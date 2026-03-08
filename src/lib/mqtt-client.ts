@@ -49,7 +49,10 @@ export class MqttHomeAssistantClient {
     // Implement actual MQTT publish
   }
 
-  async subscribeToEntity(entityId: string, callback: (state: HomeAssistantDevice) => void): Promise<void> {
+  async subscribeToEntity(
+    entityId: string,
+    callback: (state: HomeAssistantDevice) => void,
+  ): Promise<void> {
     if (!this.connected) {
       throw new Error('MQTT client not connected');
     }

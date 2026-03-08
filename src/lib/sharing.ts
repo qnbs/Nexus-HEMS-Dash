@@ -56,11 +56,11 @@ export async function createSharedDashboard(
  */
 export async function sendShareInvitation(invitation: ShareInvitation): Promise<boolean> {
   console.log('Sending invitation:', invitation);
-  
+
   // In production, send email via backend
   const inviteLink = generateShareLink(invitation.dashboardId, generateToken());
   console.log('Invitation link:', inviteLink);
-  
+
   return true;
 }
 
@@ -78,7 +78,7 @@ export async function joinSharedDashboard(
   }
 
   const dashboard: SharedDashboard = JSON.parse(stored);
-  
+
   if (dashboard.shareToken !== token) {
     throw new Error('Invalid share token');
   }
@@ -101,7 +101,7 @@ export async function joinSharedDashboard(
  */
 export async function listSharedDashboards(userEmail: string): Promise<SharedDashboard[]> {
   const dashboards: SharedDashboard[] = [];
-  
+
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i);
     if (key?.startsWith('shared-dashboard-')) {
@@ -114,17 +114,14 @@ export async function listSharedDashboards(userEmail: string): Promise<SharedDas
       }
     }
   }
-  
+
   return dashboards;
 }
 
 /**
  * Revokes access to shared dashboard
  */
-export async function revokeAccess(
-  dashboardId: string,
-  userEmail: string,
-): Promise<void> {
+export async function revokeAccess(dashboardId: string, userEmail: string): Promise<void> {
   const stored = localStorage.getItem(`shared-dashboard-${dashboardId}`);
   if (!stored) {
     throw new Error('Dashboard not found');

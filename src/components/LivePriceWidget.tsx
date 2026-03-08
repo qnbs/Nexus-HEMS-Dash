@@ -13,19 +13,23 @@ export function LivePriceWidget() {
   const [nextBestSlot, setNextBestSlot] = useState<TariffForecast | null>(null);
 
   useEffect(() => {
-    // Simulate fetching forecast
-    const simulatedForecast: TariffForecast[] = Array.from({ length: 24 }, (_, i) => ({
-      timestamp: new Date(Date.now() + i * 3600000),
-      pricePerKwh: 0.15 + Math.sin(i / 4) * 0.08,
-      renewable: 40 + Math.sin(i / 6) * 20,
-      co2Intensity: 200 + Math.sin(i / 8) * 80,
-    }));
+    const loadForecast = () => {
+      // Simulate fetching forecast
+      const simulatedForecast: TariffForecast[] = Array.from({ length: 24 }, (_, i) => ({
+        timestamp: new Date(Date.now() + i * 3600000),
+        pricePerKwh: 0.15 + Math.sin(i / 4) * 0.08,
+        renewable: 40 + Math.sin(i / 6) * 20,
+        co2Intensity: 200 + Math.sin(i / 8) * 80,
+      }));
 
-    setForecast(simulatedForecast);
+      setForecast(simulatedForecast);
 
-    // Find next best price slot
-    const sorted = [...simulatedForecast].sort((a, b) => a.pricePerKwh - b.pricePerKwh);
-    setNextBestSlot(sorted[0]);
+      // Find next best price slot
+      const sorted = [...simulatedForecast].sort((a, b) => a.pricePerKwh - b.pricePerKwh);
+      setNextBestSlot(sorted[0]);
+    };
+
+    loadForecast();
   }, []);
 
   const currentPrice = energyData.priceCurrent;
@@ -42,7 +46,11 @@ export function LivePriceWidget() {
         <div>
           <p className="eyebrow mb-2">
             <Zap className="inline h-4 w-4" aria-hidden="true" />
-            {settings.tariffProvider === 'tibber' ? 'Tibber' : settings.tariffProvider === 'awattar' ? 'aWATTar' : t('settings.none')}
+            {settings.tariffProvider === 'tibber'
+              ? 'Tibber'
+              : settings.tariffProvider === 'awattar'
+                ? 'aWATTar'
+                : t('settings.none')}
           </p>
           <div className="flex items-baseline gap-2">
             <span className="text-3xl font-semibold tabular-nums text-[color:var(--color-text)]">
@@ -70,9 +78,12 @@ export function LivePriceWidget() {
           <p className="text-xs text-[color:var(--color-muted)]">
             {t('ai.nextBestAction')}:{' '}
             <span className="font-semibold text-[color:var(--color-primary)]">
-              {nextBestSlot.timestamp.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}
-            </span>
-            {' '}({nextBestSlot.pricePerKwh.toFixed(3)} €/kWh)
+              {nextBestSlot.timestamp.toLocaleTimeString('de-DE', {
+                hour: '2-digit',
+                minute: '2-digit',
+              })}
+            </span>{' '}
+            ({nextBestSlot.pricePerKwh.toFixed(3)} €/kWh)
           </p>
         </div>
       )}

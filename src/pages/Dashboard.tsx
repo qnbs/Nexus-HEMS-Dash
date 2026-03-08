@@ -6,6 +6,10 @@ import { SankeyDiagram } from '../components/SankeyDiagram';
 import { Floorplan } from '../components/Floorplan';
 import { ControlPanel } from '../components/ControlPanel';
 import { AIOptimizerPanel } from '../components/AIOptimizerPanel';
+import { PredictiveForecast } from '../components/PredictiveForecast';
+import { LivePriceWidget } from '../components/LivePriceWidget';
+import { VoiceControlPanel } from '../components/VoiceControlPanel';
+import { ExportAndSharing } from '../components/ExportAndSharing';
 
 export function Dashboard() {
   const { t } = useTranslation();
@@ -16,6 +20,14 @@ export function Dashboard() {
     <div className="grid grid-cols-1 gap-6">
       {/* AI Optimizer Banner */}
       <AIOptimizerPanel />
+
+      {/* Live Price Widget + Voice Control */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <LivePriceWidget />
+        </div>
+        <VoiceControlPanel />
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Energy Flow (Sankey) */}
@@ -100,7 +112,15 @@ export function Dashboard() {
           </h2>
           <ControlPanel sendCommand={sendCommand} data={energyData} />
         </section>
+
+        {/* Export & Sharing */}
+        <section className="lg:col-span-1">
+          <ExportAndSharing />
+        </section>
       </div>
+
+      {/* Predictive Forecast - Full Width */}
+      <PredictiveForecast />
     </div>
   );
 }

@@ -3,8 +3,6 @@
  * Creates comprehensive energy reports with Sankey diagrams and CO2 balance
  */
 
-import type { EnergyData } from '../types';
-
 export interface MonthlyStats {
   month: string;
   year: number;
@@ -20,10 +18,7 @@ export interface MonthlyStats {
 /**
  * Generates monthly energy statistics
  */
-export async function generateMonthlyStats(
-  year: number,
-  month: number,
-): Promise<MonthlyStats> {
+export async function generateMonthlyStats(year: number, month: number): Promise<MonthlyStats> {
   // In production, fetch from IndexedDB
   return {
     month: new Date(year, month).toLocaleString('de-DE', { month: 'long' }),

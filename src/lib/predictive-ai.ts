@@ -28,8 +28,8 @@ export interface TariffForecast {
  * Fetches tariff forecast from Tibber/aWATTar
  */
 export async function fetchTariffForecast(
-  provider: StoredSettings['tariffProvider'],
-  apiToken: string,
+  _provider: StoredSettings['tariffProvider'],
+  _apiToken: string,
 ): Promise<TariffForecast[]> {
   // Mock implementation - in production, use real API
   const now = new Date();
@@ -95,10 +95,7 @@ export async function generatePredictiveRecommendation(
 /**
  * Integrates with Google Gemini API for advanced predictions
  */
-export async function queryGeminiForOptimization(
-  prompt: string,
-  apiKey: string,
-): Promise<string> {
+export async function queryGeminiForOptimization(prompt: string, apiKey: string): Promise<string> {
   // In production, integrate with @google/genai
   try {
     // Mock response
