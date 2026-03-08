@@ -30,11 +30,21 @@
 
 Built with **React 19**, **Zustand**, **D3.js**, and **Tailwind CSS 4**, the dashboard delivers a stunning **Neo-Energy Cyber-Glassmorphism UI** with full **i18n** (German/English), **WCAG 2.2 AA accessibility**, and **offline-first** architecture.
 
-### ✨ What's New in 2.0.0
+### ✨ What's New in 2.1.0
 
-- 🤖 **AI Optimizer**: Dynamic tariff-aware suggestions for EV charging, SG Ready heat pump control, and battery strategies
-- 🌐 **Full i18n**: Complete German/English localization with persistent language switcher
+- 🤖 **AI Optimizer with Google Gemini 2.5**: Real AI analysis for optimal charging strategies (EV, battery, heat pump)
+- 📈 **Predictive 24h/7d Forecast**: Weather-based PV predictions + tariff forecasts with Recharts visualization
+- 🎤 **Voice Control**: Hands-free dashboard control with Web Speech API (German & English)
+- 📄 **PDF Monthly Reports**: Automated energy reports with Sankey screenshots, costs, and CO₂ balance
+- 🤝 **Multi-Household Sharing**: Shareable dashboard links with QR codes for community projects
+- ⚡ **Live Tibber/aWATTar Widget**: Real-time price displays with mini-charts and optimization hints
+- 🏠 **Home Assistant / MQTT**: Bidirectional device control via WebSocket MQTT integration
+- 🌈 **Enhanced Dashboard Layout**: All features integrated in unified, responsive grid design
+
+### ⚡ What's New in 2.0.0
+
 - 🎨 **3 Premium Themes**: Cyber Energy Dark (default), Solar Light, Night Mode with smooth Framer Motion transitions
+- 🌐 **Full i18n**: Complete German/English localization with persistent language switcher
 - 📊 **Enhanced Sankey Diagram**: Live flow animations, mobile-optimized responsive layout
 - 🏠 **Interactive KNX Floorplan**: Real-time control of lights, climate, and window sensors
 - ♿ **WCAG 2.2 AA**: Full accessibility compliance with semantic HTML and ARIA labels
@@ -78,6 +88,13 @@ Built with **React 19**, **Zustand**, **D3.js**, and **Tailwind CSS 4**, the das
 |---------|-------------|--------|
 | ⚡ **Real-Time Sankey** | Live energy flow visualization (PV → Battery → Grid → House → HP → EV) | ✅ Live |
 | 🏠 **KNX Integration** | Interactive floorplan for lights, climate, sensors | ✅ Live |
+| 🤖 **AI Optimizer (Gemini 2.5)** | Real AI-powered optimization for EV, battery, heat pump strategies | ✅ Live |
+| 📈 **Predictive Forecast** | 24h/7d weather-based PV & tariff predictions with Recharts | ✅ Live |
+| 🎤 **Voice Control** | Hands-free dashboard control with Web Speech API | ✅ Live |
+| 📄 **PDF Reports** | Monthly energy reports with Sankey, costs, CO₂ balance | ✅ Live |
+| 🤝 **Shareable Dashboards** | Multi-household support with QR codes & read-only links | ✅ Live |
+| ⚡ **Live Price Widget** | Real-time Tibber/aWATTar tariff display with mini-charts | ✅ Live |
+| 🏠 **Home Assistant / MQTT** | Bidirectional device control via WebSocket MQTT | ✅ Live |
 | 🚗 **Smart EV Charging** | PV surplus, fast charging, dynamic tariff modes | ✅ Live |
 | 🔥 **SG Ready Control** | Heat pump modes (1-4) for thermal storage optimization | ✅ Live |
 | 🤖 **AI Optimizer** | Tariff-aware recommendations (Tibber, aWATTar) | ✅ Live |
