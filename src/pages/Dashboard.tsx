@@ -19,7 +19,9 @@ export function Dashboard() {
   return (
     <div className="grid grid-cols-1 gap-6">
       {/* AI Optimizer Banner */}
-      <AIOptimizerPanel />
+      <div id="ai-optimizer">
+        <AIOptimizerPanel />
+      </div>
 
       {/* Live Price Widget + Voice Control */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -66,6 +68,13 @@ export function Dashboard() {
             label={t('metrics.battery')}
             value={`${energyData.batterySoC.toFixed(1)} ${t('units.percent')}`}
             subValue={`${(energyData.batteryPower / 1000).toFixed(2)} ${t('units.kilowatt')}`}
+            className={
+              energyData.batteryPower < -50
+                ? 'battery-charging'
+                : energyData.batteryPower > 50
+                  ? 'battery-discharging'
+                  : ''
+            }
           />
           <MetricCard
             icon={<Home className="text-blue-400" aria-hidden="true" />}
@@ -130,14 +139,16 @@ function MetricCard({
   label,
   value,
   subValue,
+  className,
 }: {
   icon: React.ReactNode;
   label: string;
   value: string;
   subValue: string;
+  className?: string;
 }) {
   return (
-    <article className="metric-card rounded-3xl">
+    <article className={`metric-card rounded-3xl ${className || ''}`}>
       <div className="flex items-center gap-3 mb-2">
         <div className="p-2 bg-white/5 rounded-lg border border-[color:var(--color-border)]">
           {icon}

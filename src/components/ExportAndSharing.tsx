@@ -74,6 +74,7 @@ export function ExportAndSharing() {
           <button
             onClick={handleDownloadPdf}
             disabled={isGenerating}
+            data-export-report
             className="btn-primary flex w-full items-center justify-center gap-2"
           >
             <FileDown className="h-5 w-5" aria-hidden="true" />

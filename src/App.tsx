@@ -11,6 +11,7 @@ import {
   HelpCircle,
   Orbit,
   Wifi,
+  Command,
 } from 'lucide-react';
 import { Dashboard } from './pages/Dashboard';
 import { Settings } from './pages/Settings';
@@ -18,10 +19,14 @@ import { Help } from './pages/Help';
 import { themeDefinitions } from './design-tokens';
 import { ThemeSwitcher } from './components/ThemeSwitcher';
 import { LanguageSwitcher } from './components/LanguageSwitcher';
+import { CommandPalette, useCommandPalette } from './components/ui/CommandPalette';
+import { MobileNavigation } from './components/ui/MobileNavigation';
+import { watchSystemTheme, resolveTheme } from './lib/theme';
 
 export default function App() {
   const { t, i18n } = useTranslation();
-  const { connected, energyData, theme, themeTransitionKey, locale } = useAppStore();
+  const { connected, energyData, theme, themeTransitionKey, locale, setTheme, themePreference } = useAppStore();
+  const { isOpen: isCommandPaletteOpen, setIsOpen: setCommandPaletteOpen } = useCommandPalette();
 
   const { sendCommand } = useWebSocket();
   const themeDefinition = themeDefinitions[theme];
@@ -37,6 +42,26 @@ export default function App() {
       void i18n.changeLanguage(locale);
     }
   }, [i18n, locale]);
+
+  // Initialize theme from preference on mount
+  useEffect(() => {
+    if (themePreference === 'system') {
+      const resolvedTheme = resolveTheme('system');
+      setTheme(resolvedTheme);
+    }
+  }, []); // Run only once on mount
+
+  // Watch system theme preference
+  useEffect(() => {
+    if (themePreference !== 'system') return;
+
+    const unwatch = watchSystemTheme(() => {
+      const resolvedTheme = resolveTheme('system');
+      setTheme(resolvedTheme);
+    });
+
+    return unwatch;
+  }, [themePreference, setTheme]);
 
   return (
     <Router>
@@ -78,6 +103,20 @@ export default function App() {
                 <div className="flex flex-wrap items-center gap-2">
                   <LanguageSwitcher />
                   <ThemeSwitcher />
+                  
+                  {/* Command Palette Trigger */}
+                  <button
+                    onClick={() => setCommandPaletteOpen(true)}
+                    className="inline-flex items-center gap-2 rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-surface-strong)] px-3 py-1.5 text-sm transition-colors hover:bg-[color:var(--color-primary)]/10"
+                    aria-label={t('command.open', 'Open command palette')}
+                  >
+                    <Command className="h-4 w-4" aria-hidden="true" />
+                    <span className="hidden sm:inline">{t('command.search', 'Search')}</span>
+                    <kbd className="hidden rounded bg-slate-800/50 px-1.5 py-0.5 text-xs lg:inline">
+                      ⌘K
+                    </kbd>
+                  </button>
+
                   <div className="inline-flex items-center gap-2 rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-surface-strong)] px-3 py-1.5 text-sm">
                     <Wifi
                       className={`h-4 w-4 ${connected ? 'text-[color:var(--color-primary)]' : 'text-rose-400'}`}
@@ -115,7 +154,7 @@ export default function App() {
             </div>
           </header>
 
-          <main>
+          <main className="pb-20 lg:pb-0">
             <Routes>
               <Route path="/" element={<Dashboard sendCommand={sendCommand} />} />
               <Route path="/settings" element={<Settings />} />
@@ -123,6 +162,25 @@ export default function App() {
             </Routes>
           </main>
         </div>
+
+        {/* Command Palette */}
+        <CommandPalette
+          isOpen={isCommandPaletteOpen}
+          onClose={() => setCommandPaletteOpen(false)}
+          onOptimize={() => {
+            // Scroll to AI Optimizer
+            const optimizer = document.getElementById('ai-optimizer');
+            optimizer?.scrollIntoView({ behavior: 'smooth' });
+          }}
+          onExportReport={() => {
+            // Trigger PDF export
+            const exportButton = document.querySelector('[data-export-report]') as HTMLButtonElement;
+            exportButton?.click();
+          }}
+        />
+
+        {/* Mobile Bottom Navigation */}
+        <MobileNavigation />
       </div>
     </Router>
   );

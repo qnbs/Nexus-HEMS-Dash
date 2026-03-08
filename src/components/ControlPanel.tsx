@@ -2,6 +2,7 @@ import { useActionState } from 'react';
 import { Battery, Car, Thermometer } from 'lucide-react';
 
 import { CommandType, EnergyData, EvState, HpState } from '../types';
+import { hapticClick, hapticModeChange, hapticSuccess } from '../lib/haptics';
 
 export function ControlPanel({
   sendCommand,
@@ -13,6 +14,7 @@ export function ControlPanel({
   // Mock action for EV charging
   const [evState, evAction, isEvPending] = useActionState(
     async (state: EvState, formData: FormData) => {
+      hapticModeChange();
       const mode = formData.get('evMode');
       const power =
         mode === 'fast' ? 11000 : mode === 'pv' ? Math.max(0, data.pvPower - data.houseLoad) : 0;
@@ -20,6 +22,7 @@ export function ControlPanel({
       // Simulate network delay
       await new Promise((resolve) => setTimeout(resolve, 800));
       sendCommand('SET_EV_POWER', power);
+      hapticSuccess();
 
       return { mode, power, message: 'Ladestrategie aktualisiert' };
     },
@@ -29,6 +32,7 @@ export function ControlPanel({
   // Mock action for Heat Pump SG Ready
   const [hpState, hpAction, isHpPending] = useActionState(
     async (state: HpState, formData: FormData) => {
+      hapticModeChange();
       const mode = formData.get('hpMode');
       // SG Ready Modes: 1=Sperre(0W), 2=Normal(800W), 3=Empfehlung(1500W), 4=Befehl(2500W)
       let power = 800;
@@ -38,6 +42,7 @@ export function ControlPanel({
 
       await new Promise((resolve) => setTimeout(resolve, 600));
       sendCommand('SET_HEAT_PUMP_POWER', power);
+      hapticSuccess();
 
       return { mode, power, message: 'SG Ready Status gesetzt' };
     },
@@ -69,6 +74,7 @@ export function ControlPanel({
                 value="off"
                 className="hidden"
                 defaultChecked={evState.mode === 'off'}
+                onClick={hapticClick}
               />
               <span className="text-sm">Aus</span>
             </label>
@@ -81,6 +87,7 @@ export function ControlPanel({
                 value="pv"
                 className="hidden"
                 defaultChecked={evState.mode === 'pv'}
+                onClick={hapticClick}
               />
               <span className="text-sm">PV-Überschuss</span>
             </label>
@@ -93,6 +100,7 @@ export function ControlPanel({
                 value="fast"
                 className="hidden"
                 defaultChecked={evState.mode === 'fast'}
+                onClick={hapticClick}
               />
               <span className="text-sm">Schnell (11kW)</span>
             </label>
@@ -126,6 +134,7 @@ export function ControlPanel({
           <select
             name="hpMode"
             defaultValue={hpState.mode}
+            onChange={hapticClick}
             className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-500/50"
           >
             <option value="1">Modus 1: EVU-Sperre (0 kW)</option>
@@ -159,13 +168,19 @@ export function ControlPanel({
         </div>
         <div className="flex gap-2">
           <button
-            onClick={() => sendCommand('SET_BATTERY_POWER', -3000)}
+            onClick={() => {
+              hapticModeChange();
+              sendCommand('SET_BATTERY_POWER', -3000);
+            }}
             className="flex-1 py-1.5 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm transition-colors"
           >
             Laden erzwingen
           </button>
           <button
-            onClick={() => sendCommand('SET_BATTERY_POWER', 0)}
+            onClick={() => {
+              hapticModeChange();
+              sendCommand('SET_BATTERY_POWER', 0);
+            }}
             className="flex-1 py-1.5 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm transition-colors"
           >
             Auto

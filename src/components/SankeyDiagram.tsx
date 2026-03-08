@@ -135,7 +135,7 @@ export function SankeyDiagram({ data }: { data: EnergyData }) {
     });
 
     // Draw links
-    svg
+    const linkGroup = svg
       .append('g')
       .selectAll('path')
       .data(graph.links)
@@ -144,8 +144,18 @@ export function SankeyDiagram({ data }: { data: EnergyData }) {
       .attr('fill', 'none')
       .attr('stroke', (d) => (d.source as CustomNode).color)
       .attr('stroke-width', (d) => Math.max(1, d.width || 0))
-      .attr('stroke-opacity', 0.4)
+      .attr('stroke-opacity', 0.5)
+      .attr('class', 'energy-flow-path')
       .style('mix-blend-mode', 'screen')
+      .style('filter', (d) => {
+        const color = (d.source as CustomNode).color;
+        return `drop-shadow(0 0 4px ${color}) drop-shadow(0 0 8px ${color})`;
+      })
+      .style('animation', (d) => {
+        // Faster pulse for higher power flows
+        const duration = Math.max(1, 3 - d.value / 1000);
+        return `energy-pulse ${duration}s ease-in-out infinite`;
+      })
       .append('title')
       .text(
         (d) =>

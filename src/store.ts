@@ -3,6 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 
 import type { LocaleCode, EnergyData, FloorplanState, StoredSettings } from './types';
 import type { ThemeName } from './design-tokens';
+import type { ThemePreference } from './lib/theme';
 import { persistSettings } from './lib/db';
 
 interface AppState {
@@ -11,6 +12,7 @@ interface AppState {
   lastUpdated: number | null;
   locale: LocaleCode;
   theme: ThemeName;
+  themePreference: ThemePreference;
   themeTransitionKey: number;
   floorplan: FloorplanState;
   settings: StoredSettings;
@@ -18,6 +20,7 @@ interface AppState {
   setConnected: (status: boolean) => void;
   setLocale: (locale: LocaleCode) => void;
   setTheme: (theme: ThemeName) => void;
+  setThemePreference: (preference: ThemePreference) => void;
   updateFloorplan: (data: Partial<FloorplanState>) => void;
   updateSettings: (data: Partial<StoredSettings>) => void;
 }
@@ -60,6 +63,7 @@ export const useAppStore = create<AppState>()(
       lastUpdated: null,
       locale: 'de',
       theme: 'cyber-energy-dark',
+      themePreference: 'cyber-energy-dark',
       themeTransitionKey: 0,
       floorplan: {
         lightsOn: true,
@@ -76,6 +80,8 @@ export const useAppStore = create<AppState>()(
       setLocale: (locale) => set({ locale }),
       setTheme: (theme) =>
         set((state) => ({ theme, themeTransitionKey: state.themeTransitionKey + 1 })),
+      setThemePreference: (preference) =>
+        set((state) => ({ themePreference: preference, themeTransitionKey: state.themeTransitionKey + 1 })),
       updateFloorplan: (data) => set((state) => ({ floorplan: { ...state.floorplan, ...data } })),
       updateSettings: (data) => {
         const nextSettings = { ...get().settings, ...data };
@@ -89,6 +95,7 @@ export const useAppStore = create<AppState>()(
       partialize: (state) => ({
         locale: state.locale,
         theme: state.theme,
+        themePreference: state.themePreference,
         themeTransitionKey: state.themeTransitionKey,
         floorplan: state.floorplan,
         settings: state.settings,

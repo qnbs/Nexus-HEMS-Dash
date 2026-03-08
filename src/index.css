@@ -148,3 +148,55 @@
   --color-border: rgba(79, 131, 255, 0.16);
   --color-glow: rgba(79, 131, 255, 0.34);
 }
+
+/* Animations */
+@keyframes energy-pulse {
+  0%, 100% {
+    stroke-opacity: 0.5;
+    filter: brightness(1);
+  }
+  50% {
+    stroke-opacity: 0.85;
+    filter: brightness(1.4);
+  }
+}
+
+@keyframes battery-pulse-charging {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(34, 255, 136, 0.4), 0 0 40px rgba(34, 255, 136, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(34, 255, 136, 0.6), 0 0 60px rgba(34, 255, 136, 0.3);
+  }
+}
+
+@keyframes battery-pulse-discharging {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(255, 136, 0, 0.4), 0 0 40px rgba(255, 136, 0, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(255, 136, 0, 0.6), 0 0 60px rgba(255, 136, 0, 0.3);
+  }
+}
+
+.battery-charging {
+  animation: battery-pulse-charging 2s ease-in-out infinite;
+}
+
+.battery-discharging {
+  animation: battery-pulse-discharging 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-slow {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
