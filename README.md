@@ -1,8 +1,8 @@
-# Nexus-HEMS Dash 2.2
+# Nexus-HEMS Dash 2.3
 
 <div align="center">
 
-![Version](https://img.shields.io/badge/Version-2.2.0-22ff88?style=for-the-badge)
+![Version](https://img.shields.io/badge/Version-2.3.0-22ff88?style=for-the-badge)
 ![React](https://img.shields.io/badge/React-19-00f0ff?style=for-the-badge&logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178c6?style=for-the-badge&logo=typescript)
 ![Tailwind](https://img.shields.io/badge/Tailwind-4.1-38bdf8?style=for-the-badge&logo=tailwindcss)

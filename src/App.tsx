@@ -21,7 +21,9 @@ import { ThemeSwitcher } from './components/ThemeSwitcher';
 import { LanguageSwitcher } from './components/LanguageSwitcher';
 import { CommandPalette, useCommandPalette } from './components/ui/CommandPalette';
 import { MobileNavigation } from './components/ui/MobileNavigation';
+import { OfflineBanner } from './components/OfflineBanner';
 import { watchSystemTheme, resolveTheme } from './lib/theme';
+import { cacheEnergySnapshot } from './lib/offline-cache';
 
 export default function App() {
   const { t, i18n } = useTranslation();
@@ -63,8 +65,16 @@ export default function App() {
     return unwatch;
   }, [themePreference, setTheme]);
 
+  // Cache energy data for offline mode
+  useEffect(() => {
+    if (connected && energyData) {
+      void cacheEnergySnapshot(energyData);
+    }
+  }, [connected, energyData]);
+
   return (
     <Router>
+      <OfflineBanner />
       <div className="theme-shell min-h-screen font-sans text-[color:var(--color-text)] selection:bg-[color:var(--color-primary)]/30">
         <AnimatePresence>
           <motion.div

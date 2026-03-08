@@ -1,7 +1,8 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, memo } from 'react';
 import * as d3 from 'd3';
 import { sankey, sankeyLinkHorizontal, SankeyNode, SankeyLink } from 'd3-sankey';
 import { EnergyData } from '../types';
+import { cacheSankeyData } from '../lib/offline-cache';
 
 interface CustomNode extends SankeyNode<Record<string, unknown>, Record<string, unknown>> {
   name: string;
@@ -12,7 +13,7 @@ interface CustomLink extends SankeyLink<CustomNode, Record<string, unknown>> {
   value: number;
 }
 
-export function SankeyDiagram({ data }: { data: EnergyData }) {
+export const SankeyDiagram = memo(function SankeyDiagram({ data }: { data: EnergyData }) {
   const svgRef = useRef<SVGSVGElement>(null);
 
   useEffect(() => {
@@ -190,6 +191,16 @@ export function SankeyDiagram({ data }: { data: EnergyData }) {
       .attr('font-size', fontSize)
       .attr('font-family', 'Inter, sans-serif')
       .attr('font-weight', '500');
+    
+    // Cache Sankey data for offline mode
+    void cacheSankeyData(
+      graph.nodes.map((n) => ({ name: n.name, color: n.color, value: n.value })),
+      graph.links.map((l) => ({
+        source: (l.source as CustomNode).name,
+        target: (l.target as CustomNode).name,
+        value: l.value,
+      })),
+    );
   }, [data]);
 
   return (
@@ -198,6 +209,8 @@ export function SankeyDiagram({ data }: { data: EnergyData }) {
       className="w-full h-full absolute inset-0"
       role="img"
       aria-label="Real-time energy flow diagram showing distribution between PV, battery, grid, house, heat pump, and EV"
+      aria-live="polite"
+      aria-atomic="false"
     >
       <title>Energy Flow Sankey Diagram</title>
       <desc>
@@ -207,4 +220,4 @@ export function SankeyDiagram({ data }: { data: EnergyData }) {
       </desc>
     </svg>
   );
-}
+});

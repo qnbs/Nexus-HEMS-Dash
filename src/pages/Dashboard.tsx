@@ -51,7 +51,12 @@ export function Dashboard() {
         </section>
 
         {/* Key Metrics */}
-        <section className="grid grid-cols-2 lg:grid-cols-1 gap-4" aria-label="Energy metrics">
+        <section
+          className="grid grid-cols-2 lg:grid-cols-1 gap-4"
+          aria-label="Energy metrics"
+          aria-live="polite"
+          aria-atomic="false"
+        >
           <MetricCard
             icon={<Sun className="text-yellow-400" aria-hidden="true" />}
             label={t('metrics.pvGeneration')}
