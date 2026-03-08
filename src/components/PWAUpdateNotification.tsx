@@ -11,7 +11,7 @@ import { useRegisterSW } from 'virtual:pwa-register/react';
 
 export function PWAUpdateNotification() {
   const { t } = useTranslation();
-  const [showUpdatePrompt, setShowUpdatePrompt] = useState(() => needRefresh);
+  const [showUpdatePrompt, setShowUpdatePrompt] = useState(false);
   const [updateError, setUpdateError] = useState<string | null>(null);
 
   const {

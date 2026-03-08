@@ -135,7 +135,7 @@ export const SankeyDiagram = memo(function SankeyDiagram({ data }: { data: Energ
       links: activeLinks.map((d) => Object.assign({}, d)),
     });
 
-    // Draw links
+    // Draw links with enhanced hover effects
     const linkGroup = svg
       .append('g')
       .selectAll('path')
@@ -157,19 +157,41 @@ export const SankeyDiagram = memo(function SankeyDiagram({ data }: { data: Energ
         const duration = Math.max(1, 3 - d.value / 1000);
         return `energy-pulse ${duration}s ease-in-out infinite`;
       })
+      .style('cursor', 'pointer')
+      .style('transition', 'all 0.3s ease-out')
+      .on('mouseenter', function (event, d) {
+        d3.select(this)
+          .attr('stroke-opacity', 0.85)
+          .attr('stroke-width', Math.max(2, (d.width || 0) + 2))
+          .style('filter', () => {
+            const color = (d.source as CustomNode).color;
+            return `drop-shadow(0 0 8px ${color}) drop-shadow(0 0 16px ${color}) drop-shadow(0 0 24px ${color})`;
+          });
+      })
+      .on('mouseleave', function (event, d) {
+        d3.select(this)
+          .attr('stroke-opacity', 0.5)
+          .attr('stroke-width', Math.max(1, d.width || 0))
+          .style('filter', () => {
+            const color = (d.source as CustomNode).color;
+            return `drop-shadow(0 0 4px ${color}) drop-shadow(0 0 8px ${color})`;
+          });
+      })
       .append('title')
       .text(
         (d) =>
           `${(d.source as CustomNode).name} → ${(d.target as CustomNode).name}\n${Math.round(d.value)} W`,
       );
 
-    // Draw nodes
+    // Draw nodes with enhanced hover effects
     const node = svg
       .append('g')
       .selectAll('g')
       .data(graph.nodes)
       .join('g')
-      .attr('transform', (d) => `translate(${d.x0},${d.y0})`);
+      .attr('transform', (d) => `translate(${d.x0},${d.y0})`)
+      .style('cursor', 'pointer')
+      .style('transition', 'all 0.3s ease-out');
 
     node
       .append('rect')
@@ -177,6 +199,25 @@ export const SankeyDiagram = memo(function SankeyDiagram({ data }: { data: Energ
       .attr('width', (d) => (d.x1 || 0) - (d.x0 || 0))
       .attr('fill', (d) => d.color)
       .attr('rx', 4)
+      .style('filter', (d) => `drop-shadow(0 2px 4px ${d.color}40)`)
+      .on('mouseenter', function (event, d) {
+        d3.select(this)
+          .attr('rx', 6)
+          .style('filter', `drop-shadow(0 4px 12px ${d.color}80) drop-shadow(0 0 16px ${d.color})`)
+          .transition()
+          .duration(200)
+          .attr('height', ((d.y1 || 0) - (d.y0 || 0)) * 1.05)
+          .attr('width', ((d.x1 || 0) - (d.x0 || 0)) * 1.1);
+      })
+      .on('mouseleave', function (event, d) {
+        d3.select(this)
+          .attr('rx', 4)
+          .style('filter', `drop-shadow(0 2px 4px ${d.color}40)`)
+          .transition()
+          .duration(200)
+          .attr('height', (d.y1 || 0) - (d.y0 || 0))
+          .attr('width', (d.x1 || 0) - (d.x0 || 0));
+      })
       .append('title')
       .text((d) => `${d.name}\n${Math.round(d.value || 0)} W`);
 
@@ -190,7 +231,9 @@ export const SankeyDiagram = memo(function SankeyDiagram({ data }: { data: Energ
       .attr('fill', '#e2e8f0')
       .attr('font-size', fontSize)
       .attr('font-family', 'Inter, sans-serif')
-      .attr('font-weight', '500');
+      .attr('font-weight', '500')
+      .style('pointer-events', 'none')
+      .style('user-select', 'none');
     
     // Cache Sankey data for offline mode
     void cacheSankeyData(

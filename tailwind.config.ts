@@ -1,4 +1,5 @@
 import type { Config } from 'tailwindcss';
+import containerQueries from '@tailwindcss/container-queries';
 
 const config: Config = {
   content: [
@@ -8,6 +9,28 @@ const config: Config = {
   darkMode: ['class', '[data-theme="cyber-energy-dark"]', '[data-theme="night-mode"]'],
   theme: {
     extend: {
+      screens: {
+        'xs': '475px',
+        'sm': '640px',
+        'md': '768px',
+        'lg': '1024px',
+        'xl': '1280px',
+        '2xl': '1536px',
+        '3xl': '1920px',
+      },
+      spacing: {
+        '18': '4.5rem',
+        '22': '5.5rem',
+        '26': '6.5rem',
+        '30': '7.5rem',
+      },
+      fontSize: {
+        'xxs': ['0.625rem', { lineHeight: '0.875rem' }],
+      },
+      borderRadius: {
+        '4xl': '2rem',
+        '5xl': '2.5rem',
+      },
       fontFamily: {
         sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
         mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'monospace'],
@@ -34,6 +57,9 @@ const config: Config = {
         'slide-up': 'slide-up 0.4s ease-out',
         'slide-down': 'slide-down 0.4s ease-out',
         'scale-in': 'scale-in 0.35s ease-out',
+        'spin-slow': 'spin 8s linear infinite',
+        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'bounce-slow': 'bounce 2s infinite',
       },
       keyframes: {
         'energy-pulse': {
@@ -120,7 +146,9 @@ const config: Config = {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    containerQueries,
+  ],
 };
 
 export default config;
