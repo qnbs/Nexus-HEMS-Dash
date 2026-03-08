@@ -20,6 +20,7 @@ export function SankeyDiagram({ data }: { data: EnergyData }) {
 
     const width = svgRef.current.clientWidth;
     const height = svgRef.current.clientHeight;
+    const isMobile = width < 640; // sm breakpoint
 
     // Clear previous
     d3.select(svgRef.current).selectAll('*').remove();
@@ -115,12 +116,17 @@ export function SankeyDiagram({ data }: { data: EnergyData }) {
 
     if (activeLinks.length === 0) return;
 
+    const nodeWidth = isMobile ? 10 : 15;
+    const nodePadding = isMobile ? 15 : 20;
+    const fontSize = isMobile ? '10px' : '12px';
+    const padding = isMobile ? 5 : 10;
+
     const sankeyGenerator = sankey<CustomNode, CustomLink>()
-      .nodeWidth(15)
-      .nodePadding(20)
+      .nodeWidth(nodeWidth)
+      .nodePadding(nodePadding)
       .extent([
-        [10, 10],
-        [width - 10, height - 10],
+        [padding, padding],
+        [width - padding, height - padding],
       ]);
 
     const graph = sankeyGenerator({
@@ -165,15 +171,30 @@ export function SankeyDiagram({ data }: { data: EnergyData }) {
 
     node
       .append('text')
-      .attr('x', (d) => ((d.x0 || 0) < width / 2 ? 20 : -5))
+      .attr('x', (d) => ((d.x0 || 0) < width / 2 ? nodeWidth + 5 : -5))
       .attr('y', (d) => ((d.y1 || 0) - (d.y0 || 0)) / 2)
       .attr('dy', '0.35em')
       .attr('text-anchor', (d) => ((d.x0 || 0) < width / 2 ? 'start' : 'end'))
-      .text((d) => `${d.name} (${Math.round(d.value || 0)}W)`)
+      .text((d) => (isMobile ? `${d.name}` : `${d.name} (${Math.round(d.value || 0)}W)`))
       .attr('fill', '#e2e8f0')
-      .attr('font-size', '12px')
-      .attr('font-family', 'Inter, sans-serif');
+      .attr('font-size', fontSize)
+      .attr('font-family', 'Inter, sans-serif')
+      .attr('font-weight', '500');
   }, [data]);
 
-  return <svg ref={svgRef} className="w-full h-full absolute inset-0" />;
+  return (
+    <svg
+      ref={svgRef}
+      className="w-full h-full absolute inset-0"
+      role="img"
+      aria-label="Real-time energy flow diagram showing distribution between PV, battery, grid, house, heat pump, and EV"
+    >
+      <title>Energy Flow Sankey Diagram</title>
+      <desc>
+        Live visualization of energy flows: PV generating {Math.round(data.pvPower)}W, Battery at{' '}
+        {data.batterySoC.toFixed(1)}%, House consuming {Math.round(data.houseLoad)}W, Grid{' '}
+        {data.gridPower > 0 ? 'importing' : 'exporting'} {Math.abs(Math.round(data.gridPower))}W
+      </desc>
+    </svg>
+  );
 }

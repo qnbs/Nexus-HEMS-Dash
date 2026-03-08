@@ -3,10 +3,148 @@
 @theme {
   --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  
+  /* Neo-Energy Color Tokens */
+  --color-neon-green: #22ff88;
+  --color-electric-blue: #00f0ff;
+  --color-power-orange: #ff8800;
+  --color-deep-space: #07111f;
+  --color-void-blue: #0c1f34;
+  --color-polar-mist: #eaf7ff;
+  --color-solar-sand: #fff3dc;
+  --color-midnight: #030712;
 }
 
 @layer utilities {
+  /* Glassmorphism */
   .glass-panel {
-    @apply bg-slate-800/40 backdrop-blur-xl border border-white/10 shadow-xl;
+    @apply rounded-3xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] backdrop-blur-3xl shadow-2xl;
   }
+  
+  /* Neon Glow Effects */
+  .neon-glow-green {
+    text-shadow: 0 0 12px rgba(34, 255, 136, 0.65), 0 0 24px rgba(34, 255, 136, 0.35);
+  }
+  
+  .neon-glow-blue {
+    text-shadow: 0 0 12px rgba(0, 240, 255, 0.65), 0 0 24px rgba(0, 240, 255, 0.35);
+  }
+  
+  .neon-glow-orange {
+    text-shadow: 0 0 12px rgba(255, 136, 0, 0.65), 0 0 24px rgba(255, 136, 0, 0.35);
+  }
+  
+  .neon-border-green {
+    box-shadow: 0 0 18px rgba(34, 255, 136, 0.45), inset 0 0 18px rgba(34, 255, 136, 0.12);
+  }
+  
+  .neon-border-blue {
+    box-shadow: 0 0 18px rgba(0, 240, 255, 0.45), inset 0 0 18px rgba(0, 240, 255, 0.12);
+  }
+  
+  .neon-border-orange {
+    box-shadow: 0 0 18px rgba(255, 136, 0, 0.45), inset 0 0 18px rgba(255, 136, 0, 0.12);
+  }
+  
+  /* Pattern Grid Background */
+  .pattern-grid {
+    background-image: 
+      linear-gradient(rgba(34, 255, 136, 0.05) 1.5px, transparent 1.5px),
+      linear-gradient(90deg, rgba(34, 255, 136, 0.05) 1.5px, transparent 1.5px);
+    background-size: 32px 32px;
+    background-position: center center;
+  }
+  
+  /* Navigation Pills */
+  .nav-pill {
+    @apply inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all duration-300 ease-out;
+    @apply text-[color:var(--color-muted)] hover:text-[color:var(--color-text)];
+    @apply hover:bg-white/8;
+  }
+  
+  .nav-pill-active {
+    @apply bg-[color:var(--color-primary)]/18 text-[color:var(--color-primary)];
+    @apply shadow-[0_0_16px_rgba(34,255,136,0.28)];
+  }
+  
+  /* Price Badge */
+  .price-pill {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-surface-strong)] px-3.5 py-1.5 text-sm font-semibold tabular-nums;
+    @apply text-[color:var(--color-primary)] shadow-sm;
+  }
+  
+  /* Eyebrow Label */
+  .eyebrow {
+    @apply inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.22em];
+    @apply text-[color:var(--color-secondary)]/90;
+  }
+  
+  /* Theme Shell */
+  .theme-shell {
+    @apply bg-[color:var(--color-background)] transition-colors duration-500;
+  }
+  
+  /* Focus Visible (WCAG 2.2 AA) */
+  .focus-ring {
+    @apply outline-none ring-2 ring-[color:var(--color-primary)] ring-offset-2 ring-offset-[color:var(--color-background)];
+  }
+  
+  /* Metric Cards */
+  .metric-card {
+    @apply rounded-3xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] backdrop-blur-3xl shadow-2xl;
+    @apply flex flex-col justify-between gap-3 p-5;
+  }
+  
+  /* Button Variants */
+  .btn-primary {
+    @apply rounded-full bg-[color:var(--color-primary)] px-6 py-2.5 font-semibold text-[color:var(--color-background)] transition-all duration-300;
+    @apply hover:scale-[1.02] hover:shadow-[0_0_24px_rgba(34,255,136,0.42)] active:scale-[0.98];
+    @apply outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--color-background)];
+  }
+  
+  .btn-secondary {
+    @apply rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-6 py-2.5 font-semibold text-[color:var(--color-text)] backdrop-blur-xl transition-all duration-300;
+    @apply hover:scale-[1.02] hover:border-[color:var(--color-primary)]/40 active:scale-[0.98];
+    @apply outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--color-background)];
+  }
+}
+
+/* CSS Variables per Theme (injected via JS) */
+[data-theme='cyber-energy-dark'] {
+  --color-primary: #22ff88;
+  --color-secondary: #00f0ff;
+  --color-accent: #ff8800;
+  --color-background: #06111d;
+  --color-surface: rgba(8, 24, 40, 0.72);
+  --color-surface-strong: rgba(10, 32, 53, 0.88);
+  --color-text: #effffc;
+  --color-muted: #9ec3cf;
+  --color-border: rgba(34, 255, 136, 0.18);
+  --color-glow: rgba(34, 255, 136, 0.45);
+}
+
+[data-theme='solar-light'] {
+  --color-primary: #0bbf73;
+  --color-secondary: #0084ff;
+  --color-accent: #ff8800;
+  --color-background: #fff7e8;
+  --color-surface: rgba(255, 255, 255, 0.72);
+  --color-surface-strong: rgba(255, 248, 230, 0.94);
+  --color-text: #10243a;
+  --color-muted: #5f7284;
+  --color-border: rgba(0, 132, 255, 0.18);
+  --color-glow: rgba(255, 136, 0, 0.24);
+}
+
+[data-theme='night-mode'] {
+  --color-primary: #5dfdcf;
+  --color-secondary: #4f83ff;
+  --color-accent: #ff9b3d;
+  --color-background: #02050d;
+  --color-surface: rgba(6, 11, 23, 0.78);
+  --color-surface-strong: rgba(8, 14, 28, 0.94);
+  --color-text: #f4f8ff;
+  --color-muted: #92a6c4;
+  --color-border: rgba(79, 131, 255, 0.16);
+  --color-glow: rgba(79, 131, 255, 0.34);
 }

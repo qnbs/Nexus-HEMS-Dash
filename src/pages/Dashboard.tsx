@@ -1,75 +1,105 @@
+import { useTranslation } from 'react-i18next';
 import { useWebSocket } from '../useWebSocket';
 import { useAppStore } from '../store';
 import { Activity, Battery, Home, Sun, Thermometer, Zap } from 'lucide-react';
 import { SankeyDiagram } from '../components/SankeyDiagram';
 import { Floorplan } from '../components/Floorplan';
 import { ControlPanel } from '../components/ControlPanel';
+import { AIOptimizerPanel } from '../components/AIOptimizerPanel';
 
 export function Dashboard() {
+  const { t } = useTranslation();
   const { sendCommand } = useWebSocket();
   const { energyData } = useAppStore();
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      {/* Main Energy Flow (Sankey) */}
-      <div className="lg:col-span-2 glass-panel p-6 rounded-2xl flex flex-col">
-        <h2 className="text-lg font-medium mb-4 flex items-center gap-2">
-          <Activity size={20} className="text-slate-400" />
-          Echtzeit-Energiefluss
-        </h2>
-        <div className="flex-1 min-h-[400px] relative">
-          <SankeyDiagram data={energyData} />
-        </div>
-      </div>
+    <div className="grid grid-cols-1 gap-6">
+      {/* AI Optimizer Banner */}
+      <AIOptimizerPanel />
 
-      {/* Key Metrics */}
-      <div className="grid grid-cols-2 lg:grid-cols-1 gap-4">
-        <MetricCard
-          icon={<Sun className="text-yellow-400" />}
-          label="PV-Erzeugung"
-          value={`${(energyData.pvPower / 1000).toFixed(2)} kW`}
-          subValue={`${energyData.pvYieldToday.toFixed(1)} kWh heute`}
-        />
-        <MetricCard
-          icon={
-            <Battery className={energyData.batterySoC > 20 ? 'text-emerald-400' : 'text-red-400'} />
-          }
-          label="Batteriespeicher"
-          value={`${energyData.batterySoC.toFixed(1)} %`}
-          subValue={`${(energyData.batteryPower / 1000).toFixed(2)} kW`}
-        />
-        <MetricCard
-          icon={<Home className="text-blue-400" />}
-          label="Hausverbrauch"
-          value={`${(energyData.houseLoad / 1000).toFixed(2)} kW`}
-          subValue="Inkl. Grundlast"
-        />
-        <MetricCard
-          icon={<Zap className={energyData.gridPower > 0 ? 'text-red-400' : 'text-emerald-400'} />}
-          label="Netzbezug"
-          value={`${(energyData.gridPower / 1000).toFixed(2)} kW`}
-          subValue={energyData.gridPower > 0 ? 'Bezug' : 'Einspeisung'}
-        />
-      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Main Energy Flow (Sankey) */}
+        <section
+          className="lg:col-span-2 glass-panel p-6 rounded-3xl flex flex-col"
+          aria-labelledby="energy-flow-title"
+        >
+          <h2 id="energy-flow-title" className="text-lg font-medium mb-4 flex items-center gap-2">
+            <Activity
+              size={20}
+              className="text-[color:var(--color-secondary)]"
+              aria-hidden="true"
+            />
+            {t('dashboard.realtimeFlow')}
+          </h2>
+          <div className="flex-1 min-h-[320px] sm:min-h-[400px] relative">
+            <SankeyDiagram data={energyData} />
+          </div>
+        </section>
 
-      {/* Floorplan & KNX Integration */}
-      <div className="lg:col-span-2 glass-panel p-6 rounded-2xl">
-        <h2 className="text-lg font-medium mb-4 flex items-center gap-2">
-          <Home size={20} className="text-slate-400" />
-          Gebäudeautomation (KNX)
-        </h2>
-        <div className="h-[300px] w-full bg-slate-800/50 rounded-xl overflow-hidden border border-white/5">
-          <Floorplan />
-        </div>
-      </div>
+        {/* Key Metrics */}
+        <section className="grid grid-cols-2 lg:grid-cols-1 gap-4" aria-label="Energy metrics">
+          <MetricCard
+            icon={<Sun className="text-yellow-400" aria-hidden="true" />}
+            label={t('metrics.pvGeneration')}
+            value={`${(energyData.pvPower / 1000).toFixed(2)} ${t('units.kilowatt')}`}
+            subValue={`${energyData.pvYieldToday.toFixed(1)} ${t('units.kilowattHour')} ${t('common.today')}`}
+          />
+          <MetricCard
+            icon={
+              <Battery
+                className={energyData.batterySoC > 20 ? 'text-emerald-400' : 'text-red-400'}
+                aria-hidden="true"
+              />
+            }
+            label={t('metrics.battery')}
+            value={`${energyData.batterySoC.toFixed(1)} ${t('units.percent')}`}
+            subValue={`${(energyData.batteryPower / 1000).toFixed(2)} ${t('units.kilowatt')}`}
+          />
+          <MetricCard
+            icon={<Home className="text-blue-400" aria-hidden="true" />}
+            label={t('metrics.houseLoad')}
+            value={`${(energyData.houseLoad / 1000).toFixed(2)} ${t('units.kilowatt')}`}
+            subValue={t('metrics.baseLoad')}
+          />
+          <MetricCard
+            icon={
+              <Zap
+                className={energyData.gridPower > 0 ? 'text-red-400' : 'text-emerald-400'}
+                aria-hidden="true"
+              />
+            }
+            label={t('metrics.grid')}
+            value={`${(energyData.gridPower / 1000).toFixed(2)} ${t('units.kilowatt')}`}
+            subValue={energyData.gridPower > 0 ? t('metrics.import') : t('metrics.export')}
+          />
+        </section>
 
-      {/* Control Panel */}
-      <div className="glass-panel p-6 rounded-2xl">
-        <h2 className="text-lg font-medium mb-4 flex items-center gap-2">
-          <Thermometer size={20} className="text-slate-400" />
-          Steuerung & Optimierung
-        </h2>
-        <ControlPanel sendCommand={sendCommand} data={energyData} />
+        {/* Floorplan & KNX Integration */}
+        <section
+          className="lg:col-span-2 glass-panel p-6 rounded-3xl"
+          aria-labelledby="floorplan-title"
+        >
+          <h2 id="floorplan-title" className="text-lg font-medium mb-4 flex items-center gap-2">
+            <Home size={20} className="text-[color:var(--color-secondary)]" aria-hidden="true" />
+            {t('dashboard.automation')}
+          </h2>
+          <div className="h-[300px] w-full bg-slate-800/50 rounded-xl overflow-hidden border border-[color:var(--color-border)]">
+            <Floorplan />
+          </div>
+        </section>
+
+        {/* Control Panel */}
+        <section className="glass-panel p-6 rounded-3xl" aria-labelledby="control-title">
+          <h2 id="control-title" className="text-lg font-medium mb-4 flex items-center gap-2">
+            <Thermometer
+              size={20}
+              className="text-[color:var(--color-secondary)]"
+              aria-hidden="true"
+            />
+            {t('dashboard.control')}
+          </h2>
+          <ControlPanel sendCommand={sendCommand} data={energyData} />
+        </section>
       </div>
     </div>
   );
@@ -87,15 +117,19 @@ function MetricCard({
   subValue: string;
 }) {
   return (
-    <div className="glass-panel p-5 rounded-2xl flex flex-col justify-between">
+    <article className="metric-card rounded-3xl">
       <div className="flex items-center gap-3 mb-2">
-        <div className="p-2 bg-white/5 rounded-lg border border-white/10">{icon}</div>
-        <span className="text-sm font-medium text-slate-300">{label}</span>
+        <div className="p-2 bg-white/5 rounded-lg border border-[color:var(--color-border)]">
+          {icon}
+        </div>
+        <span className="text-sm font-medium text-[color:var(--color-text)]">{label}</span>
       </div>
       <div>
-        <div className="text-2xl font-light tracking-tight">{value}</div>
-        <div className="text-xs text-slate-500 mt-1">{subValue}</div>
+        <div className="text-2xl font-light tracking-tight text-[color:var(--color-text)]">
+          {value}
+        </div>
+        <div className="text-xs text-[color:var(--color-muted)] mt-1">{subValue}</div>
       </div>
-    </div>
+    </article>
   );
 }

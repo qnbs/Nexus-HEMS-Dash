@@ -8,13 +8,24 @@ export function Floorplan() {
   const [temp, setTemp] = useState(21.5);
 
   return (
-    <div className="relative w-full h-full bg-slate-900/50 p-4">
+    <div
+      className="relative w-full h-full bg-slate-900/50 p-4"
+      role="application"
+      aria-label="Interactive KNX Building Floorplan"
+    >
       {/* Simple SVG Floorplan */}
       <svg
         viewBox="0 0 800 400"
         className="w-full h-full opacity-80"
         preserveAspectRatio="xMidYMid meet"
+        role="img"
+        aria-label="Building layout with kitchen, bathroom, and living room"
       >
+        <title>KNX Floorplan</title>
+        <desc>
+          Interactive floor plan showing kitchen, bathroom, and living room with controllable lights
+          and windows
+        </desc>
         {/* Walls */}
         <path
           d="M 50 50 L 750 50 L 750 350 L 50 350 Z"
@@ -76,43 +87,49 @@ export function Floorplan() {
       <div className="absolute top-1/4 right-1/4 transform translate-x-1/2 -translate-y-1/2">
         <button
           onClick={() => setLightsOn(!lightsOn)}
-          className={`p-3 rounded-full backdrop-blur-md border transition-all ${
+          className={`p-3 rounded-full backdrop-blur-md border transition-all focus-visible:focus-ring ${
             lightsOn
               ? 'bg-yellow-400/20 border-yellow-400/50 text-yellow-300 shadow-[0_0_15px_rgba(250,204,21,0.3)]'
               : 'bg-slate-800/50 border-slate-700 text-slate-400'
           }`}
+          aria-label={lightsOn ? 'Turn off living room lights' : 'Turn on living room lights'}
+          aria-pressed={lightsOn}
         >
-          <Lightbulb size={24} />
+          <Lightbulb size={24} aria-hidden="true" />
         </button>
       </div>
 
       <div className="absolute top-12 left-1/4 transform -translate-x-1/2">
         <button
           onClick={() => setWindowOpen(!windowOpen)}
-          className={`p-2 rounded-full backdrop-blur-md border transition-all ${
+          className={`p-2 rounded-full backdrop-blur-md border transition-all focus-visible:focus-ring ${
             windowOpen
               ? 'bg-sky-400/20 border-sky-400/50 text-sky-300 shadow-[0_0_15px_rgba(56,189,248,0.3)]'
               : 'bg-slate-800/50 border-slate-700 text-slate-400'
           }`}
+          aria-label={windowOpen ? 'Close kitchen window' : 'Open kitchen window'}
+          aria-pressed={windowOpen}
         >
-          <Wind size={20} />
+          <Wind size={20} aria-hidden="true" />
         </button>
       </div>
 
       <div className="absolute bottom-1/4 right-1/3">
         <div className="flex items-center gap-2 bg-slate-800/80 backdrop-blur-md border border-slate-700 px-3 py-2 rounded-xl">
-          <Thermometer size={18} className="text-orange-400" />
+          <Thermometer size={18} className="text-orange-400" aria-hidden="true" />
           <span className="font-mono text-lg">{temp.toFixed(1)}°C</span>
           <div className="flex flex-col ml-2">
             <button
               onClick={() => setTemp((t) => t + 0.5)}
               className="text-slate-400 hover:text-white leading-none"
+              aria-label="Increase temperature"
             >
               +
             </button>
             <button
               onClick={() => setTemp((t) => t - 0.5)}
               className="text-slate-400 hover:text-white leading-none"
+              aria-label="Decrease temperature"
             >
               -
             </button>

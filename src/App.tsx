@@ -1,118 +1,123 @@
+import { useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { BrowserRouter as Router, Routes, Route, NavLink } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useWebSocket } from './useWebSocket';
 import { useAppStore } from './store';
-import { Zap, LayoutDashboard, Settings as SettingsIcon, HelpCircle } from 'lucide-react';
+import {
+  Zap,
+  LayoutDashboard,
+  Settings as SettingsIcon,
+  HelpCircle,
+  Orbit,
+  Wifi,
+} from 'lucide-react';
 import { Dashboard } from './pages/Dashboard';
 import { Settings } from './pages/Settings';
 import { Help } from './pages/Help';
+import { themeDefinitions } from './design-tokens';
+import { ThemeSwitcher } from './components/ThemeSwitcher';
+import { LanguageSwitcher } from './components/LanguageSwitcher';
 
 export default function App() {
-  const { connected, energyData } = useAppStore();
+  const { t, i18n } = useTranslation();
+  const { connected, energyData, theme, themeTransitionKey, locale } = useAppStore();
 
-  // Initialize WebSocket connection
-  useWebSocket();
+  const { sendCommand } = useWebSocket();
+  const themeDefinition = themeDefinitions[theme];
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    document.documentElement.lang = locale;
+    document.documentElement.style.colorScheme = theme === 'solar-light' ? 'light' : 'dark';
+  }, [locale, theme]);
+
+  useEffect(() => {
+    if (i18n.resolvedLanguage !== locale) {
+      void i18n.changeLanguage(locale);
+    }
+  }, [i18n, locale]);
 
   return (
     <Router>
-      <div className="min-h-screen bg-slate-900 text-slate-100 font-sans selection:bg-emerald-500/30">
-        {/* Background atmosphere */}
-        <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-emerald-500/10 blur-[120px]" />
-          <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-blue-500/10 blur-[120px]" />
-        </div>
+      <div className="theme-shell min-h-screen font-sans text-[color:var(--color-text)] selection:bg-[color:var(--color-primary)]/30">
+        <AnimatePresence>
+          <motion.div
+            key={themeTransitionKey}
+            className="pointer-events-none fixed inset-0 z-0"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.45 }}
+            style={{
+              background: `radial-gradient(circle at 20% 20%, ${themeDefinition.colors.glow} 0%, transparent 28%), radial-gradient(circle at 80% 10%, ${themeDefinition.colors.secondary}33 0%, transparent 25%), radial-gradient(circle at 60% 80%, ${themeDefinition.colors.accent}22 0%, transparent 22%), linear-gradient(145deg, ${themeDefinition.colors.background} 0%, #030712 100%)`,
+            }}
+          />
+        </AnimatePresence>
 
-        <div className="relative z-10 container mx-auto px-4 py-8 max-w-7xl">
-          <header className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
-            <div className="flex items-center gap-6">
+        <div className="pattern-grid fixed inset-0 z-0 opacity-40" />
+
+        <div className="relative z-10 mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+          <header className="glass-panel mb-8 overflow-hidden px-5 py-5 sm:px-6">
+            <div className="flex flex-col gap-6 xl:flex-row xl:items-center xl:justify-between">
               <div>
-                <h1 className="text-3xl font-light tracking-tight flex items-center gap-3">
-                  <Zap className="text-emerald-400" size={28} />
-                  Nexus-HEMS Dash
+                <div className="inline-flex items-center gap-2 rounded-full border border-[color:var(--color-border)] bg-white/6 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-[color:var(--color-secondary)]">
+                  <Orbit className="h-4 w-4" />
+                  HEMS Control Mesh
+                </div>
+                <h1 className="mt-4 flex items-center gap-3 text-3xl font-semibold tracking-tight sm:text-4xl">
+                  <Zap className="h-8 w-8 text-[color:var(--color-primary)]" />
+                  {t('common.appName')}
                 </h1>
-                <p className="text-slate-400 text-sm mt-1">
-                  Intelligenter Orchestrator für dezentrale Energie
+                <p className="mt-2 max-w-2xl text-sm text-[color:var(--color-muted)] sm:text-base">
+                  {t('common.tagline')}
                 </p>
               </div>
 
-              {/* Navigation */}
-              <nav className="hidden md:flex items-center gap-2 ml-8 bg-slate-800/50 p-1.5 rounded-2xl border border-white/10">
-                <NavLink
-                  to="/"
-                  className={({ isActive }) =>
-                    `flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors ${isActive ? 'bg-slate-700 text-emerald-400 shadow-sm' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'}`
-                  }
-                >
-                  <LayoutDashboard size={18} />
-                  Dashboard
-                </NavLink>
-                <NavLink
-                  to="/settings"
-                  className={({ isActive }) =>
-                    `flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors ${isActive ? 'bg-slate-700 text-emerald-400 shadow-sm' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'}`
-                  }
-                >
-                  <SettingsIcon size={18} />
-                  Einstellungen
-                </NavLink>
-                <NavLink
-                  to="/help"
-                  className={({ isActive }) =>
-                    `flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors ${isActive ? 'bg-slate-700 text-emerald-400 shadow-sm' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'}`
-                  }
-                >
-                  <HelpCircle size={18} />
-                  Hilfe
-                </NavLink>
-              </nav>
-            </div>
+              <div className="flex flex-col gap-3 lg:items-end">
+                <div className="flex flex-wrap items-center gap-2">
+                  <LanguageSwitcher />
+                  <ThemeSwitcher />
+                  <div className="inline-flex items-center gap-2 rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-surface-strong)] px-3 py-1.5 text-sm">
+                    <Wifi
+                      className={`h-4 w-4 ${connected ? 'text-[color:var(--color-primary)]' : 'text-rose-400'}`}
+                      aria-hidden="true"
+                    />
+                    <span>{connected ? t('common.connected') : t('common.disconnected')}</span>
+                  </div>
+                  <div className="price-pill">{energyData.priceCurrent.toFixed(3)} €/kWh</div>
+                </div>
 
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-sm">
-                <div
-                  className={`w-2 h-2 rounded-full ${connected ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]' : 'bg-red-500'}`}
-                />
-                <span className="hidden sm:inline">{connected ? 'Verbunden' : 'Getrennt'}</span>
-              </div>
-              <div className="px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-sm font-mono text-emerald-400">
-                {energyData.priceCurrent.toFixed(2)} €/kWh
+                <nav className="flex items-center gap-2 overflow-x-auto rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-surface-strong)] p-1.5">
+                  <NavLink
+                    to="/"
+                    className={({ isActive }) => `nav-pill ${isActive ? 'nav-pill-active' : ''}`}
+                  >
+                    <LayoutDashboard size={18} />
+                    {t('nav.dashboard')}
+                  </NavLink>
+                  <NavLink
+                    to="/settings"
+                    className={({ isActive }) => `nav-pill ${isActive ? 'nav-pill-active' : ''}`}
+                  >
+                    <SettingsIcon size={18} />
+                    {t('nav.settings')}
+                  </NavLink>
+                  <NavLink
+                    to="/help"
+                    className={({ isActive }) => `nav-pill ${isActive ? 'nav-pill-active' : ''}`}
+                  >
+                    <HelpCircle size={18} />
+                    {t('nav.help')}
+                  </NavLink>
+                </nav>
               </div>
             </div>
           </header>
 
-          {/* Mobile Navigation */}
-          <nav className="md:hidden flex items-center gap-2 mb-8 bg-slate-800/50 p-1.5 rounded-2xl border border-white/10 overflow-x-auto">
-            <NavLink
-              to="/"
-              className={({ isActive }) =>
-                `flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors whitespace-nowrap ${isActive ? 'bg-slate-700 text-emerald-400 shadow-sm' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'}`
-              }
-            >
-              <LayoutDashboard size={18} />
-              Dashboard
-            </NavLink>
-            <NavLink
-              to="/settings"
-              className={({ isActive }) =>
-                `flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors whitespace-nowrap ${isActive ? 'bg-slate-700 text-emerald-400 shadow-sm' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'}`
-              }
-            >
-              <SettingsIcon size={18} />
-              Einstellungen
-            </NavLink>
-            <NavLink
-              to="/help"
-              className={({ isActive }) =>
-                `flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors whitespace-nowrap ${isActive ? 'bg-slate-700 text-emerald-400 shadow-sm' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'}`
-              }
-            >
-              <HelpCircle size={18} />
-              Hilfe
-            </NavLink>
-          </nav>
-
           <main>
             <Routes>
-              <Route path="/" element={<Dashboard />} />
+              <Route path="/" element={<Dashboard sendCommand={sendCommand} />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/help" element={<Help />} />
             </Routes>
