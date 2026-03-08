@@ -75,7 +75,7 @@ export function ExportAndSharing() {
             onClick={handleDownloadPdf}
             disabled={isGenerating}
             data-export-report
-            className="btn-primary flex w-full items-center justify-center gap-2"
+            className="btn-primary focus-ring flex w-full items-center justify-center gap-2"
           >
             <FileDown className="h-5 w-5" aria-hidden="true" />
             {isGenerating
@@ -94,7 +94,7 @@ export function ExportAndSharing() {
         <div>
           <button
             onClick={handleGenerateShareLink}
-            className="btn-secondary flex w-full items-center justify-center gap-2"
+            className="btn-secondary focus-ring flex w-full items-center justify-center gap-2"
           >
             <Share2 className="h-5 w-5" aria-hidden="true" />
             {t('export.generateShareLink', 'Generate Shareable Link')}
@@ -120,7 +120,7 @@ export function ExportAndSharing() {
                   />
                   <button
                     onClick={handleCopyLink}
-                    className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-800/50 text-[color:var(--color-primary)] hover:bg-slate-700/50"
+                    className="focus-ring flex h-10 w-10 items-center justify-center rounded-lg bg-slate-800/50 text-[color:var(--color-primary)] hover:bg-slate-700/50"
                     aria-label={t('export.copyLink', 'Copy link')}
                   >
                     {copied ? <Check className="h-5 w-5" /> : <Copy className="h-5 w-5" />}

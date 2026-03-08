@@ -1,5 +1,7 @@
 import { useActionState } from 'react';
 import { Battery, Car, Thermometer } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { motion } from 'motion/react';
 
 import { CommandType, EnergyData, EvState, HpState } from '../types';
 import { hapticClick, hapticModeChange, hapticSuccess } from '../lib/haptics';
@@ -11,6 +13,8 @@ export function ControlPanel({
   sendCommand: (type: CommandType, value: number) => void;
   data: EnergyData;
 }) {
+  const { t } = useTranslation();
+  
   // Mock action for EV charging
   const [evState, evAction, isEvPending] = useActionState(
     async (state: EvState, formData: FormData) => {
@@ -24,7 +28,7 @@ export function ControlPanel({
       sendCommand('SET_EV_POWER', power);
       hapticSuccess();
 
-      return { mode, power, message: 'Ladestrategie aktualisiert' };
+      return { mode, power, message: t('control.evUpdated') };
     },
     { mode: 'off', power: 0, message: '' },
   );
@@ -44,7 +48,7 @@ export function ControlPanel({
       sendCommand('SET_HEAT_PUMP_POWER', power);
       hapticSuccess();
 
-      return { mode, power, message: 'SG Ready Status gesetzt' };
+      return { mode, power, message: t('control.hpUpdated') };
     },
     { mode: '2', power: 800, message: '' },
   );
@@ -52,21 +56,26 @@ export function ControlPanel({
   return (
     <div className="space-y-6">
       {/* EV Charging Control */}
-      <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-4">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="glass-panel p-5"
+      >
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-medium flex items-center gap-2">
-            <Car size={18} className="text-purple-400" />
-            Wallbox Ladestrategie
+          <h3 className="font-medium flex items-center gap-2 text-[color:var(--color-text)]">
+            <Car size={18} className="text-purple-400" aria-hidden="true" />
+            {t('control.evTitle')}
           </h3>
-          <span className="text-sm font-mono text-slate-400">
-            {(data.evPower / 1000).toFixed(1)} kW
+          <span className="text-sm font-mono text-[color:var(--color-muted)]">
+            {(data.evPower / 1000).toFixed(1)} {t('units.kilowatt')}
           </span>
         </div>
 
         <form action={evAction} className="space-y-3">
           <div className="grid grid-cols-3 gap-2">
             <label
-              className={`cursor-pointer text-center py-2 px-3 rounded-lg border transition-colors ${evState.mode === 'off' ? 'bg-slate-700 border-slate-500 text-white' : 'bg-slate-800 border-slate-700 text-slate-400 hover:bg-slate-700/50'}`}
+              className={`cursor-pointer text-center py-2 px-3 rounded-lg border transition-all duration-300 ${evState.mode === 'off' ? 'bg-[color:var(--color-primary)]/20 border-[color:var(--color-primary)] text-[color:var(--color-primary)]' : 'bg-[color:var(--color-surface)] border-[color:var(--color-border)] text-[color:var(--color-muted)] hover:border-[color:var(--color-primary)]/40'}`}
             >
               <input
                 type="radio"
@@ -76,10 +85,10 @@ export function ControlPanel({
                 defaultChecked={evState.mode === 'off'}
                 onClick={hapticClick}
               />
-              <span className="text-sm">Aus</span>
+              <span className="text-sm font-medium">{t('control.evOff')}</span>
             </label>
             <label
-              className={`cursor-pointer text-center py-2 px-3 rounded-lg border transition-colors ${evState.mode === 'pv' ? 'bg-emerald-900/40 border-emerald-500/50 text-emerald-300' : 'bg-slate-800 border-slate-700 text-slate-400 hover:bg-slate-700/50'}`}
+              className={`cursor-pointer text-center py-2 px-3 rounded-lg border transition-all duration-300 ${evState.mode === 'pv' ? 'bg-[color:var(--color-primary)]/20 border-[color:var(--color-primary)] text-[color:var(--color-primary)]' : 'bg-[color:var(--color-surface)] border-[color:var(--color-border)] text-[color:var(--color-muted)] hover:border-[color:var(--color-primary)]/40'}`}
             >
               <input
                 type="radio"
@@ -89,10 +98,10 @@ export function ControlPanel({
                 defaultChecked={evState.mode === 'pv'}
                 onClick={hapticClick}
               />
-              <span className="text-sm">PV-Überschuss</span>
+              <span className="text-sm font-medium">{t('control.evPv')}</span>
             </label>
             <label
-              className={`cursor-pointer text-center py-2 px-3 rounded-lg border transition-colors ${evState.mode === 'fast' ? 'bg-purple-900/40 border-purple-500/50 text-purple-300' : 'bg-slate-800 border-slate-700 text-slate-400 hover:bg-slate-700/50'}`}
+              className={`cursor-pointer text-center py-2 px-3 rounded-lg border transition-all duration-300 ${evState.mode === 'fast' ? 'bg-[color:var(--color-primary)]/20 border-[color:var(--color-primary)] text-[color:var(--color-primary)]' : 'bg-[color:var(--color-surface)] border-[color:var(--color-border)] text-[color:var(--color-muted)] hover:border-[color:var(--color-primary)]/40'}`}
             >
               <input
                 type="radio"
@@ -102,31 +111,44 @@ export function ControlPanel({
                 defaultChecked={evState.mode === 'fast'}
                 onClick={hapticClick}
               />
-              <span className="text-sm">Schnell (11kW)</span>
+              <span className="text-sm font-medium">{t('control.evFast')}</span>
             </label>
           </div>
-          <div className="flex justify-between items-center">
-            <span className="text-xs text-emerald-400 opacity-80">{evState.message}</span>
-            <button
-              type="submit"
-              disabled={isEvPending}
-              className="px-4 py-1.5 bg-slate-700 hover:bg-slate-600 disabled:opacity-50 rounded-lg text-sm transition-colors"
+          {evState.message && (
+            <motion.p
+           initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="text-sm text-[color:var(--color-primary)]"
+              role="status"
+              aria-live="polite"
             >
-              {isEvPending ? 'Speichere...' : 'Anwenden'}
-            </button>
-          </div>
+              ✓ {evState.message}
+            </motion.p>
+          )}
+          <button
+            type="submit"
+            disabled={isEvPending}
+            className="btn-primary w-full focus-ring"
+          >
+            {isEvPending ? t('common.saving') : t('common.apply')}
+          </button>
         </form>
-      </div>
+      </motion.div>
 
       {/* Heat Pump SG Ready */}
-      <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-4">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="glass-panel p-5"
+      >
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-medium flex items-center gap-2">
-            <Thermometer size={18} className="text-orange-400" />
-            Wärmepumpe (SG Ready)
+          <h3 className="font-medium flex items-center gap-2 text-[color:var(--color-text)]">
+            <Thermometer size={18} className="text-orange-400" aria-hidden="true" />
+            {t('control.hpTitle')}
           </h3>
-          <span className="text-sm font-mono text-slate-400">
-            {(data.heatPumpPower / 1000).toFixed(1)} kW
+          <span className="text-sm font-mono text-[color:var(--color-muted)]">
+            {(data.heatPumpPower / 1000).toFixed(1)} {t('units.kilowatt')}
           </span>
         </div>
 
@@ -135,36 +157,49 @@ export function ControlPanel({
             name="hpMode"
             defaultValue={hpState.mode}
             onChange={hapticClick}
-            className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-500/50"
+            className="w-full bg-[color:var(--color-surface)] border border-[color:var(--color-border)] rounded-lg px-3 py-2 text-sm text-[color:var(--color-text)] focus:outline-none focus-ring"
           >
-            <option value="1">Modus 1: EVU-Sperre (0 kW)</option>
-            <option value="2">Modus 2: Normalbetrieb</option>
-            <option value="3">Modus 3: Empfehlung (Erhöhte Temp)</option>
-            <option value="4">Modus 4: Anlaufbefehl (Max. Leistung)</option>
+            <option value="1">{t('control.hpMode1')}</option>
+            <option value="2">{t('control.hpMode2')}</option>
+            <option value="3">{t('control.hpMode3')}</option>
+            <option value="4">{t('control.hpMode4')}</option>
           </select>
-          <div className="flex justify-between items-center">
-            <span className="text-xs text-emerald-400 opacity-80">{hpState.message}</span>
-            <button
-              type="submit"
-              disabled={isHpPending}
-              className="px-4 py-1.5 bg-slate-700 hover:bg-slate-600 disabled:opacity-50 rounded-lg text-sm transition-colors"
+          {hpState.message && (
+            <motion.p
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="text-sm text-[color:var(--color-primary)]"
+              role="status"
+              aria-live="polite"
             >
-              {isHpPending ? 'Speichere...' : 'Anwenden'}
-            </button>
-          </div>
+              ✓ {hpState.message}
+            </motion.p>
+          )}
+          <button
+            type="submit"
+            disabled={isHpPending}
+            className="btn-primary w-full focus-ring"
+          >
+            {isHpPending ? t('common.saving') : t('common.apply')}
+          </button>
         </form>
-      </div>
+      </motion.div>
 
       {/* Battery Strategy */}
-      <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-4">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="glass-panel p-5"
+      >
         <div className="flex items-center justify-between mb-2">
-          <h3 className="font-medium flex items-center gap-2">
-            <Battery size={18} className="text-emerald-400" />
-            Batterie-Management
+          <h3 className="font-medium flex items-center gap-2 text-[color:var(--color-text)]">
+            <Battery size={18} className="text-emerald-400" aria-hidden="true" />
+            {t('control.batteryTitle')}
           </h3>
         </div>
-        <div className="text-sm text-slate-400 mb-3">
-          Aktueller Modus: <span className="text-emerald-300">Self-consumption</span>
+        <div className="text-sm text-[color:var(--color-muted)] mb-3">
+          {t('control.batteryMode')}: <span className="text-[color:var(--color-primary)]">{t('control.selfConsumption')}</span>
         </div>
         <div className="flex gap-2">
           <button
@@ -172,21 +207,21 @@ export function ControlPanel({
               hapticModeChange();
               sendCommand('SET_BATTERY_POWER', -3000);
             }}
-            className="flex-1 py-1.5 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm transition-colors"
+            className="btn-secondary flex-1 focus-ring"
           >
-            Laden erzwingen
+            {t('control.forceCharge')}
           </button>
           <button
             onClick={() => {
               hapticModeChange();
               sendCommand('SET_BATTERY_POWER', 0);
             }}
-            className="flex-1 py-1.5 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm transition-colors"
+            className="btn-secondary flex-1 focus-ring"
           >
-            Auto
+            {t('control.auto')}
           </button>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }

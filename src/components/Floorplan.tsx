@@ -11,7 +11,7 @@ export function Floorplan() {
     <div
       className="relative w-full h-full bg-slate-900/50 p-4"
       role="application"
-      aria-label="Interactive KNX Building Floorplan"
+      aria-label={t('dashboard.floorplan')}
     >
       {/* Simple SVG Floorplan */}
       <svg
@@ -21,10 +21,9 @@ export function Floorplan() {
         role="img"
         aria-label="Building layout with kitchen, bathroom, and living room"
       >
-        <title>KNX Floorplan</title>
+        <title>{t('dashboard.floorplan')}</title>
         <desc>
-          Interactive floor plan showing kitchen, bathroom, and living room with controllable lights
-          and windows
+          {t('dashboard.automation')}
         </desc>
         {/* Walls */}
         <path
@@ -60,13 +59,13 @@ export function Floorplan() {
 
         {/* Rooms */}
         <text x="200" y="130" fill="#64748b" fontSize="24" textAnchor="middle" fontFamily="Inter">
-          Küche
+          {t('floorplan.kitchen')}
         </text>
         <text x="200" y="280" fill="#64748b" fontSize="24" textAnchor="middle" fontFamily="Inter">
-          Bad
+          {t('floorplan.bathroom')}
         </text>
         <text x="550" y="200" fill="#64748b" fontSize="24" textAnchor="middle" fontFamily="Inter">
-          Wohnzimmer
+          {t('floorplan.livingRoom')}
         </text>
 
         {/* Light overlay */}
@@ -87,12 +86,12 @@ export function Floorplan() {
       <div className="absolute top-1/4 right-1/4 transform translate-x-1/2 -translate-y-1/2">
         <button
           onClick={() => setLightsOn(!lightsOn)}
-          className={`p-3 rounded-full backdrop-blur-md border transition-all focus-visible:focus-ring ${
+          className={`p-3 rounded-full backdrop-blur-md border transition-all focus-ring ${
             lightsOn
-              ? 'bg-yellow-400/20 border-yellow-400/50 text-yellow-300 shadow-[0_0_15px_rgba(250,204,21,0.3)]'
-              : 'bg-slate-800/50 border-slate-700 text-slate-400'
+              ? 'bg-yellow-400/20 border-yellow-400/50 text-yellow-300  neon-border-orange'
+              : 'bg-[color:var(--color-surface)] border-[color:var(--color-border)] text-[color:var(--color-muted)]'
           }`}
-          aria-label={lightsOn ? 'Turn off living room lights' : 'Turn on living room lights'}
+          aria-label={lightsOn ? t('floorplan.lights') + ' ' + t('common.active') : t('floorplan.lights')}
           aria-pressed={lightsOn}
         >
           <Lightbulb size={24} aria-hidden="true" />

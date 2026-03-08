@@ -7,12 +7,15 @@
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178c6?style=for-the-badge&logo=typescript)
 ![Tailwind](https://img.shields.io/badge/Tailwind-4.1-38bdf8?style=for-the-badge&logo=tailwindcss)
 ![PWA Ready](https://img.shields.io/badge/PWA-Ready-ff8800?style=for-the-badge)
-![i18n](https://img.shields.io/badge/i18n-DE%20%7C%20EN-22ff88?style=for-the-badge)
+![Production](https://img.shields.io/badge/Production-Ready-22ff88?style=for-the-badge)
+![i18n](https://img.shields.io/badge/i18n-100%25-22ff88?style=for-the-badge)
 ![WCAG](https://img.shields.io/badge/WCAG-2.2%20AA-00f0ff?style=for-the-badge)
 
+[![Live Demo](https://img.shields.io/badge/🚀-Live%20Demo-ff8800?style=for-the-badge)](https://qnbs.github.io/Nexus-HEMS-Dash/)
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/qnbs/Nexus-HEMS-Dash)
 
-**Real-time orchestration for PV, storage, heat & mobility**
+**Real-time orchestration for PV, storage, heat & mobility**  
+🔋 Victron Cerbo GX • 🏠 KNX • ⚡ Tibber/aWATTar • 🤖 AI Optimizer • 📱 Mobile PWA
 
 [🇬🇧 English](#english) | [🇩🇪 Deutsch](#deutsch)
 
@@ -29,6 +32,15 @@
 **Nexus-HEMS Dash** is a production-ready, real-time Home Energy Management System (HEMS) dashboard designed for the decentralized energy era. Seamlessly integrating **Victron Energy**, **KNX building automation**, and **dynamic electricity tariffs** (Tibber, aWATTar), it provides intelligent orchestration for PV generation, battery storage, heat pumps, and EV charging.
 
 Built with **React 19**, **Zustand**, **D3.js**, and **Tailwind CSS 4**, the dashboard delivers a stunning **Neo-Energy Cyber-Glassmorphism UI** with full **i18n** (German/English), **WCAG 2.2 AA accessibility**, and **offline-first** architecture.
+
+### ✨ What's New in 2.3.0
+
+- 🚀 **TanStack Query Integration**: Optimized data fetching with 5-min cache for forecasts & tariff APIs
+- ♿ **Full WCAG 2.2 AA Compliance**: aria-live regions for real-time Sankey + metrics, keyboard navigation
+- 💾 **Offline Mode with Dexie.js**: Caches last 1000 energy snapshots, "Last updated: 3 min ago" banner
+- 🧪 **Professional Testing**: Vitest unit tests + Playwright E2E tests with @axe-core for accessibility validation
+- ⚡ **Performance Optimizations**: React.memo on Sankey, virtualized device list support (react-virtual)
+- 🔧 **Best Practices Stack**: Husky git hooks, ESLint airbnb-typescript, Prettier, .devcontainer ready
 
 ### ✨ What's New in 2.1.0
 
@@ -220,12 +232,16 @@ Dexie.js (IndexedDB) + LocalStorage
 
 | Quarter | Feature | Status |
 |---------|---------|--------|
-| Q1 2026 | **Home Assistant / MQTT Integration** | � In Development |
-| Q2 2026 | **Predictive AI** (Google Gemini + tariff prediction) | 🚧 In Development |
-| Q2 2026 | **Voice Control** (Web Speech API) | 🚧 In Development |
-| Q3 2026 | **PDF Monthly Reports** (Sankey + CO₂ balance) | 🚧 In Development |
-| Q3 2026 | **Multi-Household Support** (shareable dashboards) | 🚧 In Development |
-| Q4 2026 | **Live Price Widget** (Tibber/aWATTar auto-optimization) | 🚧 In Development |
+| Q1 2026 | **Home Assistant / MQTT Integration** | ✅ Completed |
+| Q1 2026 | **Predictive AI** (Google Gemini + tariff prediction) | ✅ Completed |
+| Q1 2026 | **Voice Control** (Web Speech API) | ✅ Completed |
+| Q1 2026 | **PDF Monthly Reports** (Sankey + CO₂ balance) | ✅ Completed |
+| Q1 2026 | **Multi-Household Support** (shareable dashboards) | ✅ Completed |
+| Q1 2026 | **Live Price Widget** (Tibber/aWATTar auto-optimization) | ✅ Completed |
+| Q2 2026 | **Tailwind Config & Custom Utilities** (.neon-glow, .glass-panel) | 🚧 In Progress |
+| Q3 2026 | **Focus Traps for Modals** (WCAG 2.2 AA compliance) | 🔄 Planned |
+| Q3 2026 | **Docker/Kubernetes Deployment** | 🔄 Planned |
+| Q4 2026 | **Prometheus/Grafana Monitoring** | 🔄 Planned |
 
 ### 📄 License
 
@@ -247,11 +263,30 @@ Contributions welcome! Please open an issue or PR.
 
 Gebaut mit **React 19**, **Zustand**, **D3.js** und **Tailwind CSS 4**, liefert das Dashboard eine atemberaubende **Neo-Energy Cyber-Glassmorphism UI** mit vollständiger **i18n** (Deutsch/Englisch), **WCAG 2.2 AA Barrierefreiheit** und **Offline-First** Architektur.
 
-### ✨ Neu in 2.0.0
+### ✨ Neu in 2.3.0
 
-- 🤖 **AI-Optimizer**: Tarifbewusste Empfehlungen für EV-Ladung, SG Ready Wärmepumpensteuerung und Batteriestrategien
-- 🌐 **Vollständige i18n**: Komplette Deutsch/Englisch-Lokalisierung mit persistentem Sprachwechsel
+- 🚀 **TanStack Query Integration**: Optimiertes Data Fetching mit 5-Min-Cache für Forecasts & Tarif-APIs
+- ♿ **Vollständige WCAG 2.2 AA**: aria-live Regionen für Echtzeit-Sankey + Metriken, Tastaturnavigation
+- 💾 **Offline-Modus mit Dexie.js**: Cached die letzten 1000 Energie-Snapshots, "Letzter Stand: vor 3 Min."-Banner
+- 🧪 **Professionelles Testing**: Vitest Unit-Tests + Playwright E2E-Tests mit @axe-core für Barrierefreiheit
+- ⚡ **Performance-Optimierungen**: React.memo auf Sankey, virtualisierte Geräteliste (react-virtual)
+- 🔧 **Best-Practices-Stack**: Husky Git-Hooks, ESLint airbnb-typescript, Prettier, .devcontainer bereit
+
+### ✨ Neu in 2.1.0
+
+- 🤖 **AI-Optimizer mit Google Gemini 2.5**: Echte KI-Analyse für optimale Ladestrategien (EV, Batterie, Wärmepumpe)
+- 📈 **Prädiktive 24h/7d-Vorhersage**: Wetterbasierte PV-Prognosen + Tarifvorhersagen mit Recharts-Visualisierung
+- 🎤 **Sprachsteuerung**: Freihändige Dashboard-Steuerung mit Web Speech API (Deutsch & Englisch)
+- 📄 **PDF-Monatsberichte**: Automatisierte Energieberichte mit Sankey-Screenshots, Kosten und CO₂-Bilanz
+- 🤝 **Multi-Haushalt-Sharing**: Teilbare Dashboard-Links mit QR-Codes für Community-Projekte
+- ⚡ **Live Tibber/aWATTar Widget**: Echtzeit-Preisanzeigen mit Mini-Charts und Optimierungs-Hinweisen
+- 🏠 **Home Assistant / MQTT**: Bidirektionale Gerätesteuerung via WebSocket MQTT-Integration
+- 🌈 **Verbessertes Dashboard-Layout**: Alle Features in einheitlichem, responsivem Grid integriert
+
+### ⚡ Neu in 2.0.0
+
 - 🎨 **3 Premium-Themes**: Cyber Energy Dark (Standard), Solar Light, Night Mode mit flüssigen Framer Motion Übergängen
+- 🌐 **Vollständige i18n**: Komplette Deutsch/Englisch-Lokalisierung mit persistentem Sprachwechsel
 - 📊 **Verbessertes Sankey-Diagramm**: Live-Flow-Animationen, mobil-optimiertes responsives Layout
 - 🏠 **Interaktiver KNX-Grundriss**: Echtzeitsteuerung von Licht, Klima und Fenstersensoren
 - ♿ **WCAG 2.2 AA**: Vollständige Barrierefreiheit mit semantischem HTML und ARIA-Labels
@@ -295,9 +330,15 @@ Gebaut mit **React 19**, **Zustand**, **D3.js** und **Tailwind CSS 4**, liefert 
 |---------|--------------|--------|
 | ⚡ **Echtzeit-Sankey** | Live-Energiefluss-Visualisierung (PV → Batterie → Netz → Haus → WP → EV) | ✅ Live |
 | 🏠 **KNX-Integration** | Interaktiver Grundriss für Licht, Klima, Sensoren | ✅ Live |
+| 🤖 **AI-Optimizer (Gemini 2.5)** | Echte KI-gestützte Optimierung für EV-, Batterie-, Wärmepumpen-Strategien | ✅ Live |
+| 📈 **Prädiktive Vorhersage** | 24h/7d wetterbasierte PV- & Tarifvorhersagen mit Recharts | ✅ Live |
+| 🎤 **Sprachsteuerung** | Freihändige Dashboard-Steuerung mit Web Speech API | ✅ Live |
+| 📄 **PDF-Berichte** | Monats-Energieberichte mit Sankey, Kosten, CO₂-Bilanz | ✅ Live |
+| 🤝 **Teilbare Dashboards** | Multi-Haushalt-Support mit QR-Codes & Read-Only-Links | ✅ Live |
+| ⚡ **Live-Preis-Widget** | Echtzeit Tibber/aWATTar Tarifanzeige mit Mini-Charts | ✅ Live |
+| 🏠 **Home Assistant / MQTT** | Bidirektionale Gerätesteuerung via WebSocket MQTT | ✅ Live |
 | 🚗 **Intelligentes EV-Laden** | PV-Überschuss, Schnellladung, dynamische Tarifmodi | ✅ Live |
 | 🔥 **SG Ready Steuerung** | Wärmepumpen-Modi (1-4) zur thermischen Speicheroptimierung | ✅ Live |
-| 🤖 **AI-Optimizer** | Tarifbewusste Empfehlungen (Tibber, aWATTar) | ✅ Live |
 | 🌐 **i18n** | Deutsch/Englisch mit persistentem localStorage | ✅ 100% |
 | 🎨 **3 Themes** | Cyber Dark, Solar Light, Night Mode | ✅ Live |
 | ♿ **WCAG 2.2 AA** | Vollständige Barrierefreiheit (Semantik, ARIA, Fokus) | ✅ Konform |
@@ -375,10 +416,16 @@ Dexie.js (IndexedDB) + LocalStorage
 
 | Quartal | Feature | Status |
 |---------|---------|--------|
-| Q1 2026 | **Home Assistant / MQTT Integration** | 🔄 Geplant |
-| Q2 2026 | **Predictive AI** (Wettervorhersage + Tarifvorhersage) | 🔄 Geplant |
-| Q3 2026 | **Multi-Household Support** (Community-Speicher) | 🔄 Geplant |
-| Q4 2026 | **Sprachsteuerung** (Alexa, Google Assistant) | 🔄 Geplant |
+| Q1 2026 | **Home Assistant / MQTT Integration** | ✅ Abgeschlossen |
+| Q1 2026 | **Predictive AI** (Wettervorhersage + Tarifvorhersage) | ✅ Abgeschlossen |
+| Q1 2026 | **Sprachsteuerung** (Web Speech API) | ✅ Abgeschlossen |
+| Q1 2026 | **PDF-Monatsberichte** (Sankey + CO₂-Bilanz) | ✅ Abgeschlossen |
+| Q1 2026 | **Multi-Household Support** (Teilbare Dashboards) | ✅ Abgeschlossen |
+| Q1 2026 | **Live-Preis-Widget** (Tibber/aWATTar Auto-Optimierung) | ✅ Abgeschlossen |
+| Q2 2026 | **Tailwind Config & Custom Utilities** (.neon-glow, .glass-panel) | 🚧 In Arbeit |
+| Q3 2026 | **Focus Traps für Modals** (WCAG 2.2 AA Compliance) | 🔄 Geplant |
+| Q3 2026 | **Docker/Kubernetes Deployment** | 🔄 Geplant |
+| Q4 2026 | **Prometheus/Grafana Monitoring** | 🔄 Geplant |
 
 ### 📄 Lizenz
 

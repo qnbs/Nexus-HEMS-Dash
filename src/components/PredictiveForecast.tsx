@@ -143,25 +143,27 @@ export function PredictiveForecast() {
         <div className="flex gap-2">
           <button
             onClick={() => setTimeRange('24h')}
-            className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+            className={`focus-ring rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
               timeRange === '24h'
                 ? 'bg-[color:var(--color-primary)] text-slate-900'
                 : 'bg-slate-800/50 text-[color:var(--color-muted)] hover:bg-slate-700/50'
             }`}
             aria-pressed={timeRange === '24h'}
+            aria-label={t('forecast.hours24', '24 hours')}
           >
-            24h
+            {t('forecast.hours24', '24h')}
           </button>
           <button
             onClick={() => setTimeRange('7d')}
-            className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+            className={`focus-ring rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
               timeRange === '7d'
                 ? 'bg-[color:var(--color-primary)] text-slate-900'
                 : 'bg-slate-800/50 text-[color:var(--color-muted)] hover:bg-slate-700/50'
             }`}
             aria-pressed={timeRange === '7d'}
+            aria-label={t('forecast.days7', '7 days')}
           >
-            7d
+            {t('forecast.days7', '7d')}
           </button>
         </div>
       </div>

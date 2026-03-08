@@ -22,8 +22,13 @@ import { LanguageSwitcher } from './components/LanguageSwitcher';
 import { CommandPalette, useCommandPalette } from './components/ui/CommandPalette';
 import { MobileNavigation } from './components/ui/MobileNavigation';
 import { OfflineBanner } from './components/OfflineBanner';
+import { PWAInstallPrompt } from './components/PWAInstallPrompt';
+import { PWAUpdateNotification } from './components/PWAUpdateNotification';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { watchSystemTheme, resolveTheme } from './lib/theme';
 import { cacheEnergySnapshot } from './lib/offline-cache';
+import { backgroundSyncService } from './lib/background-sync';
+import { logError } from './lib/db';
 
 export default function App() {
   const { t, i18n } = useTranslation();
@@ -72,9 +77,24 @@ export default function App() {
     }
   }, [connected, energyData]);
 
+  // Initialize background sync service
+  useEffect(() => {
+    backgroundSyncService.init();
+    console.log('[PWA] Background sync service initialized');
+
+    return () => {
+      backgroundSyncService.destroy();
+    };
+  }, []);
+
   return (
-    <Router>
-      <OfflineBanner />
+    <ErrorBoundary onError={(error, errorInfo) => {
+      logError(error, errorInfo.componentStack, 'high').catch(console.error);
+    }}>
+      <Router>
+        <OfflineBanner />
+        <PWAInstallPrompt />
+        <PWAUpdateNotification />
       <div className="theme-shell min-h-screen font-sans text-[color:var(--color-text)] selection:bg-[color:var(--color-primary)]/30">
         <AnimatePresence>
           <motion.div
@@ -192,6 +212,7 @@ export default function App() {
         {/* Mobile Bottom Navigation */}
         <MobileNavigation />
       </div>
-    </Router>
+      </Router>
+    </ErrorBoundary>
   );
 }

@@ -46,6 +46,65 @@
     box-shadow: 0 0 18px rgba(255, 136, 0, 0.45), inset 0 0 18px rgba(255, 136, 0, 0.12);
   }
   
+  /* Energy Flow Pulse Animation */
+  .energy-pulse {
+    animation: energy-pulse 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  
+  @keyframes energy-pulse {
+    0%, 100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.72;
+      transform: scale(1.05);
+    }
+  }
+  
+  /* Cyber Shimmer Loading State */
+  .cyber-shimmer {
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(34, 255, 136, 0.12) 50%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+    animation: cyber-shimmer 2s linear infinite;
+  }
+  
+  @keyframes cyber-shimmer {
+    0% {
+      background-position: -200% center;
+    }
+    100% {
+      background-position: 200% center;
+    }
+  }
+  
+  /* Skeleton Loading */
+  .skeleton {
+    @apply relative overflow-hidden rounded-lg bg-[color:var(--color-surface)];
+  }
+  
+  .skeleton::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(34, 255, 136, 0.08) 50%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+    animation: cyber-shimmer 2s linear infinite;
+  }
+  
   /* Pattern Grid Background */
   .pattern-grid {
     background-image: 
@@ -106,6 +165,32 @@
     @apply rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-6 py-2.5 font-semibold text-[color:var(--color-text)] backdrop-blur-xl transition-all duration-300;
     @apply hover:scale-[1.02] hover:border-[color:var(--color-primary)]/40 active:scale-[0.98];
     @apply outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--color-background)];
+  }
+  
+  /* Status Indicators */
+  .status-indicator {
+    @apply relative inline-flex h-3 w-3 rounded-full;
+  }
+  
+  .status-indicator::before {
+    content: '';
+    @apply absolute inset-0 rounded-full animate-ping;
+  }
+  
+  .status-online {
+    @apply bg-[color:var(--color-primary)];
+  }
+  
+  .status-online::before {
+    @apply bg-[color:var(--color-primary)];
+  }
+  
+  .status-offline {
+    @apply bg-red-500;
+  }
+  
+  .status-offline::before {
+    @apply bg-red-500;
   }
 }
 

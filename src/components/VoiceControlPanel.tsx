@@ -104,7 +104,7 @@ export function VoiceControlPanel() {
 
         <button
           onClick={toggleVoice}
-          className={`flex h-14 w-14 items-center justify-center rounded-full transition-all ${
+          className={`focus-ring flex h-14 w-14 items-center justify-center rounded-full transition-all ${
             isListening
               ? 'animate-pulse bg-[color:var(--color-primary)] text-slate-900 shadow-lg shadow-[color:var(--color-primary)]/50'
               : 'bg-slate-800/50 text-[color:var(--color-muted)] hover:bg-slate-700/50'
@@ -165,12 +165,30 @@ export function VoiceControlPanel() {
 
         <div className="grid gap-2">
           {[
-            { cmd: 'Dashboard', desc: 'Go to dashboard' },
-            { cmd: 'Einstellungen / Settings', desc: 'Open settings' },
-            { cmd: 'Hilfe / Help', desc: 'Open help' },
-            { cmd: 'Theme wechseln', desc: 'Switch theme' },
-            { cmd: 'Sprache wechseln', desc: 'Switch language' },
-            { cmd: 'Auto laden', desc: 'Toggle EV charging' },
+            {
+              cmd: t('voice.cmdDashboard', 'Dashboard'),
+              desc: t('voice.cmdDashboardDesc', 'Go to dashboard'),
+            },
+            {
+              cmd: t('voice.cmdSettings', 'Einstellungen / Settings'),
+              desc: t('voice.cmdSettingsDesc', 'Open settings'),
+            },
+            {
+              cmd: t('voice.cmdHelp', 'Hilfe / Help'),
+              desc: t('voice.cmdHelpDesc', 'Open help'),
+            },
+            {
+              cmd: t('voice.cmdTheme', 'Theme wechseln'),
+              desc: t('voice.cmdThemeDesc', 'Switch theme'),
+            },
+            {
+              cmd: t('voice.cmdLanguage', 'Sprache wechseln'),
+              desc: t('voice.cmdLanguageDesc', 'Switch language'),
+            },
+            {
+              cmd: t('voice.cmdEv', 'Auto laden'),
+              desc: t('voice.cmdEvDesc', 'Toggle EV charging'),
+            },
           ].map((item, i) => (
             <div
               key={i}
