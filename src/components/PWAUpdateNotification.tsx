@@ -23,7 +23,7 @@ export function PWAUpdateNotification() {
 
       // Check for updates every hour
       if (registration) {
-        setInterval(
+        const intervalId = setInterval(
           () => {
             registration.update().catch((error) => {
               console.error('[PWA] Update check failed:', error);
@@ -31,6 +31,8 @@ export function PWAUpdateNotification() {
           },
           60 * 60 * 1000,
         );
+        // Store interval ref for possible cleanup
+        (registration as unknown as { _updateInterval?: ReturnType<typeof setInterval> })._updateInterval = intervalId;
       }
     },
     onRegisterError(error) {

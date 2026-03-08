@@ -33,17 +33,18 @@ export function PWAInstallPrompt() {
   });
 
   useEffect(() => {
+    let promptTimer: ReturnType<typeof setTimeout> | null = null;
+
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
       setIsInstallable(true);
 
       // Show prompt after 30 seconds
-      const timer = setTimeout(() => {
+      if (promptTimer) clearTimeout(promptTimer);
+      promptTimer = setTimeout(() => {
         setShowPrompt(true);
       }, 30000);
-
-      return () => clearTimeout(timer);
     };
 
     const handleAppInstalled = () => {
@@ -57,6 +58,7 @@ export function PWAInstallPrompt() {
     window.addEventListener('appinstalled', handleAppInstalled);
 
     return () => {
+      if (promptTimer) clearTimeout(promptTimer);
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       window.removeEventListener('appinstalled', handleAppInstalled);
     };

@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
 import { Lightbulb, Thermometer, Wind } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export function Floorplan() {
+  const { t } = useTranslation();
   const [lightsOn, setLightsOn] = useState(true);
   const [windowOpen, setWindowOpen] = useState(false);
   const [temp, setTemp] = useState(21.5);
@@ -119,14 +121,14 @@ export function Floorplan() {
           <span className="font-mono text-lg">{temp.toFixed(1)}°C</span>
           <div className="flex flex-col ml-2">
             <button
-              onClick={() => setTemp((t) => t + 0.5)}
+              onClick={() => setTemp((v) => v + 0.5)}
               className="text-slate-400 hover:text-white leading-none"
               aria-label="Increase temperature"
             >
               +
             </button>
             <button
-              onClick={() => setTemp((t) => t - 0.5)}
+              onClick={() => setTemp((v) => v - 0.5)}
               className="text-slate-400 hover:text-white leading-none"
               aria-label="Decrease temperature"
             >

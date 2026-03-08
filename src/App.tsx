@@ -212,7 +212,7 @@ export default function App() {
 
           <main className="pb-20 lg:pb-0">
             <Routes>
-              <Route path="/" element={<Dashboard sendCommand={sendCommand} />} />
+              <Route path="/" element={<Dashboard />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/help" element={<Help />} />
             </Routes>
