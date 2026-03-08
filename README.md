@@ -137,6 +137,51 @@ npm run dev
 docker-compose up -d
 ```
 
+### 🚀 Deployment
+
+#### GitHub Pages (Automatic)
+
+GitHub Actions automatically deploys to GitHub Pages on every push to `main`:
+
+1. **Enable GitHub Pages**:
+   - Go to your repository **Settings** → **Pages**
+   - Under **Build and deployment**, select:
+     - **Source**: GitHub Actions
+   - Save settings
+
+2. **Access your deployed dashboard**:
+   ```
+   https://<your-username>.github.io/Nexus-HEMS-Dash/
+   ```
+
+3. **Workflows**:
+   - `.github/workflows/ci.yml` - Lint, type-check, build on push/PR
+   - `.github/workflows/deploy.yml` - Deploy to GitHub Pages (main branch only)
+   - `.github/workflows/playwright.yml` - E2E tests on push/PR
+
+#### Manual Deployment
+
+```bash
+# Build production bundle
+npm run build
+
+# Preview production build locally
+npm run preview
+
+# Deploy dist/ folder to your hosting provider
+```
+
+#### Environment Variables (Optional)
+
+Create `.env` for API integrations:
+
+```env
+GEMINI_API_KEY=your_google_gemini_api_key
+MQTT_BROKER_URL=ws://your-mqtt-broker:9001
+TIBBER_API_TOKEN=your_tibber_api_token
+AWATTAR_API_KEY=your_awattar_api_key
+```
+
 ### 🏗️ Architecture
 
 **Local-First Design**
