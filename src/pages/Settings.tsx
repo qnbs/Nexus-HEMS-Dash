@@ -1,8 +1,10 @@
 import { useState, type FormEvent } from 'react';
 import { motion } from 'motion/react';
 import { Settings as SettingsIcon, Save, Server, Shield, Zap, Database, Check } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export function Settings() {
+  const { t } = useTranslation();
   const [saved, setSaved] = useState(false);
 
   const handleSave = (e: FormEvent) => {
@@ -30,7 +32,7 @@ export function Settings() {
         >
           <SettingsIcon className="text-emerald-400" size={28} />
         </motion.div>
-        <h1 className="text-3xl font-light tracking-tight fluid-text-4xl">Einstellungen</h1>
+        <h1 className="text-3xl font-light tracking-tight fluid-text-4xl">{t('settings.title')}</h1>
       </motion.div>
 
       <form onSubmit={handleSave} className="space-y-8 space-lg">
@@ -43,7 +45,7 @@ export function Settings() {
         >
           <h2 className="text-xl font-medium mb-6 flex items-center gap-2 border-b border-white/10 pb-4 fluid-text-xl">
             <Server size={20} className="text-blue-400" />
-            Systemkonfiguration
+            {t('settings.system')}
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 space-md">
@@ -52,7 +54,7 @@ export function Settings() {
               whileHover={{ scale: 1.01 }}
               transition={{ type: "spring", stiffness: 400, damping: 17 }}
             >
-              <label className="text-sm font-medium text-slate-300 fluid-text-sm">Victron GX IP-Adresse</label>
+              <label className="text-sm font-medium text-slate-300 fluid-text-sm">{t('settings.victronIp')}</label>
               <input
                 type="text"
                 defaultValue="192.168.1.100"
@@ -64,7 +66,7 @@ export function Settings() {
               whileHover={{ scale: 1.01 }}
               transition={{ type: "spring", stiffness: 400, damping: 17 }}
             >
-              <label className="text-sm font-medium text-slate-300 fluid-text-sm">KNX IP-Router Adresse</label>
+              <label className="text-sm font-medium text-slate-300 fluid-text-sm">{t('settings.knxIp')}</label>
               <input
                 type="text"
                 defaultValue="192.168.1.101"
@@ -76,7 +78,7 @@ export function Settings() {
               whileHover={{ scale: 1.01 }}
               transition={{ type: "spring", stiffness: 400, damping: 17 }}
             >
-              <label className="text-sm font-medium text-slate-300 fluid-text-sm">Node-RED WebSocket Port</label>
+              <label className="text-sm font-medium text-slate-300 fluid-text-sm">{t('settings.wsPort')}</label>
               <input
                 type="number"
                 defaultValue="1880"
@@ -89,7 +91,7 @@ export function Settings() {
               transition={{ type: "spring", stiffness: 400, damping: 17 }}
             >
               <label className="text-sm font-medium text-slate-300 fluid-text-sm">
-                Datenaktualisierungsrate (ms)
+                {t('settings.refreshRate')}
               </label>
               <input
                 type="number"
@@ -109,7 +111,7 @@ export function Settings() {
         >
           <h2 className="text-xl font-medium mb-6 flex items-center gap-2 border-b border-white/10 pb-4 fluid-text-xl">
             <Zap size={20} className="text-yellow-400" />
-            Energiemanagement & Tarife
+            {t('settings.energy')}
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 space-md">
@@ -119,12 +121,12 @@ export function Settings() {
               transition={{ type: "spring", stiffness: 400, damping: 17 }}
             >
               <label className="text-sm font-medium text-slate-300 fluid-text-sm">
-                Dynamischer Tarifanbieter
+                {t('settings.tariffProvider')}
               </label>
               <select className="w-full bg-slate-900/60 border border-slate-700/60 rounded-xl px-4 py-2.5 text-slate-200 focus:outline-none focus:border-emerald-500/70 focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300">
-                <option value="tibber">Tibber</option>
-                <option value="awattar">aWATTar</option>
-                <option value="none">Keiner (Fixpreis)</option>
+                <option value="tibber">{t('settings.tibber')}</option>
+                <option value="awattar">{t('settings.awattar')}</option>
+                <option value="none">{t('settings.none')}</option>
               </select>
             </motion.div>
             <motion.div 
@@ -133,7 +135,7 @@ export function Settings() {
               transition={{ type: "spring", stiffness: 400, damping: 17 }}
             >
               <label className="text-sm font-medium text-slate-300 fluid-text-sm">
-                API Token (Tarifanbieter)
+                {t('settings.apiTokenLabel')}
               </label>
               <input
                 type="password"
@@ -147,7 +149,7 @@ export function Settings() {
               transition={{ type: "spring", stiffness: 400, damping: 17 }}
             >
               <label className="text-sm font-medium text-slate-300 fluid-text-sm">
-                Preis-Schwellenwert für Ladung (€/kWh)
+                {t('settings.chargeThreshold')}
               </label>
               <input
                 type="number"
@@ -162,7 +164,7 @@ export function Settings() {
               transition={{ type: "spring", stiffness: 400, damping: 17 }}
             >
               <label className="text-sm font-medium text-slate-300 fluid-text-sm">
-                Maximaler Netzbezug (kW) - §14a EnWG
+                {t('settings.maxGrid')}
               </label>
               <input
                 type="number"
@@ -183,7 +185,7 @@ export function Settings() {
         >
           <h2 className="text-xl font-medium mb-6 flex items-center gap-2 border-b border-white/10 pb-4 fluid-text-xl">
             <Shield size={20} className="text-red-400" />
-            Sicherheit & Datenschutz
+            {t('settings.security')}
           </h2>
 
           <div className="space-y-4 space-md">
@@ -198,9 +200,9 @@ export function Settings() {
                 className="w-5 h-5 rounded border-slate-700/60 bg-slate-900/60 text-emerald-500 focus:ring-2 focus:ring-emerald-500/30 focus:ring-offset-2 focus:ring-offset-slate-900 transition-all duration-300"
               />
               <div>
-                <div className="font-medium text-slate-200 fluid-text-sm">Lokale PKI (mTLS) erzwingen</div>
+                <div className="font-medium text-slate-200 fluid-text-sm">{t('settings.mtls')}</div>
                 <div className="text-sm text-slate-400 fluid-text-xs">
-                  Erfordert gültige Client-Zertifikate für alle Verbindungen.
+                  {t('settings.mtlsHint')}
                 </div>
               </div>
             </motion.label>
@@ -215,9 +217,9 @@ export function Settings() {
                 className="w-5 h-5 rounded border-slate-700/60 bg-slate-900/60 text-emerald-500 focus:ring-2 focus:ring-emerald-500/30 focus:ring-offset-2 focus:ring-offset-slate-900 transition-all duration-300"
               />
               <div>
-                <div className="font-medium text-slate-200 fluid-text-sm">Cloud-Telemetrie deaktivieren</div>
+                <div className="font-medium text-slate-200 fluid-text-sm">{t('settings.telemetry')}</div>
                 <div className="text-sm text-slate-400 fluid-text-xs">
-                  Verhindert das Senden von anonymisierten Nutzungsdaten an externe Server.
+                  {t('settings.telemetryHint')}
                 </div>
               </div>
             </motion.label>
@@ -233,10 +235,10 @@ export function Settings() {
               />
               <div>
                 <div className="font-medium text-slate-200 fluid-text-sm">
-                  Zwei-Faktor-Authentifizierung (2FA)
+                  {t('settings.twoFactor')}
                 </div>
                 <div className="text-sm text-slate-400 fluid-text-xs">
-                  Zusätzliche Sicherheitsebene für den Zugriff auf das Dashboard.
+                  {t('settings.twoFactorHint')}
                 </div>
               </div>
             </motion.label>
@@ -252,7 +254,7 @@ export function Settings() {
         >
           <h2 className="text-xl font-medium mb-6 flex items-center gap-2 border-b border-white/10 pb-4 fluid-text-xl">
             <Database size={20} className="text-purple-400" />
-            Datenbank & Speicherung
+            {t('settings.storage')}
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 space-md">
@@ -261,7 +263,7 @@ export function Settings() {
               whileHover={{ scale: 1.01 }}
               transition={{ type: "spring", stiffness: 400, damping: 17 }}
             >
-              <label className="text-sm font-medium text-slate-300 fluid-text-sm">InfluxDB URL</label>
+              <label className="text-sm font-medium text-slate-300 fluid-text-sm">{t('settings.influxUrl')}</label>
               <input
                 type="text"
                 defaultValue="http://192.168.1.102:8086"
@@ -273,7 +275,7 @@ export function Settings() {
               whileHover={{ scale: 1.01 }}
               transition={{ type: "spring", stiffness: 400, damping: 17 }}
             >
-              <label className="text-sm font-medium text-slate-300 fluid-text-sm">InfluxDB Token</label>
+              <label className="text-sm font-medium text-slate-300 fluid-text-sm">{t('settings.influxToken')}</label>
               <input
                 type="password"
                 defaultValue="••••••••••••••••"
@@ -285,14 +287,14 @@ export function Settings() {
               whileHover={{ scale: 1.01 }}
               transition={{ type: "spring", stiffness: 400, damping: 17 }}
             >
-              <label className="text-sm font-medium text-slate-300 fluid-text-sm">Lokale Historie (Tage)</label>
+              <label className="text-sm font-medium text-slate-300 fluid-text-sm">{t('settings.historyDays')}</label>
               <input
                 type="number"
                 defaultValue="30"
                 className="w-full bg-slate-900/60 border border-slate-700/60 rounded-xl px-4 py-2.5 text-slate-200 focus:outline-none focus:border-emerald-500/70 focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300"
               />
               <p className="text-xs text-slate-400 fluid-text-xxs">
-                Speicherdauer in der lokalen IndexedDB (Dexie.js).
+                {t('settings.historyHint')}
               </p>
             </motion.div>
           </div>
@@ -312,7 +314,7 @@ export function Settings() {
             transition={{ type: "spring", stiffness: 400, damping: 17 }}
           >
             {saved ? <Check size={20} className="animate-bounce-slow" /> : <Save size={20} />}
-            {saved ? 'Gespeichert!' : 'Einstellungen speichern'}
+            {saved ? t('common.saved') : t('common.save')}
           </motion.button>
         </motion.div>
       </form>

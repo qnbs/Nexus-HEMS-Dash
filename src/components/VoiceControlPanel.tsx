@@ -71,7 +71,7 @@ export function VoiceControlPanel() {
       const controller = initVoiceController();
 
       if (!controller) {
-        setError('Voice control not supported in this browser');
+        setError(t('voice.notSupported'));
         return;
       }
 
@@ -85,7 +85,7 @@ export function VoiceControlPanel() {
         setTranscript('');
       }
     } catch (err) {
-      setError('Voice control initialization failed');
+      setError(t('voice.initError'));
       console.error(err);
     }
   };
@@ -95,10 +95,10 @@ export function VoiceControlPanel() {
       <div className="mb-4 flex items-center justify-between">
         <div>
           <h3 className="text-lg font-semibold text-[color:var(--color-text)]">
-            {t('voice.title', 'Voice Control')}
+            {t('voice.title')}
           </h3>
           <p className="mt-1 text-sm text-[color:var(--color-muted)]">
-            {t('voice.subtitle', 'Control dashboard with voice commands')}
+            {t('voice.subtitle')}
           </p>
         </div>
 
@@ -110,7 +110,7 @@ export function VoiceControlPanel() {
               : 'bg-slate-800/50 text-[color:var(--color-muted)] hover:bg-slate-700/50'
           }`}
           aria-label={
-            isListening ? t('voice.stop', 'Stop listening') : t('voice.start', 'Start listening')
+            isListening ? t('voice.stop') : t('voice.start')
           }
         >
           {isListening ? <Mic className="h-6 w-6" /> : <MicOff className="h-6 w-6" />}
@@ -128,7 +128,7 @@ export function VoiceControlPanel() {
           >
             <div className="rounded-2xl border border-[color:var(--color-primary)]/30 bg-[color:var(--color-primary)]/10 p-4">
               <p className="text-sm font-medium text-[color:var(--color-primary)]">
-                🎤 {t('voice.listening', 'Listening...')}
+                🎤 {t('voice.listening')}
               </p>
               {transcript && (
                 <p className="mt-2 text-sm text-[color:var(--color-text)]">"{transcript}"</p>
@@ -148,7 +148,7 @@ export function VoiceControlPanel() {
               <AlertCircle className="h-5 w-5 flex-shrink-0 text-red-400" />
               <div>
                 <p className="text-sm font-medium text-red-400">
-                  {t('voice.error', 'Voice control error')}
+                  {t('voice.error')}
                 </p>
                 <p className="mt-1 text-sm text-[color:var(--color-muted)]">{error}</p>
               </div>
@@ -160,34 +160,34 @@ export function VoiceControlPanel() {
       {/* Commands List */}
       <div className="space-y-2">
         <p className="text-xs font-medium uppercase tracking-wide text-[color:var(--color-muted)]">
-          {t('voice.commands', 'Available Commands')}
+          {t('voice.commands')}
         </p>
 
         <div className="grid gap-2">
           {[
             {
-              cmd: t('voice.cmdDashboard', 'Dashboard'),
-              desc: t('voice.cmdDashboardDesc', 'Go to dashboard'),
+              cmd: t('voice.cmdDashboard'),
+              desc: t('voice.cmdDashboardDesc'),
             },
             {
-              cmd: t('voice.cmdSettings', 'Einstellungen / Settings'),
-              desc: t('voice.cmdSettingsDesc', 'Open settings'),
+              cmd: t('voice.cmdSettings'),
+              desc: t('voice.cmdSettingsDesc'),
             },
             {
-              cmd: t('voice.cmdHelp', 'Hilfe / Help'),
-              desc: t('voice.cmdHelpDesc', 'Open help'),
+              cmd: t('voice.cmdHelp'),
+              desc: t('voice.cmdHelpDesc'),
             },
             {
-              cmd: t('voice.cmdTheme', 'Theme wechseln'),
-              desc: t('voice.cmdThemeDesc', 'Switch theme'),
+              cmd: t('voice.cmdTheme'),
+              desc: t('voice.cmdThemeDesc'),
             },
             {
-              cmd: t('voice.cmdLanguage', 'Sprache wechseln'),
-              desc: t('voice.cmdLanguageDesc', 'Switch language'),
+              cmd: t('voice.cmdLanguage'),
+              desc: t('voice.cmdLanguageDesc'),
             },
             {
-              cmd: t('voice.cmdEv', 'Auto laden'),
-              desc: t('voice.cmdEvDesc', 'Toggle EV charging'),
+              cmd: t('voice.cmdEv'),
+              desc: t('voice.cmdEvDesc'),
             },
           ].map((item, i) => (
             <div

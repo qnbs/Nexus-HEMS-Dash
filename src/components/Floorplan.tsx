@@ -108,7 +108,7 @@ export function Floorplan() {
               ? 'bg-sky-400/20 border-sky-400/50 text-sky-300 shadow-[0_0_15px_rgba(56,189,248,0.3)]'
               : 'bg-slate-800/50 border-slate-700 text-slate-400'
           }`}
-          aria-label={windowOpen ? 'Close kitchen window' : 'Open kitchen window'}
+          aria-label={windowOpen ? t('floorplan.windowClose') : t('floorplan.windowOpen')}
           aria-pressed={windowOpen}
         >
           <Wind size={20} aria-hidden="true" />
@@ -123,14 +123,14 @@ export function Floorplan() {
             <button
               onClick={() => setTemp((v) => v + 0.5)}
               className="text-slate-400 hover:text-white leading-none"
-              aria-label="Increase temperature"
+              aria-label={t('floorplan.tempIncrease')}
             >
               +
             </button>
             <button
               onClick={() => setTemp((v) => v - 0.5)}
               className="text-slate-400 hover:text-white leading-none"
-              aria-label="Decrease temperature"
+              aria-label={t('floorplan.tempDecrease')}
             >
               -
             </button>

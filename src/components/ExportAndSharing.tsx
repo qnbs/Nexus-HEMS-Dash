@@ -22,7 +22,7 @@ export function ExportAndSharing() {
       await downloadPdfReport(stats);
     } catch (error) {
       console.error('PDF generation error:', error);
-      alert('PDF generation failed. Please try again.');
+      alert(t('export.pdfError'));
     } finally {
       setIsGenerating(false);
     }
@@ -50,7 +50,7 @@ export function ExportAndSharing() {
       setQrCodeUrl(qrUrl);
     } catch (error) {
       console.error('Share link generation error:', error);
-      alert('Share link generation failed. Please try again.');
+      alert(t('export.linkError'));
     }
   };
 
@@ -65,7 +65,7 @@ export function ExportAndSharing() {
   return (
     <div className="glass-panel rounded-3xl p-6">
       <h3 className="mb-6 text-lg font-semibold text-[color:var(--color-text)]">
-        {t('export.title', 'Export & Sharing')}
+        {t('export.title')}
       </h3>
 
       <div className="space-y-4">
@@ -79,11 +79,11 @@ export function ExportAndSharing() {
           >
             <FileDown className="h-5 w-5" aria-hidden="true" />
             {isGenerating
-              ? t('export.generating', 'Generating...')
-              : t('export.downloadPdf', 'Download Monthly Report (PDF)')}
+              ? t('export.generating')
+              : t('export.downloadPdf')}
           </button>
           <p className="mt-2 text-xs text-[color:var(--color-muted)]">
-            {t('export.pdfDescription', 'Includes Sankey diagram, cost summary, and CO₂ balance')}
+            {t('export.pdfDescription')}
           </p>
         </div>
 
@@ -97,10 +97,10 @@ export function ExportAndSharing() {
             className="btn-secondary focus-ring flex w-full items-center justify-center gap-2"
           >
             <Share2 className="h-5 w-5" aria-hidden="true" />
-            {t('export.generateShareLink', 'Generate Shareable Link')}
+            {t('export.generateShareLink')}
           </button>
           <p className="mt-2 text-xs text-[color:var(--color-muted)]">
-            {t('export.shareLinkDescription', 'Create read-only link for sharing your dashboard')}
+            {t('export.shareLinkDescription')}
           </p>
 
           {shareLink && (
@@ -121,7 +121,7 @@ export function ExportAndSharing() {
                   <button
                     onClick={handleCopyLink}
                     className="focus-ring flex h-10 w-10 items-center justify-center rounded-lg bg-slate-800/50 text-[color:var(--color-primary)] hover:bg-slate-700/50"
-                    aria-label={t('export.copyLink', 'Copy link')}
+                    aria-label={t('export.copyLink')}
                   >
                     {copied ? <Check className="h-5 w-5" /> : <Copy className="h-5 w-5" />}
                   </button>
@@ -132,7 +132,7 @@ export function ExportAndSharing() {
                   <div className="flex flex-col items-center">
                     <div className="flex items-center gap-2 text-sm text-[color:var(--color-muted)]">
                       <QrCode className="h-4 w-4" />
-                      {t('export.qrCode', 'QR Code')}
+                      {t('export.qrCode')}
                     </div>
                     <img
                       src={qrCodeUrl}

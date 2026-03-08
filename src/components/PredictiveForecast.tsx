@@ -132,10 +132,10 @@ export function PredictiveForecast() {
               className="mr-2 inline h-6 w-6 text-[color:var(--color-primary)]"
               aria-hidden="true"
             />
-            {t('forecast.title', 'Predictive Forecast')}
+            {t('forecast.title')}
           </h2>
           <p className="mt-1 text-sm text-[color:var(--color-muted)]">
-            {t('forecast.subtitle', 'PV generation, tariff prices & CO₂ intensity')}
+            {t('forecast.subtitle')}
           </p>
         </div>
 
@@ -149,9 +149,9 @@ export function PredictiveForecast() {
                 : 'bg-slate-800/50 text-[color:var(--color-muted)] hover:bg-slate-700/50'
             }`}
             aria-pressed={timeRange === '24h'}
-            aria-label={t('forecast.hours24', '24 hours')}
+            aria-label={t('forecast.hours24')}
           >
-            {t('forecast.hours24', '24h')}
+            {t('forecast.hours24')}
           </button>
           <button
             onClick={() => setTimeRange('7d')}
@@ -161,9 +161,9 @@ export function PredictiveForecast() {
                 : 'bg-slate-800/50 text-[color:var(--color-muted)] hover:bg-slate-700/50'
             }`}
             aria-pressed={timeRange === '7d'}
-            aria-label={t('forecast.days7', '7 days')}
+            aria-label={t('forecast.days7')}
           >
-            {t('forecast.days7', '7d')}
+            {t('forecast.days7')}
           </button>
         </div>
       </div>
@@ -174,7 +174,7 @@ export function PredictiveForecast() {
           <div className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5 text-emerald-400" aria-hidden="true" />
             <span className="text-sm text-emerald-400">
-              {t('forecast.potentialSavings', 'Potential Savings')}
+              {t('forecast.potentialSavings')}
             </span>
           </div>
           <p className="mt-2 text-2xl font-semibold text-emerald-300">€{totalSavings.toFixed(2)}</p>
@@ -183,7 +183,7 @@ export function PredictiveForecast() {
         <div className="rounded-2xl bg-green-500/10 p-4">
           <div className="flex items-center gap-2">
             <Leaf className="h-5 w-5 text-green-400" aria-hidden="true" />
-            <span className="text-sm text-green-400">{t('forecast.co2Saved', 'CO₂ Saved')}</span>
+            <span className="text-sm text-green-400">{t('forecast.co2Saved')}</span>
           </div>
           <p className="mt-2 text-2xl font-semibold text-green-300">{co2Saved.toFixed(1)} kg</p>
         </div>
@@ -192,7 +192,7 @@ export function PredictiveForecast() {
           <div className="flex items-center gap-2">
             <CloudSun className="h-5 w-5 text-blue-400" aria-hidden="true" />
             <span className="text-sm text-blue-400">
-              {t('forecast.avgPvGeneration', 'Avg. PV Generation')}
+              {t('forecast.avgPvGeneration')}
             </span>
           </div>
           <p className="mt-2 text-2xl font-semibold text-blue-300">
@@ -256,7 +256,7 @@ export function PredictiveForecast() {
               stroke="#fbbf24"
               fillOpacity={1}
               fill="url(#colorPv)"
-              name={t('forecast.pvGeneration', 'PV Generation (kW)')}
+              name={t('forecast.pvGeneration')}
             />
             <Line
               yAxisId="right"
@@ -265,7 +265,7 @@ export function PredictiveForecast() {
               stroke="#f97316"
               strokeWidth={2}
               dot={false}
-              name={t('forecast.tariffPrice', 'Tariff Price (€/kWh)')}
+              name={t('forecast.tariffPrice')}
             />
             <Line
               yAxisId="left"
@@ -275,7 +275,7 @@ export function PredictiveForecast() {
               strokeWidth={2}
               strokeDasharray="5 5"
               dot={false}
-              name={t('forecast.consumption', 'Consumption (kW)')}
+              name={t('forecast.consumption')}
             />
           </AreaChart>
         </ResponsiveContainer>
@@ -284,13 +284,10 @@ export function PredictiveForecast() {
       {/* Best Action Recommendation */}
       <div className="mt-6 rounded-2xl border border-[color:var(--color-primary)]/30 bg-[color:var(--color-primary)]/10 p-4">
         <p className="text-sm font-medium text-[color:var(--color-primary)]">
-          {t('forecast.recommendation', '💡 Best Action')}
+          {t('forecast.recommendation')}
         </p>
         <p className="mt-1 text-sm text-[color:var(--color-muted)]">
-          {t(
-            'forecast.recommendationText',
-            'Charge EV and battery during low-price solar hours (10:00-14:00). Avoid grid import during peak hours (17:00-21:00).',
-          )}
+          {t('forecast.recommendationText')}
         </p>
       </div>
     </motion.div>

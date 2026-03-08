@@ -32,7 +32,7 @@ export function ThemeSwitcher() {
         aria-label={t('common.theme')}
       >
         <option value="system" className="bg-slate-900 text-slate-100">
-          {t('common.systemTheme', '🌐 System')}
+          {t('common.systemTheme')}
         </option>
         {themeOrder.map((entry) => (
           <option key={entry} value={entry} className="bg-slate-900 text-slate-100">

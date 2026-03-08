@@ -52,7 +52,7 @@ export function OfflineBanner() {
               <WifiOff className="h-5 w-5 animate-pulse" aria-hidden="true" />
               <div>
                 <p className="font-semibold">
-                  {t('offline.title', 'Offline-Modus')}
+                  {t('offline.title')}
                 </p>
                 {lastUpdate && (
                   <p className="text-sm text-white/90">
@@ -68,11 +68,11 @@ export function OfflineBanner() {
             <button
               onClick={() => window.location.reload()}
               className="flex items-center gap-2 bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-colors"
-              aria-label={t('offline.retry', 'Verbindung erneut versuchen')}
+              aria-label={t('offline.retry')}
             >
               <RefreshCw className="h-4 w-4" aria-hidden="true" />
               <span className="text-sm font-medium hidden sm:inline">
-                {t('offline.retry', 'Erneut versuchen')}
+                {t('offline.retry')}
               </span>
             </button>
           </div>

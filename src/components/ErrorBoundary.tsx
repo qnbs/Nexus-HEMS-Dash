@@ -5,6 +5,7 @@
 
 import { Component, type ReactNode, type ErrorInfo } from 'react';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
+import i18next from 'i18next';
 
 interface Props {
   children: ReactNode;
@@ -84,29 +85,28 @@ export class ErrorBoundary extends Component<Props, State> {
               </div>
               <div className="flex-1">
                 <h1 className="text-2xl font-bold text-[color:var(--color-text)]">
-                  Oops! Something went wrong
+                  {i18next.t('error.title')}
                 </h1>
                 <p className="mt-2 text-[color:var(--color-muted)]">
-                  An unexpected error occurred. You can try reloading the page or return to the
-                  dashboard.
+                  {i18next.t('error.description')}
                 </p>
 
                 {/* Error Details (only in development) */}
                 {import.meta.env.DEV && this.state.error && (
                   <details className="mt-4 rounded-xl border border-red-500/30 bg-red-500/5 p-4">
                     <summary className="cursor-pointer font-mono text-sm text-red-400">
-                      Error Details
+                      {i18next.t('error.details')}
                     </summary>
                     <div className="mt-3 space-y-2">
                       <div>
-                        <p className="text-xs font-medium text-red-300">Message:</p>
+                        <p className="text-xs font-medium text-red-300">{i18next.t('error.message')}</p>
                         <p className="mt-1 font-mono text-xs text-red-400">
                           {this.state.error.message}
                         </p>
                       </div>
                       {this.state.error.stack && (
                         <div>
-                          <p className="text-xs font-medium text-red-300">Stack Trace:</p>
+                          <p className="text-xs font-medium text-red-300">{i18next.t('error.stack')}</p>
                           <pre className="mt-1 overflow-x-auto font-mono text-xs text-red-400">
                             {this.state.error.stack}
                           </pre>
@@ -114,7 +114,7 @@ export class ErrorBoundary extends Component<Props, State> {
                       )}
                       {this.state.errorInfo?.componentStack && (
                         <div>
-                          <p className="text-xs font-medium text-red-300">Component Stack:</p>
+                          <p className="text-xs font-medium text-red-300">{i18next.t('error.componentStack')}</p>
                           <pre className="mt-1 overflow-x-auto font-mono text-xs text-red-400">
                             {this.state.errorInfo.componentStack}
                           </pre>
@@ -131,30 +131,30 @@ export class ErrorBoundary extends Component<Props, State> {
                     className="btn-primary focus-ring flex items-center gap-2"
                   >
                     <RefreshCw className="h-4 w-4" />
-                    Try Again
+                    {i18next.t('error.tryAgain')}
                   </button>
                   <button
                     onClick={this.handleReload}
                     className="btn-secondary focus-ring flex items-center gap-2"
                   >
                     <RefreshCw className="h-4 w-4" />
-                    Reload Page
+                    {i18next.t('error.reload')}
                   </button>
                   <button
                     onClick={this.handleGoHome}
                     className="btn-secondary focus-ring flex items-center gap-2"
                   >
                     <Home className="h-4 w-4" />
-                    Go to Dashboard
+                    {i18next.t('error.goHome')}
                   </button>
                 </div>
 
                 {/* Additional Help */}
                 <div className="mt-6 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)]/50 p-4">
                   <p className="text-sm text-[color:var(--color-muted)]">
-                    <strong className="text-[color:var(--color-text)]">Need help?</strong>
+                    <strong className="text-[color:var(--color-text)]">{i18next.t('error.helpTitle')}</strong>
                     <br />
-                    If the problem persists, try clearing your browser cache or contact support at{' '}
+                    {i18next.t('error.helpText')}{' '}
                     <a
                       href="mailto:support@nexus-hems.com"
                       className="text-[color:var(--color-primary)] underline hover:text-[color:var(--color-secondary)]"
