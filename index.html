@@ -3,7 +3,27 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>My Google AI Studio App</title>
+    <title>Nexus HEMS Dashboard</title>
+    <meta name="description" content="Real-time Home Energy Management System – PV, Battery, EV, KNX, Dynamic Tariffs & AI Optimizer" />
+    <meta name="theme-color" content="#22ff88" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/Nexus-HEMS-Dash/icon-192x192.png" />
+    <link rel="apple-touch-icon" href="/Nexus-HEMS-Dash/icon-192x192.png" />
+    <link rel="manifest" href="/Nexus-HEMS-Dash/manifest.json" />
+    <!-- GitHub Pages SPA redirect handler -->
+    <script>
+      (function () {
+        var segmentCount = 1; // /Nexus-HEMS-Dash/ = 1 segment
+        var l = window.location;
+        if (l.search[1] === '/') {
+          var decoded = l.search
+            .slice(1)
+            .split('&')
+            .map(function (s) { return s.replace(/~and~/g, '&'); })
+            .join('&');
+          window.history.replaceState(null, null, l.pathname.slice(0, -1) + decoded + l.hash);
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
