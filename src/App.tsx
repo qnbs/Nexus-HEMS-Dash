@@ -34,6 +34,7 @@ const AnalyticsPage = lazy(() => import('./pages/AnalyticsPage'));
 const Settings = lazy(() => import('./pages/Settings').then((m) => ({ default: m.Settings })));
 const Help = lazy(() => import('./pages/Help').then((m) => ({ default: m.Help })));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
+const AISettingsPage = lazy(() => import('./pages/AISettingsPage'));
 
 function PageLoadingFallback() {
   return (
@@ -248,6 +249,7 @@ export default function App() {
                     <Route path="/tariffs" element={<TariffsPage />} />
                     <Route path="/analytics" element={<AnalyticsPage />} />
                     <Route path="/settings" element={<Settings />} />
+                    <Route path="/settings/ai" element={<AISettingsPage />} />
                     <Route path="/help" element={<Help />} />
                     <Route path="*" element={<NotFoundPage />} />
                   </Routes>

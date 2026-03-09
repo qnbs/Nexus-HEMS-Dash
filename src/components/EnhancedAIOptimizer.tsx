@@ -1,79 +1,23 @@
 /**
- * Enhanced AI Optimizer with Google Gemini 2.5 Integration
+ * Enhanced AI Optimizer with BYOK multi-provider support
  */
 
 import { useState, useMemo, memo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Sparkles, Loader2 } from 'lucide-react';
+import { Sparkles, Loader2, Key } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 
 import { useAppStore } from '../store';
 import { buildOptimizerRecommendations } from '../lib/optimizer';
+import { callAI } from '../core/aiClient';
+import { getActiveProvider } from '../lib/ai-keys';
 
 interface GeminiRecommendation {
   title: string;
   description: string;
   impact: string;
   priority: 'high' | 'medium' | 'low';
-}
-
-async function callGeminiAPI(prompt: string, apiKey: string): Promise<GeminiRecommendation[]> {
-  try {
-    // Real Gemini API integration
-    const response = await fetch(
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-goog-api-key': apiKey,
-        },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                {
-                  text: prompt,
-                },
-              ],
-            },
-          ],
-          generationConfig: {
-            temperature: 0.7,
-            topK: 40,
-            topP: 0.95,
-            maxOutputTokens: 1024,
-          },
-        }),
-      },
-    );
-
-    if (!response.ok) {
-      throw new Error(`Gemini API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    const text = data.candidates[0]?.content?.parts[0]?.text || '';
-
-    // Parse response (expecting structured JSON)
-    try {
-      const recommendations = JSON.parse(text);
-      return recommendations;
-    } catch {
-      // Fallback: parse as plain text
-      return [
-        {
-          title: 'AI Optimization',
-          description: text,
-          impact: 'Potential cost savings',
-          priority: 'medium',
-        },
-      ];
-    }
-  } catch (error) {
-    console.error('Gemini API call failed:', error);
-    throw error;
-  }
 }
 
 export const EnhancedAIOptimizer = memo(function EnhancedAIOptimizer() {
@@ -83,6 +27,12 @@ export const EnhancedAIOptimizer = memo(function EnhancedAIOptimizer() {
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [geminiRecommendations, setGeminiRecommendations] = useState<GeminiRecommendation[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [hasProvider, setHasProvider] = useState<boolean | null>(null);
+
+  // Check if a provider is configured
+  useState(() => {
+    void getActiveProvider().then((p) => setHasProvider(p !== null));
+  });
 
   // Get basic recommendations (memoized)
   const basicRecommendations = useMemo(
@@ -95,13 +45,6 @@ export const EnhancedAIOptimizer = memo(function EnhancedAIOptimizer() {
     setError(null);
 
     try {
-      const apiKey = import.meta.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
-
-      if (!apiKey) {
-        throw new Error('Gemini API key not configured. Set VITE_GEMINI_API_KEY in .env');
-      }
-
-      // Construct detailed prompt for Gemini
       const prompt = `You are an AI energy optimization expert for a Home Energy Management System (HEMS).
 
 Current System State:
@@ -116,7 +59,6 @@ Current System State:
 
 Settings:
 - Charge Threshold: ${settings.chargeThreshold}€/kWh
-- Discharge Threshold: ${settings.dischargeThreshold}€/kWh
 - Max Grid Import: ${settings.maxGridImportKw}kW
 - Tariff Provider: ${settings.tariffProvider}
 
@@ -137,10 +79,29 @@ Return ONLY a valid JSON array with this structure:
   }
 ]`;
 
-      const recommendations = await callGeminiAPI(prompt, apiKey);
-      setGeminiRecommendations(recommendations);
+      const result = await callAI({ prompt });
+
+      try {
+        const recommendations = JSON.parse(result.text);
+        setGeminiRecommendations(recommendations);
+      } catch {
+        setGeminiRecommendations([
+          {
+            title: 'AI Optimization',
+            description: result.text,
+            impact: 'Potential cost savings',
+            priority: 'medium',
+          },
+        ]);
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Optimization failed');
+      const msg = err instanceof Error ? err.message : 'Optimization failed';
+      if (msg === 'NO_PROVIDER' || msg === 'KEY_EXPIRED') {
+        setError(t('aiSettings.noKeys', 'No API keys configured yet. Add a provider below.'));
+        setHasProvider(false);
+      } else {
+        setError(msg);
+      }
     } finally {
       setIsOptimizing(false);
     }
@@ -155,7 +116,7 @@ Return ONLY a valid JSON array with this structure:
             <Sparkles className="h-6 w-6 text-[color:var(--color-primary)]" aria-hidden="true" />
             {t('ai.optimizerTitle', 'AI Energy Optimizer')}
             <span className="ml-2 rounded-full bg-[color:var(--color-primary)]/20 px-2 py-0.5 text-xs font-medium text-[color:var(--color-primary)]">
-              Gemini 2.5
+              BYOK
             </span>
           </h2>
           <p className="mt-1 text-sm text-[color:var(--color-muted)]">
@@ -163,11 +124,19 @@ Return ONLY a valid JSON array with this structure:
           </p>
         </div>
 
-        <button
-          onClick={handleOptimizeNow}
-          disabled={isOptimizing}
-          className="btn-primary focus-ring flex items-center gap-2"
-        >
+        <div className="flex items-center gap-2">
+          <Link
+            to="/settings/ai"
+            className="btn-secondary focus-ring flex items-center gap-2 rounded-full px-3 py-2 text-sm"
+          >
+            <Key className="h-4 w-4" aria-hidden="true" />
+            <span className="hidden sm:inline">{t('aiSettings.title', 'AI Provider Keys')}</span>
+          </Link>
+          <button
+            onClick={handleOptimizeNow}
+            disabled={isOptimizing || hasProvider === false}
+            className="btn-primary focus-ring flex items-center gap-2"
+          >
           {isOptimizing ? (
             <>
               <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
@@ -180,6 +149,7 @@ Return ONLY a valid JSON array with this structure:
             </>
           )}
         </button>
+        </div>
       </div>
 
       {/* Error */}

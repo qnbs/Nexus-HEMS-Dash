@@ -49,6 +49,15 @@ export interface SettingsRecord {
   value: StoredSettings;
 }
 
+export interface AIKeyRecord {
+  provider: string;
+  encryptedKey: string;
+  model: string;
+  baseUrl: string;
+  createdAt: number;
+  lastUsed: number;
+}
+
 class NexusDatabase extends Dexie {
   energySnapshots!: Table<EnergySnapshot, number>;
   sankeySnapshots!: Table<SankeySnapshot, number>;
@@ -56,6 +65,7 @@ class NexusDatabase extends Dexie {
   cacheMetadata!: Table<CacheMetadata, string>;
   errorLogs!: Table<ErrorLog, number>;
   settings!: Table<SettingsRecord, string>;
+  aiKeys!: Table<AIKeyRecord, string>;
 
   constructor() {
     super('nexus-hems-dash');
@@ -74,6 +84,17 @@ class NexusDatabase extends Dexie {
       cacheMetadata: 'key, timestamp, expiresAt, type',
       errorLogs: '++id, timestamp, severity',
       settings: 'key',
+    });
+
+    // Version 3: Add encrypted AI key storage (BYOK)
+    this.version(3).stores({
+      energySnapshots: '++id, timestamp',
+      sankeySnapshots: '++id, timestamp',
+      offlineActions: '++id, timestamp, status, type',
+      cacheMetadata: 'key, timestamp, expiresAt, type',
+      errorLogs: '++id, timestamp, severity',
+      settings: 'key',
+      aiKeys: 'provider',
     });
   }
 }
