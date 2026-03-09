@@ -13,7 +13,7 @@ function FloorplanPageComponent() {
       <PageHeader
         title={t('nav.floorplan', 'KNX Floorplan')}
         subtitle={t('dashboard.automation')}
-        icon={<Map size={22} />}
+        icon={<Map size={22} aria-hidden="true" />}
       />
 
       {/* Full Floorplan */}
@@ -31,7 +31,7 @@ function FloorplanPageComponent() {
           <Home size={20} className="text-[color:var(--color-secondary)]" aria-hidden="true" />
           {t('floorplan.interactiveView', 'Interactive Building View')}
         </h2>
-        <div className="min-h-[400px] w-full overflow-hidden rounded-xl border border-[color:var(--color-border)] bg-slate-800/50">
+        <div className="min-h-[400px] w-full overflow-hidden rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
           <Floorplan />
         </div>
       </motion.section>
@@ -51,7 +51,7 @@ function FloorplanPageComponent() {
             transition={{ duration: 0.4, delay: 0.2 + i * 0.05 }}
           >
             <div className="flex items-center gap-3">
-              <span className="text-2xl">{room.icon}</span>
+              <span className="text-2xl" aria-hidden="true">{room.icon}</span>
               <div>
                 <p className="text-sm font-medium text-[color:var(--color-text)]">{room.label}</p>
                 <p className="text-xs text-[color:var(--color-muted)]">{room.status}</p>

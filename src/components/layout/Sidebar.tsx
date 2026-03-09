@@ -15,8 +15,6 @@ import {
   BarChart3,
   Settings,
   HelpCircle,
-  ChevronLeft,
-  ChevronRight,
   Zap,
   Key,
 } from 'lucide-react';
@@ -62,9 +60,8 @@ function SidebarComponent() {
   };
 
   return (
-    <aside
+    <nav
       className="fixed left-0 top-0 z-30 hidden h-screen w-64 flex-col border-r border-[color:var(--color-border)] bg-[color:var(--color-surface)] backdrop-blur-3xl lg:flex"
-      role="navigation"
       aria-label={t('nav.mainNavigation', 'Main navigation')}
     >
       {/* Logo */}
@@ -234,7 +231,7 @@ function SidebarComponent() {
           <span>Nexus HEMS v2.3.0</span>
         </div>
       </div>
-    </aside>
+    </nav>
   );
 }
 

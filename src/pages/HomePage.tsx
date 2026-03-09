@@ -20,7 +20,7 @@ function HomePageComponent() {
       <PageHeader
         title={t('nav.home', 'Overview')}
         subtitle={t('common.tagline')}
-        icon={<Home size={22} />}
+        icon={<Home size={22} aria-hidden="true" />}
       />
 
       {/* KPI Grid */}
@@ -31,7 +31,7 @@ function HomePageComponent() {
       >
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           <KpiCard
-            icon={<Sun className="text-yellow-400" />}
+            icon={<Sun className="text-yellow-400" aria-hidden="true" />}
             label={t('metrics.pvGeneration')}
             value={`${(energyData.pvPower / 1000).toFixed(2)} ${t('units.kilowatt')}`}
             sub={`${energyData.pvYieldToday.toFixed(1)} ${t('units.kilowattHour')} ${t('common.today')}`}
@@ -42,6 +42,7 @@ function HomePageComponent() {
             icon={
               <Battery
                 className={energyData.batterySoC > 20 ? 'text-emerald-400' : 'text-red-400'}
+                aria-hidden="true"
               />
             }
             label={t('metrics.battery')}
@@ -58,7 +59,7 @@ function HomePageComponent() {
             delay={0.15}
           />
           <KpiCard
-            icon={<Home className="text-blue-400" />}
+            icon={<Home className="text-blue-400" aria-hidden="true" />}
             label={t('metrics.houseLoad')}
             value={`${(energyData.houseLoad / 1000).toFixed(2)} ${t('units.kilowatt')}`}
             sub={t('metrics.baseLoad')}
@@ -67,7 +68,7 @@ function HomePageComponent() {
           />
           <KpiCard
             icon={
-              <Zap className={energyData.gridPower > 0 ? 'text-red-400' : 'text-emerald-400'} />
+              <Zap className={energyData.gridPower > 0 ? 'text-red-400' : 'text-emerald-400'} aria-hidden="true" />
             }
             label={t('metrics.grid')}
             value={`${(energyData.gridPower / 1000).toFixed(2)} ${t('units.kilowatt')}`}
@@ -151,37 +152,37 @@ function HomePageComponent() {
           {[
             {
               path: '/energy-flow',
-              icon: <Activity size={20} />,
+              icon: <Activity size={20} aria-hidden="true" />,
               key: 'nav.energyFlow',
               color: 'text-cyan-400',
             },
             {
               path: '/production',
-              icon: <Sun size={20} />,
+              icon: <Sun size={20} aria-hidden="true" />,
               key: 'nav.production',
               color: 'text-yellow-400',
             },
             {
               path: '/storage',
-              icon: <Battery size={20} />,
+              icon: <Battery size={20} aria-hidden="true" />,
               key: 'nav.storage',
               color: 'text-emerald-400',
             },
             {
               path: '/consumption',
-              icon: <Home size={20} />,
+              icon: <Home size={20} aria-hidden="true" />,
               key: 'nav.consumption',
               color: 'text-blue-400',
             },
             {
               path: '/tariffs',
-              icon: <TrendingUp size={20} />,
+              icon: <TrendingUp size={20} aria-hidden="true" />,
               key: 'nav.tariffs',
               color: 'text-orange-400',
             },
             {
               path: '/analytics',
-              icon: <Sparkles size={20} />,
+              icon: <Sparkles size={20} aria-hidden="true" />,
               key: 'nav.analytics',
               color: 'text-purple-400',
             },

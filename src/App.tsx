@@ -119,6 +119,7 @@ export default function App() {
             <motion.div
               key={themeTransitionKey}
               className="pointer-events-none fixed inset-0 z-0"
+              aria-hidden="true"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -129,7 +130,7 @@ export default function App() {
             />
           </AnimatePresence>
 
-          <div className="pattern-grid fixed inset-0 z-0 opacity-40" />
+          <div className="pattern-grid fixed inset-0 z-0 opacity-40" aria-hidden="true" />
 
           {/* Skip to content link (WCAG 2.2 AA) */}
           <a
@@ -150,7 +151,6 @@ export default function App() {
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-              role="banner"
             >
               <div className="flex items-center justify-between gap-4">
                 {/* Mobile Logo */}
@@ -225,6 +225,7 @@ export default function App() {
                     className="inline-flex items-center gap-2 rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-surface-strong)] px-3 py-2 text-sm"
                     animate={connected ? { scale: [1, 1.02, 1] } : {}}
                     transition={{ duration: 2, repeat: Infinity }}
+                    role="status"
                     aria-label={connected ? t('common.connected') : t('common.disconnected')}
                   >
                     <Wifi

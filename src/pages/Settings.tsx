@@ -13,18 +13,18 @@ import {
   Bell,
   Gauge,
   Globe,
+  Download,
+  Upload,
+  Eye,
+  EyeOff,
+  Info,
   Wifi,
   RefreshCw,
   Trash2,
-  Download,
-  Upload,
   HardDrive,
   Lock,
-  Eye,
-  EyeOff,
   RotateCcw,
   AlertTriangle,
-  Info,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -85,8 +85,8 @@ function ToggleSwitch({ checked, onChange, label, id }: { checked: boolean; onCh
         checked={checked}
         onChange={(e) => onChange(e.target.checked)}
         className="sr-only peer"
-        aria-label={label}
       />
+      <span className="sr-only">{label}</span>
       <div className="h-6 w-11 rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-surface)] peer-checked:bg-[color:var(--color-primary)] peer-focus:ring-2 peer-focus:ring-[color:var(--color-primary)]/30 transition-colors duration-300 after:absolute after:top-[2px] after:left-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow-sm after:transition-transform after:duration-300 peer-checked:after:translate-x-5" />
     </label>
   );
@@ -224,11 +224,15 @@ export function Settings() {
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Sidebar Navigation */}
         <nav className="w-full lg:w-56 shrink-0">
-          <div className="flex lg:flex-col gap-1 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0">
+          <div className="flex lg:flex-col gap-1 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0" role="tablist" aria-label={t('settings.title')}>
             {tabs.map((tab) => (
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
+                role="tab"
+                aria-selected={activeTab === tab.key}
+                aria-controls={`tabpanel-${tab.key}`}
+                id={`tab-${tab.key}`}
                 className={`flex items-center gap-2.5 whitespace-nowrap rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-200 ${
                   activeTab === tab.key
                     ? 'bg-[color:var(--color-primary)]/15 text-[color:var(--color-primary)] shadow-[inset_0_0_0_1px_var(--color-primary)/20]'
@@ -255,6 +259,9 @@ export function Settings() {
                   exit={{ opacity: 0, x: -20 }}
                   transition={{ duration: 0.3 }}
                   className="space-y-6"
+                  role="tabpanel"
+                  id="tabpanel-appearance"
+                  aria-labelledby="tab-appearance"
                 >
                   {/* Theme Selection */}
                   <section className={sectionClass}>
@@ -384,6 +391,9 @@ export function Settings() {
                   exit={{ opacity: 0, x: -20 }}
                   transition={{ duration: 0.3 }}
                   className="space-y-6"
+                  role="tabpanel"
+                  id="tabpanel-system"
+                  aria-labelledby="tab-system"
                 >
                   <section className={sectionClass}>
                     <h2 className={sectionHeaderClass}>
@@ -481,6 +491,9 @@ export function Settings() {
                   exit={{ opacity: 0, x: -20 }}
                   transition={{ duration: 0.3 }}
                   className="space-y-6"
+                  role="tabpanel"
+                  id="tabpanel-energy"
+                  aria-labelledby="tab-energy"
                 >
                   <section className={sectionClass}>
                     <h2 className={sectionHeaderClass}>
@@ -608,6 +621,9 @@ export function Settings() {
                   exit={{ opacity: 0, x: -20 }}
                   transition={{ duration: 0.3 }}
                   className="space-y-6"
+                  role="tabpanel"
+                  id="tabpanel-security"
+                  aria-labelledby="tab-security"
                 >
                   <section className={sectionClass}>
                     <h2 className={sectionHeaderClass}>
@@ -677,6 +693,9 @@ export function Settings() {
                   exit={{ opacity: 0, x: -20 }}
                   transition={{ duration: 0.3 }}
                   className="space-y-6"
+                  role="tabpanel"
+                  id="tabpanel-storage"
+                  aria-labelledby="tab-storage"
                 >
                   <section className={sectionClass}>
                     <h2 className={sectionHeaderClass}>
@@ -754,6 +773,9 @@ export function Settings() {
                   exit={{ opacity: 0, x: -20 }}
                   transition={{ duration: 0.3 }}
                   className="space-y-6"
+                  role="tabpanel"
+                  id="tabpanel-notifications"
+                  aria-labelledby="tab-notifications"
                 >
                   <section className={sectionClass}>
                     <h2 className={sectionHeaderClass}>
@@ -810,6 +832,9 @@ export function Settings() {
                   exit={{ opacity: 0, x: -20 }}
                   transition={{ duration: 0.3 }}
                   className="space-y-6"
+                  role="tabpanel"
+                  id="tabpanel-advanced"
+                  aria-labelledby="tab-advanced"
                 >
                   <section className={sectionClass}>
                     <h2 className={sectionHeaderClass}>

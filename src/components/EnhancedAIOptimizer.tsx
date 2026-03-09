@@ -2,7 +2,7 @@
  * Enhanced AI Optimizer with BYOK multi-provider support
  */
 
-import { useState, useMemo, memo } from 'react';
+import { useState, useEffect, useMemo, memo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Sparkles, Loader2, Key } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -30,9 +30,9 @@ export const EnhancedAIOptimizer = memo(function EnhancedAIOptimizer() {
   const [hasProvider, setHasProvider] = useState<boolean | null>(null);
 
   // Check if a provider is configured
-  useState(() => {
+  useEffect(() => {
     void getActiveProvider().then((p) => setHasProvider(p !== null));
-  });
+  }, []);
 
   // Get basic recommendations (memoized)
   const basicRecommendations = useMemo(
@@ -154,7 +154,7 @@ Return ONLY a valid JSON array with this structure:
 
       {/* Error */}
       {error && (
-        <div className="mb-4 rounded-2xl border border-red-500/30 bg-red-500/10 p-4">
+        <div className="mb-4 rounded-2xl border border-red-500/30 bg-red-500/10 p-4" role="alert">
           <p className="text-sm text-red-400">{error}</p>
         </div>
       )}

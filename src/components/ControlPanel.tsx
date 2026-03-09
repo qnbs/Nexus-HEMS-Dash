@@ -73,43 +73,43 @@ export function ControlPanel({
         </div>
 
         <form action={evAction} className="space-y-3">
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-3 gap-2" role="radiogroup" aria-label={t('control.evTitle')}>
             <label
-              className={`cursor-pointer text-center py-2 px-3 rounded-lg border transition-all duration-300 ${evState.mode === 'off' ? 'bg-[color:var(--color-primary)]/20 border-[color:var(--color-primary)] text-[color:var(--color-primary)]' : 'bg-[color:var(--color-surface)] border-[color:var(--color-border)] text-[color:var(--color-muted)] hover:border-[color:var(--color-primary)]/40'}`}
+              className={`cursor-pointer text-center py-2 px-3 rounded-lg border transition-all duration-300 focus-within:ring-2 focus-within:ring-[color:var(--color-primary)]/40 ${evState.mode === 'off' ? 'bg-[color:var(--color-primary)]/20 border-[color:var(--color-primary)] text-[color:var(--color-primary)]' : 'bg-[color:var(--color-surface)] border-[color:var(--color-border)] text-[color:var(--color-muted)] hover:border-[color:var(--color-primary)]/40'}`}
             >
               <input
                 type="radio"
                 name="evMode"
                 value="off"
                 className="sr-only"
-                defaultChecked={evState.mode === 'off'}
-                onClick={hapticClick}
+                checked={evState.mode === 'off'}
+                onChange={hapticClick}
               />
               <span className="text-sm font-medium">{t('control.evOff')}</span>
             </label>
             <label
-              className={`cursor-pointer text-center py-2 px-3 rounded-lg border transition-all duration-300 ${evState.mode === 'pv' ? 'bg-[color:var(--color-primary)]/20 border-[color:var(--color-primary)] text-[color:var(--color-primary)]' : 'bg-[color:var(--color-surface)] border-[color:var(--color-border)] text-[color:var(--color-muted)] hover:border-[color:var(--color-primary)]/40'}`}
+              className={`cursor-pointer text-center py-2 px-3 rounded-lg border transition-all duration-300 focus-within:ring-2 focus-within:ring-[color:var(--color-primary)]/40 ${evState.mode === 'pv' ? 'bg-[color:var(--color-primary)]/20 border-[color:var(--color-primary)] text-[color:var(--color-primary)]' : 'bg-[color:var(--color-surface)] border-[color:var(--color-border)] text-[color:var(--color-muted)] hover:border-[color:var(--color-primary)]/40'}`}
             >
               <input
                 type="radio"
                 name="evMode"
                 value="pv"
                 className="sr-only"
-                defaultChecked={evState.mode === 'pv'}
-                onClick={hapticClick}
+                checked={evState.mode === 'pv'}
+                onChange={hapticClick}
               />
               <span className="text-sm font-medium">{t('control.evPv')}</span>
             </label>
             <label
-              className={`cursor-pointer text-center py-2 px-3 rounded-lg border transition-all duration-300 ${evState.mode === 'fast' ? 'bg-[color:var(--color-primary)]/20 border-[color:var(--color-primary)] text-[color:var(--color-primary)]' : 'bg-[color:var(--color-surface)] border-[color:var(--color-border)] text-[color:var(--color-muted)] hover:border-[color:var(--color-primary)]/40'}`}
+              className={`cursor-pointer text-center py-2 px-3 rounded-lg border transition-all duration-300 focus-within:ring-2 focus-within:ring-[color:var(--color-primary)]/40 ${evState.mode === 'fast' ? 'bg-[color:var(--color-primary)]/20 border-[color:var(--color-primary)] text-[color:var(--color-primary)]' : 'bg-[color:var(--color-surface)] border-[color:var(--color-border)] text-[color:var(--color-muted)] hover:border-[color:var(--color-primary)]/40'}`}
             >
               <input
                 type="radio"
                 name="evMode"
                 value="fast"
                 className="sr-only"
-                defaultChecked={evState.mode === 'fast'}
-                onClick={hapticClick}
+                checked={evState.mode === 'fast'}
+                onChange={hapticClick}
               />
               <span className="text-sm font-medium">{t('control.evFast')}</span>
             </label>

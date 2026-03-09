@@ -36,7 +36,7 @@ function EVPageComponent() {
       <PageHeader
         title={t('nav.ev', 'EV Charging')}
         subtitle={t('ev.subtitle', 'Wallbox control & charging strategy')}
-        icon={<Car size={22} />}
+        icon={<Car size={22} aria-hidden="true" />}
       />
 
       {/* EV Status */}
@@ -77,7 +77,7 @@ function EVPageComponent() {
           </p>
           <p className="mt-1 text-2xl font-light text-orange-400">
             {energyData.priceCurrent.toFixed(3)}{' '}
-            <span className="text-sm text-[color:var(--color-muted)]">€/kWh</span>
+            <span className="text-sm text-[color:var(--color-muted)]">{t('units.euroPerKwh', '€/kWh')}</span>
           </p>
         </motion.div>
       </div>
@@ -107,7 +107,7 @@ function EVPageComponent() {
             <p className={`text-lg font-semibold tabular-nums ${chargeStrategy.color}`}>
               {energyData.priceCurrent.toFixed(3)}
             </p>
-            <p className="text-xs text-[color:var(--color-muted)]">€/kWh</p>
+            <p className="text-xs text-[color:var(--color-muted)]">{t('units.euroPerKwh', '€/kWh')}</p>
           </div>
         </div>
       </motion.div>
@@ -131,7 +131,7 @@ function EVPageComponent() {
         transition={{ duration: 0.5, delay: 0.35 }}
       >
         <div className="flex items-start gap-3">
-          <div className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-orange-500/10 text-orange-400 text-xs font-bold">
+          <div className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-orange-500/10 text-orange-400 text-xs font-bold" aria-hidden="true">
             §
           </div>
           <div>

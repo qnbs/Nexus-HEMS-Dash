@@ -15,11 +15,11 @@ export default function NotFoundPage() {
         transition={{ duration: 0.5 }}
       >
         <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-orange-500/10">
-          <AlertTriangle size={32} className="text-orange-400" />
+          <AlertTriangle size={32} className="text-orange-400" aria-hidden="true" />
         </div>
-        <h1 className="mb-2 text-2xl font-semibold">404</h1>
+        <h1 className="mb-2 text-2xl font-semibold">{t('error.pageNotFound', '404 – Page not found')}</h1>
         <p className="mb-6 text-[color:var(--color-muted)]">
-          {t('error.pageNotFound', 'Page not found')}
+          {t('error.pageNotFoundDesc', 'The requested page could not be found.')}
         </p>
         <Link
           to="/"

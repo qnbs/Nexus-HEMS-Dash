@@ -40,7 +40,7 @@ function ConsumptionPageComponent() {
       <PageHeader
         title={t('nav.consumption', 'Consumption')}
         subtitle={t('consumption.subtitle', 'House load & consumer analysis')}
-        icon={<Home size={22} />}
+        icon={<Home size={22} aria-hidden="true" />}
       />
 
       {/* Total Consumption */}
@@ -74,7 +74,7 @@ function ConsumptionPageComponent() {
               {(consumer.power / 1000).toFixed(2)}{' '}
               <span className="text-sm text-[color:var(--color-muted)]">kW</span>
             </p>
-            <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-800">
+            <div className="mt-3 h-2 overflow-hidden rounded-full bg-[color:var(--color-surface)]" role="progressbar" aria-valuenow={totalConsumption > 0 ? Math.round((consumer.power / totalConsumption) * 100) : 0} aria-valuemin={0} aria-valuemax={100} aria-label={consumer.label}>
               <motion.div
                 className={`h-full rounded-full bg-gradient-to-r ${consumer.color}`}
                 initial={{ width: 0 }}
@@ -102,6 +102,7 @@ function ConsumptionPageComponent() {
           <Zap
             size={20}
             className={energyData.gridPower > 0 ? 'text-red-400' : 'text-emerald-400'}
+            aria-hidden="true"
           />
           {t('metrics.grid')}
         </h2>

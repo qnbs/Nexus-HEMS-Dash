@@ -17,7 +17,7 @@ function EnergyFlowPageComponent() {
       <PageHeader
         title={t('nav.energyFlow', 'Energy Flow')}
         subtitle={t('dashboard.realtimeFlow')}
-        icon={<Activity size={22} />}
+        icon={<Activity size={22} aria-hidden="true" />}
         actions={
           <div className="flex items-center gap-2">
             <span
@@ -28,7 +28,7 @@ function EnergyFlowPageComponent() {
               />
               {connected ? t('common.live') : t('common.disconnected')}
             </span>
-            <span className="price-pill">{energyData.priceCurrent.toFixed(3)} €/kWh</span>
+            <span className="price-pill">{energyData.priceCurrent.toFixed(3)} {t('units.euroPerKwh', '€/kWh')}</span>
           </div>
         }
       />

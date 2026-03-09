@@ -60,7 +60,7 @@ async function fetchWeatherForecast(lat: number, lon: number): Promise<WeatherFo
 }
 
 export const PredictiveForecast = memo(function PredictiveForecast() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const settings = useAppStore((s) => s.settings);
   const [forecastData, setForecastData] = useState<ForecastDataPoint[]>([]);
   const [timeRange, setTimeRange] = useState<'24h' | '7d'>('24h');
@@ -85,11 +85,13 @@ export const PredictiveForecast = memo(function PredictiveForecast() {
       // Estimate consumption pattern (higher during day and evening)
       const consumption = 1.5 + Math.sin((hour / 24) * Math.PI * 2) * 1.2;
 
+      const dateLocale = i18n.language === 'de' ? 'de-DE' : 'en-US';
+
       return {
         time:
           timeRange === '24h'
-            ? w.timestamp.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })
-            : w.timestamp.toLocaleDateString('de-DE', { weekday: 'short', day: 'numeric' }),
+            ? w.timestamp.toLocaleTimeString(dateLocale, { hour: '2-digit', minute: '2-digit' })
+            : w.timestamp.toLocaleDateString(dateLocale, { weekday: 'short', day: 'numeric' }),
         pvForecast: w.pvPotential,
         price: price,
         co2Intensity: 300 + (100 - w.pvPotential * 5), // Lower CO2 when solar is high
@@ -144,7 +146,7 @@ export const PredictiveForecast = memo(function PredictiveForecast() {
             className={`focus-ring rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
               timeRange === '24h'
                 ? 'bg-[color:var(--color-primary)] text-slate-900'
-                : 'bg-slate-800/50 text-[color:var(--color-muted)] hover:bg-slate-700/50'
+                : 'bg-[color:var(--color-surface)] text-[color:var(--color-muted)] hover:bg-white/10'
             }`}
             aria-pressed={timeRange === '24h'}
             aria-label={t('forecast.hours24')}
@@ -156,7 +158,7 @@ export const PredictiveForecast = memo(function PredictiveForecast() {
             className={`focus-ring rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
               timeRange === '7d'
                 ? 'bg-[color:var(--color-primary)] text-slate-900'
-                : 'bg-slate-800/50 text-[color:var(--color-muted)] hover:bg-slate-700/50'
+                : 'bg-[color:var(--color-surface)] text-[color:var(--color-muted)] hover:bg-white/10'
             }`}
             aria-pressed={timeRange === '7d'}
             aria-label={t('forecast.days7')}
@@ -199,7 +201,7 @@ export const PredictiveForecast = memo(function PredictiveForecast() {
       </div>
 
       {/* Chart */}
-      <div className="h-80">
+      <div className="h-80" role="img" aria-label={t('chart.forecastAriaLabel', 'Energy production and price forecast chart')}>
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={forecastData}>
             <defs>

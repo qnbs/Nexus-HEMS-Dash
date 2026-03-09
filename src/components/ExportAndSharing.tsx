@@ -31,7 +31,7 @@ export const ExportAndSharing = memo(function ExportAndSharing() {
   const handleGenerateShareLink = async () => {
     try {
       const dashboard = await createSharedDashboard(
-        'My HEMS Dashboard',
+        t('export.defaultDashboardName', 'My HEMS Dashboard'),
         'user@example.com', // In production, use actual user email
       );
 
@@ -114,6 +114,7 @@ export const ExportAndSharing = memo(function ExportAndSharing() {
                     type="text"
                     readOnly
                     value={shareLink}
+                    aria-label={t('export.shareInputLabel', 'Shareable link URL')}
                     className="flex-1 rounded-lg bg-slate-900/50 px-3 py-2 text-sm text-[color:var(--color-text)] outline-none"
                   />
                   <button
@@ -134,7 +135,7 @@ export const ExportAndSharing = memo(function ExportAndSharing() {
                     </div>
                     <img
                       src={qrCodeUrl}
-                      alt="QR Code"
+                      alt={t('export.qrCodeAlt', 'QR code for shareable dashboard link')}
                       className="mt-3 rounded-lg border-2 border-[color:var(--color-primary)]"
                     />
                   </div>

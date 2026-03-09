@@ -94,13 +94,13 @@ export function PWAUpdateNotification() {
           exit={{ opacity: 0, y: -50 }}
           className="fixed left-4 right-4 top-4 z-50 md:left-auto md:right-4 md:max-w-sm"
         >
-          <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 backdrop-blur-xl p-4 shadow-2xl flex items-center gap-3">
-            <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0" />
+          <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 backdrop-blur-xl p-4 shadow-2xl flex items-center gap-3" role="status">
+            <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0" aria-hidden="true" />
             <div className="flex-1">
               <p className="font-semibold text-sm text-emerald-400">{t('pwa.offlineReady', 'Offline Ready')}</p>
               <p className="text-xs text-[color:var(--color-muted)]">{t('pwa.offlineReadyDesc', 'App cached — works without internet')}</p>
             </div>
-            <WifiOff className="h-4 w-4 text-emerald-400/60" />
+            <WifiOff className="h-4 w-4 text-emerald-400/60" aria-hidden="true" />
           </div>
         </motion.div>
       </AnimatePresence>

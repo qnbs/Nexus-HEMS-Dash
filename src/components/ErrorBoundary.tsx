@@ -77,7 +77,7 @@ export class ErrorBoundary extends Component<Props, State> {
       }
 
       return (
-        <div className="flex min-h-screen items-center justify-center bg-[color:var(--color-bg)] p-4">
+        <div className="flex min-h-screen items-center justify-center bg-[color:var(--color-bg)] p-4" role="alert">
           <div className="glass-panel w-full max-w-2xl rounded-3xl p-8">
             <div className="flex items-start gap-4">
               <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-red-500/20">
@@ -136,21 +136,21 @@ export class ErrorBoundary extends Component<Props, State> {
                     onClick={this.handleReset}
                     className="btn-primary focus-ring flex items-center gap-2"
                   >
-                    <RefreshCw className="h-4 w-4" />
+                    <RefreshCw className="h-4 w-4" aria-hidden="true" />
                     {i18next.t('error.tryAgain')}
                   </button>
                   <button
                     onClick={this.handleReload}
                     className="btn-secondary focus-ring flex items-center gap-2"
                   >
-                    <RefreshCw className="h-4 w-4" />
+                    <RefreshCw className="h-4 w-4" aria-hidden="true" />
                     {i18next.t('error.reload')}
                   </button>
                   <button
                     onClick={this.handleGoHome}
                     className="btn-secondary focus-ring flex items-center gap-2"
                   >
-                    <Home className="h-4 w-4" />
+                    <Home className="h-4 w-4" aria-hidden="true" />
                     {i18next.t('error.goHome')}
                   </button>
                 </div>

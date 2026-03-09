@@ -16,9 +16,9 @@ function TariffsPageComponent() {
       <PageHeader
         title={t('nav.tariffs', 'Dynamic Tariffs')}
         subtitle={t('tariffs.subtitle', 'Tibber, aWATTar & price optimization')}
-        icon={<TrendingUp size={22} />}
+        icon={<TrendingUp size={22} aria-hidden="true" />}
         actions={
-          <span className="price-pill text-lg">{energyData.priceCurrent.toFixed(3)} €/kWh</span>
+          <span className="price-pill text-lg">{energyData.priceCurrent.toFixed(3)} {t('units.euroPerKwh', '€/kWh')}</span>
         }
       />
 
@@ -50,9 +50,9 @@ function TariffsPageComponent() {
         <h2 className="mb-4 text-lg font-medium fluid-text-lg">{t('forecast.lowPriceWindow')}</h2>
         <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
           {[
-            { time: '02:00 – 05:00', price: '0.08 €/kWh', status: t('common.recommended') },
-            { time: '12:00 – 14:00', price: '0.12 €/kWh', status: t('ai.surplus') },
-            { time: '23:00 – 01:00', price: '0.09 €/kWh', status: t('common.recommended') },
+            { time: '02:00 – 05:00', price: `0.08 ${t('units.euroPerKwh', '€/kWh')}`, status: t('common.recommended') },
+            { time: '12:00 – 14:00', price: `0.12 ${t('units.euroPerKwh', '€/kWh')}`, status: t('ai.surplus') },
+            { time: '23:00 – 01:00', price: `0.09 ${t('units.euroPerKwh', '€/kWh')}`, status: t('common.recommended') },
           ].map((window, i) => (
             <div key={i} className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-4">
               <p className="text-sm font-medium text-emerald-400">{window.time}</p>

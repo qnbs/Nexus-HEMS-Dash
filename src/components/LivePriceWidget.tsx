@@ -7,7 +7,8 @@ import { useAppStore } from '../store';
 import type { TariffForecast } from '../lib/predictive-ai';
 
 export const LivePriceWidget = memo(function LivePriceWidget() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const dateLocale = i18n.language === 'de' ? 'de-DE' : 'en-US';
   const priceCurrent = useAppStore((s) => s.energyData.priceCurrent);
   const tariffProvider = useAppStore((s) => s.settings.tariffProvider);
   const chargeThreshold = useAppStore((s) => s.settings.chargeThreshold);
@@ -87,18 +88,18 @@ export const LivePriceWidget = memo(function LivePriceWidget() {
           <p className="text-xs text-[color:var(--color-muted)]">
             {t('ai.nextBestAction')}:{' '}
             <span className="font-semibold text-[color:var(--color-primary)]">
-              {nextBestSlot.timestamp.toLocaleTimeString('de-DE', {
+              {nextBestSlot.timestamp.toLocaleTimeString(dateLocale, {
                 hour: '2-digit',
                 minute: '2-digit',
               })}
             </span>{' '}
-            ({nextBestSlot.pricePerKwh.toFixed(3)} €/kWh)
+            ({nextBestSlot.pricePerKwh.toFixed(3)} {t('units.euroPerKwh')})
           </p>
         </div>
       )}
 
       {/* Mini Chart */}
-      <div className="mt-4 flex h-12 items-end gap-0.5">
+      <div className="mt-4 flex h-12 items-end gap-0.5" role="img" aria-label={t('chart.priceAriaLabel', 'Price forecast chart for the next 12 hours')}>
         {chartSlice.map((slot, i) => {
           const range = maxPrice - minPrice || 1;
           const height = ((slot.pricePerKwh - minPrice) / range) * 100;
@@ -108,7 +109,7 @@ export const LivePriceWidget = memo(function LivePriceWidget() {
               key={i}
               className="flex-1 rounded-t-sm bg-[color:var(--color-primary)]/40 transition-all hover:bg-[color:var(--color-primary)]"
               style={{ height: `${height}%` }}
-              title={`${slot.timestamp.toLocaleTimeString('de-DE', { hour: '2-digit' })}: ${slot.pricePerKwh.toFixed(3)} €/kWh`}
+              title={`${slot.timestamp.toLocaleTimeString(dateLocale, { hour: '2-digit' })}: ${slot.pricePerKwh.toFixed(3)} ${t('units.euroPerKwh')}`}
             />
           );
         })}

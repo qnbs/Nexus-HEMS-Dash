@@ -44,7 +44,8 @@ function AccordionItem({ title, children, defaultOpen = false }: { title: string
     <div className="rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] overflow-hidden">
       <button
         onClick={() => setOpen(!open)}
-        className="flex w-full cursor-pointer items-center justify-between p-4 font-medium text-sm text-[color:var(--color-text)] hover:bg-white/5 transition-colors text-left"
+        className="flex w-full cursor-pointer items-center justify-between p-4 font-medium text-sm text-[color:var(--color-text)] hover:bg-white/5 transition-colors text-left focus-ring"
+        aria-expanded={open}
       >
         {title}
         <motion.span animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }}>
@@ -133,6 +134,7 @@ export function Help() {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder={t('help.searchPlaceholder', 'Search documentation...')}
+          aria-label={t('help.searchPlaceholder', 'Search documentation...')}
           className="w-full bg-[color:var(--color-surface)] border border-[color:var(--color-border)] rounded-xl pl-11 pr-4 py-3 text-sm text-[color:var(--color-text)] focus:outline-none focus:border-[color:var(--color-primary)]/70 focus:ring-2 focus:ring-[color:var(--color-primary)]/20 transition-all placeholder:text-[color:var(--color-muted)]"
         />
       </div>
@@ -140,11 +142,15 @@ export function Help() {
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Sidebar */}
         <nav className="w-full lg:w-56 shrink-0">
-          <div className="flex lg:flex-col gap-1 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0">
+          <div className="flex lg:flex-col gap-1 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0" role="tablist" aria-label={t('help.title')}>
             {tabs.map((tab) => (
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
+                role="tab"
+                aria-selected={activeTab === tab.key}
+                aria-controls={`help-tabpanel-${tab.key}`}
+                id={`help-tab-${tab.key}`}
                 className={`flex items-center gap-2.5 whitespace-nowrap rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-200 ${
                   activeTab === tab.key
                     ? 'bg-[color:var(--color-primary)]/15 text-[color:var(--color-primary)] shadow-[inset_0_0_0_1px_var(--color-primary)/20]'
@@ -170,6 +176,9 @@ export function Help() {
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.3 }}
                 className="space-y-6"
+                role="tabpanel"
+                id="help-tabpanel-getting-started"
+                aria-labelledby="help-tab-getting-started"
               >
                 <div className="glass-panel-strong p-6 rounded-2xl">
                   <h2 className="text-xl font-semibold mb-4">{t('help.welcomeTitle', 'Welcome to Nexus HEMS')}</h2>
@@ -243,6 +252,9 @@ export function Help() {
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.3 }}
                 className="space-y-6"
+                role="tabpanel"
+                id="help-tabpanel-features"
+                aria-labelledby="help-tab-features"
               >
                 <div className="glass-panel-strong p-6 rounded-2xl">
                   <h2 className="text-xl font-semibold mb-6">{t('help.allFeatures', 'All Features')}</h2>
@@ -345,6 +357,9 @@ export function Help() {
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.3 }}
                 className="space-y-6"
+                role="tabpanel"
+                id="help-tabpanel-lexicon"
+                aria-labelledby="help-tab-lexicon"
               >
                 <div className="glass-panel-strong p-6 rounded-2xl">
                   <h2 className="text-xl font-semibold mb-6">{t('help.glossaryTitle')}</h2>
@@ -383,6 +398,9 @@ export function Help() {
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.3 }}
                 className="space-y-6"
+                role="tabpanel"
+                id="help-tabpanel-faq"
+                aria-labelledby="help-tab-faq"
               >
                 <div className="glass-panel-strong p-6 rounded-2xl">
                   <h2 className="text-xl font-semibold mb-6">{t('help.faqTitle')}</h2>
@@ -452,6 +470,9 @@ export function Help() {
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.3 }}
                 className="space-y-6"
+                role="tabpanel"
+                id="help-tabpanel-shortcuts"
+                aria-labelledby="help-tab-shortcuts"
               >
                 <div className="glass-panel-strong p-6 rounded-2xl">
                   <h2 className="text-xl font-semibold mb-6">{t('help.keyboardShortcuts', 'Keyboard Shortcuts')}</h2>
@@ -545,6 +566,9 @@ export function Help() {
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.3 }}
                 className="space-y-6"
+                role="tabpanel"
+                id="help-tabpanel-troubleshooting"
+                aria-labelledby="help-tab-troubleshooting"
               >
                 <div className="glass-panel-strong p-6 rounded-2xl">
                   <h2 className="text-xl font-semibold mb-6">{t('help.troubleshootingTitle', 'Troubleshooting')}</h2>
@@ -629,6 +653,9 @@ export function Help() {
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.3 }}
                 className="space-y-6"
+                role="tabpanel"
+                id="help-tabpanel-about"
+                aria-labelledby="help-tab-about"
               >
                 <div className="glass-panel-strong p-6 rounded-2xl">
                   <div className="flex items-center gap-4 mb-6">

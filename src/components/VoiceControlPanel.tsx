@@ -29,7 +29,7 @@ export const VoiceControlPanel = memo(function VoiceControlPanel() {
       voiceController.registerDefaultCommands({
         onNavigate: (page: string) => {
           navigate(page);
-          setTranscript(`Navigation: ${page}`);
+          setTranscript(t('voice.navigatedTo', { page }));
         },
         onToggleTheme: () => {
           const themes = ['cyber-energy-dark', 'cyber-energy', 'solar-light', 'minimal-white', 'night-mode'] as const;
@@ -37,15 +37,15 @@ export const VoiceControlPanel = memo(function VoiceControlPanel() {
           const currentIndex = themes.indexOf(theme as ThemeName);
           const nextTheme = themes[(currentIndex + 1) % themes.length];
           setTheme(nextTheme);
-          setTranscript(`Theme: ${nextTheme}`);
+          setTranscript(t('voice.themeChanged', { theme: nextTheme }));
         },
         onToggleLanguage: () => {
           const nextLocale = locale === 'de' ? 'en' : 'de';
           setLocale(nextLocale);
-          setTranscript(`Language: ${nextLocale}`);
+          setTranscript(t('voice.languageChanged', { locale: nextLocale }));
         },
         onToggleEV: () => {
-          setTranscript('EV charging toggled');
+          setTranscript(t('voice.evToggled', 'EV charging toggled'));
         },
       });
 
@@ -109,11 +109,11 @@ export const VoiceControlPanel = memo(function VoiceControlPanel() {
           className={`focus-ring flex h-14 w-14 items-center justify-center rounded-full transition-all ${
             isListening
               ? 'animate-pulse bg-[color:var(--color-primary)] text-slate-900 shadow-lg shadow-[color:var(--color-primary)]/50'
-              : 'bg-slate-800/50 text-[color:var(--color-muted)] hover:bg-slate-700/50'
+              : 'bg-[color:var(--color-surface)] text-[color:var(--color-muted)] hover:bg-white/10'
           }`}
           aria-label={isListening ? t('voice.stop') : t('voice.start')}
         >
-          {isListening ? <Mic className="h-6 w-6" /> : <MicOff className="h-6 w-6" />}
+          {isListening ? <Mic className="h-6 w-6" aria-hidden="true" /> : <MicOff className="h-6 w-6" aria-hidden="true" />}
         </button>
       </div>
 

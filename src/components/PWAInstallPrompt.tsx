@@ -110,8 +110,8 @@ export function PWAInstallPrompt() {
         exit={{ opacity: 0, y: 50 }}
         className="fixed bottom-4 left-4 right-4 z-50 md:left-auto md:right-4 md:max-w-sm"
       >
-        <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 backdrop-blur-xl p-4 shadow-2xl flex items-center gap-3">
-          <CheckCircle2 className="h-6 w-6 text-emerald-400 shrink-0" />
+        <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 backdrop-blur-xl p-4 shadow-2xl flex items-center gap-3" role="alert">
+          <CheckCircle2 className="h-6 w-6 text-emerald-400 shrink-0" aria-hidden="true" />
           <div>
             <p className="font-semibold text-sm text-emerald-400">{t('pwa.installed', 'Successfully installed!')}</p>
             <p className="text-xs text-[color:var(--color-muted)]">{t('pwa.installedDesc', 'Nexus HEMS is now available on your home screen')}</p>
@@ -137,7 +137,7 @@ export function PWAInstallPrompt() {
             </button>
             <div className="flex items-start gap-4">
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[color:var(--color-primary)]/20">
-                <Smartphone className="h-6 w-6 text-[color:var(--color-primary)]" />
+                <Smartphone className="h-6 w-6 text-[color:var(--color-primary)]" aria-hidden="true" />
               </div>
               <div>
                 <h3 className="font-semibold text-[color:var(--color-text)]">{t('pwa.installTitle')}</h3>

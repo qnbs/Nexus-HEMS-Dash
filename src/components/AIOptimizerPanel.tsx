@@ -39,7 +39,7 @@ export const AIOptimizerPanel = memo(function AIOptimizerPanel() {
           </h3>
         </div>
         <div className="inline-flex items-center gap-2 rounded-full border border-[color:var(--color-border)] bg-white/5 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-[color:var(--color-primary)]">
-          <BrainCircuit className="h-4 w-4" />
+          <BrainCircuit className="h-4 w-4" aria-hidden="true" />
           {t('common.live')}
         </div>
       </div>
