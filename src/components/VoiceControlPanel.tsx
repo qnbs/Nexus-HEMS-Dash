@@ -1,6 +1,6 @@
 import { useState, memo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Mic, MicOff, AlertCircle } from 'lucide-react';
+import { Mic, MicOff, AlertCircle, Keyboard } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
@@ -19,6 +19,7 @@ export const VoiceControlPanel = memo(function VoiceControlPanel() {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [textInput, setTextInput] = useState('');
 
   const initVoiceController = () => {
     if (!voiceController) {
@@ -153,6 +154,42 @@ export const VoiceControlPanel = memo(function VoiceControlPanel() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Text Input Fallback (offline mode) */}
+      <div className="mb-4">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!textInput.trim()) return;
+            const controller = initVoiceController();
+            if (controller) {
+              controller.processText(textInput.trim());
+              setTranscript(textInput.trim());
+            }
+            setTextInput('');
+          }}
+          className="flex gap-2"
+        >
+          <div className="relative flex-1">
+            <Keyboard className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[color:var(--color-muted)]" aria-hidden="true" />
+            <input
+              type="text"
+              value={textInput}
+              onChange={(e) => setTextInput(e.target.value)}
+              placeholder={t('voice.textPlaceholder', 'Type a command...')}
+              className="w-full rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] py-2 pl-9 pr-3 text-sm text-[color:var(--color-text)] outline-none transition-colors focus:border-[color:var(--color-primary)]/50 focus:ring-2 focus:ring-[color:var(--color-primary)]/20"
+              aria-label={t('voice.textPlaceholder', 'Type a command...')}
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={!textInput.trim()}
+            className="btn-secondary focus-ring rounded-xl px-4 py-2 text-sm"
+          >
+            {t('voice.send', 'Send')}
+          </button>
+        </form>
+      </div>
 
       {/* Commands List */}
       <div className="space-y-2">

@@ -258,6 +258,8 @@ export const en = {
     cmdLanguageDesc: 'Toggle language',
     cmdEv: 'Charge car',
     cmdEvDesc: 'Toggle EV charging',
+    textPlaceholder: 'Type a command...',
+    send: 'Send',
   },
   pdf: {
     title: 'PDF Reports',
@@ -438,6 +440,16 @@ export const en = {
     chargingPower: 'Charging Power',
     maxPower: 'Max Power',
     currentTariff: 'Current Tariff',
+    strategy: {
+      'pv-surplus': 'PV Surplus Charging',
+      'pv-surplusDesc': '{{surplus}} kW solar surplus available — charge for free!',
+      'low-price': 'Low Price Window',
+      'low-priceDesc': 'Price {{price}} €/kWh is below threshold ({{threshold}} €/kWh)',
+      expensive: 'High Tariff — Postpone Charging',
+      expensiveDesc: 'Price {{price}} €/kWh is expensive — wait for a better window',
+      normal: 'Normal Tariff',
+      normalDesc: 'Price {{price}} €/kWh — standard charging active',
+    },
   },
   tariffs: {
     subtitle: 'Tibber, aWATTar & price optimization',

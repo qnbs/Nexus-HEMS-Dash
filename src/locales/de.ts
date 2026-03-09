@@ -258,6 +258,8 @@ export const de = {
     cmdLanguageDesc: 'Sprache umschalten',
     cmdEv: 'Auto laden',
     cmdEvDesc: 'EV-Ladung umschalten',
+    textPlaceholder: 'Befehl eingeben...',
+    send: 'Senden',
   },
   pdf: {
     title: 'PDF-Berichte',
@@ -439,6 +441,16 @@ export const de = {
     chargingPower: 'Ladeleistung',
     maxPower: 'Max. Leistung',
     currentTariff: 'Aktueller Tarif',
+    strategy: {
+      'pv-surplus': 'PV-Überschuss-Laden',
+      'pv-surplusDesc': '{{surplus}} kW Solarüberschuss verfügbar — kostenlos laden!',
+      'low-price': 'Niedrigtarif-Fenster',
+      'low-priceDesc': 'Preis {{price}} €/kWh liegt unter Schwelle ({{threshold}} €/kWh)',
+      expensive: 'Hochtarif — Laden verschieben',
+      expensiveDesc: 'Preis {{price}} €/kWh ist teuer — auf besseres Fenster warten',
+      normal: 'Normaltarif',
+      normalDesc: 'Preis {{price}} €/kWh — Standard-Ladung aktiv',
+    },
   },
   tariffs: {
     subtitle: 'Tibber, aWATTar & Preisoptimierung',

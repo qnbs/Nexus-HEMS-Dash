@@ -14,6 +14,8 @@ export class VoiceController {
   private isListening = false;
   private commands: VoiceCommand[] = [];
 
+  private offlineMode = false;
+
   constructor() {
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -29,8 +31,23 @@ export class VoiceController {
 
       this.recognition.onerror = (event) => {
         console.error('Voice recognition error:', event.error);
+        if (event.error === 'network') {
+          this.offlineMode = true;
+          console.log('Voice control: switching to offline mode');
+        }
       };
     }
+  }
+
+  /**
+   * Process a text command directly (for offline/keyboard input fallback).
+   */
+  processText(text: string): boolean {
+    return this.processCommand(text.toLowerCase());
+  }
+
+  get isOffline(): boolean {
+    return this.offlineMode;
   }
 
   registerCommand(command: VoiceCommand): void {
@@ -80,7 +97,7 @@ export class VoiceController {
     });
   }
 
-  private processCommand(transcript: string): void {
+  private processCommand(transcript: string): boolean {
     console.log('Voice command:', transcript);
 
     for (const cmd of this.commands) {
@@ -90,11 +107,12 @@ export class VoiceController {
       ) {
         this.speak(`Befehl erkannt: ${cmd.command}`);
         cmd.action();
-        return;
+        return true;
       }
     }
 
     this.speak('Befehl nicht verstanden.');
+    return false;
   }
 
   start(): void {
