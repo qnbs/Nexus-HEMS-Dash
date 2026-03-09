@@ -51,16 +51,12 @@ export function OfflineBanner() {
             <div className="flex items-center gap-3">
               <WifiOff className="h-5 w-5 animate-pulse" aria-hidden="true" />
               <div>
-                <p className="font-semibold">
-                  {t('offline.title')}
-                </p>
+                <p className="font-semibold">{t('offline.title')}</p>
                 {lastUpdate && (
                   <p className="text-sm text-white/90">
-                    {t(
-                      'offline.lastUpdate',
-                      `Letzter Stand: vor ${lastUpdate.ageMinutes} Min.`,
-                      { minutes: lastUpdate.ageMinutes },
-                    )}
+                    {t('offline.lastUpdate', `Letzter Stand: vor ${lastUpdate.ageMinutes} Min.`, {
+                      minutes: lastUpdate.ageMinutes,
+                    })}
                   </p>
                 )}
               </div>
@@ -71,9 +67,7 @@ export function OfflineBanner() {
               aria-label={t('offline.retry')}
             >
               <RefreshCw className="h-4 w-4" aria-hidden="true" />
-              <span className="text-sm font-medium hidden sm:inline">
-                {t('offline.retry')}
-              </span>
+              <span className="text-sm font-medium hidden sm:inline">{t('offline.retry')}</span>
             </button>
           </div>
         </motion.div>

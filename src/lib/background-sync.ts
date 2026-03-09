@@ -41,9 +41,12 @@ class BackgroundSyncService {
     });
 
     // Cleanup old completed actions every hour
-    setInterval(() => {
-      cleanupCompletedActions().catch(console.error);
-    }, 60 * 60 * 1000);
+    setInterval(
+      () => {
+        cleanupCompletedActions().catch(console.error);
+      },
+      60 * 60 * 1000,
+    );
   }
 
   /**
@@ -51,11 +54,14 @@ class BackgroundSyncService {
    */
   private startPeriodicSync() {
     // Sync every 5 minutes when online
-    this.syncInterval = window.setInterval(() => {
-      if (navigator.onLine) {
-        this.syncPendingActions();
-      }
-    }, 5 * 60 * 1000);
+    this.syncInterval = window.setInterval(
+      () => {
+        if (navigator.onLine) {
+          this.syncPendingActions();
+        }
+      },
+      5 * 60 * 1000,
+    );
   }
 
   /**
@@ -97,9 +103,7 @@ class BackgroundSyncService {
    * Execute a specific action
    */
   private async executeAction(action: OfflineAction): Promise<void> {
-    const baseUrl = import.meta.env.PROD
-      ? 'https://your-api.example.com'
-      : 'http://localhost:3000';
+    const baseUrl = import.meta.env.PROD ? 'https://your-api.example.com' : 'http://localhost:3000';
 
     switch (action.type) {
       case 'ev-control':

@@ -40,13 +40,13 @@ export function watchSystemTheme(callback: (theme: 'dark' | 'light') => void): (
   if (typeof window === 'undefined') return () => {};
 
   const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-  
+
   const handler = (e: MediaQueryListEvent) => {
     callback(e.matches ? 'dark' : 'light');
   };
 
   mediaQuery.addEventListener('change', handler);
-  
+
   return () => {
     mediaQuery.removeEventListener('change', handler);
   };
@@ -87,11 +87,11 @@ export function saveThemePreference(preference: ThemePreference): void {
  */
 export function loadThemePreference(): ThemePreference {
   if (typeof window === 'undefined') return 'cyber-energy-dark';
-  
+
   const stored = localStorage.getItem('nexus-hems-theme-preference');
   if (stored && ['cyber-energy-dark', 'solar-light', 'night-mode', 'system'].includes(stored)) {
     return stored as ThemePreference;
   }
-  
+
   return 'cyber-energy-dark';
 }

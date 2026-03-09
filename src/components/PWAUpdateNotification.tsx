@@ -32,7 +32,9 @@ export function PWAUpdateNotification() {
           60 * 60 * 1000,
         );
         // Store interval ref for possible cleanup
-        (registration as unknown as { _updateInterval?: ReturnType<typeof setInterval> })._updateInterval = intervalId;
+        (
+          registration as unknown as { _updateInterval?: ReturnType<typeof setInterval> }
+        )._updateInterval = intervalId;
       }
     },
     onRegisterError(error) {
@@ -127,7 +129,10 @@ export function PWAUpdateNotification() {
                 <button onClick={handleUpdate} className="btn-primary focus-ring px-4 py-2 text-sm">
                   {t('pwa.updateNow', 'Update Now')}
                 </button>
-                <button onClick={handleDismiss} className="btn-secondary focus-ring px-4 py-2 text-sm">
+                <button
+                  onClick={handleDismiss}
+                  className="btn-secondary focus-ring px-4 py-2 text-sm"
+                >
                   {t('common.later', 'Later')}
                 </button>
               </div>

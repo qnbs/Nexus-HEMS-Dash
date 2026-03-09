@@ -24,9 +24,7 @@ export function Floorplan() {
         aria-label="Building layout with kitchen, bathroom, and living room"
       >
         <title>{t('dashboard.floorplan')}</title>
-        <desc>
-          {t('dashboard.automation')}
-        </desc>
+        <desc>{t('dashboard.automation')}</desc>
         {/* Walls */}
         <path
           d="M 50 50 L 750 50 L 750 350 L 50 350 Z"
@@ -93,7 +91,9 @@ export function Floorplan() {
               ? 'bg-yellow-400/20 border-yellow-400/50 text-yellow-300  neon-border-orange'
               : 'bg-[color:var(--color-surface)] border-[color:var(--color-border)] text-[color:var(--color-muted)]'
           }`}
-          aria-label={lightsOn ? t('floorplan.lights') + ' ' + t('common.active') : t('floorplan.lights')}
+          aria-label={
+            lightsOn ? t('floorplan.lights') + ' ' + t('common.active') : t('floorplan.lights')
+          }
           aria-pressed={lightsOn}
         >
           <Lightbulb size={24} aria-hidden="true" />

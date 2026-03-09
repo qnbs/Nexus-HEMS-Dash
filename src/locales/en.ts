@@ -19,18 +19,39 @@ export const en = {
   },
   pwa: {
     installTitle: 'Install Nexus HEMS',
-    installDescription: 'Install this app on your device for faster access and offline capabilities.',
+    installDescription:
+      'Install this app on your device for faster access and offline capabilities.',
     install: 'Install',
     updateAvailable: 'Update Available',
-    updateDescription: 'A new version of Nexus HEMS is available. Update now for the latest features.',
+    updateDescription:
+      'A new version of Nexus HEMS is available. Update now for the latest features.',
     updateNow: 'Update Now',
     registrationError: 'Service Worker registration failed',
     updateError: 'App update failed',
   },
   nav: {
     dashboard: 'Dashboard',
+    home: 'Overview',
+    energyFlow: 'Energy Flow',
+    production: 'Production',
+    storage: 'Storage',
+    consumption: 'Consumption',
+    ev: 'EV Charging',
+    floorplan: 'Floorplan',
+    aiOptimizer: 'AI Optimizer',
+    tariffs: 'Tariffs',
+    analytics: 'Analytics',
     settings: 'Settings',
     help: 'Help',
+    mainNavigation: 'Main navigation',
+    breadcrumbs: 'Breadcrumbs',
+    groupEnergy: 'Energy',
+    groupTools: 'Tools',
+    groupSystem: 'System',
+    viewAll: 'View details →',
+    quickLinks: 'Quick navigation',
+    allPages: 'All Pages',
+    more: 'More',
   },
   units: {
     watt: 'W',
@@ -130,13 +151,17 @@ export const en = {
     title: 'Help & Documentation',
     usage: 'Usage',
     usageTitle: 'Usage Information',
-    usageIntro: 'Welcome to Nexus-HEMS Dash. This app serves as the central control point for your Home Energy Management System. Here is an overview of the key features:',
+    usageIntro:
+      'Welcome to Nexus-HEMS Dash. This app serves as the central control point for your Home Energy Management System. Here is an overview of the key features:',
     dashboardTitle: 'Dashboard (Real-time Energy Flow)',
-    dashboardDesc: 'The Sankey diagram visualizes the current energy flows between the PV system, grid, battery, and consumers. The width of the lines represents the power being transferred.',
+    dashboardDesc:
+      'The Sankey diagram visualizes the current energy flows between the PV system, grid, battery, and consumers. The width of the lines represents the power being transferred.',
     automationTitle: 'Building Automation (KNX)',
-    automationDesc: 'Using the interactive floor plan, you can directly interact with your smart home. Click on lights, windows, or thermostats to change their status. Changes are sent to the KNX bus via Node-RED.',
+    automationDesc:
+      'Using the interactive floor plan, you can directly interact with your smart home. Click on lights, windows, or thermostats to change their status. Changes are sent to the KNX bus via Node-RED.',
     controlTitle: 'Control & Optimization',
-    controlDesc: 'Here you configure the charging strategy for your electric vehicle (Wallbox) and the operating mode of the heat pump (SG Ready). The app takes into account dynamic electricity tariffs and PV surplus.',
+    controlDesc:
+      'Here you configure the charging strategy for your electric vehicle (Wallbox) and the operating mode of the heat pump (SG Ready). The app takes into account dynamic electricity tariffs and PV surplus.',
     glossary: 'Glossary',
     glossaryTitle: 'Lexicon & Glossary',
     faq: 'FAQ',
@@ -145,24 +170,32 @@ export const en = {
     aboutTitle: 'About the App',
     version: 'Version 2.0.0',
     hems: 'Home Energy Management System',
-    hemsDesc: 'A system for monitoring, controlling, and optimizing energy consumption in a building.',
+    hemsDesc:
+      'A system for monitoring, controlling, and optimizing energy consumption in a building.',
     ess: 'Energy Storage System',
-    essDesc: 'An energy storage system, typically consisting of batteries and inverters (e.g. Victron MultiPlus-II).',
+    essDesc:
+      'An energy storage system, typically consisting of batteries and inverters (e.g. Victron MultiPlus-II).',
     sgReady: 'Smart Grid Ready',
-    sgReadyDesc: 'A standard for heat pumps that enables grid-friendly control (e.g. activation during PV surplus).',
+    sgReadyDesc:
+      'A standard for heat pumps that enables grid-friendly control (e.g. activation during PV surplus).',
     enwg: '§14a EnWG',
-    enwgDesc: 'A paragraph in the Energy Industry Act regulating the grid-friendly control of controllable consumer devices (wallboxes, heat pumps) by the grid operator (dimming to 4.2 kW).',
+    enwgDesc:
+      'A paragraph in the Energy Industry Act regulating the grid-friendly control of controllable consumer devices (wallboxes, heat pumps) by the grid operator (dimming to 4.2 kW).',
     knx: 'KNX',
     knxDesc: 'A worldwide standard for home and building automation (sensors and actuators).',
     soc: 'SoC (State of Charge)',
     socDesc: 'The current charge level of a battery in percent.',
     faqPowerOutage: 'What happens during a power outage?',
-    faqPowerOutageAnswer: 'The Victron ESS switches to island mode within milliseconds. Important consumers continue to be supplied from the battery. The dashboard remains accessible as long as the router and Cerbo GX are powered.',
+    faqPowerOutageAnswer:
+      'The Victron ESS switches to island mode within milliseconds. Important consumers continue to be supplied from the battery. The dashboard remains accessible as long as the router and Cerbo GX are powered.',
     faqEnwg: 'How does the §14a EnWG dimming work?',
-    faqEnwgAnswer: 'When the grid operator sends a dim signal, the HEMS reduces maximum grid import to 4.2 kW. The app intelligently distributes available power (including PV generation and battery power) to the wallbox and heat pump to minimize comfort losses.',
+    faqEnwgAnswer:
+      'When the grid operator sends a dim signal, the HEMS reduces maximum grid import to 4.2 kW. The app intelligently distributes available power (including PV generation and battery power) to the wallbox and heat pump to minimize comfort losses.',
     faqSecurity: 'Is my data secure?',
-    faqSecurityAnswer: 'Yes. The system uses a local Public Key Infrastructure (PKI) with mTLS. Communication between dashboard and backend is encrypted. Historical data is primarily stored locally in your browser (IndexedDB).',
-    aboutDesc: 'Nexus-HEMS Dash is a state-of-the-art visualization and control layer for integrated energy management systems. It was developed to make the complexity of sector coupling (electricity, heat, mobility) manageable.',
+    faqSecurityAnswer:
+      'Yes. The system uses a local Public Key Infrastructure (PKI) with mTLS. Communication between dashboard and backend is encrypted. Historical data is primarily stored locally in your browser (IndexedDB).',
+    aboutDesc:
+      'Nexus-HEMS Dash is a state-of-the-art visualization and control layer for integrated energy management systems. It was developed to make the complexity of sector coupling (electricity, heat, mobility) manageable.',
     techStack: 'Technology Stack',
     techFrontend: 'Frontend: React 19, Tailwind CSS, Lucide Icons',
     techState: 'State Management: Zustand',
@@ -170,7 +203,8 @@ export const en = {
     techBackend: 'Backend/Communication: Node.js, WebSockets',
     techStorage: 'Local Storage: Dexie.js (IndexedDB)',
     license: 'License & Acknowledgments',
-    licenseDesc: 'Based on the strategic development for integrating Victron Energy, KNX, and dynamic electricity tariffs. Developed for the decarbonization of the private sector.',
+    licenseDesc:
+      'Based on the strategic development for integrating Victron Energy, KNX, and dynamic electricity tariffs. Developed for the decarbonization of the private sector.',
   },
   ai: {
     title: 'AI Optimizer (Gemini 2.5)',
@@ -208,7 +242,8 @@ export const en = {
     examples: 'Example commands',
     exampleTheme: '"Switch to Solar Light theme"',
     exampleEv: '"Enable PV surplus charging"',
-    exampleStatus: '"Show current status"',    commands: 'Available Commands',
+    exampleStatus: '"Show current status"',
+    commands: 'Available Commands',
     error: 'Voice control error',
     cmdDashboard: 'Dashboard',
     cmdDashboardDesc: 'Go to dashboard',
@@ -221,7 +256,8 @@ export const en = {
     cmdLanguage: 'Switch language',
     cmdLanguageDesc: 'Toggle language',
     cmdEv: 'Charge car',
-    cmdEvDesc: 'Toggle EV charging',  },
+    cmdEvDesc: 'Toggle EV charging',
+  },
   pdf: {
     title: 'PDF Reports',
     subtitle: 'Automated monthly energy reports',
@@ -279,7 +315,8 @@ export const en = {
     tariffPrice: 'Tariff Price (€/kWh)',
     consumption: 'Consumption (kW)',
     recommendation: '💡 Best Action',
-    recommendationText: 'Charge EV and battery during low-price solar hours (10:00-14:00). Avoid grid import during peak hours (17:00-21:00).',
+    recommendationText:
+      'Charge EV and battery during low-price solar hours (10:00-14:00). Avoid grid import during peak hours (17:00-21:00).',
   },
   mqtt: {
     title: 'Home Assistant / MQTT',
@@ -344,7 +381,8 @@ export const en = {
   },
   error: {
     title: 'Oops! Something went wrong',
-    description: 'An unexpected error occurred. You can try reloading the page or return to the dashboard.',
+    description:
+      'An unexpected error occurred. You can try reloading the page or return to the dashboard.',
     details: 'Error Details',
     message: 'Message:',
     stack: 'Stack Trace:',
@@ -374,5 +412,36 @@ export const en = {
     ariaLive: 'Live updates',
     screenReaderOnly: 'Screen reader only',
     keyboardNavigation: 'Keyboard navigation available',
+  },
+  production: {
+    subtitle: 'Solar PV generation & forecast',
+    currentPower: 'Current Power',
+    todayYield: "Today's Yield",
+    selfConsumption: 'Self-Consumption',
+    feedIn: 'Feed-In',
+    status: 'PV System Status',
+    output: 'Output',
+  },
+  storage: {
+    subtitle: 'Battery management & strategy',
+    power: 'Power',
+    voltage: 'Voltage',
+    capacity: 'Capacity',
+  },
+  consumption: {
+    subtitle: 'House load & consumer analysis',
+    total: 'Total Consumption',
+  },
+  ev: {
+    subtitle: 'Wallbox control & charging strategy',
+    chargingPower: 'Charging Power',
+    maxPower: 'Max Power',
+    currentTariff: 'Current Tariff',
+  },
+  tariffs: {
+    subtitle: 'Tibber, aWATTar & price optimization',
+  },
+  analytics: {
+    subtitle: 'Reports, forecasts & data export',
   },
 } as const;

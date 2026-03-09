@@ -1,43 +1,34 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
+const routes = [
+  { path: '/', name: 'Home', waitFor: 'h1' },
+  { path: '/energy-flow', name: 'Energy Flow', waitFor: 'h1' },
+  { path: '/production', name: 'Production', waitFor: 'h1' },
+  { path: '/storage', name: 'Storage', waitFor: 'h1' },
+  { path: '/consumption', name: 'Consumption', waitFor: 'h1' },
+  { path: '/ev', name: 'EV Charging', waitFor: 'h1' },
+  { path: '/floorplan', name: 'Floorplan', waitFor: 'h1' },
+  { path: '/ai-optimizer', name: 'AI Optimizer', waitFor: 'h1' },
+  { path: '/tariffs', name: 'Tariffs', waitFor: 'h1' },
+  { path: '/analytics', name: 'Analytics', waitFor: 'h1' },
+  { path: '/settings', name: 'Settings', waitFor: 'h2' },
+  { path: '/help', name: 'Help', waitFor: 'h2' },
+];
+
 test.describe('WCAG 2.2 AA Accessibility', () => {
-  test('Dashboard page should have no accessibility violations', async ({ page }) => {
-    await page.goto('/');
+  for (const route of routes) {
+    test(`${route.name} page should have no accessibility violations`, async ({ page }) => {
+      await page.goto(route.path);
+      await page.waitForSelector(route.waitFor);
 
-    // Wait for content to load
-    await page.waitForSelector('h1');
+      const accessibilityScanResults = await new AxeBuilder({ page })
+        .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
+        .analyze();
 
-    const accessibilityScanResults = await new AxeBuilder({ page })
-      .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
-      .analyze();
-
-    expect(accessibilityScanResults.violations).toEqual([]);
-  });
-
-  test('Settings page should have no accessibility violations', async ({ page }) => {
-    await page.goto('/settings');
-
-    await page.waitForSelector('h2');
-
-    const accessibilityScanResults = await new AxeBuilder({ page })
-      .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
-      .analyze();
-
-    expect(accessibilityScanResults.violations).toEqual([]);
-  });
-
-  test('Help page should have no accessibility violations', async ({ page }) => {
-    await page.goto('/help');
-
-    await page.waitForSelector('h2');
-
-    const accessibilityScanResults = await new AxeBuilder({ page })
-      .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
-      .analyze();
-
-    expect(accessibilityScanResults.violations).toEqual([]);
-  });
+      expect(accessibilityScanResults.violations).toEqual([]);
+    });
+  }
 
   test('Keyboard navigation should work', async ({ page }) => {
     await page.goto('/');

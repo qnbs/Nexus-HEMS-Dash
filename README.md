@@ -1,8 +1,8 @@
-# Nexus-HEMS Dash 2.3
+# Nexus-HEMS Dash 3.0
 
 <div align="center">
 
-![Version](https://img.shields.io/badge/Version-2.3.0-22ff88?style=for-the-badge)
+![Version](https://img.shields.io/badge/Version-3.0.0-22ff88?style=for-the-badge)
 ![React](https://img.shields.io/badge/React-19-00f0ff?style=for-the-badge&logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178c6?style=for-the-badge&logo=typescript)
 ![Tailwind](https://img.shields.io/badge/Tailwind-4.1-38bdf8?style=for-the-badge&logo=tailwindcss)
@@ -32,6 +32,18 @@
 **Nexus-HEMS Dash** is a production-ready, real-time Home Energy Management System (HEMS) dashboard designed for the decentralized energy era. Seamlessly integrating **Victron Energy**, **KNX building automation**, and **dynamic electricity tariffs** (Tibber, aWATTar), it provides intelligent orchestration for PV generation, battery storage, heat pumps, and EV charging.
 
 Built with **React 19**, **Zustand**, **D3.js**, and **Tailwind CSS 4**, the dashboard delivers a stunning **Neo-Energy Cyber-Glassmorphism UI** with full **i18n** (German/English), **WCAG 2.2 AA accessibility**, and **offline-first** architecture.
+
+### ✨ What's New in 3.0.0
+
+- 🏗️ **Multi-Page Architecture**: Full refactoring from single-page to 11-route SPA with React Router v7
+- 📁 **Code-Split Pages**: Lazy-loaded routes for Home, Energy Flow, Production, Storage, Consumption, EV, Floorplan, AI Optimizer, Tariffs, Analytics
+- 🧭 **Desktop Sidebar Navigation**: Collapsible sidebar with grouped navigation (Energy, Tools, System)
+- 📱 **Redesigned Mobile Navigation**: Bottom tab bar with "More" sheet for all pages
+- 🗺️ **Breadcrumbs & Page Headers**: Context-aware breadcrumb navigation on every page
+- ⌨️ **Enhanced Command Palette**: Navigate to all 11 pages via ⌘K with bilingual keywords
+- 📦 **Optimized Bundle Splitting**: Vendor chunks for react, d3, motion, recharts, i18n, tanstack-query
+- 🔀 **404 Page**: Custom Not Found page with navigation back to dashboard
+- 🧪 **Updated E2E Tests**: Accessibility & user flow tests for all routes
 
 ### ✨ What's New in 2.3.0
 
@@ -118,12 +130,24 @@ Built with **React 19**, **Zustand**, **D3.js**, and **Tailwind CSS 4**, the das
 
 ### 🛠️ Technology Stack
 
-**Frontend**
-- ![React](https://img.shields.io/badge/React-19-00f0ff?logo=react) ![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178c6?logo=typescript)
-- ![Zustand](https://img.shields.io/badge/Zustand-5.0-22ff88) ![React Router](https://img.shields.io/badge/React_Router-7-ff8800?logo=reactrouter)
-- ![D3.js](https://img.shields.io/badge/D3.js-7.9-f9a03c?logo=d3dotjs) for Sankey diagrams
-- ![Framer Motion](https://img.shields.io/badge/Framer_Motion-12-bb4eff?logo=framer) for animations
-- ![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.1-38bdf8?logo=tailwindcss) with custom Neo-Energy palette
+### 🗺️ Page Structure (v3.0)
+
+| Route | Page | Description |
+|-------|------|-------------|
+| `/` | **Home** | KPI overview, mini Sankey, quick links to all sections |
+| `/energy-flow` | **Energy Flow** | Full D3.js Sankey diagram, live price widget, flow statistics |
+| `/production` | **Production** | PV generation stats, power output, self-consumption ratio |
+| `/storage` | **Storage** | Battery SoC visualization, charge/discharge stats, strategy controls |
+| `/consumption` | **Consumption** | Total consumption breakdown, consumer categories, grid exchange |
+| `/ev` | **EV Charging** | EV charging control, modes (PV surplus/fast/dynamic), §14a EnWG |
+| `/floorplan` | **Floorplan** | KNX interactive building floorplan, room-level controls |
+| `/ai-optimizer` | **AI Optimizer** | Gemini 2.5 AI analysis, voice control, enhanced optimizer |
+| `/tariffs` | **Tariffs** | Live Tibber/aWATTar prices, forecasts, optimal charging windows |
+| `/analytics` | **Analytics** | Energy statistics, predictive forecasts, PDF export & sharing |
+| `/settings` | **Settings** | System configuration, connections, preferences |
+| `/help` | **Help** | Documentation, keyboard shortcuts, FAQ |
+
+### 🛠️ Technology Stack
 
 **Backend & Real-Time**
 - ![Node.js](https://img.shields.io/badge/Node.js-Express-339933?logo=nodedotjs) + WebSocket server
@@ -263,6 +287,18 @@ Contributions welcome! Please open an issue or PR.
 
 Gebaut mit **React 19**, **Zustand**, **D3.js** und **Tailwind CSS 4**, liefert das Dashboard eine atemberaubende **Neo-Energy Cyber-Glassmorphism UI** mit vollständiger **i18n** (Deutsch/Englisch), **WCAG 2.2 AA Barrierefreiheit** und **Offline-First** Architektur.
 
+### ✨ Neu in 3.0.0
+
+- 🏗️ **Multi-Page-Architektur**: Vollständiges Refactoring von Single-Page zu 11-Routen-SPA mit React Router v7
+- 📁 **Code-Split Seiten**: Lazy-geladene Routen für Home, Energiefluss, Erzeugung, Speicher, Verbrauch, E-Auto, Grundriss, KI-Optimierer, Tarife, Analysen
+- 🧭 **Desktop-Sidebar-Navigation**: Sidebar mit gruppierter Navigation (Energie, Tools, System)
+- 📱 **Redesigntes Mobile-Menü**: Untere Tab-Leiste mit „Mehr"-Sheet für alle Seiten
+- 🗺️ **Breadcrumbs & Seitenheader**: Kontextabhängige Breadcrumb-Navigation auf jeder Seite
+- ⌨️ **Erweiterte Kommandopalette**: Navigation zu allen 11 Seiten via ⌘K mit zweisprachigen Stichwörtern
+- 📦 **Optimiertes Bundle-Splitting**: Vendor-Chunks für React, D3, Motion, Recharts, i18n, TanStack Query
+- 🔀 **404-Seite**: Eigene Not-Found-Seite mit Navigation zurück zum Dashboard
+- 🧪 **Aktualisierte E2E-Tests**: Barrierefreiheit- & User-Flow-Tests für alle Routen
+
 ### ✨ Neu in 2.3.0
 
 - 🚀 **TanStack Query Integration**: Optimiertes Data Fetching mit 5-Min-Cache für Forecasts & Tarif-APIs
@@ -345,14 +381,24 @@ Gebaut mit **React 19**, **Zustand**, **D3.js** und **Tailwind CSS 4**, liefert 
 | 📦 **Local-First** | Dexie.js IndexedDB, 30-Tage-Historie-Retention | ✅ Live |
 | 🔒 **Enterprise-Sicherheit** | mTLS, 2FA, Telemetrie-Opt-out, §14a Konformität | ✅ Live |
 
-### 🛠️ Technologie-Stack
+### �️ Seitenstruktur (v3.0)
 
-**Frontend**
-- ![React](https://img.shields.io/badge/React-19-00f0ff?logo=react) ![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178c6?logo=typescript)
-- ![Zustand](https://img.shields.io/badge/Zustand-5.0-22ff88) ![React Router](https://img.shields.io/badge/React_Router-7-ff8800?logo=reactrouter)
-- ![D3.js](https://img.shields.io/badge/D3.js-7.9-f9a03c?logo=d3dotjs) für Sankey-Diagramme
-- ![Framer Motion](https://img.shields.io/badge/Framer_Motion-12-bb4eff?logo=framer) für Animationen
-- ![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.1-38bdf8?logo=tailwindcss) mit eigener Neo-Energy-Palette
+| Route | Seite | Beschreibung |
+|-------|-------|--------------|
+| `/` | **Home** | KPI-Übersicht, Mini-Sankey, Schnelllinks zu allen Bereichen |
+| `/energy-flow` | **Energiefluss** | Vollständiges D3.js-Sankey-Diagramm, Live-Preis-Widget, Flussstatistiken |
+| `/production` | **Erzeugung** | PV-Erzeugungsstatistiken, Leistungsausgabe, Eigenverbrauchsquote |
+| `/storage` | **Speicher** | Batterie-SoC-Visualisierung, Lade-/Entladestatistiken, Strategiesteuerung |
+| `/consumption` | **Verbrauch** | Gesamtverbrauchsaufschlüsselung, Verbraucherkategorien, Netzaustausch |
+| `/ev` | **E-Auto** | EV-Ladesteuerung, Modi (PV-Überschuss/Schnell/Dynamisch), §14a EnWG |
+| `/floorplan` | **Grundriss** | KNX interaktiver Gebäudegrundriss, raumweise Steuerung |
+| `/ai-optimizer` | **KI-Optimierer** | Gemini 2.5 KI-Analyse, Sprachsteuerung, erweiterter Optimierer |
+| `/tariffs` | **Tarife** | Live Tibber/aWATTar-Preise, Prognosen, optimale Ladefenster |
+| `/analytics` | **Analysen** | Energiestatistiken, prädiktive Prognosen, PDF-Export & Sharing |
+| `/settings` | **Einstellungen** | Systemkonfiguration, Verbindungen, Präferenzen |
+| `/help` | **Hilfe** | Dokumentation, Tastenkürzel, FAQ |
+
+### 🛠️ Technologie-Stack
 
 **Backend & Echtzeit**
 - ![Node.js](https://img.shields.io/badge/Node.js-Express-339933?logo=nodedotjs) + WebSocket-Server

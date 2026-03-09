@@ -99,14 +99,18 @@ export class ErrorBoundary extends Component<Props, State> {
                     </summary>
                     <div className="mt-3 space-y-2">
                       <div>
-                        <p className="text-xs font-medium text-red-300">{i18next.t('error.message')}</p>
+                        <p className="text-xs font-medium text-red-300">
+                          {i18next.t('error.message')}
+                        </p>
                         <p className="mt-1 font-mono text-xs text-red-400">
                           {this.state.error.message}
                         </p>
                       </div>
                       {this.state.error.stack && (
                         <div>
-                          <p className="text-xs font-medium text-red-300">{i18next.t('error.stack')}</p>
+                          <p className="text-xs font-medium text-red-300">
+                            {i18next.t('error.stack')}
+                          </p>
                           <pre className="mt-1 overflow-x-auto font-mono text-xs text-red-400">
                             {this.state.error.stack}
                           </pre>
@@ -114,7 +118,9 @@ export class ErrorBoundary extends Component<Props, State> {
                       )}
                       {this.state.errorInfo?.componentStack && (
                         <div>
-                          <p className="text-xs font-medium text-red-300">{i18next.t('error.componentStack')}</p>
+                          <p className="text-xs font-medium text-red-300">
+                            {i18next.t('error.componentStack')}
+                          </p>
                           <pre className="mt-1 overflow-x-auto font-mono text-xs text-red-400">
                             {this.state.errorInfo.componentStack}
                           </pre>
@@ -152,7 +158,9 @@ export class ErrorBoundary extends Component<Props, State> {
                 {/* Additional Help */}
                 <div className="mt-6 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)]/50 p-4">
                   <p className="text-sm text-[color:var(--color-muted)]">
-                    <strong className="text-[color:var(--color-text)]">{i18next.t('error.helpTitle')}</strong>
+                    <strong className="text-[color:var(--color-text)]">
+                      {i18next.t('error.helpTitle')}
+                    </strong>
                     <br />
                     {i18next.t('error.helpText')}{' '}
                     <a

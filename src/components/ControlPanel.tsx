@@ -14,7 +14,7 @@ export function ControlPanel({
   data: EnergyData;
 }) {
   const { t } = useTranslation();
-  
+
   // Mock action for EV charging
   const [evState, evAction, isEvPending] = useActionState(
     async (state: EvState, formData: FormData) => {
@@ -116,7 +116,7 @@ export function ControlPanel({
           </div>
           {evState.message && (
             <motion.p
-           initial={{ opacity: 0, scale: 0.95 }}
+              initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               className="text-sm text-[color:var(--color-primary)]"
               role="status"
@@ -125,11 +125,7 @@ export function ControlPanel({
               ✓ {evState.message}
             </motion.p>
           )}
-          <button
-            type="submit"
-            disabled={isEvPending}
-            className="btn-primary w-full focus-ring"
-          >
+          <button type="submit" disabled={isEvPending} className="btn-primary w-full focus-ring">
             {isEvPending ? t('common.saving') : t('common.apply')}
           </button>
         </form>
@@ -175,11 +171,7 @@ export function ControlPanel({
               ✓ {hpState.message}
             </motion.p>
           )}
-          <button
-            type="submit"
-            disabled={isHpPending}
-            className="btn-primary w-full focus-ring"
-          >
+          <button type="submit" disabled={isHpPending} className="btn-primary w-full focus-ring">
             {isHpPending ? t('common.saving') : t('common.apply')}
           </button>
         </form>
@@ -199,7 +191,8 @@ export function ControlPanel({
           </h3>
         </div>
         <div className="text-sm text-[color:var(--color-muted)] mb-3">
-          {t('control.batteryMode')}: <span className="text-[color:var(--color-primary)]">{t('control.selfConsumption')}</span>
+          {t('control.batteryMode')}:{' '}
+          <span className="text-[color:var(--color-primary)]">{t('control.selfConsumption')}</span>
         </div>
         <div className="flex gap-2">
           <button

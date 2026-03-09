@@ -108,7 +108,9 @@ export function ConfirmDialog({
               className="glass-panel w-full max-w-md rounded-2xl p-6 shadow-2xl"
             >
               <div className="flex items-start gap-4">
-                <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${styles.iconBg}`}>
+                <div
+                  className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${styles.iconBg}`}
+                >
                   <Icon className={`h-6 w-6 ${styles.iconColor}`} aria-hidden="true" />
                 </div>
                 <div className="flex-1">

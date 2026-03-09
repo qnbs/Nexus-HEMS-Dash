@@ -57,7 +57,7 @@ export function useCacheEnergyData() {
 export function useLatestEnergySnapshot() {
   const queryClient = useQueryClient();
   const cache = queryClient.getQueryCache();
-  
+
   return useQuery({
     queryKey: ['latest-energy-snapshot'],
     queryFn: () => {
@@ -72,11 +72,11 @@ export function useLatestEnergySnapshot() {
         });
 
       if (snapshots.length === 0) return null;
-      
+
       const latest = snapshots[0];
       const timestamp = latest.queryKey[1] as number;
       const age = Date.now() - timestamp;
-      
+
       return {
         data: latest.state.data,
         timestamp,

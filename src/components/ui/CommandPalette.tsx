@@ -1,7 +1,22 @@
 import { motion, AnimatePresence } from 'motion/react';
-import { useEffect, useState } from 'react';
-import { Search, Sparkles, FileDown, Home, Settings, HelpCircle, Zap, Sun, Battery } from 'lucide-react';
-import { useNavigate } from 'react-router';
+import { useEffect, useState, useMemo } from 'react';
+import {
+  Search,
+  Sparkles,
+  FileDown,
+  Home,
+  Settings,
+  HelpCircle,
+  Zap,
+  Sun,
+  Battery,
+  Activity,
+  Car,
+  Map,
+  TrendingUp,
+  BarChart3,
+} from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
 export interface Command {
@@ -20,7 +35,12 @@ interface CommandPaletteProps {
   onExportReport?: () => void;
 }
 
-export function CommandPalette({ isOpen, onClose, onOptimize, onExportReport }: CommandPaletteProps) {
+export function CommandPalette({
+  isOpen,
+  onClose,
+  onOptimize,
+  onExportReport,
+}: CommandPaletteProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
@@ -54,14 +74,113 @@ export function CommandPalette({ isOpen, onClose, onOptimize, onExportReport }: 
     // Navigation
     {
       id: 'nav-dashboard',
-      label: t('nav.dashboard', 'Dashboard'),
+      label: t('nav.home', 'Overview'),
       icon: <Home className="h-5 w-5" />,
       action: () => {
         navigate('/');
         onClose();
       },
       category: 'navigation',
-      keywords: ['home', 'start'],
+      keywords: ['home', 'start', 'overview', 'übersicht'],
+    },
+    {
+      id: 'nav-energy-flow',
+      label: t('nav.energyFlow', 'Energy Flow'),
+      icon: <Activity className="h-5 w-5" />,
+      action: () => {
+        navigate('/energy-flow');
+        onClose();
+      },
+      category: 'navigation',
+      keywords: ['sankey', 'flow', 'energiefluss'],
+    },
+    {
+      id: 'nav-production',
+      label: t('nav.production', 'Production'),
+      icon: <Sun className="h-5 w-5 text-yellow-400" />,
+      action: () => {
+        navigate('/production');
+        onClose();
+      },
+      category: 'navigation',
+      keywords: ['solar', 'pv', 'photovoltaic', 'erzeugung'],
+    },
+    {
+      id: 'nav-storage',
+      label: t('nav.storage', 'Storage'),
+      icon: <Battery className="h-5 w-5 text-emerald-400" />,
+      action: () => {
+        navigate('/storage');
+        onClose();
+      },
+      category: 'navigation',
+      keywords: ['battery', 'soc', 'batterie', 'speicher'],
+    },
+    {
+      id: 'nav-consumption',
+      label: t('nav.consumption', 'Consumption'),
+      icon: <Home className="h-5 w-5 text-blue-400" />,
+      action: () => {
+        navigate('/consumption');
+        onClose();
+      },
+      category: 'navigation',
+      keywords: ['house', 'load', 'verbrauch', 'haus'],
+    },
+    {
+      id: 'nav-ev',
+      label: t('nav.ev', 'EV Charging'),
+      icon: <Car className="h-5 w-5 text-green-400" />,
+      action: () => {
+        navigate('/ev');
+        onClose();
+      },
+      category: 'navigation',
+      keywords: ['wallbox', 'car', 'charging', 'auto', 'laden'],
+    },
+    {
+      id: 'nav-floorplan',
+      label: t('nav.floorplan', 'Floorplan'),
+      icon: <Map className="h-5 w-5" />,
+      action: () => {
+        navigate('/floorplan');
+        onClose();
+      },
+      category: 'navigation',
+      keywords: ['knx', 'building', 'automation', 'grundriss'],
+    },
+    {
+      id: 'nav-ai',
+      label: t('nav.aiOptimizer', 'AI Optimizer'),
+      icon: <Sparkles className="h-5 w-5 text-purple-400" />,
+      action: () => {
+        navigate('/ai-optimizer');
+        onClose();
+      },
+      category: 'navigation',
+      keywords: ['gemini', 'optimize', 'ki'],
+    },
+    {
+      id: 'nav-tariffs',
+      label: t('nav.tariffs', 'Tariffs'),
+      icon: <TrendingUp className="h-5 w-5 text-orange-400" />,
+      action: () => {
+        navigate('/tariffs');
+        onClose();
+      },
+      category: 'navigation',
+      keywords: ['price', 'tibber', 'awattar', 'tarif', 'preis'],
+    },
+    {
+      id: 'nav-analytics',
+      label: t('nav.analytics', 'Analytics'),
+      icon: <BarChart3 className="h-5 w-5" />,
+      action: () => {
+        navigate('/analytics');
+        onClose();
+      },
+      category: 'navigation',
+      keywords: ['report', 'chart', 'bericht', 'analyse'],
     },
     {
       id: 'nav-settings',
@@ -72,7 +191,7 @@ export function CommandPalette({ isOpen, onClose, onOptimize, onExportReport }: 
         onClose();
       },
       category: 'navigation',
-      keywords: ['config', 'options'],
+      keywords: ['config', 'options', 'einstellungen'],
     },
     {
       id: 'nav-help',
@@ -83,38 +202,16 @@ export function CommandPalette({ isOpen, onClose, onOptimize, onExportReport }: 
         onClose();
       },
       category: 'navigation',
-      keywords: ['docs', 'documentation', 'support'],
+      keywords: ['docs', 'documentation', 'support', 'hilfe'],
     },
 
     // Devices
-    {
-      id: 'device-pv',
-      label: t('command.viewPv', 'View PV Generation'),
-      icon: <Sun className="h-5 w-5 text-yellow-400" />,
-      action: () => {
-        navigate('/');
-        onClose();
-      },
-      category: 'device',
-      keywords: ['solar', 'photovoltaic', 'panels'],
-    },
-    {
-      id: 'device-battery',
-      label: t('command.viewBattery', 'View Battery Status'),
-      icon: <Battery className="h-5 w-5 text-emerald-400" />,
-      action: () => {
-        navigate('/');
-        onClose();
-      },
-      category: 'device',
-      keywords: ['storage', 'soc'],
-    },
     {
       id: 'device-grid',
       label: t('command.viewGrid', 'View Grid Status'),
       icon: <Zap className="h-5 w-5 text-red-400" />,
       action: () => {
-        navigate('/');
+        navigate('/energy-flow');
         onClose();
       },
       category: 'device',
@@ -122,13 +219,17 @@ export function CommandPalette({ isOpen, onClose, onOptimize, onExportReport }: 
     },
   ];
 
-  const filteredCommands = commands.filter((cmd) => {
-    const searchLower = search.toLowerCase();
-    return (
-      cmd.label.toLowerCase().includes(searchLower) ||
-      cmd.keywords?.some((k) => k.toLowerCase().includes(searchLower))
-    );
-  });
+  const filteredCommands = useMemo(
+    () =>
+      commands.filter((cmd) => {
+        const searchLower = search.toLowerCase();
+        return (
+          cmd.label.toLowerCase().includes(searchLower) ||
+          cmd.keywords?.some((k) => k.toLowerCase().includes(searchLower))
+        );
+      }),
+    [search, commands],
+  );
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

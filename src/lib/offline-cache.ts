@@ -21,7 +21,7 @@ export class NexusDatabase extends Dexie {
 
   constructor() {
     super('NexusHEMS');
-    
+
     this.version(2).stores({
       energySnapshots: '++id, timestamp, createdAt',
       sankeySnapshots: '++id, timestamp, createdAt',
@@ -41,9 +41,9 @@ export async function cacheEnergySnapshot(data: unknown): Promise<void> {
       data: JSON.stringify(data),
       createdAt: Date.now(),
     };
-    
+
     await db.energySnapshots.add(snapshot);
-    
+
     // Keep only last 1000 snapshots
     const count = await db.energySnapshots.count();
     if (count > 1000) {
@@ -67,15 +67,12 @@ export async function getLatestEnergySnapshot(): Promise<{
   ageMinutes: number;
 } | null> {
   try {
-    const latest = await db.energySnapshots
-      .orderBy('timestamp')
-      .reverse()
-      .first();
-    
+    const latest = await db.energySnapshots.orderBy('timestamp').reverse().first();
+
     if (!latest) return null;
-    
+
     const age = Date.now() - latest.timestamp;
-    
+
     return {
       data: JSON.parse(latest.data),
       timestamp: latest.timestamp,
@@ -98,9 +95,9 @@ export async function cacheSankeyData(nodes: unknown[], links: unknown[]): Promi
       links: JSON.stringify(links),
       createdAt: Date.now(),
     };
-    
+
     await db.sankeySnapshots.add(snapshot);
-    
+
     // Keep only last 100 Sankey snapshots
     const count = await db.sankeySnapshots.count();
     if (count > 100) {
@@ -125,15 +122,12 @@ export async function getLatestSankeyData(): Promise<{
   ageMinutes: number;
 } | null> {
   try {
-    const latest = await db.sankeySnapshots
-      .orderBy('timestamp')
-      .reverse()
-      .first();
-    
+    const latest = await db.sankeySnapshots.orderBy('timestamp').reverse().first();
+
     if (!latest) return null;
-    
+
     const age = Date.now() - latest.timestamp;
-    
+
     return {
       nodes: JSON.parse(latest.nodes),
       links: JSON.parse(latest.links),

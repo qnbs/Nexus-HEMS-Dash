@@ -97,9 +97,7 @@ export function VoiceControlPanel() {
           <h3 className="text-lg font-semibold text-[color:var(--color-text)]">
             {t('voice.title')}
           </h3>
-          <p className="mt-1 text-sm text-[color:var(--color-muted)]">
-            {t('voice.subtitle')}
-          </p>
+          <p className="mt-1 text-sm text-[color:var(--color-muted)]">{t('voice.subtitle')}</p>
         </div>
 
         <button
@@ -109,9 +107,7 @@ export function VoiceControlPanel() {
               ? 'animate-pulse bg-[color:var(--color-primary)] text-slate-900 shadow-lg shadow-[color:var(--color-primary)]/50'
               : 'bg-slate-800/50 text-[color:var(--color-muted)] hover:bg-slate-700/50'
           }`}
-          aria-label={
-            isListening ? t('voice.stop') : t('voice.start')
-          }
+          aria-label={isListening ? t('voice.stop') : t('voice.start')}
         >
           {isListening ? <Mic className="h-6 w-6" /> : <MicOff className="h-6 w-6" />}
         </button>
@@ -147,9 +143,7 @@ export function VoiceControlPanel() {
             <div className="flex items-start gap-3 rounded-2xl border border-red-500/30 bg-red-500/10 p-4">
               <AlertCircle className="h-5 w-5 flex-shrink-0 text-red-400" />
               <div>
-                <p className="text-sm font-medium text-red-400">
-                  {t('voice.error')}
-                </p>
+                <p className="text-sm font-medium text-red-400">{t('voice.error')}</p>
                 <p className="mt-1 text-sm text-[color:var(--color-muted)]">{error}</p>
               </div>
             </div>

@@ -134,9 +134,7 @@ export function PredictiveForecast() {
             />
             {t('forecast.title')}
           </h2>
-          <p className="mt-1 text-sm text-[color:var(--color-muted)]">
-            {t('forecast.subtitle')}
-          </p>
+          <p className="mt-1 text-sm text-[color:var(--color-muted)]">{t('forecast.subtitle')}</p>
         </div>
 
         {/* Time Range Toggle */}
@@ -173,9 +171,7 @@ export function PredictiveForecast() {
         <div className="rounded-2xl bg-emerald-500/10 p-4">
           <div className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5 text-emerald-400" aria-hidden="true" />
-            <span className="text-sm text-emerald-400">
-              {t('forecast.potentialSavings')}
-            </span>
+            <span className="text-sm text-emerald-400">{t('forecast.potentialSavings')}</span>
           </div>
           <p className="mt-2 text-2xl font-semibold text-emerald-300">€{totalSavings.toFixed(2)}</p>
         </div>
@@ -191,9 +187,7 @@ export function PredictiveForecast() {
         <div className="rounded-2xl bg-blue-500/10 p-4">
           <div className="flex items-center gap-2">
             <CloudSun className="h-5 w-5 text-blue-400" aria-hidden="true" />
-            <span className="text-sm text-blue-400">
-              {t('forecast.avgPvGeneration')}
-            </span>
+            <span className="text-sm text-blue-400">{t('forecast.avgPvGeneration')}</span>
           </div>
           <p className="mt-2 text-2xl font-semibold text-blue-300">
             {(forecastData.reduce((sum, d) => sum + d.pvForecast, 0) / forecastData.length).toFixed(

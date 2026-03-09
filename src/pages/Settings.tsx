@@ -14,13 +14,13 @@ export function Settings() {
   };
 
   return (
-    <motion.div 
+    <motion.div
       className="max-w-4xl mx-auto"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <motion.div 
+      <motion.div
         className="flex items-center gap-3 mb-8"
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
@@ -28,7 +28,7 @@ export function Settings() {
       >
         <motion.div
           animate={{ rotate: [0, 90, 0] }}
-          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+          transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
         >
           <SettingsIcon className="text-emerald-400" size={28} />
         </motion.div>
@@ -37,7 +37,7 @@ export function Settings() {
 
       <form onSubmit={handleSave} className="space-y-8 space-lg">
         {/* System Configuration */}
-        <motion.section 
+        <motion.section
           className="glass-panel-strong p-6 rounded-3xl hover-lift"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -49,46 +49,52 @@ export function Settings() {
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 space-md">
-            <motion.div 
+            <motion.div
               className="space-y-2"
               whileHover={{ scale: 1.01 }}
-              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 17 }}
             >
-              <label className="text-sm font-medium text-slate-300 fluid-text-sm">{t('settings.victronIp')}</label>
+              <label className="text-sm font-medium text-slate-300 fluid-text-sm">
+                {t('settings.victronIp')}
+              </label>
               <input
                 type="text"
                 defaultValue="192.168.1.100"
                 className="w-full bg-slate-900/60 border border-slate-700/60 rounded-xl px-4 py-2.5 text-slate-200 focus:outline-none focus:border-emerald-500/70 focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300"
               />
             </motion.div>
-            <motion.div 
+            <motion.div
               className="space-y-2"
               whileHover={{ scale: 1.01 }}
-              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 17 }}
             >
-              <label className="text-sm font-medium text-slate-300 fluid-text-sm">{t('settings.knxIp')}</label>
+              <label className="text-sm font-medium text-slate-300 fluid-text-sm">
+                {t('settings.knxIp')}
+              </label>
               <input
                 type="text"
                 defaultValue="192.168.1.101"
                 className="w-full bg-slate-900/60 border border-slate-700/60 rounded-xl px-4 py-2.5 text-slate-200 focus:outline-none focus:border-emerald-500/70 focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300"
               />
             </motion.div>
-            <motion.div 
+            <motion.div
               className="space-y-2"
               whileHover={{ scale: 1.01 }}
-              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 17 }}
             >
-              <label className="text-sm font-medium text-slate-300 fluid-text-sm">{t('settings.wsPort')}</label>
+              <label className="text-sm font-medium text-slate-300 fluid-text-sm">
+                {t('settings.wsPort')}
+              </label>
               <input
                 type="number"
                 defaultValue="1880"
                 className="w-full bg-slate-900/60 border border-slate-700/60 rounded-xl px-4 py-2.5 text-slate-200 focus:outline-none focus:border-emerald-500/70 focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300"
               />
             </motion.div>
-            <motion.div 
+            <motion.div
               className="space-y-2"
               whileHover={{ scale: 1.01 }}
-              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 17 }}
             >
               <label className="text-sm font-medium text-slate-300 fluid-text-sm">
                 {t('settings.refreshRate')}
@@ -103,7 +109,7 @@ export function Settings() {
         </motion.section>
 
         {/* Energy Management */}
-        <motion.section 
+        <motion.section
           className="glass-panel-strong p-6 rounded-3xl hover-lift"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -115,10 +121,10 @@ export function Settings() {
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 space-md">
-            <motion.div 
+            <motion.div
               className="space-y-2"
               whileHover={{ scale: 1.01 }}
-              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 17 }}
             >
               <label className="text-sm font-medium text-slate-300 fluid-text-sm">
                 {t('settings.tariffProvider')}
@@ -129,10 +135,10 @@ export function Settings() {
                 <option value="none">{t('settings.none')}</option>
               </select>
             </motion.div>
-            <motion.div 
+            <motion.div
               className="space-y-2"
               whileHover={{ scale: 1.01 }}
-              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 17 }}
             >
               <label className="text-sm font-medium text-slate-300 fluid-text-sm">
                 {t('settings.apiTokenLabel')}
@@ -143,10 +149,10 @@ export function Settings() {
                 className="w-full bg-slate-900/60 border border-slate-700/60 rounded-xl px-4 py-2.5 text-slate-200 focus:outline-none focus:border-emerald-500/70 focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300"
               />
             </motion.div>
-            <motion.div 
+            <motion.div
               className="space-y-2"
               whileHover={{ scale: 1.01 }}
-              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 17 }}
             >
               <label className="text-sm font-medium text-slate-300 fluid-text-sm">
                 {t('settings.chargeThreshold')}
@@ -158,10 +164,10 @@ export function Settings() {
                 className="w-full bg-slate-900/60 border border-slate-700/60 rounded-xl px-4 py-2.5 text-slate-200 focus:outline-none focus:border-emerald-500/70 focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300"
               />
             </motion.div>
-            <motion.div 
+            <motion.div
               className="space-y-2"
               whileHover={{ scale: 1.01 }}
-              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 17 }}
             >
               <label className="text-sm font-medium text-slate-300 fluid-text-sm">
                 {t('settings.maxGrid')}
@@ -177,7 +183,7 @@ export function Settings() {
         </motion.section>
 
         {/* Security & Privacy */}
-        <motion.section 
+        <motion.section
           className="glass-panel-strong p-6 rounded-3xl hover-lift"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -189,10 +195,10 @@ export function Settings() {
           </h2>
 
           <div className="space-y-4 space-md">
-            <motion.label 
+            <motion.label
               className="flex items-center gap-3 cursor-pointer hover-lift"
               whileHover={{ x: 4 }}
-              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 17 }}
             >
               <input
                 type="checkbox"
@@ -201,15 +207,13 @@ export function Settings() {
               />
               <div>
                 <div className="font-medium text-slate-200 fluid-text-sm">{t('settings.mtls')}</div>
-                <div className="text-sm text-slate-400 fluid-text-xs">
-                  {t('settings.mtlsHint')}
-                </div>
+                <div className="text-sm text-slate-400 fluid-text-xs">{t('settings.mtlsHint')}</div>
               </div>
             </motion.label>
-            <motion.label 
+            <motion.label
               className="flex items-center gap-3 cursor-pointer hover-lift"
               whileHover={{ x: 4 }}
-              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 17 }}
             >
               <input
                 type="checkbox"
@@ -217,16 +221,18 @@ export function Settings() {
                 className="w-5 h-5 rounded border-slate-700/60 bg-slate-900/60 text-emerald-500 focus:ring-2 focus:ring-emerald-500/30 focus:ring-offset-2 focus:ring-offset-slate-900 transition-all duration-300"
               />
               <div>
-                <div className="font-medium text-slate-200 fluid-text-sm">{t('settings.telemetry')}</div>
+                <div className="font-medium text-slate-200 fluid-text-sm">
+                  {t('settings.telemetry')}
+                </div>
                 <div className="text-sm text-slate-400 fluid-text-xs">
                   {t('settings.telemetryHint')}
                 </div>
               </div>
             </motion.label>
-            <motion.label 
+            <motion.label
               className="flex items-center gap-3 cursor-pointer hover-lift"
               whileHover={{ x: 4 }}
-              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 17 }}
             >
               <input
                 type="checkbox"
@@ -246,7 +252,7 @@ export function Settings() {
         </motion.section>
 
         {/* Database & Storage */}
-        <motion.section 
+        <motion.section
           className="glass-panel-strong p-6 rounded-3xl hover-lift"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -258,49 +264,53 @@ export function Settings() {
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 space-md">
-            <motion.div 
+            <motion.div
               className="space-y-2"
               whileHover={{ scale: 1.01 }}
-              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 17 }}
             >
-              <label className="text-sm font-medium text-slate-300 fluid-text-sm">{t('settings.influxUrl')}</label>
+              <label className="text-sm font-medium text-slate-300 fluid-text-sm">
+                {t('settings.influxUrl')}
+              </label>
               <input
                 type="text"
                 defaultValue="http://192.168.1.102:8086"
                 className="w-full bg-slate-900/60 border border-slate-700/60 rounded-xl px-4 py-2.5 text-slate-200 focus:outline-none focus:border-emerald-500/70 focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300"
               />
             </motion.div>
-            <motion.div 
+            <motion.div
               className="space-y-2"
               whileHover={{ scale: 1.01 }}
-              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 17 }}
             >
-              <label className="text-sm font-medium text-slate-300 fluid-text-sm">{t('settings.influxToken')}</label>
+              <label className="text-sm font-medium text-slate-300 fluid-text-sm">
+                {t('settings.influxToken')}
+              </label>
               <input
                 type="password"
                 defaultValue="••••••••••••••••"
                 className="w-full bg-slate-900/60 border border-slate-700/60 rounded-xl px-4 py-2.5 text-slate-200 focus:outline-none focus:border-emerald-500/70 focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300"
               />
             </motion.div>
-            <motion.div 
+            <motion.div
               className="space-y-2"
               whileHover={{ scale: 1.01 }}
-              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 17 }}
             >
-              <label className="text-sm font-medium text-slate-300 fluid-text-sm">{t('settings.historyDays')}</label>
+              <label className="text-sm font-medium text-slate-300 fluid-text-sm">
+                {t('settings.historyDays')}
+              </label>
               <input
                 type="number"
                 defaultValue="30"
                 className="w-full bg-slate-900/60 border border-slate-700/60 rounded-xl px-4 py-2.5 text-slate-200 focus:outline-none focus:border-emerald-500/70 focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300"
               />
-              <p className="text-xs text-slate-400 fluid-text-xxs">
-                {t('settings.historyHint')}
-              </p>
+              <p className="text-xs text-slate-400 fluid-text-xxs">{t('settings.historyHint')}</p>
             </motion.div>
           </div>
         </motion.section>
 
-        <motion.div 
+        <motion.div
           className="flex justify-end pt-4"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -311,7 +321,7 @@ export function Settings() {
             className="btn-primary flex items-center gap-2 px-8 py-3"
             whileHover={{ scale: 1.03, y: -2 }}
             whileTap={{ scale: 0.97 }}
-            transition={{ type: "spring", stiffness: 400, damping: 17 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 17 }}
           >
             {saved ? <Check size={20} className="animate-bounce-slow" /> : <Save size={20} />}
             {saved ? t('common.saved') : t('common.save')}

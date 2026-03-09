@@ -68,22 +68,36 @@ export function NeonCard({
   );
 }
 
-export function NeonCardHeader({ children, className = '' }: { children: ReactNode; className?: string }) {
+export function NeonCardHeader({
+  children,
+  className = '',
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
   return (
-    <div className={`border-b border-[color:var(--color-border)] p-6 ${className}`}>
-      {children}
-    </div>
+    <div className={`border-b border-[color:var(--color-border)] p-6 ${className}`}>{children}</div>
   );
 }
 
-export function NeonCardBody({ children, className = '' }: { children: ReactNode; className?: string }) {
+export function NeonCardBody({
+  children,
+  className = '',
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
   return <div className={`p-6 ${className}`}>{children}</div>;
 }
 
-export function NeonCardFooter({ children, className = '' }: { children: ReactNode; className?: string }) {
+export function NeonCardFooter({
+  children,
+  className = '',
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
   return (
-    <div className={`border-t border-[color:var(--color-border)] p-6 ${className}`}>
-      {children}
-    </div>
+    <div className={`border-t border-[color:var(--color-border)] p-6 ${className}`}>{children}</div>
   );
 }

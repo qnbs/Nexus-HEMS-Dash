@@ -59,7 +59,7 @@ class NexusDatabase extends Dexie {
 
   constructor() {
     super('nexus-hems-dash');
-    
+
     // Version 1: Original schema
     this.version(1).stores({
       energySnapshots: '++id, timestamp',
@@ -99,7 +99,10 @@ export async function persistSnapshot(snapshot: EnergyData) {
 /**
  * Persist Sankey visualization snapshot
  */
-export async function persistSankeySnapshot(data: EnergyData, flows: Array<{ source: string; target: string; value: number }>) {
+export async function persistSankeySnapshot(
+  data: EnergyData,
+  flows: Array<{ source: string; target: string; value: number }>,
+) {
   await nexusDb.sankeySnapshots.add({
     timestamp: Date.now(),
     data,
@@ -202,13 +205,16 @@ export async function storeCacheMetadata(
 export async function getCacheStats() {
   const metadata = await nexusDb.cacheMetadata.toArray();
   const now = Date.now();
-  
+
   const totalSize = metadata.reduce((sum, item) => sum + item.size, 0);
   const expired = metadata.filter((item) => item.expiresAt < now).length;
-  const byType = metadata.reduce((acc, item) => {
-    acc[item.type] = (acc[item.type] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+  const byType = metadata.reduce(
+    (acc, item) => {
+      acc[item.type] = (acc[item.type] || 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>,
+  );
 
   return {
     totalSize,

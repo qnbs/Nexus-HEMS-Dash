@@ -19,18 +19,39 @@ export const de = {
   },
   pwa: {
     installTitle: 'Nexus HEMS installieren',
-    installDescription: 'Installieren Sie diese App für schnelleren Zugriff und Offline-Funktionen.',
+    installDescription:
+      'Installieren Sie diese App für schnelleren Zugriff und Offline-Funktionen.',
     install: 'Installieren',
     updateAvailable: 'Update verfügbar',
-    updateDescription: 'Eine neue Version von Nexus HEMS ist verfügbar. Jetzt aktualisieren für neue Features.',
+    updateDescription:
+      'Eine neue Version von Nexus HEMS ist verfügbar. Jetzt aktualisieren für neue Features.',
     updateNow: 'Jetzt aktualisieren',
     registrationError: 'Service Worker Registrierung fehlgeschlagen',
     updateError: 'App-Update fehlgeschlagen',
   },
   nav: {
     dashboard: 'Dashboard',
+    home: 'Übersicht',
+    energyFlow: 'Energiefluss',
+    production: 'Erzeugung',
+    storage: 'Speicher',
+    consumption: 'Verbrauch',
+    ev: 'E-Auto',
+    floorplan: 'Grundriss',
+    aiOptimizer: 'AI Optimizer',
+    tariffs: 'Tarife',
+    analytics: 'Analytik',
     settings: 'Einstellungen',
     help: 'Hilfe',
+    mainNavigation: 'Hauptnavigation',
+    breadcrumbs: 'Breadcrumbs',
+    groupEnergy: 'Energie',
+    groupTools: 'Werkzeuge',
+    groupSystem: 'System',
+    viewAll: 'Details anzeigen →',
+    quickLinks: 'Schnellzugriff',
+    allPages: 'Alle Seiten',
+    more: 'Mehr',
   },
   units: {
     watt: 'W',
@@ -130,13 +151,17 @@ export const de = {
     title: 'Hilfe & Dokumentation',
     usage: 'Benutzung',
     usageTitle: 'Benutzungs-Informationen',
-    usageIntro: 'Willkommen beim Nexus-HEMS Dash. Diese App dient als zentraler Kontrollpunkt für Ihr Home Energy Management System. Hier finden Sie eine Übersicht der wichtigsten Funktionen:',
+    usageIntro:
+      'Willkommen beim Nexus-HEMS Dash. Diese App dient als zentraler Kontrollpunkt für Ihr Home Energy Management System. Hier finden Sie eine Übersicht der wichtigsten Funktionen:',
     dashboardTitle: 'Dashboard (Echtzeit-Energiefluss)',
-    dashboardDesc: 'Das Sankey-Diagramm visualisiert die aktuellen Energieflüsse zwischen PV-Anlage, Netz, Batterie und Verbrauchern. Die Breite der Linien repräsentiert die übertragene Leistung.',
+    dashboardDesc:
+      'Das Sankey-Diagramm visualisiert die aktuellen Energieflüsse zwischen PV-Anlage, Netz, Batterie und Verbrauchern. Die Breite der Linien repräsentiert die übertragene Leistung.',
     automationTitle: 'Gebäudeautomation (KNX)',
-    automationDesc: 'Über den interaktiven Grundriss können Sie direkt mit Ihrem Smart Home interagieren. Klicken Sie auf Lampen, Fenster oder Thermostate, um deren Status zu ändern. Die Änderungen werden via Node-RED an den KNX-Bus gesendet.',
+    automationDesc:
+      'Über den interaktiven Grundriss können Sie direkt mit Ihrem Smart Home interagieren. Klicken Sie auf Lampen, Fenster oder Thermostate, um deren Status zu ändern. Die Änderungen werden via Node-RED an den KNX-Bus gesendet.',
     controlTitle: 'Steuerung & Optimierung',
-    controlDesc: 'Hier konfigurieren Sie die Ladestrategie für Ihr Elektrofahrzeug (Wallbox) und den Betriebsmodus der Wärmepumpe (SG Ready). Die App berücksichtigt dabei dynamische Stromtarife und PV-Überschuss.',
+    controlDesc:
+      'Hier konfigurieren Sie die Ladestrategie für Ihr Elektrofahrzeug (Wallbox) und den Betriebsmodus der Wärmepumpe (SG Ready). Die App berücksichtigt dabei dynamische Stromtarife und PV-Überschuss.',
     glossary: 'Glossar',
     glossaryTitle: 'Lexikon & Glossar',
     faq: 'FAQ',
@@ -145,24 +170,32 @@ export const de = {
     aboutTitle: 'Über die App',
     version: 'Version 2.0.0',
     hems: 'Home Energy Management System',
-    hemsDesc: 'Ein System zur Überwachung, Steuerung und Optimierung des Energieverbrauchs in einem Gebäude.',
+    hemsDesc:
+      'Ein System zur Überwachung, Steuerung und Optimierung des Energieverbrauchs in einem Gebäude.',
     ess: 'Energy Storage System',
-    essDesc: 'Ein Energiespeichersystem, typischerweise bestehend aus Batterien und Wechselrichtern (z.B. Victron MultiPlus-II).',
+    essDesc:
+      'Ein Energiespeichersystem, typischerweise bestehend aus Batterien und Wechselrichtern (z.B. Victron MultiPlus-II).',
     sgReady: 'Smart Grid Ready',
-    sgReadyDesc: 'Ein Standard für Wärmepumpen, der es ermöglicht, diese netzdienlich zu steuern (z.B. Einschalten bei PV-Überschuss).',
+    sgReadyDesc:
+      'Ein Standard für Wärmepumpen, der es ermöglicht, diese netzdienlich zu steuern (z.B. Einschalten bei PV-Überschuss).',
     enwg: '§14a EnWG',
-    enwgDesc: 'Paragraph im Energiewirtschaftsgesetz, der die netzdienliche Steuerung von steuerbaren Verbrauchseinrichtungen (Wallboxen, Wärmepumpen) durch den Netzbetreiber regelt (Dimmen auf 4,2 kW).',
+    enwgDesc:
+      'Paragraph im Energiewirtschaftsgesetz, der die netzdienliche Steuerung von steuerbaren Verbrauchseinrichtungen (Wallboxen, Wärmepumpen) durch den Netzbetreiber regelt (Dimmen auf 4,2 kW).',
     knx: 'KNX',
     knxDesc: 'Ein weltweiter Standard für die Haus- und Gebäudeautomation (Sensorik und Aktorik).',
     soc: 'SoC (State of Charge)',
     socDesc: 'Der aktuelle Ladezustand einer Batterie in Prozent.',
     faqPowerOutage: 'Was passiert bei einem Stromausfall?',
-    faqPowerOutageAnswer: 'Das Victron ESS schaltet innerhalb von Millisekunden in den Inselbetrieb um. Wichtige Verbraucher werden weiterhin aus der Batterie versorgt. Das Dashboard bleibt erreichbar, solange der Router und der Cerbo GX mit Strom versorgt werden.',
+    faqPowerOutageAnswer:
+      'Das Victron ESS schaltet innerhalb von Millisekunden in den Inselbetrieb um. Wichtige Verbraucher werden weiterhin aus der Batterie versorgt. Das Dashboard bleibt erreichbar, solange der Router und der Cerbo GX mit Strom versorgt werden.',
     faqEnwg: 'Wie funktioniert die §14a EnWG Dimmung?',
-    faqEnwgAnswer: 'Wenn der Netzbetreiber ein Dimmsignal sendet, reduziert das HEMS den maximalen Netzbezug auf 4,2 kW. Die App verteilt die verfügbare Leistung (inklusive PV-Erzeugung und Batterieleistung) intelligent auf Wallbox und Wärmepumpe, um Komforteinbußen zu minimieren.',
+    faqEnwgAnswer:
+      'Wenn der Netzbetreiber ein Dimmsignal sendet, reduziert das HEMS den maximalen Netzbezug auf 4,2 kW. Die App verteilt die verfügbare Leistung (inklusive PV-Erzeugung und Batterieleistung) intelligent auf Wallbox und Wärmepumpe, um Komforteinbußen zu minimieren.',
     faqSecurity: 'Sind meine Daten sicher?',
-    faqSecurityAnswer: 'Ja. Das System verwendet eine lokale Public Key Infrastructure (PKI) mit mTLS. Die Kommunikation zwischen Dashboard und Backend ist verschlüsselt. Historische Daten werden primär lokal in Ihrem Browser (IndexedDB) gespeichert.',
-    aboutDesc: 'Das Nexus-HEMS Dash ist eine hochmoderne Visualisierungs- und Steuerungsschicht für integrierte Energiemanagementsysteme. Es wurde entwickelt, um die Komplexität von Sektorenkopplung (Strom, Wärme, Mobilität) beherrschbar zu machen.',
+    faqSecurityAnswer:
+      'Ja. Das System verwendet eine lokale Public Key Infrastructure (PKI) mit mTLS. Die Kommunikation zwischen Dashboard und Backend ist verschlüsselt. Historische Daten werden primär lokal in Ihrem Browser (IndexedDB) gespeichert.',
+    aboutDesc:
+      'Das Nexus-HEMS Dash ist eine hochmoderne Visualisierungs- und Steuerungsschicht für integrierte Energiemanagementsysteme. Es wurde entwickelt, um die Komplexität von Sektorenkopplung (Strom, Wärme, Mobilität) beherrschbar zu machen.',
     techStack: 'Technologie-Stack',
     techFrontend: 'Frontend: React 19, Tailwind CSS, Lucide Icons',
     techState: 'State Management: Zustand',
@@ -170,7 +203,8 @@ export const de = {
     techBackend: 'Backend/Kommunikation: Node.js, WebSockets',
     techStorage: 'Lokale Speicherung: Dexie.js (IndexedDB)',
     license: 'Lizenz & Danksagung',
-    licenseDesc: 'Basierend auf der strategischen Ausarbeitung zur Integration von Victron Energy, KNX und dynamischen Stromtarifen. Entwickelt für die Dekarbonisierung des privaten Sektors.',
+    licenseDesc:
+      'Basierend auf der strategischen Ausarbeitung zur Integration von Victron Energy, KNX und dynamischen Stromtarifen. Entwickelt für die Dekarbonisierung des privaten Sektors.',
   },
   ai: {
     title: 'AI Optimizer (Gemini 2.5)',
@@ -281,7 +315,8 @@ export const de = {
     tariffPrice: 'Tarifpreis (€/kWh)',
     consumption: 'Verbrauch (kW)',
     recommendation: '💡 Beste Aktion',
-    recommendationText: 'EV und Batterie in den günstigen Sonnenstunden laden (10:00-14:00). Netzbezug in Spitzenzeiten vermeiden (17:00-21:00).',
+    recommendationText:
+      'EV und Batterie in den günstigen Sonnenstunden laden (10:00-14:00). Netzbezug in Spitzenzeiten vermeiden (17:00-21:00).',
   },
   mqtt: {
     title: 'Home Assistant / MQTT',
@@ -346,7 +381,8 @@ export const de = {
   },
   error: {
     title: 'Hoppla! Etwas ist schiefgelaufen',
-    description: 'Ein unerwarteter Fehler ist aufgetreten. Sie können die Seite neu laden oder zum Dashboard zurückkehren.',
+    description:
+      'Ein unerwarteter Fehler ist aufgetreten. Sie können die Seite neu laden oder zum Dashboard zurückkehren.',
     details: 'Fehlerdetails',
     message: 'Nachricht:',
     stack: 'Stack-Trace:',
@@ -355,7 +391,8 @@ export const de = {
     reload: 'Seite neu laden',
     goHome: 'Zum Dashboard',
     helpTitle: 'Brauchen Sie Hilfe?',
-    helpText: 'Falls das Problem weiterhin besteht, leeren Sie den Browser-Cache oder kontaktieren Sie den Support unter',
+    helpText:
+      'Falls das Problem weiterhin besteht, leeren Sie den Browser-Cache oder kontaktieren Sie den Support unter',
   },
   export: {
     title: 'Export & Teilen',
@@ -376,5 +413,36 @@ export const de = {
     ariaLive: 'Live-Updates',
     screenReaderOnly: 'Nur für Screenreader',
     keyboardNavigation: 'Tastaturnavigation verfügbar',
+  },
+  production: {
+    subtitle: 'Solar-PV-Erzeugung & Prognose',
+    currentPower: 'Aktuelle Leistung',
+    todayYield: 'Heutiger Ertrag',
+    selfConsumption: 'Eigenverbrauch',
+    feedIn: 'Einspeisung',
+    status: 'PV-Anlagenstatus',
+    output: 'Leistung',
+  },
+  storage: {
+    subtitle: 'Batteriemanagement & Strategie',
+    power: 'Leistung',
+    voltage: 'Spannung',
+    capacity: 'Kapazität',
+  },
+  consumption: {
+    subtitle: 'Hausverbrauch & Verbraucheranalyse',
+    total: 'Gesamtverbrauch',
+  },
+  ev: {
+    subtitle: 'Wallbox-Steuerung & Ladestrategie',
+    chargingPower: 'Ladeleistung',
+    maxPower: 'Max. Leistung',
+    currentTariff: 'Aktueller Tarif',
+  },
+  tariffs: {
+    subtitle: 'Tibber, aWATTar & Preisoptimierung',
+  },
+  analytics: {
+    subtitle: 'Berichte, Prognosen & Datenexport',
   },
 } as const;

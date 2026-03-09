@@ -18,14 +18,14 @@ export function Dashboard() {
   const { energyData } = useAppStore();
 
   return (
-    <motion.div 
+    <motion.div
       className="grid grid-cols-1 gap-6 space-lg"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.6, staggerChildren: 0.1 }}
     >
       {/* AI Optimizer Banner */}
-      <motion.div 
+      <motion.div
         id="ai-optimizer"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -35,7 +35,7 @@ export function Dashboard() {
       </motion.div>
 
       {/* Live Price Widget + Voice Control */}
-      <motion.div 
+      <motion.div
         className="grid grid-cols-1 lg:grid-cols-3 gap-6"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -47,7 +47,7 @@ export function Dashboard() {
         <VoiceControlPanel />
       </motion.div>
 
-      <motion.div 
+      <motion.div
         className="grid grid-cols-1 lg:grid-cols-3 gap-6 space-lg"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -58,10 +58,13 @@ export function Dashboard() {
           className="lg:col-span-2 glass-panel-strong p-6 rounded-3xl flex flex-col hover-lift"
           aria-labelledby="energy-flow-title"
         >
-          <h2 id="energy-flow-title" className="text-lg font-medium mb-4 flex items-center gap-2 fluid-text-lg">
+          <h2
+            id="energy-flow-title"
+            className="text-lg font-medium mb-4 flex items-center gap-2 fluid-text-lg"
+          >
             <motion.div
               animate={{ rotate: [0, 360] }}
-              transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+              transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
             >
               <Activity
                 size={20}
@@ -138,7 +141,10 @@ export function Dashboard() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.8 }}
         >
-          <h2 id="floorplan-title" className="text-lg font-medium mb-4 flex items-center gap-2 fluid-text-lg">
+          <h2
+            id="floorplan-title"
+            className="text-lg font-medium mb-4 flex items-center gap-2 fluid-text-lg"
+          >
             <Home size={20} className="text-[color:var(--color-secondary)]" aria-hidden="true" />
             {t('dashboard.automation')}
           </h2>
@@ -148,14 +154,17 @@ export function Dashboard() {
         </motion.section>
 
         {/* Control Panel */}
-        <motion.section 
-          className="glass-panel-strong p-6 rounded-3xl hover-lift" 
+        <motion.section
+          className="glass-panel-strong p-6 rounded-3xl hover-lift"
           aria-labelledby="control-title"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.9 }}
         >
-          <h2 id="control-title" className="text-lg font-medium mb-4 flex items-center gap-2 fluid-text-lg">
+          <h2
+            id="control-title"
+            className="text-lg font-medium mb-4 flex items-center gap-2 fluid-text-lg"
+          >
             <Thermometer
               size={20}
               className="text-[color:var(--color-secondary)]"
@@ -167,7 +176,7 @@ export function Dashboard() {
         </motion.section>
 
         {/* Export & Sharing */}
-        <motion.section 
+        <motion.section
           className="lg:col-span-1"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -205,38 +214,42 @@ function MetricCard({
   delay?: number;
 }) {
   return (
-    <motion.article 
+    <motion.article
       className={`metric-card rounded-3xl hover-lift hover-glow ${className || ''}`}
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      transition={{ 
-        duration: 0.5, 
+      transition={{
+        duration: 0.5,
         delay,
-        type: "spring",
+        type: 'spring',
         stiffness: 260,
-        damping: 20
+        damping: 20,
       }}
-      whileHover={{ 
-        y: -6, 
+      whileHover={{
+        y: -6,
         scale: 1.02,
-        transition: { duration: 0.3, type: "spring", stiffness: 400, damping: 17 } 
+        transition: { duration: 0.3, type: 'spring', stiffness: 400, damping: 17 },
       }}
     >
       <div className="flex items-center gap-3 mb-3">
-        <motion.div 
+        <motion.div
           className="p-2.5 bg-white/6 rounded-xl border border-[color:var(--color-border)]"
           whileHover={{ rotate: 10, scale: 1.1 }}
-          transition={{ type: "spring", stiffness: 400, damping: 17 }}
+          transition={{ type: 'spring', stiffness: 400, damping: 17 }}
         >
           {icon}
         </motion.div>
-        <span className="text-sm font-medium text-[color:var(--color-text)] fluid-text-sm">{label}</span>
+        <span className="text-sm font-medium text-[color:var(--color-text)] fluid-text-sm">
+          {label}
+        </span>
       </div>
       <div>
         <div className="text-2xl font-light tracking-tight text-[color:var(--color-text)] fluid-text-2xl">
           {value}
         </div>
-        <div className="text-xs text-[color:var(--color-muted)] mt-1.5 fluid-text-xs">{subValue}</div>
+        <div className="text-xs text-[color:var(--color-muted)] mt-1.5 fluid-text-xs">
+          {subValue}
+        </div>
       </div>
     </motion.article>
   );

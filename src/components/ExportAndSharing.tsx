@@ -78,9 +78,7 @@ export function ExportAndSharing() {
             className="btn-primary focus-ring flex w-full items-center justify-center gap-2"
           >
             <FileDown className="h-5 w-5" aria-hidden="true" />
-            {isGenerating
-              ? t('export.generating')
-              : t('export.downloadPdf')}
+            {isGenerating ? t('export.generating') : t('export.downloadPdf')}
           </button>
           <p className="mt-2 text-xs text-[color:var(--color-muted)]">
             {t('export.pdfDescription')}

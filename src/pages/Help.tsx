@@ -53,32 +53,22 @@ export function Help() {
           {activeTab === 'usage' && (
             <div className="space-y-6 animate-in fade-in duration-300">
               <h2 className="text-2xl font-medium mb-4">{t('help.usageTitle')}</h2>
-              <p className="text-slate-300 leading-relaxed">
-                {t('help.usageIntro')}
-              </p>
+              <p className="text-slate-300 leading-relaxed">{t('help.usageIntro')}</p>
 
               <div className="space-y-4 mt-6">
                 <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700">
-                  <h3 className="font-medium text-emerald-400 mb-2">
-                    {t('help.dashboardTitle')}
-                  </h3>
-                  <p className="text-sm text-slate-300">
-                    {t('help.dashboardDesc')}
-                  </p>
+                  <h3 className="font-medium text-emerald-400 mb-2">{t('help.dashboardTitle')}</h3>
+                  <p className="text-sm text-slate-300">{t('help.dashboardDesc')}</p>
                 </div>
 
                 <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700">
                   <h3 className="font-medium text-blue-400 mb-2">{t('help.automationTitle')}</h3>
-                  <p className="text-sm text-slate-300">
-                    {t('help.automationDesc')}
-                  </p>
+                  <p className="text-sm text-slate-300">{t('help.automationDesc')}</p>
                 </div>
 
                 <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700">
                   <h3 className="font-medium text-orange-400 mb-2">{t('help.controlTitle')}</h3>
-                  <p className="text-sm text-slate-300">
-                    {t('help.controlDesc')}
-                  </p>
+                  <p className="text-sm text-slate-300">{t('help.controlDesc')}</p>
                 </div>
               </div>
             </div>
@@ -90,42 +80,28 @@ export function Help() {
 
               <dl className="space-y-4">
                 <div className="border-b border-slate-700 pb-4">
-                  <dt className="font-medium text-emerald-400">
-                    {t('help.hems')}
-                  </dt>
-                  <dd className="text-sm text-slate-300 mt-1">
-                    {t('help.hemsDesc')}
-                  </dd>
+                  <dt className="font-medium text-emerald-400">{t('help.hems')}</dt>
+                  <dd className="text-sm text-slate-300 mt-1">{t('help.hemsDesc')}</dd>
                 </div>
                 <div className="border-b border-slate-700 pb-4">
                   <dt className="font-medium text-emerald-400">{t('help.ess')}</dt>
-                  <dd className="text-sm text-slate-300 mt-1">
-                    {t('help.essDesc')}
-                  </dd>
+                  <dd className="text-sm text-slate-300 mt-1">{t('help.essDesc')}</dd>
                 </div>
                 <div className="border-b border-slate-700 pb-4">
                   <dt className="font-medium text-emerald-400">{t('help.sgReady')}</dt>
-                  <dd className="text-sm text-slate-300 mt-1">
-                    {t('help.sgReadyDesc')}
-                  </dd>
+                  <dd className="text-sm text-slate-300 mt-1">{t('help.sgReadyDesc')}</dd>
                 </div>
                 <div className="border-b border-slate-700 pb-4">
                   <dt className="font-medium text-emerald-400">{t('help.enwg')}</dt>
-                  <dd className="text-sm text-slate-300 mt-1">
-                    {t('help.enwgDesc')}
-                  </dd>
+                  <dd className="text-sm text-slate-300 mt-1">{t('help.enwgDesc')}</dd>
                 </div>
                 <div className="border-b border-slate-700 pb-4">
                   <dt className="font-medium text-emerald-400">{t('help.knx')}</dt>
-                  <dd className="text-sm text-slate-300 mt-1">
-                    {t('help.knxDesc')}
-                  </dd>
+                  <dd className="text-sm text-slate-300 mt-1">{t('help.knxDesc')}</dd>
                 </div>
                 <div className="border-b border-slate-700 pb-4">
                   <dt className="font-medium text-emerald-400">{t('help.soc')}</dt>
-                  <dd className="text-sm text-slate-300 mt-1">
-                    {t('help.socDesc')}
-                  </dd>
+                  <dd className="text-sm text-slate-300 mt-1">{t('help.socDesc')}</dd>
                 </div>
               </dl>
             </div>
@@ -179,9 +155,7 @@ export function Help() {
                       </svg>
                     </span>
                   </summary>
-                  <div className="px-4 pb-4 text-sm text-slate-400">
-                    {t('help.faqEnwgAnswer')}
-                  </div>
+                  <div className="px-4 pb-4 text-sm text-slate-400">{t('help.faqEnwgAnswer')}</div>
                 </details>
 
                 <details className="group bg-slate-800/50 rounded-xl border border-slate-700">
@@ -227,9 +201,7 @@ export function Help() {
                 </div>
 
                 <div className="space-y-4 text-sm text-slate-300">
-                  <p>
-                    {t('help.aboutDesc')}
-                  </p>
+                  <p>{t('help.aboutDesc')}</p>
 
                   <div className="border-t border-slate-700 pt-4 mt-4">
                     <h4 className="font-medium text-slate-200 mb-2">{t('help.techStack')}</h4>
@@ -244,9 +216,7 @@ export function Help() {
 
                   <div className="border-t border-slate-700 pt-4 mt-4">
                     <h4 className="font-medium text-slate-200 mb-2">{t('help.license')}</h4>
-                    <p className="text-slate-400">
-                      {t('help.licenseDesc')}
-                    </p>
+                    <p className="text-slate-400">{t('help.licenseDesc')}</p>
                   </div>
                 </div>
               </div>

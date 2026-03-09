@@ -81,7 +81,10 @@ export const useAppStore = create<AppState>()(
       setTheme: (theme) =>
         set((state) => ({ theme, themeTransitionKey: state.themeTransitionKey + 1 })),
       setThemePreference: (preference) =>
-        set((state) => ({ themePreference: preference, themeTransitionKey: state.themeTransitionKey + 1 })),
+        set((state) => ({
+          themePreference: preference,
+          themeTransitionKey: state.themeTransitionKey + 1,
+        })),
       updateFloorplan: (data) => set((state) => ({ floorplan: { ...state.floorplan, ...data } })),
       updateSettings: (data) => {
         const nextSettings = { ...get().settings, ...data };

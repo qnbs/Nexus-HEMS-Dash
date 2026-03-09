@@ -234,7 +234,7 @@ export const SankeyDiagram = memo(function SankeyDiagram({ data }: { data: Energ
       .attr('font-weight', '500')
       .style('pointer-events', 'none')
       .style('user-select', 'none');
-    
+
     // Cache Sankey data for offline mode
     void cacheSankeyData(
       graph.nodes.map((n) => ({ name: n.name, color: n.color, value: n.value })),
