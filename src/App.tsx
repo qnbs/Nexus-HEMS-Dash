@@ -2,7 +2,7 @@ import { useEffect, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useWebSocket } from './useWebSocket';
+import { useAdapterBridge } from './core/useEnergyStore';
 import { useAppStore } from './store';
 import { Zap, Wifi, Command, Orbit } from 'lucide-react';
 import { themeDefinitions } from './design-tokens';
@@ -17,7 +17,6 @@ import { PWAInstallPrompt } from './components/PWAInstallPrompt';
 import { PWAUpdateNotification } from './components/PWAUpdateNotification';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { watchSystemTheme, resolveTheme } from './lib/theme';
-import { cacheEnergySnapshot } from './lib/offline-cache';
 import { backgroundSyncService } from './lib/background-sync';
 import { logError } from './lib/db';
 
@@ -53,7 +52,8 @@ export default function App() {
     useAppStore();
   const { isOpen: isCommandPaletteOpen, setIsOpen: setCommandPaletteOpen } = useCommandPalette();
 
-  const { sendCommand } = useWebSocket();
+  // Adapter bridge replaces the old useWebSocket hook
+  useAdapterBridge();
   const themeDefinition = themeDefinitions[theme];
 
   useEffect(() => {
@@ -87,13 +87,6 @@ export default function App() {
 
     return unwatch;
   }, [themePreference, setTheme]);
-
-  // Cache energy data for offline mode
-  useEffect(() => {
-    if (connected && energyData) {
-      void cacheEnergySnapshot(energyData);
-    }
-  }, [connected, energyData]);
 
   // Initialize background sync service
   useEffect(() => {

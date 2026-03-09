@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { motion } from 'motion/react';
-import { useWebSocket } from '../useWebSocket';
+import { useLegacySendCommand } from '../core/useLegacySendCommand';
 import { useAppStore } from '../store';
 import { Activity, Battery, Home, Sun, Thermometer, Zap } from 'lucide-react';
 import { SankeyDiagram } from '../components/SankeyDiagram';
@@ -14,7 +14,7 @@ import { ExportAndSharing } from '../components/ExportAndSharing';
 
 export function Dashboard() {
   const { t } = useTranslation();
-  const { sendCommand } = useWebSocket();
+  const { sendCommand } = useLegacySendCommand();
   const { energyData } = useAppStore();
 
   return (

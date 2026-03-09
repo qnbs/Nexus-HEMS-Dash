@@ -3,13 +3,13 @@ import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { Battery } from 'lucide-react';
 import { useAppStore } from '../store';
-import { useWebSocket } from '../useWebSocket';
+import { useLegacySendCommand } from '../core/useLegacySendCommand';
 import { PageHeader } from '../components/layout/PageHeader';
 
 function StoragePageComponent() {
   const { t } = useTranslation();
   const { energyData } = useAppStore();
-  const { sendCommand } = useWebSocket();
+  const { sendCommand } = useLegacySendCommand();
 
   const batteryStatus =
     energyData.batteryPower < -50

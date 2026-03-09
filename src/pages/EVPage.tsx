@@ -3,14 +3,14 @@ import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { Car } from 'lucide-react';
 import { useAppStore } from '../store';
-import { useWebSocket } from '../useWebSocket';
+import { useLegacySendCommand } from '../core/useLegacySendCommand';
 import { PageHeader } from '../components/layout/PageHeader';
 import { ControlPanel } from '../components/ControlPanel';
 
 function EVPageComponent() {
   const { t } = useTranslation();
   const { energyData } = useAppStore();
-  const { sendCommand } = useWebSocket();
+  const { sendCommand } = useLegacySendCommand();
 
   return (
     <div className="space-y-6">

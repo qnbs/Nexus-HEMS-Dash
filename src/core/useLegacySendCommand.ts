@@ -1,0 +1,40 @@
+/**
+ * useLegacySendCommand — Backward-compatible wrapper
+ *
+ * Bridges the old `sendCommand(type: CommandType, value: number)` API
+ * to the new adapter-based command routing.
+ *
+ * Usage: Drop-in replacement for `useWebSocket().sendCommand` in pages
+ * that still use ControlPanel with the legacy signature.
+ */
+
+import { useCallback } from 'react';
+import { useAdapterBridge } from './useEnergyStore';
+import type { CommandType } from '../types';
+import type { AdapterCommand } from './adapters/EnergyAdapter';
+
+/** Map legacy CommandType to AdapterCommand */
+function toLegacyCommand(type: CommandType, value: number): AdapterCommand {
+  const mapping: Record<CommandType, AdapterCommand> = {
+    SET_EV_POWER: { type: 'SET_EV_POWER', value },
+    SET_HEAT_PUMP_POWER: { type: 'SET_HEAT_PUMP_POWER', value },
+    SET_BATTERY_POWER: { type: 'SET_BATTERY_POWER', value },
+    TOGGLE_KNX_LIGHTS: { type: 'KNX_TOGGLE_LIGHTS', value: value === 1 },
+    TOGGLE_KNX_WINDOW: { type: 'KNX_TOGGLE_WINDOW', value: value === 1 },
+    SET_ROOM_TEMPERATURE: { type: 'KNX_SET_TEMPERATURE', value },
+  };
+  return mapping[type] ?? { type: 'SET_EV_POWER', value };
+}
+
+export function useLegacySendCommand() {
+  const { sendCommand: adapterSendCommand } = useAdapterBridge();
+
+  const sendCommand = useCallback(
+    (type: CommandType, value: number) => {
+      adapterSendCommand(toLegacyCommand(type, value));
+    },
+    [adapterSendCommand],
+  );
+
+  return { sendCommand };
+}

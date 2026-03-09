@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![Version](https://img.shields.io/badge/Version-3.0.0-22ff88?style=for-the-badge)
+![Version](https://img.shields.io/badge/Version-3.1.0-22ff88?style=for-the-badge)
 ![React](https://img.shields.io/badge/React-19-00f0ff?style=for-the-badge&logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178c6?style=for-the-badge&logo=typescript)
 ![Tailwind](https://img.shields.io/badge/Tailwind-4.1-38bdf8?style=for-the-badge&logo=tailwindcss)
@@ -32,6 +32,17 @@
 **Nexus-HEMS Dash** is a production-ready, real-time Home Energy Management System (HEMS) dashboard designed for the decentralized energy era. Seamlessly integrating **Victron Energy**, **KNX building automation**, and **dynamic electricity tariffs** (Tibber, aWATTar), it provides intelligent orchestration for PV generation, battery storage, heat pumps, and EV charging.
 
 Built with **React 19**, **Zustand**, **D3.js**, and **Tailwind CSS 4**, the dashboard delivers a stunning **Neo-Energy Cyber-Glassmorphism UI** with full **i18n** (German/English), **WCAG 2.2 AA accessibility**, and **offline-first** architecture.
+
+### ✨ What's New in 3.1.0
+
+- 🔌 **Adapter Pattern for HEMS Protocols**: Pluggable protocol layer with 5 adapters (VictronMQTT, ModbusSunSpec, KNX, OCPP 2.1, EEBUS stub)
+- 🧩 **UnifiedEnergyModel**: Typed data model aggregating PV, battery, grid, load, EV charger, KNX, and tariff data
+- 🔋 **OCPP 2.1 + V2X**: Full Vehicle-to-Grid support with JSON-RPC messaging and charging profile management
+- 🏠 **KNX WebSocket Bridge**: Real-time room state management with GA→field reverse lookup
+- ⚡ **Modbus/SunSpec Polling**: HTTP/REST gateway for SunSpec-compliant inverters and meters
+- 🔀 **Central useEnergyStore**: Zustand aggregator merging all adapter data with legacy bridge
+- 🛡️ **TLS/mTLS + Auth**: Adapter-level security with client certificates and token auth
+- 🔄 **Exponential Backoff**: Automatic reconnection across all WebSocket adapters
 
 ### ✨ What's New in 3.0.0
 
@@ -126,8 +137,9 @@ Built with **React 19**, **Zustand**, **D3.js**, and **Tailwind CSS 4**, the das
 | 🎨 **3 Themes** | Cyber Dark, Solar Light, Night Mode | ✅ Live |
 | ♿ **WCAG 2.2 AA** | Full accessibility (semantic, ARIA, focus) | ✅ Compliant |
 | 📦 **Local-First** | Dexie.js IndexedDB, 30-day history retention | ✅ Live |
-| 🔒 **Enterprise Security** | mTLS, 2FA, telemetry opt-out, §14a compliance | ✅ Live |
-
+| 🔒 **Enterprise Security** | mTLS, 2FA, telemetry opt-out, §14a compliance | ✅ Live || 🔌 **Adapter Pattern** | Pluggable protocol adapters (Victron, Modbus, KNX, OCPP 2.1, EEBUS) | ✅ Live |
+| 🔋 **OCPP 2.1 + V2X** | Vehicle-to-Grid charging with JSON-RPC and charging profiles | ✅ Live |
+| ⚡ **Modbus/SunSpec** | REST gateway polling for SunSpec inverters and meters | ✅ Live |
 ### 🛠️ Technology Stack
 
 ### 🗺️ Page Structure (v3.0)
@@ -237,19 +249,49 @@ AWATTAR_API_KEY=your_awattar_api_key
 
 ### 🏗️ Architecture
 
+**Adapter Pattern (v3.1)**
+
+All external protocols are encapsulated behind a unified `EnergyAdapter` interface. Each adapter normalizes raw protocol data into a single `UnifiedEnergyModel`.
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    useEnergyStore (Zustand)                     │
+│         UnifiedEnergyModel = PV + Battery + Grid + ...         │
+├─────────┬───────────┬─────────┬───────────┬────────────────────┤
+│ Victron │  Modbus   │   KNX   │ OCPP 2.1  │  EEBUS (2027)     │
+│  MQTT   │  SunSpec  │   /IP   │   V2X     │                    │
+│  (WS)   │  (REST)   │  (WS)   │   (WS)    │   (stub)          │
+├─────────┴───────────┴─────────┴───────────┴────────────────────┤
+│                    EnergyAdapter Interface                       │
+│ connect() · onData() · sendCommand() · getSnapshot() · destroy()│
+└─────────────────────────────────────────────────────────────────┘
+```
+
+| Adapter | Protocol | Capabilities | Transport |
+|---------|----------|--------------|-----------|
+| `VictronMQTTAdapter` | Node-RED WebSocket | pv, battery, grid, load | WebSocket |
+| `ModbusSunSpecAdapter` | SunSpec Models 103/124/201 | pv, battery, grid | HTTP/REST polling |
+| `KNXAdapter` | KNX/IP Tunneling | knx | WebSocket bridge |
+| `OCPP21Adapter` | OCPP 2.1 JSON-RPC | evCharger (V2X) | WebSocket |
+| `EEBUSAdapter` | SPINE/SHIP (stub) | evCharger, load | — |
+
+**Key files:**
+- `src/core/adapters/EnergyAdapter.ts` — Interface + `UnifiedEnergyModel` types
+- `src/core/useEnergyStore.ts` — Zustand aggregator + `useAdapterBridge` hook
+- `src/core/useLegacySendCommand.ts` — Backward-compatible wrapper
+
 **Local-First Design**
-- WebSocket connection to Node-RED backend (Victron Cerbo GX)
-- Zustand state management with persist middleware
-- Dexie.js IndexedDB for 30-day rolling history
+- Adapter data merged into central Zustand store, bridged to legacy `useAppStore`
+- Dexie.js IndexedDB for 30-day rolling history (persisted via `useAdapterBridge`)
 - Offline-capable PWA architecture
 
 **Real-Time Data Flow**
 ```
-Victron Cerbo GX (Node-RED) 
-    ↓ WebSocket (ws://)
-Nexus-HEMS Dash (React 19)
-    ↓ Zustand Store
-Dexie.js (IndexedDB) + LocalStorage
+Victron Cerbo GX ──┐
+Modbus/SunSpec ─────┤
+KNX/IP Gateway ─────┤── EnergyAdapter ──→ useEnergyStore ──→ Zustand
+OCPP 2.1 CSMS ──────┤                                        ↓
+EEBUS (planned) ────┘                              Dexie.js + useAppStore
 ```
 
 ### 🗺️ Roadmap 2026
@@ -262,7 +304,9 @@ Dexie.js (IndexedDB) + LocalStorage
 | Q1 2026 | **PDF Monthly Reports** (Sankey + CO₂ balance) | ✅ Completed |
 | Q1 2026 | **Multi-Household Support** (shareable dashboards) | ✅ Completed |
 | Q1 2026 | **Live Price Widget** (Tibber/aWATTar auto-optimization) | ✅ Completed |
+| Q2 2026 | **Adapter Pattern** (Victron, Modbus, KNX, OCPP 2.1) | ✅ Completed |
 | Q2 2026 | **Tailwind Config & Custom Utilities** (.neon-glow, .glass-panel) | 🚧 In Progress |
+| Q3 2026 | **EEBUS SPINE/SHIP Integration** | 🔄 Planned |
 | Q3 2026 | **Focus Traps for Modals** (WCAG 2.2 AA compliance) | 🔄 Planned |
 | Q3 2026 | **Docker/Kubernetes Deployment** | 🔄 Planned |
 | Q4 2026 | **Prometheus/Grafana Monitoring** | 🔄 Planned |
@@ -286,6 +330,17 @@ Contributions welcome! Please open an issue or PR.
 **Nexus-HEMS Dash** ist ein produktionsreifes, Echtzeit Home Energy Management System (HEMS) Dashboard für die Ära der dezentralen Energie. Nahtlose Integration von **Victron Energy**, **KNX-Gebäudeautomation** und **dynamischen Stromtarifen** (Tibber, aWATTar) ermöglicht intelligente Orchestrierung von PV-Erzeugung, Batteriespeicher, Wärmepumpen und EV-Ladung.
 
 Gebaut mit **React 19**, **Zustand**, **D3.js** und **Tailwind CSS 4**, liefert das Dashboard eine atemberaubende **Neo-Energy Cyber-Glassmorphism UI** mit vollständiger **i18n** (Deutsch/Englisch), **WCAG 2.2 AA Barrierefreiheit** und **Offline-First** Architektur.
+
+### ✨ Neu in 3.1.0
+
+- 🔌 **Adapter-Pattern für HEMS-Protokolle**: Pluggable Protokollschicht mit 5 Adaptern (VictronMQTT, ModbusSunSpec, KNX, OCPP 2.1, EEBUS-Stub)
+- 🧩 **UnifiedEnergyModel**: Typisiertes Datenmodell, das PV, Batterie, Netz, Last, E-Auto-Lader, KNX und Tarife aggregiert
+- 🔋 **OCPP 2.1 + V2X**: Vollständige Vehicle-to-Grid-Unterstützung mit JSON-RPC und Ladeprofil-Management
+- 🏠 **KNX-WebSocket-Bridge**: Echtzeit-Raumzustandsverwaltung mit GA→Feld-Reverse-Lookup
+- ⚡ **Modbus/SunSpec-Polling**: HTTP/REST-Gateway für SunSpec-konforme Wechselrichter und Zähler
+- 🔀 **Zentraler useEnergyStore**: Zustand-Aggregator mit Legacy-Bridge
+- 🛡️ **TLS/mTLS + Auth**: Adapter-Level-Sicherheit mit Client-Zertifikaten und Token-Auth
+- 🔄 **Exponential Backoff**: Automatische Wiederverbindung über alle WebSocket-Adapter
 
 ### ✨ Neu in 3.0.0
 
@@ -379,8 +434,9 @@ Gebaut mit **React 19**, **Zustand**, **D3.js** und **Tailwind CSS 4**, liefert 
 | 🎨 **3 Themes** | Cyber Dark, Solar Light, Night Mode | ✅ Live |
 | ♿ **WCAG 2.2 AA** | Vollständige Barrierefreiheit (Semantik, ARIA, Fokus) | ✅ Konform |
 | 📦 **Local-First** | Dexie.js IndexedDB, 30-Tage-Historie-Retention | ✅ Live |
-| 🔒 **Enterprise-Sicherheit** | mTLS, 2FA, Telemetrie-Opt-out, §14a Konformität | ✅ Live |
-
+| 🔒 **Enterprise-Sicherheit** | mTLS, 2FA, Telemetrie-Opt-out, §14a Konformität | ✅ Live || 🔌 **Adapter-Pattern** | Pluggable Protokoll-Adapter (Victron, Modbus, KNX, OCPP 2.1, EEBUS) | ✅ Live |
+| 🔋 **OCPP 2.1 + V2X** | Vehicle-to-Grid-Laden mit JSON-RPC und Ladeprofilen | ✅ Live |
+| ⚡ **Modbus/SunSpec** | REST-Gateway-Polling für SunSpec-Wechselrichter und -Zähler | ✅ Live |
 ### �️ Seitenstruktur (v3.0)
 
 | Route | Seite | Beschreibung |
@@ -443,19 +499,49 @@ docker-compose up -d
 
 ### 🏗️ Architektur
 
+**Adapter-Pattern (v3.1)**
+
+Alle externen Protokolle sind hinter einem einheitlichen `EnergyAdapter`-Interface gekapselt. Jeder Adapter normalisiert Rohdaten in ein einheitliches `UnifiedEnergyModel`.
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    useEnergyStore (Zustand)                     │
+│         UnifiedEnergyModel = PV + Batterie + Netz + ...        │
+├─────────┬───────────┬─────────┬───────────┬────────────────────┤
+│ Victron │  Modbus   │   KNX   │ OCPP 2.1  │  EEBUS (2027)     │
+│  MQTT   │  SunSpec  │   /IP   │   V2X     │                    │
+│  (WS)   │  (REST)   │  (WS)   │   (WS)    │   (Stub)          │
+├─────────┴───────────┴─────────┴───────────┴────────────────────┤
+│                    EnergyAdapter Interface                       │
+│ connect() · onData() · sendCommand() · getSnapshot() · destroy()│
+└─────────────────────────────────────────────────────────────────┘
+```
+
+| Adapter | Protokoll | Fähigkeiten | Transport |
+|---------|-----------|-------------|-----------|
+| `VictronMQTTAdapter` | Node-RED WebSocket | pv, battery, grid, load | WebSocket |
+| `ModbusSunSpecAdapter` | SunSpec Models 103/124/201 | pv, battery, grid | HTTP/REST-Polling |
+| `KNXAdapter` | KNX/IP Tunneling | knx | WebSocket-Bridge |
+| `OCPP21Adapter` | OCPP 2.1 JSON-RPC | evCharger (V2X) | WebSocket |
+| `EEBUSAdapter` | SPINE/SHIP (Stub) | evCharger, load | — |
+
+**Wichtige Dateien:**
+- `src/core/adapters/EnergyAdapter.ts` — Interface + `UnifiedEnergyModel`-Typen
+- `src/core/useEnergyStore.ts` — Zustand-Aggregator + `useAdapterBridge`-Hook
+- `src/core/useLegacySendCommand.ts` — Abwärtskompatible Wrapper
+
 **Local-First Design**
-- WebSocket-Verbindung zu Node-RED-Backend (Victron Cerbo GX)
-- Zustand State Management mit Persist-Middleware
-- Dexie.js IndexedDB für 30-Tage-Rolling-History
+- Adapter-Daten werden in zentralem Zustand-Store zusammengeführt, gebrückt zu Legacy-`useAppStore`
+- Dexie.js IndexedDB für 30-Tage-Rolling-History (persistiert via `useAdapterBridge`)
 - Offline-fähige PWA-Architektur
 
 **Echtzeit-Datenfluss**
 ```
-Victron Cerbo GX (Node-RED) 
-    ↓ WebSocket (ws://)
-Nexus-HEMS Dash (React 19)
-    ↓ Zustand Store
-Dexie.js (IndexedDB) + LocalStorage
+Victron Cerbo GX ──┐
+Modbus/SunSpec ─────┤
+KNX/IP-Gateway ─────┤── EnergyAdapter ──→ useEnergyStore ──→ Zustand
+OCPP 2.1 CSMS ──────┤                                        ↓
+EEBUS (geplant) ────┘                              Dexie.js + useAppStore
 ```
 
 ### 🗺️ Roadmap 2026
@@ -468,7 +554,9 @@ Dexie.js (IndexedDB) + LocalStorage
 | Q1 2026 | **PDF-Monatsberichte** (Sankey + CO₂-Bilanz) | ✅ Abgeschlossen |
 | Q1 2026 | **Multi-Household Support** (Teilbare Dashboards) | ✅ Abgeschlossen |
 | Q1 2026 | **Live-Preis-Widget** (Tibber/aWATTar Auto-Optimierung) | ✅ Abgeschlossen |
+| Q2 2026 | **Adapter-Pattern** (Victron, Modbus, KNX, OCPP 2.1) | ✅ Abgeschlossen |
 | Q2 2026 | **Tailwind Config & Custom Utilities** (.neon-glow, .glass-panel) | 🚧 In Arbeit |
+| Q3 2026 | **EEBUS SPINE/SHIP Integration** | 🔄 Geplant |
 | Q3 2026 | **Focus Traps für Modals** (WCAG 2.2 AA Compliance) | 🔄 Geplant |
 | Q3 2026 | **Docker/Kubernetes Deployment** | 🔄 Geplant |
 | Q4 2026 | **Prometheus/Grafana Monitoring** | 🔄 Geplant |

@@ -3,7 +3,7 @@ import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { Sun, Battery, Home, Zap, Activity, Sparkles, TrendingUp } from 'lucide-react';
 import { useAppStore } from '../store';
-import { useWebSocket } from '../useWebSocket';
+import { useLegacySendCommand } from '../core/useLegacySendCommand';
 import { PageHeader } from '../components/layout/PageHeader';
 import { SankeyDiagram } from '../components/SankeyDiagram';
 import { AIOptimizerPanel } from '../components/AIOptimizerPanel';
@@ -13,7 +13,7 @@ import { Link } from 'react-router-dom';
 function HomePageComponent() {
   const { t } = useTranslation();
   const { energyData } = useAppStore();
-  const { sendCommand } = useWebSocket();
+  const { sendCommand } = useLegacySendCommand();
 
   return (
     <div className="space-y-6">
