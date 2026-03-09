@@ -96,10 +96,18 @@
 
 ## 🌈 Themes
 
-### Available Themes
-1. **cyber-energy-dark** (default) - High-contrast dark mode with neon green
-2. **solar-light** - Light mode with warm solar tones
-3. **night-mode** - Deep dark mode with blue accents
+### Available Themes (5)
+1. **cyber-energy-dark** (default) — High-contrast dark mode with neon green
+2. **cyber-energy** — Vibrant light mode with cyan and emerald accents
+3. **solar-light** — Warm light mode with solar orange tones
+4. **minimal-white** — Clean modern light theme with slate grays
+5. **night-mode** — Deep dark mode with blue accents
+
+### Theme Features
+- System preference detection (`prefers-color-scheme`)
+- Animated dot-style theme switcher with spring transitions
+- `isDark` property on each theme for conditional rendering
+- `previewColors` for theme preview dots in the UI
 
 ### Theme Switching
 ```tsx

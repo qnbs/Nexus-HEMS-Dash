@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![Version](https://img.shields.io/badge/Version-3.1.0-22ff88?style=for-the-badge)
+![Version](https://img.shields.io/badge/Version-3.2.0-22ff88?style=for-the-badge)
 ![React](https://img.shields.io/badge/React-19-00f0ff?style=for-the-badge&logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178c6?style=for-the-badge&logo=typescript)
 ![Tailwind](https://img.shields.io/badge/Tailwind-4.1-38bdf8?style=for-the-badge&logo=tailwindcss)
@@ -32,6 +32,19 @@
 **Nexus-HEMS Dash** is a production-ready, real-time Home Energy Management System (HEMS) dashboard designed for the decentralized energy era. Seamlessly integrating **Victron Energy**, **KNX building automation**, and **dynamic electricity tariffs** (Tibber, aWATTar), it provides intelligent orchestration for PV generation, battery storage, heat pumps, and EV charging.
 
 Built with **React 19**, **Zustand**, **D3.js**, and **Tailwind CSS 4**, the dashboard delivers a stunning **Neo-Energy Cyber-Glassmorphism UI** with full **i18n** (German/English), **WCAG 2.2 AA accessibility**, and **offline-first** architecture.
+
+### ✨ What's New in 3.2.0
+
+- 🔐 **BYOK AI (Bring Your Own Key)**: Encrypted multi-provider AI key storage (OpenAI, Anthropic, Google, xAI, Groq, Ollama, Custom) via Web Crypto AES-GCM 256-bit + PBKDF2 600k
+- 🎨 **5 Premium Themes**: 2 new themes — Cyber Energy (vibrant light) and Minimal White (clean modern)
+- ⚡ **Dynamic EV Pricing Strategy**: Real-time charge mode indicator (PV surplus, low price, expensive, normal)
+- 📊 **Live Analytics**: Computed stats from real energy data (replace hardcoded values)
+- 🌿 **UBA CO₂ Factor**: PDF reports use official Umweltbundesamt 2024 grid emission factor (380 g/kWh)
+- 🎤 **Offline Voice Control**: Text input fallback when Speech API unavailable + offline mode detection
+- 🧪 **63 Unit Tests**: Comprehensive test suite (crypto, optimizer, store, format, voice, pdf, db, adapters)
+- 🏗️ **CI Hardened**: No more continue-on-error, bundle size budget gate (600 KB), unit test step
+- ♿ **Enhanced Accessibility**: Focus traps, ARIA roles, screen reader support across all pages
+- 🚀 **Performance**: Granular Zustand selectors, React.memo, lazy routes, optimized re-renders
 
 ### ✨ What's New in 3.1.0
 
@@ -134,10 +147,11 @@ Built with **React 19**, **Zustand**, **D3.js**, and **Tailwind CSS 4**, the das
 | 🔥 **SG Ready Control** | Heat pump modes (1-4) for thermal storage optimization | ✅ Live |
 | 🤖 **AI Optimizer** | Tariff-aware recommendations (Tibber, aWATTar) | ✅ Live |
 | 🌐 **i18n** | German/English with persistent localStorage | ✅ 100% |
-| 🎨 **3 Themes** | Cyber Dark, Solar Light, Night Mode | ✅ Live |
+| 🔐 **BYOK AI** | Encrypted multi-provider AI keys (AES-GCM 256-bit) | ✅ Live |
+| 🎨 **5 Themes** | Cyber Dark, Cyber Energy, Solar Light, Minimal White, Night Mode | ✅ Live |
 | ♿ **WCAG 2.2 AA** | Full accessibility (semantic, ARIA, focus) | ✅ Compliant |
 | 📦 **Local-First** | Dexie.js IndexedDB, 30-day history retention | ✅ Live |
-| 🔒 **Enterprise Security** | mTLS, 2FA, telemetry opt-out, §14a compliance | ✅ Live || 🔌 **Adapter Pattern** | Pluggable protocol adapters (Victron, Modbus, KNX, OCPP 2.1, EEBUS) | ✅ Live |
+| 🔒 **Enterprise Security** | mTLS, 2FA, BYOK encryption, §14a compliance | ✅ Live || 🔌 **Adapter Pattern** | Pluggable protocol adapters (Victron, Modbus, KNX, OCPP 2.1, EEBUS) | ✅ Live |
 | 🔋 **OCPP 2.1 + V2X** | Vehicle-to-Grid charging with JSON-RPC and charging profiles | ✅ Live |
 | ⚡ **Modbus/SunSpec** | REST gateway polling for SunSpec inverters and meters | ✅ Live |
 ### 🛠️ Technology Stack
@@ -238,14 +252,13 @@ npm run preview
 
 #### Environment Variables (Optional)
 
-Create `.env` for API integrations:
+Copy `.env.example` to `.env` — all variables are optional:
 
-```env
-GEMINI_API_KEY=your_google_gemini_api_key
-MQTT_BROKER_URL=ws://your-mqtt-broker:9001
-TIBBER_API_TOKEN=your_tibber_api_token
-AWATTAR_API_KEY=your_awattar_api_key
+```bash
+cp .env.example .env
 ```
+
+> **Note:** AI API keys are no longer stored in environment variables. Since v3.2.0, all AI keys are managed via the **BYOK Settings** page (`/settings/ai`) with AES-GCM 256-bit encryption in IndexedDB.
 
 ### 🏗️ Architecture
 
@@ -305,9 +318,11 @@ EEBUS (planned) ────┘                              Dexie.js + useAppSt
 | Q1 2026 | **Multi-Household Support** (shareable dashboards) | ✅ Completed |
 | Q1 2026 | **Live Price Widget** (Tibber/aWATTar auto-optimization) | ✅ Completed |
 | Q2 2026 | **Adapter Pattern** (Victron, Modbus, KNX, OCPP 2.1) | ✅ Completed |
-| Q2 2026 | **Tailwind Config & Custom Utilities** (.neon-glow, .glass-panel) | 🚧 In Progress |
+| Q2 2026 | **Tailwind Config & Custom Utilities** (.neon-glow, .glass-panel) | ✅ Completed |
+| Q2 2026 | **5 Themes + Design System** (cyber-energy, minimal-white) | ✅ Completed |
+| Q2 2026 | **BYOK AI + Dexie Encryption** (AES-GCM 256-bit, 7 providers) | ✅ Completed |
+| Q2 2026 | **63 Unit Tests + CI Hardening** (bundle budget, no continue-on-error) | ✅ Completed |
 | Q3 2026 | **EEBUS SPINE/SHIP Integration** | 🔄 Planned |
-| Q3 2026 | **Focus Traps for Modals** (WCAG 2.2 AA compliance) | 🔄 Planned |
 | Q3 2026 | **Docker/Kubernetes Deployment** | 🔄 Planned |
 | Q4 2026 | **Prometheus/Grafana Monitoring** | 🔄 Planned |
 
@@ -317,7 +332,7 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 ### 🤝 Contributing
 
-Contributions welcome! Please open an issue or PR.
+Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ---
 
@@ -330,6 +345,17 @@ Contributions welcome! Please open an issue or PR.
 **Nexus-HEMS Dash** ist ein produktionsreifes, Echtzeit Home Energy Management System (HEMS) Dashboard für die Ära der dezentralen Energie. Nahtlose Integration von **Victron Energy**, **KNX-Gebäudeautomation** und **dynamischen Stromtarifen** (Tibber, aWATTar) ermöglicht intelligente Orchestrierung von PV-Erzeugung, Batteriespeicher, Wärmepumpen und EV-Ladung.
 
 Gebaut mit **React 19**, **Zustand**, **D3.js** und **Tailwind CSS 4**, liefert das Dashboard eine atemberaubende **Neo-Energy Cyber-Glassmorphism UI** mit vollständiger **i18n** (Deutsch/Englisch), **WCAG 2.2 AA Barrierefreiheit** und **Offline-First** Architektur.
+
+### ✨ Neu in 3.2.0
+
+- 🔐 **BYOK AI (Bring Your Own Key)**: Verschlüsselte Multi-Provider KI-Schlüsselspeicherung (OpenAI, Anthropic, Google, xAI, Groq, Ollama, Custom) via Web Crypto AES-GCM 256-bit + PBKDF2 600k
+- 🎨 **5 Premium-Themes**: 2 neue Themes — Cyber Energy (lebhaftes Licht) und Minimal White (sauberes Modernes)
+- ⚡ **Dynamische EV-Preisstrategie**: Echtzeit-Lademodus-Indikator (PV-Überschuss, Niedrigpreis, Teuer, Normal)
+- 📊 **Live-Analysen**: Berechnete Statistiken aus echten Energiedaten
+- 🌿 **UBA CO₂-Faktor**: PDF-Berichte nutzen offiziellen Umweltbundesamt 2024 Netz-Emissionsfaktor (380 g/kWh)
+- 🎤 **Offline-Sprachsteuerung**: Texteingabe-Fallback + Offline-Erkennung
+- 🧪 **63 Unit-Tests**: Umfassende Test-Suite (Crypto, Optimizer, Store, Format, Voice, PDF, DB, Adapter)
+- 🏗️ **CI gehärtet**: Kein continue-on-error mehr, Bundle-Größen-Budget (600 KB), Unit-Test-Schritt
 
 ### ✨ Neu in 3.1.0
 
@@ -431,10 +457,11 @@ Gebaut mit **React 19**, **Zustand**, **D3.js** und **Tailwind CSS 4**, liefert 
 | 🚗 **Intelligentes EV-Laden** | PV-Überschuss, Schnellladung, dynamische Tarifmodi | ✅ Live |
 | 🔥 **SG Ready Steuerung** | Wärmepumpen-Modi (1-4) zur thermischen Speicheroptimierung | ✅ Live |
 | 🌐 **i18n** | Deutsch/Englisch mit persistentem localStorage | ✅ 100% |
-| 🎨 **3 Themes** | Cyber Dark, Solar Light, Night Mode | ✅ Live |
+| 🔐 **BYOK AI** | Verschlüsselte Multi-Provider KI-Schlüssel (AES-GCM 256-bit) | ✅ Live |
+| 🎨 **5 Themes** | Cyber Dark, Cyber Energy, Solar Light, Minimal White, Night Mode | ✅ Live |
 | ♿ **WCAG 2.2 AA** | Vollständige Barrierefreiheit (Semantik, ARIA, Fokus) | ✅ Konform |
 | 📦 **Local-First** | Dexie.js IndexedDB, 30-Tage-Historie-Retention | ✅ Live |
-| 🔒 **Enterprise-Sicherheit** | mTLS, 2FA, Telemetrie-Opt-out, §14a Konformität | ✅ Live || 🔌 **Adapter-Pattern** | Pluggable Protokoll-Adapter (Victron, Modbus, KNX, OCPP 2.1, EEBUS) | ✅ Live |
+| 🔒 **Enterprise-Sicherheit** | mTLS, 2FA, BYOK-Verschlüsselung, §14a Konformität | ✅ Live || 🔌 **Adapter-Pattern** | Pluggable Protokoll-Adapter (Victron, Modbus, KNX, OCPP 2.1, EEBUS) | ✅ Live |
 | 🔋 **OCPP 2.1 + V2X** | Vehicle-to-Grid-Laden mit JSON-RPC und Ladeprofilen | ✅ Live |
 | ⚡ **Modbus/SunSpec** | REST-Gateway-Polling für SunSpec-Wechselrichter und -Zähler | ✅ Live |
 ### �️ Seitenstruktur (v3.0)
@@ -555,9 +582,11 @@ EEBUS (geplant) ────┘                              Dexie.js + useAppSt
 | Q1 2026 | **Multi-Household Support** (Teilbare Dashboards) | ✅ Abgeschlossen |
 | Q1 2026 | **Live-Preis-Widget** (Tibber/aWATTar Auto-Optimierung) | ✅ Abgeschlossen |
 | Q2 2026 | **Adapter-Pattern** (Victron, Modbus, KNX, OCPP 2.1) | ✅ Abgeschlossen |
-| Q2 2026 | **Tailwind Config & Custom Utilities** (.neon-glow, .glass-panel) | 🚧 In Arbeit |
+| Q2 2026 | **Tailwind Config & Custom Utilities** (.neon-glow, .glass-panel) | ✅ Abgeschlossen |
+| Q2 2026 | **5 Themes + Design-System** (cyber-energy, minimal-white) | ✅ Abgeschlossen |
+| Q2 2026 | **BYOK AI + Dexie-Verschlüsselung** (AES-GCM 256-bit, 7 Provider) | ✅ Abgeschlossen |
+| Q2 2026 | **63 Unit-Tests + CI-Härtung** (Bundle-Budget, kein continue-on-error) | ✅ Abgeschlossen |
 | Q3 2026 | **EEBUS SPINE/SHIP Integration** | 🔄 Geplant |
-| Q3 2026 | **Focus Traps für Modals** (WCAG 2.2 AA Compliance) | 🔄 Geplant |
 | Q3 2026 | **Docker/Kubernetes Deployment** | 🔄 Geplant |
 | Q4 2026 | **Prometheus/Grafana Monitoring** | 🔄 Geplant |
 
@@ -567,4 +596,4 @@ MIT License - siehe [LICENSE](LICENSE) für Details.
 
 ### 🤝 Beitragen
 
-Beiträge willkommen! Bitte öffnen Sie ein Issue oder einen PR.
+Beiträge willkommen! Siehe [CONTRIBUTING.md](CONTRIBUTING.md) für Richtlinien.
