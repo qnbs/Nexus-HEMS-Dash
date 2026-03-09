@@ -149,7 +149,7 @@ export function Dashboard() {
             <Home size={20} className="text-[color:var(--color-secondary)]" aria-hidden="true" />
             {t('dashboard.automation')}
           </h2>
-          <div className="h-[300px] w-full bg-slate-800/50 rounded-xl overflow-hidden border border-[color:var(--color-border)]">
+          <div className="h-[300px] w-full bg-[color:var(--color-surface)] rounded-xl overflow-hidden border border-[color:var(--color-border)]">
             <Floorplan />
           </div>
         </motion.section>
@@ -234,7 +234,7 @@ const MetricCard = memo(function MetricCard({
     >
       <div className="flex items-center gap-3 mb-3">
         <motion.div
-          className="p-2.5 bg-white/6 rounded-xl border border-[color:var(--color-border)]"
+          className="p-2.5 bg-[color:var(--color-surface)] rounded-xl border border-[color:var(--color-border)]"
           whileHover={{ rotate: 10, scale: 1.1 }}
           transition={{ type: 'spring', stiffness: 400, damping: 17 }}
         >

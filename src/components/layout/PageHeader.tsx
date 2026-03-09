@@ -11,14 +11,14 @@ interface PageHeaderProps {
 function PageHeaderComponent({ title, subtitle, icon, actions }: PageHeaderProps) {
   return (
     <motion.div
-      className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+      className="mb-4 sm:mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
     >
       <div className="flex items-center gap-3">
         {icon && (
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-primary)]/10 text-[color:var(--color-primary)]">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-primary)]/10 text-[color:var(--color-primary)]" aria-hidden="true">
             {icon}
           </div>
         )}

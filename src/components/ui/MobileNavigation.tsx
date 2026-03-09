@@ -153,7 +153,7 @@ function MobileNavigationComponent() {
                     className={`flex flex-col items-center gap-1.5 rounded-xl p-3 transition-colors ${
                       location.pathname === item.path
                         ? 'bg-[color:var(--color-primary)]/15 text-[color:var(--color-primary)]'
-                        : 'text-[color:var(--color-muted)] hover:bg-white/5'
+                        : 'text-[color:var(--color-muted)] hover:bg-[color:var(--color-surface-strong)]'
                     }`}
                   >
                     {item.icon}

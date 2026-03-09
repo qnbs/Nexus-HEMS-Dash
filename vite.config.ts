@@ -13,10 +13,12 @@ export default defineConfig(({ mode }) => {
       tailwindcss(),
       VitePWA({
         registerType: 'prompt',
-        includeAssets: ['favicon.ico', 'robots.txt', 'icon-*.png'],
+        includeAssets: ['favicon.ico', 'robots.txt', 'icon-*.png', '*.svg'],
         manifest: false, // Use public/manifest.json instead
         workbox: {
-          globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
+          globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2,json}'],
+          navigateFallback: 'index.html',
+          navigateFallbackAllowlist: [/^(?!\/__).*/],
           runtimeCaching: [
             {
               urlPattern: /^https:\/\/api\.open-meteo\.com\//,
@@ -27,6 +29,36 @@ export default defineConfig(({ mode }) => {
                   maxEntries: 50,
                   maxAgeSeconds: 60 * 60 * 24, // 24 hours
                 },
+                cacheableResponse: {
+                  statuses: [0, 200],
+                },
+              },
+            },
+            {
+              urlPattern: /^https:\/\/api\.tibber\.com\//,
+              handler: 'NetworkFirst',
+              options: {
+                cacheName: 'tibber-api-cache',
+                expiration: {
+                  maxEntries: 50,
+                  maxAgeSeconds: 60 * 60, // 1 hour
+                },
+                networkTimeoutSeconds: 8,
+                cacheableResponse: {
+                  statuses: [0, 200],
+                },
+              },
+            },
+            {
+              urlPattern: /^https:\/\/api\.awattar\.(de|at)\//,
+              handler: 'NetworkFirst',
+              options: {
+                cacheName: 'awattar-api-cache',
+                expiration: {
+                  maxEntries: 50,
+                  maxAgeSeconds: 60 * 60, // 1 hour
+                },
+                networkTimeoutSeconds: 8,
                 cacheableResponse: {
                   statuses: [0, 200],
                 },
@@ -56,12 +88,12 @@ export default defineConfig(({ mode }) => {
               },
             },
             {
-              urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|avif)$/,
+              urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|avif|ico)$/,
               handler: 'CacheFirst',
               options: {
                 cacheName: 'image-cache',
                 expiration: {
-                  maxEntries: 100,
+                  maxEntries: 150,
                   maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
                 },
               },
@@ -72,8 +104,30 @@ export default defineConfig(({ mode }) => {
               options: {
                 cacheName: 'static-resources',
                 expiration: {
-                  maxEntries: 60,
+                  maxEntries: 80,
                   maxAgeSeconds: 60 * 60 * 24 * 7, // 7 days
+                },
+              },
+            },
+            {
+              urlPattern: /\.(?:woff|woff2|ttf|otf|eot)$/,
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'font-cache',
+                expiration: {
+                  maxEntries: 30,
+                  maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
+                },
+              },
+            },
+            {
+              urlPattern: /\/manifest\.json$/,
+              handler: 'StaleWhileRevalidate',
+              options: {
+                cacheName: 'manifest-cache',
+                expiration: {
+                  maxEntries: 1,
+                  maxAgeSeconds: 60 * 60 * 24, // 24 hours
                 },
               },
             },

@@ -43,9 +43,8 @@ export function OfflineBanner() {
           initial={{ opacity: 0, y: -50 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -50 }}
-          className="fixed top-0 left-0 right-0 z-50 bg-orange-500/90 backdrop-blur-lg text-white px-4 py-3 shadow-lg"
+          className="fixed top-0 left-0 right-0 z-50 bg-orange-500/90 backdrop-blur-3xl text-white px-4 py-3 shadow-lg"
           role="alert"
-          aria-live="assertive"
         >
           <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">

@@ -1,6 +1,7 @@
 /**
  * Background Sync Service
  * Handles offline action queue synchronization
+ * Features: exponential backoff, max retries, online/offline detection
  */
 
 import {
@@ -10,9 +11,14 @@ import {
   type OfflineAction,
 } from './db';
 
+const MAX_RETRIES = 5;
+const BASE_RETRY_DELAY_MS = 2000;
+
 class BackgroundSyncService {
   private isSyncing = false;
   private syncInterval: number | null = null;
+  private retryTimeouts = new Map<number, ReturnType<typeof setTimeout>>();
+  private onlineHandler: (() => void) | null = null;
 
   /**
    * Initialize background sync
@@ -26,19 +32,18 @@ class BackgroundSyncService {
         })
         .catch((error) => {
           console.warn('[BackgroundSync] Service Worker sync not available:', error);
-          // Fallback to periodic sync
           this.startPeriodicSync();
         });
     } else {
-      // Fallback to periodic sync
       this.startPeriodicSync();
     }
 
     // Listen for online/offline events
-    window.addEventListener('online', () => {
+    this.onlineHandler = () => {
       console.log('[BackgroundSync] Network online, syncing...');
       this.syncPendingActions();
-    });
+    };
+    window.addEventListener('online', this.onlineHandler);
 
     // Cleanup old completed actions every hour
     setInterval(
@@ -47,25 +52,29 @@ class BackgroundSyncService {
       },
       60 * 60 * 1000,
     );
+
+    // Initial sync if online
+    if (navigator.onLine) {
+      this.syncPendingActions();
+    }
   }
 
   /**
    * Start periodic sync (fallback)
    */
   private startPeriodicSync() {
-    // Sync every 5 minutes when online
     this.syncInterval = window.setInterval(
       () => {
         if (navigator.onLine) {
           this.syncPendingActions();
         }
       },
-      5 * 60 * 1000,
+      3 * 60 * 1000, // Every 3 minutes
     );
   }
 
   /**
-   * Sync all pending actions
+   * Sync all pending actions with retry support
    */
   async syncPendingActions(): Promise<void> {
     if (this.isSyncing || !navigator.onLine) {
@@ -76,20 +85,37 @@ class BackgroundSyncService {
 
     try {
       const actions = await getPendingActions();
+      if (actions.length === 0) return;
+
       console.log(`[BackgroundSync] Syncing ${actions.length} pending actions`);
 
       for (const action of actions) {
+        const retryCount = (action as unknown as { retryCount?: number }).retryCount ?? 0;
+        if (retryCount >= MAX_RETRIES) {
+          console.warn(`[BackgroundSync] Action ${action.id} exceeded max retries, marking failed`);
+          await updateActionStatus(action.id!, 'failed', 'Max retries exceeded');
+          continue;
+        }
+
         try {
           await updateActionStatus(action.id!, 'syncing');
           await this.executeAction(action);
           await updateActionStatus(action.id!, 'completed');
         } catch (error) {
-          console.error('[BackgroundSync] Action failed:', error);
-          await updateActionStatus(
-            action.id!,
-            'failed',
-            error instanceof Error ? error.message : 'Unknown error',
-          );
+          const errMsg = error instanceof Error ? error.message : 'Unknown error';
+          console.error(`[BackgroundSync] Action ${action.id} failed (attempt ${retryCount + 1}):`, errMsg);
+
+          // Exponential backoff retry
+          const delay = BASE_RETRY_DELAY_MS * Math.pow(2, retryCount);
+          await updateActionStatus(action.id!, 'failed', errMsg);
+
+          if (retryCount + 1 < MAX_RETRIES) {
+            const timeout = setTimeout(() => {
+              this.retryTimeouts.delete(action.id!);
+              this.syncPendingActions();
+            }, delay);
+            this.retryTimeouts.set(action.id!, timeout);
+          }
         }
       }
     } catch (error) {
@@ -97,6 +123,22 @@ class BackgroundSyncService {
     } finally {
       this.isSyncing = false;
     }
+  }
+
+  /**
+   * Get sync status summary
+   */
+  async getSyncStatus(): Promise<{
+    pendingCount: number;
+    isSyncing: boolean;
+    isOnline: boolean;
+  }> {
+    const actions = await getPendingActions();
+    return {
+      pendingCount: actions.length,
+      isSyncing: this.isSyncing,
+      isOnline: navigator.onLine,
+    };
   }
 
   /**
@@ -158,7 +200,14 @@ class BackgroundSyncService {
     if (this.syncInterval) {
       clearInterval(this.syncInterval);
     }
-    window.removeEventListener('online', this.syncPendingActions);
+    // Clear all pending retry timeouts
+    for (const timeout of this.retryTimeouts.values()) {
+      clearTimeout(timeout);
+    }
+    this.retryTimeouts.clear();
+    if (this.onlineHandler) {
+      window.removeEventListener('online', this.onlineHandler);
+    }
   }
 }
 

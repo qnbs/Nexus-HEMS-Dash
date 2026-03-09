@@ -15,16 +15,36 @@ export interface CachedSankeyData {
   createdAt: number;
 }
 
+export interface CachedTariffData {
+  id?: number;
+  provider: string; // 'tibber' | 'awattar'
+  timestamp: number;
+  data: string; // JSON stringified tariff data
+  expiresAt: number;
+  createdAt: number;
+}
+
+export interface CachedUserPreferences {
+  id?: number;
+  key: string;
+  value: string;
+  updatedAt: number;
+}
+
 export class NexusDatabase extends Dexie {
   energySnapshots!: Table<CachedEnergySnapshot, number>;
   sankeySnapshots!: Table<CachedSankeyData, number>;
+  tariffData!: Table<CachedTariffData, number>;
+  userPreferences!: Table<CachedUserPreferences, number>;
 
   constructor() {
     super('NexusHEMS');
 
-    this.version(2).stores({
+    this.version(3).stores({
       energySnapshots: '++id, timestamp, createdAt',
       sankeySnapshots: '++id, timestamp, createdAt',
+      tariffData: '++id, provider, timestamp, expiresAt',
+      userPreferences: '++id, &key, updatedAt',
     });
   }
 }
@@ -141,12 +161,105 @@ export async function getLatestSankeyData(): Promise<{
 }
 
 /**
+ * Cache tariff data (Tibber / aWATTar)
+ */
+export async function cacheTariffData(
+  provider: string,
+  data: unknown,
+  ttlMinutes = 60,
+): Promise<void> {
+  try {
+    const entry: CachedTariffData = {
+      provider,
+      timestamp: Date.now(),
+      data: JSON.stringify(data),
+      expiresAt: Date.now() + ttlMinutes * 60 * 1000,
+      createdAt: Date.now(),
+    };
+    await db.tariffData.add(entry);
+
+    // Prune expired entries
+    const expired = await db.tariffData
+      .where('expiresAt')
+      .below(Date.now())
+      .primaryKeys();
+    if (expired.length > 0) {
+      await db.tariffData.bulkDelete(expired);
+    }
+  } catch (error) {
+    console.error('Failed to cache tariff data:', error);
+  }
+}
+
+/**
+ * Get the latest valid cached tariff data for a provider
+ */
+export async function getLatestTariffData(provider: string): Promise<{
+  data: unknown;
+  timestamp: number;
+  ageMinutes: number;
+} | null> {
+  try {
+    const latest = await db.tariffData
+      .where('provider')
+      .equals(provider)
+      .and((entry) => entry.expiresAt > Date.now())
+      .reverse()
+      .sortBy('timestamp');
+
+    if (!latest.length) return null;
+
+    const entry = latest[0];
+    return {
+      data: JSON.parse(entry.data),
+      timestamp: entry.timestamp,
+      ageMinutes: Math.floor((Date.now() - entry.timestamp) / 1000 / 60),
+    };
+  } catch (error) {
+    console.error('Failed to get tariff data:', error);
+    return null;
+  }
+}
+
+/**
+ * Get storage usage statistics
+ */
+export async function getStorageStats(): Promise<{
+  energySnapshots: number;
+  sankeySnapshots: number;
+  tariffEntries: number;
+  estimatedSizeKB: number;
+}> {
+  try {
+    const energyCount = await db.energySnapshots.count();
+    const sankeyCount = await db.sankeySnapshots.count();
+    const tariffCount = await db.tariffData.count();
+
+    // Estimate size based on average record sizes
+    const estimatedSizeKB = Math.round(
+      (energyCount * 2 + sankeyCount * 5 + tariffCount * 1),
+    );
+
+    return {
+      energySnapshots: energyCount,
+      sankeySnapshots: sankeyCount,
+      tariffEntries: tariffCount,
+      estimatedSizeKB,
+    };
+  } catch (error) {
+    console.error('Failed to get storage stats:', error);
+    return { energySnapshots: 0, sankeySnapshots: 0, tariffEntries: 0, estimatedSizeKB: 0 };
+  }
+}
+
+/**
  * Clear all cached offline data
  */
 export async function clearOfflineCache(): Promise<void> {
   try {
     await db.energySnapshots.clear();
     await db.sankeySnapshots.clear();
+    await db.tariffData.clear();
   } catch (error) {
     console.error('Failed to clear offline cache:', error);
   }

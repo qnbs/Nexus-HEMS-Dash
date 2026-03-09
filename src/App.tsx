@@ -1,12 +1,11 @@
 import { useEffect, lazy, Suspense, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAdapterBridge } from './core/useEnergyStore';
 import { useAppStore } from './store';
-import { Zap, Wifi, Command, Orbit } from 'lucide-react';
+import { Zap, Wifi, Command, Orbit, Settings as SettingsIcon, HelpCircle } from 'lucide-react';
 import { themeDefinitions } from './design-tokens';
-import { ThemeSwitcher } from './components/ThemeSwitcher';
 import { LanguageSwitcher } from './components/LanguageSwitcher';
 import { CommandPalette, useCommandPalette } from './components/ui/CommandPalette';
 import { MobileNavigation } from './components/ui/MobileNavigation';
@@ -170,7 +169,7 @@ export default function App() {
                 {/* Desktop: Eyebrow Badge */}
                 <div className="hidden lg:block">
                   <motion.div
-                    className="inline-flex items-center gap-2 rounded-full border border-[color:var(--color-border)] bg-white/6 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.24em] text-[color:var(--color-secondary)]"
+                    className="inline-flex items-center gap-2 rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.24em] text-[color:var(--color-secondary)]"
                     whileHover={{ scale: 1.03, x: 2 }}
                     transition={{ type: 'spring', stiffness: 400, damping: 17 }}
                   >
@@ -185,7 +184,26 @@ export default function App() {
                 {/* Right Side Actions */}
                 <div className="flex items-center gap-2">
                   <LanguageSwitcher />
-                  <ThemeSwitcher />
+
+                  {/* Settings Link */}
+                  <Link
+                    to="/settings"
+                    className="inline-flex items-center justify-center rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-surface-strong)] p-2 text-[color:var(--color-muted)] transition-all duration-300 hover:bg-[color:var(--color-primary)]/10 hover:text-[color:var(--color-primary)] focus-ring"
+                    aria-label={t('nav.settings')}
+                    title={t('nav.settings')}
+                  >
+                    <SettingsIcon className="h-4 w-4" />
+                  </Link>
+
+                  {/* Help Link */}
+                  <Link
+                    to="/help"
+                    className="inline-flex items-center justify-center rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-surface-strong)] p-2 text-[color:var(--color-muted)] transition-all duration-300 hover:bg-[color:var(--color-primary)]/10 hover:text-[color:var(--color-primary)] focus-ring"
+                    aria-label={t('nav.help')}
+                    title={t('nav.help')}
+                  >
+                    <HelpCircle className="h-4 w-4" />
+                  </Link>
 
                   {/* Command Palette Trigger */}
                   <motion.button
@@ -197,7 +215,7 @@ export default function App() {
                   >
                     <Command className="h-4 w-4" aria-hidden="true" />
                     <span className="hidden sm:inline">{t('command.search', 'Search')}</span>
-                    <kbd className="hidden rounded bg-slate-800/50 px-1.5 py-0.5 text-xs lg:inline">
+                    <kbd className="hidden rounded bg-[color:var(--color-surface-strong)] px-1.5 py-0.5 text-xs lg:inline">
                       ⌘K
                     </kbd>
                   </motion.button>
@@ -207,6 +225,7 @@ export default function App() {
                     className="inline-flex items-center gap-2 rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-surface-strong)] px-3 py-2 text-sm"
                     animate={connected ? { scale: [1, 1.02, 1] } : {}}
                     transition={{ duration: 2, repeat: Infinity }}
+                    aria-label={connected ? t('common.connected') : t('common.disconnected')}
                   >
                     <Wifi
                       className={`h-4 w-4 transition-colors duration-300 ${connected ? 'text-[color:var(--color-primary)]' : 'text-rose-400'}`}
@@ -232,7 +251,6 @@ export default function App() {
             <main
               id="main-content"
               className="mx-auto max-w-7xl px-4 py-6 pb-20 sm:px-6 lg:pb-6"
-              role="main"
             >
               <Breadcrumbs />
               <ErrorBoundary>

@@ -32,11 +32,11 @@ export function LanguageSwitcher() {
           onClick={() => handleLocaleChange(entry)}
           className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] transition focus-visible:focus-ring ${
             locale === entry
-              ? 'bg-[color:var(--color-primary)] text-slate-950 shadow-[0_0_20px_var(--color-glow)]'
+              ? 'bg-[color:var(--color-primary)] text-[color:var(--color-background)] shadow-[0_0_20px_var(--color-glow)]'
               : 'text-[color:var(--color-muted)] hover:text-[color:var(--color-text)]'
           }`}
           aria-pressed={locale === entry}
-          aria-label={`Switch to ${entry.toUpperCase()}`}
+          aria-label={t('common.switchTo', { lang: entry.toUpperCase(), defaultValue: `Switch to ${entry.toUpperCase()}` })}
         >
           {entry}
         </button>
