@@ -65,7 +65,7 @@ export default function App() {
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
     document.documentElement.lang = locale;
-    document.documentElement.style.colorScheme = theme === 'solar-light' ? 'light' : 'dark';
+    document.documentElement.style.colorScheme = themeDefinitions[theme].isDark ? 'dark' : 'light';
   }, [locale, theme]);
 
   useEffect(() => {

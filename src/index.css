@@ -554,6 +554,32 @@
   --color-glow: rgba(79, 131, 255, 0.34);
 }
 
+[data-theme='cyber-energy'] {
+  --color-primary: #ff2d78;
+  --color-secondary: #a855f7;
+  --color-accent: #facc15;
+  --color-background: #0a0618;
+  --color-surface: rgba(16, 8, 36, 0.75);
+  --color-surface-strong: rgba(22, 12, 48, 0.9);
+  --color-text: #f8f0ff;
+  --color-muted: #b49cd0;
+  --color-border: rgba(255, 45, 120, 0.2);
+  --color-glow: rgba(168, 85, 247, 0.45);
+}
+
+[data-theme='minimal-white'] {
+  --color-primary: #111827;
+  --color-secondary: #6366f1;
+  --color-accent: #f59e0b;
+  --color-background: #ffffff;
+  --color-surface: rgba(249, 250, 251, 0.8);
+  --color-surface-strong: rgba(243, 244, 246, 0.95);
+  --color-text: #111827;
+  --color-muted: #6b7280;
+  --color-border: rgba(209, 213, 219, 0.5);
+  --color-glow: rgba(99, 102, 241, 0.15);
+}
+
 /* Animations */
 @keyframes energy-pulse {
   0%,
