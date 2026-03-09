@@ -8,7 +8,7 @@ import { PredictiveForecast } from '../components/PredictiveForecast';
 
 function ProductionPageComponent() {
   const { t } = useTranslation();
-  const { energyData } = useAppStore();
+  const energyData = useAppStore((s) => s.energyData);
 
   const selfConsumptionRatio =
     energyData.pvPower > 0

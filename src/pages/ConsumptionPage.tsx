@@ -7,7 +7,7 @@ import { PageHeader } from '../components/layout/PageHeader';
 
 function ConsumptionPageComponent() {
   const { t } = useTranslation();
-  const { energyData } = useAppStore();
+  const energyData = useAppStore((s) => s.energyData);
 
   const consumers = [
     {

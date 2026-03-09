@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Mic, MicOff, AlertCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -9,10 +9,13 @@ import { useAppStore } from '../store';
 
 let voiceController: VoiceController | null = null;
 
-export function VoiceControlPanel() {
+export const VoiceControlPanel = memo(function VoiceControlPanel() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { setTheme, theme, locale, setLocale } = useAppStore();
+  const setTheme = useAppStore((s) => s.setTheme);
+  const theme = useAppStore((s) => s.theme);
+  const locale = useAppStore((s) => s.locale);
+  const setLocale = useAppStore((s) => s.setLocale);
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -196,4 +199,4 @@ export function VoiceControlPanel() {
       </div>
     </div>
   );
-}
+});

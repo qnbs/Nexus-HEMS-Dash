@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import { motion } from 'motion/react';
 import { Lightbulb, Thermometer, Wind } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-export function Floorplan() {
+export const Floorplan = memo(function Floorplan() {
   const { t } = useTranslation();
   const [lightsOn, setLightsOn] = useState(true);
   const [windowOpen, setWindowOpen] = useState(false);
@@ -139,4 +139,4 @@ export function Floorplan() {
       </div>
     </div>
   );
-}
+});

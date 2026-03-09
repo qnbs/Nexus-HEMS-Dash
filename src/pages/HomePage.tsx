@@ -12,7 +12,7 @@ import { Link } from 'react-router-dom';
 
 function HomePageComponent() {
   const { t } = useTranslation();
-  const { energyData } = useAppStore();
+  const energyData = useAppStore((s) => s.energyData);
   const { sendCommand } = useLegacySendCommand();
 
   return (

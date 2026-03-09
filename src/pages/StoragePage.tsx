@@ -8,7 +8,7 @@ import { PageHeader } from '../components/layout/PageHeader';
 
 function StoragePageComponent() {
   const { t } = useTranslation();
-  const { energyData } = useAppStore();
+  const energyData = useAppStore((s) => s.energyData);
   const { sendCommand } = useLegacySendCommand();
 
   const batteryStatus =

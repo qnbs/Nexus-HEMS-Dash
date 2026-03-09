@@ -48,6 +48,9 @@ export function useCacheEnergyData() {
       queryClient.setQueryData(['energy-snapshot', data.timestamp], data.energyData);
       return data;
     },
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: ['latest-energy-snapshot'] });
+    },
   });
 }
 
@@ -85,5 +88,6 @@ export function useLatestEnergySnapshot() {
       };
     },
     staleTime: Infinity,
+    gcTime: 1000 * 60 * 5, // Limit cache to 5 minutes to prevent snapshot accumulation
   });
 }

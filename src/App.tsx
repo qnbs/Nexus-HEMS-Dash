@@ -1,4 +1,4 @@
-import { useEffect, lazy, Suspense } from 'react';
+import { useEffect, lazy, Suspense, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -48,8 +48,14 @@ function PageLoadingFallback() {
 
 export default function App() {
   const { t, i18n } = useTranslation();
-  const { connected, energyData, theme, themeTransitionKey, locale, setTheme, themePreference } =
-    useAppStore();
+  // Granular selectors to prevent full tree re-renders
+  const connected = useAppStore((s) => s.connected);
+  const priceCurrent = useAppStore((s) => s.energyData.priceCurrent);
+  const theme = useAppStore((s) => s.theme);
+  const themeTransitionKey = useAppStore((s) => s.themeTransitionKey);
+  const locale = useAppStore((s) => s.locale);
+  const setTheme = useAppStore((s) => s.setTheme);
+  const themePreference = useAppStore((s) => s.themePreference);
   const { isOpen: isCommandPaletteOpen, setIsOpen: setCommandPaletteOpen } = useCommandPalette();
 
   // Adapter bridge replaces the old useWebSocket hook
@@ -215,7 +221,7 @@ export default function App() {
                     whileHover={{ scale: 1.05, rotate: 2 }}
                     transition={{ type: 'spring', stiffness: 400, damping: 17 }}
                   >
-                    {energyData.priceCurrent.toFixed(3)} €/kWh
+                    {priceCurrent.toFixed(3)} €/kWh
                   </motion.div>
                 </div>
               </div>

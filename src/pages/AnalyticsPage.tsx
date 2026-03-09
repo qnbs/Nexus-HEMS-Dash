@@ -9,7 +9,7 @@ import { ExportAndSharing } from '../components/ExportAndSharing';
 
 function AnalyticsPageComponent() {
   const { t } = useTranslation();
-  const { energyData } = useAppStore();
+  const energyData = useAppStore((s) => s.energyData);
 
   return (
     <div className="space-y-6">

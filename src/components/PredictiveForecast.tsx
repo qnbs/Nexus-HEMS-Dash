@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, memo } from 'react';
 import { motion } from 'motion/react';
 import { CloudSun, TrendingUp, Leaf } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -59,9 +59,9 @@ async function fetchWeatherForecast(lat: number, lon: number): Promise<WeatherFo
   }
 }
 
-export function PredictiveForecast() {
+export const PredictiveForecast = memo(function PredictiveForecast() {
   const { t } = useTranslation();
-  const { settings } = useAppStore();
+  const settings = useAppStore((s) => s.settings);
   const [forecastData, setForecastData] = useState<ForecastDataPoint[]>([]);
   const [timeRange, setTimeRange] = useState<'24h' | '7d'>('24h');
   const [totalSavings, setTotalSavings] = useState(0);
@@ -286,4 +286,4 @@ export function PredictiveForecast() {
       </div>
     </motion.div>
   );
-}
+});

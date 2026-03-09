@@ -1,3 +1,4 @@
+import { memo, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'motion/react';
 import { useLegacySendCommand } from '../core/useLegacySendCommand';
@@ -15,7 +16,7 @@ import { ExportAndSharing } from '../components/ExportAndSharing';
 export function Dashboard() {
   const { t } = useTranslation();
   const { sendCommand } = useLegacySendCommand();
-  const { energyData } = useAppStore();
+  const energyData = useAppStore((s) => s.energyData);
 
   return (
     <motion.div
@@ -198,7 +199,7 @@ export function Dashboard() {
   );
 }
 
-function MetricCard({
+const MetricCard = memo(function MetricCard({
   icon,
   label,
   value,
@@ -253,4 +254,4 @@ function MetricCard({
       </div>
     </motion.article>
   );
-}
+});

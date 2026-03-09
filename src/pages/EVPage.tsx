@@ -9,7 +9,7 @@ import { ControlPanel } from '../components/ControlPanel';
 
 function EVPageComponent() {
   const { t } = useTranslation();
-  const { energyData } = useAppStore();
+  const energyData = useAppStore((s) => s.energyData);
   const { sendCommand } = useLegacySendCommand();
 
   return (

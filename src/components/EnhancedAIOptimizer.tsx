@@ -2,7 +2,7 @@
  * Enhanced AI Optimizer with Google Gemini 2.5 Integration
  */
 
-import { useState } from 'react';
+import { useState, useMemo, memo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Sparkles, Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -76,15 +76,19 @@ async function callGeminiAPI(prompt: string, apiKey: string): Promise<GeminiReco
   }
 }
 
-export function EnhancedAIOptimizer() {
+export const EnhancedAIOptimizer = memo(function EnhancedAIOptimizer() {
   const { t } = useTranslation();
-  const { energyData, settings } = useAppStore();
+  const energyData = useAppStore((s) => s.energyData);
+  const settings = useAppStore((s) => s.settings);
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [geminiRecommendations, setGeminiRecommendations] = useState<GeminiRecommendation[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  // Get basic recommendations
-  const basicRecommendations = buildOptimizerRecommendations(energyData, settings);
+  // Get basic recommendations (memoized)
+  const basicRecommendations = useMemo(
+    () => buildOptimizerRecommendations(energyData, settings),
+    [energyData, settings],
+  );
 
   const handleOptimizeNow = async () => {
     setIsOptimizing(true);
@@ -243,7 +247,7 @@ Return ONLY a valid JSON array with this structure:
       </AnimatePresence>
     </div>
   );
-}
+});
 
 function getSeverityStyles(severity: string) {
   switch (severity) {

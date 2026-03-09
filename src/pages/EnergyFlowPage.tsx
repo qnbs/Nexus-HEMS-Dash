@@ -9,7 +9,8 @@ import { LivePriceWidget } from '../components/LivePriceWidget';
 
 function EnergyFlowPageComponent() {
   const { t } = useTranslation();
-  const { energyData, connected } = useAppStore();
+  const energyData = useAppStore((s) => s.energyData);
+  const connected = useAppStore((s) => s.connected);
 
   return (
     <div className="space-y-6">

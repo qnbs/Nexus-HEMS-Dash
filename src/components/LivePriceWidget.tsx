@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo, memo } from 'react';
 import { motion } from 'motion/react';
 import { TrendingDown, TrendingUp, Zap } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -6,9 +6,11 @@ import { useTranslation } from 'react-i18next';
 import { useAppStore } from '../store';
 import type { TariffForecast } from '../lib/predictive-ai';
 
-export function LivePriceWidget() {
+export const LivePriceWidget = memo(function LivePriceWidget() {
   const { t } = useTranslation();
-  const { energyData, settings } = useAppStore();
+  const priceCurrent = useAppStore((s) => s.energyData.priceCurrent);
+  const tariffProvider = useAppStore((s) => s.settings.tariffProvider);
+  const chargeThreshold = useAppStore((s) => s.settings.chargeThreshold);
   const [forecast, setForecast] = useState<TariffForecast[]>([]);
   const [nextBestSlot, setNextBestSlot] = useState<TariffForecast | null>(null);
 
@@ -32,9 +34,16 @@ export function LivePriceWidget() {
     loadForecast();
   }, []);
 
-  const currentPrice = energyData.priceCurrent;
-  const isGoodPrice = currentPrice < settings.chargeThreshold;
+  const currentPrice = priceCurrent;
+  const isGoodPrice = currentPrice < chargeThreshold;
   const trend = nextBestSlot && currentPrice > nextBestSlot.pricePerKwh ? 'down' : 'up';
+
+  const chartSlice = useMemo(() => forecast.slice(0, 12), [forecast]);
+  const { maxPrice, minPrice } = useMemo(() => {
+    if (chartSlice.length === 0) return { maxPrice: 1, minPrice: 0 };
+    const prices = chartSlice.map((s) => s.pricePerKwh);
+    return { maxPrice: Math.max(...prices), minPrice: Math.min(...prices) };
+  }, [chartSlice]);
 
   return (
     <motion.div
@@ -46,9 +55,9 @@ export function LivePriceWidget() {
         <div>
           <p className="eyebrow mb-2">
             <Zap className="inline h-4 w-4" aria-hidden="true" />
-            {settings.tariffProvider === 'tibber'
+            {tariffProvider === 'tibber'
               ? 'Tibber'
-              : settings.tariffProvider === 'awattar'
+              : tariffProvider === 'awattar'
                 ? 'aWATTar'
                 : t('settings.none')}
           </p>
@@ -90,10 +99,9 @@ export function LivePriceWidget() {
 
       {/* Mini Chart */}
       <div className="mt-4 flex h-12 items-end gap-0.5">
-        {forecast.slice(0, 12).map((slot, i) => {
-          const maxPrice = Math.max(...forecast.slice(0, 12).map((s) => s.pricePerKwh));
-          const minPrice = Math.min(...forecast.slice(0, 12).map((s) => s.pricePerKwh));
-          const height = ((slot.pricePerKwh - minPrice) / (maxPrice - minPrice)) * 100;
+        {chartSlice.map((slot, i) => {
+          const range = maxPrice - minPrice || 1;
+          const height = ((slot.pricePerKwh - minPrice) / range) * 100;
 
           return (
             <div
@@ -107,4 +115,4 @@ export function LivePriceWidget() {
       </div>
     </motion.div>
   );
-}
+});

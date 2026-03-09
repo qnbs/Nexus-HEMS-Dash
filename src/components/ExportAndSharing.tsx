@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import { motion } from 'motion/react';
 import { FileDown, Share2, QrCode, Copy, Check } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -7,7 +7,7 @@ import QRCodeLib from 'qrcode';
 import { generateMonthlyStats, downloadPdfReport } from '../lib/pdf-report';
 import { generateShareLink, createSharedDashboard } from '../lib/sharing';
 
-export function ExportAndSharing() {
+export const ExportAndSharing = memo(function ExportAndSharing() {
   const { t } = useTranslation();
   const [isGenerating, setIsGenerating] = useState(false);
   const [shareLink, setShareLink] = useState<string | null>(null);
@@ -146,4 +146,4 @@ export function ExportAndSharing() {
       </div>
     </div>
   );
-}
+});
