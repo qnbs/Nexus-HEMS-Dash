@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'motion/react';
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import {
   Search,
   Sparkles,
@@ -279,10 +279,13 @@ export function CommandPalette({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: -20 }}
             className="fixed left-1/2 top-1/4 z-50 w-full max-w-2xl -translate-x-1/2 overflow-hidden rounded-2xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] shadow-2xl backdrop-blur-3xl"
+            role="dialog"
+            aria-modal="true"
+            aria-label={t('command.open', 'Command palette')}
           >
             {/* Search Input */}
             <div className="flex items-center gap-3 border-b border-[color:var(--color-border)] p-4">
-              <Search className="h-5 w-5 text-[color:var(--color-muted)]" />
+              <Search className="h-5 w-5 text-[color:var(--color-muted)]" aria-hidden="true" />
               <input
                 type="text"
                 value={search}
@@ -290,6 +293,11 @@ export function CommandPalette({
                 placeholder={t('command.searchPlaceholder', 'Search commands...')}
                 className="flex-1 bg-transparent text-[color:var(--color-text)] outline-none placeholder:text-[color:var(--color-muted)]"
                 autoFocus
+                role="combobox"
+                aria-expanded="true"
+                aria-controls="command-listbox"
+                aria-activedescendant={filteredCommands[selectedIndex] ? `cmd-${filteredCommands[selectedIndex].id}` : undefined}
+                aria-autocomplete="list"
               />
               <kbd className="rounded bg-slate-800/50 px-2 py-1 text-xs text-[color:var(--color-muted)]">
                 ESC
@@ -303,12 +311,15 @@ export function CommandPalette({
                   {t('command.noResults', 'No commands found')}
                 </div>
               ) : (
-                <div className="space-y-1">
+                <div className="space-y-1" role="listbox" id="command-listbox">
                   {filteredCommands.map((cmd, index) => (
                     <motion.button
                       key={cmd.id}
+                      id={`cmd-${cmd.id}`}
                       onClick={cmd.action}
                       onMouseEnter={() => setSelectedIndex(index)}
+                      role="option"
+                      aria-selected={index === selectedIndex}
                       className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left transition-colors ${
                         index === selectedIndex
                           ? 'bg-[color:var(--color-primary)]/20 text-[color:var(--color-text)]'

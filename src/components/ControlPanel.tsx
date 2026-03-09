@@ -81,7 +81,7 @@ export function ControlPanel({
                 type="radio"
                 name="evMode"
                 value="off"
-                className="hidden"
+                className="sr-only"
                 defaultChecked={evState.mode === 'off'}
                 onClick={hapticClick}
               />
@@ -94,7 +94,7 @@ export function ControlPanel({
                 type="radio"
                 name="evMode"
                 value="pv"
-                className="hidden"
+                className="sr-only"
                 defaultChecked={evState.mode === 'pv'}
                 onClick={hapticClick}
               />
@@ -107,7 +107,7 @@ export function ControlPanel({
                 type="radio"
                 name="evMode"
                 value="fast"
-                className="hidden"
+                className="sr-only"
                 defaultChecked={evState.mode === 'fast'}
                 onClick={hapticClick}
               />
@@ -153,6 +153,7 @@ export function ControlPanel({
             name="hpMode"
             defaultValue={hpState.mode}
             onChange={hapticClick}
+            aria-label={t('control.hpTitle')}
             className="w-full bg-[color:var(--color-surface)] border border-[color:var(--color-border)] rounded-lg px-3 py-2 text-sm text-[color:var(--color-text)] focus:outline-none focus-ring"
           >
             <option value="1">{t('control.hpMode1')}</option>

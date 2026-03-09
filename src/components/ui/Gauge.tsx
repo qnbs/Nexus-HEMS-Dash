@@ -77,7 +77,14 @@ export function Gauge({
   }, [value, animate]);
 
   return (
-    <div className="flex flex-col items-center gap-3">
+    <div
+      className="flex flex-col items-center gap-3"
+      role="meter"
+      aria-valuemin={0}
+      aria-valuemax={max}
+      aria-valuenow={value}
+      aria-label={label}
+    >
       <svg width={gaugeSize} height={gaugeSize} className="rotate-[-90deg]">
         <defs>
           <linearGradient id="gradient-primary" x1="0%" y1="0%" x2="100%" y2="100%">

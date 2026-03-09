@@ -3,7 +3,7 @@
  * Used for critical user actions requiring confirmation
  */
 
-import { useState } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { AlertTriangle, Info } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -58,6 +58,37 @@ export function ConfirmDialog({
   const { t } = useTranslation();
   const styles = variantStyles[variant];
   const Icon = styles.icon;
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  // Focus trap + auto-focus
+  useEffect(() => {
+    if (!isOpen) return;
+    const el = dialogRef.current;
+    if (!el) return;
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+    // Focus the first focusable element inside the dialog
+    const focusable = el.querySelectorAll<HTMLElement>(
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    );
+    if (focusable.length > 0) focusable[0].focus();
+    return () => { previouslyFocused?.focus(); };
+  }, [isOpen]);
+
+  const trapFocus = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 'Escape') { onClose(); return; }
+    if (e.key === 'Enter' && !loading && e.target === dialogRef.current) { handleConfirm(); return; }
+    if (e.key !== 'Tab') return;
+    const el = dialogRef.current;
+    if (!el) return;
+    const focusable = el.querySelectorAll<HTMLElement>(
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    );
+    if (focusable.length === 0) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  }, [onClose, loading]);
 
   const handleConfirm = async () => {
     try {
@@ -92,20 +123,21 @@ export function ConfirmDialog({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={handleBackdropClick}
-            onKeyDown={handleKeyDown}
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="confirm-dialog-title"
-            aria-describedby="confirm-dialog-message"
           >
             {/* Dialog */}
             <motion.div
+              ref={dialogRef}
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
               className="glass-panel w-full max-w-md rounded-2xl p-6 shadow-2xl"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="confirm-dialog-title"
+              aria-describedby="confirm-dialog-message"
+              onKeyDown={trapFocus}
             >
               <div className="flex items-start gap-4">
                 <div
