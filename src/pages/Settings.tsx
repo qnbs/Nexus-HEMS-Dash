@@ -348,30 +348,30 @@ export function Settings() {
                     </h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">{t('common.language')}</label>
-                        <select className={inputClass} defaultValue="de">
+                        <label htmlFor="settings-language" className="text-sm font-medium">{t('common.language')}</label>
+                        <select id="settings-language" className={inputClass} defaultValue="de">
                           <option value="de">Deutsch</option>
                           <option value="en">English</option>
                         </select>
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">{t('settings.units', 'Units')}</label>
-                        <select className={inputClass} defaultValue="metric">
+                        <label htmlFor="settings-units" className="text-sm font-medium">{t('settings.units', 'Units')}</label>
+                        <select id="settings-units" className={inputClass} defaultValue="metric">
                           <option value="metric">{t('settings.metric', 'Metric (kW, kWh, °C)')}</option>
                           <option value="imperial">{t('settings.imperial', 'Imperial (BTU, °F)')}</option>
                         </select>
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">{t('settings.dateFormat', 'Date format')}</label>
-                        <select className={inputClass} defaultValue="dd.mm.yyyy">
+                        <label htmlFor="settings-dateformat" className="text-sm font-medium">{t('settings.dateFormat', 'Date format')}</label>
+                        <select id="settings-dateformat" className={inputClass} defaultValue="dd.mm.yyyy">
                           <option value="dd.mm.yyyy">DD.MM.YYYY</option>
                           <option value="mm/dd/yyyy">MM/DD/YYYY</option>
                           <option value="yyyy-mm-dd">YYYY-MM-DD</option>
                         </select>
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">{t('settings.currency', 'Currency')}</label>
-                        <select className={inputClass} defaultValue="eur">
+                        <label htmlFor="settings-currency" className="text-sm font-medium">{t('settings.currency', 'Currency')}</label>
+                        <select id="settings-currency" className={inputClass} defaultValue="eur">
                           <option value="eur">€ Euro</option>
                           <option value="chf">CHF Franken</option>
                           <option value="gbp">£ Pound</option>
@@ -502,8 +502,8 @@ export function Settings() {
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">{t('settings.tariffProvider')}</label>
-                        <select className={inputClass} defaultValue={settings.tariffProvider}>
+                        <label htmlFor="settings-tariff" className="text-sm font-medium">{t('settings.tariffProvider')}</label>
+                        <select id="settings-tariff" className={inputClass} defaultValue={settings.tariffProvider}>
                           <option value="tibber">{t('settings.tibber')}</option>
                           <option value="awattar">{t('settings.awattar')}</option>
                           <option value="none">{t('settings.none')}</option>
@@ -520,7 +520,7 @@ export function Settings() {
                           <button
                             type="button"
                             onClick={() => toggleTokenVisibility('tariff')}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-[color:var(--color-muted)] hover:text-[color:var(--color-text)]"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-[color:var(--color-muted)] hover:text-[color:var(--color-text)]"
                             aria-label={showTokens['tariff'] ? t('settings.hideToken') : t('settings.showToken')}
                           >
                             {showTokens['tariff'] ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -557,8 +557,8 @@ export function Settings() {
                         <input type="number" step={0.1} defaultValue={10.0} className={inputClass} />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">{t('settings.pvOrientation', 'Orientation')}</label>
-                        <select className={inputClass} defaultValue="south">
+                        <label htmlFor="settings-orientation" className="text-sm font-medium">{t('settings.pvOrientation', 'Orientation')}</label>
+                        <select id="settings-orientation" className={inputClass} defaultValue="south">
                           <option value="south">{t('settings.south', 'South')}</option>
                           <option value="east-west">{t('settings.eastWest', 'East/West')}</option>
                           <option value="east">{t('settings.east', 'East')}</option>
@@ -570,8 +570,8 @@ export function Settings() {
                         <input type="number" min={0} max={90} defaultValue={30} className={inputClass} />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">{t('settings.inverterType', 'Inverter type')}</label>
-                        <select className={inputClass} defaultValue="victron">
+                        <label htmlFor="settings-inverter" className="text-sm font-medium">{t('settings.inverterType', 'Inverter type')}</label>
+                        <select id="settings-inverter" className={inputClass} defaultValue="victron">
                           <option value="victron">Victron MultiPlus-II</option>
                           <option value="fronius">Fronius Symo</option>
                           <option value="sma">SMA Sunny Boy/Tripower</option>
@@ -601,8 +601,8 @@ export function Settings() {
                         <input type="number" step={0.1} defaultValue={5.0} className={inputClass} />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">{t('settings.batteryStrategy', 'Default strategy')}</label>
-                        <select className={inputClass} defaultValue="self-consumption">
+                        <label htmlFor="settings-strategy" className="text-sm font-medium">{t('settings.batteryStrategy', 'Default strategy')}</label>
+                        <select id="settings-strategy" className={inputClass} defaultValue="self-consumption">
                           <option value="self-consumption">{t('control.selfConsumption')}</option>
                           <option value="force-charge">{t('control.forceCharge')}</option>
                           <option value="auto">{t('control.auto')}</option>
@@ -719,7 +719,7 @@ export function Settings() {
                           <button
                             type="button"
                             onClick={() => toggleTokenVisibility('influx')}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-[color:var(--color-muted)] hover:text-[color:var(--color-text)]"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-[color:var(--color-muted)] hover:text-[color:var(--color-text)]"
                             aria-label={showTokens['influx'] ? t('settings.hideToken') : t('settings.showToken')}
                           >
                             {showTokens['influx'] ? <EyeOff size={16} /> : <Eye size={16} />}

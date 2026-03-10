@@ -119,17 +119,17 @@ export const Floorplan = memo(function Floorplan() {
         <div className="flex items-center gap-2 bg-[color:var(--color-surface)] backdrop-blur-md border border-[color:var(--color-border)] px-3 py-2 rounded-xl">
           <Thermometer size={18} className="text-orange-400" aria-hidden="true" />
           <span className="font-mono text-lg">{temp.toFixed(1)}°C</span>
-          <div className="flex flex-col ml-2">
+          <div className="flex flex-col ml-2 gap-0.5">
             <button
               onClick={() => setTemp((v) => v + 0.5)}
-              className="text-[color:var(--color-muted)] hover:text-[color:var(--color-text)] leading-none focus-ring rounded"
+              className="flex items-center justify-center min-w-[28px] min-h-[28px] text-[color:var(--color-muted)] hover:text-[color:var(--color-text)] leading-none focus-ring rounded"
               aria-label={t('floorplan.tempIncrease')}
             >
               +
             </button>
             <button
               onClick={() => setTemp((v) => v - 0.5)}
-              className="text-[color:var(--color-muted)] hover:text-[color:var(--color-text)] leading-none focus-ring rounded"
+              className="flex items-center justify-center min-w-[28px] min-h-[28px] text-[color:var(--color-muted)] hover:text-[color:var(--color-text)] leading-none focus-ring rounded"
               aria-label={t('floorplan.tempDecrease')}
             >
               -

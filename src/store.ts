@@ -62,8 +62,8 @@ export const useAppStore = create<AppState>()(
       connected: false,
       lastUpdated: null,
       locale: 'de',
-      theme: 'cyber-energy-dark',
-      themePreference: 'cyber-energy-dark',
+      theme: 'energy-dark',
+      themePreference: 'energy-dark',
       themeTransitionKey: 0,
       floorplan: {
         lightsOn: true,

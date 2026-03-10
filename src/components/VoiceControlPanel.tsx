@@ -32,7 +32,7 @@ export const VoiceControlPanel = memo(function VoiceControlPanel() {
           setTranscript(t('voice.navigatedTo', { page }));
         },
         onToggleTheme: () => {
-          const themes = ['cyber-energy-dark', 'cyber-energy', 'solar-light', 'minimal-white', 'night-mode'] as const;
+          const themes = ['energy-dark', 'ocean-dark', 'nature-green', 'solar-light', 'minimal-white'] as const;
           type ThemeName = (typeof themes)[number];
           const currentIndex = themes.indexOf(theme as ThemeName);
           const nextTheme = themes[(currentIndex + 1) % themes.length];

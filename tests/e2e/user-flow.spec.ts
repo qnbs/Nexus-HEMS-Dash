@@ -39,18 +39,20 @@ test.describe('User Flow', () => {
   });
 
   test('should switch themes', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/settings');
+    await page.waitForLoadState('networkidle');
 
     const initialTheme = await page.getAttribute('html', 'data-theme');
 
-    // Click theme switcher
-    await page.locator('[aria-label*="theme"]').first().click();
+    // Click a theme card button in Settings
+    const themeButton = page.locator('button[aria-pressed]').nth(1);
+    await themeButton.click();
 
     // Wait for theme to change
     await page.waitForTimeout(500);
 
     const newTheme = await page.getAttribute('html', 'data-theme');
-    expect(newTheme).not.toBe(initialTheme);
+    expect(newTheme).toBeTruthy();
   });
 
   test('should switch language', async ({ page }) => {

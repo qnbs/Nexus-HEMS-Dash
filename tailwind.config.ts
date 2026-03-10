@@ -6,7 +6,7 @@ const config: Config = {
     './index.html',
     './src/**/*.{js,ts,jsx,tsx}',
   ],
-  darkMode: ['class', '[data-theme="cyber-energy-dark"]', '[data-theme="night-mode"]'],
+  darkMode: ['class', '[data-theme="energy-dark"]', '[data-theme="ocean-dark"]', '[data-theme="nature-green"]'],
   theme: {
     extend: {
       screens: {

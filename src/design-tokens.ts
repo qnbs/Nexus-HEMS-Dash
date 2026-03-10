@@ -1,8 +1,8 @@
 export type ThemeName =
-  | 'cyber-energy-dark'
+  | 'energy-dark'
   | 'solar-light'
-  | 'night-mode'
-  | 'cyber-energy'
+  | 'ocean-dark'
+  | 'nature-green'
   | 'minimal-white';
 
 export interface ThemeDefinition {
@@ -36,63 +36,81 @@ export const neoEnergyPalette = {
 } as const;
 
 export const themeDefinitions: Record<ThemeName, ThemeDefinition> = {
-  'cyber-energy-dark': {
-    name: 'cyber-energy-dark',
-    label: 'Cyber Energy Dark',
+  'energy-dark': {
+    name: 'energy-dark',
+    label: 'Energy Dark',
     isDark: true,
-    previewColors: ['#22ff88', '#00f0ff', '#06111d'],
+    previewColors: ['#22ff88', '#00d4e0', '#0a1520'],
     colors: {
-      primary: neoEnergyPalette.neonGreen,
-      secondary: neoEnergyPalette.electricBlue,
-      accent: neoEnergyPalette.powerOrange,
-      background: '#06111d',
-      surface: 'rgba(8, 24, 40, 0.72)',
-      surfaceStrong: 'rgba(10, 32, 53, 0.88)',
-      text: '#effffc',
-      muted: '#9ec3cf',
-      border: 'rgba(34, 255, 136, 0.18)',
-      glow: 'rgba(34, 255, 136, 0.45)',
-    },
-  },
-  'cyber-energy': {
-    name: 'cyber-energy',
-    label: 'Cyber Energy',
-    isDark: true,
-    previewColors: ['#ff2d78', '#a855f7', '#0a0618'],
-    colors: {
-      primary: '#ff2d78',
-      secondary: '#a855f7',
-      accent: '#facc15',
-      background: '#0a0618',
-      surface: 'rgba(16, 8, 36, 0.75)',
-      surfaceStrong: 'rgba(22, 12, 48, 0.9)',
-      text: '#f8f0ff',
-      muted: '#b49cd0',
-      border: 'rgba(255, 45, 120, 0.2)',
-      glow: 'rgba(168, 85, 247, 0.45)',
+      primary: '#22ff88',
+      secondary: '#00d4e0',
+      accent: '#ff8800',
+      background: '#0a1520',
+      surface: 'rgba(12, 28, 44, 0.72)',
+      surfaceStrong: 'rgba(14, 34, 54, 0.88)',
+      text: '#e8f4f0',
+      muted: '#8daab8',
+      border: 'rgba(34, 255, 136, 0.14)',
+      glow: 'rgba(34, 255, 136, 0.25)',
     },
   },
   'solar-light': {
     name: 'solar-light',
     label: 'Solar Light',
     isDark: false,
-    previewColors: ['#0bbf73', '#0084ff', '#fff7e8'],
+    previewColors: ['#0bbf73', '#0084ff', '#fef9ef'],
     colors: {
       primary: '#0bbf73',
       secondary: '#0084ff',
       accent: '#ff8800',
-      background: '#fff7e8',
-      surface: 'rgba(255, 255, 255, 0.72)',
-      surfaceStrong: 'rgba(255, 248, 230, 0.94)',
-      text: '#10243a',
+      background: '#fef9ef',
+      surface: 'rgba(255, 255, 255, 0.75)',
+      surfaceStrong: 'rgba(255, 250, 235, 0.94)',
+      text: '#1a2a3a',
       muted: '#5f7284',
-      border: 'rgba(0, 132, 255, 0.18)',
-      glow: 'rgba(255, 136, 0, 0.24)',
+      border: 'rgba(0, 132, 255, 0.14)',
+      glow: 'rgba(255, 136, 0, 0.18)',
+    },
+  },
+  'ocean-dark': {
+    name: 'ocean-dark',
+    label: 'Ocean Deep',
+    isDark: true,
+    previewColors: ['#38bdf8', '#818cf8', '#0c1222'],
+    colors: {
+      primary: '#38bdf8',
+      secondary: '#818cf8',
+      accent: '#fb923c',
+      background: '#0c1222',
+      surface: 'rgba(14, 22, 42, 0.76)',
+      surfaceStrong: 'rgba(18, 28, 52, 0.9)',
+      text: '#e2eaf4',
+      muted: '#8896b0',
+      border: 'rgba(56, 189, 248, 0.14)',
+      glow: 'rgba(56, 189, 248, 0.2)',
+    },
+  },
+  'nature-green': {
+    name: 'nature-green',
+    label: 'Forest',
+    isDark: true,
+    previewColors: ['#4ade80', '#a3e635', '#0f1a12'],
+    colors: {
+      primary: '#4ade80',
+      secondary: '#a3e635',
+      accent: '#fbbf24',
+      background: '#0f1a12',
+      surface: 'rgba(16, 30, 18, 0.76)',
+      surfaceStrong: 'rgba(20, 38, 22, 0.9)',
+      text: '#e4f0e6',
+      muted: '#8aaa8e',
+      border: 'rgba(74, 222, 128, 0.14)',
+      glow: 'rgba(74, 222, 128, 0.2)',
     },
   },
   'minimal-white': {
     name: 'minimal-white',
-    label: 'Minimal White',
+    label: 'Minimal',
     isDark: false,
     previewColors: ['#111827', '#6366f1', '#ffffff'],
     colors: {
@@ -105,33 +123,15 @@ export const themeDefinitions: Record<ThemeName, ThemeDefinition> = {
       text: '#111827',
       muted: '#6b7280',
       border: 'rgba(209, 213, 219, 0.5)',
-      glow: 'rgba(99, 102, 241, 0.15)',
-    },
-  },
-  'night-mode': {
-    name: 'night-mode',
-    label: 'Night Mode',
-    isDark: true,
-    previewColors: ['#5dfdcf', '#4f83ff', '#02050d'],
-    colors: {
-      primary: '#5dfdcf',
-      secondary: '#4f83ff',
-      accent: '#ff9b3d',
-      background: '#02050d',
-      surface: 'rgba(6, 11, 23, 0.78)',
-      surfaceStrong: 'rgba(8, 14, 28, 0.94)',
-      text: '#f4f8ff',
-      muted: '#92a6c4',
-      border: 'rgba(79, 131, 255, 0.16)',
-      glow: 'rgba(79, 131, 255, 0.34)',
+      glow: 'rgba(99, 102, 241, 0.12)',
     },
   },
 };
 
 export const themeOrder: ThemeName[] = [
-  'cyber-energy-dark',
-  'cyber-energy',
+  'energy-dark',
+  'ocean-dark',
+  'nature-green',
   'solar-light',
   'minimal-white',
-  'night-mode',
 ];

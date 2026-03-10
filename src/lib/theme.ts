@@ -2,7 +2,7 @@
  * Enhanced Theme System with System Preference Detection
  */
 
-export type ThemeName = 'cyber-energy-dark' | 'solar-light' | 'night-mode' | 'cyber-energy' | 'minimal-white';
+export type ThemeName = 'energy-dark' | 'solar-light' | 'ocean-dark' | 'nature-green' | 'minimal-white';
 export type ThemePreference = ThemeName | 'system';
 
 /**
@@ -20,7 +20,7 @@ export function detectSystemTheme(): 'dark' | 'light' {
  */
 export function getThemeFromSystemPreference(): ThemeName {
   const systemTheme = detectSystemTheme();
-  return systemTheme === 'dark' ? 'cyber-energy-dark' : 'minimal-white';
+  return systemTheme === 'dark' ? 'energy-dark' : 'minimal-white';
 }
 
 /**
@@ -86,12 +86,12 @@ export function saveThemePreference(preference: ThemePreference): void {
  * Loads theme preference from localStorage
  */
 export function loadThemePreference(): ThemePreference {
-  if (typeof window === 'undefined') return 'cyber-energy-dark';
+  if (typeof window === 'undefined') return 'energy-dark';
 
   const stored = localStorage.getItem('nexus-hems-theme-preference');
-  if (stored && ['cyber-energy-dark', 'cyber-energy', 'solar-light', 'minimal-white', 'night-mode', 'system'].includes(stored)) {
+  if (stored && ['energy-dark', 'ocean-dark', 'nature-green', 'solar-light', 'minimal-white', 'system'].includes(stored)) {
     return stored as ThemePreference;
   }
 
-  return 'cyber-energy-dark';
+  return 'energy-dark';
 }

@@ -1,10 +1,10 @@
 import { useEffect, lazy, Suspense, useMemo, useCallback } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion } from 'motion/react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAdapterBridge } from './core/useEnergyStore';
 import { useAppStore } from './store';
-import { Zap, Wifi, Command, Orbit, Settings as SettingsIcon, HelpCircle } from 'lucide-react';
+import { Zap, Wifi, Command, Settings as SettingsIcon, HelpCircle } from 'lucide-react';
 import { themeDefinitions } from './design-tokens';
 import { LanguageSwitcher } from './components/LanguageSwitcher';
 import { CommandPalette, useCommandPalette } from './components/ui/CommandPalette';
@@ -53,7 +53,6 @@ export default function App() {
   const connected = useAppStore((s) => s.connected);
   const priceCurrent = useAppStore((s) => s.energyData.priceCurrent);
   const theme = useAppStore((s) => s.theme);
-  const themeTransitionKey = useAppStore((s) => s.themeTransitionKey);
   const locale = useAppStore((s) => s.locale);
   const setTheme = useAppStore((s) => s.setTheme);
   const themePreference = useAppStore((s) => s.themePreference);
@@ -116,22 +115,13 @@ export default function App() {
         <PWAInstallPrompt />
         <PWAUpdateNotification />
         <div className="theme-shell min-h-screen font-sans text-[color:var(--color-text)] selection:bg-[color:var(--color-primary)]/30">
-          <AnimatePresence>
-            <motion.div
-              key={themeTransitionKey}
+          <div
               className="pointer-events-none fixed inset-0 z-0"
               aria-hidden="true"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.45 }}
               style={{
-                background: `radial-gradient(circle at 20% 20%, ${themeDefinition.colors.glow} 0%, transparent 28%), radial-gradient(circle at 80% 10%, ${themeDefinition.colors.secondary}33 0%, transparent 25%), radial-gradient(circle at 60% 80%, ${themeDefinition.colors.accent}22 0%, transparent 22%), linear-gradient(145deg, ${themeDefinition.colors.background} 0%, #030712 100%)`,
+                background: `linear-gradient(145deg, ${themeDefinition.colors.background} 0%, ${themeDefinition.colors.background} 60%, ${themeDefinition.colors.glow} 100%)`,
               }}
             />
-          </AnimatePresence>
-
-          <div className="pattern-grid fixed inset-0 z-0 opacity-40" aria-hidden="true" />
 
           {/* Skip to content link (WCAG 2.2 AA) */}
           <a
@@ -149,38 +139,21 @@ export default function App() {
             {/* Top Bar (mobile + desktop header) */}
             <motion.header
               className="glass-panel-strong sticky top-0 z-20 overflow-hidden px-4 py-3 sm:px-6"
-              initial={{ opacity: 0, y: -20 }}
+              initial={{ opacity: 0, y: -12 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
             >
               <div className="flex items-center justify-between gap-4">
                 {/* Mobile Logo */}
                 <div className="flex items-center gap-2 lg:hidden">
-                  <motion.div
-                    animate={{ rotate: [0, 10, -10, 10, 0] }}
-                    transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
-                  >
-                    <Zap className="h-6 w-6 text-[color:var(--color-primary)] drop-shadow-[0_0_12px_var(--color-primary)]" />
-                  </motion.div>
+                  <Zap className="h-5 w-5 text-[color:var(--color-primary)]" aria-hidden="true" />
                   <span className="text-lg font-semibold tracking-tight">
                     {t('common.appName')}
                   </span>
                 </div>
 
-                {/* Desktop: Eyebrow Badge */}
-                <div className="hidden lg:block">
-                  <motion.div
-                    className="inline-flex items-center gap-2 rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.24em] text-[color:var(--color-secondary)]"
-                    whileHover={{ scale: 1.03, x: 2 }}
-                    transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-                  >
-                    <Orbit
-                      className="h-3.5 w-3.5 animate-spin"
-                      style={{ animationDuration: '8s' }}
-                    />
-                    {t('header.controlMesh')}
-                  </motion.div>
-                </div>
+                {/* Desktop: Breadcrumb area placeholder */}
+                <div className="hidden lg:block" />
 
                 {/* Right Side Actions */}
                 <div className="flex items-center gap-2">
@@ -207,25 +180,21 @@ export default function App() {
                   </Link>
 
                   {/* Command Palette Trigger */}
-                  <motion.button
+                  <button
                     onClick={() => setCommandPaletteOpen(true)}
-                    className="inline-flex items-center gap-2 rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-surface-strong)] px-3 py-2 text-sm transition-all duration-300 hover:bg-[color:var(--color-primary)]/10 hover:scale-[1.02] focus-ring"
+                    className="inline-flex items-center gap-2 rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-surface-strong)] px-3 py-2 text-sm transition-colors duration-200 hover:bg-[color:var(--color-primary)]/10 focus-ring"
                     aria-label={t('command.open', 'Open command palette')}
-                    whileHover={{ y: -2 }}
-                    whileTap={{ scale: 0.97 }}
                   >
                     <Command className="h-4 w-4" aria-hidden="true" />
                     <span className="hidden sm:inline">{t('command.search', 'Search')}</span>
                     <kbd className="hidden rounded bg-[color:var(--color-surface-strong)] px-1.5 py-0.5 text-xs lg:inline">
                       ⌘K
                     </kbd>
-                  </motion.button>
+                  </button>
 
                   {/* Connection Status */}
-                  <motion.div
+                  <div
                     className="inline-flex items-center gap-2 rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-surface-strong)] px-3 py-2 text-sm"
-                    animate={connected ? { scale: [1, 1.02, 1] } : {}}
-                    transition={{ duration: 2, repeat: Infinity }}
                     role="status"
                     aria-label={connected ? t('common.connected') : t('common.disconnected')}
                   >
@@ -236,15 +205,11 @@ export default function App() {
                     <span className="hidden sm:inline">
                       {connected ? t('common.connected') : t('common.disconnected')}
                     </span>
-                  </motion.div>
+                  </div>
 
-                  <motion.div
-                    className="price-pill hidden sm:inline-flex"
-                    whileHover={{ scale: 1.05, rotate: 2 }}
-                    transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-                  >
+                  <div className="price-pill hidden sm:inline-flex">
                     {priceCurrent.toFixed(3)} €/kWh
-                  </motion.div>
+                  </div>
                 </div>
               </div>
             </motion.header>

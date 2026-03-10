@@ -20,7 +20,7 @@ const baseSettings: StoredSettings = {
   chargeThreshold: 0.2,
   maxGridImportKw: 5,
   language: 'de',
-  theme: 'cyber-energy-dark',
+  theme: 'energy-dark',
 };
 
 describe('Optimizer Recommendations', () => {

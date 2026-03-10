@@ -1,6 +1,5 @@
 import { memo } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { motion, AnimatePresence } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import {
   LayoutDashboard,
@@ -66,12 +65,7 @@ function SidebarComponent() {
     >
       {/* Logo */}
       <div className="flex items-center gap-3 border-b border-[color:var(--color-border)] px-5 py-5">
-        <motion.div
-          animate={{ rotate: [0, 10, -10, 10, 0] }}
-          transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
-        >
-          <Zap className="h-7 w-7 text-[color:var(--color-primary)] drop-shadow-[0_0_12px_var(--color-primary)]" />
-        </motion.div>
+        <Zap className="h-6 w-6 text-[color:var(--color-primary)]" aria-hidden="true" />
         <div>
           <h1 className="text-lg font-semibold tracking-tight">{t('common.appName')}</h1>
           <div className="flex items-center gap-1.5">
@@ -119,10 +113,8 @@ function SidebarComponent() {
                       </span>
                       <span>{t(item.labelKey)}</span>
                       {isActive && (
-                        <motion.div
-                          layoutId="sidebar-indicator"
-                          className="ml-auto h-2 w-2 rounded-full bg-[color:var(--color-primary)] shadow-[0_0_8px_var(--color-primary)]"
-                          transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                        <span
+                          className="ml-auto h-1.5 w-1.5 rounded-full bg-[color:var(--color-primary)]"
                         />
                       )}
                     </>
@@ -164,10 +156,8 @@ function SidebarComponent() {
                       </span>
                       <span>{t(item.labelKey)}</span>
                       {isActive && (
-                        <motion.div
-                          layoutId="sidebar-indicator"
-                          className="ml-auto h-2 w-2 rounded-full bg-[color:var(--color-primary)] shadow-[0_0_8px_var(--color-primary)]"
-                          transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                        <span
+                          className="ml-auto h-1.5 w-1.5 rounded-full bg-[color:var(--color-primary)]"
                         />
                       )}
                     </>
@@ -209,10 +199,8 @@ function SidebarComponent() {
                       </span>
                       <span>{t(item.labelKey)}</span>
                       {isActive && (
-                        <motion.div
-                          layoutId="sidebar-indicator"
-                          className="ml-auto h-2 w-2 rounded-full bg-[color:var(--color-primary)] shadow-[0_0_8px_var(--color-primary)]"
-                          transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                        <span
+                          className="ml-auto h-1.5 w-1.5 rounded-full bg-[color:var(--color-primary)]"
                         />
                       )}
                     </>

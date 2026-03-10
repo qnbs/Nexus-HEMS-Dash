@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
-import { Sun, Battery, Home, Zap, Activity, Sparkles, TrendingUp } from 'lucide-react';
+import { Sun, Battery, Home, Zap, Activity, TrendingUp } from 'lucide-react';
 import { useAppStore } from '../store';
 import { useLegacySendCommand } from '../core/useLegacySendCommand';
 import { PageHeader } from '../components/layout/PageHeader';
@@ -36,7 +36,6 @@ function HomePageComponent() {
             value={`${(energyData.pvPower / 1000).toFixed(2)} ${t('units.kilowatt')}`}
             sub={`${energyData.pvYieldToday.toFixed(1)} ${t('units.kilowattHour')} ${t('common.today')}`}
             link="/production"
-            delay={0.1}
           />
           <KpiCard
             icon={
@@ -56,7 +55,6 @@ function HomePageComponent() {
                   ? 'battery-discharging'
                   : ''
             }
-            delay={0.15}
           />
           <KpiCard
             icon={<Home className="text-blue-400" aria-hidden="true" />}
@@ -64,7 +62,6 @@ function HomePageComponent() {
             value={`${(energyData.houseLoad / 1000).toFixed(2)} ${t('units.kilowatt')}`}
             sub={t('metrics.baseLoad')}
             link="/consumption"
-            delay={0.2}
           />
           <KpiCard
             icon={
@@ -74,7 +71,6 @@ function HomePageComponent() {
             value={`${(energyData.gridPower / 1000).toFixed(2)} ${t('units.kilowatt')}`}
             sub={energyData.gridPower > 0 ? t('metrics.import') : t('metrics.export')}
             link="/energy-flow"
-            delay={0.25}
           />
         </div>
       </section>
@@ -137,69 +133,9 @@ function HomePageComponent() {
       </div>
 
       {/* AI Quick Panel */}
-      <motion.div
-        id="ai-optimizer"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.5 }}
-      >
+      <div id="ai-optimizer">
         <AIOptimizerPanel />
-      </motion.div>
-
-      {/* Quick Navigation Cards */}
-      <section aria-label={t('nav.quickLinks', 'Quick navigation')}>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-          {[
-            {
-              path: '/energy-flow',
-              icon: <Activity size={20} aria-hidden="true" />,
-              key: 'nav.energyFlow',
-              color: 'text-cyan-400',
-            },
-            {
-              path: '/production',
-              icon: <Sun size={20} aria-hidden="true" />,
-              key: 'nav.production',
-              color: 'text-yellow-400',
-            },
-            {
-              path: '/storage',
-              icon: <Battery size={20} aria-hidden="true" />,
-              key: 'nav.storage',
-              color: 'text-emerald-400',
-            },
-            {
-              path: '/consumption',
-              icon: <Home size={20} aria-hidden="true" />,
-              key: 'nav.consumption',
-              color: 'text-blue-400',
-            },
-            {
-              path: '/tariffs',
-              icon: <TrendingUp size={20} aria-hidden="true" />,
-              key: 'nav.tariffs',
-              color: 'text-orange-400',
-            },
-            {
-              path: '/analytics',
-              icon: <Sparkles size={20} aria-hidden="true" />,
-              key: 'nav.analytics',
-              color: 'text-purple-400',
-            },
-          ].map(({ path, icon, key, color }) => (
-            <Link
-              key={path}
-              to={path}
-              className="glass-panel group flex flex-col items-center gap-2 rounded-2xl p-4 text-center transition-all hover:scale-[1.03] hover:bg-white/5 focus-ring"
-            >
-              <div className={`${color} transition-transform group-hover:scale-110`}>{icon}</div>
-              <span className="text-xs font-medium text-[color:var(--color-muted)] group-hover:text-[color:var(--color-text)]">
-                {t(key)}
-              </span>
-            </Link>
-          ))}
-        </div>
-      </section>
+      </div>
     </div>
   );
 }
@@ -211,7 +147,6 @@ const KpiCard = memo(function KpiCard({
   sub,
   link,
   className,
-  delay = 0,
 }: {
   icon: React.ReactNode;
   label: string;
@@ -219,32 +154,25 @@ const KpiCard = memo(function KpiCard({
   sub: string;
   link: string;
   className?: string;
-  delay?: number;
 }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.4, delay, type: 'spring', stiffness: 260, damping: 20 }}
+    <Link
+      to={link}
+      className={`metric-card block rounded-2xl focus-ring ${className || ''}`}
     >
-      <Link
-        to={link}
-        className={`metric-card block rounded-3xl hover-lift hover-glow focus-ring ${className || ''}`}
-      >
-        <div className="mb-3 flex items-center gap-3">
-          <div className="rounded-xl border border-[color:var(--color-border)] bg-white/6 p-2.5">
-            {icon}
-          </div>
-          <span className="text-sm font-medium text-[color:var(--color-text)] fluid-text-sm">
-            {label}
-          </span>
+      <div className="mb-3 flex items-center gap-3">
+        <div className="rounded-xl border border-[color:var(--color-border)] bg-white/6 p-2.5">
+          {icon}
         </div>
-        <div className="text-2xl font-light tracking-tight text-[color:var(--color-text)] fluid-text-2xl">
-          {value}
-        </div>
-        <div className="mt-1.5 text-xs text-[color:var(--color-muted)] fluid-text-xs">{sub}</div>
-      </Link>
-    </motion.div>
+        <span className="text-sm font-medium text-[color:var(--color-text)] fluid-text-sm">
+          {label}
+        </span>
+      </div>
+      <div className="text-2xl font-light tracking-tight text-[color:var(--color-text)] fluid-text-2xl">
+        {value}
+      </div>
+      <div className="mt-1.5 text-xs text-[color:var(--color-muted)] fluid-text-xs">{sub}</div>
+    </Link>
   );
 });
 

@@ -26,7 +26,7 @@ describe('Zustand Store', () => {
       connected: false,
       lastUpdated: null,
       locale: 'de',
-      theme: 'cyber-energy-dark',
+      theme: 'energy-dark',
     });
   });
 
