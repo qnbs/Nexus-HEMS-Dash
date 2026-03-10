@@ -36,11 +36,12 @@ const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 const AISettingsPage = lazy(() => import('./pages/AISettingsPage'));
 
 function PageLoadingFallback() {
+  const { t } = useTranslation();
   return (
-    <div className="flex min-h-[40vh] items-center justify-center">
+    <div className="flex min-h-[40vh] items-center justify-center" role="status">
       <div className="flex flex-col items-center gap-3">
-        <div className="cyber-shimmer h-8 w-8 rounded-full border-2 border-[color:var(--color-primary)] border-t-transparent animate-spin" />
-        <span className="text-sm text-[color:var(--color-muted)]">Loading...</span>
+        <div className="cyber-shimmer h-8 w-8 rounded-full border-2 border-[color:var(--color-primary)] border-t-transparent animate-spin" aria-hidden="true" />
+        <span className="text-sm text-[color:var(--color-muted)]">{t('loading.page')}</span>
       </div>
     </div>
   );
@@ -177,7 +178,7 @@ export default function App() {
                       className="h-3.5 w-3.5 animate-spin"
                       style={{ animationDuration: '8s' }}
                     />
-                    HEMS Control Mesh
+                    {t('header.controlMesh')}
                   </motion.div>
                 </div>
 

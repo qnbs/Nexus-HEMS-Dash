@@ -128,7 +128,7 @@ export const VoiceControlPanel = memo(function VoiceControlPanel() {
           >
             <div className="rounded-2xl border border-[color:var(--color-primary)]/30 bg-[color:var(--color-primary)]/10 p-4">
               <p className="text-sm font-medium text-[color:var(--color-primary)]">
-                🎤 {t('voice.listening')}
+                <span aria-hidden="true">🎤 </span>{t('voice.listening')}
               </p>
               {transcript && (
                 <p className="mt-2 text-sm text-[color:var(--color-text)]">"{transcript}"</p>

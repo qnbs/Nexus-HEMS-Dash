@@ -57,9 +57,9 @@ export const LivePriceWidget = memo(function LivePriceWidget() {
           <p className="eyebrow mb-2">
             <Zap className="inline h-4 w-4" aria-hidden="true" />
             {tariffProvider === 'tibber'
-              ? 'Tibber'
+              ? t('settings.tibber')
               : tariffProvider === 'awattar'
-                ? 'aWATTar'
+                ? t('settings.awattar')
                 : t('settings.none')}
           </p>
           <div className="flex items-baseline gap-2">

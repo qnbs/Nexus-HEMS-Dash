@@ -1,6 +1,7 @@
 import { useEffect, useRef, memo } from 'react';
 import * as d3 from 'd3';
 import { sankey, sankeyLinkHorizontal, SankeyNode, SankeyLink } from 'd3-sankey';
+import { useTranslation } from 'react-i18next';
 import { EnergyData } from '../types';
 import { cacheSankeyData } from '../lib/offline-cache';
 
@@ -14,6 +15,7 @@ interface CustomLink extends SankeyLink<CustomNode, Record<string, unknown>> {
 }
 
 export const SankeyDiagram = memo(function SankeyDiagram({ data }: { data: EnergyData }) {
+  const { t } = useTranslation();
   const svgRef = useRef<SVGSVGElement>(null);
 
   useEffect(() => {
@@ -251,15 +253,19 @@ export const SankeyDiagram = memo(function SankeyDiagram({ data }: { data: Energ
       ref={svgRef}
       className="w-full h-full absolute inset-0"
       role="img"
-      aria-label="Real-time energy flow diagram showing distribution between PV, battery, grid, house, heat pump, and EV"
+      aria-label={t('sankey.ariaLabel')}
       aria-live="polite"
       aria-atomic="false"
     >
-      <title>Energy Flow Sankey Diagram</title>
+      <title>{t('sankey.title')}</title>
       <desc>
-        Live visualization of energy flows: PV generating {Math.round(data.pvPower)}W, Battery at{' '}
-        {data.batterySoC.toFixed(1)}%, House consuming {Math.round(data.houseLoad)}W, Grid{' '}
-        {data.gridPower > 0 ? 'importing' : 'exporting'} {Math.abs(Math.round(data.gridPower))}W
+        {t('sankey.desc', {
+          pvPower: Math.round(data.pvPower),
+          batterySoC: data.batterySoC.toFixed(1),
+          houseLoad: Math.round(data.houseLoad),
+          gridDirection: data.gridPower > 0 ? t('sankey.importing') : t('sankey.exporting'),
+          gridPower: Math.abs(Math.round(data.gridPower)),
+        })}
       </desc>
     </svg>
   );

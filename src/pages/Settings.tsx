@@ -521,6 +521,7 @@ export function Settings() {
                             type="button"
                             onClick={() => toggleTokenVisibility('tariff')}
                             className="absolute right-3 top-1/2 -translate-y-1/2 text-[color:var(--color-muted)] hover:text-[color:var(--color-text)]"
+                            aria-label={showTokens['tariff'] ? t('settings.hideToken') : t('settings.showToken')}
                           >
                             {showTokens['tariff'] ? <EyeOff size={16} /> : <Eye size={16} />}
                           </button>
@@ -529,14 +530,14 @@ export function Settings() {
                       <div className="space-y-2">
                         <label className="text-sm font-medium">{t('settings.chargeThreshold')}</label>
                         <div className="flex items-center gap-3">
-                          <input type="range" min={0.05} max={0.50} step={0.01} defaultValue={settings.chargeThreshold} className="flex-1 accent-[color:var(--color-primary)]" />
+                          <input type="range" min={0.05} max={0.50} step={0.01} defaultValue={settings.chargeThreshold} className="flex-1 accent-[color:var(--color-primary)]" aria-valuetext={`${settings.chargeThreshold.toFixed(2)} €/kWh`} />
                           <span className="text-sm font-mono w-16 text-right">{settings.chargeThreshold.toFixed(2)} €</span>
                         </div>
                       </div>
                       <div className="space-y-2">
                         <label className="text-sm font-medium">{t('settings.maxGrid')}</label>
                         <div className="flex items-center gap-3">
-                          <input type="range" min={1.0} max={11.0} step={0.1} defaultValue={settings.maxGridImportKw} className="flex-1 accent-[color:var(--color-primary)]" />
+                          <input type="range" min={1.0} max={11.0} step={0.1} defaultValue={settings.maxGridImportKw} className="flex-1 accent-[color:var(--color-primary)]" aria-valuetext={`${settings.maxGridImportKw.toFixed(1)} kW`} />
                           <span className="text-sm font-mono w-16 text-right">{settings.maxGridImportKw.toFixed(1)} kW</span>
                         </div>
                         <p className="text-xs text-[color:var(--color-muted)]">{t('settings.maxGridHint', '§14a EnWG limit: 4.2 kW for controllable consumers')}</p>
@@ -719,6 +720,7 @@ export function Settings() {
                             type="button"
                             onClick={() => toggleTokenVisibility('influx')}
                             className="absolute right-3 top-1/2 -translate-y-1/2 text-[color:var(--color-muted)] hover:text-[color:var(--color-text)]"
+                            aria-label={showTokens['influx'] ? t('settings.hideToken') : t('settings.showToken')}
                           >
                             {showTokens['influx'] ? <EyeOff size={16} /> : <Eye size={16} />}
                           </button>
