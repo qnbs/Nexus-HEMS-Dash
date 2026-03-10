@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 
 import type { LocaleCode, EnergyData, FloorplanState, StoredSettings } from './types';
+import { SYSTEM_PRESETS } from './types';
 import type { ThemeName } from './design-tokens';
 import type { ThemePreference } from './lib/theme';
 import { persistSettings } from './lib/db';
@@ -41,6 +42,7 @@ const defaultEnergyData: EnergyData = {
 
 const defaultSettings: StoredSettings = {
   gatewayType: 'cerbo-gx',
+  systemConfig: { ...SYSTEM_PRESETS['victron-3mp2-standard'] },
   victronIp: '192.168.1.100',
   knxIp: '192.168.1.101',
   wsPort: 1880,

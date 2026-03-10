@@ -30,6 +30,7 @@ import { useTranslation } from 'react-i18next';
 
 import { themeDefinitions, themeOrder, type ThemeName } from '../design-tokens';
 import { useAppStore } from '../store';
+import { SYSTEM_PRESETS, type SystemConfig, type PVConfig } from '../types';
 import { resolveTheme, type ThemePreference } from '../lib/theme';
 
 type SettingsTab = 'appearance' | 'system' | 'energy' | 'security' | 'storage' | 'notifications' | 'advanced';
@@ -572,20 +573,122 @@ export function Settings() {
                     </div>
                   </section>
 
-                  {/* PV System */}
+                  {/* System Preset */}
+                  <section className={sectionClass}>
+                    <h2 className={sectionHeaderClass}>
+                      <Server size={20} className="text-cyan-400" />
+                      {t('settings.systemPreset')}
+                    </h2>
+                    <p className="text-xs text-[color:var(--color-muted)] mb-4">{t('settings.systemPresetHint')}</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {Object.values(SYSTEM_PRESETS).map((preset) => (
+                        <button
+                          key={preset.presetId}
+                          type="button"
+                          onClick={() => updateSettings({ systemConfig: { ...preset } })}
+                          className={`rounded-xl border-2 p-3 text-left transition-all ${
+                            settings.systemConfig.presetId === preset.presetId
+                              ? 'border-[color:var(--color-primary)] bg-[color:var(--color-primary)]/10'
+                              : 'border-[color:var(--color-border)] bg-[color:var(--color-surface)] hover:border-[color:var(--color-primary)]/40'
+                          }`}
+                          aria-pressed={settings.systemConfig.presetId === preset.presetId}
+                        >
+                          <span className="text-sm font-medium">{preset.presetName}</span>
+                          {preset.presetId !== 'custom' && (
+                            <p className="text-xs text-[color:var(--color-muted)] mt-1">
+                              {preset.inverter.count}× {preset.inverter.ratedPowerW / 1000} kW · {preset.pv.peakPowerKWp} kWp · {preset.battery.capacityKWh} kWh
+                            </p>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </section>
+
+                  {/* Inverter Configuration */}
                   <section className={sectionClass}>
                     <h2 className={sectionHeaderClass}>
                       <Zap size={20} className="text-amber-400" />
+                      {t('settings.inverterConfig')}
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">{t('settings.inverterModel')}</label>
+                        <input
+                          type="text"
+                          value={settings.systemConfig.inverter.model}
+                          onChange={(e) => updateSettings({ systemConfig: { ...settings.systemConfig, presetId: 'custom', presetName: 'Custom', inverter: { ...settings.systemConfig.inverter, model: e.target.value } } })}
+                          className={inputClass}
+                          placeholder="Victron MultiPlus-II 48/5000/70-50"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">{t('settings.inverterCount')}</label>
+                        <input
+                          type="number"
+                          min={1}
+                          max={12}
+                          value={settings.systemConfig.inverter.count}
+                          onChange={(e) => updateSettings({ systemConfig: { ...settings.systemConfig, presetId: 'custom', presetName: 'Custom', inverter: { ...settings.systemConfig.inverter, count: Number(e.target.value) } } })}
+                          className={inputClass}
+                        />
+                        <p className="text-xs text-[color:var(--color-muted)]">{t('settings.inverterCountHint')}</p>
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">{t('settings.inverterPower')}</label>
+                        <input
+                          type="number"
+                          step={100}
+                          min={500}
+                          max={15000}
+                          value={settings.systemConfig.inverter.ratedPowerW}
+                          onChange={(e) => updateSettings({ systemConfig: { ...settings.systemConfig, presetId: 'custom', presetName: 'Custom', inverter: { ...settings.systemConfig.inverter, ratedPowerW: Number(e.target.value) } } })}
+                          className={inputClass}
+                        />
+                        <p className="text-xs text-[color:var(--color-muted)]">
+                          {t('settings.totalPower')}: {((settings.systemConfig.inverter.count * settings.systemConfig.inverter.ratedPowerW) / 1000).toFixed(1)} kW
+                        </p>
+                      </div>
+                      <div className="space-y-2">
+                        <label htmlFor="settings-inv-mode" className="text-sm font-medium">{t('settings.inverterMode')}</label>
+                        <select
+                          id="settings-inv-mode"
+                          className={inputClass}
+                          value={settings.systemConfig.inverter.mode}
+                          onChange={(e) => updateSettings({ systemConfig: { ...settings.systemConfig, presetId: 'custom', presetName: 'Custom', inverter: { ...settings.systemConfig.inverter, mode: e.target.value as 'single' | 'parallel' | 'three-phase' } } })}
+                        >
+                          <option value="single">{t('settings.modeSingle')}</option>
+                          <option value="parallel">{t('settings.modeParallel')}</option>
+                          <option value="three-phase">{t('settings.modeThreePhase')}</option>
+                        </select>
+                      </div>
+                    </div>
+                  </section>
+
+                  {/* PV System */}
+                  <section className={sectionClass}>
+                    <h2 className={sectionHeaderClass}>
+                      <Zap size={20} className="text-yellow-400" />
                       {t('settings.pvSystem', 'PV System')}
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                       <div className="space-y-2">
                         <label className="text-sm font-medium">{t('settings.pvPeakPower', 'Peak power (kWp)')}</label>
-                        <input type="number" step={0.1} defaultValue={10.0} className={inputClass} />
+                        <input
+                          type="number"
+                          step={0.1}
+                          value={settings.systemConfig.pv.peakPowerKWp}
+                          onChange={(e) => updateSettings({ systemConfig: { ...settings.systemConfig, presetId: 'custom', presetName: 'Custom', pv: { ...settings.systemConfig.pv, peakPowerKWp: Number(e.target.value) } } })}
+                          className={inputClass}
+                        />
                       </div>
                       <div className="space-y-2">
                         <label htmlFor="settings-orientation" className="text-sm font-medium">{t('settings.pvOrientation', 'Orientation')}</label>
-                        <select id="settings-orientation" className={inputClass} defaultValue="south">
+                        <select
+                          id="settings-orientation"
+                          className={inputClass}
+                          value={settings.systemConfig.pv.orientation}
+                          onChange={(e) => updateSettings({ systemConfig: { ...settings.systemConfig, presetId: 'custom', presetName: 'Custom', pv: { ...settings.systemConfig.pv, orientation: e.target.value as PVConfig['orientation'] } } })}
+                        >
                           <option value="south">{t('settings.south', 'South')}</option>
                           <option value="east-west">{t('settings.eastWest', 'East/West')}</option>
                           <option value="east">{t('settings.east', 'East')}</option>
@@ -594,16 +697,36 @@ export function Settings() {
                       </div>
                       <div className="space-y-2">
                         <label className="text-sm font-medium">{t('settings.pvTilt', 'Tilt angle (°)')}</label>
-                        <input type="number" min={0} max={90} defaultValue={30} className={inputClass} />
+                        <input
+                          type="number"
+                          min={0}
+                          max={90}
+                          value={settings.systemConfig.pv.tiltDeg}
+                          onChange={(e) => updateSettings({ systemConfig: { ...settings.systemConfig, presetId: 'custom', presetName: 'Custom', pv: { ...settings.systemConfig.pv, tiltDeg: Number(e.target.value) } } })}
+                          className={inputClass}
+                        />
                       </div>
                       <div className="space-y-2">
-                        <label htmlFor="settings-inverter" className="text-sm font-medium">{t('settings.inverterType', 'Inverter type')}</label>
-                        <select id="settings-inverter" className={inputClass} defaultValue="victron">
-                          <option value="victron">Victron MultiPlus-II</option>
-                          <option value="fronius">Fronius Symo</option>
-                          <option value="sma">SMA Sunny Boy/Tripower</option>
-                          <option value="huawei">Huawei SUN2000</option>
-                        </select>
+                        <label className="text-sm font-medium">{t('settings.pvStrings')}</label>
+                        <input
+                          type="number"
+                          min={1}
+                          max={20}
+                          value={settings.systemConfig.pv.strings}
+                          onChange={(e) => updateSettings({ systemConfig: { ...settings.systemConfig, presetId: 'custom', presetName: 'Custom', pv: { ...settings.systemConfig.pv, strings: Number(e.target.value) } } })}
+                          className={inputClass}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">{t('settings.mpptCount')}</label>
+                        <input
+                          type="number"
+                          min={1}
+                          max={8}
+                          value={settings.systemConfig.pv.mpptCount}
+                          onChange={(e) => updateSettings({ systemConfig: { ...settings.systemConfig, presetId: 'custom', presetName: 'Custom', pv: { ...settings.systemConfig.pv, mpptCount: Number(e.target.value) } } })}
+                          className={inputClass}
+                        />
                       </div>
                     </div>
                   </section>
@@ -616,24 +739,142 @@ export function Settings() {
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">{t('settings.batteryCapacity', 'Capacity (kWh)')}</label>
-                        <input type="number" step={0.1} defaultValue={10.0} className={inputClass} />
+                        <label className="text-sm font-medium">{t('settings.batteryModel')}</label>
+                        <input
+                          type="text"
+                          value={settings.systemConfig.battery.model}
+                          onChange={(e) => updateSettings({ systemConfig: { ...settings.systemConfig, presetId: 'custom', presetName: 'Custom', battery: { ...settings.systemConfig.battery, model: e.target.value } } })}
+                          className={inputClass}
+                          placeholder="BYD Battery-Box Premium HVS"
+                        />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">{t('settings.batteryMinSoC', 'Minimum SoC (%)')}</label>
-                        <input type="number" min={5} max={50} defaultValue={10} className={inputClass} />
+                        <label className="text-sm font-medium">{t('settings.batteryCapacity', 'Capacity (kWh)')}</label>
+                        <input
+                          type="number"
+                          step={0.1}
+                          value={settings.systemConfig.battery.capacityKWh}
+                          onChange={(e) => updateSettings({ systemConfig: { ...settings.systemConfig, presetId: 'custom', presetName: 'Custom', battery: { ...settings.systemConfig.battery, capacityKWh: Number(e.target.value) } } })}
+                          className={inputClass}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">{t('settings.batteryModules')}</label>
+                        <input
+                          type="number"
+                          min={1}
+                          max={16}
+                          value={settings.systemConfig.battery.modules}
+                          onChange={(e) => updateSettings({ systemConfig: { ...settings.systemConfig, presetId: 'custom', presetName: 'Custom', battery: { ...settings.systemConfig.battery, modules: Number(e.target.value) } } })}
+                          className={inputClass}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">{t('settings.batteryVoltage')}</label>
+                        <input
+                          type="number"
+                          step={0.1}
+                          value={settings.systemConfig.battery.nominalVoltageV}
+                          onChange={(e) => updateSettings({ systemConfig: { ...settings.systemConfig, presetId: 'custom', presetName: 'Custom', battery: { ...settings.systemConfig.battery, nominalVoltageV: Number(e.target.value) } } })}
+                          className={inputClass}
+                        />
                       </div>
                       <div className="space-y-2">
                         <label className="text-sm font-medium">{t('settings.batteryMaxCharge', 'Max charge rate (kW)')}</label>
-                        <input type="number" step={0.1} defaultValue={5.0} className={inputClass} />
+                        <input
+                          type="number"
+                          step={0.1}
+                          value={settings.systemConfig.battery.maxChargeRateKW}
+                          onChange={(e) => updateSettings({ systemConfig: { ...settings.systemConfig, presetId: 'custom', presetName: 'Custom', battery: { ...settings.systemConfig.battery, maxChargeRateKW: Number(e.target.value) } } })}
+                          className={inputClass}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">{t('settings.batteryMaxDischarge')}</label>
+                        <input
+                          type="number"
+                          step={0.1}
+                          value={settings.systemConfig.battery.maxDischargeRateKW}
+                          onChange={(e) => updateSettings({ systemConfig: { ...settings.systemConfig, presetId: 'custom', presetName: 'Custom', battery: { ...settings.systemConfig.battery, maxDischargeRateKW: Number(e.target.value) } } })}
+                          className={inputClass}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">{t('settings.batteryMinSoC', 'Minimum SoC (%)')}</label>
+                        <input
+                          type="number"
+                          min={5}
+                          max={50}
+                          value={settings.systemConfig.battery.minSoCPercent}
+                          onChange={(e) => updateSettings({ systemConfig: { ...settings.systemConfig, presetId: 'custom', presetName: 'Custom', battery: { ...settings.systemConfig.battery, minSoCPercent: Number(e.target.value) } } })}
+                          className={inputClass}
+                        />
                       </div>
                       <div className="space-y-2">
                         <label htmlFor="settings-strategy" className="text-sm font-medium">{t('settings.batteryStrategy', 'Default strategy')}</label>
-                        <select id="settings-strategy" className={inputClass} defaultValue="self-consumption">
+                        <select
+                          id="settings-strategy"
+                          className={inputClass}
+                          value={settings.systemConfig.battery.strategy}
+                          onChange={(e) => updateSettings({ systemConfig: { ...settings.systemConfig, presetId: 'custom', presetName: 'Custom', battery: { ...settings.systemConfig.battery, strategy: e.target.value as 'self-consumption' | 'force-charge' | 'time-of-use' | 'auto' } } })}
+                        >
                           <option value="self-consumption">{t('control.selfConsumption')}</option>
                           <option value="force-charge">{t('control.forceCharge')}</option>
+                          <option value="time-of-use">{t('settings.timeOfUse')}</option>
                           <option value="auto">{t('control.auto')}</option>
                         </select>
+                      </div>
+                    </div>
+                  </section>
+
+                  {/* EV Charger & Heat Pump */}
+                  <section className={sectionClass}>
+                    <h2 className={sectionHeaderClass}>
+                      <Gauge size={20} className="text-emerald-400" />
+                      {t('settings.consumersConfig')}
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">{t('settings.evChargerModel')}</label>
+                        <input
+                          type="text"
+                          value={settings.systemConfig.evCharger.model}
+                          onChange={(e) => updateSettings({ systemConfig: { ...settings.systemConfig, presetId: 'custom', presetName: 'Custom', evCharger: { ...settings.systemConfig.evCharger, model: e.target.value } } })}
+                          className={inputClass}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">{t('settings.evMaxPower')}</label>
+                        <input
+                          type="number"
+                          step={0.1}
+                          min={1}
+                          max={50}
+                          value={settings.systemConfig.evCharger.maxPowerKW}
+                          onChange={(e) => updateSettings({ systemConfig: { ...settings.systemConfig, presetId: 'custom', presetName: 'Custom', evCharger: { ...settings.systemConfig.evCharger, maxPowerKW: Number(e.target.value) } } })}
+                          className={inputClass}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">{t('settings.heatPumpModel')}</label>
+                        <input
+                          type="text"
+                          value={settings.systemConfig.heatPump.model}
+                          onChange={(e) => updateSettings({ systemConfig: { ...settings.systemConfig, presetId: 'custom', presetName: 'Custom', heatPump: { ...settings.systemConfig.heatPump, model: e.target.value } } })}
+                          className={inputClass}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">{t('settings.heatPumpPower')}</label>
+                        <input
+                          type="number"
+                          step={0.1}
+                          min={1}
+                          max={30}
+                          value={settings.systemConfig.heatPump.ratedPowerKW}
+                          onChange={(e) => updateSettings({ systemConfig: { ...settings.systemConfig, presetId: 'custom', presetName: 'Custom', heatPump: { ...settings.systemConfig.heatPump, ratedPowerKW: Number(e.target.value) } } })}
+                          className={inputClass}
+                        />
                       </div>
                     </div>
                   </section>

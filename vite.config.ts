@@ -17,7 +17,7 @@ export default defineConfig(({ mode }) => {
         manifest: false, // Use public/manifest.json instead
         workbox: {
           globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2,json}'],
-          navigateFallback: 'index.html',
+          navigateFallback: mode === 'production' ? '/Nexus-HEMS-Dash/index.html' : 'index.html',
           navigateFallbackAllowlist: [/^(?!\/__).*/],
           runtimeCaching: [
             {
