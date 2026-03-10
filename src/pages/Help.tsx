@@ -33,10 +33,15 @@ import {
   Gauge,
   Lightbulb,
   RefreshCw,
+  Cpu,
+  Cable,
+  Network,
+  HardDrive,
+  CheckCircle2,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-type HelpTab = 'getting-started' | 'features' | 'lexicon' | 'faq' | 'shortcuts' | 'troubleshooting' | 'about';
+type HelpTab = 'getting-started' | 'integration' | 'features' | 'lexicon' | 'faq' | 'shortcuts' | 'troubleshooting' | 'about';
 
 function AccordionItem({ title, children, defaultOpen = false }: { title: string; children: React.ReactNode; defaultOpen?: boolean }) {
   const [open, setOpen] = useState(defaultOpen);
@@ -92,12 +97,13 @@ export function Help() {
   const [searchQuery, setSearchQuery] = useState('');
 
   const tabs: { key: HelpTab; icon: React.ReactNode; label: string }[] = [
-    { key: 'getting-started', icon: <BookOpen size={18} />, label: t('help.gettingStarted', 'Getting Started') },
-    { key: 'features', icon: <Lightbulb size={18} />, label: t('help.features', 'Features') },
+    { key: 'getting-started', icon: <BookOpen size={18} />, label: t('help.gettingStarted') },
+    { key: 'integration', icon: <Cable size={18} />, label: t('help.integrationGuide') },
+    { key: 'features', icon: <Lightbulb size={18} />, label: t('help.features') },
     { key: 'lexicon', icon: <FileText size={18} />, label: t('help.glossaryTitle') },
     { key: 'faq', icon: <MessageCircleQuestion size={18} />, label: t('help.faq') },
-    { key: 'shortcuts', icon: <Keyboard size={18} />, label: t('help.shortcuts', 'Shortcuts') },
-    { key: 'troubleshooting', icon: <RefreshCw size={18} />, label: t('help.troubleshooting', 'Troubleshooting') },
+    { key: 'shortcuts', icon: <Keyboard size={18} />, label: t('help.shortcuts') },
+    { key: 'troubleshooting', icon: <RefreshCw size={18} />, label: t('help.troubleshooting') },
     { key: 'about', icon: <Info size={18} />, label: t('help.about') },
   ];
 
@@ -121,7 +127,7 @@ export function Help() {
           </div>
           <div>
             <h1 className="text-2xl font-semibold tracking-tight fluid-text-2xl">{t('help.title')}</h1>
-            <p className="text-sm text-[color:var(--color-muted)]">{t('help.subtitle', 'Everything you need to know about Nexus HEMS')}</p>
+            <p className="text-sm text-[color:var(--color-muted)]">{t('help.subtitle')}</p>
           </div>
         </div>
       </motion.div>
@@ -133,8 +139,8 @@ export function Help() {
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder={t('help.searchPlaceholder', 'Search documentation...')}
-          aria-label={t('help.searchPlaceholder', 'Search documentation...')}
+          placeholder={t('help.searchPlaceholder')}
+          aria-label={t('help.searchPlaceholder')}
           className="w-full bg-[color:var(--color-surface)] border border-[color:var(--color-border)] rounded-xl pl-11 pr-4 py-3 text-sm text-[color:var(--color-text)] focus:outline-none focus:border-[color:var(--color-primary)]/70 focus:ring-2 focus:ring-[color:var(--color-primary)]/20 transition-all placeholder:text-[color:var(--color-muted)]"
         />
       </div>
@@ -181,18 +187,18 @@ export function Help() {
                 aria-labelledby="help-tab-getting-started"
               >
                 <div className="glass-panel-strong p-6 rounded-2xl">
-                  <h2 className="text-xl font-semibold mb-4">{t('help.welcomeTitle', 'Welcome to Nexus HEMS')}</h2>
-                  <p className="text-[color:var(--color-muted)] leading-relaxed mb-6">{t('help.welcomeIntro', 'Nexus-HEMS Dash is the central control point for your Home Energy Management System. Monitor real-time energy flows, control your smart home devices, optimize EV charging and heat pump operation with AI-powered recommendations, and leverage dynamic electricity tariffs for maximum savings.')}</p>
+                  <h2 className="text-xl font-semibold mb-4">{t('help.welcomeTitle')}</h2>
+                  <p className="text-[color:var(--color-muted)] leading-relaxed mb-6">{t('help.welcomeIntro')}</p>
 
                   {/* Quick Start Steps */}
-                  <h3 className="text-lg font-medium mb-4">{t('help.quickStart', 'Quick Start Guide')}</h3>
+                  <h3 className="text-lg font-medium mb-4">{t('help.quickStart')}</h3>
                   <div className="space-y-4">
                     {[
-                      { step: 1, title: t('help.step1Title', 'Connect your devices'), desc: t('help.step1Desc', 'Go to Settings → System and enter the IP addresses for your Victron Cerbo GX, KNX IP router, and Node-RED WebSocket server.'), icon: <Server size={18} /> },
-                      { step: 2, title: t('help.step2Title', 'Configure energy parameters'), desc: t('help.step2Desc', 'Set up your tariff provider (Tibber/aWATTar), charge threshold, and §14a EnWG grid import limit under Settings → Energy.'), icon: <Zap size={18} /> },
-                      { step: 3, title: t('help.step3Title', 'Monitor your energy flow'), desc: t('help.step3Desc', 'The Dashboard shows a real-time Sankey diagram visualizing energy flows between PV, grid, battery, and consumers. Data refreshes every 2 seconds via WebSocket.'), icon: <Activity size={18} /> },
-                      { step: 4, title: t('help.step4Title', 'Optimize with AI'), desc: t('help.step4Desc', 'Enable the AI Optimizer to get real-time recommendations for EV charging, battery strategy, and heat pump operation based on weather forecasts and tariff predictions.'), icon: <Sparkles size={18} /> },
-                      { step: 5, title: t('help.step5Title', 'Install as PWA'), desc: t('help.step5Desc', 'Install Nexus HEMS as a Progressive Web App for native-like performance, offline access, and push notifications.'), icon: <Download size={18} /> },
+                      { step: 1, title: t('help.step1Title'), desc: t('help.step1Desc'), icon: <Server size={18} /> },
+                      { step: 2, title: t('help.step2Title'), desc: t('help.step2Desc'), icon: <Zap size={18} /> },
+                      { step: 3, title: t('help.step3Title'), desc: t('help.step3Desc'), icon: <Activity size={18} /> },
+                      { step: 4, title: t('help.step4Title'), desc: t('help.step4Desc'), icon: <Sparkles size={18} /> },
+                      { step: 5, title: t('help.step5Title'), desc: t('help.step5Desc'), icon: <Download size={18} /> },
                     ].map((item) => (
                       <div key={item.step} className="flex gap-4 p-4 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
                         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[color:var(--color-primary)]/15 text-[color:var(--color-primary)] font-bold text-sm">
@@ -212,33 +218,295 @@ export function Help() {
 
                 {/* System Requirements */}
                 <div className="glass-panel-strong p-6 rounded-2xl">
-                  <h3 className="text-lg font-medium mb-4">{t('help.requirements', 'System Requirements')}</h3>
+                  <h3 className="text-lg font-medium mb-4">{t('help.requirements')}</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-4">
                       <div className="flex items-center gap-2 mb-2">
                         <Monitor size={16} className="text-blue-400" />
-                        <h4 className="font-medium text-sm">{t('help.hardware', 'Hardware')}</h4>
+                        <h4 className="font-medium text-sm">{t('help.hardware')}</h4>
                       </div>
                       <ul className="text-xs text-[color:var(--color-muted)] space-y-1.5">
-                        <li>• Victron Cerbo GX / Venus OS</li>
-                        <li>• KNX IP Router ({t('help.optional', 'optional')})</li>
-                        <li>• Node-RED {t('help.onCerbo', 'on Cerbo GX or separate')}</li>
+                        <li>• Victron Cerbo GX / MK2 / Venus OS</li>
+                        <li>• Raspberry Pi 4/5 ({t('help.optional')})</li>
+                        <li>• KNX IP Router ({t('help.optional')})</li>
+                        <li>• Node-RED {t('help.onCerbo')}</li>
                         <li>• WiFi / Ethernet</li>
                       </ul>
                     </div>
                     <div className="rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-4">
                       <div className="flex items-center gap-2 mb-2">
                         <Globe size={16} className="text-cyan-400" />
-                        <h4 className="font-medium text-sm">{t('help.software', 'Software')}</h4>
+                        <h4 className="font-medium text-sm">{t('help.software')}</h4>
                       </div>
                       <ul className="text-xs text-[color:var(--color-muted)] space-y-1.5">
-                        <li>• {t('help.modernBrowser', 'Modern browser (Chrome, Firefox, Safari, Edge)')}</li>
-                        <li>• {t('help.pwaSupport', 'PWA support for offline mode')}</li>
-                        <li>• Tibber / aWATTar {t('help.account', 'account')} ({t('help.optional', 'optional')})</li>
-                        <li>• AI API Key ({t('help.optional', 'optional')})</li>
+                        <li>• {t('help.modernBrowser')}</li>
+                        <li>• {t('help.pwaSupport')}</li>
+                        <li>• Tibber / aWATTar {t('help.account')} ({t('help.optional')})</li>
+                        <li>• AI API Key ({t('help.optional')})</li>
                       </ul>
                     </div>
                   </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* === INTEGRATION GUIDE === */}
+            {activeTab === 'integration' && (
+              <motion.div
+                key="integration"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+                className="space-y-6"
+                role="tabpanel"
+                id="help-tabpanel-integration"
+                aria-labelledby="help-tab-integration"
+              >
+                {/* Intro */}
+                <div className="glass-panel-strong p-6 rounded-2xl">
+                  <h2 className="text-xl font-semibold mb-2">{t('help.integrationGuideTitle')}</h2>
+                  <p className="text-sm text-[color:var(--color-muted)] leading-relaxed">{t('help.integrationGuideIntro')}</p>
+                </div>
+
+                {/* Cerbo GX / MK2 */}
+                <div className="glass-panel-strong p-6 rounded-2xl">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/15">
+                      <Server size={20} className="text-blue-400" />
+                    </div>
+                    <h3 className="text-lg font-semibold">{t('help.cerboGxTitle')}</h3>
+                  </div>
+                  <p className="text-sm text-[color:var(--color-muted)] leading-relaxed mb-4">{t('help.cerboGxIntro')}</p>
+
+                  {/* Specs */}
+                  <h4 className="font-medium text-sm mb-2">{t('help.cerboGxSpecs')}</h4>
+                  <ul className="text-xs text-[color:var(--color-muted)] space-y-1.5 mb-4 ml-4">
+                    {['cerboGxSpec1','cerboGxSpec2','cerboGxSpec3','cerboGxSpec4','cerboGxSpec5','cerboGxSpec6'].map(k => (
+                      <li key={k} className="flex gap-2"><CheckCircle2 size={12} className="text-emerald-400 shrink-0 mt-0.5" />{t(`help.${k}`)}</li>
+                    ))}
+                  </ul>
+
+                  {/* Interfaces */}
+                  <h4 className="font-medium text-sm mb-2">{t('help.cerboGxInterfaces')}</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
+                    {['cerboGxInt1','cerboGxInt2','cerboGxInt3','cerboGxInt4','cerboGxInt5','cerboGxInt6'].map(k => (
+                      <div key={k} className="rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-2.5 text-xs text-[color:var(--color-muted)]">
+                        {t(`help.${k}`)}
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Setup Steps */}
+                  <h4 className="font-medium text-sm mb-2">{t('help.cerboGxSetup')}</h4>
+                  <ol className="text-xs text-[color:var(--color-muted)] space-y-2 mb-4">
+                    {['cerboGxSetup1','cerboGxSetup2','cerboGxSetup3','cerboGxSetup4','cerboGxSetup5','cerboGxSetup6','cerboGxSetup7'].map((k, i) => (
+                      <li key={k} className="flex gap-2">
+                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[color:var(--color-primary)]/15 text-[color:var(--color-primary)] text-[10px] font-bold">{i + 1}</span>
+                        <span className="leading-relaxed">{t(`help.${k}`)}</span>
+                      </li>
+                    ))}
+                  </ol>
+
+                  <div className="rounded-xl border border-blue-500/20 bg-blue-500/5 p-3 flex items-start gap-2">
+                    <Info size={14} className="text-blue-400 shrink-0 mt-0.5" />
+                    <p className="text-xs text-[color:var(--color-muted)]">{t('help.cerboGxNote')}</p>
+                  </div>
+                </div>
+
+                {/* Raspberry Pi */}
+                <div className="glass-panel-strong p-6 rounded-2xl">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-green-500/15">
+                      <Cpu size={20} className="text-green-400" />
+                    </div>
+                    <h3 className="text-lg font-semibold">{t('help.rpiTitle')}</h3>
+                  </div>
+                  <p className="text-sm text-[color:var(--color-muted)] leading-relaxed mb-4">{t('help.rpiIntro')}</p>
+
+                  {/* Recommended Hardware */}
+                  <h4 className="font-medium text-sm mb-2">{t('help.rpiRecommended')}</h4>
+                  <ul className="text-xs text-[color:var(--color-muted)] space-y-1.5 mb-4 ml-4">
+                    {['rpiModel','rpiPower','rpiStorage','rpiNetwork','rpiHat','rpiCan'].map(k => (
+                      <li key={k} className="flex gap-2"><CheckCircle2 size={12} className="text-green-400 shrink-0 mt-0.5" />{t(`help.${k}`)}</li>
+                    ))}
+                  </ul>
+
+                  {/* Installation Steps */}
+                  <h4 className="font-medium text-sm mb-2">{t('help.rpiSetup')}</h4>
+                  <ol className="text-xs text-[color:var(--color-muted)] space-y-2 mb-4">
+                    {['rpiSetup1','rpiSetup2','rpiSetup3','rpiSetup4','rpiSetup5','rpiSetup6','rpiSetup7'].map((k, i) => (
+                      <li key={k} className="flex gap-2">
+                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-green-500/15 text-green-400 text-[10px] font-bold">{i + 1}</span>
+                        <span className="leading-relaxed">{t(`help.${k}`)}</span>
+                      </li>
+                    ))}
+                  </ol>
+
+                  {/* Performance Tips */}
+                  <h4 className="font-medium text-sm mb-2">{t('help.rpiPerformance')}</h4>
+                  <ul className="text-xs text-[color:var(--color-muted)] space-y-1.5 mb-4 ml-4">
+                    {['rpiPerf1','rpiPerf2','rpiPerf3','rpiPerf4','rpiPerf5'].map(k => (
+                      <li key={k}>• {t(`help.${k}`)}</li>
+                    ))}
+                  </ul>
+
+                  {/* Comparison Table */}
+                  <h4 className="font-medium text-sm mb-2">{t('help.rpiVsGx')}</h4>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs border-collapse">
+                      <thead>
+                        <tr className="border-b border-[color:var(--color-border)]">
+                          <th className="text-left py-2 pr-4 text-[color:var(--color-muted)] font-medium"> </th>
+                          <th className="text-left py-2 px-4 text-green-400 font-medium">{t('help.rpiVsGxRpi')}</th>
+                          <th className="text-left py-2 px-4 text-blue-400 font-medium">{t('help.rpiVsGxCerbo')}</th>
+                        </tr>
+                      </thead>
+                      <tbody className="text-[color:var(--color-muted)]">
+                        {[
+                          ['rpiVsGxCost', 'rpiVsGxCostRpi', 'rpiVsGxCostCerbo'],
+                          ['rpiVsGxVeBus', 'rpiVsGxVeBusRpi', 'rpiVsGxVeBusCerbo'],
+                          ['rpiVsGxReliability', 'rpiVsGxReliabilityRpi', 'rpiVsGxReliabilityCerbo'],
+                          ['rpiVsGxSupport', 'rpiVsGxSupportRpi', 'rpiVsGxSupportCerbo'],
+                          ['rpiVsGxNodeRed', 'rpiVsGxNodeRedBoth', 'rpiVsGxNodeRedBoth'],
+                          ['rpiVsGxIdeal', 'rpiVsGxIdealRpi', 'rpiVsGxIdealCerbo'],
+                        ].map(([label, rpi, cerbo]) => (
+                          <tr key={label} className="border-b border-[color:var(--color-border)]/50">
+                            <td className="py-2 pr-4 font-medium">{t(`help.${label}`)}</td>
+                            <td className="py-2 px-4">{t(`help.${rpi}`)}</td>
+                            <td className="py-2 px-4">{t(`help.${cerbo}`)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Venus OS & Node-RED Architecture */}
+                <div className="glass-panel-strong p-6 rounded-2xl">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-500/15">
+                      <Network size={20} className="text-purple-400" />
+                    </div>
+                    <h3 className="text-lg font-semibold">{t('help.venusTitle')}</h3>
+                  </div>
+                  <p className="text-sm text-[color:var(--color-muted)] leading-relaxed mb-4">{t('help.venusIntro')}</p>
+
+                  {/* Architecture */}
+                  <h4 className="font-medium text-sm mb-2">{t('help.venusArchitecture')}</h4>
+                  <ol className="text-xs text-[color:var(--color-muted)] space-y-2 mb-4">
+                    {['venusArch1','venusArch2','venusArch3','venusArch4','venusArch5'].map((k, i) => (
+                      <li key={k} className="flex gap-2">
+                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-purple-500/15 text-purple-400 text-[10px] font-bold">{i + 1}</span>
+                        <span className="leading-relaxed">{t(`help.${k}`)}</span>
+                      </li>
+                    ))}
+                  </ol>
+
+                  {/* D-Bus Paths */}
+                  <h4 className="font-medium text-sm mb-2">{t('help.venusDbusTitle')}</h4>
+                  <div className="space-y-1.5 mb-4">
+                    {['venusDbus1','venusDbus2','venusDbus3','venusDbus4','venusDbus5','venusDbus6','venusDbus7'].map(k => (
+                      <div key={k} className="rounded-lg bg-[color:var(--color-surface)] border border-[color:var(--color-border)] p-2 text-xs font-mono text-[color:var(--color-muted)]">
+                        {t(`help.${k}`)}
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Node-RED Flow */}
+                  <h4 className="font-medium text-sm mb-2">{t('help.venusNodeRed')}</h4>
+                  <p className="text-xs text-[color:var(--color-muted)] leading-relaxed mb-3">{t('help.venusNodeRedDesc')}</p>
+                  <h4 className="font-medium text-sm mb-2">{t('help.venusNodeRedFlows')}</h4>
+                  <ul className="text-xs text-[color:var(--color-muted)] space-y-1.5 mb-4 ml-4">
+                    {['venusFlow1','venusFlow2','venusFlow3','venusFlow4','venusFlow5'].map(k => (
+                      <li key={k}>• {t(`help.${k}`)}</li>
+                    ))}
+                  </ul>
+
+                  {/* MQTT Topics */}
+                  <h4 className="font-medium text-sm mb-2">{t('help.venusMqttTopics')}</h4>
+                  <div className="space-y-1.5">
+                    {['venusMqtt1','venusMqtt2','venusMqtt3','venusMqtt4','venusMqtt5'].map(k => (
+                      <div key={k} className="rounded-lg bg-[color:var(--color-surface)] border border-[color:var(--color-border)] p-2 text-xs font-mono text-[color:var(--color-muted)]">
+                        {t(`help.${k}`)}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* KNX Integration */}
+                <div className="glass-panel-strong p-6 rounded-2xl">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/15">
+                      <Lightbulb size={20} className="text-amber-400" />
+                    </div>
+                    <h3 className="text-lg font-semibold">{t('help.knxTitle')}</h3>
+                  </div>
+                  <p className="text-sm text-[color:var(--color-muted)] leading-relaxed mb-4">{t('help.knxIntro')}</p>
+
+                  {/* Architecture */}
+                  <h4 className="font-medium text-sm mb-2">{t('help.knxArchitecture')}</h4>
+                  <ol className="text-xs text-[color:var(--color-muted)] space-y-2 mb-4">
+                    {['knxArch1','knxArch2','knxArch3','knxArch4'].map((k, i) => (
+                      <li key={k} className="flex gap-2">
+                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-500/15 text-amber-400 text-[10px] font-bold">{i + 1}</span>
+                        <span className="leading-relaxed">{t(`help.${k}`)}</span>
+                      </li>
+                    ))}
+                  </ol>
+
+                  {/* Group Addresses */}
+                  <h4 className="font-medium text-sm mb-2">{t('help.knxGroupAddresses')}</h4>
+                  <div className="space-y-1.5 mb-4">
+                    {['knxGA1','knxGA2','knxGA3','knxGA4','knxGA5'].map(k => (
+                      <div key={k} className="rounded-lg bg-[color:var(--color-surface)] border border-[color:var(--color-border)] p-2 text-xs font-mono text-[color:var(--color-muted)]">
+                        {t(`help.${k}`)}
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Best Practices */}
+                  <h4 className="font-medium text-sm mb-2">{t('help.knxBestPractices')}</h4>
+                  <ul className="text-xs text-[color:var(--color-muted)] space-y-1.5 ml-4">
+                    {['knxBP1','knxBP2','knxBP3','knxBP4','knxBP5'].map(k => (
+                      <li key={k}>• {t(`help.${k}`)}</li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* High-End Configuration */}
+                <div className="glass-panel-strong p-6 rounded-2xl">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-500/15">
+                      <HardDrive size={20} className="text-rose-400" />
+                    </div>
+                    <h3 className="text-lg font-semibold">{t('help.highEndTitle')}</h3>
+                  </div>
+                  <p className="text-sm text-[color:var(--color-muted)] leading-relaxed mb-4">{t('help.highEndIntro')}</p>
+
+                  {/* Hardware */}
+                  <h4 className="font-medium text-sm mb-2">{t('help.highEndHardware')}</h4>
+                  <ul className="text-xs text-[color:var(--color-muted)] space-y-1.5 mb-4 ml-4">
+                    {['highEndHW1','highEndHW2','highEndHW3','highEndHW4','highEndHW5','highEndHW6','highEndHW7','highEndHW8','highEndHW9'].map(k => (
+                      <li key={k} className="flex gap-2"><CheckCircle2 size={12} className="text-rose-400 shrink-0 mt-0.5" />{t(`help.${k}`)}</li>
+                    ))}
+                  </ul>
+
+                  {/* Software */}
+                  <h4 className="font-medium text-sm mb-2">{t('help.highEndSoftware')}</h4>
+                  <ul className="text-xs text-[color:var(--color-muted)] space-y-1.5 mb-4 ml-4">
+                    {['highEndSW1','highEndSW2','highEndSW3','highEndSW4','highEndSW5'].map(k => (
+                      <li key={k} className="flex gap-2"><CheckCircle2 size={12} className="text-purple-400 shrink-0 mt-0.5" />{t(`help.${k}`)}</li>
+                    ))}
+                  </ul>
+
+                  {/* Network */}
+                  <h4 className="font-medium text-sm mb-2">{t('help.highEndNetwork')}</h4>
+                  <ul className="text-xs text-[color:var(--color-muted)] space-y-1.5 ml-4">
+                    {['highEndNet1','highEndNet2','highEndNet3','highEndNet4','highEndNet5'].map(k => (
+                      <li key={k} className="flex gap-2"><Shield size={12} className="text-cyan-400 shrink-0 mt-0.5" />{t(`help.${k}`)}</li>
+                    ))}
+                  </ul>
                 </div>
               </motion.div>
             )}
@@ -257,78 +525,78 @@ export function Help() {
                 aria-labelledby="help-tab-features"
               >
                 <div className="glass-panel-strong p-6 rounded-2xl">
-                  <h2 className="text-xl font-semibold mb-6">{t('help.allFeatures', 'All Features')}</h2>
+                  <h2 className="text-xl font-semibold mb-6">{t('help.allFeatures')}</h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <FeatureCard
                       icon={<Activity size={20} className="text-emerald-400" />}
-                      title={t('help.featureSankey', 'Real-time Sankey Diagram')}
-                      description={t('help.featureSankeyDesc', 'D3.js-powered visualization of energy flows between PV, grid, battery, and consumers. Updates every 2 seconds via WebSocket.')}
+                      title={t('help.featureSankey')}
+                      description={t('help.featureSankeyDesc')}
                       color="bg-emerald-500/15"
                     />
                     <FeatureCard
                       icon={<Map size={20} className="text-blue-400" />}
-                      title={t('help.featureFloorplan', 'Interactive KNX Floorplan')}
-                      description={t('help.featureFloorplanDesc', 'Control lights, windows, and climate via an interactive floor plan. Commands are sent via Node-RED to your KNX bus.')}
+                      title={t('help.featureFloorplan')}
+                      description={t('help.featureFloorplanDesc')}
                       color="bg-blue-500/15"
                     />
                     <FeatureCard
                       icon={<Sparkles size={20} className="text-purple-400" />}
-                      title={t('help.featureAI', 'AI Optimizer')}
-                      description={t('help.featureAIDesc', 'Gemini 2.5-powered recommendations for EV, battery, and heat pump strategy based on tariffs, weather, and consumption patterns.')}
+                      title={t('help.featureAI')}
+                      description={t('help.featureAIDesc')}
                       color="bg-purple-500/15"
                     />
                     <FeatureCard
                       icon={<Car size={20} className="text-amber-400" />}
-                      title={t('help.featureEV', 'EV Charging Control')}
-                      description={t('help.featureEVDesc', 'Smart wallbox control with PV surplus, low-price, and scheduled charging modes. §14a EnWG compliant.')}
+                      title={t('help.featureEV')}
+                      description={t('help.featureEVDesc')}
                       color="bg-amber-500/15"
                     />
                     <FeatureCard
                       icon={<TrendingUp size={20} className="text-rose-400" />}
-                      title={t('help.featureTariffs', 'Dynamic Tariffs')}
-                      description={t('help.featureTariffsDesc', 'Real-time integration with Tibber and aWATTar. Automatic optimization of consumption to low-price windows.')}
+                      title={t('help.featureTariffs')}
+                      description={t('help.featureTariffsDesc')}
                       color="bg-rose-500/15"
                     />
                     <FeatureCard
                       icon={<Sun size={20} className="text-yellow-400" />}
-                      title={t('help.featureForecast', 'Weather-based PV Forecast')}
-                      description={t('help.featureForecastDesc', 'Predictive PV generation and consumption forecasts based on weather data. 24h and 7-day outlooks.')}
+                      title={t('help.featureForecast')}
+                      description={t('help.featureForecastDesc')}
                       color="bg-yellow-500/15"
                     />
                     <FeatureCard
                       icon={<Battery size={20} className="text-green-400" />}
-                      title={t('help.featureBattery', 'Battery Management')}
-                      description={t('help.featureBatteryDesc', 'Monitor SoC, voltage, and power. Configure charging strategies: self-consumption, force charge, or auto mode.')}
+                      title={t('help.featureBattery')}
+                      description={t('help.featureBatteryDesc')}
                       color="bg-green-500/15"
                     />
                     <FeatureCard
                       icon={<BarChart3 size={20} className="text-indigo-400" />}
-                      title={t('help.featureAnalytics', 'Analytics & Reports')}
-                      description={t('help.featureAnalyticsDesc', 'Monthly PDF reports with cost analysis, CO₂ balance, and energy statistics. Export and share dashboards.')}
+                      title={t('help.featureAnalytics')}
+                      description={t('help.featureAnalyticsDesc')}
                       color="bg-indigo-500/15"
                     />
                     <FeatureCard
                       icon={<Home size={20} className="text-teal-400" />}
-                      title={t('help.featureHA', 'Home Assistant / MQTT')}
-                      description={t('help.featureHADesc', 'Bidirectional MQTT integration with Home Assistant. Auto-discovery for all connected devices.')}
+                      title={t('help.featureHA')}
+                      description={t('help.featureHADesc')}
                       color="bg-teal-500/15"
                     />
                     <FeatureCard
                       icon={<Mic size={20} className="text-pink-400" />}
-                      title={t('help.featureVoice', 'Voice Control')}
-                      description={t('help.featureVoiceDesc', 'Hands-free dashboard control with speech recognition. Navigate, change themes, and control devices by voice.')}
+                      title={t('help.featureVoice')}
+                      description={t('help.featureVoiceDesc')}
                       color="bg-pink-500/15"
                     />
                     <FeatureCard
                       icon={<WifiOff size={20} className="text-orange-400" />}
-                      title={t('help.featureOffline', 'Offline Mode')}
-                      description={t('help.featureOfflineDesc', 'Full PWA support with service worker caching, IndexedDB persistence, and background sync. Works without internet.')}
+                      title={t('help.featureOffline')}
+                      description={t('help.featureOfflineDesc')}
                       color="bg-orange-500/15"
                     />
                     <FeatureCard
                       icon={<Shield size={20} className="text-red-400" />}
-                      title={t('help.featureSecurity', 'Security')}
-                      description={t('help.featureSecurityDesc', 'mTLS, AES-GCM 256-bit encryption for API keys, 2FA, and local-first data storage. No cloud dependency.')}
+                      title={t('help.featureSecurity')}
+                      description={t('help.featureSecurityDesc')}
                       color="bg-red-500/15"
                     />
                   </div>
@@ -336,7 +604,7 @@ export function Help() {
 
                 {/* Supported Protocols */}
                 <div className="glass-panel-strong p-6 rounded-2xl">
-                  <h3 className="text-lg font-medium mb-4">{t('help.protocols', 'Supported Protocols & Standards')}</h3>
+                  <h3 className="text-lg font-medium mb-4">{t('help.protocols')}</h3>
                   <div className="flex flex-wrap gap-2">
                     {['Modbus TCP', 'MQTT', 'KNX/IP', 'WebSocket', 'OCPP 2.1', 'SunSpec', 'EEBus', 'SG Ready', 'VE.Bus', 'Tibber API', 'aWATTar API', 'Open-Meteo API'].map((proto) => (
                       <span key={proto} className="rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-3 py-1.5 text-xs font-medium">
@@ -371,13 +639,18 @@ export function Help() {
                       { term: t('help.enwg'), desc: t('help.enwgDesc') },
                       { term: t('help.knx'), desc: t('help.knxDesc') },
                       { term: t('help.soc'), desc: t('help.socDesc') },
-                      { term: t('help.glossMppt', 'MPPT (Maximum Power Point Tracking)'), desc: t('help.glossMpptDesc', 'An algorithm used by solar charge controllers and inverters to extract maximum power from PV panels under varying conditions.') },
-                      { term: t('help.glossEms', 'EMS (Energy Management System)'), desc: t('help.glossEmsDesc', 'Software and hardware that monitors, controls, and optimizes energy consumption and production in a building or facility.') },
-                      { term: t('help.glossFeedIn', 'Feed-in Tariff (Einspeisevergütung)'), desc: t('help.glossFeedInDesc', 'A policy mechanism designed to accelerate investment in renewable energy technologies by offering long-term contracts to renewable energy producers.') },
-                      { term: t('help.glossSector', 'Sector Coupling (Sektorenkopplung)'), desc: t('help.glossSectorDesc', 'The integration of the energy-consuming sectors – electricity, heating, and transport – via power-to-heat, power-to-gas, and direct electrification.') },
-                      { term: t('help.glossModbus', 'Modbus TCP'), desc: t('help.glossModbusDesc', 'A communication protocol for industrial devices. Used to read data from Victron inverters and other energy equipment via TCP/IP.') },
-                      { term: t('help.glossOcpp', 'OCPP (Open Charge Point Protocol)'), desc: t('help.glossOcppDesc', 'An open communication protocol between EV charging stations and a central management system. Version 2.1 supports smart charging.') },
-                      { term: t('help.glossPwa', 'PWA (Progressive Web App)'), desc: t('help.glossPwaDesc', 'A type of application software that uses web technologies but delivers native app-like experiences including offline mode, push notifications, and home screen installation.') },
+                      { term: t('help.glossMppt'), desc: t('help.glossMpptDesc') },
+                      { term: t('help.glossEms'), desc: t('help.glossEmsDesc') },
+                      { term: t('help.glossFeedIn'), desc: t('help.glossFeedInDesc') },
+                      { term: t('help.glossSector'), desc: t('help.glossSectorDesc') },
+                      { term: t('help.glossModbus'), desc: t('help.glossModbusDesc') },
+                      { term: t('help.glossOcpp'), desc: t('help.glossOcppDesc') },
+                      { term: t('help.glossPwa'), desc: t('help.glossPwaDesc') },
+                      { term: t('help.glossVenusOs'), desc: t('help.glossVenusOsDesc') },
+                      { term: t('help.glossDbus'), desc: t('help.glossDbusDesc') },
+                      { term: t('help.glossNodeRed'), desc: t('help.glossNodeRedDesc') },
+                      { term: t('help.glossCerboGx'), desc: t('help.glossCerboGxDesc') },
+                      { term: t('help.glossV2x'), desc: t('help.glossV2xDesc') },
                     ].map((item, i) => (
                       <div key={i} className="border-b border-[color:var(--color-border)] pb-4 last:border-0">
                         <dt className="font-medium text-[color:var(--color-primary)] text-sm">{item.term}</dt>
@@ -406,55 +679,58 @@ export function Help() {
                   <h2 className="text-xl font-semibold mb-6">{t('help.faqTitle')}</h2>
 
                   {/* General */}
-                  <h3 className="text-sm font-semibold uppercase tracking-widest text-[color:var(--color-muted)] mb-3">{t('help.faqGeneral', 'General')}</h3>
+                  <h3 className="text-sm font-semibold uppercase tracking-widest text-[color:var(--color-muted)] mb-3">{t('help.faqGeneral')}</h3>
                   <div className="space-y-3 mb-6">
-                    <AccordionItem title={t('help.faqWhatIs', 'What is Nexus HEMS?')} defaultOpen>
-                      {t('help.faqWhatIsAnswer', 'Nexus HEMS is a real-time Home Energy Management System dashboard. It visualizes energy flows between solar panels, battery storage, the power grid, and household consumers. It integrates with Victron Cerbo GX, KNX building automation, and dynamic electricity tariff providers.')}
+                    <AccordionItem title={t('help.faqWhatIs')} defaultOpen>
+                      {t('help.faqWhatIsAnswer')}
                     </AccordionItem>
                     <AccordionItem title={t('help.faqPowerOutage')}>
                       {t('help.faqPowerOutageAnswer')}
                     </AccordionItem>
-                    <AccordionItem title={t('help.faqOffline', 'Does the app work offline?')}>
-                      {t('help.faqOfflineAnswer', 'Yes. As a PWA, the app caches all assets and recent data locally. You can view the last known energy state, browse settings, and queue control commands that will be synced when connectivity is restored.')}
+                    <AccordionItem title={t('help.faqOffline')}>
+                      {t('help.faqOfflineAnswer')}
+                    </AccordionItem>
+                    <AccordionItem title={t('help.faqCerboVsRpi')}>
+                      {t('help.faqCerboVsRpiAnswer')}
                     </AccordionItem>
                   </div>
 
                   {/* Energy & Tariffs */}
-                  <h3 className="text-sm font-semibold uppercase tracking-widest text-[color:var(--color-muted)] mb-3">{t('help.faqEnergySection', 'Energy & Tariffs')}</h3>
+                  <h3 className="text-sm font-semibold uppercase tracking-widest text-[color:var(--color-muted)] mb-3">{t('help.faqEnergySection')}</h3>
                   <div className="space-y-3 mb-6">
                     <AccordionItem title={t('help.faqEnwg')}>
                       {t('help.faqEnwgAnswer')}
                     </AccordionItem>
-                    <AccordionItem title={t('help.faqTariff', 'How do dynamic tariffs work?')}>
-                      {t('help.faqTariffAnswer', 'Dynamic tariffs change hourly based on wholesale electricity market prices. Nexus HEMS fetches prices from your provider (Tibber or aWATTar) and automatically shifts flexible loads (EV charging, heat pump, battery) to low-price windows to maximize savings.')}
+                    <AccordionItem title={t('help.faqTariff')}>
+                      {t('help.faqTariffAnswer')}
                     </AccordionItem>
-                    <AccordionItem title={t('help.faqSgReady', 'What is SG Ready and how does it work?')}>
-                      {t('help.faqSgReadyAnswer', 'SG Ready is a standard for heat pumps that define 4 operating modes: Mode 1 (lockout), Mode 2 (normal), Mode 3 (recommended increased consumption), and Mode 4 (forced start). Nexus HEMS automatically sets the optimal mode based on PV surplus, electricity price, and weather forecasts.')}
+                    <AccordionItem title={t('help.faqSgReady')}>
+                      {t('help.faqSgReadyAnswer')}
                     </AccordionItem>
                   </div>
 
                   {/* Security */}
-                  <h3 className="text-sm font-semibold uppercase tracking-widest text-[color:var(--color-muted)] mb-3">{t('help.faqSecuritySection', 'Security & Privacy')}</h3>
+                  <h3 className="text-sm font-semibold uppercase tracking-widest text-[color:var(--color-muted)] mb-3">{t('help.faqSecuritySection')}</h3>
                   <div className="space-y-3 mb-6">
                     <AccordionItem title={t('help.faqSecurity')}>
                       {t('help.faqSecurityAnswer')}
                     </AccordionItem>
-                    <AccordionItem title={t('help.faqDataStorage', 'Where is my data stored?')}>
-                      {t('help.faqDataStorageAnswer', 'All data is stored locally in your browser using IndexedDB (Dexie.js). API keys are encrypted with AES-GCM 256-bit before storage. No data is sent to external servers unless you explicitly configure a cloud integration like InfluxDB.')}
+                    <AccordionItem title={t('help.faqDataStorage')}>
+                      {t('help.faqDataStorageAnswer')}
                     </AccordionItem>
                   </div>
 
                   {/* Technical */}
-                  <h3 className="text-sm font-semibold uppercase tracking-widest text-[color:var(--color-muted)] mb-3">{t('help.faqTechnical', 'Technical')}</h3>
+                  <h3 className="text-sm font-semibold uppercase tracking-widest text-[color:var(--color-muted)] mb-3">{t('help.faqTechnical')}</h3>
                   <div className="space-y-3">
-                    <AccordionItem title={t('help.faqBrowsers', 'Which browsers are supported?')}>
-                      {t('help.faqBrowsersAnswer', 'Nexus HEMS supports all modern browsers: Chrome 90+, Firefox 90+, Safari 15+, and Edge 90+. For the best experience with PWA features, we recommend Chrome or Edge.')}
+                    <AccordionItem title={t('help.faqBrowsers')}>
+                      {t('help.faqBrowsersAnswer')}
                     </AccordionItem>
-                    <AccordionItem title={t('help.faqMobile', 'Is there a mobile app?')}>
-                      {t('help.faqMobileAnswer', 'Nexus HEMS is a Progressive Web App (PWA). You can install it from your browser to your home screen for a native app-like experience. It works on both iOS and Android with responsive layouts optimized for all screen sizes.')}
+                    <AccordionItem title={t('help.faqMobile')}>
+                      {t('help.faqMobileAnswer')}
                     </AccordionItem>
-                    <AccordionItem title={t('help.faqApi', 'Can I integrate custom APIs?')}>
-                      {t('help.faqApiAnswer', 'Yes. The adapter architecture supports custom integrations. Built-in adapters exist for Victron MQTT, KNX/IP, Modbus SunSpec, OCPP 2.1, and EEBus. You can extend the system by adding new adapters in the core/adapters directory.')}
+                    <AccordionItem title={t('help.faqApi')}>
+                      {t('help.faqApiAnswer')}
                     </AccordionItem>
                   </div>
                 </div>
@@ -475,16 +751,16 @@ export function Help() {
                 aria-labelledby="help-tab-shortcuts"
               >
                 <div className="glass-panel-strong p-6 rounded-2xl">
-                  <h2 className="text-xl font-semibold mb-6">{t('help.keyboardShortcuts', 'Keyboard Shortcuts')}</h2>
+                  <h2 className="text-xl font-semibold mb-6">{t('help.keyboardShortcuts')}</h2>
                   <div className="space-y-6">
                     {/* Navigation */}
                     <div>
-                      <h3 className="text-sm font-semibold uppercase tracking-widest text-[color:var(--color-muted)] mb-3">{t('help.shortcutNav', 'Navigation')}</h3>
+                      <h3 className="text-sm font-semibold uppercase tracking-widest text-[color:var(--color-muted)] mb-3">{t('help.shortcutNav')}</h3>
                       <div className="space-y-2">
                         {[
-                          { keys: ['⌘', 'K'], desc: t('help.shortcutCmdK', 'Open command palette') },
-                          { keys: ['⌘', '/'], desc: t('help.shortcutSearch', 'Focus search') },
-                          { keys: ['Esc'], desc: t('help.shortcutClose', 'Close dialog / go back') },
+                          { keys: ['⌘', 'K'], desc: t('help.shortcutCmdK') },
+                          { keys: ['⌘', '/'], desc: t('help.shortcutSearch') },
+                          { keys: ['Esc'], desc: t('help.shortcutClose') },
                         ].map((s, i) => (
                           <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-[color:var(--color-surface)] border border-[color:var(--color-border)]">
                             <span className="text-sm">{s.desc}</span>
@@ -500,12 +776,12 @@ export function Help() {
 
                     {/* Actions */}
                     <div>
-                      <h3 className="text-sm font-semibold uppercase tracking-widest text-[color:var(--color-muted)] mb-3">{t('help.shortcutActions', 'Actions')}</h3>
+                      <h3 className="text-sm font-semibold uppercase tracking-widest text-[color:var(--color-muted)] mb-3">{t('help.shortcutActions')}</h3>
                       <div className="space-y-2">
                         {[
-                          { keys: ['⌘', 'S'], desc: t('help.shortcutSave', 'Save settings') },
-                          { keys: ['⌘', 'E'], desc: t('help.shortcutExport', 'Export report') },
-                          { keys: ['⌘', 'L'], desc: t('help.shortcutLang', 'Toggle language') },
+                          { keys: ['⌘', 'S'], desc: t('help.shortcutSave') },
+                          { keys: ['⌘', 'E'], desc: t('help.shortcutExport') },
+                          { keys: ['⌘', 'L'], desc: t('help.shortcutLang') },
                         ].map((s, i) => (
                           <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-[color:var(--color-surface)] border border-[color:var(--color-border)]">
                             <span className="text-sm">{s.desc}</span>
@@ -523,7 +799,7 @@ export function Help() {
                     <div className="rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-4 flex items-start gap-3">
                       <Info size={16} className="text-[color:var(--color-primary)] shrink-0 mt-0.5" />
                       <p className="text-xs text-[color:var(--color-muted)]">
-                        {t('help.shortcutNote', 'On Windows/Linux, use Ctrl instead of ⌘. All shortcuts are also available through the command palette (⌘K).')}
+                        {t('help.shortcutNote')}
                       </p>
                     </div>
                   </div>
@@ -533,13 +809,13 @@ export function Help() {
                 <div className="glass-panel-strong p-6 rounded-2xl">
                   <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                     <Mic size={20} className="text-pink-400" />
-                    {t('help.voiceCommands', 'Voice Commands')}
+                    {t('help.voiceCommands')}
                   </h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {[
                       { cmd: t('voice.exampleTheme'), desc: t('voice.cmdThemeDesc') },
                       { cmd: t('voice.exampleEv'), desc: t('voice.cmdEvDesc') },
-                      { cmd: t('voice.exampleStatus'), desc: t('help.showStatus', 'Display current energy status') },
+                      { cmd: t('voice.exampleStatus'), desc: t('help.showStatus') },
                       { cmd: `"${t('voice.cmdDashboard')}"`, desc: t('voice.cmdDashboardDesc') },
                       { cmd: `"${t('voice.cmdSettings')}"`, desc: t('voice.cmdSettingsDesc') },
                       { cmd: `"${t('voice.cmdHelp')}"`, desc: t('voice.cmdHelpDesc') },
@@ -571,46 +847,46 @@ export function Help() {
                 aria-labelledby="help-tab-troubleshooting"
               >
                 <div className="glass-panel-strong p-6 rounded-2xl">
-                  <h2 className="text-xl font-semibold mb-6">{t('help.troubleshootingTitle', 'Troubleshooting')}</h2>
+                  <h2 className="text-xl font-semibold mb-6">{t('help.troubleshootingTitle')}</h2>
                   <div className="space-y-3">
-                    <AccordionItem title={t('help.troubleConnection', 'Dashboard shows "Disconnected"')} defaultOpen>
+                    <AccordionItem title={t('help.troubleConnection')} defaultOpen>
                       <ul className="space-y-2">
-                        <li>1. {t('help.troubleConn1', 'Check that your Victron Cerbo GX is powered on and connected to the network')}</li>
-                        <li>2. {t('help.troubleConn2', 'Verify the IP address in Settings → System matches your Cerbo GX')}</li>
-                        <li>3. {t('help.troubleConn3', 'Ensure Node-RED is running and the WebSocket port is correct (default: 1880)')}</li>
-                        <li>4. {t('help.troubleConn4', 'Check that your browser allows WebSocket connections')}</li>
+                        <li>1. {t('help.troubleConn1')}</li>
+                        <li>2. {t('help.troubleConn2')}</li>
+                        <li>3. {t('help.troubleConn3')}</li>
+                        <li>4. {t('help.troubleConn4')}</li>
                       </ul>
                     </AccordionItem>
-                    <AccordionItem title={t('help.troubleNoData', 'No energy data showing')} >
+                    <AccordionItem title={t('help.troubleNoData')}>
                       <ul className="space-y-2">
-                        <li>• {t('help.troubleData1', 'The Victron system may be in standby mode (no PV generation at night)')}</li>
-                        <li>• {t('help.troubleData2', 'Check the data refresh rate in Settings (default: 2000ms)')}</li>
-                        <li>• {t('help.troubleData3', 'Clear browser cache and reload the page')}</li>
-                        <li>• {t('help.troubleData4', 'Check Node-RED flow for errors')}</li>
+                        <li>• {t('help.troubleData1')}</li>
+                        <li>• {t('help.troubleData2')}</li>
+                        <li>• {t('help.troubleData3')}</li>
+                        <li>• {t('help.troubleData4')}</li>
                       </ul>
                     </AccordionItem>
-                    <AccordionItem title={t('help.troublePwa', 'PWA not installing')}>
+                    <AccordionItem title={t('help.troublePwa')}>
                       <ul className="space-y-2">
-                        <li>• {t('help.troublePwa1', 'PWA installation requires HTTPS (except on localhost)')}</li>
-                        <li>• {t('help.troublePwa2', 'Make sure the manifest.json is valid and accessible')}</li>
-                        <li>• {t('help.troublePwa3', 'On iOS, use Safari and tap "Add to Home Screen" from the share menu')}</li>
-                        <li>• {t('help.troublePwa4', 'Clear the browser cache and try again')}</li>
+                        <li>• {t('help.troublePwa1')}</li>
+                        <li>• {t('help.troublePwa2')}</li>
+                        <li>• {t('help.troublePwa3')}</li>
+                        <li>• {t('help.troublePwa4')}</li>
                       </ul>
                     </AccordionItem>
-                    <AccordionItem title={t('help.troubleKnx', 'KNX devices not responding')}>
+                    <AccordionItem title={t('help.troubleKnx')}>
                       <ul className="space-y-2">
-                        <li>• {t('help.troubleKnx1', 'Verify your KNX IP router address in Settings')}</li>
-                        <li>• {t('help.troubleKnx2', 'Check that the KNX bus has power')}</li>
-                        <li>• {t('help.troubleKnx3', 'Ensure group addresses match your ETS project configuration')}</li>
-                        <li>• {t('help.troubleKnx4', 'Test connections via ETS diagnostics first')}</li>
+                        <li>• {t('help.troubleKnx1')}</li>
+                        <li>• {t('help.troubleKnx2')}</li>
+                        <li>• {t('help.troubleKnx3')}</li>
+                        <li>• {t('help.troubleKnx4')}</li>
                       </ul>
                     </AccordionItem>
-                    <AccordionItem title={t('help.troubleAi', 'AI Optimizer not responding')}>
+                    <AccordionItem title={t('help.troubleAi')}>
                       <ul className="space-y-2">
-                        <li>• {t('help.troubleAi1', 'Check that your AI API key is configured under Settings → AI Keys')}</li>
-                        <li>• {t('help.troubleAi2', 'Verify your API key has sufficient quota')}</li>
-                        <li>• {t('help.troubleAi3', 'AI features require an internet connection')}</li>
-                        <li>• {t('help.troubleAi4', 'Try regenerating your API key in the provider\'s dashboard')}</li>
+                        <li>• {t('help.troubleAi1')}</li>
+                        <li>• {t('help.troubleAi2')}</li>
+                        <li>• {t('help.troubleAi3')}</li>
+                        <li>• {t('help.troubleAi4')}</li>
                       </ul>
                     </AccordionItem>
                   </div>
@@ -620,24 +896,24 @@ export function Help() {
                 <div className="glass-panel-strong p-6 rounded-2xl">
                   <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
                     <Gauge size={20} className="text-indigo-400" />
-                    {t('help.perfTips', 'Performance Tips')}
+                    {t('help.perfTips')}
                   </h3>
                   <div className="space-y-3 text-sm text-[color:var(--color-muted)]">
                     <div className="flex items-start gap-3">
                       <span className="text-[color:var(--color-primary)] mt-0.5">•</span>
-                      <p>{t('help.perf1', 'Use the PWA installation for better performance and offline caching')}</p>
+                      <p>{t('help.perf1')}</p>
                     </div>
                     <div className="flex items-start gap-3">
                       <span className="text-[color:var(--color-primary)] mt-0.5">•</span>
-                      <p>{t('help.perf2', 'Enable Performance Mode in Settings → Advanced to reduce animations on low-power devices')}</p>
+                      <p>{t('help.perf2')}</p>
                     </div>
                     <div className="flex items-start gap-3">
                       <span className="text-[color:var(--color-primary)] mt-0.5">•</span>
-                      <p>{t('help.perf3', 'Reduce the data refresh rate if running on mobile data or slow connections')}</p>
+                      <p>{t('help.perf3')}</p>
                     </div>
                     <div className="flex items-start gap-3">
                       <span className="text-[color:var(--color-primary)] mt-0.5">•</span>
-                      <p>{t('help.perf4', 'Periodically clear the local cache in Settings → Storage to free up IndexedDB space')}</p>
+                      <p>{t('help.perf4')}</p>
                     </div>
                   </div>
                 </div>
@@ -664,7 +940,7 @@ export function Help() {
                     </div>
                     <div>
                       <h2 className="text-xl font-semibold">{t('common.appName')}</h2>
-                      <p className="text-[color:var(--color-muted)] text-sm">{t('help.versionFull', 'Version 3.1.0 — Build 2026.03')}</p>
+                      <p className="text-[color:var(--color-muted)] text-sm">{t('help.versionFull')}</p>
                     </div>
                   </div>
 
@@ -677,12 +953,12 @@ export function Help() {
                       {[
                         { category: 'Frontend', items: 'React 19, TypeScript, Vite, Tailwind CSS' },
                         { category: 'State', items: 'Zustand, React Query, Dexie.js' },
-                        { category: t('help.visualization', 'Visualization'), items: 'D3.js Sankey, Recharts, Framer Motion' },
+                        { category: t('help.visualization'), items: 'D3.js Sankey, Recharts, Framer Motion' },
                         { category: 'Backend', items: 'Node.js, Express, WebSockets, MQTT' },
                         { category: 'AI', items: 'Google Gemini 2.5, OpenAI, Anthropic' },
                         { category: 'PWA', items: 'Workbox, Service Worker, Background Sync' },
-                        { category: t('help.protocols', 'Protocols'), items: 'Modbus, MQTT, KNX/IP, OCPP, EEBus' },
-                        { category: t('help.testing', 'Testing'), items: 'Vitest, Playwright, axe-core (a11y)' },
+                        { category: t('help.protocols'), items: 'Modbus, MQTT, KNX/IP, OCPP, EEBus' },
+                        { category: t('help.testing'), items: 'Vitest, Playwright, axe-core (a11y)' },
                       ].map((tech) => (
                         <div key={tech.category} className="rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-3">
                           <p className="text-xs font-semibold uppercase tracking-wider text-[color:var(--color-primary)] mb-1">{tech.category}</p>
@@ -694,8 +970,8 @@ export function Help() {
 
                   {/* Accessibility */}
                   <div className="border-t border-[color:var(--color-border)] pt-6 mt-6">
-                    <h3 className="font-medium mb-3">{t('help.a11yTitle', 'Accessibility')}</h3>
-                    <p className="text-sm text-[color:var(--color-muted)] leading-relaxed">{t('help.a11yDesc', 'Nexus HEMS follows WCAG 2.2 AA standards with full keyboard navigation, ARIA labels, screen reader support, skip links, focus indicators, and proper color contrast ratios. Tested with axe-core and Playwright a11y tests.')}</p>
+                    <h3 className="font-medium mb-3">{t('help.a11yTitle')}</h3>
+                    <p className="text-sm text-[color:var(--color-muted)] leading-relaxed">{t('help.a11yDesc')}</p>
                   </div>
 
                   {/* License */}
@@ -706,7 +982,7 @@ export function Help() {
 
                   {/* Credits */}
                   <div className="border-t border-[color:var(--color-border)] pt-6 mt-6">
-                    <h3 className="font-medium mb-3">{t('help.credits', 'Credits & Acknowledgments')}</h3>
+                    <h3 className="font-medium mb-3">{t('help.credits')}</h3>
                     <div className="text-sm text-[color:var(--color-muted)] space-y-1">
                       <p>• Victron Energy — Cerbo GX, VE.Bus, Venus OS</p>
                       <p>• KNX Association — KNX/IP building automation standard</p>

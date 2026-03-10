@@ -40,6 +40,7 @@ const defaultEnergyData: EnergyData = {
 };
 
 const defaultSettings: StoredSettings = {
+  gatewayType: 'cerbo-gx',
   victronIp: '192.168.1.100',
   knxIp: '192.168.1.101',
   wsPort: 1880,

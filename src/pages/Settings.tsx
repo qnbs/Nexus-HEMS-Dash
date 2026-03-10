@@ -401,6 +401,33 @@ export function Settings() {
                       {t('settings.system')}
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                      {/* Gateway Type Selector */}
+                      <div className="space-y-2 md:col-span-2">
+                        <label className="text-sm font-medium">{t('settings.gatewayType')}</label>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                          {([
+                            { value: 'cerbo-gx' as const, label: 'Cerbo GX', desc: t('settings.gatewayTypeCerboHint') },
+                            { value: 'cerbo-gx-mk2' as const, label: 'Cerbo GX MK2', desc: t('settings.gatewayTypeMk2Hint') },
+                            { value: 'raspberry-pi' as const, label: 'Raspberry Pi', desc: t('settings.gatewayTypeRpiHint') },
+                          ]).map((gw) => (
+                            <button
+                              key={gw.value}
+                              type="button"
+                              onClick={() => updateSettings({ gatewayType: gw.value })}
+                              className={`rounded-xl border-2 p-3 text-left transition-all ${
+                                settings.gatewayType === gw.value
+                                  ? 'border-[color:var(--color-primary)] bg-[color:var(--color-primary)]/10'
+                                  : 'border-[color:var(--color-border)] bg-[color:var(--color-surface)] hover:border-[color:var(--color-primary)]/40'
+                              }`}
+                              aria-pressed={settings.gatewayType === gw.value}
+                            >
+                              <span className="text-sm font-medium">{gw.label}</span>
+                              <p className="text-xs text-[color:var(--color-muted)] mt-1">{gw.desc}</p>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
                       <div className="space-y-2">
                         <label className="text-sm font-medium">{t('settings.victronIp')}</label>
                         <input type="text" defaultValue={settings.victronIp} className={inputClass} placeholder="192.168.1.100" />

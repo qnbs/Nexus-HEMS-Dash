@@ -32,7 +32,10 @@ export interface EvState {
   message: string;
 }
 
+export type GatewayType = 'cerbo-gx' | 'cerbo-gx-mk2' | 'raspberry-pi';
+
 export interface StoredSettings {
+  gatewayType: GatewayType;
   victronIp: string;
   knxIp: string;
   wsPort: number;
