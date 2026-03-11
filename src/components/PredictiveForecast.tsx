@@ -129,14 +129,11 @@ export const PredictiveForecast = memo(function PredictiveForecast() {
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold text-[color:var(--color-text)]">
-            <CloudSun
-              className="mr-2 inline h-6 w-6 text-[color:var(--color-primary)]"
-              aria-hidden="true"
-            />
+          <h2 className="text-xl font-semibold text-(--color-text)">
+            <CloudSun className="mr-2 inline h-6 w-6 text-(--color-primary)" aria-hidden="true" />
             {t('forecast.title')}
           </h2>
-          <p className="mt-1 text-sm text-[color:var(--color-muted)]">{t('forecast.subtitle')}</p>
+          <p className="mt-1 text-sm text-(--color-muted)">{t('forecast.subtitle')}</p>
         </div>
 
         {/* Time Range Toggle */}
@@ -145,8 +142,8 @@ export const PredictiveForecast = memo(function PredictiveForecast() {
             onClick={() => setTimeRange('24h')}
             className={`focus-ring rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
               timeRange === '24h'
-                ? 'bg-[color:var(--color-primary)] text-slate-900'
-                : 'bg-[color:var(--color-surface)] text-[color:var(--color-muted)] hover:bg-white/10'
+                ? 'bg-(--color-primary) text-slate-900'
+                : 'bg-(--color-surface) text-(--color-muted) hover:bg-white/10'
             }`}
             aria-pressed={timeRange === '24h'}
             aria-label={t('forecast.hours24')}
@@ -157,8 +154,8 @@ export const PredictiveForecast = memo(function PredictiveForecast() {
             onClick={() => setTimeRange('7d')}
             className={`focus-ring rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
               timeRange === '7d'
-                ? 'bg-[color:var(--color-primary)] text-slate-900'
-                : 'bg-[color:var(--color-surface)] text-[color:var(--color-muted)] hover:bg-white/10'
+                ? 'bg-(--color-primary) text-slate-900'
+                : 'bg-(--color-surface) text-(--color-muted) hover:bg-white/10'
             }`}
             aria-pressed={timeRange === '7d'}
             aria-label={t('forecast.days7')}
@@ -282,13 +279,9 @@ export const PredictiveForecast = memo(function PredictiveForecast() {
       </div>
 
       {/* Best Action Recommendation */}
-      <div className="mt-6 rounded-2xl border border-[color:var(--color-primary)]/30 bg-[color:var(--color-primary)]/10 p-4">
-        <p className="text-sm font-medium text-[color:var(--color-primary)]">
-          {t('forecast.recommendation')}
-        </p>
-        <p className="mt-1 text-sm text-[color:var(--color-muted)]">
-          {t('forecast.recommendationText')}
-        </p>
+      <div className="mt-6 rounded-2xl border border-(--color-primary)/30 bg-(--color-primary)/10 p-4">
+        <p className="text-sm font-medium text-(--color-primary)">{t('forecast.recommendation')}</p>
+        <p className="mt-1 text-sm text-(--color-muted)">{t('forecast.recommendationText')}</p>
       </div>
     </motion.div>
   );

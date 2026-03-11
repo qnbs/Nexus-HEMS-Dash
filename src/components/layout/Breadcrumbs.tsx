@@ -30,11 +30,11 @@ function BreadcrumbsComponent() {
   return (
     <nav
       aria-label={t('nav.breadcrumbs', 'Breadcrumbs')}
-      className="mb-4 flex items-center gap-1.5 text-sm text-[color:var(--color-muted)]"
+      className="mb-4 flex items-center gap-1.5 text-sm text-(--color-muted)"
     >
       <Link
         to="/"
-        className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 transition-colors hover:text-[color:var(--color-text)] focus-ring"
+        className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 transition-colors hover:text-(--color-text) focus-ring"
       >
         <Home size={14} aria-hidden="true" />
         <span>{t('nav.home', 'Home')}</span>
@@ -47,14 +47,10 @@ function BreadcrumbsComponent() {
 
         return (
           <span key={path} className="inline-flex items-center gap-1.5">
-            <ChevronRight
-              size={14}
-              aria-hidden="true"
-              className="text-[color:var(--color-border)]"
-            />
+            <ChevronRight size={14} aria-hidden="true" className="text-(--color-border)" />
             {isLast ? (
               <span
-                className="rounded-md px-1.5 py-0.5 font-medium text-[color:var(--color-text)]"
+                className="rounded-md px-1.5 py-0.5 font-medium text-(--color-text)"
                 aria-current="page"
               >
                 {t(labelKey, segment)}
@@ -62,7 +58,7 @@ function BreadcrumbsComponent() {
             ) : (
               <Link
                 to={path}
-                className="rounded-md px-1.5 py-0.5 transition-colors hover:text-[color:var(--color-text)] focus-ring"
+                className="rounded-md px-1.5 py-0.5 transition-colors hover:text-(--color-text) focus-ring"
               >
                 {t(labelKey, segment)}
               </Link>

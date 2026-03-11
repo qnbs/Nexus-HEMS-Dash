@@ -78,7 +78,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
       return (
         <div
-          className="flex min-h-screen items-center justify-center bg-[color:var(--color-bg)] p-4"
+          className="flex min-h-screen items-center justify-center bg-(--color-bg) p-4"
           role="alert"
         >
           <div className="glass-panel w-full max-w-2xl rounded-3xl p-8">
@@ -87,12 +87,10 @@ export class ErrorBoundary extends Component<Props, State> {
                 <AlertTriangle className="h-8 w-8 text-red-400" aria-hidden="true" />
               </div>
               <div className="flex-1">
-                <h1 className="text-2xl font-bold text-[color:var(--color-text)]">
+                <h1 className="text-2xl font-bold text-(--color-text)">
                   {i18next.t('error.title')}
                 </h1>
-                <p className="mt-2 text-[color:var(--color-muted)]">
-                  {i18next.t('error.description')}
-                </p>
+                <p className="mt-2 text-(--color-muted)">{i18next.t('error.description')}</p>
 
                 {/* Error Details (only in development) */}
                 {import.meta.env.DEV && this.state.error && (
@@ -159,16 +157,14 @@ export class ErrorBoundary extends Component<Props, State> {
                 </div>
 
                 {/* Additional Help */}
-                <div className="mt-6 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)]/50 p-4">
-                  <p className="text-sm text-[color:var(--color-muted)]">
-                    <strong className="text-[color:var(--color-text)]">
-                      {i18next.t('error.helpTitle')}
-                    </strong>
+                <div className="mt-6 rounded-xl border border-(--color-border) bg-(--color-surface)/50 p-4">
+                  <p className="text-sm text-(--color-muted)">
+                    <strong className="text-(--color-text)">{i18next.t('error.helpTitle')}</strong>
                     <br />
                     {i18next.t('error.helpText')}{' '}
                     <a
                       href="mailto:support@nexus-hems.com"
-                      className="text-[color:var(--color-primary)] underline hover:text-[color:var(--color-secondary)]"
+                      className="text-(--color-primary) underline hover:text-(--color-secondary)"
                     >
                       support@nexus-hems.com
                     </a>

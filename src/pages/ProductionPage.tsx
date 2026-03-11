@@ -74,16 +74,14 @@ function ProductionPageComponent() {
           {/* Power Output Bar */}
           <div>
             <div className="mb-2 flex justify-between text-sm">
-              <span className="text-[color:var(--color-muted)]">
-                {t('production.output', 'Output')}
-              </span>
+              <span className="text-(--color-muted)">{t('production.output', 'Output')}</span>
               <span className="font-medium text-yellow-400">
                 {(energyData.pvPower / 1000).toFixed(2)} {t('units.kilowatt')} / 10.0{' '}
                 {t('units.kilowatt')}
               </span>
             </div>
             <div
-              className="h-3 overflow-hidden rounded-full bg-[color:var(--color-surface)]"
+              className="h-3 overflow-hidden rounded-full bg-(--color-surface)"
               role="progressbar"
               aria-valuenow={Math.min(100, Math.round((energyData.pvPower / 10000) * 100))}
               aria-valuemin={0}
@@ -101,7 +99,7 @@ function ProductionPageComponent() {
           {/* Self-Consumption Bar */}
           <div>
             <div className="mb-2 flex justify-between text-sm">
-              <span className="text-[color:var(--color-muted)]">
+              <span className="text-(--color-muted)">
                 {t('production.selfConsumption', 'Self-Consumption')}
               </span>
               <span className="font-medium text-emerald-400">
@@ -109,7 +107,7 @@ function ProductionPageComponent() {
               </span>
             </div>
             <div
-              className="h-3 overflow-hidden rounded-full bg-[color:var(--color-surface)]"
+              className="h-3 overflow-hidden rounded-full bg-(--color-surface)"
               role="progressbar"
               aria-valuenow={Math.round(selfConsumptionRatio)}
               aria-valuemin={0}
@@ -159,9 +157,9 @@ const StatCard = memo(function StatCard({
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.4, delay }}
     >
-      <p className="text-xs text-[color:var(--color-muted)]">{label}</p>
+      <p className="text-xs text-(--color-muted)">{label}</p>
       <p className={`mt-1 text-2xl font-light ${color}`}>
-        {value} <span className="text-sm text-[color:var(--color-muted)]">{unit}</span>
+        {value} <span className="text-sm text-(--color-muted)">{unit}</span>
       </p>
     </motion.div>
   );

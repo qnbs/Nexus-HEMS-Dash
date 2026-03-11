@@ -74,12 +74,10 @@ function EVPageComponent() {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.4, delay: 0.1 }}
         >
-          <p className="text-xs text-[color:var(--color-muted)]">
-            {t('ev.chargingPower', 'Charging Power')}
-          </p>
+          <p className="text-xs text-(--color-muted)">{t('ev.chargingPower', 'Charging Power')}</p>
           <p className="mt-1 text-2xl font-light text-green-400">
             {(energyData.evPower / 1000).toFixed(2)}{' '}
-            <span className="text-sm text-[color:var(--color-muted)]">kW</span>
+            <span className="text-sm text-(--color-muted)">kW</span>
           </p>
         </motion.div>
         <motion.div
@@ -88,9 +86,9 @@ function EVPageComponent() {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.4, delay: 0.15 }}
         >
-          <p className="text-xs text-[color:var(--color-muted)]">{t('ev.maxPower', 'Max Power')}</p>
+          <p className="text-xs text-(--color-muted)">{t('ev.maxPower', 'Max Power')}</p>
           <p className="mt-1 text-2xl font-light text-cyan-400">
-            11.0 <span className="text-sm text-[color:var(--color-muted)]">kW</span>
+            11.0 <span className="text-sm text-(--color-muted)">kW</span>
           </p>
         </motion.div>
         <motion.div
@@ -99,14 +97,10 @@ function EVPageComponent() {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.4, delay: 0.2 }}
         >
-          <p className="text-xs text-[color:var(--color-muted)]">
-            {t('ev.currentTariff', 'Current Tariff')}
-          </p>
+          <p className="text-xs text-(--color-muted)">{t('ev.currentTariff', 'Current Tariff')}</p>
           <p className="mt-1 text-2xl font-light text-orange-400">
             {energyData.priceCurrent.toFixed(3)}{' '}
-            <span className="text-sm text-[color:var(--color-muted)]">
-              {t('units.euroPerKwh', '€/kWh')}
-            </span>
+            <span className="text-sm text-(--color-muted)">{t('units.euroPerKwh', '€/kWh')}</span>
           </p>
         </motion.div>
       </div>
@@ -124,7 +118,7 @@ function EVPageComponent() {
             <p className={`font-medium ${chargeStrategy.color}`}>
               {t(`ev.strategy.${chargeStrategy.mode}`)}
             </p>
-            <p className="mt-0.5 text-xs text-[color:var(--color-muted)]">
+            <p className="mt-0.5 text-xs text-(--color-muted)">
               {t(`ev.strategy.${chargeStrategy.mode}Desc`, {
                 price: energyData.priceCurrent.toFixed(3),
                 threshold: settings.chargeThreshold.toFixed(3),
@@ -136,9 +130,7 @@ function EVPageComponent() {
             <p className={`text-lg font-semibold tabular-nums ${chargeStrategy.color}`}>
               {energyData.priceCurrent.toFixed(3)}
             </p>
-            <p className="text-xs text-[color:var(--color-muted)]">
-              {t('units.euroPerKwh', '€/kWh')}
-            </p>
+            <p className="text-xs text-(--color-muted)">{t('units.euroPerKwh', '€/kWh')}</p>
           </div>
         </div>
       </motion.div>
@@ -169,8 +161,8 @@ function EVPageComponent() {
             §
           </div>
           <div>
-            <p className="text-sm font-medium text-[color:var(--color-text)]">{t('help.enwg')}</p>
-            <p className="mt-1 text-xs text-[color:var(--color-muted)]">{t('help.enwgDesc')}</p>
+            <p className="text-sm font-medium text-(--color-text)">{t('help.enwg')}</p>
+            <p className="mt-1 text-xs text-(--color-muted)">{t('help.enwgDesc')}</p>
           </div>
         </div>
       </motion.div>

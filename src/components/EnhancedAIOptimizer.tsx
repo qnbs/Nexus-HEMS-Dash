@@ -112,17 +112,17 @@ Return ONLY a valid JSON array with this structure:
       {/* Header */}
       <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="min-w-0">
-          <h2 className="flex items-center gap-2 text-lg sm:text-xl font-semibold text-[color:var(--color-text)]">
+          <h2 className="flex items-center gap-2 text-lg sm:text-xl font-semibold text-(--color-text)">
             <Sparkles
-              className="h-5 w-5 sm:h-6 sm:w-6 text-[color:var(--color-primary)] shrink-0"
+              className="h-5 w-5 sm:h-6 sm:w-6 text-(--color-primary) shrink-0"
               aria-hidden="true"
             />
             <span className="truncate">{t('ai.optimizerTitle', 'AI Energy Optimizer')}</span>
-            <span className="shrink-0 rounded-full bg-[color:var(--color-primary)]/20 px-2 py-0.5 text-xs font-medium text-[color:var(--color-primary)]">
+            <span className="shrink-0 rounded-full bg-(--color-primary)/20 px-2 py-0.5 text-xs font-medium text-(--color-primary)">
               BYOK
             </span>
           </h2>
-          <p className="mt-1 text-xs sm:text-sm text-[color:var(--color-muted)]">
+          <p className="mt-1 text-xs sm:text-sm text-(--color-muted)">
             {t('ai.optimizerSubtitle', 'AI-powered recommendations for optimal energy management')}
           </p>
         </div>
@@ -175,11 +175,9 @@ Return ONLY a valid JSON array with this structure:
             >
               <div className="mb-2 flex items-center justify-between gap-2">
                 <span className="text-xs sm:text-sm font-medium truncate">{t(rec.titleKey)}</span>
-                <span className="text-xs font-mono text-[color:var(--color-muted)] shrink-0">
-                  {rec.value}
-                </span>
+                <span className="text-xs font-mono text-(--color-muted) shrink-0">{rec.value}</span>
               </div>
-              <p className="text-xs text-[color:var(--color-muted)]">{t(rec.descriptionKey)}</p>
+              <p className="text-xs text-(--color-muted)">{t(rec.descriptionKey)}</p>
             </motion.div>
           ))}
         </div>
@@ -203,7 +201,7 @@ Return ONLY a valid JSON array with this structure:
                 className={`rounded-2xl border p-4 sm:p-5 ${getPriorityStyles(rec.priority)}`}
               >
                 <div className="mb-2 sm:mb-3 flex items-start justify-between gap-2">
-                  <h3 className="font-semibold text-sm sm:text-base text-[color:var(--color-text)]">
+                  <h3 className="font-semibold text-sm sm:text-base text-(--color-text)">
                     {rec.title}
                   </h3>
                   <span
@@ -212,10 +210,10 @@ Return ONLY a valid JSON array with this structure:
                     {rec.priority.toUpperCase()}
                   </span>
                 </div>
-                <p className="mb-2 sm:mb-3 text-xs sm:text-sm text-[color:var(--color-muted)]">
+                <p className="mb-2 sm:mb-3 text-xs sm:text-sm text-(--color-muted)">
                   {rec.description}
                 </p>
-                <div className="flex items-center gap-2 text-xs text-[color:var(--color-primary)]">
+                <div className="flex items-center gap-2 text-xs text-(--color-primary)">
                   <Sparkles className="h-4 w-4" aria-hidden="true" />
                   {rec.impact}
                 </div>
@@ -237,7 +235,7 @@ function getSeverityStyles(severity: string) {
     case 'critical':
       return 'border-red-500/30 bg-red-500/10 text-red-300';
     default:
-      return 'border-[color:var(--color-border)] bg-[color:var(--color-surface)]/50 text-[color:var(--color-text)]';
+      return 'border-(--color-border) bg-(--color-surface)/50 text-(--color-text)';
   }
 }
 
@@ -250,7 +248,7 @@ function getPriorityStyles(priority: string) {
     case 'low':
       return 'border-blue-500/30 bg-blue-500/5';
     default:
-      return 'border-[color:var(--color-border)] bg-[color:var(--color-surface)]/50';
+      return 'border-(--color-border) bg-(--color-surface)/50';
   }
 }
 

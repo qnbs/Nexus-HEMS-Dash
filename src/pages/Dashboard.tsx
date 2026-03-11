@@ -67,11 +67,7 @@ export function Dashboard() {
               animate={{ rotate: [0, 360] }}
               transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
             >
-              <Activity
-                size={20}
-                className="text-[color:var(--color-secondary)]"
-                aria-hidden="true"
-              />
+              <Activity size={20} className="text-(--color-secondary)" aria-hidden="true" />
             </motion.div>
             {t('dashboard.realtimeFlow')}
           </h2>
@@ -146,10 +142,10 @@ export function Dashboard() {
             id="floorplan-title"
             className="text-lg font-medium mb-4 flex items-center gap-2 fluid-text-lg"
           >
-            <Home size={20} className="text-[color:var(--color-secondary)]" aria-hidden="true" />
+            <Home size={20} className="text-(--color-secondary)" aria-hidden="true" />
             {t('dashboard.automation')}
           </h2>
-          <div className="h-[300px] w-full bg-[color:var(--color-surface)] rounded-xl overflow-hidden border border-[color:var(--color-border)]">
+          <div className="h-[300px] w-full bg-(--color-surface) rounded-xl overflow-hidden border border-(--color-border)">
             <Floorplan />
           </div>
         </motion.section>
@@ -166,11 +162,7 @@ export function Dashboard() {
             id="control-title"
             className="text-lg font-medium mb-4 flex items-center gap-2 fluid-text-lg"
           >
-            <Thermometer
-              size={20}
-              className="text-[color:var(--color-secondary)]"
-              aria-hidden="true"
-            />
+            <Thermometer size={20} className="text-(--color-secondary)" aria-hidden="true" />
             {t('dashboard.control')}
           </h2>
           <ControlPanel sendCommand={sendCommand} data={energyData} />
@@ -234,23 +226,19 @@ const MetricCard = memo(function MetricCard({
     >
       <div className="flex items-center gap-3 mb-3">
         <motion.div
-          className="p-2.5 bg-[color:var(--color-surface)] rounded-xl border border-[color:var(--color-border)]"
+          className="p-2.5 bg-(--color-surface) rounded-xl border border-(--color-border)"
           whileHover={{ rotate: 10, scale: 1.1 }}
           transition={{ type: 'spring', stiffness: 400, damping: 17 }}
         >
           {icon}
         </motion.div>
-        <span className="text-sm font-medium text-[color:var(--color-text)] fluid-text-sm">
-          {label}
-        </span>
+        <span className="text-sm font-medium text-(--color-text) fluid-text-sm">{label}</span>
       </div>
       <div>
-        <div className="text-2xl font-light tracking-tight text-[color:var(--color-text)] fluid-text-2xl">
+        <div className="text-2xl font-light tracking-tight text-(--color-text) fluid-text-2xl">
           {value}
         </div>
-        <div className="text-xs text-[color:var(--color-muted)] mt-1.5 fluid-text-xs">
-          {subValue}
-        </div>
+        <div className="text-xs text-(--color-muted) mt-1.5 fluid-text-xs">{subValue}</div>
       </div>
     </motion.article>
   );

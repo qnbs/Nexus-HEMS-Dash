@@ -37,7 +37,7 @@ function StoragePageComponent() {
           {/* Battery Visual */}
           <div className="relative flex flex-col items-center">
             <div
-              className="relative h-48 w-24 overflow-hidden rounded-2xl border-2 border-[color:var(--color-border)]"
+              className="relative h-48 w-24 overflow-hidden rounded-2xl border-2 border-(--color-border)"
               role="progressbar"
               aria-valuenow={Math.round(energyData.batterySoC)}
               aria-valuemin={0}
@@ -61,7 +61,7 @@ function StoragePageComponent() {
                 </span>
               </div>
             </div>
-            <div className="mt-1 h-1.5 w-10 rounded-full bg-[color:var(--color-border)]" />
+            <div className="mt-1 h-1.5 w-10 rounded-full bg-(--color-border)" />
             <span
               className={`mt-3 rounded-full px-3 py-1 text-xs font-medium ${
                 batteryStatus === 'charging'
@@ -82,32 +82,26 @@ function StoragePageComponent() {
           {/* Battery Stats */}
           <div className="grid grid-cols-2 gap-4">
             <div className="glass-panel rounded-2xl p-4">
-              <p className="text-xs text-[color:var(--color-muted)]">
-                {t('storage.power', 'Power')}
-              </p>
-              <p className="mt-1 text-xl font-light text-[color:var(--color-text)]">
+              <p className="text-xs text-(--color-muted)">{t('storage.power', 'Power')}</p>
+              <p className="mt-1 text-xl font-light text-(--color-text)">
                 {(Math.abs(energyData.batteryPower) / 1000).toFixed(2)} kW
               </p>
             </div>
             <div className="glass-panel rounded-2xl p-4">
-              <p className="text-xs text-[color:var(--color-muted)]">
-                {t('storage.voltage', 'Voltage')}
-              </p>
-              <p className="mt-1 text-xl font-light text-[color:var(--color-text)]">
+              <p className="text-xs text-(--color-muted)">{t('storage.voltage', 'Voltage')}</p>
+              <p className="mt-1 text-xl font-light text-(--color-text)">
                 {energyData.batteryVoltage.toFixed(1)} V
               </p>
             </div>
             <div className="glass-panel rounded-2xl p-4">
-              <p className="text-xs text-[color:var(--color-muted)]">{t('units.soc')}</p>
+              <p className="text-xs text-(--color-muted)">{t('units.soc')}</p>
               <p className="mt-1 text-xl font-light text-emerald-400">
                 {energyData.batterySoC.toFixed(1)}%
               </p>
             </div>
             <div className="glass-panel rounded-2xl p-4">
-              <p className="text-xs text-[color:var(--color-muted)]">
-                {t('storage.capacity', 'Capacity')}
-              </p>
-              <p className="mt-1 text-xl font-light text-[color:var(--color-text)]">
+              <p className="text-xs text-(--color-muted)">{t('storage.capacity', 'Capacity')}</p>
+              <p className="mt-1 text-xl font-light text-(--color-text)">
                 {t('storage.capacityValue', '10.0 kWh')}
               </p>
             </div>

@@ -42,10 +42,10 @@ function PageLoadingFallback() {
     <div className="flex min-h-[40vh] items-center justify-center" role="status">
       <div className="flex flex-col items-center gap-3">
         <div
-          className="cyber-shimmer h-8 w-8 rounded-full border-2 border-[color:var(--color-primary)] border-t-transparent animate-spin"
+          className="cyber-shimmer h-8 w-8 rounded-full border-2 border-(--color-primary) border-t-transparent animate-spin"
           aria-hidden="true"
         />
-        <span className="text-sm text-[color:var(--color-muted)]">{t('loading.page')}</span>
+        <span className="text-sm text-(--color-muted)">{t('loading.page')}</span>
       </div>
     </div>
   );
@@ -119,7 +119,7 @@ export default function App() {
         <OfflineBanner />
         <PWAInstallPrompt />
         <PWAUpdateNotification />
-        <div className="theme-shell min-h-screen font-sans text-[color:var(--color-text)] selection:bg-[color:var(--color-primary)]/30">
+        <div className="theme-shell min-h-screen font-sans text-(--color-text) selection:bg-(--color-primary)/30">
           <div
             className="pointer-events-none fixed inset-0 z-0"
             aria-hidden="true"
@@ -131,7 +131,7 @@ export default function App() {
           {/* Skip to content link (WCAG 2.2 AA) */}
           <a
             href="#main-content"
-            className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-xl focus:bg-[color:var(--color-primary)] focus:px-4 focus:py-2 focus:text-white focus:shadow-lg"
+            className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-100 focus:rounded-xl focus:bg-(--color-primary) focus:px-4 focus:py-2 focus:text-white focus:shadow-lg"
           >
             {t('accessibility.skipToContent', 'Skip to main content')}
           </a>
@@ -151,7 +151,7 @@ export default function App() {
               <div className="flex items-center justify-between gap-4">
                 {/* Mobile Logo */}
                 <div className="flex items-center gap-2 lg:hidden">
-                  <Zap className="h-5 w-5 text-[color:var(--color-primary)]" aria-hidden="true" />
+                  <Zap className="h-5 w-5 text-(--color-primary)" aria-hidden="true" />
                   <span className="text-lg font-semibold tracking-tight">
                     {t('common.appName')}
                   </span>
@@ -167,7 +167,7 @@ export default function App() {
                   {/* Settings Link */}
                   <Link
                     to="/settings"
-                    className="inline-flex items-center justify-center rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-surface-strong)] p-2 text-[color:var(--color-muted)] transition-all duration-300 hover:bg-[color:var(--color-primary)]/10 hover:text-[color:var(--color-primary)] focus-ring"
+                    className="inline-flex items-center justify-center rounded-full border border-(--color-border) bg-(--color-surface-strong) p-2 text-(--color-muted) transition-all duration-300 hover:bg-(--color-primary)/10 hover:text-(--color-primary) focus-ring"
                     aria-label={t('nav.settings')}
                     title={t('nav.settings')}
                   >
@@ -177,7 +177,7 @@ export default function App() {
                   {/* Help Link */}
                   <Link
                     to="/help"
-                    className="inline-flex items-center justify-center rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-surface-strong)] p-2 text-[color:var(--color-muted)] transition-all duration-300 hover:bg-[color:var(--color-primary)]/10 hover:text-[color:var(--color-primary)] focus-ring"
+                    className="inline-flex items-center justify-center rounded-full border border-(--color-border) bg-(--color-surface-strong) p-2 text-(--color-muted) transition-all duration-300 hover:bg-(--color-primary)/10 hover:text-(--color-primary) focus-ring"
                     aria-label={t('nav.help')}
                     title={t('nav.help')}
                   >
@@ -187,24 +187,24 @@ export default function App() {
                   {/* Command Palette Trigger */}
                   <button
                     onClick={() => setCommandPaletteOpen(true)}
-                    className="inline-flex items-center gap-2 rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-surface-strong)] px-3 py-2 text-sm transition-colors duration-200 hover:bg-[color:var(--color-primary)]/10 focus-ring"
+                    className="inline-flex items-center gap-2 rounded-full border border-(--color-border) bg-(--color-surface-strong) px-3 py-2 text-sm transition-colors duration-200 hover:bg-(--color-primary)/10 focus-ring"
                     aria-label={t('command.open', 'Open command palette')}
                   >
                     <Command className="h-4 w-4" aria-hidden="true" />
                     <span className="hidden sm:inline">{t('command.search', 'Search')}</span>
-                    <kbd className="hidden rounded bg-[color:var(--color-surface-strong)] px-1.5 py-0.5 text-xs lg:inline">
+                    <kbd className="hidden rounded bg-(--color-surface-strong) px-1.5 py-0.5 text-xs lg:inline">
                       ⌘K
                     </kbd>
                   </button>
 
                   {/* Connection Status */}
                   <div
-                    className="inline-flex items-center gap-2 rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-surface-strong)] px-3 py-2 text-sm"
+                    className="inline-flex items-center gap-2 rounded-full border border-(--color-border) bg-(--color-surface-strong) px-3 py-2 text-sm"
                     role="status"
                     aria-label={connected ? t('common.connected') : t('common.disconnected')}
                   >
                     <Wifi
-                      className={`h-4 w-4 transition-colors duration-300 ${connected ? 'text-[color:var(--color-primary)]' : 'text-rose-400'}`}
+                      className={`h-4 w-4 transition-colors duration-300 ${connected ? 'text-(--color-primary)' : 'text-rose-400'}`}
                       aria-hidden="true"
                     />
                     <span className="hidden sm:inline">

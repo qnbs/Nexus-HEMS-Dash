@@ -11,13 +11,13 @@ interface NeonCardProps extends Omit<HTMLMotionProps<'div'>, 'children'> {
 
 const variantStyles = {
   default: {
-    border: 'border-[color:var(--color-border)]',
-    bg: 'bg-[color:var(--color-surface)]',
+    border: 'border-(--color-border)',
+    bg: 'bg-(--color-surface)',
     glow: 'shadow-2xl',
   },
   primary: {
-    border: 'border-[color:var(--color-primary)]/30',
-    bg: 'bg-[color:var(--color-primary)]/5',
+    border: 'border-(--color-primary)/30',
+    bg: 'bg-(--color-primary)/5',
     glow: 'shadow-[0_0_30px_rgba(34,255,136,0.3)]',
   },
   success: {
@@ -75,9 +75,7 @@ export function NeonCardHeader({
   children: ReactNode;
   className?: string;
 }) {
-  return (
-    <div className={`border-b border-[color:var(--color-border)] p-6 ${className}`}>{children}</div>
-  );
+  return <div className={`border-b border-(--color-border) p-6 ${className}`}>{children}</div>;
 }
 
 export function NeonCardBody({
@@ -97,7 +95,5 @@ export function NeonCardFooter({
   children: ReactNode;
   className?: string;
 }) {
-  return (
-    <div className={`border-t border-[color:var(--color-border)] p-6 ${className}`}>{children}</div>
-  );
+  return <div className={`border-t border-(--color-border) p-6 ${className}`}>{children}</div>;
 }

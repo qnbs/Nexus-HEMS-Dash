@@ -64,9 +64,7 @@ export const ExportAndSharing = memo(function ExportAndSharing() {
 
   return (
     <div className="glass-panel rounded-3xl p-6">
-      <h3 className="mb-6 text-lg font-semibold text-[color:var(--color-text)]">
-        {t('export.title')}
-      </h3>
+      <h3 className="mb-6 text-lg font-semibold text-(--color-text)">{t('export.title')}</h3>
 
       <div className="space-y-4">
         {/* PDF Export */}
@@ -80,13 +78,11 @@ export const ExportAndSharing = memo(function ExportAndSharing() {
             <FileDown className="h-5 w-5" aria-hidden="true" />
             {isGenerating ? t('export.generating') : t('export.downloadPdf')}
           </button>
-          <p className="mt-2 text-xs text-[color:var(--color-muted)]">
-            {t('export.pdfDescription')}
-          </p>
+          <p className="mt-2 text-xs text-(--color-muted)">{t('export.pdfDescription')}</p>
         </div>
 
         {/* Divider */}
-        <div className="border-t border-[color:var(--color-border)]" />
+        <div className="border-t border-(--color-border)" />
 
         {/* Share Link */}
         <div>
@@ -97,9 +93,7 @@ export const ExportAndSharing = memo(function ExportAndSharing() {
             <Share2 className="h-5 w-5" aria-hidden="true" />
             {t('export.generateShareLink')}
           </button>
-          <p className="mt-2 text-xs text-[color:var(--color-muted)]">
-            {t('export.shareLinkDescription')}
-          </p>
+          <p className="mt-2 text-xs text-(--color-muted)">{t('export.shareLinkDescription')}</p>
 
           {shareLink && (
             <motion.div
@@ -107,7 +101,7 @@ export const ExportAndSharing = memo(function ExportAndSharing() {
               animate={{ opacity: 1, height: 'auto' }}
               className="mt-4 overflow-hidden"
             >
-              <div className="rounded-2xl border border-[color:var(--color-primary)]/30 bg-[color:var(--color-primary)]/5 p-4">
+              <div className="rounded-2xl border border-(--color-primary)/30 bg-(--color-primary)/5 p-4">
                 {/* Link */}
                 <div className="mb-4 flex items-center gap-2">
                   <input
@@ -115,11 +109,11 @@ export const ExportAndSharing = memo(function ExportAndSharing() {
                     readOnly
                     value={shareLink}
                     aria-label={t('export.shareInputLabel', 'Shareable link URL')}
-                    className="flex-1 rounded-lg bg-slate-900/50 px-3 py-2 text-sm text-[color:var(--color-text)] outline-none"
+                    className="flex-1 rounded-lg bg-slate-900/50 px-3 py-2 text-sm text-(--color-text) outline-none"
                   />
                   <button
                     onClick={handleCopyLink}
-                    className="focus-ring flex h-10 w-10 items-center justify-center rounded-lg bg-slate-800/50 text-[color:var(--color-primary)] hover:bg-slate-700/50"
+                    className="focus-ring flex h-10 w-10 items-center justify-center rounded-lg bg-slate-800/50 text-(--color-primary) hover:bg-slate-700/50"
                     aria-label={t('export.copyLink')}
                   >
                     {copied ? <Check className="h-5 w-5" /> : <Copy className="h-5 w-5" />}
@@ -129,14 +123,14 @@ export const ExportAndSharing = memo(function ExportAndSharing() {
                 {/* QR Code */}
                 {qrCodeUrl && (
                   <div className="flex flex-col items-center">
-                    <div className="flex items-center gap-2 text-sm text-[color:var(--color-muted)]">
+                    <div className="flex items-center gap-2 text-sm text-(--color-muted)">
                       <QrCode className="h-4 w-4" />
                       {t('export.qrCode')}
                     </div>
                     <img
                       src={qrCodeUrl}
                       alt={t('export.qrCodeAlt', 'QR code for shareable dashboard link')}
-                      className="mt-3 rounded-lg border-2 border-[color:var(--color-primary)]"
+                      className="mt-3 rounded-lg border-2 border-(--color-primary)"
                     />
                   </div>
                 )}

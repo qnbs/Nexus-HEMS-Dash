@@ -70,10 +70,8 @@ function TariffsPageComponent() {
           ].map((window, i) => (
             <div key={i} className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-4">
               <p className="text-sm font-medium text-emerald-400">{window.time}</p>
-              <p className="mt-1 text-lg font-light text-[color:var(--color-text)]">
-                {window.price}
-              </p>
-              <p className="mt-0.5 text-xs text-[color:var(--color-muted)]">{window.status}</p>
+              <p className="mt-1 text-lg font-light text-(--color-text)">{window.price}</p>
+              <p className="mt-0.5 text-xs text-(--color-muted)">{window.status}</p>
             </div>
           ))}
         </div>

@@ -28,10 +28,10 @@ function FloorplanPageComponent() {
           id="floorplan-full-title"
           className="mb-4 flex items-center gap-2 text-lg font-medium fluid-text-lg"
         >
-          <Home size={20} className="text-[color:var(--color-secondary)]" aria-hidden="true" />
+          <Home size={20} className="text-(--color-secondary)" aria-hidden="true" />
           {t('floorplan.interactiveView', 'Interactive Building View')}
         </h2>
-        <div className="min-h-[400px] w-full overflow-hidden rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
+        <div className="min-h-[400px] w-full overflow-hidden rounded-xl border border-(--color-border) bg-(--color-surface)">
           <Floorplan />
         </div>
       </motion.section>
@@ -55,8 +55,8 @@ function FloorplanPageComponent() {
                 {room.icon}
               </span>
               <div>
-                <p className="text-sm font-medium text-[color:var(--color-text)]">{room.label}</p>
-                <p className="text-xs text-[color:var(--color-muted)]">{room.status}</p>
+                <p className="text-sm font-medium text-(--color-text)">{room.label}</p>
+                <p className="text-xs text-(--color-muted)">{room.status}</p>
               </div>
             </div>
           </motion.div>

@@ -40,7 +40,7 @@ const variantStyles = {
     icon: Info,
     iconBg: 'bg-blue-500/20',
     iconColor: 'text-blue-400',
-    confirmButton: 'bg-[color:var(--color-primary)] hover:opacity-90 text-slate-900',
+    confirmButton: 'bg-(--color-primary) hover:opacity-90 text-slate-900',
   },
 };
 
@@ -160,14 +160,11 @@ export function ConfirmDialog({
                 <div className="flex-1">
                   <h2
                     id="confirm-dialog-title"
-                    className="text-lg font-semibold text-[color:var(--color-text)]"
+                    className="text-lg font-semibold text-(--color-text)"
                   >
                     {title}
                   </h2>
-                  <div
-                    id="confirm-dialog-message"
-                    className="mt-2 text-sm text-[color:var(--color-muted)]"
-                  >
+                  <div id="confirm-dialog-message" className="mt-2 text-sm text-(--color-muted)">
                     {message}
                   </div>
                 </div>

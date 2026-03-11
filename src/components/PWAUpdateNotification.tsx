@@ -61,16 +61,16 @@ export function PWAUpdateNotification() {
           className="fixed left-4 right-4 top-4 z-50 md:left-auto md:right-4 md:max-w-sm"
           role="status"
         >
-          <div className="rounded-2xl border border-[color:var(--color-primary)]/30 bg-[color:var(--color-primary)]/10 backdrop-blur-xl p-4 shadow-2xl flex items-center gap-3">
+          <div className="rounded-2xl border border-(--color-primary)/30 bg-(--color-primary)/10 backdrop-blur-xl p-4 shadow-2xl flex items-center gap-3">
             <RefreshCw
-              className="h-5 w-5 text-[color:var(--color-primary)] animate-spin shrink-0"
+              className="h-5 w-5 text-(--color-primary) animate-spin shrink-0"
               aria-hidden="true"
             />
             <div className="flex-1">
-              <p className="font-semibold text-sm text-[color:var(--color-primary)]">
+              <p className="font-semibold text-sm text-(--color-primary)">
                 {t('pwa.updating', 'Updating…')}
               </p>
-              <p className="text-xs text-[color:var(--color-muted)]">
+              <p className="text-xs text-(--color-muted)">
                 {t('pwa.updateSize', 'Quick update — no data loss')}
               </p>
             </div>
@@ -99,7 +99,7 @@ export function PWAUpdateNotification() {
               <p className="font-semibold text-sm text-emerald-400">
                 {t('pwa.offlineReady', 'Offline Ready')}
               </p>
-              <p className="text-xs text-[color:var(--color-muted)]">
+              <p className="text-xs text-(--color-muted)">
                 {t('pwa.offlineReadyDesc', 'App cached — works without internet')}
               </p>
             </div>

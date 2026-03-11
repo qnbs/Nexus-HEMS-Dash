@@ -50,12 +50,12 @@ function ConsumptionPageComponent() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.1 }}
       >
-        <p className="text-sm text-[color:var(--color-muted)]">
+        <p className="text-sm text-(--color-muted)">
           {t('consumption.total', 'Total Consumption')}
         </p>
         <p className="mt-2 text-4xl font-light tracking-tight text-blue-400">
           {(totalConsumption / 1000).toFixed(2)}{' '}
-          <span className="text-lg text-[color:var(--color-muted)]">kW</span>
+          <span className="text-lg text-(--color-muted)">kW</span>
         </p>
       </motion.div>
 
@@ -69,13 +69,13 @@ function ConsumptionPageComponent() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.15 + i * 0.05 }}
           >
-            <p className="text-xs text-[color:var(--color-muted)]">{consumer.label}</p>
+            <p className="text-xs text-(--color-muted)">{consumer.label}</p>
             <p className={`mt-1 text-2xl font-light ${consumer.textColor}`}>
               {(consumer.power / 1000).toFixed(2)}{' '}
-              <span className="text-sm text-[color:var(--color-muted)]">kW</span>
+              <span className="text-sm text-(--color-muted)">kW</span>
             </p>
             <div
-              className="mt-3 h-2 overflow-hidden rounded-full bg-[color:var(--color-surface)]"
+              className="mt-3 h-2 overflow-hidden rounded-full bg-(--color-surface)"
               role="progressbar"
               aria-valuenow={
                 totalConsumption > 0 ? Math.round((consumer.power / totalConsumption) * 100) : 0
@@ -93,7 +93,7 @@ function ConsumptionPageComponent() {
                 transition={{ duration: 1, ease: 'easeOut', delay: 0.3 + i * 0.1 }}
               />
             </div>
-            <p className="mt-1 text-right text-xs text-[color:var(--color-muted)]">
+            <p className="mt-1 text-right text-xs text-(--color-muted)">
               {totalConsumption > 0 ? ((consumer.power / totalConsumption) * 100).toFixed(0) : 0}%
             </p>
           </motion.div>
@@ -116,14 +116,14 @@ function ConsumptionPageComponent() {
           {t('metrics.grid')}
         </h2>
         <div className="grid grid-cols-2 gap-4">
-          <div className="rounded-2xl border border-[color:var(--color-border)] p-4">
-            <p className="text-xs text-[color:var(--color-muted)]">{t('metrics.import')}</p>
+          <div className="rounded-2xl border border-(--color-border) p-4">
+            <p className="text-xs text-(--color-muted)">{t('metrics.import')}</p>
             <p className="mt-1 text-xl font-light text-red-400">
               {(Math.max(0, energyData.gridPower) / 1000).toFixed(2)} kW
             </p>
           </div>
-          <div className="rounded-2xl border border-[color:var(--color-border)] p-4">
-            <p className="text-xs text-[color:var(--color-muted)]">{t('metrics.export')}</p>
+          <div className="rounded-2xl border border-(--color-border) p-4">
+            <p className="text-xs text-(--color-muted)">{t('metrics.export')}</p>
             <p className="mt-1 text-xl font-light text-emerald-400">
               {(Math.max(0, -energyData.gridPower) / 1000).toFixed(2)} kW
             </p>

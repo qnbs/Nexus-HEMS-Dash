@@ -104,18 +104,16 @@ export const VoiceControlPanel = memo(function VoiceControlPanel() {
     <div className="glass-panel rounded-3xl p-6">
       <div className="mb-4 flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-[color:var(--color-text)]">
-            {t('voice.title')}
-          </h3>
-          <p className="mt-1 text-sm text-[color:var(--color-muted)]">{t('voice.subtitle')}</p>
+          <h3 className="text-lg font-semibold text-(--color-text)">{t('voice.title')}</h3>
+          <p className="mt-1 text-sm text-(--color-muted)">{t('voice.subtitle')}</p>
         </div>
 
         <button
           onClick={toggleVoice}
           className={`focus-ring flex h-14 w-14 items-center justify-center rounded-full transition-all ${
             isListening
-              ? 'animate-pulse bg-[color:var(--color-primary)] text-slate-900 shadow-lg shadow-[color:var(--color-primary)]/50'
-              : 'bg-[color:var(--color-surface)] text-[color:var(--color-muted)] hover:bg-white/10'
+              ? 'animate-pulse bg-(--color-primary) text-slate-900 shadow-lg shadow-(--color-primary)/50'
+              : 'bg-(--color-surface) text-(--color-muted) hover:bg-white/10'
           }`}
           aria-label={isListening ? t('voice.stop') : t('voice.start')}
         >
@@ -136,14 +134,12 @@ export const VoiceControlPanel = memo(function VoiceControlPanel() {
             exit={{ opacity: 0, height: 0 }}
             className="mb-4 overflow-hidden"
           >
-            <div className="rounded-2xl border border-[color:var(--color-primary)]/30 bg-[color:var(--color-primary)]/10 p-4">
-              <p className="text-sm font-medium text-[color:var(--color-primary)]">
+            <div className="rounded-2xl border border-(--color-primary)/30 bg-(--color-primary)/10 p-4">
+              <p className="text-sm font-medium text-(--color-primary)">
                 <span aria-hidden="true">🎤 </span>
                 {t('voice.listening')}
               </p>
-              {transcript && (
-                <p className="mt-2 text-sm text-[color:var(--color-text)]">"{transcript}"</p>
-              )}
+              {transcript && <p className="mt-2 text-sm text-(--color-text)">"{transcript}"</p>}
             </div>
           </motion.div>
         )}
@@ -159,7 +155,7 @@ export const VoiceControlPanel = memo(function VoiceControlPanel() {
               <AlertCircle className="h-5 w-5 flex-shrink-0 text-red-400" />
               <div>
                 <p className="text-sm font-medium text-red-400">{t('voice.error')}</p>
-                <p className="mt-1 text-sm text-[color:var(--color-muted)]">{error}</p>
+                <p className="mt-1 text-sm text-(--color-muted)">{error}</p>
               </div>
             </div>
           </motion.div>
@@ -183,7 +179,7 @@ export const VoiceControlPanel = memo(function VoiceControlPanel() {
         >
           <div className="relative flex-1">
             <Keyboard
-              className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[color:var(--color-muted)]"
+              className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-(--color-muted)"
               aria-hidden="true"
             />
             <input
@@ -191,7 +187,7 @@ export const VoiceControlPanel = memo(function VoiceControlPanel() {
               value={textInput}
               onChange={(e) => setTextInput(e.target.value)}
               placeholder={t('voice.textPlaceholder', 'Type a command...')}
-              className="w-full rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] py-2 pl-9 pr-3 text-sm text-[color:var(--color-text)] outline-none transition-colors focus:border-[color:var(--color-primary)]/50 focus:ring-2 focus:ring-[color:var(--color-primary)]/20"
+              className="w-full rounded-xl border border-(--color-border) bg-(--color-surface) py-2 pl-9 pr-3 text-sm text-(--color-text) outline-none transition-colors focus:border-(--color-primary)/50 focus:ring-2 focus:ring-(--color-primary)/20"
               aria-label={t('voice.textPlaceholder', 'Type a command...')}
             />
           </div>
@@ -207,7 +203,7 @@ export const VoiceControlPanel = memo(function VoiceControlPanel() {
 
       {/* Commands List */}
       <div className="space-y-2">
-        <p className="text-xs font-medium uppercase tracking-wide text-[color:var(--color-muted)]">
+        <p className="text-xs font-medium uppercase tracking-wide text-(--color-muted)">
           {t('voice.commands')}
         </p>
 
@@ -242,8 +238,8 @@ export const VoiceControlPanel = memo(function VoiceControlPanel() {
               key={i}
               className="flex items-center justify-between rounded-lg bg-slate-800/30 px-3 py-2"
             >
-              <span className="text-sm font-mono text-[color:var(--color-text)]">{item.cmd}</span>
-              <span className="text-xs text-[color:var(--color-muted)]">{item.desc}</span>
+              <span className="text-sm font-mono text-(--color-text)">{item.cmd}</span>
+              <span className="text-xs text-(--color-muted)">{item.desc}</span>
             </div>
           ))}
         </div>

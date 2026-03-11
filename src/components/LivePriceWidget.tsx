@@ -63,10 +63,10 @@ export const LivePriceWidget = memo(function LivePriceWidget() {
                 : t('settings.none')}
           </p>
           <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-semibold tabular-nums text-[color:var(--color-text)]">
+            <span className="text-3xl font-semibold tabular-nums text-(--color-text)">
               {currentPrice.toFixed(3)}
             </span>
-            <span className="text-sm text-[color:var(--color-muted)]">{t('units.euroPerKwh')}</span>
+            <span className="text-sm text-(--color-muted)">{t('units.euroPerKwh')}</span>
           </div>
         </div>
 
@@ -84,10 +84,10 @@ export const LivePriceWidget = memo(function LivePriceWidget() {
       </div>
 
       {nextBestSlot && (
-        <div className="mt-4 border-t border-[color:var(--color-border)] pt-4">
-          <p className="text-xs text-[color:var(--color-muted)]">
+        <div className="mt-4 border-t border-(--color-border) pt-4">
+          <p className="text-xs text-(--color-muted)">
             {t('ai.nextBestAction')}:{' '}
-            <span className="font-semibold text-[color:var(--color-primary)]">
+            <span className="font-semibold text-(--color-primary)">
               {nextBestSlot.timestamp.toLocaleTimeString(dateLocale, {
                 hour: '2-digit',
                 minute: '2-digit',
@@ -111,7 +111,7 @@ export const LivePriceWidget = memo(function LivePriceWidget() {
           return (
             <div
               key={i}
-              className="flex-1 rounded-t-sm bg-[color:var(--color-primary)]/40 transition-all hover:bg-[color:var(--color-primary)]"
+              className="flex-1 rounded-t-sm bg-(--color-primary)/40 transition-all hover:bg-(--color-primary)"
               style={{ height: `${height}%` }}
               title={`${slot.timestamp.toLocaleTimeString(dateLocale, { hour: '2-digit' })}: ${slot.pricePerKwh.toFixed(3)} ${t('units.euroPerKwh')}`}
             />

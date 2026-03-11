@@ -93,16 +93,12 @@ function HomePageComponent() {
               id="home-flow-title"
               className="flex items-center gap-2 text-lg font-medium fluid-text-lg"
             >
-              <Activity
-                size={20}
-                className="text-[color:var(--color-secondary)]"
-                aria-hidden="true"
-              />
+              <Activity size={20} className="text-(--color-secondary)" aria-hidden="true" />
               {t('dashboard.realtimeFlow')}
             </h2>
             <Link
               to="/energy-flow"
-              className="rounded-lg px-3 py-1.5 text-xs font-medium text-[color:var(--color-primary)] transition-colors hover:bg-[color:var(--color-primary)]/10 focus-ring"
+              className="rounded-lg px-3 py-1.5 text-xs font-medium text-(--color-primary) transition-colors hover:bg-(--color-primary)/10 focus-ring"
             >
               {t('nav.viewAll', 'View details →')}
             </Link>
@@ -124,11 +120,7 @@ function HomePageComponent() {
             id="home-controls-title"
             className="mb-4 flex items-center gap-2 text-lg font-medium fluid-text-lg"
           >
-            <TrendingUp
-              size={20}
-              className="text-[color:var(--color-secondary)]"
-              aria-hidden="true"
-            />
+            <TrendingUp size={20} className="text-(--color-secondary)" aria-hidden="true" />
             {t('dashboard.control')}
           </h2>
           <ControlPanel sendCommand={sendCommand} data={energyData} />
@@ -161,17 +153,13 @@ const KpiCard = memo(function KpiCard({
   return (
     <Link to={link} className={`metric-card block rounded-2xl focus-ring ${className || ''}`}>
       <div className="mb-3 flex items-center gap-3">
-        <div className="rounded-xl border border-[color:var(--color-border)] bg-white/6 p-2.5">
-          {icon}
-        </div>
-        <span className="text-sm font-medium text-[color:var(--color-text)] fluid-text-sm">
-          {label}
-        </span>
+        <div className="rounded-xl border border-(--color-border) bg-white/6 p-2.5">{icon}</div>
+        <span className="text-sm font-medium text-(--color-text) fluid-text-sm">{label}</span>
       </div>
-      <div className="text-2xl font-light tracking-tight text-[color:var(--color-text)] fluid-text-2xl">
+      <div className="text-2xl font-light tracking-tight text-(--color-text) fluid-text-2xl">
         {value}
       </div>
-      <div className="mt-1.5 text-xs text-[color:var(--color-muted)] fluid-text-xs">{sub}</div>
+      <div className="mt-1.5 text-xs text-(--color-muted) fluid-text-xs">{sub}</div>
     </Link>
   );
 });

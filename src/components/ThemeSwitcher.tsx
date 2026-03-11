@@ -65,7 +65,7 @@ export function ThemeSwitcher() {
 
   return (
     <div
-      className="flex items-center gap-1.5 rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-surface-strong)] px-2 py-1 backdrop-blur-3xl"
+      className="flex items-center gap-1.5 rounded-full border border-(--color-border) bg-(--color-surface-strong) px-2 py-1 backdrop-blur-3xl"
       role="group"
       aria-label={t('common.theme')}
     >
@@ -82,17 +82,17 @@ export function ThemeSwitcher() {
         aria-pressed={isSystem}
         title={t('common.systemTheme')}
       >
-        <Monitor className="h-3.5 w-3.5 text-[color:var(--color-muted)]" />
+        <Monitor className="h-3.5 w-3.5 text-(--color-muted)" />
         {isSystem && (
           <motion.span
             layoutId="theme-active-ring"
-            className="absolute inset-[-3px] rounded-full border-2 border-[color:var(--color-primary)]"
+            className="absolute inset-[-3px] rounded-full border-2 border-(--color-primary)"
             transition={{ type: 'spring', stiffness: 500, damping: 30 }}
           />
         )}
       </motion.button>
 
-      <span className="mx-0.5 h-4 w-px bg-[color:var(--color-border)]" aria-hidden="true" />
+      <span className="mx-0.5 h-4 w-px bg-(--color-border)" aria-hidden="true" />
 
       {/* Theme dots */}
       {themeOrder.map((entry) => (

@@ -279,20 +279,20 @@ export function CommandPalette({
             initial={{ opacity: 0, scale: 0.95, y: -20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: -20 }}
-            className="fixed left-1/2 top-1/4 z-50 w-full max-w-2xl -translate-x-1/2 overflow-hidden rounded-2xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] shadow-2xl backdrop-blur-3xl"
+            className="fixed left-1/2 top-1/4 z-50 w-full max-w-2xl -translate-x-1/2 overflow-hidden rounded-2xl border border-(--color-border) bg-(--color-surface) shadow-2xl backdrop-blur-3xl"
             role="dialog"
             aria-modal="true"
             aria-label={t('command.open', 'Command palette')}
           >
             {/* Search Input */}
-            <div className="flex items-center gap-3 border-b border-[color:var(--color-border)] p-4">
-              <Search className="h-5 w-5 text-[color:var(--color-muted)]" aria-hidden="true" />
+            <div className="flex items-center gap-3 border-b border-(--color-border) p-4">
+              <Search className="h-5 w-5 text-(--color-muted)" aria-hidden="true" />
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder={t('command.searchPlaceholder', 'Search commands...')}
-                className="flex-1 bg-transparent text-[color:var(--color-text)] outline-none placeholder:text-[color:var(--color-muted)]"
+                className="flex-1 bg-transparent text-(--color-text) outline-none placeholder:text-(--color-muted)"
                 autoFocus
                 role="combobox"
                 aria-expanded="true"
@@ -304,7 +304,7 @@ export function CommandPalette({
                 }
                 aria-autocomplete="list"
               />
-              <kbd className="rounded bg-slate-800/50 px-2 py-1 text-xs text-[color:var(--color-muted)]">
+              <kbd className="rounded bg-slate-800/50 px-2 py-1 text-xs text-(--color-muted)">
                 ESC
               </kbd>
             </div>
@@ -312,7 +312,7 @@ export function CommandPalette({
             {/* Commands List */}
             <div className="max-h-96 overflow-y-auto p-2">
               {filteredCommands.length === 0 ? (
-                <div className="py-12 text-center text-sm text-[color:var(--color-muted)]">
+                <div className="py-12 text-center text-sm text-(--color-muted)">
                   {t('command.noResults', 'No commands found')}
                 </div>
               ) : (
@@ -327,28 +327,24 @@ export function CommandPalette({
                       aria-selected={index === selectedIndex}
                       className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left transition-colors ${
                         index === selectedIndex
-                          ? 'bg-[color:var(--color-primary)]/20 text-[color:var(--color-text)]'
-                          : 'text-[color:var(--color-muted)] hover:bg-slate-800/50'
+                          ? 'bg-(--color-primary)/20 text-(--color-text)'
+                          : 'text-(--color-muted) hover:bg-slate-800/50'
                       }`}
                       whileHover={{ x: 4 }}
                     >
                       <div
                         className={`flex h-10 w-10 items-center justify-center rounded-lg ${
-                          index === selectedIndex
-                            ? 'bg-[color:var(--color-primary)]/30'
-                            : 'bg-slate-800/30'
+                          index === selectedIndex ? 'bg-(--color-primary)/30' : 'bg-slate-800/30'
                         }`}
                       >
                         {cmd.icon}
                       </div>
                       <div className="flex-1">
                         <p className="font-medium">{cmd.label}</p>
-                        <p className="text-xs capitalize text-[color:var(--color-muted)]">
-                          {cmd.category}
-                        </p>
+                        <p className="text-xs capitalize text-(--color-muted)">{cmd.category}</p>
                       </div>
                       {index === selectedIndex && (
-                        <kbd className="rounded bg-slate-800/50 px-2 py-1 text-xs text-[color:var(--color-muted)]">
+                        <kbd className="rounded bg-slate-800/50 px-2 py-1 text-xs text-(--color-muted)">
                           ↵
                         </kbd>
                       )}
@@ -359,7 +355,7 @@ export function CommandPalette({
             </div>
 
             {/* Footer */}
-            <div className="flex items-center justify-between border-t border-[color:var(--color-border)] px-4 py-3 text-xs text-[color:var(--color-muted)]">
+            <div className="flex items-center justify-between border-t border-(--color-border) px-4 py-3 text-xs text-(--color-muted)">
               <span>{t('command.navigate', 'Navigate')}</span>
               <div className="flex gap-2">
                 <kbd className="rounded bg-slate-800/50 px-2 py-1">↑↓</kbd>

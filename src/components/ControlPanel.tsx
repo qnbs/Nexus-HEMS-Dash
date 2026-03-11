@@ -63,11 +63,11 @@ export function ControlPanel({
         className="glass-panel p-5"
       >
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-medium flex items-center gap-2 text-[color:var(--color-text)]">
+          <h3 className="font-medium flex items-center gap-2 text-(--color-text)">
             <Car size={18} className="text-purple-400" aria-hidden="true" />
             {t('control.evTitle')}
           </h3>
-          <span className="text-sm font-mono text-[color:var(--color-muted)]">
+          <span className="text-sm font-mono text-(--color-muted)">
             {(data.evPower / 1000).toFixed(1)} {t('units.kilowatt')}
           </span>
         </div>
@@ -79,7 +79,7 @@ export function ControlPanel({
             aria-label={t('control.evTitle')}
           >
             <label
-              className={`cursor-pointer text-center py-2 px-3 rounded-lg border transition-all duration-300 focus-within:ring-2 focus-within:ring-[color:var(--color-primary)]/40 ${evState.mode === 'off' ? 'bg-[color:var(--color-primary)]/20 border-[color:var(--color-primary)] text-[color:var(--color-primary)]' : 'bg-[color:var(--color-surface)] border-[color:var(--color-border)] text-[color:var(--color-muted)] hover:border-[color:var(--color-primary)]/40'}`}
+              className={`cursor-pointer text-center py-2 px-3 rounded-lg border transition-all duration-300 focus-within:ring-2 focus-within:ring-(--color-primary)/40 ${evState.mode === 'off' ? 'bg-(--color-primary)/20 border-(--color-primary) text-(--color-primary)' : 'bg-(--color-surface) border-(--color-border) text-(--color-muted) hover:border-(--color-primary)/40'}`}
             >
               <input
                 type="radio"
@@ -92,7 +92,7 @@ export function ControlPanel({
               <span className="text-sm font-medium">{t('control.evOff')}</span>
             </label>
             <label
-              className={`cursor-pointer text-center py-2 px-3 rounded-lg border transition-all duration-300 focus-within:ring-2 focus-within:ring-[color:var(--color-primary)]/40 ${evState.mode === 'pv' ? 'bg-[color:var(--color-primary)]/20 border-[color:var(--color-primary)] text-[color:var(--color-primary)]' : 'bg-[color:var(--color-surface)] border-[color:var(--color-border)] text-[color:var(--color-muted)] hover:border-[color:var(--color-primary)]/40'}`}
+              className={`cursor-pointer text-center py-2 px-3 rounded-lg border transition-all duration-300 focus-within:ring-2 focus-within:ring-(--color-primary)/40 ${evState.mode === 'pv' ? 'bg-(--color-primary)/20 border-(--color-primary) text-(--color-primary)' : 'bg-(--color-surface) border-(--color-border) text-(--color-muted) hover:border-(--color-primary)/40'}`}
             >
               <input
                 type="radio"
@@ -105,7 +105,7 @@ export function ControlPanel({
               <span className="text-sm font-medium">{t('control.evPv')}</span>
             </label>
             <label
-              className={`cursor-pointer text-center py-2 px-3 rounded-lg border transition-all duration-300 focus-within:ring-2 focus-within:ring-[color:var(--color-primary)]/40 ${evState.mode === 'fast' ? 'bg-[color:var(--color-primary)]/20 border-[color:var(--color-primary)] text-[color:var(--color-primary)]' : 'bg-[color:var(--color-surface)] border-[color:var(--color-border)] text-[color:var(--color-muted)] hover:border-[color:var(--color-primary)]/40'}`}
+              className={`cursor-pointer text-center py-2 px-3 rounded-lg border transition-all duration-300 focus-within:ring-2 focus-within:ring-(--color-primary)/40 ${evState.mode === 'fast' ? 'bg-(--color-primary)/20 border-(--color-primary) text-(--color-primary)' : 'bg-(--color-surface) border-(--color-border) text-(--color-muted) hover:border-(--color-primary)/40'}`}
             >
               <input
                 type="radio"
@@ -122,7 +122,7 @@ export function ControlPanel({
             <motion.p
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="text-sm text-[color:var(--color-primary)]"
+              className="text-sm text-(--color-primary)"
               role="status"
               aria-live="polite"
             >
@@ -143,11 +143,11 @@ export function ControlPanel({
         className="glass-panel p-5"
       >
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-medium flex items-center gap-2 text-[color:var(--color-text)]">
+          <h3 className="font-medium flex items-center gap-2 text-(--color-text)">
             <Thermometer size={18} className="text-orange-400" aria-hidden="true" />
             {t('control.hpTitle')}
           </h3>
-          <span className="text-sm font-mono text-[color:var(--color-muted)]">
+          <span className="text-sm font-mono text-(--color-muted)">
             {(data.heatPumpPower / 1000).toFixed(1)} {t('units.kilowatt')}
           </span>
         </div>
@@ -158,7 +158,7 @@ export function ControlPanel({
             defaultValue={hpState.mode}
             onChange={hapticClick}
             aria-label={t('control.hpTitle')}
-            className="w-full bg-[color:var(--color-surface)] border border-[color:var(--color-border)] rounded-lg px-3 py-2 text-sm text-[color:var(--color-text)] focus:outline-none focus-ring"
+            className="w-full bg-(--color-surface) border border-(--color-border) rounded-lg px-3 py-2 text-sm text-(--color-text) focus:outline-none focus-ring"
           >
             <option value="1">{t('control.hpMode1')}</option>
             <option value="2">{t('control.hpMode2')}</option>
@@ -169,7 +169,7 @@ export function ControlPanel({
             <motion.p
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="text-sm text-[color:var(--color-primary)]"
+              className="text-sm text-(--color-primary)"
               role="status"
               aria-live="polite"
             >
@@ -190,14 +190,14 @@ export function ControlPanel({
         className="glass-panel p-5"
       >
         <div className="flex items-center justify-between mb-2">
-          <h3 className="font-medium flex items-center gap-2 text-[color:var(--color-text)]">
+          <h3 className="font-medium flex items-center gap-2 text-(--color-text)">
             <Battery size={18} className="text-emerald-400" aria-hidden="true" />
             {t('control.batteryTitle')}
           </h3>
         </div>
-        <div className="text-sm text-[color:var(--color-muted)] mb-3">
+        <div className="text-sm text-(--color-muted) mb-3">
           {t('control.batteryMode')}:{' '}
-          <span className="text-[color:var(--color-primary)]">{t('control.selfConsumption')}</span>
+          <span className="text-(--color-primary)">{t('control.selfConsumption')}</span>
         </div>
         <div className="flex gap-2">
           <button

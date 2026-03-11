@@ -138,10 +138,10 @@ function MobileNavigationComponent() {
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              className="fixed bottom-16 left-0 right-0 z-40 rounded-t-3xl border-t border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-4 backdrop-blur-3xl lg:hidden"
+              className="fixed bottom-16 left-0 right-0 z-40 rounded-t-3xl border-t border-(--color-border) bg-(--color-surface) p-4 backdrop-blur-3xl lg:hidden"
             >
               <div className="mb-3 flex items-center justify-between">
-                <span className="text-sm font-semibold text-[color:var(--color-text)]">
+                <span className="text-sm font-semibold text-(--color-text)">
                   {t('nav.allPages', 'All Pages')}
                 </span>
                 <button
@@ -159,8 +159,8 @@ function MobileNavigationComponent() {
                     onClick={() => handleNavigation(item.path)}
                     className={`flex flex-col items-center gap-1.5 rounded-xl p-3 transition-colors ${
                       location.pathname === item.path
-                        ? 'bg-[color:var(--color-primary)]/15 text-[color:var(--color-primary)]'
-                        : 'text-[color:var(--color-muted)] hover:bg-[color:var(--color-surface-strong)]'
+                        ? 'bg-(--color-primary)/15 text-(--color-primary)'
+                        : 'text-(--color-muted) hover:bg-(--color-surface-strong)'
                     }`}
                   >
                     {item.icon}
@@ -178,7 +178,7 @@ function MobileNavigationComponent() {
         className="fixed bottom-0 left-0 right-0 z-50 lg:hidden"
         aria-label={t('mobile.navigation', 'Mobile Navigation')}
       >
-        <div className="absolute inset-0 border-t border-[color:var(--color-border)] bg-[color:var(--color-surface)] backdrop-blur-3xl" />
+        <div className="absolute inset-0 border-t border-(--color-border) bg-(--color-surface) backdrop-blur-3xl" />
         <div className="relative flex items-center justify-around px-2 py-2">
           {primaryItems.map((item) => {
             const isActive =
@@ -195,8 +195,8 @@ function MobileNavigationComponent() {
                 <div
                   className={`flex h-10 w-10 items-center justify-center rounded-2xl transition-colors ${
                     isActive
-                      ? 'bg-[color:var(--color-primary)]/20 text-[color:var(--color-primary)]'
-                      : 'text-[color:var(--color-muted)]'
+                      ? 'bg-(--color-primary)/20 text-(--color-primary)'
+                      : 'text-(--color-muted)'
                   }`}
                 >
                   {item.icon}
@@ -204,15 +204,13 @@ function MobileNavigationComponent() {
                 {isActive && (
                   <motion.div
                     layoutId="mobile-nav-indicator"
-                    className="absolute -bottom-0.5 h-1 w-8 rounded-full bg-[color:var(--color-primary)]"
+                    className="absolute -bottom-0.5 h-1 w-8 rounded-full bg-(--color-primary)"
                     transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                   />
                 )}
                 <span
                   className={`text-[10px] font-medium ${
-                    isActive
-                      ? 'text-[color:var(--color-primary)]'
-                      : 'text-[color:var(--color-muted)]'
+                    isActive ? 'text-(--color-primary)' : 'text-(--color-muted)'
                   }`}
                 >
                   {item.label}
@@ -228,12 +226,12 @@ function MobileNavigationComponent() {
             aria-label={t('nav.more', 'More pages')}
           >
             <div
-              className={`flex h-10 w-10 items-center justify-center rounded-2xl transition-colors ${moreOpen ? 'bg-[color:var(--color-primary)]/20 text-[color:var(--color-primary)]' : 'text-[color:var(--color-muted)]'}`}
+              className={`flex h-10 w-10 items-center justify-center rounded-2xl transition-colors ${moreOpen ? 'bg-(--color-primary)/20 text-(--color-primary)' : 'text-(--color-muted)'}`}
             >
               <MoreHorizontal className="h-5 w-5" />
             </div>
             <span
-              className={`text-[10px] font-medium ${moreOpen ? 'text-[color:var(--color-primary)]' : 'text-[color:var(--color-muted)]'}`}
+              className={`text-[10px] font-medium ${moreOpen ? 'text-(--color-primary)' : 'text-(--color-muted)'}`}
             >
               {t('nav.more', 'More')}
             </span>

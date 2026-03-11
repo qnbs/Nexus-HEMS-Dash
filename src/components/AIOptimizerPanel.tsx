@@ -34,11 +34,11 @@ export const AIOptimizerPanel = memo(function AIOptimizerPanel() {
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="eyebrow">{t('dashboard.optimizer')}</p>
-          <h3 className="mt-2 text-lg sm:text-xl font-semibold text-[color:var(--color-text)]">
+          <h3 className="mt-2 text-lg sm:text-xl font-semibold text-(--color-text)">
             {t('dashboard.optimizerSubtitle')}
           </h3>
         </div>
-        <div className="shrink-0 inline-flex items-center gap-2 rounded-full border border-[color:var(--color-border)] bg-white/5 px-2 sm:px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-[color:var(--color-primary)]">
+        <div className="shrink-0 inline-flex items-center gap-2 rounded-full border border-(--color-border) bg-white/5 px-2 sm:px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-(--color-primary)">
           <BrainCircuit className="h-4 w-4" aria-hidden="true" />
           {t('common.live')}
         </div>

@@ -89,7 +89,7 @@ export const Floorplan = memo(function Floorplan() {
           className={`p-3 rounded-full backdrop-blur-md border transition-all focus-ring ${
             lightsOn
               ? 'bg-yellow-400/20 border-yellow-400/50 text-yellow-300  neon-border-orange'
-              : 'bg-[color:var(--color-surface)] border-[color:var(--color-border)] text-[color:var(--color-muted)]'
+              : 'bg-(--color-surface) border-(--color-border) text-(--color-muted)'
           }`}
           aria-label={
             lightsOn ? t('floorplan.lights') + ' ' + t('common.active') : t('floorplan.lights')
@@ -106,7 +106,7 @@ export const Floorplan = memo(function Floorplan() {
           className={`p-2 rounded-full backdrop-blur-md border transition-all focus-ring ${
             windowOpen
               ? 'bg-sky-400/20 border-sky-400/50 text-sky-300 shadow-[0_0_15px_rgba(56,189,248,0.3)]'
-              : 'bg-[color:var(--color-surface)] border-[color:var(--color-border)] text-[color:var(--color-muted)]'
+              : 'bg-(--color-surface) border-(--color-border) text-(--color-muted)'
           }`}
           aria-label={windowOpen ? t('floorplan.windowClose') : t('floorplan.windowOpen')}
           aria-pressed={windowOpen}
@@ -116,20 +116,20 @@ export const Floorplan = memo(function Floorplan() {
       </div>
 
       <div className="absolute bottom-1/4 right-1/3">
-        <div className="flex items-center gap-2 bg-[color:var(--color-surface)] backdrop-blur-md border border-[color:var(--color-border)] px-3 py-2 rounded-xl">
+        <div className="flex items-center gap-2 bg-(--color-surface) backdrop-blur-md border border-(--color-border) px-3 py-2 rounded-xl">
           <Thermometer size={18} className="text-orange-400" aria-hidden="true" />
           <span className="font-mono text-lg">{temp.toFixed(1)}°C</span>
           <div className="flex flex-col ml-2 gap-0.5">
             <button
               onClick={() => setTemp((v) => v + 0.5)}
-              className="flex items-center justify-center min-w-[28px] min-h-[28px] text-[color:var(--color-muted)] hover:text-[color:var(--color-text)] leading-none focus-ring rounded"
+              className="flex items-center justify-center min-w-[28px] min-h-[28px] text-(--color-muted) hover:text-(--color-text) leading-none focus-ring rounded"
               aria-label={t('floorplan.tempIncrease')}
             >
               +
             </button>
             <button
               onClick={() => setTemp((v) => v - 0.5)}
-              className="flex items-center justify-center min-w-[28px] min-h-[28px] text-[color:var(--color-muted)] hover:text-[color:var(--color-text)] leading-none focus-ring rounded"
+              className="flex items-center justify-center min-w-[28px] min-h-[28px] text-(--color-muted) hover:text-(--color-text) leading-none focus-ring rounded"
               aria-label={t('floorplan.tempDecrease')}
             >
               -

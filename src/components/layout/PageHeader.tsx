@@ -19,7 +19,7 @@ function PageHeaderComponent({ title, subtitle, icon, actions }: PageHeaderProps
       <div className="flex items-center gap-3">
         {icon && (
           <div
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-primary)]/10 text-[color:var(--color-primary)]"
+            className="flex h-10 w-10 items-center justify-center rounded-xl border border-(--color-border) bg-(--color-primary)/10 text-(--color-primary)"
             aria-hidden="true"
           >
             {icon}
@@ -28,9 +28,7 @@ function PageHeaderComponent({ title, subtitle, icon, actions }: PageHeaderProps
         <div>
           <h1 className="text-2xl font-semibold tracking-tight fluid-text-2xl">{title}</h1>
           {subtitle && (
-            <p className="mt-0.5 text-sm text-[color:var(--color-muted)] fluid-text-sm">
-              {subtitle}
-            </p>
+            <p className="mt-0.5 text-sm text-(--color-muted) fluid-text-sm">{subtitle}</p>
           )}
         </div>
       </div>

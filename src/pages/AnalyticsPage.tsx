@@ -63,7 +63,7 @@ function AnalyticsPageComponent() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.4, delay: 0.1 + i * 0.05 }}
           >
-            <p className="text-xs text-[color:var(--color-muted)]">{stat.label}</p>
+            <p className="text-xs text-(--color-muted)">{stat.label}</p>
             <p className={`mt-1 text-2xl font-light ${stat.color}`}>{stat.value}</p>
           </motion.div>
         ))}

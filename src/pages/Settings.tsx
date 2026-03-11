@@ -57,8 +57,8 @@ function ThemePreviewCard({
       onClick={onClick}
       className={`relative flex flex-col items-center gap-2 rounded-2xl border-2 p-4 transition-all duration-300 focus-ring ${
         isActive
-          ? 'border-[color:var(--color-primary)] bg-[color:var(--color-primary)]/10 shadow-[0_0_20px_var(--color-primary)/15]'
-          : 'border-[color:var(--color-border)] bg-[color:var(--color-surface)] hover:border-[color:var(--color-primary)]/40'
+          ? 'border-(--color-primary) bg-(--color-primary)/10 shadow-[0_0_20px_var(--color-primary)/15]'
+          : 'border-(--color-border) bg-(--color-surface) hover:border-(--color-primary)/40'
       }`}
       whileHover={{ scale: 1.03, y: -2 }}
       whileTap={{ scale: 0.97 }}
@@ -74,7 +74,7 @@ function ThemePreviewCard({
       {isActive && (
         <motion.div
           layoutId="theme-check"
-          className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-[color:var(--color-primary)] text-white"
+          className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-(--color-primary) text-white"
           transition={{ type: 'spring', stiffness: 500, damping: 30 }}
         >
           <Check className="h-3 w-3" />
@@ -105,7 +105,7 @@ function ToggleSwitch({
         className="sr-only peer"
       />
       <span className="sr-only">{label}</span>
-      <div className="h-6 w-11 rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-surface)] peer-checked:bg-[color:var(--color-primary)] peer-focus:ring-2 peer-focus:ring-[color:var(--color-primary)]/30 transition-colors duration-300 after:absolute after:top-[2px] after:left-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow-sm after:transition-transform after:duration-300 peer-checked:after:translate-x-5" />
+      <div className="h-6 w-11 rounded-full border border-(--color-border) bg-(--color-surface) peer-checked:bg-(--color-primary) peer-focus:ring-2 peer-focus:ring-(--color-primary)/30 transition-colors duration-300 after:absolute after:top-[2px] after:left-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow-sm after:transition-transform after:duration-300 peer-checked:after:translate-x-5" />
     </label>
   );
 }
@@ -193,10 +193,10 @@ export function Settings() {
   const isSystem = themePreference === 'system';
 
   const inputClass =
-    'w-full bg-[color:var(--color-surface)] border border-[color:var(--color-border)] rounded-xl px-4 py-2.5 text-[color:var(--color-text)] focus:outline-none focus:border-[color:var(--color-primary)]/70 focus:ring-2 focus:ring-[color:var(--color-primary)]/20 transition-all duration-300 placeholder:text-[color:var(--color-muted)]';
+    'w-full bg-(--color-surface) border border-(--color-border) rounded-xl px-4 py-2.5 text-(--color-text) focus:outline-none focus:border-(--color-primary)/70 focus:ring-2 focus:ring-(--color-primary)/20 transition-all duration-300 placeholder:text-(--color-muted)';
   const sectionClass = 'glass-panel-strong p-6 rounded-2xl space-y-6';
   const sectionHeaderClass =
-    'text-lg font-medium flex items-center gap-2 border-b border-[color:var(--color-border)] pb-4';
+    'text-lg font-medium flex items-center gap-2 border-b border-(--color-border) pb-4';
 
   return (
     <motion.div
@@ -214,17 +214,17 @@ export function Settings() {
       >
         <div className="flex items-center gap-3">
           <motion.div
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-primary)]/10"
+            className="flex h-10 w-10 items-center justify-center rounded-xl border border-(--color-border) bg-(--color-primary)/10"
             animate={{ rotate: [0, 90, 0] }}
             transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
           >
-            <SettingsIcon className="text-[color:var(--color-primary)]" size={22} />
+            <SettingsIcon className="text-(--color-primary)" size={22} />
           </motion.div>
           <div>
             <h1 className="text-2xl font-semibold tracking-tight fluid-text-2xl">
               {t('settings.title')}
             </h1>
-            <p className="text-sm text-[color:var(--color-muted)]">
+            <p className="text-sm text-(--color-muted)">
               {t('settings.subtitle', 'Configure your HEMS dashboard')}
             </p>
           </div>
@@ -232,7 +232,7 @@ export function Settings() {
         <div className="flex items-center gap-2">
           <motion.button
             onClick={handleExportSettings}
-            className="inline-flex items-center gap-2 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface-strong)] px-3 py-2 text-sm transition-all hover:bg-[color:var(--color-primary)]/10 focus-ring"
+            className="inline-flex items-center gap-2 rounded-xl border border-(--color-border) bg-(--color-surface-strong) px-3 py-2 text-sm transition-all hover:bg-(--color-primary)/10 focus-ring"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             title={t('settings.exportSettings', 'Export settings')}
@@ -242,7 +242,7 @@ export function Settings() {
           </motion.button>
           <motion.button
             onClick={handleImportSettings}
-            className="inline-flex items-center gap-2 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface-strong)] px-3 py-2 text-sm transition-all hover:bg-[color:var(--color-primary)]/10 focus-ring"
+            className="inline-flex items-center gap-2 rounded-xl border border-(--color-border) bg-(--color-surface-strong) px-3 py-2 text-sm transition-all hover:bg-(--color-primary)/10 focus-ring"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             title={t('settings.importSettings', 'Import settings')}
@@ -271,8 +271,8 @@ export function Settings() {
                 id={`tab-${tab.key}`}
                 className={`flex items-center gap-2.5 whitespace-nowrap rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-200 ${
                   activeTab === tab.key
-                    ? 'bg-[color:var(--color-primary)]/15 text-[color:var(--color-primary)] shadow-[inset_0_0_0_1px_var(--color-primary)/20]'
-                    : 'text-[color:var(--color-muted)] hover:bg-white/5 hover:text-[color:var(--color-text)]'
+                    ? 'bg-(--color-primary)/15 text-(--color-primary) shadow-[inset_0_0_0_1px_var(--color-primary)/20]'
+                    : 'text-(--color-muted) hover:bg-white/5 hover:text-(--color-text)'
                 }`}
               >
                 {tab.icon}
@@ -302,19 +302,19 @@ export function Settings() {
                   {/* Theme Selection */}
                   <section className={sectionClass}>
                     <h2 className={sectionHeaderClass}>
-                      <Palette size={20} className="text-[color:var(--color-primary)]" />
+                      <Palette size={20} className="text-(--color-primary)" />
                       {t('settings.themeTitle', 'Color Theme')}
                     </h2>
 
                     {/* System Theme Toggle */}
-                    <div className="flex items-center justify-between rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-4">
+                    <div className="flex items-center justify-between rounded-xl border border-(--color-border) bg-(--color-surface) p-4">
                       <div className="flex items-center gap-3">
-                        <Monitor size={20} className="text-[color:var(--color-muted)]" />
+                        <Monitor size={20} className="text-(--color-muted)" />
                         <div>
                           <p className="font-medium text-sm">
                             {t('settings.systemTheme', 'Follow system preference')}
                           </p>
-                          <p className="text-xs text-[color:var(--color-muted)]">
+                          <p className="text-xs text-(--color-muted)">
                             {t(
                               'settings.systemThemeHint',
                               'Automatically switch between light and dark themes',
@@ -343,16 +343,13 @@ export function Settings() {
                     </div>
 
                     {/* Active Theme Info */}
-                    <div className="flex items-center gap-2 rounded-lg bg-[color:var(--color-primary)]/5 border border-[color:var(--color-primary)]/20 px-4 py-3 text-sm">
-                      <Info size={16} className="text-[color:var(--color-primary)] shrink-0" />
+                    <div className="flex items-center gap-2 rounded-lg bg-(--color-primary)/5 border border-(--color-primary)/20 px-4 py-3 text-sm">
+                      <Info size={16} className="text-(--color-primary) shrink-0" />
                       <span>
                         {t('settings.activeTheme', 'Active')}:{' '}
                         <strong>{themeDefinitions[theme].label}</strong>
                         {isSystem && (
-                          <span className="text-[color:var(--color-muted)]">
-                            {' '}
-                            ({t('common.systemTheme')})
-                          </span>
+                          <span className="text-(--color-muted)"> ({t('common.systemTheme')})</span>
                         )}
                       </span>
                     </div>
@@ -370,7 +367,7 @@ export function Settings() {
                           <p className="font-medium text-sm">
                             {t('settings.animations', 'Animations')}
                           </p>
-                          <p className="text-xs text-[color:var(--color-muted)]">
+                          <p className="text-xs text-(--color-muted)">
                             {t(
                               'settings.animationsHint',
                               'Enable smooth transitions and motion effects',
@@ -389,7 +386,7 @@ export function Settings() {
                           <p className="font-medium text-sm">
                             {t('settings.compactMode', 'Compact mode')}
                           </p>
-                          <p className="text-xs text-[color:var(--color-muted)]">
+                          <p className="text-xs text-(--color-muted)">
                             {t(
                               'settings.compactModeHint',
                               'Reduce spacing for more content on screen',
@@ -408,7 +405,7 @@ export function Settings() {
                           <p className="font-medium text-sm">
                             {t('settings.glowEffects', 'Glow effects')}
                           </p>
-                          <p className="text-xs text-[color:var(--color-muted)]">
+                          <p className="text-xs text-(--color-muted)">
                             {t('settings.glowEffectsHint', 'Neon glow and glassmorphism effects')}
                           </p>
                         </div>
@@ -526,15 +523,13 @@ export function Settings() {
                               onClick={() => updateSettings({ gatewayType: gw.value })}
                               className={`rounded-xl border-2 p-3 text-left transition-all ${
                                 settings.gatewayType === gw.value
-                                  ? 'border-[color:var(--color-primary)] bg-[color:var(--color-primary)]/10'
-                                  : 'border-[color:var(--color-border)] bg-[color:var(--color-surface)] hover:border-[color:var(--color-primary)]/40'
+                                  ? 'border-(--color-primary) bg-(--color-primary)/10'
+                                  : 'border-(--color-border) bg-(--color-surface) hover:border-(--color-primary)/40'
                               }`}
                               aria-pressed={settings.gatewayType === gw.value}
                             >
                               <span className="text-sm font-medium">{gw.label}</span>
-                              <p className="text-xs text-[color:var(--color-muted)] mt-1">
-                                {gw.desc}
-                              </p>
+                              <p className="text-xs text-(--color-muted) mt-1">{gw.desc}</p>
                             </button>
                           ))}
                         </div>
@@ -548,7 +543,7 @@ export function Settings() {
                           className={inputClass}
                           placeholder="192.168.1.100"
                         />
-                        <p className="text-xs text-[color:var(--color-muted)]">
+                        <p className="text-xs text-(--color-muted)">
                           {t('settings.victronIpHint', 'IP address of your Victron Cerbo GX')}
                         </p>
                       </div>
@@ -560,7 +555,7 @@ export function Settings() {
                           className={inputClass}
                           placeholder="192.168.1.101"
                         />
-                        <p className="text-xs text-[color:var(--color-muted)]">
+                        <p className="text-xs text-(--color-muted)">
                           {t('settings.knxIpHint', 'IP address of your KNX IP router')}
                         </p>
                       </div>
@@ -573,7 +568,7 @@ export function Settings() {
                           min={1}
                           max={65535}
                         />
-                        <p className="text-xs text-[color:var(--color-muted)]">
+                        <p className="text-xs text-(--color-muted)">
                           {t('settings.wsPortHint', 'Node-RED WebSocket port (default: 1880)')}
                         </p>
                       </div>
@@ -587,7 +582,7 @@ export function Settings() {
                           max={30000}
                           step={100}
                         />
-                        <p className="text-xs text-[color:var(--color-muted)]">
+                        <p className="text-xs text-(--color-muted)">
                           {t('settings.refreshRateHint', 'Data polling interval in milliseconds')}
                         </p>
                       </div>
@@ -608,14 +603,14 @@ export function Settings() {
                       ].map((device) => (
                         <div
                           key={device.name}
-                          className="flex items-center gap-3 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-3"
+                          className="flex items-center gap-3 rounded-xl border border-(--color-border) bg-(--color-surface) p-3"
                         >
                           <span
                             className={`h-2.5 w-2.5 rounded-full ${device.status ? 'bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.6)]' : 'bg-rose-400'}`}
                           />
                           <div>
                             <p className="text-sm font-medium">{device.name}</p>
-                            <p className="text-xs text-[color:var(--color-muted)]">
+                            <p className="text-xs text-(--color-muted)">
                               {device.status ? t('common.connected') : t('common.disconnected')}
                             </p>
                           </div>
@@ -655,7 +650,7 @@ export function Settings() {
                     <div className="flex items-center justify-between pt-2">
                       <div>
                         <p className="font-medium text-sm">{t('mqtt.autoDiscovery')}</p>
-                        <p className="text-xs text-[color:var(--color-muted)]">
+                        <p className="text-xs text-(--color-muted)">
                           {t(
                             'settings.mqttAutoHint',
                             'Automatically discover Home Assistant devices',
@@ -717,7 +712,7 @@ export function Settings() {
                           <button
                             type="button"
                             onClick={() => toggleTokenVisibility('tariff')}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-[color:var(--color-muted)] hover:text-[color:var(--color-text)]"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-(--color-muted) hover:text-(--color-text)"
                             aria-label={
                               showTokens['tariff']
                                 ? t('settings.hideToken')
@@ -739,7 +734,7 @@ export function Settings() {
                             max={0.5}
                             step={0.01}
                             defaultValue={settings.chargeThreshold}
-                            className="flex-1 accent-[color:var(--color-primary)]"
+                            className="flex-1 accent-(--color-primary)"
                             aria-valuetext={`${settings.chargeThreshold.toFixed(2)} €/kWh`}
                           />
                           <span className="text-sm font-mono w-16 text-right">
@@ -756,14 +751,14 @@ export function Settings() {
                             max={11.0}
                             step={0.1}
                             defaultValue={settings.maxGridImportKw}
-                            className="flex-1 accent-[color:var(--color-primary)]"
+                            className="flex-1 accent-(--color-primary)"
                             aria-valuetext={`${settings.maxGridImportKw.toFixed(1)} kW`}
                           />
                           <span className="text-sm font-mono w-16 text-right">
                             {settings.maxGridImportKw.toFixed(1)} kW
                           </span>
                         </div>
-                        <p className="text-xs text-[color:var(--color-muted)]">
+                        <p className="text-xs text-(--color-muted)">
                           {t(
                             'settings.maxGridHint',
                             '§14a EnWG limit: 4.2 kW for controllable consumers',
@@ -779,7 +774,7 @@ export function Settings() {
                       <Server size={20} className="text-cyan-400" />
                       {t('settings.systemPreset')}
                     </h2>
-                    <p className="text-xs text-[color:var(--color-muted)] mb-4">
+                    <p className="text-xs text-(--color-muted) mb-4">
                       {t('settings.systemPresetHint')}
                     </p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -790,14 +785,14 @@ export function Settings() {
                           onClick={() => updateSettings({ systemConfig: { ...preset } })}
                           className={`rounded-xl border-2 p-3 text-left transition-all ${
                             settings.systemConfig.presetId === preset.presetId
-                              ? 'border-[color:var(--color-primary)] bg-[color:var(--color-primary)]/10'
-                              : 'border-[color:var(--color-border)] bg-[color:var(--color-surface)] hover:border-[color:var(--color-primary)]/40'
+                              ? 'border-(--color-primary) bg-(--color-primary)/10'
+                              : 'border-(--color-border) bg-(--color-surface) hover:border-(--color-primary)/40'
                           }`}
                           aria-pressed={settings.systemConfig.presetId === preset.presetId}
                         >
                           <span className="text-sm font-medium">{preset.presetName}</span>
                           {preset.presetId !== 'custom' && (
-                            <p className="text-xs text-[color:var(--color-muted)] mt-1">
+                            <p className="text-xs text-(--color-muted) mt-1">
                               {preset.inverter.count}× {preset.inverter.ratedPowerW / 1000} kW ·{' '}
                               {preset.pv.peakPowerKWp} kWp · {preset.battery.capacityKWh} kWh
                             </p>
@@ -858,7 +853,7 @@ export function Settings() {
                           }
                           className={inputClass}
                         />
-                        <p className="text-xs text-[color:var(--color-muted)]">
+                        <p className="text-xs text-(--color-muted)">
                           {t('settings.inverterCountHint')}
                         </p>
                       </div>
@@ -885,7 +880,7 @@ export function Settings() {
                           }
                           className={inputClass}
                         />
-                        <p className="text-xs text-[color:var(--color-muted)]">
+                        <p className="text-xs text-(--color-muted)">
                           {t('settings.totalPower')}:{' '}
                           {(
                             (settings.systemConfig.inverter.count *
@@ -1391,12 +1386,10 @@ export function Settings() {
                       {t('settings.security')}
                     </h2>
                     <div className="space-y-5">
-                      <div className="flex items-center justify-between p-4 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
+                      <div className="flex items-center justify-between p-4 rounded-xl border border-(--color-border) bg-(--color-surface)">
                         <div>
                           <p className="font-medium text-sm">{t('settings.mtls')}</p>
-                          <p className="text-xs text-[color:var(--color-muted)]">
-                            {t('settings.mtlsHint')}
-                          </p>
+                          <p className="text-xs text-(--color-muted)">{t('settings.mtlsHint')}</p>
                         </div>
                         <ToggleSwitch
                           id="mtls"
@@ -1405,10 +1398,10 @@ export function Settings() {
                           label={t('settings.mtls')}
                         />
                       </div>
-                      <div className="flex items-center justify-between p-4 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
+                      <div className="flex items-center justify-between p-4 rounded-xl border border-(--color-border) bg-(--color-surface)">
                         <div>
                           <p className="font-medium text-sm">{t('settings.telemetry')}</p>
-                          <p className="text-xs text-[color:var(--color-muted)]">
+                          <p className="text-xs text-(--color-muted)">
                             {t('settings.telemetryHint')}
                           </p>
                         </div>
@@ -1419,10 +1412,10 @@ export function Settings() {
                           label={t('settings.telemetry')}
                         />
                       </div>
-                      <div className="flex items-center justify-between p-4 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
+                      <div className="flex items-center justify-between p-4 rounded-xl border border-(--color-border) bg-(--color-surface)">
                         <div>
                           <p className="font-medium text-sm">{t('settings.twoFactor')}</p>
-                          <p className="text-xs text-[color:var(--color-muted)]">
+                          <p className="text-xs text-(--color-muted)">
                             {t('settings.twoFactorHint')}
                           </p>
                         </div>
@@ -1449,7 +1442,7 @@ export function Settings() {
                           <p className="font-medium text-emerald-400">
                             {t('settings.encryptionActive', 'End-to-end encryption active')}
                           </p>
-                          <p className="text-[color:var(--color-muted)]">
+                          <p className="text-(--color-muted)">
                             {t(
                               'settings.encryptionDesc',
                               'All API keys are stored with AES-GCM 256-bit encryption. WebSocket connections use TLS. Local data stays in your browser.',
@@ -1459,16 +1452,16 @@ export function Settings() {
                       </div>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-                      <div className="rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-3">
-                        <p className="text-xs text-[color:var(--color-muted)]">
+                      <div className="rounded-xl border border-(--color-border) bg-(--color-surface) p-3">
+                        <p className="text-xs text-(--color-muted)">
                           {t('settings.certStatus', 'Certificate Status')}
                         </p>
                         <p className="text-sm font-medium text-emerald-400">
                           {t('settings.certValid', 'Valid')}
                         </p>
                       </div>
-                      <div className="rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-3">
-                        <p className="text-xs text-[color:var(--color-muted)]">
+                      <div className="rounded-xl border border-(--color-border) bg-(--color-surface) p-3">
+                        <p className="text-xs text-(--color-muted)">
                           {t('settings.encType', 'Encryption')}
                         </p>
                         <p className="text-sm font-medium">PBKDF2 + AES-GCM 256</p>
@@ -1516,7 +1509,7 @@ export function Settings() {
                           <button
                             type="button"
                             onClick={() => toggleTokenVisibility('influx')}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-[color:var(--color-muted)] hover:text-[color:var(--color-text)]"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-(--color-muted) hover:text-(--color-text)"
                             aria-label={
                               showTokens['influx']
                                 ? t('settings.hideToken')
@@ -1536,9 +1529,7 @@ export function Settings() {
                           min={1}
                           max={365}
                         />
-                        <p className="text-xs text-[color:var(--color-muted)]">
-                          {t('settings.historyHint')}
-                        </p>
+                        <p className="text-xs text-(--color-muted)">{t('settings.historyHint')}</p>
                       </div>
                     </div>
                   </section>
@@ -1550,21 +1541,19 @@ export function Settings() {
                       {t('settings.localStorage', 'Local Storage')}
                     </h2>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                      <div className="rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-4 text-center">
-                        <p className="text-2xl font-bold text-[color:var(--color-primary)]">~2.4</p>
-                        <p className="text-xs text-[color:var(--color-muted)]">MB IndexedDB</p>
+                      <div className="rounded-xl border border-(--color-border) bg-(--color-surface) p-4 text-center">
+                        <p className="text-2xl font-bold text-(--color-primary)">~2.4</p>
+                        <p className="text-xs text-(--color-muted)">MB IndexedDB</p>
                       </div>
-                      <div className="rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-4 text-center">
-                        <p className="text-2xl font-bold text-[color:var(--color-secondary)]">
-                          847
-                        </p>
-                        <p className="text-xs text-[color:var(--color-muted)]">
+                      <div className="rounded-xl border border-(--color-border) bg-(--color-surface) p-4 text-center">
+                        <p className="text-2xl font-bold text-(--color-secondary)">847</p>
+                        <p className="text-xs text-(--color-muted)">
                           {t('settings.snapshots', 'Snapshots')}
                         </p>
                       </div>
-                      <div className="rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-4 text-center">
+                      <div className="rounded-xl border border-(--color-border) bg-(--color-surface) p-4 text-center">
                         <p className="text-2xl font-bold text-amber-400">30</p>
-                        <p className="text-xs text-[color:var(--color-muted)]">
+                        <p className="text-xs text-(--color-muted)">
                           {t('settings.daysRetention', 'Days retention')}
                         </p>
                       </div>
@@ -1600,12 +1589,12 @@ export function Settings() {
                       {t('settings.notifications', 'Notifications')}
                     </h2>
                     <div className="space-y-5">
-                      <div className="flex items-center justify-between p-4 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
+                      <div className="flex items-center justify-between p-4 rounded-xl border border-(--color-border) bg-(--color-surface)">
                         <div>
                           <p className="font-medium text-sm">
                             {t('settings.pushNotifications', 'Push notifications')}
                           </p>
-                          <p className="text-xs text-[color:var(--color-muted)]">
+                          <p className="text-xs text-(--color-muted)">
                             {t('settings.pushHint', 'Receive alerts for important system events')}
                           </p>
                         </div>
@@ -1616,12 +1605,12 @@ export function Settings() {
                           label={t('settings.pushNotifications', 'Push notifications')}
                         />
                       </div>
-                      <div className="flex items-center justify-between p-4 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
+                      <div className="flex items-center justify-between p-4 rounded-xl border border-(--color-border) bg-(--color-surface)">
                         <div>
                           <p className="font-medium text-sm">
                             {t('settings.priceAlerts', 'Price alerts')}
                           </p>
-                          <p className="text-xs text-[color:var(--color-muted)]">
+                          <p className="text-xs text-(--color-muted)">
                             {t(
                               'settings.priceAlertsHint',
                               'Notify when electricity price drops below threshold',
@@ -1635,12 +1624,12 @@ export function Settings() {
                           label={t('settings.priceAlerts', 'Price alerts')}
                         />
                       </div>
-                      <div className="flex items-center justify-between p-4 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
+                      <div className="flex items-center justify-between p-4 rounded-xl border border-(--color-border) bg-(--color-surface)">
                         <div>
                           <p className="font-medium text-sm">
                             {t('settings.batteryAlerts', 'Battery alerts')}
                           </p>
-                          <p className="text-xs text-[color:var(--color-muted)]">
+                          <p className="text-xs text-(--color-muted)">
                             {t(
                               'settings.batteryAlertsHint',
                               'Alert when battery SoC falls below minimum',
@@ -1654,12 +1643,12 @@ export function Settings() {
                           label={t('settings.batteryAlerts', 'Battery alerts')}
                         />
                       </div>
-                      <div className="flex items-center justify-between p-4 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
+                      <div className="flex items-center justify-between p-4 rounded-xl border border-(--color-border) bg-(--color-surface)">
                         <div>
                           <p className="font-medium text-sm">
                             {t('settings.gridAlerts', 'Grid anomaly alerts')}
                           </p>
-                          <p className="text-xs text-[color:var(--color-muted)]">
+                          <p className="text-xs text-(--color-muted)">
                             {t(
                               'settings.gridAlertsHint',
                               'Alert on voltage fluctuations or power outages',
@@ -1673,12 +1662,12 @@ export function Settings() {
                           label={t('settings.gridAlerts', 'Grid anomaly alerts')}
                         />
                       </div>
-                      <div className="flex items-center justify-between p-4 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
+                      <div className="flex items-center justify-between p-4 rounded-xl border border-(--color-border) bg-(--color-surface)">
                         <div>
                           <p className="font-medium text-sm">
                             {t('settings.updateNotifications', 'Update notifications')}
                           </p>
-                          <p className="text-xs text-[color:var(--color-muted)]">
+                          <p className="text-xs text-(--color-muted)">
                             {t('settings.updateHint', 'Notify when a new app version is available')}
                           </p>
                         </div>
@@ -1713,12 +1702,12 @@ export function Settings() {
                       {t('settings.advanced', 'Advanced')}
                     </h2>
                     <div className="space-y-5">
-                      <div className="flex items-center justify-between p-4 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
+                      <div className="flex items-center justify-between p-4 rounded-xl border border-(--color-border) bg-(--color-surface)">
                         <div>
                           <p className="font-medium text-sm">
                             {t('settings.debugMode', 'Debug mode')}
                           </p>
-                          <p className="text-xs text-[color:var(--color-muted)]">
+                          <p className="text-xs text-(--color-muted)">
                             {t('settings.debugHint', 'Show detailed logs and developer tools')}
                           </p>
                         </div>
@@ -1729,12 +1718,12 @@ export function Settings() {
                           label={t('settings.debugMode', 'Debug mode')}
                         />
                       </div>
-                      <div className="flex items-center justify-between p-4 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
+                      <div className="flex items-center justify-between p-4 rounded-xl border border-(--color-border) bg-(--color-surface)">
                         <div>
                           <p className="font-medium text-sm">
                             {t('settings.experimentalFeatures', 'Experimental features')}
                           </p>
-                          <p className="text-xs text-[color:var(--color-muted)]">
+                          <p className="text-xs text-(--color-muted)">
                             {t(
                               'settings.experimentalHint',
                               'Enable beta features that may be unstable',
@@ -1748,12 +1737,12 @@ export function Settings() {
                           label={t('settings.experimentalFeatures', 'Experimental features')}
                         />
                       </div>
-                      <div className="flex items-center justify-between p-4 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
+                      <div className="flex items-center justify-between p-4 rounded-xl border border-(--color-border) bg-(--color-surface)">
                         <div>
                           <p className="font-medium text-sm">
                             {t('settings.performanceMode', 'Performance mode')}
                           </p>
-                          <p className="text-xs text-[color:var(--color-muted)]">
+                          <p className="text-xs text-(--color-muted)">
                             {t(
                               'settings.performanceHint',
                               'Reduce animations and effects for better performance',
@@ -1782,7 +1771,7 @@ export function Settings() {
                           <p className="font-medium text-sm text-rose-400">
                             {t('settings.resetAll', 'Reset all settings')}
                           </p>
-                          <p className="text-xs text-[color:var(--color-muted)]">
+                          <p className="text-xs text-(--color-muted)">
                             {t(
                               'settings.resetHint',
                               'This will reset all settings to their default values',
@@ -1805,7 +1794,7 @@ export function Settings() {
                             <button
                               type="button"
                               onClick={() => setConfirmReset(false)}
-                              className="rounded-xl border border-[color:var(--color-border)] px-3 py-2 text-sm hover:bg-white/5 transition-colors"
+                              className="rounded-xl border border-(--color-border) px-3 py-2 text-sm hover:bg-white/5 transition-colors"
                             >
                               {t('aiSettings.cancel', 'Cancel')}
                             </button>

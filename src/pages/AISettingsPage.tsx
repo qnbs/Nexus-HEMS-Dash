@@ -115,13 +115,13 @@ export default function AISettingsPage() {
           animate={{ rotate: [0, 15, -15, 0] }}
           transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
         >
-          <Key className="text-[color:var(--color-primary)]" size={28} />
+          <Key className="text-(--color-primary)" size={28} />
         </motion.div>
         <div>
           <h1 className="text-3xl font-light tracking-tight fluid-text-4xl">
             {t('aiSettings.title', 'AI Provider Keys')}
           </h1>
-          <p className="mt-1 text-sm text-[color:var(--color-muted)]">
+          <p className="mt-1 text-sm text-(--color-muted)">
             {t('aiSettings.subtitle', 'Bring Your Own Key — encrypted with AES-GCM 256-bit')}
           </p>
         </div>
@@ -134,9 +134,9 @@ export default function AISettingsPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
       >
-        <Shield className="mt-0.5 h-5 w-5 shrink-0 text-[color:var(--color-primary)]" />
-        <div className="text-sm text-[color:var(--color-muted)]">
-          <p className="font-medium text-[color:var(--color-text)]">
+        <Shield className="mt-0.5 h-5 w-5 shrink-0 text-(--color-primary)" />
+        <div className="text-sm text-(--color-muted)">
+          <p className="font-medium text-(--color-text)">
             {t('aiSettings.securityTitle', 'End-to-End Encrypted')}
           </p>
           <p className="mt-1">
@@ -182,12 +182,12 @@ export default function AISettingsPage() {
         transition={{ delay: 0.3 }}
       >
         <h2 className="mb-4 flex items-center gap-2 text-lg font-medium">
-          <Sparkles className="h-5 w-5 text-[color:var(--color-secondary)]" />
+          <Sparkles className="h-5 w-5 text-(--color-secondary)" />
           {t('aiSettings.configured', 'Configured Providers')}
         </h2>
 
         {storedKeys.length === 0 ? (
-          <p className="py-8 text-center text-sm text-[color:var(--color-muted)]">
+          <p className="py-8 text-center text-sm text-(--color-muted)">
             {t('aiSettings.noKeys', 'No API keys configured yet. Add a provider below.')}
           </p>
         ) : (
@@ -197,20 +197,20 @@ export default function AISettingsPage() {
                 key={key.provider}
                 className={`flex items-center justify-between rounded-2xl border p-4 transition-colors ${
                   activeProvider === key.provider
-                    ? 'border-[color:var(--color-primary)]/40 bg-[color:var(--color-primary)]/5'
-                    : 'border-[color:var(--color-border)] bg-[color:var(--color-surface)]'
+                    ? 'border-(--color-primary)/40 bg-(--color-primary)/5'
+                    : 'border-(--color-border) bg-(--color-surface)'
                 }`}
                 layout
               >
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[color:var(--color-surface-strong)]">
-                    <Key className="h-5 w-5 text-[color:var(--color-primary)]" />
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-(--color-surface-strong)">
+                    <Key className="h-5 w-5 text-(--color-primary)" />
                   </div>
                   <div>
-                    <p className="font-medium text-[color:var(--color-text)]">
+                    <p className="font-medium text-(--color-text)">
                       {AI_PROVIDERS[key.provider]?.label ?? key.provider}
                     </p>
-                    <p className="text-xs text-[color:var(--color-muted)]">
+                    <p className="text-xs text-(--color-muted)">
                       {key.model} · {t('aiSettings.lastUsed', 'Last used')}{' '}
                       {new Date(key.lastUsed).toLocaleDateString()}
                     </p>
@@ -227,7 +227,7 @@ export default function AISettingsPage() {
                     </button>
                   )}
                   {activeProvider === key.provider && (
-                    <span className="rounded-full bg-[color:var(--color-primary)]/20 px-3 py-1 text-xs font-medium text-[color:var(--color-primary)]">
+                    <span className="rounded-full bg-(--color-primary)/20 px-3 py-1 text-xs font-medium text-(--color-primary)">
                       {t('common.active')}
                     </span>
                   )}
@@ -270,15 +270,15 @@ export default function AISettingsPage() {
                   disabled={isConfigured}
                   className={`flex flex-col items-center gap-2 rounded-2xl border p-4 text-center transition-all focus-ring ${
                     isConfigured
-                      ? 'cursor-not-allowed border-[color:var(--color-border)] opacity-40'
-                      : 'border-[color:var(--color-border)] hover:border-[color:var(--color-primary)]/40 hover:bg-[color:var(--color-primary)]/5'
+                      ? 'cursor-not-allowed border-(--color-border) opacity-40'
+                      : 'border-(--color-border) hover:border-(--color-primary)/40 hover:bg-(--color-primary)/5'
                   }`}
                   whileHover={isConfigured ? {} : { scale: 1.03 }}
                   whileTap={isConfigured ? {} : { scale: 0.97 }}
                 >
-                  <Key className="h-5 w-5 text-[color:var(--color-secondary)]" />
+                  <Key className="h-5 w-5 text-(--color-secondary)" />
                   <span className="text-sm font-medium">{p.label}</span>
-                  {isConfigured && <Check className="h-4 w-4 text-[color:var(--color-primary)]" />}
+                  {isConfigured && <Check className="h-4 w-4 text-(--color-primary)" />}
                 </motion.button>
               );
             })}
@@ -291,7 +291,7 @@ export default function AISettingsPage() {
             className="space-y-4"
           >
             <div className="flex items-center justify-between">
-              <h3 className="font-medium text-[color:var(--color-text)]">
+              <h3 className="font-medium text-(--color-text)">
                 {AI_PROVIDERS[addingProvider].label}
               </h3>
               <button
@@ -300,7 +300,7 @@ export default function AISettingsPage() {
                   setApiKeyInput('');
                   setError(null);
                 }}
-                className="text-sm text-[color:var(--color-muted)] hover:text-[color:var(--color-text)]"
+                className="text-sm text-(--color-muted) hover:text-(--color-text)"
               >
                 {t('aiSettings.cancel', 'Cancel')}
               </button>
@@ -308,10 +308,7 @@ export default function AISettingsPage() {
 
             {/* API Key Input */}
             <div className="space-y-2">
-              <label
-                htmlFor="ai-api-key"
-                className="text-sm font-medium text-[color:var(--color-muted)]"
-              >
+              <label htmlFor="ai-api-key" className="text-sm font-medium text-(--color-muted)">
                 API Key
               </label>
               <div className="relative">
@@ -322,12 +319,12 @@ export default function AISettingsPage() {
                   onChange={(e) => setApiKeyInput(e.target.value)}
                   placeholder="sk-..."
                   autoComplete="off"
-                  className="w-full rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-4 py-2.5 pr-10 text-[color:var(--color-text)] outline-none transition-colors focus:border-[color:var(--color-primary)]/50 focus:ring-2 focus:ring-[color:var(--color-primary)]/20"
+                  className="w-full rounded-xl border border-(--color-border) bg-(--color-surface) px-4 py-2.5 pr-10 text-(--color-text) outline-none transition-colors focus:border-(--color-primary)/50 focus:ring-2 focus:ring-(--color-primary)/20"
                 />
                 <button
                   type="button"
                   onClick={() => setShowKey(!showKey)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[color:var(--color-muted)]"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-(--color-muted)"
                   aria-label={showKey ? 'Hide key' : 'Show key'}
                 >
                   {showKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -337,10 +334,7 @@ export default function AISettingsPage() {
 
             {/* Model Selection */}
             <div className="space-y-2">
-              <label
-                htmlFor="ai-model"
-                className="text-sm font-medium text-[color:var(--color-muted)]"
-              >
+              <label htmlFor="ai-model" className="text-sm font-medium text-(--color-muted)">
                 {t('aiSettings.model', 'Model')}
               </label>
               {AI_PROVIDERS[addingProvider].models.length > 0 ? (
@@ -348,7 +342,7 @@ export default function AISettingsPage() {
                   id="ai-model"
                   value={modelInput}
                   onChange={(e) => setModelInput(e.target.value)}
-                  className="w-full rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-4 py-2.5 text-[color:var(--color-text)] outline-none transition-colors focus:border-[color:var(--color-primary)]/50 focus:ring-2 focus:ring-[color:var(--color-primary)]/20"
+                  className="w-full rounded-xl border border-(--color-border) bg-(--color-surface) px-4 py-2.5 text-(--color-text) outline-none transition-colors focus:border-(--color-primary)/50 focus:ring-2 focus:ring-(--color-primary)/20"
                 >
                   {AI_PROVIDERS[addingProvider].models.map((m) => (
                     <option key={m} value={m}>
@@ -363,7 +357,7 @@ export default function AISettingsPage() {
                   value={modelInput}
                   onChange={(e) => setModelInput(e.target.value)}
                   placeholder="model-name"
-                  className="w-full rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-4 py-2.5 text-[color:var(--color-text)] outline-none transition-colors focus:border-[color:var(--color-primary)]/50 focus:ring-2 focus:ring-[color:var(--color-primary)]/20"
+                  className="w-full rounded-xl border border-(--color-border) bg-(--color-surface) px-4 py-2.5 text-(--color-text) outline-none transition-colors focus:border-(--color-primary)/50 focus:ring-2 focus:ring-(--color-primary)/20"
                 />
               )}
             </div>
@@ -371,10 +365,7 @@ export default function AISettingsPage() {
             {/* Custom Base URL (for 'custom' and 'ollama') */}
             {(addingProvider === 'custom' || addingProvider === 'ollama') && (
               <div className="space-y-2">
-                <label
-                  htmlFor="ai-base-url"
-                  className="text-sm font-medium text-[color:var(--color-muted)]"
-                >
+                <label htmlFor="ai-base-url" className="text-sm font-medium text-(--color-muted)">
                   Base URL
                 </label>
                 <input
@@ -383,7 +374,7 @@ export default function AISettingsPage() {
                   value={customUrlInput}
                   onChange={(e) => setCustomUrlInput(e.target.value)}
                   placeholder="https://..."
-                  className="w-full rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-4 py-2.5 text-[color:var(--color-text)] outline-none transition-colors focus:border-[color:var(--color-primary)]/50 focus:ring-2 focus:ring-[color:var(--color-primary)]/20"
+                  className="w-full rounded-xl border border-(--color-border) bg-(--color-surface) px-4 py-2.5 text-(--color-text) outline-none transition-colors focus:border-(--color-primary)/50 focus:ring-2 focus:ring-(--color-primary)/20"
                 />
               </div>
             )}

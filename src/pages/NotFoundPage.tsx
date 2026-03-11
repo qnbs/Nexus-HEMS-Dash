@@ -20,7 +20,7 @@ export default function NotFoundPage() {
         <h1 className="mb-2 text-2xl font-semibold">
           {t('error.pageNotFound', '404 – Page not found')}
         </h1>
-        <p className="mb-6 text-[color:var(--color-muted)]">
+        <p className="mb-6 text-(--color-muted)">
           {t('error.pageNotFoundDesc', 'The requested page could not be found.')}
         </p>
         <Link

@@ -21,9 +21,9 @@ export function LanguageSwitcher() {
     <div
       role="group"
       aria-label={t('common.language')}
-      className="flex items-center gap-2 rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-surface-strong)] px-2 py-1.5 backdrop-blur-3xl"
+      className="flex items-center gap-2 rounded-full border border-(--color-border) bg-(--color-surface-strong) px-2 py-1.5 backdrop-blur-3xl"
     >
-      <Languages className="h-4 w-4 text-[color:var(--color-muted)]" aria-hidden="true" />
+      <Languages className="h-4 w-4 text-(--color-muted)" aria-hidden="true" />
       <span className="sr-only">{t('common.language')}</span>
       {locales.map((entry) => (
         <button
@@ -32,8 +32,8 @@ export function LanguageSwitcher() {
           onClick={() => handleLocaleChange(entry)}
           className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] transition focus-visible:focus-ring ${
             locale === entry
-              ? 'bg-[color:var(--color-primary)] text-[color:var(--color-background)] shadow-[0_0_20px_var(--color-glow)]'
-              : 'text-[color:var(--color-muted)] hover:text-[color:var(--color-text)]'
+              ? 'bg-(--color-primary) text-(--color-background) shadow-[0_0_20px_var(--color-glow)]'
+              : 'text-(--color-muted) hover:text-(--color-text)'
           }`}
           aria-pressed={locale === entry}
           aria-label={t('common.switchTo', {
