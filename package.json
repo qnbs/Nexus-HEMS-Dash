@@ -1,7 +1,7 @@
 {
   "name": "nexus-hems-dash",
   "private": true,
-  "version": "3.8.1",
+  "version": "3.8.2",
   "description": "Real-time Home Energy Management System dashboard with Victron Cerbo GX, KNX, dynamic tariffs (Tibber/aWATTar) and SG Ready heat pump control",
   "keywords": [
     "hems",
@@ -35,7 +35,11 @@
     "test:e2e:ui": "playwright test --ui",
     "test:a11y": "playwright test tests/e2e/accessibility.spec.ts",
     "prepare": "husky",
-    "start": "node server.ts"
+    "start": "node server.ts",
+    "docker:build": "docker build -t nexus-hems-dash .",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "lighthouse": "lhci autorun"
   },
   "dependencies": {
     "@google/genai": "^1.29.0",

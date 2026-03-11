@@ -25,13 +25,16 @@ export default defineConfig(({ mode }) => {
 
       VitePWA({
         registerType: 'autoUpdate',
-        includeAssets: ['favicon.ico', 'robots.txt'],
+        includeAssets: ['favicon.ico', 'robots.txt', 'icon.svg'],
         manifest: false, // Use public/manifest.json
         workbox: {
           globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
           globIgnores: ['**/bundle-stats.html'],
+          maximumFileSizeToCacheInBytes: 4 * 1024 * 1024, // 4 MB
+          sourcemap: false,
           navigateFallback: isProd ? '/Nexus-HEMS-Dash/index.html' : 'index.html',
           navigateFallbackAllowlist: [/^(?!\/__).*/],
+          navigationPreload: true,
           runtimeCaching: [
             {
               urlPattern: /^https:\/\/api\.open-meteo\.com\//,

@@ -121,3 +121,12 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 14
+
+  docker-build:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate Dockerfile
+        run: docker build --target production -t nexus-hems-dash:ci .

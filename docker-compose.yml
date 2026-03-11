@@ -1,0 +1,24 @@
+services:
+  nexus-hems:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nexus-hems-dash
+    ports:
+      - '8080:8080'
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /var/cache/nginx
+      - /run
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      - TZ=Europe/Berlin
+    healthcheck:
+      test: ['CMD', 'wget', '-qO-', 'http://localhost:8080/']
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
