@@ -122,15 +122,15 @@ function ConsumptionPageComponent() {
           {t('metrics.grid')}
         </h2>
         <div className="grid grid-cols-2 gap-4">
-          <div className="rounded-2xl border border-(--color-border) p-4">
-            <p className="text-xs text-(--color-muted)">{t('metrics.import')}</p>
-            <p className="mt-1 text-xl font-light text-red-400">
+          <div className="overflow-hidden rounded-2xl border border-(--color-border) p-4">
+            <p className="truncate text-xs text-(--color-muted)">{t('metrics.import')}</p>
+            <p className="mt-1 truncate text-xl font-light text-red-400">
               {(Math.max(0, energyData.gridPower) / 1000).toFixed(2)} kW
             </p>
           </div>
-          <div className="rounded-2xl border border-(--color-border) p-4">
-            <p className="text-xs text-(--color-muted)">{t('metrics.export')}</p>
-            <p className="mt-1 text-xl font-light text-emerald-400">
+          <div className="overflow-hidden rounded-2xl border border-(--color-border) p-4">
+            <p className="truncate text-xs text-(--color-muted)">{t('metrics.export')}</p>
+            <p className="mt-1 truncate text-xl font-light text-emerald-400">
               {(Math.max(0, -energyData.gridPower) / 1000).toFixed(2)} kW
             </p>
           </div>

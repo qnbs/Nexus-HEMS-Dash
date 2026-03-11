@@ -75,12 +75,12 @@ export function ControlPanel({
         transition={{ delay: 0.1 }}
         className="glass-panel p-5"
       >
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-medium flex items-center gap-2 text-(--color-text)">
-            <Car size={18} className="text-purple-400" aria-hidden="true" />
+        <div className="flex min-w-0 items-center justify-between gap-2 mb-4">
+          <h3 className="min-w-0 truncate font-medium flex items-center gap-2 text-(--color-text)">
+            <Car size={18} className="shrink-0 text-purple-400" aria-hidden="true" />
             {t('control.evTitle')}
           </h3>
-          <span className="text-sm font-mono text-(--color-muted)">
+          <span className="shrink-0 text-sm font-mono text-(--color-muted)">
             {(data.evPower / 1000).toFixed(1)} {t('units.kilowatt')}
           </span>
         </div>
@@ -155,12 +155,12 @@ export function ControlPanel({
         transition={{ delay: 0.2 }}
         className="glass-panel p-5"
       >
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-medium flex items-center gap-2 text-(--color-text)">
-            <Thermometer size={18} className="text-orange-400" aria-hidden="true" />
+        <div className="flex min-w-0 items-center justify-between gap-2 mb-4">
+          <h3 className="min-w-0 truncate font-medium flex items-center gap-2 text-(--color-text)">
+            <Thermometer size={18} className="shrink-0 text-orange-400" aria-hidden="true" />
             {t('control.hpTitle')}
           </h3>
-          <span className="text-sm font-mono text-(--color-muted)">
+          <span className="shrink-0 text-sm font-mono text-(--color-muted)">
             {(data.heatPumpPower / 1000).toFixed(1)} {t('units.kilowatt')}
           </span>
         </div>
@@ -202,9 +202,9 @@ export function ControlPanel({
         transition={{ delay: 0.3 }}
         className="glass-panel p-5"
       >
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="font-medium flex items-center gap-2 text-(--color-text)">
-            <Battery size={18} className="text-emerald-400" aria-hidden="true" />
+        <div className="flex min-w-0 items-center justify-between mb-2">
+          <h3 className="min-w-0 truncate font-medium flex items-center gap-2 text-(--color-text)">
+            <Battery size={18} className="shrink-0 text-emerald-400" aria-hidden="true" />
             {t('control.batteryTitle')}
           </h3>
         </div>

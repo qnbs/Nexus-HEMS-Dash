@@ -139,7 +139,7 @@ export const SankeyDiagram = memo(function SankeyDiagram({ data }: { data: Energ
       links: activeLinks.map((d) => Object.assign({}, d)),
     });
 
-    // Draw links with enhanced hover effects
+    // Draw links with subtle glow
     svg
       .append('g')
       .selectAll('path')
@@ -149,36 +149,30 @@ export const SankeyDiagram = memo(function SankeyDiagram({ data }: { data: Energ
       .attr('fill', 'none')
       .attr('stroke', (d) => (d.source as CustomNode).color)
       .attr('stroke-width', (d) => Math.max(1, d.width || 0))
-      .attr('stroke-opacity', 0.5)
+      .attr('stroke-opacity', 0.35)
       .attr('class', 'energy-flow-path')
-      .style('mix-blend-mode', 'screen')
       .style('filter', (d) => {
         const color = (d.source as CustomNode).color;
-        return `drop-shadow(0 0 4px ${color}) drop-shadow(0 0 8px ${color})`;
-      })
-      .style('animation', (d) => {
-        // Faster pulse for higher power flows
-        const duration = Math.max(1, 3 - d.value / 1000);
-        return `energy-pulse ${duration}s ease-in-out infinite`;
+        return `drop-shadow(0 0 3px ${color}40)`;
       })
       .style('cursor', 'pointer')
       .style('transition', 'all 0.3s ease-out')
       .on('mouseenter', function (_event, d) {
         d3.select(this)
-          .attr('stroke-opacity', 0.85)
-          .attr('stroke-width', Math.max(2, (d.width || 0) + 2))
+          .attr('stroke-opacity', 0.6)
+          .attr('stroke-width', Math.max(2, (d.width || 0) + 1))
           .style('filter', () => {
             const color = (d.source as CustomNode).color;
-            return `drop-shadow(0 0 8px ${color}) drop-shadow(0 0 16px ${color}) drop-shadow(0 0 24px ${color})`;
+            return `drop-shadow(0 0 6px ${color}60)`;
           });
       })
       .on('mouseleave', function (_event, d) {
         d3.select(this)
-          .attr('stroke-opacity', 0.5)
+          .attr('stroke-opacity', 0.35)
           .attr('stroke-width', Math.max(1, d.width || 0))
           .style('filter', () => {
             const color = (d.source as CustomNode).color;
-            return `drop-shadow(0 0 4px ${color}) drop-shadow(0 0 8px ${color})`;
+            return `drop-shadow(0 0 3px ${color}40)`;
           });
       })
       .append('title')
@@ -187,40 +181,30 @@ export const SankeyDiagram = memo(function SankeyDiagram({ data }: { data: Energ
           `${(d.source as CustomNode).name} → ${(d.target as CustomNode).name}\n${Math.round(d.value)} W`,
       );
 
-    // Draw nodes with enhanced hover effects
+    // Draw nodes with subtle styling
     const node = svg
       .append('g')
       .selectAll('g')
       .data(graph.nodes)
       .join('g')
       .attr('transform', (d) => `translate(${d.x0},${d.y0})`)
-      .style('cursor', 'pointer')
-      .style('transition', 'all 0.3s ease-out');
+      .style('cursor', 'pointer');
 
     node
       .append('rect')
       .attr('height', (d) => (d.y1 || 0) - (d.y0 || 0))
       .attr('width', (d) => (d.x1 || 0) - (d.x0 || 0))
       .attr('fill', (d) => d.color)
+      .attr('fill-opacity', 0.85)
       .attr('rx', 4)
-      .style('filter', (d) => `drop-shadow(0 2px 4px ${d.color}40)`)
+      .style('transition', 'all 0.2s ease-out')
       .on('mouseenter', function (_event, d) {
         d3.select(this)
-          .attr('rx', 6)
-          .style('filter', `drop-shadow(0 4px 12px ${d.color}80) drop-shadow(0 0 16px ${d.color})`)
-          .transition()
-          .duration(200)
-          .attr('height', ((d.y1 || 0) - (d.y0 || 0)) * 1.05)
-          .attr('width', ((d.x1 || 0) - (d.x0 || 0)) * 1.1);
+          .attr('fill-opacity', 1)
+          .style('filter', `drop-shadow(0 2px 8px ${d.color}50)`);
       })
-      .on('mouseleave', function (_event, d) {
-        d3.select(this)
-          .attr('rx', 4)
-          .style('filter', `drop-shadow(0 2px 4px ${d.color}40)`)
-          .transition()
-          .duration(200)
-          .attr('height', (d.y1 || 0) - (d.y0 || 0))
-          .attr('width', (d.x1 || 0) - (d.x0 || 0));
+      .on('mouseleave', function () {
+        d3.select(this).attr('fill-opacity', 0.85).style('filter', 'none');
       })
       .append('title')
       .text((d) => `${d.name}\n${Math.round(d.value || 0)} W`);

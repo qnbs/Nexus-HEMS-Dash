@@ -163,8 +163,8 @@ const StatCard = memo(function StatCard({
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.4, delay }}
     >
-      <p className="text-xs text-(--color-muted)">{label}</p>
-      <p className={`mt-1 text-2xl font-light ${color}`}>
+      <p className="truncate text-xs text-(--color-muted)">{label}</p>
+      <p className={`mt-1 truncate text-2xl font-light ${color}`}>
         {value} <span className="text-sm text-(--color-muted)">{unit}</span>
       </p>
     </motion.div>

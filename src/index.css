@@ -181,18 +181,16 @@
 
   /* ========== ENERGY FLOW ANIMATIONS ========== */
   .energy-pulse {
-    animation: energy-pulse 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    animation: energy-pulse 4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
   }
 
   @keyframes energy-pulse {
     0%,
     100% {
       opacity: 1;
-      transform: scale(1);
     }
     50% {
-      opacity: 0.75;
-      transform: scale(1.04);
+      opacity: 0.85;
     }
   }
 
@@ -377,7 +375,8 @@
   /* ========== METRIC CARDS (ENHANCED) ========== */
   .metric-card {
     @apply rounded-3xl backdrop-blur-3xl;
-    @apply flex flex-col justify-between gap-3 p-6;
+    @apply flex flex-col justify-between gap-3 p-4 sm:p-6;
+    @apply overflow-hidden;
     @apply transition-all duration-500 ease-out;
     background: linear-gradient(
       135deg,
@@ -607,12 +606,12 @@ body {
 @keyframes energy-pulse {
   0%,
   100% {
-    stroke-opacity: 0.5;
+    stroke-opacity: 0.3;
     filter: brightness(1);
   }
   50% {
-    stroke-opacity: 0.85;
-    filter: brightness(1.4);
+    stroke-opacity: 0.5;
+    filter: brightness(1.08);
   }
 }
 

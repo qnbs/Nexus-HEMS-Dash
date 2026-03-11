@@ -157,15 +157,22 @@ const KpiCard = memo(function KpiCard({
   className?: string;
 }) {
   return (
-    <Link to={link} className={`metric-card block rounded-2xl focus-ring ${className || ''}`}>
-      <div className="mb-3 flex items-center gap-3">
-        <div className="rounded-xl border border-(--color-border) bg-white/6 p-2.5">{icon}</div>
-        <span className="text-sm font-medium text-(--color-text) fluid-text-sm">{label}</span>
+    <Link
+      to={link}
+      className={`metric-card block overflow-hidden rounded-2xl focus-ring ${className || ''}`}
+    >
+      <div className="mb-3 flex min-w-0 items-center gap-3">
+        <div className="shrink-0 rounded-xl border border-(--color-border) bg-white/6 p-2.5">
+          {icon}
+        </div>
+        <span className="min-w-0 truncate text-sm font-medium text-(--color-text) fluid-text-sm">
+          {label}
+        </span>
       </div>
-      <div className="text-2xl font-light tracking-tight text-(--color-text) fluid-text-2xl">
+      <div className="truncate text-2xl font-light tracking-tight text-(--color-text) fluid-text-2xl">
         {value}
       </div>
-      <div className="mt-1.5 text-xs text-(--color-muted) fluid-text-xs">{sub}</div>
+      <div className="mt-1.5 truncate text-xs text-(--color-muted) fluid-text-xs">{sub}</div>
     </Link>
   );
 });

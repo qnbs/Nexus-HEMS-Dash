@@ -114,8 +114,8 @@ const FlowStat = memo(function FlowStat({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay }}
     >
-      <p className="text-xs text-(--color-muted)">{label}</p>
-      <p className={`mt-1 text-xl font-light ${color}`}>{value}</p>
+      <p className="truncate text-xs text-(--color-muted)">{label}</p>
+      <p className={`mt-1 truncate text-xl font-light ${color}`}>{value}</p>
     </motion.div>
   );
 });
