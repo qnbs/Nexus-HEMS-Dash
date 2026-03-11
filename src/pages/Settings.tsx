@@ -29,7 +29,7 @@ import {
 import { useTranslation } from 'react-i18next';
 
 import { themeDefinitions, themeOrder, type ThemeName } from '../design-tokens';
-import { useAppStore } from '../store';
+import { useAppStore, defaultSettings } from '../store';
 import { SYSTEM_PRESETS, type PVConfig } from '../types';
 import { resolveTheme, type ThemePreference } from '../lib/theme';
 
@@ -111,7 +111,7 @@ function ToggleSwitch({
 }
 
 export function Settings() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [saved, setSaved] = useState(false);
   const [activeTab, setActiveTab] = useState<SettingsTab>('appearance');
   const [showTokens, setShowTokens] = useState<Record<string, boolean>>({});
@@ -122,6 +122,8 @@ export function Settings() {
   const themePreference = useAppStore((s) => s.themePreference);
   const setThemePreference = useAppStore((s) => s.setThemePreference);
   const setTheme = useAppStore((s) => s.setTheme);
+  const locale = useAppStore((s) => s.locale);
+  const setLocale = useAppStore((s) => s.setLocale);
   const settings = useAppStore((s) => s.settings);
   const updateSettings = useAppStore((s) => s.updateSettings);
 
@@ -376,8 +378,8 @@ export function Settings() {
                         </div>
                         <ToggleSwitch
                           id="animations"
-                          checked={true}
-                          onChange={() => {}}
+                          checked={settings.animations ?? true}
+                          onChange={(v) => updateSettings({ animations: v })}
                           label={t('settings.animations', 'Animations')}
                         />
                       </div>
@@ -395,8 +397,8 @@ export function Settings() {
                         </div>
                         <ToggleSwitch
                           id="compact"
-                          checked={false}
-                          onChange={() => {}}
+                          checked={settings.compactMode ?? false}
+                          onChange={(v) => updateSettings({ compactMode: v })}
                           label={t('settings.compactMode', 'Compact mode')}
                         />
                       </div>
@@ -411,8 +413,8 @@ export function Settings() {
                         </div>
                         <ToggleSwitch
                           id="glow"
-                          checked={true}
-                          onChange={() => {}}
+                          checked={settings.glowEffects ?? true}
+                          onChange={(v) => updateSettings({ glowEffects: v })}
                           label={t('settings.glowEffects', 'Glow effects')}
                         />
                       </div>
@@ -430,7 +432,16 @@ export function Settings() {
                         <label htmlFor="settings-language" className="text-sm font-medium">
                           {t('common.language')}
                         </label>
-                        <select id="settings-language" className={inputClass} defaultValue="de">
+                        <select
+                          id="settings-language"
+                          className={inputClass}
+                          value={locale}
+                          onChange={(e) => {
+                            const l = e.target.value as 'de' | 'en';
+                            setLocale(l);
+                            void i18n.changeLanguage(l);
+                          }}
+                        >
                           <option value="de">Deutsch</option>
                           <option value="en">English</option>
                         </select>
@@ -439,7 +450,14 @@ export function Settings() {
                         <label htmlFor="settings-units" className="text-sm font-medium">
                           {t('settings.units', 'Units')}
                         </label>
-                        <select id="settings-units" className={inputClass} defaultValue="metric">
+                        <select
+                          id="settings-units"
+                          className={inputClass}
+                          value={settings.units ?? 'metric'}
+                          onChange={(e) =>
+                            updateSettings({ units: e.target.value as 'metric' | 'imperial' })
+                          }
+                        >
                           <option value="metric">
                             {t('settings.metric', 'Metric (kW, kWh, °C)')}
                           </option>
@@ -455,7 +473,15 @@ export function Settings() {
                         <select
                           id="settings-dateformat"
                           className={inputClass}
-                          defaultValue="dd.mm.yyyy"
+                          value={settings.dateFormat ?? 'dd.mm.yyyy'}
+                          onChange={(e) =>
+                            updateSettings({
+                              dateFormat: e.target.value as
+                                | 'dd.mm.yyyy'
+                                | 'mm/dd/yyyy'
+                                | 'yyyy-mm-dd',
+                            })
+                          }
                         >
                           <option value="dd.mm.yyyy">DD.MM.YYYY</option>
                           <option value="mm/dd/yyyy">MM/DD/YYYY</option>
@@ -466,7 +492,14 @@ export function Settings() {
                         <label htmlFor="settings-currency" className="text-sm font-medium">
                           {t('settings.currency', 'Currency')}
                         </label>
-                        <select id="settings-currency" className={inputClass} defaultValue="eur">
+                        <select
+                          id="settings-currency"
+                          className={inputClass}
+                          value={settings.currency ?? 'eur'}
+                          onChange={(e) =>
+                            updateSettings({ currency: e.target.value as 'eur' | 'chf' | 'gbp' })
+                          }
+                        >
                           <option value="eur">€ Euro</option>
                           <option value="chf">CHF Franken</option>
                           <option value="gbp">£ Pound</option>
@@ -659,8 +692,8 @@ export function Settings() {
                       </div>
                       <ToggleSwitch
                         id="mqtt-auto"
-                        checked={true}
-                        onChange={() => {}}
+                        checked={settings.mqttAutoDiscovery ?? true}
+                        onChange={(v) => updateSettings({ mqttAutoDiscovery: v })}
                         label={t('mqtt.autoDiscovery')}
                       />
                     </div>
@@ -1600,8 +1633,8 @@ export function Settings() {
                         </div>
                         <ToggleSwitch
                           id="push"
-                          checked={true}
-                          onChange={() => {}}
+                          checked={settings.pushNotifications ?? true}
+                          onChange={(v) => updateSettings({ pushNotifications: v })}
                           label={t('settings.pushNotifications', 'Push notifications')}
                         />
                       </div>
@@ -1619,8 +1652,8 @@ export function Settings() {
                         </div>
                         <ToggleSwitch
                           id="price-alerts"
-                          checked={true}
-                          onChange={() => {}}
+                          checked={settings.priceAlerts ?? true}
+                          onChange={(v) => updateSettings({ priceAlerts: v })}
                           label={t('settings.priceAlerts', 'Price alerts')}
                         />
                       </div>
@@ -1638,8 +1671,8 @@ export function Settings() {
                         </div>
                         <ToggleSwitch
                           id="battery-alerts"
-                          checked={true}
-                          onChange={() => {}}
+                          checked={settings.batteryAlerts ?? true}
+                          onChange={(v) => updateSettings({ batteryAlerts: v })}
                           label={t('settings.batteryAlerts', 'Battery alerts')}
                         />
                       </div>
@@ -1657,8 +1690,8 @@ export function Settings() {
                         </div>
                         <ToggleSwitch
                           id="grid-alerts"
-                          checked={false}
-                          onChange={() => {}}
+                          checked={settings.gridAlerts ?? false}
+                          onChange={(v) => updateSettings({ gridAlerts: v })}
                           label={t('settings.gridAlerts', 'Grid anomaly alerts')}
                         />
                       </div>
@@ -1673,8 +1706,8 @@ export function Settings() {
                         </div>
                         <ToggleSwitch
                           id="update-notif"
-                          checked={true}
-                          onChange={() => {}}
+                          checked={settings.updateNotifications ?? true}
+                          onChange={(v) => updateSettings({ updateNotifications: v })}
                           label={t('settings.updateNotifications', 'Update notifications')}
                         />
                       </div>
@@ -1713,8 +1746,8 @@ export function Settings() {
                         </div>
                         <ToggleSwitch
                           id="debug"
-                          checked={false}
-                          onChange={() => {}}
+                          checked={settings.debugMode ?? false}
+                          onChange={(v) => updateSettings({ debugMode: v })}
                           label={t('settings.debugMode', 'Debug mode')}
                         />
                       </div>
@@ -1732,8 +1765,8 @@ export function Settings() {
                         </div>
                         <ToggleSwitch
                           id="experimental"
-                          checked={false}
-                          onChange={() => {}}
+                          checked={settings.experimentalFeatures ?? false}
+                          onChange={(v) => updateSettings({ experimentalFeatures: v })}
                           label={t('settings.experimentalFeatures', 'Experimental features')}
                         />
                       </div>
@@ -1751,8 +1784,8 @@ export function Settings() {
                         </div>
                         <ToggleSwitch
                           id="performance"
-                          checked={false}
-                          onChange={() => {}}
+                          checked={settings.performanceMode ?? false}
+                          onChange={(v) => updateSettings({ performanceMode: v })}
                           label={t('settings.performanceMode', 'Performance mode')}
                         />
                       </div>
@@ -1801,8 +1834,8 @@ export function Settings() {
                             <button
                               type="button"
                               onClick={() => {
+                                updateSettings(defaultSettings);
                                 setConfirmReset(false);
-                                // Reset logic here
                               }}
                               className="rounded-xl bg-rose-500 px-3 py-2 text-sm text-white hover:bg-rose-600 transition-colors"
                             >

@@ -27,7 +27,7 @@ src/
 │   └── ui/           # Shared UI primitives (Gauge, NeonCard, etc.)
 ├── core/             # Adapter pattern (EnergyAdapter, UnifiedEnergyModel)
 │   └── adapters/     # Protocol adapters (Victron, Modbus, KNX, OCPP, EEBUS)
-├── lib/              # Utilities (db, crypto, format, optimizer, voice, etc.)
+├── lib/              # Utilities (db, crypto, format, optimizer, etc.)
 ├── locales/          # i18n translations (en.ts, de.ts)
 ├── pages/            # Route-level page components
 ├── tests/            # Vitest unit tests
@@ -98,15 +98,15 @@ Use `useTranslation()` hook, never hardcode strings.
 
 We use [Conventional Commits](https://www.conventionalcommits.org/):
 
-| Prefix | Usage |
-|--------|-------|
-| `feat:` | New feature |
-| `fix:` | Bug fix |
-| `test:` | Adding or updating tests |
-| `docs:` | Documentation changes |
+| Prefix      | Usage                                  |
+| ----------- | -------------------------------------- |
+| `feat:`     | New feature                            |
+| `fix:`      | Bug fix                                |
+| `test:`     | Adding or updating tests               |
+| `docs:`     | Documentation changes                  |
 | `refactor:` | Code restructuring (no feature change) |
-| `perf:` | Performance improvement |
-| `chore:` | Build, CI, dependency updates |
+| `perf:`     | Performance improvement                |
+| `chore:`    | Build, CI, dependency updates          |
 
 ## License
 

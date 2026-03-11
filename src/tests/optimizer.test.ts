@@ -35,6 +35,21 @@ const baseSettings: StoredSettings = {
   historyDays: 30,
   location: { lat: 53.5511, lon: 9.9937 },
   gridPriceAvg: 0.25,
+  animations: true,
+  compactMode: false,
+  glowEffects: true,
+  units: 'metric',
+  dateFormat: 'dd.mm.yyyy',
+  currency: 'eur',
+  mqttAutoDiscovery: true,
+  pushNotifications: true,
+  priceAlerts: true,
+  batteryAlerts: true,
+  gridAlerts: false,
+  updateNotifications: true,
+  debugMode: false,
+  experimentalFeatures: false,
+  performanceMode: false,
 };
 
 describe('Optimizer Recommendations', () => {

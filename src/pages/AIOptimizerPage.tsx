@@ -5,7 +5,6 @@ import { Sparkles } from 'lucide-react';
 import { PageHeader } from '../components/layout/PageHeader';
 import { AIOptimizerPanel } from '../components/AIOptimizerPanel';
 import { EnhancedAIOptimizer } from '../components/EnhancedAIOptimizer';
-import { VoiceControlPanel } from '../components/VoiceControlPanel';
 
 function AIOptimizerPageComponent() {
   const { t } = useTranslation();
@@ -37,16 +36,6 @@ function AIOptimizerPageComponent() {
         className="min-w-0"
       >
         <EnhancedAIOptimizer />
-      </motion.div>
-
-      {/* Voice Control */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.3 }}
-        className="min-w-0"
-      >
-        <VoiceControlPanel />
       </motion.div>
     </div>
   );

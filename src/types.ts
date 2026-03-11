@@ -210,6 +210,26 @@ export interface StoredSettings {
   historyDays: number;
   location: { lat: number; lon: number };
   gridPriceAvg: number;
+  // Appearance
+  animations: boolean;
+  compactMode: boolean;
+  glowEffects: boolean;
+  // Language & Region
+  units: 'metric' | 'imperial';
+  dateFormat: 'dd.mm.yyyy' | 'mm/dd/yyyy' | 'yyyy-mm-dd';
+  currency: 'eur' | 'chf' | 'gbp';
+  // System
+  mqttAutoDiscovery: boolean;
+  // Notifications
+  pushNotifications: boolean;
+  priceAlerts: boolean;
+  batteryAlerts: boolean;
+  gridAlerts: boolean;
+  updateNotifications: boolean;
+  // Advanced
+  debugMode: boolean;
+  experimentalFeatures: boolean;
+  performanceMode: boolean;
 }
 
 export interface FloorplanState {

@@ -40,7 +40,7 @@ const defaultEnergyData: EnergyData = {
   priceCurrent: 0.18,
 };
 
-const defaultSettings: StoredSettings = {
+export const defaultSettings: StoredSettings = {
   gatewayType: 'cerbo-gx',
   systemConfig: { ...SYSTEM_PRESETS['victron-3mp2-standard'] },
   victronIp: '192.168.1.100',
@@ -58,6 +58,21 @@ const defaultSettings: StoredSettings = {
   historyDays: 30,
   location: { lat: 53.5511, lon: 9.9937 },
   gridPriceAvg: 0.25,
+  animations: true,
+  compactMode: false,
+  glowEffects: true,
+  units: 'metric',
+  dateFormat: 'dd.mm.yyyy',
+  currency: 'eur',
+  mqttAutoDiscovery: true,
+  pushNotifications: true,
+  priceAlerts: true,
+  batteryAlerts: true,
+  gridAlerts: false,
+  updateNotifications: true,
+  debugMode: false,
+  experimentalFeatures: false,
+  performanceMode: false,
 };
 
 export const useAppStore = create<AppState>()(

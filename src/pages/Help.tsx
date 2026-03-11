@@ -21,7 +21,6 @@ import {
   Download,
   Keyboard,
   Monitor,
-  Mic,
   Globe,
   ChevronDown,
   Search,
@@ -765,12 +764,6 @@ export function Help() {
                       color="bg-teal-500/15"
                     />
                     <FeatureCard
-                      icon={<Mic size={20} className="text-pink-400" />}
-                      title={t('help.featureVoice')}
-                      description={t('help.featureVoiceDesc')}
-                      color="bg-pink-500/15"
-                    />
-                    <FeatureCard
                       icon={<WifiOff size={20} className="text-orange-400" />}
                       title={t('help.featureOffline')}
                       description={t('help.featureOfflineDesc')}
@@ -1027,35 +1020,6 @@ export function Help() {
                       <Info size={16} className="text-(--color-primary) shrink-0 mt-0.5" />
                       <p className="text-xs text-(--color-muted)">{t('help.shortcutNote')}</p>
                     </div>
-                  </div>
-                </div>
-
-                {/* Voice Commands */}
-                <div className="glass-panel-strong p-6 rounded-2xl">
-                  <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                    <Mic size={20} className="text-pink-400" />
-                    {t('help.voiceCommands')}
-                  </h2>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {[
-                      { cmd: t('voice.exampleTheme'), desc: t('voice.cmdThemeDesc') },
-                      { cmd: t('voice.exampleEv'), desc: t('voice.cmdEvDesc') },
-                      { cmd: t('voice.exampleStatus'), desc: t('help.showStatus') },
-                      { cmd: `"${t('voice.cmdDashboard')}"`, desc: t('voice.cmdDashboardDesc') },
-                      { cmd: `"${t('voice.cmdSettings')}"`, desc: t('voice.cmdSettingsDesc') },
-                      { cmd: `"${t('voice.cmdHelp')}"`, desc: t('voice.cmdHelpDesc') },
-                    ].map((vc, i) => (
-                      <div
-                        key={i}
-                        className="flex items-start gap-3 p-3 rounded-lg bg-(--color-surface) border border-(--color-border)"
-                      >
-                        <Mic size={14} className="text-pink-400 shrink-0 mt-1" />
-                        <div>
-                          <p className="text-sm font-mono text-(--color-primary)">{vc.cmd}</p>
-                          <p className="text-xs text-(--color-muted)">{vc.desc}</p>
-                        </div>
-                      </div>
-                    ))}
                   </div>
                 </div>
               </motion.div>

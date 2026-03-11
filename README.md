@@ -4,7 +4,7 @@
 
 ### The Definitive Open-Source Home Energy Management System
 
-![Version](https://img.shields.io/badge/v3.3-stable-22ff88?style=for-the-badge)
+![Version](https://img.shields.io/badge/v3.4-stable-22ff88?style=for-the-badge)
 ![React 19](https://img.shields.io/badge/React-19-00f0ff?style=for-the-badge&logo=react)
 ![TypeScript 5.8](https://img.shields.io/badge/TypeScript-5.8-3178c6?style=for-the-badge&logo=typescript)
 ![Tailwind v4](https://img.shields.io/badge/Tailwind-v4-38bdf8?style=for-the-badge&logo=tailwindcss)
@@ -12,7 +12,7 @@
 ![PWA](https://img.shields.io/badge/PWA-Offline--Ready-ff8800?style=for-the-badge&logo=pwa)
 ![i18n 100%](https://img.shields.io/badge/i18n-100%25-22ff88?style=for-the-badge)
 ![WCAG 2.2 AA](https://img.shields.io/badge/WCAG-2.2%20AA-00f0ff?style=for-the-badge)
-![Tests](https://img.shields.io/badge/Tests-63%20passed-22ff88?style=for-the-badge&logo=vitest)
+![Tests](https://img.shields.io/badge/Tests-57%20passed-22ff88?style=for-the-badge&logo=vitest)
 ![License](https://img.shields.io/badge/License-MIT-f7b93e?style=for-the-badge)
 
 <br/>
@@ -105,17 +105,17 @@
 
 ### Platform & UX
 
-| Feature                  | Description                                                        | Status       |
-| ------------------------ | ------------------------------------------------------------------ | ------------ |
-| 🏠 **KNX Floorplan**     | Interactive building automation — lights, climate, sensors         | ✅ Live      |
-| 🎤 **Voice Control**     | Hands-free via Web Speech API (DE/EN) + offline text fallback      | ✅ Live      |
-| 📄 **PDF Reports**       | Automated monthly reports with Sankey, costs, CO₂ (UBA 380 g/kWh)  | ✅ Live      |
-| 🤝 **Multi-Household**   | Shareable dashboard links with QR codes                            | ✅ Live      |
-| 🔐 **BYOK AI Vault**     | 7 providers (OpenAI, Anthropic, Google, xAI, Groq, Ollama, Custom) | ✅ Live      |
-| 🎨 **5 Premium Themes**  | OceanDeep, Cyber Energy, Solar Light, Minimal White, Night Mode    | ✅ Live      |
-| 🌐 **Full i18n**         | 100% German/English with persistent language switcher + Cmd+K      | ✅ 100%      |
-| ♿ **WCAG 2.2 AA**       | Semantic HTML, ARIA live regions, focus traps, keyboard nav        | ✅ Certified |
-| 📱 **PWA Offline-First** | Service worker with Workbox, IndexedDB cache, background sync      | ✅ Live      |
+| Feature              | Description                                                | Status  |
+| -------------------- | ---------------------------------------------------------- | ------- |
+| 🏠 **KNX Floorplan** | Interactive building automation — lights, climate, sensors | ✅ Live |
+
+| 📄 **PDF Reports** | Automated monthly reports with Sankey, costs, CO₂ (UBA 380 g/kWh) | ✅ Live |
+| 🤝 **Multi-Household** | Shareable dashboard links with QR codes | ✅ Live |
+| 🔐 **BYOK AI Vault** | 7 providers (OpenAI, Anthropic, Google, xAI, Groq, Ollama, Custom) | ✅ Live |
+| 🎨 **5 Premium Themes** | OceanDeep, Cyber Energy, Solar Light, Minimal White, Night Mode | ✅ Live |
+| 🌐 **Full i18n** | 100% German/English with persistent language switcher + Cmd+K | ✅ 100% |
+| ♿ **WCAG 2.2 AA** | Semantic HTML, ARIA live regions, focus traps, keyboard nav | ✅ Certified |
+| 📱 **PWA Offline-First** | Service worker with Workbox, IndexedDB cache, background sync | ✅ Live |
 
 ### Protocol Adapters
 
@@ -233,7 +233,7 @@ npm run dev
 | `npm run build`      | Production build with PWA service worker |
 | `npm run preview`    | Preview production build locally         |
 | `npm run test`       | Run Vitest in watch mode                 |
-| `npm run test:run`   | Run all 63 unit tests once               |
+| `npm run test:run`   | Run all 57 unit tests once               |
 | `npm run test:e2e`   | Playwright E2E + accessibility tests     |
 | `npm run lint`       | ESLint with zero-warning policy          |
 | `npm run format`     | Prettier auto-format                     |
@@ -261,7 +261,7 @@ GEMINI_API_KEY=your-key-here
 | `/consumption`  | **Consumption**  | Load breakdown, consumer categories, grid exchange      |
 | `/ev`           | **EV Charging**  | Charge control, PV surplus / fast / dynamic modes, §14a |
 | `/floorplan`    | **Floorplan**    | KNX interactive building automation, room controls      |
-| `/ai-optimizer` | **AI Optimizer** | Gemini 2.5 analysis, voice control, enhanced optimizer  |
+| `/ai-optimizer` | **AI Optimizer** | Gemini 2.5 analysis, enhanced optimizer                 |
 | `/tariffs`      | **Tariffs**      | Live Tibber/aWATTar prices, forecasts, optimal windows  |
 | `/analytics`    | **Analytics**    | Statistics, predictive forecasts, PDF export & sharing  |
 | `/monitoring`   | **Monitoring**   | Prometheus metrics, health status, Grafana integration  |
@@ -383,11 +383,11 @@ Nexus-HEMS runs as a full Progressive Web App with sophisticated offline capabil
 
 ### Test Suite
 
-| Type           | Tool                 | Tests                      | Coverage                                                                   |
-| :------------- | :------------------- | :------------------------- | :------------------------------------------------------------------------- |
-| **Unit Tests** | Vitest + jsdom       | 63 tests, 10 suites        | Crypto, Store, Optimizer, Format, Voice, PDF, DB, Adapters, Haptics, Theme |
-| **E2E Tests**  | Playwright           | Accessibility + user flows | Multi-route navigation, a11y audit                                         |
-| **a11y Tests** | @axe-core/playwright | WCAG 2.2 AA                | Automated accessibility validation                                         |
+| Type           | Tool                 | Tests                      | Coverage                                                            |
+| :------------- | :------------------- | :------------------------- | :------------------------------------------------------------------ |
+| **Unit Tests** | Vitest + jsdom       | 57 tests, 9 suites         | Crypto, Store, Optimizer, Format, PDF, DB, Adapters, Haptics, Theme |
+| **E2E Tests**  | Playwright           | Accessibility + user flows | Multi-route navigation, a11y audit                                  |
+| **a11y Tests** | @axe-core/playwright | WCAG 2.2 AA                | Automated accessibility validation                                  |
 
 ### CI Pipeline (GitHub Actions)
 
@@ -397,7 +397,7 @@ push/PR → ci.yml
 ├── ESLint (zero warnings)
 ├── TypeScript strict check
 ├── Prettier format check
-├── Vitest (63 tests)
+├── Vitest (57 tests)
 ├── Vite build
 ├── Bundle size gate (< 600 KB index chunk)
 └── Upload artifacts
@@ -468,7 +468,7 @@ docker-compose up -d   # Coming Q3 2026
 | Q2      | 5 Adapters (Victron, Modbus, KNX, OCPP 2.1, EEBUS stub) | ✅ Shipped  |
 | Q2      | 5 Themes + Neo-Energy Design System                     | ✅ Shipped  |
 | Q2      | BYOK AI Vault (AES-GCM 256-bit, 7 providers)            | ✅ Shipped  |
-| Q2      | 63 Unit Tests + CI Hardening                            | ✅ Shipped  |
+| Q2      | 57 Unit Tests + CI Hardening                            | ✅ Shipped  |
 | Q3      | EEBUS SPINE/SHIP Full Implementation                    | ✅ Shipped  |
 | Q3      | Prometheus/Grafana Monitoring                           | ✅ Shipped  |
 | Q3      | PWA Auto-Update + Offline Perfection                    | ✅ Shipped  |
@@ -480,6 +480,19 @@ docker-compose up -d   # Coming Q3 2026
 ---
 
 ## 📝 Changelog
+
+<details>
+<summary><b>v3.4.0</b> — Settings Overhaul & Cleanup</summary>
+
+- All Settings toggles now functional (Appearance, Notifications, Advanced)
+- Language/units/date format/currency selects wired to persisted store
+- Settings reset (Danger Zone) fully implemented
+- Removed voice control feature (VoiceControlPanel, voice-control lib, tests)
+- Removed dead code (useWebSocket.ts, mqtt-client.ts)
+- DESIGN-SYSTEM.md updated to Tailwind v4 syntax
+- 57 unit tests, 9 test suites
+- Bundle size reduced to ~396 KB index chunk
+</details>
 
 <details>
 <summary><b>v3.3.0</b> — EEBUS, Monitoring & PWA</summary>
@@ -501,8 +514,7 @@ docker-compose up -d   # Coming Q3 2026
 - 2 new themes: Cyber Energy (light), Minimal White
 - Dynamic EV pricing strategy with real-time indicators
 - UBA 2024 CO₂ factor (380 g/kWh) for PDF reports
-- Offline voice control with text input fallback
-- 63 unit tests, CI hardening with bundle budget gate
+- 57 unit tests, CI hardening with bundle budget gate
 </details>
 
 <details>
@@ -529,7 +541,7 @@ docker-compose up -d   # Coming Q3 2026
 <summary><b>v2.x</b> — Foundation</summary>
 
 - TanStack Query, WCAG 2.2 AA, Dexie.js offline cache
-- AI Optimizer (Gemini), predictive forecasts, voice control
+- AI Optimizer (Gemini), predictive forecasts
 - PDF reports, multi-household sharing, live price widget
 - 5 themes, full i18n (DE/EN), PWA with service worker
 </details>
@@ -599,7 +611,7 @@ Gebaut mit **React 19**, **Zustand**, **D3.js** und **Tailwind CSS v4** liefert 
 
 - 🔐 **BYOK AI** — AES-GCM 256-bit verschlüsselter Schlüsseltresor für 7 KI-Anbieter
 - 🎨 **5 Premium-Themes** — inkl. Cyber Energy (Hell) und Minimal White
-- 🧪 **63 Unit-Tests** — Crypto, Optimizer, Store, Format, Voice, PDF, DB, Adapter
+- 🧪 **57 Unit-Tests** — Crypto, Optimizer, Store, Format, PDF, DB, Adapter
 - 📊 **Live-Analysen** — Berechnete Statistiken aus Echtzeit-Energiedaten
 
 ### ✨ Highlights v3.1
@@ -619,7 +631,6 @@ Gebaut mit **React 19**, **Zustand**, **D3.js** und **Tailwind CSS v4** liefert 
 | 🚗 **Intelligentes EV-Laden** | PV-Überschuss, Schnellladung, dynamische Modi, §14a             | ✅ Live    |
 | 🔥 **SG Ready**               | Wärmepumpen-Modi 1–4 zur thermischen Speicheroptimierung        | ✅ Live    |
 | 🏠 **KNX-Grundriss**          | Interaktive Gebäudeautomation — Licht, Klima, Sensoren          | ✅ Live    |
-| 🎤 **Sprachsteuerung**        | Freihändig via Web Speech API (DE/EN) + Offline-Fallback        | ✅ Live    |
 | 📄 **PDF-Berichte**           | Monatsberichte mit Sankey, Kosten, CO₂ (UBA 380 g/kWh)          | ✅ Live    |
 | 🔐 **BYOK KI-Tresor**         | 7 Anbieter mit AES-GCM 256-bit Verschlüsselung                  | ✅ Live    |
 | 🎨 **5 Themes**               | OceanDeep, Cyber Energy, Solar Light, Minimal White, Night Mode | ✅ Live    |
@@ -674,8 +685,8 @@ npm run dev
 
 | Quartal | Feature                                               | Status          |
 | :------ | :---------------------------------------------------- | :-------------- |
-| Q1      | MQTT, Predictive AI, Voice, PDF, Sharing, Live-Preise | ✅ Ausgeliefert |
-| Q2      | 5 Adapter, 5 Themes, BYOK AI, 63 Tests, CI-Härtung    | ✅ Ausgeliefert |
+| Q1      | MQTT, Predictive AI, PDF, Sharing, Live-Preise        | ✅ Ausgeliefert |
+| Q2      | 5 Adapter, 5 Themes, BYOK AI, 57 Tests, CI-Härtung    | ✅ Ausgeliefert |
 | Q3      | EEBUS SPINE/SHIP, Monitoring, PWA-Perfektion          | ✅ Ausgeliefert |
 | Q3      | Docker/Kubernetes                                     | 🔄 Geplant      |
 | Q4      | Historische Datenanalyse, Matter/Thread, Multi-Tenant | 🔜 Geplant      |

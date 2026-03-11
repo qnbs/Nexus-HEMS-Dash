@@ -10,7 +10,6 @@ import { ControlPanel } from '../components/ControlPanel';
 import { AIOptimizerPanel } from '../components/AIOptimizerPanel';
 import { PredictiveForecast } from '../components/PredictiveForecast';
 import { LivePriceWidget } from '../components/LivePriceWidget';
-import { VoiceControlPanel } from '../components/VoiceControlPanel';
 import { ExportAndSharing } from '../components/ExportAndSharing';
 
 export function Dashboard() {
@@ -35,17 +34,13 @@ export function Dashboard() {
         <AIOptimizerPanel />
       </motion.div>
 
-      {/* Live Price Widget + Voice Control */}
+      {/* Live Price Widget */}
       <motion.div
-        className="grid grid-cols-1 lg:grid-cols-3 gap-6"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
       >
-        <div className="lg:col-span-2">
-          <LivePriceWidget />
-        </div>
-        <VoiceControlPanel />
+        <LivePriceWidget />
       </motion.div>
 
       <motion.div
