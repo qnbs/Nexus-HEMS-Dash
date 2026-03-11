@@ -6,6 +6,7 @@ import { useAdapterBridge } from './core/useEnergyStore';
 import { useAppStore } from './store';
 import { Zap, Wifi, Command, Settings as SettingsIcon, HelpCircle } from 'lucide-react';
 import { themeDefinitions } from './design-tokens';
+import { Onboarding } from './components/Onboarding';
 import { LanguageSwitcher } from './components/LanguageSwitcher';
 import { CommandPalette, useCommandPalette } from './components/ui/CommandPalette';
 import { MobileNavigation } from './components/ui/MobileNavigation';
@@ -70,6 +71,7 @@ export default function App() {
   const setTheme = useAppStore((s) => s.setTheme);
   const themePreference = useAppStore((s) => s.themePreference);
   const { isOpen: isCommandPaletteOpen, setIsOpen: setCommandPaletteOpen } = useCommandPalette();
+  const onboardingCompleted = useAppStore((s) => s.onboardingCompleted);
 
   // Adapter bridge replaces the old useWebSocket hook
   useAdapterBridge();
@@ -128,6 +130,7 @@ export default function App() {
         <OfflineBanner />
         <PWAInstallPrompt />
         <PWAUpdateNotification />
+        {!onboardingCompleted && <Onboarding />}
         <div className="theme-shell min-h-screen font-sans text-(--color-text) selection:bg-(--color-primary)/30">
           <div
             className="pointer-events-none fixed inset-0 z-0"

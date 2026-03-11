@@ -329,7 +329,7 @@ function PWASettingsSection() {
                     ? t('settings_pwa.forceUpdateFound', 'Update found — restarting…')
                     : updateStatus === 'none'
                       ? t('settings_pwa.forceUpdateNone', 'Already up to date')
-                      : t('settings_pwa.appVersion', 'App Version') + ' 3.9.3'}
+                      : t('settings_pwa.appVersion', 'App Version') + ' 4.0.0'}
               </p>
             </div>
             <motion.button
@@ -2185,6 +2185,35 @@ export function Settings() {
                           onChange={(v) => updateSettings({ performanceMode: v })}
                           label={t('settings.performanceMode', 'Performance mode')}
                         />
+                      </div>
+
+                      {/* Reset Onboarding */}
+                      <div className="flex items-center justify-between p-4 rounded-xl border border-(--color-border) bg-(--color-surface)">
+                        <div>
+                          <p className="font-medium text-sm">
+                            {t('settings.resetOnboarding', 'Show onboarding again')}
+                          </p>
+                          <p className="text-xs text-(--color-muted)">
+                            {t(
+                              'settings.resetOnboardingHint',
+                              'Restart the welcome tour on next reload',
+                            )}
+                          </p>
+                        </div>
+                        <motion.button
+                          type="button"
+                          onClick={() => {
+                            useAppStore.getState().setOnboardingCompleted(false);
+                            setSaved(true);
+                            setTimeout(() => setSaved(false), 3000);
+                          }}
+                          className="flex items-center gap-2 rounded-xl border border-(--color-border) bg-(--color-surface-strong) px-4 py-2 text-sm text-(--color-muted) hover:text-(--color-primary) hover:border-(--color-primary)/30 transition-colors focus-ring"
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                        >
+                          <RotateCcw size={16} />
+                          {t('settings.resetOnboardingAction', 'Restart Tour')}
+                        </motion.button>
                       </div>
                     </div>
                   </section>

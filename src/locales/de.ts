@@ -344,6 +344,9 @@ export const de = {
     experimentalHint: 'Beta-Funktionen aktivieren, die instabil sein können',
     performanceMode: 'Leistungsmodus',
     performanceHint: 'Animationen und Effekte reduzieren für bessere Performance',
+    resetOnboarding: 'Onboarding erneut anzeigen',
+    resetOnboardingHint: 'Willkommensführung beim nächsten Laden erneut starten',
+    resetOnboardingAction: 'Tour neu starten',
     dangerZone: 'Gefahrenzone',
     resetAll: 'Alle Einstellungen zurücksetzen',
     resetHint: 'Alle Einstellungen werden auf die Standardwerte zurückgesetzt',
@@ -1101,5 +1104,40 @@ export const de = {
     alertRules: 'Aktive Alarmregeln',
     grafanaHint:
       'Importieren Sie das vorkonfigurierte Grafana-Dashboard über die API oder verwenden Sie die Template-UID:',
+  },
+  onboarding: {
+    welcome: 'Willkommen bei Nexus HEMS',
+    welcomeDesc:
+      'Ihr intelligentes Home Energy Management System für Echtzeit-Monitoring, Optimierung und Steuerung Ihres gesamten Energie-Ökosystems.',
+    chooseLanguage: 'Sprache wählen',
+    langHint: 'Sie können dies später in den Einstellungen ändern.',
+    energyFlow: 'Echtzeit-Energiefluss',
+    energyFlowDesc:
+      'Überwachen Sie Ihre PV-Erzeugung, Batteriespeicher, Netzaustausch und Hausverbrauch live mit einem interaktiven Sankey-Diagramm.',
+    smartControl: 'Intelligente Steuerung',
+    smartControlDesc:
+      'Optimieren Sie das EV-Laden mit dynamischen Tarifen, steuern Sie Wärmepumpen via SG Ready und verwalten Sie Ihr KNX Smart Home — alles in einem Dashboard.',
+    aiOptimizer: 'KI-Optimierer',
+    aiOptimizerDesc:
+      'Lassen Sie die KI Ihre Energiemuster analysieren und Eigenverbrauch, Batteriestrategie und Kostenersparnis automatisch optimieren.',
+    allSet: 'Alles bereit!',
+    allSetDesc:
+      'Ihr Dashboard ist einsatzbereit. Verbinden Sie Ihren Victron Cerbo GX oder starten Sie mit Demo-Daten.',
+    next: 'Weiter',
+    back: 'Zurück',
+    skip: 'Überspringen',
+    getStarted: 'Loslegen',
+    step: 'Schritt {{current}} von {{total}}',
+    featurePv: 'PV-Erzeugung',
+    featurePvDesc: 'Solarproduktion in Echtzeit verfolgen',
+    featureBattery: 'Batteriespeicher',
+    featureBatteryDesc: 'Ladezustand & Strategie überwachen',
+    featureEv: 'EV-Laden',
+    featureEvDesc: 'Intelligentes Laden mit dynamischen Tarifen',
+    featureKnx: 'KNX Smart Home',
+    featureKnxDesc: 'Grundriss-Steuerung & Automatisierung',
+    tipConnect: 'Verbinden Sie Ihr Gateway unter Einstellungen → System',
+    tipTariff: 'Richten Sie Tibber oder aWATTar für dynamische Preise ein',
+    tipAi: 'Konfigurieren Sie KI-Schlüssel unter Einstellungen → KI für smarte Optimierung',
   },
 } as const;

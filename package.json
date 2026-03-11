@@ -1,7 +1,7 @@
 {
   "name": "nexus-hems-dash",
   "private": true,
-  "version": "3.9.3",
+  "version": "4.0.0",
   "description": "Real-time Home Energy Management System dashboard with Victron Cerbo GX, KNX, dynamic tariffs (Tibber/aWATTar) and SG Ready heat pump control",
   "keywords": [
     "hems",
@@ -59,6 +59,7 @@
     "express": "^4.21.2",
     "i18next": "^25.8.14",
     "i18next-browser-languagedetector": "^8.2.1",
+    "jspdf": "^4.2.0",
     "lucide-react": "^0.546.0",
     "motion": "^12.23.24",
     "qrcode": "^1.5.4",

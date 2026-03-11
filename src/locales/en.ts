@@ -341,6 +341,9 @@ export const en = {
     experimentalHint: 'Enable beta features that may be unstable',
     performanceMode: 'Performance mode',
     performanceHint: 'Reduce animations and effects for better performance',
+    resetOnboarding: 'Show onboarding again',
+    resetOnboardingHint: 'Restart the welcome tour on next reload',
+    resetOnboardingAction: 'Restart Tour',
     dangerZone: 'Danger Zone',
     resetAll: 'Reset all settings',
     resetHint: 'This will reset all settings to their default values',
@@ -1089,5 +1092,40 @@ export const en = {
     alertRules: 'Active Alert Rules',
     grafanaHint:
       'Import the pre-configured Grafana dashboard from the API or use the template UID:',
+  },
+  onboarding: {
+    welcome: 'Welcome to Nexus HEMS',
+    welcomeDesc:
+      'Your intelligent Home Energy Management System for real-time monitoring, optimization and control of your entire energy ecosystem.',
+    chooseLanguage: 'Choose your language',
+    langHint: 'You can change this later in settings.',
+    energyFlow: 'Real-Time Energy Flow',
+    energyFlowDesc:
+      'Monitor your PV generation, battery storage, grid exchange and household consumption live with an interactive Sankey diagram.',
+    smartControl: 'Smart Control',
+    smartControlDesc:
+      'Optimize EV charging with dynamic tariffs, control heat pumps via SG Ready, and manage your KNX smart home — all from one dashboard.',
+    aiOptimizer: 'AI Optimizer',
+    aiOptimizerDesc:
+      'Let AI analyze your energy patterns and automatically optimize self-consumption, battery strategy and cost savings.',
+    allSet: "You're all set!",
+    allSetDesc:
+      'Your dashboard is ready. Connect your Victron Cerbo GX or start exploring with demo data.',
+    next: 'Next',
+    back: 'Back',
+    skip: 'Skip',
+    getStarted: 'Get Started',
+    step: 'Step {{current}} of {{total}}',
+    featurePv: 'PV Generation',
+    featurePvDesc: 'Track solar production in real-time',
+    featureBattery: 'Battery Storage',
+    featureBatteryDesc: 'Monitor charge levels & strategy',
+    featureEv: 'EV Charging',
+    featureEvDesc: 'Smart charging with dynamic tariffs',
+    featureKnx: 'KNX Smart Home',
+    featureKnxDesc: 'Floorplan control & automation',
+    tipConnect: 'Connect your gateway in Settings → System',
+    tipTariff: 'Set up Tibber or aWATTar for dynamic pricing',
+    tipAi: 'Configure AI keys in Settings → AI for smart optimization',
   },
 } as const;

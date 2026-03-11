@@ -17,6 +17,7 @@ interface AppState {
   themeTransitionKey: number;
   floorplan: FloorplanState;
   settings: StoredSettings;
+  onboardingCompleted: boolean;
   setEnergyData: (data: Partial<EnergyData>) => void;
   setConnected: (status: boolean) => void;
   setLocale: (locale: LocaleCode) => void;
@@ -24,6 +25,7 @@ interface AppState {
   setThemePreference: (preference: ThemePreference) => void;
   updateFloorplan: (data: Partial<FloorplanState>) => void;
   updateSettings: (data: Partial<StoredSettings>) => void;
+  setOnboardingCompleted: (completed: boolean) => void;
 }
 
 const defaultEnergyData: EnergyData = {
@@ -91,6 +93,8 @@ export const useAppStore = create<AppState>()(
         roomTemperature: 21.5,
       },
       settings: defaultSettings,
+      onboardingCompleted: false,
+      setOnboardingCompleted: (completed) => set({ onboardingCompleted: completed }),
       setEnergyData: (data) =>
         set((state) => ({
           energyData: { ...state.energyData, ...data },
@@ -122,6 +126,7 @@ export const useAppStore = create<AppState>()(
         themeTransitionKey: state.themeTransitionKey,
         floorplan: state.floorplan,
         settings: state.settings,
+        onboardingCompleted: state.onboardingCompleted,
       }),
     },
   ),
