@@ -157,30 +157,39 @@ Return ONLY a valid JSON array with this structure:
 
       {/* Error */}
       {error && (
-        <div className="mb-4 rounded-2xl border border-red-500/30 bg-red-500/10 p-4" role="alert">
+        <div
+          className="mb-4 rounded-2xl border border-red-500/30 bg-red-500/10 p-4"
+          role="alert"
+          aria-live="assertive"
+          aria-atomic="true"
+        >
           <p className="text-sm text-red-400">{error}</p>
         </div>
       )}
 
       {/* Basic Recommendations (Always Visible) */}
       {!geminiRecommendations.length && (
-        <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2">
-          {basicRecommendations.map((rec, i) => (
-            <motion.div
-              key={rec.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.06 }}
-              className={`rounded-2xl border p-3 sm:p-4 ${getSeverityStyles(rec.severity)}`}
-            >
-              <div className="mb-2 flex items-center justify-between gap-2">
-                <span className="text-xs sm:text-sm font-medium truncate">{t(rec.titleKey)}</span>
-                <span className="text-xs font-mono text-(--color-muted) shrink-0">{rec.value}</span>
-              </div>
-              <p className="text-xs text-(--color-muted)">{t(rec.descriptionKey)}</p>
-            </motion.div>
-          ))}
-        </div>
+        <section aria-label={t('optimizer.basicRecommendations', 'Basic Recommendations')}>
+          <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2">
+            {basicRecommendations.map((rec, i) => (
+              <motion.div
+                key={rec.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.06 }}
+                className={`rounded-2xl border p-3 sm:p-4 ${getSeverityStyles(rec.severity)}`}
+              >
+                <div className="mb-2 flex items-center justify-between gap-2">
+                  <span className="text-xs sm:text-sm font-medium truncate">{t(rec.titleKey)}</span>
+                  <span className="text-xs font-mono text-(--color-muted) shrink-0">
+                    {rec.value}
+                  </span>
+                </div>
+                <p className="text-xs text-(--color-muted)">{t(rec.descriptionKey)}</p>
+              </motion.div>
+            ))}
+          </div>
+        </section>
       )}
 
       {/* Gemini AI Recommendations */}

@@ -201,7 +201,10 @@ export default function App() {
                   >
                     <Command className="h-4 w-4" aria-hidden="true" />
                     <span className="hidden sm:inline">{t('command.search', 'Search')}</span>
-                    <kbd className="hidden rounded bg-(--color-surface-strong) px-1.5 py-0.5 text-xs lg:inline">
+                    <kbd
+                      className="hidden rounded bg-(--color-surface-strong) px-1.5 py-0.5 text-xs lg:inline"
+                      aria-hidden="true"
+                    >
                       ⌘K
                     </kbd>
                   </button>
@@ -210,6 +213,8 @@ export default function App() {
                   <div
                     className="inline-flex items-center gap-2 rounded-full border border-(--color-border) bg-(--color-surface-strong) px-3 py-2 text-sm"
                     role="status"
+                    aria-live="polite"
+                    aria-atomic="true"
                     aria-label={connected ? t('common.connected') : t('common.disconnected')}
                   >
                     <Wifi
@@ -221,7 +226,10 @@ export default function App() {
                     </span>
                   </div>
 
-                  <div className="price-pill hidden sm:inline-flex">
+                  <div
+                    className="price-pill hidden sm:inline-flex"
+                    aria-label={t('dashboard.currentPrice', 'Current electricity price')}
+                  >
                     {priceCurrent.toFixed(3)} €/kWh
                   </div>
                 </div>

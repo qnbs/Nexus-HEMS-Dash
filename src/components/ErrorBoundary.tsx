@@ -80,6 +80,7 @@ export class ErrorBoundary extends Component<Props, State> {
         <div
           className="flex min-h-screen items-center justify-center bg-(--color-bg) p-4"
           role="alert"
+          aria-live="assertive"
         >
           <div className="glass-panel w-full max-w-2xl rounded-3xl p-8">
             <div className="flex items-start gap-4">

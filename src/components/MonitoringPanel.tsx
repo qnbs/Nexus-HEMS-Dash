@@ -15,7 +15,7 @@ function MetricCard({ label, value, unit, status = 'normal' }: MetricCardProps) 
 
   return (
     <NeonCard variant={variant} className="p-3 sm:p-4">
-      <p className="text-xs sm:text-sm text-(--color-text-secondary) truncate">{label}</p>
+      <h3 className="text-xs sm:text-sm text-(--color-text-secondary) truncate">{label}</h3>
       <p className="text-lg sm:text-2xl font-bold text-(--color-text) mt-1">
         {value}
         <span className="text-xs sm:text-sm font-normal text-(--color-text-secondary) ml-1">
@@ -223,7 +223,11 @@ export default function MonitoringPanel() {
         <h3 className="text-sm font-semibold text-(--color-text) mb-3">
           {t('monitoring.adapterHealth', 'Adapter Health')}
         </h3>
-        <table className="w-full text-left" role="table">
+        <table
+          className="w-full text-left"
+          role="table"
+          aria-label={t('monitoring.adapterHealth', 'Adapter Health')}
+        >
           <thead>
             <tr className="border-b border-(--color-border)/30">
               <th className="py-2 px-3 text-xs font-medium text-(--color-text-secondary)">

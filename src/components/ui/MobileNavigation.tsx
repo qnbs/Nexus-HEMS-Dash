@@ -1,5 +1,5 @@
-import { memo } from 'react';
-import { motion } from 'motion/react';
+import { memo, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import {
   LayoutDashboard,
   Activity,
@@ -19,7 +19,6 @@ import {
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
-import { AnimatePresence } from 'motion/react';
 
 interface NavItem {
   id: string;
@@ -33,6 +32,35 @@ function MobileNavigationComponent() {
   const location = useLocation();
   const navigate = useNavigate();
   const [moreOpen, setMoreOpen] = useState(false);
+  const moreSheetRef = useRef<HTMLDivElement>(null);
+
+  // Focus trap for the more sheet
+  useEffect(() => {
+    if (!moreOpen) return;
+    const sheet = moreSheetRef.current;
+    if (!sheet) return;
+    const closeBtn = sheet.querySelector<HTMLElement>('[aria-label]');
+    closeBtn?.focus();
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setMoreOpen(false);
+        return;
+      }
+      if (e.key !== 'Tab') return;
+      const focusable = sheet.querySelectorAll<HTMLElement>('button:not([disabled])');
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    sheet.addEventListener('keydown', handleKeyDown);
+    return () => sheet.removeEventListener('keydown', handleKeyDown);
+  }, [moreOpen]);
 
   const primaryItems: NavItem[] = [
     {
@@ -127,11 +155,15 @@ function MobileNavigationComponent() {
               className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden"
             />
             <motion.div
+              ref={moreSheetRef}
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
               className="fixed bottom-16 left-0 right-0 z-40 rounded-t-3xl border-t border-(--color-border) bg-(--color-surface) p-4 backdrop-blur-3xl lg:hidden"
+              role="dialog"
+              aria-modal="true"
+              aria-label={t('nav.allPages', 'All Pages')}
             >
               <div className="mb-3 flex items-center justify-between">
                 <span className="text-sm font-semibold text-(--color-text)">

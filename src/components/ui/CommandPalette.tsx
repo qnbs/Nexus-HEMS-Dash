@@ -323,7 +323,11 @@ export function CommandPalette({
             {/* Commands List */}
             <div className="max-h-96 overflow-y-auto p-2">
               {filteredCommands.length === 0 ? (
-                <div className="py-12 text-center text-sm text-(--color-muted)">
+                <div
+                  className="py-12 text-center text-sm text-(--color-muted)"
+                  role="status"
+                  aria-live="polite"
+                >
                   {t('command.noResults', 'No commands found')}
                 </div>
               ) : (

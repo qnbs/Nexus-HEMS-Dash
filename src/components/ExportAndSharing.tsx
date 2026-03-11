@@ -92,6 +92,8 @@ export const ExportAndSharing = memo(function ExportAndSharing() {
             exit={{ opacity: 0, height: 0 }}
             className="mb-4 flex items-center gap-2 rounded-2xl border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-400"
             role="alert"
+            aria-live="assertive"
+            aria-atomic="true"
           >
             <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden="true" />
             {errorMessage}
@@ -104,6 +106,8 @@ export const ExportAndSharing = memo(function ExportAndSharing() {
             exit={{ opacity: 0, height: 0 }}
             className="mb-4 flex items-center gap-2 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-400"
             role="status"
+            aria-live="polite"
+            aria-atomic="true"
           >
             <Check className="h-4 w-4 shrink-0" aria-hidden="true" />
             {successMessage}

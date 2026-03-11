@@ -69,9 +69,15 @@ function SidebarComponent() {
         <Zap className="h-6 w-6 text-(--color-primary)" aria-hidden="true" />
         <div>
           <h1 className="text-lg font-semibold tracking-tight">{t('common.appName')}</h1>
-          <div className="flex items-center gap-1.5">
+          <div
+            className="flex items-center gap-1.5"
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+          >
             <span
               className={`h-2 w-2 rounded-full ${connected ? 'bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.6)]' : 'bg-rose-400'}`}
+              aria-hidden="true"
             />
             <span className="text-xs text-(--color-muted)">
               {connected ? t('common.connected') : t('common.disconnected')}
@@ -84,10 +90,13 @@ function SidebarComponent() {
       <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-6">
         {/* Main Group */}
         <div>
-          <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-widest text-(--color-muted)">
+          <p
+            id="nav-group-energy"
+            className="mb-2 px-3 text-xs font-semibold uppercase tracking-widest text-(--color-muted)"
+          >
             {t('nav.groupEnergy', 'Energy')}
           </p>
-          <ul className="space-y-1" role="list">
+          <ul className="space-y-1" role="list" aria-labelledby="nav-group-energy">
             {groups.main.map((item) => (
               <li key={item.path}>
                 <NavLink
@@ -126,10 +135,13 @@ function SidebarComponent() {
 
         {/* Tools Group */}
         <div>
-          <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-widest text-(--color-muted)">
+          <p
+            id="nav-group-tools"
+            className="mb-2 px-3 text-xs font-semibold uppercase tracking-widest text-(--color-muted)"
+          >
             {t('nav.groupTools', 'Tools')}
           </p>
-          <ul className="space-y-1" role="list">
+          <ul className="space-y-1" role="list" aria-labelledby="nav-group-tools">
             {groups.tools.map((item) => (
               <li key={item.path}>
                 <NavLink
@@ -167,10 +179,13 @@ function SidebarComponent() {
 
         {/* System Group */}
         <div>
-          <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-widest text-(--color-muted)">
+          <p
+            id="nav-group-system"
+            className="mb-2 px-3 text-xs font-semibold uppercase tracking-widest text-(--color-muted)"
+          >
             {t('nav.groupSystem', 'System')}
           </p>
-          <ul className="space-y-1" role="list">
+          <ul className="space-y-1" role="list" aria-labelledby="nav-group-system">
             {groups.system.map((item) => (
               <li key={item.path}>
                 <NavLink

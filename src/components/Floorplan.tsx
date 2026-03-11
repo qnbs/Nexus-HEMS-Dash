@@ -80,7 +80,7 @@ export const Floorplan = memo(function Floorplan() {
   };
 
   return (
-    <div className="relative w-full" role="application" aria-label={t('dashboard.floorplan')}>
+    <div className="relative w-full" role="group" aria-label={t('dashboard.floorplan')}>
       {/* SVG Floorplan — 5 rooms */}
       <svg
         viewBox="0 0 900 500"
