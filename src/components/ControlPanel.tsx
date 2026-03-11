@@ -5,6 +5,7 @@ import { motion } from 'motion/react';
 
 import { type CommandType, type EnergyData, type EvState, type HpState } from '../types';
 import { hapticClick, hapticModeChange, hapticSuccess } from '../lib/haptics';
+import { useAppStore } from '../store';
 
 export function ControlPanel({
   sendCommand,
@@ -14,6 +15,7 @@ export function ControlPanel({
   data: EnergyData;
 }) {
   const { t } = useTranslation();
+  const settings = useAppStore((s) => s.settings);
 
   // Mock action for EV charging
   const [evState, evAction, isEvPending] = useActionState(
@@ -21,7 +23,11 @@ export function ControlPanel({
       hapticModeChange();
       const mode = formData.get('evMode') as string;
       const power =
-        mode === 'fast' ? 11000 : mode === 'pv' ? Math.max(0, data.pvPower - data.houseLoad) : 0;
+        mode === 'fast'
+          ? settings.systemConfig.evCharger.maxPowerKW * 1000
+          : mode === 'pv'
+            ? Math.max(0, data.pvPower - data.houseLoad)
+            : 0;
 
       // Simulate network delay
       await new Promise((resolve) => setTimeout(resolve, 800));

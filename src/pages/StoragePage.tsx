@@ -9,6 +9,7 @@ import { PageHeader } from '../components/layout/PageHeader';
 function StoragePageComponent() {
   const { t } = useTranslation();
   const energyData = useAppStore((s) => s.energyData);
+  const settings = useAppStore((s) => s.settings);
   const { sendCommand } = useLegacySendCommand();
 
   const batteryStatus =
@@ -124,7 +125,14 @@ function StoragePageComponent() {
           {['selfConsumption', 'forceCharge', 'auto'].map((mode) => (
             <button
               key={mode}
-              onClick={() => sendCommand('SET_BATTERY_POWER', mode === 'forceCharge' ? 5000 : 0)}
+              onClick={() =>
+                sendCommand(
+                  'SET_BATTERY_POWER',
+                  mode === 'forceCharge'
+                    ? -(settings.systemConfig.battery.maxChargeRateKW * 1000)
+                    : 0,
+                )
+              }
               className="btn-secondary rounded-xl px-4 py-2.5 text-sm font-medium focus-ring"
             >
               {t(`control.${mode}`)}

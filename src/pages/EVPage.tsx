@@ -88,7 +88,8 @@ function EVPageComponent() {
         >
           <p className="text-xs text-(--color-muted)">{t('ev.maxPower', 'Max Power')}</p>
           <p className="mt-1 text-2xl font-light text-cyan-400">
-            11.0 <span className="text-sm text-(--color-muted)">kW</span>
+            {settings.systemConfig.evCharger.maxPowerKW.toFixed(1)}{' '}
+            <span className="text-sm text-(--color-muted)">kW</span>
           </p>
         </motion.div>
         <motion.div

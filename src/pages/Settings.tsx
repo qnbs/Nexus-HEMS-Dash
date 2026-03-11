@@ -572,7 +572,8 @@ export function Settings() {
                         <label className="text-sm font-medium">{t('settings.victronIp')}</label>
                         <input
                           type="text"
-                          defaultValue={settings.victronIp}
+                          value={settings.victronIp}
+                          onChange={(e) => updateSettings({ victronIp: e.target.value })}
                           className={inputClass}
                           placeholder="192.168.1.100"
                         />
@@ -584,7 +585,8 @@ export function Settings() {
                         <label className="text-sm font-medium">{t('settings.knxIp')}</label>
                         <input
                           type="text"
-                          defaultValue={settings.knxIp}
+                          value={settings.knxIp}
+                          onChange={(e) => updateSettings({ knxIp: e.target.value })}
                           className={inputClass}
                           placeholder="192.168.1.101"
                         />
@@ -596,7 +598,8 @@ export function Settings() {
                         <label className="text-sm font-medium">{t('settings.wsPort')}</label>
                         <input
                           type="number"
-                          defaultValue={settings.wsPort}
+                          value={settings.wsPort}
+                          onChange={(e) => updateSettings({ wsPort: Number(e.target.value) })}
                           className={inputClass}
                           min={1}
                           max={65535}
@@ -609,7 +612,10 @@ export function Settings() {
                         <label className="text-sm font-medium">{t('settings.refreshRate')}</label>
                         <input
                           type="number"
-                          defaultValue={settings.refreshRateMs}
+                          value={settings.refreshRateMs}
+                          onChange={(e) =>
+                            updateSettings({ refreshRateMs: Number(e.target.value) })
+                          }
                           className={inputClass}
                           min={500}
                           max={30000}
@@ -727,7 +733,12 @@ export function Settings() {
                         <select
                           id="settings-tariff"
                           className={inputClass}
-                          defaultValue={settings.tariffProvider}
+                          value={settings.tariffProvider}
+                          onChange={(e) =>
+                            updateSettings({
+                              tariffProvider: e.target.value as 'tibber' | 'awattar' | 'none',
+                            })
+                          }
                         >
                           <option value="tibber">{t('settings.tibber')}</option>
                           <option value="awattar">{t('settings.awattar')}</option>
@@ -739,8 +750,9 @@ export function Settings() {
                         <div className="relative">
                           <input
                             type={showTokens['tariff'] ? 'text' : 'password'}
-                            defaultValue="••••••••••••••••"
                             className={inputClass + ' pr-10'}
+                            placeholder="••••••••••••••••"
+                            aria-label={t('settings.apiTokenLabel')}
                           />
                           <button
                             type="button"
@@ -766,7 +778,10 @@ export function Settings() {
                             min={0.05}
                             max={0.5}
                             step={0.01}
-                            defaultValue={settings.chargeThreshold}
+                            value={settings.chargeThreshold}
+                            onChange={(e) =>
+                              updateSettings({ chargeThreshold: Number(e.target.value) })
+                            }
                             className="flex-1 accent-(--color-primary)"
                             aria-valuetext={`${settings.chargeThreshold.toFixed(2)} €/kWh`}
                           />
@@ -783,7 +798,10 @@ export function Settings() {
                             min={1.0}
                             max={11.0}
                             step={0.1}
-                            defaultValue={settings.maxGridImportKw}
+                            value={settings.maxGridImportKw}
+                            onChange={(e) =>
+                              updateSettings({ maxGridImportKw: Number(e.target.value) })
+                            }
                             className="flex-1 accent-(--color-primary)"
                             aria-valuetext={`${settings.maxGridImportKw.toFixed(1)} kW`}
                           />
@@ -1527,7 +1545,8 @@ export function Settings() {
                         <label className="text-sm font-medium">{t('settings.influxUrl')}</label>
                         <input
                           type="text"
-                          defaultValue={settings.influxUrl}
+                          value={settings.influxUrl}
+                          onChange={(e) => updateSettings({ influxUrl: e.target.value })}
                           className={inputClass}
                         />
                       </div>
@@ -1536,7 +1555,8 @@ export function Settings() {
                         <div className="relative">
                           <input
                             type={showTokens['influx'] ? 'text' : 'password'}
-                            defaultValue={settings.influxToken}
+                            value={settings.influxToken}
+                            onChange={(e) => updateSettings({ influxToken: e.target.value })}
                             className={inputClass + ' pr-10'}
                           />
                           <button
@@ -1557,7 +1577,8 @@ export function Settings() {
                         <label className="text-sm font-medium">{t('settings.historyDays')}</label>
                         <input
                           type="number"
-                          defaultValue={settings.historyDays}
+                          value={settings.historyDays}
+                          onChange={(e) => updateSettings({ historyDays: Number(e.target.value) })}
                           className={inputClass}
                           min={1}
                           max={365}
