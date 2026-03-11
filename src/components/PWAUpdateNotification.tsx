@@ -7,7 +7,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { RefreshCw, AlertCircle, WifiOff, CheckCircle2 } from 'lucide-react';
+import { RefreshCw, AlertCircle, WifiOff, CheckCircle2, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 
@@ -60,7 +60,7 @@ export function PWAUpdateNotification() {
           className="fixed left-4 right-4 top-4 z-50 md:left-auto md:right-4 md:max-w-sm"
           role="alert"
         >
-          <div className="rounded-2xl border border-(--color-primary)/30 bg-(--color-primary)/10 backdrop-blur-xl p-4 shadow-2xl flex items-center gap-3">
+          <div className="relative rounded-2xl border border-(--color-primary)/30 bg-(--color-primary)/10 backdrop-blur-xl p-4 shadow-2xl flex items-center gap-3">
             <RefreshCw className="h-5 w-5 text-(--color-primary) shrink-0" aria-hidden="true" />
             <div className="flex-1">
               <p className="font-semibold text-sm text-(--color-primary)">
@@ -83,6 +83,13 @@ export function PWAUpdateNotification() {
               ) : (
                 t('pwa.restart', 'Restart')
               )}
+            </button>
+            <button
+              onClick={() => setShowUpdating(false)}
+              className="absolute -top-2 -right-2 rounded-full bg-(--color-surface) border border-(--color-border) p-1 text-(--color-muted) hover:text-(--color-text) transition-colors shadow-md"
+              aria-label={t('common.close', 'Close')}
+            >
+              <X className="h-3 w-3" />
             </button>
           </div>
         </motion.div>
