@@ -4,14 +4,13 @@ import {
   LayoutDashboard,
   Activity,
   Sparkles,
-  Settings,
+  TrendingUp,
   MoreHorizontal,
   Sun,
   Battery,
   Home,
   Car,
   Map,
-  TrendingUp,
   BarChart3,
   HelpCircle,
   Monitor,
@@ -55,10 +54,10 @@ function MobileNavigationComponent() {
       path: '/ai-optimizer',
     },
     {
-      id: 'settings',
-      icon: <Settings className="h-5 w-5" />,
-      label: t('nav.settings', 'Settings'),
-      path: '/settings',
+      id: 'tariffs',
+      icon: <TrendingUp className="h-5 w-5" />,
+      label: t('nav.tariffs', 'Tariffs'),
+      path: '/tariffs',
     },
   ];
 
@@ -87,12 +86,6 @@ function MobileNavigationComponent() {
       icon: <Map className="h-5 w-5" />,
       label: t('nav.floorplan', 'Floorplan'),
       path: '/floorplan',
-    },
-    {
-      id: 'tariffs',
-      icon: <TrendingUp className="h-5 w-5" />,
-      label: t('nav.tariffs', 'Tariffs'),
-      path: '/tariffs',
     },
     {
       id: 'analytics',

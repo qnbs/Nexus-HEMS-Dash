@@ -293,7 +293,7 @@ export function CommandPalette({
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder={t('command.searchPlaceholder', 'Search commands...')}
                 className="flex-1 bg-transparent text-(--color-text) outline-none placeholder:text-(--color-muted)"
-                autoFocus
+                autoFocus={window.innerWidth >= 1024}
                 role="combobox"
                 aria-expanded="true"
                 aria-controls="command-listbox"

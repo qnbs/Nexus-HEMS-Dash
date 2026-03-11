@@ -1,623 +1,689 @@
-# Nexus-HEMS Dash 3.3
-
 <div align="center">
 
-![Version](https://img.shields.io/badge/Version-3.3.0-22ff88?style=for-the-badge)
-![React](https://img.shields.io/badge/React-19-00f0ff?style=for-the-badge&logo=react)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178c6?style=for-the-badge&logo=typescript)
-![Tailwind](https://img.shields.io/badge/Tailwind-4.1-38bdf8?style=for-the-badge&logo=tailwindcss)
-![PWA Ready](https://img.shields.io/badge/PWA-Ready-ff8800?style=for-the-badge)
-![Production](https://img.shields.io/badge/Production-Ready-22ff88?style=for-the-badge)
-![i18n](https://img.shields.io/badge/i18n-100%25-22ff88?style=for-the-badge)
-![WCAG](https://img.shields.io/badge/WCAG-2.2%20AA-00f0ff?style=for-the-badge)
+# ⚡ Nexus-HEMS Dashboard
 
-[![Live Demo](https://img.shields.io/badge/🚀-Live%20Demo-ff8800?style=for-the-badge)](https://qnbs.github.io/Nexus-HEMS-Dash/)
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/qnbs/Nexus-HEMS-Dash)
+### The Definitive Open-Source Home Energy Management System
 
-**Real-time orchestration for PV, storage, heat & mobility**  
-🔋 Victron Cerbo GX • 🏠 KNX • ⚡ Tibber/aWATTar • 🤖 AI Optimizer • 📱 Mobile PWA
+![Version](https://img.shields.io/badge/v3.3-stable-22ff88?style=for-the-badge)
+![React 19](https://img.shields.io/badge/React-19-00f0ff?style=for-the-badge&logo=react)
+![TypeScript 5.8](https://img.shields.io/badge/TypeScript-5.8-3178c6?style=for-the-badge&logo=typescript)
+![Tailwind v4](https://img.shields.io/badge/Tailwind-v4-38bdf8?style=for-the-badge&logo=tailwindcss)
+![Vite 6](https://img.shields.io/badge/Vite-6-646cff?style=for-the-badge&logo=vite)
+![PWA](https://img.shields.io/badge/PWA-Offline--Ready-ff8800?style=for-the-badge&logo=pwa)
+![i18n 100%](https://img.shields.io/badge/i18n-100%25-22ff88?style=for-the-badge)
+![WCAG 2.2 AA](https://img.shields.io/badge/WCAG-2.2%20AA-00f0ff?style=for-the-badge)
+![Tests](https://img.shields.io/badge/Tests-63%20passed-22ff88?style=for-the-badge&logo=vitest)
+![License](https://img.shields.io/badge/License-MIT-f7b93e?style=for-the-badge)
 
-[🇬🇧 English](#english) | [🇩🇪 Deutsch](#deutsch)
+<br/>
+
+[![Live Demo](https://img.shields.io/badge/%F0%9F%9A%80_Live_Demo-qnbs.github.io-ff8800?style=for-the-badge)](https://qnbs.github.io/Nexus-HEMS-Dash/)
+&nbsp;&nbsp;
+[![Open in Codespaces](https://img.shields.io/badge/%F0%9F%92%BB_Open_in-Codespaces-22ff88?style=for-the-badge&logo=github)](https://codespaces.new/qnbs/Nexus-HEMS-Dash)
+
+<br/>
+
+**Real-time orchestration for photovoltaics, battery storage, heat pumps & e-mobility**
+
+🔋 Victron Cerbo GX &bull; 🏠 KNX/IP &bull; ⚡ Tibber / aWATTar &bull; 🤖 AI Optimizer (Gemini) &bull; 📡 EEBUS SPINE/SHIP &bull; 🔌 OCPP 2.1 V2X
+
+[English](#-overview) &nbsp;|&nbsp; [Deutsch](#-überblick)
 
 </div>
 
 ---
 
-<a name="english"></a>
+## 📋 Table of Contents
 
-## 🇬🇧 English
+- [Overview](#-overview)
+- [Key Features](#-key-features)
+- [Architecture](#-architecture)
+- [Technology Stack](#-technology-stack)
+- [Quick Start](#-quick-start)
+- [Page Structure](#-page-structure)
+- [Protocol Adapters](#-protocol-adapters)
+- [PWA & Offline](#-pwa--offline-architecture)
+- [Security & Compliance](#-security--compliance)
+- [Design System](#-design-system)
+- [Testing & CI/CD](#-testing--cicd)
+- [Deployment](#-deployment)
+- [Roadmap](#-roadmap-2026)
+- [Changelog](#-changelog)
+- [Contributing](#-contributing)
+- [Deutsch](#-überblick)
 
-### 🎯 Overview
+---
 
-**Nexus-HEMS Dash** is a production-ready, real-time Home Energy Management System (HEMS) dashboard designed for the decentralized energy era. Seamlessly integrating **Victron Energy**, **KNX building automation**, and **dynamic electricity tariffs** (Tibber, aWATTar), it provides intelligent orchestration for PV generation, battery storage, heat pumps, and EV charging.
+## 🎯 Overview
 
-Built with **React 19**, **Zustand**, **D3.js**, and **Tailwind CSS 4**, the dashboard delivers a stunning **Neo-Energy Cyber-Glassmorphism UI** with full **i18n** (German/English), **WCAG 2.2 AA accessibility**, and **offline-first** architecture.
+**Nexus-HEMS Dashboard** is a production-grade, real-time Home Energy Management System built for the decentralized energy era. It unifies **5 industrial protocols** behind a single dashboard to orchestrate photovoltaic generation, battery storage, heat pumps, EV charging, and building automation — all while optimizing for dynamic electricity tariffs.
 
-### ✨ What's New in 3.3.0
+```
+  ┌──────────────┐   ┌───────────────┐   ┌──────────────┐
+  │  ☀️  PV Array  │   │  🔋 Battery    │   │  ⚡ Grid       │
+  └──────┬───────┘   └───────┬───────┘   └──────┬───────┘
+         │                   │                   │
+         └─────────┬─────────┴─────────┬─────────┘
+                   │                   │
+            ┌──────┴──────┐     ┌──────┴──────┐
+            │ 🏠 House     │     │ 🚗 EV / 🔥 HP │
+            └─────────────┘     └─────────────┘
+                        ↕
+           ┌────────────────────────┐
+           │  📊 Nexus-HEMS Dash    │
+           │  D3 Sankey · AI · PWA  │
+           └────────────────────────┘
+```
 
-- 📡 **EEBUS SPINE/SHIP Full Implementation**: Complete SPINE protocol engine with SHIP handshake, TLS 1.3 mutual auth, CEM use cases (LPC, LPP, MGCP) and §14a EnWG compliance
-- 📊 **Prometheus/Grafana Monitoring**: Built-in /monitoring page with real-time metrics, 25+ Prometheus-style gauges, health status, and Grafana integration
-- 🔌 **EEBUS Adapter Live**: Full EnergyAdapter implementation replacing the previous stub — connects to EEBUS-compatible devices (wallboxes, heat pumps, inverters)
-- 🎯 **Monitoring Route**: New `/monitoring` page with live system health, adapter status, and performance metrics
-- 🌊 **OceanDeep Default Theme**: New default dark theme with deep ocean aesthetics
-- 🛠️ **Energy Settings Crash Fix**: Fixed crash when opening energy settings page
-- 📱 **AI Optimizer Mobile UX**: Improved responsive layout for AI optimizer on mobile devices
+### Why Nexus-HEMS?
 
-### ✨ What's New in 3.2.0
+|                         | Traditional     | Nexus-HEMS                                          |
+| ----------------------- | --------------- | --------------------------------------------------- |
+| **Protocol Support**    | Single vendor   | 5 protocols (Victron, Modbus, KNX, OCPP 2.1, EEBUS) |
+| **Tariff Optimization** | Manual          | AI-powered with Tibber/aWATTar real-time pricing    |
+| **Accessibility**       | Basic           | WCAG 2.2 AA certified                               |
+| **Connectivity**        | Cloud-dependent | Offline-first PWA with local IndexedDB              |
+| **Visualization**       | Static charts   | Live D3.js Sankey energy flow diagrams              |
+| **i18n**                | Single language | Full EN/DE with persistent preference               |
+| **Security**            | API keys in env | AES-GCM 256-bit encrypted BYOK key vault            |
 
-- 🔐 **BYOK AI (Bring Your Own Key)**: Encrypted multi-provider AI key storage (OpenAI, Anthropic, Google, xAI, Groq, Ollama, Custom) via Web Crypto AES-GCM 256-bit + PBKDF2 600k
-- 🎨 **5 Premium Themes**: 2 new themes — Cyber Energy (vibrant light) and Minimal White (clean modern)
-- ⚡ **Dynamic EV Pricing Strategy**: Real-time charge mode indicator (PV surplus, low price, expensive, normal)
-- 📊 **Live Analytics**: Computed stats from real energy data (replace hardcoded values)
-- 🌿 **UBA CO₂ Factor**: PDF reports use official Umweltbundesamt 2024 grid emission factor (380 g/kWh)
-- 🎤 **Offline Voice Control**: Text input fallback when Speech API unavailable + offline mode detection
-- 🧪 **63 Unit Tests**: Comprehensive test suite (crypto, optimizer, store, format, voice, pdf, db, adapters)
-- 🏗️ **CI Hardened**: No more continue-on-error, bundle size budget gate (600 KB), unit test step
-- ♿ **Enhanced Accessibility**: Focus traps, ARIA roles, screen reader support across all pages
-- 🚀 **Performance**: Granular Zustand selectors, React.memo, lazy routes, optimized re-renders
+---
 
-### ✨ What's New in 3.1.0
+## ✨ Key Features
 
-- 🔌 **Adapter Pattern for HEMS Protocols**: Pluggable protocol layer with 5 adapters (VictronMQTT, ModbusSunSpec, KNX, OCPP 2.1, EEBUS stub)
-- 🧩 **UnifiedEnergyModel**: Typed data model aggregating PV, battery, grid, load, EV charger, KNX, and tariff data
-- 🔋 **OCPP 2.1 + V2X**: Full Vehicle-to-Grid support with JSON-RPC messaging and charging profile management
-- 🏠 **KNX WebSocket Bridge**: Real-time room state management with GA→field reverse lookup
-- ⚡ **Modbus/SunSpec Polling**: HTTP/REST gateway for SunSpec-compliant inverters and meters
-- 🔀 **Central useEnergyStore**: Zustand aggregator merging all adapter data with legacy bridge
-- 🛡️ **TLS/mTLS + Auth**: Adapter-level security with client certificates and token auth
-- 🔄 **Exponential Backoff**: Automatic reconnection across all WebSocket adapters
+### Energy Management
 
-### ✨ What's New in 3.0.0
+| Feature                      | Description                                                     | Status  |
+| ---------------------------- | --------------------------------------------------------------- | ------- |
+| ⚡ **Real-Time Sankey**      | Live D3.js energy flow — PV → Battery → Grid → House → HP → EV  | ✅ Live |
+| 🤖 **AI Optimizer**          | Google Gemini 2.5 for optimal EV/battery/HP charging strategies | ✅ Live |
+| 📈 **Predictive Forecast**   | 24h/7d weather-based PV & tariff predictions via Recharts       | ✅ Live |
+| ⚡ **Live Tariff Widget**    | Real-time Tibber/aWATTar prices with mini-charts & alerts       | ✅ Live |
+| 🚗 **Smart EV Charging**     | PV surplus, fast charge, dynamic tariff modes + §14a EnWG       | ✅ Live |
+| 🔥 **SG Ready Control**      | Heat pump modes 1–4 for thermal storage optimization            | ✅ Live |
+| 📊 **Prometheus Monitoring** | 25+ metrics gauges, system health, adapter status               | ✅ Live |
 
-- 🏗️ **Multi-Page Architecture**: Full refactoring from single-page to 11-route SPA with React Router v7
-- 📁 **Code-Split Pages**: Lazy-loaded routes for Home, Energy Flow, Production, Storage, Consumption, EV, Floorplan, AI Optimizer, Tariffs, Analytics
-- 🧭 **Desktop Sidebar Navigation**: Collapsible sidebar with grouped navigation (Energy, Tools, System)
-- 📱 **Redesigned Mobile Navigation**: Bottom tab bar with "More" sheet for all pages
-- 🗺️ **Breadcrumbs & Page Headers**: Context-aware breadcrumb navigation on every page
-- ⌨️ **Enhanced Command Palette**: Navigate to all 11 pages via ⌘K with bilingual keywords
-- 📦 **Optimized Bundle Splitting**: Vendor chunks for react, d3, motion, recharts, i18n, tanstack-query
-- 🔀 **404 Page**: Custom Not Found page with navigation back to dashboard
-- 🧪 **Updated E2E Tests**: Accessibility & user flow tests for all routes
+### Platform & UX
 
-### ✨ What's New in 2.3.0
+| Feature                  | Description                                                        | Status       |
+| ------------------------ | ------------------------------------------------------------------ | ------------ |
+| 🏠 **KNX Floorplan**     | Interactive building automation — lights, climate, sensors         | ✅ Live      |
+| 🎤 **Voice Control**     | Hands-free via Web Speech API (DE/EN) + offline text fallback      | ✅ Live      |
+| 📄 **PDF Reports**       | Automated monthly reports with Sankey, costs, CO₂ (UBA 380 g/kWh)  | ✅ Live      |
+| 🤝 **Multi-Household**   | Shareable dashboard links with QR codes                            | ✅ Live      |
+| 🔐 **BYOK AI Vault**     | 7 providers (OpenAI, Anthropic, Google, xAI, Groq, Ollama, Custom) | ✅ Live      |
+| 🎨 **5 Premium Themes**  | OceanDeep, Cyber Energy, Solar Light, Minimal White, Night Mode    | ✅ Live      |
+| 🌐 **Full i18n**         | 100% German/English with persistent language switcher + Cmd+K      | ✅ 100%      |
+| ♿ **WCAG 2.2 AA**       | Semantic HTML, ARIA live regions, focus traps, keyboard nav        | ✅ Certified |
+| 📱 **PWA Offline-First** | Service worker with Workbox, IndexedDB cache, background sync      | ✅ Live      |
 
-- 🚀 **TanStack Query Integration**: Optimized data fetching with 5-min cache for forecasts & tariff APIs
-- ♿ **Full WCAG 2.2 AA Compliance**: aria-live regions for real-time Sankey + metrics, keyboard navigation
-- 💾 **Offline Mode with Dexie.js**: Caches last 1000 energy snapshots, "Last updated: 3 min ago" banner
-- 🧪 **Professional Testing**: Vitest unit tests + Playwright E2E tests with @axe-core for accessibility validation
-- ⚡ **Performance Optimizations**: React.memo on Sankey, virtualized device list support (react-virtual)
-- 🔧 **Best Practices Stack**: Husky git hooks, ESLint airbnb-typescript, Prettier, .devcontainer ready
+### Protocol Adapters
 
-### ✨ What's New in 2.1.0
+| Feature                 | Description                                         | Status  |
+| ----------------------- | --------------------------------------------------- | ------- |
+| 🔌 **Victron MQTT**     | WebSocket bridge to Cerbo GX via Node-RED           | ✅ Live |
+| ⚡ **Modbus/SunSpec**   | REST polling for SunSpec Models 103/124/201         | ✅ Live |
+| 🏠 **KNX/IP**           | WebSocket bridge with GA→field reverse lookup       | ✅ Live |
+| 🔋 **OCPP 2.1 + V2X**   | Vehicle-to-Grid JSON-RPC with charging profiles     | ✅ Live |
+| 📡 **EEBUS SPINE/SHIP** | TLS 1.3 mutual auth, CEM use cases (LPC, LPP, MGCP) | ✅ Live |
 
-- 🤖 **AI Optimizer with Google Gemini 2.5**: Real AI analysis for optimal charging strategies (EV, battery, heat pump)
-- 📈 **Predictive 24h/7d Forecast**: Weather-based PV predictions + tariff forecasts with Recharts visualization
-- 🎤 **Voice Control**: Hands-free dashboard control with Web Speech API (German & English)
-- 📄 **PDF Monthly Reports**: Automated energy reports with Sankey screenshots, costs, and CO₂ balance
-- 🤝 **Multi-Household Sharing**: Shareable dashboard links with QR codes for community projects
-- ⚡ **Live Tibber/aWATTar Widget**: Real-time price displays with mini-charts and optimization hints
-- 🏠 **Home Assistant / MQTT**: Bidirectional device control via WebSocket MQTT integration
-- 🌈 **Enhanced Dashboard Layout**: All features integrated in unified, responsive grid design
+---
 
-### ⚡ What's New in 2.0.0
+## 🏗️ Architecture
 
-- 🎨 **3 Premium Themes**: Cyber Energy Dark (default), Solar Light, Night Mode with smooth Framer Motion transitions
-- 🌐 **Full i18n**: Complete German/English localization with persistent language switcher
-- 📊 **Enhanced Sankey Diagram**: Live flow animations, mobile-optimized responsive layout
-- 🏠 **Interactive KNX Floorplan**: Real-time control of lights, climate, and window sensors
-- ♿ **WCAG 2.2 AA**: Full accessibility compliance with semantic HTML and ARIA labels
-- 📦 **Local-First**: Dexie.js-powered IndexedDB with 30-day rolling history
-- 🔒 **Enterprise Security**: mTLS enforcement, 2FA, telemetry opt-out, §14a EnWG compliance
+### Adapter Pattern
 
-### 📸 Screenshots
+All external protocols are encapsulated behind a unified `EnergyAdapter` interface. Each adapter normalizes raw protocol data into a single `UnifiedEnergyModel`, enabling hot-swappable protocol support.
 
-<details>
-<summary>🖼️ View all screenshots (8)</summary>
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                       useEnergyStore (Zustand)                      │
+│            UnifiedEnergyModel = PV + Battery + Grid + …             │
+├──────────┬───────────┬──────────┬────────────┬─────────────────────-┤
+│ Victron  │  Modbus   │   KNX    │  OCPP 2.1  │    EEBUS             │
+│   MQTT   │  SunSpec  │   /IP    │    V2X     │  SPINE/SHIP          │
+│   (WS)   │  (REST)   │  (WS)   │    (WS)    │  (WS+TLS 1.3)       │
+├──────────┴───────────┴──────────┴────────────┴─────────────────────-┤
+│                       EnergyAdapter Interface                       │
+│    connect() · onData() · sendCommand() · getSnapshot() · destroy() │
+└─────────────────────────────────────────────────────────────────────┘
+```
 
-1. **Dashboard - Real-Time Sankey Flow**
-   ![Sankey Live](./docs/screenshots/sankey-live.png)
+### Real-Time Data Flow
 
-2. **KNX Floorplan - Building Automation**
-   ![KNX Floorplan](./docs/screenshots/knx-floorplan.png)
+```
+Victron Cerbo GX ──┐
+Modbus/SunSpec ─────┤
+KNX/IP Gateway ─────┼── EnergyAdapter ──→ useEnergyStore ──→ Zustand Store
+OCPP 2.1 CSMS ──────┤                          │                    │
+EEBUS CEM ──────────┘                    Dexie.js IndexedDB    useAppStore
+                                               │                    │
+                                          Offline Cache     D3 Sankey + UI
+```
 
-3. **EV Charging Control**
-   ![EV Charging](./docs/screenshots/ev-charging.png)
+### Key Architectural Decisions
 
-4. **AI Optimizer - Dynamic Tariff Strategies**
-   ![AI Optimizer](./docs/screenshots/ai-optimizer.png)
+| Decision                        | Rationale                                                          |
+| ------------------------------- | ------------------------------------------------------------------ |
+| **Zustand** over Redux          | Minimal boilerplate, granular selectors, no provider wrappers      |
+| **D3.js** for Sankey            | Full control over energy flow animation & real-time updates        |
+| **Dexie.js** for storage        | TypeScript-first IndexedDB wrapper with versioned schemas          |
+| **Workbox** for PWA             | Industry-standard service worker tooling with fine-grained caching |
+| **Framer Motion** for animation | GPU-accelerated layout animations with spring physics              |
+| **TanStack Query** for fetching | Built-in stale-while-revalidate, 5-min cache for API calls         |
 
-5. **Mobile-Responsive View**
-   ![Mobile](./docs/screenshots/mobile-view.png)
+---
 
-6. **Theme Switcher - 3 Themes**
-   ![Themes](./docs/screenshots/themes.png)
+## 🛠️ Technology Stack
 
-7. **Settings - System Configuration**
-   ![Settings](./docs/screenshots/settings.png)
+<table>
+<tr><td><b>Category</b></td><td><b>Technology</b></td><td><b>Version</b></td></tr>
+<tr><td>UI Framework</td><td>React + React DOM</td><td>19</td></tr>
+<tr><td>Language</td><td>TypeScript (strict)</td><td>5.8</td></tr>
+<tr><td>Build Tool</td><td>Vite</td><td>6</td></tr>
+<tr><td>Styling</td><td>Tailwind CSS (v4 engine)</td><td>4.1</td></tr>
+<tr><td>State Management</td><td>Zustand</td><td>5</td></tr>
+<tr><td>Routing</td><td>React Router</td><td>7</td></tr>
+<tr><td>Visualization</td><td>D3.js + d3-sankey</td><td>7.9</td></tr>
+<tr><td>Charts</td><td>Recharts</td><td>3.8</td></tr>
+<tr><td>Animation</td><td>Framer Motion</td><td>12</td></tr>
+<tr><td>Data Fetching</td><td>TanStack React Query</td><td>5</td></tr>
+<tr><td>i18n</td><td>react-i18next + i18next</td><td>16 / 25</td></tr>
+<tr><td>Database</td><td>Dexie.js (IndexedDB)</td><td>4.3</td></tr>
+<tr><td>PWA</td><td>vite-plugin-pwa + Workbox</td><td>1.2 / 7.4</td></tr>
+<tr><td>Icons</td><td>Lucide React</td><td>0.546</td></tr>
+<tr><td>Encryption</td><td>Web Crypto API (AES-GCM 256)</td><td>Native</td></tr>
+<tr><td>Server</td><td>Express + WebSocket</td><td>4.21</td></tr>
+<tr><td>Unit Tests</td><td>Vitest</td><td>4.0</td></tr>
+<tr><td>E2E Tests</td><td>Playwright + @axe-core</td><td>1.58</td></tr>
+<tr><td>Linting</td><td>ESLint (flat config)</td><td>9</td></tr>
+<tr><td>Formatting</td><td>Prettier</td><td>3.8</td></tr>
+<tr><td>Git Hooks</td><td>Husky + lint-staged</td><td>9.1</td></tr>
+</table>
 
-8. **Offline Mode - PWA**
-   ![Offline](./docs/screenshots/offline-mode.png)
+---
 
-</details>
+## 🚀 Quick Start
 
-### 🚀 Features
+### Prerequisites
 
-| Feature | Description | Status |
-|---------|-------------|--------|
-| ⚡ **Real-Time Sankey** | Live energy flow visualization (PV → Battery → Grid → House → HP → EV) | ✅ Live |
-| 🏠 **KNX Integration** | Interactive floorplan for lights, climate, sensors | ✅ Live |
-| 🤖 **AI Optimizer (Gemini 2.5)** | Real AI-powered optimization for EV, battery, heat pump strategies | ✅ Live |
-| 📈 **Predictive Forecast** | 24h/7d weather-based PV & tariff predictions with Recharts | ✅ Live |
-| 🎤 **Voice Control** | Hands-free dashboard control with Web Speech API | ✅ Live |
-| 📄 **PDF Reports** | Monthly energy reports with Sankey, costs, CO₂ balance | ✅ Live |
-| 🤝 **Shareable Dashboards** | Multi-household support with QR codes & read-only links | ✅ Live |
-| ⚡ **Live Price Widget** | Real-time Tibber/aWATTar tariff display with mini-charts | ✅ Live |
-| 🏠 **Home Assistant / MQTT** | Bidirectional device control via WebSocket MQTT | ✅ Live |
-| 🚗 **Smart EV Charging** | PV surplus, fast charging, dynamic tariff modes | ✅ Live |
-| 🔥 **SG Ready Control** | Heat pump modes (1-4) for thermal storage optimization | ✅ Live |
-| 🤖 **AI Optimizer** | Tariff-aware recommendations (Tibber, aWATTar) | ✅ Live |
-| 🌐 **i18n** | German/English with persistent localStorage | ✅ 100% |
-| 🔐 **BYOK AI** | Encrypted multi-provider AI keys (AES-GCM 256-bit) | ✅ Live |
-| 🎨 **5 Themes** | Cyber Dark, Cyber Energy, Solar Light, Minimal White, Night Mode | ✅ Live |
-| ♿ **WCAG 2.2 AA** | Full accessibility (semantic, ARIA, focus) | ✅ Compliant |
-| 📦 **Local-First** | Dexie.js IndexedDB, 30-day history retention | ✅ Live |
-| 🔒 **Enterprise Security** | mTLS, 2FA, BYOK encryption, §14a compliance | ✅ Live || 🔌 **Adapter Pattern** | Pluggable protocol adapters (Victron, Modbus, KNX, OCPP 2.1, EEBUS) | ✅ Live |
-| 🔋 **OCPP 2.1 + V2X** | Vehicle-to-Grid charging with JSON-RPC and charging profiles | ✅ Live |
-| ⚡ **Modbus/SunSpec** | REST gateway polling for SunSpec inverters and meters | ✅ Live |
-### 🛠️ Technology Stack
+- **Node.js 22+** (LTS recommended)
+- npm 10+ or pnpm
+- Optional: Victron Cerbo GX with Node-RED, KNX IP Router
 
-### 🗺️ Page Structure (v3.0)
-
-| Route | Page | Description |
-|-------|------|-------------|
-| `/` | **Home** | KPI overview, mini Sankey, quick links to all sections |
-| `/energy-flow` | **Energy Flow** | Full D3.js Sankey diagram, live price widget, flow statistics |
-| `/production` | **Production** | PV generation stats, power output, self-consumption ratio |
-| `/storage` | **Storage** | Battery SoC visualization, charge/discharge stats, strategy controls |
-| `/consumption` | **Consumption** | Total consumption breakdown, consumer categories, grid exchange |
-| `/ev` | **EV Charging** | EV charging control, modes (PV surplus/fast/dynamic), §14a EnWG |
-| `/floorplan` | **Floorplan** | KNX interactive building floorplan, room-level controls |
-| `/ai-optimizer` | **AI Optimizer** | Gemini 2.5 AI analysis, voice control, enhanced optimizer |
-| `/tariffs` | **Tariffs** | Live Tibber/aWATTar prices, forecasts, optimal charging windows |
-| `/analytics` | **Analytics** | Energy statistics, predictive forecasts, PDF export & sharing |
-| `/monitoring` | **Monitoring** | Prometheus metrics, system health, adapter status, Grafana integration |
-| `/settings` | **Settings** | System configuration, connections, preferences |
-| `/help` | **Help** | Documentation, keyboard shortcuts, FAQ |
-
-### 🛠️ Technology Stack
-
-**Backend & Real-Time**
-- ![Node.js](https://img.shields.io/badge/Node.js-Express-339933?logo=nodedotjs) + WebSocket server
-- ![Dexie.js](https://img.shields.io/badge/Dexie.js-4.3-22ff88) for IndexedDB persistence
-
-**i18n & Accessibility**
-- ![react-i18next](https://img.shields.io/badge/react--i18next-16-22ff88) with German/English locales
-- **WCAG 2.2 AA** compliance (semantic HTML, ARIA, keyboard nav)
-
-**Quality & Testing**
-- ![ESLint](https://img.shields.io/badge/ESLint-9-4b32c3?logo=eslint) + ![Prettier](https://img.shields.io/badge/Prettier-3.8-f7b93e?logo=prettier)
-- ![Vitest](https://img.shields.io/badge/Vitest-4.0-fcc72b?logo=vitest) + ![Playwright](https://img.shields.io/badge/Playwright-1.58-2ead33?logo=playwright) with @axe-core/playwright
-- ![Husky](https://img.shields.io/badge/Husky-9.1-22ff88?logo=git) for pre-commit hooks
-
-### 📦 Getting Started
-
-#### Prerequisites
-- Node.js 22+ (LTS recommended)
-- npm or pnpm
-- Victron Cerbo GX with Node-RED (optional)
-- KNX IP Router (optional)
-
-#### Installation
+### Installation
 
 ```bash
-# Clone the repository
+# Clone
 git clone https://github.com/qnbs/Nexus-HEMS-Dash.git
 cd Nexus-HEMS-Dash
 
-# Install dependencies
+# Install (no --legacy-peer-deps needed)
 npm install
 
 # Start development server
 npm run dev
 ```
 
-#### Docker / Docker Compose (coming soon)
+### Available Scripts
+
+| Command              | Description                              |
+| -------------------- | ---------------------------------------- |
+| `npm run dev`        | Start dev server (Express + Vite HMR)    |
+| `npm run build`      | Production build with PWA service worker |
+| `npm run preview`    | Preview production build locally         |
+| `npm run test`       | Run Vitest in watch mode                 |
+| `npm run test:run`   | Run all 63 unit tests once               |
+| `npm run test:e2e`   | Playwright E2E + accessibility tests     |
+| `npm run lint`       | ESLint with zero-warning policy          |
+| `npm run format`     | Prettier auto-format                     |
+| `npm run type-check` | TypeScript strict validation             |
+
+### Environment Variables
+
+> **Note:** Since v3.2.0, all AI API keys are managed via the BYOK Settings page (`/settings/ai`) with AES-GCM 256-bit encryption in IndexedDB. No `.env` file required for AI features.
 
 ```bash
-docker-compose up -d
+# Optional: only needed for server-side Gemini proxy
+GEMINI_API_KEY=your-key-here
 ```
 
-### 🚀 Deployment
+---
 
-#### GitHub Pages (Automatic)
+## 🗺️ Page Structure
 
-GitHub Actions automatically deploys to GitHub Pages on every push to `main`:
+| Route           | Page             | Description                                             |
+| :-------------- | :--------------- | :------------------------------------------------------ |
+| `/`             | **Home**         | KPI dashboard, mini Sankey, quick navigation            |
+| `/energy-flow`  | **Energy Flow**  | Full D3.js Sankey diagram with live price widget        |
+| `/production`   | **Production**   | PV generation, power output, self-consumption ratio     |
+| `/storage`      | **Storage**      | Battery SoC, charge/discharge stats, strategy controls  |
+| `/consumption`  | **Consumption**  | Load breakdown, consumer categories, grid exchange      |
+| `/ev`           | **EV Charging**  | Charge control, PV surplus / fast / dynamic modes, §14a |
+| `/floorplan`    | **Floorplan**    | KNX interactive building automation, room controls      |
+| `/ai-optimizer` | **AI Optimizer** | Gemini 2.5 analysis, voice control, enhanced optimizer  |
+| `/tariffs`      | **Tariffs**      | Live Tibber/aWATTar prices, forecasts, optimal windows  |
+| `/analytics`    | **Analytics**    | Statistics, predictive forecasts, PDF export & sharing  |
+| `/monitoring`   | **Monitoring**   | Prometheus metrics, health status, Grafana integration  |
+| `/settings`     | **Settings**     | System configuration, connections, AI key vault         |
+| `/settings/ai`  | **AI Settings**  | BYOK provider management, encryption settings           |
+| `/help`         | **Help**         | Documentation, keyboard shortcuts, FAQ                  |
 
-1. **Enable GitHub Pages**:
-   - Go to your repository **Settings** → **Pages**
-   - Under **Build and deployment**, select:
-     - **Source**: GitHub Actions
-   - Save settings
+---
 
-2. **Access your deployed dashboard**:
-   ```
-   https://<your-username>.github.io/Nexus-HEMS-Dash/
-   ```
+## 🔌 Protocol Adapters
 
-3. **Workflows**:
-   - `.github/workflows/ci.yml` - Lint, type-check, build on push/PR
-   - `.github/workflows/deploy.yml` - Deploy to GitHub Pages (main branch only)
-   - `.github/workflows/playwright.yml` - E2E tests on push/PR
+| Adapter                | Protocol            | Capabilities            | Transport         | Security     |
+| :--------------------- | :------------------ | :---------------------- | :---------------- | :----------- |
+| `VictronMQTTAdapter`   | Node-RED MQTT→WS    | PV, battery, grid, load | WebSocket         | Token auth   |
+| `ModbusSunSpecAdapter` | SunSpec 103/124/201 | PV, battery, grid       | HTTP/REST polling | TLS          |
+| `KNXAdapter`           | KNX/IP Tunneling    | Room automation         | WebSocket bridge  | —            |
+| `OCPP21Adapter`        | OCPP 2.1 JSON-RPC   | EV charger + V2X        | WebSocket         | Client certs |
+| `EEBUSAdapter`         | SPINE/SHIP 1.0      | EV charger, load        | WebSocket         | TLS 1.3 mTLS |
 
-#### Manual Deployment
+### Integration Points
+
+```
+src/core/adapters/
+├── EnergyAdapter.ts          # Interface + UnifiedEnergyModel types
+├── VictronMQTTAdapter.ts     # Cerbo GX via Node-RED WebSocket
+├── ModbusSunSpecAdapter.ts   # SunSpec inverter/meter REST polling
+├── KNXAdapter.ts             # KNX/IP room state management
+├── OCPP21Adapter.ts          # OCPP 2.1 V2X charging profiles
+├── EEBUSAdapter.ts           # SPINE/SHIP with CEM use cases
+└── index.ts                  # Adapter registry & factory
+
+src/core/
+├── useEnergyStore.ts         # Zustand aggregator + useAdapterBridge
+└── useLegacySendCommand.ts   # Backward-compatible command wrapper
+```
+
+---
+
+## 📱 PWA & Offline Architecture
+
+Nexus-HEMS runs as a full Progressive Web App with sophisticated offline capabilities:
+
+| Layer               | Strategy                   | Details                                              |
+| :------------------ | :------------------------- | :--------------------------------------------------- |
+| **App Shell**       | Precache (Workbox)         | All HTML, JS, CSS precached — instant load           |
+| **API: Weather**    | StaleWhileRevalidate       | Open-Meteo, 24h cache, 50 entries max                |
+| **API: Tariffs**    | NetworkFirst (8s timeout)  | Tibber/aWATTar, 1h cache                             |
+| **API: AI**         | NetworkFirst (10s timeout) | Gemini responses, 1h cache                           |
+| **Fonts**           | CacheFirst                 | Google Fonts + local, 365-day cache                  |
+| **Images**          | CacheFirst                 | 30-day cache, 150 entries max                        |
+| **Static Assets**   | StaleWhileRevalidate       | JS/CSS bundles, 7-day cache                          |
+| **Energy Data**     | IndexedDB (Dexie.js)       | Last 1,000 snapshots + 100 Sankey diagrams           |
+| **Tariff Data**     | IndexedDB + TTL            | Provider-scoped with automatic expiry                |
+| **Offline Actions** | Background Sync            | Queued commands with exponential backoff (5 retries) |
+
+### Service Worker Lifecycle
+
+- **Auto-update** with `skipWaiting` + `clientsClaim` — no stale cache
+- **Controller change** listener for seamless page reload
+- **Inline loading fallback** in HTML — prevents blank white screen
+- **Emergency retry** button — clears all caches and SW registrations
+- **30-minute** periodic update checks in background
+
+---
+
+## 🔒 Security & Compliance
+
+| Area                   | Implementation                                                |
+| :--------------------- | :------------------------------------------------------------ |
+| **AI Key Encryption**  | AES-GCM 256-bit + PBKDF2 600k iterations, stored in IndexedDB |
+| **Transport Security** | TLS 1.3 + mutual TLS for EEBUS, client certificates for OCPP  |
+| **Content Security**   | Trusted Types support, no inline eval                         |
+| **§14a EnWG**          | Smart meter gateway integration for controllable loads        |
+| **Data Sovereignty**   | Local-first architecture — no cloud dependency                |
+| **WCAG 2.2 AA**        | Axe-core automated testing, semantic HTML, focus management   |
+
+---
+
+## 🎨 Design System
+
+**Neo-Energy Cyber-Glassmorphism** — a design language built for energy dashboards.
+
+### Color Palette
+
+| Token           | Hex       | Usage                                 |
+| :-------------- | :-------- | :------------------------------------ |
+| `neon-green`    | `#22ff88` | Primary actions, success, energy flow |
+| `electric-blue` | `#00f0ff` | Secondary elements, info states       |
+| `power-orange`  | `#ff8800` | Accents, warnings, tariff alerts      |
+| `deep-space`    | `#07111f` | Dark mode backgrounds                 |
+| `void-blue`     | `#0c1f34` | Dark mode surfaces                    |
+| `polar-mist`    | `#eaf7ff` | Light mode backgrounds                |
+| `solar-sand`    | `#fff3dc` | Light mode surfaces                   |
+
+### UI Primitives
+
+```tsx
+<div className="glass-panel">          {/* Glassmorphism surface */}
+<div className="glass-panel-strong">   {/* Elevated glassmorphism */}
+<h1 className="neon-glow-green">       {/* Neon text glow */}
+<button className="btn-primary">       {/* Primary action button */}
+<button className="btn-secondary">     {/* Secondary action button */}
+<div className="focus-ring">           {/* Accessible focus indicator */}
+```
+
+### Themes
+
+| Theme             | Mode  | Aesthetic                                    |
+| :---------------- | :---- | :------------------------------------------- |
+| **OceanDeep**     | Dark  | Deep ocean blues with neon accents (default) |
+| **Cyber Energy**  | Light | Vibrant greens and electric highlights       |
+| **Solar Light**   | Light | Warm solar tones with clean surfaces         |
+| **Minimal White** | Light | Ultra-clean modern minimalism                |
+| **Night Mode**    | Dark  | OLED-friendly deep blacks                    |
+
+---
+
+## 🧪 Testing & CI/CD
+
+### Test Suite
+
+| Type           | Tool                 | Tests                      | Coverage                                                                   |
+| :------------- | :------------------- | :------------------------- | :------------------------------------------------------------------------- |
+| **Unit Tests** | Vitest + jsdom       | 63 tests, 10 suites        | Crypto, Store, Optimizer, Format, Voice, PDF, DB, Adapters, Haptics, Theme |
+| **E2E Tests**  | Playwright           | Accessibility + user flows | Multi-route navigation, a11y audit                                         |
+| **a11y Tests** | @axe-core/playwright | WCAG 2.2 AA                | Automated accessibility validation                                         |
+
+### CI Pipeline (GitHub Actions)
+
+```
+push/PR → ci.yml
+├── npm ci (no --legacy-peer-deps needed)
+├── ESLint (zero warnings)
+├── TypeScript strict check
+├── Prettier format check
+├── Vitest (63 tests)
+├── Vite build
+├── Bundle size gate (< 600 KB index chunk)
+└── Upload artifacts
+
+push to main → deploy.yml
+├── npm ci → build
+└── Deploy to GitHub Pages
+
+push/PR → playwright.yml
+├── Install Playwright browsers
+├── Run E2E tests
+└── Upload test report (30-day retention)
+```
+
+### Bundle Budget
+
+| Chunk              | Size    | Limit  |
+| :----------------- | :------ | :----- |
+| `index`            | ~400 KB | 600 KB |
+| `vendor-react`     | ~48 KB  | —      |
+| `vendor-recharts`  | ~309 KB | —      |
+| `vendor-d3`        | ~100 KB | —      |
+| `vendor-motion`    | ~95 KB  | —      |
+| `vendor-data`      | ~96 KB  | —      |
+| `vendor-i18n`      | ~51 KB  | —      |
+| **Total precache** | ~1.4 MB | —      |
+
+---
+
+## 🚀 Deployment
+
+### GitHub Pages (Automatic)
+
+Every push to `main` triggers automatic deployment via GitHub Actions:
+
+1. **Enable Pages**: Repository **Settings** → **Pages** → Source: **GitHub Actions**
+2. **Access**: `https://<username>.github.io/Nexus-HEMS-Dash/`
+3. **PWA**: Installable on all platforms — iOS, Android, Desktop
+
+### Manual / Self-Hosted
 
 ```bash
-# Build production bundle
-npm run build
+npm run build          # → dist/ folder
+npm run preview        # Local preview on port 4173
 
-# Preview production build locally
-npm run preview
-
-# Deploy dist/ folder to your hosting provider
+# Deploy dist/ to any static host:
+# Nginx, Apache, Caddy, Cloudflare Pages, Vercel, Netlify
 ```
 
-#### Environment Variables (Optional)
-
-Copy `.env.example` to `.env` — all variables are optional:
+### Docker (Planned)
 
 ```bash
-cp .env.example .env
+docker-compose up -d   # Coming Q3 2026
 ```
 
-> **Note:** AI API keys are no longer stored in environment variables. Since v3.2.0, all AI keys are managed via the **BYOK Settings** page (`/settings/ai`) with AES-GCM 256-bit encryption in IndexedDB.
+---
 
-### 🏗️ Architecture
+## 🗺️ Roadmap 2026
 
-**Adapter Pattern (v3.1)**
+| Quarter | Feature                                                 | Status      |
+| :------ | :------------------------------------------------------ | :---------- |
+| Q1      | Home Assistant / MQTT Integration                       | ✅ Shipped  |
+| Q1      | Predictive AI (Gemini + tariff forecasting)             | ✅ Shipped  |
+| Q1      | Voice Control (Web Speech API)                          | ✅ Shipped  |
+| Q1      | PDF Monthly Reports (Sankey + CO₂)                      | ✅ Shipped  |
+| Q1      | Multi-Household Sharing                                 | ✅ Shipped  |
+| Q1      | Live Tariff Widget (Tibber/aWATTar)                     | ✅ Shipped  |
+| Q2      | 5 Adapters (Victron, Modbus, KNX, OCPP 2.1, EEBUS stub) | ✅ Shipped  |
+| Q2      | 5 Themes + Neo-Energy Design System                     | ✅ Shipped  |
+| Q2      | BYOK AI Vault (AES-GCM 256-bit, 7 providers)            | ✅ Shipped  |
+| Q2      | 63 Unit Tests + CI Hardening                            | ✅ Shipped  |
+| Q3      | EEBUS SPINE/SHIP Full Implementation                    | ✅ Shipped  |
+| Q3      | Prometheus/Grafana Monitoring                           | ✅ Shipped  |
+| Q3      | PWA Auto-Update + Offline Perfection                    | ✅ Shipped  |
+| Q3      | Docker / Kubernetes Deployment                          | 🔄 Planned  |
+| Q4      | Historical Data Analytics Dashboard                     | 🔄 Planned  |
+| Q4      | Matter / Thread Smart Home Integration                  | 🔜 Upcoming |
+| Q4      | Multi-Tenant SaaS Mode                                  | 🔜 Upcoming |
 
-All external protocols are encapsulated behind a unified `EnergyAdapter` interface. Each adapter normalizes raw protocol data into a single `UnifiedEnergyModel`.
+---
 
+## 📝 Changelog
+
+<details>
+<summary><b>v3.3.0</b> — EEBUS, Monitoring & PWA</summary>
+
+- EEBUS SPINE/SHIP full implementation (TLS 1.3, CEM use cases, §14a EnWG)
+- Prometheus/Grafana monitoring page with 25+ metrics
+- PWA auto-update with `skipWaiting` + `clientsClaim` (fixes blank white screen)
+- Inline loading fallback + emergency cache reset
+- OceanDeep default theme
+- Tailwind v4 shorthand migration (~500 class fixes)
+- Dependency cleanup (removed peer dep conflicts)
+- Bundle size reduced from 512 KB → 400 KB
+</details>
+
+<details>
+<summary><b>v3.2.0</b> — BYOK AI & Themes</summary>
+
+- Encrypted multi-provider AI key storage (AES-GCM 256-bit + PBKDF2 600k)
+- 2 new themes: Cyber Energy (light), Minimal White
+- Dynamic EV pricing strategy with real-time indicators
+- UBA 2024 CO₂ factor (380 g/kWh) for PDF reports
+- Offline voice control with text input fallback
+- 63 unit tests, CI hardening with bundle budget gate
+</details>
+
+<details>
+<summary><b>v3.1.0</b> — Adapter Pattern</summary>
+
+- 5 protocol adapters (Victron, Modbus/SunSpec, KNX, OCPP 2.1, EEBUS)
+- UnifiedEnergyModel typed data aggregation
+- OCPP 2.1 V2X with charging profiles
+- KNX WebSocket bridge with GA→field lookup
+- TLS/mTLS + exponential backoff reconnection
+</details>
+
+<details>
+<summary><b>v3.0.0</b> — Multi-Page Architecture</summary>
+
+- 14-route SPA with React Router v7
+- Lazy-loaded code-split pages
+- Desktop sidebar + mobile bottom navigation
+- Breadcrumbs & page headers
+- Enhanced command palette (⌘K) with bilingual keywords
+</details>
+
+<details>
+<summary><b>v2.x</b> — Foundation</summary>
+
+- TanStack Query, WCAG 2.2 AA, Dexie.js offline cache
+- AI Optimizer (Gemini), predictive forecasts, voice control
+- PDF reports, multi-household sharing, live price widget
+- 5 themes, full i18n (DE/EN), PWA with service worker
+</details>
+
+---
+
+## 📸 Screenshots
+
+<details>
+<summary>🖼️ View all screenshots</summary>
+
+| Screenshot                                      | Description                                           |
+| :---------------------------------------------- | :---------------------------------------------------- |
+| ![Sankey](./docs/screenshots/sankey-live.png)   | **Real-Time Sankey Flow** — Live energy visualization |
+| ![KNX](./docs/screenshots/knx-floorplan.png)    | **KNX Floorplan** — Interactive building automation   |
+| ![EV](./docs/screenshots/ev-charging.png)       | **EV Charging** — Smart charge control                |
+| ![AI](./docs/screenshots/ai-optimizer.png)      | **AI Optimizer** — Dynamic tariff strategies          |
+| ![Mobile](./docs/screenshots/mobile-view.png)   | **Mobile View** — Responsive PWA                      |
+| ![Themes](./docs/screenshots/themes.png)        | **Themes** — 5 premium themes                         |
+| ![Settings](./docs/screenshots/settings.png)    | **Settings** — System configuration                   |
+| ![Offline](./docs/screenshots/offline-mode.png) | **Offline Mode** — PWA with cached data               |
+
+</details>
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+```bash
+# Fork → Clone → Branch → Code → Test → PR
+npm run lint && npm run test:run && npm run build
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                    useEnergyStore (Zustand)                     │
-│         UnifiedEnergyModel = PV + Battery + Grid + ...         │
-├─────────┬───────────┬─────────┬───────────┬────────────────────┤
-│ Victron │  Modbus   │   KNX   │ OCPP 2.1  │  EEBUS            │
-│  MQTT   │  SunSpec  │   /IP   │   V2X     │                    │
-│  (WS)   │  (REST)   │  (WS)   │   (WS)    │   (WS+TLS)        │
-├─────────┴───────────┴─────────┴───────────┴────────────────────┤
-│                    EnergyAdapter Interface                       │
-│ connect() · onData() · sendCommand() · getSnapshot() · destroy()│
-└─────────────────────────────────────────────────────────────────┘
-```
 
-| Adapter | Protocol | Capabilities | Transport |
-|---------|----------|--------------|-----------|
-| `VictronMQTTAdapter` | Node-RED WebSocket | pv, battery, grid, load | WebSocket |
-| `ModbusSunSpecAdapter` | SunSpec Models 103/124/201 | pv, battery, grid | HTTP/REST polling |
-| `KNXAdapter` | KNX/IP Tunneling | knx | WebSocket bridge |
-| `OCPP21Adapter` | OCPP 2.1 JSON-RPC | evCharger (V2X) | WebSocket |
-| `EEBUSAdapter` | SPINE/SHIP | evCharger, load | WebSocket+TLS |
+---
 
-**Key files:**
-- `src/core/adapters/EnergyAdapter.ts` — Interface + `UnifiedEnergyModel` types
-- `src/core/useEnergyStore.ts` — Zustand aggregator + `useAdapterBridge` hook
-- `src/core/useLegacySendCommand.ts` — Backward-compatible wrapper
+## 📄 License
 
-**Local-First Design**
-- Adapter data merged into central Zustand store, bridged to legacy `useAppStore`
-- Dexie.js IndexedDB for 30-day rolling history (persisted via `useAdapterBridge`)
-- Offline-capable PWA architecture
-
-**Real-Time Data Flow**
-```
-Victron Cerbo GX ──┐
-Modbus/SunSpec ─────┤
-KNX/IP Gateway ─────┤── EnergyAdapter ──→ useEnergyStore ──→ Zustand
-OCPP 2.1 CSMS ──────┤                                        ↓
-EEBUS (planned) ────┘                              Dexie.js + useAppStore
-```
-
-### 🗺️ Roadmap 2026
-
-| Quarter | Feature | Status |
-|---------|---------|--------|
-| Q1 2026 | **Home Assistant / MQTT Integration** | ✅ Completed |
-| Q1 2026 | **Predictive AI** (Google Gemini + tariff prediction) | ✅ Completed |
-| Q1 2026 | **Voice Control** (Web Speech API) | ✅ Completed |
-| Q1 2026 | **PDF Monthly Reports** (Sankey + CO₂ balance) | ✅ Completed |
-| Q1 2026 | **Multi-Household Support** (shareable dashboards) | ✅ Completed |
-| Q1 2026 | **Live Price Widget** (Tibber/aWATTar auto-optimization) | ✅ Completed |
-| Q2 2026 | **Adapter Pattern** (Victron, Modbus, KNX, OCPP 2.1) | ✅ Completed |
-| Q2 2026 | **Tailwind Config & Custom Utilities** (.neon-glow, .glass-panel) | ✅ Completed |
-| Q2 2026 | **5 Themes + Design System** (cyber-energy, minimal-white) | ✅ Completed |
-| Q2 2026 | **BYOK AI + Dexie Encryption** (AES-GCM 256-bit, 7 providers) | ✅ Completed |
-| Q2 2026 | **63 Unit Tests + CI Hardening** (bundle budget, no continue-on-error) | ✅ Completed |
-| Q3 2026 | **EEBUS SPINE/SHIP Integration** | ✅ Completed |
-| Q3 2026 | **Prometheus/Grafana Monitoring** | ✅ Completed |
-| Q3 2026 | **Docker/Kubernetes Deployment** | 🔄 Planned |
-| Q4 2026 | **Historical Data Analytics** | 🔄 Planned |
-
-### 📄 License
-
-MIT License - see [LICENSE](LICENSE) for details.
-
-### 🤝 Contributing
-
-Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+MIT — see [LICENSE](LICENSE) for details.
 
 ---
 
 <a name="deutsch"></a>
 
-## 🇩🇪 Deutsch
+<div align="center">
 
-### 🎯 Überblick
+# 🇩🇪 Deutsch
 
-**Nexus-HEMS Dash** ist ein produktionsreifes, Echtzeit Home Energy Management System (HEMS) Dashboard für die Ära der dezentralen Energie. Nahtlose Integration von **Victron Energy**, **KNX-Gebäudeautomation** und **dynamischen Stromtarifen** (Tibber, aWATTar) ermöglicht intelligente Orchestrierung von PV-Erzeugung, Batteriespeicher, Wärmepumpen und EV-Ladung.
+</div>
 
-Gebaut mit **React 19**, **Zustand**, **D3.js** und **Tailwind CSS 4**, liefert das Dashboard eine atemberaubende **Neo-Energy Cyber-Glassmorphism UI** mit vollständiger **i18n** (Deutsch/Englisch), **WCAG 2.2 AA Barrierefreiheit** und **Offline-First** Architektur.
+## 🎯 Überblick
 
-### ✨ Neu in 3.3.0
+**Nexus-HEMS Dashboard** ist ein produktionsreifes, Echtzeit-Home-Energy-Management-System für die Ära der dezentralen Energieversorgung. Es vereint **5 Industrieprotokolle** hinter einem einzigen Dashboard zur Orchestrierung von Photovoltaik, Batteriespeicher, Wärmepumpen, E-Mobilität und Gebäudeautomation — alles optimiert für dynamische Stromtarife.
 
-- 📡 **EEBUS SPINE/SHIP Vollimplementierung**: Komplette SPINE-Protokoll-Engine mit SHIP-Handshake, TLS 1.3 Mutual Auth, CEM Use Cases (LPC, LPP, MGCP) und §14a EnWG Konformität
-- 📊 **Prometheus/Grafana Monitoring**: Integrierte /monitoring-Seite mit Echtzeit-Metriken, 25+ Prometheus-Gauges, Gesundheitsstatus und Grafana-Integration
-- 🔌 **EEBUS Adapter Live**: Vollständige EnergyAdapter-Implementierung ersetzt vorherigen Stub — verbindet mit EEBUS-kompatiblen Geräten (Wallboxen, Wärmepumpen, Wechselrichter)
-- 🎯 **Monitoring-Route**: Neue `/monitoring`-Seite mit Live-Systemgesundheit, Adapter-Status und Performance-Metriken
-- 🌊 **OceanDeep Standard-Theme**: Neues Standard-Dark-Theme mit tiefer Ozean-Ästhetik
-- 🛠️ **Energie-Einstellungen Crash behoben**: Absturz beim Öffnen der Energie-Einstellungsseite behoben
-- 📱 **AI Optimizer Mobile UX**: Verbessertes responsives Layout für KI-Optimierer auf Mobilgeräten
+Gebaut mit **React 19**, **Zustand**, **D3.js** und **Tailwind CSS v4** liefert das Dashboard eine **Neo-Energy Cyber-Glassmorphism UI** mit vollständiger **Internationalisierung** (DE/EN), **WCAG 2.2 AA Barrierefreiheit** und **Offline-First** Architektur.
 
-### ✨ Neu in 3.2.0
+### ✨ Highlights v3.3
 
-- 🔐 **BYOK AI (Bring Your Own Key)**: Verschlüsselte Multi-Provider KI-Schlüsselspeicherung (OpenAI, Anthropic, Google, xAI, Groq, Ollama, Custom) via Web Crypto AES-GCM 256-bit + PBKDF2 600k
-- 🎨 **5 Premium-Themes**: 2 neue Themes — Cyber Energy (lebhaftes Licht) und Minimal White (sauberes Modernes)
-- ⚡ **Dynamische EV-Preisstrategie**: Echtzeit-Lademodus-Indikator (PV-Überschuss, Niedrigpreis, Teuer, Normal)
-- 📊 **Live-Analysen**: Berechnete Statistiken aus echten Energiedaten
-- 🌿 **UBA CO₂-Faktor**: PDF-Berichte nutzen offiziellen Umweltbundesamt 2024 Netz-Emissionsfaktor (380 g/kWh)
-- 🎤 **Offline-Sprachsteuerung**: Texteingabe-Fallback + Offline-Erkennung
-- 🧪 **63 Unit-Tests**: Umfassende Test-Suite (Crypto, Optimizer, Store, Format, Voice, PDF, DB, Adapter)
-- 🏗️ **CI gehärtet**: Kein continue-on-error mehr, Bundle-Größen-Budget (600 KB), Unit-Test-Schritt
+- 📡 **EEBUS SPINE/SHIP** — Komplette Protokoll-Engine mit TLS 1.3, CEM Use Cases, §14a EnWG
+- 📊 **Prometheus/Grafana Monitoring** — 25+ Metriken, Systemgesundheit, Adapter-Status
+- 📱 **PWA Auto-Update** — `skipWaiting` + `clientsClaim` verhindert White-Screen-Bug
+- 🎨 **Tailwind v4 Migration** — ~500 Klassen auf Shorthand-Syntax migriert
+- 🔧 **CI-Pipeline bereinigt** — Peer-Dep-Konflikte gelöst, Bundle 512→400 KB reduziert
 
-### ✨ Neu in 3.1.0
+### ✨ Highlights v3.2
 
-- 🔌 **Adapter-Pattern für HEMS-Protokolle**: Pluggable Protokollschicht mit 5 Adaptern (VictronMQTT, ModbusSunSpec, KNX, OCPP 2.1, EEBUS-Stub)
-- 🧩 **UnifiedEnergyModel**: Typisiertes Datenmodell, das PV, Batterie, Netz, Last, E-Auto-Lader, KNX und Tarife aggregiert
-- 🔋 **OCPP 2.1 + V2X**: Vollständige Vehicle-to-Grid-Unterstützung mit JSON-RPC und Ladeprofil-Management
-- 🏠 **KNX-WebSocket-Bridge**: Echtzeit-Raumzustandsverwaltung mit GA→Feld-Reverse-Lookup
-- ⚡ **Modbus/SunSpec-Polling**: HTTP/REST-Gateway für SunSpec-konforme Wechselrichter und Zähler
-- 🔀 **Zentraler useEnergyStore**: Zustand-Aggregator mit Legacy-Bridge
-- 🛡️ **TLS/mTLS + Auth**: Adapter-Level-Sicherheit mit Client-Zertifikaten und Token-Auth
-- 🔄 **Exponential Backoff**: Automatische Wiederverbindung über alle WebSocket-Adapter
+- 🔐 **BYOK AI** — AES-GCM 256-bit verschlüsselter Schlüsseltresor für 7 KI-Anbieter
+- 🎨 **5 Premium-Themes** — inkl. Cyber Energy (Hell) und Minimal White
+- 🧪 **63 Unit-Tests** — Crypto, Optimizer, Store, Format, Voice, PDF, DB, Adapter
+- 📊 **Live-Analysen** — Berechnete Statistiken aus Echtzeit-Energiedaten
 
-### ✨ Neu in 3.0.0
+### ✨ Highlights v3.1
 
-- 🏗️ **Multi-Page-Architektur**: Vollständiges Refactoring von Single-Page zu 11-Routen-SPA mit React Router v7
-- 📁 **Code-Split Seiten**: Lazy-geladene Routen für Home, Energiefluss, Erzeugung, Speicher, Verbrauch, E-Auto, Grundriss, KI-Optimierer, Tarife, Analysen
-- 🧭 **Desktop-Sidebar-Navigation**: Sidebar mit gruppierter Navigation (Energie, Tools, System)
-- 📱 **Redesigntes Mobile-Menü**: Untere Tab-Leiste mit „Mehr"-Sheet für alle Seiten
-- 🗺️ **Breadcrumbs & Seitenheader**: Kontextabhängige Breadcrumb-Navigation auf jeder Seite
-- ⌨️ **Erweiterte Kommandopalette**: Navigation zu allen 11 Seiten via ⌘K mit zweisprachigen Stichwörtern
-- 📦 **Optimiertes Bundle-Splitting**: Vendor-Chunks für React, D3, Motion, Recharts, i18n, TanStack Query
-- 🔀 **404-Seite**: Eigene Not-Found-Seite mit Navigation zurück zum Dashboard
-- 🧪 **Aktualisierte E2E-Tests**: Barrierefreiheit- & User-Flow-Tests für alle Routen
-
-### ✨ Neu in 2.3.0
-
-- 🚀 **TanStack Query Integration**: Optimiertes Data Fetching mit 5-Min-Cache für Forecasts & Tarif-APIs
-- ♿ **Vollständige WCAG 2.2 AA**: aria-live Regionen für Echtzeit-Sankey + Metriken, Tastaturnavigation
-- 💾 **Offline-Modus mit Dexie.js**: Cached die letzten 1000 Energie-Snapshots, "Letzter Stand: vor 3 Min."-Banner
-- 🧪 **Professionelles Testing**: Vitest Unit-Tests + Playwright E2E-Tests mit @axe-core für Barrierefreiheit
-- ⚡ **Performance-Optimierungen**: React.memo auf Sankey, virtualisierte Geräteliste (react-virtual)
-- 🔧 **Best-Practices-Stack**: Husky Git-Hooks, ESLint airbnb-typescript, Prettier, .devcontainer bereit
-
-### ✨ Neu in 2.1.0
-
-- 🤖 **AI-Optimizer mit Google Gemini 2.5**: Echte KI-Analyse für optimale Ladestrategien (EV, Batterie, Wärmepumpe)
-- 📈 **Prädiktive 24h/7d-Vorhersage**: Wetterbasierte PV-Prognosen + Tarifvorhersagen mit Recharts-Visualisierung
-- 🎤 **Sprachsteuerung**: Freihändige Dashboard-Steuerung mit Web Speech API (Deutsch & Englisch)
-- 📄 **PDF-Monatsberichte**: Automatisierte Energieberichte mit Sankey-Screenshots, Kosten und CO₂-Bilanz
-- 🤝 **Multi-Haushalt-Sharing**: Teilbare Dashboard-Links mit QR-Codes für Community-Projekte
-- ⚡ **Live Tibber/aWATTar Widget**: Echtzeit-Preisanzeigen mit Mini-Charts und Optimierungs-Hinweisen
-- 🏠 **Home Assistant / MQTT**: Bidirektionale Gerätesteuerung via WebSocket MQTT-Integration
-- 🌈 **Verbessertes Dashboard-Layout**: Alle Features in einheitlichem, responsivem Grid integriert
-
-### ⚡ Neu in 2.0.0
-
-- 🎨 **3 Premium-Themes**: Cyber Energy Dark (Standard), Solar Light, Night Mode mit flüssigen Framer Motion Übergängen
-- 🌐 **Vollständige i18n**: Komplette Deutsch/Englisch-Lokalisierung mit persistentem Sprachwechsel
-- 📊 **Verbessertes Sankey-Diagramm**: Live-Flow-Animationen, mobil-optimiertes responsives Layout
-- 🏠 **Interaktiver KNX-Grundriss**: Echtzeitsteuerung von Licht, Klima und Fenstersensoren
-- ♿ **WCAG 2.2 AA**: Vollständige Barrierefreiheit mit semantischem HTML und ARIA-Labels
-- 📦 **Local-First**: Dexie.js-basierte IndexedDB mit 30-Tage-Rolling-History
-- 🔒 **Enterprise-Sicherheit**: mTLS-Enforcement, 2FA, Telemetrie-Opt-out, §14a EnWG Konformität
-
-### 📸 Screenshots
-
-<details>
-<summary>🖼️ Alle Screenshots anzeigen (8)</summary>
-
-1. **Dashboard - Echtzeit-Sankey-Fluss**
-   ![Sankey Live](./docs/screenshots/sankey-live.png)
-
-2. **KNX-Grundriss - Gebäudeautomation**
-   ![KNX Floorplan](./docs/screenshots/knx-floorplan.png)
-
-3. **EV-Ladesteuerung**
-   ![EV Charging](./docs/screenshots/ev-charging.png)
-
-4. **AI-Optimizer - Dynamische Tarifstrategien**
-   ![AI Optimizer](./docs/screenshots/ai-optimizer.png)
-
-5. **Mobile-Responsive Ansicht**
-   ![Mobile](./docs/screenshots/mobile-view.png)
-
-6. **Theme-Wechsler - 3 Themes**
-   ![Themes](./docs/screenshots/themes.png)
-
-7. **Einstellungen - Systemkonfiguration**
-   ![Settings](./docs/screenshots/settings.png)
-
-8. **Offline-Modus - PWA**
-   ![Offline](./docs/screenshots/offline-mode.png)
-
-</details>
+- 🔌 **Adapter-Pattern** — 5 austauschbare Protokolladapter (Victron, Modbus, KNX, OCPP, EEBUS)
+- 🔋 **OCPP 2.1 + V2X** — Vehicle-to-Grid mit JSON-RPC und Ladeprofilen
+- 🛡️ **TLS/mTLS** — Adapter-Level-Sicherheit mit Client-Zertifikaten
 
 ### 🚀 Funktionen
 
-| Feature | Beschreibung | Status |
-|---------|--------------|--------|
-| ⚡ **Echtzeit-Sankey** | Live-Energiefluss-Visualisierung (PV → Batterie → Netz → Haus → WP → EV) | ✅ Live |
-| 🏠 **KNX-Integration** | Interaktiver Grundriss für Licht, Klima, Sensoren | ✅ Live |
-| 🤖 **AI-Optimizer (Gemini 2.5)** | Echte KI-gestützte Optimierung für EV-, Batterie-, Wärmepumpen-Strategien | ✅ Live |
-| 📈 **Prädiktive Vorhersage** | 24h/7d wetterbasierte PV- & Tarifvorhersagen mit Recharts | ✅ Live |
-| 🎤 **Sprachsteuerung** | Freihändige Dashboard-Steuerung mit Web Speech API | ✅ Live |
-| 📄 **PDF-Berichte** | Monats-Energieberichte mit Sankey, Kosten, CO₂-Bilanz | ✅ Live |
-| 🤝 **Teilbare Dashboards** | Multi-Haushalt-Support mit QR-Codes & Read-Only-Links | ✅ Live |
-| ⚡ **Live-Preis-Widget** | Echtzeit Tibber/aWATTar Tarifanzeige mit Mini-Charts | ✅ Live |
-| 🏠 **Home Assistant / MQTT** | Bidirektionale Gerätesteuerung via WebSocket MQTT | ✅ Live |
-| 🚗 **Intelligentes EV-Laden** | PV-Überschuss, Schnellladung, dynamische Tarifmodi | ✅ Live |
-| 🔥 **SG Ready Steuerung** | Wärmepumpen-Modi (1-4) zur thermischen Speicheroptimierung | ✅ Live |
-| 🌐 **i18n** | Deutsch/Englisch mit persistentem localStorage | ✅ 100% |
-| 🔐 **BYOK AI** | Verschlüsselte Multi-Provider KI-Schlüssel (AES-GCM 256-bit) | ✅ Live |
-| 🎨 **5 Themes** | Cyber Dark, Cyber Energy, Solar Light, Minimal White, Night Mode | ✅ Live |
-| ♿ **WCAG 2.2 AA** | Vollständige Barrierefreiheit (Semantik, ARIA, Fokus) | ✅ Konform |
-| 📦 **Local-First** | Dexie.js IndexedDB, 30-Tage-Historie-Retention | ✅ Live |
-| 🔒 **Enterprise-Sicherheit** | mTLS, 2FA, BYOK-Verschlüsselung, §14a Konformität | ✅ Live || 🔌 **Adapter-Pattern** | Pluggable Protokoll-Adapter (Victron, Modbus, KNX, OCPP 2.1, EEBUS) | ✅ Live |
-| 🔋 **OCPP 2.1 + V2X** | Vehicle-to-Grid-Laden mit JSON-RPC und Ladeprofilen | ✅ Live |
-| ⚡ **Modbus/SunSpec** | REST-Gateway-Polling für SunSpec-Wechselrichter und -Zähler | ✅ Live |
-### �️ Seitenstruktur (v3.0)
-
-| Route | Seite | Beschreibung |
-|-------|-------|--------------|
-| `/` | **Home** | KPI-Übersicht, Mini-Sankey, Schnelllinks zu allen Bereichen |
-| `/energy-flow` | **Energiefluss** | Vollständiges D3.js-Sankey-Diagramm, Live-Preis-Widget, Flussstatistiken |
-| `/production` | **Erzeugung** | PV-Erzeugungsstatistiken, Leistungsausgabe, Eigenverbrauchsquote |
-| `/storage` | **Speicher** | Batterie-SoC-Visualisierung, Lade-/Entladestatistiken, Strategiesteuerung |
-| `/consumption` | **Verbrauch** | Gesamtverbrauchsaufschlüsselung, Verbraucherkategorien, Netzaustausch |
-| `/ev` | **E-Auto** | EV-Ladesteuerung, Modi (PV-Überschuss/Schnell/Dynamisch), §14a EnWG |
-| `/floorplan` | **Grundriss** | KNX interaktiver Gebäudegrundriss, raumweise Steuerung |
-| `/ai-optimizer` | **KI-Optimierer** | Gemini 2.5 KI-Analyse, Sprachsteuerung, erweiterter Optimierer |
-| `/tariffs` | **Tarife** | Live Tibber/aWATTar-Preise, Prognosen, optimale Ladefenster |
-| `/analytics` | **Analysen** | Energiestatistiken, prädiktive Prognosen, PDF-Export & Sharing |
-| `/monitoring` | **Monitoring** | Prometheus-Metriken, Systemgesundheit, Adapter-Status, Grafana-Integration |
-| `/settings` | **Einstellungen** | Systemkonfiguration, Verbindungen, Präferenzen |
-| `/help` | **Hilfe** | Dokumentation, Tastenkürzel, FAQ |
-
-### 🛠️ Technologie-Stack
-
-**Backend & Echtzeit**
-- ![Node.js](https://img.shields.io/badge/Node.js-Express-339933?logo=nodedotjs) + WebSocket-Server
-- ![Dexie.js](https://img.shields.io/badge/Dexie.js-4.3-22ff88) für IndexedDB-Persistierung
-
-**i18n & Barrierefreiheit**
-- ![react-i18next](https://img.shields.io/badge/react--i18next-16-22ff88) mit Deutsch/Englisch-Locales
-- **WCAG 2.2 AA** Konformität (semantisches HTML, ARIA, Tastaturnavigation)
-
-**Qualität & Testing**
-- ![ESLint](https://img.shields.io/badge/ESLint-9-4b32c3?logo=eslint) + ![Prettier](https://img.shields.io/badge/Prettier-3.8-f7b93e?logo=prettier)
-- ![Vitest](https://img.shields.io/badge/Vitest-4.0-fcc72b?logo=vitest) + ![Playwright](https://img.shields.io/badge/Playwright-1.58-2ead33?logo=playwright) mit @axe-core/playwright
-- ![Husky](https://img.shields.io/badge/Husky-9.1-22ff88?logo=git) für Pre-Commit-Hooks
+| Feature                       | Beschreibung                                                    | Status     |
+| :---------------------------- | :-------------------------------------------------------------- | :--------- |
+| ⚡ **Echtzeit-Sankey**        | Live D3.js Energiefluss — PV → Batterie → Netz → Haus → WP → EV | ✅ Live    |
+| 🤖 **KI-Optimierer**          | Google Gemini 2.5 für optimale Lade-/Heizstrategien             | ✅ Live    |
+| 📈 **Prädiktive Vorhersage**  | 24h/7d wetterbasierte PV- & Tarifprognosen                      | ✅ Live    |
+| ⚡ **Live-Tarif-Widget**      | Echtzeit Tibber/aWATTar Preise mit Mini-Charts                  | ✅ Live    |
+| 🚗 **Intelligentes EV-Laden** | PV-Überschuss, Schnellladung, dynamische Modi, §14a             | ✅ Live    |
+| 🔥 **SG Ready**               | Wärmepumpen-Modi 1–4 zur thermischen Speicheroptimierung        | ✅ Live    |
+| 🏠 **KNX-Grundriss**          | Interaktive Gebäudeautomation — Licht, Klima, Sensoren          | ✅ Live    |
+| 🎤 **Sprachsteuerung**        | Freihändig via Web Speech API (DE/EN) + Offline-Fallback        | ✅ Live    |
+| 📄 **PDF-Berichte**           | Monatsberichte mit Sankey, Kosten, CO₂ (UBA 380 g/kWh)          | ✅ Live    |
+| 🔐 **BYOK KI-Tresor**         | 7 Anbieter mit AES-GCM 256-bit Verschlüsselung                  | ✅ Live    |
+| 🎨 **5 Themes**               | OceanDeep, Cyber Energy, Solar Light, Minimal White, Night Mode | ✅ Live    |
+| 🌐 **i18n**                   | 100% Deutsch/Englisch mit persistentem Sprachwechsel            | ✅ 100%    |
+| ♿ **WCAG 2.2 AA**            | Semantisches HTML, ARIA, Fokus-Traps, Tastaturnavigation        | ✅ Konform |
+| 📱 **PWA Offline-First**      | Service Worker, IndexedDB, Background Sync                      | ✅ Live    |
+| 🔌 **5 Adapter**              | Victron MQTT, Modbus/SunSpec, KNX/IP, OCPP 2.1, EEBUS           | ✅ Live    |
+| 📊 **Monitoring**             | Prometheus-Metriken, Systemgesundheit, Grafana-Integration      | ✅ Live    |
 
 ### 📦 Erste Schritte
 
-#### Voraussetzungen
-- Node.js 22+ (LTS empfohlen)
-- npm oder pnpm
-- Victron Cerbo GX mit Node-RED (optional)
-- KNX IP Router (optional)
-
-#### Installation
-
 ```bash
-# Repository klonen
 git clone https://github.com/qnbs/Nexus-HEMS-Dash.git
 cd Nexus-HEMS-Dash
-
-# Abhängigkeiten installieren
 npm install
-
-# Entwicklungsserver starten
 npm run dev
 ```
 
-#### Docker / Docker Compose (demnächst)
+### 🗺️ Seitenstruktur
 
-```bash
-docker-compose up -d
-```
+| Route           | Seite             | Beschreibung                                   |
+| :-------------- | :---------------- | :--------------------------------------------- |
+| `/`             | **Home**          | KPI-Übersicht, Mini-Sankey, Schnelllinks       |
+| `/energy-flow`  | **Energiefluss**  | D3.js-Sankey-Diagramm, Live-Preis-Widget       |
+| `/production`   | **Erzeugung**     | PV-Statistiken, Eigenverbrauchsquote           |
+| `/storage`      | **Speicher**      | Batterie-SoC, Lade-/Entladestatistiken         |
+| `/consumption`  | **Verbrauch**     | Lastaufschlüsselung, Netzaustausch             |
+| `/ev`           | **E-Auto**        | Ladesteuerung, PV-Überschuss/Schnell/Dynamisch |
+| `/floorplan`    | **Grundriss**     | KNX Gebäudeautomation, Raumsteuerung           |
+| `/ai-optimizer` | **KI-Optimierer** | Gemini 2.5 Analyse, Sprachsteuerung            |
+| `/tariffs`      | **Tarife**        | Live-Preise, Prognosen, optimale Ladefenster   |
+| `/analytics`    | **Analysen**      | Statistiken, Prognosen, PDF-Export             |
+| `/monitoring`   | **Monitoring**    | Prometheus, Systemgesundheit, Grafana          |
+| `/settings`     | **Einstellungen** | Konfiguration, KI-Schlüssel, Verbindungen      |
+| `/help`         | **Hilfe**         | Dokumentation, Tastenkürzel, FAQ               |
 
 ### 🏗️ Architektur
 
-**Adapter-Pattern (v3.1)**
-
-Alle externen Protokolle sind hinter einem einheitlichen `EnergyAdapter`-Interface gekapselt. Jeder Adapter normalisiert Rohdaten in ein einheitliches `UnifiedEnergyModel`.
-
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                    useEnergyStore (Zustand)                     │
-│         UnifiedEnergyModel = PV + Batterie + Netz + ...        │
-├─────────┬───────────┬─────────┬───────────┬────────────────────┤
-│ Victron │  Modbus   │   KNX   │ OCPP 2.1  │  EEBUS            │
-│  MQTT   │  SunSpec  │   /IP   │   V2X     │                    │
-│  (WS)   │  (REST)   │  (WS)   │   (WS)    │   (WS+TLS)        │
-├─────────┴───────────┴─────────┴───────────┴────────────────────┤
-│                    EnergyAdapter Interface                       │
-│ connect() · onData() · sendCommand() · getSnapshot() · destroy()│
-└─────────────────────────────────────────────────────────────────┘
-```
-
-| Adapter | Protokoll | Fähigkeiten | Transport |
-|---------|-----------|-------------|-----------|
-| `VictronMQTTAdapter` | Node-RED WebSocket | pv, battery, grid, load | WebSocket |
-| `ModbusSunSpecAdapter` | SunSpec Models 103/124/201 | pv, battery, grid | HTTP/REST-Polling |
-| `KNXAdapter` | KNX/IP Tunneling | knx | WebSocket-Bridge |
-| `OCPP21Adapter` | OCPP 2.1 JSON-RPC | evCharger (V2X) | WebSocket |
-| `EEBUSAdapter` | SPINE/SHIP | evCharger, load | WebSocket+TLS |
-
-**Wichtige Dateien:**
-- `src/core/adapters/EnergyAdapter.ts` — Interface + `UnifiedEnergyModel`-Typen
-- `src/core/useEnergyStore.ts` — Zustand-Aggregator + `useAdapterBridge`-Hook
-- `src/core/useLegacySendCommand.ts` — Abwärtskompatible Wrapper
-
-**Local-First Design**
-- Adapter-Daten werden in zentralem Zustand-Store zusammengeführt, gebrückt zu Legacy-`useAppStore`
-- Dexie.js IndexedDB für 30-Tage-Rolling-History (persistiert via `useAdapterBridge`)
-- Offline-fähige PWA-Architektur
-
-**Echtzeit-Datenfluss**
-```
-Victron Cerbo GX ──┐
-Modbus/SunSpec ─────┤
-KNX/IP-Gateway ─────┤── EnergyAdapter ──→ useEnergyStore ──→ Zustand
-OCPP 2.1 CSMS ──────┤                                        ↓
-EEBUS (geplant) ────┘                              Dexie.js + useAppStore
+┌─────────────────────────────────────────────────────────────────────┐
+│                       useEnergyStore (Zustand)                      │
+│            UnifiedEnergyModel = PV + Batterie + Netz + …            │
+├──────────┬───────────┬──────────┬────────────┬─────────────────────-┤
+│ Victron  │  Modbus   │   KNX    │  OCPP 2.1  │    EEBUS             │
+│   MQTT   │  SunSpec  │   /IP    │    V2X     │  SPINE/SHIP          │
+├──────────┴───────────┴──────────┴────────────┴─────────────────────-┤
+│                       EnergyAdapter Interface                       │
+└─────────────────────────────────────────────────────────────────────┘
 ```
 
 ### 🗺️ Roadmap 2026
 
-| Quartal | Feature | Status |
-|---------|---------|--------|
-| Q1 2026 | **Home Assistant / MQTT Integration** | ✅ Abgeschlossen |
-| Q1 2026 | **Predictive AI** (Wettervorhersage + Tarifvorhersage) | ✅ Abgeschlossen |
-| Q1 2026 | **Sprachsteuerung** (Web Speech API) | ✅ Abgeschlossen |
-| Q1 2026 | **PDF-Monatsberichte** (Sankey + CO₂-Bilanz) | ✅ Abgeschlossen |
-| Q1 2026 | **Multi-Household Support** (Teilbare Dashboards) | ✅ Abgeschlossen |
-| Q1 2026 | **Live-Preis-Widget** (Tibber/aWATTar Auto-Optimierung) | ✅ Abgeschlossen |
-| Q2 2026 | **Adapter-Pattern** (Victron, Modbus, KNX, OCPP 2.1) | ✅ Abgeschlossen |
-| Q2 2026 | **Tailwind Config & Custom Utilities** (.neon-glow, .glass-panel) | ✅ Abgeschlossen |
-| Q2 2026 | **5 Themes + Design-System** (cyber-energy, minimal-white) | ✅ Abgeschlossen |
-| Q2 2026 | **BYOK AI + Dexie-Verschlüsselung** (AES-GCM 256-bit, 7 Provider) | ✅ Abgeschlossen |
-| Q2 2026 | **63 Unit-Tests + CI-Härtung** (Bundle-Budget, kein continue-on-error) | ✅ Abgeschlossen |
-| Q3 2026 | **EEBUS SPINE/SHIP Integration** | ✅ Abgeschlossen |
-| Q3 2026 | **Prometheus/Grafana Monitoring** | ✅ Abgeschlossen |
-| Q3 2026 | **Docker/Kubernetes Deployment** | 🔄 Geplant |
-| Q4 2026 | **Historische Datenanalyse** | 🔄 Geplant |
+| Quartal | Feature                                               | Status          |
+| :------ | :---------------------------------------------------- | :-------------- |
+| Q1      | MQTT, Predictive AI, Voice, PDF, Sharing, Live-Preise | ✅ Ausgeliefert |
+| Q2      | 5 Adapter, 5 Themes, BYOK AI, 63 Tests, CI-Härtung    | ✅ Ausgeliefert |
+| Q3      | EEBUS SPINE/SHIP, Monitoring, PWA-Perfektion          | ✅ Ausgeliefert |
+| Q3      | Docker/Kubernetes                                     | 🔄 Geplant      |
+| Q4      | Historische Datenanalyse, Matter/Thread, Multi-Tenant | 🔜 Geplant      |
 
 ### 📄 Lizenz
 
-MIT License - siehe [LICENSE](LICENSE) für Details.
+MIT — siehe [LICENSE](LICENSE).
 
 ### 🤝 Beitragen
 
-Beiträge willkommen! Siehe [CONTRIBUTING.md](CONTRIBUTING.md) für Richtlinien.
+Beiträge willkommen! Siehe [CONTRIBUTING.md](CONTRIBUTING.md).
