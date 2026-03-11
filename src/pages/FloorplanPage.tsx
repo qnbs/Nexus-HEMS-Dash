@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
-import { Map, Home, Wifi, WifiOff, Thermometer, Droplets, Lightbulb, Wind } from 'lucide-react';
+import { Map, Home, Wifi, Thermometer, Droplets, Lightbulb, Wind } from 'lucide-react';
 import { PageHeader } from '../components/layout/PageHeader';
 import { Floorplan } from '../components/Floorplan';
 

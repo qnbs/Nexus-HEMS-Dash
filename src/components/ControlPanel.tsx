@@ -3,7 +3,14 @@ import { Battery, Car, Thermometer } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'motion/react';
 
-import { type CommandType, type EnergyData, type EvState, type HpState } from '../types';
+import {
+  type CommandType,
+  type EnergyData,
+  type EvState,
+  type HpState,
+  type EvMode,
+  type HpMode,
+} from '../types';
 import { hapticClick, hapticModeChange, hapticSuccess } from '../lib/haptics';
 import { useAppStore } from '../store';
 
@@ -19,9 +26,9 @@ export function ControlPanel({
 
   // Mock action for EV charging
   const [evState, evAction, isEvPending] = useActionState(
-    async (state: EvState, formData: FormData) => {
+    async (_state: EvState, formData: FormData) => {
       hapticModeChange();
-      const mode = formData.get('evMode') as string;
+      const mode = (formData.get('evMode') ?? 'off') as EvMode;
       const power =
         mode === 'fast'
           ? settings.systemConfig.evCharger.maxPowerKW * 1000
@@ -36,14 +43,14 @@ export function ControlPanel({
 
       return { mode, power, message: t('control.evUpdated') };
     },
-    { mode: 'off', power: 0, message: '' },
+    { mode: 'off' as EvMode, power: 0, message: '' },
   );
 
   // Mock action for Heat Pump SG Ready
   const [hpState, hpAction, isHpPending] = useActionState(
-    async (state: HpState, formData: FormData) => {
+    async (_state: HpState, formData: FormData) => {
       hapticModeChange();
-      const mode = formData.get('hpMode') as string;
+      const mode = (formData.get('hpMode') ?? '2') as HpMode;
       // SG Ready Modes: 1=Sperre(0W), 2=Normal(800W), 3=Empfehlung(1500W), 4=Befehl(2500W)
       let power = 800;
       if (mode === '1') power = 0;
@@ -56,7 +63,7 @@ export function ControlPanel({
 
       return { mode, power, message: t('control.hpUpdated') };
     },
-    { mode: '2', power: 800, message: '' },
+    { mode: '2' as HpMode, power: 800, message: '' },
   );
 
   return (

@@ -60,10 +60,7 @@ export function PWAUpdateNotification() {
           role="alert"
         >
           <div className="rounded-2xl border border-(--color-primary)/30 bg-(--color-primary)/10 backdrop-blur-xl p-4 shadow-2xl flex items-center gap-3">
-            <RefreshCw
-              className="h-5 w-5 text-(--color-primary) shrink-0"
-              aria-hidden="true"
-            />
+            <RefreshCw className="h-5 w-5 text-(--color-primary) shrink-0" aria-hidden="true" />
             <div className="flex-1">
               <p className="font-semibold text-sm text-(--color-primary)">
                 {t('pwa.updateReady', 'Update ready')}

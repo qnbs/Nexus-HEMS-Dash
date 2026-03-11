@@ -13,7 +13,7 @@ export default defineConfig(({ mode }) => {
       tailwindcss(),
       VitePWA({
         registerType: 'autoUpdate',
-        includeAssets: ['favicon.ico', 'robots.txt', 'icon-*.png', '*.svg'],
+        includeAssets: ['favicon.ico', 'robots.txt'],
         manifest: false, // Use public/manifest.json instead
         workbox: {
           globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2,json}'],

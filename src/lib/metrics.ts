@@ -241,12 +241,11 @@ export const HEMS_METRICS: MetricDefinition[] = [
 // ─── Metrics Collector (Client-side) ────────────────────────────────
 
 export class MetricsCollector {
-  private samples: Map<string, MetricSample[]> = new Map();
-  private startTime = Date.now();
-  private messageCount = { inbound: 0, outbound: 0 };
-  private adapterHealth: Map<string, AdapterHealth> = new Map();
-  private histogramBuckets: Map<string, number[]> = new Map();
-  private listeners: Array<(metrics: MetricFamily[]) => void> = [];
+  private readonly samples: Map<string, MetricSample[]> = new Map();
+  private readonly startTime = Date.now();
+  private readonly messageCount = { inbound: 0, outbound: 0 };
+  private readonly adapterHealth: Map<string, AdapterHealth> = new Map();
+  private readonly listeners: Array<(metrics: MetricFamily[]) => void> = [];
   private collectInterval: ReturnType<typeof setInterval> | null = null;
 
   /**
@@ -275,7 +274,8 @@ export class MetricsCollector {
   onMetrics(callback: (metrics: MetricFamily[]) => void): () => void {
     this.listeners.push(callback);
     return () => {
-      this.listeners = this.listeners.filter((l) => l !== callback);
+      const idx = this.listeners.indexOf(callback);
+      if (idx !== -1) this.listeners.splice(idx, 1);
     };
   }
 

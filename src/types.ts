@@ -26,8 +26,10 @@ export type CommandType =
   | 'TOGGLE_KNX_WINDOW'
   | 'SET_ROOM_TEMPERATURE';
 
+export type EvMode = 'off' | 'pv' | 'fast';
+
 export interface EvState {
-  mode: string;
+  mode: EvMode;
   power: number;
   message: string;
 }
@@ -251,8 +253,10 @@ export interface ThemeOption {
   label: string;
 }
 
+export type HpMode = '1' | '2' | '3' | '4';
+
 export interface HpState {
-  mode: string;
+  mode: HpMode;
   power: number;
   message: string;
 }

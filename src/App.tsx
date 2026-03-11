@@ -111,7 +111,6 @@ export default function App() {
   // Initialize background sync service
   useEffect(() => {
     backgroundSyncService.init();
-    console.log('[PWA] Background sync service initialized');
 
     return () => {
       backgroundSyncService.destroy();
@@ -121,7 +120,7 @@ export default function App() {
   return (
     <ErrorBoundary
       onError={(error, errorInfo) => {
-        logError(error, errorInfo.componentStack, 'high').catch(console.error);
+        logError(error, errorInfo.componentStack ?? undefined, 'high').catch(console.error);
       }}
     >
       <Router basename={import.meta.env.BASE_URL}>

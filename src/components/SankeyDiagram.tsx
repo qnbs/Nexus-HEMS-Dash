@@ -163,7 +163,7 @@ export const SankeyDiagram = memo(function SankeyDiagram({ data }: { data: Energ
       })
       .style('cursor', 'pointer')
       .style('transition', 'all 0.3s ease-out')
-      .on('mouseenter', function (event, d) {
+      .on('mouseenter', function (_event, d) {
         d3.select(this)
           .attr('stroke-opacity', 0.85)
           .attr('stroke-width', Math.max(2, (d.width || 0) + 2))
@@ -172,7 +172,7 @@ export const SankeyDiagram = memo(function SankeyDiagram({ data }: { data: Energ
             return `drop-shadow(0 0 8px ${color}) drop-shadow(0 0 16px ${color}) drop-shadow(0 0 24px ${color})`;
           });
       })
-      .on('mouseleave', function (event, d) {
+      .on('mouseleave', function (_event, d) {
         d3.select(this)
           .attr('stroke-opacity', 0.5)
           .attr('stroke-width', Math.max(1, d.width || 0))
@@ -204,7 +204,7 @@ export const SankeyDiagram = memo(function SankeyDiagram({ data }: { data: Energ
       .attr('fill', (d) => d.color)
       .attr('rx', 4)
       .style('filter', (d) => `drop-shadow(0 2px 4px ${d.color}40)`)
-      .on('mouseenter', function (event, d) {
+      .on('mouseenter', function (_event, d) {
         d3.select(this)
           .attr('rx', 6)
           .style('filter', `drop-shadow(0 4px 12px ${d.color}80) drop-shadow(0 0 16px ${d.color})`)
@@ -213,7 +213,7 @@ export const SankeyDiagram = memo(function SankeyDiagram({ data }: { data: Energ
           .attr('height', ((d.y1 || 0) - (d.y0 || 0)) * 1.05)
           .attr('width', ((d.x1 || 0) - (d.x0 || 0)) * 1.1);
       })
-      .on('mouseleave', function (event, d) {
+      .on('mouseleave', function (_event, d) {
         d3.select(this)
           .attr('rx', 4)
           .style('filter', `drop-shadow(0 2px 4px ${d.color}40)`)
