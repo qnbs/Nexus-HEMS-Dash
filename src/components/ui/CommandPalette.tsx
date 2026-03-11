@@ -162,6 +162,17 @@ export function CommandPalette({
       keywords: ['gemini', 'optimize', 'ki'],
     },
     {
+      id: 'nav-ai-settings',
+      label: t('command.aiSettings', 'AI Provider Keys'),
+      icon: <Sparkles className="h-5 w-5 text-cyan-400" />,
+      action: () => {
+        navigate('/ai-settings');
+        onClose();
+      },
+      category: 'navigation',
+      keywords: ['api', 'key', 'provider', 'byok', 'schlüssel'],
+    },
+    {
       id: 'nav-tariffs',
       label: t('nav.tariffs', 'Tariffs'),
       icon: <TrendingUp className="h-5 w-5 text-orange-400" />,
@@ -291,7 +302,7 @@ export function CommandPalette({
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder={t('command.searchPlaceholder', 'Search commands...')}
+                placeholder={t('command.searchPlaceholder', 'Search commands…')}
                 className="flex-1 bg-transparent text-(--color-text) outline-none placeholder:text-(--color-muted)"
                 autoFocus={window.innerWidth >= 1024}
                 role="combobox"
@@ -341,7 +352,13 @@ export function CommandPalette({
                       </div>
                       <div className="flex-1">
                         <p className="font-medium">{cmd.label}</p>
-                        <p className="text-xs capitalize text-(--color-muted)">{cmd.category}</p>
+                        <p className="text-xs capitalize text-(--color-muted)">
+                          {cmd.category === 'navigation'
+                            ? t('command.categoryNavigation', 'Navigation')
+                            : cmd.category === 'action'
+                              ? t('command.categoryAction', 'Action')
+                              : t('command.categoryDevice', 'Device')}
+                        </p>
                       </div>
                       {index === selectedIndex && (
                         <kbd className="rounded bg-slate-800/50 px-2 py-1 text-xs text-(--color-muted)">

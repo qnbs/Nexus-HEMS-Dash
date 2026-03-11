@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useState, type FormEvent, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Settings as SettingsIcon,
@@ -25,6 +25,7 @@ import {
   Lock,
   RotateCcw,
   AlertTriangle,
+  Sparkles,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -32,6 +33,9 @@ import { themeDefinitions, themeOrder, type ThemeName } from '../design-tokens';
 import { useAppStore, defaultSettings } from '../store';
 import { SYSTEM_PRESETS, type PVConfig } from '../types';
 import { resolveTheme, type ThemePreference } from '../lib/theme';
+import { ConfirmDialog, useConfirmDialog } from '../components/ConfirmDialog';
+
+const AISettingsPage = lazy(() => import('./AISettingsPage'));
 
 type SettingsTab =
   | 'appearance'
@@ -40,7 +44,8 @@ type SettingsTab =
   | 'security'
   | 'storage'
   | 'notifications'
-  | 'advanced';
+  | 'advanced'
+  | 'ai';
 
 function ThemePreviewCard({
   def,
@@ -115,7 +120,7 @@ export function Settings() {
   const [saved, setSaved] = useState(false);
   const [activeTab, setActiveTab] = useState<SettingsTab>('appearance');
   const [showTokens, setShowTokens] = useState<Record<string, boolean>>({});
-  const [confirmReset, setConfirmReset] = useState(false);
+  const confirm = useConfirmDialog();
 
   // Theme state
   const theme = useAppStore((s) => s.theme);
@@ -144,34 +149,56 @@ export function Settings() {
   };
 
   const handleExportSettings = () => {
-    const data = JSON.stringify(settings, null, 2);
-    const blob = new Blob([data], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'nexus-hems-settings.json';
-    a.click();
-    URL.revokeObjectURL(url);
+    confirm.openDialog({
+      title: t('settings.confirmExportTitle', 'Export Settings'),
+      message: t(
+        'settings.confirmExportMessage',
+        'Your current settings will be exported as a JSON file.',
+      ),
+      confirmText: t('settings.confirmExportAction', 'Export'),
+      variant: 'info',
+      onConfirm: () => {
+        const data = JSON.stringify(settings, null, 2);
+        const blob = new Blob([data], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'nexus-hems-settings.json';
+        a.click();
+        URL.revokeObjectURL(url);
+      },
+    });
   };
 
   const handleImportSettings = () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.json';
-    input.onchange = async (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      if (!file) return;
-      const text = await file.text();
-      try {
-        const data = JSON.parse(text);
-        updateSettings(data);
-        setSaved(true);
-        setTimeout(() => setSaved(false), 3000);
-      } catch {
-        console.error('Invalid settings file');
-      }
-    };
-    input.click();
+    confirm.openDialog({
+      title: t('settings.confirmImportTitle', 'Import Settings'),
+      message: t(
+        'settings.confirmImportMessage',
+        'Importing settings will overwrite all current configurations.',
+      ),
+      confirmText: t('settings.confirmImportAction', 'Choose File'),
+      variant: 'warning',
+      onConfirm: () => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        input.onchange = async (e) => {
+          const file = (e.target as HTMLInputElement).files?.[0];
+          if (!file) return;
+          const text = await file.text();
+          try {
+            const data = JSON.parse(text);
+            updateSettings(data);
+            setSaved(true);
+            setTimeout(() => setSaved(false), 3000);
+          } catch {
+            console.error('Invalid settings file');
+          }
+        };
+        input.click();
+      },
+    });
   };
 
   const tabs: { key: SettingsTab; icon: React.ReactNode; label: string }[] = [
@@ -190,6 +217,7 @@ export function Settings() {
       label: t('settings.notifications', 'Notifications'),
     },
     { key: 'advanced', icon: <Gauge size={18} />, label: t('settings.advanced', 'Advanced') },
+    { key: 'ai', icon: <Sparkles size={18} />, label: t('settings.aiTab', 'AI Providers') },
   ];
 
   const isSystem = themePreference === 'system';
@@ -1832,41 +1860,55 @@ export function Settings() {
                             )}
                           </p>
                         </div>
-                        {!confirmReset ? (
-                          <motion.button
-                            type="button"
-                            onClick={() => setConfirmReset(true)}
-                            className="flex items-center gap-2 rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-2 text-sm text-rose-400 hover:bg-rose-500/20 transition-colors"
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                          >
-                            <RotateCcw size={16} />
-                            {t('settings.reset', 'Reset')}
-                          </motion.button>
-                        ) : (
-                          <div className="flex items-center gap-2">
-                            <button
-                              type="button"
-                              onClick={() => setConfirmReset(false)}
-                              className="rounded-xl border border-(--color-border) px-3 py-2 text-sm hover:bg-white/5 transition-colors"
-                            >
-                              {t('aiSettings.cancel', 'Cancel')}
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => {
+                        <motion.button
+                          type="button"
+                          onClick={() =>
+                            confirm.openDialog({
+                              title: t('settings.confirmResetTitle', 'Reset All Settings'),
+                              message: t(
+                                'settings.confirmResetMessage',
+                                'This will permanently reset all settings to factory defaults.',
+                              ),
+                              confirmText: t('settings.confirmResetAction', 'Reset Everything'),
+                              variant: 'danger',
+                              onConfirm: () => {
                                 updateSettings(defaultSettings);
-                                setConfirmReset(false);
-                              }}
-                              className="rounded-xl bg-rose-500 px-3 py-2 text-sm text-white hover:bg-rose-600 transition-colors"
-                            >
-                              {t('settings.confirmReset', 'Confirm reset')}
-                            </button>
-                          </div>
-                        )}
+                              },
+                            })
+                          }
+                          className="flex items-center gap-2 rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-2 text-sm text-rose-400 hover:bg-rose-500/20 transition-colors"
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                        >
+                          <RotateCcw size={16} />
+                          {t('settings.reset', 'Reset')}
+                        </motion.button>
                       </div>
                     </div>
                   </section>
+                </motion.div>
+              )}
+
+              {activeTab === 'ai' && (
+                <motion.div
+                  key="ai"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.3 }}
+                  role="tabpanel"
+                  id="tabpanel-ai"
+                  aria-labelledby="tab-ai"
+                >
+                  <Suspense
+                    fallback={
+                      <div className="flex items-center justify-center py-12">
+                        <RefreshCw className="h-6 w-6 animate-spin text-(--color-primary)" />
+                      </div>
+                    }
+                  >
+                    <AISettingsPage />
+                  </Suspense>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -1892,6 +1934,8 @@ export function Settings() {
           </form>
         </div>
       </div>
+
+      <ConfirmDialog {...confirm.dialogProps} />
     </motion.div>
   );
 }

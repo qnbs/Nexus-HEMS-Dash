@@ -38,9 +38,7 @@ export function PWAUpdateNotification() {
       setUpdateError(t('pwa.registrationError', 'Failed to register Service Worker'));
     },
     onNeedRefresh() {
-      // In autoUpdate mode the SW already called skipWaiting();
-      // the page will reload automatically via controllerchange.
-      // Show a brief transitional toast.
+      // Show "update ready" notification with manual restart option
       setShowUpdating(true);
     },
     onOfflineReady() {
@@ -50,7 +48,7 @@ export function PWAUpdateNotification() {
     },
   });
 
-  // Brief "updating" toast (shown right before auto-reload)
+  // "Update ready — restart to apply" toast
   if (showUpdating) {
     return (
       <AnimatePresence>
@@ -59,21 +57,27 @@ export function PWAUpdateNotification() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -50 }}
           className="fixed left-4 right-4 top-4 z-50 md:left-auto md:right-4 md:max-w-sm"
-          role="status"
+          role="alert"
         >
           <div className="rounded-2xl border border-(--color-primary)/30 bg-(--color-primary)/10 backdrop-blur-xl p-4 shadow-2xl flex items-center gap-3">
             <RefreshCw
-              className="h-5 w-5 text-(--color-primary) animate-spin shrink-0"
+              className="h-5 w-5 text-(--color-primary) shrink-0"
               aria-hidden="true"
             />
             <div className="flex-1">
               <p className="font-semibold text-sm text-(--color-primary)">
-                {t('pwa.updating', 'Updating…')}
+                {t('pwa.updateReady', 'Update ready')}
               </p>
               <p className="text-xs text-(--color-muted)">
-                {t('pwa.updateSize', 'Quick update — no data loss')}
+                {t('pwa.updateReadyDesc', 'A new version has been installed. Restart to apply.')}
               </p>
             </div>
+            <button
+              onClick={() => window.location.reload()}
+              className="shrink-0 rounded-lg bg-(--color-primary) px-3 py-1.5 text-xs font-medium text-white hover:opacity-90 transition-opacity focus-ring"
+            >
+              {t('pwa.restart', 'Restart')}
+            </button>
           </div>
         </motion.div>
       </AnimatePresence>

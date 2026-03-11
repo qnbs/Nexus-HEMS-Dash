@@ -1,142 +1,398 @@
-import { useState, memo } from 'react';
+import { useState, memo, useCallback } from 'react';
 import { motion } from 'motion/react';
-import { Lightbulb, Thermometer, Wind } from 'lucide-react';
+import { Lightbulb, Thermometer, Wind, Droplets, Sun, Moon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+
+interface RoomState {
+  lights: boolean;
+  dimmer: number;
+  temp: number;
+  setpoint: number;
+  windowOpen: boolean;
+  humidity: number;
+}
+
+const DEFAULT_ROOMS: Record<string, RoomState> = {
+  kitchen: { lights: false, dimmer: 100, temp: 22.0, setpoint: 21, windowOpen: true, humidity: 55 },
+  bathroom: {
+    lights: false,
+    dimmer: 60,
+    temp: 23.5,
+    setpoint: 24,
+    windowOpen: false,
+    humidity: 72,
+  },
+  living: { lights: true, dimmer: 80, temp: 21.5, setpoint: 22, windowOpen: false, humidity: 48 },
+  bedroom: { lights: false, dimmer: 30, temp: 19.8, setpoint: 19, windowOpen: true, humidity: 45 },
+  office: { lights: true, dimmer: 90, temp: 21.0, setpoint: 21, windowOpen: false, humidity: 42 },
+};
+
+const ROOM_GA: Record<
+  string,
+  { light: string; dim: string; temp: string; setpoint: string; window: string }
+> = {
+  kitchen: { light: '1/1/0', dim: '1/1/1', temp: '3/1/0', setpoint: '2/1/0', window: '3/1/1' },
+  bathroom: { light: '1/2/0', dim: '1/2/1', temp: '3/2/0', setpoint: '2/2/0', window: '3/2/1' },
+  living: { light: '1/3/0', dim: '1/3/1', temp: '3/3/0', setpoint: '2/3/0', window: '3/3/1' },
+  bedroom: { light: '1/4/0', dim: '1/4/1', temp: '3/4/0', setpoint: '2/4/0', window: '3/4/1' },
+  office: { light: '1/5/0', dim: '1/5/1', temp: '3/5/0', setpoint: '2/5/0', window: '3/5/1' },
+};
+
+const ROOM_RECTS: Record<string, { x: number; y: number; w: number; h: number }> = {
+  kitchen: { x: 34, y: 34, w: 292, h: 212 },
+  bathroom: { x: 34, y: 254, w: 292, h: 212 },
+  living: { x: 334, y: 34, w: 262, h: 432 },
+  bedroom: { x: 604, y: 34, w: 262, h: 242 },
+  office: { x: 604, y: 284, w: 262, h: 182 },
+};
+
+const ROOM_CENTERS: Record<string, { x: number; y: number }> = {
+  kitchen: { x: 180, y: 140 },
+  bathroom: { x: 180, y: 360 },
+  living: { x: 465, y: 250 },
+  bedroom: { x: 735, y: 155 },
+  office: { x: 735, y: 375 },
+};
+
+const ROOM_ICONS: Record<string, string> = {
+  kitchen: '🍳',
+  bathroom: '🚿',
+  living: '🛋️',
+  bedroom: '🛏️',
+  office: '💻',
+};
 
 export const Floorplan = memo(function Floorplan() {
   const { t } = useTranslation();
-  const [lightsOn, setLightsOn] = useState(true);
-  const [windowOpen, setWindowOpen] = useState(false);
-  const [temp, setTemp] = useState(21.5);
+  const [rooms, setRooms] = useState<Record<string, RoomState>>(DEFAULT_ROOMS);
+  const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
+
+  const updateRoom = useCallback((id: string, patch: Partial<RoomState>) => {
+    setRooms((prev) => ({ ...prev, [id]: { ...prev[id], ...patch } }));
+  }, []);
+
+  const roomLabels: Record<string, string> = {
+    kitchen: t('floorplan.kitchen'),
+    bathroom: t('floorplan.bathroom'),
+    living: t('floorplan.livingRoom'),
+    bedroom: t('floorplan.bedroom'),
+    office: t('floorplan.office'),
+  };
 
   return (
-    <div
-      className="relative w-full h-full bg-slate-900/50 p-4"
-      role="application"
-      aria-label={t('dashboard.floorplan')}
-    >
-      {/* Simple SVG Floorplan */}
+    <div className="relative w-full" role="application" aria-label={t('dashboard.floorplan')}>
+      {/* SVG Floorplan — 5 rooms */}
       <svg
-        viewBox="0 0 800 400"
-        className="w-full h-full opacity-80"
+        viewBox="0 0 900 500"
+        className="w-full opacity-80"
         preserveAspectRatio="xMidYMid meet"
         role="img"
-        aria-label="Building layout with kitchen, bathroom, and living room"
+        aria-label={t('floorplan.interactiveView')}
       >
         <title>{t('dashboard.floorplan')}</title>
-        <desc>{t('dashboard.automation')}</desc>
-        {/* Walls */}
-        <path
-          d="M 50 50 L 750 50 L 750 350 L 50 350 Z"
+        {/* Outer walls */}
+        <rect
+          x="30"
+          y="30"
+          width="840"
+          height="440"
           fill="none"
           stroke="#475569"
           strokeWidth="8"
+          rx="4"
         />
-        <path d="M 350 50 L 350 350" fill="none" stroke="#475569" strokeWidth="8" />
-        <path d="M 50 200 L 350 200" fill="none" stroke="#475569" strokeWidth="8" />
+        {/* Vertical dividers */}
+        <line x1="330" y1="30" x2="330" y2="470" stroke="#475569" strokeWidth="6" />
+        <line x1="600" y1="30" x2="600" y2="470" stroke="#475569" strokeWidth="6" />
+        {/* Horizontal dividers */}
+        <line x1="30" y1="250" x2="330" y2="250" stroke="#475569" strokeWidth="6" />
+        <line x1="600" y1="280" x2="870" y2="280" stroke="#475569" strokeWidth="6" />
 
-        {/* Windows */}
+        {/* Door gaps */}
         <line
-          x1="150"
-          y1="50"
-          x2="250"
-          y2="50"
-          stroke={windowOpen ? '#38bdf8' : '#94a3b8'}
-          strokeWidth="12"
+          x1="330"
+          y1="160"
+          x2="330"
+          y2="210"
+          stroke="var(--color-bg, #0f172a)"
+          strokeWidth="8"
+        />
+        <line
+          x1="330"
+          y1="330"
+          x2="330"
+          y2="380"
+          stroke="var(--color-bg, #0f172a)"
+          strokeWidth="8"
+        />
+        <line
+          x1="600"
+          y1="140"
+          x2="600"
+          y2="190"
+          stroke="var(--color-bg, #0f172a)"
+          strokeWidth="8"
+        />
+        <line
+          x1="600"
+          y1="340"
+          x2="600"
+          y2="390"
+          stroke="var(--color-bg, #0f172a)"
+          strokeWidth="8"
+        />
+        <line
+          x1="160"
+          y1="250"
+          x2="210"
+          y2="250"
+          stroke="var(--color-bg, #0f172a)"
+          strokeWidth="8"
+        />
+
+        {/* Windows (colored based on state) */}
+        <line
+          x1="120"
+          y1="30"
+          x2="220"
+          y2="30"
+          stroke={rooms.kitchen.windowOpen ? '#38bdf8' : '#94a3b8'}
+          strokeWidth="10"
           className="transition-colors duration-500"
         />
-        <line x1="500" y1="350" x2="600" y2="350" stroke="#94a3b8" strokeWidth="12" />
-
-        {/* Doors */}
-        <path
-          d="M 350 150 Q 400 150 400 100"
-          fill="none"
-          stroke="#94a3b8"
-          strokeWidth="4"
-          strokeDasharray="4 4"
+        <line
+          x1="700"
+          y1="30"
+          x2="800"
+          y2="30"
+          stroke={rooms.bedroom.windowOpen ? '#38bdf8' : '#94a3b8'}
+          strokeWidth="10"
+          className="transition-colors duration-500"
         />
-        <line x1="350" y1="150" x2="350" y2="100" stroke="#1e293b" strokeWidth="10" />
+        <line x1="460" y1="470" x2="540" y2="470" stroke="#94a3b8" strokeWidth="10" />
 
-        {/* Rooms */}
-        <text x="200" y="130" fill="#64748b" fontSize="24" textAnchor="middle" fontFamily="Inter">
-          {t('floorplan.kitchen')}
-        </text>
-        <text x="200" y="280" fill="#64748b" fontSize="24" textAnchor="middle" fontFamily="Inter">
-          {t('floorplan.bathroom')}
-        </text>
-        <text x="550" y="200" fill="#64748b" fontSize="24" textAnchor="middle" fontFamily="Inter">
-          {t('floorplan.livingRoom')}
-        </text>
+        {/* Light overlays per room */}
+        {Object.entries(rooms).map(([id, room]) => {
+          const r = ROOM_RECTS[id];
+          return (
+            <motion.rect
+              key={id}
+              x={r.x}
+              y={r.y}
+              width={r.w}
+              height={r.h}
+              fill="#fef08a"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: room.lights ? 0.08 + room.dimmer * 0.0012 : 0 }}
+              transition={{ duration: 0.5 }}
+              className="pointer-events-none"
+              rx="2"
+            />
+          );
+        })}
 
-        {/* Light overlay */}
-        <motion.rect
-          x="354"
-          y="54"
-          width="392"
-          height="292"
-          fill="#fef08a"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: lightsOn ? 0.15 : 0 }}
-          transition={{ duration: 0.5 }}
-          className="pointer-events-none"
-        />
+        {/* Room labels + clickable areas */}
+        {Object.keys(roomLabels).map((id) => {
+          const c = ROOM_CENTERS[id];
+          const isSelected = selectedRoom === id;
+          return (
+            <g key={id}>
+              <rect
+                x={c.x - 70}
+                y={c.y - 40}
+                width={140}
+                height={80}
+                fill="transparent"
+                className="cursor-pointer"
+                onClick={() => setSelectedRoom(isSelected ? null : id)}
+                role="button"
+                tabIndex={0}
+                aria-label={roomLabels[id]}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setSelectedRoom(isSelected ? null : id);
+                  }
+                }}
+              />
+              {isSelected && (
+                <rect
+                  x={c.x - 70}
+                  y={c.y - 40}
+                  width={140}
+                  height={80}
+                  fill="none"
+                  stroke="var(--color-primary, #6366f1)"
+                  strokeWidth="2"
+                  rx="8"
+                  className="pointer-events-none"
+                />
+              )}
+              <text
+                x={c.x}
+                y={c.y - 8}
+                fill="#94a3b8"
+                fontSize="18"
+                textAnchor="middle"
+                fontFamily="Inter"
+                fontWeight={isSelected ? 600 : 400}
+              >
+                {roomLabels[id]}
+              </text>
+              <text
+                x={c.x}
+                y={c.y + 18}
+                fill={rooms[id].lights ? '#eab308' : '#64748b'}
+                fontSize="13"
+                textAnchor="middle"
+                fontFamily="monospace"
+              >
+                {rooms[id].temp.toFixed(1)}°C · {rooms[id].humidity}%
+              </text>
+            </g>
+          );
+        })}
       </svg>
 
-      {/* Interactive Elements Overlay */}
-      <div className="absolute top-1/4 right-1/4 transform translate-x-1/2 -translate-y-1/2">
-        <button
-          onClick={() => setLightsOn(!lightsOn)}
-          className={`p-3 rounded-full backdrop-blur-md border transition-all focus-ring ${
-            lightsOn
-              ? 'bg-yellow-400/20 border-yellow-400/50 text-yellow-300  neon-border-orange'
-              : 'bg-(--color-surface) border-(--color-border) text-(--color-muted)'
-          }`}
-          aria-label={
-            lightsOn ? t('floorplan.lights') + ' ' + t('common.active') : t('floorplan.lights')
-          }
-          aria-pressed={lightsOn}
+      {/* Room control panel */}
+      {selectedRoom && rooms[selectedRoom] && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mt-4 glass-panel rounded-2xl p-5 space-y-4"
         >
-          <Lightbulb size={24} aria-hidden="true" />
-        </button>
-      </div>
-
-      <div className="absolute top-12 left-1/4 transform -translate-x-1/2">
-        <button
-          onClick={() => setWindowOpen(!windowOpen)}
-          className={`p-2 rounded-full backdrop-blur-md border transition-all focus-ring ${
-            windowOpen
-              ? 'bg-sky-400/20 border-sky-400/50 text-sky-300 shadow-[0_0_15px_rgba(56,189,248,0.3)]'
-              : 'bg-(--color-surface) border-(--color-border) text-(--color-muted)'
-          }`}
-          aria-label={windowOpen ? t('floorplan.windowClose') : t('floorplan.windowOpen')}
-          aria-pressed={windowOpen}
-        >
-          <Wind size={20} aria-hidden="true" />
-        </button>
-      </div>
-
-      <div className="absolute bottom-1/4 right-1/3">
-        <div className="flex items-center gap-2 bg-(--color-surface) backdrop-blur-md border border-(--color-border) px-3 py-2 rounded-xl">
-          <Thermometer size={18} className="text-orange-400" aria-hidden="true" />
-          <span className="font-mono text-lg">{temp.toFixed(1)}°C</span>
-          <div className="flex flex-col ml-2 gap-0.5">
-            <button
-              onClick={() => setTemp((v) => v + 0.5)}
-              className="flex items-center justify-center min-w-[28px] min-h-[28px] text-(--color-muted) hover:text-(--color-text) leading-none focus-ring rounded"
-              aria-label={t('floorplan.tempIncrease')}
-            >
-              +
-            </button>
-            <button
-              onClick={() => setTemp((v) => v - 0.5)}
-              className="flex items-center justify-center min-w-[28px] min-h-[28px] text-(--color-muted) hover:text-(--color-text) leading-none focus-ring rounded"
-              aria-label={t('floorplan.tempDecrease')}
-            >
-              -
-            </button>
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-medium flex items-center gap-2">
+              <span className="text-xl" aria-hidden="true">
+                {ROOM_ICONS[selectedRoom]}
+              </span>
+              {roomLabels[selectedRoom]}
+            </h3>
+            <span className="text-xs font-mono text-(--color-muted)">
+              GA {ROOM_GA[selectedRoom].light}
+            </span>
           </div>
-        </div>
-      </div>
+
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+            {/* Lights */}
+            <div className="flex flex-col items-center gap-2">
+              <button
+                onClick={() => updateRoom(selectedRoom, { lights: !rooms[selectedRoom].lights })}
+                className={`p-3 rounded-full border transition-all focus-ring ${
+                  rooms[selectedRoom].lights
+                    ? 'bg-yellow-400/20 border-yellow-400/50 text-yellow-300'
+                    : 'bg-(--color-surface) border-(--color-border) text-(--color-muted)'
+                }`}
+                aria-label={t('floorplan.lights')}
+                aria-pressed={rooms[selectedRoom].lights}
+              >
+                <Lightbulb size={22} aria-hidden="true" />
+              </button>
+              <span className="text-xs text-(--color-muted)">{t('floorplan.lights')}</span>
+            </div>
+
+            {/* Window */}
+            <div className="flex flex-col items-center gap-2">
+              <button
+                onClick={() =>
+                  updateRoom(selectedRoom, { windowOpen: !rooms[selectedRoom].windowOpen })
+                }
+                className={`p-3 rounded-full border transition-all focus-ring ${
+                  rooms[selectedRoom].windowOpen
+                    ? 'bg-sky-400/20 border-sky-400/50 text-sky-300'
+                    : 'bg-(--color-surface) border-(--color-border) text-(--color-muted)'
+                }`}
+                aria-label={
+                  rooms[selectedRoom].windowOpen
+                    ? t('floorplan.windowClose')
+                    : t('floorplan.windowOpen')
+                }
+                aria-pressed={rooms[selectedRoom].windowOpen}
+              >
+                <Wind size={22} aria-hidden="true" />
+              </button>
+              <span className="text-xs text-(--color-muted)">{t('floorplan.window')}</span>
+            </div>
+
+            {/* Temperature */}
+            <div className="flex flex-col items-center gap-2">
+              <div className="flex items-center gap-1 bg-(--color-surface) border border-(--color-border) rounded-xl px-3 py-2">
+                <Thermometer size={16} className="text-orange-400" aria-hidden="true" />
+                <span className="font-mono text-sm">{rooms[selectedRoom].temp.toFixed(1)}°</span>
+              </div>
+              <span className="text-xs text-(--color-muted)">{t('floorplan.actual')}</span>
+            </div>
+
+            {/* Humidity */}
+            <div className="flex flex-col items-center gap-2">
+              <div className="flex items-center gap-1 bg-(--color-surface) border border-(--color-border) rounded-xl px-3 py-2">
+                <Droplets size={16} className="text-blue-400" aria-hidden="true" />
+                <span className="font-mono text-sm">{rooms[selectedRoom].humidity}%</span>
+              </div>
+              <span className="text-xs text-(--color-muted)">{t('floorplan.humidity')}</span>
+            </div>
+          </div>
+
+          {/* Dimmer */}
+          {rooms[selectedRoom].lights && (
+            <div className="space-y-1">
+              <label className="text-xs text-(--color-muted) flex items-center gap-1">
+                <Sun size={12} aria-hidden="true" />
+                {t('floorplan.brightness')} · {rooms[selectedRoom].dimmer}%
+                <span className="ml-auto text-[10px] font-mono text-(--color-muted)">
+                  GA {ROOM_GA[selectedRoom].dim}
+                </span>
+              </label>
+              <input
+                type="range"
+                min={5}
+                max={100}
+                value={rooms[selectedRoom].dimmer}
+                onChange={(e) => updateRoom(selectedRoom, { dimmer: Number(e.target.value) })}
+                className="w-full accent-(--color-primary)"
+                aria-label={t('floorplan.dimmer')}
+              />
+            </div>
+          )}
+
+          {/* Temperature setpoint */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Thermometer size={16} className="text-orange-400" aria-hidden="true" />
+              <span className="text-sm">
+                {t('floorplan.setpoint')}: {rooms[selectedRoom].setpoint.toFixed(1)}°C
+              </span>
+              <span className="text-[10px] font-mono text-(--color-muted)">
+                GA {ROOM_GA[selectedRoom].setpoint}
+              </span>
+            </div>
+            <div className="flex gap-1">
+              <button
+                onClick={() =>
+                  updateRoom(selectedRoom, {
+                    setpoint: Math.max(15, rooms[selectedRoom].setpoint - 0.5),
+                  })
+                }
+                className="flex items-center justify-center min-w-[32px] min-h-[32px] rounded-lg bg-(--color-surface) border border-(--color-border) text-(--color-muted) hover:text-(--color-text) focus-ring"
+                aria-label={t('floorplan.tempDecrease')}
+              >
+                <Moon size={14} aria-hidden="true" />
+              </button>
+              <button
+                onClick={() =>
+                  updateRoom(selectedRoom, {
+                    setpoint: Math.min(30, rooms[selectedRoom].setpoint + 0.5),
+                  })
+                }
+                className="flex items-center justify-center min-w-[32px] min-h-[32px] rounded-lg bg-(--color-surface) border border-(--color-border) text-(--color-muted) hover:text-(--color-text) focus-ring"
+                aria-label={t('floorplan.tempIncrease')}
+              >
+                <Sun size={14} aria-hidden="true" />
+              </button>
+            </div>
+          </div>
+        </motion.div>
+      )}
     </div>
   );
 });
