@@ -15,6 +15,7 @@ export function PWAUpdateNotification() {
   const { t } = useTranslation();
   const [showOfflineReady, setShowOfflineReady] = useState(false);
   const [showUpdating, setShowUpdating] = useState(false);
+  const [isRestarting, setIsRestarting] = useState(false);
   const [updateError, setUpdateError] = useState<string | null>(null);
 
   useRegisterSW({
@@ -70,10 +71,18 @@ export function PWAUpdateNotification() {
               </p>
             </div>
             <button
-              onClick={() => window.location.reload()}
-              className="shrink-0 rounded-lg bg-(--color-primary) px-3 py-1.5 text-xs font-medium text-white hover:opacity-90 transition-opacity focus-ring"
+              onClick={() => {
+                setIsRestarting(true);
+                setTimeout(() => window.location.reload(), 500);
+              }}
+              disabled={isRestarting}
+              className="shrink-0 rounded-lg bg-(--color-primary) px-3 py-1.5 text-xs font-medium text-white hover:opacity-90 transition-opacity disabled:opacity-50 focus-ring"
             >
-              {t('pwa.restart', 'Restart')}
+              {isRestarting ? (
+                <RefreshCw className="h-3 w-3 animate-spin" aria-hidden="true" />
+              ) : (
+                t('pwa.restart', 'Restart')
+              )}
             </button>
           </div>
         </motion.div>
@@ -121,7 +130,10 @@ export function PWAUpdateNotification() {
           exit={{ opacity: 0, y: -50 }}
           className="fixed left-4 right-4 top-4 z-50 md:left-auto md:right-4 md:max-w-md"
         >
-          <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-4 backdrop-blur-3xl">
+          <div
+            className="rounded-2xl border border-red-500/30 bg-red-500/10 p-4 backdrop-blur-3xl"
+            role="alert"
+          >
             <div className="flex items-start gap-3">
               <AlertCircle className="h-5 w-5 shrink-0 text-red-400" aria-hidden="true" />
               <div className="flex-1">

@@ -74,6 +74,22 @@
       "purpose": "maskable"
     }
   ],
+  "screenshots": [
+    {
+      "src": "/Nexus-HEMS-Dash/screenshot-wide.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Nexus HEMS Dashboard — Desktop View"
+    },
+    {
+      "src": "/Nexus-HEMS-Dash/screenshot-narrow.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Nexus HEMS Dashboard — Mobile View"
+    }
+  ],
   "shortcuts": [
     {
       "name": "Dashboard",

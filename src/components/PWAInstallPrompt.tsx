@@ -8,38 +8,17 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Download, X, Smartphone, Monitor, Zap, CheckCircle2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-
-interface BeforeInstallPromptEvent extends Event {
-  prompt: () => Promise<void>;
-  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
-}
-
-function isIOS(): boolean {
-  return (
-    /iPad|iPhone|iPod/.test(navigator.userAgent) &&
-    !(window as unknown as { MSStream?: unknown }).MSStream
-  );
-}
-
-function isStandalone(): boolean {
-  return (
-    window.matchMedia('(display-mode: standalone)').matches ||
-    (navigator as unknown as { standalone?: boolean }).standalone === true
-  );
-}
+import { usePWAInstall } from '../lib/pwa-install';
 
 export function PWAInstallPrompt() {
   const { t } = useTranslation();
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const { canInstall, isIOSDevice, isInstalled, install } = usePWAInstall();
   const [showPrompt, setShowPrompt] = useState(false);
   const [showIOSHint, setShowIOSHint] = useState(false);
-  const [installed, setInstalled] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   useEffect(() => {
-    // Don't show if already installed
-    if (isStandalone()) return;
-
-    let promptTimer: ReturnType<typeof setTimeout> | null = null;
+    if (isInstalled) return;
 
     // Check if dismissed in last 7 days
     const dismissed = localStorage.getItem('pwa-install-dismissed');
@@ -48,55 +27,37 @@ export function PWAInstallPrompt() {
       if (daysSinceDismissal < 7) return;
     }
 
-    const handleBeforeInstallPrompt = (e: Event) => {
-      e.preventDefault();
-      setDeferredPrompt(e as BeforeInstallPromptEvent);
+    const timer = setTimeout(() => {
+      if (canInstall) setShowPrompt(true);
+      else if (isIOSDevice && !localStorage.getItem('pwa-installed')) setShowIOSHint(true);
+    }, 20000);
 
-      // Show prompt after 20 seconds of engagement
-      promptTimer = setTimeout(() => {
-        setShowPrompt(true);
-      }, 20000);
-    };
+    return () => clearTimeout(timer);
+  }, [canInstall, isIOSDevice, isInstalled]);
 
-    const handleAppInstalled = () => {
-      setInstalled(true);
+  // Show success toast when installed
+  useEffect(() => {
+    if (!isInstalled) return;
+    const wasShown = localStorage.getItem('pwa-install-success-shown');
+    if (wasShown) return;
+
+    localStorage.setItem('pwa-install-success-shown', 'true');
+    // Use timeout to avoid synchronous setState in effect body
+    const timer1 = setTimeout(() => {
+      setShowSuccess(true);
       setShowPrompt(false);
-      setDeferredPrompt(null);
-      localStorage.setItem('pwa-installed', 'true');
-      // Show success briefly
-      setTimeout(() => setInstalled(false), 4000);
-    };
-
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    window.addEventListener('appinstalled', handleAppInstalled);
-
-    // Show iOS install hint if applicable
-    if (isIOS() && !localStorage.getItem('pwa-installed')) {
-      promptTimer = setTimeout(() => {
-        setShowIOSHint(true);
-      }, 15000);
-    }
-
+    }, 0);
+    const timer2 = setTimeout(() => setShowSuccess(false), 4000);
     return () => {
-      if (promptTimer) clearTimeout(promptTimer);
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-      window.removeEventListener('appinstalled', handleAppInstalled);
+      clearTimeout(timer1);
+      clearTimeout(timer2);
     };
-  }, []);
+  }, [isInstalled]);
 
   const handleInstallClick = async () => {
-    if (!deferredPrompt) return;
-
-    try {
-      await deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      if (outcome === 'accepted') {
-        console.log('[PWA] User accepted installation');
-      }
-      setDeferredPrompt(null);
+    const accepted = await install();
+    if (accepted) {
       setShowPrompt(false);
-    } catch (error) {
-      console.error('[PWA] Installation error:', error);
     }
   };
 
@@ -107,7 +68,7 @@ export function PWAInstallPrompt() {
   };
 
   // Installation success toast
-  if (installed) {
+  if (showSuccess) {
     return (
       <motion.div
         initial={{ opacity: 0, y: 50 }}

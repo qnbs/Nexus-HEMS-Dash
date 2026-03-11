@@ -9,10 +9,32 @@
       content="Real-time Home Energy Management System – PV, Battery, EV, KNX, Dynamic Tariffs & AI Optimizer"
     />
     <meta name="theme-color" content="#22ff88" />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Nexus-HEMS" />
     <link rel="icon" href="/Nexus-HEMS-Dash/favicon.ico" sizes="48x48" />
+    <link rel="icon" type="image/svg+xml" href="/Nexus-HEMS-Dash/icon.svg" />
     <link rel="icon" type="image/png" sizes="192x192" href="/Nexus-HEMS-Dash/icon-192x192.png" />
-    <link rel="apple-touch-icon" href="/Nexus-HEMS-Dash/icon-192x192.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/Nexus-HEMS-Dash/apple-touch-icon.png" />
     <link rel="manifest" href="/Nexus-HEMS-Dash/manifest.json" />
+    <!-- Set theme from localStorage BEFORE any CSS/React loads to prevent blank screen -->
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem('nexus-hems-store');
+          if (stored) {
+            var parsed = JSON.parse(stored);
+            var theme = (parsed.state && parsed.state.theme) || 'ocean-dark';
+            document.documentElement.setAttribute('data-theme', theme);
+          } else {
+            document.documentElement.setAttribute('data-theme', 'ocean-dark');
+          }
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'ocean-dark');
+        }
+      })();
+    </script>
     <!-- GitHub Pages SPA redirect handler -->
     <script>
       (function () {
@@ -66,32 +88,62 @@
     <script type="module" src="/src/main.tsx"></script>
     <script>
       // Fallback: if app hasn't rendered after 5s, show retry option
+      // This also works as recovery when React crashes or SW serves stale cache
       setTimeout(function () {
-        var el = document.getElementById('app-loading');
-        if (el && el.parentElement && el.parentElement.children.length === 1) {
+        var root = document.getElementById('root');
+        if (!root) return;
+        // Check if app rendered: look for theme-shell or visible content
+        var appRendered =
+          root.querySelector('.theme-shell') ||
+          root.querySelector('[data-reactroot]') ||
+          root.querySelector('header') ||
+          root.querySelector('main') ||
+          root.querySelector('nav');
+        if (!appRendered) {
+          // Clear root and show recovery UI
+          root.innerHTML = '';
+          var recovery = document.createElement('div');
+          recovery.style.cssText =
+            'display:flex;align-items:center;justify-content:center;min-height:100vh;background:#0f172a;color:#94a3b8;font-family:system-ui,sans-serif;flex-direction:column;gap:1rem;padding:2rem;text-align:center';
+          recovery.innerHTML =
+            '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#22ff88" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>' +
+            '<div style="font-size:1rem;color:#e2eaf4;font-weight:600">Nexus HEMS</div>' +
+            '<div style="font-size:0.875rem">The app could not be loaded.</div>' +
+            '<div style="font-size:0.75rem;max-width:300px">This can happen when the app updates. Clearing the cache usually fixes it.</div>';
           var btn = document.createElement('button');
-          btn.textContent = 'Retry';
+          btn.textContent = 'Clear Cache & Reload';
           btn.style.cssText =
-            'margin-top:1rem;padding:0.5rem 1.5rem;border-radius:0.5rem;border:1px solid #22ff88;background:transparent;color:#22ff88;cursor:pointer;font-size:0.875rem';
+            'margin-top:0.5rem;padding:0.75rem 2rem;border-radius:0.75rem;border:1px solid #22ff88;background:transparent;color:#22ff88;cursor:pointer;font-size:0.875rem;font-weight:600;transition:all 0.2s';
+          btn.onmouseenter = function () {
+            btn.style.background = 'rgba(34,255,136,0.15)';
+          };
+          btn.onmouseleave = function () {
+            btn.style.background = 'transparent';
+          };
           btn.onclick = function () {
-            // Unregister SW and hard reload to recover from broken cache
+            btn.disabled = true;
+            btn.textContent = 'Clearing…';
             if ('serviceWorker' in navigator) {
               navigator.serviceWorker.getRegistrations().then(function (regs) {
                 regs.forEach(function (r) {
                   r.unregister();
                 });
                 caches.keys().then(function (names) {
-                  names.forEach(function (n) {
-                    caches.delete(n);
+                  Promise.all(
+                    names.map(function (n) {
+                      return caches.delete(n);
+                    }),
+                  ).then(function () {
+                    window.location.reload();
                   });
-                  window.location.reload();
                 });
               });
             } else {
               window.location.reload();
             }
           };
-          el.appendChild(btn);
+          recovery.appendChild(btn);
+          root.appendChild(recovery);
         }
       }, 5000);
     </script>

@@ -25,7 +25,7 @@ export default defineConfig(({ mode }) => {
 
       VitePWA({
         registerType: 'autoUpdate',
-        includeAssets: ['favicon.ico', 'robots.txt', 'icon.svg'],
+        includeAssets: ['favicon.ico', 'robots.txt', 'icon.svg', 'apple-touch-icon.png'],
         manifest: false, // Use public/manifest.json
         workbox: {
           globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
@@ -88,6 +88,7 @@ export default defineConfig(({ mode }) => {
               options: {
                 cacheName: 'images',
                 expiration: { maxEntries: 150, maxAgeSeconds: 2_592_000 },
+                cacheableResponse: { statuses: [0, 200] },
               },
             },
             {
@@ -111,6 +112,8 @@ export default defineConfig(({ mode }) => {
           skipWaiting: true,
           clientsClaim: true,
         },
+        /* Ensure old precache entries from previous SW versions are purged */
+        selfDestroying: false,
         devOptions: { enabled: false, type: 'module' },
       }),
 

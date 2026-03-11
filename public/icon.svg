@@ -2,24 +2,58 @@
   <defs>
     <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#0a1520"/>
-      <stop offset="100%" stop-color="#0c1f34"/>
+      <stop offset="50%" stop-color="#0c1f34"/>
+      <stop offset="100%" stop-color="#091420"/>
     </linearGradient>
-    <linearGradient id="bolt" x1="0%" y1="0%" x2="100%" y2="100%">
+    <linearGradient id="bolt" x1="20%" y1="0%" x2="80%" y2="100%">
       <stop offset="0%" stop-color="#22ff88"/>
+      <stop offset="50%" stop-color="#1ae8a0"/>
       <stop offset="100%" stop-color="#00f0ff"/>
     </linearGradient>
+    <linearGradient id="bolt-shadow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#22ff88" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#00f0ff" stop-opacity="0.1"/>
+    </linearGradient>
     <filter id="glow">
-      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feGaussianBlur stdDeviation="10" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="inner-glow">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
       <feMerge>
         <feMergeNode in="blur"/>
         <feMergeNode in="SourceGraphic"/>
       </feMerge>
     </filter>
   </defs>
+  <!-- Background with rounded corners -->
   <rect width="512" height="512" rx="96" fill="url(#bg)"/>
-  <rect x="8" y="8" width="496" height="496" rx="90" fill="none" stroke="#22ff88" stroke-width="3" stroke-opacity="0.25"/>
+  <!-- Subtle grid pattern -->
+  <g opacity="0.04">
+    <line x1="128" y1="0" x2="128" y2="512" stroke="#22ff88" stroke-width="1"/>
+    <line x1="256" y1="0" x2="256" y2="512" stroke="#22ff88" stroke-width="1"/>
+    <line x1="384" y1="0" x2="384" y2="512" stroke="#22ff88" stroke-width="1"/>
+    <line x1="0" y1="128" x2="512" y2="128" stroke="#22ff88" stroke-width="1"/>
+    <line x1="0" y1="256" x2="512" y2="256" stroke="#22ff88" stroke-width="1"/>
+    <line x1="0" y1="384" x2="512" y2="384" stroke="#22ff88" stroke-width="1"/>
+  </g>
+  <!-- Border ring -->
+  <rect x="6" y="6" width="500" height="500" rx="92" fill="none" stroke="#22ff88" stroke-width="2" stroke-opacity="0.2"/>
+  <!-- Glow circle behind bolt -->
+  <circle cx="256" cy="256" r="140" fill="#22ff88" opacity="0.04"/>
+  <!-- Lightning bolt shadow -->
+  <g transform="translate(262, 262) scale(1.1) translate(-256, -256)">
+    <polygon points="280,80 160,280 240,280 232,432 352,232 272,232 280,80" fill="url(#bolt-shadow)"/>
+  </g>
   <!-- Lightning bolt -->
   <g filter="url(#glow)" transform="translate(256, 256) scale(1.1) translate(-256, -256)">
     <polygon points="280,80 160,280 240,280 232,432 352,232 272,232 280,80" fill="url(#bolt)" opacity="0.95"/>
+  </g>
+  <!-- Highlight on bolt -->
+  <g filter="url(#inner-glow)" transform="translate(256, 256) scale(0.85) translate(-256, -256)">
+    <polygon points="278,110 180,270 245,270 238,400 340,245 275,245 278,110" fill="white" opacity="0.08"/>
   </g>
 </svg>

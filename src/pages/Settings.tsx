@@ -1,4 +1,4 @@
-import { useState, type FormEvent, lazy, Suspense } from 'react';
+import { useState, useEffect, type FormEvent, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Settings as SettingsIcon,
@@ -26,6 +26,8 @@ import {
   RotateCcw,
   AlertTriangle,
   Sparkles,
+  Smartphone,
+  CheckCircle2,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -34,6 +36,7 @@ import { useAppStore, defaultSettings } from '../store';
 import { SYSTEM_PRESETS, type PVConfig } from '../types';
 import { resolveTheme, type ThemePreference } from '../lib/theme';
 import { ConfirmDialog, useConfirmDialog } from '../components/ConfirmDialog';
+import { usePWAInstall } from '../lib/pwa-install';
 
 const AISettingsPage = lazy(() => import('./AISettingsPage'));
 
@@ -112,6 +115,167 @@ function ToggleSwitch({
       <span className="sr-only">{label}</span>
       <div className="h-6 w-11 rounded-full border border-(--color-border) bg-(--color-surface) peer-checked:bg-(--color-primary) peer-focus:ring-2 peer-focus:ring-(--color-primary)/30 transition-colors duration-300 after:absolute after:top-[2px] after:left-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow-sm after:transition-transform after:duration-300 peer-checked:after:translate-x-5" />
     </label>
+  );
+}
+
+function PWASettingsSection() {
+  const { t } = useTranslation();
+  const { canInstall, isIOSDevice, isInstalled, install } = usePWAInstall();
+  const [swStatus, setSWStatus] = useState<'active' | 'waiting' | 'none'>('none');
+  const [cacheSize, setCacheSize] = useState<string | null>(null);
+  const [installing, setInstalling] = useState(false);
+
+  useEffect(() => {
+    // Check service worker status
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistration().then((reg) => {
+        if (reg?.active) setSWStatus(reg.waiting ? 'waiting' : 'active');
+      });
+    }
+    // Estimate cache size
+    if ('storage' in navigator && 'estimate' in navigator.storage) {
+      navigator.storage.estimate().then((estimate) => {
+        if (estimate.usage) {
+          const mb = (estimate.usage / (1024 * 1024)).toFixed(1);
+          setCacheSize(`${mb} MB`);
+        }
+      });
+    }
+  }, []);
+
+  const handleInstall = async () => {
+    setInstalling(true);
+    await install();
+    setInstalling(false);
+  };
+
+  const handleClearCache = async () => {
+    if ('serviceWorker' in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      for (const r of regs) await r.unregister();
+      const names = await caches.keys();
+      await Promise.all(names.map((n) => caches.delete(n)));
+      window.location.reload();
+    }
+  };
+
+  const sectionClass =
+    'rounded-2xl border border-(--color-border) bg-(--color-surface)/50 p-6 backdrop-blur-sm';
+  const sectionHeaderClass =
+    'mb-5 flex items-center gap-3 text-lg font-semibold text-(--color-text)';
+
+  return (
+    <section className={sectionClass}>
+      <h2 className={sectionHeaderClass}>
+        <Smartphone size={20} className="text-sky-400" />
+        {t('settings.pwaTitle', 'Progressive Web App')}
+      </h2>
+      <div className="space-y-4">
+        {/* Install status */}
+        <div className="flex items-center justify-between p-4 rounded-xl border border-(--color-border) bg-(--color-surface)">
+          <div>
+            <p className="font-medium text-sm">{t('settings.pwaInstallStatus', 'Installation')}</p>
+            <p className="text-xs text-(--color-muted)">
+              {isInstalled
+                ? t('settings.pwaInstalled', 'App is installed on this device')
+                : isIOSDevice
+                  ? t('settings.pwaIOSHint', 'Use Safari Share → "Add to Home Screen" to install')
+                  : canInstall
+                    ? t('settings.pwaCanInstall', 'App can be installed as native app')
+                    : t(
+                        'settings.pwaNotAvailable',
+                        'Install not available (already installed or unsupported browser)',
+                      )}
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            {isInstalled ? (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 px-3 py-1.5 text-xs font-medium text-emerald-400">
+                <CheckCircle2 size={14} />
+                {t('settings.pwaInstalledBadge', 'Installed')}
+              </span>
+            ) : canInstall ? (
+              <motion.button
+                onClick={handleInstall}
+                disabled={installing}
+                className="flex items-center gap-2 rounded-xl bg-(--color-primary) px-4 py-2 text-sm font-medium text-white hover:opacity-90 transition-opacity disabled:opacity-50 focus-ring"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <Download size={16} />
+                {installing
+                  ? t('settings.pwaInstalling', 'Installing…')
+                  : t('pwa.install', 'Install')}
+              </motion.button>
+            ) : null}
+          </div>
+        </div>
+
+        {/* Service Worker status */}
+        <div className="flex items-center justify-between p-4 rounded-xl border border-(--color-border) bg-(--color-surface)">
+          <div>
+            <p className="font-medium text-sm">
+              {t('settings.pwaServiceWorker', 'Service Worker')}
+            </p>
+            <p className="text-xs text-(--color-muted)">
+              {swStatus === 'active'
+                ? t('settings.pwaSWActive', 'Active — offline mode enabled')
+                : swStatus === 'waiting'
+                  ? t('settings.pwaSWWaiting', 'Update waiting — restart to apply')
+                  : t('settings.pwaSWNone', 'Not registered')}
+            </p>
+          </div>
+          <span
+            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium ${
+              swStatus === 'active'
+                ? 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-400'
+                : swStatus === 'waiting'
+                  ? 'bg-amber-500/10 border border-amber-500/30 text-amber-400'
+                  : 'bg-(--color-surface-strong) border border-(--color-border) text-(--color-muted)'
+            }`}
+          >
+            <span
+              className={`h-2 w-2 rounded-full ${
+                swStatus === 'active'
+                  ? 'bg-emerald-400'
+                  : swStatus === 'waiting'
+                    ? 'bg-amber-400'
+                    : 'bg-(--color-muted)'
+              }`}
+              aria-hidden="true"
+            />
+            {swStatus === 'active'
+              ? t('common.active', 'Active')
+              : swStatus === 'waiting'
+                ? t('common.waiting', 'Waiting')
+                : t('common.inactive', 'Inactive')}
+          </span>
+        </div>
+
+        {/* Cache info */}
+        <div className="flex items-center justify-between p-4 rounded-xl border border-(--color-border) bg-(--color-surface)">
+          <div>
+            <p className="font-medium text-sm">{t('settings.pwaCache', 'Cache Storage')}</p>
+            <p className="text-xs text-(--color-muted)">
+              {cacheSize
+                ? t('settings.pwaCacheSize', 'Using {{size}} of device storage', {
+                    size: cacheSize,
+                  })
+                : t('settings.pwaCacheUnknown', 'Storage usage unavailable')}
+            </p>
+          </div>
+          <motion.button
+            onClick={handleClearCache}
+            className="flex items-center gap-2 rounded-xl border border-(--color-border) bg-(--color-surface-strong) px-3 py-2 text-xs text-(--color-muted) hover:text-rose-400 hover:border-rose-500/30 transition-colors focus-ring"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <Trash2 size={14} />
+            {t('settings.pwaClearCache', 'Clear Cache')}
+          </motion.button>
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -1892,6 +2056,9 @@ export function Settings() {
                       </div>
                     </div>
                   </section>
+
+                  {/* PWA / App Installation */}
+                  <PWASettingsSection />
 
                   {/* Reset */}
                   <section className={sectionClass}>

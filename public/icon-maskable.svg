@@ -2,16 +2,28 @@
   <defs>
     <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#0a1520"/>
-      <stop offset="100%" stop-color="#0c1f34"/>
+      <stop offset="50%" stop-color="#0c1f34"/>
+      <stop offset="100%" stop-color="#091420"/>
     </linearGradient>
-    <linearGradient id="bolt" x1="0%" y1="0%" x2="100%" y2="100%">
+    <linearGradient id="bolt" x1="20%" y1="0%" x2="80%" y2="100%">
       <stop offset="0%" stop-color="#22ff88"/>
+      <stop offset="50%" stop-color="#1ae8a0"/>
       <stop offset="100%" stop-color="#00f0ff"/>
     </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
   </defs>
-  <!-- Maskable: full bleed with safe zone padding -->
+  <!-- Full bleed background for maskable (no rounded corners) -->
   <rect width="512" height="512" fill="url(#bg)"/>
-  <g transform="translate(256, 256) scale(0.75) translate(-256, -256)">
-    <polygon points="280,80 160,280 240,280 232,432 352,232 272,232 280,80" fill="url(#bolt)"/>
+  <!-- Subtle radial glow -->
+  <circle cx="256" cy="256" r="120" fill="#22ff88" opacity="0.05"/>
+  <!-- Lightning bolt scaled to safe zone (80% of center = scale 0.65) -->
+  <g filter="url(#glow)" transform="translate(256, 256) scale(0.65) translate(-256, -256)">
+    <polygon points="280,80 160,280 240,280 232,432 352,232 272,232 280,80" fill="url(#bolt)" opacity="0.95"/>
   </g>
 </svg>
