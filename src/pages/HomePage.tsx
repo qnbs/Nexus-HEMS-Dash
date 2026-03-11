@@ -3,6 +3,8 @@ import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { Sun, Battery, Home, Zap, Activity, TrendingUp } from 'lucide-react';
 import { useAppStore } from '../store';
+import { getDisplayData } from '../lib/demo-data';
+import { DemoBadge } from '../components/DemoBadge';
 import { useLegacySendCommand } from '../core/useLegacySendCommand';
 import { PageHeader } from '../components/layout/PageHeader';
 import { SankeyDiagram } from '../components/SankeyDiagram';
@@ -12,7 +14,10 @@ import { Link } from 'react-router-dom';
 
 function HomePageComponent() {
   const { t } = useTranslation();
-  const energyData = useAppStore((s) => s.energyData);
+  const storeData = useAppStore((s) => s.energyData);
+  const connected = useAppStore((s) => s.connected);
+  const energyData = getDisplayData(storeData, connected);
+  const isDemo = !connected && energyData !== storeData;
   const { sendCommand } = useLegacySendCommand();
 
   return (
@@ -21,6 +26,7 @@ function HomePageComponent() {
         title={t('nav.home', 'Overview')}
         subtitle={t('common.tagline')}
         icon={<Home size={22} aria-hidden="true" />}
+        actions={isDemo ? <DemoBadge /> : undefined}
       />
 
       {/* KPI Grid */}

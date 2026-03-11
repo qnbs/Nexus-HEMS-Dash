@@ -3,12 +3,17 @@ import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { Battery } from 'lucide-react';
 import { useAppStore } from '../store';
+import { getDisplayData } from '../lib/demo-data';
+import { DemoBadge } from '../components/DemoBadge';
 import { useLegacySendCommand } from '../core/useLegacySendCommand';
 import { PageHeader } from '../components/layout/PageHeader';
 
 function StoragePageComponent() {
   const { t } = useTranslation();
-  const energyData = useAppStore((s) => s.energyData);
+  const storeData = useAppStore((s) => s.energyData);
+  const connected = useAppStore((s) => s.connected);
+  const energyData = getDisplayData(storeData, connected);
+  const isDemo = !connected && energyData !== storeData;
   const settings = useAppStore((s) => s.settings);
   const { sendCommand } = useLegacySendCommand();
 
@@ -25,6 +30,7 @@ function StoragePageComponent() {
         title={t('nav.storage', 'Storage')}
         subtitle={t('storage.subtitle', 'Battery management & strategy')}
         icon={<Battery size={22} aria-hidden="true" />}
+        actions={isDemo ? <DemoBadge /> : undefined}
       />
 
       {/* Battery Visual */}

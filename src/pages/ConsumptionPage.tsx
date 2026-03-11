@@ -3,11 +3,16 @@ import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { Home, Zap } from 'lucide-react';
 import { useAppStore } from '../store';
+import { getDisplayData } from '../lib/demo-data';
+import { DemoBadge } from '../components/DemoBadge';
 import { PageHeader } from '../components/layout/PageHeader';
 
 function ConsumptionPageComponent() {
   const { t } = useTranslation();
-  const energyData = useAppStore((s) => s.energyData);
+  const storeData = useAppStore((s) => s.energyData);
+  const connected = useAppStore((s) => s.connected);
+  const energyData = getDisplayData(storeData, connected);
+  const isDemo = !connected && energyData !== storeData;
 
   const consumers = [
     {
@@ -41,6 +46,7 @@ function ConsumptionPageComponent() {
         title={t('nav.consumption', 'Consumption')}
         subtitle={t('consumption.subtitle', 'House load & consumer analysis')}
         icon={<Home size={22} aria-hidden="true" />}
+        actions={isDemo ? <DemoBadge /> : undefined}
       />
 
       {/* Total Consumption */}

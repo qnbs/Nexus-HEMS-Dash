@@ -12,9 +12,9 @@ describe('Dashboard Sharing', () => {
   });
 
   describe('generateShareLink', () => {
-    it('should generate a valid share URL', () => {
+    it('should generate a valid share URL with query params', () => {
       const link = generateShareLink('dash-123', 'token-abc');
-      expect(link).toContain('/shared/dash-123');
+      expect(link).toContain('shared=dash-123');
       expect(link).toContain('token=token-abc');
     });
 

@@ -3,13 +3,18 @@ import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { Car, TrendingDown, TrendingUp, Zap, Leaf } from 'lucide-react';
 import { useAppStore } from '../store';
+import { getDisplayData } from '../lib/demo-data';
+import { DemoBadge } from '../components/DemoBadge';
 import { useLegacySendCommand } from '../core/useLegacySendCommand';
 import { PageHeader } from '../components/layout/PageHeader';
 import { ControlPanel } from '../components/ControlPanel';
 
 function EVPageComponent() {
   const { t } = useTranslation();
-  const energyData = useAppStore((s) => s.energyData);
+  const storeData = useAppStore((s) => s.energyData);
+  const connected = useAppStore((s) => s.connected);
+  const energyData = getDisplayData(storeData, connected);
+  const isDemo = !connected && energyData !== storeData;
   const { sendCommand } = useLegacySendCommand();
   const settings = useAppStore((s) => s.settings);
 
@@ -64,6 +69,7 @@ function EVPageComponent() {
         title={t('nav.ev', 'EV Charging')}
         subtitle={t('ev.subtitle', 'Wallbox control & charging strategy')}
         icon={<Car size={22} aria-hidden="true" />}
+        actions={isDemo ? <DemoBadge /> : undefined}
       />
 
       {/* EV Status */}

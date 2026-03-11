@@ -4,6 +4,7 @@ export const de = {
     tagline: 'Echtzeit-Orchestrierung für PV, Speicher, Wärme und Mobilität',
     connected: 'Verbunden',
     disconnected: 'Getrennt',
+    demoMode: 'Demo',
     live: 'Live',
     today: 'heute',
     apply: 'Anwenden',

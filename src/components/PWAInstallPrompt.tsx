@@ -74,7 +74,7 @@ export function PWAInstallPrompt() {
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 50 }}
-        className="fixed bottom-4 left-4 right-4 z-50 md:left-auto md:right-4 md:max-w-sm"
+        className="fixed bottom-20 left-4 right-4 z-50 lg:bottom-4 md:left-auto md:right-4 md:max-w-sm"
       >
         <div
           className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 backdrop-blur-xl p-4 shadow-2xl flex items-center gap-3"
@@ -102,7 +102,7 @@ export function PWAInstallPrompt() {
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 50 }}
-          className="fixed bottom-4 left-4 right-4 z-50 md:left-auto md:right-4 md:max-w-md"
+          className="fixed bottom-20 left-4 right-4 z-50 lg:bottom-4 md:left-auto md:right-4 md:max-w-md"
         >
           <div className="glass-panel rounded-2xl border-2 border-(--color-primary)/30 p-6 shadow-2xl">
             <button
@@ -140,7 +140,7 @@ export function PWAInstallPrompt() {
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 50 }}
-        className="fixed bottom-4 left-4 right-4 z-50 md:left-auto md:right-4 md:max-w-md"
+        className="fixed bottom-20 left-4 right-4 z-50 lg:bottom-4 md:left-auto md:right-4 md:max-w-md"
       >
         <div className="glass-panel rounded-2xl border-2 border-(--color-primary)/30 p-6 shadow-2xl">
           <div className="flex items-start justify-between gap-4">

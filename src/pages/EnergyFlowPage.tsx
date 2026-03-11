@@ -3,14 +3,18 @@ import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { Activity } from 'lucide-react';
 import { useAppStore } from '../store';
+import { getDisplayData } from '../lib/demo-data';
+import { DemoBadge } from '../components/DemoBadge';
 import { PageHeader } from '../components/layout/PageHeader';
 import { SankeyDiagram } from '../components/SankeyDiagram';
 import { LivePriceWidget } from '../components/LivePriceWidget';
 
 function EnergyFlowPageComponent() {
   const { t } = useTranslation();
-  const energyData = useAppStore((s) => s.energyData);
+  const storeData = useAppStore((s) => s.energyData);
   const connected = useAppStore((s) => s.connected);
+  const energyData = getDisplayData(storeData, connected);
+  const isDemo = !connected && energyData !== storeData;
 
   return (
     <div className="space-y-6">
@@ -20,6 +24,7 @@ function EnergyFlowPageComponent() {
         icon={<Activity size={22} aria-hidden="true" />}
         actions={
           <div className="flex items-center gap-2">
+            {isDemo && <DemoBadge />}
             <span
               className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium ${connected ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}`}
             >

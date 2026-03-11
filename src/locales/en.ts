@@ -4,6 +4,7 @@ export const en = {
     tagline: 'Real-time orchestration for PV, storage, heat and mobility',
     connected: 'Connected',
     disconnected: 'Disconnected',
+    demoMode: 'Demo',
     live: 'Live',
     today: 'today',
     apply: 'Apply',

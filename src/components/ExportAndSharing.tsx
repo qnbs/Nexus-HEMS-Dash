@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import QRCodeLib from 'qrcode';
 
 import { generateMonthlyStats, downloadPdfReport } from '../lib/pdf-report';
-import { generateShareLink, createSharedDashboard } from '../lib/sharing';
+import { generateShareLink, createSharedDashboard, shareViaWebShare } from '../lib/sharing';
 
 export const ExportAndSharing = memo(function ExportAndSharing() {
   const { t } = useTranslation();
@@ -43,6 +43,19 @@ export const ExportAndSharing = memo(function ExportAndSharing() {
       );
 
       const link = generateShareLink(dashboard.id, dashboard.shareToken);
+
+      // Try Web Share API first (mobile-friendly)
+      const shared = await shareViaWebShare(
+        t('export.defaultDashboardName', 'My HEMS Dashboard'),
+        link,
+      );
+      if (shared) {
+        setSuccessMessage(t('common.success'));
+        setTimeout(() => setSuccessMessage(null), 3000);
+        return;
+      }
+
+      // Fallback: show link + QR code
       setShareLink(link);
 
       // Generate QR code

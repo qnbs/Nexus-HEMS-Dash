@@ -21,11 +21,37 @@ export interface ShareInvitation {
 }
 
 /**
+ * Returns the app's base URL including the deployment base path (e.g. /Nexus-HEMS-Dash/)
+ */
+function getAppBaseUrl(): string {
+  const base = import.meta.env.BASE_URL ?? '/';
+  const origin = window.location.origin;
+  // Ensure no double slashes
+  return `${origin}${base.endsWith('/') ? base.slice(0, -1) : base}`;
+}
+
+/**
  * Generates a shareable link for the dashboard
  */
 export function generateShareLink(dashboardId: string, token: string): string {
-  const baseUrl = window.location.origin;
-  return `${baseUrl}/shared/${dashboardId}?token=${token}`;
+  const baseUrl = getAppBaseUrl();
+  return `${baseUrl}/?shared=${encodeURIComponent(dashboardId)}&token=${encodeURIComponent(token)}`;
+}
+
+/**
+ * Attempts to share via the Web Share API, returns true if shared, false if not available
+ */
+export async function shareViaWebShare(title: string, url: string): Promise<boolean> {
+  if (typeof navigator !== 'undefined' && navigator.share) {
+    try {
+      await navigator.share({ title, url });
+      return true;
+    } catch {
+      // User cancelled or share failed
+      return false;
+    }
+  }
+  return false;
 }
 
 /**
@@ -130,11 +156,20 @@ export async function revokeAccess(dashboardId: string, userEmail: string): Prom
   localStorage.setItem(`shared-dashboard-${dashboardId}`, JSON.stringify(dashboard));
 }
 
-// Helper functions
+// Helper functions — use crypto.getRandomValues for secure token generation
 function generateToken(): string {
-  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  const array = new Uint8Array(20);
+  crypto.getRandomValues(array);
+  return Array.from(array, (b) => b.toString(36).padStart(2, '0'))
+    .join('')
+    .slice(0, 24);
 }
 
 function generateId(): string {
-  return `dash-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+  const array = new Uint8Array(8);
+  crypto.getRandomValues(array);
+  const suffix = Array.from(array, (b) => b.toString(36).padStart(2, '0'))
+    .join('')
+    .slice(0, 9);
+  return `dash-${Date.now()}-${suffix}`;
 }

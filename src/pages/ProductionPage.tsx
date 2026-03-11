@@ -3,12 +3,17 @@ import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { Sun } from 'lucide-react';
 import { useAppStore } from '../store';
+import { getDisplayData } from '../lib/demo-data';
+import { DemoBadge } from '../components/DemoBadge';
 import { PageHeader } from '../components/layout/PageHeader';
 import { PredictiveForecast } from '../components/PredictiveForecast';
 
 function ProductionPageComponent() {
   const { t } = useTranslation();
-  const energyData = useAppStore((s) => s.energyData);
+  const storeData = useAppStore((s) => s.energyData);
+  const connected = useAppStore((s) => s.connected);
+  const energyData = getDisplayData(storeData, connected);
+  const isDemo = !connected && energyData !== storeData;
 
   const selfConsumptionRatio =
     energyData.pvPower > 0
@@ -26,6 +31,7 @@ function ProductionPageComponent() {
         title={t('nav.production', 'Production')}
         subtitle={t('production.subtitle', 'Solar PV generation & forecast')}
         icon={<Sun size={22} aria-hidden="true" />}
+        actions={isDemo ? <DemoBadge /> : undefined}
       />
 
       {/* PV Stats Grid */}
