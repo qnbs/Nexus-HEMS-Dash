@@ -148,7 +148,7 @@ class BackgroundSyncService {
    * Execute a specific action
    */
   private async executeAction(action: OfflineAction): Promise<void> {
-    const baseUrl = import.meta.env.PROD ? 'https://your-api.example.com' : 'http://localhost:3000';
+    const baseUrl = import.meta.env.VITE_API_URL || window.location.origin;
 
     switch (action.type) {
       case 'ev-control':

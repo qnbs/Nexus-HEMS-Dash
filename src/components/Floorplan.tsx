@@ -208,6 +208,7 @@ export const Floorplan = memo(function Floorplan() {
                 role="button"
                 tabIndex={0}
                 aria-label={roomLabels[id]}
+                aria-expanded={isSelected}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();

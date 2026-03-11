@@ -209,7 +209,10 @@ export function ControlPanel({
           <button
             onClick={() => {
               hapticModeChange();
-              sendCommand('SET_BATTERY_POWER', -3000);
+              sendCommand(
+                'SET_BATTERY_POWER',
+                -(settings.systemConfig.battery.maxChargeRateKW * 1000),
+              );
             }}
             className="btn-secondary flex-1 focus-ring"
           >

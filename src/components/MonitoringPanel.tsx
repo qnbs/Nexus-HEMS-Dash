@@ -34,6 +34,7 @@ interface AdapterRowProps {
 }
 
 function AdapterRow({ name, protocol, connected, latencyMs }: AdapterRowProps) {
+  const { t } = useTranslation();
   return (
     <tr className="border-b border-(--color-border)/20 last:border-b-0">
       <td className="py-2 px-3 text-sm text-(--color-text)">{name}</td>
@@ -46,8 +47,9 @@ function AdapterRow({ name, protocol, connected, latencyMs }: AdapterRowProps) {
         >
           <span
             className={`w-1.5 h-1.5 rounded-full ${connected ? 'bg-emerald-400' : 'bg-red-400'}`}
+            aria-hidden="true"
           />
-          {connected ? 'Connected' : 'Disconnected'}
+          {connected ? t('common.connected') : t('common.disconnected')}
         </span>
       </td>
       <td className="py-2 px-3 text-xs text-(--color-text-secondary) text-right">

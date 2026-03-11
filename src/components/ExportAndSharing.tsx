@@ -1,6 +1,6 @@
 import { useState, memo } from 'react';
-import { motion } from 'motion/react';
-import { FileDown, Share2, QrCode, Copy, Check } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { FileDown, Share2, QrCode, Copy, Check, AlertTriangle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import QRCodeLib from 'qrcode';
 
@@ -13,26 +13,33 @@ export const ExportAndSharing = memo(function ExportAndSharing() {
   const [shareLink, setShareLink] = useState<string | null>(null);
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const handleDownloadPdf = async () => {
     setIsGenerating(true);
+    setErrorMessage(null);
     try {
       const now = new Date();
       const stats = await generateMonthlyStats(now.getFullYear(), now.getMonth());
       await downloadPdfReport(stats);
+      setSuccessMessage(t('common.success'));
+      setTimeout(() => setSuccessMessage(null), 3000);
     } catch (error) {
       console.error('PDF generation error:', error);
-      alert(t('export.pdfError'));
+      setErrorMessage(t('export.pdfError'));
+      setTimeout(() => setErrorMessage(null), 5000);
     } finally {
       setIsGenerating(false);
     }
   };
 
   const handleGenerateShareLink = async () => {
+    setErrorMessage(null);
     try {
       const dashboard = await createSharedDashboard(
         t('export.defaultDashboardName', 'My HEMS Dashboard'),
-        'user@example.com', // In production, use actual user email
+        'shared@nexus-hems.local',
       );
 
       const link = generateShareLink(dashboard.id, dashboard.shareToken);
@@ -50,7 +57,8 @@ export const ExportAndSharing = memo(function ExportAndSharing() {
       setQrCodeUrl(qrUrl);
     } catch (error) {
       console.error('Share link generation error:', error);
-      alert(t('export.linkError'));
+      setErrorMessage(t('export.linkError'));
+      setTimeout(() => setErrorMessage(null), 5000);
     }
   };
 
@@ -65,6 +73,34 @@ export const ExportAndSharing = memo(function ExportAndSharing() {
   return (
     <div className="glass-panel rounded-3xl p-6">
       <h3 className="mb-6 text-lg font-semibold text-(--color-text)">{t('export.title')}</h3>
+
+      {/* Status Messages */}
+      <AnimatePresence>
+        {errorMessage && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="mb-4 flex items-center gap-2 rounded-2xl border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-400"
+            role="alert"
+          >
+            <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden="true" />
+            {errorMessage}
+          </motion.div>
+        )}
+        {successMessage && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="mb-4 flex items-center gap-2 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-400"
+            role="status"
+          >
+            <Check className="h-4 w-4 shrink-0" aria-hidden="true" />
+            {successMessage}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div className="space-y-4">
         {/* PDF Export */}

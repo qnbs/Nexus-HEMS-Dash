@@ -75,7 +75,7 @@ export default function AISettingsPage() {
       setTimeout(() => setSuccess(null), 3000);
       await refreshKeys();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save key');
+      setError(err instanceof Error ? err.message : t('common.error'));
     } finally {
       setSaving(false);
     }
@@ -325,7 +325,7 @@ export default function AISettingsPage() {
                   type="button"
                   onClick={() => setShowKey(!showKey)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-(--color-muted)"
-                  aria-label={showKey ? 'Hide key' : 'Show key'}
+                  aria-label={showKey ? t('common.hideKey') : t('common.showKey')}
                 >
                   {showKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>

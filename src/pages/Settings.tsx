@@ -118,6 +118,7 @@ function ToggleSwitch({
 export function Settings() {
   const { t, i18n } = useTranslation();
   const [saved, setSaved] = useState(false);
+  const [importSuccess, setImportSuccess] = useState(false);
   const [activeTab, setActiveTab] = useState<SettingsTab>('appearance');
   const [showTokens, setShowTokens] = useState<Record<string, boolean>>({});
   const confirm = useConfirmDialog();
@@ -190,10 +191,16 @@ export function Settings() {
           try {
             const data = JSON.parse(text);
             updateSettings(data);
-            setSaved(true);
-            setTimeout(() => setSaved(false), 3000);
+            setImportSuccess(true);
+            setTimeout(() => setImportSuccess(false), 4000);
           } catch {
-            console.error('Invalid settings file');
+            confirm.openDialog({
+              title: t('common.error'),
+              message: t('common.importError'),
+              confirmText: t('common.dismiss'),
+              variant: 'danger',
+              onConfirm: () => {},
+            });
           }
         };
         input.click();
@@ -282,6 +289,22 @@ export function Settings() {
           </motion.button>
         </div>
       </motion.div>
+
+      {/* Import Success Banner */}
+      <AnimatePresence>
+        {importSuccess && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="mb-4 flex items-center gap-2 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-400"
+            role="status"
+          >
+            <Check size={16} className="shrink-0" aria-hidden="true" />
+            {t('common.importSuccess')}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Sidebar Navigation */}

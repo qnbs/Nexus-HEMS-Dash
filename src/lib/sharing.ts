@@ -55,11 +55,9 @@ export async function createSharedDashboard(
  * Sends invitation to join shared dashboard
  */
 export async function sendShareInvitation(invitation: ShareInvitation): Promise<boolean> {
-  console.log('Sending invitation:', invitation);
-
   // In production, send email via backend
   const inviteLink = generateShareLink(invitation.dashboardId, generateToken());
-  console.log('Invitation link:', inviteLink);
+  void inviteLink; // will be used when backend email service is implemented
 
   return true;
 }
