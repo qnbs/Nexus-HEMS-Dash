@@ -4,7 +4,7 @@
 
 ### The Definitive Open-Source Home Energy Management System
 
-![Version](https://img.shields.io/badge/v3.5-stable-22ff88?style=for-the-badge)
+![Version](https://img.shields.io/badge/v3.7-stable-22ff88?style=for-the-badge)
 ![React 19](https://img.shields.io/badge/React-19-00f0ff?style=for-the-badge&logo=react)
 ![TypeScript 5.8](https://img.shields.io/badge/TypeScript-5.8-3178c6?style=for-the-badge&logo=typescript)
 ![Tailwind v4](https://img.shields.io/badge/Tailwind-v4-38bdf8?style=for-the-badge&logo=tailwindcss)
@@ -481,99 +481,68 @@ docker-compose up -d   # Coming Q3 2026
 ## 📝 Changelog
 
 <details>
+<summary><b>v3.7.0</b> — PWA Icons, White-Screen Fix & README Overhaul</summary>
+
+- PWA icons generated (72–512px + maskable variants, favicon.ico)
+- Fixed blank white screen on mobile (body background-color, reduced retry timeout)
+- manifest.json cleaned (removed non-existent screenshot/shortcut icon refs)
+- robots.txt added, vite.config.ts includeAssets verified
+- README fully restructured, version synced to 3.7.0
+- German section condensed (removed per-version highlights bloat)
+</details>
+
+<details>
+<summary><b>v3.6.x</b> — File Operations, Dialogs & i18n Polish</summary>
+
+- AI Settings page with BYOK key vault (7 providers, AES-GCM 256-bit)
+- KNX Floorplan: 8 room types with lighting, blinds, HVAC, scenes
+- Confirmation dialogs for export/import/reset, inline success/error toasts
+- Settings: all 12 inputs controlled, hardcoded power values removed
+- 70+ new i18n keys (EN/DE), 100% coverage verified
+- Breadcrumbs fix for `/settings/ai` route
+- PDF export success toast, QR code download button
+- File size validation (1 MB) on Settings import
+</details>
+
+<details>
 <summary><b>v3.5.0</b> — AI Model Update & UX Polish</summary>
 
 - AI models updated: Gemini 3.1, Claude 4 Haiku, o4-mini, Llama 4, Qwen 3
-- Scroll-to-top on page navigation (no more jumping/jarring)
-- Version strings and documentation updated across all locales
-- README audit: removed outdated references, added v3.4/v3.5 German highlights
-- Help page: added GitHub repository link in About section
+- Scroll-to-top on page navigation
+- Help page: GitHub repository link added
 </details>
 
 <details>
 <summary><b>v3.4.0</b> — Settings Overhaul & Cleanup</summary>
 
-- All Settings toggles now functional (Appearance, Notifications, Advanced)
-- Language/units/date format/currency selects wired to persisted store
-- Settings reset (Danger Zone) fully implemented
-- Removed voice control feature (VoiceControlPanel, voice-control lib, tests)
-- Removed dead code (useWebSocket.ts, mqtt-client.ts)
-- DESIGN-SYSTEM.md updated to Tailwind v4 syntax
-- 57 unit tests, 9 test suites
-- Bundle size reduced to ~396 KB index chunk
+- All Settings toggles functional, language/units/currency persistent
+- Removed voice control, dead code cleanup (useWebSocket, mqtt-client)
+- Bundle reduced to ~396 KB index chunk
 </details>
 
 <details>
 <summary><b>v3.3.0</b> — EEBUS, Monitoring & PWA</summary>
 
 - EEBUS SPINE/SHIP full implementation (TLS 1.3, CEM use cases, §14a EnWG)
-- Prometheus/Grafana monitoring page with 25+ metrics
-- PWA auto-update with `skipWaiting` + `clientsClaim` (fixes blank white screen)
-- Inline loading fallback + emergency cache reset
-- OceanDeep default theme
-- Tailwind v4 shorthand migration (~500 class fixes)
-- Dependency cleanup (removed peer dep conflicts)
-- Bundle size reduced from 512 KB → 400 KB
+- Prometheus/Grafana monitoring with 25+ metrics
+- PWA auto-update with skipWaiting + clientsClaim
+- Tailwind v4 migration (~500 class fixes), bundle 512→400 KB
 </details>
 
 <details>
-<summary><b>v3.2.0</b> — BYOK AI & Themes</summary>
+<summary><b>v3.0–3.2</b> — Architecture & Security</summary>
 
-- Encrypted multi-provider AI key storage (AES-GCM 256-bit + PBKDF2 600k)
-- 2 new themes: Cyber Energy (light), Minimal White
-- Dynamic EV pricing strategy with real-time indicators
-- UBA 2024 CO₂ factor (380 g/kWh) for PDF reports
-- 57 unit tests, CI hardening with bundle budget gate
-</details>
-
-<details>
-<summary><b>v3.1.0</b> — Adapter Pattern</summary>
-
-- 5 protocol adapters (Victron, Modbus/SunSpec, KNX, OCPP 2.1, EEBUS)
-- UnifiedEnergyModel typed data aggregation
-- OCPP 2.1 V2X with charging profiles
-- KNX WebSocket bridge with GA→field lookup
-- TLS/mTLS + exponential backoff reconnection
-</details>
-
-<details>
-<summary><b>v3.0.0</b> — Multi-Page Architecture</summary>
-
-- 14-route SPA with React Router v7
-- Lazy-loaded code-split pages
-- Desktop sidebar + mobile bottom navigation
-- Breadcrumbs & page headers
-- Enhanced command palette (⌘K) with bilingual keywords
-</details>
-
-<details>
-<summary><b>v2.x</b> — Foundation</summary>
-
-- TanStack Query, WCAG 2.2 AA, Dexie.js offline cache
-- AI Optimizer (Gemini), predictive forecasts
-- PDF reports, multi-household sharing, live price widget
-- 5 themes, full i18n (DE/EN), PWA with service worker
+- 14-route SPA with React Router v7, lazy-loaded code-split pages
+- 5 protocol adapters (Victron, Modbus, KNX, OCPP 2.1, EEBUS)
+- BYOK AI vault (AES-GCM 256-bit + PBKDF2 600k), 5 themes
+- 57 unit tests, CI pipeline with bundle budget gate
 </details>
 
 ---
 
 ## 📸 Screenshots
 
-<details>
-<summary>🖼️ View all screenshots</summary>
-
-| Screenshot                                      | Description                                           |
-| :---------------------------------------------- | :---------------------------------------------------- |
-| ![Sankey](./docs/screenshots/sankey-live.png)   | **Real-Time Sankey Flow** — Live energy visualization |
-| ![KNX](./docs/screenshots/knx-floorplan.png)    | **KNX Floorplan** — Interactive building automation   |
-| ![EV](./docs/screenshots/ev-charging.png)       | **EV Charging** — Smart charge control                |
-| ![AI](./docs/screenshots/ai-optimizer.png)      | **AI Optimizer** — Dynamic tariff strategies          |
-| ![Mobile](./docs/screenshots/mobile-view.png)   | **Mobile View** — Responsive PWA                      |
-| ![Themes](./docs/screenshots/themes.png)        | **Themes** — 5 premium themes                         |
-| ![Settings](./docs/screenshots/settings.png)    | **Settings** — System configuration                   |
-| ![Offline](./docs/screenshots/offline-mode.png) | **Offline Mode** — PWA with cached data               |
-
-</details>
+> Screenshots are available in the [Live Demo](https://qnbs.github.io/Nexus-HEMS-Dash/). Install it as a PWA for the best experience on any device.
 
 ---
 
@@ -607,39 +576,6 @@ MIT — see [LICENSE](LICENSE) for details.
 **Nexus-HEMS Dashboard** ist ein produktionsreifes, Echtzeit-Home-Energy-Management-System für die Ära der dezentralen Energieversorgung. Es vereint **5 Industrieprotokolle** hinter einem einzigen Dashboard zur Orchestrierung von Photovoltaik, Batteriespeicher, Wärmepumpen, E-Mobilität und Gebäudeautomation — alles optimiert für dynamische Stromtarife.
 
 Gebaut mit **React 19**, **Zustand**, **D3.js** und **Tailwind CSS v4** liefert das Dashboard eine **Neo-Energy Cyber-Glassmorphism UI** mit vollständiger **Internationalisierung** (DE/EN), **WCAG 2.2 AA Barrierefreiheit** und **Offline-First** Architektur.
-
-### ✨ Highlights v3.5
-
-- 🤖 **AI Modelle aktualisiert** — Gemini 3.1, Claude 4, o4-mini, Llama 4, Qwen 3
-- 🔝 **Scroll-to-Top** — Alle Seiten starten automatisch oben bei Navigation
-- 📝 **README & Hilfe optimiert** — Umfassende Dokumentationsaktualisierung
-
-### ✨ Highlights v3.4
-
-- ⚙️ **Settings-Overhaul** — Alle Toggles funktional, Sprache/Einheiten/Währung persistent
-- 🧹 **Code-Bereinigung** — Voice Control entfernt, tote Dateien gelöscht
-- 📦 **Bundle reduziert** — ~396 KB Index-Chunk
-
-### ✨ Highlights v3.3
-
-- 📡 **EEBUS SPINE/SHIP** — Komplette Protokoll-Engine mit TLS 1.3, CEM Use Cases, §14a EnWG
-- 📊 **Prometheus/Grafana Monitoring** — 25+ Metriken, Systemgesundheit, Adapter-Status
-- 📱 **PWA Auto-Update** — `skipWaiting` + `clientsClaim` verhindert White-Screen-Bug
-- 🎨 **Tailwind v4 Migration** — ~500 Klassen auf Shorthand-Syntax migriert
-- 🔧 **CI-Pipeline bereinigt** — Peer-Dep-Konflikte gelöst, Bundle 512→400 KB reduziert
-
-### ✨ Highlights v3.2
-
-- 🔐 **BYOK AI** — AES-GCM 256-bit verschlüsselter Schlüsseltresor für 7 KI-Anbieter
-- 🎨 **5 Premium-Themes** — inkl. Cyber Energy (Hell) und Minimal White
-- 🧪 **57 Unit-Tests** — Crypto, Optimizer, Store, Format, PDF, DB, Adapter
-- 📊 **Live-Analysen** — Berechnete Statistiken aus Echtzeit-Energiedaten
-
-### ✨ Highlights v3.1
-
-- 🔌 **Adapter-Pattern** — 5 austauschbare Protokolladapter (Victron, Modbus, KNX, OCPP, EEBUS)
-- 🔋 **OCPP 2.1 + V2X** — Vehicle-to-Grid mit JSON-RPC und Ladeprofilen
-- 🛡️ **TLS/mTLS** — Adapter-Level-Sicherheit mit Client-Zertifikaten
 
 ### 🚀 Funktionen
 

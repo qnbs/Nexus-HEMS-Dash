@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a1520"/>
+      <stop offset="100%" stop-color="#0c1f34"/>
+    </linearGradient>
+    <linearGradient id="bolt" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#22ff88"/>
+      <stop offset="100%" stop-color="#00f0ff"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <rect width="512" height="512" rx="96" fill="url(#bg)"/>
+  <rect x="8" y="8" width="496" height="496" rx="90" fill="none" stroke="#22ff88" stroke-width="3" stroke-opacity="0.25"/>
+  <!-- Lightning bolt -->
+  <g filter="url(#glow)" transform="translate(256, 256) scale(1.1) translate(-256, -256)">
+    <polygon points="280,80 160,280 240,280 232,432 352,232 272,232 280,80" fill="url(#bolt)" opacity="0.95"/>
+  </g>
+</svg>

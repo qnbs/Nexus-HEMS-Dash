@@ -74,22 +74,6 @@
       "purpose": "maskable"
     }
   ],
-  "screenshots": [
-    {
-      "src": "/Nexus-HEMS-Dash/screenshot-desktop.png",
-      "sizes": "1920x1080",
-      "type": "image/png",
-      "form_factor": "wide",
-      "label": "Nexus HEMS Dashboard - Desktop View"
-    },
-    {
-      "src": "/Nexus-HEMS-Dash/screenshot-mobile.png",
-      "sizes": "750x1334",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Nexus HEMS Dashboard - Mobile View"
-    }
-  ],
   "shortcuts": [
     {
       "name": "Dashboard",
@@ -98,7 +82,7 @@
       "url": "/Nexus-HEMS-Dash/",
       "icons": [
         {
-          "src": "/Nexus-HEMS-Dash/icon-shortcut-dashboard.png",
+          "src": "/Nexus-HEMS-Dash/icon-96x96.png",
           "sizes": "96x96",
           "type": "image/png"
         }
@@ -108,10 +92,10 @@
       "name": "AI Optimizer",
       "short_name": "Optimizer",
       "description": "Optimize energy consumption with AI",
-      "url": "/Nexus-HEMS-Dash/#optimizer",
+      "url": "/Nexus-HEMS-Dash/ai-optimizer",
       "icons": [
         {
-          "src": "/Nexus-HEMS-Dash/icon-shortcut-ai.png",
+          "src": "/Nexus-HEMS-Dash/icon-96x96.png",
           "sizes": "96x96",
           "type": "image/png"
         }
@@ -124,7 +108,7 @@
       "url": "/Nexus-HEMS-Dash/settings",
       "icons": [
         {
-          "src": "/Nexus-HEMS-Dash/icon-shortcut-settings.png",
+          "src": "/Nexus-HEMS-Dash/icon-96x96.png",
           "sizes": "96x96",
           "type": "image/png"
         }

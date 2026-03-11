@@ -517,6 +517,12 @@
   }
 }
 
+/* Prevent white flash before theme loads */
+html,
+body {
+  background-color: #0f172a;
+}
+
 /* CSS Variables per Theme (injected via JS) */
 [data-theme='energy-dark'] {
   --color-primary: #22ff88;

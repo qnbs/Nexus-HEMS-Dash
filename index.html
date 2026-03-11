@@ -9,6 +9,7 @@
       content="Real-time Home Energy Management System – PV, Battery, EV, KNX, Dynamic Tariffs & AI Optimizer"
     />
     <meta name="theme-color" content="#22ff88" />
+    <link rel="icon" href="/Nexus-HEMS-Dash/favicon.ico" sizes="48x48" />
     <link rel="icon" type="image/png" sizes="192x192" href="/Nexus-HEMS-Dash/icon-192x192.png" />
     <link rel="apple-touch-icon" href="/Nexus-HEMS-Dash/icon-192x192.png" />
     <link rel="manifest" href="/Nexus-HEMS-Dash/manifest.json" />
@@ -64,7 +65,7 @@
     </div>
     <script type="module" src="/src/main.tsx"></script>
     <script>
-      // Fallback: if app hasn't rendered after 15s, show retry option
+      // Fallback: if app hasn't rendered after 5s, show retry option
       setTimeout(function () {
         var el = document.getElementById('app-loading');
         if (el && el.parentElement && el.parentElement.children.length === 1) {
@@ -92,7 +93,7 @@
           };
           el.appendChild(btn);
         }
-      }, 15000);
+      }, 5000);
     </script>
   </body>
 </html>
