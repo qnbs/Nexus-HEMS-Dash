@@ -30,7 +30,21 @@ let _installed = false;
 let _isIOS = false;
 const _listeners = new Set<() => void>();
 
+// Cached snapshot — must return the same reference when values haven't changed
+// (useSyncExternalStore compares with Object.is)
+let _cachedSnapshot: {
+  deferredPrompt: BeforeInstallPromptEvent | null;
+  installed: boolean;
+  isIOSDevice: boolean;
+} = {
+  deferredPrompt: _deferredPrompt,
+  installed: _installed,
+  isIOSDevice: _isIOS,
+};
+
 function notify() {
+  // Rebuild cached snapshot before notifying subscribers
+  _cachedSnapshot = { deferredPrompt: _deferredPrompt, installed: _installed, isIOSDevice: _isIOS };
   _listeners.forEach((fn) => fn());
 }
 
@@ -42,12 +56,14 @@ function subscribe(fn: () => void) {
 }
 
 function getSnapshot() {
-  return { deferredPrompt: _deferredPrompt, installed: _installed, isIOSDevice: _isIOS };
+  return _cachedSnapshot;
 }
 
 // Initialize global listeners once
 if (typeof window !== 'undefined') {
   _isIOS = isIOS();
+  // Rebuild snapshot with correct _isIOS value
+  _cachedSnapshot = { deferredPrompt: _deferredPrompt, installed: _installed, isIOSDevice: _isIOS };
 
   window.addEventListener('beforeinstallprompt', (e: Event) => {
     e.preventDefault();
