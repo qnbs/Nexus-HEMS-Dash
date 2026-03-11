@@ -17,7 +17,7 @@ import {
   Monitor,
   X,
 } from 'lucide-react';
-import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 import { AnimatePresence } from 'motion/react';

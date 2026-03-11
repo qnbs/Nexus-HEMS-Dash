@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   LayoutDashboard,
@@ -51,7 +51,6 @@ const navItems: NavItem[] = [
 
 function SidebarComponent() {
   const { t } = useTranslation();
-  const location = useLocation();
   const { connected } = useAppStore();
 
   const groups = {
@@ -115,9 +114,7 @@ function SidebarComponent() {
                       </span>
                       <span>{t(item.labelKey)}</span>
                       {isActive && (
-                        <span
-                          className="ml-auto h-1.5 w-1.5 rounded-full bg-[color:var(--color-primary)]"
-                        />
+                        <span className="ml-auto h-1.5 w-1.5 rounded-full bg-[color:var(--color-primary)]" />
                       )}
                     </>
                   )}
@@ -158,9 +155,7 @@ function SidebarComponent() {
                       </span>
                       <span>{t(item.labelKey)}</span>
                       {isActive && (
-                        <span
-                          className="ml-auto h-1.5 w-1.5 rounded-full bg-[color:var(--color-primary)]"
-                        />
+                        <span className="ml-auto h-1.5 w-1.5 rounded-full bg-[color:var(--color-primary)]" />
                       )}
                     </>
                   )}
@@ -201,9 +196,7 @@ function SidebarComponent() {
                       </span>
                       <span>{t(item.labelKey)}</span>
                       {isActive && (
-                        <span
-                          className="ml-auto h-1.5 w-1.5 rounded-full bg-[color:var(--color-primary)]"
-                        />
+                        <span className="ml-auto h-1.5 w-1.5 rounded-full bg-[color:var(--color-primary)]" />
                       )}
                     </>
                   )}

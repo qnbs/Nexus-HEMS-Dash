@@ -75,7 +75,7 @@ export const PredictiveForecast = memo(function PredictiveForecast() {
     const weather = await fetchWeatherForecast(lat, lon);
     const hours = timeRange === '24h' ? 24 : 168;
 
-    const data: ForecastDataPoint[] = weather.slice(0, hours).map((w, i) => {
+    const data: ForecastDataPoint[] = weather.slice(0, hours).map((w) => {
       // Simulate tariff pricing (peak hours: 17-21)
       const hour = w.timestamp.getHours();
       const isPeak = hour >= 17 && hour <= 21;
@@ -113,10 +113,10 @@ export const PredictiveForecast = memo(function PredictiveForecast() {
       return sum + d.pvForecast * 0.5; // 500g CO2/kWh grid equivalent
     }, 0);
     setCo2Saved(co2);
-  }, [timeRange, settings.location, settings.gridPriceAvg]);
+  }, [timeRange, settings.location, settings.gridPriceAvg, i18n.language]);
 
   useEffect(() => {
-    loadForecast();
+    loadForecast(); // eslint-disable-line react-hooks/set-state-in-effect
   }, [loadForecast]);
 
   return (
@@ -201,7 +201,11 @@ export const PredictiveForecast = memo(function PredictiveForecast() {
       </div>
 
       {/* Chart */}
-      <div className="h-80" role="img" aria-label={t('chart.forecastAriaLabel', 'Energy production and price forecast chart')}>
+      <div
+        className="h-80"
+        role="img"
+        aria-label={t('chart.forecastAriaLabel', 'Energy production and price forecast chart')}
+      >
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={forecastData}>
             <defs>

@@ -39,38 +39,26 @@ const baseSettings: StoredSettings = {
 
 describe('Optimizer Recommendations', () => {
   it('should recommend battery charge when price is below threshold', () => {
-    const recs = buildOptimizerRecommendations(
-      { ...baseEnergy, priceCurrent: 0.1 },
-      baseSettings,
-    );
+    const recs = buildOptimizerRecommendations({ ...baseEnergy, priceCurrent: 0.1 }, baseSettings);
     const chargeRec = recs.find((r) => r.id === 'charge-window');
     expect(chargeRec).toBeDefined();
     expect(chargeRec?.severity).toBe('positive');
   });
 
   it('should NOT recommend battery charge when price is above threshold', () => {
-    const recs = buildOptimizerRecommendations(
-      { ...baseEnergy, priceCurrent: 0.25 },
-      baseSettings,
-    );
+    const recs = buildOptimizerRecommendations({ ...baseEnergy, priceCurrent: 0.25 }, baseSettings);
     expect(recs.find((r) => r.id === 'charge-window')).toBeUndefined();
   });
 
   it('should recommend EV charging on PV surplus > 1800W', () => {
     // pvSurplus = pvPower - houseLoad - heatPumpPower - evPower
     // 5000 - 2000 - 1000 - 0 = 2000 > 1800 ✓
-    const recs = buildOptimizerRecommendations(
-      { ...baseEnergy, pvPower: 5000 },
-      baseSettings,
-    );
+    const recs = buildOptimizerRecommendations({ ...baseEnergy, pvPower: 5000 }, baseSettings);
     expect(recs.find((r) => r.id === 'pv-surplus')).toBeDefined();
   });
 
   it('should NOT recommend EV with low PV surplus', () => {
-    const recs = buildOptimizerRecommendations(
-      { ...baseEnergy, pvPower: 2500 },
-      baseSettings,
-    );
+    const recs = buildOptimizerRecommendations({ ...baseEnergy, pvPower: 2500 }, baseSettings);
     expect(recs.find((r) => r.id === 'pv-surplus')).toBeUndefined();
   });
 
@@ -83,10 +71,7 @@ describe('Optimizer Recommendations', () => {
   });
 
   it('should warn on grid import exceeding limit', () => {
-    const recs = buildOptimizerRecommendations(
-      { ...baseEnergy, gridPower: 6000 },
-      baseSettings,
-    );
+    const recs = buildOptimizerRecommendations({ ...baseEnergy, gridPower: 6000 }, baseSettings);
     const gridRec = recs.find((r) => r.id === 'grid-limit');
     expect(gridRec).toBeDefined();
     expect(gridRec?.severity).toBe('critical');

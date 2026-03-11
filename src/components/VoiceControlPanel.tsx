@@ -32,7 +32,13 @@ export const VoiceControlPanel = memo(function VoiceControlPanel() {
           setTranscript(t('voice.navigatedTo', { page }));
         },
         onToggleTheme: () => {
-          const themes = ['energy-dark', 'ocean-dark', 'nature-green', 'solar-light', 'minimal-white'] as const;
+          const themes = [
+            'energy-dark',
+            'ocean-dark',
+            'nature-green',
+            'solar-light',
+            'minimal-white',
+          ] as const;
           type ThemeName = (typeof themes)[number];
           const currentIndex = themes.indexOf(theme as ThemeName);
           const nextTheme = themes[(currentIndex + 1) % themes.length];
@@ -113,7 +119,11 @@ export const VoiceControlPanel = memo(function VoiceControlPanel() {
           }`}
           aria-label={isListening ? t('voice.stop') : t('voice.start')}
         >
-          {isListening ? <Mic className="h-6 w-6" aria-hidden="true" /> : <MicOff className="h-6 w-6" aria-hidden="true" />}
+          {isListening ? (
+            <Mic className="h-6 w-6" aria-hidden="true" />
+          ) : (
+            <MicOff className="h-6 w-6" aria-hidden="true" />
+          )}
         </button>
       </div>
 
@@ -128,7 +138,8 @@ export const VoiceControlPanel = memo(function VoiceControlPanel() {
           >
             <div className="rounded-2xl border border-[color:var(--color-primary)]/30 bg-[color:var(--color-primary)]/10 p-4">
               <p className="text-sm font-medium text-[color:var(--color-primary)]">
-                <span aria-hidden="true">🎤 </span>{t('voice.listening')}
+                <span aria-hidden="true">🎤 </span>
+                {t('voice.listening')}
               </p>
               {transcript && (
                 <p className="mt-2 text-sm text-[color:var(--color-text)]">"{transcript}"</p>
@@ -171,7 +182,10 @@ export const VoiceControlPanel = memo(function VoiceControlPanel() {
           className="flex gap-2"
         >
           <div className="relative flex-1">
-            <Keyboard className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[color:var(--color-muted)]" aria-hidden="true" />
+            <Keyboard
+              className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[color:var(--color-muted)]"
+              aria-hidden="true"
+            />
             <input
               type="text"
               value={textInput}

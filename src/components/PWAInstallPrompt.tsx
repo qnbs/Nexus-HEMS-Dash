@@ -15,12 +15,17 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 function isIOS(): boolean {
-  return /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as unknown as { MSStream?: unknown }).MSStream;
+  return (
+    /iPad|iPhone|iPod/.test(navigator.userAgent) &&
+    !(window as unknown as { MSStream?: unknown }).MSStream
+  );
 }
 
 function isStandalone(): boolean {
-  return window.matchMedia('(display-mode: standalone)').matches ||
-    (navigator as unknown as { standalone?: boolean }).standalone === true;
+  return (
+    window.matchMedia('(display-mode: standalone)').matches ||
+    (navigator as unknown as { standalone?: boolean }).standalone === true
+  );
 }
 
 export function PWAInstallPrompt() {
@@ -110,11 +115,18 @@ export function PWAInstallPrompt() {
         exit={{ opacity: 0, y: 50 }}
         className="fixed bottom-4 left-4 right-4 z-50 md:left-auto md:right-4 md:max-w-sm"
       >
-        <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 backdrop-blur-xl p-4 shadow-2xl flex items-center gap-3" role="alert">
+        <div
+          className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 backdrop-blur-xl p-4 shadow-2xl flex items-center gap-3"
+          role="alert"
+        >
           <CheckCircle2 className="h-6 w-6 text-emerald-400 shrink-0" aria-hidden="true" />
           <div>
-            <p className="font-semibold text-sm text-emerald-400">{t('pwa.installed', 'Successfully installed!')}</p>
-            <p className="text-xs text-[color:var(--color-muted)]">{t('pwa.installedDesc', 'Nexus HEMS is now available on your home screen')}</p>
+            <p className="font-semibold text-sm text-emerald-400">
+              {t('pwa.installed', 'Successfully installed!')}
+            </p>
+            <p className="text-xs text-[color:var(--color-muted)]">
+              {t('pwa.installedDesc', 'Nexus HEMS is now available on your home screen')}
+            </p>
           </div>
         </div>
       </motion.div>
@@ -132,16 +144,30 @@ export function PWAInstallPrompt() {
           className="fixed bottom-4 left-4 right-4 z-50 md:left-auto md:right-4 md:max-w-md"
         >
           <div className="glass-panel rounded-2xl border-2 border-[color:var(--color-primary)]/30 p-6 shadow-2xl">
-            <button onClick={handleDismiss} className="absolute top-3 right-3 p-1 rounded-lg text-[color:var(--color-muted)] hover:text-[color:var(--color-text)]" aria-label={t('common.close', 'Close')}>
+            <button
+              onClick={handleDismiss}
+              className="absolute top-3 right-3 p-1 rounded-lg text-[color:var(--color-muted)] hover:text-[color:var(--color-text)]"
+              aria-label={t('common.close', 'Close')}
+            >
               <X className="h-4 w-4" />
             </button>
             <div className="flex items-start gap-4">
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[color:var(--color-primary)]/20">
-                <Smartphone className="h-6 w-6 text-[color:var(--color-primary)]" aria-hidden="true" />
+                <Smartphone
+                  className="h-6 w-6 text-[color:var(--color-primary)]"
+                  aria-hidden="true"
+                />
               </div>
               <div>
-                <h3 className="font-semibold text-[color:var(--color-text)]">{t('pwa.installTitle')}</h3>
-                <p className="mt-1 text-sm text-[color:var(--color-muted)]">{t('pwa.iosInstallHint', 'To install on iOS: tap the Share button in Safari, then select "Add to Home Screen".')}</p>
+                <h3 className="font-semibold text-[color:var(--color-text)]">
+                  {t('pwa.installTitle')}
+                </h3>
+                <p className="mt-1 text-sm text-[color:var(--color-muted)]">
+                  {t(
+                    'pwa.iosInstallHint',
+                    'To install on iOS: tap the Share button in Safari, then select "Add to Home Screen".',
+                  )}
+                </p>
               </div>
             </div>
           </div>
@@ -164,22 +190,41 @@ export function PWAInstallPrompt() {
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-start gap-4">
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[color:var(--color-primary)]/20">
-                <Download className="h-6 w-6 text-[color:var(--color-primary)]" aria-hidden="true" />
+                <Download
+                  className="h-6 w-6 text-[color:var(--color-primary)]"
+                  aria-hidden="true"
+                />
               </div>
               <div className="flex-1">
-                <h3 className="font-semibold text-[color:var(--color-text)]">{t('pwa.installTitle')}</h3>
-                <p className="mt-1 text-sm text-[color:var(--color-muted)]">{t('pwa.installDescription')}</p>
+                <h3 className="font-semibold text-[color:var(--color-text)]">
+                  {t('pwa.installTitle')}
+                </h3>
+                <p className="mt-1 text-sm text-[color:var(--color-muted)]">
+                  {t('pwa.installDescription')}
+                </p>
                 <div className="mt-3 flex flex-wrap gap-2 text-xs text-[color:var(--color-muted)]">
                   <span className="inline-flex items-center gap-1 rounded-full border border-[color:var(--color-border)] px-2 py-0.5">
-                    <Zap className="h-3 w-3 text-[color:var(--color-primary)]" /> {t('pwa.featureFast', 'Faster loading')}
+                    <Zap className="h-3 w-3 text-[color:var(--color-primary)]" />{' '}
+                    {t('pwa.featureFast', 'Faster loading')}
                   </span>
                   <span className="inline-flex items-center gap-1 rounded-full border border-[color:var(--color-border)] px-2 py-0.5">
-                    <Monitor className="h-3 w-3 text-blue-400" /> {t('pwa.featureOffline', 'Offline mode')}
+                    <Monitor className="h-3 w-3 text-blue-400" />{' '}
+                    {t('pwa.featureOffline', 'Offline mode')}
                   </span>
                 </div>
                 <div className="mt-4 flex gap-2">
-                  <button onClick={handleInstallClick} className="btn-primary focus-ring px-4 py-2 text-sm">{t('pwa.install')}</button>
-                  <button onClick={handleDismiss} className="btn-secondary focus-ring px-4 py-2 text-sm">{t('common.later', 'Later')}</button>
+                  <button
+                    onClick={handleInstallClick}
+                    className="btn-primary focus-ring px-4 py-2 text-sm"
+                  >
+                    {t('pwa.install')}
+                  </button>
+                  <button
+                    onClick={handleDismiss}
+                    className="btn-secondary focus-ring px-4 py-2 text-sm"
+                  >
+                    {t('common.later', 'Later')}
+                  </button>
                 </div>
               </div>
             </div>

@@ -39,12 +39,7 @@ interface OCPPCall {
 }
 
 /** Subset of OCPP 2.1 StatusNotification connectorStatus values */
-type OCPPConnectorStatus =
-  | 'Available'
-  | 'Occupied'
-  | 'Reserved'
-  | 'Unavailable'
-  | 'Faulted';
+type OCPPConnectorStatus = 'Available' | 'Occupied' | 'Reserved' | 'Unavailable' | 'Faulted';
 
 /** Subset of OCPP 2.1 TransactionEvent data */
 interface OCPPTransactionEvent {
@@ -204,8 +199,7 @@ export class OCPP21Adapter implements EnergyAdapter {
     const ws = new WebSocket(wsUrl, ['ocpp2.1']);
 
     ws.onopen = () => {
-      this.retryDelay =
-        this.config.reconnect?.initialDelayMs ?? DEFAULT_RECONNECT.initialDelayMs;
+      this.retryDelay = this.config.reconnect?.initialDelayMs ?? DEFAULT_RECONNECT.initialDelayMs;
       this.setStatus('connected');
       // Send BootNotification
       this.sendCall('BootNotification', {

@@ -99,7 +99,11 @@ export const LivePriceWidget = memo(function LivePriceWidget() {
       )}
 
       {/* Mini Chart */}
-      <div className="mt-4 flex h-12 items-end gap-0.5" role="img" aria-label={t('chart.priceAriaLabel', 'Price forecast chart for the next 12 hours')}>
+      <div
+        className="mt-4 flex h-12 items-end gap-0.5"
+        role="img"
+        aria-label={t('chart.priceAriaLabel', 'Price forecast chart for the next 12 hours')}
+      >
         {chartSlice.map((slot, i) => {
           const range = maxPrice - minPrice || 1;
           const height = ((slot.pricePerKwh - minPrice) / range) * 100;

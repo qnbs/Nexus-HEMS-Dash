@@ -1,4 +1,4 @@
-import { useEffect, lazy, Suspense, useMemo, useCallback } from 'react';
+import { useEffect, lazy, Suspense } from 'react';
 import { motion } from 'motion/react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -41,7 +41,10 @@ function PageLoadingFallback() {
   return (
     <div className="flex min-h-[40vh] items-center justify-center" role="status">
       <div className="flex flex-col items-center gap-3">
-        <div className="cyber-shimmer h-8 w-8 rounded-full border-2 border-[color:var(--color-primary)] border-t-transparent animate-spin" aria-hidden="true" />
+        <div
+          className="cyber-shimmer h-8 w-8 rounded-full border-2 border-[color:var(--color-primary)] border-t-transparent animate-spin"
+          aria-hidden="true"
+        />
         <span className="text-sm text-[color:var(--color-muted)]">{t('loading.page')}</span>
       </div>
     </div>
@@ -81,6 +84,7 @@ export default function App() {
       const resolvedTheme = resolveTheme('system');
       setTheme(resolvedTheme);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Run only once on mount
 
   // Watch system theme preference
@@ -117,12 +121,12 @@ export default function App() {
         <PWAUpdateNotification />
         <div className="theme-shell min-h-screen font-sans text-[color:var(--color-text)] selection:bg-[color:var(--color-primary)]/30">
           <div
-              className="pointer-events-none fixed inset-0 z-0"
-              aria-hidden="true"
-              style={{
-                background: `linear-gradient(145deg, ${themeDefinition.colors.background} 0%, ${themeDefinition.colors.background} 60%, ${themeDefinition.colors.glow} 100%)`,
-              }}
-            />
+            className="pointer-events-none fixed inset-0 z-0"
+            aria-hidden="true"
+            style={{
+              background: `linear-gradient(145deg, ${themeDefinition.colors.background} 0%, ${themeDefinition.colors.background} 60%, ${themeDefinition.colors.glow} 100%)`,
+            }}
+          />
 
           {/* Skip to content link (WCAG 2.2 AA) */}
           <a
@@ -216,10 +220,7 @@ export default function App() {
             </motion.header>
 
             {/* Page Content */}
-            <main
-              id="main-content"
-              className="mx-auto max-w-7xl px-4 py-6 pb-20 sm:px-6 lg:pb-6"
-            >
+            <main id="main-content" className="mx-auto max-w-7xl px-4 py-6 pb-20 sm:px-6 lg:pb-6">
               <Breadcrumbs />
               <ErrorBoundary>
                 <Suspense fallback={<PageLoadingFallback />}>

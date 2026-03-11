@@ -16,19 +16,46 @@ function EVPageComponent() {
   const chargeStrategy = useMemo(() => {
     const price = energyData.priceCurrent;
     const threshold = settings.chargeThreshold;
-    const pvSurplus = Math.max(0, energyData.pvPower - energyData.houseLoad - energyData.heatPumpPower);
+    const pvSurplus = Math.max(
+      0,
+      energyData.pvPower - energyData.houseLoad - energyData.heatPumpPower,
+    );
     const hasPvSurplus = pvSurplus > 1400;
 
     if (hasPvSurplus) {
-      return { mode: 'pv-surplus' as const, color: 'text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/30', icon: Leaf, surplus: pvSurplus };
+      return {
+        mode: 'pv-surplus' as const,
+        color: 'text-emerald-400',
+        bg: 'bg-emerald-500/10 border-emerald-500/30',
+        icon: Leaf,
+        surplus: pvSurplus,
+      };
     }
     if (price <= threshold) {
-      return { mode: 'low-price' as const, color: 'text-cyan-400', bg: 'bg-cyan-500/10 border-cyan-500/30', icon: TrendingDown, surplus: 0 };
+      return {
+        mode: 'low-price' as const,
+        color: 'text-cyan-400',
+        bg: 'bg-cyan-500/10 border-cyan-500/30',
+        icon: TrendingDown,
+        surplus: 0,
+      };
     }
     if (price > threshold * 1.5) {
-      return { mode: 'expensive' as const, color: 'text-red-400', bg: 'bg-red-500/10 border-red-500/30', icon: TrendingUp, surplus: 0 };
+      return {
+        mode: 'expensive' as const,
+        color: 'text-red-400',
+        bg: 'bg-red-500/10 border-red-500/30',
+        icon: TrendingUp,
+        surplus: 0,
+      };
     }
-    return { mode: 'normal' as const, color: 'text-orange-400', bg: 'bg-orange-500/10 border-orange-500/30', icon: Zap, surplus: 0 };
+    return {
+      mode: 'normal' as const,
+      color: 'text-orange-400',
+      bg: 'bg-orange-500/10 border-orange-500/30',
+      icon: Zap,
+      surplus: 0,
+    };
   }, [energyData, settings.chargeThreshold]);
 
   return (
@@ -77,7 +104,9 @@ function EVPageComponent() {
           </p>
           <p className="mt-1 text-2xl font-light text-orange-400">
             {energyData.priceCurrent.toFixed(3)}{' '}
-            <span className="text-sm text-[color:var(--color-muted)]">{t('units.euroPerKwh', '€/kWh')}</span>
+            <span className="text-sm text-[color:var(--color-muted)]">
+              {t('units.euroPerKwh', '€/kWh')}
+            </span>
           </p>
         </motion.div>
       </div>
@@ -107,7 +136,9 @@ function EVPageComponent() {
             <p className={`text-lg font-semibold tabular-nums ${chargeStrategy.color}`}>
               {energyData.priceCurrent.toFixed(3)}
             </p>
-            <p className="text-xs text-[color:var(--color-muted)]">{t('units.euroPerKwh', '€/kWh')}</p>
+            <p className="text-xs text-[color:var(--color-muted)]">
+              {t('units.euroPerKwh', '€/kWh')}
+            </p>
           </div>
         </div>
       </motion.div>
@@ -131,7 +162,10 @@ function EVPageComponent() {
         transition={{ duration: 0.5, delay: 0.35 }}
       >
         <div className="flex items-start gap-3">
-          <div className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-orange-500/10 text-orange-400 text-xs font-bold" aria-hidden="true">
+          <div
+            className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-orange-500/10 text-orange-400 text-xs font-bold"
+            aria-hidden="true"
+          >
             §
           </div>
           <div>

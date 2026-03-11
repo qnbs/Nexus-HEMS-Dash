@@ -51,7 +51,9 @@ function FloorplanPageComponent() {
             transition={{ duration: 0.4, delay: 0.2 + i * 0.05 }}
           >
             <div className="flex items-center gap-3">
-              <span className="text-2xl" aria-hidden="true">{room.icon}</span>
+              <span className="text-2xl" aria-hidden="true">
+                {room.icon}
+              </span>
               <div>
                 <p className="text-sm font-medium text-[color:var(--color-text)]">{room.label}</p>
                 <p className="text-xs text-[color:var(--color-muted)]">{room.status}</p>

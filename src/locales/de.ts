@@ -28,7 +28,8 @@ export const de = {
     install: 'Installieren',
     installed: 'Erfolgreich installiert!',
     installedDesc: 'Nexus HEMS ist jetzt auf Ihrem Startbildschirm verfügbar',
-    iosInstallHint: 'Zum Installieren auf iOS: Tippen Sie auf den Teilen-Button in Safari, dann wählen Sie "Zum Home-Bildschirm".',
+    iosInstallHint:
+      'Zum Installieren auf iOS: Tippen Sie auf den Teilen-Button in Safari, dann wählen Sie "Zum Home-Bildschirm".',
     featureFast: 'Schnelleres Laden',
     featureOffline: 'Offline-Modus',
     updateAvailable: 'Update verfügbar',
@@ -198,7 +199,8 @@ export const de = {
     gatewayTypeMk2Hint: 'MK2 mit schnellerer CPU, USB-C, Wi-Fi 5',
     gatewayTypeRpiHint: 'Raspberry Pi 4/5 mit Venus OS Large',
     systemPreset: 'System-Vorlage',
-    systemPresetHint: 'Wählen Sie eine vorkonfigurierte Anlage oder passen Sie jeden Parameter individuell an.',
+    systemPresetHint:
+      'Wählen Sie eine vorkonfigurierte Anlage oder passen Sie jeden Parameter individuell an.',
     inverterConfig: 'Wechselrichter-Konfiguration',
     inverterModel: 'Wechselrichter-Modell',
     inverterCount: 'Anzahl Geräte',
@@ -241,7 +243,8 @@ export const de = {
     batteryStrategy: 'Standardstrategie',
     encryptionTitle: 'Verschlüsselung & Zertifikate',
     encryptionActive: 'Ende-zu-Ende-Verschlüsselung aktiv',
-    encryptionDesc: 'Alle API-Schlüssel werden mit AES-GCM 256-Bit verschlüsselt gespeichert. WebSocket-Verbindungen nutzen TLS. Lokale Daten verbleiben in Ihrem Browser.',
+    encryptionDesc:
+      'Alle API-Schlüssel werden mit AES-GCM 256-Bit verschlüsselt gespeichert. WebSocket-Verbindungen nutzen TLS. Lokale Daten verbleiben in Ihrem Browser.',
     certStatus: 'Zertifikatsstatus',
     certValid: 'Gültig',
     encType: 'Verschlüsselung',
@@ -337,18 +340,24 @@ export const de = {
     // Erste Schritte
     gettingStarted: 'Erste Schritte',
     welcomeTitle: 'Willkommen bei Nexus HEMS',
-    welcomeIntro: 'Nexus-HEMS Dash ist der zentrale Kontrollpunkt für Ihr Home Energy Management System. Überwachen Sie Echtzeit-Energieflüsse, steuern Sie Ihre Smart-Home-Geräte, optimieren Sie E-Auto-Ladung und Wärmepumpenbetrieb mit KI-gestützten Empfehlungen und nutzen Sie dynamische Stromtarife für maximale Einsparungen.',
+    welcomeIntro:
+      'Nexus-HEMS Dash ist der zentrale Kontrollpunkt für Ihr Home Energy Management System. Überwachen Sie Echtzeit-Energieflüsse, steuern Sie Ihre Smart-Home-Geräte, optimieren Sie E-Auto-Ladung und Wärmepumpenbetrieb mit KI-gestützten Empfehlungen und nutzen Sie dynamische Stromtarife für maximale Einsparungen.',
     quickStart: 'Schnellstart-Anleitung',
     step1Title: 'Geräte verbinden',
-    step1Desc: 'Gehen Sie zu Einstellungen → System und geben Sie die IP-Adressen für Ihren Victron Cerbo GX (oder Raspberry Pi), KNX IP-Router und Node-RED WebSocket-Server ein.',
+    step1Desc:
+      'Gehen Sie zu Einstellungen → System und geben Sie die IP-Adressen für Ihren Victron Cerbo GX (oder Raspberry Pi), KNX IP-Router und Node-RED WebSocket-Server ein.',
     step2Title: 'Energieparameter konfigurieren',
-    step2Desc: 'Richten Sie Ihren Tarifanbieter (Tibber/aWATTar), den Preis-Schwellenwert und das §14a EnWG Netzbezugslimit unter Einstellungen → Energie ein.',
+    step2Desc:
+      'Richten Sie Ihren Tarifanbieter (Tibber/aWATTar), den Preis-Schwellenwert und das §14a EnWG Netzbezugslimit unter Einstellungen → Energie ein.',
     step3Title: 'Energiefluss überwachen',
-    step3Desc: 'Das Dashboard zeigt ein Echtzeit-Sankey-Diagramm zur Visualisierung der Energieflüsse zwischen PV, Netz, Batterie und Verbrauchern. Daten werden alle 2 Sekunden per WebSocket aktualisiert.',
+    step3Desc:
+      'Das Dashboard zeigt ein Echtzeit-Sankey-Diagramm zur Visualisierung der Energieflüsse zwischen PV, Netz, Batterie und Verbrauchern. Daten werden alle 2 Sekunden per WebSocket aktualisiert.',
     step4Title: 'Mit KI optimieren',
-    step4Desc: 'Aktivieren Sie den AI Optimizer für Echtzeit-Empfehlungen zu E-Auto-Ladung, Batteriestrategie und Wärmepumpenbetrieb basierend auf Wettervorhersagen und Tarifprognosen.',
+    step4Desc:
+      'Aktivieren Sie den AI Optimizer für Echtzeit-Empfehlungen zu E-Auto-Ladung, Batteriestrategie und Wärmepumpenbetrieb basierend auf Wettervorhersagen und Tarifprognosen.',
     step5Title: 'Als PWA installieren',
-    step5Desc: 'Installieren Sie Nexus HEMS als Progressive Web App für native Performance, Offline-Zugriff und Push-Benachrichtigungen.',
+    step5Desc:
+      'Installieren Sie Nexus HEMS als Progressive Web App für native Performance, Offline-Zugriff und Push-Benachrichtigungen.',
     requirements: 'Systemanforderungen',
     hardware: 'Hardware',
     software: 'Software',
@@ -362,80 +371,113 @@ export const de = {
     features: 'Funktionen',
     allFeatures: 'Alle Funktionen',
     featureSankey: 'Echtzeit-Sankey-Diagramm',
-    featureSankeyDesc: 'D3.js-basierte Visualisierung der Energieflüsse zwischen PV, Netz, Batterie und Verbrauchern. Aktualisierung alle 2 Sekunden via WebSocket.',
+    featureSankeyDesc:
+      'D3.js-basierte Visualisierung der Energieflüsse zwischen PV, Netz, Batterie und Verbrauchern. Aktualisierung alle 2 Sekunden via WebSocket.',
     featureFloorplan: 'Interaktiver KNX-Grundriss',
-    featureFloorplanDesc: 'Steuern Sie Licht, Fenster und Klima über einen interaktiven Grundriss. Befehle werden via Node-RED an Ihren KNX-Bus gesendet.',
+    featureFloorplanDesc:
+      'Steuern Sie Licht, Fenster und Klima über einen interaktiven Grundriss. Befehle werden via Node-RED an Ihren KNX-Bus gesendet.',
     featureAI: 'AI Optimizer',
-    featureAIDesc: 'Gemini 2.5-gestützte Empfehlungen für EV-, Batterie- und Wärmepumpenstrategie basierend auf Tarifen, Wetter und Verbrauchsmustern.',
+    featureAIDesc:
+      'Gemini 2.5-gestützte Empfehlungen für EV-, Batterie- und Wärmepumpenstrategie basierend auf Tarifen, Wetter und Verbrauchsmustern.',
     featureEV: 'E-Auto-Ladesteuerung',
-    featureEVDesc: 'Intelligente Wallbox-Steuerung mit PV-Überschuss-, Niedrigtarif- und geplanten Lademodi. §14a EnWG konform.',
+    featureEVDesc:
+      'Intelligente Wallbox-Steuerung mit PV-Überschuss-, Niedrigtarif- und geplanten Lademodi. §14a EnWG konform.',
     featureTariffs: 'Dynamische Tarife',
-    featureTariffsDesc: 'Echtzeit-Integration mit Tibber und aWATTar. Automatische Optimierung des Verbrauchs in Niedrigtarif-Fenster.',
+    featureTariffsDesc:
+      'Echtzeit-Integration mit Tibber und aWATTar. Automatische Optimierung des Verbrauchs in Niedrigtarif-Fenster.',
     featureForecast: 'Wetterbasierte PV-Prognose',
-    featureForecastDesc: 'Prädiktive PV-Erzeugungs- und Verbrauchsprognosen basierend auf Wetterdaten. 24h- und 7-Tage-Ausblick.',
+    featureForecastDesc:
+      'Prädiktive PV-Erzeugungs- und Verbrauchsprognosen basierend auf Wetterdaten. 24h- und 7-Tage-Ausblick.',
     featureBattery: 'Batterie-Management',
-    featureBatteryDesc: 'Überwachen Sie SoC, Spannung und Leistung. Konfigurieren Sie Ladestrategien: Eigenverbrauch, Laden erzwingen oder Automatik.',
+    featureBatteryDesc:
+      'Überwachen Sie SoC, Spannung und Leistung. Konfigurieren Sie Ladestrategien: Eigenverbrauch, Laden erzwingen oder Automatik.',
     featureAnalytics: 'Analytik & Berichte',
-    featureAnalyticsDesc: 'Monatliche PDF-Berichte mit Kostenanalyse, CO₂-Bilanz und Energiestatistiken. Dashboards exportieren und teilen.',
+    featureAnalyticsDesc:
+      'Monatliche PDF-Berichte mit Kostenanalyse, CO₂-Bilanz und Energiestatistiken. Dashboards exportieren und teilen.',
     featureHA: 'Home Assistant / MQTT',
-    featureHADesc: 'Bidirektionale MQTT-Integration mit Home Assistant. Auto-Discovery für alle verbundenen Geräte.',
+    featureHADesc:
+      'Bidirektionale MQTT-Integration mit Home Assistant. Auto-Discovery für alle verbundenen Geräte.',
     featureVoice: 'Sprachsteuerung',
-    featureVoiceDesc: 'Freihändige Dashboard-Steuerung mit Spracherkennung. Navigieren, Themes wechseln und Geräte per Sprache steuern.',
+    featureVoiceDesc:
+      'Freihändige Dashboard-Steuerung mit Spracherkennung. Navigieren, Themes wechseln und Geräte per Sprache steuern.',
     featureOffline: 'Offline-Modus',
-    featureOfflineDesc: 'Volle PWA-Unterstützung mit Service-Worker-Caching, IndexedDB-Persistenz und Hintergrund-Synchronisierung. Funktioniert ohne Internet.',
+    featureOfflineDesc:
+      'Volle PWA-Unterstützung mit Service-Worker-Caching, IndexedDB-Persistenz und Hintergrund-Synchronisierung. Funktioniert ohne Internet.',
     featureSecurity: 'Sicherheit',
-    featureSecurityDesc: 'mTLS, AES-GCM 256-Bit-Verschlüsselung für API-Schlüssel, 2FA und lokale Datenhaltung. Keine Cloud-Abhängigkeit.',
+    featureSecurityDesc:
+      'mTLS, AES-GCM 256-Bit-Verschlüsselung für API-Schlüssel, 2FA und lokale Datenhaltung. Keine Cloud-Abhängigkeit.',
     protocols: 'Unterstützte Protokolle & Standards',
 
     // Glossar erweitert
     glossMppt: 'MPPT (Maximum Power Point Tracking)',
-    glossMpptDesc: 'Ein Algorithmus, der von Solar-Ladereglern und Wechselrichtern verwendet wird, um unter wechselnden Bedingungen die maximale Leistung aus PV-Modulen zu extrahieren.',
+    glossMpptDesc:
+      'Ein Algorithmus, der von Solar-Ladereglern und Wechselrichtern verwendet wird, um unter wechselnden Bedingungen die maximale Leistung aus PV-Modulen zu extrahieren.',
     glossEms: 'EMS (Energiemanagementsystem)',
-    glossEmsDesc: 'Software und Hardware zur Überwachung, Steuerung und Optimierung des Energieverbrauchs und der Energieerzeugung in einem Gebäude.',
+    glossEmsDesc:
+      'Software und Hardware zur Überwachung, Steuerung und Optimierung des Energieverbrauchs und der Energieerzeugung in einem Gebäude.',
     glossFeedIn: 'Einspeisevergütung (Feed-in Tariff)',
-    glossFeedInDesc: 'Ein politisches Instrument zur Beschleunigung von Investitionen in erneuerbare Energien durch langfristige Verträge für Erzeuger.',
+    glossFeedInDesc:
+      'Ein politisches Instrument zur Beschleunigung von Investitionen in erneuerbare Energien durch langfristige Verträge für Erzeuger.',
     glossSector: 'Sektorenkopplung (Sector Coupling)',
-    glossSectorDesc: 'Die Integration der energieverbrauchenden Sektoren – Strom, Wärme und Verkehr – über Power-to-Heat, Power-to-Gas und direkte Elektrifizierung.',
+    glossSectorDesc:
+      'Die Integration der energieverbrauchenden Sektoren – Strom, Wärme und Verkehr – über Power-to-Heat, Power-to-Gas und direkte Elektrifizierung.',
     glossModbus: 'Modbus TCP',
-    glossModbusDesc: 'Ein Kommunikationsprotokoll für industrielle Geräte. Wird zum Auslesen von Daten aus Victron-Wechselrichtern und anderen Energiegeräten via TCP/IP verwendet.',
+    glossModbusDesc:
+      'Ein Kommunikationsprotokoll für industrielle Geräte. Wird zum Auslesen von Daten aus Victron-Wechselrichtern und anderen Energiegeräten via TCP/IP verwendet.',
     glossOcpp: 'OCPP (Open Charge Point Protocol)',
-    glossOcppDesc: 'Ein offenes Kommunikationsprotokoll zwischen E-Auto-Ladestationen und einem zentralen Managementsystem. Version 2.1 unterstützt intelligentes Laden.',
+    glossOcppDesc:
+      'Ein offenes Kommunikationsprotokoll zwischen E-Auto-Ladestationen und einem zentralen Managementsystem. Version 2.1 unterstützt intelligentes Laden.',
     glossPwa: 'PWA (Progressive Web App)',
-    glossPwaDesc: 'Eine Anwendungssoftware, die Webtechnologien nutzt, aber native App-Erlebnisse bietet, einschließlich Offline-Modus, Push-Benachrichtigungen und Homescreen-Installation.',
+    glossPwaDesc:
+      'Eine Anwendungssoftware, die Webtechnologien nutzt, aber native App-Erlebnisse bietet, einschließlich Offline-Modus, Push-Benachrichtigungen und Homescreen-Installation.',
     glossVenusOs: 'Venus OS',
-    glossVenusOsDesc: 'Das Linux-basierte Betriebssystem auf dem Victron Cerbo GX und Raspberry Pi. Es verwaltet D-Bus-Dienste, MQTT und die VRM-Portal-Verbindung.',
+    glossVenusOsDesc:
+      'Das Linux-basierte Betriebssystem auf dem Victron Cerbo GX und Raspberry Pi. Es verwaltet D-Bus-Dienste, MQTT und die VRM-Portal-Verbindung.',
     glossDbus: 'D-Bus',
-    glossDbusDesc: 'Ein Interprozesskommunikations-Bus, der von Venus OS verwendet wird, um Echtzeitdaten zwischen Wechselrichter, Batterie, PV-Laderegler und anderen Victron-Komponenten auszutauschen.',
+    glossDbusDesc:
+      'Ein Interprozesskommunikations-Bus, der von Venus OS verwendet wird, um Echtzeitdaten zwischen Wechselrichter, Batterie, PV-Laderegler und anderen Victron-Komponenten auszutauschen.',
     glossNodeRed: 'Node-RED',
-    glossNodeRedDesc: 'Ein flussbasiertes Programmierwerkzeug zur Verknüpfung von Hardware, APIs und Online-Diensten. Läuft nativ auf Venus OS (Cerbo GX) oder Raspberry Pi.',
+    glossNodeRedDesc:
+      'Ein flussbasiertes Programmierwerkzeug zur Verknüpfung von Hardware, APIs und Online-Diensten. Läuft nativ auf Venus OS (Cerbo GX) oder Raspberry Pi.',
     glossCerboGx: 'Cerbo GX / Cerbo GX MK2',
-    glossCerboGxDesc: 'Victrons Kommunikationszentrale, die alle Systemkomponenten über VE.Bus, VE.Direct und VE.Can verbindet. Die MK2 (2024+) bietet schnellere CPU, mehr RAM, WiFi 5 und Bluetooth 5.',
+    glossCerboGxDesc:
+      'Victrons Kommunikationszentrale, die alle Systemkomponenten über VE.Bus, VE.Direct und VE.Can verbindet. Die MK2 (2024+) bietet schnellere CPU, mehr RAM, WiFi 5 und Bluetooth 5.',
     glossV2x: 'V2X (Vehicle-to-Everything)',
-    glossV2xDesc: 'Bidirektionale E-Auto-Ladetechnologie: V2G (Vehicle-to-Grid) speist Strom ins Netz zurück, V2H (Vehicle-to-Home) versorgt den Haushalt.',
+    glossV2xDesc:
+      'Bidirektionale E-Auto-Ladetechnologie: V2G (Vehicle-to-Grid) speist Strom ins Netz zurück, V2H (Vehicle-to-Home) versorgt den Haushalt.',
 
     // FAQ erweitert
     faqGeneral: 'Allgemein',
     faqWhatIs: 'Was ist Nexus HEMS?',
-    faqWhatIsAnswer: 'Nexus HEMS ist ein Echtzeit-Dashboard für Home Energy Management Systeme. Es visualisiert Energieflüsse zwischen Solaranlage, Batteriespeicher, Stromnetz und Haushaltsverbrauchern. Es integriert Victron Cerbo GX, KNX-Gebäudeautomation und dynamische Stromtarifanbieter.',
+    faqWhatIsAnswer:
+      'Nexus HEMS ist ein Echtzeit-Dashboard für Home Energy Management Systeme. Es visualisiert Energieflüsse zwischen Solaranlage, Batteriespeicher, Stromnetz und Haushaltsverbrauchern. Es integriert Victron Cerbo GX, KNX-Gebäudeautomation und dynamische Stromtarifanbieter.',
     faqOffline: 'Funktioniert die App offline?',
-    faqOfflineAnswer: 'Ja. Als PWA speichert die App alle Assets und aktuellen Daten lokal. Sie können den letzten Energiestatus einsehen, Einstellungen durchsuchen und Steuerbefehle in eine Warteschlange stellen, die bei Wiederherstellung der Verbindung synchronisiert werden.',
+    faqOfflineAnswer:
+      'Ja. Als PWA speichert die App alle Assets und aktuellen Daten lokal. Sie können den letzten Energiestatus einsehen, Einstellungen durchsuchen und Steuerbefehle in eine Warteschlange stellen, die bei Wiederherstellung der Verbindung synchronisiert werden.',
     faqEnergySection: 'Energie & Tarife',
     faqTariff: 'Wie funktionieren dynamische Tarife?',
-    faqTariffAnswer: 'Dynamische Tarife ändern sich stündlich basierend auf Großhandels-Strommarktpreisen. Nexus HEMS ruft Preise von Ihrem Anbieter (Tibber oder aWATTar) ab und verschiebt automatisch flexible Lasten (E-Auto-Ladung, Wärmepumpe, Batterie) in Niedrigpreisfenster für maximale Einsparungen.',
+    faqTariffAnswer:
+      'Dynamische Tarife ändern sich stündlich basierend auf Großhandels-Strommarktpreisen. Nexus HEMS ruft Preise von Ihrem Anbieter (Tibber oder aWATTar) ab und verschiebt automatisch flexible Lasten (E-Auto-Ladung, Wärmepumpe, Batterie) in Niedrigpreisfenster für maximale Einsparungen.',
     faqSgReady: 'Was ist SG Ready und wie funktioniert es?',
-    faqSgReadyAnswer: 'SG Ready ist ein Standard für Wärmepumpen mit 4 Betriebsmodi: Modus 1 (EVU-Sperre), Modus 2 (Normalbetrieb), Modus 3 (erhöhte Abnahme empfohlen) und Modus 4 (Anlaufbefehl). Nexus HEMS setzt automatisch den optimalen Modus basierend auf PV-Überschuss, Strompreis und Wettervorhersagen.',
+    faqSgReadyAnswer:
+      'SG Ready ist ein Standard für Wärmepumpen mit 4 Betriebsmodi: Modus 1 (EVU-Sperre), Modus 2 (Normalbetrieb), Modus 3 (erhöhte Abnahme empfohlen) und Modus 4 (Anlaufbefehl). Nexus HEMS setzt automatisch den optimalen Modus basierend auf PV-Überschuss, Strompreis und Wettervorhersagen.',
     faqSecuritySection: 'Sicherheit & Datenschutz',
     faqDataStorage: 'Wo werden meine Daten gespeichert?',
-    faqDataStorageAnswer: 'Alle Daten werden lokal in Ihrem Browser mittels IndexedDB (Dexie.js) gespeichert. API-Schlüssel werden vor der Speicherung mit AES-GCM 256-Bit verschlüsselt. Keine Daten werden an externe Server gesendet, es sei denn, Sie konfigurieren explizit eine Cloud-Integration wie InfluxDB.',
+    faqDataStorageAnswer:
+      'Alle Daten werden lokal in Ihrem Browser mittels IndexedDB (Dexie.js) gespeichert. API-Schlüssel werden vor der Speicherung mit AES-GCM 256-Bit verschlüsselt. Keine Daten werden an externe Server gesendet, es sei denn, Sie konfigurieren explizit eine Cloud-Integration wie InfluxDB.',
     faqTechnical: 'Technisches',
     faqBrowsers: 'Welche Browser werden unterstützt?',
-    faqBrowsersAnswer: 'Nexus HEMS unterstützt alle modernen Browser: Chrome 90+, Firefox 90+, Safari 15+ und Edge 90+. Für das beste Erlebnis mit PWA-Funktionen empfehlen wir Chrome oder Edge.',
+    faqBrowsersAnswer:
+      'Nexus HEMS unterstützt alle modernen Browser: Chrome 90+, Firefox 90+, Safari 15+ und Edge 90+. Für das beste Erlebnis mit PWA-Funktionen empfehlen wir Chrome oder Edge.',
     faqMobile: 'Gibt es eine Mobile-App?',
-    faqMobileAnswer: 'Nexus HEMS ist eine Progressive Web App (PWA). Sie können sie über Ihren Browser auf dem Homescreen installieren für ein natives App-Erlebnis. Sie funktioniert auf iOS und Android mit responsiven Layouts für alle Bildschirmgrößen.',
+    faqMobileAnswer:
+      'Nexus HEMS ist eine Progressive Web App (PWA). Sie können sie über Ihren Browser auf dem Homescreen installieren für ein natives App-Erlebnis. Sie funktioniert auf iOS und Android mit responsiven Layouts für alle Bildschirmgrößen.',
     faqApi: 'Kann ich eigene APIs integrieren?',
-    faqApiAnswer: 'Ja. Die Adapter-Architektur unterstützt benutzerdefinierte Integrationen. Eingebaute Adapter existieren für Victron MQTT, KNX/IP, Modbus SunSpec, OCPP 2.1 und EEBus. Das System kann durch neue Adapter im core/adapters-Verzeichnis erweitert werden.',
+    faqApiAnswer:
+      'Ja. Die Adapter-Architektur unterstützt benutzerdefinierte Integrationen. Eingebaute Adapter existieren für Victron MQTT, KNX/IP, Modbus SunSpec, OCPP 2.1 und EEBus. Das System kann durch neue Adapter im core/adapters-Verzeichnis erweitert werden.',
     faqCerboVsRpi: 'Cerbo GX oder Raspberry Pi — was ist besser?',
-    faqCerboVsRpiAnswer: 'Der Cerbo GX ist die empfohlene Produktionslösung — er enthält VE.Bus/VE.Can-Schnittstellen, industrielle Zuverlässigkeit und offiziellen Victron-Support. Ein Raspberry Pi mit Venus OS ist eine hervorragende Entwicklungs-/Testplattform und eignet sich gut für Nicht-Victron-Systeme oder enge Budgets. Beide laufen mit Venus OS und unterstützen die gleiche D-Bus/MQTT-Schnittstelle.',
+    faqCerboVsRpiAnswer:
+      'Der Cerbo GX ist die empfohlene Produktionslösung — er enthält VE.Bus/VE.Can-Schnittstellen, industrielle Zuverlässigkeit und offiziellen Victron-Support. Ein Raspberry Pi mit Venus OS ist eine hervorragende Entwicklungs-/Testplattform und eignet sich gut für Nicht-Victron-Systeme oder enge Budgets. Beide laufen mit Venus OS und unterstützen die gleiche D-Bus/MQTT-Schnittstelle.',
 
     // Shortcuts
     shortcuts: 'Tastaturkürzel',
@@ -448,7 +490,8 @@ export const de = {
     shortcutSave: 'Einstellungen speichern',
     shortcutExport: 'Bericht exportieren',
     shortcutLang: 'Sprache umschalten',
-    shortcutNote: 'Auf Windows/Linux verwenden Sie Strg statt ⌘. Alle Tastaturkürzel sind auch über die Befehlspalette (⌘K) verfügbar.',
+    shortcutNote:
+      'Auf Windows/Linux verwenden Sie Strg statt ⌘. Alle Tastaturkürzel sind auch über die Befehlspalette (⌘K) verfügbar.',
     voiceCommands: 'Sprachbefehle',
     showStatus: 'Aktuellen Energiestatus anzeigen',
 
@@ -456,13 +499,17 @@ export const de = {
     troubleshooting: 'Fehlerbehebung',
     troubleshootingTitle: 'Fehlerbehebung',
     troubleConnection: 'Dashboard zeigt „Getrennt"',
-    troubleConn1: 'Prüfen Sie, ob Ihr Victron Cerbo GX (oder Raspberry Pi) eingeschaltet und mit dem Netzwerk verbunden ist',
-    troubleConn2: 'Überprüfen Sie, ob die IP-Adresse in Einstellungen → System mit Ihrem Cerbo GX übereinstimmt',
-    troubleConn3: 'Stellen Sie sicher, dass Node-RED läuft und der WebSocket-Port korrekt ist (Standard: 1880)',
+    troubleConn1:
+      'Prüfen Sie, ob Ihr Victron Cerbo GX (oder Raspberry Pi) eingeschaltet und mit dem Netzwerk verbunden ist',
+    troubleConn2:
+      'Überprüfen Sie, ob die IP-Adresse in Einstellungen → System mit Ihrem Cerbo GX übereinstimmt',
+    troubleConn3:
+      'Stellen Sie sicher, dass Node-RED läuft und der WebSocket-Port korrekt ist (Standard: 1880)',
     troubleConn4: 'Prüfen Sie, ob Ihr Browser WebSocket-Verbindungen zulässt',
     troubleNoData: 'Keine Energiedaten sichtbar',
     troubleData1: 'Das Victron-System kann im Standby-Modus sein (keine PV-Erzeugung nachts)',
-    troubleData2: 'Überprüfen Sie die Datenaktualisierungsrate in den Einstellungen (Standard: 2000ms)',
+    troubleData2:
+      'Überprüfen Sie die Datenaktualisierungsrate in den Einstellungen (Standard: 2000ms)',
     troubleData3: 'Browser-Cache löschen und Seite neu laden',
     troubleData4: 'Node-RED-Flow auf Fehler prüfen',
     troublePwa: 'PWA lässt sich nicht installieren',
@@ -476,32 +523,39 @@ export const de = {
     troubleKnx3: 'Gruppenadressen müssen mit der ETS-Projektkonfiguration übereinstimmen',
     troubleKnx4: 'Verbindungen zunächst über die ETS-Diagnose testen',
     troubleAi: 'AI Optimizer reagiert nicht',
-    troubleAi1: 'Prüfen Sie, ob Ihr AI-API-Schlüssel unter Einstellungen → AI Keys konfiguriert ist',
+    troubleAi1:
+      'Prüfen Sie, ob Ihr AI-API-Schlüssel unter Einstellungen → AI Keys konfiguriert ist',
     troubleAi2: 'Überprüfen Sie, ob Ihr API-Schlüssel ausreichend Kontingent hat',
     troubleAi3: 'AI-Funktionen erfordern eine Internetverbindung',
     troubleAi4: 'Versuchen Sie, Ihren API-Schlüssel im Dashboard des Anbieters neu zu generieren',
     perfTips: 'Performance-Tipps',
     perf1: 'Nutzen Sie die PWA-Installation für bessere Performance und Offline-Caching',
-    perf2: 'Aktivieren Sie den Leistungsmodus in Einstellungen → Erweitert, um Animationen auf leistungsschwachen Geräten zu reduzieren',
-    perf3: 'Reduzieren Sie die Datenaktualisierungsrate bei mobilen Daten oder langsamen Verbindungen',
-    perf4: 'Leeren Sie regelmäßig den lokalen Cache in Einstellungen → Speicher, um IndexedDB-Speicherplatz freizugeben',
+    perf2:
+      'Aktivieren Sie den Leistungsmodus in Einstellungen → Erweitert, um Animationen auf leistungsschwachen Geräten zu reduzieren',
+    perf3:
+      'Reduzieren Sie die Datenaktualisierungsrate bei mobilen Daten oder langsamen Verbindungen',
+    perf4:
+      'Leeren Sie regelmäßig den lokalen Cache in Einstellungen → Speicher, um IndexedDB-Speicherplatz freizugeben',
 
     // Über
     versionFull: 'Version 3.1.0 — Build 2026.03',
     visualization: 'Visualisierung',
     testing: 'Tests',
     a11yTitle: 'Barrierefreiheit',
-    a11yDesc: 'Nexus HEMS folgt den WCAG 2.2 AA-Standards mit vollständiger Tastaturnavigation, ARIA-Labels, Screenreader-Unterstützung, Skip-Links, Fokus-Indikatoren und korrekten Farbkontrastverhältnissen. Getestet mit axe-core und Playwright a11y-Tests.',
+    a11yDesc:
+      'Nexus HEMS folgt den WCAG 2.2 AA-Standards mit vollständiger Tastaturnavigation, ARIA-Labels, Screenreader-Unterstützung, Skip-Links, Fokus-Indikatoren und korrekten Farbkontrastverhältnissen. Getestet mit axe-core und Playwright a11y-Tests.',
     credits: 'Danksagungen & Credits',
 
     // Integrationsanleitung
     integrationGuide: 'Integrationsanleitung',
     integrationGuideTitle: 'System-Integrationsanleitung',
-    integrationGuideIntro: 'Nexus HEMS unterstützt mehrere Hardware-Plattformen und Protokolle. Diese Anleitung behandelt die empfohlenen Konfigurationen für Produktions- und Entwicklungsumgebungen.',
+    integrationGuideIntro:
+      'Nexus HEMS unterstützt mehrere Hardware-Plattformen und Protokolle. Diese Anleitung behandelt die empfohlenen Konfigurationen für Produktions- und Entwicklungsumgebungen.',
 
     // Cerbo GX Abschnitt
     cerboGxTitle: 'Victron Cerbo GX & Cerbo GX MK2',
-    cerboGxIntro: 'Der Cerbo GX ist Victrons Kommunikationszentrale für Energiesysteme. Er verbindet alle Komponenten und bietet D-Bus-, MQTT- und VRM-Portal-Zugriff. Der Cerbo GX MK2 (erschienen 2024) bietet verbesserte Leistung.',
+    cerboGxIntro:
+      'Der Cerbo GX ist Victrons Kommunikationszentrale für Energiesysteme. Er verbindet alle Komponenten und bietet D-Bus-, MQTT- und VRM-Portal-Zugriff. Der Cerbo GX MK2 (erschienen 2024) bietet verbesserte Leistung.',
     cerboGxSpecs: 'Cerbo GX MK2 Spezifikationen',
     cerboGxSpec1: '1,2 GHz Quad-Core ARM Cortex-A53 CPU (vs. 800 MHz beim Original)',
     cerboGxSpec2: '512 MB RAM (vs. 256 MB beim Original)',
@@ -521,14 +575,17 @@ export const de = {
     cerboGxSetup2: 'MPPT Solarladeregler über VE.Direct-Kabel anschließen',
     cerboGxSetup3: 'Per Ethernet mit dem LAN verbinden und IP-Adresse notieren',
     cerboGxSetup4: 'MQTT im LAN aktivieren: Remote Console → Einstellungen → Dienste',
-    cerboGxSetup5: 'Node-RED über Venus OS Large Image installieren (Einstellungen → Venus OS Large → Node-RED)',
+    cerboGxSetup5:
+      'Node-RED über Venus OS Large Image installieren (Einstellungen → Venus OS Large → Node-RED)',
     cerboGxSetup6: 'Nexus HEMS Node-RED-Flow importieren (stellt WebSocket-Brücke bereit)',
     cerboGxSetup7: 'Cerbo GX IP in Nexus HEMS Einstellungen → System eingeben',
-    cerboGxNote: 'Für GX MK2: Die schnellere Hardware ermöglicht höhere Abfrageraten (500ms statt 2000ms) und das gleichzeitige Ausführen von mehr Node-RED-Flows ohne Leistungsprobleme.',
+    cerboGxNote:
+      'Für GX MK2: Die schnellere Hardware ermöglicht höhere Abfrageraten (500ms statt 2000ms) und das gleichzeitige Ausführen von mehr Node-RED-Flows ohne Leistungsprobleme.',
 
     // Raspberry Pi Abschnitt
     rpiTitle: 'Raspberry Pi mit Venus OS',
-    rpiIntro: 'Ein Raspberry Pi mit Venus OS bietet die gleiche D-Bus/MQTT-Infrastruktur wie der Cerbo GX — ideal für Entwicklung, Tests oder Nicht-Victron-Setups.',
+    rpiIntro:
+      'Ein Raspberry Pi mit Venus OS bietet die gleiche D-Bus/MQTT-Infrastruktur wie der Cerbo GX — ideal für Entwicklung, Tests oder Nicht-Victron-Setups.',
     rpiRecommended: 'Empfohlene Hardware',
     rpiModel: 'Raspberry Pi 4 Model B (4 GB oder 8 GB RAM) oder Raspberry Pi 5 (4/8 GB)',
     rpiPower: '5V/3A USB-C Netzteil (offizielles Raspberry Pi empfohlen)',
@@ -537,7 +594,8 @@ export const de = {
     rpiHat: 'Optional: VE.Direct USB-Kabel für direkte Victron-Geräteverbindung',
     rpiCan: 'Optional: CAN-Bus-HAT für VE.Can-Unterstützung',
     rpiSetup: 'Venus OS Installation',
-    rpiSetup1: 'Venus OS für Raspberry Pi von Victrons Website herunterladen (venus-image-raspberrypi4.img.gz)',
+    rpiSetup1:
+      'Venus OS für Raspberry Pi von Victrons Website herunterladen (venus-image-raspberrypi4.img.gz)',
     rpiSetup2: 'Image auf microSD flashen mit balenaEtcher oder Raspberry Pi Imager',
     rpiSetup3: 'microSD einsetzen, Ethernet anschließen und einschalten',
     rpiSetup4: 'Gerät im Netzwerk finden (venus.local oder über Router-DHCP)',
@@ -573,10 +631,12 @@ export const de = {
 
     // Venus OS & Node-RED Architektur
     venusTitle: 'Venus OS & Node-RED Architektur',
-    venusIntro: 'Venus OS ist das Linux-basierte Betriebssystem im Herzen jedes Cerbo GX und Venus-kompatiblen Geräts. Es stellt D-Bus als zentrale Kommunikationsschicht bereit.',
+    venusIntro:
+      'Venus OS ist das Linux-basierte Betriebssystem im Herzen jedes Cerbo GX und Venus-kompatiblen Geräts. Es stellt D-Bus als zentrale Kommunikationsschicht bereit.',
     venusArchitecture: 'Systemarchitektur',
     venusArch1: 'D-Bus-Dienste stellen alle Gerätedaten bereit (com.victronenergy.*)',
-    venusArch2: 'dbus-mqtt-Bridge veröffentlicht alle Werte auf lokalen MQTT-Topics (N/<portal-id>/...)',
+    venusArch2:
+      'dbus-mqtt-Bridge veröffentlicht alle Werte auf lokalen MQTT-Topics (N/<portal-id>/...)',
     venusArch3: 'Node-RED liest D-Bus/MQTT-Werte und stellt sie über WebSocket bereit',
     venusArch4: 'Nexus HEMS verbindet sich mit dem Node-RED WebSocket für Echtzeitdaten',
     venusArch5: 'Befehle fließen zurück: Dashboard → WebSocket → Node-RED → D-Bus → Gerät',
@@ -589,7 +649,8 @@ export const de = {
     venusDbus6: 'com.victronenergy.pvinverter — AC-gekoppelter PV-Wechselrichter',
     venusDbus7: 'com.victronenergy.temperature — Temperatursensoren',
     venusNodeRed: 'Node-RED Flow-Design',
-    venusNodeRedDesc: 'Der empfohlene Node-RED Flow abonniert Victron D-Bus-Knoten, aggregiert die Daten und veröffentlicht sie als JSON über einen WebSocket-Output-Knoten. Er empfängt auch Befehle vom Dashboard und schreibt sie zurück auf D-Bus.',
+    venusNodeRedDesc:
+      'Der empfohlene Node-RED Flow abonniert Victron D-Bus-Knoten, aggregiert die Daten und veröffentlicht sie als JSON über einen WebSocket-Output-Knoten. Er empfängt auch Befehle vom Dashboard und schreibt sie zurück auf D-Bus.',
     venusNodeRedFlows: 'Erforderliche Node-RED Knoten',
     venusFlow1: 'victron-vrm — Victron D-Bus Input/Output-Knoten (vorinstalliert auf Venus OS)',
     venusFlow2: 'node-red-contrib-knx — KNX/IP Gateway-Knoten für Gebäudeautomation',
@@ -605,12 +666,14 @@ export const de = {
 
     // KNX Integration
     knxTitle: 'KNX Gebäudeautomation Integration',
-    knxIntro: 'KNX ist der weltweite Standard für Smart Home und Gebäudeautomation. Nexus HEMS integriert KNX über einen IP-Router und Node-RED.',
+    knxIntro:
+      'KNX ist der weltweite Standard für Smart Home und Gebäudeautomation. Nexus HEMS integriert KNX über einen IP-Router und Node-RED.',
     knxArchitecture: 'KNX-Architektur',
     knxArch1: 'KNX TP-Bus (Twisted Pair) verbindet Sensoren und Aktoren im gesamten Gebäude',
     knxArch2: 'KNX/IP-Router (z.B. Weinzierl, MDT, ABB) verbindet den TP-Bus mit dem IP-Netzwerk',
     knxArch3: 'Node-RED nutzt node-red-contrib-knx zur Kommunikation mit dem IP-Router',
-    knxArch4: 'Gruppenadressen im ETS-Projekt werden bestimmten Funktionen zugeordnet (Licht, Temperatur, Fenster)',
+    knxArch4:
+      'Gruppenadressen im ETS-Projekt werden bestimmten Funktionen zugeordnet (Licht, Temperatur, Fenster)',
     knxGroupAddresses: 'Typische Gruppenadress-Zuordnung',
     knxGA1: '1/0/0 — Wohnzimmer Licht ein/aus (DPT 1.001)',
     knxGA2: '1/0/1 — Wohnzimmer Dimmwert (DPT 5.001)',
@@ -619,16 +682,19 @@ export const de = {
     knxGA5: '3/0/0 — Küche Fensterkontakt (DPT 1.009)',
     knxBestPractices: 'KNX Best Practices',
     knxBP1: 'Dedizierter KNX/IP-Router (kein Interface) für Tunneling und Routing verwenden',
-    knxBP2: 'Gruppenadressen systematisch planen vor ETS-Konfiguration (z.B. 1/x = Beleuchtung, 2/x = Klima)',
+    knxBP2:
+      'Gruppenadressen systematisch planen vor ETS-Konfiguration (z.B. 1/x = Beleuchtung, 2/x = Klima)',
     knxBP3: 'ETS-Filterung verwenden, um nur relevante Telegramme auf die IP-Seite zu senden',
     knxBP4: 'Statische IP für den KNX/IP-Router im Gebäude-Subnetz vergeben',
     knxBP5: 'Alle Gruppenadressen mit der ETS-Diagnose testen, bevor Nexus HEMS verbunden wird',
 
     // High-End Konfiguration
     highEndTitle: 'Optimale High-End Konfiguration',
-    highEndIntro: 'Die empfohlene High-End-Konfiguration maximiert Leistung, Zuverlässigkeit und Funktionsumfang.',
+    highEndIntro:
+      'Die empfohlene High-End-Konfiguration maximiert Leistung, Zuverlässigkeit und Funktionsumfang.',
     highEndHardware: 'Hardware-Konfiguration',
-    highEndHW1: 'Victron Cerbo GX MK2 als primäres Gateway (Produktion) oder Raspberry Pi 5 (Entwicklung)',
+    highEndHW1:
+      'Victron Cerbo GX MK2 als primäres Gateway (Produktion) oder Raspberry Pi 5 (Entwicklung)',
     highEndHW2: 'Victron MultiPlus-II 48/5000 oder Quattro als Wechselrichter/Ladegerät',
     highEndHW3: 'Victron Smart Solar MPPT RS 450/200 Laderegler (VE.Can)',
     highEndHW4: 'Victron Lynx Smart BMS mit Lynx Distributor für Batteriemanagement',
@@ -647,7 +713,8 @@ export const de = {
     highEndNet1: 'Dediziertes VLAN für Energiegeräte (Cerbo GX, KNX/IP-Router, Wallbox)',
     highEndNet2: 'Statische IP-Adressen für alle Energie-Infrastrukturgeräte',
     highEndNet3: 'USV-gestützter Netzwerk-Switch für 24/7-Konnektivität',
-    highEndNet4: 'Firewall-Regeln: WAN-Zugriff für Energiegeräte sperren, nur LAN-Kommunikation erlauben',
+    highEndNet4:
+      'Firewall-Regeln: WAN-Zugriff für Energiegeräte sperren, nur LAN-Kommunikation erlauben',
     highEndNet5: 'mTLS-Zertifikate für verschlüsselte WebSocket-Verbindungen',
   },
   ai: {
@@ -914,7 +981,8 @@ export const de = {
     title: 'AI Provider Keys',
     subtitle: 'Bring Your Own Key — verschlüsselt mit AES-GCM 256-Bit',
     securityTitle: 'Ende-zu-Ende verschlüsselt',
-    securityDesc: 'Schlüssel werden mit PBKDF2 + AES-GCM 256-Bit vor der Speicherung in IndexedDB verschlüsselt. Schlüssel werden niemals an unsere Server gesendet — nur direkt an den AI-Anbieter deiner Wahl.',
+    securityDesc:
+      'Schlüssel werden mit PBKDF2 + AES-GCM 256-Bit vor der Speicherung in IndexedDB verschlüsselt. Schlüssel werden niemals an unsere Server gesendet — nur direkt an den AI-Anbieter deiner Wahl.',
     configured: 'Konfigurierte Anbieter',
     noKeys: 'Noch keine API-Schlüssel konfiguriert. Füge unten einen Anbieter hinzu.',
     addProvider: 'Anbieter hinzufügen',
@@ -931,7 +999,8 @@ export const de = {
     forecastAriaLabel: 'Energieerzeugungs- und Preisprognose-Diagramm',
   },
   sankey: {
-    ariaLabel: 'Echtzeit-Energieflussdiagramm mit Verteilung zwischen PV, Batterie, Netz, Haus, Wärmepumpe und EV',
+    ariaLabel:
+      'Echtzeit-Energieflussdiagramm mit Verteilung zwischen PV, Batterie, Netz, Haus, Wärmepumpe und EV',
     title: 'Energiefluss-Sankey-Diagramm',
     desc: 'Live-Visualisierung der Energieflüsse: PV erzeugt {{pvPower}}W, Batterie bei {{batterySoC}}%, Haus verbraucht {{houseLoad}}W, Netz {{gridDirection}} {{gridPower}}W',
     importing: 'Bezug',
@@ -963,6 +1032,7 @@ export const de = {
     connections: 'WS-Verbindungen',
     adapterHealth: 'Adapter-Status',
     alertRules: 'Aktive Alarmregeln',
-    grafanaHint: 'Importieren Sie das vorkonfigurierte Grafana-Dashboard über die API oder verwenden Sie die Template-UID:',
+    grafanaHint:
+      'Importieren Sie das vorkonfigurierte Grafana-Dashboard über die API oder verwenden Sie die Template-UID:',
   },
 } as const;

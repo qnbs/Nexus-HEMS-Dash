@@ -32,14 +32,14 @@ export type VictronGatewayType = 'cerbo-gx' | 'cerbo-gx-mk2' | 'raspberry-pi';
 export const VENUS_DBUS_PATHS = {
   // System-wide
   system: {
-    serial:    '/system/0/Serial',
-    vrmId:     '/system/0/VrmPortalId',
-    acIn:      '/system/0/Ac/ActiveIn/Source',
-    pvOnGrid:  '/system/0/Ac/PvOnGrid/L1/Power',
+    serial: '/system/0/Serial',
+    vrmId: '/system/0/VrmPortalId',
+    acIn: '/system/0/Ac/ActiveIn/Source',
+    pvOnGrid: '/system/0/Ac/PvOnGrid/L1/Power',
   },
   // Grid meter
   grid: {
-    power:     'com.victronenergy.grid/Ac/Power',
+    power: 'com.victronenergy.grid/Ac/Power',
     voltageL1: 'com.victronenergy.grid/Ac/L1/Voltage',
     voltageL2: 'com.victronenergy.grid/Ac/L2/Voltage',
     voltageL3: 'com.victronenergy.grid/Ac/L3/Voltage',
@@ -48,34 +48,34 @@ export const VENUS_DBUS_PATHS = {
   },
   // PV inverter (on AC output or DC-coupled via MPPT)
   pv: {
-    power:       'com.victronenergy.pvinverter/Ac/Power',
-    yieldToday:  'com.victronenergy.pvinverter/Ac/Energy/Forward',
-    position:    'com.victronenergy.pvinverter/Position',  // 0=AC-in, 1=AC-out, 2=AC-in2
+    power: 'com.victronenergy.pvinverter/Ac/Power',
+    yieldToday: 'com.victronenergy.pvinverter/Ac/Energy/Forward',
+    position: 'com.victronenergy.pvinverter/Position', // 0=AC-in, 1=AC-out, 2=AC-in2
   },
   // MPPT solar charger (DC-coupled)
   solarCharger: {
-    power:      'com.victronenergy.solarcharger/Yield/Power',
+    power: 'com.victronenergy.solarcharger/Yield/Power',
     yieldToday: 'com.victronenergy.solarcharger/Yield/System',
-    voltage:    'com.victronenergy.solarcharger/Pv/V',
-    state:      'com.victronenergy.solarcharger/State',
-    errorCode:  'com.victronenergy.solarcharger/ErrorCode',
+    voltage: 'com.victronenergy.solarcharger/Pv/V',
+    state: 'com.victronenergy.solarcharger/State',
+    errorCode: 'com.victronenergy.solarcharger/ErrorCode',
   },
   // Battery (via BMS or Multi/Quattro)
   battery: {
-    power:   'com.victronenergy.battery/Dc/0/Power',
-    soc:     'com.victronenergy.battery/Soc',
+    power: 'com.victronenergy.battery/Dc/0/Power',
+    soc: 'com.victronenergy.battery/Soc',
     voltage: 'com.victronenergy.battery/Dc/0/Voltage',
     current: 'com.victronenergy.battery/Dc/0/Current',
-    state:   'com.victronenergy.battery/State',
-    timeToGo:'com.victronenergy.battery/TimeToGo',
+    state: 'com.victronenergy.battery/State',
+    timeToGo: 'com.victronenergy.battery/TimeToGo',
   },
   // VE.Bus (Multi/Quattro inverter-charger)
   vebus: {
-    power:      'com.victronenergy.vebus/Ac/ActiveIn/P',
-    state:      'com.victronenergy.vebus/State',
-    mode:       'com.victronenergy.vebus/Mode',                 // 1=Charger, 2=Inverter, 3=On, 4=Off
+    power: 'com.victronenergy.vebus/Ac/ActiveIn/P',
+    state: 'com.victronenergy.vebus/State',
+    mode: 'com.victronenergy.vebus/Mode', // 1=Charger, 2=Inverter, 3=On, 4=Off
     acOutPower: 'com.victronenergy.vebus/Ac/Out/P',
-    acOutVolt:  'com.victronenergy.vebus/Ac/Out/L1/V',
+    acOutVolt: 'com.victronenergy.vebus/Ac/Out/L1/V',
   },
   // Temperature sensors
   temperature: {
@@ -211,8 +211,7 @@ export class VictronMQTTAdapter implements EnergyAdapter {
     const ws = new WebSocket(wsUrl);
 
     ws.onopen = () => {
-      this.retryDelay =
-        this.config.reconnect?.initialDelayMs ?? DEFAULT_RECONNECT.initialDelayMs;
+      this.retryDelay = this.config.reconnect?.initialDelayMs ?? DEFAULT_RECONNECT.initialDelayMs;
       this.setStatus('connected');
     };
 
@@ -271,9 +270,7 @@ export class VictronMQTTAdapter implements EnergyAdapter {
   }
 
   /** Map Node-RED's flat data to UnifiedEnergyModel */
-  private toUnifiedModel(
-    data: NodeREDEnergyMessage['data'],
-  ): Partial<UnifiedEnergyModel> {
+  private toUnifiedModel(data: NodeREDEnergyMessage['data']): Partial<UnifiedEnergyModel> {
     return {
       timestamp: Date.now(),
       pv: {
@@ -299,9 +296,10 @@ export class VictronMQTTAdapter implements EnergyAdapter {
           (data.houseLoad ?? 0) - (data.heatPumpPower ?? 0) - (data.evPower ?? 0),
         ),
       },
-      tariff: data.priceCurrent != null
-        ? { currentPriceEurKWh: data.priceCurrent, provider: 'tibber' }
-        : undefined,
+      tariff:
+        data.priceCurrent != null
+          ? { currentPriceEurKWh: data.priceCurrent, provider: 'tibber' }
+          : undefined,
     };
   }
 

@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'motion/react';
-import { useEffect, useState, useMemo, useRef, useCallback } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import {
   Search,
   Sparkles,
@@ -46,6 +46,7 @@ export function CommandPalette({
   const [search, setSearch] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const commands: Command[] = [
     // Actions
     {
@@ -296,7 +297,11 @@ export function CommandPalette({
                 role="combobox"
                 aria-expanded="true"
                 aria-controls="command-listbox"
-                aria-activedescendant={filteredCommands[selectedIndex] ? `cmd-${filteredCommands[selectedIndex].id}` : undefined}
+                aria-activedescendant={
+                  filteredCommands[selectedIndex]
+                    ? `cmd-${filteredCommands[selectedIndex].id}`
+                    : undefined
+                }
                 aria-autocomplete="list"
               />
               <kbd className="rounded bg-slate-800/50 px-2 py-1 text-xs text-[color:var(--color-muted)]">
@@ -369,6 +374,7 @@ export function CommandPalette({
 }
 
 // Hook for global Cmd+K / Ctrl+K shortcut
+// eslint-disable-next-line react-refresh/only-export-components
 export function useCommandPalette() {
   const [isOpen, setIsOpen] = useState(false);
 

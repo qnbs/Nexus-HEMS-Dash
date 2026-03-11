@@ -20,6 +20,7 @@ test.describe('User Flow', () => {
       { linkText: /ai optimizer|ki-optimierer/i, url: '/ai-optimizer' },
       { linkText: /tariffs|tarife/i, url: '/tariffs' },
       { linkText: /analytics|analysen/i, url: '/analytics' },
+      { linkText: /monitoring/i, url: '/monitoring' },
       { linkText: /settings|einstellungen/i, url: '/settings' },
       { linkText: /help|hilfe/i, url: '/help' },
     ];
@@ -41,8 +42,6 @@ test.describe('User Flow', () => {
   test('should switch themes', async ({ page }) => {
     await page.goto('/settings');
     await page.waitForLoadState('networkidle');
-
-    const initialTheme = await page.getAttribute('html', 'data-theme');
 
     // Click a theme card button in Settings
     const themeButton = page.locator('button[aria-pressed]').nth(1);

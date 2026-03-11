@@ -77,7 +77,10 @@ export class ErrorBoundary extends Component<Props, State> {
       }
 
       return (
-        <div className="flex min-h-screen items-center justify-center bg-[color:var(--color-bg)] p-4" role="alert">
+        <div
+          className="flex min-h-screen items-center justify-center bg-[color:var(--color-bg)] p-4"
+          role="alert"
+        >
           <div className="glass-panel w-full max-w-2xl rounded-3xl p-8">
             <div className="flex items-start gap-4">
               <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-red-500/20">

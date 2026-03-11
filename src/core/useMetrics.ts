@@ -5,7 +5,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import type { MetricFamily, HealthStatus } from '../lib/metrics';
+import type { MetricFamily } from '../lib/metrics';
 import { metricsCollector } from '../lib/metrics';
 
 export interface MetricSnapshot {
@@ -41,7 +41,7 @@ export function useMetrics(intervalMs: number = 5000): MetricSnapshot {
         lastUpdated: Date.now(),
         error: null,
       });
-    } catch (err) {
+    } catch {
       // Fallback to client-side collector
       const families = metricsCollector.toJSON();
       const health = metricsCollector.getHealthStatus();
@@ -55,7 +55,7 @@ export function useMetrics(intervalMs: number = 5000): MetricSnapshot {
   }, []);
 
   useEffect(() => {
-    fetchMetrics();
+    fetchMetrics(); // eslint-disable-line react-hooks/set-state-in-effect
     intervalRef.current = setInterval(fetchMetrics, intervalMs);
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);

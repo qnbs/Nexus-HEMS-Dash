@@ -203,11 +203,4 @@ export interface EnergyAdapter {
   destroy(): void;
 }
 
-export type AdapterCapability =
-  | 'pv'
-  | 'battery'
-  | 'grid'
-  | 'load'
-  | 'evCharger'
-  | 'knx'
-  | 'tariff';
+export type AdapterCapability = 'pv' | 'battery' | 'grid' | 'load' | 'evCharger' | 'knx' | 'tariff';

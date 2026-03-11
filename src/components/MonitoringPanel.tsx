@@ -15,10 +15,14 @@ function MetricCard({ label, value, unit, status = 'normal' }: MetricCardProps) 
 
   return (
     <NeonCard variant={variant} className="p-3 sm:p-4">
-      <p className="text-xs sm:text-sm text-[color:var(--color-text-secondary)] truncate">{label}</p>
+      <p className="text-xs sm:text-sm text-[color:var(--color-text-secondary)] truncate">
+        {label}
+      </p>
       <p className="text-lg sm:text-2xl font-bold text-[color:var(--color-text)] mt-1">
         {value}
-        <span className="text-xs sm:text-sm font-normal text-[color:var(--color-text-secondary)] ml-1">{unit}</span>
+        <span className="text-xs sm:text-sm font-normal text-[color:var(--color-text-secondary)] ml-1">
+          {unit}
+        </span>
       </p>
     </NeonCard>
   );
@@ -39,12 +43,12 @@ function AdapterRow({ name, protocol, connected, latencyMs }: AdapterRowProps) {
       <td className="py-2 px-3">
         <span
           className={`inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full ${
-            connected
-              ? 'bg-emerald-500/10 text-emerald-400'
-              : 'bg-red-500/10 text-red-400'
+            connected ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'
           }`}
         >
-          <span className={`w-1.5 h-1.5 rounded-full ${connected ? 'bg-emerald-400' : 'bg-red-400'}`} />
+          <span
+            className={`w-1.5 h-1.5 rounded-full ${connected ? 'bg-emerald-400' : 'bg-red-400'}`}
+          />
           {connected ? 'Connected' : 'Disconnected'}
         </span>
       </td>
@@ -77,8 +81,13 @@ export default function MonitoringPanel() {
   // Derive statuses
   const gridStatus = gridPower > 4200 ? 'critical' : gridPower > 3000 ? 'warning' : 'normal';
   const batteryStatus = batterySoC < 10 ? 'critical' : batterySoC < 20 ? 'warning' : 'normal';
-  const voltageStatus = voltage < 210 || voltage > 250 ? 'critical' : voltage < 220 || voltage > 240 ? 'warning' : 'normal';
-  const priceStatus = price > 0.40 ? 'critical' : price > 0.30 ? 'warning' : 'normal';
+  const voltageStatus =
+    voltage < 210 || voltage > 250
+      ? 'critical'
+      : voltage < 220 || voltage > 240
+        ? 'warning'
+        : 'normal';
+  const priceStatus = price > 0.4 ? 'critical' : price > 0.3 ? 'warning' : 'normal';
 
   const formatUptime = (seconds: number) => {
     const h = Math.floor(seconds / 3600);
@@ -114,12 +123,12 @@ export default function MonitoringPanel() {
         <div className="flex items-center gap-2">
           <span
             className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full ${
-              error
-                ? 'bg-red-500/10 text-red-400'
-                : 'bg-emerald-500/10 text-emerald-400'
+              error ? 'bg-red-500/10 text-red-400' : 'bg-emerald-500/10 text-emerald-400'
             }`}
           >
-            <span className={`w-2 h-2 rounded-full animate-pulse ${error ? 'bg-red-400' : 'bg-emerald-400'}`} />
+            <span
+              className={`w-2 h-2 rounded-full animate-pulse ${error ? 'bg-red-400' : 'bg-emerald-400'}`}
+            />
             {error ? t('monitoring.error', 'Error') : t('monitoring.live', 'Live')}
           </span>
           {lastUpdated > 0 && (
@@ -142,9 +151,7 @@ export default function MonitoringPanel() {
             </code>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium text-[color:var(--color-primary)]">
-              JSON API
-            </p>
+            <p className="text-xs font-medium text-[color:var(--color-primary)]">JSON API</p>
             <code className="text-xs sm:text-sm text-[color:var(--color-text)] font-mono block truncate mt-0.5">
               GET /api/metrics/json
             </code>
@@ -157,16 +164,60 @@ export default function MonitoringPanel() {
 
       {/* Key Metric Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
-        <MetricCard label={t('monitoring.pvPower', 'PV Power')} value={pvPower.toFixed(0)} unit="W" />
-        <MetricCard label={t('monitoring.gridPower', 'Grid Power')} value={gridPower.toFixed(0)} unit="W" status={gridStatus} />
-        <MetricCard label={t('monitoring.batteryPower', 'Battery')} value={batteryPower.toFixed(0)} unit="W" />
-        <MetricCard label={t('monitoring.batterySoC', 'Battery SoC')} value={batterySoC.toFixed(0)} unit="%" status={batteryStatus} />
-        <MetricCard label={t('monitoring.houseLoad', 'House Load')} value={houseLoad.toFixed(0)} unit="W" />
-        <MetricCard label={t('monitoring.evCharger', 'EV Charger')} value={evPower.toFixed(0)} unit="W" />
-        <MetricCard label={t('monitoring.heatPump', 'Heat Pump')} value={heatPump.toFixed(0)} unit="W" />
-        <MetricCard label={t('monitoring.gridVoltage', 'Grid Voltage')} value={voltage.toFixed(1)} unit="V" status={voltageStatus} />
-        <MetricCard label={t('monitoring.price', 'Price')} value={price.toFixed(3)} unit="€/kWh" status={priceStatus} />
-        <MetricCard label={t('monitoring.connections', 'WS Connections')} value={String(health.connections)} unit="" />
+        <MetricCard
+          label={t('monitoring.pvPower', 'PV Power')}
+          value={pvPower.toFixed(0)}
+          unit="W"
+        />
+        <MetricCard
+          label={t('monitoring.gridPower', 'Grid Power')}
+          value={gridPower.toFixed(0)}
+          unit="W"
+          status={gridStatus}
+        />
+        <MetricCard
+          label={t('monitoring.batteryPower', 'Battery')}
+          value={batteryPower.toFixed(0)}
+          unit="W"
+        />
+        <MetricCard
+          label={t('monitoring.batterySoC', 'Battery SoC')}
+          value={batterySoC.toFixed(0)}
+          unit="%"
+          status={batteryStatus}
+        />
+        <MetricCard
+          label={t('monitoring.houseLoad', 'House Load')}
+          value={houseLoad.toFixed(0)}
+          unit="W"
+        />
+        <MetricCard
+          label={t('monitoring.evCharger', 'EV Charger')}
+          value={evPower.toFixed(0)}
+          unit="W"
+        />
+        <MetricCard
+          label={t('monitoring.heatPump', 'Heat Pump')}
+          value={heatPump.toFixed(0)}
+          unit="W"
+        />
+        <MetricCard
+          label={t('monitoring.gridVoltage', 'Grid Voltage')}
+          value={voltage.toFixed(1)}
+          unit="V"
+          status={voltageStatus}
+        />
+        <MetricCard
+          label={t('monitoring.price', 'Price')}
+          value={price.toFixed(3)}
+          unit="€/kWh"
+          status={priceStatus}
+        />
+        <MetricCard
+          label={t('monitoring.connections', 'WS Connections')}
+          value={String(health.connections)}
+          unit=""
+        />
       </div>
 
       {/* Adapter Health Table */}
@@ -177,10 +228,18 @@ export default function MonitoringPanel() {
         <table className="w-full text-left" role="table">
           <thead>
             <tr className="border-b border-[color:var(--color-border)]/30">
-              <th className="py-2 px-3 text-xs font-medium text-[color:var(--color-text-secondary)]">Adapter</th>
-              <th className="py-2 px-3 text-xs font-medium text-[color:var(--color-text-secondary)]">Protocol</th>
-              <th className="py-2 px-3 text-xs font-medium text-[color:var(--color-text-secondary)]">Status</th>
-              <th className="py-2 px-3 text-xs font-medium text-[color:var(--color-text-secondary)] text-right">Latency</th>
+              <th className="py-2 px-3 text-xs font-medium text-[color:var(--color-text-secondary)]">
+                Adapter
+              </th>
+              <th className="py-2 px-3 text-xs font-medium text-[color:var(--color-text-secondary)]">
+                Protocol
+              </th>
+              <th className="py-2 px-3 text-xs font-medium text-[color:var(--color-text-secondary)]">
+                Status
+              </th>
+              <th className="py-2 px-3 text-xs font-medium text-[color:var(--color-text-secondary)] text-right">
+                Latency
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -220,7 +279,9 @@ export default function MonitoringPanel() {
               className="flex items-center justify-between gap-2 p-2 rounded-lg bg-[color:var(--color-surface)]/50 border border-[color:var(--color-border)]/20"
             >
               <div className="min-w-0">
-                <p className="text-xs font-medium text-[color:var(--color-text)] truncate">{rule.name}</p>
+                <p className="text-xs font-medium text-[color:var(--color-text)] truncate">
+                  {rule.name}
+                </p>
                 <p className="text-xs text-[color:var(--color-text-secondary)]">{rule.threshold}</p>
               </div>
               <span

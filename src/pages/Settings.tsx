@@ -30,10 +30,17 @@ import { useTranslation } from 'react-i18next';
 
 import { themeDefinitions, themeOrder, type ThemeName } from '../design-tokens';
 import { useAppStore } from '../store';
-import { SYSTEM_PRESETS, type SystemConfig, type PVConfig } from '../types';
+import { SYSTEM_PRESETS, type PVConfig } from '../types';
 import { resolveTheme, type ThemePreference } from '../lib/theme';
 
-type SettingsTab = 'appearance' | 'system' | 'energy' | 'security' | 'storage' | 'notifications' | 'advanced';
+type SettingsTab =
+  | 'appearance'
+  | 'system'
+  | 'energy'
+  | 'security'
+  | 'storage'
+  | 'notifications'
+  | 'advanced';
 
 function ThemePreviewCard({
   def,
@@ -77,7 +84,17 @@ function ThemePreviewCard({
   );
 }
 
-function ToggleSwitch({ checked, onChange, label, id }: { checked: boolean; onChange: (v: boolean) => void; label: string; id: string }) {
+function ToggleSwitch({
+  checked,
+  onChange,
+  label,
+  id,
+}: {
+  checked: boolean;
+  onChange: (v: boolean) => void;
+  label: string;
+  id: string;
+}) {
   return (
     <label htmlFor={id} className="relative inline-flex cursor-pointer items-center">
       <input
@@ -156,20 +173,30 @@ export function Settings() {
   };
 
   const tabs: { key: SettingsTab; icon: React.ReactNode; label: string }[] = [
-    { key: 'appearance', icon: <Palette size={18} />, label: t('settings.appearance', 'Appearance') },
+    {
+      key: 'appearance',
+      icon: <Palette size={18} />,
+      label: t('settings.appearance', 'Appearance'),
+    },
     { key: 'system', icon: <Server size={18} />, label: t('settings.system') },
     { key: 'energy', icon: <Zap size={18} />, label: t('settings.energyShort', 'Energy') },
     { key: 'security', icon: <Shield size={18} />, label: t('settings.security') },
     { key: 'storage', icon: <Database size={18} />, label: t('settings.storageShort', 'Storage') },
-    { key: 'notifications', icon: <Bell size={18} />, label: t('settings.notifications', 'Notifications') },
+    {
+      key: 'notifications',
+      icon: <Bell size={18} />,
+      label: t('settings.notifications', 'Notifications'),
+    },
     { key: 'advanced', icon: <Gauge size={18} />, label: t('settings.advanced', 'Advanced') },
   ];
 
   const isSystem = themePreference === 'system';
 
-  const inputClass = 'w-full bg-[color:var(--color-surface)] border border-[color:var(--color-border)] rounded-xl px-4 py-2.5 text-[color:var(--color-text)] focus:outline-none focus:border-[color:var(--color-primary)]/70 focus:ring-2 focus:ring-[color:var(--color-primary)]/20 transition-all duration-300 placeholder:text-[color:var(--color-muted)]';
+  const inputClass =
+    'w-full bg-[color:var(--color-surface)] border border-[color:var(--color-border)] rounded-xl px-4 py-2.5 text-[color:var(--color-text)] focus:outline-none focus:border-[color:var(--color-primary)]/70 focus:ring-2 focus:ring-[color:var(--color-primary)]/20 transition-all duration-300 placeholder:text-[color:var(--color-muted)]';
   const sectionClass = 'glass-panel-strong p-6 rounded-2xl space-y-6';
-  const sectionHeaderClass = 'text-lg font-medium flex items-center gap-2 border-b border-[color:var(--color-border)] pb-4';
+  const sectionHeaderClass =
+    'text-lg font-medium flex items-center gap-2 border-b border-[color:var(--color-border)] pb-4';
 
   return (
     <motion.div
@@ -194,8 +221,12 @@ export function Settings() {
             <SettingsIcon className="text-[color:var(--color-primary)]" size={22} />
           </motion.div>
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight fluid-text-2xl">{t('settings.title')}</h1>
-            <p className="text-sm text-[color:var(--color-muted)]">{t('settings.subtitle', 'Configure your HEMS dashboard')}</p>
+            <h1 className="text-2xl font-semibold tracking-tight fluid-text-2xl">
+              {t('settings.title')}
+            </h1>
+            <p className="text-sm text-[color:var(--color-muted)]">
+              {t('settings.subtitle', 'Configure your HEMS dashboard')}
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -225,7 +256,11 @@ export function Settings() {
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Sidebar Navigation */}
         <nav className="w-full lg:w-56 shrink-0">
-          <div className="flex lg:flex-col gap-1 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0" role="tablist" aria-label={t('settings.title')}>
+          <div
+            className="flex lg:flex-col gap-1 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0"
+            role="tablist"
+            aria-label={t('settings.title')}
+          >
             {tabs.map((tab) => (
               <button
                 key={tab.key}
@@ -276,8 +311,15 @@ export function Settings() {
                       <div className="flex items-center gap-3">
                         <Monitor size={20} className="text-[color:var(--color-muted)]" />
                         <div>
-                          <p className="font-medium text-sm">{t('settings.systemTheme', 'Follow system preference')}</p>
-                          <p className="text-xs text-[color:var(--color-muted)]">{t('settings.systemThemeHint', 'Automatically switch between light and dark themes')}</p>
+                          <p className="font-medium text-sm">
+                            {t('settings.systemTheme', 'Follow system preference')}
+                          </p>
+                          <p className="text-xs text-[color:var(--color-muted)]">
+                            {t(
+                              'settings.systemThemeHint',
+                              'Automatically switch between light and dark themes',
+                            )}
+                          </p>
                         </div>
                       </div>
                       <ToggleSwitch
@@ -304,8 +346,14 @@ export function Settings() {
                     <div className="flex items-center gap-2 rounded-lg bg-[color:var(--color-primary)]/5 border border-[color:var(--color-primary)]/20 px-4 py-3 text-sm">
                       <Info size={16} className="text-[color:var(--color-primary)] shrink-0" />
                       <span>
-                        {t('settings.activeTheme', 'Active')}: <strong>{themeDefinitions[theme].label}</strong>
-                        {isSystem && <span className="text-[color:var(--color-muted)]"> ({t('common.systemTheme')})</span>}
+                        {t('settings.activeTheme', 'Active')}:{' '}
+                        <strong>{themeDefinitions[theme].label}</strong>
+                        {isSystem && (
+                          <span className="text-[color:var(--color-muted)]">
+                            {' '}
+                            ({t('common.systemTheme')})
+                          </span>
+                        )}
                       </span>
                     </div>
                   </section>
@@ -319,24 +367,57 @@ export function Settings() {
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="font-medium text-sm">{t('settings.animations', 'Animations')}</p>
-                          <p className="text-xs text-[color:var(--color-muted)]">{t('settings.animationsHint', 'Enable smooth transitions and motion effects')}</p>
+                          <p className="font-medium text-sm">
+                            {t('settings.animations', 'Animations')}
+                          </p>
+                          <p className="text-xs text-[color:var(--color-muted)]">
+                            {t(
+                              'settings.animationsHint',
+                              'Enable smooth transitions and motion effects',
+                            )}
+                          </p>
                         </div>
-                        <ToggleSwitch id="animations" checked={true} onChange={() => {}} label={t('settings.animations', 'Animations')} />
+                        <ToggleSwitch
+                          id="animations"
+                          checked={true}
+                          onChange={() => {}}
+                          label={t('settings.animations', 'Animations')}
+                        />
                       </div>
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="font-medium text-sm">{t('settings.compactMode', 'Compact mode')}</p>
-                          <p className="text-xs text-[color:var(--color-muted)]">{t('settings.compactModeHint', 'Reduce spacing for more content on screen')}</p>
+                          <p className="font-medium text-sm">
+                            {t('settings.compactMode', 'Compact mode')}
+                          </p>
+                          <p className="text-xs text-[color:var(--color-muted)]">
+                            {t(
+                              'settings.compactModeHint',
+                              'Reduce spacing for more content on screen',
+                            )}
+                          </p>
                         </div>
-                        <ToggleSwitch id="compact" checked={false} onChange={() => {}} label={t('settings.compactMode', 'Compact mode')} />
+                        <ToggleSwitch
+                          id="compact"
+                          checked={false}
+                          onChange={() => {}}
+                          label={t('settings.compactMode', 'Compact mode')}
+                        />
                       </div>
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="font-medium text-sm">{t('settings.glowEffects', 'Glow effects')}</p>
-                          <p className="text-xs text-[color:var(--color-muted)]">{t('settings.glowEffectsHint', 'Neon glow and glassmorphism effects')}</p>
+                          <p className="font-medium text-sm">
+                            {t('settings.glowEffects', 'Glow effects')}
+                          </p>
+                          <p className="text-xs text-[color:var(--color-muted)]">
+                            {t('settings.glowEffectsHint', 'Neon glow and glassmorphism effects')}
+                          </p>
                         </div>
-                        <ToggleSwitch id="glow" checked={true} onChange={() => {}} label={t('settings.glowEffects', 'Glow effects')} />
+                        <ToggleSwitch
+                          id="glow"
+                          checked={true}
+                          onChange={() => {}}
+                          label={t('settings.glowEffects', 'Glow effects')}
+                        />
                       </div>
                     </div>
                   </section>
@@ -349,29 +430,45 @@ export function Settings() {
                     </h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <label htmlFor="settings-language" className="text-sm font-medium">{t('common.language')}</label>
+                        <label htmlFor="settings-language" className="text-sm font-medium">
+                          {t('common.language')}
+                        </label>
                         <select id="settings-language" className={inputClass} defaultValue="de">
                           <option value="de">Deutsch</option>
                           <option value="en">English</option>
                         </select>
                       </div>
                       <div className="space-y-2">
-                        <label htmlFor="settings-units" className="text-sm font-medium">{t('settings.units', 'Units')}</label>
+                        <label htmlFor="settings-units" className="text-sm font-medium">
+                          {t('settings.units', 'Units')}
+                        </label>
                         <select id="settings-units" className={inputClass} defaultValue="metric">
-                          <option value="metric">{t('settings.metric', 'Metric (kW, kWh, °C)')}</option>
-                          <option value="imperial">{t('settings.imperial', 'Imperial (BTU, °F)')}</option>
+                          <option value="metric">
+                            {t('settings.metric', 'Metric (kW, kWh, °C)')}
+                          </option>
+                          <option value="imperial">
+                            {t('settings.imperial', 'Imperial (BTU, °F)')}
+                          </option>
                         </select>
                       </div>
                       <div className="space-y-2">
-                        <label htmlFor="settings-dateformat" className="text-sm font-medium">{t('settings.dateFormat', 'Date format')}</label>
-                        <select id="settings-dateformat" className={inputClass} defaultValue="dd.mm.yyyy">
+                        <label htmlFor="settings-dateformat" className="text-sm font-medium">
+                          {t('settings.dateFormat', 'Date format')}
+                        </label>
+                        <select
+                          id="settings-dateformat"
+                          className={inputClass}
+                          defaultValue="dd.mm.yyyy"
+                        >
                           <option value="dd.mm.yyyy">DD.MM.YYYY</option>
                           <option value="mm/dd/yyyy">MM/DD/YYYY</option>
                           <option value="yyyy-mm-dd">YYYY-MM-DD</option>
                         </select>
                       </div>
                       <div className="space-y-2">
-                        <label htmlFor="settings-currency" className="text-sm font-medium">{t('settings.currency', 'Currency')}</label>
+                        <label htmlFor="settings-currency" className="text-sm font-medium">
+                          {t('settings.currency', 'Currency')}
+                        </label>
                         <select id="settings-currency" className={inputClass} defaultValue="eur">
                           <option value="eur">€ Euro</option>
                           <option value="chf">CHF Franken</option>
@@ -406,11 +503,23 @@ export function Settings() {
                       <div className="space-y-2 md:col-span-2">
                         <label className="text-sm font-medium">{t('settings.gatewayType')}</label>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                          {([
-                            { value: 'cerbo-gx' as const, label: 'Cerbo GX', desc: t('settings.gatewayTypeCerboHint') },
-                            { value: 'cerbo-gx-mk2' as const, label: 'Cerbo GX MK2', desc: t('settings.gatewayTypeMk2Hint') },
-                            { value: 'raspberry-pi' as const, label: 'Raspberry Pi', desc: t('settings.gatewayTypeRpiHint') },
-                          ]).map((gw) => (
+                          {[
+                            {
+                              value: 'cerbo-gx' as const,
+                              label: 'Cerbo GX',
+                              desc: t('settings.gatewayTypeCerboHint'),
+                            },
+                            {
+                              value: 'cerbo-gx-mk2' as const,
+                              label: 'Cerbo GX MK2',
+                              desc: t('settings.gatewayTypeMk2Hint'),
+                            },
+                            {
+                              value: 'raspberry-pi' as const,
+                              label: 'Raspberry Pi',
+                              desc: t('settings.gatewayTypeRpiHint'),
+                            },
+                          ].map((gw) => (
                             <button
                               key={gw.value}
                               type="button"
@@ -423,7 +532,9 @@ export function Settings() {
                               aria-pressed={settings.gatewayType === gw.value}
                             >
                               <span className="text-sm font-medium">{gw.label}</span>
-                              <p className="text-xs text-[color:var(--color-muted)] mt-1">{gw.desc}</p>
+                              <p className="text-xs text-[color:var(--color-muted)] mt-1">
+                                {gw.desc}
+                              </p>
                             </button>
                           ))}
                         </div>
@@ -431,23 +542,54 @@ export function Settings() {
 
                       <div className="space-y-2">
                         <label className="text-sm font-medium">{t('settings.victronIp')}</label>
-                        <input type="text" defaultValue={settings.victronIp} className={inputClass} placeholder="192.168.1.100" />
-                        <p className="text-xs text-[color:var(--color-muted)]">{t('settings.victronIpHint', 'IP address of your Victron Cerbo GX')}</p>
+                        <input
+                          type="text"
+                          defaultValue={settings.victronIp}
+                          className={inputClass}
+                          placeholder="192.168.1.100"
+                        />
+                        <p className="text-xs text-[color:var(--color-muted)]">
+                          {t('settings.victronIpHint', 'IP address of your Victron Cerbo GX')}
+                        </p>
                       </div>
                       <div className="space-y-2">
                         <label className="text-sm font-medium">{t('settings.knxIp')}</label>
-                        <input type="text" defaultValue={settings.knxIp} className={inputClass} placeholder="192.168.1.101" />
-                        <p className="text-xs text-[color:var(--color-muted)]">{t('settings.knxIpHint', 'IP address of your KNX IP router')}</p>
+                        <input
+                          type="text"
+                          defaultValue={settings.knxIp}
+                          className={inputClass}
+                          placeholder="192.168.1.101"
+                        />
+                        <p className="text-xs text-[color:var(--color-muted)]">
+                          {t('settings.knxIpHint', 'IP address of your KNX IP router')}
+                        </p>
                       </div>
                       <div className="space-y-2">
                         <label className="text-sm font-medium">{t('settings.wsPort')}</label>
-                        <input type="number" defaultValue={settings.wsPort} className={inputClass} min={1} max={65535} />
-                        <p className="text-xs text-[color:var(--color-muted)]">{t('settings.wsPortHint', 'Node-RED WebSocket port (default: 1880)')}</p>
+                        <input
+                          type="number"
+                          defaultValue={settings.wsPort}
+                          className={inputClass}
+                          min={1}
+                          max={65535}
+                        />
+                        <p className="text-xs text-[color:var(--color-muted)]">
+                          {t('settings.wsPortHint', 'Node-RED WebSocket port (default: 1880)')}
+                        </p>
                       </div>
                       <div className="space-y-2">
                         <label className="text-sm font-medium">{t('settings.refreshRate')}</label>
-                        <input type="number" defaultValue={settings.refreshRateMs} className={inputClass} min={500} max={30000} step={100} />
-                        <p className="text-xs text-[color:var(--color-muted)]">{t('settings.refreshRateHint', 'Data polling interval in milliseconds')}</p>
+                        <input
+                          type="number"
+                          defaultValue={settings.refreshRateMs}
+                          className={inputClass}
+                          min={500}
+                          max={30000}
+                          step={100}
+                        />
+                        <p className="text-xs text-[color:var(--color-muted)]">
+                          {t('settings.refreshRateHint', 'Data polling interval in milliseconds')}
+                        </p>
                       </div>
                     </div>
                   </section>
@@ -464,11 +606,18 @@ export function Settings() {
                         { name: t('devices.knxRouter'), status: false },
                         { name: 'Node-RED', status: true },
                       ].map((device) => (
-                        <div key={device.name} className="flex items-center gap-3 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-3">
-                          <span className={`h-2.5 w-2.5 rounded-full ${device.status ? 'bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.6)]' : 'bg-rose-400'}`} />
+                        <div
+                          key={device.name}
+                          className="flex items-center gap-3 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-3"
+                        >
+                          <span
+                            className={`h-2.5 w-2.5 rounded-full ${device.status ? 'bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.6)]' : 'bg-rose-400'}`}
+                          />
                           <div>
                             <p className="text-sm font-medium">{device.name}</p>
-                            <p className="text-xs text-[color:var(--color-muted)]">{device.status ? t('common.connected') : t('common.disconnected')}</p>
+                            <p className="text-xs text-[color:var(--color-muted)]">
+                              {device.status ? t('common.connected') : t('common.disconnected')}
+                            </p>
                           </div>
                         </div>
                       ))}
@@ -484,7 +633,11 @@ export function Settings() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                       <div className="space-y-2">
                         <label className="text-sm font-medium">{t('mqtt.brokerUrl')}</label>
-                        <input type="text" className={inputClass} placeholder="mqtt://192.168.1.50" />
+                        <input
+                          type="text"
+                          className={inputClass}
+                          placeholder="mqtt://192.168.1.50"
+                        />
                       </div>
                       <div className="space-y-2">
                         <label className="text-sm font-medium">{t('mqtt.port')}</label>
@@ -502,9 +655,19 @@ export function Settings() {
                     <div className="flex items-center justify-between pt-2">
                       <div>
                         <p className="font-medium text-sm">{t('mqtt.autoDiscovery')}</p>
-                        <p className="text-xs text-[color:var(--color-muted)]">{t('settings.mqttAutoHint', 'Automatically discover Home Assistant devices')}</p>
+                        <p className="text-xs text-[color:var(--color-muted)]">
+                          {t(
+                            'settings.mqttAutoHint',
+                            'Automatically discover Home Assistant devices',
+                          )}
+                        </p>
                       </div>
-                      <ToggleSwitch id="mqtt-auto" checked={true} onChange={() => {}} label={t('mqtt.autoDiscovery')} />
+                      <ToggleSwitch
+                        id="mqtt-auto"
+                        checked={true}
+                        onChange={() => {}}
+                        label={t('mqtt.autoDiscovery')}
+                      />
                     </div>
                   </section>
                 </motion.div>
@@ -530,8 +693,14 @@ export function Settings() {
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                       <div className="space-y-2">
-                        <label htmlFor="settings-tariff" className="text-sm font-medium">{t('settings.tariffProvider')}</label>
-                        <select id="settings-tariff" className={inputClass} defaultValue={settings.tariffProvider}>
+                        <label htmlFor="settings-tariff" className="text-sm font-medium">
+                          {t('settings.tariffProvider')}
+                        </label>
+                        <select
+                          id="settings-tariff"
+                          className={inputClass}
+                          defaultValue={settings.tariffProvider}
+                        >
                           <option value="tibber">{t('settings.tibber')}</option>
                           <option value="awattar">{t('settings.awattar')}</option>
                           <option value="none">{t('settings.none')}</option>
@@ -549,26 +718,57 @@ export function Settings() {
                             type="button"
                             onClick={() => toggleTokenVisibility('tariff')}
                             className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-[color:var(--color-muted)] hover:text-[color:var(--color-text)]"
-                            aria-label={showTokens['tariff'] ? t('settings.hideToken') : t('settings.showToken')}
+                            aria-label={
+                              showTokens['tariff']
+                                ? t('settings.hideToken')
+                                : t('settings.showToken')
+                            }
                           >
                             {showTokens['tariff'] ? <EyeOff size={16} /> : <Eye size={16} />}
                           </button>
                         </div>
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">{t('settings.chargeThreshold')}</label>
+                        <label className="text-sm font-medium">
+                          {t('settings.chargeThreshold')}
+                        </label>
                         <div className="flex items-center gap-3">
-                          <input type="range" min={0.05} max={0.50} step={0.01} defaultValue={settings.chargeThreshold} className="flex-1 accent-[color:var(--color-primary)]" aria-valuetext={`${settings.chargeThreshold.toFixed(2)} €/kWh`} />
-                          <span className="text-sm font-mono w-16 text-right">{settings.chargeThreshold.toFixed(2)} €</span>
+                          <input
+                            type="range"
+                            min={0.05}
+                            max={0.5}
+                            step={0.01}
+                            defaultValue={settings.chargeThreshold}
+                            className="flex-1 accent-[color:var(--color-primary)]"
+                            aria-valuetext={`${settings.chargeThreshold.toFixed(2)} €/kWh`}
+                          />
+                          <span className="text-sm font-mono w-16 text-right">
+                            {settings.chargeThreshold.toFixed(2)} €
+                          </span>
                         </div>
                       </div>
                       <div className="space-y-2">
                         <label className="text-sm font-medium">{t('settings.maxGrid')}</label>
                         <div className="flex items-center gap-3">
-                          <input type="range" min={1.0} max={11.0} step={0.1} defaultValue={settings.maxGridImportKw} className="flex-1 accent-[color:var(--color-primary)]" aria-valuetext={`${settings.maxGridImportKw.toFixed(1)} kW`} />
-                          <span className="text-sm font-mono w-16 text-right">{settings.maxGridImportKw.toFixed(1)} kW</span>
+                          <input
+                            type="range"
+                            min={1.0}
+                            max={11.0}
+                            step={0.1}
+                            defaultValue={settings.maxGridImportKw}
+                            className="flex-1 accent-[color:var(--color-primary)]"
+                            aria-valuetext={`${settings.maxGridImportKw.toFixed(1)} kW`}
+                          />
+                          <span className="text-sm font-mono w-16 text-right">
+                            {settings.maxGridImportKw.toFixed(1)} kW
+                          </span>
                         </div>
-                        <p className="text-xs text-[color:var(--color-muted)]">{t('settings.maxGridHint', '§14a EnWG limit: 4.2 kW for controllable consumers')}</p>
+                        <p className="text-xs text-[color:var(--color-muted)]">
+                          {t(
+                            'settings.maxGridHint',
+                            '§14a EnWG limit: 4.2 kW for controllable consumers',
+                          )}
+                        </p>
                       </div>
                     </div>
                   </section>
@@ -579,7 +779,9 @@ export function Settings() {
                       <Server size={20} className="text-cyan-400" />
                       {t('settings.systemPreset')}
                     </h2>
-                    <p className="text-xs text-[color:var(--color-muted)] mb-4">{t('settings.systemPresetHint')}</p>
+                    <p className="text-xs text-[color:var(--color-muted)] mb-4">
+                      {t('settings.systemPresetHint')}
+                    </p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {Object.values(SYSTEM_PRESETS).map((preset) => (
                         <button
@@ -596,7 +798,8 @@ export function Settings() {
                           <span className="text-sm font-medium">{preset.presetName}</span>
                           {preset.presetId !== 'custom' && (
                             <p className="text-xs text-[color:var(--color-muted)] mt-1">
-                              {preset.inverter.count}× {preset.inverter.ratedPowerW / 1000} kW · {preset.pv.peakPowerKWp} kWp · {preset.battery.capacityKWh} kWh
+                              {preset.inverter.count}× {preset.inverter.ratedPowerW / 1000} kW ·{' '}
+                              {preset.pv.peakPowerKWp} kWp · {preset.battery.capacityKWh} kWh
                             </p>
                           )}
                         </button>
@@ -616,7 +819,19 @@ export function Settings() {
                         <input
                           type="text"
                           value={settings.systemConfig.inverter.model}
-                          onChange={(e) => updateSettings({ systemConfig: { ...settings.systemConfig, presetId: 'custom', presetName: 'Custom', inverter: { ...settings.systemConfig.inverter, model: e.target.value } } })}
+                          onChange={(e) =>
+                            updateSettings({
+                              systemConfig: {
+                                ...settings.systemConfig,
+                                presetId: 'custom',
+                                presetName: 'Custom',
+                                inverter: {
+                                  ...settings.systemConfig.inverter,
+                                  model: e.target.value,
+                                },
+                              },
+                            })
+                          }
                           className={inputClass}
                           placeholder="Victron MultiPlus-II 48/5000/70-50"
                         />
@@ -628,10 +843,24 @@ export function Settings() {
                           min={1}
                           max={12}
                           value={settings.systemConfig.inverter.count}
-                          onChange={(e) => updateSettings({ systemConfig: { ...settings.systemConfig, presetId: 'custom', presetName: 'Custom', inverter: { ...settings.systemConfig.inverter, count: Number(e.target.value) } } })}
+                          onChange={(e) =>
+                            updateSettings({
+                              systemConfig: {
+                                ...settings.systemConfig,
+                                presetId: 'custom',
+                                presetName: 'Custom',
+                                inverter: {
+                                  ...settings.systemConfig.inverter,
+                                  count: Number(e.target.value),
+                                },
+                              },
+                            })
+                          }
                           className={inputClass}
                         />
-                        <p className="text-xs text-[color:var(--color-muted)]">{t('settings.inverterCountHint')}</p>
+                        <p className="text-xs text-[color:var(--color-muted)]">
+                          {t('settings.inverterCountHint')}
+                        </p>
                       </div>
                       <div className="space-y-2">
                         <label className="text-sm font-medium">{t('settings.inverterPower')}</label>
@@ -641,20 +870,52 @@ export function Settings() {
                           min={500}
                           max={15000}
                           value={settings.systemConfig.inverter.ratedPowerW}
-                          onChange={(e) => updateSettings({ systemConfig: { ...settings.systemConfig, presetId: 'custom', presetName: 'Custom', inverter: { ...settings.systemConfig.inverter, ratedPowerW: Number(e.target.value) } } })}
+                          onChange={(e) =>
+                            updateSettings({
+                              systemConfig: {
+                                ...settings.systemConfig,
+                                presetId: 'custom',
+                                presetName: 'Custom',
+                                inverter: {
+                                  ...settings.systemConfig.inverter,
+                                  ratedPowerW: Number(e.target.value),
+                                },
+                              },
+                            })
+                          }
                           className={inputClass}
                         />
                         <p className="text-xs text-[color:var(--color-muted)]">
-                          {t('settings.totalPower')}: {((settings.systemConfig.inverter.count * settings.systemConfig.inverter.ratedPowerW) / 1000).toFixed(1)} kW
+                          {t('settings.totalPower')}:{' '}
+                          {(
+                            (settings.systemConfig.inverter.count *
+                              settings.systemConfig.inverter.ratedPowerW) /
+                            1000
+                          ).toFixed(1)}{' '}
+                          kW
                         </p>
                       </div>
                       <div className="space-y-2">
-                        <label htmlFor="settings-inv-mode" className="text-sm font-medium">{t('settings.inverterMode')}</label>
+                        <label htmlFor="settings-inv-mode" className="text-sm font-medium">
+                          {t('settings.inverterMode')}
+                        </label>
                         <select
                           id="settings-inv-mode"
                           className={inputClass}
                           value={settings.systemConfig.inverter.mode}
-                          onChange={(e) => updateSettings({ systemConfig: { ...settings.systemConfig, presetId: 'custom', presetName: 'Custom', inverter: { ...settings.systemConfig.inverter, mode: e.target.value as 'single' | 'parallel' | 'three-phase' } } })}
+                          onChange={(e) =>
+                            updateSettings({
+                              systemConfig: {
+                                ...settings.systemConfig,
+                                presetId: 'custom',
+                                presetName: 'Custom',
+                                inverter: {
+                                  ...settings.systemConfig.inverter,
+                                  mode: e.target.value as 'single' | 'parallel' | 'three-phase',
+                                },
+                              },
+                            })
+                          }
                         >
                           <option value="single">{t('settings.modeSingle')}</option>
                           <option value="parallel">{t('settings.modeParallel')}</option>
@@ -672,22 +933,50 @@ export function Settings() {
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">{t('settings.pvPeakPower', 'Peak power (kWp)')}</label>
+                        <label className="text-sm font-medium">
+                          {t('settings.pvPeakPower', 'Peak power (kWp)')}
+                        </label>
                         <input
                           type="number"
                           step={0.1}
                           value={settings.systemConfig.pv.peakPowerKWp}
-                          onChange={(e) => updateSettings({ systemConfig: { ...settings.systemConfig, presetId: 'custom', presetName: 'Custom', pv: { ...settings.systemConfig.pv, peakPowerKWp: Number(e.target.value) } } })}
+                          onChange={(e) =>
+                            updateSettings({
+                              systemConfig: {
+                                ...settings.systemConfig,
+                                presetId: 'custom',
+                                presetName: 'Custom',
+                                pv: {
+                                  ...settings.systemConfig.pv,
+                                  peakPowerKWp: Number(e.target.value),
+                                },
+                              },
+                            })
+                          }
                           className={inputClass}
                         />
                       </div>
                       <div className="space-y-2">
-                        <label htmlFor="settings-orientation" className="text-sm font-medium">{t('settings.pvOrientation', 'Orientation')}</label>
+                        <label htmlFor="settings-orientation" className="text-sm font-medium">
+                          {t('settings.pvOrientation', 'Orientation')}
+                        </label>
                         <select
                           id="settings-orientation"
                           className={inputClass}
                           value={settings.systemConfig.pv.orientation}
-                          onChange={(e) => updateSettings({ systemConfig: { ...settings.systemConfig, presetId: 'custom', presetName: 'Custom', pv: { ...settings.systemConfig.pv, orientation: e.target.value as PVConfig['orientation'] } } })}
+                          onChange={(e) =>
+                            updateSettings({
+                              systemConfig: {
+                                ...settings.systemConfig,
+                                presetId: 'custom',
+                                presetName: 'Custom',
+                                pv: {
+                                  ...settings.systemConfig.pv,
+                                  orientation: e.target.value as PVConfig['orientation'],
+                                },
+                              },
+                            })
+                          }
                         >
                           <option value="south">{t('settings.south', 'South')}</option>
                           <option value="east-west">{t('settings.eastWest', 'East/West')}</option>
@@ -696,13 +985,27 @@ export function Settings() {
                         </select>
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">{t('settings.pvTilt', 'Tilt angle (°)')}</label>
+                        <label className="text-sm font-medium">
+                          {t('settings.pvTilt', 'Tilt angle (°)')}
+                        </label>
                         <input
                           type="number"
                           min={0}
                           max={90}
                           value={settings.systemConfig.pv.tiltDeg}
-                          onChange={(e) => updateSettings({ systemConfig: { ...settings.systemConfig, presetId: 'custom', presetName: 'Custom', pv: { ...settings.systemConfig.pv, tiltDeg: Number(e.target.value) } } })}
+                          onChange={(e) =>
+                            updateSettings({
+                              systemConfig: {
+                                ...settings.systemConfig,
+                                presetId: 'custom',
+                                presetName: 'Custom',
+                                pv: {
+                                  ...settings.systemConfig.pv,
+                                  tiltDeg: Number(e.target.value),
+                                },
+                              },
+                            })
+                          }
                           className={inputClass}
                         />
                       </div>
@@ -713,7 +1016,19 @@ export function Settings() {
                           min={1}
                           max={20}
                           value={settings.systemConfig.pv.strings}
-                          onChange={(e) => updateSettings({ systemConfig: { ...settings.systemConfig, presetId: 'custom', presetName: 'Custom', pv: { ...settings.systemConfig.pv, strings: Number(e.target.value) } } })}
+                          onChange={(e) =>
+                            updateSettings({
+                              systemConfig: {
+                                ...settings.systemConfig,
+                                presetId: 'custom',
+                                presetName: 'Custom',
+                                pv: {
+                                  ...settings.systemConfig.pv,
+                                  strings: Number(e.target.value),
+                                },
+                              },
+                            })
+                          }
                           className={inputClass}
                         />
                       </div>
@@ -724,7 +1039,19 @@ export function Settings() {
                           min={1}
                           max={8}
                           value={settings.systemConfig.pv.mpptCount}
-                          onChange={(e) => updateSettings({ systemConfig: { ...settings.systemConfig, presetId: 'custom', presetName: 'Custom', pv: { ...settings.systemConfig.pv, mpptCount: Number(e.target.value) } } })}
+                          onChange={(e) =>
+                            updateSettings({
+                              systemConfig: {
+                                ...settings.systemConfig,
+                                presetId: 'custom',
+                                presetName: 'Custom',
+                                pv: {
+                                  ...settings.systemConfig.pv,
+                                  mpptCount: Number(e.target.value),
+                                },
+                              },
+                            })
+                          }
                           className={inputClass}
                         />
                       </div>
@@ -743,80 +1070,194 @@ export function Settings() {
                         <input
                           type="text"
                           value={settings.systemConfig.battery.model}
-                          onChange={(e) => updateSettings({ systemConfig: { ...settings.systemConfig, presetId: 'custom', presetName: 'Custom', battery: { ...settings.systemConfig.battery, model: e.target.value } } })}
+                          onChange={(e) =>
+                            updateSettings({
+                              systemConfig: {
+                                ...settings.systemConfig,
+                                presetId: 'custom',
+                                presetName: 'Custom',
+                                battery: {
+                                  ...settings.systemConfig.battery,
+                                  model: e.target.value,
+                                },
+                              },
+                            })
+                          }
                           className={inputClass}
                           placeholder="BYD Battery-Box Premium HVS"
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">{t('settings.batteryCapacity', 'Capacity (kWh)')}</label>
+                        <label className="text-sm font-medium">
+                          {t('settings.batteryCapacity', 'Capacity (kWh)')}
+                        </label>
                         <input
                           type="number"
                           step={0.1}
                           value={settings.systemConfig.battery.capacityKWh}
-                          onChange={(e) => updateSettings({ systemConfig: { ...settings.systemConfig, presetId: 'custom', presetName: 'Custom', battery: { ...settings.systemConfig.battery, capacityKWh: Number(e.target.value) } } })}
+                          onChange={(e) =>
+                            updateSettings({
+                              systemConfig: {
+                                ...settings.systemConfig,
+                                presetId: 'custom',
+                                presetName: 'Custom',
+                                battery: {
+                                  ...settings.systemConfig.battery,
+                                  capacityKWh: Number(e.target.value),
+                                },
+                              },
+                            })
+                          }
                           className={inputClass}
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">{t('settings.batteryModules')}</label>
+                        <label className="text-sm font-medium">
+                          {t('settings.batteryModules')}
+                        </label>
                         <input
                           type="number"
                           min={1}
                           max={16}
                           value={settings.systemConfig.battery.modules}
-                          onChange={(e) => updateSettings({ systemConfig: { ...settings.systemConfig, presetId: 'custom', presetName: 'Custom', battery: { ...settings.systemConfig.battery, modules: Number(e.target.value) } } })}
+                          onChange={(e) =>
+                            updateSettings({
+                              systemConfig: {
+                                ...settings.systemConfig,
+                                presetId: 'custom',
+                                presetName: 'Custom',
+                                battery: {
+                                  ...settings.systemConfig.battery,
+                                  modules: Number(e.target.value),
+                                },
+                              },
+                            })
+                          }
                           className={inputClass}
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">{t('settings.batteryVoltage')}</label>
+                        <label className="text-sm font-medium">
+                          {t('settings.batteryVoltage')}
+                        </label>
                         <input
                           type="number"
                           step={0.1}
                           value={settings.systemConfig.battery.nominalVoltageV}
-                          onChange={(e) => updateSettings({ systemConfig: { ...settings.systemConfig, presetId: 'custom', presetName: 'Custom', battery: { ...settings.systemConfig.battery, nominalVoltageV: Number(e.target.value) } } })}
+                          onChange={(e) =>
+                            updateSettings({
+                              systemConfig: {
+                                ...settings.systemConfig,
+                                presetId: 'custom',
+                                presetName: 'Custom',
+                                battery: {
+                                  ...settings.systemConfig.battery,
+                                  nominalVoltageV: Number(e.target.value),
+                                },
+                              },
+                            })
+                          }
                           className={inputClass}
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">{t('settings.batteryMaxCharge', 'Max charge rate (kW)')}</label>
+                        <label className="text-sm font-medium">
+                          {t('settings.batteryMaxCharge', 'Max charge rate (kW)')}
+                        </label>
                         <input
                           type="number"
                           step={0.1}
                           value={settings.systemConfig.battery.maxChargeRateKW}
-                          onChange={(e) => updateSettings({ systemConfig: { ...settings.systemConfig, presetId: 'custom', presetName: 'Custom', battery: { ...settings.systemConfig.battery, maxChargeRateKW: Number(e.target.value) } } })}
+                          onChange={(e) =>
+                            updateSettings({
+                              systemConfig: {
+                                ...settings.systemConfig,
+                                presetId: 'custom',
+                                presetName: 'Custom',
+                                battery: {
+                                  ...settings.systemConfig.battery,
+                                  maxChargeRateKW: Number(e.target.value),
+                                },
+                              },
+                            })
+                          }
                           className={inputClass}
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">{t('settings.batteryMaxDischarge')}</label>
+                        <label className="text-sm font-medium">
+                          {t('settings.batteryMaxDischarge')}
+                        </label>
                         <input
                           type="number"
                           step={0.1}
                           value={settings.systemConfig.battery.maxDischargeRateKW}
-                          onChange={(e) => updateSettings({ systemConfig: { ...settings.systemConfig, presetId: 'custom', presetName: 'Custom', battery: { ...settings.systemConfig.battery, maxDischargeRateKW: Number(e.target.value) } } })}
+                          onChange={(e) =>
+                            updateSettings({
+                              systemConfig: {
+                                ...settings.systemConfig,
+                                presetId: 'custom',
+                                presetName: 'Custom',
+                                battery: {
+                                  ...settings.systemConfig.battery,
+                                  maxDischargeRateKW: Number(e.target.value),
+                                },
+                              },
+                            })
+                          }
                           className={inputClass}
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">{t('settings.batteryMinSoC', 'Minimum SoC (%)')}</label>
+                        <label className="text-sm font-medium">
+                          {t('settings.batteryMinSoC', 'Minimum SoC (%)')}
+                        </label>
                         <input
                           type="number"
                           min={5}
                           max={50}
                           value={settings.systemConfig.battery.minSoCPercent}
-                          onChange={(e) => updateSettings({ systemConfig: { ...settings.systemConfig, presetId: 'custom', presetName: 'Custom', battery: { ...settings.systemConfig.battery, minSoCPercent: Number(e.target.value) } } })}
+                          onChange={(e) =>
+                            updateSettings({
+                              systemConfig: {
+                                ...settings.systemConfig,
+                                presetId: 'custom',
+                                presetName: 'Custom',
+                                battery: {
+                                  ...settings.systemConfig.battery,
+                                  minSoCPercent: Number(e.target.value),
+                                },
+                              },
+                            })
+                          }
                           className={inputClass}
                         />
                       </div>
                       <div className="space-y-2">
-                        <label htmlFor="settings-strategy" className="text-sm font-medium">{t('settings.batteryStrategy', 'Default strategy')}</label>
+                        <label htmlFor="settings-strategy" className="text-sm font-medium">
+                          {t('settings.batteryStrategy', 'Default strategy')}
+                        </label>
                         <select
                           id="settings-strategy"
                           className={inputClass}
                           value={settings.systemConfig.battery.strategy}
-                          onChange={(e) => updateSettings({ systemConfig: { ...settings.systemConfig, presetId: 'custom', presetName: 'Custom', battery: { ...settings.systemConfig.battery, strategy: e.target.value as 'self-consumption' | 'force-charge' | 'time-of-use' | 'auto' } } })}
+                          onChange={(e) =>
+                            updateSettings({
+                              systemConfig: {
+                                ...settings.systemConfig,
+                                presetId: 'custom',
+                                presetName: 'Custom',
+                                battery: {
+                                  ...settings.systemConfig.battery,
+                                  strategy: e.target.value as
+                                    | 'self-consumption'
+                                    | 'force-charge'
+                                    | 'time-of-use'
+                                    | 'auto',
+                                },
+                              },
+                            })
+                          }
                         >
                           <option value="self-consumption">{t('control.selfConsumption')}</option>
                           <option value="force-charge">{t('control.forceCharge')}</option>
@@ -835,11 +1276,25 @@ export function Settings() {
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">{t('settings.evChargerModel')}</label>
+                        <label className="text-sm font-medium">
+                          {t('settings.evChargerModel')}
+                        </label>
                         <input
                           type="text"
                           value={settings.systemConfig.evCharger.model}
-                          onChange={(e) => updateSettings({ systemConfig: { ...settings.systemConfig, presetId: 'custom', presetName: 'Custom', evCharger: { ...settings.systemConfig.evCharger, model: e.target.value } } })}
+                          onChange={(e) =>
+                            updateSettings({
+                              systemConfig: {
+                                ...settings.systemConfig,
+                                presetId: 'custom',
+                                presetName: 'Custom',
+                                evCharger: {
+                                  ...settings.systemConfig.evCharger,
+                                  model: e.target.value,
+                                },
+                              },
+                            })
+                          }
                           className={inputClass}
                         />
                       </div>
@@ -851,7 +1306,19 @@ export function Settings() {
                           min={1}
                           max={50}
                           value={settings.systemConfig.evCharger.maxPowerKW}
-                          onChange={(e) => updateSettings({ systemConfig: { ...settings.systemConfig, presetId: 'custom', presetName: 'Custom', evCharger: { ...settings.systemConfig.evCharger, maxPowerKW: Number(e.target.value) } } })}
+                          onChange={(e) =>
+                            updateSettings({
+                              systemConfig: {
+                                ...settings.systemConfig,
+                                presetId: 'custom',
+                                presetName: 'Custom',
+                                evCharger: {
+                                  ...settings.systemConfig.evCharger,
+                                  maxPowerKW: Number(e.target.value),
+                                },
+                              },
+                            })
+                          }
                           className={inputClass}
                         />
                       </div>
@@ -860,7 +1327,19 @@ export function Settings() {
                         <input
                           type="text"
                           value={settings.systemConfig.heatPump.model}
-                          onChange={(e) => updateSettings({ systemConfig: { ...settings.systemConfig, presetId: 'custom', presetName: 'Custom', heatPump: { ...settings.systemConfig.heatPump, model: e.target.value } } })}
+                          onChange={(e) =>
+                            updateSettings({
+                              systemConfig: {
+                                ...settings.systemConfig,
+                                presetId: 'custom',
+                                presetName: 'Custom',
+                                heatPump: {
+                                  ...settings.systemConfig.heatPump,
+                                  model: e.target.value,
+                                },
+                              },
+                            })
+                          }
                           className={inputClass}
                         />
                       </div>
@@ -872,7 +1351,19 @@ export function Settings() {
                           min={1}
                           max={30}
                           value={settings.systemConfig.heatPump.ratedPowerKW}
-                          onChange={(e) => updateSettings({ systemConfig: { ...settings.systemConfig, presetId: 'custom', presetName: 'Custom', heatPump: { ...settings.systemConfig.heatPump, ratedPowerKW: Number(e.target.value) } } })}
+                          onChange={(e) =>
+                            updateSettings({
+                              systemConfig: {
+                                ...settings.systemConfig,
+                                presetId: 'custom',
+                                presetName: 'Custom',
+                                heatPump: {
+                                  ...settings.systemConfig.heatPump,
+                                  ratedPowerKW: Number(e.target.value),
+                                },
+                              },
+                            })
+                          }
                           className={inputClass}
                         />
                       </div>
@@ -903,23 +1394,44 @@ export function Settings() {
                       <div className="flex items-center justify-between p-4 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
                         <div>
                           <p className="font-medium text-sm">{t('settings.mtls')}</p>
-                          <p className="text-xs text-[color:var(--color-muted)]">{t('settings.mtlsHint')}</p>
+                          <p className="text-xs text-[color:var(--color-muted)]">
+                            {t('settings.mtlsHint')}
+                          </p>
                         </div>
-                        <ToggleSwitch id="mtls" checked={settings.mtls} onChange={(v) => updateSettings({ mtls: v })} label={t('settings.mtls')} />
+                        <ToggleSwitch
+                          id="mtls"
+                          checked={settings.mtls}
+                          onChange={(v) => updateSettings({ mtls: v })}
+                          label={t('settings.mtls')}
+                        />
                       </div>
                       <div className="flex items-center justify-between p-4 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
                         <div>
                           <p className="font-medium text-sm">{t('settings.telemetry')}</p>
-                          <p className="text-xs text-[color:var(--color-muted)]">{t('settings.telemetryHint')}</p>
+                          <p className="text-xs text-[color:var(--color-muted)]">
+                            {t('settings.telemetryHint')}
+                          </p>
                         </div>
-                        <ToggleSwitch id="telemetry" checked={settings.telemetryDisabled} onChange={(v) => updateSettings({ telemetryDisabled: v })} label={t('settings.telemetry')} />
+                        <ToggleSwitch
+                          id="telemetry"
+                          checked={settings.telemetryDisabled}
+                          onChange={(v) => updateSettings({ telemetryDisabled: v })}
+                          label={t('settings.telemetry')}
+                        />
                       </div>
                       <div className="flex items-center justify-between p-4 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
                         <div>
                           <p className="font-medium text-sm">{t('settings.twoFactor')}</p>
-                          <p className="text-xs text-[color:var(--color-muted)]">{t('settings.twoFactorHint')}</p>
+                          <p className="text-xs text-[color:var(--color-muted)]">
+                            {t('settings.twoFactorHint')}
+                          </p>
                         </div>
-                        <ToggleSwitch id="2fa" checked={settings.twoFactor} onChange={(v) => updateSettings({ twoFactor: v })} label={t('settings.twoFactor')} />
+                        <ToggleSwitch
+                          id="2fa"
+                          checked={settings.twoFactor}
+                          onChange={(v) => updateSettings({ twoFactor: v })}
+                          label={t('settings.twoFactor')}
+                        />
                       </div>
                     </div>
                   </section>
@@ -934,18 +1446,31 @@ export function Settings() {
                       <div className="flex items-start gap-3">
                         <Shield size={20} className="text-emerald-400 shrink-0 mt-0.5" />
                         <div className="text-sm space-y-1">
-                          <p className="font-medium text-emerald-400">{t('settings.encryptionActive', 'End-to-end encryption active')}</p>
-                          <p className="text-[color:var(--color-muted)]">{t('settings.encryptionDesc', 'All API keys are stored with AES-GCM 256-bit encryption. WebSocket connections use TLS. Local data stays in your browser.')}</p>
+                          <p className="font-medium text-emerald-400">
+                            {t('settings.encryptionActive', 'End-to-end encryption active')}
+                          </p>
+                          <p className="text-[color:var(--color-muted)]">
+                            {t(
+                              'settings.encryptionDesc',
+                              'All API keys are stored with AES-GCM 256-bit encryption. WebSocket connections use TLS. Local data stays in your browser.',
+                            )}
+                          </p>
                         </div>
                       </div>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
                       <div className="rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-3">
-                        <p className="text-xs text-[color:var(--color-muted)]">{t('settings.certStatus', 'Certificate Status')}</p>
-                        <p className="text-sm font-medium text-emerald-400">{t('settings.certValid', 'Valid')}</p>
+                        <p className="text-xs text-[color:var(--color-muted)]">
+                          {t('settings.certStatus', 'Certificate Status')}
+                        </p>
+                        <p className="text-sm font-medium text-emerald-400">
+                          {t('settings.certValid', 'Valid')}
+                        </p>
                       </div>
                       <div className="rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-3">
-                        <p className="text-xs text-[color:var(--color-muted)]">{t('settings.encType', 'Encryption')}</p>
+                        <p className="text-xs text-[color:var(--color-muted)]">
+                          {t('settings.encType', 'Encryption')}
+                        </p>
                         <p className="text-sm font-medium">PBKDF2 + AES-GCM 256</p>
                       </div>
                     </div>
@@ -974,7 +1499,11 @@ export function Settings() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                       <div className="space-y-2">
                         <label className="text-sm font-medium">{t('settings.influxUrl')}</label>
-                        <input type="text" defaultValue={settings.influxUrl} className={inputClass} />
+                        <input
+                          type="text"
+                          defaultValue={settings.influxUrl}
+                          className={inputClass}
+                        />
                       </div>
                       <div className="space-y-2">
                         <label className="text-sm font-medium">{t('settings.influxToken')}</label>
@@ -988,7 +1517,11 @@ export function Settings() {
                             type="button"
                             onClick={() => toggleTokenVisibility('influx')}
                             className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-[color:var(--color-muted)] hover:text-[color:var(--color-text)]"
-                            aria-label={showTokens['influx'] ? t('settings.hideToken') : t('settings.showToken')}
+                            aria-label={
+                              showTokens['influx']
+                                ? t('settings.hideToken')
+                                : t('settings.showToken')
+                            }
                           >
                             {showTokens['influx'] ? <EyeOff size={16} /> : <Eye size={16} />}
                           </button>
@@ -996,8 +1529,16 @@ export function Settings() {
                       </div>
                       <div className="space-y-2">
                         <label className="text-sm font-medium">{t('settings.historyDays')}</label>
-                        <input type="number" defaultValue={settings.historyDays} className={inputClass} min={1} max={365} />
-                        <p className="text-xs text-[color:var(--color-muted)]">{t('settings.historyHint')}</p>
+                        <input
+                          type="number"
+                          defaultValue={settings.historyDays}
+                          className={inputClass}
+                          min={1}
+                          max={365}
+                        />
+                        <p className="text-xs text-[color:var(--color-muted)]">
+                          {t('settings.historyHint')}
+                        </p>
                       </div>
                     </div>
                   </section>
@@ -1014,12 +1555,18 @@ export function Settings() {
                         <p className="text-xs text-[color:var(--color-muted)]">MB IndexedDB</p>
                       </div>
                       <div className="rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-4 text-center">
-                        <p className="text-2xl font-bold text-[color:var(--color-secondary)]">847</p>
-                        <p className="text-xs text-[color:var(--color-muted)]">{t('settings.snapshots', 'Snapshots')}</p>
+                        <p className="text-2xl font-bold text-[color:var(--color-secondary)]">
+                          847
+                        </p>
+                        <p className="text-xs text-[color:var(--color-muted)]">
+                          {t('settings.snapshots', 'Snapshots')}
+                        </p>
                       </div>
                       <div className="rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-4 text-center">
                         <p className="text-2xl font-bold text-amber-400">30</p>
-                        <p className="text-xs text-[color:var(--color-muted)]">{t('settings.daysRetention', 'Days retention')}</p>
+                        <p className="text-xs text-[color:var(--color-muted)]">
+                          {t('settings.daysRetention', 'Days retention')}
+                        </p>
                       </div>
                     </div>
                     <motion.button
@@ -1055,38 +1602,92 @@ export function Settings() {
                     <div className="space-y-5">
                       <div className="flex items-center justify-between p-4 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
                         <div>
-                          <p className="font-medium text-sm">{t('settings.pushNotifications', 'Push notifications')}</p>
-                          <p className="text-xs text-[color:var(--color-muted)]">{t('settings.pushHint', 'Receive alerts for important system events')}</p>
+                          <p className="font-medium text-sm">
+                            {t('settings.pushNotifications', 'Push notifications')}
+                          </p>
+                          <p className="text-xs text-[color:var(--color-muted)]">
+                            {t('settings.pushHint', 'Receive alerts for important system events')}
+                          </p>
                         </div>
-                        <ToggleSwitch id="push" checked={true} onChange={() => {}} label={t('settings.pushNotifications', 'Push notifications')} />
+                        <ToggleSwitch
+                          id="push"
+                          checked={true}
+                          onChange={() => {}}
+                          label={t('settings.pushNotifications', 'Push notifications')}
+                        />
                       </div>
                       <div className="flex items-center justify-between p-4 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
                         <div>
-                          <p className="font-medium text-sm">{t('settings.priceAlerts', 'Price alerts')}</p>
-                          <p className="text-xs text-[color:var(--color-muted)]">{t('settings.priceAlertsHint', 'Notify when electricity price drops below threshold')}</p>
+                          <p className="font-medium text-sm">
+                            {t('settings.priceAlerts', 'Price alerts')}
+                          </p>
+                          <p className="text-xs text-[color:var(--color-muted)]">
+                            {t(
+                              'settings.priceAlertsHint',
+                              'Notify when electricity price drops below threshold',
+                            )}
+                          </p>
                         </div>
-                        <ToggleSwitch id="price-alerts" checked={true} onChange={() => {}} label={t('settings.priceAlerts', 'Price alerts')} />
+                        <ToggleSwitch
+                          id="price-alerts"
+                          checked={true}
+                          onChange={() => {}}
+                          label={t('settings.priceAlerts', 'Price alerts')}
+                        />
                       </div>
                       <div className="flex items-center justify-between p-4 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
                         <div>
-                          <p className="font-medium text-sm">{t('settings.batteryAlerts', 'Battery alerts')}</p>
-                          <p className="text-xs text-[color:var(--color-muted)]">{t('settings.batteryAlertsHint', 'Alert when battery SoC falls below minimum')}</p>
+                          <p className="font-medium text-sm">
+                            {t('settings.batteryAlerts', 'Battery alerts')}
+                          </p>
+                          <p className="text-xs text-[color:var(--color-muted)]">
+                            {t(
+                              'settings.batteryAlertsHint',
+                              'Alert when battery SoC falls below minimum',
+                            )}
+                          </p>
                         </div>
-                        <ToggleSwitch id="battery-alerts" checked={true} onChange={() => {}} label={t('settings.batteryAlerts', 'Battery alerts')} />
+                        <ToggleSwitch
+                          id="battery-alerts"
+                          checked={true}
+                          onChange={() => {}}
+                          label={t('settings.batteryAlerts', 'Battery alerts')}
+                        />
                       </div>
                       <div className="flex items-center justify-between p-4 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
                         <div>
-                          <p className="font-medium text-sm">{t('settings.gridAlerts', 'Grid anomaly alerts')}</p>
-                          <p className="text-xs text-[color:var(--color-muted)]">{t('settings.gridAlertsHint', 'Alert on voltage fluctuations or power outages')}</p>
+                          <p className="font-medium text-sm">
+                            {t('settings.gridAlerts', 'Grid anomaly alerts')}
+                          </p>
+                          <p className="text-xs text-[color:var(--color-muted)]">
+                            {t(
+                              'settings.gridAlertsHint',
+                              'Alert on voltage fluctuations or power outages',
+                            )}
+                          </p>
                         </div>
-                        <ToggleSwitch id="grid-alerts" checked={false} onChange={() => {}} label={t('settings.gridAlerts', 'Grid anomaly alerts')} />
+                        <ToggleSwitch
+                          id="grid-alerts"
+                          checked={false}
+                          onChange={() => {}}
+                          label={t('settings.gridAlerts', 'Grid anomaly alerts')}
+                        />
                       </div>
                       <div className="flex items-center justify-between p-4 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
                         <div>
-                          <p className="font-medium text-sm">{t('settings.updateNotifications', 'Update notifications')}</p>
-                          <p className="text-xs text-[color:var(--color-muted)]">{t('settings.updateHint', 'Notify when a new app version is available')}</p>
+                          <p className="font-medium text-sm">
+                            {t('settings.updateNotifications', 'Update notifications')}
+                          </p>
+                          <p className="text-xs text-[color:var(--color-muted)]">
+                            {t('settings.updateHint', 'Notify when a new app version is available')}
+                          </p>
                         </div>
-                        <ToggleSwitch id="update-notif" checked={true} onChange={() => {}} label={t('settings.updateNotifications', 'Update notifications')} />
+                        <ToggleSwitch
+                          id="update-notif"
+                          checked={true}
+                          onChange={() => {}}
+                          label={t('settings.updateNotifications', 'Update notifications')}
+                        />
                       </div>
                     </div>
                   </section>
@@ -1114,24 +1715,57 @@ export function Settings() {
                     <div className="space-y-5">
                       <div className="flex items-center justify-between p-4 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
                         <div>
-                          <p className="font-medium text-sm">{t('settings.debugMode', 'Debug mode')}</p>
-                          <p className="text-xs text-[color:var(--color-muted)]">{t('settings.debugHint', 'Show detailed logs and developer tools')}</p>
+                          <p className="font-medium text-sm">
+                            {t('settings.debugMode', 'Debug mode')}
+                          </p>
+                          <p className="text-xs text-[color:var(--color-muted)]">
+                            {t('settings.debugHint', 'Show detailed logs and developer tools')}
+                          </p>
                         </div>
-                        <ToggleSwitch id="debug" checked={false} onChange={() => {}} label={t('settings.debugMode', 'Debug mode')} />
+                        <ToggleSwitch
+                          id="debug"
+                          checked={false}
+                          onChange={() => {}}
+                          label={t('settings.debugMode', 'Debug mode')}
+                        />
                       </div>
                       <div className="flex items-center justify-between p-4 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
                         <div>
-                          <p className="font-medium text-sm">{t('settings.experimentalFeatures', 'Experimental features')}</p>
-                          <p className="text-xs text-[color:var(--color-muted)]">{t('settings.experimentalHint', 'Enable beta features that may be unstable')}</p>
+                          <p className="font-medium text-sm">
+                            {t('settings.experimentalFeatures', 'Experimental features')}
+                          </p>
+                          <p className="text-xs text-[color:var(--color-muted)]">
+                            {t(
+                              'settings.experimentalHint',
+                              'Enable beta features that may be unstable',
+                            )}
+                          </p>
                         </div>
-                        <ToggleSwitch id="experimental" checked={false} onChange={() => {}} label={t('settings.experimentalFeatures', 'Experimental features')} />
+                        <ToggleSwitch
+                          id="experimental"
+                          checked={false}
+                          onChange={() => {}}
+                          label={t('settings.experimentalFeatures', 'Experimental features')}
+                        />
                       </div>
                       <div className="flex items-center justify-between p-4 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
                         <div>
-                          <p className="font-medium text-sm">{t('settings.performanceMode', 'Performance mode')}</p>
-                          <p className="text-xs text-[color:var(--color-muted)]">{t('settings.performanceHint', 'Reduce animations and effects for better performance')}</p>
+                          <p className="font-medium text-sm">
+                            {t('settings.performanceMode', 'Performance mode')}
+                          </p>
+                          <p className="text-xs text-[color:var(--color-muted)]">
+                            {t(
+                              'settings.performanceHint',
+                              'Reduce animations and effects for better performance',
+                            )}
+                          </p>
                         </div>
-                        <ToggleSwitch id="performance" checked={false} onChange={() => {}} label={t('settings.performanceMode', 'Performance mode')} />
+                        <ToggleSwitch
+                          id="performance"
+                          checked={false}
+                          onChange={() => {}}
+                          label={t('settings.performanceMode', 'Performance mode')}
+                        />
                       </div>
                     </div>
                   </section>
@@ -1145,8 +1779,15 @@ export function Settings() {
                     <div className="rounded-xl border border-rose-500/30 bg-rose-500/5 p-4">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="font-medium text-sm text-rose-400">{t('settings.resetAll', 'Reset all settings')}</p>
-                          <p className="text-xs text-[color:var(--color-muted)]">{t('settings.resetHint', 'This will reset all settings to their default values')}</p>
+                          <p className="font-medium text-sm text-rose-400">
+                            {t('settings.resetAll', 'Reset all settings')}
+                          </p>
+                          <p className="text-xs text-[color:var(--color-muted)]">
+                            {t(
+                              'settings.resetHint',
+                              'This will reset all settings to their default values',
+                            )}
+                          </p>
                         </div>
                         {!confirmReset ? (
                           <motion.button

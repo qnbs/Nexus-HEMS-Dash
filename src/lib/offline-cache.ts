@@ -179,10 +179,7 @@ export async function cacheTariffData(
     await db.tariffData.add(entry);
 
     // Prune expired entries
-    const expired = await db.tariffData
-      .where('expiresAt')
-      .below(Date.now())
-      .primaryKeys();
+    const expired = await db.tariffData.where('expiresAt').below(Date.now()).primaryKeys();
     if (expired.length > 0) {
       await db.tariffData.bulkDelete(expired);
     }
@@ -236,9 +233,7 @@ export async function getStorageStats(): Promise<{
     const tariffCount = await db.tariffData.count();
 
     // Estimate size based on average record sizes
-    const estimatedSizeKB = Math.round(
-      (energyCount * 2 + sankeyCount * 5 + tariffCount * 1),
-    );
+    const estimatedSizeKB = Math.round(energyCount * 2 + sankeyCount * 5 + tariffCount * 1);
 
     return {
       energySnapshots: energyCount,

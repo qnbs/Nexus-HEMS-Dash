@@ -36,7 +36,14 @@ function StoragePageComponent() {
         <div className="flex flex-col items-center gap-6 md:flex-row md:justify-around">
           {/* Battery Visual */}
           <div className="relative flex flex-col items-center">
-            <div className="relative h-48 w-24 overflow-hidden rounded-2xl border-2 border-[color:var(--color-border)]" role="progressbar" aria-valuenow={Math.round(energyData.batterySoC)} aria-valuemin={0} aria-valuemax={100} aria-label={t('storage.batteryLevel', 'Battery level')}>
+            <div
+              className="relative h-48 w-24 overflow-hidden rounded-2xl border-2 border-[color:var(--color-border)]"
+              role="progressbar"
+              aria-valuenow={Math.round(energyData.batterySoC)}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-label={t('storage.batteryLevel', 'Battery level')}
+            >
               <motion.div
                 className={`absolute bottom-0 left-0 right-0 ${
                   batteryStatus === 'charging'
@@ -100,7 +107,9 @@ function StoragePageComponent() {
               <p className="text-xs text-[color:var(--color-muted)]">
                 {t('storage.capacity', 'Capacity')}
               </p>
-              <p className="mt-1 text-xl font-light text-[color:var(--color-text)]">{t('storage.capacityValue', '10.0 kWh')}</p>
+              <p className="mt-1 text-xl font-light text-[color:var(--color-text)]">
+                {t('storage.capacityValue', '10.0 kWh')}
+              </p>
             </div>
           </div>
         </div>

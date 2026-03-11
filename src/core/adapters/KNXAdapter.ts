@@ -113,10 +113,7 @@ export class KNXAdapter implements EnergyAdapter {
   private readonly config: AdapterConnectionConfig;
   private readonly roomConfigs: KNXRoomConfig[];
 
-  constructor(
-    config?: Partial<AdapterConnectionConfig>,
-    roomConfigs?: KNXRoomConfig[],
-  ) {
+  constructor(config?: Partial<AdapterConnectionConfig>, roomConfigs?: KNXRoomConfig[]) {
     this.config = {
       name: 'KNX/IP',
       host: config?.host ?? '192.168.1.101',
@@ -228,8 +225,7 @@ export class KNXAdapter implements EnergyAdapter {
     const ws = new WebSocket(wsUrl);
 
     ws.onopen = () => {
-      this.retryDelay =
-        this.config.reconnect?.initialDelayMs ?? DEFAULT_RECONNECT.initialDelayMs;
+      this.retryDelay = this.config.reconnect?.initialDelayMs ?? DEFAULT_RECONNECT.initialDelayMs;
       this.setStatus('connected');
     };
 

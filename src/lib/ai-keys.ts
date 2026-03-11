@@ -4,17 +4,10 @@
  * A device-bound passphrase is derived on first use and stored in sessionStorage.
  */
 
-import { nexusDb, type AIKeyRecord } from './db';
+import { nexusDb } from './db';
 import { encrypt, decrypt } from './crypto';
 
-export type AIProvider =
-  | 'openai'
-  | 'anthropic'
-  | 'google'
-  | 'xai'
-  | 'groq'
-  | 'ollama'
-  | 'custom';
+export type AIProvider = 'openai' | 'anthropic' | 'google' | 'xai' | 'groq' | 'ollama' | 'custom';
 
 export interface AIProviderConfig {
   provider: AIProvider;

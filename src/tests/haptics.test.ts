@@ -8,7 +8,9 @@ describe('Haptic Feedback', () => {
   });
 
   it('should not throw when triggering haptic on unsupported device', () => {
-    const mockNavigator = { vibrate: undefined as ((pattern: VibratePattern) => boolean) | undefined };
+    const mockNavigator = {
+      vibrate: undefined as ((pattern: VibratePattern) => boolean) | undefined,
+    };
     Object.defineProperty(global, 'navigator', { value: mockNavigator, writable: true });
 
     expect(() => triggerHaptic('light')).not.toThrow();

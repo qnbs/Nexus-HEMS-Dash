@@ -2,7 +2,12 @@
  * Enhanced Theme System with System Preference Detection
  */
 
-export type ThemeName = 'energy-dark' | 'solar-light' | 'ocean-dark' | 'nature-green' | 'minimal-white';
+export type ThemeName =
+  | 'energy-dark'
+  | 'solar-light'
+  | 'ocean-dark'
+  | 'nature-green'
+  | 'minimal-white';
 export type ThemePreference = ThemeName | 'system';
 
 /**
@@ -89,7 +94,17 @@ export function loadThemePreference(): ThemePreference {
   if (typeof window === 'undefined') return 'ocean-dark';
 
   const stored = localStorage.getItem('nexus-hems-theme-preference');
-  if (stored && ['energy-dark', 'ocean-dark', 'nature-green', 'solar-light', 'minimal-white', 'system'].includes(stored)) {
+  if (
+    stored &&
+    [
+      'energy-dark',
+      'ocean-dark',
+      'nature-green',
+      'solar-light',
+      'minimal-white',
+      'system',
+    ].includes(stored)
+  ) {
     return stored as ThemePreference;
   }
 

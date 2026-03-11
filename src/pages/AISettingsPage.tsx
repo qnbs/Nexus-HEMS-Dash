@@ -5,16 +5,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useTranslation } from 'react-i18next';
-import {
-  Key,
-  Shield,
-  Trash2,
-  Check,
-  AlertTriangle,
-  Eye,
-  EyeOff,
-  Sparkles,
-} from 'lucide-react';
+import { Key, Shield, Trash2, Check, AlertTriangle, Eye, EyeOff, Sparkles } from 'lucide-react';
 
 import {
   AI_PROVIDERS,
@@ -261,9 +252,7 @@ export default function AISettingsPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
       >
-        <h2 className="mb-4 text-lg font-medium">
-          {t('aiSettings.addProvider', 'Add Provider')}
-        </h2>
+        <h2 className="mb-4 text-lg font-medium">{t('aiSettings.addProvider', 'Add Provider')}</h2>
 
         {/* Provider Grid */}
         {!addingProvider ? (
@@ -289,9 +278,7 @@ export default function AISettingsPage() {
                 >
                   <Key className="h-5 w-5 text-[color:var(--color-secondary)]" />
                   <span className="text-sm font-medium">{p.label}</span>
-                  {isConfigured && (
-                    <Check className="h-4 w-4 text-[color:var(--color-primary)]" />
-                  )}
+                  {isConfigured && <Check className="h-4 w-4 text-[color:var(--color-primary)]" />}
                 </motion.button>
               );
             })}

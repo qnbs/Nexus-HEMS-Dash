@@ -28,7 +28,9 @@ function EnergyFlowPageComponent() {
               />
               {connected ? t('common.live') : t('common.disconnected')}
             </span>
-            <span className="price-pill">{energyData.priceCurrent.toFixed(3)} {t('units.euroPerKwh', '€/kWh')}</span>
+            <span className="price-pill">
+              {energyData.priceCurrent.toFixed(3)} {t('units.euroPerKwh', '€/kWh')}
+            </span>
           </div>
         }
       />

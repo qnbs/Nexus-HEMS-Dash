@@ -1,6 +1,6 @@
 import { useEffect, useRef, memo } from 'react';
 import * as d3 from 'd3';
-import { sankey, sankeyLinkHorizontal, type SankeyNode, type SankeyLink } from 'd3-sankey';
+import { sankey, sankeyLinkHorizontal } from 'd3-sankey';
 import { useTranslation } from 'react-i18next';
 import { EnergyData } from '../types';
 import { cacheSankeyData } from '../lib/offline-cache';
@@ -140,7 +140,7 @@ export const SankeyDiagram = memo(function SankeyDiagram({ data }: { data: Energ
     });
 
     // Draw links with enhanced hover effects
-    const linkGroup = svg
+    svg
       .append('g')
       .selectAll('path')
       .data(graph.links)

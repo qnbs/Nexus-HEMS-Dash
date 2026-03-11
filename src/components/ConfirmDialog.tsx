@@ -71,24 +71,44 @@ export function ConfirmDialog({
       'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
     );
     if (focusable.length > 0) focusable[0].focus();
-    return () => { previouslyFocused?.focus(); };
+    return () => {
+      previouslyFocused?.focus();
+    };
   }, [isOpen]);
 
-  const trapFocus = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'Escape') { onClose(); return; }
-    if (e.key === 'Enter' && !loading && e.target === dialogRef.current) { handleConfirm(); return; }
-    if (e.key !== 'Tab') return;
-    const el = dialogRef.current;
-    if (!el) return;
-    const focusable = el.querySelectorAll<HTMLElement>(
-      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
-    );
-    if (focusable.length === 0) return;
-    const first = focusable[0];
-    const last = focusable[focusable.length - 1];
-    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
-    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
-  }, [onClose, loading]);
+  const trapFocus = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+        return;
+      }
+      if (e.key === 'Enter' && !loading && e.target === dialogRef.current) {
+        Promise.resolve(onConfirm())
+          .then(() => onClose())
+          .catch((error: unknown) =>
+            console.error('[ConfirmDialog] Confirmation action failed:', error),
+          );
+        return;
+      }
+      if (e.key !== 'Tab') return;
+      const el = dialogRef.current;
+      if (!el) return;
+      const focusable = el.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      );
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    },
+    [onClose, loading, onConfirm],
+  );
 
   const handleConfirm = async () => {
     try {
@@ -102,14 +122,6 @@ export function ConfirmDialog({
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
       onClose();
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Escape') {
-      onClose();
-    } else if (e.key === 'Enter' && !loading) {
-      handleConfirm();
     }
   };
 
@@ -217,6 +229,7 @@ export function ConfirmDialog({
 /**
  * Hook for managing confirmation dialogs
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function useConfirmDialog() {
   const [isOpen, setIsOpen] = useState(false);
   const [dialogProps, setDialogProps] = useState<Omit<ConfirmDialogProps, 'isOpen' | 'onClose'>>({

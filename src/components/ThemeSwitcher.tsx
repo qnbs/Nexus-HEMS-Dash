@@ -31,10 +31,7 @@ function ThemePreviewDot({
       title={def.label}
     >
       {/* two‑color inner dots */}
-      <span
-        className="absolute h-2 w-2 rounded-full"
-        style={{ background: c1, top: 5, left: 5 }}
-      />
+      <span className="absolute h-2 w-2 rounded-full" style={{ background: c1, top: 5, left: 5 }} />
       <span
         className="absolute h-2 w-2 rounded-full"
         style={{ background: c2, bottom: 5, right: 5 }}

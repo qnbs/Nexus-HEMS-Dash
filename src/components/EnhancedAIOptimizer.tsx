@@ -113,7 +113,10 @@ Return ONLY a valid JSON array with this structure:
       <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="min-w-0">
           <h2 className="flex items-center gap-2 text-lg sm:text-xl font-semibold text-[color:var(--color-text)]">
-            <Sparkles className="h-5 w-5 sm:h-6 sm:w-6 text-[color:var(--color-primary)] shrink-0" aria-hidden="true" />
+            <Sparkles
+              className="h-5 w-5 sm:h-6 sm:w-6 text-[color:var(--color-primary)] shrink-0"
+              aria-hidden="true"
+            />
             <span className="truncate">{t('ai.optimizerTitle', 'AI Energy Optimizer')}</span>
             <span className="shrink-0 rounded-full bg-[color:var(--color-primary)]/20 px-2 py-0.5 text-xs font-medium text-[color:var(--color-primary)]">
               BYOK
@@ -172,7 +175,9 @@ Return ONLY a valid JSON array with this structure:
             >
               <div className="mb-2 flex items-center justify-between gap-2">
                 <span className="text-xs sm:text-sm font-medium truncate">{t(rec.titleKey)}</span>
-                <span className="text-xs font-mono text-[color:var(--color-muted)] shrink-0">{rec.value}</span>
+                <span className="text-xs font-mono text-[color:var(--color-muted)] shrink-0">
+                  {rec.value}
+                </span>
               </div>
               <p className="text-xs text-[color:var(--color-muted)]">{t(rec.descriptionKey)}</p>
             </motion.div>
@@ -198,14 +203,18 @@ Return ONLY a valid JSON array with this structure:
                 className={`rounded-2xl border p-4 sm:p-5 ${getPriorityStyles(rec.priority)}`}
               >
                 <div className="mb-2 sm:mb-3 flex items-start justify-between gap-2">
-                  <h3 className="font-semibold text-sm sm:text-base text-[color:var(--color-text)]">{rec.title}</h3>
+                  <h3 className="font-semibold text-sm sm:text-base text-[color:var(--color-text)]">
+                    {rec.title}
+                  </h3>
                   <span
                     className={`shrink-0 rounded-full px-2 py-1 text-xs font-medium ${getPriorityBadge(rec.priority)}`}
                   >
                     {rec.priority.toUpperCase()}
                   </span>
                 </div>
-                <p className="mb-2 sm:mb-3 text-xs sm:text-sm text-[color:var(--color-muted)]">{rec.description}</p>
+                <p className="mb-2 sm:mb-3 text-xs sm:text-sm text-[color:var(--color-muted)]">
+                  {rec.description}
+                </p>
                 <div className="flex items-center gap-2 text-xs text-[color:var(--color-primary)]">
                   <Sparkles className="h-4 w-4" aria-hidden="true" />
                   {rec.impact}

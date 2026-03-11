@@ -12,6 +12,7 @@ const routes = [
   { path: '/ai-optimizer', name: 'AI Optimizer', waitFor: 'h1' },
   { path: '/tariffs', name: 'Tariffs', waitFor: 'h1' },
   { path: '/analytics', name: 'Analytics', waitFor: 'h1' },
+  { path: '/monitoring', name: 'Monitoring', waitFor: 'h1' },
   { path: '/settings', name: 'Settings', waitFor: 'h2' },
   { path: '/help', name: 'Help', waitFor: 'h2' },
 ];

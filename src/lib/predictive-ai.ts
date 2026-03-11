@@ -95,7 +95,10 @@ export async function generatePredictiveRecommendation(
 /**
  * Integrates with Google Gemini API for advanced predictions
  */
-export async function queryGeminiForOptimization(prompt: string, apiKey: string): Promise<string> {
+export async function queryGeminiForOptimization(
+  _prompt: string,
+  _apiKey: string,
+): Promise<string> {
   // In production, integrate with @google/genai
   try {
     // Mock response
@@ -144,6 +147,7 @@ export async function getForecast(
   const second = prices.slice(Math.floor(prices.length / 2));
   const firstAvg = first.reduce((a, b) => a + b, 0) / first.length;
   const secondAvg = second.reduce((a, b) => a + b, 0) / second.length;
-  const trend = secondAvg > firstAvg * 1.05 ? 'rising' : secondAvg < firstAvg * 0.95 ? 'falling' : 'stable';
+  const trend =
+    secondAvg > firstAvg * 1.05 ? 'rising' : secondAvg < firstAvg * 0.95 ? 'falling' : 'stable';
   return { min, max, avg, trend };
 }

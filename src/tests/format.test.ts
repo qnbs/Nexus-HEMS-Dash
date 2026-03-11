@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { formatNumber, formatPower, formatEnergy, formatCurrencyPerKwh, formatPercent } from '../lib/format';
+import {
+  formatNumber,
+  formatPower,
+  formatEnergy,
+  formatCurrencyPerKwh,
+  formatPercent,
+} from '../lib/format';
 
 describe('Format Utilities', () => {
   describe('formatNumber', () => {

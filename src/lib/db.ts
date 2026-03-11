@@ -17,6 +17,7 @@ export interface SankeySnapshot {
 export interface OfflineAction {
   id?: number;
   type: 'ev-control' | 'hp-control' | 'battery-control' | 'settings' | 'ai-optimize';
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   payload: any;
   timestamp: number;
   retries: number;
@@ -145,6 +146,7 @@ export async function persistSankeySnapshot(
  */
 export async function queueOfflineAction(
   type: OfflineAction['type'],
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   payload: any,
 ): Promise<number> {
   const id = await nexusDb.offlineActions.add({

@@ -80,7 +80,13 @@ export interface EEBUSMeasurement {
   measurementId: number;
   valueType: 'value' | 'averageValue' | 'minValue' | 'maxValue';
   unit: 'W' | 'Wh' | 'A' | 'V' | 'Hz' | '°C' | '%';
-  scopeType: 'ACPowerTotal' | 'ACPower' | 'ACCurrent' | 'ACVoltage' | 'StateOfCharge' | 'Temperature';
+  scopeType:
+    | 'ACPowerTotal'
+    | 'ACPower'
+    | 'ACCurrent'
+    | 'ACVoltage'
+    | 'StateOfCharge'
+    | 'Temperature';
   value: number;
   timestamp: string;
 }
@@ -297,33 +303,57 @@ export class EEBUSAdapter implements EnergyAdapter {
       switch (command.type) {
         case 'SET_EV_CURRENT':
           return this.sendLoadControlWrite({
-            limitId: 1, limitType: 'maxValueLimit', unit: 'A',
-            value: command.value as number, isActive: true, isChangeable: true,
+            limitId: 1,
+            limitType: 'maxValueLimit',
+            unit: 'A',
+            value: command.value as number,
+            isActive: true,
+            isChangeable: true,
           });
         case 'SET_EV_POWER':
           return this.sendLoadControlWrite({
-            limitId: 2, limitType: 'maxValueLimit', unit: 'W',
-            value: command.value as number, isActive: true, isChangeable: true,
+            limitId: 2,
+            limitType: 'maxValueLimit',
+            unit: 'W',
+            value: command.value as number,
+            isActive: true,
+            isChangeable: true,
           });
         case 'START_CHARGING':
           return this.sendLoadControlWrite({
-            limitId: 3, limitType: 'minValueLimit', unit: 'A',
-            value: 6, isActive: true, isChangeable: true,
+            limitId: 3,
+            limitType: 'minValueLimit',
+            unit: 'A',
+            value: 6,
+            isActive: true,
+            isChangeable: true,
           });
         case 'STOP_CHARGING':
           return this.sendLoadControlWrite({
-            limitId: 1, limitType: 'maxValueLimit', unit: 'A',
-            value: 0, isActive: true, isChangeable: false,
+            limitId: 1,
+            limitType: 'maxValueLimit',
+            unit: 'A',
+            value: 0,
+            isActive: true,
+            isChangeable: false,
           });
         case 'SET_HEAT_PUMP_POWER':
           return this.sendLoadControlWrite({
-            limitId: 10, limitType: 'maxValueLimit', unit: 'W',
-            value: command.value as number, isActive: true, isChangeable: true,
+            limitId: 10,
+            limitType: 'maxValueLimit',
+            unit: 'W',
+            value: command.value as number,
+            isActive: true,
+            isChangeable: true,
           });
         case 'SET_GRID_LIMIT':
           return this.sendLoadControlWrite({
-            limitId: 100, limitType: 'maxValueLimit', unit: 'W',
-            value: command.value as number, isActive: true, isChangeable: false,
+            limitId: 100,
+            limitType: 'maxValueLimit',
+            unit: 'W',
+            value: command.value as number,
+            isActive: true,
+            isChangeable: false,
           });
         default:
           console.warn(`[EEBUS] Unsupported command: ${command.type}`);
@@ -343,7 +373,11 @@ export class EEBUSAdapter implements EnergyAdapter {
     device.trusted = true;
     this.discoveredDevices.set(ski, device);
     this.sendSHIPPinVerification(ski);
-    this.emitEvent({ type: 'paired', device, message: `Paired with ${device.brand} ${device.model}` });
+    this.emitEvent({
+      type: 'paired',
+      device,
+      message: `Paired with ${device.brand} ${device.model}`,
+    });
   }
 
   async discoverDevices(): Promise<EEBUSDiscoveredDevice[]> {
@@ -351,21 +385,36 @@ export class EEBUSAdapter implements EnergyAdapter {
 
     const mockDevices: EEBUSDiscoveredDevice[] = [
       {
-        ski: 'a1b2c3d4e5f6-evse', brand: 'EEBUS', model: 'EV Charging Station Pro',
-        deviceType: 'EVCharger', host: this.config?.host ?? '192.168.1.120',
-        port: this.config?.port ?? 4712, path: '/ship/', register: true,
+        ski: 'a1b2c3d4e5f6-evse',
+        brand: 'EEBUS',
+        model: 'EV Charging Station Pro',
+        deviceType: 'EVCharger',
+        host: this.config?.host ?? '192.168.1.120',
+        port: this.config?.port ?? 4712,
+        path: '/ship/',
+        register: true,
         trusted: this.pairedDevices.has('a1b2c3d4e5f6-evse'),
       },
       {
-        ski: 'k1l2m3n4o5p6-hp', brand: 'EEBUS', model: 'SG-Ready Heat Pump CEM',
-        deviceType: 'Compressor', host: this.config?.host ?? '192.168.1.121',
-        port: 4712, path: '/ship/', register: true,
+        ski: 'k1l2m3n4o5p6-hp',
+        brand: 'EEBUS',
+        model: 'SG-Ready Heat Pump CEM',
+        deviceType: 'Compressor',
+        host: this.config?.host ?? '192.168.1.121',
+        port: 4712,
+        path: '/ship/',
+        register: true,
         trusted: this.pairedDevices.has('k1l2m3n4o5p6-hp'),
       },
       {
-        ski: 'u1v2w3x4y5z6-inv', brand: 'EEBUS', model: 'Hybrid Inverter CEM',
-        deviceType: 'Inverter', host: this.config?.host ?? '192.168.1.122',
-        port: 4712, path: '/ship/', register: true,
+        ski: 'u1v2w3x4y5z6-inv',
+        brand: 'EEBUS',
+        model: 'Hybrid Inverter CEM',
+        deviceType: 'Inverter',
+        host: this.config?.host ?? '192.168.1.122',
+        port: 4712,
+        path: '/ship/',
+        register: true,
         trusted: this.pairedDevices.has('u1v2w3x4y5z6-inv'),
       },
     ];
@@ -385,21 +434,29 @@ export class EEBUSAdapter implements EnergyAdapter {
   // ─── SHIP Protocol ────────────────────────────────────────────────
 
   private sendSHIPInit(): void {
-    this.ws?.send(JSON.stringify({
-      type: 'init', version: [1, 0, 0], formats: ['JSON-UTF8'],
-    }));
+    this.ws?.send(
+      JSON.stringify({
+        type: 'init',
+        version: [1, 0, 0],
+        formats: ['JSON-UTF8'],
+      }),
+    );
   }
 
   private sendSHIPHello(): void {
-    this.ws?.send(JSON.stringify({
-      connectionHello: [{ phase: 'ready', waiting: 60000, prolongationRequest: false }],
-    }));
+    this.ws?.send(
+      JSON.stringify({
+        connectionHello: [{ phase: 'ready', waiting: 60000, prolongationRequest: false }],
+      }),
+    );
   }
 
   private sendSHIPPinVerification(ski: string): void {
-    this.ws?.send(JSON.stringify({
-      connectionPinState: [{ pinState: 'ok', ski }],
-    }));
+    this.ws?.send(
+      JSON.stringify({
+        connectionPinState: [{ pinState: 'ok', ski }],
+      }),
+    );
   }
 
   // ─── SPINE Protocol ───────────────────────────────────────────────
@@ -459,10 +516,14 @@ export class EEBUSAdapter implements EnergyAdapter {
 
     for (const cmd of payload.cmd) {
       if (cmd.measurementListData) {
-        this.handleMeasurementData(cmd.measurementListData as { measurementData: EEBUSMeasurement[] });
+        this.handleMeasurementData(
+          cmd.measurementListData as { measurementData: EEBUSMeasurement[] },
+        );
       }
       if (cmd.loadControlLimitListData) {
-        this.handleLoadControlData(cmd.loadControlLimitListData as { loadControlLimitData: EEBUSLoadControlLimit[] });
+        this.handleLoadControlData(
+          cmd.loadControlLimitListData as { loadControlLimitData: EEBUSLoadControlLimit[] },
+        );
       }
       if (cmd.incentiveTableData) {
         this.handleIncentiveData(cmd.incentiveTableData as { incentiveData: EEBUSIncentive[] });
@@ -515,8 +576,12 @@ export class EEBUSAdapter implements EnergyAdapter {
         totalPowerW: (data.houseLoad as number) ?? 0,
         heatPumpPowerW: (data.heatPumpPower as number) ?? 0,
         evPowerW: (data.evPower as number) ?? 0,
-        otherPowerW: Math.max(0,
-          ((data.houseLoad as number) ?? 0) - ((data.heatPumpPower as number) ?? 0) - ((data.evPower as number) ?? 0)),
+        otherPowerW: Math.max(
+          0,
+          ((data.houseLoad as number) ?? 0) -
+            ((data.heatPumpPower as number) ?? 0) -
+            ((data.evPower as number) ?? 0),
+        ),
       };
     }
 
@@ -573,7 +638,8 @@ export class EEBUSAdapter implements EnergyAdapter {
 
   private getMaxCurrentLimit(): number {
     for (const limit of this.loadLimits.values()) {
-      if (limit.limitType === 'maxValueLimit' && limit.unit === 'A' && limit.isActive) return limit.value;
+      if (limit.limitType === 'maxValueLimit' && limit.unit === 'A' && limit.isActive)
+        return limit.value;
     }
     return 32;
   }
@@ -583,7 +649,8 @@ export class EEBUSAdapter implements EnergyAdapter {
   private sendLoadControlWrite(limit: EEBUSLoadControlLimit): boolean {
     return this.sendSPINEMessage({
       header: {
-        protocolId: 'ee1.0', msgCounter: ++this.msgCounter,
+        protocolId: 'ee1.0',
+        msgCounter: ++this.msgCounter,
         cmdClassifier: 'write',
         featureSource: { entity: 1, feature: 1 },
         featureDestination: { entity: 2, feature: 4 },
@@ -598,7 +665,8 @@ export class EEBUSAdapter implements EnergyAdapter {
   private sendSPINEAck(_replyCounter: number): void {
     this.sendSPINEMessage({
       header: {
-        protocolId: 'ee1.0', msgCounter: ++this.msgCounter,
+        protocolId: 'ee1.0',
+        msgCounter: ++this.msgCounter,
         cmdClassifier: 'result',
         featureSource: { entity: 1, feature: 0 },
         featureDestination: { entity: 0, feature: 0 },
@@ -623,7 +691,8 @@ export class EEBUSAdapter implements EnergyAdapter {
     // Request measurements
     this.sendSPINEMessage({
       header: {
-        protocolId: 'ee1.0', msgCounter: ++this.msgCounter,
+        protocolId: 'ee1.0',
+        msgCounter: ++this.msgCounter,
         cmdClassifier: 'read',
         featureSource: { entity: 1, feature: 1 },
         featureDestination: { entity: 2, feature: 2 },
@@ -634,7 +703,8 @@ export class EEBUSAdapter implements EnergyAdapter {
     // Request load control limits
     this.sendSPINEMessage({
       header: {
-        protocolId: 'ee1.0', msgCounter: ++this.msgCounter,
+        protocolId: 'ee1.0',
+        msgCounter: ++this.msgCounter,
         cmdClassifier: 'read',
         featureSource: { entity: 1, feature: 1 },
         featureDestination: { entity: 2, feature: 4 },
@@ -645,7 +715,8 @@ export class EEBUSAdapter implements EnergyAdapter {
     // Request incentive table
     this.sendSPINEMessage({
       header: {
-        protocolId: 'ee1.0', msgCounter: ++this.msgCounter,
+        protocolId: 'ee1.0',
+        msgCounter: ++this.msgCounter,
         cmdClassifier: 'read',
         featureSource: { entity: 1, feature: 1 },
         featureDestination: { entity: 2, feature: 6 },
@@ -665,8 +736,14 @@ export class EEBUSAdapter implements EnergyAdapter {
   }
 
   private cleanup(): void {
-    if (this.reconnectTimer) { clearTimeout(this.reconnectTimer); this.reconnectTimer = null; }
-    if (this.heartbeatInterval) { clearInterval(this.heartbeatInterval); this.heartbeatInterval = null; }
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
+    if (this.heartbeatInterval) {
+      clearInterval(this.heartbeatInterval);
+      this.heartbeatInterval = null;
+    }
   }
 
   private setStatus(status: AdapterStatus, error?: string): void {

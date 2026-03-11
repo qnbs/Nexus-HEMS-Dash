@@ -78,10 +78,18 @@ function ProductionPageComponent() {
                 {t('production.output', 'Output')}
               </span>
               <span className="font-medium text-yellow-400">
-                {(energyData.pvPower / 1000).toFixed(2)} {t('units.kilowatt')} / 10.0 {t('units.kilowatt')}
+                {(energyData.pvPower / 1000).toFixed(2)} {t('units.kilowatt')} / 10.0{' '}
+                {t('units.kilowatt')}
               </span>
             </div>
-            <div className="h-3 overflow-hidden rounded-full bg-[color:var(--color-surface)]" role="progressbar" aria-valuenow={Math.min(100, Math.round((energyData.pvPower / 10000) * 100))} aria-valuemin={0} aria-valuemax={100} aria-label={t('production.output')}>
+            <div
+              className="h-3 overflow-hidden rounded-full bg-[color:var(--color-surface)]"
+              role="progressbar"
+              aria-valuenow={Math.min(100, Math.round((energyData.pvPower / 10000) * 100))}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-label={t('production.output')}
+            >
               <motion.div
                 className="h-full rounded-full bg-gradient-to-r from-yellow-500 to-orange-500"
                 initial={{ width: 0 }}
@@ -100,7 +108,14 @@ function ProductionPageComponent() {
                 {selfConsumptionRatio.toFixed(0)}%
               </span>
             </div>
-            <div className="h-3 overflow-hidden rounded-full bg-[color:var(--color-surface)]" role="progressbar" aria-valuenow={Math.round(selfConsumptionRatio)} aria-valuemin={0} aria-valuemax={100} aria-label={t('production.selfConsumption')}>
+            <div
+              className="h-3 overflow-hidden rounded-full bg-[color:var(--color-surface)]"
+              role="progressbar"
+              aria-valuenow={Math.round(selfConsumptionRatio)}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-label={t('production.selfConsumption')}
+            >
               <motion.div
                 className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500"
                 initial={{ width: 0 }}

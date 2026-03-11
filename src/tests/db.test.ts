@@ -1,4 +1,4 @@
-import { describe, it, expect,  beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import 'fake-indexeddb/auto';
 import { nexusDb, persistSnapshot } from '../lib/db';
 import type { EnergyData } from '../types';

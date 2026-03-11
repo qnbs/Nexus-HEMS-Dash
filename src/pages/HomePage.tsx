@@ -65,7 +65,10 @@ function HomePageComponent() {
           />
           <KpiCard
             icon={
-              <Zap className={energyData.gridPower > 0 ? 'text-red-400' : 'text-emerald-400'} aria-hidden="true" />
+              <Zap
+                className={energyData.gridPower > 0 ? 'text-red-400' : 'text-emerald-400'}
+                aria-hidden="true"
+              />
             }
             label={t('metrics.grid')}
             value={`${(energyData.gridPower / 1000).toFixed(2)} ${t('units.kilowatt')}`}
@@ -156,10 +159,7 @@ const KpiCard = memo(function KpiCard({
   className?: string;
 }) {
   return (
-    <Link
-      to={link}
-      className={`metric-card block rounded-2xl focus-ring ${className || ''}`}
-    >
+    <Link to={link} className={`metric-card block rounded-2xl focus-ring ${className || ''}`}>
       <div className="mb-3 flex items-center gap-3">
         <div className="rounded-xl border border-[color:var(--color-border)] bg-white/6 p-2.5">
           {icon}

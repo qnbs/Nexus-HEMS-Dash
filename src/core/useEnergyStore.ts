@@ -71,7 +71,10 @@ const emptyModel: UnifiedEnergyModel = {
 
 // ─── Adapter factory ─────────────────────────────────────────────────
 
-function createAdapterInstance(id: AdapterId, config?: Partial<AdapterConnectionConfig>): EnergyAdapter {
+function createAdapterInstance(
+  id: AdapterId,
+  config?: Partial<AdapterConnectionConfig>,
+): EnergyAdapter {
   switch (id) {
     case 'victron-mqtt':
       return new VictronMQTTAdapter(config);
@@ -118,7 +121,7 @@ function createDefaultAdapters(): Record<AdapterId, AdapterEntry> {
 
 // ─── Store ───────────────────────────────────────────────────────────
 
-export const useEnergyStoreBase = create<EnergyStoreState>()((set, get) => ({
+export const useEnergyStoreBase = create<EnergyStoreState>()((set) => ({
   unified: { ...emptyModel },
   adapters: createDefaultAdapters(),
   anyConnected: false,
@@ -333,6 +336,11 @@ export const selectAdapterStatuses = (state: EnergyStoreState) =>
   Object.fromEntries(
     Object.entries(state.adapters).map(([id, entry]) => [
       id,
-      { status: entry.status, enabled: entry.enabled, name: entry.adapter.name, error: entry.error },
+      {
+        status: entry.status,
+        enabled: entry.enabled,
+        name: entry.adapter.name,
+        error: entry.error,
+      },
     ]),
   );

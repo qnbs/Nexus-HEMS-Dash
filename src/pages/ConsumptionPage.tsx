@@ -74,7 +74,16 @@ function ConsumptionPageComponent() {
               {(consumer.power / 1000).toFixed(2)}{' '}
               <span className="text-sm text-[color:var(--color-muted)]">kW</span>
             </p>
-            <div className="mt-3 h-2 overflow-hidden rounded-full bg-[color:var(--color-surface)]" role="progressbar" aria-valuenow={totalConsumption > 0 ? Math.round((consumer.power / totalConsumption) * 100) : 0} aria-valuemin={0} aria-valuemax={100} aria-label={consumer.label}>
+            <div
+              className="mt-3 h-2 overflow-hidden rounded-full bg-[color:var(--color-surface)]"
+              role="progressbar"
+              aria-valuenow={
+                totalConsumption > 0 ? Math.round((consumer.power / totalConsumption) * 100) : 0
+              }
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-label={consumer.label}
+            >
               <motion.div
                 className={`h-full rounded-full bg-gradient-to-r ${consumer.color}`}
                 initial={{ width: 0 }}

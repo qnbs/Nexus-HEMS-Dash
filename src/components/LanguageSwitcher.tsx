@@ -36,7 +36,10 @@ export function LanguageSwitcher() {
               : 'text-[color:var(--color-muted)] hover:text-[color:var(--color-text)]'
           }`}
           aria-pressed={locale === entry}
-          aria-label={t('common.switchTo', { lang: entry.toUpperCase(), defaultValue: `Switch to ${entry.toUpperCase()}` })}
+          aria-label={t('common.switchTo', {
+            lang: entry.toUpperCase(),
+            defaultValue: `Switch to ${entry.toUpperCase()}`,
+          })}
         >
           {entry}
         </button>

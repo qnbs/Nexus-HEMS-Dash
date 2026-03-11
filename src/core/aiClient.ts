@@ -48,11 +48,36 @@ export async function callAI(request: AICompletionRequest): Promise<AICompletion
     case 'xai':
     case 'groq':
     case 'custom':
-      return callOpenAICompatible(baseUrl, apiKey, model, systemPrompt, request.prompt, temperature, maxTokens, provider);
+      return callOpenAICompatible(
+        baseUrl,
+        apiKey,
+        model,
+        systemPrompt,
+        request.prompt,
+        temperature,
+        maxTokens,
+        provider,
+      );
     case 'anthropic':
-      return callAnthropic(baseUrl, apiKey, model, systemPrompt, request.prompt, temperature, maxTokens);
+      return callAnthropic(
+        baseUrl,
+        apiKey,
+        model,
+        systemPrompt,
+        request.prompt,
+        temperature,
+        maxTokens,
+      );
     case 'google':
-      return callGemini(baseUrl, apiKey, model, request.prompt, systemPrompt, temperature, maxTokens);
+      return callGemini(
+        baseUrl,
+        apiKey,
+        model,
+        request.prompt,
+        systemPrompt,
+        temperature,
+        maxTokens,
+      );
     case 'ollama':
       return callOllama(baseUrl, model, request.prompt, systemPrompt, temperature);
     default:
@@ -146,26 +171,23 @@ async function callGemini(
   temperature: number,
   maxTokens: number,
 ): Promise<AICompletionResult> {
-  const response = await fetch(
-    `${baseUrl}/models/${model}:generateContent`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-goog-api-key': apiKey,
-      },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: systemPrompt }] },
-        contents: [{ parts: [{ text: userPrompt }] }],
-        generationConfig: {
-          temperature,
-          maxOutputTokens: maxTokens,
-          topK: 40,
-          topP: 0.95,
-        },
-      }),
+  const response = await fetch(`${baseUrl}/models/${model}:generateContent`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-goog-api-key': apiKey,
     },
-  );
+    body: JSON.stringify({
+      systemInstruction: { parts: [{ text: systemPrompt }] },
+      contents: [{ parts: [{ text: userPrompt }] }],
+      generationConfig: {
+        temperature,
+        maxOutputTokens: maxTokens,
+        topK: 40,
+        topP: 0.95,
+      },
+    }),
+  });
 
   if (!response.ok) {
     throw new Error(`Gemini API error: ${response.status}`);

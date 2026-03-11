@@ -57,16 +57,12 @@ describe('VictronMQTTAdapter (without real WebSocket)', () => {
   // We test the adapter logic by mocking WebSocket at the global level
   let mockWsSend: ReturnType<typeof vi.fn>;
   let mockWsClose: ReturnType<typeof vi.fn>;
-  let onOpenCallback: (() => void) | null = null;
   let onMessageCallback: ((event: { data: string }) => void) | null = null;
-  let onCloseCallback: (() => void) | null = null;
 
   beforeEach(() => {
     mockWsSend = vi.fn();
     mockWsClose = vi.fn();
-    onOpenCallback = null;
     onMessageCallback = null;
-    onCloseCallback = null;
 
     // Mock WebSocket globally
     vi.stubGlobal(
@@ -81,9 +77,7 @@ describe('VictronMQTTAdapter (without real WebSocket)', () => {
 
         constructor() {
           setTimeout(() => {
-            onOpenCallback = this.onopen;
             onMessageCallback = this.onmessage;
-            onCloseCallback = this.onclose;
             this.onopen?.();
           }, 0);
         }
@@ -144,7 +138,8 @@ describe('VictronMQTTAdapter (without real WebSocket)', () => {
     onMessageCallback?.({ data: JSON.stringify(message) });
 
     expect(dataCb).toHaveBeenCalledTimes(1);
-    const model = (dataCb as unknown as ReturnType<typeof vi.fn>).mock.calls[0][0] as Partial<UnifiedEnergyModel>;
+    const model = (dataCb as unknown as ReturnType<typeof vi.fn>).mock
+      .calls[0][0] as Partial<UnifiedEnergyModel>;
 
     expect(model.pv?.totalPowerW).toBe(3500);
     expect(model.pv?.yieldTodayKWh).toBe(12.5);

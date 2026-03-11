@@ -4,7 +4,9 @@ import { resolveTheme, detectSystemTheme } from '../lib/theme';
 describe('Theme System', () => {
   it('should resolve system theme to actual theme', () => {
     const resolved = resolveTheme('system');
-    expect(['energy-dark', 'solar-light', 'ocean-dark', 'nature-green', 'minimal-white']).toContain(resolved);
+    expect(['energy-dark', 'solar-light', 'ocean-dark', 'nature-green', 'minimal-white']).toContain(
+      resolved,
+    );
   });
 
   it('should pass through non-system themes', () => {

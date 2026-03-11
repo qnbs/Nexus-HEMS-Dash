@@ -94,11 +94,18 @@ export function PWAUpdateNotification() {
           exit={{ opacity: 0, y: -50 }}
           className="fixed left-4 right-4 top-4 z-50 md:left-auto md:right-4 md:max-w-sm"
         >
-          <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 backdrop-blur-xl p-4 shadow-2xl flex items-center gap-3" role="status">
+          <div
+            className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 backdrop-blur-xl p-4 shadow-2xl flex items-center gap-3"
+            role="status"
+          >
             <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0" aria-hidden="true" />
             <div className="flex-1">
-              <p className="font-semibold text-sm text-emerald-400">{t('pwa.offlineReady', 'Offline Ready')}</p>
-              <p className="text-xs text-[color:var(--color-muted)]">{t('pwa.offlineReadyDesc', 'App cached — works without internet')}</p>
+              <p className="font-semibold text-sm text-emerald-400">
+                {t('pwa.offlineReady', 'Offline Ready')}
+              </p>
+              <p className="text-xs text-[color:var(--color-muted)]">
+                {t('pwa.offlineReadyDesc', 'App cached — works without internet')}
+              </p>
             </div>
             <WifiOff className="h-4 w-4 text-emerald-400/60" aria-hidden="true" />
           </div>
@@ -151,24 +158,38 @@ export function PWAUpdateNotification() {
         <div className="glass-panel rounded-2xl border-2 border-[color:var(--color-primary)]/30 p-5 shadow-2xl">
           <div className="flex items-start gap-4">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[color:var(--color-primary)]/20">
-              <RefreshCw className={`h-5 w-5 text-[color:var(--color-primary)] ${isUpdating ? 'animate-spin' : ''}`} aria-hidden="true" />
+              <RefreshCw
+                className={`h-5 w-5 text-[color:var(--color-primary)] ${isUpdating ? 'animate-spin' : ''}`}
+                aria-hidden="true"
+              />
             </div>
             <div className="flex-1">
               <h3 className="font-semibold text-[color:var(--color-text)]">
                 {t('pwa.updateAvailable', 'Update Available')}
               </h3>
               <p className="mt-1 text-sm text-[color:var(--color-muted)]">
-                {t('pwa.updateDescription', 'A new version of Nexus HEMS is available with improvements and fixes.')}
+                {t(
+                  'pwa.updateDescription',
+                  'A new version of Nexus HEMS is available with improvements and fixes.',
+                )}
               </p>
               <div className="mt-2 flex items-center gap-2 text-xs text-[color:var(--color-muted)]">
                 <Wifi className="h-3 w-3 text-emerald-400" />
                 <span>{t('pwa.updateSize', 'Quick update — no data loss')}</span>
               </div>
               <div className="mt-4 flex gap-2">
-                <button onClick={handleUpdate} disabled={isUpdating} className="btn-primary focus-ring px-4 py-2 text-sm disabled:opacity-50">
+                <button
+                  onClick={handleUpdate}
+                  disabled={isUpdating}
+                  className="btn-primary focus-ring px-4 py-2 text-sm disabled:opacity-50"
+                >
                   {isUpdating ? t('pwa.updating', 'Updating…') : t('pwa.updateNow', 'Update Now')}
                 </button>
-                <button onClick={handleDismiss} disabled={isUpdating} className="btn-secondary focus-ring px-4 py-2 text-sm disabled:opacity-50">
+                <button
+                  onClick={handleDismiss}
+                  disabled={isUpdating}
+                  className="btn-secondary focus-ring px-4 py-2 text-sm disabled:opacity-50"
+                >
                   {t('common.later', 'Later')}
                 </button>
               </div>

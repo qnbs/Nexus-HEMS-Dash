@@ -18,7 +18,10 @@ function PageHeaderComponent({ title, subtitle, icon, actions }: PageHeaderProps
     >
       <div className="flex items-center gap-3">
         {icon && (
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-primary)]/10 text-[color:var(--color-primary)]" aria-hidden="true">
+          <div
+            className="flex h-10 w-10 items-center justify-center rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-primary)]/10 text-[color:var(--color-primary)]"
+            aria-hidden="true"
+          >
             {icon}
           </div>
         )}

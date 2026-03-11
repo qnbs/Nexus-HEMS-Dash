@@ -191,15 +191,9 @@ export class ModbusSunSpecAdapter implements EnergyAdapter {
       this.fetchModel<SunSpecMeterRegs>('meter'),
     ]);
 
-    const pv = this.parseInverter(
-      inverter.status === 'fulfilled' ? inverter.value : null,
-    );
-    const bat = this.parseBattery(
-      battery.status === 'fulfilled' ? battery.value : null,
-    );
-    const grid = this.parseMeter(
-      meter.status === 'fulfilled' ? meter.value : null,
-    );
+    const pv = this.parseInverter(inverter.status === 'fulfilled' ? inverter.value : null);
+    const bat = this.parseBattery(battery.status === 'fulfilled' ? battery.value : null);
+    const grid = this.parseMeter(meter.status === 'fulfilled' ? meter.value : null);
 
     const model: Partial<UnifiedEnergyModel> = {
       timestamp: Date.now(),

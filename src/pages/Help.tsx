@@ -16,17 +16,13 @@ import {
   Sparkles,
   TrendingUp,
   BarChart3,
-  Settings,
   Shield,
-  Wifi,
   WifiOff,
   Download,
   Keyboard,
   Monitor,
-  Smartphone,
   Mic,
   Globe,
-  ExternalLink,
   ChevronDown,
   Search,
   Server,
@@ -41,9 +37,25 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-type HelpTab = 'getting-started' | 'integration' | 'features' | 'lexicon' | 'faq' | 'shortcuts' | 'troubleshooting' | 'about';
+type HelpTab =
+  | 'getting-started'
+  | 'integration'
+  | 'features'
+  | 'lexicon'
+  | 'faq'
+  | 'shortcuts'
+  | 'troubleshooting'
+  | 'about';
 
-function AccordionItem({ title, children, defaultOpen = false }: { title: string; children: React.ReactNode; defaultOpen?: boolean }) {
+function AccordionItem({
+  title,
+  children,
+  defaultOpen = false,
+}: {
+  title: string;
+  children: React.ReactNode;
+  defaultOpen?: boolean;
+}) {
   const [open, setOpen] = useState(defaultOpen);
   return (
     <div className="rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] overflow-hidden">
@@ -75,7 +87,17 @@ function AccordionItem({ title, children, defaultOpen = false }: { title: string
   );
 }
 
-function FeatureCard({ icon, title, description, color }: { icon: React.ReactNode; title: string; description: string; color: string }) {
+function FeatureCard({
+  icon,
+  title,
+  description,
+  color,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  color: string;
+}) {
   return (
     <motion.div
       className="glass-panel p-5 rounded-xl border border-[color:var(--color-border)] hover:border-[color:var(--color-primary)]/30 transition-all"
@@ -126,7 +148,9 @@ export function Help() {
             <HelpCircle className="text-[color:var(--color-primary)]" size={22} />
           </div>
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight fluid-text-2xl">{t('help.title')}</h1>
+            <h1 className="text-2xl font-semibold tracking-tight fluid-text-2xl">
+              {t('help.title')}
+            </h1>
             <p className="text-sm text-[color:var(--color-muted)]">{t('help.subtitle')}</p>
           </div>
         </div>
@@ -148,7 +172,11 @@ export function Help() {
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Sidebar */}
         <nav className="w-full lg:w-56 shrink-0">
-          <div className="flex lg:flex-col gap-1 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0" role="tablist" aria-label={t('help.title')}>
+          <div
+            className="flex lg:flex-col gap-1 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0"
+            role="tablist"
+            aria-label={t('help.title')}
+          >
             {tabs.map((tab) => (
               <button
                 key={tab.key}
@@ -188,19 +216,49 @@ export function Help() {
               >
                 <div className="glass-panel-strong p-6 rounded-2xl">
                   <h2 className="text-xl font-semibold mb-4">{t('help.welcomeTitle')}</h2>
-                  <p className="text-[color:var(--color-muted)] leading-relaxed mb-6">{t('help.welcomeIntro')}</p>
+                  <p className="text-[color:var(--color-muted)] leading-relaxed mb-6">
+                    {t('help.welcomeIntro')}
+                  </p>
 
                   {/* Quick Start Steps */}
                   <h3 className="text-lg font-medium mb-4">{t('help.quickStart')}</h3>
                   <div className="space-y-4">
                     {[
-                      { step: 1, title: t('help.step1Title'), desc: t('help.step1Desc'), icon: <Server size={18} /> },
-                      { step: 2, title: t('help.step2Title'), desc: t('help.step2Desc'), icon: <Zap size={18} /> },
-                      { step: 3, title: t('help.step3Title'), desc: t('help.step3Desc'), icon: <Activity size={18} /> },
-                      { step: 4, title: t('help.step4Title'), desc: t('help.step4Desc'), icon: <Sparkles size={18} /> },
-                      { step: 5, title: t('help.step5Title'), desc: t('help.step5Desc'), icon: <Download size={18} /> },
+                      {
+                        step: 1,
+                        title: t('help.step1Title'),
+                        desc: t('help.step1Desc'),
+                        icon: <Server size={18} />,
+                      },
+                      {
+                        step: 2,
+                        title: t('help.step2Title'),
+                        desc: t('help.step2Desc'),
+                        icon: <Zap size={18} />,
+                      },
+                      {
+                        step: 3,
+                        title: t('help.step3Title'),
+                        desc: t('help.step3Desc'),
+                        icon: <Activity size={18} />,
+                      },
+                      {
+                        step: 4,
+                        title: t('help.step4Title'),
+                        desc: t('help.step4Desc'),
+                        icon: <Sparkles size={18} />,
+                      },
+                      {
+                        step: 5,
+                        title: t('help.step5Title'),
+                        desc: t('help.step5Desc'),
+                        icon: <Download size={18} />,
+                      },
                     ].map((item) => (
-                      <div key={item.step} className="flex gap-4 p-4 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
+                      <div
+                        key={item.step}
+                        className="flex gap-4 p-4 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)]"
+                      >
                         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[color:var(--color-primary)]/15 text-[color:var(--color-primary)] font-bold text-sm">
                           {item.step}
                         </div>
@@ -209,7 +267,9 @@ export function Help() {
                             <span className="text-[color:var(--color-primary)]">{item.icon}</span>
                             <h4 className="font-medium text-sm">{item.title}</h4>
                           </div>
-                          <p className="text-xs text-[color:var(--color-muted)] leading-relaxed">{item.desc}</p>
+                          <p className="text-xs text-[color:var(--color-muted)] leading-relaxed">
+                            {item.desc}
+                          </p>
                         </div>
                       </div>
                     ))}
@@ -241,7 +301,9 @@ export function Help() {
                       <ul className="text-xs text-[color:var(--color-muted)] space-y-1.5">
                         <li>• {t('help.modernBrowser')}</li>
                         <li>• {t('help.pwaSupport')}</li>
-                        <li>• Tibber / aWATTar {t('help.account')} ({t('help.optional')})</li>
+                        <li>
+                          • Tibber / aWATTar {t('help.account')} ({t('help.optional')})
+                        </li>
                         <li>• AI API Key ({t('help.optional')})</li>
                       </ul>
                     </div>
@@ -266,7 +328,9 @@ export function Help() {
                 {/* Intro */}
                 <div className="glass-panel-strong p-6 rounded-2xl">
                   <h2 className="text-xl font-semibold mb-2">{t('help.integrationGuideTitle')}</h2>
-                  <p className="text-sm text-[color:var(--color-muted)] leading-relaxed">{t('help.integrationGuideIntro')}</p>
+                  <p className="text-sm text-[color:var(--color-muted)] leading-relaxed">
+                    {t('help.integrationGuideIntro')}
+                  </p>
                 </div>
 
                 {/* Cerbo GX / MK2 */}
@@ -277,21 +341,43 @@ export function Help() {
                     </div>
                     <h3 className="text-lg font-semibold">{t('help.cerboGxTitle')}</h3>
                   </div>
-                  <p className="text-sm text-[color:var(--color-muted)] leading-relaxed mb-4">{t('help.cerboGxIntro')}</p>
+                  <p className="text-sm text-[color:var(--color-muted)] leading-relaxed mb-4">
+                    {t('help.cerboGxIntro')}
+                  </p>
 
                   {/* Specs */}
                   <h4 className="font-medium text-sm mb-2">{t('help.cerboGxSpecs')}</h4>
                   <ul className="text-xs text-[color:var(--color-muted)] space-y-1.5 mb-4 ml-4">
-                    {['cerboGxSpec1','cerboGxSpec2','cerboGxSpec3','cerboGxSpec4','cerboGxSpec5','cerboGxSpec6'].map(k => (
-                      <li key={k} className="flex gap-2"><CheckCircle2 size={12} className="text-emerald-400 shrink-0 mt-0.5" />{t(`help.${k}`)}</li>
+                    {[
+                      'cerboGxSpec1',
+                      'cerboGxSpec2',
+                      'cerboGxSpec3',
+                      'cerboGxSpec4',
+                      'cerboGxSpec5',
+                      'cerboGxSpec6',
+                    ].map((k) => (
+                      <li key={k} className="flex gap-2">
+                        <CheckCircle2 size={12} className="text-emerald-400 shrink-0 mt-0.5" />
+                        {t(`help.${k}`)}
+                      </li>
                     ))}
                   </ul>
 
                   {/* Interfaces */}
                   <h4 className="font-medium text-sm mb-2">{t('help.cerboGxInterfaces')}</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
-                    {['cerboGxInt1','cerboGxInt2','cerboGxInt3','cerboGxInt4','cerboGxInt5','cerboGxInt6'].map(k => (
-                      <div key={k} className="rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-2.5 text-xs text-[color:var(--color-muted)]">
+                    {[
+                      'cerboGxInt1',
+                      'cerboGxInt2',
+                      'cerboGxInt3',
+                      'cerboGxInt4',
+                      'cerboGxInt5',
+                      'cerboGxInt6',
+                    ].map((k) => (
+                      <div
+                        key={k}
+                        className="rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-2.5 text-xs text-[color:var(--color-muted)]"
+                      >
                         {t(`help.${k}`)}
                       </div>
                     ))}
@@ -300,9 +386,19 @@ export function Help() {
                   {/* Setup Steps */}
                   <h4 className="font-medium text-sm mb-2">{t('help.cerboGxSetup')}</h4>
                   <ol className="text-xs text-[color:var(--color-muted)] space-y-2 mb-4">
-                    {['cerboGxSetup1','cerboGxSetup2','cerboGxSetup3','cerboGxSetup4','cerboGxSetup5','cerboGxSetup6','cerboGxSetup7'].map((k, i) => (
+                    {[
+                      'cerboGxSetup1',
+                      'cerboGxSetup2',
+                      'cerboGxSetup3',
+                      'cerboGxSetup4',
+                      'cerboGxSetup5',
+                      'cerboGxSetup6',
+                      'cerboGxSetup7',
+                    ].map((k, i) => (
                       <li key={k} className="flex gap-2">
-                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[color:var(--color-primary)]/15 text-[color:var(--color-primary)] text-[10px] font-bold">{i + 1}</span>
+                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[color:var(--color-primary)]/15 text-[color:var(--color-primary)] text-[10px] font-bold">
+                          {i + 1}
+                        </span>
                         <span className="leading-relaxed">{t(`help.${k}`)}</span>
                       </li>
                     ))}
@@ -310,7 +406,9 @@ export function Help() {
 
                   <div className="rounded-xl border border-blue-500/20 bg-blue-500/5 p-3 flex items-start gap-2">
                     <Info size={14} className="text-blue-400 shrink-0 mt-0.5" />
-                    <p className="text-xs text-[color:var(--color-muted)]">{t('help.cerboGxNote')}</p>
+                    <p className="text-xs text-[color:var(--color-muted)]">
+                      {t('help.cerboGxNote')}
+                    </p>
                   </div>
                 </div>
 
@@ -322,22 +420,39 @@ export function Help() {
                     </div>
                     <h3 className="text-lg font-semibold">{t('help.rpiTitle')}</h3>
                   </div>
-                  <p className="text-sm text-[color:var(--color-muted)] leading-relaxed mb-4">{t('help.rpiIntro')}</p>
+                  <p className="text-sm text-[color:var(--color-muted)] leading-relaxed mb-4">
+                    {t('help.rpiIntro')}
+                  </p>
 
                   {/* Recommended Hardware */}
                   <h4 className="font-medium text-sm mb-2">{t('help.rpiRecommended')}</h4>
                   <ul className="text-xs text-[color:var(--color-muted)] space-y-1.5 mb-4 ml-4">
-                    {['rpiModel','rpiPower','rpiStorage','rpiNetwork','rpiHat','rpiCan'].map(k => (
-                      <li key={k} className="flex gap-2"><CheckCircle2 size={12} className="text-green-400 shrink-0 mt-0.5" />{t(`help.${k}`)}</li>
-                    ))}
+                    {['rpiModel', 'rpiPower', 'rpiStorage', 'rpiNetwork', 'rpiHat', 'rpiCan'].map(
+                      (k) => (
+                        <li key={k} className="flex gap-2">
+                          <CheckCircle2 size={12} className="text-green-400 shrink-0 mt-0.5" />
+                          {t(`help.${k}`)}
+                        </li>
+                      ),
+                    )}
                   </ul>
 
                   {/* Installation Steps */}
                   <h4 className="font-medium text-sm mb-2">{t('help.rpiSetup')}</h4>
                   <ol className="text-xs text-[color:var(--color-muted)] space-y-2 mb-4">
-                    {['rpiSetup1','rpiSetup2','rpiSetup3','rpiSetup4','rpiSetup5','rpiSetup6','rpiSetup7'].map((k, i) => (
+                    {[
+                      'rpiSetup1',
+                      'rpiSetup2',
+                      'rpiSetup3',
+                      'rpiSetup4',
+                      'rpiSetup5',
+                      'rpiSetup6',
+                      'rpiSetup7',
+                    ].map((k, i) => (
                       <li key={k} className="flex gap-2">
-                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-green-500/15 text-green-400 text-[10px] font-bold">{i + 1}</span>
+                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-green-500/15 text-green-400 text-[10px] font-bold">
+                          {i + 1}
+                        </span>
                         <span className="leading-relaxed">{t(`help.${k}`)}</span>
                       </li>
                     ))}
@@ -346,7 +461,7 @@ export function Help() {
                   {/* Performance Tips */}
                   <h4 className="font-medium text-sm mb-2">{t('help.rpiPerformance')}</h4>
                   <ul className="text-xs text-[color:var(--color-muted)] space-y-1.5 mb-4 ml-4">
-                    {['rpiPerf1','rpiPerf2','rpiPerf3','rpiPerf4','rpiPerf5'].map(k => (
+                    {['rpiPerf1', 'rpiPerf2', 'rpiPerf3', 'rpiPerf4', 'rpiPerf5'].map((k) => (
                       <li key={k}>• {t(`help.${k}`)}</li>
                     ))}
                   </ul>
@@ -357,21 +472,34 @@ export function Help() {
                     <table className="w-full text-xs border-collapse">
                       <thead>
                         <tr className="border-b border-[color:var(--color-border)]">
-                          <th className="text-left py-2 pr-4 text-[color:var(--color-muted)] font-medium"> </th>
-                          <th className="text-left py-2 px-4 text-green-400 font-medium">{t('help.rpiVsGxRpi')}</th>
-                          <th className="text-left py-2 px-4 text-blue-400 font-medium">{t('help.rpiVsGxCerbo')}</th>
+                          <th className="text-left py-2 pr-4 text-[color:var(--color-muted)] font-medium">
+                            {' '}
+                          </th>
+                          <th className="text-left py-2 px-4 text-green-400 font-medium">
+                            {t('help.rpiVsGxRpi')}
+                          </th>
+                          <th className="text-left py-2 px-4 text-blue-400 font-medium">
+                            {t('help.rpiVsGxCerbo')}
+                          </th>
                         </tr>
                       </thead>
                       <tbody className="text-[color:var(--color-muted)]">
                         {[
                           ['rpiVsGxCost', 'rpiVsGxCostRpi', 'rpiVsGxCostCerbo'],
                           ['rpiVsGxVeBus', 'rpiVsGxVeBusRpi', 'rpiVsGxVeBusCerbo'],
-                          ['rpiVsGxReliability', 'rpiVsGxReliabilityRpi', 'rpiVsGxReliabilityCerbo'],
+                          [
+                            'rpiVsGxReliability',
+                            'rpiVsGxReliabilityRpi',
+                            'rpiVsGxReliabilityCerbo',
+                          ],
                           ['rpiVsGxSupport', 'rpiVsGxSupportRpi', 'rpiVsGxSupportCerbo'],
                           ['rpiVsGxNodeRed', 'rpiVsGxNodeRedBoth', 'rpiVsGxNodeRedBoth'],
                           ['rpiVsGxIdeal', 'rpiVsGxIdealRpi', 'rpiVsGxIdealCerbo'],
                         ].map(([label, rpi, cerbo]) => (
-                          <tr key={label} className="border-b border-[color:var(--color-border)]/50">
+                          <tr
+                            key={label}
+                            className="border-b border-[color:var(--color-border)]/50"
+                          >
                             <td className="py-2 pr-4 font-medium">{t(`help.${label}`)}</td>
                             <td className="py-2 px-4">{t(`help.${rpi}`)}</td>
                             <td className="py-2 px-4">{t(`help.${cerbo}`)}</td>
@@ -390,24 +518,41 @@ export function Help() {
                     </div>
                     <h3 className="text-lg font-semibold">{t('help.venusTitle')}</h3>
                   </div>
-                  <p className="text-sm text-[color:var(--color-muted)] leading-relaxed mb-4">{t('help.venusIntro')}</p>
+                  <p className="text-sm text-[color:var(--color-muted)] leading-relaxed mb-4">
+                    {t('help.venusIntro')}
+                  </p>
 
                   {/* Architecture */}
                   <h4 className="font-medium text-sm mb-2">{t('help.venusArchitecture')}</h4>
                   <ol className="text-xs text-[color:var(--color-muted)] space-y-2 mb-4">
-                    {['venusArch1','venusArch2','venusArch3','venusArch4','venusArch5'].map((k, i) => (
-                      <li key={k} className="flex gap-2">
-                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-purple-500/15 text-purple-400 text-[10px] font-bold">{i + 1}</span>
-                        <span className="leading-relaxed">{t(`help.${k}`)}</span>
-                      </li>
-                    ))}
+                    {['venusArch1', 'venusArch2', 'venusArch3', 'venusArch4', 'venusArch5'].map(
+                      (k, i) => (
+                        <li key={k} className="flex gap-2">
+                          <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-purple-500/15 text-purple-400 text-[10px] font-bold">
+                            {i + 1}
+                          </span>
+                          <span className="leading-relaxed">{t(`help.${k}`)}</span>
+                        </li>
+                      ),
+                    )}
                   </ol>
 
                   {/* D-Bus Paths */}
                   <h4 className="font-medium text-sm mb-2">{t('help.venusDbusTitle')}</h4>
                   <div className="space-y-1.5 mb-4">
-                    {['venusDbus1','venusDbus2','venusDbus3','venusDbus4','venusDbus5','venusDbus6','venusDbus7'].map(k => (
-                      <div key={k} className="rounded-lg bg-[color:var(--color-surface)] border border-[color:var(--color-border)] p-2 text-xs font-mono text-[color:var(--color-muted)]">
+                    {[
+                      'venusDbus1',
+                      'venusDbus2',
+                      'venusDbus3',
+                      'venusDbus4',
+                      'venusDbus5',
+                      'venusDbus6',
+                      'venusDbus7',
+                    ].map((k) => (
+                      <div
+                        key={k}
+                        className="rounded-lg bg-[color:var(--color-surface)] border border-[color:var(--color-border)] p-2 text-xs font-mono text-[color:var(--color-muted)]"
+                      >
                         {t(`help.${k}`)}
                       </div>
                     ))}
@@ -415,22 +560,31 @@ export function Help() {
 
                   {/* Node-RED Flow */}
                   <h4 className="font-medium text-sm mb-2">{t('help.venusNodeRed')}</h4>
-                  <p className="text-xs text-[color:var(--color-muted)] leading-relaxed mb-3">{t('help.venusNodeRedDesc')}</p>
+                  <p className="text-xs text-[color:var(--color-muted)] leading-relaxed mb-3">
+                    {t('help.venusNodeRedDesc')}
+                  </p>
                   <h4 className="font-medium text-sm mb-2">{t('help.venusNodeRedFlows')}</h4>
                   <ul className="text-xs text-[color:var(--color-muted)] space-y-1.5 mb-4 ml-4">
-                    {['venusFlow1','venusFlow2','venusFlow3','venusFlow4','venusFlow5'].map(k => (
-                      <li key={k}>• {t(`help.${k}`)}</li>
-                    ))}
+                    {['venusFlow1', 'venusFlow2', 'venusFlow3', 'venusFlow4', 'venusFlow5'].map(
+                      (k) => (
+                        <li key={k}>• {t(`help.${k}`)}</li>
+                      ),
+                    )}
                   </ul>
 
                   {/* MQTT Topics */}
                   <h4 className="font-medium text-sm mb-2">{t('help.venusMqttTopics')}</h4>
                   <div className="space-y-1.5">
-                    {['venusMqtt1','venusMqtt2','venusMqtt3','venusMqtt4','venusMqtt5'].map(k => (
-                      <div key={k} className="rounded-lg bg-[color:var(--color-surface)] border border-[color:var(--color-border)] p-2 text-xs font-mono text-[color:var(--color-muted)]">
-                        {t(`help.${k}`)}
-                      </div>
-                    ))}
+                    {['venusMqtt1', 'venusMqtt2', 'venusMqtt3', 'venusMqtt4', 'venusMqtt5'].map(
+                      (k) => (
+                        <div
+                          key={k}
+                          className="rounded-lg bg-[color:var(--color-surface)] border border-[color:var(--color-border)] p-2 text-xs font-mono text-[color:var(--color-muted)]"
+                        >
+                          {t(`help.${k}`)}
+                        </div>
+                      ),
+                    )}
                   </div>
                 </div>
 
@@ -442,14 +596,18 @@ export function Help() {
                     </div>
                     <h3 className="text-lg font-semibold">{t('help.knxTitle')}</h3>
                   </div>
-                  <p className="text-sm text-[color:var(--color-muted)] leading-relaxed mb-4">{t('help.knxIntro')}</p>
+                  <p className="text-sm text-[color:var(--color-muted)] leading-relaxed mb-4">
+                    {t('help.knxIntro')}
+                  </p>
 
                   {/* Architecture */}
                   <h4 className="font-medium text-sm mb-2">{t('help.knxArchitecture')}</h4>
                   <ol className="text-xs text-[color:var(--color-muted)] space-y-2 mb-4">
-                    {['knxArch1','knxArch2','knxArch3','knxArch4'].map((k, i) => (
+                    {['knxArch1', 'knxArch2', 'knxArch3', 'knxArch4'].map((k, i) => (
                       <li key={k} className="flex gap-2">
-                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-500/15 text-amber-400 text-[10px] font-bold">{i + 1}</span>
+                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-500/15 text-amber-400 text-[10px] font-bold">
+                          {i + 1}
+                        </span>
                         <span className="leading-relaxed">{t(`help.${k}`)}</span>
                       </li>
                     ))}
@@ -458,8 +616,11 @@ export function Help() {
                   {/* Group Addresses */}
                   <h4 className="font-medium text-sm mb-2">{t('help.knxGroupAddresses')}</h4>
                   <div className="space-y-1.5 mb-4">
-                    {['knxGA1','knxGA2','knxGA3','knxGA4','knxGA5'].map(k => (
-                      <div key={k} className="rounded-lg bg-[color:var(--color-surface)] border border-[color:var(--color-border)] p-2 text-xs font-mono text-[color:var(--color-muted)]">
+                    {['knxGA1', 'knxGA2', 'knxGA3', 'knxGA4', 'knxGA5'].map((k) => (
+                      <div
+                        key={k}
+                        className="rounded-lg bg-[color:var(--color-surface)] border border-[color:var(--color-border)] p-2 text-xs font-mono text-[color:var(--color-muted)]"
+                      >
                         {t(`help.${k}`)}
                       </div>
                     ))}
@@ -468,7 +629,7 @@ export function Help() {
                   {/* Best Practices */}
                   <h4 className="font-medium text-sm mb-2">{t('help.knxBestPractices')}</h4>
                   <ul className="text-xs text-[color:var(--color-muted)] space-y-1.5 ml-4">
-                    {['knxBP1','knxBP2','knxBP3','knxBP4','knxBP5'].map(k => (
+                    {['knxBP1', 'knxBP2', 'knxBP3', 'knxBP4', 'knxBP5'].map((k) => (
                       <li key={k}>• {t(`help.${k}`)}</li>
                     ))}
                   </ul>
@@ -482,29 +643,58 @@ export function Help() {
                     </div>
                     <h3 className="text-lg font-semibold">{t('help.highEndTitle')}</h3>
                   </div>
-                  <p className="text-sm text-[color:var(--color-muted)] leading-relaxed mb-4">{t('help.highEndIntro')}</p>
+                  <p className="text-sm text-[color:var(--color-muted)] leading-relaxed mb-4">
+                    {t('help.highEndIntro')}
+                  </p>
 
                   {/* Hardware */}
                   <h4 className="font-medium text-sm mb-2">{t('help.highEndHardware')}</h4>
                   <ul className="text-xs text-[color:var(--color-muted)] space-y-1.5 mb-4 ml-4">
-                    {['highEndHW1','highEndHW2','highEndHW3','highEndHW4','highEndHW5','highEndHW6','highEndHW7','highEndHW8','highEndHW9'].map(k => (
-                      <li key={k} className="flex gap-2"><CheckCircle2 size={12} className="text-rose-400 shrink-0 mt-0.5" />{t(`help.${k}`)}</li>
+                    {[
+                      'highEndHW1',
+                      'highEndHW2',
+                      'highEndHW3',
+                      'highEndHW4',
+                      'highEndHW5',
+                      'highEndHW6',
+                      'highEndHW7',
+                      'highEndHW8',
+                      'highEndHW9',
+                    ].map((k) => (
+                      <li key={k} className="flex gap-2">
+                        <CheckCircle2 size={12} className="text-rose-400 shrink-0 mt-0.5" />
+                        {t(`help.${k}`)}
+                      </li>
                     ))}
                   </ul>
 
                   {/* Software */}
                   <h4 className="font-medium text-sm mb-2">{t('help.highEndSoftware')}</h4>
                   <ul className="text-xs text-[color:var(--color-muted)] space-y-1.5 mb-4 ml-4">
-                    {['highEndSW1','highEndSW2','highEndSW3','highEndSW4','highEndSW5'].map(k => (
-                      <li key={k} className="flex gap-2"><CheckCircle2 size={12} className="text-purple-400 shrink-0 mt-0.5" />{t(`help.${k}`)}</li>
-                    ))}
+                    {['highEndSW1', 'highEndSW2', 'highEndSW3', 'highEndSW4', 'highEndSW5'].map(
+                      (k) => (
+                        <li key={k} className="flex gap-2">
+                          <CheckCircle2 size={12} className="text-purple-400 shrink-0 mt-0.5" />
+                          {t(`help.${k}`)}
+                        </li>
+                      ),
+                    )}
                   </ul>
 
                   {/* Network */}
                   <h4 className="font-medium text-sm mb-2">{t('help.highEndNetwork')}</h4>
                   <ul className="text-xs text-[color:var(--color-muted)] space-y-1.5 ml-4">
-                    {['highEndNet1','highEndNet2','highEndNet3','highEndNet4','highEndNet5'].map(k => (
-                      <li key={k} className="flex gap-2"><Shield size={12} className="text-cyan-400 shrink-0 mt-0.5" />{t(`help.${k}`)}</li>
+                    {[
+                      'highEndNet1',
+                      'highEndNet2',
+                      'highEndNet3',
+                      'highEndNet4',
+                      'highEndNet5',
+                    ].map((k) => (
+                      <li key={k} className="flex gap-2">
+                        <Shield size={12} className="text-cyan-400 shrink-0 mt-0.5" />
+                        {t(`help.${k}`)}
+                      </li>
                     ))}
                   </ul>
                 </div>
@@ -606,8 +796,24 @@ export function Help() {
                 <div className="glass-panel-strong p-6 rounded-2xl">
                   <h3 className="text-lg font-medium mb-4">{t('help.protocols')}</h3>
                   <div className="flex flex-wrap gap-2">
-                    {['Modbus TCP', 'MQTT', 'KNX/IP', 'WebSocket', 'OCPP 2.1', 'SunSpec', 'EEBus', 'SG Ready', 'VE.Bus', 'Tibber API', 'aWATTar API', 'Open-Meteo API'].map((proto) => (
-                      <span key={proto} className="rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-3 py-1.5 text-xs font-medium">
+                    {[
+                      'Modbus TCP',
+                      'MQTT',
+                      'KNX/IP',
+                      'WebSocket',
+                      'OCPP 2.1',
+                      'SunSpec',
+                      'EEBus',
+                      'SG Ready',
+                      'VE.Bus',
+                      'Tibber API',
+                      'aWATTar API',
+                      'Open-Meteo API',
+                    ].map((proto) => (
+                      <span
+                        key={proto}
+                        className="rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-3 py-1.5 text-xs font-medium"
+                      >
                         {proto}
                       </span>
                     ))}
@@ -652,9 +858,16 @@ export function Help() {
                       { term: t('help.glossCerboGx'), desc: t('help.glossCerboGxDesc') },
                       { term: t('help.glossV2x'), desc: t('help.glossV2xDesc') },
                     ].map((item, i) => (
-                      <div key={i} className="border-b border-[color:var(--color-border)] pb-4 last:border-0">
-                        <dt className="font-medium text-[color:var(--color-primary)] text-sm">{item.term}</dt>
-                        <dd className="text-sm text-[color:var(--color-muted)] mt-1 leading-relaxed">{item.desc}</dd>
+                      <div
+                        key={i}
+                        className="border-b border-[color:var(--color-border)] pb-4 last:border-0"
+                      >
+                        <dt className="font-medium text-[color:var(--color-primary)] text-sm">
+                          {item.term}
+                        </dt>
+                        <dd className="text-sm text-[color:var(--color-muted)] mt-1 leading-relaxed">
+                          {item.desc}
+                        </dd>
                       </div>
                     ))}
                   </dl>
@@ -679,7 +892,9 @@ export function Help() {
                   <h2 className="text-xl font-semibold mb-6">{t('help.faqTitle')}</h2>
 
                   {/* General */}
-                  <h3 className="text-sm font-semibold uppercase tracking-widest text-[color:var(--color-muted)] mb-3">{t('help.faqGeneral')}</h3>
+                  <h3 className="text-sm font-semibold uppercase tracking-widest text-[color:var(--color-muted)] mb-3">
+                    {t('help.faqGeneral')}
+                  </h3>
                   <div className="space-y-3 mb-6">
                     <AccordionItem title={t('help.faqWhatIs')} defaultOpen>
                       {t('help.faqWhatIsAnswer')}
@@ -696,7 +911,9 @@ export function Help() {
                   </div>
 
                   {/* Energy & Tariffs */}
-                  <h3 className="text-sm font-semibold uppercase tracking-widest text-[color:var(--color-muted)] mb-3">{t('help.faqEnergySection')}</h3>
+                  <h3 className="text-sm font-semibold uppercase tracking-widest text-[color:var(--color-muted)] mb-3">
+                    {t('help.faqEnergySection')}
+                  </h3>
                   <div className="space-y-3 mb-6">
                     <AccordionItem title={t('help.faqEnwg')}>
                       {t('help.faqEnwgAnswer')}
@@ -710,7 +927,9 @@ export function Help() {
                   </div>
 
                   {/* Security */}
-                  <h3 className="text-sm font-semibold uppercase tracking-widest text-[color:var(--color-muted)] mb-3">{t('help.faqSecuritySection')}</h3>
+                  <h3 className="text-sm font-semibold uppercase tracking-widest text-[color:var(--color-muted)] mb-3">
+                    {t('help.faqSecuritySection')}
+                  </h3>
                   <div className="space-y-3 mb-6">
                     <AccordionItem title={t('help.faqSecurity')}>
                       {t('help.faqSecurityAnswer')}
@@ -721,7 +940,9 @@ export function Help() {
                   </div>
 
                   {/* Technical */}
-                  <h3 className="text-sm font-semibold uppercase tracking-widest text-[color:var(--color-muted)] mb-3">{t('help.faqTechnical')}</h3>
+                  <h3 className="text-sm font-semibold uppercase tracking-widest text-[color:var(--color-muted)] mb-3">
+                    {t('help.faqTechnical')}
+                  </h3>
                   <div className="space-y-3">
                     <AccordionItem title={t('help.faqBrowsers')}>
                       {t('help.faqBrowsersAnswer')}
@@ -729,9 +950,7 @@ export function Help() {
                     <AccordionItem title={t('help.faqMobile')}>
                       {t('help.faqMobileAnswer')}
                     </AccordionItem>
-                    <AccordionItem title={t('help.faqApi')}>
-                      {t('help.faqApiAnswer')}
-                    </AccordionItem>
+                    <AccordionItem title={t('help.faqApi')}>{t('help.faqApiAnswer')}</AccordionItem>
                   </div>
                 </div>
               </motion.div>
@@ -755,18 +974,28 @@ export function Help() {
                   <div className="space-y-6">
                     {/* Navigation */}
                     <div>
-                      <h3 className="text-sm font-semibold uppercase tracking-widest text-[color:var(--color-muted)] mb-3">{t('help.shortcutNav')}</h3>
+                      <h3 className="text-sm font-semibold uppercase tracking-widest text-[color:var(--color-muted)] mb-3">
+                        {t('help.shortcutNav')}
+                      </h3>
                       <div className="space-y-2">
                         {[
                           { keys: ['⌘', 'K'], desc: t('help.shortcutCmdK') },
                           { keys: ['⌘', '/'], desc: t('help.shortcutSearch') },
                           { keys: ['Esc'], desc: t('help.shortcutClose') },
                         ].map((s, i) => (
-                          <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-[color:var(--color-surface)] border border-[color:var(--color-border)]">
+                          <div
+                            key={i}
+                            className="flex items-center justify-between p-3 rounded-lg bg-[color:var(--color-surface)] border border-[color:var(--color-border)]"
+                          >
                             <span className="text-sm">{s.desc}</span>
                             <div className="flex items-center gap-1">
                               {s.keys.map((k, j) => (
-                                <kbd key={j} className="rounded-md border border-[color:var(--color-border)] bg-[color:var(--color-surface-strong)] px-2 py-1 text-xs font-mono">{k}</kbd>
+                                <kbd
+                                  key={j}
+                                  className="rounded-md border border-[color:var(--color-border)] bg-[color:var(--color-surface-strong)] px-2 py-1 text-xs font-mono"
+                                >
+                                  {k}
+                                </kbd>
                               ))}
                             </div>
                           </div>
@@ -776,18 +1005,28 @@ export function Help() {
 
                     {/* Actions */}
                     <div>
-                      <h3 className="text-sm font-semibold uppercase tracking-widest text-[color:var(--color-muted)] mb-3">{t('help.shortcutActions')}</h3>
+                      <h3 className="text-sm font-semibold uppercase tracking-widest text-[color:var(--color-muted)] mb-3">
+                        {t('help.shortcutActions')}
+                      </h3>
                       <div className="space-y-2">
                         {[
                           { keys: ['⌘', 'S'], desc: t('help.shortcutSave') },
                           { keys: ['⌘', 'E'], desc: t('help.shortcutExport') },
                           { keys: ['⌘', 'L'], desc: t('help.shortcutLang') },
                         ].map((s, i) => (
-                          <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-[color:var(--color-surface)] border border-[color:var(--color-border)]">
+                          <div
+                            key={i}
+                            className="flex items-center justify-between p-3 rounded-lg bg-[color:var(--color-surface)] border border-[color:var(--color-border)]"
+                          >
                             <span className="text-sm">{s.desc}</span>
                             <div className="flex items-center gap-1">
                               {s.keys.map((k, j) => (
-                                <kbd key={j} className="rounded-md border border-[color:var(--color-border)] bg-[color:var(--color-surface-strong)] px-2 py-1 text-xs font-mono">{k}</kbd>
+                                <kbd
+                                  key={j}
+                                  className="rounded-md border border-[color:var(--color-border)] bg-[color:var(--color-surface-strong)] px-2 py-1 text-xs font-mono"
+                                >
+                                  {k}
+                                </kbd>
                               ))}
                             </div>
                           </div>
@@ -797,7 +1036,10 @@ export function Help() {
 
                     {/* Platform */}
                     <div className="rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-4 flex items-start gap-3">
-                      <Info size={16} className="text-[color:var(--color-primary)] shrink-0 mt-0.5" />
+                      <Info
+                        size={16}
+                        className="text-[color:var(--color-primary)] shrink-0 mt-0.5"
+                      />
                       <p className="text-xs text-[color:var(--color-muted)]">
                         {t('help.shortcutNote')}
                       </p>
@@ -820,10 +1062,15 @@ export function Help() {
                       { cmd: `"${t('voice.cmdSettings')}"`, desc: t('voice.cmdSettingsDesc') },
                       { cmd: `"${t('voice.cmdHelp')}"`, desc: t('voice.cmdHelpDesc') },
                     ].map((vc, i) => (
-                      <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-[color:var(--color-surface)] border border-[color:var(--color-border)]">
+                      <div
+                        key={i}
+                        className="flex items-start gap-3 p-3 rounded-lg bg-[color:var(--color-surface)] border border-[color:var(--color-border)]"
+                      >
                         <Mic size={14} className="text-pink-400 shrink-0 mt-1" />
                         <div>
-                          <p className="text-sm font-mono text-[color:var(--color-primary)]">{vc.cmd}</p>
+                          <p className="text-sm font-mono text-[color:var(--color-primary)]">
+                            {vc.cmd}
+                          </p>
                           <p className="text-xs text-[color:var(--color-muted)]">{vc.desc}</p>
                         </div>
                       </div>
@@ -940,11 +1187,15 @@ export function Help() {
                     </div>
                     <div>
                       <h2 className="text-xl font-semibold">{t('common.appName')}</h2>
-                      <p className="text-[color:var(--color-muted)] text-sm">{t('help.versionFull')}</p>
+                      <p className="text-[color:var(--color-muted)] text-sm">
+                        {t('help.versionFull')}
+                      </p>
                     </div>
                   </div>
 
-                  <p className="text-[color:var(--color-muted)] leading-relaxed mb-6">{t('help.aboutDesc')}</p>
+                  <p className="text-[color:var(--color-muted)] leading-relaxed mb-6">
+                    {t('help.aboutDesc')}
+                  </p>
 
                   {/* Tech Stack */}
                   <div className="border-t border-[color:var(--color-border)] pt-6">
@@ -953,15 +1204,29 @@ export function Help() {
                       {[
                         { category: 'Frontend', items: 'React 19, TypeScript, Vite, Tailwind CSS' },
                         { category: 'State', items: 'Zustand, React Query, Dexie.js' },
-                        { category: t('help.visualization'), items: 'D3.js Sankey, Recharts, Framer Motion' },
+                        {
+                          category: t('help.visualization'),
+                          items: 'D3.js Sankey, Recharts, Framer Motion',
+                        },
                         { category: 'Backend', items: 'Node.js, Express, WebSockets, MQTT' },
                         { category: 'AI', items: 'Google Gemini 2.5, OpenAI, Anthropic' },
                         { category: 'PWA', items: 'Workbox, Service Worker, Background Sync' },
-                        { category: t('help.protocols'), items: 'Modbus, MQTT, KNX/IP, OCPP, EEBus' },
-                        { category: t('help.testing'), items: 'Vitest, Playwright, axe-core (a11y)' },
+                        {
+                          category: t('help.protocols'),
+                          items: 'Modbus, MQTT, KNX/IP, OCPP, EEBus',
+                        },
+                        {
+                          category: t('help.testing'),
+                          items: 'Vitest, Playwright, axe-core (a11y)',
+                        },
                       ].map((tech) => (
-                        <div key={tech.category} className="rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-3">
-                          <p className="text-xs font-semibold uppercase tracking-wider text-[color:var(--color-primary)] mb-1">{tech.category}</p>
+                        <div
+                          key={tech.category}
+                          className="rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-3"
+                        >
+                          <p className="text-xs font-semibold uppercase tracking-wider text-[color:var(--color-primary)] mb-1">
+                            {tech.category}
+                          </p>
                           <p className="text-xs text-[color:var(--color-muted)]">{tech.items}</p>
                         </div>
                       ))}
@@ -971,13 +1236,17 @@ export function Help() {
                   {/* Accessibility */}
                   <div className="border-t border-[color:var(--color-border)] pt-6 mt-6">
                     <h3 className="font-medium mb-3">{t('help.a11yTitle')}</h3>
-                    <p className="text-sm text-[color:var(--color-muted)] leading-relaxed">{t('help.a11yDesc')}</p>
+                    <p className="text-sm text-[color:var(--color-muted)] leading-relaxed">
+                      {t('help.a11yDesc')}
+                    </p>
                   </div>
 
                   {/* License */}
                   <div className="border-t border-[color:var(--color-border)] pt-6 mt-6">
                     <h3 className="font-medium mb-3">{t('help.license')}</h3>
-                    <p className="text-sm text-[color:var(--color-muted)] leading-relaxed">{t('help.licenseDesc')}</p>
+                    <p className="text-sm text-[color:var(--color-muted)] leading-relaxed">
+                      {t('help.licenseDesc')}
+                    </p>
                   </div>
 
                   {/* Credits */}

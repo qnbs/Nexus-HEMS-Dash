@@ -2,19 +2,21 @@ import type { Config } from 'tailwindcss';
 import containerQueries from '@tailwindcss/container-queries';
 
 const config: Config = {
-  content: [
-    './index.html',
-    './src/**/*.{js,ts,jsx,tsx}',
-  ],
-  darkMode: ['class', '[data-theme="energy-dark"]', '[data-theme="ocean-dark"]', '[data-theme="nature-green"]'] as unknown as Config['darkMode'],
+  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
+  darkMode: [
+    'class',
+    '[data-theme="energy-dark"]',
+    '[data-theme="ocean-dark"]',
+    '[data-theme="nature-green"]',
+  ] as unknown as Config['darkMode'],
   theme: {
     extend: {
       screens: {
-        'xs': '475px',
-        'sm': '640px',
-        'md': '768px',
-        'lg': '1024px',
-        'xl': '1280px',
+        xs: '475px',
+        sm: '640px',
+        md: '768px',
+        lg: '1024px',
+        xl: '1280px',
         '2xl': '1536px',
         '3xl': '1920px',
       },
@@ -29,7 +31,7 @@ const config: Config = {
         '128': '32rem',
       },
       fontSize: {
-        'xxs': ['0.625rem', { lineHeight: '0.875rem' }],
+        xxs: ['0.625rem', { lineHeight: '0.875rem' }],
       },
       borderRadius: {
         '4xl': '2rem',
@@ -48,10 +50,10 @@ const config: Config = {
         'void-blue': '#0c1f34',
         'polar-mist': '#eaf7ff',
         'solar-sand': '#fff3dc',
-        'midnight': '#030712',
+        midnight: '#030712',
       },
       backdropBlur: {
-        'xs': '2px',
+        xs: '2px',
         '3xl': '64px',
       },
       animation: {
@@ -135,13 +137,11 @@ const config: Config = {
         '450': '450ms',
       },
       transitionTimingFunction: {
-        'spring': 'cubic-bezier(0.34, 1.56, 0.64, 1)',
+        spring: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
       },
     },
   },
-  plugins: [
-    containerQueries,
-  ],
+  plugins: [containerQueries],
 };
 
 export default config;

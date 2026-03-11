@@ -68,49 +68,174 @@ export interface AdapterHealth {
 
 export const HEMS_METRICS: MetricDefinition[] = [
   // Power metrics (instantaneous)
-  { name: 'hems_pv_power_watts', help: 'Current PV generation power in watts', type: 'gauge', unit: 'watts', labels: ['inverter'] },
-  { name: 'hems_battery_power_watts', help: 'Battery power (positive=charging, negative=discharging)', type: 'gauge', unit: 'watts', labels: ['battery_id'] },
-  { name: 'hems_grid_power_watts', help: 'Grid power (positive=import, negative=export)', type: 'gauge', unit: 'watts', labels: ['phase'] },
-  { name: 'hems_house_load_watts', help: 'Total household consumption in watts', type: 'gauge', unit: 'watts' },
-  { name: 'hems_ev_charger_power_watts', help: 'EV charger power in watts', type: 'gauge', unit: 'watts', labels: ['charger_id'] },
-  { name: 'hems_heat_pump_power_watts', help: 'Heat pump power consumption in watts', type: 'gauge', unit: 'watts' },
+  {
+    name: 'hems_pv_power_watts',
+    help: 'Current PV generation power in watts',
+    type: 'gauge',
+    unit: 'watts',
+    labels: ['inverter'],
+  },
+  {
+    name: 'hems_battery_power_watts',
+    help: 'Battery power (positive=charging, negative=discharging)',
+    type: 'gauge',
+    unit: 'watts',
+    labels: ['battery_id'],
+  },
+  {
+    name: 'hems_grid_power_watts',
+    help: 'Grid power (positive=import, negative=export)',
+    type: 'gauge',
+    unit: 'watts',
+    labels: ['phase'],
+  },
+  {
+    name: 'hems_house_load_watts',
+    help: 'Total household consumption in watts',
+    type: 'gauge',
+    unit: 'watts',
+  },
+  {
+    name: 'hems_ev_charger_power_watts',
+    help: 'EV charger power in watts',
+    type: 'gauge',
+    unit: 'watts',
+    labels: ['charger_id'],
+  },
+  {
+    name: 'hems_heat_pump_power_watts',
+    help: 'Heat pump power consumption in watts',
+    type: 'gauge',
+    unit: 'watts',
+  },
 
   // State of charge
-  { name: 'hems_battery_soc_percent', help: 'Battery state of charge', type: 'gauge', unit: 'percent', labels: ['battery_id'] },
-  { name: 'hems_ev_soc_percent', help: 'EV state of charge', type: 'gauge', unit: 'percent', labels: ['charger_id'] },
+  {
+    name: 'hems_battery_soc_percent',
+    help: 'Battery state of charge',
+    type: 'gauge',
+    unit: 'percent',
+    labels: ['battery_id'],
+  },
+  {
+    name: 'hems_ev_soc_percent',
+    help: 'EV state of charge',
+    type: 'gauge',
+    unit: 'percent',
+    labels: ['charger_id'],
+  },
 
   // Voltage / Frequency
-  { name: 'hems_grid_voltage_volts', help: 'Grid voltage', type: 'gauge', unit: 'volts', labels: ['phase'] },
-  { name: 'hems_battery_voltage_volts', help: 'Battery voltage', type: 'gauge', unit: 'volts', labels: ['battery_id'] },
+  {
+    name: 'hems_grid_voltage_volts',
+    help: 'Grid voltage',
+    type: 'gauge',
+    unit: 'volts',
+    labels: ['phase'],
+  },
+  {
+    name: 'hems_battery_voltage_volts',
+    help: 'Battery voltage',
+    type: 'gauge',
+    unit: 'volts',
+    labels: ['battery_id'],
+  },
   { name: 'hems_grid_frequency_hertz', help: 'Grid frequency', type: 'gauge', unit: 'hertz' },
 
   // Energy counters (cumulative)
   { name: 'hems_pv_yield_today_kwh', help: 'PV yield today in kWh', type: 'counter', unit: 'kwh' },
-  { name: 'hems_grid_import_kwh_total', help: 'Total grid energy imported', type: 'counter', unit: 'kwh' },
-  { name: 'hems_grid_export_kwh_total', help: 'Total grid energy exported', type: 'counter', unit: 'kwh' },
-  { name: 'hems_self_consumption_kwh_total', help: 'Total self-consumed energy', type: 'counter', unit: 'kwh' },
+  {
+    name: 'hems_grid_import_kwh_total',
+    help: 'Total grid energy imported',
+    type: 'counter',
+    unit: 'kwh',
+  },
+  {
+    name: 'hems_grid_export_kwh_total',
+    help: 'Total grid energy exported',
+    type: 'counter',
+    unit: 'kwh',
+  },
+  {
+    name: 'hems_self_consumption_kwh_total',
+    help: 'Total self-consumed energy',
+    type: 'counter',
+    unit: 'kwh',
+  },
 
   // Tariff / Price
-  { name: 'hems_tariff_price_eur_per_kwh', help: 'Current electricity tariff price', type: 'gauge', unit: 'eur_per_kwh', labels: ['provider'] },
-  { name: 'hems_tariff_co2_grams_per_kwh', help: 'Current grid CO2 intensity', type: 'gauge', unit: 'grams_per_kwh' },
+  {
+    name: 'hems_tariff_price_eur_per_kwh',
+    help: 'Current electricity tariff price',
+    type: 'gauge',
+    unit: 'eur_per_kwh',
+    labels: ['provider'],
+  },
+  {
+    name: 'hems_tariff_co2_grams_per_kwh',
+    help: 'Current grid CO2 intensity',
+    type: 'gauge',
+    unit: 'grams_per_kwh',
+  },
 
   // System
-  { name: 'hems_adapter_connected', help: 'Adapter connection status (1=connected, 0=disconnected)', type: 'gauge', labels: ['adapter', 'protocol'] },
-  { name: 'hems_adapter_errors_total', help: 'Total adapter errors', type: 'counter', labels: ['adapter', 'error_type'] },
-  { name: 'hems_adapter_latency_seconds', help: 'Adapter response latency', type: 'histogram', unit: 'seconds', labels: ['adapter'] },
-  { name: 'hems_websocket_messages_total', help: 'Total WebSocket messages received', type: 'counter', labels: ['direction'] },
-  { name: 'hems_uptime_seconds', help: 'Dashboard uptime in seconds', type: 'counter', unit: 'seconds' },
+  {
+    name: 'hems_adapter_connected',
+    help: 'Adapter connection status (1=connected, 0=disconnected)',
+    type: 'gauge',
+    labels: ['adapter', 'protocol'],
+  },
+  {
+    name: 'hems_adapter_errors_total',
+    help: 'Total adapter errors',
+    type: 'counter',
+    labels: ['adapter', 'error_type'],
+  },
+  {
+    name: 'hems_adapter_latency_seconds',
+    help: 'Adapter response latency',
+    type: 'histogram',
+    unit: 'seconds',
+    labels: ['adapter'],
+  },
+  {
+    name: 'hems_websocket_messages_total',
+    help: 'Total WebSocket messages received',
+    type: 'counter',
+    labels: ['direction'],
+  },
+  {
+    name: 'hems_uptime_seconds',
+    help: 'Dashboard uptime in seconds',
+    type: 'counter',
+    unit: 'seconds',
+  },
 
   // Load Control (§14a EnWG)
-  { name: 'hems_load_control_limit_watts', help: 'Active load control limit (§14a EnWG)', type: 'gauge', unit: 'watts', labels: ['limit_type'] },
+  {
+    name: 'hems_load_control_limit_watts',
+    help: 'Active load control limit (§14a EnWG)',
+    type: 'gauge',
+    unit: 'watts',
+    labels: ['limit_type'],
+  },
   { name: 'hems_load_control_active', help: 'Whether load control is active (1/0)', type: 'gauge' },
 
   // SG Ready
   { name: 'hems_sg_ready_state', help: 'SG Ready operating state (1-4)', type: 'gauge' },
 
   // Optimizer
-  { name: 'hems_optimizer_savings_eur', help: 'Estimated optimizer savings in EUR', type: 'gauge', unit: 'eur' },
-  { name: 'hems_optimizer_recommendations_total', help: 'Total optimizer recommendations generated', type: 'counter' },
+  {
+    name: 'hems_optimizer_savings_eur',
+    help: 'Estimated optimizer savings in EUR',
+    type: 'gauge',
+    unit: 'eur',
+  },
+  {
+    name: 'hems_optimizer_recommendations_total',
+    help: 'Total optimizer recommendations generated',
+    type: 'counter',
+  },
 ];
 
 // ─── Metrics Collector (Client-side) ────────────────────────────────
@@ -171,7 +296,9 @@ export class MetricsCollector {
     this.setSample('hems_grid_voltage_volts', data.gridVoltage, ts, { phase: 'L1' });
     this.setSample('hems_battery_voltage_volts', data.batteryVoltage, ts, { battery_id: 'main' });
     this.setSample('hems_pv_yield_today_kwh', data.pvYieldToday, ts);
-    this.setSample('hems_tariff_price_eur_per_kwh', data.priceCurrent, ts, { provider: tariffProvider });
+    this.setSample('hems_tariff_price_eur_per_kwh', data.priceCurrent, ts, {
+      provider: tariffProvider,
+    });
 
     this.setSample('hems_uptime_seconds', (ts - this.startTime) / 1000, ts);
   }
@@ -179,7 +306,12 @@ export class MetricsCollector {
   /**
    * Record adapter health status
    */
-  recordAdapterStatus(adapterId: string, name: string, connected: boolean, latencyMs: number = 0): void {
+  recordAdapterStatus(
+    adapterId: string,
+    name: string,
+    connected: boolean,
+    latencyMs: number = 0,
+  ): void {
     const ts = Date.now();
     const existing = this.adapterHealth.get(adapterId);
 
@@ -209,7 +341,10 @@ export class MetricsCollector {
       health.status = 'error';
     }
 
-    this.incrementCounter('hems_adapter_errors_total', { adapter: adapterId, error_type: errorType });
+    this.incrementCounter('hems_adapter_errors_total', {
+      adapter: adapterId,
+      error_type: errorType,
+    });
   }
 
   /**
@@ -305,9 +440,7 @@ export class MetricsCollector {
 
     if (!labels) return samples[samples.length - 1]?.value ?? null;
 
-    const match = samples.find((s) =>
-      Object.entries(labels).every(([k, v]) => s.labels[k] === v),
-    );
+    const match = samples.find((s) => Object.entries(labels).every(([k, v]) => s.labels[k] === v));
     return match?.value ?? null;
   }
 
@@ -322,7 +455,12 @@ export class MetricsCollector {
 
   // ─── Internal helpers ─────────────────────────────────────────────
 
-  private setSample(name: string, value: number, timestamp: number, labels: Record<string, string> = {}): void {
+  private setSample(
+    name: string,
+    value: number,
+    timestamp: number,
+    labels: Record<string, string> = {},
+  ): void {
     if (!this.samples.has(name)) {
       this.samples.set(name, []);
     }
@@ -330,9 +468,10 @@ export class MetricsCollector {
     const arr = this.samples.get(name)!;
 
     // Find existing sample with same labels
-    const existingIdx = arr.findIndex((s) =>
-      Object.keys(labels).length === Object.keys(s.labels).length &&
-      Object.entries(labels).every(([k, v]) => s.labels[k] === v),
+    const existingIdx = arr.findIndex(
+      (s) =>
+        Object.keys(labels).length === Object.keys(s.labels).length &&
+        Object.entries(labels).every(([k, v]) => s.labels[k] === v),
     );
 
     const sample: MetricSample = { name, labels, value, timestamp };
@@ -364,9 +503,9 @@ export class MetricsCollector {
     const protocols: Record<string, string> = {
       'victron-mqtt': 'MQTT',
       'modbus-sunspec': 'Modbus TCP',
-      'knx': 'KNXnet/IP',
-      'ocpp': 'OCPP 2.1',
-      'eebus': 'EEBUS SPINE/SHIP',
+      knx: 'KNXnet/IP',
+      ocpp: 'OCPP 2.1',
+      eebus: 'EEBUS SPINE/SHIP',
     };
     return protocols[adapterId] ?? 'unknown';
   }
@@ -414,22 +553,38 @@ export const GRAFANA_DASHBOARD_CONFIG = {
         type: 'timeseries',
         gridPos: { h: 8, w: 12, x: 12, y: 0 },
         targets: [{ expr: 'hems_grid_power_watts', legendFormat: 'Grid (+ import / - export)' }],
-        fieldConfig: { defaults: { unit: 'watt', thresholds: { steps: [
-          { value: -1000, color: 'green' },
-          { value: 0, color: 'orange' },
-          { value: 2000, color: 'red' },
-        ] } } },
+        fieldConfig: {
+          defaults: {
+            unit: 'watt',
+            thresholds: {
+              steps: [
+                { value: -1000, color: 'green' },
+                { value: 0, color: 'orange' },
+                { value: 2000, color: 'red' },
+              ],
+            },
+          },
+        },
       },
       {
         title: 'Battery State of Charge',
         type: 'gauge',
         gridPos: { h: 8, w: 6, x: 0, y: 8 },
         targets: [{ expr: 'hems_battery_soc_percent' }],
-        fieldConfig: { defaults: { unit: 'percent', min: 0, max: 100, thresholds: { steps: [
-          { value: 0, color: 'red' },
-          { value: 20, color: 'orange' },
-          { value: 50, color: 'green' },
-        ] } } },
+        fieldConfig: {
+          defaults: {
+            unit: 'percent',
+            min: 0,
+            max: 100,
+            thresholds: {
+              steps: [
+                { value: 0, color: 'red' },
+                { value: 20, color: 'orange' },
+                { value: 50, color: 'green' },
+              ],
+            },
+          },
+        },
       },
       {
         title: 'House Load',
@@ -474,20 +629,24 @@ export const GRAFANA_DASHBOARD_CONFIG = {
         title: 'Self-Consumption Rate',
         type: 'gauge',
         gridPos: { h: 8, w: 6, x: 12, y: 22 },
-        targets: [{
-          expr: '(1 - (max(hems_grid_power_watts, 0) / hems_house_load_watts)) * 100',
-          legendFormat: 'Self-Consumption',
-        }],
+        targets: [
+          {
+            expr: '(1 - (max(hems_grid_power_watts, 0) / hems_house_load_watts)) * 100',
+            legendFormat: 'Self-Consumption',
+          },
+        ],
         fieldConfig: { defaults: { unit: 'percent', min: 0, max: 100 } },
       },
       {
         title: 'Autarky Rate',
         type: 'gauge',
         gridPos: { h: 8, w: 6, x: 18, y: 22 },
-        targets: [{
-          expr: '(1 - clamp_min(hems_grid_power_watts, 0) / hems_house_load_watts) * 100',
-          legendFormat: 'Autarky',
-        }],
+        targets: [
+          {
+            expr: '(1 - clamp_min(hems_grid_power_watts, 0) / hems_house_load_watts) * 100',
+            legendFormat: 'Autarky',
+          },
+        ],
         fieldConfig: { defaults: { unit: 'percent', min: 0, max: 100 } },
       },
     ],
