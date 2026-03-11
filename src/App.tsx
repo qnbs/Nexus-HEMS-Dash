@@ -1,6 +1,6 @@
 import { useEffect, lazy, Suspense } from 'react';
 import { motion } from 'motion/react';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAdapterBridge } from './core/useEnergyStore';
 import { useAppStore } from './store';
@@ -49,6 +49,15 @@ function PageLoadingFallback() {
       </div>
     </div>
   );
+}
+
+/** Scrolls to the top of the page on every route change */
+function ScrollToTop(): null {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
 }
 
 export default function App() {
@@ -116,6 +125,7 @@ export default function App() {
       }}
     >
       <Router basename={import.meta.env.BASE_URL}>
+        <ScrollToTop />
         <OfflineBanner />
         <PWAInstallPrompt />
         <PWAUpdateNotification />

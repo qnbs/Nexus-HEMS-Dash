@@ -21,19 +21,19 @@ export const AI_PROVIDERS: Record<AIProvider, AIProviderConfig> = {
     provider: 'openai',
     label: 'OpenAI',
     baseUrl: 'https://api.openai.com/v1',
-    models: ['gpt-4o', 'gpt-4o-mini', 'o3-mini'],
+    models: ['gpt-4o', 'gpt-4o-mini', 'o4-mini'],
   },
   anthropic: {
     provider: 'anthropic',
     label: 'Anthropic',
     baseUrl: 'https://api.anthropic.com/v1',
-    models: ['claude-sonnet-4-20250514', 'claude-3-5-haiku-20241022'],
+    models: ['claude-sonnet-4-20250514', 'claude-haiku-4-20250514'],
   },
   google: {
     provider: 'google',
     label: 'Google Gemini',
     baseUrl: 'https://generativelanguage.googleapis.com/v1beta',
-    models: ['gemini-2.0-flash', 'gemini-2.5-pro-preview-06-05'],
+    models: ['gemini-3.0-flash', 'gemini-3.1-pro'],
   },
   xai: {
     provider: 'xai',
@@ -45,13 +45,13 @@ export const AI_PROVIDERS: Record<AIProvider, AIProviderConfig> = {
     provider: 'groq',
     label: 'Groq',
     baseUrl: 'https://api.groq.com/openai/v1',
-    models: ['llama-3.3-70b-versatile', 'mixtral-8x7b-32768'],
+    models: ['llama-3.3-70b-versatile', 'llama-4-scout-17b-16e-instruct'],
   },
   ollama: {
     provider: 'ollama',
     label: 'Ollama (Local)',
     baseUrl: 'http://localhost:11434/api',
-    models: ['llama3.2', 'mistral', 'qwen2.5'],
+    models: ['llama4', 'mistral', 'qwen3'],
   },
   custom: {
     provider: 'custom',

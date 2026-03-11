@@ -376,7 +376,7 @@ export const en = {
       'Control lights, windows, and climate via an interactive floor plan. Commands are sent via Node-RED to your KNX bus.',
     featureAI: 'AI Optimizer',
     featureAIDesc:
-      'Gemini 2.5-powered recommendations for EV, battery, and heat pump strategy based on tariffs, weather, and consumption patterns.',
+      'Gemini 3.1-powered recommendations for EV, battery, and heat pump strategy based on tariffs, weather, and consumption patterns.',
     featureEV: 'EV Charging Control',
     featureEVDesc:
       'Smart wallbox control with PV surplus, low-price, and scheduled charging modes. §14a EnWG compliant.',
@@ -526,7 +526,7 @@ export const en = {
     perf4: 'Periodically clear the local cache in Settings → Storage to free up IndexedDB space',
 
     // About
-    versionFull: 'Version 3.1.0 — Build 2026.03',
+    versionFull: 'Version 3.5.0 — Build 2026.07',
     visualization: 'Visualization',
     testing: 'Testing',
     a11yTitle: 'Accessibility',
@@ -704,7 +704,7 @@ export const en = {
     highEndNet5: 'mTLS certificates for encrypted WebSocket connections',
   },
   ai: {
-    title: 'AI Optimizer (Gemini 2.5)',
+    title: 'AI Optimizer (Gemini 3.1)',
     subtitle: 'Intelligent real-time optimization for EV, battery and heat pump',
     statusOptimal: 'Optimal export window: sell surplus PV to the grid.',
     statusCharge: 'Tariff valley detected: charge battery and EV now.',
@@ -721,7 +721,7 @@ export const en = {
     recommendations: 'Recommendations',
     costSaving: 'Cost savings',
     co2Reduction: 'CO₂ reduction',
-    geminiPowered: 'Powered by Google Gemini 2.5',
+    geminiPowered: 'Powered by Google Gemini 3.1',
   },
   pdf: {
     title: 'PDF Reports',

@@ -378,7 +378,7 @@ export const de = {
       'Steuern Sie Licht, Fenster und Klima über einen interaktiven Grundriss. Befehle werden via Node-RED an Ihren KNX-Bus gesendet.',
     featureAI: 'AI Optimizer',
     featureAIDesc:
-      'Gemini 2.5-gestützte Empfehlungen für EV-, Batterie- und Wärmepumpenstrategie basierend auf Tarifen, Wetter und Verbrauchsmustern.',
+      'Gemini 3.1-gestützte Empfehlungen für EV-, Batterie- und Wärmepumpenstrategie basierend auf Tarifen, Wetter und Verbrauchsmustern.',
     featureEV: 'E-Auto-Ladesteuerung',
     featureEVDesc:
       'Intelligente Wallbox-Steuerung mit PV-Überschuss-, Niedrigtarif- und geplanten Lademodi. §14a EnWG konform.',
@@ -534,7 +534,7 @@ export const de = {
       'Leeren Sie regelmäßig den lokalen Cache in Einstellungen → Speicher, um IndexedDB-Speicherplatz freizugeben',
 
     // Über
-    versionFull: 'Version 3.1.0 — Build 2026.03',
+    versionFull: 'Version 3.5.0 — Build 2026.07',
     visualization: 'Visualisierung',
     testing: 'Tests',
     a11yTitle: 'Barrierefreiheit',
@@ -714,7 +714,7 @@ export const de = {
     highEndNet5: 'mTLS-Zertifikate für verschlüsselte WebSocket-Verbindungen',
   },
   ai: {
-    title: 'AI Optimizer (Gemini 2.5)',
+    title: 'AI Optimizer (Gemini 3.1)',
     subtitle: 'Intelligente Echtzeit-Optimierung für EV, Batterie und Wärmepumpe',
     statusOptimal: 'Optimales Einspeisefenster: PV-Überschuss gewinnbringend exportieren.',
     statusCharge: 'Tarif-Tal erkannt: Batterie und EV jetzt laden.',
@@ -731,7 +731,7 @@ export const de = {
     recommendations: 'Empfehlungen',
     costSaving: 'Kostenersparnis',
     co2Reduction: 'CO₂-Reduktion',
-    geminiPowered: 'Powered by Google Gemini 2.5',
+    geminiPowered: 'Powered by Google Gemini 3.1',
   },
   pdf: {
     title: 'PDF-Berichte',

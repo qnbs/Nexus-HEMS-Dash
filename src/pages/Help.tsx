@@ -33,6 +33,8 @@ import {
   Network,
   HardDrive,
   CheckCircle2,
+  Github,
+  ExternalLink,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -1138,6 +1140,18 @@ export function Help() {
 
                   <p className="text-(--color-muted) leading-relaxed mb-6">{t('help.aboutDesc')}</p>
 
+                  {/* GitHub Repository */}
+                  <a
+                    href="https://github.com/qnbs/Nexus-HEMS-Dash"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 rounded-xl border border-(--color-border) bg-(--color-surface) px-4 py-2.5 text-sm font-medium transition-all duration-200 hover:bg-(--color-primary)/10 hover:border-(--color-primary)/40 hover:text-(--color-primary) focus-ring mb-6"
+                  >
+                    <Github size={18} aria-hidden="true" />
+                    <span>GitHub Repository</span>
+                    <ExternalLink size={14} className="text-(--color-muted)" aria-hidden="true" />
+                  </a>
+
                   {/* Tech Stack */}
                   <div className="border-t border-(--color-border) pt-6">
                     <h3 className="font-medium mb-4">{t('help.techStack')}</h3>
@@ -1150,7 +1164,7 @@ export function Help() {
                           items: 'D3.js Sankey, Recharts, Framer Motion',
                         },
                         { category: 'Backend', items: 'Node.js, Express, WebSockets, MQTT' },
-                        { category: 'AI', items: 'Google Gemini 2.5, OpenAI, Anthropic' },
+                        { category: 'AI', items: 'Google Gemini 3.1, OpenAI, Anthropic' },
                         { category: 'PWA', items: 'Workbox, Service Worker, Background Sync' },
                         {
                           category: t('help.protocols'),
@@ -1198,7 +1212,7 @@ export function Help() {
                       <p>• KNX Association — KNX/IP building automation standard</p>
                       <p>• Tibber & aWATTar — Dynamic electricity tariff APIs</p>
                       <p>• D3.js — Data-driven visualization library</p>
-                      <p>• Google — Gemini 2.5 AI model</p>
+                      <p>• Google — Gemini 3.1 AI model</p>
                     </div>
                   </div>
                 </div>

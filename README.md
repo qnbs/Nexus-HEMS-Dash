@@ -4,7 +4,7 @@
 
 ### The Definitive Open-Source Home Energy Management System
 
-![Version](https://img.shields.io/badge/v3.4-stable-22ff88?style=for-the-badge)
+![Version](https://img.shields.io/badge/v3.5-stable-22ff88?style=for-the-badge)
 ![React 19](https://img.shields.io/badge/React-19-00f0ff?style=for-the-badge&logo=react)
 ![TypeScript 5.8](https://img.shields.io/badge/TypeScript-5.8-3178c6?style=for-the-badge&logo=typescript)
 ![Tailwind v4](https://img.shields.io/badge/Tailwind-v4-38bdf8?style=for-the-badge&logo=tailwindcss)
@@ -96,7 +96,7 @@
 | Feature                      | Description                                                     | Status  |
 | ---------------------------- | --------------------------------------------------------------- | ------- |
 | ⚡ **Real-Time Sankey**      | Live D3.js energy flow — PV → Battery → Grid → House → HP → EV  | ✅ Live |
-| 🤖 **AI Optimizer**          | Google Gemini 2.5 for optimal EV/battery/HP charging strategies | ✅ Live |
+| 🤖 **AI Optimizer**          | Google Gemini 3.1 for optimal EV/battery/HP charging strategies | ✅ Live |
 | 📈 **Predictive Forecast**   | 24h/7d weather-based PV & tariff predictions via Recharts       | ✅ Live |
 | ⚡ **Live Tariff Widget**    | Real-time Tibber/aWATTar prices with mini-charts & alerts       | ✅ Live |
 | 🚗 **Smart EV Charging**     | PV surplus, fast charge, dynamic tariff modes + §14a EnWG       | ✅ Live |
@@ -261,7 +261,7 @@ GEMINI_API_KEY=your-key-here
 | `/consumption`  | **Consumption**  | Load breakdown, consumer categories, grid exchange      |
 | `/ev`           | **EV Charging**  | Charge control, PV surplus / fast / dynamic modes, §14a |
 | `/floorplan`    | **Floorplan**    | KNX interactive building automation, room controls      |
-| `/ai-optimizer` | **AI Optimizer** | Gemini 2.5 analysis, enhanced optimizer                 |
+| `/ai-optimizer` | **AI Optimizer** | Gemini 3.1 analysis, enhanced optimizer                 |
 | `/tariffs`      | **Tariffs**      | Live Tibber/aWATTar prices, forecasts, optimal windows  |
 | `/analytics`    | **Analytics**    | Statistics, predictive forecasts, PDF export & sharing  |
 | `/monitoring`   | **Monitoring**   | Prometheus metrics, health status, Grafana integration  |
@@ -461,7 +461,6 @@ docker-compose up -d   # Coming Q3 2026
 | :------ | :------------------------------------------------------ | :---------- |
 | Q1      | Home Assistant / MQTT Integration                       | ✅ Shipped  |
 | Q1      | Predictive AI (Gemini + tariff forecasting)             | ✅ Shipped  |
-| Q1      | Voice Control (Web Speech API)                          | ✅ Shipped  |
 | Q1      | PDF Monthly Reports (Sankey + CO₂)                      | ✅ Shipped  |
 | Q1      | Multi-Household Sharing                                 | ✅ Shipped  |
 | Q1      | Live Tariff Widget (Tibber/aWATTar)                     | ✅ Shipped  |
@@ -480,6 +479,16 @@ docker-compose up -d   # Coming Q3 2026
 ---
 
 ## 📝 Changelog
+
+<details>
+<summary><b>v3.5.0</b> — AI Model Update & UX Polish</summary>
+
+- AI models updated: Gemini 3.1, Claude 4 Haiku, o4-mini, Llama 4, Qwen 3
+- Scroll-to-top on page navigation (no more jumping/jarring)
+- Version strings and documentation updated across all locales
+- README audit: removed outdated references, added v3.4/v3.5 German highlights
+- Help page: added GitHub repository link in About section
+</details>
 
 <details>
 <summary><b>v3.4.0</b> — Settings Overhaul & Cleanup</summary>
@@ -599,6 +608,18 @@ MIT — see [LICENSE](LICENSE) for details.
 
 Gebaut mit **React 19**, **Zustand**, **D3.js** und **Tailwind CSS v4** liefert das Dashboard eine **Neo-Energy Cyber-Glassmorphism UI** mit vollständiger **Internationalisierung** (DE/EN), **WCAG 2.2 AA Barrierefreiheit** und **Offline-First** Architektur.
 
+### ✨ Highlights v3.5
+
+- 🤖 **AI Modelle aktualisiert** — Gemini 3.1, Claude 4, o4-mini, Llama 4, Qwen 3
+- 🔝 **Scroll-to-Top** — Alle Seiten starten automatisch oben bei Navigation
+- 📝 **README & Hilfe optimiert** — Umfassende Dokumentationsaktualisierung
+
+### ✨ Highlights v3.4
+
+- ⚙️ **Settings-Overhaul** — Alle Toggles funktional, Sprache/Einheiten/Währung persistent
+- 🧹 **Code-Bereinigung** — Voice Control entfernt, tote Dateien gelöscht
+- 📦 **Bundle reduziert** — ~396 KB Index-Chunk
+
 ### ✨ Highlights v3.3
 
 - 📡 **EEBUS SPINE/SHIP** — Komplette Protokoll-Engine mit TLS 1.3, CEM Use Cases, §14a EnWG
@@ -625,7 +646,7 @@ Gebaut mit **React 19**, **Zustand**, **D3.js** und **Tailwind CSS v4** liefert 
 | Feature                       | Beschreibung                                                    | Status     |
 | :---------------------------- | :-------------------------------------------------------------- | :--------- |
 | ⚡ **Echtzeit-Sankey**        | Live D3.js Energiefluss — PV → Batterie → Netz → Haus → WP → EV | ✅ Live    |
-| 🤖 **KI-Optimierer**          | Google Gemini 2.5 für optimale Lade-/Heizstrategien             | ✅ Live    |
+| 🤖 **KI-Optimierer**          | Google Gemini 3.1 für optimale Lade-/Heizstrategien             | ✅ Live    |
 | 📈 **Prädiktive Vorhersage**  | 24h/7d wetterbasierte PV- & Tarifprognosen                      | ✅ Live    |
 | ⚡ **Live-Tarif-Widget**      | Echtzeit Tibber/aWATTar Preise mit Mini-Charts                  | ✅ Live    |
 | 🚗 **Intelligentes EV-Laden** | PV-Überschuss, Schnellladung, dynamische Modi, §14a             | ✅ Live    |
@@ -660,7 +681,7 @@ npm run dev
 | `/consumption`  | **Verbrauch**     | Lastaufschlüsselung, Netzaustausch             |
 | `/ev`           | **E-Auto**        | Ladesteuerung, PV-Überschuss/Schnell/Dynamisch |
 | `/floorplan`    | **Grundriss**     | KNX Gebäudeautomation, Raumsteuerung           |
-| `/ai-optimizer` | **KI-Optimierer** | Gemini 2.5 Analyse, Sprachsteuerung            |
+| `/ai-optimizer` | **KI-Optimierer** | Gemini 3.1 Analyse, erweiterter Optimierer     |
 | `/tariffs`      | **Tarife**        | Live-Preise, Prognosen, optimale Ladefenster   |
 | `/analytics`    | **Analysen**      | Statistiken, Prognosen, PDF-Export             |
 | `/monitoring`   | **Monitoring**    | Prometheus, Systemgesundheit, Grafana          |
