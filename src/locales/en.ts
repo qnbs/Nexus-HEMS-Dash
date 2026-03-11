@@ -332,6 +332,8 @@ export const en = {
     confirmResetMessage:
       'This will permanently reset all settings to their factory defaults. This action cannot be undone.',
     confirmResetAction: 'Reset Everything',
+    exportSuccess: 'Settings exported successfully',
+    importFileTooLarge: 'File too large (max 1 MB).',
     cancel: 'Cancel',
   },
   help: {
@@ -946,6 +948,7 @@ export const en = {
     qrCodeAlt: 'QR code for shareable dashboard link',
     pdfError: 'PDF generation failed. Please try again.',
     linkError: 'Share link generation failed. Please try again.',
+    clipboardError: 'Could not copy to clipboard.',
   },
   accessibility: {
     skipToContent: 'Skip to main content',

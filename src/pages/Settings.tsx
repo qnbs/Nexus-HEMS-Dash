@@ -119,6 +119,7 @@ export function Settings() {
   const { t, i18n } = useTranslation();
   const [saved, setSaved] = useState(false);
   const [importSuccess, setImportSuccess] = useState(false);
+  const [exportSuccess, setExportSuccess] = useState(false);
   const [activeTab, setActiveTab] = useState<SettingsTab>('appearance');
   const [showTokens, setShowTokens] = useState<Record<string, boolean>>({});
   const confirm = useConfirmDialog();
@@ -167,6 +168,8 @@ export function Settings() {
         a.download = 'nexus-hems-settings.json';
         a.click();
         URL.revokeObjectURL(url);
+        setExportSuccess(true);
+        setTimeout(() => setExportSuccess(false), 4000);
       },
     });
   };
@@ -187,9 +190,23 @@ export function Settings() {
         input.onchange = async (e) => {
           const file = (e.target as HTMLInputElement).files?.[0];
           if (!file) return;
+          const maxSize = 1024 * 1024; // 1 MB
+          if (file.size > maxSize) {
+            confirm.openDialog({
+              title: t('common.error'),
+              message: t('settings.importFileTooLarge', 'File too large (max 1 MB).'),
+              confirmText: t('common.dismiss'),
+              variant: 'danger',
+              onConfirm: () => {},
+            });
+            return;
+          }
           const text = await file.text();
           try {
             const data = JSON.parse(text);
+            if (typeof data !== 'object' || data === null || Array.isArray(data)) {
+              throw new Error('invalid');
+            }
             updateSettings(data);
             setImportSuccess(true);
             setTimeout(() => setImportSuccess(false), 4000);
@@ -290,7 +307,7 @@ export function Settings() {
         </div>
       </motion.div>
 
-      {/* Import Success Banner */}
+      {/* Success Banners */}
       <AnimatePresence>
         {importSuccess && (
           <motion.div
@@ -302,6 +319,18 @@ export function Settings() {
           >
             <Check size={16} className="shrink-0" aria-hidden="true" />
             {t('common.importSuccess')}
+          </motion.div>
+        )}
+        {exportSuccess && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="mb-4 flex items-center gap-2 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-400"
+            role="status"
+          >
+            <Check size={16} className="shrink-0" aria-hidden="true" />
+            {t('settings.exportSuccess', 'Settings exported successfully')}
           </motion.div>
         )}
       </AnimatePresence>

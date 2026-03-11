@@ -334,6 +334,8 @@ export const de = {
     confirmResetMessage:
       'Alle Einstellungen werden dauerhaft auf Werkseinstellungen zurückgesetzt. Diese Aktion kann nicht rückgängig gemacht werden.',
     confirmResetAction: 'Alles zurücksetzen',
+    exportSuccess: 'Einstellungen erfolgreich exportiert',
+    importFileTooLarge: 'Datei zu groß (max. 1 MB).',
     cancel: 'Abbrechen',
   },
   help: {
@@ -957,6 +959,7 @@ export const de = {
     qrCodeAlt: 'QR-Code für teilbaren Dashboard-Link',
     pdfError: 'PDF-Erstellung fehlgeschlagen. Bitte erneut versuchen.',
     linkError: 'Link-Erstellung fehlgeschlagen. Bitte erneut versuchen.',
+    clipboardError: 'Kopieren in die Zwischenablage fehlgeschlagen.',
   },
   accessibility: {
     skipToContent: 'Zum Hauptinhalt springen',

@@ -62,11 +62,20 @@ export const ExportAndSharing = memo(function ExportAndSharing() {
     }
   };
 
-  const handleCopyLink = () => {
+  const handleCopyLink = async () => {
     if (shareLink) {
-      navigator.clipboard.writeText(shareLink);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      try {
+        await navigator.clipboard.writeText(shareLink);
+        setCopied(true);
+        setSuccessMessage(t('common.copySuccess', 'Copied to clipboard'));
+        setTimeout(() => {
+          setCopied(false);
+          setSuccessMessage(null);
+        }, 2000);
+      } catch {
+        setErrorMessage(t('export.clipboardError', 'Could not copy to clipboard'));
+        setTimeout(() => setErrorMessage(null), 5000);
+      }
     }
   };
 
@@ -168,6 +177,14 @@ export const ExportAndSharing = memo(function ExportAndSharing() {
                       alt={t('export.qrCodeAlt', 'QR code for shareable dashboard link')}
                       className="mt-3 rounded-lg border-2 border-(--color-primary)"
                     />
+                    <a
+                      href={qrCodeUrl}
+                      download="nexus-hems-qr.png"
+                      className="btn-secondary focus-ring mt-3 inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs"
+                    >
+                      <FileDown className="h-3.5 w-3.5" aria-hidden="true" />
+                      {t('export.downloadQr', 'Download QR code')}
+                    </a>
                   </div>
                 )}
               </div>
