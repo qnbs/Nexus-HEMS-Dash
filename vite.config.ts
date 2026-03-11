@@ -12,7 +12,7 @@ export default defineConfig(({ mode }) => {
       react(),
       tailwindcss(),
       VitePWA({
-        registerType: 'prompt',
+        registerType: 'autoUpdate',
         includeAssets: ['favicon.ico', 'robots.txt', 'icon-*.png', '*.svg'],
         manifest: false, // Use public/manifest.json instead
         workbox: {
@@ -133,8 +133,8 @@ export default defineConfig(({ mode }) => {
             },
           ],
           cleanupOutdatedCaches: true,
-          skipWaiting: false,
-          clientsClaim: false,
+          skipWaiting: true,
+          clientsClaim: true,
         },
         devOptions: {
           enabled: false,
@@ -160,6 +160,8 @@ export default defineConfig(({ mode }) => {
             'vendor-recharts': ['recharts'],
             'vendor-query': ['@tanstack/react-query'],
             'vendor-i18n': ['i18next', 'react-i18next'],
+            'vendor-icons': ['lucide-react'],
+            'vendor-data': ['dexie', 'zustand', 'date-fns'],
           },
         },
       },
