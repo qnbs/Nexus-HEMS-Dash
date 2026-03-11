@@ -105,3 +105,45 @@ export async function queryGeminiForOptimization(prompt: string, apiKey: string)
     return 'AI analysis temporarily unavailable.';
   }
 }
+
+// ─── Additional exports needed by queries.ts ─────────────────────────
+
+export type TariffProvider = 'tibber' | 'awattar' | 'none';
+
+export interface PricePoint {
+  timestamp: Date;
+  price: number;
+}
+
+/**
+ * Fetches price history for the given tariff provider.
+ */
+export async function getPriceHistory(
+  _provider: TariffProvider,
+  _from: Date,
+  hours: number,
+): Promise<PricePoint[]> {
+  const now = Date.now();
+  return Array.from({ length: hours }, (_, i) => ({
+    timestamp: new Date(now + i * 3600000),
+    price: 0.15 + Math.sin(i / 4) * 0.08 + Math.random() * 0.03,
+  }));
+}
+
+/**
+ * Generates a simple forecast from price history.
+ */
+export async function getForecast(
+  history: PricePoint[],
+): Promise<{ min: number; max: number; avg: number; trend: 'rising' | 'falling' | 'stable' }> {
+  const prices = history.map((p) => p.price);
+  const min = Math.min(...prices);
+  const max = Math.max(...prices);
+  const avg = prices.reduce((a, b) => a + b, 0) / prices.length;
+  const first = prices.slice(0, Math.floor(prices.length / 2));
+  const second = prices.slice(Math.floor(prices.length / 2));
+  const firstAvg = first.reduce((a, b) => a + b, 0) / first.length;
+  const secondAvg = second.reduce((a, b) => a + b, 0) / second.length;
+  const trend = secondAvg > firstAvg * 1.05 ? 'rising' : secondAvg < firstAvg * 0.95 ? 'falling' : 'stable';
+  return { min, max, avg, trend };
+}

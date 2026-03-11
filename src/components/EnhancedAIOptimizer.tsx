@@ -108,23 +108,23 @@ Return ONLY a valid JSON array with this structure:
   };
 
   return (
-    <div className="glass-panel rounded-3xl p-6">
+    <div className="glass-panel rounded-2xl sm:rounded-3xl p-4 sm:p-6">
       {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h2 className="flex items-center gap-2 text-xl font-semibold text-[color:var(--color-text)]">
-            <Sparkles className="h-6 w-6 text-[color:var(--color-primary)]" aria-hidden="true" />
-            {t('ai.optimizerTitle', 'AI Energy Optimizer')}
-            <span className="ml-2 rounded-full bg-[color:var(--color-primary)]/20 px-2 py-0.5 text-xs font-medium text-[color:var(--color-primary)]">
+      <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="min-w-0">
+          <h2 className="flex items-center gap-2 text-lg sm:text-xl font-semibold text-[color:var(--color-text)]">
+            <Sparkles className="h-5 w-5 sm:h-6 sm:w-6 text-[color:var(--color-primary)] shrink-0" aria-hidden="true" />
+            <span className="truncate">{t('ai.optimizerTitle', 'AI Energy Optimizer')}</span>
+            <span className="shrink-0 rounded-full bg-[color:var(--color-primary)]/20 px-2 py-0.5 text-xs font-medium text-[color:var(--color-primary)]">
               BYOK
             </span>
           </h2>
-          <p className="mt-1 text-sm text-[color:var(--color-muted)]">
+          <p className="mt-1 text-xs sm:text-sm text-[color:var(--color-muted)]">
             {t('ai.optimizerSubtitle', 'AI-powered recommendations for optimal energy management')}
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <Link
             to="/settings/ai"
             className="btn-secondary focus-ring flex items-center gap-2 rounded-full px-3 py-2 text-sm"
@@ -135,20 +135,20 @@ Return ONLY a valid JSON array with this structure:
           <button
             onClick={handleOptimizeNow}
             disabled={isOptimizing || hasProvider === false}
-            className="btn-primary focus-ring flex items-center gap-2"
+            className="btn-primary focus-ring flex items-center gap-2 text-sm"
           >
-          {isOptimizing ? (
-            <>
-              <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
-              {t('ai.optimizing', 'Optimizing...')}
-            </>
-          ) : (
-            <>
-              <Sparkles className="h-5 w-5" aria-hidden="true" />
-              {t('ai.optimizeNow', 'Optimize Now')}
-            </>
-          )}
-        </button>
+            {isOptimizing ? (
+              <>
+                <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 animate-spin" aria-hidden="true" />
+                <span className="hidden xs:inline">{t('ai.optimizing', 'Optimizing...')}</span>
+              </>
+            ) : (
+              <>
+                <Sparkles className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
+                <span className="hidden xs:inline">{t('ai.optimizeNow', 'Optimize Now')}</span>
+              </>
+            )}
+          </button>
         </div>
       </div>
 
@@ -161,20 +161,20 @@ Return ONLY a valid JSON array with this structure:
 
       {/* Basic Recommendations (Always Visible) */}
       {!geminiRecommendations.length && (
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2">
           {basicRecommendations.map((rec, i) => (
             <motion.div
-              key={i}
+              key={rec.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.06 }}
-              className={`rounded-2xl border p-4 ${getSeverityStyles(rec.severity)}`}
+              className={`rounded-2xl border p-3 sm:p-4 ${getSeverityStyles(rec.severity)}`}
             >
-              <div className="mb-2 flex items-center justify-between">
-                <span className="text-sm font-medium">{t(rec.title)}</span>
-                {rec.live && <span className="pulse-badge">{t('common.live', 'LIVE')}</span>}
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <span className="text-xs sm:text-sm font-medium truncate">{t(rec.titleKey)}</span>
+                <span className="text-xs font-mono text-[color:var(--color-muted)] shrink-0">{rec.value}</span>
               </div>
-              <p className="text-xs text-[color:var(--color-muted)]">{t(rec.description)}</p>
+              <p className="text-xs text-[color:var(--color-muted)]">{t(rec.descriptionKey)}</p>
             </motion.div>
           ))}
         </div>
@@ -187,7 +187,7 @@ Return ONLY a valid JSON array with this structure:
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="space-y-4"
+            className="space-y-3 sm:space-y-4"
           >
             {geminiRecommendations.map((rec, i) => (
               <motion.div
@@ -195,17 +195,17 @@ Return ONLY a valid JSON array with this structure:
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: i * 0.1 }}
-                className={`rounded-2xl border p-5 ${getPriorityStyles(rec.priority)}`}
+                className={`rounded-2xl border p-4 sm:p-5 ${getPriorityStyles(rec.priority)}`}
               >
-                <div className="mb-3 flex items-start justify-between">
-                  <h3 className="font-semibold text-[color:var(--color-text)]">{rec.title}</h3>
+                <div className="mb-2 sm:mb-3 flex items-start justify-between gap-2">
+                  <h3 className="font-semibold text-sm sm:text-base text-[color:var(--color-text)]">{rec.title}</h3>
                   <span
-                    className={`rounded-full px-2 py-1 text-xs font-medium ${getPriorityBadge(rec.priority)}`}
+                    className={`shrink-0 rounded-full px-2 py-1 text-xs font-medium ${getPriorityBadge(rec.priority)}`}
                   >
                     {rec.priority.toUpperCase()}
                   </span>
                 </div>
-                <p className="mb-3 text-sm text-[color:var(--color-muted)]">{rec.description}</p>
+                <p className="mb-2 sm:mb-3 text-xs sm:text-sm text-[color:var(--color-muted)]">{rec.description}</p>
                 <div className="flex items-center gap-2 text-xs text-[color:var(--color-primary)]">
                   <Sparkles className="h-4 w-4" aria-hidden="true" />
                   {rec.impact}

@@ -34,3 +34,15 @@ export { ModbusSunSpecAdapter } from './ModbusSunSpecAdapter';
 export { KNXAdapter } from './KNXAdapter';
 export { OCPP21Adapter } from './OCPP21Adapter';
 export { EEBUSAdapter } from './EEBUSAdapter';
+export type {
+  EEBUSDeviceType,
+  EEBUSEntity,
+  EEBUSFeature,
+  EEBUSFeatureType,
+  EEBUSMeasurement,
+  EEBUSLoadControlLimit,
+  EEBUSIncentive,
+  SHIPConnectionState,
+  EEBUSDiscoveredDevice,
+  EEBUSConnectionEvent,
+} from './EEBUSAdapter';

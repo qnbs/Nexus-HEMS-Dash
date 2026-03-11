@@ -20,7 +20,7 @@ export function detectSystemTheme(): 'dark' | 'light' {
  */
 export function getThemeFromSystemPreference(): ThemeName {
   const systemTheme = detectSystemTheme();
-  return systemTheme === 'dark' ? 'energy-dark' : 'minimal-white';
+  return systemTheme === 'dark' ? 'ocean-dark' : 'minimal-white';
 }
 
 /**
@@ -86,7 +86,7 @@ export function saveThemePreference(preference: ThemePreference): void {
  * Loads theme preference from localStorage
  */
 export function loadThemePreference(): ThemePreference {
-  if (typeof window === 'undefined') return 'energy-dark';
+  if (typeof window === 'undefined') return 'ocean-dark';
 
   const stored = localStorage.getItem('nexus-hems-theme-preference');
   if (stored && ['energy-dark', 'ocean-dark', 'nature-green', 'solar-light', 'minimal-white', 'system'].includes(stored)) {

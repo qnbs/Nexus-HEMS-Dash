@@ -8,8 +8,8 @@ afterEach(() => {
 });
 
 // Mock Web Speech API
-global.SpeechRecognition = vi.fn();
-global.webkitSpeechRecognition = vi.fn();
+(globalThis as Record<string, unknown>).SpeechRecognition = vi.fn();
+(globalThis as Record<string, unknown>).webkitSpeechRecognition = vi.fn();
 
 // Mock Navigator Vibrate
 Object.defineProperty(global.navigator, 'vibrate', {

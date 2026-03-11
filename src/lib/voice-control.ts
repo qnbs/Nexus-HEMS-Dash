@@ -24,12 +24,12 @@ export class VoiceController {
       this.recognition.interimResults = false;
       this.recognition.lang = 'de-DE';
 
-      this.recognition.onresult = (event) => {
+      this.recognition.onresult = (event: SpeechRecognitionEvent) => {
         const transcript = event.results[event.results.length - 1][0].transcript.toLowerCase();
         this.processCommand(transcript);
       };
 
-      this.recognition.onerror = (event) => {
+      this.recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
         console.error('Voice recognition error:', event.error);
         if (event.error === 'network') {
           this.offlineMode = true;

@@ -3,7 +3,7 @@ import { Battery, Car, Thermometer } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'motion/react';
 
-import { CommandType, EnergyData, EvState, HpState } from '../types';
+import { type CommandType, type EnergyData, type EvState, type HpState } from '../types';;
 import { hapticClick, hapticModeChange, hapticSuccess } from '../lib/haptics';
 
 export function ControlPanel({
@@ -19,7 +19,7 @@ export function ControlPanel({
   const [evState, evAction, isEvPending] = useActionState(
     async (state: EvState, formData: FormData) => {
       hapticModeChange();
-      const mode = formData.get('evMode');
+      const mode = formData.get('evMode') as string;
       const power =
         mode === 'fast' ? 11000 : mode === 'pv' ? Math.max(0, data.pvPower - data.houseLoad) : 0;
 
@@ -37,7 +37,7 @@ export function ControlPanel({
   const [hpState, hpAction, isHpPending] = useActionState(
     async (state: HpState, formData: FormData) => {
       hapticModeChange();
-      const mode = formData.get('hpMode');
+      const mode = formData.get('hpMode') as string;
       // SG Ready Modes: 1=Sperre(0W), 2=Normal(800W), 3=Empfehlung(1500W), 4=Befehl(2500W)
       let power = 800;
       if (mode === '1') power = 0;

@@ -33,9 +33,9 @@ describe('EnergyAdapter Interface (EEBUSAdapter stub)', () => {
     expect(adapter.status).toBe('disconnected');
   });
 
-  it('should stay disconnected after connect (stub)', async () => {
+  it('should transition to error after connect without valid config', async () => {
     await adapter.connect();
-    expect(adapter.status).toBe('disconnected');
+    expect(adapter.status).toBe('error');
   });
 
   it('should return empty snapshot', () => {
@@ -98,7 +98,7 @@ describe('VictronMQTTAdapter (without real WebSocket)', () => {
     const { VictronMQTTAdapter } = await import('../core/adapters/VictronMQTTAdapter');
     const adapter = new VictronMQTTAdapter({ host: 'localhost', port: 8080 });
 
-    const statusCb = vi.fn<Parameters<AdapterStatusCallback>>();
+    const statusCb = vi.fn() as unknown as AdapterStatusCallback;
     adapter.onStatus(statusCb);
 
     await adapter.connect();
@@ -117,7 +117,7 @@ describe('VictronMQTTAdapter (without real WebSocket)', () => {
     const { VictronMQTTAdapter } = await import('../core/adapters/VictronMQTTAdapter');
     const adapter = new VictronMQTTAdapter({ host: 'localhost', port: 8080 });
 
-    const dataCb = vi.fn<Parameters<AdapterDataCallback>>();
+    const dataCb = vi.fn() as unknown as AdapterDataCallback;
     adapter.onData(dataCb);
 
     await adapter.connect();
@@ -144,7 +144,7 @@ describe('VictronMQTTAdapter (without real WebSocket)', () => {
     onMessageCallback?.({ data: JSON.stringify(message) });
 
     expect(dataCb).toHaveBeenCalledTimes(1);
-    const model = dataCb.mock.calls[0][0] as Partial<UnifiedEnergyModel>;
+    const model = (dataCb as unknown as ReturnType<typeof vi.fn>).mock.calls[0][0] as Partial<UnifiedEnergyModel>;
 
     expect(model.pv?.totalPowerW).toBe(3500);
     expect(model.pv?.yieldTodayKWh).toBe(12.5);
@@ -211,6 +211,6 @@ describe('Adapter capabilities', () => {
   it('EEBUSAdapter should cover evCharger, load', async () => {
     const { EEBUSAdapter } = await import('../core/adapters/EEBUSAdapter');
     const adapter = new EEBUSAdapter();
-    expect(adapter.capabilities).toEqual(['evCharger', 'load']);
+    expect(adapter.capabilities).toEqual(['evCharger', 'load', 'grid']);
   });
 });

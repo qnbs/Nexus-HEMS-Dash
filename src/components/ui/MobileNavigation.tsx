@@ -14,6 +14,7 @@ import {
   TrendingUp,
   BarChart3,
   HelpCircle,
+  Monitor,
   X,
 } from 'lucide-react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
@@ -98,6 +99,12 @@ function MobileNavigationComponent() {
       icon: <BarChart3 className="h-5 w-5" />,
       label: t('nav.analytics', 'Analytics'),
       path: '/analytics',
+    },
+    {
+      id: 'monitoring',
+      icon: <Monitor className="h-5 w-5" />,
+      label: t('nav.monitoring', 'Monitoring'),
+      path: '/monitoring',
     },
     {
       id: 'help',

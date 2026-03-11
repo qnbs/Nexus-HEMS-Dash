@@ -14,6 +14,7 @@ const routeLabels: Record<string, string> = {
   '/ai-optimizer': 'nav.aiOptimizer',
   '/tariffs': 'nav.tariffs',
   '/analytics': 'nav.analytics',
+  '/monitoring': 'nav.monitoring',
   '/settings': 'nav.settings',
   '/help': 'nav.help',
 };

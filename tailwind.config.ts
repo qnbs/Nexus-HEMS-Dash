@@ -6,7 +6,7 @@ const config: Config = {
     './index.html',
     './src/**/*.{js,ts,jsx,tsx}',
   ],
-  darkMode: ['class', '[data-theme="energy-dark"]', '[data-theme="ocean-dark"]', '[data-theme="nature-green"]'],
+  darkMode: ['class', '[data-theme="energy-dark"]', '[data-theme="ocean-dark"]', '[data-theme="nature-green"]'] as unknown as Config['darkMode'],
   theme: {
     extend: {
       screens: {
@@ -23,6 +23,10 @@ const config: Config = {
         '22': '5.5rem',
         '26': '6.5rem',
         '30': '7.5rem',
+        '88': '22rem',
+        '100': '25rem',
+        '112': '28rem',
+        '128': '32rem',
       },
       fontSize: {
         'xxs': ['0.625rem', { lineHeight: '0.875rem' }],
@@ -126,17 +130,6 @@ const config: Config = {
         'inner-glow-green': 'inset 0 0 20px rgba(34, 255, 136, 0.15)',
         'inner-glow-blue': 'inset 0 0 20px rgba(0, 240, 255, 0.15)',
         'inner-glow-orange': 'inset 0 0 20px rgba(255, 136, 0, 0.15)',
-      },
-      borderRadius: {
-        '4xl': '2rem',
-        '5xl': '2.5rem',
-      },
-      spacing: {
-        '18': '4.5rem',
-        '88': '22rem',
-        '100': '25rem',
-        '112': '28rem',
-        '128': '32rem',
       },
       transitionDuration: {
         '450': '450ms',

@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { buildOptimizerRecommendations } from '../lib/optimizer';
 import type { EnergyData, StoredSettings } from '../types';
+import { SYSTEM_PRESETS } from '../types';
 
 const baseEnergy: EnergyData = {
   pvPower: 4000,
@@ -19,8 +20,21 @@ const baseEnergy: EnergyData = {
 const baseSettings: StoredSettings = {
   chargeThreshold: 0.2,
   maxGridImportKw: 5,
-  language: 'de',
-  theme: 'energy-dark',
+  gatewayType: 'cerbo-gx',
+  systemConfig: SYSTEM_PRESETS['victron-3mp2-standard'],
+  victronIp: '192.168.1.100',
+  knxIp: '192.168.1.50',
+  wsPort: 3000,
+  refreshRateMs: 2000,
+  tariffProvider: 'tibber',
+  mtls: false,
+  telemetryDisabled: false,
+  twoFactor: true,
+  influxUrl: '',
+  influxToken: '',
+  historyDays: 30,
+  location: { lat: 53.5511, lon: 9.9937 },
+  gridPriceAvg: 0.25,
 };
 
 describe('Optimizer Recommendations', () => {

@@ -34,6 +34,7 @@ const Settings = lazy(() => import('./pages/Settings').then((m) => ({ default: m
 const Help = lazy(() => import('./pages/Help').then((m) => ({ default: m.Help })));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 const AISettingsPage = lazy(() => import('./pages/AISettingsPage'));
+const MonitoringPage = lazy(() => import('./pages/MonitoringPage'));
 
 function PageLoadingFallback() {
   const { t } = useTranslation();
@@ -235,6 +236,7 @@ export default function App() {
                     <Route path="/analytics" element={<AnalyticsPage />} />
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/settings/ai" element={<AISettingsPage />} />
+                    <Route path="/monitoring" element={<MonitoringPage />} />
                     <Route path="/help" element={<Help />} />
                     <Route path="*" element={<NotFoundPage />} />
                   </Routes>

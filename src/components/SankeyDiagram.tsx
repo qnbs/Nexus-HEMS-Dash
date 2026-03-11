@@ -1,16 +1,18 @@
 import { useEffect, useRef, memo } from 'react';
 import * as d3 from 'd3';
-import { sankey, sankeyLinkHorizontal, SankeyNode, SankeyLink } from 'd3-sankey';
+import { sankey, sankeyLinkHorizontal, type SankeyNode, type SankeyLink } from 'd3-sankey';
 import { useTranslation } from 'react-i18next';
 import { EnergyData } from '../types';
 import { cacheSankeyData } from '../lib/offline-cache';
 
-interface CustomNode extends SankeyNode<Record<string, unknown>, Record<string, unknown>> {
+interface CustomNode {
   name: string;
   color: string;
 }
 
-interface CustomLink extends SankeyLink<CustomNode, Record<string, unknown>> {
+interface CustomLink {
+  source: number;
+  target: number;
   value: number;
 }
 

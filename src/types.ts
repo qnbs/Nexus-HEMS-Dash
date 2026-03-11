@@ -143,6 +143,8 @@ export interface StoredSettings {
   influxUrl: string;
   influxToken: string;
   historyDays: number;
+  location: { lat: number; lon: number };
+  gridPriceAvg: number;
 }
 
 export interface FloorplanState {

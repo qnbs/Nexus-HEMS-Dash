@@ -56,6 +56,8 @@ const defaultSettings: StoredSettings = {
   influxUrl: 'http://192.168.1.102:8086',
   influxToken: '••••••••••••••••',
   historyDays: 30,
+  location: { lat: 53.5511, lon: 9.9937 },
+  gridPriceAvg: 0.25,
 };
 
 export const useAppStore = create<AppState>()(
@@ -63,10 +65,10 @@ export const useAppStore = create<AppState>()(
     (set, get) => ({
       energyData: defaultEnergyData,
       connected: false,
-      lastUpdated: null,
+      lastUpdated: null as number | null,
       locale: 'de',
-      theme: 'energy-dark',
-      themePreference: 'energy-dark',
+      theme: 'ocean-dark',
+      themePreference: 'ocean-dark',
       themeTransitionKey: 0,
       floorplan: {
         lightsOn: true,

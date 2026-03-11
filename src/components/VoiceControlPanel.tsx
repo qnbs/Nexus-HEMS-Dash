@@ -52,7 +52,7 @@ export const VoiceControlPanel = memo(function VoiceControlPanel() {
       // Custom recognition handler to capture transcript
       if (voiceController['recognition']) {
         const recognition = voiceController['recognition'];
-        recognition.onresult = (event) => {
+        recognition.onresult = (event: SpeechRecognitionEvent) => {
           const result = event.results[event.results.length - 1];
           const text = result[0].transcript;
           setTranscript(text);
@@ -61,7 +61,7 @@ export const VoiceControlPanel = memo(function VoiceControlPanel() {
           voiceController?.['processCommand'](text.toLowerCase());
         };
 
-        recognition.onerror = (event) => {
+        recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
           setError(event.error);
           setIsListening(false);
         };

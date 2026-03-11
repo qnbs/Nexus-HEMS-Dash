@@ -11,7 +11,7 @@ function AIOptimizerPageComponent() {
   const { t } = useTranslation();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <PageHeader
         title={t('nav.aiOptimizer', 'AI Optimizer')}
         subtitle={t('ai.subtitle')}
@@ -24,6 +24,7 @@ function AIOptimizerPageComponent() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.1 }}
+        className="min-w-0"
       >
         <AIOptimizerPanel />
       </motion.div>
@@ -33,6 +34,7 @@ function AIOptimizerPageComponent() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
+        className="min-w-0"
       >
         <EnhancedAIOptimizer />
       </motion.div>
@@ -42,6 +44,7 @@ function AIOptimizerPageComponent() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.3 }}
+        className="min-w-0"
       >
         <VoiceControlPanel />
       </motion.div>

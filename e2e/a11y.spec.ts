@@ -60,7 +60,7 @@ test.describe('Accessibility Tests (WCAG 2.2 AA)', () => {
     // All nav items should have accessible names
     const navLinksCount = await nav.getByRole('link').count();
     for (let i = 0; i < navLinksCount; i++) {
-      await expect(nav.getByRole('link').nth(i)).toHaveAccessibleName();
+      await expect(nav.getByRole('link').nth(i)).toHaveAccessibleName(/.+/);
     }
   });
 

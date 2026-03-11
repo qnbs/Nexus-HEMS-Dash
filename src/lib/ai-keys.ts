@@ -151,7 +151,7 @@ export async function listAIKeys(): Promise<
 > {
   const records = await nexusDb.aiKeys.toArray();
   return records.map(({ provider, model, baseUrl, createdAt, lastUsed }) => ({
-    provider,
+    provider: provider as AIProvider,
     model,
     baseUrl,
     createdAt,
