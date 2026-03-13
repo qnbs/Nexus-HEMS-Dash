@@ -44,7 +44,7 @@ const defaultEnergyData: EnergyData = {
 
 export const defaultSettings: StoredSettings = {
   gatewayType: 'cerbo-gx',
-  systemConfig: { ...SYSTEM_PRESETS['victron-3mp2-standard'] },
+  systemConfig: { ...SYSTEM_PRESETS['victron-3mp2-standard']! },
   victronIp: '192.168.1.100',
   knxIp: '192.168.1.101',
   wsPort: 1880,
@@ -92,6 +92,15 @@ export const defaultSettings: StoredSettings = {
   keyboardShortcuts: true,
 };
 
+type PersistedKey =
+  | 'locale'
+  | 'theme'
+  | 'themePreference'
+  | 'themeTransitionKey'
+  | 'floorplan'
+  | 'settings'
+  | 'onboardingCompleted';
+
 export const useAppStore = create<AppState>()(
   persist(
     (set, get) => ({
@@ -134,7 +143,7 @@ export const useAppStore = create<AppState>()(
     {
       name: 'nexus-hems-store',
       storage: createJSONStorage(() => localStorage),
-      partialize: (state) => ({
+      partialize: (state): Pick<AppState, PersistedKey> => ({
         locale: state.locale,
         theme: state.theme,
         themePreference: state.themePreference,

@@ -250,13 +250,10 @@ export async function getCacheStats() {
 
   const totalSize = metadata.reduce((sum, item) => sum + item.size, 0);
   const expired = metadata.filter((item) => item.expiresAt < now).length;
-  const byType = metadata.reduce(
-    (acc, item) => {
-      acc[item.type] = (acc[item.type] || 0) + 1;
-      return acc;
-    },
-    {} as Record<string, number>,
-  );
+  const byType = metadata.reduce<Partial<Record<string, number>>>((acc, item) => {
+    acc[item.type] = (acc[item.type] ?? 0) + 1;
+    return acc;
+  }, {});
 
   return {
     totalSize,
