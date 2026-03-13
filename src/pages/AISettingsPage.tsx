@@ -5,8 +5,19 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useTranslation } from 'react-i18next';
-import { Key, Shield, Trash2, Check, AlertTriangle, Eye, EyeOff, Sparkles } from 'lucide-react';
+import {
+  Key,
+  Shield,
+  Trash2,
+  Check,
+  AlertTriangle,
+  Eye,
+  EyeOff,
+  Sparkles,
+  KeyRound,
+} from 'lucide-react';
 
+import { EmptyState } from '../components/ui/EmptyState';
 import {
   AI_PROVIDERS,
   saveAIKey,
@@ -181,15 +192,20 @@ export default function AISettingsPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
       >
-        <h2 className="mb-4 flex items-center gap-2 text-lg font-medium">
+        <h2 className="mb-4 flex items-center gap-2 text-lg font-medium fluid-text-lg">
           <Sparkles className="h-5 w-5 text-(--color-secondary)" />
           {t('aiSettings.configured', 'Configured Providers')}
         </h2>
 
         {storedKeys.length === 0 ? (
-          <p className="py-8 text-center text-sm text-(--color-muted)">
-            {t('aiSettings.noKeys', 'No API keys configured yet. Add a provider below.')}
-          </p>
+          <EmptyState
+            icon={KeyRound}
+            title={t('aiSettings.noKeys', 'No API keys configured yet.')}
+            description={t(
+              'aiSettings.noKeysDesc',
+              'Add a provider below to get started with AI-powered energy optimization.',
+            )}
+          />
         ) : (
           <div className="space-y-3">
             {storedKeys.map((key) => (
@@ -221,7 +237,7 @@ export default function AISettingsPage() {
                   {activeProvider !== key.provider && (
                     <button
                       onClick={() => handleSetActive(key.provider)}
-                      className="btn-secondary rounded-full px-3 py-1.5 text-xs focus-ring"
+                      className="btn-secondary rounded-full px-3 py-1.5 text-xs active:scale-[0.95] focus-ring"
                     >
                       {t('aiSettings.setActive', 'Set Active')}
                     </button>
@@ -233,7 +249,7 @@ export default function AISettingsPage() {
                   )}
                   <button
                     onClick={() => handleRemove(key.provider)}
-                    className="rounded-full p-2 text-red-400 transition-colors hover:bg-red-500/10 focus-ring"
+                    className="rounded-full p-2 text-red-400 transition-colors hover:bg-red-500/10 active:scale-[0.9] focus-ring"
                     aria-label={t('aiSettings.remove', 'Remove key')}
                   >
                     <Trash2 className="h-4 w-4" />
@@ -252,7 +268,9 @@ export default function AISettingsPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
       >
-        <h2 className="mb-4 text-lg font-medium">{t('aiSettings.addProvider', 'Add Provider')}</h2>
+        <h2 className="mb-4 text-lg font-medium fluid-text-lg">
+          {t('aiSettings.addProvider', 'Add Provider')}
+        </h2>
 
         {/* Provider Grid */}
         {!addingProvider ? (

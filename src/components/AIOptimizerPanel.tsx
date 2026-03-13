@@ -34,7 +34,7 @@ export const AIOptimizerPanel = memo(function AIOptimizerPanel() {
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="eyebrow">{t('dashboard.optimizer')}</p>
-          <h3 className="mt-2 text-lg sm:text-xl font-semibold text-(--color-text)">
+          <h3 className="mt-2 text-lg fluid-text-lg sm:text-xl font-semibold text-(--color-text)">
             {t('dashboard.optimizerSubtitle')}
           </h3>
         </div>
@@ -61,7 +61,7 @@ export const AIOptimizerPanel = memo(function AIOptimizerPanel() {
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] opacity-80">
                     {t(recommendation.titleKey)}
                   </p>
-                  <h4 className="mt-2 text-base font-semibold">
+                  <h4 className="mt-2 text-base fluid-text-base font-semibold">
                     {t(recommendation.descriptionKey)}
                   </h4>
                 </div>

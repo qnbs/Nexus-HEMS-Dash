@@ -87,7 +87,7 @@ function FloorplanPageComponent() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.2 }}
       >
-        <h3 className="mb-3 text-sm font-medium text-(--color-text)">
+        <h3 className="mb-3 text-sm fluid-text-sm font-medium text-(--color-text)">
           {t('floorplan.scenesTitle')}
         </h3>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">

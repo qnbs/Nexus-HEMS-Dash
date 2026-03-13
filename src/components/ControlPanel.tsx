@@ -142,9 +142,14 @@ export function ControlPanel({
               ✓ {evState.message}
             </motion.p>
           )}
-          <button type="submit" disabled={isEvPending} className="btn-primary w-full focus-ring">
+          <motion.button
+            type="submit"
+            disabled={isEvPending}
+            className="btn-primary w-full focus-ring"
+            whileTap={{ scale: 0.97 }}
+          >
             {isEvPending ? t('common.saving') : t('common.apply')}
-          </button>
+          </motion.button>
         </form>
       </motion.div>
 
@@ -189,9 +194,14 @@ export function ControlPanel({
               ✓ {hpState.message}
             </motion.p>
           )}
-          <button type="submit" disabled={isHpPending} className="btn-primary w-full focus-ring">
+          <motion.button
+            type="submit"
+            disabled={isHpPending}
+            className="btn-primary w-full focus-ring"
+            whileTap={{ scale: 0.97 }}
+          >
             {isHpPending ? t('common.saving') : t('common.apply')}
-          </button>
+          </motion.button>
         </form>
       </motion.div>
 
@@ -213,7 +223,8 @@ export function ControlPanel({
           <span className="text-(--color-primary)">{t('control.selfConsumption')}</span>
         </div>
         <div className="flex gap-2">
-          <button
+          <motion.button
+            whileTap={{ scale: 0.95 }}
             onClick={() => {
               hapticModeChange();
               sendCommand(
@@ -224,8 +235,9 @@ export function ControlPanel({
             className="btn-secondary flex-1 focus-ring"
           >
             {t('control.forceCharge')}
-          </button>
-          <button
+          </motion.button>
+          <motion.button
+            whileTap={{ scale: 0.95 }}
             onClick={() => {
               hapticModeChange();
               sendCommand('SET_BATTERY_POWER', 0);
@@ -233,7 +245,7 @@ export function ControlPanel({
             className="btn-secondary flex-1 focus-ring"
           >
             {t('control.auto')}
-          </button>
+          </motion.button>
         </div>
       </motion.div>
     </div>

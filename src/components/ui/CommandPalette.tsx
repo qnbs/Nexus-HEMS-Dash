@@ -15,9 +15,11 @@ import {
   Map,
   TrendingUp,
   BarChart3,
+  SearchX,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { EmptyState } from './EmptyState';
 
 export interface Command {
   id: string;
@@ -323,12 +325,8 @@ export function CommandPalette({
             {/* Commands List */}
             <div className="max-h-96 overflow-y-auto p-2">
               {filteredCommands.length === 0 ? (
-                <div
-                  className="py-12 text-center text-sm text-(--color-muted)"
-                  role="status"
-                  aria-live="polite"
-                >
-                  {t('command.noResults', 'No commands found')}
+                <div role="status" aria-live="polite">
+                  <EmptyState icon={SearchX} title={t('command.noResults', 'No commands found')} />
                 </div>
               ) : (
                 <div className="space-y-1" role="listbox" id="command-listbox">

@@ -129,7 +129,7 @@ export const PredictiveForecast = memo(function PredictiveForecast() {
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold text-(--color-text)">
+          <h2 className="text-xl font-semibold fluid-text-xl text-(--color-text)">
             <CloudSun className="mr-2 inline h-6 w-6 text-(--color-primary)" aria-hidden="true" />
             {t('forecast.title')}
           </h2>

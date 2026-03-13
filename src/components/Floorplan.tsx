@@ -279,7 +279,7 @@ export const Floorplan = memo(function Floorplan() {
             <div className="flex flex-col items-center gap-2">
               <button
                 onClick={() => updateRoom(selectedRoom, { lights: !rooms[selectedRoom].lights })}
-                className={`p-3 rounded-full border transition-all focus-ring ${
+                className={`p-3 rounded-full border transition-all active:scale-[0.93] focus-ring ${
                   rooms[selectedRoom].lights
                     ? 'bg-yellow-400/20 border-yellow-400/50 text-yellow-300'
                     : 'bg-(--color-surface) border-(--color-border) text-(--color-muted)'
@@ -298,7 +298,7 @@ export const Floorplan = memo(function Floorplan() {
                 onClick={() =>
                   updateRoom(selectedRoom, { windowOpen: !rooms[selectedRoom].windowOpen })
                 }
-                className={`p-3 rounded-full border transition-all focus-ring ${
+                className={`p-3 rounded-full border transition-all active:scale-[0.93] focus-ring ${
                   rooms[selectedRoom].windowOpen
                     ? 'bg-sky-400/20 border-sky-400/50 text-sky-300'
                     : 'bg-(--color-surface) border-(--color-border) text-(--color-muted)'
@@ -374,7 +374,7 @@ export const Floorplan = memo(function Floorplan() {
                     setpoint: Math.max(15, rooms[selectedRoom].setpoint - 0.5),
                   })
                 }
-                className="flex items-center justify-center min-w-[32px] min-h-[32px] rounded-lg bg-(--color-surface) border border-(--color-border) text-(--color-muted) hover:text-(--color-text) focus-ring"
+                className="flex items-center justify-center min-w-[32px] min-h-[32px] rounded-lg bg-(--color-surface) border border-(--color-border) text-(--color-muted) hover:text-(--color-text) active:scale-[0.9] focus-ring"
                 aria-label={t('floorplan.tempDecrease')}
               >
                 <Moon size={14} aria-hidden="true" />
@@ -385,7 +385,7 @@ export const Floorplan = memo(function Floorplan() {
                     setpoint: Math.min(30, rooms[selectedRoom].setpoint + 0.5),
                   })
                 }
-                className="flex items-center justify-center min-w-[32px] min-h-[32px] rounded-lg bg-(--color-surface) border border-(--color-border) text-(--color-muted) hover:text-(--color-text) focus-ring"
+                className="flex items-center justify-center min-w-[32px] min-h-[32px] rounded-lg bg-(--color-surface) border border-(--color-border) text-(--color-muted) hover:text-(--color-text) active:scale-[0.9] focus-ring"
                 aria-label={t('floorplan.tempIncrease')}
               >
                 <Sun size={14} aria-hidden="true" />

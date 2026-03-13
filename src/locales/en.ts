@@ -1043,7 +1043,8 @@ export const en = {
     securityDesc:
       'Keys are encrypted with PBKDF2 + AES-GCM 256-bit before storage in IndexedDB. Keys are never sent to our servers — only directly to the AI provider you choose.',
     configured: 'Configured Providers',
-    noKeys: 'No API keys configured yet. Add a provider below.',
+    noKeys: 'No API keys configured yet.',
+    noKeysDesc: 'Add a provider below to get started with AI-powered energy optimization.',
     addProvider: 'Add Provider',
     model: 'Model',
     cancel: 'Cancel',

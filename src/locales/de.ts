@@ -1055,7 +1055,8 @@ export const de = {
     securityDesc:
       'Schlüssel werden mit PBKDF2 + AES-GCM 256-Bit vor der Speicherung in IndexedDB verschlüsselt. Schlüssel werden niemals an unsere Server gesendet — nur direkt an den AI-Anbieter deiner Wahl.',
     configured: 'Konfigurierte Anbieter',
-    noKeys: 'Noch keine API-Schlüssel konfiguriert. Füge unten einen Anbieter hinzu.',
+    noKeys: 'Noch keine API-Schlüssel konfiguriert.',
+    noKeysDesc: 'Füge unten einen Anbieter hinzu, um KI-gestützte Energieoptimierung zu starten.',
     addProvider: 'Anbieter hinzufügen',
     model: 'Modell',
     cancel: 'Abbrechen',

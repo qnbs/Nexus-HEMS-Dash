@@ -187,7 +187,9 @@ export function Onboarding() {
             <Zap className="h-5 w-5 text-[#38bdf8] sm:h-6 sm:w-6" />
           </div>
           <div>
-            <h1 className="text-lg font-bold text-white tracking-tight sm:text-xl">Nexus HEMS</h1>
+            <h1 className="text-lg fluid-text-lg font-bold text-white tracking-tight sm:text-xl">
+              Nexus HEMS
+            </h1>
             <p className="text-xs text-[#64748b]">Dashboard</p>
           </div>
         </motion.div>
@@ -223,7 +225,7 @@ export function Onboarding() {
                   >
                     <Globe className="h-7 w-7 text-[#0c1222] sm:h-8 sm:w-8" />
                   </motion.div>
-                  <h2 className="text-xl font-bold text-white sm:text-2xl">
+                  <h2 className="text-xl fluid-text-xl font-bold text-white sm:text-2xl">
                     {t('onboarding.welcome')}
                   </h2>
                   <p className="mt-2 text-sm text-[#8896b0] leading-relaxed">
@@ -276,7 +278,7 @@ export function Onboarding() {
                   >
                     <Zap className="h-7 w-7 text-[#0c1222] sm:h-8 sm:w-8" />
                   </motion.div>
-                  <h2 className="text-lg font-bold text-white sm:text-xl">
+                  <h2 className="text-lg fluid-text-lg font-bold text-white sm:text-xl">
                     {t('onboarding.energyFlow')}
                   </h2>
                   <p className="mt-2 text-sm text-[#8896b0] leading-relaxed">
@@ -354,7 +356,7 @@ export function Onboarding() {
                   >
                     <Car className="h-7 w-7 text-[#0c1222] sm:h-8 sm:w-8" />
                   </motion.div>
-                  <h2 className="text-lg font-bold text-white sm:text-xl">
+                  <h2 className="text-lg fluid-text-lg font-bold text-white sm:text-xl">
                     {t('onboarding.smartControl')}
                   </h2>
                   <p className="mt-2 text-sm text-[#8896b0] leading-relaxed">
@@ -428,7 +430,7 @@ export function Onboarding() {
                   >
                     <Brain className="h-7 w-7 text-white sm:h-8 sm:w-8" />
                   </motion.div>
-                  <h2 className="text-lg font-bold text-white sm:text-xl">
+                  <h2 className="text-lg fluid-text-lg font-bold text-white sm:text-xl">
                     {t('onboarding.aiOptimizer')}
                   </h2>
                   <p className="mt-2 text-sm text-[#8896b0] leading-relaxed">
@@ -498,7 +500,7 @@ export function Onboarding() {
                   >
                     <Rocket className="h-8 w-8 text-[#0c1222] sm:h-10 sm:w-10" />
                   </motion.div>
-                  <h2 className="text-xl font-bold text-white sm:text-2xl">
+                  <h2 className="text-xl fluid-text-xl font-bold text-white sm:text-2xl">
                     {t('onboarding.allSet')}
                   </h2>
                   <p className="mt-2 text-sm text-[#8896b0] leading-relaxed">

@@ -68,7 +68,9 @@ function SidebarComponent() {
       <div className="flex items-center gap-3 border-b border-(--color-border) px-5 py-5">
         <Zap className="h-6 w-6 text-(--color-primary)" aria-hidden="true" />
         <div>
-          <h1 className="text-lg font-semibold tracking-tight">{t('common.appName')}</h1>
+          <h1 className="text-lg font-semibold fluid-text-lg tracking-tight">
+            {t('common.appName')}
+          </h1>
           <div
             className="flex items-center gap-1.5"
             role="status"

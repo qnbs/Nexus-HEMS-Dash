@@ -113,7 +113,7 @@ function ConsumptionPageComponent() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.35 }}
       >
-        <h2 className="mb-4 flex items-center gap-2 text-lg font-medium">
+        <h2 className="mb-4 flex items-center gap-2 text-lg fluid-text-lg font-medium">
           <Zap
             size={20}
             className={energyData.gridPower > 0 ? 'text-red-400' : 'text-emerald-400'}

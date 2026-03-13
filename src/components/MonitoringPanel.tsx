@@ -113,7 +113,7 @@ export default function MonitoringPanel() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div>
-          <h2 className="text-lg sm:text-xl font-bold text-(--color-text)">
+          <h2 className="text-lg sm:text-xl font-bold fluid-text-lg text-(--color-text)">
             {t('monitoring.title', 'System Monitoring')}
           </h2>
           <p className="text-xs sm:text-sm text-(--color-text-secondary)">

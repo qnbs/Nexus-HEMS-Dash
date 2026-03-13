@@ -216,7 +216,7 @@ function PWASettingsSection() {
   const sectionClass =
     'rounded-2xl border border-(--color-border) bg-(--color-surface)/50 p-6 backdrop-blur-sm';
   const sectionHeaderClass =
-    'mb-5 flex items-center gap-3 text-lg font-semibold text-(--color-text)';
+    'mb-5 flex items-center gap-3 text-lg fluid-text-lg font-semibold text-(--color-text)';
   const rowClass =
     'flex items-center justify-between p-4 rounded-xl border border-(--color-border) bg-(--color-surface)';
 
@@ -546,7 +546,7 @@ export function Settings() {
     'w-full bg-(--color-surface) border border-(--color-border) rounded-xl px-4 py-2.5 text-(--color-text) focus:outline-none focus:border-(--color-primary)/70 focus:ring-2 focus:ring-(--color-primary)/20 transition-all duration-300 placeholder:text-(--color-muted)';
   const sectionClass = 'glass-panel-strong p-6 rounded-2xl space-y-6';
   const sectionHeaderClass =
-    'text-lg font-medium flex items-center gap-2 border-b border-(--color-border) pb-4';
+    'text-lg fluid-text-lg font-medium flex items-center gap-2 border-b border-(--color-border) pb-4';
 
   return (
     <motion.div
@@ -647,7 +647,7 @@ export function Settings() {
                 aria-selected={activeTab === tab.key}
                 aria-controls={`tabpanel-${tab.key}`}
                 id={`tab-${tab.key}`}
-                className={`flex items-center gap-2.5 whitespace-nowrap rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-200 ${
+                className={`flex items-center gap-2.5 whitespace-nowrap rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-200 active:scale-[0.97] ${
                   activeTab === tab.key
                     ? 'bg-(--color-primary)/15 text-(--color-primary) shadow-[inset_0_0_0_1px_var(--color-primary)/20]'
                     : 'text-(--color-muted) hover:bg-white/5 hover:text-(--color-text)'

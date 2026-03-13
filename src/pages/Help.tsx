@@ -184,7 +184,7 @@ export function Help() {
                 aria-selected={activeTab === tab.key}
                 aria-controls={`help-tabpanel-${tab.key}`}
                 id={`help-tab-${tab.key}`}
-                className={`flex items-center gap-2.5 whitespace-nowrap rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-200 ${
+                className={`flex items-center gap-2.5 whitespace-nowrap rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-200 active:scale-[0.97] ${
                   activeTab === tab.key
                     ? 'bg-(--color-primary)/15 text-(--color-primary) shadow-[inset_0_0_0_1px_var(--color-primary)/20]'
                     : 'text-(--color-muted) hover:bg-white/5 hover:text-(--color-text)'
@@ -214,13 +214,15 @@ export function Help() {
                 aria-labelledby="help-tab-getting-started"
               >
                 <div className="glass-panel-strong p-6 rounded-2xl">
-                  <h2 className="text-xl font-semibold mb-4">{t('help.welcomeTitle')}</h2>
+                  <h2 className="text-xl font-semibold fluid-text-xl mb-4">
+                    {t('help.welcomeTitle')}
+                  </h2>
                   <p className="text-(--color-muted) leading-relaxed mb-6">
                     {t('help.welcomeIntro')}
                   </p>
 
                   {/* Quick Start Steps */}
-                  <h3 className="text-lg font-medium mb-4">{t('help.quickStart')}</h3>
+                  <h3 className="text-lg font-medium fluid-text-lg mb-4">{t('help.quickStart')}</h3>
                   <div className="space-y-4">
                     {[
                       {
@@ -277,7 +279,9 @@ export function Help() {
 
                 {/* System Requirements */}
                 <div className="glass-panel-strong p-6 rounded-2xl">
-                  <h3 className="text-lg font-medium mb-4">{t('help.requirements')}</h3>
+                  <h3 className="text-lg font-medium fluid-text-lg mb-4">
+                    {t('help.requirements')}
+                  </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="rounded-xl border border-(--color-border) bg-(--color-surface) p-4">
                       <div className="flex items-center gap-2 mb-2">
@@ -326,7 +330,9 @@ export function Help() {
               >
                 {/* Intro */}
                 <div className="glass-panel-strong p-6 rounded-2xl">
-                  <h2 className="text-xl font-semibold mb-2">{t('help.integrationGuideTitle')}</h2>
+                  <h2 className="text-xl font-semibold fluid-text-xl mb-2">
+                    {t('help.integrationGuideTitle')}
+                  </h2>
                   <p className="text-sm text-(--color-muted) leading-relaxed">
                     {t('help.integrationGuideIntro')}
                   </p>
@@ -338,7 +344,9 @@ export function Help() {
                     <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/15">
                       <Server size={20} className="text-blue-400" />
                     </div>
-                    <h3 className="text-lg font-semibold">{t('help.cerboGxTitle')}</h3>
+                    <h3 className="text-lg font-semibold fluid-text-lg">
+                      {t('help.cerboGxTitle')}
+                    </h3>
                   </div>
                   <p className="text-sm text-(--color-muted) leading-relaxed mb-4">
                     {t('help.cerboGxIntro')}

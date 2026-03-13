@@ -112,7 +112,7 @@ Return ONLY a valid JSON array with this structure:
       {/* Header */}
       <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="min-w-0">
-          <h2 className="flex items-center gap-2 text-lg sm:text-xl font-semibold text-(--color-text)">
+          <h2 className="flex items-center gap-2 text-lg sm:text-xl font-semibold fluid-text-lg text-(--color-text)">
             <Sparkles
               className="h-5 w-5 sm:h-6 sm:w-6 text-(--color-primary) shrink-0"
               aria-hidden="true"
