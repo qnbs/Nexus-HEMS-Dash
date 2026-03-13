@@ -6,7 +6,7 @@ import { useAppStore } from '../store';
 import { PageHeader } from '../components/layout/PageHeader';
 import { PredictiveForecast } from '../components/PredictiveForecast';
 import { ExportAndSharing } from '../components/ExportAndSharing';
-import { calculateCo2Savings } from '../lib/pdf-report';
+import { calculateCo2Savings } from '../lib/format';
 
 function AnalyticsPageComponent() {
   const { t } = useTranslation();

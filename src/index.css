@@ -603,18 +603,6 @@ body {
 }
 
 /* Animations */
-@keyframes energy-pulse {
-  0%,
-  100% {
-    stroke-opacity: 0.3;
-    filter: brightness(1);
-  }
-  50% {
-    stroke-opacity: 0.5;
-    filter: brightness(1.08);
-  }
-}
-
 @keyframes battery-pulse-charging {
   0%,
   100% {

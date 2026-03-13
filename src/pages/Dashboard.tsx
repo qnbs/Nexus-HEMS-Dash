@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'motion/react';
 import { useLegacySendCommand } from '../core/useLegacySendCommand';
@@ -8,9 +8,15 @@ import { SankeyDiagram } from '../components/SankeyDiagram';
 import { Floorplan } from '../components/Floorplan';
 import { ControlPanel } from '../components/ControlPanel';
 import { AIOptimizerPanel } from '../components/AIOptimizerPanel';
-import { PredictiveForecast } from '../components/PredictiveForecast';
 import { LivePriceWidget } from '../components/LivePriceWidget';
-import { ExportAndSharing } from '../components/ExportAndSharing';
+
+// Lazy-load below-the-fold heavy components (recharts ~180 KB, qrcode + jspdf ~310 KB)
+const PredictiveForecast = lazy(() =>
+  import('../components/PredictiveForecast').then((m) => ({ default: m.PredictiveForecast })),
+);
+const ExportAndSharing = lazy(() =>
+  import('../components/ExportAndSharing').then((m) => ({ default: m.ExportAndSharing })),
+);
 
 export function Dashboard() {
   const { t } = useTranslation();
@@ -170,7 +176,9 @@ export function Dashboard() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 1.0 }}
         >
-          <ExportAndSharing />
+          <Suspense fallback={<div className="glass-panel rounded-3xl p-6 h-40 cyber-shimmer" />}>
+            <ExportAndSharing />
+          </Suspense>
         </motion.section>
       </motion.div>
 
@@ -180,7 +188,9 @@ export function Dashboard() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 1.1 }}
       >
-        <PredictiveForecast />
+        <Suspense fallback={<div className="glass-panel rounded-3xl p-6 h-64 cyber-shimmer" />}>
+          <PredictiveForecast />
+        </Suspense>
       </motion.div>
     </motion.div>
   );

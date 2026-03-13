@@ -5,6 +5,10 @@
  */
 
 import { jsPDF } from 'jspdf';
+import { calculateCo2Savings } from './format';
+
+// Re-export so existing test imports keep working
+export { calculateCo2Savings } from './format';
 
 export interface MonthlyStats {
   month: string;
@@ -65,18 +69,6 @@ export async function captureSankeyDiagram(): Promise<string> {
     img.onerror = reject;
     img.src = url;
   });
-}
-
-/** German grid CO₂ emission factor (g CO₂/kWh) — Umweltbundesamt 2024 average */
-const GRID_CO2_FACTOR = 380;
-
-/**
- * Calculates CO₂ savings from self-consumed PV generation.
- * @param pvKwh - PV generation in kWh that displaced grid import
- * @returns CO₂ saved in kg
- */
-export function calculateCo2Savings(pvKwh: number): number {
-  return (pvKwh * GRID_CO2_FACTOR) / 1000;
 }
 
 /** Safe number formatting that handles NaN/null/undefined */
@@ -284,7 +276,7 @@ export async function generatePdfReport(stats: MonthlyStats): Promise<Blob> {
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7);
   doc.setTextColor(100, 116, 139);
-  doc.text(`Netzfaktor: ${GRID_CO2_FACTOR} g CO2/kWh (UBA 2024)`, midX, y + 33);
+  doc.text(`Netzfaktor: 380 g CO2/kWh (UBA 2024)`, midX, y + 33);
 
   y += 46;
 

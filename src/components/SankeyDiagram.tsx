@@ -1,5 +1,5 @@
 import { useEffect, useRef, memo } from 'react';
-import * as d3 from 'd3';
+import { select } from 'd3-selection';
 import { sankey, sankeyLinkHorizontal } from 'd3-sankey';
 import { useTranslation } from 'react-i18next';
 import { EnergyData } from '../types';
@@ -28,10 +28,9 @@ export const SankeyDiagram = memo(function SankeyDiagram({ data }: { data: Energ
     const isMobile = width < 640; // sm breakpoint
 
     // Clear previous
-    d3.select(svgRef.current).selectAll('*').remove();
+    select(svgRef.current).selectAll('*').remove();
 
-    const svg = d3
-      .select(svgRef.current)
+    const svg = select(svgRef.current)
       .attr('viewBox', `0 0 ${width} ${height}`)
       .attr('preserveAspectRatio', 'xMidYMid meet');
 
@@ -158,7 +157,7 @@ export const SankeyDiagram = memo(function SankeyDiagram({ data }: { data: Energ
       .style('cursor', 'pointer')
       .style('transition', 'all 0.3s ease-out')
       .on('mouseenter', function (_event, d) {
-        d3.select(this)
+        select(this)
           .attr('stroke-opacity', 0.6)
           .attr('stroke-width', Math.max(2, (d.width || 0) + 1))
           .style('filter', () => {
@@ -167,7 +166,7 @@ export const SankeyDiagram = memo(function SankeyDiagram({ data }: { data: Energ
           });
       })
       .on('mouseleave', function (_event, d) {
-        d3.select(this)
+        select(this)
           .attr('stroke-opacity', 0.35)
           .attr('stroke-width', Math.max(1, d.width || 0))
           .style('filter', () => {
@@ -199,12 +198,10 @@ export const SankeyDiagram = memo(function SankeyDiagram({ data }: { data: Energ
       .attr('rx', 4)
       .style('transition', 'all 0.2s ease-out')
       .on('mouseenter', function (_event, d) {
-        d3.select(this)
-          .attr('fill-opacity', 1)
-          .style('filter', `drop-shadow(0 2px 8px ${d.color}50)`);
+        select(this).attr('fill-opacity', 1).style('filter', `drop-shadow(0 2px 8px ${d.color}50)`);
       })
       .on('mouseleave', function () {
-        d3.select(this).attr('fill-opacity', 0.85).style('filter', 'none');
+        select(this).attr('fill-opacity', 0.85).style('filter', 'none');
       })
       .append('title')
       .text((d) => `${d.name}\n${Math.round(d.value || 0)} W`);

@@ -13,8 +13,9 @@ export default defineConfig(({ mode }) => {
     base: isProd ? '/Nexus-HEMS-Dash/' : '/',
 
     plugins: [
-      // React Compiler auto-memoizes components — replaces manual memo/useMemo/useCallback
-      // Uses Babel (not SWC) because React Compiler is a Babel-only plugin
+      // React Compiler auto-memoizes — requires Babel (no SWC alternative yet).
+      // Babel is limited to React Compiler transform only; esbuild handles
+      // the rest of TS/JSX compilation for near-SWC dev speed.
       react({
         babel: {
           plugins: [['babel-plugin-react-compiler', {}]],
@@ -117,12 +118,13 @@ export default defineConfig(({ mode }) => {
         devOptions: { enabled: false, type: 'module' },
       }),
 
-      // Bundle analyzer — only in production, generates dist/bundle-stats.html
+      // Bundle analyzer — generates dist/bundle-stats.html for Lighthouse audits
       isProd &&
         visualizer({
           filename: 'dist/bundle-stats.html',
           gzipSize: true,
           brotliSize: true,
+          template: 'treemap', // treemap view for better chunk analysis
         }),
     ].filter(Boolean),
 
@@ -143,9 +145,10 @@ export default defineConfig(({ mode }) => {
         'react-dom',
         'react-router-dom',
         'react/jsx-runtime',
-        'd3',
+        'react/compiler-runtime',
+        'd3-selection',
         'd3-sankey',
-        'motion',
+        'motion/react',
         'recharts',
         'zustand',
         'i18next',
@@ -153,6 +156,8 @@ export default defineConfig(({ mode }) => {
         'dexie',
         'lucide-react',
         '@tanstack/react-query',
+        'clsx',
+        'tailwind-merge',
       ],
     },
 
@@ -160,56 +165,82 @@ export default defineConfig(({ mode }) => {
       target: 'es2022',
       cssCodeSplit: true,
       reportCompressedSize: true,
+      // Modern browsers don't need the modulepreload polyfill (~1.5 KB)
+      modulePreload: { polyfill: false },
+      // Strip legal comments for smaller output
+      minify: 'esbuild',
+      // Warn when chunks exceed 250 KB (compressed)
+      chunkSizeWarningLimit: 250,
 
       rollupOptions: {
         output: {
-          // Deterministic short hashes for long-term caching
+          // Deterministic short hashes for aggressive long-term caching
           chunkFileNames: 'assets/[name]-[hash:8].js',
+          entryFileNames: 'assets/[name]-[hash:8].js',
           assetFileNames: 'assets/[name]-[hash:8][extname]',
 
           // Function-based manualChunks avoids circular-reference warnings
-          // and gives finer control than object syntax
+          // and gives finer control than object syntax.
+          // Strategy: separate heavy libs into dedicated chunks so pages
+          // only download what they actually render.
           manualChunks(id) {
             if (!id.includes('node_modules')) return;
 
-            // Framework core — loaded on every page
+            // ── Framework core — loaded on every page ──
             if (/\/react\/|\/react-dom\/|\/scheduler\/|\/react-router/.test(id)) return 'framework';
 
-            // D3 visualization — only Sankey + EnergyFlow pages
+            // ── D3 visualization — only Sankey pages ──
+            // After tree-shaking: only d3-selection + d3-sankey (~30 KB)
             if (/\/d3[-/]|\/d3-sankey\//.test(id)) return 'vendor-d3';
 
-            // Recharts — Analytics, Monitoring, Tariffs pages
+            // ── Recharts — Analytics, Monitoring, Tariffs pages ──
             if (/\/recharts\/|\/victory/.test(id)) return 'vendor-recharts';
 
-            // Animation engine
+            // ── Animation engine — widely used but tree-shakeable ──
             if (/\/motion\//.test(id)) return 'vendor-motion';
 
-            // Internationalization
+            // ── Internationalization ──
             if (/\/i18next/.test(id)) return 'vendor-i18n';
 
-            // Icons (tree-shaken)
+            // ── Icons (tree-shaken per-icon) ──
             if (id.includes('/lucide-react/')) return 'vendor-icons';
 
-            // React Query + Devtools
+            // ── React Query + Devtools ──
             if (id.includes('/@tanstack/')) return 'vendor-query';
 
-            // QR code — only ExportAndSharing
+            // ── PDF generation + optional deps — dynamically imported on user action ──
+            if (
+              /\/jspdf\/|\/html2canvas\/|\/dompurify\/|\/purify|\/canvg\/|\/fflate\/|\/fast-png\//.test(
+                id,
+              )
+            )
+              return 'vendor-pdf';
+
+            // ── QR code — dynamically imported on user action ──
             if (id.includes('/qrcode/')) return 'vendor-qrcode';
 
-            // Date utilities — used in analytics/monitoring
+            // ── Date utilities — analytics/monitoring ──
             if (id.includes('/date-fns/')) return 'vendor-date';
 
-            // State + storage
+            // ── State + offline storage ──
             if (/\/zustand\/|\/dexie\//.test(id)) return 'vendor-state';
 
-            // Google Gemini AI — only AI pages
+            // ── Google Gemini AI — only AI pages ──
             if (id.includes('/@google/genai/')) return 'vendor-ai';
 
-            // Everything else
+            // ── Radix UI primitives ──
+            if (id.includes('/@radix-ui/')) return 'vendor-radix';
+
+            // ── Micro-utilities ──
             if (/\/clsx\/|\/tailwind-merge\//.test(id)) return 'vendor-utils';
           },
         },
       },
+    },
+
+    // Strip legal comments from output for smaller bundles
+    esbuild: {
+      legalComments: 'none',
     },
 
     // Web Workers use ES modules for tree-shaking

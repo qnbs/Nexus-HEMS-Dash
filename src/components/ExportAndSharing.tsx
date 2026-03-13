@@ -2,9 +2,7 @@ import { useState, memo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { FileDown, Share2, QrCode, Copy, Check, AlertTriangle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import QRCodeLib from 'qrcode';
 
-import { generateMonthlyStats, downloadPdfReport } from '../lib/pdf-report';
 import { generateShareLink, createSharedDashboard, shareViaWebShare } from '../lib/sharing';
 
 export const ExportAndSharing = memo(function ExportAndSharing() {
@@ -20,6 +18,8 @@ export const ExportAndSharing = memo(function ExportAndSharing() {
     setIsGenerating(true);
     setErrorMessage(null);
     try {
+      // Dynamic import — jsPDF (~280 KB) only loads when user clicks "Download PDF"
+      const { generateMonthlyStats, downloadPdfReport } = await import('../lib/pdf-report');
       const now = new Date();
       const stats = await generateMonthlyStats(now.getFullYear(), now.getMonth());
       await downloadPdfReport(stats);
@@ -58,7 +58,8 @@ export const ExportAndSharing = memo(function ExportAndSharing() {
       // Fallback: show link + QR code
       setShareLink(link);
 
-      // Generate QR code
+      // Dynamic import — qrcode (~33 KB) only loads when share link is generated
+      const QRCodeLib = (await import('qrcode')).default;
       const qrUrl = await QRCodeLib.toDataURL(link, {
         width: 200,
         margin: 2,
