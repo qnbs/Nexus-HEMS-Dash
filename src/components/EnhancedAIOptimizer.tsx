@@ -131,6 +131,7 @@ Return ONLY a valid JSON array with this structure:
           <Link
             to="/settings/ai"
             className="btn-secondary focus-ring flex items-center gap-2 rounded-full px-3 py-2 text-sm"
+            aria-label={t('aiSettings.title', 'AI Provider Keys')}
           >
             <Key className="h-4 w-4" aria-hidden="true" />
             <span className="hidden sm:inline">{t('aiSettings.title', 'AI Provider Keys')}</span>
@@ -139,6 +140,11 @@ Return ONLY a valid JSON array with this structure:
             onClick={handleOptimizeNow}
             disabled={isOptimizing || hasProvider === false}
             className="btn-primary focus-ring flex items-center gap-2 text-sm"
+            aria-label={
+              isOptimizing
+                ? t('ai.optimizing', 'Optimizing...')
+                : t('ai.optimizeNow', 'Optimize Now')
+            }
           >
             {isOptimizing ? (
               <>

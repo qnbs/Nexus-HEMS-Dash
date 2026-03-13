@@ -92,7 +92,7 @@ function FeatureCard({
       </div>
       <div className="min-w-0">
         <p className="text-sm font-semibold text-white truncate">{title}</p>
-        <p className="mt-0.5 text-xs text-[#8896b0] leading-relaxed line-clamp-2">{desc}</p>
+        <p className="mt-0.5 text-xs text-[#94a3b8] leading-relaxed line-clamp-2">{desc}</p>
       </div>
     </motion.div>
   );
@@ -190,7 +190,7 @@ export function Onboarding() {
             <h1 className="text-lg fluid-text-lg font-bold text-white tracking-tight sm:text-xl">
               Nexus HEMS
             </h1>
-            <p className="text-xs text-[#64748b]">Dashboard</p>
+            <p className="text-xs text-[#94a3b8]">Dashboard</p>
           </div>
         </motion.div>
 
@@ -199,7 +199,7 @@ export function Onboarding() {
           {/* Step indicator */}
           <div className="mb-5 flex items-center justify-between sm:mb-6">
             <StepIndicator current={step} total={TOTAL_STEPS} />
-            <span className="text-xs text-[#64748b]">
+            <span className="text-xs text-[#94a3b8]">
               {t('onboarding.step', { current: step + 1, total: TOTAL_STEPS })}
             </span>
           </div>
@@ -228,13 +228,13 @@ export function Onboarding() {
                   <h2 className="text-xl fluid-text-xl font-bold text-white sm:text-2xl">
                     {t('onboarding.welcome')}
                   </h2>
-                  <p className="mt-2 text-sm text-[#8896b0] leading-relaxed">
+                  <p className="mt-2 text-sm text-[#94a3b8] leading-relaxed">
                     {t('onboarding.welcomeDesc')}
                   </p>
                 </div>
 
                 <div>
-                  <p className="mb-3 text-sm font-medium text-[#8896b0]">
+                  <p className="mb-3 text-sm font-medium text-[#94a3b8]">
                     {t('onboarding.chooseLanguage')}
                   </p>
                   <div className="grid gap-3">
@@ -253,7 +253,7 @@ export function Onboarding() {
                       onSelect={handleLanguageChange}
                     />
                   </div>
-                  <p className="mt-2 text-xs text-[#64748b]">{t('onboarding.langHint')}</p>
+                  <p className="mt-2 text-xs text-[#94a3b8]">{t('onboarding.langHint')}</p>
                 </div>
               </motion.div>
             )}
@@ -281,7 +281,7 @@ export function Onboarding() {
                   <h2 className="text-lg fluid-text-lg font-bold text-white sm:text-xl">
                     {t('onboarding.energyFlow')}
                   </h2>
-                  <p className="mt-2 text-sm text-[#8896b0] leading-relaxed">
+                  <p className="mt-2 text-sm text-[#94a3b8] leading-relaxed">
                     {t('onboarding.energyFlowDesc')}
                   </p>
                 </div>
@@ -291,7 +291,7 @@ export function Onboarding() {
                   <div className="flex items-center justify-between">
                     <div className="flex flex-col items-center gap-1">
                       <Sun className="h-5 w-5 text-amber-400 sm:h-6 sm:w-6" />
-                      <span className="text-[10px] text-[#8896b0]">PV</span>
+                      <span className="text-[10px] text-[#94a3b8]">PV</span>
                     </div>
                     <motion.div
                       className="h-0.5 flex-1 mx-2 rounded-full bg-gradient-to-r from-amber-400 via-[#38bdf8] to-[#818cf8] sm:mx-3"
@@ -302,7 +302,7 @@ export function Onboarding() {
                     />
                     <div className="flex flex-col items-center gap-1">
                       <Home className="h-5 w-5 text-[#38bdf8] sm:h-6 sm:w-6" />
-                      <span className="text-[10px] text-[#8896b0]">Home</span>
+                      <span className="text-[10px] text-[#94a3b8]">Home</span>
                     </div>
                     <motion.div
                       className="h-0.5 flex-1 mx-2 rounded-full bg-gradient-to-r from-[#38bdf8] to-[#818cf8] sm:mx-3"
@@ -313,7 +313,7 @@ export function Onboarding() {
                     />
                     <div className="flex flex-col items-center gap-1">
                       <Battery className="h-5 w-5 text-[#818cf8] sm:h-6 sm:w-6" />
-                      <span className="text-[10px] text-[#8896b0]">Battery</span>
+                      <span className="text-[10px] text-[#94a3b8]">Battery</span>
                     </div>
                   </div>
                 </div>
@@ -359,7 +359,7 @@ export function Onboarding() {
                   <h2 className="text-lg fluid-text-lg font-bold text-white sm:text-xl">
                     {t('onboarding.smartControl')}
                   </h2>
-                  <p className="mt-2 text-sm text-[#8896b0] leading-relaxed">
+                  <p className="mt-2 text-sm text-[#94a3b8] leading-relaxed">
                     {t('onboarding.smartControlDesc')}
                   </p>
                 </div>
@@ -383,7 +383,7 @@ export function Onboarding() {
 
                 {/* Mini price chart illustration */}
                 <div className="rounded-2xl border border-white/10 bg-[#0e1630]/60 p-3 sm:p-4">
-                  <p className="mb-2 text-xs font-medium text-[#8896b0]">
+                  <p className="mb-2 text-xs font-medium text-[#94a3b8]">
                     {locale === 'de' ? 'Dynamischer Stromtarif' : 'Dynamic Electricity Tariff'}
                   </p>
                   <div className="flex items-end gap-0.5 h-10 sm:gap-1 sm:h-12">
@@ -400,7 +400,7 @@ export function Onboarding() {
                       />
                     ))}
                   </div>
-                  <div className="mt-1 flex justify-between text-[9px] text-[#64748b]">
+                  <div className="mt-1 flex justify-between text-[9px] text-[#94a3b8]">
                     <span>0h</span>
                     <span>6h</span>
                     <span>12h</span>
@@ -433,7 +433,7 @@ export function Onboarding() {
                   <h2 className="text-lg fluid-text-lg font-bold text-white sm:text-xl">
                     {t('onboarding.aiOptimizer')}
                   </h2>
-                  <p className="mt-2 text-sm text-[#8896b0] leading-relaxed">
+                  <p className="mt-2 text-sm text-[#94a3b8] leading-relaxed">
                     {t('onboarding.aiOptimizerDesc')}
                   </p>
                 </div>
@@ -473,7 +473,7 @@ export function Onboarding() {
                       <span className="text-base shrink-0" aria-hidden="true">
                         {tip.icon}
                       </span>
-                      <span className="text-xs text-[#8896b0] min-w-0">{tip.text}</span>
+                      <span className="text-xs text-[#94a3b8] min-w-0">{tip.text}</span>
                     </motion.div>
                   ))}
                 </div>
@@ -503,7 +503,7 @@ export function Onboarding() {
                   <h2 className="text-xl fluid-text-xl font-bold text-white sm:text-2xl">
                     {t('onboarding.allSet')}
                   </h2>
-                  <p className="mt-2 text-sm text-[#8896b0] leading-relaxed">
+                  <p className="mt-2 text-sm text-[#94a3b8] leading-relaxed">
                     {t('onboarding.allSetDesc')}
                   </p>
                 </div>
@@ -559,7 +559,7 @@ export function Onboarding() {
               {step > 0 ? (
                 <motion.button
                   onClick={goBack}
-                  className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-[#8896b0] hover:text-white hover:border-white/20 transition-colors focus-ring sm:px-4 sm:py-2.5"
+                  className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-[#94a3b8] hover:text-white hover:border-white/20 transition-colors focus-ring sm:px-4 sm:py-2.5"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
@@ -569,7 +569,7 @@ export function Onboarding() {
               ) : (
                 <motion.button
                   onClick={skip}
-                  className="text-sm text-[#64748b] hover:text-white transition-colors focus-ring rounded-lg px-3 py-2"
+                  className="text-sm text-[#94a3b8] hover:text-white transition-colors focus-ring rounded-lg px-3 py-2"
                   whileHover={{ scale: 1.02 }}
                 >
                   {t('onboarding.skip')}
@@ -610,7 +610,7 @@ export function Onboarding() {
         {step > 0 && step < TOTAL_STEPS - 1 && (
           <motion.button
             onClick={skip}
-            className="mt-4 text-xs text-[#64748b] hover:text-white transition-colors"
+            className="mt-4 text-xs text-[#94a3b8] hover:text-white transition-colors"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}

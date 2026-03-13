@@ -1,6 +1,15 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('PWA & Offline Behavior', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem(
+        'nexus-hems-store',
+        JSON.stringify({ state: { onboardingCompleted: true }, version: 0 }),
+      );
+    });
+  });
+
   test('should load the app and show main heading', async ({ page }) => {
     await page.goto('/');
     await expect(page.locator('h1').first()).toBeVisible({ timeout: 15_000 });
@@ -51,6 +60,15 @@ test.describe('PWA & Offline Behavior', () => {
 });
 
 test.describe('Error Recovery', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem(
+        'nexus-hems-store',
+        JSON.stringify({ state: { onboardingCompleted: true }, version: 0 }),
+      );
+    });
+  });
+
   test('should show 404 page for unknown routes', async ({ page }) => {
     await page.goto('/this-page-does-not-exist-xyz');
     await expect(page.locator('text=/404|not found|nicht gefunden/i')).toBeVisible({
@@ -67,6 +85,15 @@ test.describe('Error Recovery', () => {
 });
 
 test.describe('Performance', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem(
+        'nexus-hems-store',
+        JSON.stringify({ state: { onboardingCompleted: true }, version: 0 }),
+      );
+    });
+  });
+
   test('should load the first contentful paint within reasonable time', async ({ page }) => {
     const start = Date.now();
     await page.goto('/');
@@ -79,8 +106,9 @@ test.describe('Performance', () => {
   test('should lazy-load route chunks', async ({ page }) => {
     const requests: string[] = [];
     page.on('request', (req) => {
-      if (req.url().endsWith('.js')) {
-        requests.push(req.url());
+      const url = req.url();
+      if (/\.(js|ts|tsx|mjs)(\?|$)/.test(url)) {
+        requests.push(url);
       }
     });
 

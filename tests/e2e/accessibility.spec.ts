@@ -18,6 +18,16 @@ const routes = [
 ];
 
 test.describe('WCAG 2.2 AA Accessibility', () => {
+  test.beforeEach(async ({ page }) => {
+    // Dismiss Onboarding overlay (CI starts with clean localStorage)
+    await page.addInitScript(() => {
+      localStorage.setItem(
+        'nexus-hems-store',
+        JSON.stringify({ state: { onboardingCompleted: true }, version: 0 }),
+      );
+    });
+  });
+
   for (const route of routes) {
     test(`${route.name} page should have no accessibility violations`, async ({ page }) => {
       await page.goto(route.path);

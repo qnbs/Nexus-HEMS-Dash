@@ -1,6 +1,15 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('User Flow', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem(
+        'nexus-hems-store',
+        JSON.stringify({ state: { onboardingCompleted: true }, version: 0 }),
+      );
+    });
+  });
+
   test('should load home page', async ({ page }) => {
     await page.goto('/');
     await expect(page.locator('h1')).toBeVisible({ timeout: 15_000 });

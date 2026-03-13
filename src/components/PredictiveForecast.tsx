@@ -142,7 +142,7 @@ export const PredictiveForecast = memo(function PredictiveForecast() {
             onClick={() => setTimeRange('24h')}
             className={`focus-ring rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
               timeRange === '24h'
-                ? 'bg-(--color-primary) text-slate-900'
+                ? 'bg-(--color-primary) text-(--color-background) font-bold'
                 : 'bg-(--color-surface) text-(--color-muted) hover:bg-white/10'
             }`}
             aria-pressed={timeRange === '24h'}
@@ -154,7 +154,7 @@ export const PredictiveForecast = memo(function PredictiveForecast() {
             onClick={() => setTimeRange('7d')}
             className={`focus-ring rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
               timeRange === '7d'
-                ? 'bg-(--color-primary) text-slate-900'
+                ? 'bg-(--color-primary) text-(--color-background) font-bold'
                 : 'bg-(--color-surface) text-(--color-muted) hover:bg-white/10'
             }`}
             aria-pressed={timeRange === '7d'}

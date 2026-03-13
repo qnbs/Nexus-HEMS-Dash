@@ -40,7 +40,7 @@ const variantStyles = {
     icon: Info,
     iconBg: 'bg-blue-500/20',
     iconColor: 'text-blue-400',
-    confirmButton: 'bg-(--color-primary) hover:opacity-90 text-slate-900',
+    confirmButton: 'bg-(--color-primary) hover:opacity-90 text-(--color-background) font-bold',
   },
 };
 

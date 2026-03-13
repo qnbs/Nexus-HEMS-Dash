@@ -86,7 +86,7 @@ export const Floorplan = memo(function Floorplan() {
         viewBox="0 0 900 500"
         className="w-full opacity-80"
         preserveAspectRatio="xMidYMid meet"
-        role="img"
+        role="group"
         aria-label={t('floorplan.interactiveView')}
       >
         <title>{t('dashboard.floorplan')}</title>
@@ -243,7 +243,7 @@ export const Floorplan = memo(function Floorplan() {
               <text
                 x={c.x}
                 y={c.y + 18}
-                fill={rooms[id].lights ? '#eab308' : '#64748b'}
+                fill={rooms[id].lights ? '#eab308' : '#94a3b8'}
                 fontSize="13"
                 textAnchor="middle"
                 fontFamily="monospace"
