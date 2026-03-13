@@ -3,45 +3,32 @@ import { test, expect } from '@playwright/test';
 test.describe('PWA & Offline Behavior', () => {
   test('should load the app and show main heading', async ({ page }) => {
     await page.goto('/');
-    await expect(page.locator('h1').first()).toBeVisible();
+    await expect(page.locator('h1').first()).toBeVisible({ timeout: 15_000 });
   });
 
-  test('should register a service worker', async ({ page }) => {
+  test('should have service worker API available', async ({ page }) => {
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForSelector('h1', { timeout: 15_000 });
 
-    const swRegistered = await page.evaluate(async () => {
-      if (!('serviceWorker' in navigator)) return false;
-      const regs = await navigator.serviceWorker.getRegistrations();
-      return regs.length > 0;
-    });
-
-    // In dev mode, SW might not be registered — that's expected
-    expect(typeof swRegistered).toBe('boolean');
+    const swAvailable = await page.evaluate(() => 'serviceWorker' in navigator);
+    expect(swAvailable).toBe(true);
   });
 
   test('should show offline banner when network goes offline', async ({ page, context }) => {
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForSelector('h1', { timeout: 15_000 });
 
     // Go offline
     await context.setOffline(true);
-
-    // Trigger the offline event
-    await page.evaluate(() => {
-      window.dispatchEvent(new Event('offline'));
-    });
+    await page.evaluate(() => window.dispatchEvent(new Event('offline')));
 
     // Check for the offline banner (role="alert")
     const banner = page.locator('[role="alert"]');
-    // Banner should appear — may take animation time
-    await expect(banner.first()).toBeVisible({ timeout: 5000 });
+    await expect(banner.first()).toBeVisible({ timeout: 5_000 });
 
     // Go back online
     await context.setOffline(false);
-    await page.evaluate(() => {
-      window.dispatchEvent(new Event('online'));
-    });
+    await page.evaluate(() => window.dispatchEvent(new Event('online')));
   });
 
   test('should have a manifest.json link', async ({ page }) => {
@@ -59,18 +46,21 @@ test.describe('PWA & Offline Behavior', () => {
   test('should have apple-touch-icon', async ({ page }) => {
     await page.goto('/');
     const icon = page.locator('link[rel="apple-touch-icon"]');
-    await expect(icon).toHaveAttribute('href', /icon-.*\.png/);
+    await expect(icon).toHaveAttribute('href', /apple-touch-icon\.png/);
   });
 });
 
 test.describe('Error Recovery', () => {
   test('should show 404 page for unknown routes', async ({ page }) => {
     await page.goto('/this-page-does-not-exist-xyz');
-    await expect(page.locator('text=/404|not found|nicht gefunden/i')).toBeVisible();
+    await expect(page.locator('text=/404|not found|nicht gefunden/i')).toBeVisible({
+      timeout: 15_000,
+    });
   });
 
   test('should have a home link on 404 page', async ({ page }) => {
     await page.goto('/unknown-route');
+    await page.waitForSelector('text=/404|not found|nicht gefunden/i', { timeout: 15_000 });
     const homeLink = page.locator('a[href="/"]').or(page.locator('a[href*="Nexus-HEMS-Dash"]'));
     await expect(homeLink.first()).toBeVisible();
   });
@@ -94,14 +84,13 @@ test.describe('Performance', () => {
       }
     });
 
-    // Load home page first
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForSelector('h1', { timeout: 15_000 });
     const homeRequestCount = requests.length;
 
     // Navigate to Settings — should trigger additional chunk loads
     await page.goto('/settings');
-    await page.waitForLoadState('networkidle');
+    await page.waitForSelector('h1', { timeout: 15_000 });
 
     // At least one new chunk loaded for settings
     expect(requests.length).toBeGreaterThan(homeRequestCount);

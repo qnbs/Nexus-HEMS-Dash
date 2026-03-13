@@ -34,9 +34,20 @@ describe('i18n Configuration', () => {
     expect(val).not.toBe('dashboard.realtimeFlow');
   });
 
-  it('should have matching top-level keys between de and en', () => {
-    const deKeys = Object.keys(de).sort();
-    const enKeys = Object.keys(en).sort();
+  it('should have matching keys between de and en (recursive)', () => {
+    const collectKeys = (obj: Record<string, unknown>, prefix = ''): string[] => {
+      const keys: string[] = [];
+      for (const [key, val] of Object.entries(obj)) {
+        const fullKey = prefix ? `${prefix}.${key}` : key;
+        keys.push(fullKey);
+        if (typeof val === 'object' && val !== null) {
+          keys.push(...collectKeys(val as Record<string, unknown>, fullKey));
+        }
+      }
+      return keys;
+    };
+    const deKeys = collectKeys(de as unknown as Record<string, unknown>).sort();
+    const enKeys = collectKeys(en as unknown as Record<string, unknown>).sort();
     expect(deKeys).toEqual(enKeys);
   });
 

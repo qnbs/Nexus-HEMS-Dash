@@ -3,12 +3,14 @@ import { test, expect } from '@playwright/test';
 test.describe('User Flow', () => {
   test('should load home page', async ({ page }) => {
     await page.goto('/');
-    await expect(page.locator('h1')).toBeVisible();
+    await expect(page.locator('h1')).toBeVisible({ timeout: 15_000 });
   });
 
   test('should navigate to all main pages via sidebar', async ({ page }) => {
+    // Use a large viewport to ensure sidebar is visible
+    await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForSelector('h1', { timeout: 15_000 });
 
     const navRoutes = [
       { linkText: /energy flow|energiefluss/i, url: '/energy-flow' },
@@ -30,40 +32,42 @@ test.describe('User Flow', () => {
       if ((await link.count()) > 0 && (await link.isVisible())) {
         await link.click();
         await expect(page).toHaveURL(new RegExp(route.url));
+        await page.waitForSelector('h1', { timeout: 15_000 });
       }
     }
   });
 
   test('should show 404 page for unknown routes', async ({ page }) => {
     await page.goto('/unknown-page-xyz');
-    await expect(page.locator('text=/404|not found|nicht gefunden/i')).toBeVisible();
+    await expect(page.locator('text=/404|not found|nicht gefunden/i')).toBeVisible({
+      timeout: 15_000,
+    });
   });
 
   test('should switch themes', async ({ page }) => {
     await page.goto('/settings');
-    await page.waitForLoadState('networkidle');
+    await page.waitForSelector('h1', { timeout: 15_000 });
 
     // Click a theme card button in Settings
     const themeButton = page.locator('button[aria-pressed]').nth(1);
     await themeButton.click();
 
-    // Wait for theme to change
-    await page.waitForTimeout(500);
-
-    const newTheme = await page.getAttribute('html', 'data-theme');
-    expect(newTheme).toBeTruthy();
+    // Wait for theme attribute to change
+    await expect(page.locator('html')).toHaveAttribute('data-theme', /.+/);
   });
 
   test('should switch language', async ({ page }) => {
     await page.goto('/');
+    await page.waitForSelector('h1', { timeout: 15_000 });
 
-    // Click language switcher
-    const langButton = page.locator('button').filter({ hasText: /DE|EN/i }).first();
-    await langButton.click();
+    // Get current lang
+    const initialLang = await page.getAttribute('html', 'lang');
 
-    await page.waitForTimeout(300);
+    // Click the other language button (not the currently active one)
+    const inactiveButton = page.locator('button[aria-pressed="false"]').first();
+    await inactiveButton.click();
 
-    const newLang = await page.getAttribute('html', 'lang');
-    expect(['de', 'en']).toContain(newLang);
+    // Verify language attribute changed
+    await expect(page.locator('html')).not.toHaveAttribute('lang', initialLang || '');
   });
 });

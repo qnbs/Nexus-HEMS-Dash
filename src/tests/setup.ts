@@ -14,6 +14,7 @@ afterEach(() => {
 // Mock Navigator Vibrate
 Object.defineProperty(global.navigator, 'vibrate', {
   writable: true,
+  configurable: true,
   value: vi.fn(),
 });
 

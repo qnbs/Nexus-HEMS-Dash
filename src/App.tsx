@@ -4,7 +4,7 @@ import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react
 import { useTranslation } from 'react-i18next';
 import { useAdapterBridge } from './core/useEnergyStore';
 import { useAppStore } from './store';
-import { Zap, Wifi, Command, Settings as SettingsIcon, HelpCircle } from 'lucide-react';
+import { Wifi, Command, Settings as SettingsIcon, HelpCircle } from 'lucide-react';
 import { themeDefinitions } from './design-tokens';
 import { Onboarding } from './components/Onboarding';
 import { LanguageSwitcher } from './components/LanguageSwitcher';
@@ -155,17 +155,22 @@ export default function App() {
           <div className="relative z-10 lg:ml-64">
             {/* Top Bar (mobile + desktop header) */}
             <motion.header
-              className="glass-panel-strong sticky top-0 z-20 overflow-hidden px-4 py-3 sm:px-6"
+              className="glass-panel-strong sticky top-0 z-20 overflow-hidden px-4 py-2 sm:px-6 sm:py-3"
               initial={{ opacity: 0, y: -12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
             >
               <div className="flex items-center justify-between gap-4">
                 {/* Mobile Logo */}
-                <div className="flex items-center gap-2 lg:hidden">
-                  <Zap className="h-5 w-5 text-(--color-primary)" aria-hidden="true" />
-                  <span className="text-lg font-semibold tracking-tight">
-                    {t('common.appName')}
+                <div className="flex flex-col items-center lg:hidden" aria-label="HEMS">
+                  <img
+                    src={`${import.meta.env.BASE_URL}icon.svg`}
+                    alt=""
+                    className="h-6 w-6 rounded-md"
+                    aria-hidden="true"
+                  />
+                  <span className="text-[0.55rem] font-bold uppercase leading-tight tracking-widest text-(--color-primary)">
+                    HEMS
                   </span>
                 </div>
 

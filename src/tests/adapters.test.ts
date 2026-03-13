@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import type {
   EnergyAdapter,
   AdapterDataCallback,
@@ -58,6 +58,10 @@ describe('VictronMQTTAdapter (without real WebSocket)', () => {
   let mockWsSend: ReturnType<typeof vi.fn>;
   let mockWsClose: ReturnType<typeof vi.fn>;
   let onMessageCallback: ((event: { data: string }) => void) | null = null;
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
 
   beforeEach(() => {
     mockWsSend = vi.fn();

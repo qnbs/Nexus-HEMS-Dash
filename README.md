@@ -4,7 +4,7 @@
 
 ### The Definitive Open-Source Home Energy Management System
 
-![Version](https://img.shields.io/badge/v3.9-stable-22ff88?style=for-the-badge)
+![Version](https://img.shields.io/badge/v4.0-stable-22ff88?style=for-the-badge)
 ![React 19](https://img.shields.io/badge/React-19-00f0ff?style=for-the-badge&logo=react)
 ![TypeScript 5.8](https://img.shields.io/badge/TypeScript-5.8-3178c6?style=for-the-badge&logo=typescript)
 ![Tailwind v4](https://img.shields.io/badge/Tailwind-v4-38bdf8?style=for-the-badge&logo=tailwindcss)
@@ -12,6 +12,8 @@
 ![PWA](https://img.shields.io/badge/PWA-Offline--Ready-ff8800?style=for-the-badge&logo=pwa)
 ![i18n 100%](https://img.shields.io/badge/i18n-100%25-22ff88?style=for-the-badge)
 ![WCAG 2.2 AA](https://img.shields.io/badge/WCAG-2.2%20AA-00f0ff?style=for-the-badge)
+[![CI](https://github.com/qnbs/Nexus-HEMS-Dash/actions/workflows/ci.yml/badge.svg)](https://github.com/qnbs/Nexus-HEMS-Dash/actions/workflows/ci.yml)
+[![Deploy](https://github.com/qnbs/Nexus-HEMS-Dash/actions/workflows/deploy.yml/badge.svg)](https://github.com/qnbs/Nexus-HEMS-Dash/actions/workflows/deploy.yml)
 ![Tests](https://img.shields.io/badge/Tests-106%20passed-22ff88?style=for-the-badge&logo=vitest)
 ![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker)
 ![Tauri](https://img.shields.io/badge/Tauri-Desktop-FFC131?style=for-the-badge&logo=tauri)
