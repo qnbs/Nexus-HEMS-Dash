@@ -13,10 +13,9 @@
  */
 
 import { create } from 'zustand';
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { useAppStore } from '../store';
 import { persistSnapshot } from '../lib/db';
-import { cacheEnergySnapshot } from '../lib/offline-cache';
 
 import type {
   EnergyAdapter,
@@ -184,6 +183,24 @@ function deepMergeModel(
   };
 }
 
+// ─── Standalone command dispatcher ───────────────────────────────────
+
+/**
+ * sendAdapterCommand — Sends a command to all connected adapters.
+ * Pure function using getState(), no React hook required.
+ */
+export function sendAdapterCommand(command: AdapterCommand): void {
+  const entries = Object.entries(useEnergyStoreBase.getState().adapters) as [
+    AdapterId,
+    AdapterEntry,
+  ][];
+  for (const [, entry] of entries) {
+    if (entry.enabled && entry.status === 'connected') {
+      void entry.adapter.sendCommand(command);
+    }
+  }
+}
+
 // ─── Bridge hook: syncs adapters ↔ old store ─────────────────────────
 
 /**
@@ -192,43 +209,41 @@ function deepMergeModel(
  * 2. Merges adapter data into useEnergyStore
  * 3. Bridges data to useAppStore (backwards compat)
  * 4. Persists snapshots to Dexie.js
- * 5. Provides sendCommand that routes to the right adapter
  *
  * Mount this ONCE in App.tsx (replaces the old useWebSocket hook).
+ * Uses getState() for actions to avoid full-store subscription.
  */
 export function useAdapterBridge() {
-  const store = useEnergyStoreBase();
   const setEnergyData = useAppStore((s) => s.setEnergyData);
   const setConnected = useAppStore((s) => s.setConnected);
-  const adaptersRef = useRef(store.adapters);
-  adaptersRef.current = store.adapters;
 
   useEffect(() => {
-    const entries = Object.entries(store.adapters) as [AdapterId, AdapterEntry][];
+    const { adapters, mergeData, setAdapterStatus } = useEnergyStoreBase.getState();
+    const entries = Object.entries(adapters) as [AdapterId, AdapterEntry][];
 
     for (const [id, entry] of entries) {
       if (!entry.enabled) continue;
 
       // Subscribe to data
       entry.adapter.onData((data) => {
-        store.mergeData(id, data);
+        mergeData(id, data);
 
         // Bridge to legacy store
         bridgeToAppStore(data, setEnergyData);
 
-        // Persist to Dexie.js
+        // Persist to Dexie.js (single write — no duplicate)
         if (data.timestamp) {
           void persistSnapshot(unifiedToLegacy(useEnergyStoreBase.getState().unified));
-          void cacheEnergySnapshot(unifiedToLegacy(useEnergyStoreBase.getState().unified));
         }
       });
 
       // Subscribe to status
       entry.adapter.onStatus((status, error) => {
-        store.setAdapterStatus(id, status, error);
+        setAdapterStatus(id, status, error);
 
         // Bridge connection status (connected if any adapter is connected)
-        const anyConn = Object.values(adaptersRef.current).some(
+        const currentAdapters = useEnergyStoreBase.getState().adapters;
+        const anyConn = Object.values(currentAdapters).some(
           (a) => a.enabled && a.status === 'connected',
         );
         setConnected(anyConn);
@@ -245,17 +260,6 @@ export function useAdapterBridge() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only on mount — adapters are stable references
-
-  const sendCommand = (command: AdapterCommand): void => {
-    const entries = Object.entries(adaptersRef.current) as [AdapterId, AdapterEntry][];
-    for (const [, entry] of entries) {
-      if (entry.enabled && entry.status === 'connected') {
-        void entry.adapter.sendCommand(command);
-      }
-    }
-  };
-
-  return { sendCommand, unified: store.unified, adapters: store.adapters };
 }
 
 // ─── Legacy bridge helpers ───────────────────────────────────────────

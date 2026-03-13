@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { WifiOff, RefreshCw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-import { getLatestEnergySnapshot } from '../lib/offline-cache';
+import { getLatestEnergySnapshot } from '../lib/db';
 
 export function OfflineBanner() {
   const { t } = useTranslation();

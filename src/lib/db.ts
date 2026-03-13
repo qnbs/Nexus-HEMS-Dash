@@ -118,6 +118,27 @@ export async function persistSnapshot(snapshot: EnergyData) {
 }
 
 /**
+ * Get the most recent persisted energy snapshot (used by OfflineBanner)
+ */
+export async function getLatestEnergySnapshot(): Promise<{
+  data: EnergyData;
+  timestamp: number;
+  ageMinutes: number;
+} | null> {
+  try {
+    const latest = await nexusDb.energySnapshots.orderBy('timestamp').reverse().first();
+    if (!latest) return null;
+    return {
+      data: latest,
+      timestamp: latest.timestamp,
+      ageMinutes: Math.floor((Date.now() - latest.timestamp) / 1000 / 60),
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Persist Sankey visualization snapshot
  */
 export async function persistSankeySnapshot(

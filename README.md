@@ -173,7 +173,7 @@ EEBUS CEM ──────────┘                    Dexie.js IndexedD
 | **D3.js** for Sankey            | Full control over energy flow animation & real-time updates        |
 | **Dexie.js** for storage        | TypeScript-first IndexedDB wrapper with versioned schemas          |
 | **Workbox** for PWA             | Industry-standard service worker tooling with fine-grained caching |
-| **Framer Motion** for animation | GPU-accelerated layout animations with spring physics              |
+| **Motion** for animation        | GPU-accelerated layout animations with spring physics              |
 | **TanStack Query** for fetching | Built-in stale-while-revalidate, 5-min cache for API calls         |
 
 ---
@@ -189,9 +189,9 @@ EEBUS CEM ──────────┘                    Dexie.js IndexedD
 <tr><td>Styling</td><td>Tailwind CSS (v4 engine)</td><td>4.1</td></tr>
 <tr><td>State Management</td><td>Zustand</td><td>5</td></tr>
 <tr><td>Routing</td><td>React Router</td><td>7</td></tr>
-<tr><td>Visualization</td><td>D3.js + d3-sankey</td><td>7.9</td></tr>
+<tr><td>Visualization</td><td>d3-selection + d3-sankey</td><td>3.0 / 0.12</td></tr>
 <tr><td>Charts</td><td>Recharts</td><td>3.8</td></tr>
-<tr><td>Animation</td><td>Framer Motion</td><td>12</td></tr>
+<tr><td>Animation</td><td>Motion (Framer Motion successor)</td><td>12</td></tr>
 <tr><td>Data Fetching</td><td>TanStack React Query</td><td>5</td></tr>
 <tr><td>i18n</td><td>react-i18next + i18next</td><td>16 / 25</td></tr>
 <tr><td>Database</td><td>Dexie.js (IndexedDB)</td><td>4.3</td></tr>
@@ -436,15 +436,16 @@ push/PR → tauri-build.yml
 
 | Chunk              | Size    | Limit  |
 | :----------------- | :------ | :----- |
-| `index`            | ~192 KB | 600 KB |
-| `vendor-react`     | ~48 KB  | —      |
-| `vendor-recharts`  | ~309 KB | —      |
-| `vendor-d3`        | ~100 KB | —      |
-| `vendor-motion`    | ~95 KB  | —      |
-| `vendor-data`      | ~96 KB  | —      |
+| `index`            | ~219 KB | 600 KB |
+| `framework`        | ~229 KB | —      |
+| `vendor-recharts`  | ~306 KB | —      |
+| `vendor-pdf`       | ~770 KB | —      |
+| `vendor-motion`    | ~124 KB | —      |
+| `vendor-state`     | ~98 KB  | —      |
+| `vendor-d3`        | ~84 KB  | —      |
 | `vendor-i18n`      | ~51 KB  | —      |
-| `vendor-radix`     | ~30 KB  | —      |
-| **Total precache** | ~1.6 MB | —      |
+| `vendor-radix`     | ~32 KB  | —      |
+| **Total precache** | ~2.7 MB | —      |
 
 ---
 
@@ -515,6 +516,21 @@ cd src-tauri && cargo tauri build
 ---
 
 ## 📝 Changelog
+
+<details>
+<summary><b>v4.0.0</b> — Performance Architecture & Adapter Optimization</summary>
+
+- **Zustand optimization**: `useAdapterBridge` refactored to eliminate full-store subscription — no unnecessary App.tsx re-renders on each data update
+- **Standalone `sendAdapterCommand`**: Pure function via `getState()`, `useLegacySendCommand` no longer triggers duplicate adapter connections
+- **IndexedDB consolidation**: Eliminated duplicate writes in adapter bridge (was writing to both `nexus-hems-dash` and `NexusHEMS` databases simultaneously)
+- **New `getLatestEnergySnapshot` in primary DB**: OfflineBanner reads from consolidated database
+- **D3 tree-shaking**: Replaced `import * as d3` with `import { select } from 'd3-selection'`, removed full `d3` package (84 KB vendor-d3 chunk, down from ~130 KB)
+- **Dynamic imports**: jsPDF + QRCode loaded on-demand only when generating reports
+- **Lazy-loaded heavy components**: PredictiveForecast + ExportAndSharing split from Dashboard main bundle
+- **CI fix**: Coverage thresholds aligned to actual suite coverage (30/25/30/30%)
+- **Vite manualChunks**: Function-based chunking with deterministic chunk names
+- **CSS cleanup**: Removed duplicate keyframe animations from index.css
+</details>
 
 <details>
 <summary><b>v3.9.0</b> — WCAG 2.2 AA, Radix UI Primitives & CI Fix</summary>

@@ -9,7 +9,7 @@
  */
 
 import { useCallback } from 'react';
-import { useAdapterBridge } from './useEnergyStore';
+import { sendAdapterCommand } from './useEnergyStore';
 import type { CommandType } from '../types';
 import type { AdapterCommand } from './adapters/EnergyAdapter';
 
@@ -27,14 +27,9 @@ function toLegacyCommand(type: CommandType, value: number): AdapterCommand {
 }
 
 export function useLegacySendCommand() {
-  const { sendCommand: adapterSendCommand } = useAdapterBridge();
-
-  const sendCommand = useCallback(
-    (type: CommandType, value: number) => {
-      adapterSendCommand(toLegacyCommand(type, value));
-    },
-    [adapterSendCommand],
-  );
+  const sendCommand = useCallback((type: CommandType, value: number) => {
+    sendAdapterCommand(toLegacyCommand(type, value));
+  }, []);
 
   return { sendCommand };
 }
