@@ -28,6 +28,11 @@ import {
   Sparkles,
   Smartphone,
   CheckCircle2,
+  MapPin,
+  Type,
+  Clock,
+  Keyboard,
+  Moon,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -880,6 +885,87 @@ export function Settings() {
                           <option value="chf">CHF Franken</option>
                           <option value="gbp">£ Pound</option>
                         </select>
+                      </div>
+                    </div>
+                  </section>
+
+                  {/* Accessibility */}
+                  <section className={sectionClass}>
+                    <h2 className={sectionHeaderClass}>
+                      <Type size={20} className="text-violet-400" />
+                      {t('settings.accessibilityTitle', 'Accessibility')}
+                    </h2>
+                    <div className="space-y-5">
+                      {/* Font Scale */}
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-medium text-sm">
+                              {t('settings.fontScale', 'Font size')}
+                            </p>
+                            <p className="text-xs text-(--color-muted)">
+                              {t('settings.fontScaleHint', 'Adjust the global font size scaling')}
+                            </p>
+                          </div>
+                          <span className="text-sm font-mono tabular-nums text-(--color-primary)">
+                            {Math.round((settings.fontScale ?? 1.0) * 100)}%
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className="text-xs text-(--color-muted)">A</span>
+                          <input
+                            type="range"
+                            min={0.85}
+                            max={1.25}
+                            step={0.05}
+                            value={settings.fontScale ?? 1.0}
+                            onChange={(e) => updateSettings({ fontScale: Number(e.target.value) })}
+                            className="flex-1 accent-(--color-primary)"
+                            aria-label={t('settings.fontScale', 'Font size')}
+                            aria-valuetext={`${Math.round((settings.fontScale ?? 1.0) * 100)}%`}
+                          />
+                          <span className="text-base font-medium text-(--color-muted)">A</span>
+                        </div>
+                      </div>
+                      {/* Reduced Motion */}
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-medium text-sm">
+                            {t('settings.reducedMotion', 'Reduced motion')}
+                          </p>
+                          <p className="text-xs text-(--color-muted)">
+                            {t(
+                              'settings.reducedMotionHint',
+                              'Minimize animations for motion-sensitive users',
+                            )}
+                          </p>
+                        </div>
+                        <ToggleSwitch
+                          id="reduced-motion"
+                          checked={settings.reducedMotion ?? false}
+                          onChange={(v) => updateSettings({ reducedMotion: v })}
+                          label={t('settings.reducedMotion', 'Reduced motion')}
+                        />
+                      </div>
+                      {/* High Contrast */}
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-medium text-sm">
+                            {t('settings.highContrast', 'High contrast')}
+                          </p>
+                          <p className="text-xs text-(--color-muted)">
+                            {t(
+                              'settings.highContrastHint',
+                              'Increase contrast ratios for better readability',
+                            )}
+                          </p>
+                        </div>
+                        <ToggleSwitch
+                          id="high-contrast"
+                          checked={settings.highContrast ?? false}
+                          onChange={(v) => updateSettings({ highContrast: v })}
+                          label={t('settings.highContrast', 'High contrast')}
+                        />
                       </div>
                     </div>
                   </section>
@@ -1791,6 +1877,166 @@ export function Settings() {
                       </div>
                     </div>
                   </section>
+
+                  {/* Location & Weather */}
+                  <section className={sectionClass}>
+                    <h2 className={sectionHeaderClass}>
+                      <MapPin size={20} className="text-rose-400" />
+                      {t('settings.locationTitle', 'Location & Weather')}
+                    </h2>
+                    <p className="text-xs text-(--color-muted) -mt-2">
+                      {t(
+                        'settings.locationHint',
+                        'Used for solar forecast, weather data, and sunrise/sunset calculations',
+                      )}
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                      <div className="space-y-2">
+                        <label htmlFor="settings-lat" className="text-sm font-medium">
+                          {t('settings.latitude', 'Latitude')}
+                        </label>
+                        <input
+                          id="settings-lat"
+                          type="number"
+                          step={0.0001}
+                          min={-90}
+                          max={90}
+                          value={settings.location.lat}
+                          onChange={(e) =>
+                            updateSettings({
+                              location: { ...settings.location, lat: Number(e.target.value) },
+                            })
+                          }
+                          className={inputClass}
+                          placeholder="53.5511"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label htmlFor="settings-lon" className="text-sm font-medium">
+                          {t('settings.longitude', 'Longitude')}
+                        </label>
+                        <input
+                          id="settings-lon"
+                          type="number"
+                          step={0.0001}
+                          min={-180}
+                          max={180}
+                          value={settings.location.lon}
+                          onChange={(e) =>
+                            updateSettings({
+                              location: { ...settings.location, lon: Number(e.target.value) },
+                            })
+                          }
+                          className={inputClass}
+                          placeholder="9.9937"
+                        />
+                      </div>
+                    </div>
+                  </section>
+
+                  {/* Grid & Tariff Extras */}
+                  <section className={sectionClass}>
+                    <h2 className={sectionHeaderClass}>
+                      <Zap size={20} className="text-orange-400" />
+                      {t('settings.gridExtrasTitle', 'Grid & Tariff Details')}
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                      <div className="space-y-2">
+                        <label htmlFor="settings-grid-price" className="text-sm font-medium">
+                          {t('settings.gridPriceAvg', 'Avg. grid price (€/kWh)')}
+                        </label>
+                        <div className="flex items-center gap-3">
+                          <input
+                            type="range"
+                            min={0.1}
+                            max={0.6}
+                            step={0.01}
+                            value={settings.gridPriceAvg}
+                            onChange={(e) =>
+                              updateSettings({ gridPriceAvg: Number(e.target.value) })
+                            }
+                            className="flex-1 accent-(--color-primary)"
+                            aria-label={t('settings.gridPriceAvg', 'Avg. grid price (€/kWh)')}
+                            aria-valuetext={`${settings.gridPriceAvg.toFixed(2)} €/kWh`}
+                          />
+                          <span className="text-sm font-mono w-20 text-right">
+                            {settings.gridPriceAvg.toFixed(2)} €
+                          </span>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <label htmlFor="settings-feedin" className="text-sm font-medium">
+                          {t('settings.feedInTariff', 'Feed-in tariff (€/kWh)')}
+                        </label>
+                        <div className="flex items-center gap-3">
+                          <input
+                            type="range"
+                            min={0.0}
+                            max={0.2}
+                            step={0.001}
+                            value={settings.feedInTariff ?? 0.082}
+                            onChange={(e) =>
+                              updateSettings({ feedInTariff: Number(e.target.value) })
+                            }
+                            className="flex-1 accent-(--color-primary)"
+                            aria-label={t('settings.feedInTariff', 'Feed-in tariff (€/kWh)')}
+                            aria-valuetext={`${(settings.feedInTariff ?? 0.082).toFixed(3)} €/kWh`}
+                          />
+                          <span className="text-sm font-mono w-20 text-right">
+                            {(settings.feedInTariff ?? 0.082).toFixed(3)} €
+                          </span>
+                        </div>
+                        <p className="text-xs text-(--color-muted)">
+                          {t('settings.feedInTariffHint', 'EEG feed-in compensation per kWh')}
+                        </p>
+                      </div>
+                      <div className="space-y-2">
+                        <label htmlFor="settings-grid-operator" className="text-sm font-medium">
+                          {t('settings.gridOperator', 'Grid operator')}
+                        </label>
+                        <input
+                          id="settings-grid-operator"
+                          type="text"
+                          value={settings.gridOperator ?? ''}
+                          onChange={(e) => updateSettings({ gridOperator: e.target.value })}
+                          className={inputClass}
+                          placeholder={t(
+                            'settings.gridOperatorPlaceholder',
+                            'e.g. Stromnetz Hamburg',
+                          )}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label htmlFor="settings-budget" className="text-sm font-medium">
+                          {t('settings.monthlyBudget', 'Monthly energy budget (€)')}
+                        </label>
+                        <div className="flex items-center gap-3">
+                          <input
+                            type="range"
+                            min={20}
+                            max={500}
+                            step={5}
+                            value={settings.monthlyBudget ?? 80}
+                            onChange={(e) =>
+                              updateSettings({ monthlyBudget: Number(e.target.value) })
+                            }
+                            className="flex-1 accent-(--color-primary)"
+                            aria-label={t('settings.monthlyBudget', 'Monthly energy budget (€)')}
+                            aria-valuetext={`${settings.monthlyBudget ?? 80} €`}
+                          />
+                          <span className="text-sm font-mono w-16 text-right">
+                            {settings.monthlyBudget ?? 80} €
+                          </span>
+                        </div>
+                        <p className="text-xs text-(--color-muted)">
+                          {t(
+                            'settings.monthlyBudgetHint',
+                            'Target monthly electricity cost for budget tracking',
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                  </section>
                 </motion.div>
               )}
 
@@ -2110,6 +2356,142 @@ export function Settings() {
                       </div>
                     </div>
                   </section>
+
+                  {/* Alert Thresholds */}
+                  <section className={sectionClass}>
+                    <h2 className={sectionHeaderClass}>
+                      <Gauge size={20} className="text-orange-400" />
+                      {t('settings.alertThresholds', 'Alert Thresholds')}
+                    </h2>
+                    <div className="space-y-5">
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <p className="font-medium text-sm">
+                            {t('settings.batteryAlertThreshold', 'Battery SoC alert level')}
+                          </p>
+                          <span className="text-sm font-mono tabular-nums text-(--color-primary)">
+                            {settings.batteryAlertThreshold ?? 15}%
+                          </span>
+                        </div>
+                        <input
+                          type="range"
+                          min={5}
+                          max={50}
+                          step={1}
+                          value={settings.batteryAlertThreshold ?? 15}
+                          onChange={(e) =>
+                            updateSettings({ batteryAlertThreshold: Number(e.target.value) })
+                          }
+                          className="w-full accent-(--color-primary)"
+                          aria-label={t(
+                            'settings.batteryAlertThreshold',
+                            'Battery SoC alert level',
+                          )}
+                          aria-valuetext={`${settings.batteryAlertThreshold ?? 15}%`}
+                        />
+                        <p className="text-xs text-(--color-muted)">
+                          {t(
+                            'settings.batteryAlertThresholdHint',
+                            'Alert when battery falls below this charge level',
+                          )}
+                        </p>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <p className="font-medium text-sm">
+                            {t('settings.priceAlertThreshold', 'Price alert threshold')}
+                          </p>
+                          <span className="text-sm font-mono tabular-nums text-(--color-primary)">
+                            {(settings.priceAlertThreshold ?? 0.1).toFixed(2)} €/kWh
+                          </span>
+                        </div>
+                        <input
+                          type="range"
+                          min={0.02}
+                          max={0.5}
+                          step={0.01}
+                          value={settings.priceAlertThreshold ?? 0.1}
+                          onChange={(e) =>
+                            updateSettings({ priceAlertThreshold: Number(e.target.value) })
+                          }
+                          className="w-full accent-(--color-primary)"
+                          aria-label={t('settings.priceAlertThreshold', 'Price alert threshold')}
+                          aria-valuetext={`${(settings.priceAlertThreshold ?? 0.1).toFixed(2)} €/kWh`}
+                        />
+                        <p className="text-xs text-(--color-muted)">
+                          {t(
+                            'settings.priceAlertThresholdHint',
+                            'Notify when grid price drops below this value',
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                  </section>
+
+                  {/* Quiet Hours */}
+                  <section className={sectionClass}>
+                    <h2 className={sectionHeaderClass}>
+                      <Moon size={20} className="text-indigo-400" />
+                      {t('settings.quietHours', 'Quiet Hours')}
+                    </h2>
+                    <div className="space-y-5">
+                      <div className="flex items-center justify-between p-4 rounded-xl border border-(--color-border) bg-(--color-surface)">
+                        <div>
+                          <p className="font-medium text-sm">
+                            {t('settings.quietHoursEnabled', 'Enable quiet hours')}
+                          </p>
+                          <p className="text-xs text-(--color-muted)">
+                            {t(
+                              'settings.quietHoursHint',
+                              'Suppress non-critical notifications during specified hours',
+                            )}
+                          </p>
+                        </div>
+                        <ToggleSwitch
+                          id="quiet-hours"
+                          checked={settings.quietHoursEnabled ?? false}
+                          onChange={(v) => updateSettings({ quietHoursEnabled: v })}
+                          label={t('settings.quietHoursEnabled', 'Enable quiet hours')}
+                        />
+                      </div>
+                      {(settings.quietHoursEnabled ?? false) && (
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <label
+                              htmlFor="quiet-start"
+                              className="text-sm font-medium flex items-center gap-2"
+                            >
+                              <Clock size={14} className="text-(--color-muted)" />
+                              {t('settings.quietHoursStart', 'Start')}
+                            </label>
+                            <input
+                              id="quiet-start"
+                              type="time"
+                              value={settings.quietHoursStart ?? '22:00'}
+                              onChange={(e) => updateSettings({ quietHoursStart: e.target.value })}
+                              className={inputClass}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <label
+                              htmlFor="quiet-end"
+                              className="text-sm font-medium flex items-center gap-2"
+                            >
+                              <Clock size={14} className="text-(--color-muted)" />
+                              {t('settings.quietHoursEnd', 'End')}
+                            </label>
+                            <input
+                              id="quiet-end"
+                              type="time"
+                              value={settings.quietHoursEnd ?? '07:00'}
+                              onChange={(e) => updateSettings({ quietHoursEnd: e.target.value })}
+                              className={inputClass}
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </section>
                 </motion.div>
               )}
 
@@ -2188,38 +2570,157 @@ export function Settings() {
                       </div>
 
                       {/* Reset Onboarding */}
-                      <div className="flex items-center justify-between p-4 rounded-xl border border-(--color-border) bg-(--color-surface)">
-                        <div>
-                          <p className="font-medium text-sm">
-                            {t('settings.resetOnboarding', 'Show onboarding again')}
-                          </p>
-                          <p className="text-xs text-(--color-muted)">
-                            {t(
-                              'settings.resetOnboardingHint',
-                              'Restart the welcome tour on next reload',
-                            )}
-                          </p>
+                      <div className="rounded-xl border border-(--color-primary)/20 bg-(--color-primary)/5 p-5">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex items-start gap-3">
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-(--color-primary)/15">
+                              <RotateCcw size={20} className="text-(--color-primary)" />
+                            </div>
+                            <div>
+                              <p className="font-medium text-sm">
+                                {t('settings.resetOnboarding', 'Show onboarding again')}
+                              </p>
+                              <p className="text-xs text-(--color-muted) mt-1">
+                                {t(
+                                  'settings.resetOnboardingHint',
+                                  'Restart the welcome tour on next reload',
+                                )}
+                              </p>
+                            </div>
+                          </div>
+                          <motion.button
+                            type="button"
+                            onClick={() => {
+                              useAppStore.getState().setOnboardingCompleted(false);
+                              setSaved(true);
+                              setTimeout(() => setSaved(false), 3000);
+                            }}
+                            className="flex items-center gap-2 rounded-xl border border-(--color-primary)/30 bg-(--color-primary)/10 px-4 py-2 text-sm text-(--color-primary) hover:bg-(--color-primary)/20 transition-colors focus-ring shrink-0"
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                          >
+                            <RotateCcw size={16} />
+                            {t('settings.resetOnboardingAction', 'Restart Tour')}
+                          </motion.button>
                         </div>
-                        <motion.button
-                          type="button"
-                          onClick={() => {
-                            useAppStore.getState().setOnboardingCompleted(false);
-                            setSaved(true);
-                            setTimeout(() => setSaved(false), 3000);
-                          }}
-                          className="flex items-center gap-2 rounded-xl border border-(--color-border) bg-(--color-surface-strong) px-4 py-2 text-sm text-(--color-muted) hover:text-(--color-primary) hover:border-(--color-primary)/30 transition-colors focus-ring"
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                        >
-                          <RotateCcw size={16} />
-                          {t('settings.resetOnboardingAction', 'Restart Tour')}
-                        </motion.button>
                       </div>
                     </div>
                   </section>
 
                   {/* PWA / App Installation */}
                   <PWASettingsSection />
+
+                  {/* Dashboard Preferences */}
+                  <section className={sectionClass}>
+                    <h2 className={sectionHeaderClass}>
+                      <Monitor size={20} className="text-cyan-400" />
+                      {t('settings.dashboardPrefs', 'Dashboard Preferences')}
+                    </h2>
+                    <div className="space-y-5">
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-medium text-sm">
+                              {t('settings.dashboardRefreshSec', 'Auto-refresh interval')}
+                            </p>
+                            <p className="text-xs text-(--color-muted)">
+                              {t(
+                                'settings.dashboardRefreshHint',
+                                'How often the dashboard data refreshes automatically',
+                              )}
+                            </p>
+                          </div>
+                          <span className="text-sm font-mono tabular-nums text-(--color-primary)">
+                            {settings.dashboardRefreshSec ?? 5}s
+                          </span>
+                        </div>
+                        <input
+                          type="range"
+                          min={1}
+                          max={30}
+                          step={1}
+                          value={settings.dashboardRefreshSec ?? 5}
+                          onChange={(e) =>
+                            updateSettings({ dashboardRefreshSec: Number(e.target.value) })
+                          }
+                          className="w-full accent-(--color-primary)"
+                          aria-label={t('settings.dashboardRefreshSec', 'Auto-refresh interval')}
+                          aria-valuetext={`${settings.dashboardRefreshSec ?? 5} ${t('common.seconds', 'seconds')}`}
+                        />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-medium text-sm">
+                            {t('settings.sidebarPosition', 'Sidebar position')}
+                          </p>
+                          <p className="text-xs text-(--color-muted)">
+                            {t(
+                              'settings.sidebarPositionHint',
+                              'Place the navigation sidebar on the left or right side',
+                            )}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-1 rounded-xl border border-(--color-border) bg-(--color-surface) p-1">
+                          {(['left', 'right'] as const).map((pos) => (
+                            <button
+                              key={pos}
+                              type="button"
+                              onClick={() => updateSettings({ sidebarPosition: pos })}
+                              className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
+                                (settings.sidebarPosition ?? 'left') === pos
+                                  ? 'bg-(--color-primary)/15 text-(--color-primary)'
+                                  : 'text-(--color-muted) hover:text-(--color-text)'
+                              }`}
+                              aria-pressed={(settings.sidebarPosition ?? 'left') === pos}
+                            >
+                              {pos === 'left'
+                                ? t('settings.sidebarLeft', 'Left')
+                                : t('settings.sidebarRight', 'Right')}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-medium text-sm">
+                            {t('settings.autoBackup', 'Automatic backup')}
+                          </p>
+                          <p className="text-xs text-(--color-muted)">
+                            {t(
+                              'settings.autoBackupHint',
+                              'Periodically save settings to local storage',
+                            )}
+                          </p>
+                        </div>
+                        <ToggleSwitch
+                          id="auto-backup"
+                          checked={settings.autoBackup ?? false}
+                          onChange={(v) => updateSettings({ autoBackup: v })}
+                          label={t('settings.autoBackup', 'Automatic backup')}
+                        />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-medium text-sm flex items-center gap-2">
+                            <Keyboard size={14} className="text-(--color-muted)" />
+                            {t('settings.keyboardShortcuts', 'Keyboard shortcuts')}
+                          </p>
+                          <p className="text-xs text-(--color-muted)">
+                            {t(
+                              'settings.keyboardShortcutsHint',
+                              'Enable Cmd+K command palette and other keyboard shortcuts',
+                            )}
+                          </p>
+                        </div>
+                        <ToggleSwitch
+                          id="keyboard-shortcuts"
+                          checked={settings.keyboardShortcuts ?? true}
+                          onChange={(v) => updateSettings({ keyboardShortcuts: v })}
+                          label={t('settings.keyboardShortcuts', 'Keyboard shortcuts')}
+                        />
+                      </div>
+                    </div>
+                  </section>
 
                   {/* Reset */}
                   <section className={sectionClass}>

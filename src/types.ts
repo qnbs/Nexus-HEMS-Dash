@@ -222,16 +222,34 @@ export interface StoredSettings {
   currency: 'eur' | 'chf' | 'gbp';
   // System
   mqttAutoDiscovery: boolean;
+  // Accessibility
+  fontScale: number;
+  reducedMotion: boolean;
+  highContrast: boolean;
   // Notifications
   pushNotifications: boolean;
   priceAlerts: boolean;
   batteryAlerts: boolean;
   gridAlerts: boolean;
   updateNotifications: boolean;
+  batteryAlertThreshold: number;
+  priceAlertThreshold: number;
+  quietHoursEnabled: boolean;
+  quietHoursStart: string;
+  quietHoursEnd: string;
+  // Energy extras
+  feedInTariff: number;
+  gridOperator: string;
+  monthlyBudget: number;
+  // Dashboard
+  dashboardRefreshSec: number;
+  sidebarPosition: 'left' | 'right';
   // Advanced
   debugMode: boolean;
   experimentalFeatures: boolean;
   performanceMode: boolean;
+  autoBackup: boolean;
+  keyboardShortcuts: boolean;
 }
 
 export interface FloorplanState {
