@@ -57,7 +57,7 @@ export function Dashboard() {
       >
         {/* Main Energy Flow (Sankey) */}
         <section
-          className="lg:col-span-2 glass-panel-strong p-6 rounded-3xl flex flex-col hover-lift"
+          className="lg:col-span-2 glass-panel-strong gradient-border spotlight p-6 rounded-3xl flex flex-col"
           aria-labelledby="energy-flow-title"
         >
           <h2
@@ -70,7 +70,7 @@ export function Dashboard() {
             >
               <Activity size={20} className="text-(--color-secondary)" aria-hidden="true" />
             </motion.div>
-            {t('dashboard.realtimeFlow')}
+            <span className="animated-underline">{t('dashboard.realtimeFlow')}</span>
           </h2>
           <div className="flex-1 min-h-[320px] sm:min-h-[400px] relative">
             <SankeyDiagram data={energyData} />
@@ -133,7 +133,7 @@ export function Dashboard() {
 
         {/* Floorplan & KNX Integration */}
         <motion.section
-          className="lg:col-span-2 glass-panel-strong p-6 rounded-3xl hover-lift"
+          className="lg:col-span-2 glass-panel-strong gradient-border spotlight p-6 rounded-3xl"
           aria-labelledby="floorplan-title"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -153,7 +153,7 @@ export function Dashboard() {
 
         {/* Control Panel */}
         <motion.section
-          className="glass-panel-strong p-6 rounded-3xl hover-lift"
+          className="glass-panel-strong gradient-border spotlight p-6 rounded-3xl"
           aria-labelledby="control-title"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -213,7 +213,7 @@ const MetricCard = memo(function MetricCard({
 }) {
   return (
     <motion.article
-      className={`metric-card rounded-3xl hover-lift hover-glow ${className || ''}`}
+      className={`metric-card gradient-border spotlight rounded-3xl ${className || ''}`}
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{
@@ -228,10 +228,21 @@ const MetricCard = memo(function MetricCard({
         scale: 1.02,
         transition: { duration: 0.3, type: 'spring', stiffness: 400, damping: 17 },
       }}
+      onMouseMove={(e) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        e.currentTarget.style.setProperty(
+          '--spotlight-x',
+          `${((e.clientX - rect.left) / rect.width) * 100}%`,
+        );
+        e.currentTarget.style.setProperty(
+          '--spotlight-y',
+          `${((e.clientY - rect.top) / rect.height) * 100}%`,
+        );
+      }}
     >
       <div className="flex items-center gap-3 mb-3">
         <motion.div
-          className="p-2.5 bg-(--color-surface) rounded-xl border border-(--color-border)"
+          className="flex h-10 w-10 items-center justify-center bg-(--color-surface) rounded-xl border border-(--color-border)"
           whileHover={{ rotate: 10, scale: 1.1 }}
           transition={{ type: 'spring', stiffness: 400, damping: 17 }}
         >
@@ -240,7 +251,7 @@ const MetricCard = memo(function MetricCard({
         <span className="text-sm font-medium text-(--color-text) fluid-text-sm">{label}</span>
       </div>
       <div>
-        <div className="text-2xl font-light tracking-tight text-(--color-text) fluid-text-2xl">
+        <div className="text-2xl font-light tracking-tight text-(--color-text) fluid-text-2xl tabular-nums">
           {value}
         </div>
         <div className="text-xs text-(--color-muted) mt-1.5 fluid-text-xs">{subValue}</div>

@@ -179,6 +179,70 @@
       inset 0 0 8px rgba(255, 136, 0, 0.08);
   }
 
+  /* ========== ANIMATED GRADIENT BORDER ========== */
+  .gradient-border {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .gradient-border::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--color-primary) 40%, transparent),
+      color-mix(in srgb, var(--color-secondary) 30%, transparent),
+      color-mix(in srgb, var(--color-accent) 20%, transparent)
+    );
+    mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.4s ease-out;
+  }
+
+  .gradient-border:hover::before {
+    opacity: 1;
+  }
+
+  /* ========== TEXT GRADIENT ========== */
+  .text-gradient {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* ========== SPOTLIGHT HOVER EFFECT ========== */
+  .spotlight {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .spotlight::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      300px circle at var(--spotlight-x, 50%) var(--spotlight-y, 50%),
+      color-mix(in srgb, var(--color-primary) 6%, transparent),
+      transparent 60%
+    );
+    opacity: 0;
+    transition: opacity 0.4s ease-out;
+    pointer-events: none;
+    border-radius: inherit;
+  }
+
+  .spotlight:hover::after {
+    opacity: 1;
+  }
+
   /* ========== ENERGY FLOW ANIMATIONS ========== */
   .energy-pulse {
     animation: energy-pulse 4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
@@ -191,6 +255,55 @@
     }
     50% {
       opacity: 0.85;
+    }
+  }
+
+  .energy-flow-animated {
+    animation: energy-dash 2s linear infinite;
+  }
+
+  @keyframes energy-dash {
+    to {
+      stroke-dashoffset: -20;
+    }
+  }
+
+  /* ========== STAGGER ENTRANCE ========== */
+  .stagger-fade-in > * {
+    opacity: 0;
+    transform: translateY(12px);
+    animation: stagger-item 0.4s ease-out forwards;
+  }
+
+  .stagger-fade-in > *:nth-child(1) {
+    animation-delay: 0.05s;
+  }
+  .stagger-fade-in > *:nth-child(2) {
+    animation-delay: 0.1s;
+  }
+  .stagger-fade-in > *:nth-child(3) {
+    animation-delay: 0.15s;
+  }
+  .stagger-fade-in > *:nth-child(4) {
+    animation-delay: 0.2s;
+  }
+  .stagger-fade-in > *:nth-child(5) {
+    animation-delay: 0.25s;
+  }
+  .stagger-fade-in > *:nth-child(6) {
+    animation-delay: 0.3s;
+  }
+  .stagger-fade-in > *:nth-child(7) {
+    animation-delay: 0.35s;
+  }
+  .stagger-fade-in > *:nth-child(8) {
+    animation-delay: 0.4s;
+  }
+
+  @keyframes stagger-item {
+    to {
+      opacity: 1;
+      transform: translateY(0);
     }
   }
 
@@ -361,15 +474,61 @@
     @apply inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.22em];
     @apply text-(--color-secondary)/90;
   }
-
-  /* ========== THEME SHELL ========== */
-  .theme-shell {
-    @apply bg-(--color-background) transition-colors duration-500;
+  ANIMATED UNDERLINE ========== */ .animated-underline {
+    position: relative;
   }
 
-  /* ========== FOCUS VISIBLE (WCAG 2.2 AA) ========== */
-  .focus-ring:focus-visible {
-    @apply outline-none ring-2 ring-(--color-primary) ring-offset-2 ring-offset-(--color-background);
+  .animated-underline::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+    border-radius: 1px;
+    transition:
+      width 0.3s ease-out,
+      left 0.3s ease-out;
+  }
+
+  .animated-underline:hover::after {
+    width: 100%;
+    left: 0;
+  }
+
+  /* ========== HEADER ACCENT LINE ========== */
+  .header-accent-line {
+    position: relative;
+  }
+
+  .header-accent-line::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      color-mix(in srgb, var(--color-primary) 40%, transparent) 20%,
+      color-mix(in srgb, var(--color-secondary) 30%, transparent) 50%,
+      color-mix(in srgb, var(--color-primary) 40%, transparent) 80%,
+      transparent
+    );
+  }
+
+  /* ========== SECTION DIVIDER ========== */
+  .section-divider {
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      color-mix(in srgb, var(--color-border) 60%, transparent) 30%,
+      color-mix(in srgb, var(--color-border) 60%, transparent) 70%,
+      transparent
+    );
   }
 
   /* ========== METRIC CARDS (ENHANCED) ========== */
@@ -378,9 +537,46 @@
     @apply flex flex-col justify-between gap-3 p-4 sm:p-6;
     @apply overflow-hidden;
     @apply transition-all duration-500 ease-out;
+    position: relative;
     background: linear-gradient(
       135deg,
       color-mix(in srgb, var(--color-surface) 80%, transparent),
+      color-mix(in srgb, var(--color-surface) 60%, transparent)
+    );
+    border: 1px solid color-mix(in srgb, var(--color-border) 100%, transparent);
+    box-shadow:
+      0 8px 24px rgba(0, 0, 0, 0.12),
+      0 2px 6px rgba(0, 0, 0, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  }
+
+  .metric-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      color-mix(in srgb, var(--color-primary) 40%, transparent),
+      transparent
+    );
+    opacity: 0;
+    transition: opacity 0.4s ease-out;
+  }
+
+  .metric-card:hover::before {
+    opacity: 1;
+  }
+
+  .metric-card:hover {
+    transform: translateY(-4px) scale(1.01);
+    border-color: color-mix(
+      in srgb,
+      var(--color-primary) 25%,
+      var(--color-border) color-mix(in srgb, var(--color-surface) 80%, transparent),
       color-mix(in srgb, var(--color-surface) 60%, transparent)
     );
     border: 1px solid color-mix(in srgb, var(--color-border) 100%, transparent);
@@ -403,6 +599,8 @@
   .btn-primary {
     @apply rounded-full px-6 py-2.5 font-semibold transition-all duration-300;
     @apply text-(--color-background) outline-none;
+    position: relative;
+    overflow: hidden;
     background: linear-gradient(
       135deg,
       var(--color-primary) 0%,
@@ -412,6 +610,33 @@
       0 4px 12px color-mix(in srgb, var(--color-primary) 40%, transparent),
       0 2px 4px rgba(0, 0, 0, 0.12),
       inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  }
+
+  .btn-primary::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+      45deg,
+      transparent 30%,
+      rgba(255, 255, 255, 0.12) 50%,
+      transparent 70%
+    );
+    transform: translateX(-100%);
+    transition: none;
+  }
+
+  .btn-primary:hover::after {
+    animation: btn-shimmer 0.6s ease-out forwards;
+  }
+
+  @keyframes btn-shimmer {
+    to {
+      transform: translateX(100%);
+    }
   }
 
   .btn-primary:hover {
@@ -651,4 +876,67 @@ body {
 
 .animate-pulse-slow {
   animation: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* ========== SIDEBAR ACTIVE ACCENT BAR ========== */
+.sidebar-link {
+  position: relative;
+}
+
+.sidebar-link-active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 25%;
+  bottom: 25%;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: linear-gradient(
+    180deg,
+    var(--color-primary),
+    color-mix(in srgb, var(--color-secondary) 70%, var(--color-primary))
+  );
+  box-shadow: 0 0 8px color-mix(in srgb, var(--color-primary) 50%, transparent);
+}
+
+/* ========== ICON BADGE PULSE ========== */
+@keyframes icon-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+.icon-float {
+  animation: icon-float 3s ease-in-out infinite;
+}
+
+/* ========== PROGRESS BAR ========== */
+.progress-bar {
+  height: 4px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--color-surface-strong) 100%, transparent);
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--color-primary) 40%, transparent);
+}
+
+/* ========== TOOLTIP ========== */
+.tooltip-content {
+  @apply rounded-xl px-3 py-2 text-xs font-medium;
+  background: color-mix(in srgb, var(--color-surface-strong) 96%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-border) 60%, transparent);
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.2),
+    0 2px 6px rgba(0, 0, 0, 0.12);
+  backdrop-filter: blur(12px);
 }

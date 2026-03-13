@@ -18,12 +18,14 @@ function PageHeaderComponent({ title, subtitle, icon, actions }: PageHeaderProps
     >
       <div className="flex items-center gap-3">
         {icon && (
-          <div
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-(--color-border) bg-(--color-primary)/10 text-(--color-primary)"
+          <motion.div
+            className="flex h-10 w-10 items-center justify-center rounded-xl border border-(--color-primary)/20 bg-(--color-primary)/10 text-(--color-primary)"
             aria-hidden="true"
+            whileHover={{ rotate: 8, scale: 1.08 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 17 }}
           >
             {icon}
-          </div>
+          </motion.div>
         )}
         <div>
           <h1 className="text-2xl font-semibold tracking-tight fluid-text-2xl">{title}</h1>

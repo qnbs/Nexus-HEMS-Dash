@@ -1,6 +1,7 @@
 import { memo } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { motion } from 'motion/react';
 import {
   LayoutDashboard,
   Activity,
@@ -60,13 +61,22 @@ function SidebarComponent() {
   };
 
   return (
-    <nav
+    <motion.nav
       className="fixed left-0 top-0 z-30 hidden h-screen w-64 flex-col border-r border-(--color-border) bg-(--color-surface) backdrop-blur-3xl lg:flex"
       aria-label={t('nav.mainNavigation', 'Main navigation')}
+      initial={{ x: -20, opacity: 0 }}
+      animate={{ x: 0, opacity: 1 }}
+      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
     >
       {/* Logo */}
       <div className="flex items-center gap-3 border-b border-(--color-border) px-5 py-5">
-        <Zap className="h-6 w-6 text-(--color-primary)" aria-hidden="true" />
+        <motion.div
+          className="flex h-9 w-9 items-center justify-center rounded-xl bg-(--color-primary)/10 border border-(--color-primary)/20"
+          whileHover={{ rotate: 10, scale: 1.1 }}
+          transition={{ type: 'spring', stiffness: 400, damping: 17 }}
+        >
+          <Zap className="h-5 w-5 text-(--color-primary)" aria-hidden="true" />
+        </motion.div>
         <div>
           <h1 className="text-lg font-semibold fluid-text-lg tracking-tight">
             {t('common.appName')}
@@ -78,7 +88,7 @@ function SidebarComponent() {
             aria-atomic="true"
           >
             <span
-              className={`h-2 w-2 rounded-full ${connected ? 'bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.6)]' : 'bg-rose-400'}`}
+              className={`h-2 w-2 rounded-full ${connected ? 'bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.6)]' : 'bg-rose-400 shadow-[0_0_6px_rgba(251,113,133,0.6)]'}`}
               aria-hidden="true"
             />
             <span className="text-xs text-(--color-muted)">
@@ -98,7 +108,7 @@ function SidebarComponent() {
           >
             {t('nav.groupEnergy', 'Energy')}
           </p>
-          <ul className="space-y-1" role="list" aria-labelledby="nav-group-energy">
+          <ul className="space-y-0.5" role="list" aria-labelledby="nav-group-energy">
             {groups.main.map((item) => (
               <li key={item.path}>
                 <NavLink
@@ -107,7 +117,7 @@ function SidebarComponent() {
                   className={({ isActive }) =>
                     `sidebar-link group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
                       isActive
-                        ? 'bg-(--color-primary)/15 text-(--color-primary) shadow-[inset_0_0_0_1px_var(--color-primary)/20]'
+                        ? 'sidebar-link-active bg-(--color-primary)/15 text-(--color-primary) shadow-[inset_0_0_0_1px_var(--color-primary)/20]'
                         : 'text-(--color-muted) hover:bg-white/5 hover:text-(--color-text)'
                     }`
                   }
@@ -143,7 +153,7 @@ function SidebarComponent() {
           >
             {t('nav.groupTools', 'Tools')}
           </p>
-          <ul className="space-y-1" role="list" aria-labelledby="nav-group-tools">
+          <ul className="space-y-0.5" role="list" aria-labelledby="nav-group-tools">
             {groups.tools.map((item) => (
               <li key={item.path}>
                 <NavLink
@@ -151,7 +161,7 @@ function SidebarComponent() {
                   className={({ isActive }) =>
                     `sidebar-link group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
                       isActive
-                        ? 'bg-(--color-primary)/15 text-(--color-primary) shadow-[inset_0_0_0_1px_var(--color-primary)/20]'
+                        ? 'sidebar-link-active bg-(--color-primary)/15 text-(--color-primary) shadow-[inset_0_0_0_1px_var(--color-primary)/20]'
                         : 'text-(--color-muted) hover:bg-white/5 hover:text-(--color-text)'
                     }`
                   }
@@ -187,7 +197,7 @@ function SidebarComponent() {
           >
             {t('nav.groupSystem', 'System')}
           </p>
-          <ul className="space-y-1" role="list" aria-labelledby="nav-group-system">
+          <ul className="space-y-0.5" role="list" aria-labelledby="nav-group-system">
             {groups.system.map((item) => (
               <li key={item.path}>
                 <NavLink
@@ -195,7 +205,7 @@ function SidebarComponent() {
                   className={({ isActive }) =>
                     `sidebar-link group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
                       isActive
-                        ? 'bg-(--color-primary)/15 text-(--color-primary) shadow-[inset_0_0_0_1px_var(--color-primary)/20]'
+                        ? 'sidebar-link-active bg-(--color-primary)/15 text-(--color-primary) shadow-[inset_0_0_0_1px_var(--color-primary)/20]'
                         : 'text-(--color-muted) hover:bg-white/5 hover:text-(--color-text)'
                     }`
                   }
@@ -228,10 +238,10 @@ function SidebarComponent() {
       <div className="border-t border-(--color-border) px-4 py-3">
         <div className="flex items-center gap-2 text-xs text-(--color-muted)">
           <span className="energy-pulse inline-block h-1.5 w-1.5 rounded-full bg-(--color-primary)" />
-          <span>Nexus HEMS v2.3.0</span>
+          <span>Nexus HEMS v4.1.0</span>
         </div>
       </div>
-    </nav>
+    </motion.nav>
   );
 }
 

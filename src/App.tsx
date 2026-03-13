@@ -155,7 +155,7 @@ export default function App() {
           <div className="relative z-10 lg:ml-64">
             {/* Top Bar (mobile + desktop header) */}
             <motion.header
-              className="glass-panel-strong sticky top-0 z-20 overflow-hidden px-4 py-2 sm:px-6 sm:py-3"
+              className="glass-panel-strong header-accent-line sticky top-0 z-20 overflow-hidden px-4 py-2 sm:px-6 sm:py-3"
               initial={{ opacity: 0, y: -12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
@@ -163,11 +163,13 @@ export default function App() {
               <div className="flex items-center justify-between gap-4">
                 {/* Mobile Logo */}
                 <div className="flex flex-col items-center lg:hidden" aria-label="HEMS">
-                  <img
+                  <motion.img
                     src={`${import.meta.env.BASE_URL}icon.svg`}
                     alt=""
-                    className="h-6 w-6 rounded-md"
+                    className="h-7 w-7 rounded-lg"
                     aria-hidden="true"
+                    whileHover={{ rotate: 10, scale: 1.1 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 17 }}
                   />
                   <span className="text-[0.55rem] font-bold uppercase leading-tight tracking-widest text-(--color-primary)">
                     HEMS
@@ -219,33 +221,43 @@ export default function App() {
 
                   {/* Connection Status */}
                   <div
-                    className="inline-flex items-center gap-2 rounded-full border border-(--color-border) bg-(--color-surface-strong) px-3 py-2 text-sm"
+                    className="inline-flex items-center gap-2 rounded-full border border-(--color-border) bg-(--color-surface-strong) px-3 py-2 text-sm transition-all duration-300"
                     role="status"
                     aria-live="polite"
                     aria-atomic="true"
                     aria-label={connected ? t('common.connected') : t('common.disconnected')}
                   >
-                    <Wifi
-                      className={`h-4 w-4 transition-colors duration-300 ${connected ? 'text-(--color-primary)' : 'text-rose-400'}`}
-                      aria-hidden="true"
-                    />
+                    <motion.div
+                      animate={connected ? { scale: [1, 1.15, 1] } : undefined}
+                      transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                    >
+                      <Wifi
+                        className={`h-4 w-4 transition-colors duration-300 ${connected ? 'text-(--color-primary)' : 'text-rose-400'}`}
+                        aria-hidden="true"
+                      />
+                    </motion.div>
                     <span className="hidden sm:inline">
                       {connected ? t('common.connected') : t('common.disconnected')}
                     </span>
                   </div>
 
-                  <div
+                  <motion.div
                     className="price-pill hidden sm:inline-flex"
                     aria-label={t('dashboard.currentPrice', 'Current electricity price')}
+                    whileHover={{ scale: 1.05 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 17 }}
                   >
                     {priceCurrent.toFixed(3)} €/kWh
-                  </div>
+                  </motion.div>
                 </div>
               </div>
             </motion.header>
 
             {/* Page Content */}
-            <main id="main-content" className="mx-auto max-w-7xl px-4 py-6 pb-20 sm:px-6 lg:pb-6">
+            <main
+              id="main-content"
+              className="mx-auto max-w-7xl px-4 py-6 pb-20 sm:px-6 lg:pb-6 pattern-grid"
+            >
               <Breadcrumbs />
               <ErrorBoundary>
                 <Suspense fallback={<PageLoadingFallback />}>

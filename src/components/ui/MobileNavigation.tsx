@@ -203,7 +203,9 @@ function MobileNavigationComponent() {
         className="fixed bottom-0 left-0 right-0 z-50 lg:hidden"
         aria-label={t('mobile.navigation', 'Mobile Navigation')}
       >
-        <div className="absolute inset-0 border-t border-(--color-border) bg-(--color-surface) backdrop-blur-3xl" />
+        <div className="absolute inset-0 border-t border-(--color-border) bg-(--color-surface) backdrop-blur-3xl">
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-(--color-primary)/20 to-transparent" />
+        </div>
         <div className="relative flex items-center justify-around px-2 py-2">
           {primaryItems.map((item) => {
             const isActive =
@@ -211,11 +213,12 @@ function MobileNavigationComponent() {
                 ? location.pathname === '/'
                 : location.pathname.startsWith(item.path);
             return (
-              <button
+              <motion.button
                 key={item.id}
                 onClick={() => handleNavigation(item.path)}
                 className="relative flex flex-col items-center gap-0.5 px-3 py-1"
                 aria-current={isActive ? 'page' : undefined}
+                whileTap={{ scale: 0.92 }}
               >
                 <div
                   className={`flex h-10 w-10 items-center justify-center rounded-2xl transition-colors ${
@@ -240,15 +243,16 @@ function MobileNavigationComponent() {
                 >
                   {item.label}
                 </span>
-              </button>
+              </motion.button>
             );
           })}
           {/* More button */}
-          <button
+          <motion.button
             onClick={() => setMoreOpen(!moreOpen)}
             className="relative flex flex-col items-center gap-0.5 px-3 py-1"
             aria-expanded={moreOpen}
             aria-label={t('nav.more', 'More pages')}
+            whileTap={{ scale: 0.92 }}
           >
             <div
               className={`flex h-10 w-10 items-center justify-center rounded-2xl transition-colors ${moreOpen ? 'bg-(--color-primary)/20 text-(--color-primary)' : 'text-(--color-muted)'}`}
@@ -260,7 +264,7 @@ function MobileNavigationComponent() {
             >
               {t('nav.more', 'More')}
             </span>
-          </button>
+          </motion.button>
         </div>
       </nav>
     </>

@@ -138,7 +138,30 @@ export const SankeyDiagram = memo(function SankeyDiagram({ data }: { data: Energ
       links: activeLinks.map((d) => Object.assign({}, d)),
     });
 
-    // Draw links with subtle glow
+    // Define gradient defs for links
+    const defs = svg.append('defs');
+
+    // Create gradients for each link
+    activeLinks.forEach((link, i) => {
+      const sourceColor = nodes[link.source].color;
+      const targetColor = nodes[link.target].color;
+      const gradient = defs
+        .append('linearGradient')
+        .attr('id', `link-gradient-${i}`)
+        .attr('gradientUnits', 'userSpaceOnUse');
+      gradient
+        .append('stop')
+        .attr('offset', '0%')
+        .attr('stop-color', sourceColor)
+        .attr('stop-opacity', 0.6);
+      gradient
+        .append('stop')
+        .attr('offset', '100%')
+        .attr('stop-color', targetColor)
+        .attr('stop-opacity', 0.4);
+    });
+
+    // Draw links with gradient strokes
     svg
       .append('g')
       .selectAll('path')
@@ -146,32 +169,32 @@ export const SankeyDiagram = memo(function SankeyDiagram({ data }: { data: Energ
       .join('path')
       .attr('d', sankeyLinkHorizontal())
       .attr('fill', 'none')
-      .attr('stroke', (d) => (d.source as CustomNode).color)
+      .attr('stroke', (_d, i) => `url(#link-gradient-${i})`)
       .attr('stroke-width', (d) => Math.max(1, d.width || 0))
-      .attr('stroke-opacity', 0.35)
+      .attr('stroke-opacity', 0.5)
       .attr('class', 'energy-flow-path')
       .style('filter', (d) => {
         const color = (d.source as CustomNode).color;
-        return `drop-shadow(0 0 3px ${color}40)`;
+        return `drop-shadow(0 0 4px ${color}50)`;
       })
       .style('cursor', 'pointer')
       .style('transition', 'all 0.3s ease-out')
       .on('mouseenter', function (_event, d) {
         select(this)
-          .attr('stroke-opacity', 0.6)
-          .attr('stroke-width', Math.max(2, (d.width || 0) + 1))
+          .attr('stroke-opacity', 0.75)
+          .attr('stroke-width', Math.max(2, (d.width || 0) + 2))
           .style('filter', () => {
             const color = (d.source as CustomNode).color;
-            return `drop-shadow(0 0 6px ${color}60)`;
+            return `drop-shadow(0 0 8px ${color}70)`;
           });
       })
       .on('mouseleave', function (_event, d) {
         select(this)
-          .attr('stroke-opacity', 0.35)
+          .attr('stroke-opacity', 0.5)
           .attr('stroke-width', Math.max(1, d.width || 0))
           .style('filter', () => {
             const color = (d.source as CustomNode).color;
-            return `drop-shadow(0 0 3px ${color}40)`;
+            return `drop-shadow(0 0 4px ${color}50)`;
           });
       })
       .append('title')
@@ -194,14 +217,20 @@ export const SankeyDiagram = memo(function SankeyDiagram({ data }: { data: Energ
       .attr('height', (d) => (d.y1 || 0) - (d.y0 || 0))
       .attr('width', (d) => (d.x1 || 0) - (d.x0 || 0))
       .attr('fill', (d) => d.color)
-      .attr('fill-opacity', 0.85)
-      .attr('rx', 4)
+      .attr('fill-opacity', 0.9)
+      .attr('rx', 6)
+      .attr('ry', 6)
+      .style('filter', (d) => `drop-shadow(0 2px 4px ${d.color}30)`)
       .style('transition', 'all 0.2s ease-out')
       .on('mouseenter', function (_event, d) {
-        select(this).attr('fill-opacity', 1).style('filter', `drop-shadow(0 2px 8px ${d.color}50)`);
+        select(this)
+          .attr('fill-opacity', 1)
+          .style('filter', `drop-shadow(0 4px 12px ${d.color}60)`);
       })
-      .on('mouseleave', function () {
-        select(this).attr('fill-opacity', 0.85).style('filter', 'none');
+      .on('mouseleave', function (_event, d) {
+        select(this)
+          .attr('fill-opacity', 0.9)
+          .style('filter', `drop-shadow(0 2px 4px ${d.color}30)`);
       })
       .append('title')
       .text((d) => `${d.name}\n${Math.round(d.value || 0)} W`);

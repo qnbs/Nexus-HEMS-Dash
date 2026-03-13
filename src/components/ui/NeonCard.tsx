@@ -1,5 +1,5 @@
 import { motion, type HTMLMotionProps } from 'motion/react';
-import { type ReactNode } from 'react';
+import { type ReactNode, type MouseEvent } from 'react';
 
 interface NeonCardProps extends Omit<HTMLMotionProps<'div'>, 'children'> {
   children: ReactNode;
@@ -7,6 +7,7 @@ interface NeonCardProps extends Omit<HTMLMotionProps<'div'>, 'children'> {
   glow?: boolean;
   pulse?: boolean;
   hover?: boolean;
+  spotlight?: boolean;
 }
 
 const variantStyles = {
@@ -37,12 +38,25 @@ const variantStyles = {
   },
 };
 
+function handleSpotlightMove(e: MouseEvent<HTMLDivElement>) {
+  const rect = e.currentTarget.getBoundingClientRect();
+  e.currentTarget.style.setProperty(
+    '--spotlight-x',
+    `${((e.clientX - rect.left) / rect.width) * 100}%`,
+  );
+  e.currentTarget.style.setProperty(
+    '--spotlight-y',
+    `${((e.clientY - rect.top) / rect.height) * 100}%`,
+  );
+}
+
 export function NeonCard({
   children,
   variant = 'default',
   glow = false,
   pulse = false,
   hover = true,
+  spotlight = false,
   className = '',
   ...props
 }: NeonCardProps) {
@@ -51,16 +65,25 @@ export function NeonCard({
   return (
     <motion.div
       className={`
-        rounded-3xl border backdrop-blur-3xl
+        rounded-3xl border backdrop-blur-3xl gradient-border
         ${styles.border} ${styles.bg}
         ${glow ? styles.glow : ''}
         ${pulse ? 'animate-pulse-slow' : ''}
+        ${spotlight ? 'spotlight' : ''}
         ${className}
       `}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      whileHover={hover ? { scale: 1.02, transition: { duration: 0.2 } } : undefined}
+      whileHover={
+        hover
+          ? {
+              scale: 1.015,
+              transition: { duration: 0.25, type: 'spring', stiffness: 400, damping: 25 },
+            }
+          : undefined
+      }
+      onMouseMove={spotlight ? handleSpotlightMove : undefined}
       {...props}
     >
       {children}
