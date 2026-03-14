@@ -3,7 +3,7 @@ import { select } from 'd3-selection';
 import { sankey, sankeyLinkHorizontal } from 'd3-sankey';
 import { useTranslation } from 'react-i18next';
 import { EnergyData } from '../types';
-import { cacheSankeyData } from '../lib/offline-cache';
+import { persistSankeySnapshot } from '../lib/db';
 
 interface CustomNode {
   name: string;
@@ -250,8 +250,8 @@ export function SankeyDiagram({ data }: { data: EnergyData }) {
       .style('user-select', 'none');
 
     // Cache Sankey data for offline mode
-    void cacheSankeyData(
-      graph.nodes.map((n) => ({ name: n.name, color: n.color, value: n.value })),
+    void persistSankeySnapshot(
+      data,
       graph.links.map((l) => ({
         source: (l.source as CustomNode).name,
         target: (l.target as CustomNode).name,

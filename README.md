@@ -452,18 +452,20 @@ push/PR → tauri-build.yml
 
 ### Bundle Budget
 
-| Chunk              | Size    | Limit  |
-| :----------------- | :------ | :----- |
-| `index`            | ~219 KB | 600 KB |
-| `framework`        | ~229 KB | —      |
-| `vendor-recharts`  | ~306 KB | —      |
-| `vendor-pdf`       | ~770 KB | —      |
-| `vendor-motion`    | ~124 KB | —      |
-| `vendor-state`     | ~98 KB  | —      |
-| `vendor-d3`        | ~84 KB  | —      |
-| `vendor-i18n`      | ~51 KB  | —      |
-| `vendor-radix`     | ~32 KB  | —      |
-| **Total precache** | ~2.7 MB | —      |
+| Chunk              | Size    | Gzip    | Limit  |
+| :----------------- | :------ | :------ | :----- |
+| `index`            | ~106 KB | ~31 KB  | 600 KB |
+| `framework`        | ~230 KB | ~74 KB  | —      |
+| `vendor-recharts`  | ~350 KB | ~98 KB  | —      |
+| `vendor-pdf`       | ~770 KB | ~235 KB | —      |
+| `vendor-motion`    | ~124 KB | ~41 KB  | —      |
+| `vendor-state`     | ~98 KB  | ~33 KB  | —      |
+| `vendor-d3`        | ~84 KB  | ~27 KB  | —      |
+| `de` (locale)      | ~71 KB  | ~26 KB  | —      |
+| `en` (locale)      | ~67 KB  | ~24 KB  | —      |
+| `vendor-i18n`      | ~51 KB  | ~16 KB  | —      |
+| `vendor-radix`     | ~32 KB  | ~11 KB  | —      |
+| **Total precache** | ~3.2 MB | —       | —      |
 
 ---
 
@@ -509,31 +511,65 @@ cd src-tauri && cargo tauri build
 
 ## 🗺️ Roadmap 2026
 
-| Quarter | Feature                                                 | Status      |
-| :------ | :------------------------------------------------------ | :---------- |
-| Q1      | Home Assistant / MQTT Integration                       | ✅ Shipped  |
-| Q1      | Predictive AI (Gemini + tariff forecasting)             | ✅ Shipped  |
-| Q1      | PDF Monthly Reports (Sankey + CO₂)                      | ✅ Shipped  |
-| Q1      | Multi-Household Sharing                                 | ✅ Shipped  |
-| Q1      | Live Tariff Widget (Tibber/aWATTar)                     | ✅ Shipped  |
-| Q2      | 5 Adapters (Victron, Modbus, KNX, OCPP 2.1, EEBUS stub) | ✅ Shipped  |
-| Q2      | 5 Themes + Neo-Energy Design System                     | ✅ Shipped  |
-| Q2      | BYOK AI Vault (AES-GCM 256-bit, 7 providers)            | ✅ Shipped  |
-| Q2      | 106 Unit Tests + CI Hardening                           | ✅ Shipped  |
-| Q3      | EEBUS SPINE/SHIP Full Implementation                    | ✅ Shipped  |
-| Q3      | Prometheus/Grafana Monitoring                           | ✅ Shipped  |
-| Q3      | PWA Auto-Update + Offline Perfection                    | ✅ Shipped  |
-| Q3      | Docker / Kubernetes Deployment                          | ✅ Shipped  |
-| Q3      | React Compiler + Build Optimization (52% reduction)     | ✅ Shipped  |
-| Q3      | Lighthouse CI + Tauri Desktop Builds                    | ✅ Shipped  |
-| Q3      | WCAG 2.2 AA + Radix UI Primitives                       | ✅ Shipped  |
-| Q4      | Historical Data Analytics Dashboard                     | 🔄 Planned  |
-| Q4      | Matter / Thread Smart Home Integration                  | 🔜 Upcoming |
-| Q4      | Multi-Tenant SaaS Mode                                  | 🔜 Upcoming |
+| Quarter | Feature                                                   | Status      |
+| :------ | :-------------------------------------------------------- | :---------- |
+| Q1      | Home Assistant / MQTT Integration                         | ✅ Shipped  |
+| Q1      | Predictive AI (Gemini + tariff forecasting)               | ✅ Shipped  |
+| Q1      | PDF Monthly Reports (Sankey + CO₂)                        | ✅ Shipped  |
+| Q1      | Multi-Household Sharing                                   | ✅ Shipped  |
+| Q1      | Live Tariff Widget (Tibber/aWATTar)                       | ✅ Shipped  |
+| Q2      | 5 Adapters (Victron, Modbus, KNX, OCPP 2.1, EEBUS stub)   | ✅ Shipped  |
+| Q2      | 5 Themes + Neo-Energy Design System                       | ✅ Shipped  |
+| Q2      | BYOK AI Vault (AES-GCM 256-bit, 7 providers)              | ✅ Shipped  |
+| Q2      | 106 Unit Tests + CI Hardening                             | ✅ Shipped  |
+| Q3      | EEBUS SPINE/SHIP Full Implementation                      | ✅ Shipped  |
+| Q3      | Prometheus/Grafana Monitoring                             | ✅ Shipped  |
+| Q3      | PWA Auto-Update + Offline Perfection                      | ✅ Shipped  |
+| Q3      | Docker / Kubernetes Deployment                            | ✅ Shipped  |
+| Q3      | React Compiler + Build Optimization (60% index reduction) | ✅ Shipped  |
+| Q3      | Lighthouse CI + Tauri Desktop Builds                      | ✅ Shipped  |
+| Q3      | WCAG 2.2 AA Audit + Radix UI Primitives                   | ✅ Shipped  |
+| Q3      | Global Audit: TS-strict, 0 lint warnings, dead code purge | ✅ Shipped  |
+| Q3      | Cross-page navigation system (PageCrossLinks)             | ✅ Shipped  |
+| Q3      | IndexedDB consolidation (single Dexie database)           | ✅ Shipped  |
+| Q4      | Historical Data Analytics Dashboard                       | 🔄 Planned  |
+| Q4      | Matter / Thread Smart Home Integration                    | 🔜 Upcoming |
+| Q4      | Multi-Tenant SaaS Mode                                    | 🔜 Upcoming |
 
 ---
 
 ## 📝 Changelog
+
+<details>
+<summary><b>v4.2.0</b> — Global Audit, React Compiler Cleanup & IndexedDB Consolidation</summary>
+
+- **Removed all manual memoization**: 22× `memo()`, 12× `useMemo()`, 7× `useCallback()` — React Compiler handles auto-memoization
+- **ESLint zero-warning enforcement**: Fixed `exhaustive-deps` in PredictiveForecast, `set-state-in-effect` in CommandPalette
+- **IndexedDB consolidation**: Migrated SankeyDiagram from `cacheSankeyData` (offline-cache.ts / `NexusHEMS` DB) to `persistSankeySnapshot` (db.ts / `nexus-hems-dash` DB) — single database architecture
+- **CI/Pipeline fixes**: ESLint scripts updated from v8 `--ext` to v9 flat config syntax, nginx CSP `worker-src 'self'` added
+- **Tauri v2 fixes**: `windows_subsystem` moved from lib.rs → main.rs, version synced across package.json / Cargo.toml / tauri.conf.json
+- **Lazy-loaded locales**: i18n.ts rewritten with `partialBundledLanguages` + dynamic `import()` — index chunk 261 KB → 106 KB (−60%)
+- **Lazy-loaded Onboarding**: Separate 19 KB chunk, only loads when needed
+- **CSS fix**: Eliminated "Invalid dangling combinator" build warning
+- Version bump 0.13.0 → 4.2.0 (aligned with Tauri/Cargo versions)
+</details>
+
+<details>
+<summary><b>v4.1.0</b> — WCAG 2.2 AA Comprehensive Audit</summary>
+
+- **Route-change focus management**: Programmatic focus on `<main>` after navigation with `aria-live` route announcements
+- **CommandPalette**: `aria-labelledby`, `aria-label` on search input
+- **MobileNavigation**: Focus-restore on close, `focus-ring` on all nav items, `aria-label` for icon buttons
+- **Onboarding**: Escape key to close, `aria-label` on step indicators and skip button, `role="status"` on step counter
+- **Floorplan**: Contextual `aria-labels` on temperature buttons with room names, SVG focus outlines, screen-reader room status text
+- **SankeyDiagram**: Hidden accessible data table for screen readers with energy flow source/target/value data
+- **OfflineBanner**: `aria-atomic` for live region, `focus-ring` on retry button
+- **ConfirmDialog**: `aria-labelledby` linking title to dialog
+- **Sidebar**: Semantic `<h3>` headings for nav groups (was `<p>`)
+- **MonitoringPanel**: `scope="col"` on table headers
+- **CSS**: `.focus-ring` utility class (2px ring, offset, high-contrast enhanced), SVG `rect:focus-visible` outline
+- **i18n**: 13 new a11y keys in de.ts and en.ts
+</details>
 
 <details>
 <summary><b>v4.0.0</b> — Performance Architecture & Adapter Optimization</summary>
@@ -766,7 +802,8 @@ npm run dev
 | Q2      | 5 Adapter, 5 Themes, BYOK AI, 106 Tests, CI-Härtung   | ✅ Ausgeliefert |
 | Q3      | EEBUS SPINE/SHIP, Monitoring, PWA-Perfektion          | ✅ Ausgeliefert |
 | Q3      | Docker/Kubernetes, Tauri Desktop, Lighthouse CI       | ✅ Ausgeliefert |
-| Q3      | React Compiler, WCAG 2.2 AA, Radix UI                 | ✅ Ausgeliefert |
+| Q3      | React Compiler (60% Index-Reduktion), WCAG 2.2 AA     | ✅ Ausgeliefert |
+| Q3      | Global Audit, IndexedDB-Konsolidierung, Cross-Links   | ✅ Ausgeliefert |
 | Q4      | Historische Datenanalyse, Matter/Thread, Multi-Tenant | 🔜 Geplant      |
 
 ### 📄 Lizenz
