@@ -22,6 +22,7 @@ import {
 import { PieChart as RechartsPie, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { PageHeader } from '../components/layout/PageHeader';
 import { Floorplan } from '../components/Floorplan';
+import { PageCrossLinks } from '../components/ui/PageCrossLinks';
 
 const ROOMS = [
   {
@@ -813,6 +814,9 @@ function FloorplanPageComponent() {
           ))}
         </div>
       </motion.section>
+
+      {/* ─── Cross-Links & Navigation ─────────────────────────── */}
+      <PageCrossLinks />
     </div>
   );
 }

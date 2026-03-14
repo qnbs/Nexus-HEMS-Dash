@@ -35,6 +35,7 @@ import {
 import { useAppStore } from '../store';
 import { PageHeader } from '../components/layout/PageHeader';
 import { useMetrics, getMetricFromSnapshot } from '../core/useMetrics';
+import { PageCrossLinks } from '../components/ui/PageCrossLinks';
 
 // ─── Deterministic system load history ────────────────────────────────
 
@@ -842,6 +843,9 @@ function MonitoringPageComponent() {
           {t('monitoring.grafanaHint')}
         </div>
       </motion.section>
+
+      {/* ─── Cross-Links & Navigation ─────────────────────────── */}
+      <PageCrossLinks />
     </div>
   );
 }

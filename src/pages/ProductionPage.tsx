@@ -34,6 +34,7 @@ import { DemoBadge } from '../components/DemoBadge';
 import { PageHeader } from '../components/layout/PageHeader';
 import { PredictiveForecast } from '../components/PredictiveForecast';
 import { Link } from 'react-router-dom';
+import { PageCrossLinks } from '../components/ui/PageCrossLinks';
 
 // ─── Generate realistic 24h PV production curve ─────────────────────
 function generateProductionHistory(currentPvPower: number, peakKWp: number) {
@@ -601,6 +602,9 @@ function ProductionPageComponent() {
           <PredictiveForecast />
         </motion.div>
       </div>
+
+      {/* ─── Cross-Links & Navigation ─────────────────────────── */}
+      <PageCrossLinks />
     </div>
   );
 }

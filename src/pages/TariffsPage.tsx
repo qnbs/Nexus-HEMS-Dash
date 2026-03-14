@@ -42,6 +42,7 @@ import { useAppStore } from '../store';
 import { PageHeader } from '../components/layout/PageHeader';
 import { LivePriceWidget } from '../components/LivePriceWidget';
 import { PredictiveForecast } from '../components/PredictiveForecast';
+import { PageCrossLinks } from '../components/ui/PageCrossLinks';
 
 // ─── Static data (generated once, outside render) ────────────────────
 
@@ -1180,6 +1181,9 @@ function TariffsPageComponent() {
           </div>
         </div>
       </motion.section>
+
+      {/* ─── Cross-Links & Navigation ─────────────────────────── */}
+      <PageCrossLinks />
     </div>
   );
 }

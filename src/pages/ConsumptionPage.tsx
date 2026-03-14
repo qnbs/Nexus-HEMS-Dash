@@ -35,6 +35,7 @@ import { useAppStore } from '../store';
 import { getDisplayData } from '../lib/demo-data';
 import { DemoBadge } from '../components/DemoBadge';
 import { PageHeader } from '../components/layout/PageHeader';
+import { PageCrossLinks } from '../components/ui/PageCrossLinks';
 
 // ─── Generate realistic 24h consumption history ─────────────────────
 function generateConsumptionHistory() {
@@ -676,6 +677,9 @@ function ConsumptionPageComponent() {
           </div>
         </motion.section>
       )}
+
+      {/* ─── Cross-Links & Navigation ─────────────────────────── */}
+      <PageCrossLinks />
     </div>
   );
 }

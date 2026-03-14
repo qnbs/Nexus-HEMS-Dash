@@ -36,6 +36,7 @@ import { DemoBadge } from '../components/DemoBadge';
 import { useLegacySendCommand } from '../core/useLegacySendCommand';
 import { PageHeader } from '../components/layout/PageHeader';
 import { Link } from 'react-router-dom';
+import { PageCrossLinks } from '../components/ui/PageCrossLinks';
 
 // ─── Generate realistic 24h SoC + Power history ─────────────────────
 function generateSoCHistory(currentSoC: number, currentPower: number) {
@@ -708,6 +709,9 @@ function StoragePageComponent() {
           </Link>
         </div>
       </motion.section>
+
+      {/* ─── Cross-Links & Navigation ─────────────────────────── */}
+      <PageCrossLinks />
     </div>
   );
 }

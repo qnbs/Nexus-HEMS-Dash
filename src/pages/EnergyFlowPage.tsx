@@ -36,6 +36,7 @@ import { DemoBadge } from '../components/DemoBadge';
 import { PageHeader } from '../components/layout/PageHeader';
 import { SankeyDiagram } from '../components/SankeyDiagram';
 import { LivePriceWidget } from '../components/LivePriceWidget';
+import { PageCrossLinks } from '../components/ui/PageCrossLinks';
 
 // ─── 24h Power History Data (simulated) ───────────────────────────────
 function generate24hHistory(energyData: {
@@ -694,6 +695,9 @@ function EnergyFlowPageComponent() {
           </motion.section>
         )}
       </AnimatePresence>
+
+      {/* ─── Cross-Links & Navigation ─────────────────────────── */}
+      <PageCrossLinks />
     </div>
   );
 }

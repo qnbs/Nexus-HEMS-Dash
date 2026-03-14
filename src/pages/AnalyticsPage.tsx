@@ -40,6 +40,7 @@ import { PageHeader } from '../components/layout/PageHeader';
 import { PredictiveForecast } from '../components/PredictiveForecast';
 import { ExportAndSharing } from '../components/ExportAndSharing';
 import { calculateCo2Savings } from '../lib/format';
+import { PageCrossLinks } from '../components/ui/PageCrossLinks';
 
 // ─── Deterministic data generators (module-level, pure per call) ──────
 
@@ -808,6 +809,9 @@ function AnalyticsPageComponent() {
       >
         <ExportAndSharing />
       </motion.div>
+
+      {/* ─── Cross-Links & Navigation ─────────────────────────── */}
+      <PageCrossLinks />
     </div>
   );
 }

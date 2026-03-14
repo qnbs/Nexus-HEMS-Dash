@@ -37,14 +37,51 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
+import { Link } from 'react-router-dom';
+import { ArrowRight } from 'lucide-react';
 import { themeDefinitions, themeOrder, type ThemeName } from '../design-tokens';
 import { useAppStore, defaultSettings } from '../store';
 import { SYSTEM_PRESETS, type PVConfig } from '../types';
 import { resolveTheme, type ThemePreference } from '../lib/theme';
 import { ConfirmDialog, useConfirmDialog } from '../components/ConfirmDialog';
 import { usePWAInstall } from '../lib/pwa-install';
+import { SETTINGS_TABS, type SettingsTabId } from '../lib/page-relations';
+import { PAGE_REGISTRY } from '../lib/page-relations';
 
 const AISettingsPage = lazy(() => import('./AISettingsPage'));
+
+// ─── Feature Links Bar for each Settings Tab ────────────────────────
+function SettingsFeatureBar({ tabId }: { tabId: SettingsTabId }) {
+  const { t } = useTranslation();
+  const meta = SETTINGS_TABS[tabId];
+  if (!meta || meta.relatedPages.length === 0) return null;
+
+  return (
+    <div className="mb-4 rounded-xl border border-(--color-primary)/15 bg-(--color-primary)/5 p-3">
+      <p className="mb-2 text-[10px] font-semibold tracking-wider text-(--color-primary) uppercase">
+        {t('crossLinks.affectedFeatures')}
+      </p>
+      <div className="flex flex-wrap gap-2">
+        {meta.relatedPages.map((pageId) => {
+          const page = PAGE_REGISTRY[pageId];
+          if (!page) return null;
+          const Icon = page.icon;
+          return (
+            <Link
+              key={pageId}
+              to={page.path}
+              className="focus-ring inline-flex items-center gap-1.5 rounded-lg border border-(--color-border)/30 bg-white/5 px-2.5 py-1.5 text-xs text-(--color-text) transition-colors hover:bg-white/10 hover:text-(--color-primary)"
+            >
+              <Icon size={12} aria-hidden="true" />
+              {t(page.i18nKey)}
+              <ArrowRight size={10} className="text-(--color-muted)" aria-hidden="true" />
+            </Link>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 type SettingsTab =
   | 'appearance'
@@ -703,6 +740,7 @@ export function Settings() {
                   id="tabpanel-appearance"
                   aria-labelledby="tab-appearance"
                 >
+                  <SettingsFeatureBar tabId="appearance" />
                   {/* Theme Selection */}
                   <section className={sectionClass}>
                     <h2 className={sectionHeaderClass}>
@@ -1006,6 +1044,7 @@ export function Settings() {
                   id="tabpanel-system"
                   aria-labelledby="tab-system"
                 >
+                  <SettingsFeatureBar tabId="system" />
                   <section className={sectionClass}>
                     <h2 className={sectionHeaderClass}>
                       <Server size={20} className="text-blue-400" />
@@ -1203,6 +1242,7 @@ export function Settings() {
                   id="tabpanel-energy"
                   aria-labelledby="tab-energy"
                 >
+                  <SettingsFeatureBar tabId="energy" />
                   <section className={sectionClass}>
                     <h2 className={sectionHeaderClass}>
                       <Zap size={20} className="text-yellow-400" />
@@ -2074,6 +2114,7 @@ export function Settings() {
                   id="tabpanel-security"
                   aria-labelledby="tab-security"
                 >
+                  <SettingsFeatureBar tabId="security" />
                   <section className={sectionClass}>
                     <h2 className={sectionHeaderClass}>
                       <Shield size={20} className="text-red-400" />
@@ -2178,6 +2219,7 @@ export function Settings() {
                   id="tabpanel-storage"
                   aria-labelledby="tab-storage"
                 >
+                  <SettingsFeatureBar tabId="storage" />
                   <section className={sectionClass}>
                     <h2 className={sectionHeaderClass}>
                       <Database size={20} className="text-purple-400" />
@@ -2280,6 +2322,7 @@ export function Settings() {
                   id="tabpanel-notifications"
                   aria-labelledby="tab-notifications"
                 >
+                  <SettingsFeatureBar tabId="notifications" />
                   <section className={sectionClass}>
                     <h2 className={sectionHeaderClass}>
                       <Bell size={20} className="text-yellow-400" />
@@ -2529,6 +2572,7 @@ export function Settings() {
                   id="tabpanel-advanced"
                   aria-labelledby="tab-advanced"
                 >
+                  <SettingsFeatureBar tabId="advanced" />
                   <section className={sectionClass}>
                     <h2 className={sectionHeaderClass}>
                       <Gauge size={20} className="text-indigo-400" />
@@ -2802,6 +2846,7 @@ export function Settings() {
                   id="tabpanel-ai"
                   aria-labelledby="tab-ai"
                 >
+                  <SettingsFeatureBar tabId="ai" />
                   <Suspense
                     fallback={
                       <div className="flex items-center justify-center py-12">

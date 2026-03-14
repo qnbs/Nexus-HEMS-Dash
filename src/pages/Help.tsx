@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { Link } from 'react-router-dom';
 import {
   HelpCircle,
   BookOpen,
@@ -91,15 +92,17 @@ function FeatureCard({
   title,
   description,
   color,
+  link,
 }: {
   icon: React.ReactNode;
   title: string;
   description: string;
   color: string;
+  link?: string;
 }) {
-  return (
+  const content = (
     <motion.div
-      className="glass-panel rounded-xl border border-(--color-border) p-5 transition-all hover:border-(--color-primary)/30"
+      className={`glass-panel rounded-xl border border-(--color-border) p-5 transition-all hover:border-(--color-primary)/30 ${link ? 'cursor-pointer' : ''}`}
       whileHover={{ y: -2, scale: 1.01 }}
       transition={{ type: 'spring', stiffness: 400, damping: 17 }}
     >
@@ -108,8 +111,23 @@ function FeatureCard({
       </div>
       <h3 className="mb-1 text-sm font-semibold">{title}</h3>
       <p className="text-xs leading-relaxed text-(--color-muted)">{description}</p>
+      {link && (
+        <span className="mt-2 inline-flex items-center gap-1 text-[10px] font-medium text-(--color-primary)">
+          <ExternalLink size={10} aria-hidden="true" />
+          Öffnen
+        </span>
+      )}
     </motion.div>
   );
+
+  if (link) {
+    return (
+      <Link to={link} className="focus-ring block rounded-xl">
+        {content}
+      </Link>
+    );
+  }
+  return content;
 }
 
 export function Help() {
@@ -230,35 +248,41 @@ export function Help() {
                         title: t('help.step1Title'),
                         desc: t('help.step1Desc'),
                         icon: <Server size={18} />,
+                        link: '/settings?tab=system',
                       },
                       {
                         step: 2,
                         title: t('help.step2Title'),
                         desc: t('help.step2Desc'),
                         icon: <Zap size={18} />,
+                        link: '/settings?tab=energy',
                       },
                       {
                         step: 3,
                         title: t('help.step3Title'),
                         desc: t('help.step3Desc'),
                         icon: <Activity size={18} />,
+                        link: '/monitoring',
                       },
                       {
                         step: 4,
                         title: t('help.step4Title'),
                         desc: t('help.step4Desc'),
                         icon: <Sparkles size={18} />,
+                        link: '/settings/ai',
                       },
                       {
                         step: 5,
                         title: t('help.step5Title'),
                         desc: t('help.step5Desc'),
                         icon: <Download size={18} />,
+                        link: '/',
                       },
                     ].map((item) => (
-                      <div
+                      <Link
                         key={item.step}
-                        className="flex gap-4 rounded-xl border border-(--color-border) bg-(--color-surface) p-4"
+                        to={item.link}
+                        className="focus-ring flex gap-4 rounded-xl border border-(--color-border) bg-(--color-surface) p-4 transition-colors hover:border-(--color-primary)/40 hover:bg-white/5"
                       >
                         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-(--color-primary)/15 text-sm font-bold text-(--color-primary)">
                           {item.step}
@@ -272,7 +296,7 @@ export function Help() {
                             {item.desc}
                           </p>
                         </div>
-                      </div>
+                      </Link>
                     ))}
                   </div>
                 </div>
@@ -724,54 +748,63 @@ export function Help() {
                       title={t('help.featureSankey')}
                       description={t('help.featureSankeyDesc')}
                       color="bg-emerald-500/15"
+                      link="/energy-flow"
                     />
                     <FeatureCard
                       icon={<Map size={20} className="text-blue-400" />}
                       title={t('help.featureFloorplan')}
                       description={t('help.featureFloorplanDesc')}
                       color="bg-blue-500/15"
+                      link="/floorplan"
                     />
                     <FeatureCard
                       icon={<Sparkles size={20} className="text-purple-400" />}
                       title={t('help.featureAI')}
                       description={t('help.featureAIDesc')}
                       color="bg-purple-500/15"
+                      link="/ai-optimizer"
                     />
                     <FeatureCard
                       icon={<Car size={20} className="text-amber-400" />}
                       title={t('help.featureEV')}
                       description={t('help.featureEVDesc')}
                       color="bg-amber-500/15"
+                      link="/ev"
                     />
                     <FeatureCard
                       icon={<TrendingUp size={20} className="text-rose-400" />}
                       title={t('help.featureTariffs')}
                       description={t('help.featureTariffsDesc')}
                       color="bg-rose-500/15"
+                      link="/tariffs"
                     />
                     <FeatureCard
                       icon={<Sun size={20} className="text-yellow-400" />}
                       title={t('help.featureForecast')}
                       description={t('help.featureForecastDesc')}
                       color="bg-yellow-500/15"
+                      link="/production"
                     />
                     <FeatureCard
                       icon={<Battery size={20} className="text-green-400" />}
                       title={t('help.featureBattery')}
                       description={t('help.featureBatteryDesc')}
                       color="bg-green-500/15"
+                      link="/storage"
                     />
                     <FeatureCard
                       icon={<BarChart3 size={20} className="text-indigo-400" />}
                       title={t('help.featureAnalytics')}
                       description={t('help.featureAnalyticsDesc')}
                       color="bg-indigo-500/15"
+                      link="/analytics"
                     />
                     <FeatureCard
                       icon={<Home size={20} className="text-teal-400" />}
                       title={t('help.featureHA')}
                       description={t('help.featureHADesc')}
                       color="bg-teal-500/15"
+                      link="/consumption"
                     />
                     <FeatureCard
                       icon={<WifiOff size={20} className="text-orange-400" />}

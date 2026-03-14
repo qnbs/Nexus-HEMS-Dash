@@ -45,6 +45,7 @@ import { useLegacySendCommand } from '../core/useLegacySendCommand';
 import { PageHeader } from '../components/layout/PageHeader';
 import { ControlPanel } from '../components/ControlPanel';
 import { Link } from 'react-router-dom';
+import { PageCrossLinks } from '../components/ui/PageCrossLinks';
 
 // ─── Generate 24h charging history ──────────────────────────────────
 function generateChargingHistory(currentEvPower: number, maxPowerKW: number) {
@@ -1084,6 +1085,9 @@ function EVPageComponent() {
           </div>
         </div>
       </motion.section>
+
+      {/* ─── Cross-Links & Navigation ─────────────────────────── */}
+      <PageCrossLinks />
     </div>
   );
 }

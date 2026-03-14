@@ -27,6 +27,7 @@ import { SankeyDiagram } from '../components/SankeyDiagram';
 import { AIOptimizerPanel } from '../components/AIOptimizerPanel';
 import { ControlPanel } from '../components/ControlPanel';
 import { Link } from 'react-router-dom';
+import { PageCrossLinks } from '../components/ui/PageCrossLinks';
 
 function HomePageComponent() {
   const { t } = useTranslation();
@@ -445,6 +446,9 @@ function HomePageComponent() {
       <div id="ai-optimizer">
         <AIOptimizerPanel />
       </div>
+
+      {/* ─── Cross-Links & Navigation ─────────────────────────── */}
+      <PageCrossLinks />
     </div>
   );
 }

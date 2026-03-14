@@ -38,6 +38,7 @@ import {
 import { PageHeader } from '../components/layout/PageHeader';
 import { AIOptimizerPanel } from '../components/AIOptimizerPanel';
 import { EnhancedAIOptimizer } from '../components/EnhancedAIOptimizer';
+import { PageCrossLinks } from '../components/ui/PageCrossLinks';
 import { useAppStore } from '../store';
 import { formatPower } from '../lib/format';
 
@@ -735,6 +736,9 @@ function AIOptimizerPageComponent() {
       >
         <EnhancedAIOptimizer />
       </motion.div>
+
+      {/* ─── Cross-Links & Navigation ─────────────────────────── */}
+      <PageCrossLinks />
     </div>
   );
 }
