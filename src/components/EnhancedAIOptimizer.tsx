@@ -2,7 +2,7 @@
  * Enhanced AI Optimizer with BYOK multi-provider support
  */
 
-import { useState, useEffect, useMemo, memo } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Sparkles, Loader2, Key } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -20,7 +20,7 @@ interface GeminiRecommendation {
   priority: 'high' | 'medium' | 'low';
 }
 
-export const EnhancedAIOptimizer = memo(function EnhancedAIOptimizer() {
+export function EnhancedAIOptimizer() {
   const { t } = useTranslation();
   const energyData = useAppStore((s) => s.energyData);
   const settings = useAppStore((s) => s.settings);
@@ -34,11 +34,8 @@ export const EnhancedAIOptimizer = memo(function EnhancedAIOptimizer() {
     void getActiveProvider().then((p) => setHasProvider(p !== null));
   }, []);
 
-  // Get basic recommendations (memoized)
-  const basicRecommendations = useMemo(
-    () => buildOptimizerRecommendations(energyData, settings),
-    [energyData, settings],
-  );
+  // Get basic recommendations
+  const basicRecommendations = buildOptimizerRecommendations(energyData, settings);
 
   const handleOptimizeNow = async () => {
     setIsOptimizing(true);
@@ -239,7 +236,7 @@ Return ONLY a valid JSON array with this structure:
       </AnimatePresence>
     </div>
   );
-});
+}
 
 function getSeverityStyles(severity: string) {
   switch (severity) {

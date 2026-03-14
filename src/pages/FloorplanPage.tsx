@@ -1,4 +1,4 @@
-import { memo, useState } from 'react';
+import { useState } from 'react';
 import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -895,4 +895,4 @@ function AlertRow({
   );
 }
 
-export default memo(FloorplanPageComponent);
+export default FloorplanPageComponent;

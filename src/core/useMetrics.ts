@@ -4,7 +4,7 @@
  * Polls /api/metrics/json and exposes typed metric data for UI components.
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { MetricFamily } from '../lib/metrics';
 import { metricsCollector } from '../lib/metrics';
 
@@ -27,7 +27,7 @@ export function useMetrics(intervalMs: number = 5000): MetricSnapshot {
   });
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const fetchMetrics = useCallback(async () => {
+  const fetchMetrics = async () => {
     try {
       const res = await fetch('/api/metrics/json');
       if (!res.ok) {
@@ -52,7 +52,7 @@ export function useMetrics(intervalMs: number = 5000): MetricSnapshot {
         error: null,
       });
     }
-  }, []);
+  };
 
   useEffect(() => {
     fetchMetrics(); // eslint-disable-line react-hooks/set-state-in-effect
@@ -60,7 +60,7 @@ export function useMetrics(intervalMs: number = 5000): MetricSnapshot {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [fetchMetrics, intervalMs]);
+  }, [intervalMs]);
 
   return snapshot;
 }

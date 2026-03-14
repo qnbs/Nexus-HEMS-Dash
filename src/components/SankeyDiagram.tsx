@@ -1,4 +1,4 @@
-import { useEffect, useRef, memo } from 'react';
+import { useEffect, useRef } from 'react';
 import { select } from 'd3-selection';
 import { sankey, sankeyLinkHorizontal } from 'd3-sankey';
 import { useTranslation } from 'react-i18next';
@@ -16,7 +16,7 @@ interface CustomLink {
   value: number;
 }
 
-export const SankeyDiagram = memo(function SankeyDiagram({ data }: { data: EnergyData }) {
+export function SankeyDiagram({ data }: { data: EnergyData }) {
   const { t } = useTranslation();
   const svgRef = useRef<SVGSVGElement>(null);
 
@@ -337,4 +337,4 @@ export const SankeyDiagram = memo(function SankeyDiagram({ data }: { data: Energ
       </table>
     </>
   );
-});
+}

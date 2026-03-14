@@ -3,7 +3,7 @@
  * Singleton pattern: global event listeners + useSyncExternalStore
  */
 
-import { useCallback, useSyncExternalStore } from 'react';
+import { useSyncExternalStore } from 'react';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -87,7 +87,7 @@ export function usePWAInstall() {
   const isIOSDevice = state.isIOSDevice && !isStandalone();
   const isInstalled = state.installed || isStandalone();
 
-  const install = useCallback(async () => {
+  const install = async () => {
     if (!_deferredPrompt) return false;
     try {
       await _deferredPrompt.prompt();
@@ -98,7 +98,7 @@ export function usePWAInstall() {
     } catch {
       return false;
     }
-  }, []);
+  };
 
   return { canInstall, isIOSDevice, isInstalled, install };
 }

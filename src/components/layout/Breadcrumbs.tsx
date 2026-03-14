@@ -1,4 +1,3 @@
-import { memo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ChevronRight, Home } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -71,4 +70,4 @@ function BreadcrumbsComponent() {
   );
 }
 
-export const Breadcrumbs = memo(BreadcrumbsComponent);
+export const Breadcrumbs = BreadcrumbsComponent;

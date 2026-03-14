@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, memo } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { TrendingDown, TrendingUp, Zap } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useAppStore } from '../store';
 import type { TariffForecast } from '../lib/predictive-ai';
 
-export const LivePriceWidget = memo(function LivePriceWidget() {
+export function LivePriceWidget() {
   const { t, i18n } = useTranslation();
   const dateLocale = i18n.language === 'de' ? 'de-DE' : 'en-US';
   const priceCurrent = useAppStore((s) => s.energyData.priceCurrent);
@@ -39,12 +39,12 @@ export const LivePriceWidget = memo(function LivePriceWidget() {
   const isGoodPrice = currentPrice < chargeThreshold;
   const trend = nextBestSlot && currentPrice > nextBestSlot.pricePerKwh ? 'down' : 'up';
 
-  const chartSlice = useMemo(() => forecast.slice(0, 12), [forecast]);
-  const { maxPrice, minPrice } = useMemo(() => {
+  const chartSlice = forecast.slice(0, 12);
+  const { maxPrice, minPrice } = (() => {
     if (chartSlice.length === 0) return { maxPrice: 1, minPrice: 0 };
     const prices = chartSlice.map((s) => s.pricePerKwh);
     return { maxPrice: Math.max(...prices), minPrice: Math.min(...prices) };
-  }, [chartSlice]);
+  })();
 
   return (
     <motion.div
@@ -124,4 +124,4 @@ export const LivePriceWidget = memo(function LivePriceWidget() {
       </div>
     </motion.div>
   );
-});
+}

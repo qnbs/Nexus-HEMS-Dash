@@ -1,4 +1,3 @@
-import { memo, useMemo } from 'react';
 import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -105,46 +104,43 @@ function MonitoringPageComponent() {
   };
 
   // ─── Adapter list ───────────────────────────────────────────────────
-  const adapters = useMemo(
-    () => [
-      {
-        name: 'Victron MQTT',
-        protocol: 'MQTT/WS',
-        id: 'victron-mqtt',
-        icon: <Radio size={14} />,
-        desc: t('monitoring.adapterVictronDesc'),
-      },
-      {
-        name: 'Modbus SunSpec',
-        protocol: 'Modbus TCP',
-        id: 'modbus-sunspec',
-        icon: <Zap size={14} />,
-        desc: t('monitoring.adapterModbusDesc'),
-      },
-      {
-        name: 'KNX/IP',
-        protocol: 'KNXnet/IP',
-        id: 'knx',
-        icon: <Server size={14} />,
-        desc: t('monitoring.adapterKnxDesc'),
-      },
-      {
-        name: 'OCPP 2.1',
-        protocol: 'OCPP/WS',
-        id: 'ocpp',
-        icon: <Zap size={14} />,
-        desc: t('monitoring.adapterOcppDesc'),
-      },
-      {
-        name: 'EEBUS',
-        protocol: 'SPINE/SHIP',
-        id: 'eebus',
-        icon: <Shield size={14} />,
-        desc: t('monitoring.adapterEebusDesc'),
-      },
-    ],
-    [t],
-  );
+  const adapters = [
+    {
+      name: 'Victron MQTT',
+      protocol: 'MQTT/WS',
+      id: 'victron-mqtt',
+      icon: <Radio size={14} />,
+      desc: t('monitoring.adapterVictronDesc'),
+    },
+    {
+      name: 'Modbus SunSpec',
+      protocol: 'Modbus TCP',
+      id: 'modbus-sunspec',
+      icon: <Zap size={14} />,
+      desc: t('monitoring.adapterModbusDesc'),
+    },
+    {
+      name: 'KNX/IP',
+      protocol: 'KNXnet/IP',
+      id: 'knx',
+      icon: <Server size={14} />,
+      desc: t('monitoring.adapterKnxDesc'),
+    },
+    {
+      name: 'OCPP 2.1',
+      protocol: 'OCPP/WS',
+      id: 'ocpp',
+      icon: <Zap size={14} />,
+      desc: t('monitoring.adapterOcppDesc'),
+    },
+    {
+      name: 'EEBUS',
+      protocol: 'SPINE/SHIP',
+      id: 'eebus',
+      icon: <Shield size={14} />,
+      desc: t('monitoring.adapterEebusDesc'),
+    },
+  ];
 
   // ─── 10 live metric cards ──────────────────────────────────────────
   const metricCards = [
@@ -247,7 +243,7 @@ function MonitoringPageComponent() {
   const networkIO = Math.round(pvPower / 100 + gridPower / 200);
 
   // ─── System load history ────────────────────────────────────────────
-  const loadHistory = useMemo(() => generateSystemLoadHistory(houseLoad), [houseLoad]);
+  const loadHistory = generateSystemLoadHistory(houseLoad);
 
   // ─── Alert rules ────────────────────────────────────────────────────
   const alertRules = [
@@ -897,4 +893,4 @@ function ResourceGauge({
   );
 }
 
-export default memo(MonitoringPageComponent);
+export default MonitoringPageComponent;

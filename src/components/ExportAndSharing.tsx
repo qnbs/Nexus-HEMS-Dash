@@ -1,11 +1,11 @@
-import { useState, memo } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { FileDown, Share2, QrCode, Copy, Check, AlertTriangle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { generateShareLink, createSharedDashboard, shareViaWebShare } from '../lib/sharing';
 
-export const ExportAndSharing = memo(function ExportAndSharing() {
+export function ExportAndSharing() {
   const { t } = useTranslation();
   const [isGenerating, setIsGenerating] = useState(false);
   const [shareLink, setShareLink] = useState<string | null>(null);
@@ -214,4 +214,4 @@ export const ExportAndSharing = memo(function ExportAndSharing() {
       </div>
     </div>
   );
-});
+}

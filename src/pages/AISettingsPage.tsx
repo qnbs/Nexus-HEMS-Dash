@@ -2,7 +2,7 @@
  * BYOK AI Settings Page — Manage encrypted API keys for multiple AI providers.
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -49,16 +49,16 @@ export default function AISettingsPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  const refreshKeys = useCallback(async () => {
+  const refreshKeys = async () => {
     const keys = await listAIKeys();
     setStoredKeys(keys);
     const active = await getActiveProvider();
     setActive(active);
-  }, []);
+  };
 
   useEffect(() => {
     void refreshKeys();
-  }, [refreshKeys]);
+  }, []);
 
   const handleSave = async () => {
     if (!addingProvider || !apiKeyInput.trim()) return;

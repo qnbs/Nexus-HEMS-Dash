@@ -1,4 +1,3 @@
-import { useMemo, memo } from 'react';
 import { motion } from 'motion/react';
 import { BrainCircuit, TriangleAlert, TrendingUp, Zap } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -20,14 +19,11 @@ const severityIcons = {
   neutral: Zap,
 } as const;
 
-export const AIOptimizerPanel = memo(function AIOptimizerPanel() {
+export function AIOptimizerPanel() {
   const { t } = useTranslation();
   const energyData = useAppStore((state) => state.energyData);
   const settings = useAppStore((state) => state.settings);
-  const recommendations = useMemo(
-    () => buildOptimizerRecommendations(energyData, settings),
-    [energyData, settings],
-  );
+  const recommendations = buildOptimizerRecommendations(energyData, settings);
 
   return (
     <div className="glass-panel grid gap-3 p-4 sm:gap-4 sm:p-5">
@@ -74,4 +70,4 @@ export const AIOptimizerPanel = memo(function AIOptimizerPanel() {
       </div>
     </div>
   );
-});
+}

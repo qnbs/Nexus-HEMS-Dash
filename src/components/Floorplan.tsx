@@ -1,4 +1,4 @@
-import { useState, memo, useCallback } from 'react';
+import { useState } from 'react';
 import { motion } from 'motion/react';
 import { Lightbulb, Thermometer, Wind, Droplets, Sun, Moon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -62,14 +62,14 @@ const ROOM_ICONS: Record<string, string> = {
   office: '💻',
 };
 
-export const Floorplan = memo(function Floorplan() {
+export function Floorplan() {
   const { t } = useTranslation();
   const [rooms, setRooms] = useState<Record<string, RoomState>>(DEFAULT_ROOMS);
   const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
 
-  const updateRoom = useCallback((id: string, patch: Partial<RoomState>) => {
+  const updateRoom = (id: string, patch: Partial<RoomState>) => {
     setRooms((prev) => ({ ...prev, [id]: { ...prev[id], ...patch } }));
-  }, []);
+  };
 
   const roomLabels: Record<string, string> = {
     kitchen: t('floorplan.kitchen'),
@@ -409,4 +409,4 @@ export const Floorplan = memo(function Floorplan() {
       )}
     </div>
   );
-});
+}

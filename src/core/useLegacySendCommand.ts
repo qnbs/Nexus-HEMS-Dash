@@ -8,7 +8,6 @@
  * that still use ControlPanel with the legacy signature.
  */
 
-import { useCallback } from 'react';
 import { sendAdapterCommand } from './useEnergyStore';
 import type { CommandType } from '../types';
 import type { AdapterCommand } from './adapters/EnergyAdapter';
@@ -27,9 +26,9 @@ function toLegacyCommand(type: CommandType, value: number): AdapterCommand {
 }
 
 export function useLegacySendCommand() {
-  const sendCommand = useCallback((type: CommandType, value: number) => {
+  const sendCommand = (type: CommandType, value: number) => {
     sendAdapterCommand(toLegacyCommand(type, value));
-  }, []);
+  };
 
   return { sendCommand };
 }

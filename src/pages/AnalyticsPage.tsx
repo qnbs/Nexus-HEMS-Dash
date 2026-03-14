@@ -1,4 +1,3 @@
-import { memo, useMemo } from 'react';
 import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -113,7 +112,7 @@ function AnalyticsPageComponent() {
   const netCost = gridCost - feedInRevenue;
 
   // ─── Cost allocation donut ──────────────────────────────────────────
-  const costAllocation = useMemo(() => {
+  const costAllocation = (() => {
     const selfSavings = (selfConsumed / 1000) * energyData.priceCurrent;
     return [
       {
@@ -128,19 +127,13 @@ function AnalyticsPageComponent() {
         color: '#00f0ff',
       },
     ].filter((d) => d.value > 0);
-  }, [selfConsumed, energyData.priceCurrent, gridCost, feedInRevenue, t]);
+  })();
 
   // ─── Energy balance chart data ──────────────────────────────────────
-  const balanceData = useMemo(
-    () => generateEnergyBalance(energyData.pvPower, energyData.houseLoad),
-    [energyData.pvPower, energyData.houseLoad],
-  );
+  const balanceData = generateEnergyBalance(energyData.pvPower, energyData.houseLoad);
 
   // ─── Monthly comparison data ────────────────────────────────────────
-  const monthlyData = useMemo(
-    () => generateMonthlyComparison(energyData.pvYieldToday),
-    [energyData.pvYieldToday],
-  );
+  const monthlyData = generateMonthlyComparison(energyData.pvYieldToday);
 
   // ─── Peak / off-peak hours ──────────────────────────────────────────
   const hour = new Date().getHours();
@@ -816,4 +809,4 @@ function AnalyticsPageComponent() {
   );
 }
 
-export default memo(AnalyticsPageComponent);
+export default AnalyticsPageComponent;

@@ -1,4 +1,3 @@
-import { memo } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'motion/react';
@@ -245,4 +244,4 @@ function SidebarComponent() {
   );
 }
 
-export const Sidebar = memo(SidebarComponent);
+export const Sidebar = SidebarComponent;

@@ -1,4 +1,3 @@
-import { memo } from 'react';
 import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -538,7 +537,7 @@ function LoadBar({
   );
 }
 
-const KpiCard = memo(function KpiCard({
+function KpiCard({
   icon,
   label,
   value,
@@ -579,7 +578,7 @@ const KpiCard = memo(function KpiCard({
       </div>
     </Link>
   );
-});
+}
 
-export const HomePage = memo(HomePageComponent);
+export const HomePage = HomePageComponent;
 export default HomePage;

@@ -1,4 +1,3 @@
-import { memo } from 'react';
 import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -611,7 +610,7 @@ function ProductionPageComponent() {
 
 // ─── Sub-components ──────────────────────────────────────────────────
 
-const KpiMini = memo(function KpiMini({
+function KpiMini({
   icon,
   label,
   value,
@@ -632,7 +631,7 @@ const KpiMini = memo(function KpiMini({
       <p className="mt-0.5 truncate text-[10px] text-(--color-muted)">{sub}</p>
     </div>
   );
-});
+}
 
 function SpecRow({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
@@ -646,4 +645,4 @@ function SpecRow({ icon, label, value }: { icon: React.ReactNode; label: string;
   );
 }
 
-export default memo(ProductionPageComponent);
+export default ProductionPageComponent;

@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'motion/react';
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Search,
   Sparkles,
@@ -48,7 +48,6 @@ export function CommandPalette({
   const [search, setSearch] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const commands: Command[] = [
     // Actions
     {
@@ -233,17 +232,13 @@ export function CommandPalette({
     },
   ];
 
-  const filteredCommands = useMemo(
-    () =>
-      commands.filter((cmd) => {
-        const searchLower = search.toLowerCase();
-        return (
-          cmd.label.toLowerCase().includes(searchLower) ||
-          cmd.keywords?.some((k) => k.toLowerCase().includes(searchLower))
-        );
-      }),
-    [search, commands],
-  );
+  const filteredCommands = commands.filter((cmd) => {
+    const searchLower = search.toLowerCase();
+    return (
+      cmd.label.toLowerCase().includes(searchLower) ||
+      cmd.keywords?.some((k) => k.toLowerCase().includes(searchLower))
+    );
+  });
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -267,8 +262,11 @@ export function CommandPalette({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, selectedIndex, filteredCommands, onClose]);
 
+  // Reset search & selection whenever the palette opens.
+  // This is a legitimate "sync state on prop change" pattern.
   useEffect(() => {
     if (isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSearch('');
       setSelectedIndex(0);
     }

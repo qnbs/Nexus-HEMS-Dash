@@ -1,4 +1,3 @@
-import { memo } from 'react';
 import { motion } from 'motion/react';
 
 interface PageHeaderProps {
@@ -39,4 +38,4 @@ function PageHeaderComponent({ title, subtitle, icon, actions }: PageHeaderProps
   );
 }
 
-export const PageHeader = memo(PageHeaderComponent);
+export const PageHeader = PageHeaderComponent;

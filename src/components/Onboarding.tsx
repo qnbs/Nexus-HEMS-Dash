@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -133,13 +133,10 @@ export function Onboarding() {
   const setLocale = useAppStore((s) => s.setLocale);
   const setOnboardingCompleted = useAppStore((s) => s.setOnboardingCompleted);
 
-  const handleLanguageChange = useCallback(
-    (code: LocaleCode) => {
-      setLocale(code);
-      void i18n.changeLanguage(code);
-    },
-    [setLocale, i18n],
-  );
+  const handleLanguageChange = (code: LocaleCode) => {
+    setLocale(code);
+    void i18n.changeLanguage(code);
+  };
 
   const next = () => setStep((s) => Math.min(s + 1, TOTAL_STEPS - 1));
   const back = () => setStep((s) => Math.max(s - 1, 0));

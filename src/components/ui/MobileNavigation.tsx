@@ -1,4 +1,4 @@
-import { memo, useRef, useEffect } from 'react';
+import { useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   LayoutDashboard,
@@ -278,4 +278,4 @@ function MobileNavigationComponent() {
   );
 }
 
-export const MobileNavigation = memo(MobileNavigationComponent);
+export const MobileNavigation = MobileNavigationComponent;

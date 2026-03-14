@@ -1,4 +1,3 @@
-import { memo } from 'react';
 import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -686,15 +685,7 @@ function ConsumptionPageComponent() {
 
 // ─── Sub-components ──────────────────────────────────────────────────
 
-const KpiMini = memo(function KpiMini({
-  icon,
-  label,
-  value,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-}) {
+function KpiMini({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
     <div className="glass-panel rounded-2xl p-3">
       <div className="mb-1 flex items-center gap-1.5">
@@ -704,9 +695,9 @@ const KpiMini = memo(function KpiMini({
       <p className="text-lg font-light tracking-tight text-(--color-text)">{value}</p>
     </div>
   );
-});
+}
 
-const CostCard = memo(function CostCard({
+function CostCard({
   label,
   value,
   sub,
@@ -724,6 +715,6 @@ const CostCard = memo(function CostCard({
       <p className="text-[10px] text-(--color-muted)">{sub}</p>
     </div>
   );
-});
+}
 
-export default memo(ConsumptionPageComponent);
+export default ConsumptionPageComponent;

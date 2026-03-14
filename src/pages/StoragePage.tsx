@@ -1,4 +1,4 @@
-import { memo, useState } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -718,7 +718,7 @@ function StoragePageComponent() {
 
 // ─── Sub-components ──────────────────────────────────────────────────
 
-const StatCard = memo(function StatCard({
+function StatCard({
   icon,
   label,
   value,
@@ -745,7 +745,7 @@ const StatCard = memo(function StatCard({
       <p className="mt-0.5 truncate text-[10px] text-(--color-muted)">{sub}</p>
     </div>
   );
-});
+}
 
 function SpecRow({ label, value }: { label: string; value: string }) {
   return (
@@ -756,4 +756,4 @@ function SpecRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-export default memo(StoragePageComponent);
+export default StoragePageComponent;

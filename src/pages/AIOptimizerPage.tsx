@@ -1,4 +1,4 @@
-import { memo, useState } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -743,4 +743,4 @@ function AIOptimizerPageComponent() {
   );
 }
 
-export default memo(AIOptimizerPageComponent);
+export default AIOptimizerPageComponent;

@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, memo } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { CloudSun, TrendingUp, Leaf } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -59,7 +59,7 @@ async function fetchWeatherForecast(lat: number, lon: number): Promise<WeatherFo
   }
 }
 
-export const PredictiveForecast = memo(function PredictiveForecast() {
+export function PredictiveForecast() {
   const { t, i18n } = useTranslation();
   const settings = useAppStore((s) => s.settings);
   const [forecastData, setForecastData] = useState<ForecastDataPoint[]>([]);
@@ -67,57 +67,56 @@ export const PredictiveForecast = memo(function PredictiveForecast() {
   const [totalSavings, setTotalSavings] = useState(0);
   const [co2Saved, setCo2Saved] = useState(0);
 
-  const loadForecast = useCallback(async () => {
-    // Default location: Hamburg, Germany
-    const lat = settings.location?.lat || 53.5511;
-    const lon = settings.location?.lon || 9.9937;
-
-    const weather = await fetchWeatherForecast(lat, lon);
-    const hours = timeRange === '24h' ? 24 : 168;
-
-    const data: ForecastDataPoint[] = weather.slice(0, hours).map((w) => {
-      // Simulate tariff pricing (peak hours: 17-21)
-      const hour = w.timestamp.getHours();
-      const isPeak = hour >= 17 && hour <= 21;
-      const basePrice = settings.gridPriceAvg || 0.25;
-      const price = isPeak ? basePrice * 1.5 : basePrice * 0.8;
-
-      // Estimate consumption pattern (higher during day and evening)
-      const consumption = 1.5 + Math.sin((hour / 24) * Math.PI * 2) * 1.2;
-
-      const dateLocale = i18n.language === 'de' ? 'de-DE' : 'en-US';
-
-      return {
-        time:
-          timeRange === '24h'
-            ? w.timestamp.toLocaleTimeString(dateLocale, { hour: '2-digit', minute: '2-digit' })
-            : w.timestamp.toLocaleDateString(dateLocale, { weekday: 'short', day: 'numeric' }),
-        pvForecast: w.pvPotential,
-        price: price,
-        co2Intensity: 300 + (100 - w.pvPotential * 5), // Lower CO2 when solar is high
-        consumption: consumption,
-      };
-    });
-
-    setForecastData(data);
-
-    // Calculate total savings if optimizing with PV
-    const savings = data.reduce((sum, d) => {
-      const pvSurplus = Math.max(0, d.pvForecast - d.consumption);
-      return sum + pvSurplus * d.price;
-    }, 0);
-    setTotalSavings(savings);
-
-    // Calculate CO2 savings
-    const co2 = data.reduce((sum, d) => {
-      return sum + d.pvForecast * 0.5; // 500g CO2/kWh grid equivalent
-    }, 0);
-    setCo2Saved(co2);
-  }, [timeRange, settings.location, settings.gridPriceAvg, i18n.language]);
-
   useEffect(() => {
-    loadForecast(); // eslint-disable-line react-hooks/set-state-in-effect
-  }, [loadForecast]);
+    const run = async () => {
+      // Default location: Hamburg, Germany
+      const lat = settings.location?.lat || 53.5511;
+      const lon = settings.location?.lon || 9.9937;
+
+      const weather = await fetchWeatherForecast(lat, lon);
+      const hours = timeRange === '24h' ? 24 : 168;
+
+      const data: ForecastDataPoint[] = weather.slice(0, hours).map((w) => {
+        // Simulate tariff pricing (peak hours: 17-21)
+        const hour = w.timestamp.getHours();
+        const isPeak = hour >= 17 && hour <= 21;
+        const basePrice = settings.gridPriceAvg || 0.25;
+        const price = isPeak ? basePrice * 1.5 : basePrice * 0.8;
+
+        // Estimate consumption pattern (higher during day and evening)
+        const consumption = 1.5 + Math.sin((hour / 24) * Math.PI * 2) * 1.2;
+
+        const dateLocale = i18n.language === 'de' ? 'de-DE' : 'en-US';
+
+        return {
+          time:
+            timeRange === '24h'
+              ? w.timestamp.toLocaleTimeString(dateLocale, { hour: '2-digit', minute: '2-digit' })
+              : w.timestamp.toLocaleDateString(dateLocale, { weekday: 'short', day: 'numeric' }),
+          pvForecast: w.pvPotential,
+          price: price,
+          co2Intensity: 300 + (100 - w.pvPotential * 5), // Lower CO2 when solar is high
+          consumption: consumption,
+        };
+      });
+
+      setForecastData(data);
+
+      // Calculate total savings if optimizing with PV
+      const savings = data.reduce((sum, d) => {
+        const pvSurplus = Math.max(0, d.pvForecast - d.consumption);
+        return sum + pvSurplus * d.price;
+      }, 0);
+      setTotalSavings(savings);
+
+      // Calculate CO2 savings
+      const co2 = data.reduce((sum, d) => {
+        return sum + d.pvForecast * 0.5; // 500g CO2/kWh grid equivalent
+      }, 0);
+      setCo2Saved(co2);
+    };
+    run();
+  }, [timeRange, settings.location, settings.gridPriceAvg, i18n.language]);
 
   return (
     <motion.div
@@ -285,4 +284,4 @@ export const PredictiveForecast = memo(function PredictiveForecast() {
       </div>
     </motion.div>
   );
-});
+}

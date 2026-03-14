@@ -1,4 +1,3 @@
-import { memo, useMemo } from 'react';
 import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -197,7 +196,7 @@ function EVPageComponent() {
   };
 
   // Strategy computation
-  const chargeStrategy = useMemo(() => {
+  const chargeStrategy = (() => {
     const price = energyData.priceCurrent;
     const threshold = settings.chargeThreshold;
     const hasPvSurplus = pvSurplus > 1400;
@@ -236,10 +235,10 @@ function EVPageComponent() {
       icon: Zap,
       surplus: 0,
     };
-  }, [energyData, settings.chargeThreshold, pvSurplus]);
+  })();
 
   const historyData = generateChargingHistory(energyData.evPower, evConfig.maxPowerKW);
-  const priceWindows = useMemo(() => generatePriceWindows(), []);
+  const priceWindows = generatePriceWindows();
 
   return (
     <div className="space-y-6">
@@ -1094,7 +1093,7 @@ function EVPageComponent() {
 
 // ─── Sub-components ──────────────────────────────────────────────────
 
-const KpiMini = memo(function KpiMini({
+function KpiMini({
   icon,
   label,
   value,
@@ -1115,7 +1114,7 @@ const KpiMini = memo(function KpiMini({
       <p className="mt-0.5 truncate text-[10px] text-(--color-muted)">{sub}</p>
     </div>
   );
-});
+}
 
 function SpecRow({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
@@ -1179,4 +1178,4 @@ function WeeklyStat({
   );
 }
 
-export default memo(EVPageComponent);
+export default EVPageComponent;
