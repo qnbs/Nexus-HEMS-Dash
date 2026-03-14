@@ -334,7 +334,7 @@ function PWASettingsSection() {
                     ? t('settings_pwa.forceUpdateFound', 'Update found — restarting…')
                     : updateStatus === 'none'
                       ? t('settings_pwa.forceUpdateNone', 'Already up to date')
-                      : t('settings_pwa.appVersion', 'App Version') + ' 4.0.0'}
+                      : t('settings_pwa.appVersion', 'App Version') + ' 4.1.0'}
               </p>
             </div>
             <motion.button

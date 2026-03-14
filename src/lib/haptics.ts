@@ -21,8 +21,8 @@ export function triggerHaptic(pattern: HapticPattern = 'light'): void {
   if ('vibrate' in navigator) {
     try {
       navigator.vibrate(patterns[pattern]);
-    } catch (error) {
-      console.warn('Haptic feedback not supported:', error);
+    } catch {
+      // Haptic feedback not supported on this device
     }
   }
 }
@@ -32,13 +32,6 @@ export function triggerHaptic(pattern: HapticPattern = 'light'): void {
  */
 export function hapticClick(): void {
   triggerHaptic('light');
-}
-
-/**
- * Haptic feedback for toggle switches
- */
-export function hapticToggle(enabled: boolean): void {
-  triggerHaptic(enabled ? 'medium' : 'light');
 }
 
 /**
@@ -53,20 +46,6 @@ export function hapticModeChange(): void {
  */
 export function hapticSuccess(): void {
   triggerHaptic('success');
-}
-
-/**
- * Haptic feedback for warnings
- */
-export function hapticWarning(): void {
-  triggerHaptic('warning');
-}
-
-/**
- * Haptic feedback for errors
- */
-export function hapticError(): void {
-  triggerHaptic('error');
 }
 
 /**

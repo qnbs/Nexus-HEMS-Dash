@@ -20,7 +20,7 @@ export function PWAUpdateNotification() {
 
   useRegisterSW({
     onRegisteredSW(swUrl, registration) {
-      console.log('[PWA] Service Worker registered:', swUrl);
+      if (import.meta.env.DEV) console.log('[PWA] Service Worker registered:', swUrl);
 
       // Check for updates every 30 minutes
       if (registration) {
@@ -43,7 +43,7 @@ export function PWAUpdateNotification() {
       setShowUpdating(true);
     },
     onOfflineReady() {
-      console.log('[PWA] App ready to work offline');
+      if (import.meta.env.DEV) console.log('[PWA] App ready to work offline');
       setShowOfflineReady(true);
       setTimeout(() => setShowOfflineReady(false), 5000);
     },

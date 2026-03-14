@@ -162,7 +162,10 @@ export default function App() {
             >
               <div className="flex items-center justify-between gap-4">
                 {/* Mobile Logo */}
-                <div className="flex flex-col items-center lg:hidden" aria-label="HEMS">
+                <div
+                  className="flex flex-col items-center lg:hidden"
+                  aria-label={t('common.appName')}
+                >
                   <motion.img
                     src={`${import.meta.env.BASE_URL}icon.svg`}
                     alt=""

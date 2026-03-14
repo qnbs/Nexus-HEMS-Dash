@@ -439,7 +439,7 @@ export const de = {
     faqTitle: 'Häufig gestellte Fragen (FAQ)',
     about: 'Über die App',
     aboutTitle: 'Über die App',
-    version: 'Version 3.1.0',
+    version: 'Version 4.1.0',
     hems: 'Home Energy Management System',
     hemsDesc:
       'Ein System zur Überwachung, Steuerung und Optimierung des Energieverbrauchs in einem Gebäude.',
@@ -674,7 +674,7 @@ export const de = {
       'Leeren Sie regelmäßig den lokalen Cache in Einstellungen → Speicher, um IndexedDB-Speicherplatz freizugeben',
 
     // Über
-    versionFull: 'Version 3.5.0 — Build 2026.07',
+    versionFull: 'Version 4.1.0 — Build 2026.03',
     visualization: 'Visualisierung',
     testing: 'Tests',
     a11yTitle: 'Barrierefreiheit',

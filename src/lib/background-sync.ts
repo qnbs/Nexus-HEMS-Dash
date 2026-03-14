@@ -31,7 +31,8 @@ class BackgroundSyncService {
           return registration.sync.register('sync-offline-actions');
         })
         .catch((error) => {
-          console.warn('[BackgroundSync] Service Worker sync not available:', error);
+          if (import.meta.env.DEV)
+            console.warn('[BackgroundSync] Service Worker sync not available:', error);
           this.startPeriodicSync();
         });
     } else {
@@ -40,7 +41,7 @@ class BackgroundSyncService {
 
     // Listen for online/offline events
     this.onlineHandler = () => {
-      console.log('[BackgroundSync] Network online, syncing...');
+      if (import.meta.env.DEV) console.log('[BackgroundSync] Network online, syncing...');
       this.syncPendingActions();
     };
     window.addEventListener('online', this.onlineHandler);
@@ -87,12 +88,16 @@ class BackgroundSyncService {
       const actions = await getPendingActions();
       if (actions.length === 0) return;
 
-      console.log(`[BackgroundSync] Syncing ${actions.length} pending actions`);
+      if (import.meta.env.DEV)
+        console.log(`[BackgroundSync] Syncing ${actions.length} pending actions`);
 
       for (const action of actions) {
         const retryCount = (action as unknown as { retryCount?: number }).retryCount ?? 0;
         if (retryCount >= MAX_RETRIES) {
-          console.warn(`[BackgroundSync] Action ${action.id} exceeded max retries, marking failed`);
+          if (import.meta.env.DEV)
+            console.warn(
+              `[BackgroundSync] Action ${action.id} exceeded max retries, marking failed`,
+            );
           await updateActionStatus(action.id!, 'failed', 'Max retries exceeded');
           continue;
         }

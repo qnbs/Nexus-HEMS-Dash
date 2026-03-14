@@ -229,7 +229,8 @@ export class EEBUSAdapter implements EnergyAdapter {
       this.ws = new WebSocket(url);
 
       this.ws.onopen = () => {
-        console.log('[EEBUS] WebSocket connected, initiating SHIP handshake');
+        if (import.meta.env.DEV)
+          console.log('[EEBUS] WebSocket connected, initiating SHIP handshake');
         this.shipState = 'cmi';
         this.emitEvent({ type: 'ship_state', shipState: 'cmi' });
         this.sendSHIPInit();
@@ -245,7 +246,8 @@ export class EEBUSAdapter implements EnergyAdapter {
       };
 
       this.ws.onclose = (event) => {
-        console.log(`[EEBUS] WebSocket closed: ${event.code} ${event.reason}`);
+        if (import.meta.env.DEV)
+          console.log(`[EEBUS] WebSocket closed: ${event.code} ${event.reason}`);
         this.cleanup();
         this.setStatus('disconnected');
         this.shipState = 'closed';
@@ -356,7 +358,7 @@ export class EEBUSAdapter implements EnergyAdapter {
             isChangeable: false,
           });
         default:
-          console.warn(`[EEBUS] Unsupported command: ${command.type}`);
+          if (import.meta.env.DEV) console.warn(`[EEBUS] Unsupported command: ${command.type}`);
           return false;
       }
     } catch (error) {
@@ -381,7 +383,7 @@ export class EEBUSAdapter implements EnergyAdapter {
   }
 
   async discoverDevices(): Promise<EEBUSDiscoveredDevice[]> {
-    console.log('[EEBUS] Starting mDNS device discovery...');
+    if (import.meta.env.DEV) console.log('[EEBUS] Starting mDNS device discovery...');
 
     const mockDevices: EEBUSDiscoveredDevice[] = [
       {

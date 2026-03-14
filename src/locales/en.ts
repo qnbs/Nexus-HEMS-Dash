@@ -435,7 +435,7 @@ export const en = {
     faqTitle: 'Frequently Asked Questions (FAQ)',
     about: 'About',
     aboutTitle: 'About the App',
-    version: 'Version 3.1.0',
+    version: 'Version 4.1.0',
     hems: 'Home Energy Management System',
     hemsDesc:
       'A system for monitoring, controlling, and optimizing energy consumption in a building.',
@@ -664,7 +664,7 @@ export const en = {
     perf4: 'Periodically clear the local cache in Settings → Storage to free up IndexedDB space',
 
     // About
-    versionFull: 'Version 3.5.0 — Build 2026.07',
+    versionFull: 'Version 4.1.0 — Build 2026.03',
     visualization: 'Visualization',
     testing: 'Testing',
     a11yTitle: 'Accessibility',
