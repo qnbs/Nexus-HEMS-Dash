@@ -6,7 +6,9 @@ import { useAdapterBridge } from './core/useEnergyStore';
 import { useAppStore } from './store';
 import { Wifi, Command, Settings as SettingsIcon, HelpCircle } from 'lucide-react';
 import { themeDefinitions } from './design-tokens';
-import { Onboarding } from './components/Onboarding';
+const Onboarding = lazy(() =>
+  import('./components/Onboarding').then((m) => ({ default: m.Onboarding })),
+);
 import { LanguageSwitcher } from './components/LanguageSwitcher';
 import { CommandPalette, useCommandPalette } from './components/ui/CommandPalette';
 import { MobileNavigation } from './components/ui/MobileNavigation';
@@ -163,7 +165,11 @@ export default function App() {
         <OfflineBanner />
         <PWAInstallPrompt />
         <PWAUpdateNotification />
-        {!onboardingCompleted && <Onboarding />}
+        {!onboardingCompleted && (
+          <Suspense fallback={null}>
+            <Onboarding />
+          </Suspense>
+        )}
         <div className="theme-shell min-h-screen font-sans text-(--color-text) selection:bg-(--color-primary)/30">
           <div
             className="pointer-events-none fixed inset-0 z-0"

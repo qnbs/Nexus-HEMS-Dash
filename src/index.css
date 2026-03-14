@@ -483,7 +483,8 @@
     @apply inline-flex items-center gap-2 text-xs font-semibold tracking-[0.22em] uppercase;
     @apply text-(--color-secondary)/90;
   }
-  ANIMATED UNDERLINE ========== */ .animated-underline {
+  /* ========== ANIMATED UNDERLINE ========== */
+  .animated-underline {
     position: relative;
   }
 
