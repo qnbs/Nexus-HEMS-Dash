@@ -711,8 +711,8 @@ function CostCard({
   return (
     <div className="rounded-xl border border-(--color-border) bg-white/5 p-3">
       <p className="truncate text-[10px] tracking-wider text-(--color-muted) uppercase">{label}</p>
-      <p className={`mt-1 text-lg font-semibold ${color}`}>{value}</p>
-      <p className="text-[10px] text-(--color-muted)">{sub}</p>
+      <p className={`mt-1 truncate text-lg font-semibold ${color}`}>{value}</p>
+      <p className="truncate text-[10px] text-(--color-muted)">{sub}</p>
     </div>
   );
 }

@@ -235,7 +235,7 @@ function SidebarComponent() {
       <div className="border-t border-(--color-border) px-4 py-3">
         <div className="flex items-center gap-2 text-xs text-(--color-muted)">
           <span className="energy-pulse inline-block h-1.5 w-1.5 rounded-full bg-(--color-primary)" />
-          <span>Nexus HEMS v4.1.0</span>
+          <span>Nexus HEMS v4.2.0</span>
         </div>
       </div>
     </motion.nav>

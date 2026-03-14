@@ -132,7 +132,7 @@ function HomePageComponent() {
           />
           <HealthPill
             icon={<Battery size={13} className="text-emerald-400" />}
-            label="SoC"
+            label={t('metrics.battery', 'SoC')}
             value={`${energyData.batterySoC.toFixed(0)}%`}
             ok={energyData.batterySoC > 20}
           />
@@ -463,11 +463,15 @@ function HealthPill({
   ok: boolean;
 }) {
   return (
-    <div className="flex items-center gap-1.5">
+    <div className="flex min-w-0 items-center gap-1.5">
       {icon}
-      <span className="text-(--color-muted)">{label}:</span>
-      <span className={`font-medium ${ok ? 'text-(--color-text)' : 'text-red-400'}`}>{value}</span>
-      <span className={`h-1.5 w-1.5 rounded-full ${ok ? 'bg-emerald-400' : 'bg-red-400'}`} />
+      <span className="truncate text-(--color-muted)">{label}:</span>
+      <span className={`shrink-0 font-medium ${ok ? 'text-(--color-text)' : 'text-red-400'}`}>
+        {value}
+      </span>
+      <span
+        className={`h-1.5 w-1.5 shrink-0 rounded-full ${ok ? 'bg-emerald-400' : 'bg-red-400'}`}
+      />
     </div>
   );
 }
@@ -486,10 +490,10 @@ function HighlightCard({
   return (
     <div className="glass-panel rounded-2xl p-3.5">
       <div className="mb-1.5 flex items-center gap-1.5">
-        {icon}
+        <span className="shrink-0">{icon}</span>
         <p className="truncate text-[11px] text-(--color-muted)">{label}</p>
       </div>
-      <p className="text-lg font-light tracking-tight text-(--color-text)">{value}</p>
+      <p className="truncate text-lg font-light tracking-tight text-(--color-text)">{value}</p>
       <p className="mt-0.5 truncate text-[10px] text-(--color-muted)">{sub}</p>
     </div>
   );

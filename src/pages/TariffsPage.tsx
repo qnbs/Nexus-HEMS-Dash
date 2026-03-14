@@ -329,7 +329,7 @@ function TariffsPageComponent() {
             </div>
           </div>
 
-          <div className="flex items-center gap-6 text-sm text-(--color-muted)">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-(--color-muted) sm:gap-x-6">
             <span className="flex items-center gap-1.5">
               <TrendingDown className="h-4 w-4 text-emerald-400" aria-hidden="true" />
               {t('tariffs.todayLow')}:{' '}
@@ -435,8 +435,10 @@ function TariffsPageComponent() {
             >
               {kpi.icon}
             </div>
-            <p className="text-xs text-(--color-muted)">{kpi.label}</p>
-            <p className={`mt-0.5 text-xl font-bold tabular-nums ${kpi.color}`}>{kpi.value}</p>
+            <p className="truncate text-xs text-(--color-muted)">{kpi.label}</p>
+            <p className={`mt-0.5 truncate text-xl font-bold tabular-nums ${kpi.color}`}>
+              {kpi.value}
+            </p>
             <p className="text-[10px] text-(--color-muted)">{kpi.unit}</p>
           </motion.div>
         ))}

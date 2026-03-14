@@ -30,7 +30,7 @@ function BreadcrumbsComponent() {
   return (
     <nav
       aria-label={t('nav.breadcrumbs', 'Breadcrumbs')}
-      className="mb-4 flex items-center gap-1.5 text-sm text-(--color-muted)"
+      className="mb-4 flex min-w-0 items-center gap-1.5 overflow-hidden text-sm text-(--color-muted)"
     >
       <Link
         to="/"
@@ -46,11 +46,11 @@ function BreadcrumbsComponent() {
         const labelKey = routeLabels[path] || segment;
 
         return (
-          <span key={path} className="inline-flex items-center gap-1.5">
-            <ChevronRight size={14} aria-hidden="true" className="text-(--color-border)" />
+          <span key={path} className="inline-flex min-w-0 shrink-0 items-center gap-1.5">
+            <ChevronRight size={14} aria-hidden="true" className="shrink-0 text-(--color-border)" />
             {isLast ? (
               <span
-                className="rounded-md px-1.5 py-0.5 font-medium text-(--color-text)"
+                className="truncate rounded-md px-1.5 py-0.5 font-medium text-(--color-text)"
                 aria-current="page"
               >
                 {t(labelKey, segment)}
@@ -58,7 +58,7 @@ function BreadcrumbsComponent() {
             ) : (
               <Link
                 to={path}
-                className="focus-ring rounded-md px-1.5 py-0.5 transition-colors hover:text-(--color-text)"
+                className="focus-ring truncate rounded-md px-1.5 py-0.5 transition-colors hover:text-(--color-text)"
               >
                 {t(labelKey, segment)}
               </Link>

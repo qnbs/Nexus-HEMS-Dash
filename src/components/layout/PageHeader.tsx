@@ -15,10 +15,10 @@ function PageHeaderComponent({ title, subtitle, icon, actions }: PageHeaderProps
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
     >
-      <div className="flex items-center gap-3">
+      <div className="flex min-w-0 items-center gap-3">
         {icon && (
           <motion.div
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-(--color-primary)/20 bg-(--color-primary)/10 text-(--color-primary)"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-(--color-primary)/20 bg-(--color-primary)/10 text-(--color-primary)"
             aria-hidden="true"
             whileHover={{ rotate: 8, scale: 1.08 }}
             transition={{ type: 'spring', stiffness: 400, damping: 17 }}
@@ -26,9 +26,11 @@ function PageHeaderComponent({ title, subtitle, icon, actions }: PageHeaderProps
             {icon}
           </motion.div>
         )}
-        <div>
-          <h1 className="fluid-text-2xl font-semibold tracking-tight">{title}</h1>
-          {subtitle && <p className="fluid-text-sm mt-0.5 text-(--color-muted)">{subtitle}</p>}
+        <div className="min-w-0">
+          <h1 className="fluid-text-2xl truncate font-semibold tracking-tight">{title}</h1>
+          {subtitle && (
+            <p className="fluid-text-sm mt-0.5 truncate text-(--color-muted)">{subtitle}</p>
+          )}
         </div>
       </div>
       {actions && <div className="flex items-center gap-2">{actions}</div>}

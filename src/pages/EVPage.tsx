@@ -446,8 +446,8 @@ function EVPageComponent() {
           <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-white/5">
             <chargeStrategy.icon className={`h-5 w-5 ${chargeStrategy.color}`} />
           </div>
-          <div className="flex-1">
-            <p className={`font-medium ${chargeStrategy.color}`}>
+          <div className="min-w-0 flex-1">
+            <p className={`truncate font-medium ${chargeStrategy.color}`}>
               {t(`ev.strategy.${chargeStrategy.mode}`)}
             </p>
             <p className="mt-0.5 text-xs text-(--color-muted)">
@@ -1103,10 +1103,10 @@ function KpiMini({
   return (
     <div className="glass-panel rounded-2xl p-3.5">
       <div className="mb-1.5 flex items-center gap-1.5">
-        {icon}
+        <span className="shrink-0">{icon}</span>
         <p className="truncate text-[11px] text-(--color-muted)">{label}</p>
       </div>
-      <p className="text-lg font-light tracking-tight text-(--color-text)">{value}</p>
+      <p className="truncate text-lg font-light tracking-tight text-(--color-text)">{value}</p>
       <p className="mt-0.5 truncate text-[10px] text-(--color-muted)">{sub}</p>
     </div>
   );
@@ -1167,8 +1167,8 @@ function WeeklyStat({
 }) {
   return (
     <div className="rounded-xl border border-(--color-border)/30 bg-white/5 p-3">
-      <p className="text-[11px] text-(--color-muted)">{label}</p>
-      <p className={`mt-1 text-lg font-light tracking-tight ${color}`}>{value}</p>
+      <p className="truncate text-[11px] text-(--color-muted)">{label}</p>
+      <p className={`mt-1 truncate text-lg font-light tracking-tight ${color}`}>{value}</p>
       <p className="mt-0.5 truncate text-[10px] text-(--color-muted)">{sub}</p>
     </div>
   );
