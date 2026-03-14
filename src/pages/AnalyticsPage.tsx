@@ -237,7 +237,7 @@ function AnalyticsPageComponent() {
         subtitle={t('analytics.subtitle')}
         icon={<BarChart3 size={22} aria-hidden="true" />}
         actions={
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {isPeakHour && (
               <span className="inline-flex items-center gap-1.5 rounded-full bg-orange-500/15 px-3 py-1.5 text-[10px] font-semibold tracking-wider text-orange-400 uppercase">
                 <Zap size={10} className="energy-pulse" aria-hidden="true" />
@@ -259,7 +259,7 @@ function AnalyticsPageComponent() {
       />
 
       {/* ─── 8 KPI Cards ──────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-4 xl:grid-cols-8">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-8">
         {kpiCards.map((card, i) => (
           <motion.div
             key={card.label}
@@ -280,8 +280,10 @@ function AnalyticsPageComponent() {
                 aria-hidden="true"
               />
             </div>
-            <p className={`text-xl font-light ${card.color}`}>{card.value}</p>
-            <p className="mt-0.5 text-[10px] leading-tight text-(--color-muted)">{card.label}</p>
+            <p className={`truncate text-xl font-light ${card.color}`}>{card.value}</p>
+            <p className="mt-0.5 truncate text-[10px] leading-tight text-(--color-muted)">
+              {card.label}
+            </p>
             <div className="mt-1.5 flex items-center gap-1 text-[9px]">
               {card.trendUp ? (
                 <ArrowUpRight size={10} className="text-emerald-400" aria-hidden="true" />
@@ -306,7 +308,7 @@ function AnalyticsPageComponent() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.35 }}
         >
-          <div className="mb-4 flex items-center justify-between">
+          <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <h2
               id="balance-chart-title"
               className="fluid-text-lg flex items-center gap-2 text-lg font-medium"
@@ -314,7 +316,7 @@ function AnalyticsPageComponent() {
               <Clock size={20} className="text-(--color-secondary)" aria-hidden="true" />
               {t('analytics.energyBalance24h')}
             </h2>
-            <div className="flex items-center gap-3 text-[10px]">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px]">
               <span className="flex items-center gap-1">
                 <span className="inline-block h-2.5 w-2.5 rounded-full bg-yellow-400" />
                 {t('analytics.pvProduction')}
@@ -494,11 +496,11 @@ function AnalyticsPageComponent() {
                 {netCost <= 0 ? '–' : ''}€{Math.abs(netCost).toFixed(2)}
               </span>
             </div>
-            <div className="mt-1 flex items-center justify-between text-[10px] text-(--color-muted)">
-              <span>
+            <div className="mt-1 flex flex-wrap items-center justify-between gap-1 text-[10px] text-(--color-muted)">
+              <span className="truncate">
                 {t('analytics.gridCostLabel')}: €{gridCost.toFixed(2)}
               </span>
-              <span>
+              <span className="truncate">
                 {t('analytics.feedInRevenue')}: €{feedInRevenue.toFixed(2)}
               </span>
             </div>
@@ -514,7 +516,7 @@ function AnalyticsPageComponent() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.4 }}
       >
-        <div className="mb-4 flex items-center justify-between">
+        <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <h2
             id="monthly-chart-title"
             className="fluid-text-lg flex items-center gap-2 text-lg font-medium"
@@ -522,7 +524,7 @@ function AnalyticsPageComponent() {
             <CalendarDays size={20} className="text-(--color-secondary)" aria-hidden="true" />
             {t('analytics.monthlyComparison')}
           </h2>
-          <div className="flex items-center gap-3 text-[10px]">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px]">
             <span className="flex items-center gap-1">
               <span className="inline-block h-2.5 w-2.5 rounded bg-yellow-400" />
               {t('analytics.productionKwh')}
@@ -588,7 +590,7 @@ function AnalyticsPageComponent() {
           </ResponsiveContainer>
         </div>
         {/* Annual summary */}
-        <div className="mt-4 grid grid-cols-4 gap-3">
+        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
           {(() => {
             const totalProd = monthlyData.reduce((a, d) => a + d.production, 0);
             const totalCons = monthlyData.reduce((a, d) => a + d.consumption, 0);
@@ -777,12 +779,12 @@ function AnalyticsPageComponent() {
             ))}
           </div>
           {/* Real-time indicator */}
-          <div className="mt-4 flex items-center justify-between rounded-xl bg-white/5 px-3 py-2.5 text-xs">
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-white/5 px-3 py-2.5 text-xs">
             <span className="flex items-center gap-1.5 text-(--color-muted)">
               <Activity size={12} className="energy-pulse text-emerald-400" aria-hidden="true" />
               {t('analytics.liveDataStream')}
             </span>
-            <span className="font-mono text-emerald-400">
+            <span className="truncate font-mono text-emerald-400">
               {energyData.gridVoltage.toFixed(0)}V · {energyData.priceCurrent.toFixed(4)} €/kWh
             </span>
           </div>
