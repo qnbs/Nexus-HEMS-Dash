@@ -178,8 +178,8 @@ function EVPageComponent() {
     { name: t('ev.gridCharge'), value: Math.round(gridToEv), color: '#8b5cf6' },
   ].filter((d) => d.value > 10);
 
-  // Charging efficiency (AC→DC typical 88-94%)
-  const chargingEfficiency = isCharging ? 89 + Math.random() * 5 : 0;
+  // Charging efficiency (AC→DC typical 88-94%) — deterministic from power
+  const chargingEfficiency = isCharging ? 89 + (energyData.evPower % 50) / 10 : 0;
   const cableLossW = isCharging
     ? Math.round(energyData.evPower * (1 - chargingEfficiency / 100))
     : 0;

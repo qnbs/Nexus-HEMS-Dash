@@ -118,11 +118,11 @@ function ProductionPageComponent() {
   const selfConsumptionSavings = (pvToHouse / 1000) * energyData.priceCurrent;
   const totalRevenueEstimate = feedInRevenueToday + selfConsumptionSavings * 8;
 
-  // Simulated irradiance (W/m²)
+  // Simulated irradiance (W/m²) — deterministic from utilization
   const hour = new Date().getHours();
   const irradiance =
     hour >= 6 && hour <= 20
-      ? Math.round(200 + (utilizationPercent / 100) * 800 + Math.random() * 50)
+      ? Math.round(200 + (utilizationPercent / 100) * 800 + (energyData.pvPower % 50))
       : 0;
 
   // Performance ratio (simplified)
