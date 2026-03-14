@@ -95,7 +95,7 @@ export const ExportAndSharing = memo(function ExportAndSharing() {
 
   return (
     <div className="glass-panel rounded-3xl p-6">
-      <h3 className="mb-6 text-lg font-semibold fluid-text-lg text-(--color-text)">
+      <h3 className="fluid-text-lg mb-6 text-lg font-semibold text-(--color-text)">
         {t('export.title')}
       </h3>
 

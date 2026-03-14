@@ -292,7 +292,7 @@ export function CommandPalette({
             initial={{ opacity: 0, scale: 0.95, y: -20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: -20 }}
-            className="fixed left-1/2 top-1/4 z-50 w-full max-w-2xl -translate-x-1/2 overflow-hidden rounded-2xl border border-(--color-border) bg-(--color-surface) shadow-2xl backdrop-blur-3xl"
+            className="fixed top-1/4 left-1/2 z-50 w-full max-w-2xl -translate-x-1/2 overflow-hidden rounded-2xl border border-(--color-border) bg-(--color-surface) shadow-2xl backdrop-blur-3xl"
             role="dialog"
             aria-modal="true"
             aria-label={t('command.open', 'Command palette')}
@@ -354,7 +354,7 @@ export function CommandPalette({
                       </div>
                       <div className="flex-1">
                         <p className="font-medium">{cmd.label}</p>
-                        <p className="text-xs capitalize text-(--color-muted)">
+                        <p className="text-xs text-(--color-muted) capitalize">
                           {cmd.category === 'navigation'
                             ? t('command.categoryNavigation', 'Navigation')
                             : cmd.category === 'action'

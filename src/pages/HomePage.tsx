@@ -88,13 +88,13 @@ function HomePageComponent() {
           <div className="flex items-center gap-2">
             {isDemo && <DemoBadge />}
             <span
-              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider ${
+              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] font-semibold tracking-wider uppercase ${
                 connected ? 'bg-emerald-500/15 text-emerald-400' : 'bg-rose-500/15 text-rose-400'
               }`}
             >
               <span
                 className={`h-1.5 w-1.5 rounded-full ${
-                  connected ? 'bg-emerald-400 energy-pulse' : 'bg-rose-400'
+                  connected ? 'energy-pulse bg-emerald-400' : 'bg-rose-400'
                 }`}
               />
               {connected ? t('common.live') : t('common.demoMode')}
@@ -293,7 +293,7 @@ function HomePageComponent() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Compact Sankey */}
         <motion.section
-          className="glass-panel-strong rounded-3xl p-6 lg:col-span-2 hover-lift"
+          className="glass-panel-strong hover-lift rounded-3xl p-6 lg:col-span-2"
           aria-labelledby="home-flow-title"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -302,14 +302,14 @@ function HomePageComponent() {
           <div className="relative z-10 mb-3 flex items-center justify-between">
             <h2
               id="home-flow-title"
-              className="flex items-center gap-2 text-lg font-medium fluid-text-lg"
+              className="fluid-text-lg flex items-center gap-2 text-lg font-medium"
             >
               <Activity size={20} className="text-(--color-secondary)" aria-hidden="true" />
               {t('dashboard.realtimeFlow')}
             </h2>
             <Link
               to="/energy-flow"
-              className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-medium text-(--color-primary) transition-colors hover:bg-(--color-primary)/10 focus-ring"
+              className="focus-ring inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-medium text-(--color-primary) transition-colors hover:bg-(--color-primary)/10"
             >
               {t('nav.viewAll', 'Details')}
               <ChevronRight size={14} />
@@ -322,7 +322,7 @@ function HomePageComponent() {
 
         {/* Quick Controls */}
         <motion.section
-          className="glass-panel-strong rounded-3xl p-6 hover-lift"
+          className="glass-panel-strong hover-lift rounded-3xl p-6"
           aria-labelledby="home-controls-title"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -330,7 +330,7 @@ function HomePageComponent() {
         >
           <h2
             id="home-controls-title"
-            className="mb-4 flex items-center gap-2 text-lg font-medium fluid-text-lg"
+            className="fluid-text-lg mb-4 flex items-center gap-2 text-lg font-medium"
           >
             <TrendingUp size={20} className="text-(--color-secondary)" aria-hidden="true" />
             {t('dashboard.control')}
@@ -343,7 +343,7 @@ function HomePageComponent() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Today's Highlights */}
         <motion.section
-          className="glass-panel-strong rounded-3xl p-6 hover-lift lg:col-span-2"
+          className="glass-panel-strong hover-lift rounded-3xl p-6 lg:col-span-2"
           aria-labelledby="home-highlights-title"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -351,7 +351,7 @@ function HomePageComponent() {
         >
           <h2
             id="home-highlights-title"
-            className="mb-4 flex items-center gap-2 text-lg font-medium fluid-text-lg"
+            className="fluid-text-lg mb-4 flex items-center gap-2 text-lg font-medium"
           >
             <BarChart3 size={20} className="text-(--color-secondary)" aria-hidden="true" />
             {t('dashboard.todayHighlights')}
@@ -386,7 +386,7 @@ function HomePageComponent() {
 
         {/* Load Breakdown */}
         <motion.section
-          className="glass-panel-strong rounded-3xl p-6 hover-lift"
+          className="glass-panel-strong hover-lift rounded-3xl p-6"
           aria-labelledby="home-load-title"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -394,7 +394,7 @@ function HomePageComponent() {
         >
           <h2
             id="home-load-title"
-            className="mb-4 flex items-center gap-2 text-lg font-medium fluid-text-lg"
+            className="fluid-text-lg mb-4 flex items-center gap-2 text-lg font-medium"
           >
             <Home size={20} className="text-(--color-secondary)" aria-hidden="true" />
             {t('dashboard.loadBreakdown')}
@@ -433,7 +433,7 @@ function HomePageComponent() {
           </div>
           <Link
             to="/consumption"
-            className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-(--color-primary) hover:underline focus-ring"
+            className="focus-ring mt-3 inline-flex items-center gap-1 text-xs font-medium text-(--color-primary) hover:underline"
           >
             {t('dashboard.viewDetails')}
             <ArrowRight size={12} />
@@ -553,21 +553,21 @@ const KpiCard = memo(function KpiCard({
   return (
     <Link
       to={link}
-      className={`metric-card group block overflow-hidden rounded-2xl focus-ring ${className || ''}`}
+      className={`metric-card group focus-ring block overflow-hidden rounded-2xl ${className || ''}`}
     >
       <div className="mb-3 flex min-w-0 items-center gap-3">
         <div className="shrink-0 rounded-xl border border-(--color-border) bg-white/6 p-2.5">
           {icon}
         </div>
-        <span className="min-w-0 truncate text-sm font-medium text-(--color-text) fluid-text-sm">
+        <span className="fluid-text-sm min-w-0 truncate text-sm font-medium text-(--color-text)">
           {label}
         </span>
       </div>
-      <div className="truncate text-2xl font-light tracking-tight text-(--color-text) fluid-text-2xl">
+      <div className="fluid-text-2xl truncate text-2xl font-light tracking-tight text-(--color-text)">
         {value}
       </div>
       <div className="mt-1.5 flex items-center justify-between">
-        <span className="truncate text-xs text-(--color-muted) fluid-text-xs">{sub}</span>
+        <span className="fluid-text-xs truncate text-xs text-(--color-muted)">{sub}</span>
         <ChevronRight
           size={14}
           className="shrink-0 text-(--color-muted) opacity-0 transition-opacity group-hover:opacity-100"

@@ -150,7 +150,7 @@ export function Gauge({
       </svg>
 
       <div className="text-center">
-        <p className="text-xs font-medium uppercase tracking-wide text-(--color-muted)">{label}</p>
+        <p className="text-xs font-medium tracking-wide text-(--color-muted) uppercase">{label}</p>
         {showValue && (
           <p className="mt-1 text-sm text-(--color-text)">
             {displayValue.toFixed(1)} {unit}

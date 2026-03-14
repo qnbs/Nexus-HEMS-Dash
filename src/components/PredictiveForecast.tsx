@@ -129,7 +129,7 @@ export const PredictiveForecast = memo(function PredictiveForecast() {
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold fluid-text-xl text-(--color-text)">
+          <h2 className="fluid-text-xl text-xl font-semibold text-(--color-text)">
             <CloudSun className="mr-2 inline h-6 w-6 text-(--color-primary)" aria-hidden="true" />
             {t('forecast.title')}
           </h2>
@@ -142,7 +142,7 @@ export const PredictiveForecast = memo(function PredictiveForecast() {
             onClick={() => setTimeRange('24h')}
             className={`focus-ring rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
               timeRange === '24h'
-                ? 'bg-(--color-primary) text-(--color-background) font-bold'
+                ? 'bg-(--color-primary) font-bold text-(--color-background)'
                 : 'bg-(--color-surface) text-(--color-muted) hover:bg-white/10'
             }`}
             aria-pressed={timeRange === '24h'}
@@ -154,7 +154,7 @@ export const PredictiveForecast = memo(function PredictiveForecast() {
             onClick={() => setTimeRange('7d')}
             className={`focus-ring rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
               timeRange === '7d'
-                ? 'bg-(--color-primary) text-(--color-background) font-bold'
+                ? 'bg-(--color-primary) font-bold text-(--color-background)'
                 : 'bg-(--color-surface) text-(--color-muted) hover:bg-white/10'
             }`}
             aria-pressed={timeRange === '7d'}

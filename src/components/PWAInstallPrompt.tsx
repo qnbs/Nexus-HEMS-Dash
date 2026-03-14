@@ -74,15 +74,15 @@ export function PWAInstallPrompt() {
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 50 }}
-        className="fixed bottom-20 left-4 right-4 z-50 lg:bottom-4 md:left-auto md:right-4 md:max-w-sm"
+        className="fixed right-4 bottom-20 left-4 z-50 md:right-4 md:left-auto md:max-w-sm lg:bottom-4"
       >
         <div
-          className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 backdrop-blur-xl p-4 shadow-2xl flex items-center gap-3"
+          className="flex items-center gap-3 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 shadow-2xl backdrop-blur-xl"
           role="alert"
         >
-          <CheckCircle2 className="h-6 w-6 text-emerald-400 shrink-0" aria-hidden="true" />
+          <CheckCircle2 className="h-6 w-6 shrink-0 text-emerald-400" aria-hidden="true" />
           <div>
-            <p className="font-semibold text-sm text-emerald-400">
+            <p className="text-sm font-semibold text-emerald-400">
               {t('pwa.installed', 'Successfully installed!')}
             </p>
             <p className="text-xs text-(--color-muted)">
@@ -102,12 +102,12 @@ export function PWAInstallPrompt() {
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 50 }}
-          className="fixed bottom-20 left-4 right-4 z-50 lg:bottom-4 md:left-auto md:right-4 md:max-w-md"
+          className="fixed right-4 bottom-20 left-4 z-50 md:right-4 md:left-auto md:max-w-md lg:bottom-4"
         >
           <div className="glass-panel rounded-2xl border-2 border-(--color-primary)/30 p-6 shadow-2xl">
             <button
               onClick={handleDismiss}
-              className="absolute top-3 right-3 p-1 rounded-lg text-(--color-muted) hover:text-(--color-text)"
+              className="absolute top-3 right-3 rounded-lg p-1 text-(--color-muted) hover:text-(--color-text)"
               aria-label={t('common.close', 'Close')}
             >
               <X className="h-4 w-4" />
@@ -140,7 +140,7 @@ export function PWAInstallPrompt() {
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 50 }}
-        className="fixed bottom-20 left-4 right-4 z-50 lg:bottom-4 md:left-auto md:right-4 md:max-w-md"
+        className="fixed right-4 bottom-20 left-4 z-50 md:right-4 md:left-auto md:max-w-md lg:bottom-4"
       >
         <div className="glass-panel rounded-2xl border-2 border-(--color-primary)/30 p-6 shadow-2xl">
           <div className="flex items-start justify-between gap-4">

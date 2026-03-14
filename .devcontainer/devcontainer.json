@@ -5,22 +5,37 @@
     "ghcr.io/devcontainers/features/github-cli:1": {}
   },
   "forwardPorts": [5173],
-  "postCreateCommand": "npm install",
+  "postCreateCommand": "npm install && npx husky install",
   "customizations": {
     "vscode": {
       "extensions": [
-        "dbaeumer.vscode-eslint",
         "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint",
         "bradlc.vscode-tailwindcss",
         "ms-playwright.playwright",
-        "GitHub.copilot"
+        "GitHub.copilot",
+        "GitHub.copilot-chat",
+        "christian-kohler.path-intellisense",
+        "mikestead.dotenv",
+        "streetsidesoftware.code-spell-checker",
+        "streetsidesoftware.code-spell-checker-german",
+        "usernamehw.errorlens",
+        "editorconfig.editorconfig",
+        "eamodio.gitlens",
+        "mhutchie.git-graph"
       ],
       "settings": {
         "editor.defaultFormatter": "esbenp.prettier-vscode",
         "editor.formatOnSave": true,
         "editor.codeActionsOnSave": {
           "source.fixAll.eslint": "explicit"
-        }
+        },
+        "eslint.useFlatConfig": true,
+        "typescript.tsdk": "node_modules/typescript/lib",
+        "typescript.enablePromptUseWorkspaceTsdk": true,
+        "files.eol": "\n",
+        "files.trimTrailingWhitespace": true,
+        "files.insertFinalNewline": true
       }
     }
   }

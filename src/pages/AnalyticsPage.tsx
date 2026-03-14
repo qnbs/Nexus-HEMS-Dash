@@ -239,18 +239,18 @@ function AnalyticsPageComponent() {
         actions={
           <div className="flex items-center gap-2">
             {isPeakHour && (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-orange-500/15 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-orange-400">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-orange-500/15 px-3 py-1.5 text-[10px] font-semibold tracking-wider text-orange-400 uppercase">
                 <Zap size={10} className="energy-pulse" aria-hidden="true" />
                 {t('analytics.peakHours')}
               </span>
             )}
             {isSolarPeak && (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-yellow-500/15 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-yellow-400">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-yellow-500/15 px-3 py-1.5 text-[10px] font-semibold tracking-wider text-yellow-400 uppercase">
                 <Sun size={10} aria-hidden="true" />
                 {t('analytics.solarPeak')}
               </span>
             )}
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-400">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-3 py-1.5 text-[10px] font-semibold tracking-wider text-emerald-400 uppercase">
               <Activity size={10} className="energy-pulse" aria-hidden="true" />
               {t('common.live')}
             </span>
@@ -263,7 +263,7 @@ function AnalyticsPageComponent() {
         {kpiCards.map((card, i) => (
           <motion.div
             key={card.label}
-            className="group metric-card rounded-2xl hover-lift"
+            className="group metric-card hover-lift rounded-2xl"
             initial={{ opacity: 0, scale: 0.92 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.35, delay: 0.05 + i * 0.04 }}
@@ -300,7 +300,7 @@ function AnalyticsPageComponent() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* 24h Energy Balance Chart */}
         <motion.section
-          className="glass-panel-strong rounded-3xl p-6 hover-lift lg:col-span-2"
+          className="glass-panel-strong hover-lift rounded-3xl p-6 lg:col-span-2"
           aria-labelledby="balance-chart-title"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -309,7 +309,7 @@ function AnalyticsPageComponent() {
           <div className="mb-4 flex items-center justify-between">
             <h2
               id="balance-chart-title"
-              className="flex items-center gap-2 text-lg font-medium fluid-text-lg"
+              className="fluid-text-lg flex items-center gap-2 text-lg font-medium"
             >
               <Clock size={20} className="text-(--color-secondary)" aria-hidden="true" />
               {t('analytics.energyBalance24h')}
@@ -435,7 +435,7 @@ function AnalyticsPageComponent() {
 
         {/* Cost Allocation Donut */}
         <motion.section
-          className="glass-panel-strong rounded-3xl p-6 hover-lift"
+          className="glass-panel-strong hover-lift rounded-3xl p-6"
           aria-labelledby="cost-donut-title"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -443,7 +443,7 @@ function AnalyticsPageComponent() {
         >
           <h2
             id="cost-donut-title"
-            className="mb-4 flex items-center gap-2 text-lg font-medium fluid-text-lg"
+            className="fluid-text-lg mb-4 flex items-center gap-2 text-lg font-medium"
           >
             <PieIcon size={20} className="text-(--color-secondary)" aria-hidden="true" />
             {t('analytics.costAllocation')}
@@ -508,7 +508,7 @@ function AnalyticsPageComponent() {
 
       {/* ─── Monthly Comparison Bar Chart ─────────────────────────── */}
       <motion.section
-        className="glass-panel-strong rounded-3xl p-6 hover-lift"
+        className="glass-panel-strong hover-lift rounded-3xl p-6"
         aria-labelledby="monthly-chart-title"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -517,7 +517,7 @@ function AnalyticsPageComponent() {
         <div className="mb-4 flex items-center justify-between">
           <h2
             id="monthly-chart-title"
-            className="flex items-center gap-2 text-lg font-medium fluid-text-lg"
+            className="fluid-text-lg flex items-center gap-2 text-lg font-medium"
           >
             <CalendarDays size={20} className="text-(--color-secondary)" aria-hidden="true" />
             {t('analytics.monthlyComparison')}
@@ -629,7 +629,7 @@ function AnalyticsPageComponent() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* System Efficiency Panel */}
         <motion.section
-          className="glass-panel-strong rounded-3xl p-6 hover-lift"
+          className="glass-panel-strong hover-lift rounded-3xl p-6"
           aria-labelledby="efficiency-title"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -637,7 +637,7 @@ function AnalyticsPageComponent() {
         >
           <h2
             id="efficiency-title"
-            className="mb-4 flex items-center gap-2 text-lg font-medium fluid-text-lg"
+            className="fluid-text-lg mb-4 flex items-center gap-2 text-lg font-medium"
           >
             <Gauge size={20} className="text-(--color-secondary)" aria-hidden="true" />
             {t('analytics.efficiencyMetrics')}
@@ -711,7 +711,7 @@ function AnalyticsPageComponent() {
 
         {/* Data Quality & System Health */}
         <motion.section
-          className="glass-panel-strong rounded-3xl p-6 hover-lift"
+          className="glass-panel-strong hover-lift rounded-3xl p-6"
           aria-labelledby="data-quality-title"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -719,7 +719,7 @@ function AnalyticsPageComponent() {
         >
           <h2
             id="data-quality-title"
-            className="mb-4 flex items-center gap-2 text-lg font-medium fluid-text-lg"
+            className="fluid-text-lg mb-4 flex items-center gap-2 text-lg font-medium"
           >
             <Shield size={20} className="text-(--color-secondary)" aria-hidden="true" />
             {t('analytics.dataQuality')}
@@ -770,7 +770,7 @@ function AnalyticsPageComponent() {
                 </div>
                 <span
                   className={`h-2 w-2 rounded-full ${
-                    item.status === 'ok' ? 'bg-emerald-400' : 'bg-yellow-400 energy-pulse'
+                    item.status === 'ok' ? 'bg-emerald-400' : 'energy-pulse bg-yellow-400'
                   }`}
                 />
               </div>
@@ -779,7 +779,7 @@ function AnalyticsPageComponent() {
           {/* Real-time indicator */}
           <div className="mt-4 flex items-center justify-between rounded-xl bg-white/5 px-3 py-2.5 text-xs">
             <span className="flex items-center gap-1.5 text-(--color-muted)">
-              <Activity size={12} className="text-emerald-400 energy-pulse" aria-hidden="true" />
+              <Activity size={12} className="energy-pulse text-emerald-400" aria-hidden="true" />
               {t('analytics.liveDataStream')}
             </span>
             <span className="font-mono text-emerald-400">

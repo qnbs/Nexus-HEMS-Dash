@@ -30,21 +30,21 @@ export const AIOptimizerPanel = memo(function AIOptimizerPanel() {
   );
 
   return (
-    <div className="glass-panel grid gap-3 sm:gap-4 p-4 sm:p-5">
+    <div className="glass-panel grid gap-3 p-4 sm:gap-4 sm:p-5">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="eyebrow">{t('dashboard.optimizer')}</p>
-          <h3 className="mt-2 text-lg fluid-text-lg sm:text-xl font-semibold text-(--color-text)">
+          <h3 className="fluid-text-lg mt-2 text-lg font-semibold text-(--color-text) sm:text-xl">
             {t('dashboard.optimizerSubtitle')}
           </h3>
         </div>
-        <div className="shrink-0 inline-flex items-center gap-2 rounded-full border border-(--color-border) bg-white/5 px-2 sm:px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-(--color-primary)">
+        <div className="inline-flex shrink-0 items-center gap-2 rounded-full border border-(--color-border) bg-white/5 px-2 py-1 text-xs font-semibold tracking-[0.22em] text-(--color-primary) uppercase sm:px-3">
           <BrainCircuit className="h-4 w-4" aria-hidden="true" />
           {t('common.live')}
         </div>
       </div>
 
-      <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {recommendations.map((recommendation, index) => {
           const Icon = severityIcons[recommendation.severity];
 
@@ -54,14 +54,14 @@ export const AIOptimizerPanel = memo(function AIOptimizerPanel() {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.06, duration: 0.3 }}
-              className={`rounded-2xl sm:rounded-3xl border p-3 sm:p-4 ${severityStyles[recommendation.severity]}`}
+              className={`rounded-2xl border p-3 sm:rounded-3xl sm:p-4 ${severityStyles[recommendation.severity]}`}
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] opacity-80">
+                  <p className="text-xs font-semibold tracking-[0.18em] uppercase opacity-80">
                     {t(recommendation.titleKey)}
                   </p>
-                  <h4 className="mt-2 text-base fluid-text-base font-semibold">
+                  <h4 className="fluid-text-base mt-2 text-base font-semibold">
                     {t(recommendation.descriptionKey)}
                   </h4>
                 </div>

@@ -37,7 +37,7 @@ function LanguageOption({
   return (
     <motion.button
       onClick={() => onSelect(code)}
-      className={`relative flex items-center gap-4 rounded-2xl border-2 px-5 py-3.5 transition-all duration-300 focus-ring ${
+      className={`focus-ring relative flex items-center gap-4 rounded-2xl border-2 px-5 py-3.5 transition-all duration-300 ${
         active
           ? 'border-[#38bdf8] bg-[#38bdf8]/10 shadow-[0_0_24px_#38bdf820]'
           : 'border-white/10 bg-white/5 hover:border-white/20'
@@ -91,8 +91,8 @@ function FeatureCard({
         <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
       </div>
       <div className="min-w-0">
-        <p className="text-sm font-semibold text-white truncate">{title}</p>
-        <p className="mt-0.5 text-xs text-[#94a3b8] leading-relaxed line-clamp-2">{desc}</p>
+        <p className="truncate text-sm font-semibold text-white">{title}</p>
+        <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-[#94a3b8]">{desc}</p>
       </div>
     </motion.div>
   );
@@ -171,8 +171,8 @@ export function Onboarding() {
       {/* Animated background */}
       <div className="pointer-events-none fixed inset-0 overflow-hidden" aria-hidden="true">
         <div className="absolute top-[-20%] left-[-10%] h-[600px] w-[600px] rounded-full bg-[#38bdf8]/5 blur-[120px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] h-[500px] w-[500px] rounded-full bg-[#818cf8]/5 blur-[100px]" />
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 h-[300px] w-[300px] rounded-full bg-[#fb923c]/3 blur-[80px]" />
+        <div className="absolute right-[-10%] bottom-[-10%] h-[500px] w-[500px] rounded-full bg-[#818cf8]/5 blur-[100px]" />
+        <div className="absolute top-1/4 left-1/2 h-[300px] w-[300px] -translate-x-1/2 rounded-full bg-[#fb923c]/3 blur-[80px]" />
       </div>
 
       <div className="flex min-h-full items-center justify-center px-4 py-6 sm:py-10">
@@ -189,11 +189,11 @@ export function Onboarding() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
           >
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#38bdf8]/10 border border-[#38bdf8]/20 sm:h-12 sm:w-12">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-[#38bdf8]/20 bg-[#38bdf8]/10 sm:h-12 sm:w-12">
               <Zap className="h-5 w-5 text-[#38bdf8] sm:h-6 sm:w-6" />
             </div>
             <div>
-              <h1 className="text-lg fluid-text-lg font-bold text-white tracking-tight sm:text-xl">
+              <h1 className="fluid-text-lg text-lg font-bold tracking-tight text-white sm:text-xl">
                 Nexus HEMS
               </h1>
               <p className="text-xs text-[#94a3b8]">Dashboard</p>
@@ -201,7 +201,7 @@ export function Onboarding() {
           </motion.div>
 
           {/* Card */}
-          <div className="w-full rounded-3xl border border-white/10 bg-white/5 p-4 backdrop-blur-xl shadow-2xl sm:p-6 md:p-8">
+          <div className="w-full rounded-3xl border border-white/10 bg-white/5 p-4 shadow-2xl backdrop-blur-xl sm:p-6 md:p-8">
             {/* Step indicator */}
             <div className="mb-5 flex items-center justify-between sm:mb-6">
               <StepIndicator current={step} total={TOTAL_STEPS} />
@@ -231,10 +231,10 @@ export function Onboarding() {
                     >
                       <Globe className="h-7 w-7 text-[#0c1222] sm:h-8 sm:w-8" />
                     </motion.div>
-                    <h2 className="text-xl fluid-text-xl font-bold text-white sm:text-2xl">
+                    <h2 className="fluid-text-xl text-xl font-bold text-white sm:text-2xl">
                       {t('onboarding.welcome')}
                     </h2>
-                    <p className="mt-2 text-sm text-[#94a3b8] leading-relaxed">
+                    <p className="mt-2 text-sm leading-relaxed text-[#94a3b8]">
                       {t('onboarding.welcomeDesc')}
                     </p>
                   </div>
@@ -284,10 +284,10 @@ export function Onboarding() {
                     >
                       <Zap className="h-7 w-7 text-[#0c1222] sm:h-8 sm:w-8" />
                     </motion.div>
-                    <h2 className="text-lg fluid-text-lg font-bold text-white sm:text-xl">
+                    <h2 className="fluid-text-lg text-lg font-bold text-white sm:text-xl">
                       {t('onboarding.energyFlow')}
                     </h2>
-                    <p className="mt-2 text-sm text-[#94a3b8] leading-relaxed">
+                    <p className="mt-2 text-sm leading-relaxed text-[#94a3b8]">
                       {t('onboarding.energyFlowDesc')}
                     </p>
                   </div>
@@ -300,7 +300,7 @@ export function Onboarding() {
                         <span className="text-[10px] text-[#94a3b8]">PV</span>
                       </div>
                       <motion.div
-                        className="h-0.5 flex-1 mx-2 rounded-full bg-gradient-to-r from-amber-400 via-[#38bdf8] to-[#818cf8] sm:mx-3"
+                        className="mx-2 h-0.5 flex-1 rounded-full bg-gradient-to-r from-amber-400 via-[#38bdf8] to-[#818cf8] sm:mx-3"
                         initial={{ scaleX: 0 }}
                         animate={{ scaleX: 1 }}
                         transition={{ delay: 0.3, duration: 0.8, ease: 'easeOut' }}
@@ -311,7 +311,7 @@ export function Onboarding() {
                         <span className="text-[10px] text-[#94a3b8]">Home</span>
                       </div>
                       <motion.div
-                        className="h-0.5 flex-1 mx-2 rounded-full bg-gradient-to-r from-[#38bdf8] to-[#818cf8] sm:mx-3"
+                        className="mx-2 h-0.5 flex-1 rounded-full bg-gradient-to-r from-[#38bdf8] to-[#818cf8] sm:mx-3"
                         initial={{ scaleX: 0 }}
                         animate={{ scaleX: 1 }}
                         transition={{ delay: 0.6, duration: 0.8, ease: 'easeOut' }}
@@ -362,10 +362,10 @@ export function Onboarding() {
                     >
                       <Car className="h-7 w-7 text-[#0c1222] sm:h-8 sm:w-8" />
                     </motion.div>
-                    <h2 className="text-lg fluid-text-lg font-bold text-white sm:text-xl">
+                    <h2 className="fluid-text-lg text-lg font-bold text-white sm:text-xl">
                       {t('onboarding.smartControl')}
                     </h2>
-                    <p className="mt-2 text-sm text-[#94a3b8] leading-relaxed">
+                    <p className="mt-2 text-sm leading-relaxed text-[#94a3b8]">
                       {t('onboarding.smartControlDesc')}
                     </p>
                   </div>
@@ -392,7 +392,7 @@ export function Onboarding() {
                     <p className="mb-2 text-xs font-medium text-[#94a3b8]">
                       {t('onboarding.dynamicTariff')}
                     </p>
-                    <div className="flex items-end gap-0.5 h-10 sm:gap-1 sm:h-12">
+                    <div className="flex h-10 items-end gap-0.5 sm:h-12 sm:gap-1">
                       {[
                         0.18, 0.22, 0.15, 0.12, 0.08, 0.06, 0.05, 0.09, 0.14, 0.19, 0.25, 0.28,
                         0.24, 0.2, 0.16, 0.12, 0.1, 0.14, 0.22, 0.3, 0.35, 0.28, 0.22, 0.18,
@@ -436,17 +436,17 @@ export function Onboarding() {
                     >
                       <Brain className="h-7 w-7 text-white sm:h-8 sm:w-8" />
                     </motion.div>
-                    <h2 className="text-lg fluid-text-lg font-bold text-white sm:text-xl">
+                    <h2 className="fluid-text-lg text-lg font-bold text-white sm:text-xl">
                       {t('onboarding.aiOptimizer')}
                     </h2>
-                    <p className="mt-2 text-sm text-[#94a3b8] leading-relaxed">
+                    <p className="mt-2 text-sm leading-relaxed text-[#94a3b8]">
                       {t('onboarding.aiOptimizerDesc')}
                     </p>
                   </div>
 
                   {/* AI visualization */}
                   <div className="rounded-2xl border border-white/10 bg-[#0e1630]/60 p-4 sm:p-5">
-                    <div className="flex items-center gap-3 mb-3">
+                    <div className="mb-3 flex items-center gap-3">
                       <Brain className="h-4 w-4 text-[#818cf8]" />
                       <span className="text-xs font-medium text-white">
                         {t('onboarding.aiRecommendations')}
@@ -471,15 +471,15 @@ export function Onboarding() {
                     ].map((tip, i) => (
                       <motion.div
                         key={i}
-                        className="flex items-center gap-3 rounded-xl border border-white/5 bg-white/5 px-3 py-2.5 mb-2 last:mb-0"
+                        className="mb-2 flex items-center gap-3 rounded-xl border border-white/5 bg-white/5 px-3 py-2.5 last:mb-0"
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: tip.delay, duration: 0.4 }}
                       >
-                        <span className="text-base shrink-0" aria-hidden="true">
+                        <span className="shrink-0 text-base" aria-hidden="true">
                           {tip.icon}
                         </span>
-                        <span className="text-xs text-[#94a3b8] min-w-0">{tip.text}</span>
+                        <span className="min-w-0 text-xs text-[#94a3b8]">{tip.text}</span>
                       </motion.div>
                     ))}
                   </div>
@@ -506,10 +506,10 @@ export function Onboarding() {
                     >
                       <Rocket className="h-8 w-8 text-[#0c1222] sm:h-10 sm:w-10" />
                     </motion.div>
-                    <h2 className="text-xl fluid-text-xl font-bold text-white sm:text-2xl">
+                    <h2 className="fluid-text-xl text-xl font-bold text-white sm:text-2xl">
                       {t('onboarding.allSet')}
                     </h2>
-                    <p className="mt-2 text-sm text-[#94a3b8] leading-relaxed">
+                    <p className="mt-2 text-sm leading-relaxed text-[#94a3b8]">
                       {t('onboarding.allSetDesc')}
                     </p>
                   </div>
@@ -544,7 +544,7 @@ export function Onboarding() {
                         <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#38bdf8]/20">
                           <Check className="h-3.5 w-3.5 text-[#38bdf8]" strokeWidth={3} />
                         </div>
-                        <span className="text-sm text-white min-w-0">{item.text}</span>
+                        <span className="min-w-0 text-sm text-white">{item.text}</span>
                       </motion.div>
                     ))}
                   </div>
@@ -558,7 +558,7 @@ export function Onboarding() {
                 {step > 0 ? (
                   <motion.button
                     onClick={goBack}
-                    className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-[#94a3b8] hover:text-white hover:border-white/20 transition-colors focus-ring sm:px-4 sm:py-2.5"
+                    className="focus-ring flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-[#94a3b8] transition-colors hover:border-white/20 hover:text-white sm:px-4 sm:py-2.5"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
@@ -568,7 +568,7 @@ export function Onboarding() {
                 ) : (
                   <motion.button
                     onClick={skip}
-                    className="text-sm text-[#94a3b8] hover:text-white transition-colors focus-ring rounded-lg px-3 py-2"
+                    className="focus-ring rounded-lg px-3 py-2 text-sm text-[#94a3b8] transition-colors hover:text-white"
                     whileHover={{ scale: 1.02 }}
                   >
                     {t('onboarding.skip')}
@@ -580,7 +580,7 @@ export function Onboarding() {
                 {step < TOTAL_STEPS - 1 ? (
                   <motion.button
                     onClick={goNext}
-                    className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#38bdf8] to-[#818cf8] px-5 py-2 text-sm font-semibold text-[#0c1222] shadow-[0_0_20px_#38bdf830] hover:shadow-[0_0_30px_#38bdf850] transition-shadow focus-ring sm:px-6 sm:py-2.5"
+                    className="focus-ring flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#38bdf8] to-[#818cf8] px-5 py-2 text-sm font-semibold text-[#0c1222] shadow-[0_0_20px_#38bdf830] transition-shadow hover:shadow-[0_0_30px_#38bdf850] sm:px-6 sm:py-2.5"
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.97 }}
                   >
@@ -590,7 +590,7 @@ export function Onboarding() {
                 ) : (
                   <motion.button
                     onClick={finish}
-                    className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#38bdf8] to-[#818cf8] px-6 py-2.5 text-sm font-bold text-[#0c1222] shadow-[0_0_30px_#38bdf840] hover:shadow-[0_0_40px_#38bdf860] transition-shadow focus-ring sm:px-8 sm:py-3"
+                    className="focus-ring flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#38bdf8] to-[#818cf8] px-6 py-2.5 text-sm font-bold text-[#0c1222] shadow-[0_0_30px_#38bdf840] transition-shadow hover:shadow-[0_0_40px_#38bdf860] sm:px-8 sm:py-3"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     initial={{ opacity: 0 }}
@@ -609,7 +609,7 @@ export function Onboarding() {
           {step > 0 && step < TOTAL_STEPS - 1 && (
             <motion.button
               onClick={skip}
-              className="mt-4 text-xs text-[#94a3b8] hover:text-white transition-colors"
+              className="mt-4 text-xs text-[#94a3b8] transition-colors hover:text-white"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5 }}

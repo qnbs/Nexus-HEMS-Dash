@@ -43,10 +43,10 @@ export function OfflineBanner() {
           initial={{ opacity: 0, y: -50 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -50 }}
-          className="fixed top-0 left-0 right-0 z-50 bg-orange-500/90 backdrop-blur-3xl text-white px-4 py-3 shadow-lg"
+          className="fixed top-0 right-0 left-0 z-50 bg-orange-500/90 px-4 py-3 text-white shadow-lg backdrop-blur-3xl"
           role="alert"
         >
-          <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+          <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <WifiOff className="h-5 w-5 animate-pulse" aria-hidden="true" />
               <div>
@@ -62,11 +62,11 @@ export function OfflineBanner() {
             </div>
             <button
               onClick={() => window.location.reload()}
-              className="flex items-center gap-2 bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-colors"
+              className="flex items-center gap-2 rounded-lg bg-white/20 px-4 py-2 transition-colors hover:bg-white/30"
               aria-label={t('offline.retry')}
             >
               <RefreshCw className="h-4 w-4" aria-hidden="true" />
-              <span className="text-sm font-medium hidden sm:inline">{t('offline.retry')}</span>
+              <span className="hidden text-sm font-medium sm:inline">{t('offline.retry')}</span>
             </button>
           </div>
         </motion.div>

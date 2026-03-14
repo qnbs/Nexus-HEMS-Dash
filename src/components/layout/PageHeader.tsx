@@ -11,7 +11,7 @@ interface PageHeaderProps {
 function PageHeaderComponent({ title, subtitle, icon, actions }: PageHeaderProps) {
   return (
     <motion.div
-      className="mb-4 sm:mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+      className="mb-4 flex flex-col gap-4 sm:mb-6 sm:flex-row sm:items-center sm:justify-between"
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
@@ -28,9 +28,9 @@ function PageHeaderComponent({ title, subtitle, icon, actions }: PageHeaderProps
           </motion.div>
         )}
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight fluid-text-2xl">{title}</h1>
+          <h1 className="fluid-text-2xl text-2xl font-semibold tracking-tight">{title}</h1>
           {subtitle && (
-            <p className="mt-0.5 text-sm text-(--color-muted) fluid-text-sm">{subtitle}</p>
+            <p className="fluid-text-sm mt-0.5 text-sm text-(--color-muted)">{subtitle}</p>
           )}
         </div>
       </div>

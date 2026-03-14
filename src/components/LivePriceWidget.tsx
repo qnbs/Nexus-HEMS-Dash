@@ -67,7 +67,7 @@ export const LivePriceWidget = memo(function LivePriceWidget() {
                 : t('settings.none')}
           </p>
           <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-semibold tabular-nums text-(--color-text)">
+            <span className="text-3xl font-semibold text-(--color-text) tabular-nums">
               {currentPrice.toFixed(3)}
             </span>
             <span className="text-sm text-(--color-muted)">{t('units.euroPerKwh')}</span>

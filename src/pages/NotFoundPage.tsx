@@ -17,7 +17,7 @@ export default function NotFoundPage() {
         <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-orange-500/10">
           <AlertTriangle size={32} className="text-orange-400" aria-hidden="true" />
         </div>
-        <h1 className="mb-2 text-2xl font-semibold fluid-text-2xl">
+        <h1 className="fluid-text-2xl mb-2 text-2xl font-semibold">
           {t('error.pageNotFound', '404 – Page not found')}
         </h1>
         <p className="mb-6 text-(--color-muted)">
@@ -25,7 +25,7 @@ export default function NotFoundPage() {
         </p>
         <Link
           to="/"
-          className="btn-primary inline-flex items-center gap-2 rounded-xl px-6 py-3 focus-ring"
+          className="btn-primary focus-ring inline-flex items-center gap-2 rounded-xl px-6 py-3"
         >
           <Home size={18} />
           {t('error.goHome', 'Go to Dashboard')}

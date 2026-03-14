@@ -68,7 +68,7 @@ function ThemePreviewCard({
   return (
     <motion.button
       onClick={onClick}
-      className={`relative flex flex-col items-center gap-2 rounded-2xl border-2 p-4 transition-all duration-300 focus-ring ${
+      className={`focus-ring relative flex flex-col items-center gap-2 rounded-2xl border-2 p-4 transition-all duration-300 ${
         isActive
           ? 'border-(--color-primary) bg-(--color-primary)/10 shadow-[0_0_20px_var(--color-primary)/15]'
           : 'border-(--color-border) bg-(--color-surface) hover:border-(--color-primary)/40'
@@ -115,10 +115,10 @@ function ToggleSwitch({
         type="checkbox"
         checked={checked}
         onChange={(e) => onChange(e.target.checked)}
-        className="sr-only peer"
+        className="peer sr-only"
       />
       <span className="sr-only">{label}</span>
-      <div className="h-6 w-11 rounded-full border border-(--color-border) bg-(--color-surface) peer-checked:bg-(--color-primary) peer-focus:ring-2 peer-focus:ring-(--color-primary)/30 transition-colors duration-300 after:absolute after:top-[2px] after:left-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow-sm after:transition-transform after:duration-300 peer-checked:after:translate-x-5" />
+      <div className="h-6 w-11 rounded-full border border-(--color-border) bg-(--color-surface) transition-colors duration-300 peer-checked:bg-(--color-primary) peer-focus:ring-2 peer-focus:ring-(--color-primary)/30 after:absolute after:top-[2px] after:left-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow-sm after:transition-transform after:duration-300 peer-checked:after:translate-x-5" />
     </label>
   );
 }
@@ -236,7 +236,7 @@ function PWASettingsSection() {
           {/* Install status */}
           <div className={rowClass}>
             <div>
-              <p className="font-medium text-sm">
+              <p className="text-sm font-medium">
                 {t('settings_pwa.installStatus', 'Installation')}
               </p>
               <p className="text-xs text-(--color-muted)">
@@ -257,7 +257,7 @@ function PWASettingsSection() {
             </div>
             <div className="flex items-center gap-2">
               {isInstalled ? (
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 px-3 py-1.5 text-xs font-medium text-emerald-400">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-xs font-medium text-emerald-400">
                   <CheckCircle2 size={14} />
                   {t('settings_pwa.installedBadge', 'Installed')}
                 </span>
@@ -265,7 +265,7 @@ function PWASettingsSection() {
                 <motion.button
                   onClick={handleInstall}
                   disabled={installing}
-                  className="flex items-center gap-2 rounded-xl bg-(--color-primary) px-4 py-2 text-sm font-medium text-white hover:opacity-90 transition-opacity disabled:opacity-50 focus-ring"
+                  className="focus-ring flex items-center gap-2 rounded-xl bg-(--color-primary) px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
@@ -281,7 +281,7 @@ function PWASettingsSection() {
           {/* Service Worker status */}
           <div className={rowClass}>
             <div>
-              <p className="font-medium text-sm">
+              <p className="text-sm font-medium">
                 {t('settings_pwa.serviceWorker', 'Service Worker')}
               </p>
               <p className="text-xs text-(--color-muted)">
@@ -296,10 +296,10 @@ function PWASettingsSection() {
               <span
                 className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium ${
                   swStatus === 'active'
-                    ? 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-400'
+                    ? 'border border-emerald-500/30 bg-emerald-500/10 text-emerald-400'
                     : swStatus === 'waiting'
-                      ? 'bg-amber-500/10 border border-amber-500/30 text-amber-400'
-                      : 'bg-(--color-surface-strong) border border-(--color-border) text-(--color-muted)'
+                      ? 'border border-amber-500/30 bg-amber-500/10 text-amber-400'
+                      : 'border border-(--color-border) bg-(--color-surface-strong) text-(--color-muted)'
                 }`}
               >
                 <span
@@ -324,7 +324,7 @@ function PWASettingsSection() {
           {/* Force update check */}
           <div className={rowClass}>
             <div>
-              <p className="font-medium text-sm">
+              <p className="text-sm font-medium">
                 {t('settings_pwa.forceUpdate', 'Check for Update')}
               </p>
               <p className="text-xs text-(--color-muted)">
@@ -340,7 +340,7 @@ function PWASettingsSection() {
             <motion.button
               onClick={handleForceUpdate}
               disabled={updateStatus === 'checking' || updateStatus === 'found'}
-              className="flex items-center gap-2 rounded-xl border border-(--color-border) bg-(--color-surface-strong) px-3 py-2 text-xs text-(--color-muted) hover:text-(--color-primary) hover:border-(--color-primary)/30 transition-colors focus-ring disabled:opacity-50"
+              className="focus-ring flex items-center gap-2 rounded-xl border border-(--color-border) bg-(--color-surface-strong) px-3 py-2 text-xs text-(--color-muted) transition-colors hover:border-(--color-primary)/30 hover:text-(--color-primary) disabled:opacity-50"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
@@ -354,7 +354,7 @@ function PWASettingsSection() {
           {/* Cache info */}
           <div className={rowClass}>
             <div>
-              <p className="font-medium text-sm">{t('settings_pwa.cache', 'Cache Storage')}</p>
+              <p className="text-sm font-medium">{t('settings_pwa.cache', 'Cache Storage')}</p>
               <p className="text-xs text-(--color-muted)">
                 {cacheSize
                   ? t('settings_pwa.cacheSize', 'Using {{size}} of device storage', {
@@ -365,7 +365,7 @@ function PWASettingsSection() {
             </div>
             <motion.button
               onClick={handleClearCache}
-              className="flex items-center gap-2 rounded-xl border border-(--color-border) bg-(--color-surface-strong) px-3 py-2 text-xs text-(--color-muted) hover:text-rose-400 hover:border-rose-500/30 transition-colors focus-ring"
+              className="focus-ring flex items-center gap-2 rounded-xl border border-(--color-border) bg-(--color-surface-strong) px-3 py-2 text-xs text-(--color-muted) transition-colors hover:border-rose-500/30 hover:text-rose-400"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
@@ -377,7 +377,7 @@ function PWASettingsSection() {
           {/* Persistent storage */}
           <div className={rowClass}>
             <div>
-              <p className="font-medium text-sm">
+              <p className="text-sm font-medium">
                 {t('settings_pwa.persistentStorage', 'Persistent Storage')}
               </p>
               <p className="text-xs text-(--color-muted)">
@@ -393,14 +393,14 @@ function PWASettingsSection() {
               </p>
             </div>
             {persistedStorage === true ? (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 px-3 py-1.5 text-xs font-medium text-emerald-400">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-xs font-medium text-emerald-400">
                 <Lock size={12} />
                 {t('common.active', 'Active')}
               </span>
             ) : (
               <motion.button
                 onClick={handleRequestPersistence}
-                className="flex items-center gap-2 rounded-xl border border-(--color-border) bg-(--color-surface-strong) px-3 py-2 text-xs text-(--color-muted) hover:text-(--color-primary) hover:border-(--color-primary)/30 transition-colors focus-ring"
+                className="focus-ring flex items-center gap-2 rounded-xl border border-(--color-border) bg-(--color-surface-strong) px-3 py-2 text-xs text-(--color-muted) transition-colors hover:border-(--color-primary)/30 hover:text-(--color-primary)"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
@@ -555,14 +555,14 @@ export function Settings() {
 
   return (
     <motion.div
-      className="max-w-5xl mx-auto"
+      className="mx-auto max-w-5xl"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
       {/* Page Header */}
       <motion.div
-        className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-8"
+        className="mb-8 flex flex-col justify-between gap-3 sm:flex-row sm:items-center"
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.5, delay: 0.1 }}
@@ -576,7 +576,7 @@ export function Settings() {
             <SettingsIcon className="text-(--color-primary)" size={22} />
           </motion.div>
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight fluid-text-2xl">
+            <h1 className="fluid-text-2xl text-2xl font-semibold tracking-tight">
               {t('settings.title')}
             </h1>
             <p className="text-sm text-(--color-muted)">
@@ -587,7 +587,7 @@ export function Settings() {
         <div className="flex items-center gap-2 self-end sm:self-auto">
           <motion.button
             onClick={handleExportSettings}
-            className="inline-flex items-center gap-2 rounded-xl border border-(--color-border) bg-(--color-surface-strong) px-3 py-2 text-sm transition-all hover:bg-(--color-primary)/10 focus-ring"
+            className="focus-ring inline-flex items-center gap-2 rounded-xl border border-(--color-border) bg-(--color-surface-strong) px-3 py-2 text-sm transition-all hover:bg-(--color-primary)/10"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             title={t('settings.exportSettings', 'Export settings')}
@@ -597,7 +597,7 @@ export function Settings() {
           </motion.button>
           <motion.button
             onClick={handleImportSettings}
-            className="inline-flex items-center gap-2 rounded-xl border border-(--color-border) bg-(--color-surface-strong) px-3 py-2 text-sm transition-all hover:bg-(--color-primary)/10 focus-ring"
+            className="focus-ring inline-flex items-center gap-2 rounded-xl border border-(--color-border) bg-(--color-surface-strong) px-3 py-2 text-sm transition-all hover:bg-(--color-primary)/10"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             title={t('settings.importSettings', 'Import settings')}
@@ -636,11 +636,11 @@ export function Settings() {
         )}
       </AnimatePresence>
 
-      <div className="flex flex-col lg:flex-row gap-6">
+      <div className="flex flex-col gap-6 lg:flex-row">
         {/* Sidebar Navigation */}
-        <nav className="w-full lg:w-56 shrink-0">
+        <nav className="w-full shrink-0 lg:w-56">
           <div
-            className="flex lg:flex-col gap-1 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0 scrollbar-hide"
+            className="scrollbar-hide flex gap-1 overflow-x-auto pb-2 lg:flex-col lg:overflow-visible lg:pb-0"
             role="tablist"
             aria-label={t('settings.title')}
           >
@@ -652,7 +652,7 @@ export function Settings() {
                 aria-selected={activeTab === tab.key}
                 aria-controls={`tabpanel-${tab.key}`}
                 id={`tab-${tab.key}`}
-                className={`flex items-center gap-2.5 whitespace-nowrap rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-200 active:scale-[0.97] ${
+                className={`flex items-center gap-2.5 rounded-xl px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-all duration-200 active:scale-[0.97] ${
                   activeTab === tab.key
                     ? 'bg-(--color-primary)/15 text-(--color-primary) shadow-[inset_0_0_0_1px_var(--color-primary)/20]'
                     : 'text-(--color-muted) hover:bg-white/5 hover:text-(--color-text)'
@@ -666,7 +666,7 @@ export function Settings() {
         </nav>
 
         {/* Content Area */}
-        <div className="flex-1 min-w-0">
+        <div className="min-w-0 flex-1">
           <form onSubmit={handleSave}>
             <AnimatePresence mode="wait">
               {/* === APPEARANCE === */}
@@ -694,7 +694,7 @@ export function Settings() {
                       <div className="flex items-center gap-3">
                         <Monitor size={20} className="text-(--color-muted)" />
                         <div>
-                          <p className="font-medium text-sm">
+                          <p className="text-sm font-medium">
                             {t('settings.systemTheme', 'Follow system preference')}
                           </p>
                           <p className="text-xs text-(--color-muted)">
@@ -714,7 +714,7 @@ export function Settings() {
                     </div>
 
                     {/* Theme Grid */}
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                       {themeOrder.map((name) => (
                         <ThemePreviewCard
                           key={name}
@@ -726,8 +726,8 @@ export function Settings() {
                     </div>
 
                     {/* Active Theme Info */}
-                    <div className="flex items-center gap-2 rounded-lg bg-(--color-primary)/5 border border-(--color-primary)/20 px-4 py-3 text-sm">
-                      <Info size={16} className="text-(--color-primary) shrink-0" />
+                    <div className="flex items-center gap-2 rounded-lg border border-(--color-primary)/20 bg-(--color-primary)/5 px-4 py-3 text-sm">
+                      <Info size={16} className="shrink-0 text-(--color-primary)" />
                       <span>
                         {t('settings.activeTheme', 'Active')}:{' '}
                         <strong>{themeDefinitions[theme].label}</strong>
@@ -747,7 +747,7 @@ export function Settings() {
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="font-medium text-sm">
+                          <p className="text-sm font-medium">
                             {t('settings.animations', 'Animations')}
                           </p>
                           <p className="text-xs text-(--color-muted)">
@@ -766,7 +766,7 @@ export function Settings() {
                       </div>
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="font-medium text-sm">
+                          <p className="text-sm font-medium">
                             {t('settings.compactMode', 'Compact mode')}
                           </p>
                           <p className="text-xs text-(--color-muted)">
@@ -785,7 +785,7 @@ export function Settings() {
                       </div>
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="font-medium text-sm">
+                          <p className="text-sm font-medium">
                             {t('settings.glowEffects', 'Glow effects')}
                           </p>
                           <p className="text-xs text-(--color-muted)">
@@ -808,7 +808,7 @@ export function Settings() {
                       <Globe size={20} className="text-cyan-400" />
                       {t('settings.languageTitle', 'Language & Region')}
                     </h2>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <div className="space-y-2">
                         <label htmlFor="settings-language" className="text-sm font-medium">
                           {t('common.language')}
@@ -900,14 +900,14 @@ export function Settings() {
                       <div className="space-y-3">
                         <div className="flex items-center justify-between">
                           <div>
-                            <p className="font-medium text-sm">
+                            <p className="text-sm font-medium">
                               {t('settings.fontScale', 'Font size')}
                             </p>
                             <p className="text-xs text-(--color-muted)">
                               {t('settings.fontScaleHint', 'Adjust the global font size scaling')}
                             </p>
                           </div>
-                          <span className="text-sm font-mono tabular-nums text-(--color-primary)">
+                          <span className="font-mono text-sm text-(--color-primary) tabular-nums">
                             {Math.round((settings.fontScale ?? 1.0) * 100)}%
                           </span>
                         </div>
@@ -930,7 +930,7 @@ export function Settings() {
                       {/* Reduced Motion */}
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="font-medium text-sm">
+                          <p className="text-sm font-medium">
                             {t('settings.reducedMotion', 'Reduced motion')}
                           </p>
                           <p className="text-xs text-(--color-muted)">
@@ -950,7 +950,7 @@ export function Settings() {
                       {/* High Contrast */}
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="font-medium text-sm">
+                          <p className="text-sm font-medium">
                             {t('settings.highContrast', 'High contrast')}
                           </p>
                           <p className="text-xs text-(--color-muted)">
@@ -990,11 +990,11 @@ export function Settings() {
                       <Server size={20} className="text-blue-400" />
                       {t('settings.system')}
                     </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                       {/* Gateway Type Selector */}
                       <div className="space-y-2 md:col-span-2">
                         <label className="text-sm font-medium">{t('settings.gatewayType')}</label>
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                           {[
                             {
                               value: 'cerbo-gx' as const,
@@ -1024,7 +1024,7 @@ export function Settings() {
                               aria-pressed={settings.gatewayType === gw.value}
                             >
                               <span className="text-sm font-medium">{gw.label}</span>
-                              <p className="text-xs text-(--color-muted) mt-1">{gw.desc}</p>
+                              <p className="mt-1 text-xs text-(--color-muted)">{gw.desc}</p>
                             </button>
                           ))}
                         </div>
@@ -1096,7 +1096,7 @@ export function Settings() {
                       <Wifi size={20} className="text-emerald-400" />
                       {t('settings.connectionStatus', 'Connection Status')}
                     </h2>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                       {[
                         { name: t('devices.cerboGx'), status: true },
                         { name: t('devices.knxRouter'), status: false },
@@ -1126,7 +1126,7 @@ export function Settings() {
                       <RefreshCw size={20} className="text-orange-400" />
                       {t('settings.mqttConfig', 'MQTT / Home Assistant')}
                     </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                       <div className="space-y-2">
                         <label className="text-sm font-medium">{t('mqtt.brokerUrl')}</label>
                         <input
@@ -1150,7 +1150,7 @@ export function Settings() {
                     </div>
                     <div className="flex items-center justify-between pt-2">
                       <div>
-                        <p className="font-medium text-sm">{t('mqtt.autoDiscovery')}</p>
+                        <p className="text-sm font-medium">{t('mqtt.autoDiscovery')}</p>
                         <p className="text-xs text-(--color-muted)">
                           {t(
                             'settings.mqttAutoHint',
@@ -1187,7 +1187,7 @@ export function Settings() {
                       <Zap size={20} className="text-yellow-400" />
                       {t('settings.energy')}
                     </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                       <div className="space-y-2">
                         <label htmlFor="settings-tariff" className="text-sm font-medium">
                           {t('settings.tariffProvider')}
@@ -1219,7 +1219,7 @@ export function Settings() {
                           <button
                             type="button"
                             onClick={() => toggleTokenVisibility('tariff')}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-(--color-muted) hover:text-(--color-text)"
+                            className="absolute top-1/2 right-3 -translate-y-1/2 p-1 text-(--color-muted) hover:text-(--color-text)"
                             aria-label={
                               showTokens['tariff']
                                 ? t('settings.hideToken')
@@ -1247,7 +1247,7 @@ export function Settings() {
                             className="flex-1 accent-(--color-primary)"
                             aria-valuetext={`${settings.chargeThreshold.toFixed(2)} €/kWh`}
                           />
-                          <span className="text-sm font-mono w-16 text-right">
+                          <span className="w-16 text-right font-mono text-sm">
                             {settings.chargeThreshold.toFixed(2)} €
                           </span>
                         </div>
@@ -1267,7 +1267,7 @@ export function Settings() {
                             className="flex-1 accent-(--color-primary)"
                             aria-valuetext={`${settings.maxGridImportKw.toFixed(1)} kW`}
                           />
-                          <span className="text-sm font-mono w-16 text-right">
+                          <span className="w-16 text-right font-mono text-sm">
                             {settings.maxGridImportKw.toFixed(1)} kW
                           </span>
                         </div>
@@ -1287,10 +1287,10 @@ export function Settings() {
                       <Server size={20} className="text-cyan-400" />
                       {t('settings.systemPreset')}
                     </h2>
-                    <p className="text-xs text-(--color-muted) mb-4">
+                    <p className="mb-4 text-xs text-(--color-muted)">
                       {t('settings.systemPresetHint')}
                     </p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                       {Object.values(SYSTEM_PRESETS).map((preset) => (
                         <button
                           key={preset.presetId}
@@ -1305,7 +1305,7 @@ export function Settings() {
                         >
                           <span className="text-sm font-medium">{preset.presetName}</span>
                           {preset.presetId !== 'custom' && (
-                            <p className="text-xs text-(--color-muted) mt-1">
+                            <p className="mt-1 text-xs text-(--color-muted)">
                               {preset.inverter.count}× {preset.inverter.ratedPowerW / 1000} kW ·{' '}
                               {preset.pv.peakPowerKWp} kWp · {preset.battery.capacityKWh} kWh
                             </p>
@@ -1321,7 +1321,7 @@ export function Settings() {
                       <Zap size={20} className="text-amber-400" />
                       {t('settings.inverterConfig')}
                     </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                       <div className="space-y-2">
                         <label className="text-sm font-medium">{t('settings.inverterModel')}</label>
                         <input
@@ -1439,7 +1439,7 @@ export function Settings() {
                       <Zap size={20} className="text-yellow-400" />
                       {t('settings.pvSystem', 'PV System')}
                     </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                       <div className="space-y-2">
                         <label className="text-sm font-medium">
                           {t('settings.pvPeakPower', 'Peak power (kWp)')}
@@ -1572,7 +1572,7 @@ export function Settings() {
                       <HardDrive size={20} className="text-purple-400" />
                       {t('settings.batteryConfig', 'Battery Configuration')}
                     </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                       <div className="space-y-2">
                         <label className="text-sm font-medium">{t('settings.batteryModel')}</label>
                         <input
@@ -1782,7 +1782,7 @@ export function Settings() {
                       <Gauge size={20} className="text-emerald-400" />
                       {t('settings.consumersConfig')}
                     </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                       <div className="space-y-2">
                         <label className="text-sm font-medium">
                           {t('settings.evChargerModel')}
@@ -1884,13 +1884,13 @@ export function Settings() {
                       <MapPin size={20} className="text-rose-400" />
                       {t('settings.locationTitle', 'Location & Weather')}
                     </h2>
-                    <p className="text-xs text-(--color-muted) -mt-2">
+                    <p className="-mt-2 text-xs text-(--color-muted)">
                       {t(
                         'settings.locationHint',
                         'Used for solar forecast, weather data, and sunrise/sunset calculations',
                       )}
                     </p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                       <div className="space-y-2">
                         <label htmlFor="settings-lat" className="text-sm font-medium">
                           {t('settings.latitude', 'Latitude')}
@@ -1940,7 +1940,7 @@ export function Settings() {
                       <Zap size={20} className="text-orange-400" />
                       {t('settings.gridExtrasTitle', 'Grid & Tariff Details')}
                     </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                       <div className="space-y-2">
                         <label htmlFor="settings-grid-price" className="text-sm font-medium">
                           {t('settings.gridPriceAvg', 'Avg. grid price (€/kWh)')}
@@ -1959,7 +1959,7 @@ export function Settings() {
                             aria-label={t('settings.gridPriceAvg', 'Avg. grid price (€/kWh)')}
                             aria-valuetext={`${settings.gridPriceAvg.toFixed(2)} €/kWh`}
                           />
-                          <span className="text-sm font-mono w-20 text-right">
+                          <span className="w-20 text-right font-mono text-sm">
                             {settings.gridPriceAvg.toFixed(2)} €
                           </span>
                         </div>
@@ -1982,7 +1982,7 @@ export function Settings() {
                             aria-label={t('settings.feedInTariff', 'Feed-in tariff (€/kWh)')}
                             aria-valuetext={`${(settings.feedInTariff ?? 0.082).toFixed(3)} €/kWh`}
                           />
-                          <span className="text-sm font-mono w-20 text-right">
+                          <span className="w-20 text-right font-mono text-sm">
                             {(settings.feedInTariff ?? 0.082).toFixed(3)} €
                           </span>
                         </div>
@@ -2024,7 +2024,7 @@ export function Settings() {
                             aria-label={t('settings.monthlyBudget', 'Monthly energy budget (€)')}
                             aria-valuetext={`${settings.monthlyBudget ?? 80} €`}
                           />
-                          <span className="text-sm font-mono w-16 text-right">
+                          <span className="w-16 text-right font-mono text-sm">
                             {settings.monthlyBudget ?? 80} €
                           </span>
                         </div>
@@ -2059,9 +2059,9 @@ export function Settings() {
                       {t('settings.security')}
                     </h2>
                     <div className="space-y-5">
-                      <div className="flex items-center justify-between p-4 rounded-xl border border-(--color-border) bg-(--color-surface)">
+                      <div className="flex items-center justify-between rounded-xl border border-(--color-border) bg-(--color-surface) p-4">
                         <div>
-                          <p className="font-medium text-sm">{t('settings.mtls')}</p>
+                          <p className="text-sm font-medium">{t('settings.mtls')}</p>
                           <p className="text-xs text-(--color-muted)">{t('settings.mtlsHint')}</p>
                         </div>
                         <ToggleSwitch
@@ -2071,9 +2071,9 @@ export function Settings() {
                           label={t('settings.mtls')}
                         />
                       </div>
-                      <div className="flex items-center justify-between p-4 rounded-xl border border-(--color-border) bg-(--color-surface)">
+                      <div className="flex items-center justify-between rounded-xl border border-(--color-border) bg-(--color-surface) p-4">
                         <div>
-                          <p className="font-medium text-sm">{t('settings.telemetry')}</p>
+                          <p className="text-sm font-medium">{t('settings.telemetry')}</p>
                           <p className="text-xs text-(--color-muted)">
                             {t('settings.telemetryHint')}
                           </p>
@@ -2085,9 +2085,9 @@ export function Settings() {
                           label={t('settings.telemetry')}
                         />
                       </div>
-                      <div className="flex items-center justify-between p-4 rounded-xl border border-(--color-border) bg-(--color-surface)">
+                      <div className="flex items-center justify-between rounded-xl border border-(--color-border) bg-(--color-surface) p-4">
                         <div>
-                          <p className="font-medium text-sm">{t('settings.twoFactor')}</p>
+                          <p className="text-sm font-medium">{t('settings.twoFactor')}</p>
                           <p className="text-xs text-(--color-muted)">
                             {t('settings.twoFactorHint')}
                           </p>
@@ -2110,8 +2110,8 @@ export function Settings() {
                     </h2>
                     <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4">
                       <div className="flex items-start gap-3">
-                        <Shield size={20} className="text-emerald-400 shrink-0 mt-0.5" />
-                        <div className="text-sm space-y-1">
+                        <Shield size={20} className="mt-0.5 shrink-0 text-emerald-400" />
+                        <div className="space-y-1 text-sm">
                           <p className="font-medium text-emerald-400">
                             {t('settings.encryptionActive', 'End-to-end encryption active')}
                           </p>
@@ -2124,7 +2124,7 @@ export function Settings() {
                         </div>
                       </div>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                    <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <div className="rounded-xl border border-(--color-border) bg-(--color-surface) p-3">
                         <p className="text-xs text-(--color-muted)">
                           {t('settings.certStatus', 'Certificate Status')}
@@ -2162,7 +2162,7 @@ export function Settings() {
                       <Database size={20} className="text-purple-400" />
                       {t('settings.storage')}
                     </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                       <div className="space-y-2">
                         <label className="text-sm font-medium">{t('settings.influxUrl')}</label>
                         <input
@@ -2184,7 +2184,7 @@ export function Settings() {
                           <button
                             type="button"
                             onClick={() => toggleTokenVisibility('influx')}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-(--color-muted) hover:text-(--color-text)"
+                            className="absolute top-1/2 right-3 -translate-y-1/2 p-1 text-(--color-muted) hover:text-(--color-text)"
                             aria-label={
                               showTokens['influx']
                                 ? t('settings.hideToken')
@@ -2216,7 +2216,7 @@ export function Settings() {
                       <HardDrive size={20} className="text-cyan-400" />
                       {t('settings.localStorage', 'Local Storage')}
                     </h2>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                       <div className="rounded-xl border border-(--color-border) bg-(--color-surface) p-4 text-center">
                         <p className="text-2xl font-bold text-(--color-primary)">~2.4</p>
                         <p className="text-xs text-(--color-muted)">MB IndexedDB</p>
@@ -2236,7 +2236,7 @@ export function Settings() {
                     </div>
                     <motion.button
                       type="button"
-                      className="flex items-center gap-2 text-sm text-rose-400 hover:text-rose-300 transition-colors"
+                      className="flex items-center gap-2 text-sm text-rose-400 transition-colors hover:text-rose-300"
                       whileHover={{ x: 4 }}
                     >
                       <Trash2 size={16} />
@@ -2265,9 +2265,9 @@ export function Settings() {
                       {t('settings.notifications', 'Notifications')}
                     </h2>
                     <div className="space-y-5">
-                      <div className="flex items-center justify-between p-4 rounded-xl border border-(--color-border) bg-(--color-surface)">
+                      <div className="flex items-center justify-between rounded-xl border border-(--color-border) bg-(--color-surface) p-4">
                         <div>
-                          <p className="font-medium text-sm">
+                          <p className="text-sm font-medium">
                             {t('settings.pushNotifications', 'Push notifications')}
                           </p>
                           <p className="text-xs text-(--color-muted)">
@@ -2281,9 +2281,9 @@ export function Settings() {
                           label={t('settings.pushNotifications', 'Push notifications')}
                         />
                       </div>
-                      <div className="flex items-center justify-between p-4 rounded-xl border border-(--color-border) bg-(--color-surface)">
+                      <div className="flex items-center justify-between rounded-xl border border-(--color-border) bg-(--color-surface) p-4">
                         <div>
-                          <p className="font-medium text-sm">
+                          <p className="text-sm font-medium">
                             {t('settings.priceAlerts', 'Price alerts')}
                           </p>
                           <p className="text-xs text-(--color-muted)">
@@ -2300,9 +2300,9 @@ export function Settings() {
                           label={t('settings.priceAlerts', 'Price alerts')}
                         />
                       </div>
-                      <div className="flex items-center justify-between p-4 rounded-xl border border-(--color-border) bg-(--color-surface)">
+                      <div className="flex items-center justify-between rounded-xl border border-(--color-border) bg-(--color-surface) p-4">
                         <div>
-                          <p className="font-medium text-sm">
+                          <p className="text-sm font-medium">
                             {t('settings.batteryAlerts', 'Battery alerts')}
                           </p>
                           <p className="text-xs text-(--color-muted)">
@@ -2319,9 +2319,9 @@ export function Settings() {
                           label={t('settings.batteryAlerts', 'Battery alerts')}
                         />
                       </div>
-                      <div className="flex items-center justify-between p-4 rounded-xl border border-(--color-border) bg-(--color-surface)">
+                      <div className="flex items-center justify-between rounded-xl border border-(--color-border) bg-(--color-surface) p-4">
                         <div>
-                          <p className="font-medium text-sm">
+                          <p className="text-sm font-medium">
                             {t('settings.gridAlerts', 'Grid anomaly alerts')}
                           </p>
                           <p className="text-xs text-(--color-muted)">
@@ -2338,9 +2338,9 @@ export function Settings() {
                           label={t('settings.gridAlerts', 'Grid anomaly alerts')}
                         />
                       </div>
-                      <div className="flex items-center justify-between p-4 rounded-xl border border-(--color-border) bg-(--color-surface)">
+                      <div className="flex items-center justify-between rounded-xl border border-(--color-border) bg-(--color-surface) p-4">
                         <div>
-                          <p className="font-medium text-sm">
+                          <p className="text-sm font-medium">
                             {t('settings.updateNotifications', 'Update notifications')}
                           </p>
                           <p className="text-xs text-(--color-muted)">
@@ -2366,10 +2366,10 @@ export function Settings() {
                     <div className="space-y-5">
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
-                          <p className="font-medium text-sm">
+                          <p className="text-sm font-medium">
                             {t('settings.batteryAlertThreshold', 'Battery SoC alert level')}
                           </p>
-                          <span className="text-sm font-mono tabular-nums text-(--color-primary)">
+                          <span className="font-mono text-sm text-(--color-primary) tabular-nums">
                             {settings.batteryAlertThreshold ?? 15}%
                           </span>
                         </div>
@@ -2398,10 +2398,10 @@ export function Settings() {
                       </div>
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
-                          <p className="font-medium text-sm">
+                          <p className="text-sm font-medium">
                             {t('settings.priceAlertThreshold', 'Price alert threshold')}
                           </p>
-                          <span className="text-sm font-mono tabular-nums text-(--color-primary)">
+                          <span className="font-mono text-sm text-(--color-primary) tabular-nums">
                             {(settings.priceAlertThreshold ?? 0.1).toFixed(2)} €/kWh
                           </span>
                         </div>
@@ -2435,9 +2435,9 @@ export function Settings() {
                       {t('settings.quietHours', 'Quiet Hours')}
                     </h2>
                     <div className="space-y-5">
-                      <div className="flex items-center justify-between p-4 rounded-xl border border-(--color-border) bg-(--color-surface)">
+                      <div className="flex items-center justify-between rounded-xl border border-(--color-border) bg-(--color-surface) p-4">
                         <div>
-                          <p className="font-medium text-sm">
+                          <p className="text-sm font-medium">
                             {t('settings.quietHoursEnabled', 'Enable quiet hours')}
                           </p>
                           <p className="text-xs text-(--color-muted)">
@@ -2455,11 +2455,11 @@ export function Settings() {
                         />
                       </div>
                       {(settings.quietHoursEnabled ?? false) && (
-                        <div className="grid grid-cols-1 min-[400px]:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 gap-4 min-[400px]:grid-cols-2">
                           <div className="space-y-2">
                             <label
                               htmlFor="quiet-start"
-                              className="text-sm font-medium flex items-center gap-2"
+                              className="flex items-center gap-2 text-sm font-medium"
                             >
                               <Clock size={14} className="text-(--color-muted)" />
                               {t('settings.quietHoursStart', 'Start')}
@@ -2475,7 +2475,7 @@ export function Settings() {
                           <div className="space-y-2">
                             <label
                               htmlFor="quiet-end"
-                              className="text-sm font-medium flex items-center gap-2"
+                              className="flex items-center gap-2 text-sm font-medium"
                             >
                               <Clock size={14} className="text-(--color-muted)" />
                               {t('settings.quietHoursEnd', 'End')}
@@ -2514,9 +2514,9 @@ export function Settings() {
                       {t('settings.advanced', 'Advanced')}
                     </h2>
                     <div className="space-y-5">
-                      <div className="flex items-center justify-between p-4 rounded-xl border border-(--color-border) bg-(--color-surface)">
+                      <div className="flex items-center justify-between rounded-xl border border-(--color-border) bg-(--color-surface) p-4">
                         <div>
-                          <p className="font-medium text-sm">
+                          <p className="text-sm font-medium">
                             {t('settings.debugMode', 'Debug mode')}
                           </p>
                           <p className="text-xs text-(--color-muted)">
@@ -2530,9 +2530,9 @@ export function Settings() {
                           label={t('settings.debugMode', 'Debug mode')}
                         />
                       </div>
-                      <div className="flex items-center justify-between p-4 rounded-xl border border-(--color-border) bg-(--color-surface)">
+                      <div className="flex items-center justify-between rounded-xl border border-(--color-border) bg-(--color-surface) p-4">
                         <div>
-                          <p className="font-medium text-sm">
+                          <p className="text-sm font-medium">
                             {t('settings.experimentalFeatures', 'Experimental features')}
                           </p>
                           <p className="text-xs text-(--color-muted)">
@@ -2549,9 +2549,9 @@ export function Settings() {
                           label={t('settings.experimentalFeatures', 'Experimental features')}
                         />
                       </div>
-                      <div className="flex items-center justify-between p-4 rounded-xl border border-(--color-border) bg-(--color-surface)">
+                      <div className="flex items-center justify-between rounded-xl border border-(--color-border) bg-(--color-surface) p-4">
                         <div>
-                          <p className="font-medium text-sm">
+                          <p className="text-sm font-medium">
                             {t('settings.performanceMode', 'Performance mode')}
                           </p>
                           <p className="text-xs text-(--color-muted)">
@@ -2571,16 +2571,16 @@ export function Settings() {
 
                       {/* Reset Onboarding */}
                       <div className="rounded-xl border border-(--color-primary)/20 bg-(--color-primary)/5 p-5">
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                          <div className="flex items-start gap-3 min-w-0 flex-1">
+                        <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                          <div className="flex min-w-0 flex-1 items-start gap-3">
                             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-(--color-primary)/15">
                               <RotateCcw size={20} className="text-(--color-primary)" />
                             </div>
                             <div className="min-w-0">
-                              <p className="font-medium text-sm">
+                              <p className="text-sm font-medium">
                                 {t('settings.resetOnboarding', 'Show onboarding again')}
                               </p>
-                              <p className="text-xs text-(--color-muted) mt-1">
+                              <p className="mt-1 text-xs text-(--color-muted)">
                                 {t(
                                   'settings.resetOnboardingHint',
                                   'Restart the welcome tour on next reload',
@@ -2595,7 +2595,7 @@ export function Settings() {
                               setSaved(true);
                               setTimeout(() => setSaved(false), 3000);
                             }}
-                            className="flex items-center justify-center gap-2 rounded-xl border border-(--color-primary)/30 bg-(--color-primary)/10 px-4 py-2 text-sm text-(--color-primary) hover:bg-(--color-primary)/20 transition-colors focus-ring shrink-0 w-full sm:w-auto"
+                            className="focus-ring flex w-full shrink-0 items-center justify-center gap-2 rounded-xl border border-(--color-primary)/30 bg-(--color-primary)/10 px-4 py-2 text-sm text-(--color-primary) transition-colors hover:bg-(--color-primary)/20 sm:w-auto"
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
                           >
@@ -2620,7 +2620,7 @@ export function Settings() {
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
                           <div>
-                            <p className="font-medium text-sm">
+                            <p className="text-sm font-medium">
                               {t('settings.dashboardRefreshSec', 'Auto-refresh interval')}
                             </p>
                             <p className="text-xs text-(--color-muted)">
@@ -2630,7 +2630,7 @@ export function Settings() {
                               )}
                             </p>
                           </div>
-                          <span className="text-sm font-mono tabular-nums text-(--color-primary)">
+                          <span className="font-mono text-sm text-(--color-primary) tabular-nums">
                             {settings.dashboardRefreshSec ?? 5}s
                           </span>
                         </div>
@@ -2650,7 +2650,7 @@ export function Settings() {
                       </div>
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="font-medium text-sm">
+                          <p className="text-sm font-medium">
                             {t('settings.sidebarPosition', 'Sidebar position')}
                           </p>
                           <p className="text-xs text-(--color-muted)">
@@ -2682,7 +2682,7 @@ export function Settings() {
                       </div>
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="font-medium text-sm">
+                          <p className="text-sm font-medium">
                             {t('settings.autoBackup', 'Automatic backup')}
                           </p>
                           <p className="text-xs text-(--color-muted)">
@@ -2701,7 +2701,7 @@ export function Settings() {
                       </div>
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="font-medium text-sm flex items-center gap-2">
+                          <p className="flex items-center gap-2 text-sm font-medium">
                             <Keyboard size={14} className="text-(--color-muted)" />
                             {t('settings.keyboardShortcuts', 'Keyboard shortcuts')}
                           </p>
@@ -2729,9 +2729,9 @@ export function Settings() {
                       {t('settings.dangerZone', 'Danger Zone')}
                     </h2>
                     <div className="rounded-xl border border-rose-500/30 bg-rose-500/5 p-4">
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                      <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
                         <div className="min-w-0 flex-1">
-                          <p className="font-medium text-sm text-rose-400">
+                          <p className="text-sm font-medium text-rose-400">
                             {t('settings.resetAll', 'Reset all settings')}
                           </p>
                           <p className="text-xs text-(--color-muted)">
@@ -2757,7 +2757,7 @@ export function Settings() {
                               },
                             })
                           }
-                          className="flex items-center justify-center gap-2 rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-2 text-sm text-rose-400 hover:bg-rose-500/20 transition-colors shrink-0 w-full sm:w-auto"
+                          className="flex w-full shrink-0 items-center justify-center gap-2 rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-2 text-sm text-rose-400 transition-colors hover:bg-rose-500/20 sm:w-auto"
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
                         >

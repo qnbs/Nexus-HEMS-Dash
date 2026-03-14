@@ -30,7 +30,7 @@ export function LanguageSwitcher() {
           key={entry}
           type="button"
           onClick={() => handleLocaleChange(entry)}
-          className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] transition focus-visible:focus-ring ${
+          className={`focus-visible:focus-ring rounded-full px-3 py-1 text-xs font-semibold tracking-[0.22em] uppercase transition ${
             locale === entry
               ? 'bg-(--color-primary) text-(--color-background) shadow-[0_0_20px_var(--color-glow)]'
               : 'text-(--color-muted) hover:text-(--color-text)'

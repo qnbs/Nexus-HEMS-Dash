@@ -35,7 +35,7 @@ function BreadcrumbsComponent() {
     >
       <Link
         to="/"
-        className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 transition-colors hover:text-(--color-text) focus-ring"
+        className="focus-ring inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 transition-colors hover:text-(--color-text)"
       >
         <Home size={14} aria-hidden="true" />
         <span>{t('nav.home', 'Home')}</span>
@@ -59,7 +59,7 @@ function BreadcrumbsComponent() {
             ) : (
               <Link
                 to={path}
-                className="rounded-md px-1.5 py-0.5 transition-colors hover:text-(--color-text) focus-ring"
+                className="focus-ring rounded-md px-1.5 py-0.5 transition-colors hover:text-(--color-text)"
               >
                 {t(labelKey, segment)}
               </Link>

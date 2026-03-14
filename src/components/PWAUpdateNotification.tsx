@@ -57,13 +57,13 @@ export function PWAUpdateNotification() {
           initial={{ opacity: 0, y: -50 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -50 }}
-          className="fixed left-4 right-4 top-4 z-50 md:left-auto md:right-4 md:max-w-sm"
+          className="fixed top-4 right-4 left-4 z-50 md:right-4 md:left-auto md:max-w-sm"
           role="alert"
         >
-          <div className="relative rounded-2xl border border-(--color-primary)/30 bg-(--color-primary)/10 backdrop-blur-xl p-4 shadow-2xl flex items-center gap-3">
-            <RefreshCw className="h-5 w-5 text-(--color-primary) shrink-0" aria-hidden="true" />
+          <div className="relative flex items-center gap-3 rounded-2xl border border-(--color-primary)/30 bg-(--color-primary)/10 p-4 shadow-2xl backdrop-blur-xl">
+            <RefreshCw className="h-5 w-5 shrink-0 text-(--color-primary)" aria-hidden="true" />
             <div className="flex-1">
-              <p className="font-semibold text-sm text-(--color-primary)">
+              <p className="text-sm font-semibold text-(--color-primary)">
                 {t('pwa.updateReady', 'Update ready')}
               </p>
               <p className="text-xs text-(--color-muted)">
@@ -76,7 +76,7 @@ export function PWAUpdateNotification() {
                 setTimeout(() => window.location.reload(), 500);
               }}
               disabled={isRestarting}
-              className="shrink-0 rounded-lg bg-(--color-primary) px-3 py-1.5 text-xs font-medium text-white hover:opacity-90 transition-opacity disabled:opacity-50 focus-ring"
+              className="focus-ring shrink-0 rounded-lg bg-(--color-primary) px-3 py-1.5 text-xs font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
             >
               {isRestarting ? (
                 <RefreshCw className="h-3 w-3 animate-spin" aria-hidden="true" />
@@ -86,7 +86,7 @@ export function PWAUpdateNotification() {
             </button>
             <button
               onClick={() => setShowUpdating(false)}
-              className="absolute -top-2 -right-2 rounded-full bg-(--color-surface) border border-(--color-border) p-1 text-(--color-muted) hover:text-(--color-text) transition-colors shadow-md"
+              className="absolute -top-2 -right-2 rounded-full border border-(--color-border) bg-(--color-surface) p-1 text-(--color-muted) shadow-md transition-colors hover:text-(--color-text)"
               aria-label={t('common.close', 'Close')}
             >
               <X className="h-3 w-3" />
@@ -105,15 +105,15 @@ export function PWAUpdateNotification() {
           initial={{ opacity: 0, y: -50 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -50 }}
-          className="fixed left-4 right-4 top-4 z-50 md:left-auto md:right-4 md:max-w-sm"
+          className="fixed top-4 right-4 left-4 z-50 md:right-4 md:left-auto md:max-w-sm"
         >
           <div
-            className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 backdrop-blur-xl p-4 shadow-2xl flex items-center gap-3"
+            className="flex items-center gap-3 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 shadow-2xl backdrop-blur-xl"
             role="status"
           >
-            <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0" aria-hidden="true" />
+            <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-400" aria-hidden="true" />
             <div className="flex-1">
-              <p className="font-semibold text-sm text-emerald-400">
+              <p className="text-sm font-semibold text-emerald-400">
                 {t('pwa.offlineReady', 'Offline Ready')}
               </p>
               <p className="text-xs text-(--color-muted)">
@@ -135,7 +135,7 @@ export function PWAUpdateNotification() {
           initial={{ opacity: 0, y: -50 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -50 }}
-          className="fixed left-4 right-4 top-4 z-50 md:left-auto md:right-4 md:max-w-md"
+          className="fixed top-4 right-4 left-4 z-50 md:right-4 md:left-auto md:max-w-md"
         >
           <div
             className="rounded-2xl border border-red-500/30 bg-red-500/10 p-4 backdrop-blur-3xl"

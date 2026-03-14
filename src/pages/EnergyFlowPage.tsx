@@ -29,7 +29,7 @@ function EnergyFlowPageComponent() {
               className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium ${connected ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}`}
             >
               <span
-                className={`h-2 w-2 rounded-full ${connected ? 'bg-emerald-400 energy-pulse' : 'bg-rose-400'}`}
+                className={`h-2 w-2 rounded-full ${connected ? 'energy-pulse bg-emerald-400' : 'bg-rose-400'}`}
               />
               {connected ? t('common.live') : t('common.disconnected')}
             </span>
@@ -42,7 +42,7 @@ function EnergyFlowPageComponent() {
 
       {/* Full Sankey Diagram */}
       <motion.section
-        className="glass-panel-strong rounded-3xl p-6 hover-lift"
+        className="glass-panel-strong hover-lift rounded-3xl p-6"
         aria-labelledby="flow-sankey-title"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

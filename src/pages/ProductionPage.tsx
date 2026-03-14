@@ -162,7 +162,7 @@ function ProductionPageComponent() {
             >
               <span
                 className={`h-2 w-2 rounded-full ${
-                  energyData.pvPower > 500 ? 'bg-yellow-400 energy-pulse' : 'bg-slate-400'
+                  energyData.pvPower > 500 ? 'energy-pulse bg-yellow-400' : 'bg-slate-400'
                 }`}
               />
               {energyData.pvPower > 500 ? t('production.generating') : t('production.idle')}
@@ -310,7 +310,7 @@ function ProductionPageComponent() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* 24h Production Curve */}
         <motion.section
-          className="glass-panel-strong rounded-3xl p-6 hover-lift lg:col-span-2"
+          className="glass-panel-strong hover-lift rounded-3xl p-6 lg:col-span-2"
           aria-labelledby="pv-chart-title"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -319,7 +319,7 @@ function ProductionPageComponent() {
           <div className="mb-4 flex items-center justify-between">
             <h2
               id="pv-chart-title"
-              className="flex items-center gap-2 text-lg font-medium fluid-text-lg"
+              className="fluid-text-lg flex items-center gap-2 text-lg font-medium"
             >
               <BarChart3 size={20} className="text-(--color-secondary)" aria-hidden="true" />
               {t('production.productionCurve')}
@@ -400,7 +400,7 @@ function ProductionPageComponent() {
 
         {/* PV Power Distribution Pie */}
         <motion.section
-          className="glass-panel-strong rounded-3xl p-6 hover-lift"
+          className="glass-panel-strong hover-lift rounded-3xl p-6"
           aria-labelledby="pv-distribution-title"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -408,7 +408,7 @@ function ProductionPageComponent() {
         >
           <h2
             id="pv-distribution-title"
-            className="mb-4 flex items-center gap-2 text-lg font-medium fluid-text-lg"
+            className="fluid-text-lg mb-4 flex items-center gap-2 text-lg font-medium"
           >
             <Zap size={20} className="text-(--color-secondary)" aria-hidden="true" />
             {t('production.distribution')}
@@ -475,13 +475,13 @@ function ProductionPageComponent() {
 
       {/* ─── PV System Status Bars ─────────────────────────────────── */}
       <motion.section
-        className="glass-panel-strong rounded-3xl p-6 hover-lift"
+        className="glass-panel-strong hover-lift rounded-3xl p-6"
         aria-labelledby="pv-status-title"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.3 }}
       >
-        <h2 id="pv-status-title" className="mb-5 text-lg font-medium fluid-text-lg">
+        <h2 id="pv-status-title" className="fluid-text-lg mb-5 text-lg font-medium">
           {t('production.status')}
         </h2>
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -542,7 +542,7 @@ function ProductionPageComponent() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* PV System Specs */}
         <motion.section
-          className="glass-panel-strong rounded-3xl p-6 hover-lift"
+          className="glass-panel-strong hover-lift rounded-3xl p-6"
           aria-labelledby="pv-specs-title"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -550,7 +550,7 @@ function ProductionPageComponent() {
         >
           <h2
             id="pv-specs-title"
-            className="mb-4 flex items-center gap-2 text-lg font-medium fluid-text-lg"
+            className="fluid-text-lg mb-4 flex items-center gap-2 text-lg font-medium"
           >
             <Info size={20} className="text-(--color-secondary)" aria-hidden="true" />
             {t('production.systemSpecs')}
@@ -584,7 +584,7 @@ function ProductionPageComponent() {
           </dl>
           <Link
             to="/settings"
-            className="mt-4 inline-flex items-center gap-1 text-xs font-medium text-(--color-primary) hover:underline focus-ring"
+            className="focus-ring mt-4 inline-flex items-center gap-1 text-xs font-medium text-(--color-primary) hover:underline"
           >
             {t('storage.editConfig')}
             <ChevronRight size={12} />

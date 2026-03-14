@@ -452,11 +452,11 @@
     @apply inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-medium;
     @apply transition-all duration-300 ease-out;
     @apply text-(--color-muted) hover:text-(--color-text);
-    @apply hover:bg-white/10 hover:scale-[1.02];
+    @apply hover:scale-[1.02] hover:bg-white/10;
   }
 
   .nav-pill-active {
-    @apply bg-(--color-primary)/20 text-(--color-primary) scale-[1.02];
+    @apply scale-[1.02] bg-(--color-primary)/20 text-(--color-primary);
     box-shadow:
       0 0 12px color-mix(in srgb, var(--color-primary) 18%, transparent),
       0 2px 8px rgba(0, 0, 0, 0.1),
@@ -480,7 +480,7 @@
 
   /* ========== EYEBROW LABEL ========== */
   .eyebrow {
-    @apply inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.22em];
+    @apply inline-flex items-center gap-2 text-xs font-semibold tracking-[0.22em] uppercase;
     @apply text-(--color-secondary)/90;
   }
   ANIMATED UNDERLINE ========== */ .animated-underline {
@@ -665,7 +665,7 @@
   }
 
   .btn-primary:disabled {
-    @apply opacity-50 cursor-not-allowed;
+    @apply cursor-not-allowed opacity-50;
     transform: none;
     box-shadow: none;
   }
@@ -701,7 +701,7 @@
   }
 
   .btn-secondary:disabled {
-    @apply opacity-50 cursor-not-allowed;
+    @apply cursor-not-allowed opacity-50;
     transform: none;
   }
 
@@ -712,7 +712,7 @@
 
   .status-indicator::before {
     content: '';
-    @apply absolute inset-0 rounded-full animate-ping;
+    @apply absolute inset-0 animate-ping rounded-full;
   }
 
   .status-online {

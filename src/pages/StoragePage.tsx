@@ -153,9 +153,9 @@ function StoragePageComponent() {
               <span
                 className={`h-2 w-2 rounded-full ${
                   batteryStatus === 'charging'
-                    ? 'bg-emerald-400 energy-pulse'
+                    ? 'energy-pulse bg-emerald-400'
                     : batteryStatus === 'discharging'
-                      ? 'bg-orange-400 energy-pulse'
+                      ? 'energy-pulse bg-orange-400'
                       : 'bg-blue-400'
                 }`}
               />
@@ -346,7 +346,7 @@ function StoragePageComponent() {
 
       {/* ─── SoC History Chart ─────────────────────────────────────── */}
       <motion.section
-        className="glass-panel-strong rounded-3xl p-6 hover-lift"
+        className="glass-panel-strong hover-lift rounded-3xl p-6"
         aria-labelledby="soc-chart-title"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -355,7 +355,7 @@ function StoragePageComponent() {
         <div className="mb-4 flex items-center justify-between">
           <h2
             id="soc-chart-title"
-            className="flex items-center gap-2 text-lg font-medium fluid-text-lg"
+            className="fluid-text-lg flex items-center gap-2 text-lg font-medium"
           >
             <TrendingUp size={20} className="text-(--color-secondary)" aria-hidden="true" />
             {t('storage.socHistory')}
@@ -445,7 +445,7 @@ function StoragePageComponent() {
 
       {/* ─── Strategy Selector ─────────────────────────────────────── */}
       <motion.section
-        className="glass-panel-strong rounded-3xl p-6 hover-lift"
+        className="glass-panel-strong hover-lift rounded-3xl p-6"
         aria-labelledby="battery-strategy-title"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -453,7 +453,7 @@ function StoragePageComponent() {
       >
         <h2
           id="battery-strategy-title"
-          className="mb-5 flex items-center gap-2 text-lg font-medium fluid-text-lg"
+          className="fluid-text-lg mb-5 flex items-center gap-2 text-lg font-medium"
         >
           <Settings size={20} className="text-(--color-secondary)" aria-hidden="true" />
           {t('control.batteryTitle')}
@@ -473,9 +473,9 @@ function StoragePageComponent() {
                   role="radio"
                   aria-checked={isActive}
                   onClick={() => handleStrategyChange(mode)}
-                  className={`relative flex flex-col gap-2 rounded-2xl border p-4 text-left transition-all focus-ring ${
+                  className={`focus-ring relative flex flex-col gap-2 rounded-2xl border p-4 text-left transition-all ${
                     isActive
-                      ? 'border-(--color-primary) bg-(--color-primary)/12 shadow-lg shadow-(--color-primary)/10'
+                      ? 'border-(--color-primary) bg-(--color-primary)/12 shadow-(--color-primary)/10 shadow-lg'
                       : 'border-(--color-border) bg-(--color-surface) hover:border-(--color-primary)/40 hover:bg-(--color-surface-strong)'
                   }`}
                   whileHover={{ scale: 1.02 }}
@@ -513,7 +513,7 @@ function StoragePageComponent() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* System Specifications */}
         <motion.section
-          className="glass-panel-strong rounded-3xl p-6 hover-lift"
+          className="glass-panel-strong hover-lift rounded-3xl p-6"
           aria-labelledby="battery-specs-title"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -521,7 +521,7 @@ function StoragePageComponent() {
         >
           <h2
             id="battery-specs-title"
-            className="mb-4 flex items-center gap-2 text-lg font-medium fluid-text-lg"
+            className="fluid-text-lg mb-4 flex items-center gap-2 text-lg font-medium"
           >
             <Info size={20} className="text-(--color-secondary)" aria-hidden="true" />
             {t('storage.systemSpecs')}
@@ -554,7 +554,7 @@ function StoragePageComponent() {
 
         {/* Safety & Limits */}
         <motion.section
-          className="glass-panel-strong rounded-3xl p-6 hover-lift"
+          className="glass-panel-strong hover-lift rounded-3xl p-6"
           aria-labelledby="battery-safety-title"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -562,7 +562,7 @@ function StoragePageComponent() {
         >
           <h2
             id="battery-safety-title"
-            className="mb-4 flex items-center gap-2 text-lg font-medium fluid-text-lg"
+            className="fluid-text-lg mb-4 flex items-center gap-2 text-lg font-medium"
           >
             <Shield size={20} className="text-(--color-secondary)" aria-hidden="true" />
             {t('storage.safetyLimits')}
@@ -579,7 +579,7 @@ function StoragePageComponent() {
               <div className="relative h-3 overflow-hidden rounded-full bg-(--color-border)">
                 {/* Usable range */}
                 <div
-                  className="absolute top-0 h-full bg-emerald-500/25 rounded-full"
+                  className="absolute top-0 h-full rounded-full bg-emerald-500/25"
                   style={{
                     left: `${batteryConfig.minSoCPercent}%`,
                     width: `${batteryConfig.maxSoCPercent - batteryConfig.minSoCPercent}%`,
@@ -625,9 +625,9 @@ function StoragePageComponent() {
                 <motion.div
                   className={`absolute top-0 h-full ${
                     batteryStatus === 'charging'
-                      ? 'bg-emerald-500/40 rounded-r-full'
+                      ? 'rounded-r-full bg-emerald-500/40'
                       : batteryStatus === 'discharging'
-                        ? 'bg-orange-500/40 rounded-l-full'
+                        ? 'rounded-l-full bg-orange-500/40'
                         : ''
                   }`}
                   animate={{
@@ -661,7 +661,7 @@ function StoragePageComponent() {
             {/* Health indicators */}
             <div className="grid grid-cols-2 gap-3">
               <div className="rounded-xl border border-(--color-border) bg-white/5 p-3">
-                <p className="text-[10px] uppercase tracking-wider text-(--color-muted)">
+                <p className="text-[10px] tracking-wider text-(--color-muted) uppercase">
                   {t('storage.health')}
                 </p>
                 <p
@@ -671,7 +671,7 @@ function StoragePageComponent() {
                 </p>
               </div>
               <div className="rounded-xl border border-(--color-border) bg-white/5 p-3">
-                <p className="text-[10px] uppercase tracking-wider text-(--color-muted)">
+                <p className="text-[10px] tracking-wider text-(--color-muted) uppercase">
                   {t('storage.temperature')}
                 </p>
                 <p
@@ -701,7 +701,7 @@ function StoragePageComponent() {
           </div>
           <Link
             to="/settings"
-            className="inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-medium text-(--color-primary) transition-colors hover:bg-(--color-primary)/10 focus-ring"
+            className="focus-ring inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-medium text-(--color-primary) transition-colors hover:bg-(--color-primary)/10"
           >
             {t('storage.editConfig')}
             <ChevronRight size={14} />

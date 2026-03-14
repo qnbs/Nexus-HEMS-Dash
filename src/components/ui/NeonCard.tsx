@@ -64,14 +64,7 @@ export function NeonCard({
 
   return (
     <motion.div
-      className={`
-        rounded-3xl border backdrop-blur-3xl gradient-border
-        ${styles.border} ${styles.bg}
-        ${glow ? styles.glow : ''}
-        ${pulse ? 'animate-pulse-slow' : ''}
-        ${spotlight ? 'spotlight' : ''}
-        ${className}
-      `}
+      className={`gradient-border rounded-3xl border backdrop-blur-3xl ${styles.border} ${styles.bg} ${glow ? styles.glow : ''} ${pulse ? 'animate-pulse-slow' : ''} ${spotlight ? 'spotlight' : ''} ${className} `}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}

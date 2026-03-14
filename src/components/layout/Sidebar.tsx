@@ -62,7 +62,7 @@ function SidebarComponent() {
 
   return (
     <motion.nav
-      className="fixed left-0 top-0 z-30 hidden h-screen w-64 flex-col border-r border-(--color-border) bg-(--color-surface) backdrop-blur-3xl lg:flex"
+      className="fixed top-0 left-0 z-30 hidden h-screen w-64 flex-col border-r border-(--color-border) bg-(--color-surface) backdrop-blur-3xl lg:flex"
       aria-label={t('nav.mainNavigation', 'Main navigation')}
       initial={{ x: -20, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
@@ -71,14 +71,14 @@ function SidebarComponent() {
       {/* Logo */}
       <div className="flex items-center gap-3 border-b border-(--color-border) px-5 py-5">
         <motion.div
-          className="flex h-9 w-9 items-center justify-center rounded-xl bg-(--color-primary)/10 border border-(--color-primary)/20"
+          className="flex h-9 w-9 items-center justify-center rounded-xl border border-(--color-primary)/20 bg-(--color-primary)/10"
           whileHover={{ rotate: 10, scale: 1.1 }}
           transition={{ type: 'spring', stiffness: 400, damping: 17 }}
         >
           <Zap className="h-5 w-5 text-(--color-primary)" aria-hidden="true" />
         </motion.div>
         <div>
-          <h1 className="text-lg font-semibold fluid-text-lg tracking-tight">
+          <h1 className="fluid-text-lg text-lg font-semibold tracking-tight">
             {t('common.appName')}
           </h1>
           <div
@@ -99,12 +99,12 @@ function SidebarComponent() {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-6">
+      <nav className="flex-1 space-y-6 overflow-y-auto px-3 py-4">
         {/* Main Group */}
         <div>
           <p
             id="nav-group-energy"
-            className="mb-2 px-3 text-xs font-semibold uppercase tracking-widest text-(--color-muted)"
+            className="mb-2 px-3 text-xs font-semibold tracking-widest text-(--color-muted) uppercase"
           >
             {t('nav.groupEnergy', 'Energy')}
           </p>
@@ -149,7 +149,7 @@ function SidebarComponent() {
         <div>
           <p
             id="nav-group-tools"
-            className="mb-2 px-3 text-xs font-semibold uppercase tracking-widest text-(--color-muted)"
+            className="mb-2 px-3 text-xs font-semibold tracking-widest text-(--color-muted) uppercase"
           >
             {t('nav.groupTools', 'Tools')}
           </p>
@@ -193,7 +193,7 @@ function SidebarComponent() {
         <div>
           <p
             id="nav-group-system"
-            className="mb-2 px-3 text-xs font-semibold uppercase tracking-widest text-(--color-muted)"
+            className="mb-2 px-3 text-xs font-semibold tracking-widest text-(--color-muted) uppercase"
           >
             {t('nav.groupSystem', 'System')}
           </p>

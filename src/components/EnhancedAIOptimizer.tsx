@@ -108,13 +108,13 @@ Return ONLY a valid JSON array with this structure:
   };
 
   return (
-    <div className="glass-panel rounded-2xl sm:rounded-3xl p-4 sm:p-6">
+    <div className="glass-panel rounded-2xl p-4 sm:rounded-3xl sm:p-6">
       {/* Header */}
-      <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div className="mb-4 flex flex-col gap-3 sm:mb-6 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
-          <h2 className="flex items-center gap-2 text-lg sm:text-xl font-semibold fluid-text-lg text-(--color-text)">
+          <h2 className="fluid-text-lg flex items-center gap-2 text-lg font-semibold text-(--color-text) sm:text-xl">
             <Sparkles
-              className="h-5 w-5 sm:h-6 sm:w-6 text-(--color-primary) shrink-0"
+              className="h-5 w-5 shrink-0 text-(--color-primary) sm:h-6 sm:w-6"
               aria-hidden="true"
             />
             <span className="truncate">{t('ai.optimizerTitle', 'AI Energy Optimizer')}</span>
@@ -122,12 +122,12 @@ Return ONLY a valid JSON array with this structure:
               BYOK
             </span>
           </h2>
-          <p className="mt-1 text-xs sm:text-sm text-(--color-muted)">
+          <p className="mt-1 text-xs text-(--color-muted) sm:text-sm">
             {t('ai.optimizerSubtitle', 'AI-powered recommendations for optimal energy management')}
           </p>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex shrink-0 items-center gap-2">
           <Link
             to="/settings/ai"
             className="btn-secondary focus-ring flex items-center gap-2 rounded-full px-3 py-2 text-sm"
@@ -148,13 +148,13 @@ Return ONLY a valid JSON array with this structure:
           >
             {isOptimizing ? (
               <>
-                <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 animate-spin" aria-hidden="true" />
-                <span className="hidden xs:inline">{t('ai.optimizing', 'Optimizing...')}</span>
+                <Loader2 className="h-4 w-4 animate-spin sm:h-5 sm:w-5" aria-hidden="true" />
+                <span className="xs:inline hidden">{t('ai.optimizing', 'Optimizing...')}</span>
               </>
             ) : (
               <>
                 <Sparkles className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
-                <span className="hidden xs:inline">{t('ai.optimizeNow', 'Optimize Now')}</span>
+                <span className="xs:inline hidden">{t('ai.optimizeNow', 'Optimize Now')}</span>
               </>
             )}
           </button>
@@ -176,7 +176,7 @@ Return ONLY a valid JSON array with this structure:
       {/* Basic Recommendations (Always Visible) */}
       {!geminiRecommendations.length && (
         <section aria-label={t('optimizer.basicRecommendations', 'Basic Recommendations')}>
-          <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
             {basicRecommendations.map((rec, i) => (
               <motion.div
                 key={rec.id}
@@ -186,8 +186,8 @@ Return ONLY a valid JSON array with this structure:
                 className={`rounded-2xl border p-3 sm:p-4 ${getSeverityStyles(rec.severity)}`}
               >
                 <div className="mb-2 flex items-center justify-between gap-2">
-                  <span className="text-xs sm:text-sm font-medium truncate">{t(rec.titleKey)}</span>
-                  <span className="text-xs font-mono text-(--color-muted) shrink-0">
+                  <span className="truncate text-xs font-medium sm:text-sm">{t(rec.titleKey)}</span>
+                  <span className="shrink-0 font-mono text-xs text-(--color-muted)">
                     {rec.value}
                   </span>
                 </div>
@@ -215,8 +215,8 @@ Return ONLY a valid JSON array with this structure:
                 transition={{ delay: i * 0.1 }}
                 className={`rounded-2xl border p-4 sm:p-5 ${getPriorityStyles(rec.priority)}`}
               >
-                <div className="mb-2 sm:mb-3 flex items-start justify-between gap-2">
-                  <h3 className="font-semibold text-sm sm:text-base text-(--color-text)">
+                <div className="mb-2 flex items-start justify-between gap-2 sm:mb-3">
+                  <h3 className="text-sm font-semibold text-(--color-text) sm:text-base">
                     {rec.title}
                   </h3>
                   <span
@@ -225,7 +225,7 @@ Return ONLY a valid JSON array with this structure:
                     {rec.priority.toUpperCase()}
                   </span>
                 </div>
-                <p className="mb-2 sm:mb-3 text-xs sm:text-sm text-(--color-muted)">
+                <p className="mb-2 text-xs text-(--color-muted) sm:mb-3 sm:text-sm">
                   {rec.description}
                 </p>
                 <div className="flex items-center gap-2 text-xs text-(--color-primary)">

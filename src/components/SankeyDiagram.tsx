@@ -263,7 +263,7 @@ export const SankeyDiagram = memo(function SankeyDiagram({ data }: { data: Energ
   return (
     <svg
       ref={svgRef}
-      className="w-full h-full absolute inset-0"
+      className="absolute inset-0 h-full w-full"
       role="img"
       aria-label={t('sankey.ariaLabel')}
       aria-live="polite"

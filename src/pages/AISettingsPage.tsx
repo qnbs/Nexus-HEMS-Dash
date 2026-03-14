@@ -129,7 +129,7 @@ export default function AISettingsPage() {
           <Key className="text-(--color-primary)" size={28} />
         </motion.div>
         <div>
-          <h1 className="text-3xl font-light tracking-tight fluid-text-4xl">
+          <h1 className="fluid-text-4xl text-3xl font-light tracking-tight">
             {t('aiSettings.title', 'AI Provider Keys')}
           </h1>
           <p className="mt-1 text-sm text-(--color-muted)">
@@ -192,7 +192,7 @@ export default function AISettingsPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
       >
-        <h2 className="mb-4 flex items-center gap-2 text-lg font-medium fluid-text-lg">
+        <h2 className="fluid-text-lg mb-4 flex items-center gap-2 text-lg font-medium">
           <Sparkles className="h-5 w-5 text-(--color-secondary)" />
           {t('aiSettings.configured', 'Configured Providers')}
         </h2>
@@ -211,33 +211,33 @@ export default function AISettingsPage() {
             {storedKeys.map((key) => (
               <motion.div
                 key={key.provider}
-                className={`flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between rounded-2xl border p-4 transition-colors ${
+                className={`flex flex-col gap-3 rounded-2xl border p-4 transition-colors sm:flex-row sm:items-center sm:justify-between ${
                   activeProvider === key.provider
                     ? 'border-(--color-primary)/40 bg-(--color-primary)/5'
                     : 'border-(--color-border) bg-(--color-surface)'
                 }`}
                 layout
               >
-                <div className="flex items-center gap-3 min-w-0">
+                <div className="flex min-w-0 items-center gap-3">
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-(--color-surface-strong)">
                     <Key className="h-5 w-5 text-(--color-primary)" />
                   </div>
                   <div className="min-w-0">
-                    <p className="font-medium text-(--color-text) truncate">
+                    <p className="truncate font-medium text-(--color-text)">
                       {AI_PROVIDERS[key.provider]?.label ?? key.provider}
                     </p>
-                    <p className="text-xs text-(--color-muted) truncate">
+                    <p className="truncate text-xs text-(--color-muted)">
                       {key.model} · {t('aiSettings.lastUsed', 'Last used')}{' '}
                       {new Date(key.lastUsed).toLocaleDateString()}
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+                <div className="flex shrink-0 items-center gap-2 self-end sm:self-auto">
                   {activeProvider !== key.provider && (
                     <button
                       onClick={() => handleSetActive(key.provider)}
-                      className="btn-secondary rounded-full px-3 py-1.5 text-xs active:scale-[0.95] focus-ring"
+                      className="btn-secondary focus-ring rounded-full px-3 py-1.5 text-xs active:scale-[0.95]"
                     >
                       {t('aiSettings.setActive', 'Set Active')}
                     </button>
@@ -249,7 +249,7 @@ export default function AISettingsPage() {
                   )}
                   <button
                     onClick={() => handleRemove(key.provider)}
-                    className="rounded-full p-2 text-red-400 transition-colors hover:bg-red-500/10 active:scale-[0.9] focus-ring"
+                    className="focus-ring rounded-full p-2 text-red-400 transition-colors hover:bg-red-500/10 active:scale-[0.9]"
                     aria-label={t('aiSettings.remove', 'Remove key')}
                   >
                     <Trash2 className="h-4 w-4" />
@@ -268,7 +268,7 @@ export default function AISettingsPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
       >
-        <h2 className="mb-4 text-lg font-medium fluid-text-lg">
+        <h2 className="fluid-text-lg mb-4 text-lg font-medium">
           {t('aiSettings.addProvider', 'Add Provider')}
         </h2>
 
@@ -286,7 +286,7 @@ export default function AISettingsPage() {
                     setCustomUrlInput(p.baseUrl);
                   }}
                   disabled={isConfigured}
-                  className={`flex flex-col items-center gap-2 rounded-2xl border p-4 text-center transition-all focus-ring ${
+                  className={`focus-ring flex flex-col items-center gap-2 rounded-2xl border p-4 text-center transition-all ${
                     isConfigured
                       ? 'cursor-not-allowed border-(--color-border) opacity-40'
                       : 'border-(--color-border) hover:border-(--color-primary)/40 hover:bg-(--color-primary)/5'
@@ -337,12 +337,12 @@ export default function AISettingsPage() {
                   onChange={(e) => setApiKeyInput(e.target.value)}
                   placeholder="sk-..."
                   autoComplete="off"
-                  className="w-full rounded-xl border border-(--color-border) bg-(--color-surface) px-4 py-2.5 pr-10 text-(--color-text) outline-none transition-colors focus:border-(--color-primary)/50 focus:ring-2 focus:ring-(--color-primary)/20"
+                  className="w-full rounded-xl border border-(--color-border) bg-(--color-surface) px-4 py-2.5 pr-10 text-(--color-text) transition-colors outline-none focus:border-(--color-primary)/50 focus:ring-2 focus:ring-(--color-primary)/20"
                 />
                 <button
                   type="button"
                   onClick={() => setShowKey(!showKey)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-(--color-muted)"
+                  className="absolute top-1/2 right-3 -translate-y-1/2 text-(--color-muted)"
                   aria-label={showKey ? t('common.hideKey') : t('common.showKey')}
                 >
                   {showKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -360,7 +360,7 @@ export default function AISettingsPage() {
                   id="ai-model"
                   value={modelInput}
                   onChange={(e) => setModelInput(e.target.value)}
-                  className="w-full rounded-xl border border-(--color-border) bg-(--color-surface) px-4 py-2.5 text-(--color-text) outline-none transition-colors focus:border-(--color-primary)/50 focus:ring-2 focus:ring-(--color-primary)/20"
+                  className="w-full rounded-xl border border-(--color-border) bg-(--color-surface) px-4 py-2.5 text-(--color-text) transition-colors outline-none focus:border-(--color-primary)/50 focus:ring-2 focus:ring-(--color-primary)/20"
                 >
                   {AI_PROVIDERS[addingProvider].models.map((m) => (
                     <option key={m} value={m}>
@@ -375,7 +375,7 @@ export default function AISettingsPage() {
                   value={modelInput}
                   onChange={(e) => setModelInput(e.target.value)}
                   placeholder="model-name"
-                  className="w-full rounded-xl border border-(--color-border) bg-(--color-surface) px-4 py-2.5 text-(--color-text) outline-none transition-colors focus:border-(--color-primary)/50 focus:ring-2 focus:ring-(--color-primary)/20"
+                  className="w-full rounded-xl border border-(--color-border) bg-(--color-surface) px-4 py-2.5 text-(--color-text) transition-colors outline-none focus:border-(--color-primary)/50 focus:ring-2 focus:ring-(--color-primary)/20"
                 />
               )}
             </div>
@@ -392,7 +392,7 @@ export default function AISettingsPage() {
                   value={customUrlInput}
                   onChange={(e) => setCustomUrlInput(e.target.value)}
                   placeholder="https://..."
-                  className="w-full rounded-xl border border-(--color-border) bg-(--color-surface) px-4 py-2.5 text-(--color-text) outline-none transition-colors focus:border-(--color-primary)/50 focus:ring-2 focus:ring-(--color-primary)/20"
+                  className="w-full rounded-xl border border-(--color-border) bg-(--color-surface) px-4 py-2.5 text-(--color-text) transition-colors outline-none focus:border-(--color-primary)/50 focus:ring-2 focus:ring-(--color-primary)/20"
                 />
               </div>
             )}

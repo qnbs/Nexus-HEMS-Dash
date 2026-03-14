@@ -44,12 +44,12 @@ function TariffsPageComponent() {
 
       {/* Charging Windows */}
       <motion.section
-        className="glass-panel-strong rounded-3xl p-6 hover-lift"
+        className="glass-panel-strong hover-lift rounded-3xl p-6"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.3 }}
       >
-        <h2 className="mb-4 text-lg font-medium fluid-text-lg">{t('forecast.lowPriceWindow')}</h2>
+        <h2 className="fluid-text-lg mb-4 text-lg font-medium">{t('forecast.lowPriceWindow')}</h2>
         <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
           {[
             {

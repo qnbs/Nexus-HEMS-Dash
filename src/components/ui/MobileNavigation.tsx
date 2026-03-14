@@ -160,7 +160,7 @@ function MobileNavigationComponent() {
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              className="fixed bottom-16 left-0 right-0 z-40 rounded-t-3xl border-t border-(--color-border) bg-(--color-surface) p-4 backdrop-blur-3xl lg:hidden"
+              className="fixed right-0 bottom-16 left-0 z-40 rounded-t-3xl border-t border-(--color-border) bg-(--color-surface) p-4 backdrop-blur-3xl lg:hidden"
               role="dialog"
               aria-modal="true"
               aria-label={t('nav.allPages', 'All Pages')}
@@ -171,7 +171,7 @@ function MobileNavigationComponent() {
                 </span>
                 <button
                   onClick={() => setMoreOpen(false)}
-                  className="rounded-full p-1.5 hover:bg-white/10 focus-ring"
+                  className="focus-ring rounded-full p-1.5 hover:bg-white/10"
                   aria-label={t('common.close', 'Close')}
                 >
                   <X size={18} />
@@ -189,7 +189,7 @@ function MobileNavigationComponent() {
                     }`}
                   >
                     {item.icon}
-                    <span className="text-[10px] font-medium leading-tight">{item.label}</span>
+                    <span className="text-[10px] leading-tight font-medium">{item.label}</span>
                   </button>
                 ))}
               </div>
@@ -200,11 +200,11 @@ function MobileNavigationComponent() {
 
       {/* Bottom Navigation Bar */}
       <nav
-        className="fixed bottom-0 left-0 right-0 z-50 lg:hidden"
+        className="fixed right-0 bottom-0 left-0 z-50 lg:hidden"
         aria-label={t('mobile.navigation', 'Mobile Navigation')}
       >
         <div className="absolute inset-0 border-t border-(--color-border) bg-(--color-surface) backdrop-blur-3xl">
-          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-(--color-primary)/20 to-transparent" />
+          <div className="absolute top-0 right-0 left-0 h-px bg-gradient-to-r from-transparent via-(--color-primary)/20 to-transparent" />
         </div>
         <div className="relative flex items-center justify-around px-2 py-2">
           {primaryItems.map((item) => {
