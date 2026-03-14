@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
-import { Sun, Battery, Home, Zap, Activity, TrendingUp } from 'lucide-react';
+import { Sun, Battery, Home, Zap, Activity, TrendingUp, Leaf } from 'lucide-react';
 import { useAppStore } from '../store';
 import { getDisplayData } from '../lib/demo-data';
 import { DemoBadge } from '../components/DemoBadge';
@@ -20,6 +20,13 @@ function HomePageComponent() {
   const isDemo = !connected && energyData !== storeData;
   const { sendCommand } = useLegacySendCommand();
 
+  // Self-sufficiency ratio: how much of house load is covered by PV + battery discharge
+  const pvContribution = Math.min(energyData.pvPower, energyData.houseLoad);
+  const batteryContribution = Math.max(0, energyData.batteryPower); // positive = discharge
+  const selfSupplied = Math.min(pvContribution + batteryContribution, energyData.houseLoad);
+  const selfSufficiency =
+    energyData.houseLoad > 0 ? (selfSupplied / energyData.houseLoad) * 100 : 0;
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -35,7 +42,7 @@ function HomePageComponent() {
         aria-live="polite"
         aria-atomic="false"
       >
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
           <KpiCard
             icon={<Sun className="text-yellow-400" aria-hidden="true" />}
             label={t('metrics.pvGeneration')}
@@ -81,6 +88,13 @@ function HomePageComponent() {
             sub={energyData.gridPower > 0 ? t('metrics.import') : t('metrics.export')}
             link="/energy-flow"
           />
+          <KpiCard
+            icon={<Leaf className="text-emerald-400" aria-hidden="true" />}
+            label={t('metrics.autonomy')}
+            value={`${selfSufficiency.toFixed(0)}${t('units.percent')}`}
+            sub={t('dashboard.selfSufficiencyHint')}
+            link="/analytics"
+          />
         </div>
       </section>
 
@@ -94,13 +108,21 @@ function HomePageComponent() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
         >
-          <div className="mb-3 flex items-center justify-between">
+          <div className="relative z-10 mb-3 flex items-center justify-between">
             <h2
               id="home-flow-title"
               className="flex items-center gap-2 text-lg font-medium fluid-text-lg"
             >
               <Activity size={20} className="text-(--color-secondary)" aria-hidden="true" />
               {t('dashboard.realtimeFlow')}
+              <span
+                className={`ml-2 inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${connected ? 'bg-emerald-500/15 text-emerald-400' : 'bg-rose-500/15 text-rose-400'}`}
+              >
+                <span
+                  className={`h-1.5 w-1.5 rounded-full ${connected ? 'bg-emerald-400 energy-pulse' : 'bg-rose-400'}`}
+                />
+                {connected ? t('common.live') : t('common.demoMode')}
+              </span>
             </h2>
             <Link
               to="/energy-flow"
@@ -109,7 +131,7 @@ function HomePageComponent() {
               {t('nav.viewAll', 'View details →')}
             </Link>
           </div>
-          <div className="min-h-[280px] sm:min-h-[340px]">
+          <div className="relative min-h-[280px] sm:min-h-[340px]">
             <SankeyDiagram data={energyData} />
           </div>
         </motion.section>
