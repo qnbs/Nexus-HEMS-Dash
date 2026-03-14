@@ -52,7 +52,11 @@ export const LivePriceWidget = memo(function LivePriceWidget() {
       animate={{ opacity: 1, y: 0 }}
       className="glass-panel rounded-3xl p-5"
     >
-      <div className="flex items-center justify-between" aria-live="polite" aria-atomic="true">
+      <div
+        className="flex items-center justify-between gap-4"
+        aria-live="polite"
+        aria-atomic="true"
+      >
         <div>
           <p className="eyebrow mb-2">
             <Zap className="inline h-4 w-4" aria-hidden="true" />

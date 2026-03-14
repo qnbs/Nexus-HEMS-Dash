@@ -562,7 +562,7 @@ export function Settings() {
     >
       {/* Page Header */}
       <motion.div
-        className="flex items-center justify-between gap-3 mb-8"
+        className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-8"
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.5, delay: 0.1 }}
@@ -584,7 +584,7 @@ export function Settings() {
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 self-end sm:self-auto">
           <motion.button
             onClick={handleExportSettings}
             className="inline-flex items-center gap-2 rounded-xl border border-(--color-border) bg-(--color-surface-strong) px-3 py-2 text-sm transition-all hover:bg-(--color-primary)/10 focus-ring"
@@ -640,7 +640,7 @@ export function Settings() {
         {/* Sidebar Navigation */}
         <nav className="w-full lg:w-56 shrink-0">
           <div
-            className="flex lg:flex-col gap-1 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0"
+            className="flex lg:flex-col gap-1 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0 scrollbar-hide"
             role="tablist"
             aria-label={t('settings.title')}
           >
@@ -2455,7 +2455,7 @@ export function Settings() {
                         />
                       </div>
                       {(settings.quietHoursEnabled ?? false) && (
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 min-[400px]:grid-cols-2 gap-4">
                           <div className="space-y-2">
                             <label
                               htmlFor="quiet-start"
@@ -2571,12 +2571,12 @@ export function Settings() {
 
                       {/* Reset Onboarding */}
                       <div className="rounded-xl border border-(--color-primary)/20 bg-(--color-primary)/5 p-5">
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="flex items-start gap-3">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                          <div className="flex items-start gap-3 min-w-0 flex-1">
                             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-(--color-primary)/15">
                               <RotateCcw size={20} className="text-(--color-primary)" />
                             </div>
-                            <div>
+                            <div className="min-w-0">
                               <p className="font-medium text-sm">
                                 {t('settings.resetOnboarding', 'Show onboarding again')}
                               </p>
@@ -2595,7 +2595,7 @@ export function Settings() {
                               setSaved(true);
                               setTimeout(() => setSaved(false), 3000);
                             }}
-                            className="flex items-center gap-2 rounded-xl border border-(--color-primary)/30 bg-(--color-primary)/10 px-4 py-2 text-sm text-(--color-primary) hover:bg-(--color-primary)/20 transition-colors focus-ring shrink-0"
+                            className="flex items-center justify-center gap-2 rounded-xl border border-(--color-primary)/30 bg-(--color-primary)/10 px-4 py-2 text-sm text-(--color-primary) hover:bg-(--color-primary)/20 transition-colors focus-ring shrink-0 w-full sm:w-auto"
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
                           >
@@ -2729,8 +2729,8 @@ export function Settings() {
                       {t('settings.dangerZone', 'Danger Zone')}
                     </h2>
                     <div className="rounded-xl border border-rose-500/30 bg-rose-500/5 p-4">
-                      <div className="flex items-center justify-between">
-                        <div>
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                        <div className="min-w-0 flex-1">
                           <p className="font-medium text-sm text-rose-400">
                             {t('settings.resetAll', 'Reset all settings')}
                           </p>
@@ -2757,7 +2757,7 @@ export function Settings() {
                               },
                             })
                           }
-                          className="flex items-center gap-2 rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-2 text-sm text-rose-400 hover:bg-rose-500/20 transition-colors"
+                          className="flex items-center justify-center gap-2 rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-2 text-sm text-rose-400 hover:bg-rose-500/20 transition-colors shrink-0 w-full sm:w-auto"
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
                         >

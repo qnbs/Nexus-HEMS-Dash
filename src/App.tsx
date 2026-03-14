@@ -70,6 +70,12 @@ export default function App() {
   const locale = useAppStore((s) => s.locale);
   const setTheme = useAppStore((s) => s.setTheme);
   const themePreference = useAppStore((s) => s.themePreference);
+  const fontScale = useAppStore((s) => s.settings.fontScale);
+  const reducedMotion = useAppStore((s) => s.settings.reducedMotion);
+  const highContrast = useAppStore((s) => s.settings.highContrast);
+  const compactMode = useAppStore((s) => s.settings.compactMode);
+  const glowEffects = useAppStore((s) => s.settings.glowEffects);
+  const animations = useAppStore((s) => s.settings.animations);
   const { isOpen: isCommandPaletteOpen, setIsOpen: setCommandPaletteOpen } = useCommandPalette();
   const onboardingCompleted = useAppStore((s) => s.onboardingCompleted);
 
@@ -82,6 +88,33 @@ export default function App() {
     document.documentElement.lang = locale;
     document.documentElement.style.colorScheme = themeDefinitions[theme].isDark ? 'dark' : 'light';
   }, [locale, theme]);
+
+  // Apply accessibility settings to the DOM
+  useEffect(() => {
+    const scale = fontScale ?? 1.0;
+    document.documentElement.style.fontSize = `${scale * 100}%`;
+  }, [fontScale]);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('reduced-motion', reducedMotion ?? false);
+  }, [reducedMotion]);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('high-contrast', highContrast ?? false);
+  }, [highContrast]);
+
+  // Apply display settings to the DOM
+  useEffect(() => {
+    document.documentElement.classList.toggle('compact-mode', compactMode ?? false);
+  }, [compactMode]);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('no-glow', !(glowEffects ?? true));
+  }, [glowEffects]);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('no-animations', !(animations ?? true));
+  }, [animations]);
 
   useEffect(() => {
     if (i18n.resolvedLanguage !== locale) {

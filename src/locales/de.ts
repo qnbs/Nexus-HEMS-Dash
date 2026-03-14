@@ -1183,5 +1183,11 @@ export const de = {
     tipConnect: 'Verbinden Sie Ihr Gateway unter Einstellungen → System',
     tipTariff: 'Richten Sie Tibber oder aWATTar für dynamische Preise ein',
     tipAi: 'Konfigurieren Sie KI-Schlüssel unter Einstellungen → KI für smarte Optimierung',
+    dynamicTariff: 'Dynamischer Stromtarif',
+    aiRecommendations: 'KI-Empfehlungen',
+    checkLanguage: 'Sprache konfiguriert',
+    checkEnergyFlow: 'Echtzeit-Energiefluss bereit',
+    checkControl: 'Steuerungsfunktionen verfügbar',
+    checkAi: 'KI-Optimierung vorbereitet',
   },
 } as const;

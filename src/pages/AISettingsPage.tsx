@@ -211,29 +211,29 @@ export default function AISettingsPage() {
             {storedKeys.map((key) => (
               <motion.div
                 key={key.provider}
-                className={`flex items-center justify-between rounded-2xl border p-4 transition-colors ${
+                className={`flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between rounded-2xl border p-4 transition-colors ${
                   activeProvider === key.provider
                     ? 'border-(--color-primary)/40 bg-(--color-primary)/5'
                     : 'border-(--color-border) bg-(--color-surface)'
                 }`}
                 layout
               >
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-(--color-surface-strong)">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-(--color-surface-strong)">
                     <Key className="h-5 w-5 text-(--color-primary)" />
                   </div>
-                  <div>
-                    <p className="font-medium text-(--color-text)">
+                  <div className="min-w-0">
+                    <p className="font-medium text-(--color-text) truncate">
                       {AI_PROVIDERS[key.provider]?.label ?? key.provider}
                     </p>
-                    <p className="text-xs text-(--color-muted)">
+                    <p className="text-xs text-(--color-muted) truncate">
                       {key.model} · {t('aiSettings.lastUsed', 'Last used')}{' '}
                       {new Date(key.lastUsed).toLocaleDateString()}
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
                   {activeProvider !== key.provider && (
                     <button
                       onClick={() => handleSetActive(key.provider)}

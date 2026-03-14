@@ -1170,5 +1170,11 @@ export const en = {
     tipConnect: 'Connect your gateway in Settings → System',
     tipTariff: 'Set up Tibber or aWATTar for dynamic pricing',
     tipAi: 'Configure AI keys in Settings → AI for smart optimization',
+    dynamicTariff: 'Dynamic Electricity Tariff',
+    aiRecommendations: 'AI Recommendations',
+    checkLanguage: 'Language configured',
+    checkEnergyFlow: 'Real-time energy flow ready',
+    checkControl: 'Control features available',
+    checkAi: 'AI optimization prepared',
   },
 } as const;

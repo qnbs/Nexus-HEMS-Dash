@@ -172,7 +172,7 @@ export function Help() {
         {/* Sidebar */}
         <nav className="w-full lg:w-56 shrink-0">
           <div
-            className="flex lg:flex-col gap-1 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0"
+            className="flex lg:flex-col gap-1 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0 scrollbar-hide"
             role="tablist"
             aria-label={t('help.title')}
           >
