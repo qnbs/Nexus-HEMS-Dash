@@ -284,7 +284,7 @@ function EnergyFlowPageComponent() {
             </span>
           </div>
         </div>
-        <div className="min-h-[400px] sm:min-h-[500px]">
+        <div className="relative min-h-[400px] sm:min-h-[500px]">
           <SankeyDiagram data={energyData} />
         </div>
       </motion.section>
