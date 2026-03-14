@@ -230,7 +230,7 @@ function FloorplanPageComponent() {
 
       {/* ─── Full Floorplan ────────────────────────────────────── */}
       <motion.section
-        className="glass-panel-strong hover-lift rounded-3xl p-6"
+        className="glass-panel-strong hover-lift p-6"
         aria-labelledby="floorplan-full-title"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -238,7 +238,7 @@ function FloorplanPageComponent() {
       >
         <h2
           id="floorplan-full-title"
-          className="fluid-text-lg mb-4 flex items-center gap-2 text-lg font-medium"
+          className="fluid-text-lg mb-4 flex items-center gap-2 font-medium"
         >
           <Home size={20} className="text-(--color-secondary)" aria-hidden="true" />
           {t('floorplan.interactiveView')}
@@ -252,16 +252,13 @@ function FloorplanPageComponent() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* KNX Bus Status */}
         <motion.section
-          className="glass-panel-strong hover-lift rounded-3xl p-6"
+          className="glass-panel-strong hover-lift p-6"
           aria-labelledby="knx-bus-title"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.15 }}
         >
-          <h2
-            id="knx-bus-title"
-            className="fluid-text-lg mb-4 flex items-center gap-2 text-lg font-medium"
-          >
+          <h2 id="knx-bus-title" className="fluid-text-lg mb-4 flex items-center gap-2 font-medium">
             <Wifi size={20} className="text-green-400" aria-hidden="true" />
             {t('floorplan.knxStatus')}
           </h2>
@@ -287,7 +284,7 @@ function FloorplanPageComponent() {
 
         {/* KNX Scenes */}
         <motion.section
-          className="glass-panel-strong hover-lift rounded-3xl p-6 lg:col-span-2"
+          className="glass-panel-strong hover-lift p-6 lg:col-span-2"
           aria-labelledby="knx-scenes-title"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -295,7 +292,7 @@ function FloorplanPageComponent() {
         >
           <h2
             id="knx-scenes-title"
-            className="fluid-text-lg mb-4 flex items-center gap-2 text-lg font-medium"
+            className="fluid-text-lg mb-4 flex items-center gap-2 font-medium"
           >
             <Activity size={20} className="text-(--color-secondary)" aria-hidden="true" />
             {t('floorplan.scenesTitle')}
@@ -347,7 +344,7 @@ function FloorplanPageComponent() {
       >
         <h2
           id="room-cards-title"
-          className="fluid-text-lg mb-4 flex items-center gap-2 text-lg font-medium"
+          className="fluid-text-lg mb-4 flex items-center gap-2 font-medium"
         >
           <BarChart3 size={20} className="text-(--color-secondary)" aria-hidden="true" />
           {t('floorplan.roomOverview')}
@@ -460,7 +457,7 @@ function FloorplanPageComponent() {
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         {/* Comfort Ring Gauge */}
         <motion.section
-          className="glass-panel-strong hover-lift rounded-3xl p-6"
+          className="glass-panel-strong hover-lift p-6"
           aria-labelledby="comfort-gauge-title"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -468,7 +465,7 @@ function FloorplanPageComponent() {
         >
           <h2
             id="comfort-gauge-title"
-            className="fluid-text-lg mb-4 flex items-center gap-2 text-lg font-medium"
+            className="fluid-text-lg mb-4 flex items-center gap-2 font-medium"
           >
             <Gauge size={20} className="text-(--color-secondary)" aria-hidden="true" />
             {t('floorplan.comfortIndex')}
@@ -536,7 +533,7 @@ function FloorplanPageComponent() {
 
         {/* Building Alerts */}
         <motion.section
-          className="glass-panel-strong hover-lift rounded-3xl p-6"
+          className="glass-panel-strong hover-lift p-6"
           aria-labelledby="building-alerts-title"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -544,7 +541,7 @@ function FloorplanPageComponent() {
         >
           <h2
             id="building-alerts-title"
-            className="fluid-text-lg mb-4 flex items-center gap-2 text-lg font-medium"
+            className="fluid-text-lg mb-4 flex items-center gap-2 font-medium"
           >
             <AlertTriangle size={20} className="text-(--color-secondary)" aria-hidden="true" />
             {t('floorplan.alerts')}
@@ -592,7 +589,7 @@ function FloorplanPageComponent() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Room Energy Donut */}
         <motion.section
-          className="glass-panel-strong hover-lift rounded-3xl p-6"
+          className="glass-panel-strong hover-lift p-6"
           aria-labelledby="room-energy-title"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -600,7 +597,7 @@ function FloorplanPageComponent() {
         >
           <h2
             id="room-energy-title"
-            className="fluid-text-lg mb-4 flex items-center gap-2 text-lg font-medium"
+            className="fluid-text-lg mb-4 flex items-center gap-2 font-medium"
           >
             <Zap size={20} className="text-(--color-secondary)" aria-hidden="true" />
             {t('floorplan.energyDistribution')}
@@ -649,7 +646,7 @@ function FloorplanPageComponent() {
 
         {/* Air Quality Index + Temperature Comparison */}
         <motion.section
-          className="glass-panel-strong hover-lift rounded-3xl p-6 lg:col-span-2"
+          className="glass-panel-strong hover-lift p-6 lg:col-span-2"
           aria-labelledby="air-quality-title"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -657,7 +654,7 @@ function FloorplanPageComponent() {
         >
           <h2
             id="air-quality-title"
-            className="fluid-text-lg mb-4 flex items-center gap-2 text-lg font-medium"
+            className="fluid-text-lg mb-4 flex items-center gap-2 font-medium"
           >
             <Leaf size={20} className="text-(--color-secondary)" aria-hidden="true" />
             {t('floorplan.airQuality')}
@@ -750,7 +747,7 @@ function FloorplanPageComponent() {
 
       {/* ─── KNX Activity Timeline ─────────────────────────────── */}
       <motion.section
-        className="glass-panel-strong hover-lift rounded-3xl p-6"
+        className="glass-panel-strong hover-lift p-6"
         aria-labelledby="knx-activity-title"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -758,7 +755,7 @@ function FloorplanPageComponent() {
       >
         <h2
           id="knx-activity-title"
-          className="fluid-text-lg mb-4 flex items-center gap-2 text-lg font-medium"
+          className="fluid-text-lg mb-4 flex items-center gap-2 font-medium"
         >
           <Clock size={20} className="text-(--color-secondary)" aria-hidden="true" />
           {t('floorplan.recentActivity')}

@@ -9,7 +9,7 @@ export default function NotFoundPage() {
   return (
     <div className="flex min-h-[60vh] items-center justify-center">
       <motion.div
-        className="glass-panel-strong max-w-md rounded-3xl p-8 text-center"
+        className="glass-panel-strong max-w-md p-8 text-center"
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
@@ -17,7 +17,7 @@ export default function NotFoundPage() {
         <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-orange-500/10">
           <AlertTriangle size={32} className="text-orange-400" aria-hidden="true" />
         </div>
-        <h1 className="fluid-text-2xl mb-2 text-2xl font-semibold">
+        <h1 className="fluid-text-2xl mb-2 font-semibold">
           {t('error.pageNotFound', '404 – Page not found')}
         </h1>
         <p className="mb-6 text-(--color-muted)">

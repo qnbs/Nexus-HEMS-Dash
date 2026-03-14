@@ -50,7 +50,7 @@ export function LivePriceWidget() {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="glass-panel rounded-3xl p-5"
+      className="glass-panel p-5"
     >
       <div
         className="flex items-center justify-between gap-4"

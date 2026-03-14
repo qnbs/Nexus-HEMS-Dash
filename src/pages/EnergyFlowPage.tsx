@@ -255,7 +255,7 @@ function EnergyFlowPageComponent() {
 
       {/* ─── Sankey Diagram (NEVER BREAK) ─────────────────────────── */}
       <motion.section
-        className="glass-panel-strong hover-lift rounded-3xl p-6"
+        className="glass-panel-strong hover-lift p-6"
         aria-labelledby="flow-sankey-title"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -294,7 +294,7 @@ function EnergyFlowPageComponent() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Self-Sufficiency Gauge */}
         <motion.section
-          className="glass-panel-strong hover-lift rounded-3xl p-6"
+          className="glass-panel-strong hover-lift p-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
@@ -322,7 +322,7 @@ function EnergyFlowPageComponent() {
 
         {/* Self-Consumption Rate Gauge */}
         <motion.section
-          className="glass-panel-strong hover-lift rounded-3xl p-6"
+          className="glass-panel-strong hover-lift p-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.25 }}
@@ -354,7 +354,7 @@ function EnergyFlowPageComponent() {
 
         {/* Grid Exchange Panel */}
         <motion.section
-          className="glass-panel-strong hover-lift rounded-3xl p-6"
+          className="glass-panel-strong hover-lift p-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
@@ -417,7 +417,7 @@ function EnergyFlowPageComponent() {
 
       {/* ─── 24h Power History Chart ──────────────────────────────── */}
       <motion.section
-        className="glass-panel-strong hover-lift rounded-3xl p-6"
+        className="glass-panel-strong hover-lift p-6"
         aria-labelledby="flow-history-title"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -529,7 +529,7 @@ function EnergyFlowPageComponent() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* PV Distribution Donut */}
         <motion.section
-          className="glass-panel-strong hover-lift rounded-3xl p-6"
+          className="glass-panel-strong hover-lift p-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.4 }}
@@ -585,7 +585,7 @@ function EnergyFlowPageComponent() {
 
         {/* CO₂ & Environmental Impact */}
         <motion.section
-          className="glass-panel-strong hover-lift rounded-3xl p-6"
+          className="glass-panel-strong hover-lift p-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.45 }}
@@ -638,7 +638,7 @@ function EnergyFlowPageComponent() {
 
       {/* ─── Today Highlights Strip ───────────────────────────────── */}
       <motion.section
-        className="glass-panel-strong rounded-3xl p-5"
+        className="glass-panel-strong p-5"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.55 }}

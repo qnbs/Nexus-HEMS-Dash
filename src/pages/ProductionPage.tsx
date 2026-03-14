@@ -157,12 +157,12 @@ function ProductionPageComponent() {
               className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium ${
                 energyData.pvPower > 500
                   ? 'bg-yellow-500/10 text-yellow-400'
-                  : 'bg-slate-500/10 text-slate-400'
+                  : 'bg-(--color-muted)/10 text-(--color-muted)'
               }`}
             >
               <span
                 className={`h-2 w-2 rounded-full ${
-                  energyData.pvPower > 500 ? 'energy-pulse bg-yellow-400' : 'bg-slate-400'
+                  energyData.pvPower > 500 ? 'energy-pulse bg-yellow-400' : 'bg-(--color-muted)'
                 }`}
               />
               {energyData.pvPower > 500 ? t('production.generating') : t('production.idle')}
@@ -173,7 +173,7 @@ function ProductionPageComponent() {
 
       {/* ─── Hero: Solar Ring Gauge + KPI Grid ─────────────────────── */}
       <motion.section
-        className="glass-panel-strong rounded-3xl p-6"
+        className="glass-panel-strong p-6"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.1 }}
@@ -310,17 +310,14 @@ function ProductionPageComponent() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* 24h Production Curve */}
         <motion.section
-          className="glass-panel-strong hover-lift rounded-3xl p-6 lg:col-span-2"
+          className="glass-panel-strong hover-lift p-6 lg:col-span-2"
           aria-labelledby="pv-chart-title"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
           <div className="mb-4 flex items-center justify-between">
-            <h2
-              id="pv-chart-title"
-              className="fluid-text-lg flex items-center gap-2 text-lg font-medium"
-            >
+            <h2 id="pv-chart-title" className="fluid-text-lg flex items-center gap-2 font-medium">
               <BarChart3 size={20} className="text-(--color-secondary)" aria-hidden="true" />
               {t('production.productionCurve')}
             </h2>
@@ -400,7 +397,7 @@ function ProductionPageComponent() {
 
         {/* PV Power Distribution Pie */}
         <motion.section
-          className="glass-panel-strong hover-lift rounded-3xl p-6"
+          className="glass-panel-strong hover-lift p-6"
           aria-labelledby="pv-distribution-title"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -408,7 +405,7 @@ function ProductionPageComponent() {
         >
           <h2
             id="pv-distribution-title"
-            className="fluid-text-lg mb-4 flex items-center gap-2 text-lg font-medium"
+            className="fluid-text-lg mb-4 flex items-center gap-2 font-medium"
           >
             <Zap size={20} className="text-(--color-secondary)" aria-hidden="true" />
             {t('production.distribution')}
@@ -475,13 +472,13 @@ function ProductionPageComponent() {
 
       {/* ─── PV System Status Bars ─────────────────────────────────── */}
       <motion.section
-        className="glass-panel-strong hover-lift rounded-3xl p-6"
+        className="glass-panel-strong hover-lift p-6"
         aria-labelledby="pv-status-title"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.3 }}
       >
-        <h2 id="pv-status-title" className="fluid-text-lg mb-5 text-lg font-medium">
+        <h2 id="pv-status-title" className="fluid-text-lg mb-5 font-medium">
           {t('production.status')}
         </h2>
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -542,7 +539,7 @@ function ProductionPageComponent() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* PV System Specs */}
         <motion.section
-          className="glass-panel-strong hover-lift rounded-3xl p-6"
+          className="glass-panel-strong hover-lift p-6"
           aria-labelledby="pv-specs-title"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -550,7 +547,7 @@ function ProductionPageComponent() {
         >
           <h2
             id="pv-specs-title"
-            className="fluid-text-lg mb-4 flex items-center gap-2 text-lg font-medium"
+            className="fluid-text-lg mb-4 flex items-center gap-2 font-medium"
           >
             <Info size={20} className="text-(--color-secondary)" aria-hidden="true" />
             {t('production.systemSpecs')}

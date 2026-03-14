@@ -251,12 +251,14 @@ function EVPageComponent() {
             {isDemo && <DemoBadge />}
             <span
               className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium ${
-                isCharging ? 'bg-green-500/10 text-green-400' : 'bg-slate-500/10 text-slate-400'
+                isCharging
+                  ? 'bg-green-500/10 text-green-400'
+                  : 'bg-(--color-muted)/10 text-(--color-muted)'
               }`}
             >
               <span
                 className={`h-2 w-2 rounded-full ${
-                  isCharging ? 'energy-pulse bg-green-400' : 'bg-slate-400'
+                  isCharging ? 'energy-pulse bg-green-400' : 'bg-(--color-muted)'
                 }`}
               />
               {isCharging ? t('ev.charging') : t('ev.idle')}
@@ -267,7 +269,7 @@ function EVPageComponent() {
 
       {/* ─── Hero: EV SoC Ring + KPI Grid ────────────────────────── */}
       <motion.section
-        className="glass-panel-strong rounded-3xl p-6"
+        className="glass-panel-strong p-6"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.1 }}
@@ -469,17 +471,14 @@ function EVPageComponent() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* 24h Charging History */}
         <motion.section
-          className="glass-panel-strong hover-lift rounded-3xl p-6 lg:col-span-2"
+          className="glass-panel-strong hover-lift p-6 lg:col-span-2"
           aria-labelledby="ev-history-title"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
           <div className="mb-4 flex items-center justify-between">
-            <h2
-              id="ev-history-title"
-              className="fluid-text-lg flex items-center gap-2 text-lg font-medium"
-            >
+            <h2 id="ev-history-title" className="fluid-text-lg flex items-center gap-2 font-medium">
               <Gauge size={20} className="text-(--color-secondary)" aria-hidden="true" />
               {t('ev.chargingHistory')}
             </h2>
@@ -551,7 +550,7 @@ function EVPageComponent() {
 
         {/* Price Windows / Charge Planner */}
         <motion.section
-          className="glass-panel-strong hover-lift rounded-3xl p-6"
+          className="glass-panel-strong hover-lift p-6"
           aria-labelledby="ev-planner-title"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -559,7 +558,7 @@ function EVPageComponent() {
         >
           <h2
             id="ev-planner-title"
-            className="fluid-text-lg mb-4 flex items-center gap-2 text-lg font-medium"
+            className="fluid-text-lg mb-4 flex items-center gap-2 font-medium"
           >
             <Clock size={20} className="text-(--color-secondary)" aria-hidden="true" />
             {t('ev.chargePlanner')}
@@ -620,7 +619,7 @@ function EVPageComponent() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Charge Source Donut */}
         <motion.section
-          className="glass-panel-strong hover-lift rounded-3xl p-6"
+          className="glass-panel-strong hover-lift p-6"
           aria-labelledby="ev-source-title"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -628,7 +627,7 @@ function EVPageComponent() {
         >
           <h2
             id="ev-source-title"
-            className="fluid-text-lg mb-4 flex items-center gap-2 text-lg font-medium"
+            className="fluid-text-lg mb-4 flex items-center gap-2 font-medium"
           >
             <Activity size={20} className="text-(--color-secondary)" aria-hidden="true" />
             {t('ev.chargeSource')}
@@ -694,7 +693,7 @@ function EVPageComponent() {
 
         {/* Weekly Summary + Efficiency */}
         <motion.section
-          className="glass-panel-strong hover-lift rounded-3xl p-6 lg:col-span-2"
+          className="glass-panel-strong hover-lift p-6 lg:col-span-2"
           aria-labelledby="ev-weekly-title"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -702,7 +701,7 @@ function EVPageComponent() {
         >
           <h2
             id="ev-weekly-title"
-            className="fluid-text-lg mb-4 flex items-center gap-2 text-lg font-medium"
+            className="fluid-text-lg mb-4 flex items-center gap-2 font-medium"
           >
             <BarChart3 size={20} className="text-(--color-secondary)" aria-hidden="true" />
             {t('ev.weeklySummary')}
@@ -766,13 +765,13 @@ function EVPageComponent() {
 
       {/* ─── Power Utilization Bars ──────────────────────────────── */}
       <motion.section
-        className="glass-panel-strong hover-lift rounded-3xl p-6"
+        className="glass-panel-strong hover-lift p-6"
         aria-labelledby="ev-power-title"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.3 }}
       >
-        <h2 id="ev-power-title" className="fluid-text-lg mb-5 text-lg font-medium">
+        <h2 id="ev-power-title" className="fluid-text-lg mb-5 font-medium">
           {t('ev.powerStatus')}
         </h2>
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -833,18 +832,18 @@ function EVPageComponent() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Charging Strategy Controls */}
         <motion.section
-          className="glass-panel-strong hover-lift rounded-3xl p-6 lg:col-span-2"
+          className="glass-panel-strong hover-lift p-6 lg:col-span-2"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.35 }}
         >
-          <h2 className="fluid-text-lg mb-4 text-lg font-medium">{t('control.evTitle')}</h2>
+          <h2 className="fluid-text-lg mb-4 font-medium">{t('control.evTitle')}</h2>
           <ControlPanel sendCommand={sendCommand} data={energyData} />
         </motion.section>
 
         {/* Wallbox Specs */}
         <motion.section
-          className="glass-panel-strong hover-lift rounded-3xl p-6"
+          className="glass-panel-strong hover-lift p-6"
           aria-labelledby="ev-specs-title"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -852,7 +851,7 @@ function EVPageComponent() {
         >
           <h2
             id="ev-specs-title"
-            className="fluid-text-lg mb-4 flex items-center gap-2 text-lg font-medium"
+            className="fluid-text-lg mb-4 flex items-center gap-2 font-medium"
           >
             <Info size={20} className="text-(--color-secondary)" aria-hidden="true" />
             {t('ev.wallboxSpecs')}
@@ -893,7 +892,7 @@ function EVPageComponent() {
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         {/* Protocol Status */}
         <motion.section
-          className="glass-panel-strong hover-lift rounded-3xl p-6"
+          className="glass-panel-strong hover-lift p-6"
           aria-labelledby="ev-protocol-title"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -901,7 +900,7 @@ function EVPageComponent() {
         >
           <h2
             id="ev-protocol-title"
-            className="fluid-text-lg mb-4 flex items-center gap-2 text-lg font-medium"
+            className="fluid-text-lg mb-4 flex items-center gap-2 font-medium"
           >
             <ShieldCheck size={20} className="text-(--color-secondary)" aria-hidden="true" />
             {t('ev.protocolStatus')}
@@ -924,16 +923,13 @@ function EVPageComponent() {
 
         {/* §14a EnWG Section */}
         <motion.section
-          className="glass-panel-strong hover-lift rounded-3xl p-6"
+          className="glass-panel-strong hover-lift p-6"
           aria-labelledby="ev-enwg-title"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.4 }}
         >
-          <h2
-            id="ev-enwg-title"
-            className="fluid-text-lg mb-4 flex items-center gap-2 text-lg font-medium"
-          >
+          <h2 id="ev-enwg-title" className="fluid-text-lg mb-4 flex items-center gap-2 font-medium">
             <div
               className="flex h-5 w-5 items-center justify-center rounded text-xs font-bold text-orange-400"
               aria-hidden="true"
@@ -973,7 +969,7 @@ function EVPageComponent() {
 
       {/* ─── Departure Planner ───────────────────────────────────── */}
       <motion.section
-        className="glass-panel-strong hover-lift rounded-3xl p-6"
+        className="glass-panel-strong hover-lift p-6"
         aria-labelledby="ev-departure-title"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -981,7 +977,7 @@ function EVPageComponent() {
       >
         <h2
           id="ev-departure-title"
-          className="fluid-text-lg mb-4 flex items-center gap-2 text-lg font-medium"
+          className="fluid-text-lg mb-4 flex items-center gap-2 font-medium"
         >
           <CalendarClock size={20} className="text-(--color-secondary)" aria-hidden="true" />
           {t('ev.departurePlanner')}
@@ -1066,7 +1062,7 @@ function EVPageComponent() {
                           ? 'bg-green-400'
                           : slot.type === 'top-up'
                             ? 'bg-orange-400'
-                            : 'bg-slate-500'
+                            : 'bg-(--color-muted)'
                       }`}
                     />
                     <span className="font-medium text-(--color-text)">{slot.time}</span>
@@ -1144,11 +1140,11 @@ function ProtocolRow({
         <span className="text-sm font-medium text-(--color-text)">{label}</span>
         <span
           className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
-            status ? 'bg-green-500/10 text-green-400' : 'bg-slate-500/10 text-slate-400'
+            status ? 'bg-green-500/10 text-green-400' : 'bg-(--color-muted)/10 text-(--color-muted)'
           }`}
         >
           <span
-            className={`h-1.5 w-1.5 rounded-full ${status ? 'bg-green-400' : 'bg-slate-400'}`}
+            className={`h-1.5 w-1.5 rounded-full ${status ? 'bg-green-400' : 'bg-(--color-muted)'}`}
           />
           {status ? t('ev.enabled') : t('ev.disabled')}
         </span>

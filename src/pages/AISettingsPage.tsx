@@ -187,12 +187,12 @@ export default function AISettingsPage() {
 
       {/* Stored Keys */}
       <motion.section
-        className="glass-panel-strong mb-6 rounded-3xl p-6"
+        className="glass-panel-strong mb-6 p-6"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
       >
-        <h2 className="fluid-text-lg mb-4 flex items-center gap-2 text-lg font-medium">
+        <h2 className="fluid-text-lg mb-4 flex items-center gap-2 font-medium">
           <Sparkles className="h-5 w-5 text-(--color-secondary)" />
           {t('aiSettings.configured', 'Configured Providers')}
         </h2>
@@ -263,12 +263,12 @@ export default function AISettingsPage() {
 
       {/* Add New Provider */}
       <motion.section
-        className="glass-panel-strong rounded-3xl p-6"
+        className="glass-panel-strong p-6"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
       >
-        <h2 className="fluid-text-lg mb-4 text-lg font-medium">
+        <h2 className="fluid-text-lg mb-4 font-medium">
           {t('aiSettings.addProvider', 'Add Provider')}
         </h2>
 

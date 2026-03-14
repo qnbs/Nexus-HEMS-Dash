@@ -97,16 +97,16 @@ export function Floorplan() {
           width="840"
           height="440"
           fill="none"
-          stroke="#475569"
+          stroke="var(--color-muted)"
           strokeWidth="8"
           rx="4"
         />
         {/* Vertical dividers */}
-        <line x1="330" y1="30" x2="330" y2="470" stroke="#475569" strokeWidth="6" />
-        <line x1="600" y1="30" x2="600" y2="470" stroke="#475569" strokeWidth="6" />
+        <line x1="330" y1="30" x2="330" y2="470" stroke="var(--color-muted)" strokeWidth="6" />
+        <line x1="600" y1="30" x2="600" y2="470" stroke="var(--color-muted)" strokeWidth="6" />
         {/* Horizontal dividers */}
-        <line x1="30" y1="250" x2="330" y2="250" stroke="#475569" strokeWidth="6" />
-        <line x1="600" y1="280" x2="870" y2="280" stroke="#475569" strokeWidth="6" />
+        <line x1="30" y1="250" x2="330" y2="250" stroke="var(--color-muted)" strokeWidth="6" />
+        <line x1="600" y1="280" x2="870" y2="280" stroke="var(--color-muted)" strokeWidth="6" />
 
         {/* Door gaps */}
         <line
@@ -156,7 +156,7 @@ export function Floorplan() {
           y1="30"
           x2="220"
           y2="30"
-          stroke={rooms.kitchen.windowOpen ? '#38bdf8' : '#94a3b8'}
+          stroke={rooms.kitchen.windowOpen ? 'var(--color-primary)' : 'var(--color-muted)'}
           strokeWidth="10"
           className="transition-colors duration-500"
         />
@@ -165,11 +165,11 @@ export function Floorplan() {
           y1="30"
           x2="800"
           y2="30"
-          stroke={rooms.bedroom.windowOpen ? '#38bdf8' : '#94a3b8'}
+          stroke={rooms.bedroom.windowOpen ? 'var(--color-primary)' : 'var(--color-muted)'}
           strokeWidth="10"
           className="transition-colors duration-500"
         />
-        <line x1="460" y1="470" x2="540" y2="470" stroke="#94a3b8" strokeWidth="10" />
+        <line x1="460" y1="470" x2="540" y2="470" stroke="var(--color-muted)" strokeWidth="10" />
 
         {/* Light overlays per room */}
         {Object.entries(rooms).map(([id, room]) => {

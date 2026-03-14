@@ -157,7 +157,7 @@ function MobileNavigationComponent() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setMoreOpen(false)}
-              className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden"
+              className="z-modal-backdrop fixed inset-0 bg-black/60 backdrop-blur-sm lg:hidden"
             />
             <motion.div
               ref={moreSheetRef}
@@ -165,7 +165,7 @@ function MobileNavigationComponent() {
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              className="fixed right-0 bottom-16 left-0 z-40 rounded-t-3xl border-t border-(--color-border) bg-(--color-surface) p-4 backdrop-blur-3xl lg:hidden"
+              className="z-modal fixed right-0 bottom-16 left-0 rounded-t-3xl border-t border-(--color-border) bg-(--color-surface) p-4 backdrop-blur-3xl lg:hidden"
               role="dialog"
               aria-modal="true"
               aria-label={t('nav.allPages', 'All Pages')}
@@ -205,7 +205,7 @@ function MobileNavigationComponent() {
 
       {/* Bottom Navigation Bar */}
       <nav
-        className="fixed right-0 bottom-0 left-0 z-50 lg:hidden"
+        className="z-fixed fixed right-0 bottom-0 left-0 lg:hidden"
         aria-label={t('mobile.navigation', 'Mobile Navigation')}
       >
         <div className="absolute inset-0 border-t border-(--color-border) bg-(--color-surface) backdrop-blur-3xl">

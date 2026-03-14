@@ -369,7 +369,7 @@ function MonitoringPageComponent() {
 
       {/* ─── System Health Banner ──────────────────────────────────── */}
       <motion.section
-        className="glass-panel-strong hover-lift rounded-3xl p-5"
+        className="glass-panel-strong hover-lift p-5"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
@@ -467,17 +467,14 @@ function MonitoringPageComponent() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* 24h System Load Chart */}
         <motion.section
-          className="glass-panel-strong hover-lift rounded-3xl p-6 lg:col-span-2"
+          className="glass-panel-strong hover-lift p-6 lg:col-span-2"
           aria-labelledby="load-chart-title"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.35 }}
         >
           <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <h2
-              id="load-chart-title"
-              className="fluid-text-lg flex items-center gap-2 text-lg font-medium"
-            >
+            <h2 id="load-chart-title" className="fluid-text-lg flex items-center gap-2 font-medium">
               <Activity size={20} className="text-(--color-secondary)" aria-hidden="true" />
               {t('monitoring.systemLoad24h')}
             </h2>
@@ -564,7 +561,7 @@ function MonitoringPageComponent() {
 
         {/* Resource Utilization */}
         <motion.section
-          className="glass-panel-strong hover-lift rounded-3xl p-6"
+          className="glass-panel-strong hover-lift p-6"
           aria-labelledby="resources-title"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -572,7 +569,7 @@ function MonitoringPageComponent() {
         >
           <h2
             id="resources-title"
-            className="fluid-text-lg mb-4 flex items-center gap-2 text-lg font-medium"
+            className="fluid-text-lg mb-4 flex items-center gap-2 font-medium"
           >
             <Server size={20} className="text-(--color-secondary)" aria-hidden="true" />
             {t('monitoring.resources')}
@@ -640,7 +637,7 @@ function MonitoringPageComponent() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Adapter Connectivity */}
         <motion.section
-          className="glass-panel-strong hover-lift rounded-3xl p-6"
+          className="glass-panel-strong hover-lift p-6"
           aria-labelledby="adapters-title"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -648,7 +645,7 @@ function MonitoringPageComponent() {
         >
           <h2
             id="adapters-title"
-            className="fluid-text-lg mb-4 flex items-center gap-2 text-lg font-medium"
+            className="fluid-text-lg mb-4 flex items-center gap-2 font-medium"
           >
             <Wifi size={20} className="text-(--color-secondary)" aria-hidden="true" />
             {t('monitoring.adapterHealth')}
@@ -703,16 +700,13 @@ function MonitoringPageComponent() {
 
         {/* Alert Rules */}
         <motion.section
-          className="glass-panel-strong hover-lift rounded-3xl p-6"
+          className="glass-panel-strong hover-lift p-6"
           aria-labelledby="alerts-title"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.42 }}
         >
-          <h2
-            id="alerts-title"
-            className="fluid-text-lg mb-4 flex items-center gap-2 text-lg font-medium"
-          >
+          <h2 id="alerts-title" className="fluid-text-lg mb-4 flex items-center gap-2 font-medium">
             <ShieldAlert size={20} className="text-(--color-secondary)" aria-hidden="true" />
             {t('monitoring.alertRules')}
           </h2>
@@ -753,16 +747,13 @@ function MonitoringPageComponent() {
 
       {/* ─── Event Log Timeline ────────────────────────────────────── */}
       <motion.section
-        className="glass-panel-strong hover-lift rounded-3xl p-6"
+        className="glass-panel-strong hover-lift p-6"
         aria-labelledby="event-log-title"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.44 }}
       >
-        <h2
-          id="event-log-title"
-          className="fluid-text-lg mb-4 flex items-center gap-2 text-lg font-medium"
-        >
+        <h2 id="event-log-title" className="fluid-text-lg mb-4 flex items-center gap-2 font-medium">
           <Terminal size={20} className="text-(--color-secondary)" aria-hidden="true" />
           {t('monitoring.eventLog')}
         </h2>
@@ -803,16 +794,13 @@ function MonitoringPageComponent() {
 
       {/* ─── Grafana Integration ───────────────────────────────────── */}
       <motion.section
-        className="glass-panel-strong hover-lift rounded-3xl p-6"
+        className="glass-panel-strong hover-lift p-6"
         aria-labelledby="grafana-title"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.46 }}
       >
-        <h2
-          id="grafana-title"
-          className="fluid-text-lg mb-4 flex items-center gap-2 text-lg font-medium"
-        >
+        <h2 id="grafana-title" className="fluid-text-lg mb-4 flex items-center gap-2 font-medium">
           <BarChart3 size={20} className="text-(--color-secondary)" aria-hidden="true" />
           Grafana Dashboard
         </h2>

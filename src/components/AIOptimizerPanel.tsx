@@ -30,7 +30,7 @@ export function AIOptimizerPanel() {
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="eyebrow">{t('dashboard.optimizer')}</p>
-          <h3 className="fluid-text-lg mt-2 text-lg font-semibold text-(--color-text) sm:text-xl">
+          <h3 className="fluid-text-lg mt-2 font-semibold text-(--color-text)">
             {t('dashboard.optimizerSubtitle')}
           </h3>
         </div>
@@ -57,7 +57,7 @@ export function AIOptimizerPanel() {
                   <p className="text-xs font-semibold tracking-[0.18em] uppercase opacity-80">
                     {t(recommendation.titleKey)}
                   </p>
-                  <h4 className="fluid-text-base mt-2 text-base font-semibold">
+                  <h4 className="fluid-text-base mt-2 font-semibold">
                     {t(recommendation.descriptionKey)}
                   </h4>
                 </div>

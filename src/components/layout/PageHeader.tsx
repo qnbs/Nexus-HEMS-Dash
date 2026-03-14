@@ -27,10 +27,8 @@ function PageHeaderComponent({ title, subtitle, icon, actions }: PageHeaderProps
           </motion.div>
         )}
         <div>
-          <h1 className="fluid-text-2xl text-2xl font-semibold tracking-tight">{title}</h1>
-          {subtitle && (
-            <p className="fluid-text-sm mt-0.5 text-sm text-(--color-muted)">{subtitle}</p>
-          )}
+          <h1 className="fluid-text-2xl font-semibold tracking-tight">{title}</h1>
+          {subtitle && <p className="fluid-text-sm mt-0.5 text-(--color-muted)">{subtitle}</p>}
         </div>
       </div>
       {actions && <div className="flex items-center gap-2">{actions}</div>}

@@ -165,9 +165,7 @@ export function Help() {
             <HelpCircle className="text-(--color-primary)" size={22} />
           </div>
           <div>
-            <h1 className="fluid-text-2xl text-2xl font-semibold tracking-tight">
-              {t('help.title')}
-            </h1>
+            <h1 className="fluid-text-2xl font-semibold tracking-tight">{t('help.title')}</h1>
             <p className="text-sm text-(--color-muted)">{t('help.subtitle')}</p>
           </div>
         </div>
@@ -232,15 +230,13 @@ export function Help() {
                 aria-labelledby="help-tab-getting-started"
               >
                 <div className="glass-panel-strong rounded-2xl p-6">
-                  <h2 className="fluid-text-xl mb-4 text-xl font-semibold">
-                    {t('help.welcomeTitle')}
-                  </h2>
+                  <h2 className="fluid-text-xl mb-4 font-semibold">{t('help.welcomeTitle')}</h2>
                   <p className="mb-6 leading-relaxed text-(--color-muted)">
                     {t('help.welcomeIntro')}
                   </p>
 
                   {/* Quick Start Steps */}
-                  <h3 className="fluid-text-lg mb-4 text-lg font-medium">{t('help.quickStart')}</h3>
+                  <h3 className="fluid-text-lg mb-4 font-medium">{t('help.quickStart')}</h3>
                   <div className="space-y-4">
                     {[
                       {
@@ -303,9 +299,7 @@ export function Help() {
 
                 {/* System Requirements */}
                 <div className="glass-panel-strong rounded-2xl p-6">
-                  <h3 className="fluid-text-lg mb-4 text-lg font-medium">
-                    {t('help.requirements')}
-                  </h3>
+                  <h3 className="fluid-text-lg mb-4 font-medium">{t('help.requirements')}</h3>
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div className="rounded-xl border border-(--color-border) bg-(--color-surface) p-4">
                       <div className="mb-2 flex items-center gap-2">
@@ -354,7 +348,7 @@ export function Help() {
               >
                 {/* Intro */}
                 <div className="glass-panel-strong rounded-2xl p-6">
-                  <h2 className="fluid-text-xl mb-2 text-xl font-semibold">
+                  <h2 className="fluid-text-xl mb-2 font-semibold">
                     {t('help.integrationGuideTitle')}
                   </h2>
                   <p className="text-sm leading-relaxed text-(--color-muted)">
@@ -368,9 +362,7 @@ export function Help() {
                     <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/15">
                       <Server size={20} className="text-blue-400" />
                     </div>
-                    <h3 className="fluid-text-lg text-lg font-semibold">
-                      {t('help.cerboGxTitle')}
-                    </h3>
+                    <h3 className="fluid-text-lg font-semibold">{t('help.cerboGxTitle')}</h3>
                   </div>
                   <p className="mb-4 text-sm leading-relaxed text-(--color-muted)">
                     {t('help.cerboGxIntro')}

@@ -61,7 +61,7 @@ function SidebarComponent() {
 
   return (
     <motion.nav
-      className="fixed top-0 left-0 z-30 hidden h-screen w-64 flex-col border-r border-(--color-border) bg-(--color-surface) backdrop-blur-3xl lg:flex"
+      className="z-fixed fixed top-0 left-0 hidden h-screen w-64 flex-col border-r border-(--color-border) bg-(--color-surface) backdrop-blur-3xl lg:flex"
       aria-label={t('nav.mainNavigation', 'Main navigation')}
       initial={{ x: -20, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
@@ -77,9 +77,7 @@ function SidebarComponent() {
           <Zap className="h-5 w-5 text-(--color-primary)" aria-hidden="true" />
         </motion.div>
         <div>
-          <h1 className="fluid-text-lg text-lg font-semibold tracking-tight">
-            {t('common.appName')}
-          </h1>
+          <h1 className="fluid-text-lg font-semibold tracking-tight">{t('common.appName')}</h1>
           <div
             className="flex items-center gap-1.5"
             role="status"

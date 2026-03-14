@@ -558,8 +558,8 @@ function AIOptimizerPageComponent() {
               idle: {
                 icon: Clock,
                 label: 'Idle',
-                color: 'text-slate-400',
-                border: 'border-slate-400/20 bg-slate-400/5',
+                color: 'text-(--color-muted)',
+                border: 'border-(--color-muted)/20 bg-(--color-muted)/5',
               },
             }[action.action];
             const Icon = actionMeta.icon;

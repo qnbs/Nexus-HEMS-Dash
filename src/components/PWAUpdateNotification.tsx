@@ -57,7 +57,7 @@ export function PWAUpdateNotification() {
           initial={{ opacity: 0, y: -50 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -50 }}
-          className="fixed top-4 right-4 left-4 z-50 md:right-4 md:left-auto md:max-w-sm"
+          className="z-notification fixed top-4 right-4 left-4 md:right-4 md:left-auto md:max-w-sm"
           role="alert"
         >
           <div className="relative flex items-center gap-3 rounded-2xl border border-(--color-primary)/30 bg-(--color-primary)/10 p-4 shadow-2xl backdrop-blur-xl">
@@ -105,7 +105,7 @@ export function PWAUpdateNotification() {
           initial={{ opacity: 0, y: -50 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -50 }}
-          className="fixed top-4 right-4 left-4 z-50 md:right-4 md:left-auto md:max-w-sm"
+          className="z-notification fixed top-4 right-4 left-4 md:right-4 md:left-auto md:max-w-sm"
         >
           <div
             className="flex items-center gap-3 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 shadow-2xl backdrop-blur-xl"
@@ -135,7 +135,7 @@ export function PWAUpdateNotification() {
           initial={{ opacity: 0, y: -50 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -50 }}
-          className="fixed top-4 right-4 left-4 z-50 md:right-4 md:left-auto md:max-w-md"
+          className="z-notification fixed top-4 right-4 left-4 md:right-4 md:left-auto md:max-w-md"
         >
           <div
             className="rounded-2xl border border-red-500/30 bg-red-500/10 p-4 backdrop-blur-3xl"

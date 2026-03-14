@@ -296,7 +296,7 @@ function AnalyticsPageComponent() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* 24h Energy Balance Chart */}
         <motion.section
-          className="glass-panel-strong hover-lift rounded-3xl p-6 lg:col-span-2"
+          className="glass-panel-strong hover-lift p-6 lg:col-span-2"
           aria-labelledby="balance-chart-title"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -305,7 +305,7 @@ function AnalyticsPageComponent() {
           <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <h2
               id="balance-chart-title"
-              className="fluid-text-lg flex items-center gap-2 text-lg font-medium"
+              className="fluid-text-lg flex items-center gap-2 font-medium"
             >
               <Clock size={20} className="text-(--color-secondary)" aria-hidden="true" />
               {t('analytics.energyBalance24h')}
@@ -431,7 +431,7 @@ function AnalyticsPageComponent() {
 
         {/* Cost Allocation Donut */}
         <motion.section
-          className="glass-panel-strong hover-lift rounded-3xl p-6"
+          className="glass-panel-strong hover-lift p-6"
           aria-labelledby="cost-donut-title"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -439,7 +439,7 @@ function AnalyticsPageComponent() {
         >
           <h2
             id="cost-donut-title"
-            className="fluid-text-lg mb-4 flex items-center gap-2 text-lg font-medium"
+            className="fluid-text-lg mb-4 flex items-center gap-2 font-medium"
           >
             <PieIcon size={20} className="text-(--color-secondary)" aria-hidden="true" />
             {t('analytics.costAllocation')}
@@ -504,7 +504,7 @@ function AnalyticsPageComponent() {
 
       {/* ─── Monthly Comparison Bar Chart ─────────────────────────── */}
       <motion.section
-        className="glass-panel-strong hover-lift rounded-3xl p-6"
+        className="glass-panel-strong hover-lift p-6"
         aria-labelledby="monthly-chart-title"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -513,7 +513,7 @@ function AnalyticsPageComponent() {
         <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <h2
             id="monthly-chart-title"
-            className="fluid-text-lg flex items-center gap-2 text-lg font-medium"
+            className="fluid-text-lg flex items-center gap-2 font-medium"
           >
             <CalendarDays size={20} className="text-(--color-secondary)" aria-hidden="true" />
             {t('analytics.monthlyComparison')}
@@ -625,7 +625,7 @@ function AnalyticsPageComponent() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* System Efficiency Panel */}
         <motion.section
-          className="glass-panel-strong hover-lift rounded-3xl p-6"
+          className="glass-panel-strong hover-lift p-6"
           aria-labelledby="efficiency-title"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -633,7 +633,7 @@ function AnalyticsPageComponent() {
         >
           <h2
             id="efficiency-title"
-            className="fluid-text-lg mb-4 flex items-center gap-2 text-lg font-medium"
+            className="fluid-text-lg mb-4 flex items-center gap-2 font-medium"
           >
             <Gauge size={20} className="text-(--color-secondary)" aria-hidden="true" />
             {t('analytics.efficiencyMetrics')}
@@ -707,7 +707,7 @@ function AnalyticsPageComponent() {
 
         {/* Data Quality & System Health */}
         <motion.section
-          className="glass-panel-strong hover-lift rounded-3xl p-6"
+          className="glass-panel-strong hover-lift p-6"
           aria-labelledby="data-quality-title"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -715,7 +715,7 @@ function AnalyticsPageComponent() {
         >
           <h2
             id="data-quality-title"
-            className="fluid-text-lg mb-4 flex items-center gap-2 text-lg font-medium"
+            className="fluid-text-lg mb-4 flex items-center gap-2 font-medium"
           >
             <Shield size={20} className="text-(--color-secondary)" aria-hidden="true" />
             {t('analytics.dataQuality')}

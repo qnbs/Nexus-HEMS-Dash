@@ -190,7 +190,7 @@ function ConsumptionPageComponent() {
 
       {/* ─── Hero: Total Consumption + Self-Sufficiency ────────────── */}
       <motion.section
-        className="glass-panel-strong rounded-3xl p-6"
+        className="glass-panel-strong p-6"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.1 }}
@@ -300,7 +300,7 @@ function ConsumptionPageComponent() {
         {consumers.map((consumer, i) => (
           <motion.article
             key={consumer.key}
-            className="glass-panel-strong hover-lift rounded-3xl p-5"
+            className="glass-panel-strong hover-lift p-5"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.15 + i * 0.06 }}
@@ -348,7 +348,7 @@ function ConsumptionPageComponent() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* 24h Consumption History */}
         <motion.section
-          className="glass-panel-strong hover-lift rounded-3xl p-6 lg:col-span-2"
+          className="glass-panel-strong hover-lift p-6 lg:col-span-2"
           aria-labelledby="consumption-chart-title"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -357,7 +357,7 @@ function ConsumptionPageComponent() {
           <div className="mb-4 flex items-center justify-between">
             <h2
               id="consumption-chart-title"
-              className="fluid-text-lg flex items-center gap-2 text-lg font-medium"
+              className="fluid-text-lg flex items-center gap-2 font-medium"
             >
               <BarChart3 size={20} className="text-(--color-secondary)" aria-hidden="true" />
               {t('consumption.history')}
@@ -440,7 +440,7 @@ function ConsumptionPageComponent() {
 
         {/* Energy Source Pie Chart */}
         <motion.section
-          className="glass-panel-strong hover-lift rounded-3xl p-6"
+          className="glass-panel-strong hover-lift p-6"
           aria-labelledby="source-chart-title"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -448,7 +448,7 @@ function ConsumptionPageComponent() {
         >
           <h2
             id="source-chart-title"
-            className="fluid-text-lg mb-4 flex items-center gap-2 text-lg font-medium"
+            className="fluid-text-lg mb-4 flex items-center gap-2 font-medium"
           >
             <PieChart size={20} className="text-(--color-secondary)" aria-hidden="true" />
             {t('consumption.energySources')}
@@ -497,7 +497,7 @@ function ConsumptionPageComponent() {
 
       {/* ─── Grid Exchange ─────────────────────────────────────────── */}
       <motion.section
-        className="glass-panel-strong hover-lift rounded-3xl p-6"
+        className="glass-panel-strong hover-lift p-6"
         aria-labelledby="grid-exchange-title"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -505,7 +505,7 @@ function ConsumptionPageComponent() {
       >
         <h2
           id="grid-exchange-title"
-          className="fluid-text-lg mb-4 flex items-center gap-2 text-lg font-medium"
+          className="fluid-text-lg mb-4 flex items-center gap-2 font-medium"
         >
           <Zap
             size={20}
@@ -592,7 +592,7 @@ function ConsumptionPageComponent() {
 
       {/* ─── Cost & Savings Summary ───────────────────────────────── */}
       <motion.section
-        className="glass-panel-strong hover-lift rounded-3xl p-6"
+        className="glass-panel-strong hover-lift p-6"
         aria-labelledby="cost-summary-title"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -600,7 +600,7 @@ function ConsumptionPageComponent() {
       >
         <h2
           id="cost-summary-title"
-          className="fluid-text-lg mb-4 flex items-center gap-2 text-lg font-medium"
+          className="fluid-text-lg mb-4 flex items-center gap-2 font-medium"
         >
           <Coins size={20} className="text-(--color-secondary)" aria-hidden="true" />
           {t('consumption.costSummary')}
@@ -642,7 +642,7 @@ function ConsumptionPageComponent() {
       {/* ─── Load Shifting Recommendations ─────────────────────────── */}
       {recommendations.length > 0 && (
         <motion.section
-          className="glass-panel rounded-3xl p-5"
+          className="glass-panel p-5"
           aria-labelledby="recommendations-title"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -650,7 +650,7 @@ function ConsumptionPageComponent() {
         >
           <h2
             id="recommendations-title"
-            className="fluid-text-base mb-3 flex items-center gap-2 text-base font-medium"
+            className="fluid-text-base mb-3 flex items-center gap-2 font-medium"
           >
             <Lightbulb size={18} className="text-yellow-400" aria-hidden="true" />
             {t('consumption.recommendations')}

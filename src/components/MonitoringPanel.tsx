@@ -15,12 +15,10 @@ function MetricCard({ label, value, unit, status = 'normal' }: MetricCardProps) 
 
   return (
     <NeonCard variant={variant} className="p-3 sm:p-4">
-      <h3 className="truncate text-xs text-(--color-text-secondary) sm:text-sm">{label}</h3>
-      <p className="mt-1 text-lg font-bold text-(--color-text) sm:text-2xl">
+      <h3 className="truncate text-xs text-(--color-muted) sm:text-sm">{label}</h3>
+      <p className="mt-1 text-lg font-bold text-(--color-text)">
         {value}
-        <span className="ml-1 text-xs font-normal text-(--color-text-secondary) sm:text-sm">
-          {unit}
-        </span>
+        <span className="ml-1 text-xs font-normal text-(--color-muted) sm:text-sm">{unit}</span>
       </p>
     </NeonCard>
   );
@@ -38,7 +36,7 @@ function AdapterRow({ name, protocol, connected, latencyMs }: AdapterRowProps) {
   return (
     <tr className="border-b border-(--color-border)/20 last:border-b-0">
       <td className="px-3 py-2 text-sm text-(--color-text)">{name}</td>
-      <td className="px-3 py-2 text-xs text-(--color-text-secondary)">{protocol}</td>
+      <td className="px-3 py-2 text-xs text-(--color-muted)">{protocol}</td>
       <td className="px-3 py-2">
         <span
           className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium ${
@@ -52,7 +50,7 @@ function AdapterRow({ name, protocol, connected, latencyMs }: AdapterRowProps) {
           {connected ? t('common.connected') : t('common.disconnected')}
         </span>
       </td>
-      <td className="px-3 py-2 text-right text-xs text-(--color-text-secondary)">
+      <td className="px-3 py-2 text-right text-xs text-(--color-muted)">
         {latencyMs > 0 ? `${latencyMs.toFixed(0)}ms` : '—'}
       </td>
     </tr>
@@ -113,10 +111,10 @@ export default function MonitoringPanel() {
       {/* Header */}
       <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
         <div>
-          <h2 className="fluid-text-lg text-lg font-bold text-(--color-text) sm:text-xl">
+          <h2 className="fluid-text-lg font-bold text-(--color-text)">
             {t('monitoring.title', 'System Monitoring')}
           </h2>
-          <p className="text-xs text-(--color-text-secondary) sm:text-sm">
+          <p className="text-xs text-(--color-muted) sm:text-sm">
             Prometheus / Grafana · {t('monitoring.uptime', 'Uptime')}: {formatUptime(uptime)}
           </p>
         </div>
@@ -132,7 +130,7 @@ export default function MonitoringPanel() {
             {error ? t('monitoring.error', 'Error') : t('monitoring.live', 'Live')}
           </span>
           {lastUpdated > 0 && (
-            <span className="text-xs text-(--color-text-secondary)">
+            <span className="text-xs text-(--color-muted)">
               {new Date(lastUpdated).toLocaleTimeString()}
             </span>
           )}
@@ -154,7 +152,7 @@ export default function MonitoringPanel() {
               GET /api/metrics/json
             </code>
           </div>
-          <div className="text-xs text-(--color-text-secondary)">
+          <div className="text-xs text-(--color-muted)">
             {t('monitoring.interval', 'Scrape Interval')}: 5s
           </div>
         </div>
@@ -230,27 +228,18 @@ export default function MonitoringPanel() {
         >
           <thead>
             <tr className="border-b border-(--color-border)/30">
-              <th
-                scope="col"
-                className="px-3 py-2 text-xs font-medium text-(--color-text-secondary)"
-              >
+              <th scope="col" className="px-3 py-2 text-xs font-medium text-(--color-muted)">
                 Adapter
               </th>
-              <th
-                scope="col"
-                className="px-3 py-2 text-xs font-medium text-(--color-text-secondary)"
-              >
+              <th scope="col" className="px-3 py-2 text-xs font-medium text-(--color-muted)">
                 Protocol
               </th>
-              <th
-                scope="col"
-                className="px-3 py-2 text-xs font-medium text-(--color-text-secondary)"
-              >
+              <th scope="col" className="px-3 py-2 text-xs font-medium text-(--color-muted)">
                 Status
               </th>
               <th
                 scope="col"
-                className="px-3 py-2 text-right text-xs font-medium text-(--color-text-secondary)"
+                className="px-3 py-2 text-right text-xs font-medium text-(--color-muted)"
               >
                 Latency
               </th>
@@ -294,7 +283,7 @@ export default function MonitoringPanel() {
             >
               <div className="min-w-0">
                 <p className="truncate text-xs font-medium text-(--color-text)">{rule.name}</p>
-                <p className="text-xs text-(--color-text-secondary)">{rule.threshold}</p>
+                <p className="text-xs text-(--color-muted)">{rule.threshold}</p>
               </div>
               <span
                 className={`rounded px-1.5 py-0.5 text-xs ${
@@ -315,7 +304,7 @@ export default function MonitoringPanel() {
       {/* Grafana Integration Hint */}
       <NeonCard className="p-3 sm:p-4">
         <h3 className="mb-2 text-sm font-semibold text-(--color-text)">Grafana Dashboard</h3>
-        <p className="mb-2 text-xs text-(--color-text-secondary)">
+        <p className="mb-2 text-xs text-(--color-muted)">
           {t(
             'monitoring.grafanaHint',
             'Import the pre-configured Grafana dashboard from the API or use the template UID:',

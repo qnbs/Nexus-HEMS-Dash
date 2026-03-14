@@ -172,7 +172,7 @@ function StoragePageComponent() {
 
       {/* ─── Hero: Battery Visual + Live Stats ─────────────────────── */}
       <motion.section
-        className="glass-panel-strong rounded-3xl p-6"
+        className="glass-panel-strong p-6"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.1 }}
@@ -347,17 +347,14 @@ function StoragePageComponent() {
 
       {/* ─── SoC History Chart ─────────────────────────────────────── */}
       <motion.section
-        className="glass-panel-strong hover-lift rounded-3xl p-6"
+        className="glass-panel-strong hover-lift p-6"
         aria-labelledby="soc-chart-title"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
       >
         <div className="mb-4 flex items-center justify-between">
-          <h2
-            id="soc-chart-title"
-            className="fluid-text-lg flex items-center gap-2 text-lg font-medium"
-          >
+          <h2 id="soc-chart-title" className="fluid-text-lg flex items-center gap-2 font-medium">
             <TrendingUp size={20} className="text-(--color-secondary)" aria-hidden="true" />
             {t('storage.socHistory')}
           </h2>
@@ -446,7 +443,7 @@ function StoragePageComponent() {
 
       {/* ─── Strategy Selector ─────────────────────────────────────── */}
       <motion.section
-        className="glass-panel-strong hover-lift rounded-3xl p-6"
+        className="glass-panel-strong hover-lift p-6"
         aria-labelledby="battery-strategy-title"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -454,7 +451,7 @@ function StoragePageComponent() {
       >
         <h2
           id="battery-strategy-title"
-          className="fluid-text-lg mb-5 flex items-center gap-2 text-lg font-medium"
+          className="fluid-text-lg mb-5 flex items-center gap-2 font-medium"
         >
           <Settings size={20} className="text-(--color-secondary)" aria-hidden="true" />
           {t('control.batteryTitle')}
@@ -514,7 +511,7 @@ function StoragePageComponent() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* System Specifications */}
         <motion.section
-          className="glass-panel-strong hover-lift rounded-3xl p-6"
+          className="glass-panel-strong hover-lift p-6"
           aria-labelledby="battery-specs-title"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -522,7 +519,7 @@ function StoragePageComponent() {
         >
           <h2
             id="battery-specs-title"
-            className="fluid-text-lg mb-4 flex items-center gap-2 text-lg font-medium"
+            className="fluid-text-lg mb-4 flex items-center gap-2 font-medium"
           >
             <Info size={20} className="text-(--color-secondary)" aria-hidden="true" />
             {t('storage.systemSpecs')}
@@ -555,7 +552,7 @@ function StoragePageComponent() {
 
         {/* Safety & Limits */}
         <motion.section
-          className="glass-panel-strong hover-lift rounded-3xl p-6"
+          className="glass-panel-strong hover-lift p-6"
           aria-labelledby="battery-safety-title"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -563,7 +560,7 @@ function StoragePageComponent() {
         >
           <h2
             id="battery-safety-title"
-            className="fluid-text-lg mb-4 flex items-center gap-2 text-lg font-medium"
+            className="fluid-text-lg mb-4 flex items-center gap-2 font-medium"
           >
             <Shield size={20} className="text-(--color-secondary)" aria-hidden="true" />
             {t('storage.safetyLimits')}
@@ -688,7 +685,7 @@ function StoragePageComponent() {
 
       {/* ─── Quick Actions Footer ──────────────────────────────────── */}
       <motion.section
-        className="glass-panel rounded-3xl p-5"
+        className="glass-panel p-5"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.5 }}

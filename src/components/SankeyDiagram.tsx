@@ -242,7 +242,7 @@ export function SankeyDiagram({ data }: { data: EnergyData }) {
       .attr('dy', '0.35em')
       .attr('text-anchor', (d) => ((d.x0 || 0) < width / 2 ? 'start' : 'end'))
       .text((d) => (isMobile ? `${d.name}` : `${d.name} (${Math.round(d.value || 0)}W)`))
-      .attr('fill', '#e2e8f0')
+      .attr('fill', 'var(--color-text)')
       .attr('font-size', fontSize)
       .attr('font-family', 'Inter, sans-serif')
       .attr('font-weight', '500')

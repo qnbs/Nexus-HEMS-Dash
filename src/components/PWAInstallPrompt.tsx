@@ -74,7 +74,7 @@ export function PWAInstallPrompt() {
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 50 }}
-        className="fixed right-4 bottom-20 left-4 z-50 md:right-4 md:left-auto md:max-w-sm lg:bottom-4"
+        className="z-notification fixed right-4 bottom-20 left-4 md:right-4 md:left-auto md:max-w-sm lg:bottom-4"
       >
         <div
           className="flex items-center gap-3 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 shadow-2xl backdrop-blur-xl"
@@ -102,7 +102,7 @@ export function PWAInstallPrompt() {
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 50 }}
-          className="fixed right-4 bottom-20 left-4 z-50 md:right-4 md:left-auto md:max-w-md lg:bottom-4"
+          className="z-notification fixed right-4 bottom-20 left-4 md:right-4 md:left-auto md:max-w-md lg:bottom-4"
         >
           <div className="glass-panel rounded-2xl border-2 border-(--color-primary)/30 p-6 shadow-2xl">
             <button
@@ -140,7 +140,7 @@ export function PWAInstallPrompt() {
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 50 }}
-        className="fixed right-4 bottom-20 left-4 z-50 md:right-4 md:left-auto md:max-w-md lg:bottom-4"
+        className="z-notification fixed right-4 bottom-20 left-4 md:right-4 md:left-auto md:max-w-md lg:bottom-4"
       >
         <div className="glass-panel rounded-2xl border-2 border-(--color-primary)/30 p-6 shadow-2xl">
           <div className="flex items-start justify-between gap-4">

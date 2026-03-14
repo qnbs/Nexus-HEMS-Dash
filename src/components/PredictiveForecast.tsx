@@ -123,12 +123,12 @@ export function PredictiveForecast() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.2 }}
-      className="glass-panel rounded-3xl p-6"
+      className="glass-panel p-6"
     >
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h2 className="fluid-text-xl text-xl font-semibold text-(--color-text)">
+          <h2 className="fluid-text-xl font-semibold text-(--color-text)">
             <CloudSun className="mr-2 inline h-6 w-6 text-(--color-primary)" aria-hidden="true" />
             {t('forecast.title')}
           </h2>

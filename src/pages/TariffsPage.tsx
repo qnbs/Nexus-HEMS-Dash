@@ -444,7 +444,7 @@ function TariffsPageComponent() {
 
       {/* ── 48h Price Timeline ─────────────────────────── */}
       <motion.section
-        className="glass-panel-strong hover-lift rounded-3xl p-6"
+        className="glass-panel-strong hover-lift p-6"
         {...sectionAnim}
         transition={{ ...sectionAnim.transition, delay: 0.15 }}
       >
@@ -604,7 +604,7 @@ function TariffsPageComponent() {
 
       {/* ── Price Heatmap (7d × 24h) ──────────────────── */}
       <motion.section
-        className="glass-panel-strong hover-lift rounded-3xl p-6"
+        className="glass-panel-strong hover-lift p-6"
         {...sectionAnim}
         transition={{ ...sectionAnim.transition, delay: 0.2 }}
       >
@@ -660,7 +660,7 @@ function TariffsPageComponent() {
 
       {/* ── Optimal Charging Windows ───────────────────── */}
       <motion.section
-        className="glass-panel-strong hover-lift rounded-3xl p-6"
+        className="glass-panel-strong hover-lift p-6"
         {...sectionAnim}
         transition={{ ...sectionAnim.transition, delay: 0.25 }}
       >
@@ -750,7 +750,7 @@ function TariffsPageComponent() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Device Scheduling */}
         <motion.section
-          className="glass-panel-strong hover-lift rounded-3xl p-6"
+          className="glass-panel-strong hover-lift p-6"
           {...sectionAnim}
           transition={{ ...sectionAnim.transition, delay: 0.3 }}
         >
@@ -815,7 +815,7 @@ function TariffsPageComponent() {
 
         {/* Price Distribution */}
         <motion.section
-          className="glass-panel-strong hover-lift rounded-3xl p-6"
+          className="glass-panel-strong hover-lift p-6"
           {...sectionAnim}
           transition={{ ...sectionAnim.transition, delay: 0.35 }}
         >
@@ -879,7 +879,7 @@ function TariffsPageComponent() {
 
       {/* ── Monthly Cost Tracker ──────────────────────── */}
       <motion.section
-        className="glass-panel-strong hover-lift rounded-3xl p-6"
+        className="glass-panel-strong hover-lift p-6"
         {...sectionAnim}
         transition={{ ...sectionAnim.transition, delay: 0.4 }}
       >
@@ -1006,7 +1006,7 @@ function TariffsPageComponent() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Feed-in Revenue Panel */}
         <motion.section
-          className="glass-panel-strong hover-lift rounded-3xl p-6"
+          className="glass-panel-strong hover-lift p-6"
           {...sectionAnim}
           transition={{ ...sectionAnim.transition, delay: 0.45 }}
         >
@@ -1057,7 +1057,7 @@ function TariffsPageComponent() {
 
         {/* Provider Info Panel */}
         <motion.section
-          className="glass-panel-strong hover-lift rounded-3xl p-6"
+          className="glass-panel-strong hover-lift p-6"
           {...sectionAnim}
           transition={{ ...sectionAnim.transition, delay: 0.5 }}
         >
@@ -1144,7 +1144,7 @@ function TariffsPageComponent() {
 
       {/* ── Insights Summary ──────────────────────────── */}
       <motion.section
-        className="glass-panel rounded-3xl p-6"
+        className="glass-panel p-6"
         {...sectionAnim}
         transition={{ ...sectionAnim.transition, delay: 0.65 }}
       >

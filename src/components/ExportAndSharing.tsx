@@ -94,10 +94,8 @@ export function ExportAndSharing() {
   };
 
   return (
-    <div className="glass-panel rounded-3xl p-6">
-      <h3 className="fluid-text-lg mb-6 text-lg font-semibold text-(--color-text)">
-        {t('export.title')}
-      </h3>
+    <div className="glass-panel p-6">
+      <h3 className="fluid-text-lg mb-6 font-semibold text-(--color-text)">{t('export.title')}</h3>
 
       {/* Status Messages */}
       <AnimatePresence>
@@ -174,11 +172,11 @@ export function ExportAndSharing() {
                     readOnly
                     value={shareLink}
                     aria-label={t('export.shareInputLabel', 'Shareable link URL')}
-                    className="flex-1 rounded-lg bg-slate-900/50 px-3 py-2 text-sm text-(--color-text) outline-none"
+                    className="flex-1 rounded-lg bg-(--color-surface) px-3 py-2 text-sm text-(--color-text) outline-none"
                   />
                   <button
                     onClick={handleCopyLink}
-                    className="focus-ring flex h-10 w-10 items-center justify-center rounded-lg bg-slate-800/50 text-(--color-primary) hover:bg-slate-700/50"
+                    className="focus-ring flex h-10 w-10 items-center justify-center rounded-lg bg-(--color-surface-strong) text-(--color-primary) hover:bg-(--color-surface-strong)"
                     aria-label={t('export.copyLink')}
                   >
                     {copied ? <Check className="h-5 w-5" /> : <Copy className="h-5 w-5" />}

@@ -196,10 +196,10 @@ export default function App() {
           <Sidebar />
 
           {/* Main Content Area (with sidebar offset on desktop) */}
-          <div className="relative z-10 lg:ml-64">
+          <div className="relative lg:ml-64">
             {/* Top Bar (mobile + desktop header) */}
             <motion.header
-              className="glass-panel-strong header-accent-line sticky top-0 z-20 overflow-hidden px-4 py-2 sm:px-6 sm:py-3"
+              className="glass-panel-strong header-accent-line z-sticky sticky top-0 overflow-hidden px-4 py-2 sm:px-6 sm:py-3"
               initial={{ opacity: 0, y: -12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}

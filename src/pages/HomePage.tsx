@@ -293,17 +293,14 @@ function HomePageComponent() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Compact Sankey */}
         <motion.section
-          className="glass-panel-strong hover-lift rounded-3xl p-6 lg:col-span-2"
+          className="glass-panel-strong hover-lift p-6 lg:col-span-2"
           aria-labelledby="home-flow-title"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
           <div className="relative z-10 mb-3 flex items-center justify-between">
-            <h2
-              id="home-flow-title"
-              className="fluid-text-lg flex items-center gap-2 text-lg font-medium"
-            >
+            <h2 id="home-flow-title" className="fluid-text-lg flex items-center gap-2 font-medium">
               <Activity size={20} className="text-(--color-secondary)" aria-hidden="true" />
               {t('dashboard.realtimeFlow')}
             </h2>
@@ -322,7 +319,7 @@ function HomePageComponent() {
 
         {/* Quick Controls */}
         <motion.section
-          className="glass-panel-strong hover-lift rounded-3xl p-6"
+          className="glass-panel-strong hover-lift p-6"
           aria-labelledby="home-controls-title"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -330,7 +327,7 @@ function HomePageComponent() {
         >
           <h2
             id="home-controls-title"
-            className="fluid-text-lg mb-4 flex items-center gap-2 text-lg font-medium"
+            className="fluid-text-lg mb-4 flex items-center gap-2 font-medium"
           >
             <TrendingUp size={20} className="text-(--color-secondary)" aria-hidden="true" />
             {t('dashboard.control')}
@@ -343,7 +340,7 @@ function HomePageComponent() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Today's Highlights */}
         <motion.section
-          className="glass-panel-strong hover-lift rounded-3xl p-6 lg:col-span-2"
+          className="glass-panel-strong hover-lift p-6 lg:col-span-2"
           aria-labelledby="home-highlights-title"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -351,7 +348,7 @@ function HomePageComponent() {
         >
           <h2
             id="home-highlights-title"
-            className="fluid-text-lg mb-4 flex items-center gap-2 text-lg font-medium"
+            className="fluid-text-lg mb-4 flex items-center gap-2 font-medium"
           >
             <BarChart3 size={20} className="text-(--color-secondary)" aria-hidden="true" />
             {t('dashboard.todayHighlights')}
@@ -386,7 +383,7 @@ function HomePageComponent() {
 
         {/* Load Breakdown */}
         <motion.section
-          className="glass-panel-strong hover-lift rounded-3xl p-6"
+          className="glass-panel-strong hover-lift p-6"
           aria-labelledby="home-load-title"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -394,7 +391,7 @@ function HomePageComponent() {
         >
           <h2
             id="home-load-title"
-            className="fluid-text-lg mb-4 flex items-center gap-2 text-lg font-medium"
+            className="fluid-text-lg mb-4 flex items-center gap-2 font-medium"
           >
             <Home size={20} className="text-(--color-secondary)" aria-hidden="true" />
             {t('dashboard.loadBreakdown')}
@@ -562,15 +559,15 @@ function KpiCard({
         <div className="shrink-0 rounded-xl border border-(--color-border) bg-white/6 p-2.5">
           {icon}
         </div>
-        <span className="fluid-text-sm min-w-0 truncate text-sm font-medium text-(--color-text)">
+        <span className="fluid-text-sm min-w-0 truncate font-medium text-(--color-text)">
           {label}
         </span>
       </div>
-      <div className="fluid-text-2xl truncate text-2xl font-light tracking-tight text-(--color-text)">
+      <div className="fluid-text-2xl truncate font-light tracking-tight text-(--color-text)">
         {value}
       </div>
       <div className="mt-1.5 flex items-center justify-between">
-        <span className="fluid-text-xs truncate text-xs text-(--color-muted)">{sub}</span>
+        <span className="fluid-text-xs truncate text-(--color-muted)">{sub}</span>
         <ChevronRight
           size={14}
           className="shrink-0 text-(--color-muted) opacity-0 transition-opacity group-hover:opacity-100"

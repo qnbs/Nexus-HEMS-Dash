@@ -109,7 +109,7 @@ Return ONLY a valid JSON array with this structure:
       {/* Header */}
       <div className="mb-4 flex flex-col gap-3 sm:mb-6 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
-          <h2 className="fluid-text-lg flex items-center gap-2 text-lg font-semibold text-(--color-text) sm:text-xl">
+          <h2 className="fluid-text-lg flex items-center gap-2 font-semibold text-(--color-text)">
             <Sparkles
               className="h-5 w-5 shrink-0 text-(--color-primary) sm:h-6 sm:w-6"
               aria-hidden="true"
@@ -273,6 +273,6 @@ function getPriorityBadge(priority: string) {
     case 'low':
       return 'bg-blue-500/20 text-blue-400';
     default:
-      return 'bg-slate-500/20 text-slate-400';
+      return 'bg-(--color-muted)/20 text-(--color-muted)';
   }
 }

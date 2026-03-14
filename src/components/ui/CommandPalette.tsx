@@ -282,7 +282,7 @@ export function CommandPalette({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm"
+            className="z-modal-backdrop fixed inset-0 bg-black/80 backdrop-blur-sm"
           />
 
           {/* Command Palette */}
@@ -290,7 +290,7 @@ export function CommandPalette({
             initial={{ opacity: 0, scale: 0.95, y: -20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: -20 }}
-            className="fixed top-1/4 left-1/2 z-50 w-full max-w-2xl -translate-x-1/2 overflow-hidden rounded-2xl border border-(--color-border) bg-(--color-surface) shadow-2xl backdrop-blur-3xl"
+            className="z-modal fixed top-[10%] left-1/2 mx-4 w-full max-w-2xl -translate-x-1/2 overflow-hidden rounded-2xl border border-(--color-border) bg-(--color-surface) shadow-2xl backdrop-blur-3xl sm:top-1/4 sm:mx-0"
             role="dialog"
             aria-modal="true"
             aria-labelledby="cmd-palette-title"
@@ -319,7 +319,7 @@ export function CommandPalette({
               <span id="cmd-palette-title" className="sr-only">
                 {t('accessibility.commandPaletteTitle', 'Command palette')}
               </span>
-              <kbd className="rounded bg-slate-800/50 px-2 py-1 text-xs text-(--color-muted)">
+              <kbd className="rounded bg-(--color-surface-strong) px-2 py-1 text-xs text-(--color-muted)">
                 ESC
               </kbd>
             </div>
@@ -343,13 +343,15 @@ export function CommandPalette({
                       className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left transition-colors ${
                         index === selectedIndex
                           ? 'bg-(--color-primary)/20 text-(--color-text)'
-                          : 'text-(--color-muted) hover:bg-slate-800/50'
+                          : 'text-(--color-muted) hover:bg-(--color-surface-strong)'
                       }`}
                       whileHover={{ x: 4 }}
                     >
                       <div
                         className={`flex h-10 w-10 items-center justify-center rounded-lg ${
-                          index === selectedIndex ? 'bg-(--color-primary)/30' : 'bg-slate-800/30'
+                          index === selectedIndex
+                            ? 'bg-(--color-primary)/30'
+                            : 'bg-(--color-surface)'
                         }`}
                       >
                         {cmd.icon}
@@ -365,7 +367,7 @@ export function CommandPalette({
                         </p>
                       </div>
                       {index === selectedIndex && (
-                        <kbd className="rounded bg-slate-800/50 px-2 py-1 text-xs text-(--color-muted)">
+                        <kbd className="rounded bg-(--color-surface-strong) px-2 py-1 text-xs text-(--color-muted)">
                           ↵
                         </kbd>
                       )}
@@ -379,8 +381,8 @@ export function CommandPalette({
             <div className="flex items-center justify-between border-t border-(--color-border) px-4 py-3 text-xs text-(--color-muted)">
               <span>{t('command.navigate', 'Navigate')}</span>
               <div className="flex gap-2">
-                <kbd className="rounded bg-slate-800/50 px-2 py-1">↑↓</kbd>
-                <kbd className="rounded bg-slate-800/50 px-2 py-1">↵</kbd>
+                <kbd className="rounded bg-(--color-surface-strong) px-2 py-1">↑↓</kbd>
+                <kbd className="rounded bg-(--color-surface-strong) px-2 py-1">↵</kbd>
               </div>
             </div>
           </motion.div>

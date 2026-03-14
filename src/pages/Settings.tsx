@@ -634,9 +634,7 @@ export function Settings() {
             <SettingsIcon className="text-(--color-primary)" size={22} />
           </motion.div>
           <div>
-            <h1 className="fluid-text-2xl text-2xl font-semibold tracking-tight">
-              {t('settings.title')}
-            </h1>
+            <h1 className="fluid-text-2xl font-semibold tracking-tight">{t('settings.title')}</h1>
             <p className="text-sm text-(--color-muted)">
               {t('settings.subtitle', 'Configure your HEMS dashboard')}
             </p>
