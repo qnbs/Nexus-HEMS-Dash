@@ -230,16 +230,28 @@ export default function MonitoringPanel() {
         >
           <thead>
             <tr className="border-b border-(--color-border)/30">
-              <th className="px-3 py-2 text-xs font-medium text-(--color-text-secondary)">
+              <th
+                scope="col"
+                className="px-3 py-2 text-xs font-medium text-(--color-text-secondary)"
+              >
                 Adapter
               </th>
-              <th className="px-3 py-2 text-xs font-medium text-(--color-text-secondary)">
+              <th
+                scope="col"
+                className="px-3 py-2 text-xs font-medium text-(--color-text-secondary)"
+              >
                 Protocol
               </th>
-              <th className="px-3 py-2 text-xs font-medium text-(--color-text-secondary)">
+              <th
+                scope="col"
+                className="px-3 py-2 text-xs font-medium text-(--color-text-secondary)"
+              >
                 Status
               </th>
-              <th className="px-3 py-2 text-right text-xs font-medium text-(--color-text-secondary)">
+              <th
+                scope="col"
+                className="px-3 py-2 text-right text-xs font-medium text-(--color-text-secondary)"
+              >
                 Latency
               </th>
             </tr>

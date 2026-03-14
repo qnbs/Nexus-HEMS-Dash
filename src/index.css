@@ -109,6 +109,19 @@
     display: none;
   }
 
+  /* ========== FOCUS RING (WCAG 2.2 AA visible focus indicator) ========== */
+  .focus-ring:focus-visible {
+    outline: 2px solid var(--color-primary, #38bdf8);
+    outline-offset: 2px;
+    border-radius: inherit;
+  }
+
+  /* SVG interactive elements — visible focus indication */
+  svg [role='button']:focus-visible {
+    outline: 2px solid var(--color-primary, #38bdf8);
+    outline-offset: 2px;
+  }
+
   /* ========== ADVANCED GLASSMORPHISM ========== */
   .glass-panel {
     @apply rounded-3xl border border-(--color-border) backdrop-blur-3xl;
@@ -784,6 +797,11 @@ html.high-contrast .glass-panel-strong {
 html.high-contrast button,
 html.high-contrast a {
   text-decoration-thickness: 2px;
+}
+
+html.high-contrast .focus-ring:focus-visible {
+  outline-width: 3px;
+  outline-offset: 3px;
 }
 
 /* ========== APP-CONTROLLED COMPACT MODE ========== */

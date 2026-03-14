@@ -207,7 +207,12 @@ export const Floorplan = memo(function Floorplan() {
                 onClick={() => setSelectedRoom(isSelected ? null : id)}
                 role="button"
                 tabIndex={0}
-                aria-label={roomLabels[id]}
+                aria-label={t('accessibility.floorplanRoomStatus', {
+                  room: roomLabels[id],
+                  temp: rooms[id].temp.toFixed(1),
+                  humidity: rooms[id].humidity,
+                  light: rooms[id].lights ? t('floorplan.on', 'An') : t('floorplan.off', 'Aus'),
+                })}
                 aria-expanded={isSelected}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
@@ -227,6 +232,7 @@ export const Floorplan = memo(function Floorplan() {
                   strokeWidth="2"
                   rx="8"
                   className="pointer-events-none"
+                  aria-hidden="true"
                 />
               )}
               <text
@@ -247,6 +253,7 @@ export const Floorplan = memo(function Floorplan() {
                 fontSize="13"
                 textAnchor="middle"
                 fontFamily="monospace"
+                aria-hidden="true"
               >
                 {rooms[id].temp.toFixed(1)}°C · {rooms[id].humidity}%
               </text>
@@ -375,7 +382,10 @@ export const Floorplan = memo(function Floorplan() {
                   })
                 }
                 className="focus-ring flex min-h-[32px] min-w-[32px] items-center justify-center rounded-lg border border-(--color-border) bg-(--color-surface) text-(--color-muted) hover:text-(--color-text) active:scale-[0.9]"
-                aria-label={t('floorplan.tempDecrease')}
+                aria-label={t('accessibility.tempDecreaseRoom', {
+                  room: roomLabels[selectedRoom],
+                  temp: (rooms[selectedRoom].setpoint - 0.5).toFixed(1),
+                })}
               >
                 <Moon size={14} aria-hidden="true" />
               </button>
@@ -386,7 +396,10 @@ export const Floorplan = memo(function Floorplan() {
                   })
                 }
                 className="focus-ring flex min-h-[32px] min-w-[32px] items-center justify-center rounded-lg border border-(--color-border) bg-(--color-surface) text-(--color-muted) hover:text-(--color-text) active:scale-[0.9]"
-                aria-label={t('floorplan.tempIncrease')}
+                aria-label={t('accessibility.tempIncreaseRoom', {
+                  room: roomLabels[selectedRoom],
+                  temp: (rooms[selectedRoom].setpoint + 0.5).toFixed(1),
+                })}
               >
                 <Sun size={14} aria-hidden="true" />
               </button>

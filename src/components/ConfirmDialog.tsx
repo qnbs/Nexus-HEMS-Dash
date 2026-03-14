@@ -80,6 +80,7 @@ export function ConfirmDialog({
         <Dialog.Content
           className="glass-panel fixed top-1/2 left-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-2xl p-6 shadow-2xl"
           aria-describedby="confirm-dialog-message"
+          aria-labelledby="confirm-dialog-title"
         >
           <div className="flex items-start gap-4">
             <div
@@ -88,7 +89,10 @@ export function ConfirmDialog({
               <Icon className={`h-6 w-6 ${styles.iconColor}`} aria-hidden="true" />
             </div>
             <div className="flex-1">
-              <Dialog.Title className="text-lg font-semibold text-(--color-text)">
+              <Dialog.Title
+                id="confirm-dialog-title"
+                className="text-lg font-semibold text-(--color-text)"
+              >
                 {title}
               </Dialog.Title>
               <Dialog.Description

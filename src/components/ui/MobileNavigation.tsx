@@ -33,10 +33,15 @@ function MobileNavigationComponent() {
   const navigate = useNavigate();
   const [moreOpen, setMoreOpen] = useState(false);
   const moreSheetRef = useRef<HTMLDivElement>(null);
+  const moreButtonRef = useRef<HTMLButtonElement>(null);
 
   // Focus trap for the more sheet
   useEffect(() => {
-    if (!moreOpen) return;
+    if (!moreOpen) {
+      // Restore focus to trigger button on close
+      moreButtonRef.current?.focus();
+      return;
+    }
     const sheet = moreSheetRef.current;
     if (!sheet) return;
     const closeBtn = sheet.querySelector<HTMLElement>('[aria-label]');
@@ -182,7 +187,7 @@ function MobileNavigationComponent() {
                   <button
                     key={item.id}
                     onClick={() => handleNavigation(item.path)}
-                    className={`flex flex-col items-center gap-1.5 rounded-xl p-3 transition-colors ${
+                    className={`focus-ring flex flex-col items-center gap-1.5 rounded-xl p-3 transition-colors ${
                       location.pathname === item.path
                         ? 'bg-(--color-primary)/15 text-(--color-primary)'
                         : 'text-(--color-muted) hover:bg-(--color-surface-strong)'
@@ -216,8 +221,9 @@ function MobileNavigationComponent() {
               <motion.button
                 key={item.id}
                 onClick={() => handleNavigation(item.path)}
-                className="relative flex flex-col items-center gap-0.5 px-3 py-1"
+                className="focus-ring relative flex flex-col items-center gap-0.5 px-3 py-1"
                 aria-current={isActive ? 'page' : undefined}
+                aria-label={item.label}
                 whileTap={{ scale: 0.92 }}
               >
                 <div
@@ -248,10 +254,11 @@ function MobileNavigationComponent() {
           })}
           {/* More button */}
           <motion.button
+            ref={moreButtonRef}
             onClick={() => setMoreOpen(!moreOpen)}
             className="relative flex flex-col items-center gap-0.5 px-3 py-1"
             aria-expanded={moreOpen}
-            aria-label={t('nav.more', 'More pages')}
+            aria-label={t('accessibility.moreNavPages', 'More pages')}
             whileTap={{ scale: 0.92 }}
           >
             <div

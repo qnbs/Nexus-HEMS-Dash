@@ -45,6 +45,7 @@ export function OfflineBanner() {
           exit={{ opacity: 0, y: -50 }}
           className="fixed top-0 right-0 left-0 z-50 bg-orange-500/90 px-4 py-3 text-white shadow-lg backdrop-blur-3xl"
           role="alert"
+          aria-atomic="true"
         >
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
             <div className="flex items-center gap-3">
@@ -62,7 +63,7 @@ export function OfflineBanner() {
             </div>
             <button
               onClick={() => window.location.reload()}
-              className="flex items-center gap-2 rounded-lg bg-white/20 px-4 py-2 transition-colors hover:bg-white/30"
+              className="focus-ring flex items-center gap-2 rounded-lg bg-white/20 px-4 py-2 transition-colors hover:bg-white/30"
               aria-label={t('offline.retry')}
             >
               <RefreshCw className="h-4 w-4" aria-hidden="true" />

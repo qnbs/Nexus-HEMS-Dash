@@ -54,11 +54,16 @@ function PageLoadingFallback() {
   );
 }
 
-/** Scrolls to the top of the page on every route change */
+/** Scrolls to the top and moves focus to main content on every route change */
 function ScrollToTop(): null {
   const { pathname } = useLocation();
   useEffect(() => {
     window.scrollTo(0, 0);
+    // Move focus to main content area for screen reader users
+    const main = document.getElementById('main-content');
+    if (main) {
+      main.focus({ preventScroll: true });
+    }
   }, [pathname]);
   return null;
 }
@@ -298,7 +303,8 @@ export default function App() {
             {/* Page Content */}
             <main
               id="main-content"
-              className="pattern-grid mx-auto max-w-7xl px-4 py-6 pb-20 sm:px-6 lg:pb-6"
+              tabIndex={-1}
+              className="pattern-grid mx-auto max-w-7xl px-4 py-6 pb-20 outline-none sm:px-6 lg:pb-6"
             >
               <Breadcrumbs />
               <ErrorBoundary>

@@ -102,12 +102,12 @@ function SidebarComponent() {
       <nav className="flex-1 space-y-6 overflow-y-auto px-3 py-4">
         {/* Main Group */}
         <div>
-          <p
+          <h2
             id="nav-group-energy"
             className="mb-2 px-3 text-xs font-semibold tracking-widest text-(--color-muted) uppercase"
           >
             {t('nav.groupEnergy', 'Energy')}
-          </p>
+          </h2>
           <ul className="space-y-0.5" role="list" aria-labelledby="nav-group-energy">
             {groups.main.map((item) => (
               <li key={item.path}>
@@ -147,12 +147,12 @@ function SidebarComponent() {
 
         {/* Tools Group */}
         <div>
-          <p
+          <h2
             id="nav-group-tools"
             className="mb-2 px-3 text-xs font-semibold tracking-widest text-(--color-muted) uppercase"
           >
             {t('nav.groupTools', 'Tools')}
-          </p>
+          </h2>
           <ul className="space-y-0.5" role="list" aria-labelledby="nav-group-tools">
             {groups.tools.map((item) => (
               <li key={item.path}>
@@ -191,12 +191,12 @@ function SidebarComponent() {
 
         {/* System Group */}
         <div>
-          <p
+          <h2
             id="nav-group-system"
             className="mb-2 px-3 text-xs font-semibold tracking-widest text-(--color-muted) uppercase"
           >
             {t('nav.groupSystem', 'System')}
-          </p>
+          </h2>
           <ul className="space-y-0.5" role="list" aria-labelledby="nav-group-system">
             {groups.system.map((item) => (
               <li key={item.path}>

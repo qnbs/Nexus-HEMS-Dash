@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -99,8 +99,16 @@ function FeatureCard({
 }
 
 function StepIndicator({ current, total }: { current: number; total: number }) {
+  const { t } = useTranslation();
   return (
-    <div className="flex items-center gap-1.5 sm:gap-2" aria-hidden="true">
+    <div
+      className="flex items-center gap-1.5 sm:gap-2"
+      role="progressbar"
+      aria-valuenow={current + 1}
+      aria-valuemin={1}
+      aria-valuemax={total}
+      aria-label={t('accessibility.progressStep', { current: current + 1, total })}
+    >
       {Array.from({ length: total }, (_, i) => (
         <motion.div
           key={i}
@@ -143,6 +151,17 @@ export function Onboarding() {
   const skip = () => {
     setOnboardingCompleted(true);
   };
+
+  // Escape key dismisses the onboarding dialog
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setOnboardingCompleted(true);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [setOnboardingCompleted]);
 
   const slideVariants = {
     enter: (dir: number) => ({ x: dir > 0 ? 80 : -80, opacity: 0 }),
@@ -570,6 +589,7 @@ export function Onboarding() {
                     onClick={skip}
                     className="focus-ring rounded-lg px-3 py-2 text-sm text-[#94a3b8] transition-colors hover:text-white"
                     whileHover={{ scale: 1.02 }}
+                    aria-label={t('accessibility.skipOnboarding')}
                   >
                     {t('onboarding.skip')}
                   </motion.button>
@@ -613,6 +633,7 @@ export function Onboarding() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5 }}
+              aria-label={t('accessibility.skipOnboarding')}
             >
               {t('onboarding.skip')}
             </motion.button>

@@ -295,7 +295,7 @@ export function CommandPalette({
             className="fixed top-1/4 left-1/2 z-50 w-full max-w-2xl -translate-x-1/2 overflow-hidden rounded-2xl border border-(--color-border) bg-(--color-surface) shadow-2xl backdrop-blur-3xl"
             role="dialog"
             aria-modal="true"
-            aria-label={t('command.open', 'Command palette')}
+            aria-labelledby="cmd-palette-title"
           >
             {/* Search Input */}
             <div className="flex items-center gap-3 border-b border-(--color-border) p-4">
@@ -316,7 +316,11 @@ export function CommandPalette({
                     : undefined
                 }
                 aria-autocomplete="list"
+                aria-label={t('accessibility.searchCommands', 'Search commands')}
               />
+              <span id="cmd-palette-title" className="sr-only">
+                {t('accessibility.commandPaletteTitle', 'Command palette')}
+              </span>
               <kbd className="rounded bg-slate-800/50 px-2 py-1 text-xs text-(--color-muted)">
                 ESC
               </kbd>

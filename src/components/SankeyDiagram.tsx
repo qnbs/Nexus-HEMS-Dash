@@ -261,24 +261,80 @@ export const SankeyDiagram = memo(function SankeyDiagram({ data }: { data: Energ
   }, [data]);
 
   return (
-    <svg
-      ref={svgRef}
-      className="absolute inset-0 h-full w-full"
-      role="img"
-      aria-label={t('sankey.ariaLabel')}
-      aria-live="polite"
-      aria-atomic="false"
-    >
-      <title>{t('sankey.title')}</title>
-      <desc>
-        {t('sankey.desc', {
-          pvPower: Math.round(data.pvPower),
-          batterySoC: data.batterySoC.toFixed(1),
-          houseLoad: Math.round(data.houseLoad),
-          gridDirection: data.gridPower > 0 ? t('sankey.importing') : t('sankey.exporting'),
-          gridPower: Math.abs(Math.round(data.gridPower)),
-        })}
-      </desc>
-    </svg>
+    <>
+      <svg
+        ref={svgRef}
+        className="absolute inset-0 h-full w-full"
+        role="img"
+        aria-label={t('sankey.ariaLabel')}
+        aria-live="polite"
+        aria-atomic="false"
+      >
+        <title>{t('sankey.title')}</title>
+        <desc>
+          {t('sankey.desc', {
+            pvPower: Math.round(data.pvPower),
+            batterySoC: data.batterySoC.toFixed(1),
+            houseLoad: Math.round(data.houseLoad),
+            gridDirection: data.gridPower > 0 ? t('sankey.importing') : t('sankey.exporting'),
+            gridPower: Math.abs(Math.round(data.gridPower)),
+          })}
+        </desc>
+      </svg>
+      {/* Accessible data table for screen readers */}
+      <table className="sr-only" aria-label={t('accessibility.sankeyDataTable')}>
+        <thead>
+          <tr>
+            <th scope="col">{t('accessibility.sankeySource')}</th>
+            <th scope="col">{t('accessibility.sankeyTarget')}</th>
+            <th scope="col">{t('accessibility.sankeyPower')}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data.pvPower > 0 && (
+            <tr>
+              <td>PV</td>
+              <td>House</td>
+              <td>{Math.min(data.pvPower, data.houseLoad).toFixed(0)}</td>
+            </tr>
+          )}
+          {data.gridPower > 0 && (
+            <tr>
+              <td>Grid</td>
+              <td>House</td>
+              <td>{data.gridPower.toFixed(0)}</td>
+            </tr>
+          )}
+          {data.batteryPower > 0 && (
+            <tr>
+              <td>Battery</td>
+              <td>House</td>
+              <td>{data.batteryPower.toFixed(0)}</td>
+            </tr>
+          )}
+          {data.batteryPower < 0 && (
+            <tr>
+              <td>PV</td>
+              <td>Battery</td>
+              <td>{Math.abs(data.batteryPower).toFixed(0)}</td>
+            </tr>
+          )}
+          {data.evPower > 0 && (
+            <tr>
+              <td>PV/Grid</td>
+              <td>EV</td>
+              <td>{data.evPower.toFixed(0)}</td>
+            </tr>
+          )}
+          {data.heatPumpPower > 0 && (
+            <tr>
+              <td>PV/Grid</td>
+              <td>Heat Pump</td>
+              <td>{data.heatPumpPower.toFixed(0)}</td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </>
   );
 });
