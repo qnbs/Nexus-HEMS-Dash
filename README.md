@@ -4,20 +4,38 @@
 
 ### The Definitive Open-Source Home Energy Management System
 
-![Version](https://img.shields.io/badge/v4.1.0-stable-22ff88?style=for-the-badge)
-![React 19](https://img.shields.io/badge/React-19-00f0ff?style=for-the-badge&logo=react)
-![TypeScript 5.8](https://img.shields.io/badge/TypeScript-5.8-3178c6?style=for-the-badge&logo=typescript)
-![Tailwind v4](https://img.shields.io/badge/Tailwind-v4-38bdf8?style=for-the-badge&logo=tailwindcss)
-![Vite 6](https://img.shields.io/badge/Vite-6-646cff?style=for-the-badge&logo=vite)
-![PWA](https://img.shields.io/badge/PWA-Offline--Ready-ff8800?style=for-the-badge&logo=pwa)
-![i18n 100%](https://img.shields.io/badge/i18n-100%25-22ff88?style=for-the-badge)
-![WCAG 2.2 AA](https://img.shields.io/badge/WCAG-2.2%20AA-00f0ff?style=for-the-badge)
-[![CI](https://github.com/qnbs/Nexus-HEMS-Dash/actions/workflows/ci.yml/badge.svg)](https://github.com/qnbs/Nexus-HEMS-Dash/actions/workflows/ci.yml)
-[![Deploy](https://github.com/qnbs/Nexus-HEMS-Dash/actions/workflows/deploy.yml/badge.svg)](https://github.com/qnbs/Nexus-HEMS-Dash/actions/workflows/deploy.yml)
-![Tests](https://img.shields.io/badge/Tests-106%20passed-22ff88?style=for-the-badge&logo=vitest)
-![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker)
-![Tauri](https://img.shields.io/badge/Tauri-Desktop-FFC131?style=for-the-badge&logo=tauri)
-![License](https://img.shields.io/badge/License-MIT-f7b93e?style=for-the-badge)
+<!-- Row 1: Dynamic repo & CI badges -->
+
+[![GitHub release](https://img.shields.io/github/v/release/qnbs/Nexus-HEMS-Dash?style=for-the-badge&color=22ff88&logo=github&label=Release)](https://github.com/qnbs/Nexus-HEMS-Dash/releases)
+[![CI](https://img.shields.io/github/actions/workflow/status/qnbs/Nexus-HEMS-Dash/ci.yml?branch=main&style=for-the-badge&logo=githubactions&logoColor=white&label=CI)](https://github.com/qnbs/Nexus-HEMS-Dash/actions/workflows/ci.yml)
+[![Deploy](https://img.shields.io/github/actions/workflow/status/qnbs/Nexus-HEMS-Dash/deploy.yml?branch=main&style=for-the-badge&logo=githubactions&logoColor=white&label=Deploy&color=22ff88)](https://github.com/qnbs/Nexus-HEMS-Dash/actions/workflows/deploy.yml)
+[![Lighthouse](https://img.shields.io/github/actions/workflow/status/qnbs/Nexus-HEMS-Dash/lighthouse.yml?branch=main&style=for-the-badge&logo=lighthouse&logoColor=white&label=Lighthouse)](https://github.com/qnbs/Nexus-HEMS-Dash/actions/workflows/lighthouse.yml)
+[![License](https://img.shields.io/github/license/qnbs/Nexus-HEMS-Dash?style=for-the-badge&color=f7b93e)](LICENSE)
+
+<!-- Row 2: Tech stack -->
+
+![React 19](https://img.shields.io/badge/React-19-00f0ff?style=for-the-badge&logo=react&logoColor=00f0ff)
+![TypeScript 5.8](https://img.shields.io/badge/TypeScript-5.8-3178c6?style=for-the-badge&logo=typescript&logoColor=white)
+![Tailwind v4](https://img.shields.io/badge/Tailwind-v4-38bdf8?style=for-the-badge&logo=tailwindcss&logoColor=white)
+![Vite 6](https://img.shields.io/badge/Vite-6-646cff?style=for-the-badge&logo=vite&logoColor=white)
+![Zustand 5](https://img.shields.io/badge/Zustand-5-443E38?style=for-the-badge&logo=react&logoColor=white)
+
+<!-- Row 3: Platform & quality -->
+
+![PWA](https://img.shields.io/badge/PWA-Offline--First-ff8800?style=for-the-badge&logo=pwa&logoColor=white)
+![WCAG 2.2 AA](https://img.shields.io/badge/WCAG-2.2%20AA-00f0ff?style=for-the-badge&logo=w3c&logoColor=white)
+![i18n](https://img.shields.io/badge/i18n-DE%20%7C%20EN-22ff88?style=for-the-badge&logo=googletranslate&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![Tauri](https://img.shields.io/badge/Tauri-Desktop-FFC131?style=for-the-badge&logo=tauri&logoColor=white)
+
+<!-- Row 4: Dynamic repo stats -->
+
+[![GitHub stars](https://img.shields.io/github/stars/qnbs/Nexus-HEMS-Dash?style=for-the-badge&color=f7b93e&logo=github)](https://github.com/qnbs/Nexus-HEMS-Dash/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/qnbs/Nexus-HEMS-Dash?style=for-the-badge&color=00f0ff&logo=github)](https://github.com/qnbs/Nexus-HEMS-Dash/network/members)
+[![GitHub issues](https://img.shields.io/github/issues/qnbs/Nexus-HEMS-Dash?style=for-the-badge&color=ff8800&logo=github)](https://github.com/qnbs/Nexus-HEMS-Dash/issues)
+[![GitHub last commit](https://img.shields.io/github/last-commit/qnbs/Nexus-HEMS-Dash?style=for-the-badge&color=22ff88&logo=git&logoColor=white)](https://github.com/qnbs/Nexus-HEMS-Dash/commits/main)
+[![GitHub repo size](https://img.shields.io/github/repo-size/qnbs/Nexus-HEMS-Dash?style=for-the-badge&color=646cff&logo=github)](https://github.com/qnbs/Nexus-HEMS-Dash)
+[![GitHub code size](https://img.shields.io/github/languages/code-size/qnbs/Nexus-HEMS-Dash?style=for-the-badge&color=3178c6&logo=typescript&logoColor=white)](https://github.com/qnbs/Nexus-HEMS-Dash)
 
 <br/>
 
@@ -97,15 +115,15 @@
 
 ### Energy Management
 
-| Feature                      | Description                                                     | Status  |
-| ---------------------------- | --------------------------------------------------------------- | ------- |
-| ⚡ **Real-Time Sankey**      | Live D3.js energy flow — PV → Battery → Grid → House → HP → EV  | ✅ Live |
-| 🤖 **AI Optimizer**          | Google Gemini 3.1 for optimal EV/battery/HP charging strategies | ✅ Live |
-| 📈 **Predictive Forecast**   | 24h/7d weather-based PV & tariff predictions via Recharts       | ✅ Live |
-| ⚡ **Live Tariff Widget**    | Real-time Tibber/aWATTar prices with mini-charts & alerts       | ✅ Live |
-| 🚗 **Smart EV Charging**     | PV surplus, fast charge, dynamic tariff modes + §14a EnWG       | ✅ Live |
-| 🔥 **SG Ready Control**      | Heat pump modes 1–4 for thermal storage optimization            | ✅ Live |
-| 📊 **Prometheus Monitoring** | 25+ metrics gauges, system health, adapter status               | ✅ Live |
+| Feature                      | Description                                                            | Status  |
+| ---------------------------- | ---------------------------------------------------------------------- | ------- |
+| ⚡ **Real-Time Sankey**      | Live D3.js energy flow — PV → Battery → Grid → House → HP → EV         | ✅ Live |
+| 🤖 **AI Optimizer**          | Google Gemini 3.1 for optimal EV/battery/HP charging strategies        | ✅ Live |
+| 📈 **Predictive Forecast**   | 24h/7d weather-based PV & tariff predictions via Recharts              | ✅ Live |
+| ⚡ **Live Tariff Widget**    | Real-time Tibber/aWATTar prices with mini-charts & alerts              | ✅ Live |
+| 🚗 **Smart EV Charging**     | PV surplus, fast charge, dynamic tariff modes + §14a EnWG              | ✅ Live |
+| 🔥 **SG Ready Control**      | Heat pump modes 1–4 for thermal storage optimization                   | ✅ Live |
+| 📊 **Prometheus Monitoring** | Health dashboard, 10 live metrics, load charts, adapter matrix, alerts | ✅ Live |
 
 ### Platform & UX
 
@@ -262,22 +280,22 @@ GEMINI_API_KEY=your-key-here
 
 ## 🗺️ Page Structure
 
-| Route           | Page             | Description                                             |
-| :-------------- | :--------------- | :------------------------------------------------------ |
-| `/`             | **Home**         | KPI dashboard, mini Sankey, quick navigation            |
-| `/energy-flow`  | **Energy Flow**  | Full D3.js Sankey diagram with live price widget        |
-| `/production`   | **Production**   | PV generation, power output, self-consumption ratio     |
-| `/storage`      | **Storage**      | Battery SoC, charge/discharge stats, strategy controls  |
-| `/consumption`  | **Consumption**  | Load breakdown, consumer categories, grid exchange      |
-| `/ev`           | **EV Charging**  | Charge control, PV surplus / fast / dynamic modes, §14a |
-| `/floorplan`    | **Floorplan**    | KNX interactive building automation, room controls      |
-| `/ai-optimizer` | **AI Optimizer** | Gemini 3.1 analysis, enhanced optimizer                 |
-| `/tariffs`      | **Tariffs**      | Live Tibber/aWATTar prices, forecasts, optimal windows  |
-| `/analytics`    | **Analytics**    | Statistics, predictive forecasts, PDF export & sharing  |
-| `/monitoring`   | **Monitoring**   | Prometheus metrics, health status, Grafana integration  |
-| `/settings`     | **Settings**     | System configuration, connections, AI key vault         |
-| `/settings/ai`  | **AI Settings**  | BYOK provider management, encryption settings           |
-| `/help`         | **Help**         | Documentation, keyboard shortcuts, FAQ                  |
+| Route           | Page             | Description                                                                                     |
+| :-------------- | :--------------- | :---------------------------------------------------------------------------------------------- |
+| `/`             | **Home**         | KPI dashboard, mini Sankey, quick navigation                                                    |
+| `/energy-flow`  | **Energy Flow**  | Full D3.js Sankey diagram with live price widget                                                |
+| `/production`   | **Production**   | PV generation, power output, self-consumption ratio                                             |
+| `/storage`      | **Storage**      | Battery SoC, charge/discharge stats, strategy controls                                          |
+| `/consumption`  | **Consumption**  | Load breakdown, consumer categories, grid exchange                                              |
+| `/ev`           | **EV Charging**  | Charge control, PV surplus / fast / dynamic modes, §14a                                         |
+| `/floorplan`    | **Floorplan**    | KNX interactive building automation, room controls                                              |
+| `/ai-optimizer` | **AI Optimizer** | Gemini 3.1 analysis, enhanced optimizer                                                         |
+| `/tariffs`      | **Tariffs**      | Live Tibber/aWATTar prices, forecasts, optimal windows                                          |
+| `/analytics`    | **Analytics**    | 8 KPIs, energy balance chart, monthly comparison, cost donut, data quality                      |
+| `/monitoring`   | **Monitoring**   | System health, 10 live metrics, load charts, adapter matrix, alerts, Grafana                    |
+| `/settings`     | **Settings**     | 8-tab configuration: appearance, system, energy, security, storage, notifications, advanced, AI |
+| `/settings/ai`  | **AI Settings**  | BYOK provider management, encryption settings                                                   |
+| `/help`         | **Help**         | Documentation, keyboard shortcuts, FAQ                                                          |
 
 ---
 
@@ -681,23 +699,23 @@ Gebaut mit **React 19**, **Zustand**, **D3.js** und **Tailwind CSS v4** liefert 
 
 ### 🚀 Funktionen
 
-| Feature                       | Beschreibung                                                    | Status     |
-| :---------------------------- | :-------------------------------------------------------------- | :--------- |
-| ⚡ **Echtzeit-Sankey**        | Live D3.js Energiefluss — PV → Batterie → Netz → Haus → WP → EV | ✅ Live    |
-| 🤖 **KI-Optimierer**          | Google Gemini 3.1 für optimale Lade-/Heizstrategien             | ✅ Live    |
-| 📈 **Prädiktive Vorhersage**  | 24h/7d wetterbasierte PV- & Tarifprognosen                      | ✅ Live    |
-| ⚡ **Live-Tarif-Widget**      | Echtzeit Tibber/aWATTar Preise mit Mini-Charts                  | ✅ Live    |
-| 🚗 **Intelligentes EV-Laden** | PV-Überschuss, Schnellladung, dynamische Modi, §14a             | ✅ Live    |
-| 🔥 **SG Ready**               | Wärmepumpen-Modi 1–4 zur thermischen Speicheroptimierung        | ✅ Live    |
-| 🏠 **KNX-Grundriss**          | Interaktive Gebäudeautomation — Licht, Klima, Sensoren          | ✅ Live    |
-| 📄 **PDF-Berichte**           | Monatsberichte mit Sankey, Kosten, CO₂ (UBA 380 g/kWh)          | ✅ Live    |
-| 🔐 **BYOK KI-Tresor**         | 7 Anbieter mit AES-GCM 256-bit Verschlüsselung                  | ✅ Live    |
-| 🎨 **5 Themes**               | OceanDeep, Cyber Energy, Solar Light, Minimal White, Night Mode | ✅ Live    |
-| 🌐 **i18n**                   | 100% Deutsch/Englisch mit persistentem Sprachwechsel            | ✅ 100%    |
-| ♿ **WCAG 2.2 AA**            | Semantisches HTML, ARIA, Fokus-Traps, Tastaturnavigation        | ✅ Konform |
-| 📱 **PWA Offline-First**      | Service Worker, IndexedDB, Background Sync                      | ✅ Live    |
-| 🔌 **5 Adapter**              | Victron MQTT, Modbus/SunSpec, KNX/IP, OCPP 2.1, EEBUS           | ✅ Live    |
-| 📊 **Monitoring**             | Prometheus-Metriken, Systemgesundheit, Grafana-Integration      | ✅ Live    |
+| Feature                       | Beschreibung                                                           | Status     |
+| :---------------------------- | :--------------------------------------------------------------------- | :--------- |
+| ⚡ **Echtzeit-Sankey**        | Live D3.js Energiefluss — PV → Batterie → Netz → Haus → WP → EV        | ✅ Live    |
+| 🤖 **KI-Optimierer**          | Google Gemini 3.1 für optimale Lade-/Heizstrategien                    | ✅ Live    |
+| 📈 **Prädiktive Vorhersage**  | 24h/7d wetterbasierte PV- & Tarifprognosen                             | ✅ Live    |
+| ⚡ **Live-Tarif-Widget**      | Echtzeit Tibber/aWATTar Preise mit Mini-Charts                         | ✅ Live    |
+| 🚗 **Intelligentes EV-Laden** | PV-Überschuss, Schnellladung, dynamische Modi, §14a                    | ✅ Live    |
+| 🔥 **SG Ready**               | Wärmepumpen-Modi 1–4 zur thermischen Speicheroptimierung               | ✅ Live    |
+| 🏠 **KNX-Grundriss**          | Interaktive Gebäudeautomation — Licht, Klima, Sensoren                 | ✅ Live    |
+| 📄 **PDF-Berichte**           | Monatsberichte mit Sankey, Kosten, CO₂ (UBA 380 g/kWh)                 | ✅ Live    |
+| 🔐 **BYOK KI-Tresor**         | 7 Anbieter mit AES-GCM 256-bit Verschlüsselung                         | ✅ Live    |
+| 🎨 **5 Themes**               | OceanDeep, Cyber Energy, Solar Light, Minimal White, Night Mode        | ✅ Live    |
+| 🌐 **i18n**                   | 100% Deutsch/Englisch mit persistentem Sprachwechsel                   | ✅ 100%    |
+| ♿ **WCAG 2.2 AA**            | Semantisches HTML, ARIA, Fokus-Traps, Tastaturnavigation               | ✅ Konform |
+| 📱 **PWA Offline-First**      | Service Worker, IndexedDB, Background Sync                             | ✅ Live    |
+| 🔌 **5 Adapter**              | Victron MQTT, Modbus/SunSpec, KNX/IP, OCPP 2.1, EEBUS                  | ✅ Live    |
+| 📊 **Monitoring**             | 10 Live-Metriken, System-Health, Lastdiagramme, Adapter-Matrix, Alerts | ✅ Live    |
 
 ### 📦 Erste Schritte
 
@@ -710,21 +728,21 @@ npm run dev
 
 ### 🗺️ Seitenstruktur
 
-| Route           | Seite             | Beschreibung                                   |
-| :-------------- | :---------------- | :--------------------------------------------- |
-| `/`             | **Home**          | KPI-Übersicht, Mini-Sankey, Schnelllinks       |
-| `/energy-flow`  | **Energiefluss**  | D3.js-Sankey-Diagramm, Live-Preis-Widget       |
-| `/production`   | **Erzeugung**     | PV-Statistiken, Eigenverbrauchsquote           |
-| `/storage`      | **Speicher**      | Batterie-SoC, Lade-/Entladestatistiken         |
-| `/consumption`  | **Verbrauch**     | Lastaufschlüsselung, Netzaustausch             |
-| `/ev`           | **E-Auto**        | Ladesteuerung, PV-Überschuss/Schnell/Dynamisch |
-| `/floorplan`    | **Grundriss**     | KNX Gebäudeautomation, Raumsteuerung           |
-| `/ai-optimizer` | **KI-Optimierer** | Gemini 3.1 Analyse, erweiterter Optimierer     |
-| `/tariffs`      | **Tarife**        | Live-Preise, Prognosen, optimale Ladefenster   |
-| `/analytics`    | **Analysen**      | Statistiken, Prognosen, PDF-Export             |
-| `/monitoring`   | **Monitoring**    | Prometheus, Systemgesundheit, Grafana          |
-| `/settings`     | **Einstellungen** | Konfiguration, KI-Schlüssel, Verbindungen      |
-| `/help`         | **Hilfe**         | Dokumentation, Tastenkürzel, FAQ               |
+| Route           | Seite             | Beschreibung                                                                                               |
+| :-------------- | :---------------- | :--------------------------------------------------------------------------------------------------------- |
+| `/`             | **Home**          | KPI-Übersicht, Mini-Sankey, Schnelllinks                                                                   |
+| `/energy-flow`  | **Energiefluss**  | D3.js-Sankey-Diagramm, Live-Preis-Widget                                                                   |
+| `/production`   | **Erzeugung**     | PV-Statistiken, Eigenverbrauchsquote                                                                       |
+| `/storage`      | **Speicher**      | Batterie-SoC, Lade-/Entladestatistiken                                                                     |
+| `/consumption`  | **Verbrauch**     | Lastaufschlüsselung, Netzaustausch                                                                         |
+| `/ev`           | **E-Auto**        | Ladesteuerung, PV-Überschuss/Schnell/Dynamisch                                                             |
+| `/floorplan`    | **Grundriss**     | KNX Gebäudeautomation, Raumsteuerung                                                                       |
+| `/ai-optimizer` | **KI-Optimierer** | Gemini 3.1 Analyse, erweiterter Optimierer                                                                 |
+| `/tariffs`      | **Tarife**        | Live-Preise, Prognosen, optimale Ladefenster                                                               |
+| `/analytics`    | **Analysen**      | 8 KPIs, Energiebilanz-Chart, Monatsvergleich, Kostenanalyse, Datenqualität                                 |
+| `/monitoring`   | **Monitoring**    | 10 Live-Metriken, Lastdiagramme, Adapter-Matrix, Alerts, Grafana                                           |
+| `/settings`     | **Einstellungen** | 8-Tab-Konfiguration: Darstellung, System, Energie, Sicherheit, Speicher, Benachrichtigungen, Erweitert, KI |
+| `/help`         | **Hilfe**         | Dokumentation, Tastenkürzel, FAQ                                                                           |
 
 ### 🏗️ Architektur
 

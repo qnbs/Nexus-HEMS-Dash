@@ -168,7 +168,7 @@ export function CommandPalette({
       label: t('command.aiSettings', 'AI Provider Keys'),
       icon: <Sparkles className="h-5 w-5 text-cyan-400" />,
       action: () => {
-        navigate('/ai-settings');
+        navigate('/settings/ai');
         onClose();
       },
       category: 'navigation',

@@ -1,4 +1,5 @@
 import { useState, useEffect, type FormEvent, lazy, Suspense } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Settings as SettingsIcon,
@@ -418,10 +419,30 @@ function PWASettingsSection() {
 
 export function Settings() {
   const { t, i18n } = useTranslation();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [saved, setSaved] = useState(false);
   const [importSuccess, setImportSuccess] = useState(false);
   const [exportSuccess, setExportSuccess] = useState(false);
-  const [activeTab, setActiveTab] = useState<SettingsTab>('appearance');
+
+  const validTabs: SettingsTab[] = [
+    'appearance',
+    'system',
+    'energy',
+    'security',
+    'storage',
+    'notifications',
+    'advanced',
+    'ai',
+  ];
+  const tabParam = searchParams.get('tab') as SettingsTab | null;
+  const initialTab = tabParam && validTabs.includes(tabParam) ? tabParam : 'appearance';
+  const [activeTab, setActiveTab] = useState<SettingsTab>(initialTab);
+
+  const handleTabChange = (tab: SettingsTab) => {
+    setActiveTab(tab);
+    setSearchParams(tab === 'appearance' ? {} : { tab }, { replace: true });
+  };
+
   const [showTokens, setShowTokens] = useState<Record<string, boolean>>({});
   const confirm = useConfirmDialog();
 
@@ -647,7 +668,7 @@ export function Settings() {
             {tabs.map((tab) => (
               <button
                 key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
+                onClick={() => handleTabChange(tab.key)}
                 role="tab"
                 aria-selected={activeTab === tab.key}
                 aria-controls={`tabpanel-${tab.key}`}

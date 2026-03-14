@@ -583,7 +583,7 @@ function ProductionPageComponent() {
             />
           </dl>
           <Link
-            to="/settings"
+            to="/settings?tab=energy"
             className="focus-ring mt-4 inline-flex items-center gap-1 text-xs font-medium text-(--color-primary) hover:underline"
           >
             {t('storage.editConfig')}
