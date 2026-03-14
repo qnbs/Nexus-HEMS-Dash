@@ -86,37 +86,28 @@ test.describe('Mobile Navigation', () => {
 
   test('should toggle mobile bottom sheet via More button', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 });
-    await page.goto('/');
-    // Wait for main content — on mobile PageHeader h1 may still be loading lazily
-    await page.waitForSelector('#main-content', { timeout: 15_000 });
+    await page.goto('/', { waitUntil: 'networkidle' });
 
     // Bottom navigation bar should be visible on mobile
     const bottomNav = page.locator('nav[aria-label*="Mobile" i], nav[aria-label*="Mobil" i]');
-    await expect(bottomNav.first()).toBeVisible({ timeout: 5_000 });
+    await expect(bottomNav.first()).toBeVisible({ timeout: 10_000 });
 
-    // Look for the "More" button in the bottom bar
-    const moreButton = page
-      .locator(
-        'button[aria-label*="More" i], button[aria-label*="Mehr" i], button[aria-label*="pages" i]',
-      )
-      .first();
+    // Look for the "More" button via aria-expanded attribute (unique to the More button)
+    const moreButton = page.locator('button[aria-expanded]').first();
+    await expect(moreButton).toBeVisible({ timeout: 5_000 });
+    await moreButton.click({ timeout: 5_000 });
 
-    if ((await moreButton.count()) > 0) {
-      await moreButton.click();
-
-      // Bottom sheet dialog should appear with more navigation items
-      const sheet = page.locator('[role="dialog"]');
-      await expect(sheet.first()).toBeVisible({ timeout: 5_000 });
-    }
+    // Bottom sheet dialog should appear with more navigation items
+    const sheet = page.locator('[role="dialog"]');
+    await expect(sheet.first()).toBeVisible({ timeout: 5_000 });
   });
 
   test('should show responsive layout on mobile', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 });
-    await page.goto('/');
-    await page.waitForSelector('#main-content', { timeout: 15_000 });
+    await page.goto('/', { waitUntil: 'networkidle' });
 
     // Main content should still be visible
-    await expect(page.locator('#main-content').first()).toBeVisible();
+    await expect(page.locator('#main-content').first()).toBeVisible({ timeout: 10_000 });
 
     // Desktop sidebar should be hidden on mobile
     const sidebar = page.locator('nav[aria-label*="Main" i], nav[aria-label*="Haupt" i]');
