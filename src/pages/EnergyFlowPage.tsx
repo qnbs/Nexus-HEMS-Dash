@@ -29,7 +29,7 @@ import {
   Tooltip as RechartsTooltip,
   ResponsiveContainer,
 } from 'recharts';
-import { useAppStore } from '../store';
+import { useAppStoreShallow } from '../store';
 import { getDisplayData } from '../lib/demo-data';
 import { formatPower, formatPercent, calculateCo2Savings } from '../lib/format';
 import { DemoBadge } from '../components/DemoBadge';
@@ -100,8 +100,10 @@ function getDistributionData(ed: {
 function EnergyFlowPageComponent() {
   const { t, i18n } = useTranslation();
   const locale = i18n.language;
-  const storeData = useAppStore((s) => s.energyData);
-  const connected = useAppStore((s) => s.connected);
+  const { storeData, connected } = useAppStoreShallow((s) => ({
+    storeData: s.energyData,
+    connected: s.connected,
+  }));
   const energyData = getDisplayData(storeData, connected);
   const isDemo = !connected && energyData !== storeData;
 

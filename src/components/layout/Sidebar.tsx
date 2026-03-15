@@ -21,10 +21,10 @@ import {
 import { useAppStore } from '../../store';
 
 interface NavItem {
-  path: string;
-  labelKey: string;
-  icon: React.ReactNode;
-  group: 'main' | 'tools' | 'system';
+  readonly path: string;
+  readonly labelKey: string;
+  readonly icon: React.ReactNode;
+  readonly group: 'main' | 'tools' | 'system';
 }
 
 const navItems: NavItem[] = [
@@ -51,7 +51,7 @@ const navItems: NavItem[] = [
 
 function SidebarComponent() {
   const { t } = useTranslation();
-  const { connected } = useAppStore();
+  const connected = useAppStore((s) => s.connected);
 
   const groups = {
     main: navItems.filter((i) => i.group === 'main'),

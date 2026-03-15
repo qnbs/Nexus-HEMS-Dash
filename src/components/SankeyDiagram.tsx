@@ -1,31 +1,67 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { select } from 'd3-selection';
-import { sankey, sankeyLinkHorizontal } from 'd3-sankey';
+import { sankeyLinkHorizontal } from 'd3-sankey';
 import { useTranslation } from 'react-i18next';
 import { EnergyData } from '../types';
 import { persistSankeySnapshot } from '../lib/db';
-
-interface CustomNode {
-  name: string;
-  color: string;
-}
-
-interface CustomLink {
-  source: number;
-  target: number;
-  value: number;
-}
+import type {
+  SankeyGraphResult,
+  SankeyWorkerInput,
+  SankeyWorkerOutput,
+} from '../workers/sankey-worker';
 
 export function SankeyDiagram({ data }: { data: EnergyData }) {
   const { t } = useTranslation();
   const svgRef = useRef<SVGSVGElement>(null);
+  const workerRef = useRef<Worker | null>(null);
+  const [graph, setGraph] = useState<SankeyGraphResult | null>(null);
 
+  // Initialise the Web Worker once
   useEffect(() => {
-    if (!svgRef.current) return;
+    const w = new Worker(new URL('../workers/sankey-worker.ts', import.meta.url), {
+      type: 'module',
+    });
+    w.onmessage = (e: MessageEvent<SankeyWorkerOutput>) => {
+      if (e.data.type === 'result') setGraph(e.data.graph);
+    };
+    workerRef.current = w;
+    return () => {
+      w.terminate();
+      workerRef.current = null;
+    };
+  }, []);
+
+  // Send computation to worker whenever data changes
+  useEffect(() => {
+    if (!workerRef.current || !svgRef.current) return;
+    const width = svgRef.current.clientWidth;
+    const height = svgRef.current.clientHeight;
+    if (width === 0 || height === 0) return;
+
+    const msg: SankeyWorkerInput = {
+      data: {
+        pvPower: data.pvPower,
+        batteryPower: data.batteryPower,
+        houseLoad: data.houseLoad,
+        heatPumpPower: data.heatPumpPower,
+        evPower: data.evPower,
+        gridPower: data.gridPower,
+      },
+      width,
+      height,
+    };
+    workerRef.current.postMessage(msg);
+  }, [data]);
+
+  // D3 DOM rendering on main thread — only when graph result arrives
+  useEffect(() => {
+    if (!svgRef.current || !graph) return;
 
     const width = svgRef.current.clientWidth;
     const height = svgRef.current.clientHeight;
-    const isMobile = width < 640; // sm breakpoint
+    const isMobile = width < 640;
+    const nodeWidth = isMobile ? 10 : 15;
+    const fontSize = isMobile ? '10px' : '12px';
 
     // Clear previous
     select(svgRef.current).selectAll('*').remove();
@@ -34,117 +70,10 @@ export function SankeyDiagram({ data }: { data: EnergyData }) {
       .attr('viewBox', `0 0 ${width} ${height}`)
       .attr('preserveAspectRatio', 'xMidYMid meet');
 
-    // Prepare data
-    const nodes: CustomNode[] = [
-      { name: 'PV', color: '#facc15' }, // 0
-      { name: 'Grid', color: '#ef4444' }, // 1
-      { name: 'Battery', color: '#10b981' }, // 2
-      { name: 'House', color: '#3b82f6' }, // 3
-      { name: 'Heat Pump', color: '#f97316' }, // 4
-      { name: 'EV', color: '#8b5cf6' }, // 5
-    ];
-
-    const links: CustomLink[] = [];
-
-    // Simple logic to distribute power (simplified for visualization)
-    let pvRemaining = Math.max(0, data.pvPower);
-    let batteryDischarge = Math.max(0, data.batteryPower); // Positive means discharging
-    const batteryCharge = Math.max(0, -data.batteryPower); // Negative means charging
-
-    // PV to House
-    const pvToHouse = Math.min(pvRemaining, data.houseLoad);
-    if (pvToHouse > 0) {
-      links.push({ source: 0, target: 3, value: pvToHouse });
-      pvRemaining -= pvToHouse;
-    }
-
-    // PV to Heat Pump
-    const pvToHp = Math.min(pvRemaining, data.heatPumpPower);
-    if (pvToHp > 0) {
-      links.push({ source: 0, target: 4, value: pvToHp });
-      pvRemaining -= pvToHp;
-    }
-
-    // PV to EV
-    const pvToEv = Math.min(pvRemaining, data.evPower);
-    if (pvToEv > 0) {
-      links.push({ source: 0, target: 5, value: pvToEv });
-      pvRemaining -= pvToEv;
-    }
-
-    // PV to Battery
-    const pvToBat = Math.min(pvRemaining, batteryCharge);
-    if (pvToBat > 0) {
-      links.push({ source: 0, target: 2, value: pvToBat });
-      pvRemaining -= pvToBat;
-    }
-
-    // PV to Grid (Export)
-    if (pvRemaining > 0) {
-      links.push({ source: 0, target: 1, value: pvRemaining });
-    }
-
-    // Battery to House
-    const batToHouse = Math.min(batteryDischarge, data.houseLoad - pvToHouse);
-    if (batToHouse > 0) {
-      links.push({ source: 2, target: 3, value: batToHouse });
-      batteryDischarge -= batToHouse;
-    }
-
-    // Grid to House
-    const gridToHouse = Math.max(0, data.houseLoad - pvToHouse - batToHouse);
-    if (gridToHouse > 0) {
-      links.push({ source: 1, target: 3, value: gridToHouse });
-    }
-
-    // Grid to Heat Pump
-    const gridToHp = Math.max(0, data.heatPumpPower - pvToHp);
-    if (gridToHp > 0) {
-      links.push({ source: 1, target: 4, value: gridToHp });
-    }
-
-    // Grid to EV
-    const gridToEv = Math.max(0, data.evPower - pvToEv);
-    if (gridToEv > 0) {
-      links.push({ source: 1, target: 5, value: gridToEv });
-    }
-
-    // Grid to Battery
-    const gridToBat = Math.max(0, batteryCharge - pvToBat);
-    if (gridToBat > 0) {
-      links.push({ source: 1, target: 2, value: gridToBat });
-    }
-
-    // Filter out zero-value links
-    const activeLinks = links.filter((l) => l.value > 10); // threshold to avoid tiny lines
-
-    if (activeLinks.length === 0) return;
-
-    const nodeWidth = isMobile ? 10 : 15;
-    const nodePadding = isMobile ? 15 : 20;
-    const fontSize = isMobile ? '10px' : '12px';
-    const padding = isMobile ? 5 : 10;
-
-    const sankeyGenerator = sankey<CustomNode, CustomLink>()
-      .nodeWidth(nodeWidth)
-      .nodePadding(nodePadding)
-      .extent([
-        [padding, padding],
-        [width - padding, height - padding],
-      ]);
-
-    const graph = sankeyGenerator({
-      nodes: nodes.map((d) => Object.assign({}, d)),
-      links: activeLinks.map((d) => Object.assign({}, d)),
-    });
-
     // Define gradient defs for links
     const defs = svg.append('defs');
 
-    // Create gradients for each link
-    activeLinks.forEach((link, i) => {
-      const sourceColor = nodes[link.source].color;
-      const targetColor = nodes[link.target].color;
+    graph.links.forEach((link, i) => {
       const gradient = defs
         .append('linearGradient')
         .attr('id', `link-gradient-${i}`)
@@ -152,58 +81,55 @@ export function SankeyDiagram({ data }: { data: EnergyData }) {
       gradient
         .append('stop')
         .attr('offset', '0%')
-        .attr('stop-color', sourceColor)
+        .attr('stop-color', link.sourceColor)
         .attr('stop-opacity', 0.6);
       gradient
         .append('stop')
         .attr('offset', '100%')
-        .attr('stop-color', targetColor)
+        .attr('stop-color', link.targetColor)
         .attr('stop-opacity', 0.4);
     });
 
-    // Draw links with gradient strokes
+    // Draw links — reconstruct d3-sankey-compatible link objects for sankeyLinkHorizontal
+    const pathGen = sankeyLinkHorizontal();
     svg
       .append('g')
       .selectAll('path')
       .data(graph.links)
       .join('path')
-      .attr('d', sankeyLinkHorizontal())
+      .attr('d', (d) =>
+        pathGen({
+          source: { x1: d.sourceX1, y0: d.y0, y1: d.y0 } as never,
+          target: { x0: d.targetX0, y0: d.y1, y1: d.y1 } as never,
+          width: d.width,
+          y0: d.y0,
+          y1: d.y1,
+        } as never),
+      )
       .attr('fill', 'none')
       .attr('stroke', (_d, i) => `url(#link-gradient-${i})`)
-      .attr('stroke-width', (d) => Math.max(1, d.width || 0))
+      .attr('stroke-width', (d) => Math.max(1, d.width))
       .attr('stroke-opacity', 0.5)
       .attr('class', 'energy-flow-path')
-      .style('filter', (d) => {
-        const color = (d.source as CustomNode).color;
-        return `drop-shadow(0 0 4px ${color}50)`;
-      })
+      .style('filter', (d) => `drop-shadow(0 0 4px ${d.sourceColor}50)`)
       .style('cursor', 'pointer')
       .style('transition', 'all 0.3s ease-out')
       .on('mouseenter', function (_event, d) {
         select(this)
           .attr('stroke-opacity', 0.75)
-          .attr('stroke-width', Math.max(2, (d.width || 0) + 2))
-          .style('filter', () => {
-            const color = (d.source as CustomNode).color;
-            return `drop-shadow(0 0 8px ${color}70)`;
-          });
+          .attr('stroke-width', Math.max(2, d.width + 2))
+          .style('filter', `drop-shadow(0 0 8px ${d.sourceColor}70)`);
       })
       .on('mouseleave', function (_event, d) {
         select(this)
           .attr('stroke-opacity', 0.5)
-          .attr('stroke-width', Math.max(1, d.width || 0))
-          .style('filter', () => {
-            const color = (d.source as CustomNode).color;
-            return `drop-shadow(0 0 4px ${color}50)`;
-          });
+          .attr('stroke-width', Math.max(1, d.width))
+          .style('filter', `drop-shadow(0 0 4px ${d.sourceColor}50)`);
       })
       .append('title')
-      .text(
-        (d) =>
-          `${(d.source as CustomNode).name} → ${(d.target as CustomNode).name}\n${Math.round(d.value)} W`,
-      );
+      .text((d) => `${d.sourceName} → ${d.targetName}\n${Math.round(d.value)} W`);
 
-    // Draw nodes with subtle styling
+    // Draw nodes
     const node = svg
       .append('g')
       .selectAll('g')
@@ -214,8 +140,8 @@ export function SankeyDiagram({ data }: { data: EnergyData }) {
 
     node
       .append('rect')
-      .attr('height', (d) => (d.y1 || 0) - (d.y0 || 0))
-      .attr('width', (d) => (d.x1 || 0) - (d.x0 || 0))
+      .attr('height', (d) => d.y1 - d.y0)
+      .attr('width', (d) => d.x1 - d.x0)
       .attr('fill', (d) => d.color)
       .attr('fill-opacity', 0.9)
       .attr('rx', 6)
@@ -233,15 +159,15 @@ export function SankeyDiagram({ data }: { data: EnergyData }) {
           .style('filter', `drop-shadow(0 2px 4px ${d.color}30)`);
       })
       .append('title')
-      .text((d) => `${d.name}\n${Math.round(d.value || 0)} W`);
+      .text((d) => `${d.name}\n${Math.round(d.value)} W`);
 
     node
       .append('text')
-      .attr('x', (d) => ((d.x0 || 0) < width / 2 ? nodeWidth + 5 : -5))
-      .attr('y', (d) => ((d.y1 || 0) - (d.y0 || 0)) / 2)
+      .attr('x', (d) => (d.x0 < width / 2 ? nodeWidth + 5 : -5))
+      .attr('y', (d) => (d.y1 - d.y0) / 2)
       .attr('dy', '0.35em')
-      .attr('text-anchor', (d) => ((d.x0 || 0) < width / 2 ? 'start' : 'end'))
-      .text((d) => (isMobile ? `${d.name}` : `${d.name} (${Math.round(d.value || 0)}W)`))
+      .attr('text-anchor', (d) => (d.x0 < width / 2 ? 'start' : 'end'))
+      .text((d) => (isMobile ? `${d.name}` : `${d.name} (${Math.round(d.value)}W)`))
       .attr('fill', 'var(--color-text)')
       .attr('font-size', fontSize)
       .attr('font-family', 'Inter, sans-serif')
@@ -253,12 +179,12 @@ export function SankeyDiagram({ data }: { data: EnergyData }) {
     void persistSankeySnapshot(
       data,
       graph.links.map((l) => ({
-        source: (l.source as CustomNode).name,
-        target: (l.target as CustomNode).name,
+        source: l.sourceName,
+        target: l.targetName,
         value: l.value,
       })),
     );
-  }, [data]);
+  }, [graph, data]);
 
   return (
     <>

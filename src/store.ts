@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { useShallow } from 'zustand/react/shallow';
 import { persist, createJSONStorage } from 'zustand/middleware';
 
 import type { LocaleCode, EnergyData, FloorplanState, StoredSettings } from './types';
@@ -167,6 +168,21 @@ export const useAppStore = create<AppState>()(
     },
   ),
 );
+
+// ─── useShallow-wrapped store access ─────────────────────────────────
+
+/**
+ * useAppStoreShallow — Shallow-comparing wrapper for useAppStore.
+ *
+ * Use when selecting multiple values into an object to prevent
+ * unnecessary re-renders (shallow compare instead of referential).
+ *
+ * Example:
+ *   const { theme, locale } = useAppStoreShallow((s) => ({ theme: s.theme, locale: s.locale }));
+ */
+export function useAppStoreShallow<T>(selector: (state: AppState) => T): T {
+  return useAppStore(useShallow(selector));
+}
 
 // Expose store for E2E / Playwright tests in dev mode
 if (import.meta.env.DEV) {

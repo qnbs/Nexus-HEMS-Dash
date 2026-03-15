@@ -27,7 +27,7 @@ import {
   Cell,
   Legend,
 } from 'recharts';
-import { useAppStore } from '../store';
+import { useAppStoreShallow } from '../store';
 import { getDisplayData } from '../lib/demo-data';
 import { DemoBadge } from '../components/DemoBadge';
 import { PageHeader } from '../components/layout/PageHeader';
@@ -86,11 +86,13 @@ function generateProductionHistory(currentPvPower: number, peakKWp: number) {
 
 function ProductionPageComponent() {
   const { t } = useTranslation();
-  const storeData = useAppStore((s) => s.energyData);
-  const connected = useAppStore((s) => s.connected);
+  const { storeData, connected, settings } = useAppStoreShallow((s) => ({
+    storeData: s.energyData,
+    connected: s.connected,
+    settings: s.settings,
+  }));
   const energyData = getDisplayData(storeData, connected);
   const isDemo = !connected && energyData !== storeData;
-  const settings = useAppStore((s) => s.settings);
   const pvConfig = settings.systemConfig.pv;
   const inverterConfig = settings.systemConfig.inverter;
   const peakWp = pvConfig.peakPowerKWp * 1000;

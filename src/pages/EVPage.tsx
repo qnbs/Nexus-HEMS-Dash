@@ -37,7 +37,7 @@ import {
   Cell,
   Legend,
 } from 'recharts';
-import { useAppStore } from '../store';
+import { useAppStoreShallow } from '../store';
 import { getDisplayData } from '../lib/demo-data';
 import { DemoBadge } from '../components/DemoBadge';
 import { useLegacySendCommand } from '../core/useLegacySendCommand';
@@ -129,12 +129,14 @@ function generatePriceWindows() {
 
 function EVPageComponent() {
   const { t } = useTranslation();
-  const storeData = useAppStore((s) => s.energyData);
-  const connected = useAppStore((s) => s.connected);
+  const { storeData, connected, settings } = useAppStoreShallow((s) => ({
+    storeData: s.energyData,
+    connected: s.connected,
+    settings: s.settings,
+  }));
   const energyData = getDisplayData(storeData, connected);
   const isDemo = !connected && energyData !== storeData;
   const { sendCommand } = useLegacySendCommand();
-  const settings = useAppStore((s) => s.settings);
   const evConfig = settings.systemConfig.evCharger;
   const maxPowerW = evConfig.maxPowerKW * 1000;
 

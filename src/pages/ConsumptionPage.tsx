@@ -30,7 +30,7 @@ import {
   Cell,
   Legend,
 } from 'recharts';
-import { useAppStore } from '../store';
+import { useAppStoreShallow } from '../store';
 import { getDisplayData } from '../lib/demo-data';
 import { DemoBadge } from '../components/DemoBadge';
 import { PageHeader } from '../components/layout/PageHeader';
@@ -89,8 +89,10 @@ const CONSUMER_COLORS = {
 
 function ConsumptionPageComponent() {
   const { t } = useTranslation();
-  const storeData = useAppStore((s) => s.energyData);
-  const connected = useAppStore((s) => s.connected);
+  const { storeData, connected } = useAppStoreShallow((s) => ({
+    storeData: s.energyData,
+    connected: s.connected,
+  }));
   const energyData = getDisplayData(storeData, connected);
   const isDemo = !connected && energyData !== storeData;
 

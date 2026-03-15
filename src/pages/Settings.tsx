@@ -41,7 +41,7 @@ import {
 import { useTranslation } from 'react-i18next';
 
 import { themeDefinitions, themeOrder, type ThemeName } from '../design-tokens';
-import { useAppStore, defaultSettings } from '../store';
+import { useAppStore, useAppStoreShallow, defaultSettings } from '../store';
 import { SYSTEM_PRESETS, type PVConfig } from '../types';
 import { resolveTheme, type ThemePreference } from '../lib/theme';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
@@ -490,14 +490,25 @@ export function Settings() {
   const confirm = useConfirmDialog();
 
   // Theme state
-  const theme = useAppStore((s) => s.theme);
-  const themePreference = useAppStore((s) => s.themePreference);
-  const setThemePreference = useAppStore((s) => s.setThemePreference);
-  const setTheme = useAppStore((s) => s.setTheme);
-  const locale = useAppStore((s) => s.locale);
-  const setLocale = useAppStore((s) => s.setLocale);
-  const settings = useAppStore((s) => s.settings);
-  const updateSettings = useAppStore((s) => s.updateSettings);
+  const {
+    theme,
+    themePreference,
+    setThemePreference,
+    setTheme,
+    locale,
+    setLocale,
+    settings,
+    updateSettings,
+  } = useAppStoreShallow((s) => ({
+    theme: s.theme,
+    themePreference: s.themePreference,
+    setThemePreference: s.setThemePreference,
+    setTheme: s.setTheme,
+    locale: s.locale,
+    setLocale: s.setLocale,
+    settings: s.settings,
+    updateSettings: s.updateSettings,
+  }));
 
   const handleThemeChange = (preference: ThemePreference) => {
     setThemePreference(preference);

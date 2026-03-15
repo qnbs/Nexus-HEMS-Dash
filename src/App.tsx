@@ -3,7 +3,7 @@ import { motion } from 'motion/react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAdapterBridge } from './core/useEnergyStore';
-import { useAppStore } from './store';
+import { useAppStoreShallow } from './store';
 import { Wifi, Command, Settings as SettingsIcon, HelpCircle } from 'lucide-react';
 import { themeDefinitions } from './design-tokens';
 const Onboarding = lazy(() =>
@@ -69,21 +69,37 @@ function ScrollToTop(): null {
 
 export default function App() {
   const { t, i18n } = useTranslation();
-  // Granular selectors to prevent full tree re-renders
-  const connected = useAppStore((s) => s.connected);
-  const priceCurrent = useAppStore((s) => s.energyData.priceCurrent);
-  const theme = useAppStore((s) => s.theme);
-  const locale = useAppStore((s) => s.locale);
-  const setTheme = useAppStore((s) => s.setTheme);
-  const themePreference = useAppStore((s) => s.themePreference);
-  const fontScale = useAppStore((s) => s.settings.fontScale);
-  const reducedMotion = useAppStore((s) => s.settings.reducedMotion);
-  const highContrast = useAppStore((s) => s.settings.highContrast);
-  const compactMode = useAppStore((s) => s.settings.compactMode);
-  const glowEffects = useAppStore((s) => s.settings.glowEffects);
-  const animations = useAppStore((s) => s.settings.animations);
+  // Shallow-compared selector — re-renders only when selected values change
+  const {
+    connected,
+    priceCurrent,
+    theme,
+    locale,
+    setTheme,
+    themePreference,
+    fontScale,
+    reducedMotion,
+    highContrast,
+    compactMode,
+    glowEffects,
+    animations,
+    onboardingCompleted,
+  } = useAppStoreShallow((s) => ({
+    connected: s.connected,
+    priceCurrent: s.energyData.priceCurrent,
+    theme: s.theme,
+    locale: s.locale,
+    setTheme: s.setTheme,
+    themePreference: s.themePreference,
+    fontScale: s.settings.fontScale,
+    reducedMotion: s.settings.reducedMotion,
+    highContrast: s.settings.highContrast,
+    compactMode: s.settings.compactMode,
+    glowEffects: s.settings.glowEffects,
+    animations: s.settings.animations,
+    onboardingCompleted: s.onboardingCompleted,
+  }));
   const { isOpen: isCommandPaletteOpen, setIsOpen: setCommandPaletteOpen } = useCommandPalette();
-  const onboardingCompleted = useAppStore((s) => s.onboardingCompleted);
 
   // Adapter bridge replaces the old useWebSocket hook
   useAdapterBridge();

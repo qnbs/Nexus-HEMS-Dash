@@ -31,7 +31,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
-import { useAppStore } from '../store';
+import { useAppStoreShallow } from '../store';
 import { PageHeader } from '../components/layout/PageHeader';
 import { useMetrics, getMetricFromSnapshot } from '../core/useMetrics';
 import { PageCrossLinks } from '../components/ui/PageCrossLinks';
@@ -62,8 +62,10 @@ function generateSystemLoadHistory(currentLoad: number) {
 
 function MonitoringPageComponent() {
   const { t } = useTranslation();
-  const energyData = useAppStore((s) => s.energyData);
-  const connected = useAppStore((s) => s.connected);
+  const { energyData, connected } = useAppStoreShallow((s) => ({
+    energyData: s.energyData,
+    connected: s.connected,
+  }));
   const { families, health, lastUpdated, error } = useMetrics(5000);
 
   const get = (name: string, labels?: Record<string, string>) =>
