@@ -1560,6 +1560,33 @@ export const de = {
   header: {
     controlMesh: 'HEMS-Steuerungsnetz',
   },
+  safety: {
+    emergencyStop: 'Notaus — Alle Geräte sofort abschalten',
+    emergencyStopTitle: 'NOTAUS — Alle Geräte abschalten?',
+    emergencyStopDesc:
+      'Alle Adapter werden sofort getrennt. Batterie, EV-Ladung, Wärmepumpe und KNX-Aktoren werden abgeschaltet. Nur Netzbezug bleibt aktiv. Dieser Vorgang kann nicht automatisch rückgängig gemacht werden.',
+    confirmEmergencyStop: 'NOTAUS BESTÄTIGEN',
+    emergencyActive: 'NOTAUS AKTIV',
+    emergencyActiveDesc:
+      'Alle Geräte wurden getrennt. Das System befindet sich im sicheren Zustand. Nur Netzbezug ist aktiv.',
+    resetSystem: 'System zurücksetzen & neu starten',
+    confirmCommandTitle: 'Gerätebefehl bestätigen',
+    executeCommand: 'Befehl ausführen',
+    confirmBattery:
+      'Batterie-Steuerbefehl: {{type}} auf {{value}} setzen. Unsachgemäße Werte können den Speicher beschädigen.',
+    confirmV2X: 'V2X-Entladung: {{type}} auf {{value}} W. Dies entlädt das Fahrzeug ins Hausnetz.',
+    confirmGridLimit:
+      'Netzlimit: {{type}} auf {{value}} W setzen. §14a EnWG-Grenzwert wird geändert.',
+    confirmEV: 'EV-Ladebefehl: {{type}} auf {{value}} setzen. Prüfen Sie den Fahrzeugzustand.',
+    confirmHeatPump:
+      'Wärmepumpen-Befehl: {{type}} auf {{value}} setzen. SG-Ready-Modus wird geändert.',
+    confirmGeneric: 'Gerätebefehl {{type}} mit Wert {{value}} ausführen?',
+    commandRejected: 'Befehl abgelehnt',
+    commandExecuted: 'Befehl ausgeführt',
+    validationFailed: 'Validierung fehlgeschlagen',
+    rateLimitExceeded: 'Befehlsrate überschritten (max. 30/min)',
+    circuitBreakerOpen: 'Schutzschalter offen — Adapter gesperrt',
+  },
   monitoring: {
     title: 'Systemüberwachung',
     pageTitle: 'Monitoring',

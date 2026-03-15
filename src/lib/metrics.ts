@@ -236,6 +236,31 @@ export const HEMS_METRICS: MetricDefinition[] = [
     help: 'Total optimizer recommendations generated',
     type: 'counter',
   },
+
+  // Command Safety & Audit
+  {
+    name: 'hems_commands_total',
+    help: 'Total hardware commands sent',
+    type: 'counter',
+    labels: ['command_type', 'status'],
+  },
+  {
+    name: 'hems_commands_rejected_total',
+    help: 'Total commands rejected by validation or rate limiting',
+    type: 'counter',
+    labels: ['command_type', 'reason'],
+  },
+  {
+    name: 'hems_emergency_stops_total',
+    help: 'Total emergency stop activations',
+    type: 'counter',
+  },
+  {
+    name: 'hems_circuit_breaker_state',
+    help: 'Circuit breaker state per adapter (0=closed, 1=open, 2=half-open)',
+    type: 'gauge',
+    labels: ['adapter'],
+  },
 ];
 
 // ─── Metrics Collector (Client-side) ────────────────────────────────

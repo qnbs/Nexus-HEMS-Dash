@@ -1,6 +1,7 @@
 import Dexie, { type Table } from 'dexie';
 
 import type { EnergyData, StoredSettings } from '../types';
+import type { CommandAuditEntry } from '../core/command-safety';
 
 export interface EnergySnapshot extends EnergyData {
   id?: number;
@@ -66,6 +67,7 @@ class NexusDatabase extends Dexie {
   errorLogs!: Table<ErrorLog, number>;
   settings!: Table<SettingsRecord, string>;
   aiKeys!: Table<AIKeyRecord, string>;
+  commandAudit!: Table<CommandAuditEntry, number>;
 
   constructor() {
     super('nexus-hems-dash');
@@ -95,6 +97,18 @@ class NexusDatabase extends Dexie {
       errorLogs: '++id, timestamp, severity',
       settings: 'key',
       aiKeys: 'provider',
+    });
+
+    // Version 4: Add command audit trail for safety logging
+    this.version(4).stores({
+      energySnapshots: '++id, timestamp',
+      sankeySnapshots: '++id, timestamp',
+      offlineActions: '++id, timestamp, status, type',
+      cacheMetadata: 'key, timestamp, expiresAt, type',
+      errorLogs: '++id, timestamp, severity',
+      settings: 'key',
+      aiKeys: 'provider',
+      commandAudit: '++id, timestamp, commandType, status',
     });
   }
 }

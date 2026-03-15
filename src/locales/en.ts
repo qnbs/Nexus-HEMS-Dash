@@ -1545,6 +1545,32 @@ export const en = {
   header: {
     controlMesh: 'HEMS Control Mesh',
   },
+  safety: {
+    emergencyStop: 'Emergency Stop — Shut down all devices immediately',
+    emergencyStopTitle: 'EMERGENCY STOP — Shut down all devices?',
+    emergencyStopDesc:
+      'All adapters will be disconnected immediately. Battery, EV charging, heat pump and KNX actuators will be shut down. Only grid supply remains active. This action cannot be undone automatically.',
+    confirmEmergencyStop: 'CONFIRM EMERGENCY STOP',
+    emergencyActive: 'EMERGENCY STOP ACTIVE',
+    emergencyActiveDesc:
+      'All devices have been disconnected. The system is in safe state. Only grid supply is active.',
+    resetSystem: 'Reset system & restart',
+    confirmCommandTitle: 'Confirm device command',
+    executeCommand: 'Execute command',
+    confirmBattery:
+      'Battery control: set {{type}} to {{value}}. Incorrect values may damage the storage system.',
+    confirmV2X:
+      'V2X discharge: set {{type}} to {{value}} W. This will discharge the vehicle to the house grid.',
+    confirmGridLimit: 'Grid limit: set {{type}} to {{value}} W. §14a EnWG limit will be changed.',
+    confirmEV: 'EV charging command: set {{type}} to {{value}}. Check vehicle state first.',
+    confirmHeatPump: 'Heat pump command: set {{type}} to {{value}}. SG Ready mode will be changed.',
+    confirmGeneric: 'Execute device command {{type}} with value {{value}}?',
+    commandRejected: 'Command rejected',
+    commandExecuted: 'Command executed',
+    validationFailed: 'Validation failed',
+    rateLimitExceeded: 'Command rate exceeded (max 30/min)',
+    circuitBreakerOpen: 'Circuit breaker open — adapter locked',
+  },
   monitoring: {
     title: 'System Monitoring',
     pageTitle: 'Monitoring',

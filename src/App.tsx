@@ -17,6 +17,7 @@ import { Breadcrumbs } from './components/layout/Breadcrumbs';
 import { OfflineBanner } from './components/OfflineBanner';
 import { PWAInstallPrompt } from './components/PWAInstallPrompt';
 import { PWAUpdateNotification } from './components/PWAUpdateNotification';
+import { EmergencyStop } from './components/EmergencyStop';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { watchSystemTheme, resolveTheme } from './lib/theme';
 import { backgroundSyncService } from './lib/background-sync';
@@ -349,6 +350,9 @@ export default function App() {
 
           {/* Mobile Bottom Navigation */}
           <MobileNavigation />
+
+          {/* Emergency Stop — Global safety button */}
+          <EmergencyStop />
         </div>
       </Router>
     </ErrorBoundary>

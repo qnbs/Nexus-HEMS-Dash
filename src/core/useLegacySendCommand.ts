@@ -2,7 +2,7 @@
  * useLegacySendCommand — Backward-compatible wrapper
  *
  * Bridges the old `sendCommand(type: CommandType, value: number)` API
- * to the new adapter-based command routing.
+ * to the new adapter-based command routing with safety validation.
  *
  * Usage: Drop-in replacement for `useWebSocket().sendCommand` in pages
  * that still use ControlPanel with the legacy signature.
@@ -27,6 +27,7 @@ function toLegacyCommand(type: CommandType, value: number): AdapterCommand {
 
 export function useLegacySendCommand() {
   const sendCommand = (type: CommandType, value: number) => {
+    // Commands go through sendAdapterCommand which validates via Zod + rate limiting + audit
     sendAdapterCommand(toLegacyCommand(type, value));
   };
 

@@ -1,0 +1,190 @@
+/**
+ * Command Safety Layer — Fail-safe command confirmation, validation & audit
+ *
+ * Ensures all hardware commands (Battery, EV, Heat Pump, KNX) go through:
+ *   1. Zod schema validation (no negative kW, range checks)
+ *   2. Rate limiting (max N commands per minute)
+ *   3. Audit logging to IndexedDB
+ *   4. Optional UI confirmation (danger commands)
+ *
+ * This module is the ONLY path to send commands to adapters.
+ */
+
+import { z } from 'zod';
+import type { AdapterCommand, AdapterCommandType } from './adapters/EnergyAdapter';
+import { nexusDb } from '../lib/db';
+
+// ─── Zod Validation Schemas per Command ──────────────────────────────
+
+const positiveNumber = z.number().nonnegative();
+const currentAmps = z.number().min(0).max(80); // IEC 61851 max 80A
+const powerWatts = z.number().min(0).max(50_000); // 50 kW safety cap
+const batteryPowerWatts = z.number().min(-25_000).max(25_000); // Bidirectional
+const temperatureSetpoint = z.number().min(5).max(35); // °C sane range
+
+export const commandSchemas: Record<AdapterCommandType, z.ZodType> = {
+  SET_EV_POWER: powerWatts,
+  SET_EV_CURRENT: currentAmps,
+  START_CHARGING: z.union([z.boolean(), z.number()]),
+  STOP_CHARGING: z.union([z.boolean(), z.number()]),
+  SET_V2X_DISCHARGE: powerWatts,
+  SET_HEAT_PUMP_MODE: z.number().min(1).max(4), // SG Ready 1–4
+  SET_HEAT_PUMP_POWER: positiveNumber.max(15_000), // 15 kW heat pump cap
+  SET_BATTERY_POWER: batteryPowerWatts,
+  SET_BATTERY_MODE: z.union([
+    z.literal('self-consumption'),
+    z.literal('force-charge'),
+    z.literal('time-of-use'),
+    z.literal('auto'),
+    z.number(),
+  ]),
+  SET_GRID_LIMIT: positiveNumber.max(25_000), // §14a EnWG
+  KNX_TOGGLE_LIGHTS: z.boolean(),
+  KNX_SET_TEMPERATURE: temperatureSetpoint,
+  KNX_TOGGLE_WINDOW: z.boolean(),
+};
+
+/** Commands that modify high-power hardware and need user confirmation */
+export const DANGER_COMMANDS = new Set<AdapterCommandType>([
+  'SET_BATTERY_POWER',
+  'SET_BATTERY_MODE',
+  'SET_V2X_DISCHARGE',
+  'SET_GRID_LIMIT',
+  'SET_EV_POWER',
+  'SET_EV_CURRENT',
+  'START_CHARGING',
+  'STOP_CHARGING',
+  'SET_HEAT_PUMP_MODE',
+  'SET_HEAT_PUMP_POWER',
+]);
+
+// ─── Rate Limiter ────────────────────────────────────────────────────
+
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const RATE_LIMIT_MAX = 30; // max 30 commands per minute
+
+interface RateLimitEntry {
+  timestamps: number[];
+}
+
+const rateLimits = new Map<string, RateLimitEntry>();
+
+export function checkRateLimit(commandType: string): boolean {
+  const now = Date.now();
+  const entry = rateLimits.get(commandType) ?? { timestamps: [] };
+
+  // Prune old entries
+  entry.timestamps = entry.timestamps.filter((t) => now - t < RATE_LIMIT_WINDOW_MS);
+
+  if (entry.timestamps.length >= RATE_LIMIT_MAX) {
+    return false; // Rate limited
+  }
+
+  entry.timestamps.push(now);
+  rateLimits.set(commandType, entry);
+  return true;
+}
+
+// ─── Command Validation ──────────────────────────────────────────────
+
+export interface CommandValidationResult {
+  valid: boolean;
+  error?: string;
+}
+
+export function validateCommand(command: AdapterCommand): CommandValidationResult {
+  const schema = commandSchemas[command.type];
+  if (!schema) {
+    return { valid: false, error: `Unknown command type: ${command.type}` };
+  }
+
+  const result = schema.safeParse(command.value);
+  if (!result.success) {
+    const issues = result.error.issues.map((i) => i.message).join('; ');
+    return {
+      valid: false,
+      error: `Invalid value for ${command.type}: ${issues}`,
+    };
+  }
+
+  if (!checkRateLimit(command.type)) {
+    return {
+      valid: false,
+      error: `Rate limit exceeded for ${command.type} (max ${RATE_LIMIT_MAX}/min)`,
+    };
+  }
+
+  return { valid: true };
+}
+
+/** Whether this command needs a user confirmation dialog */
+export function requiresConfirmation(command: AdapterCommand): boolean {
+  return DANGER_COMMANDS.has(command.type);
+}
+
+// ─── Audit Trail ─────────────────────────────────────────────────────
+
+export interface CommandAuditEntry {
+  id?: number;
+  timestamp: number;
+  commandType: AdapterCommandType;
+  value: unknown;
+  targetDeviceId?: string;
+  status: 'confirmed' | 'rejected' | 'executed' | 'failed' | 'emergency_stop';
+  error?: string;
+  adapterId?: string;
+}
+
+/**
+ * Log a command event to IndexedDB for audit.
+ * Non-blocking — errors are swallowed silently.
+ */
+export async function logCommandAudit(entry: Omit<CommandAuditEntry, 'id'>): Promise<void> {
+  try {
+    await nexusDb.table('commandAudit').add(entry);
+
+    // Auto-cleanup: keep max 5000 entries
+    const count = await nexusDb.table('commandAudit').count();
+    if (count > 5000) {
+      const oldest = await nexusDb
+        .table('commandAudit')
+        .orderBy('timestamp')
+        .limit(count - 5000)
+        .primaryKeys();
+      await nexusDb.table('commandAudit').bulkDelete(oldest);
+    }
+  } catch {
+    // Audit logging should never break the command flow
+    if (import.meta.env.DEV) {
+      console.warn('[CommandSafety] Failed to log audit entry');
+    }
+  }
+}
+
+/**
+ * Get human-readable description of a command for the confirmation dialog.
+ */
+export function describeCommand(command: AdapterCommand): {
+  labelKey: string;
+  severity: 'danger' | 'warning';
+} {
+  switch (command.type) {
+    case 'SET_BATTERY_POWER':
+    case 'SET_BATTERY_MODE':
+      return { labelKey: 'safety.confirmBattery', severity: 'warning' };
+    case 'SET_V2X_DISCHARGE':
+      return { labelKey: 'safety.confirmV2X', severity: 'danger' };
+    case 'SET_GRID_LIMIT':
+      return { labelKey: 'safety.confirmGridLimit', severity: 'danger' };
+    case 'SET_EV_POWER':
+    case 'SET_EV_CURRENT':
+    case 'START_CHARGING':
+    case 'STOP_CHARGING':
+      return { labelKey: 'safety.confirmEV', severity: 'warning' };
+    case 'SET_HEAT_PUMP_MODE':
+    case 'SET_HEAT_PUMP_POWER':
+      return { labelKey: 'safety.confirmHeatPump', severity: 'warning' };
+    default:
+      return { labelKey: 'safety.confirmGeneric', severity: 'warning' };
+  }
+}

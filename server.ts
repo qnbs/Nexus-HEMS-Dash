@@ -2,6 +2,7 @@ import express from 'express';
 import { createServer as createViteServer } from 'vite';
 import { WebSocketServer } from 'ws';
 import http from 'http';
+import rateLimit from 'express-rate-limit';
 
 // ─── Prometheus Metrics (server-side) ─────────────────────────────
 interface ServerMetricSample {
@@ -138,6 +139,64 @@ function updateServerMetrics(data: Record<string, number>): void {
 async function startServer() {
   const app = express();
   const PORT = 3000;
+
+  // ─── Rate Limiting ───────────────────────────────────────────────────
+  const apiLimiter = rateLimit({
+    windowMs: 60_000,
+    max: 60,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Too many requests, please try again later.' },
+  });
+
+  app.use('/api/', apiLimiter);
+
+  // Parse JSON for POST routes
+  app.use(express.json({ limit: '10kb' }));
+
+  // ─── Input Validation for WS commands ────────────────────────────
+  const VALID_COMMAND_TYPES = new Set([
+    'SET_EV_POWER',
+    'SET_HEAT_PUMP_POWER',
+    'SET_BATTERY_POWER',
+    'SET_EV_CURRENT',
+    'START_CHARGING',
+    'STOP_CHARGING',
+    'SET_V2X_DISCHARGE',
+    'SET_HEAT_PUMP_MODE',
+    'SET_BATTERY_MODE',
+    'SET_GRID_LIMIT',
+    'KNX_TOGGLE_LIGHTS',
+    'KNX_SET_TEMPERATURE',
+    'KNX_TOGGLE_WINDOW',
+  ]);
+
+  function validateWSCommand(parsed: Record<string, unknown>): { valid: boolean; error?: string } {
+    if (!parsed || typeof parsed !== 'object')
+      return { valid: false, error: 'Invalid message format' };
+    const type = parsed.type as string;
+    if (!type || !VALID_COMMAND_TYPES.has(type))
+      return { valid: false, error: `Unknown command: ${type}` };
+    const value = parsed.value;
+    if (value === undefined || value === null) return { valid: false, error: 'Missing value' };
+    if (typeof value === 'number') {
+      if (!Number.isFinite(value)) return { valid: false, error: 'Value must be finite' };
+      // Reject negative power values for power-setting commands
+      if (
+        type.startsWith('SET_EV_') ||
+        type === 'SET_HEAT_PUMP_POWER' ||
+        type === 'SET_GRID_LIMIT'
+      ) {
+        if (value < 0) return { valid: false, error: `Negative value not allowed for ${type}` };
+      }
+      if (Math.abs(value) > 50_000)
+        return { valid: false, error: 'Value exceeds safety limit (50 kW)' };
+    }
+    return { valid: true };
+  }
+
+  // Per-client WS command rate tracking
+  const wsRateLimits = new WeakMap<import('ws').WebSocket, { count: number; resetAt: number }>();
 
   const server = http.createServer(app);
   const wss = new WebSocketServer({ server });
@@ -312,8 +371,30 @@ async function startServer() {
 
     ws.on('message', (message) => {
       wsMessageCount.inbound++;
+
+      // Rate limit per WebSocket client
+      const now = Date.now();
+      let rl = wsRateLimits.get(ws);
+      if (!rl || now > rl.resetAt) {
+        rl = { count: 0, resetAt: now + 60_000 };
+        wsRateLimits.set(ws, rl);
+      }
+      rl.count++;
+      if (rl.count > 30) {
+        ws.send(JSON.stringify({ type: 'ERROR', error: 'Rate limit exceeded (30 cmd/min)' }));
+        return;
+      }
+
       try {
         const parsed = JSON.parse(message.toString());
+
+        // Validate command
+        const validation = validateWSCommand(parsed);
+        if (!validation.valid) {
+          ws.send(JSON.stringify({ type: 'ERROR', error: validation.error }));
+          return;
+        }
+
         if (parsed.type === 'SET_EV_POWER') {
           mockData.evPower = parsed.value;
         } else if (parsed.type === 'SET_HEAT_PUMP_POWER') {

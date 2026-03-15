@@ -30,6 +30,9 @@ import { ModbusSunSpecAdapter } from './adapters/ModbusSunSpecAdapter';
 import { KNXAdapter } from './adapters/KNXAdapter';
 import { OCPP21Adapter } from './adapters/OCPP21Adapter';
 import { EEBUSAdapter } from './adapters/EEBUSAdapter';
+import { CircuitBreaker } from './circuit-breaker';
+import type { CircuitState } from './circuit-breaker';
+import { validateCommand, logCommandAudit } from './command-safety';
 
 // ─── Adapter registry ────────────────────────────────────────────────
 
@@ -40,6 +43,8 @@ export interface AdapterEntry {
   enabled: boolean;
   status: AdapterStatus;
   error?: string;
+  circuitBreaker: CircuitBreaker;
+  circuitState: CircuitState;
 }
 
 export interface EnergyStoreState {
@@ -94,26 +99,36 @@ function createDefaultAdapters(): Record<AdapterId, AdapterEntry> {
       adapter: createAdapterInstance('victron-mqtt'),
       enabled: true, // Primary adapter — always enabled by default
       status: 'disconnected',
+      circuitBreaker: new CircuitBreaker(),
+      circuitState: 'closed',
     },
     'modbus-sunspec': {
       adapter: createAdapterInstance('modbus-sunspec'),
       enabled: false,
       status: 'disconnected',
+      circuitBreaker: new CircuitBreaker(),
+      circuitState: 'closed',
     },
     knx: {
       adapter: createAdapterInstance('knx'),
       enabled: false,
       status: 'disconnected',
+      circuitBreaker: new CircuitBreaker(),
+      circuitState: 'closed',
     },
     'ocpp-21': {
       adapter: createAdapterInstance('ocpp-21'),
       enabled: false,
       status: 'disconnected',
+      circuitBreaker: new CircuitBreaker(),
+      circuitState: 'closed',
     },
     eebus: {
       adapter: createAdapterInstance('eebus'),
       enabled: false,
       status: 'disconnected',
+      circuitBreaker: new CircuitBreaker(),
+      circuitState: 'closed',
     },
   };
 }
@@ -187,16 +202,44 @@ function deepMergeModel(
 
 /**
  * sendAdapterCommand — Sends a command to all connected adapters.
+ * Validates input via Zod schemas and logs to audit trail.
  * Pure function using getState(), no React hook required.
  */
 export function sendAdapterCommand(command: AdapterCommand): void {
+  // Validate command before sending
+  const validation = validateCommand(command);
+  if (!validation.valid) {
+    if (import.meta.env.DEV) {
+      console.warn(`[sendAdapterCommand] Rejected: ${validation.error}`);
+    }
+    void logCommandAudit({
+      timestamp: Date.now(),
+      commandType: command.type,
+      value: command.value,
+      targetDeviceId: command.targetDeviceId,
+      status: 'rejected',
+      error: validation.error,
+    });
+    return;
+  }
+
   const entries = Object.entries(useEnergyStoreBase.getState().adapters) as [
     AdapterId,
     AdapterEntry,
   ][];
-  for (const [, entry] of entries) {
-    if (entry.enabled && entry.status === 'connected') {
-      void entry.adapter.sendCommand(command);
+  for (const [id, entry] of entries) {
+    if (entry.enabled && entry.status === 'connected' && entry.circuitBreaker.canExecute()) {
+      void entry.adapter.sendCommand(command).then((success) => {
+        void logCommandAudit({
+          timestamp: Date.now(),
+          commandType: command.type,
+          value: command.value,
+          targetDeviceId: command.targetDeviceId,
+          status: success ? 'executed' : 'failed',
+          adapterId: id,
+          error: success ? undefined : 'Adapter rejected command',
+        });
+      });
     }
   }
 }
@@ -224,9 +267,24 @@ export function useAdapterBridge() {
     for (const [id, entry] of entries) {
       if (!entry.enabled) continue;
 
+      // Wire circuit breaker state changes into the store
+      entry.circuitBreaker.onStateChange((circuitState) => {
+        useEnergyStoreBase.setState((state) => {
+          const existing = state.adapters[id];
+          if (!existing) return state;
+          return {
+            adapters: {
+              ...state.adapters,
+              [id]: { ...existing, circuitState },
+            },
+          };
+        });
+      });
+
       // Subscribe to data
       entry.adapter.onData((data) => {
         mergeData(id, data);
+        entry.circuitBreaker.recordSuccess();
 
         // Bridge to legacy store
         bridgeToAppStore(data, setEnergyData);
@@ -241,6 +299,10 @@ export function useAdapterBridge() {
       entry.adapter.onStatus((status, error) => {
         setAdapterStatus(id, status, error);
 
+        if (status === 'error') {
+          entry.circuitBreaker.recordFailure();
+        }
+
         // Bridge connection status (connected if any adapter is connected)
         const currentAdapters = useEnergyStoreBase.getState().adapters;
         const anyConn = Object.values(currentAdapters).some(
@@ -249,12 +311,15 @@ export function useAdapterBridge() {
         setConnected(anyConn);
       });
 
-      // Connect
-      void entry.adapter.connect();
+      // Connect (only if circuit breaker allows)
+      if (entry.circuitBreaker.canExecute()) {
+        void entry.adapter.connect();
+      }
     }
 
     return () => {
       for (const [, entry] of entries) {
+        entry.circuitBreaker.destroy();
         entry.adapter.destroy();
       }
     };
