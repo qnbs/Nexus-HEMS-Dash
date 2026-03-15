@@ -16,16 +16,13 @@
  */
 
 import type {
-  EnergyAdapter,
-  AdapterStatus,
   AdapterCapability,
   AdapterConnectionConfig,
   AdapterCommand,
-  AdapterDataCallback,
-  AdapterStatusCallback,
   UnifiedEnergyModel,
   EVChargerData,
 } from './EnergyAdapter';
+import { BaseAdapter } from './BaseAdapter';
 
 // ─── OCPP 2.1 message types ─────────────────────────────────────────
 
@@ -81,20 +78,13 @@ const DEFAULT_RECONNECT = {
   backoffMultiplier: 2,
 };
 
-export class OCPP21Adapter implements EnergyAdapter {
+export class OCPP21Adapter extends BaseAdapter {
   readonly id = 'ocpp-21';
   readonly name = 'OCPP 2.1 Charging Station';
   readonly capabilities: AdapterCapability[] = ['evCharger'];
 
-  private _status: AdapterStatus = 'disconnected';
   private ws: WebSocket | null = null;
-  private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
-  private retryDelay: number;
-  private destroyed = false;
   private msgCounter = 0;
-
-  private dataCallbacks: AdapterDataCallback[] = [];
-  private statusCallbacks: AdapterStatusCallback[] = [];
 
   private charger: ChargerState = {
     connectorStatus: 'Available',
@@ -109,104 +99,31 @@ export class OCPP21Adapter implements EnergyAdapter {
     v2xActive: false,
   };
 
-  private readonly config: AdapterConnectionConfig;
-
   constructor(config?: Partial<AdapterConnectionConfig>) {
-    this.config = {
+    super({
       name: 'OCPP 2.1 CSMS',
       host: config?.host ?? '192.168.1.200',
       port: config?.port ?? 9000,
       tls: config?.tls ?? true,
       reconnect: { ...DEFAULT_RECONNECT, ...config?.reconnect },
       ...config,
-    };
-    this.retryDelay = this.config.reconnect?.initialDelayMs ?? DEFAULT_RECONNECT.initialDelayMs;
+    });
   }
 
-  get status(): AdapterStatus {
-    return this._status;
-  }
+  // ─── BaseAdapter abstract implementations ─────────────────────────
 
-  // ─── Lifecycle ────────────────────────────────────────────────────
-
-  async connect(): Promise<void> {
-    if (this._status === 'connected' || this._status === 'connecting') return;
-    this.destroyed = false;
-    this.doConnect();
-  }
-
-  async disconnect(): Promise<void> {
-    this.clearReconnect();
-    this.ws?.close();
-    this.ws = null;
-    this.setStatus('disconnected');
-  }
-
-  destroy(): void {
-    this.destroyed = true;
-    void this.disconnect();
-    this.dataCallbacks = [];
-    this.statusCallbacks = [];
-  }
-
-  // ─── Subscriptions ───────────────────────────────────────────────
-
-  onData(callback: AdapterDataCallback): void {
-    this.dataCallbacks.push(callback);
-  }
-
-  onStatus(callback: AdapterStatusCallback): void {
-    this.statusCallbacks.push(callback);
-  }
-
-  // ─── Commands ─────────────────────────────────────────────────────
-
-  async sendCommand(command: AdapterCommand): Promise<boolean> {
-    if (this.ws?.readyState !== WebSocket.OPEN) return false;
-
-    switch (command.type) {
-      case 'SET_EV_CURRENT':
-        return this.sendSetChargingProfile(Number(command.value));
-      case 'START_CHARGING':
-        return this.sendRemoteStart();
-      case 'STOP_CHARGING':
-        return this.sendRemoteStop();
-      case 'SET_V2X_DISCHARGE':
-        return this.sendV2XDischarge(Number(command.value));
-      case 'SET_EV_POWER':
-        // Convert power (W) to current (A) at nominal voltage
-        return this.sendSetChargingProfile(
-          Math.round(Number(command.value) / this.charger.voltageV),
-        );
-      default:
-        return false;
-    }
-  }
-
-  getSnapshot(): Partial<UnifiedEnergyModel> {
-    return { evCharger: this.toEVChargerData() };
-  }
-
-  // ─── Internal ─────────────────────────────────────────────────────
-
-  private doConnect(): void {
+  protected async _connect(): Promise<void> {
     this.setStatus('connecting');
 
     const protocol = this.config.tls ? 'wss:' : 'ws:';
     const wsUrl = `${protocol}//${this.config.host}:${this.config.port}/ocpp`;
-
-    // OCPP 2.1 requires subprotocol "ocpp2.1"
     const ws = new WebSocket(wsUrl, ['ocpp2.1']);
 
     ws.onopen = () => {
-      this.retryDelay = this.config.reconnect?.initialDelayMs ?? DEFAULT_RECONNECT.initialDelayMs;
+      this.resetRetryDelay();
       this.setStatus('connected');
-      // Send BootNotification
       this.sendCall('BootNotification', {
-        chargingStation: {
-          model: 'NexusHEMS-Virtual',
-          vendorName: 'NexusDash',
-        },
+        chargingStation: { model: 'NexusHEMS-Virtual', vendorName: 'NexusDash' },
         reason: 'PowerUp',
       });
     };
@@ -222,9 +139,7 @@ export class OCPP21Adapter implements EnergyAdapter {
 
     ws.onclose = () => {
       this.setStatus('disconnected');
-      if (!this.destroyed && this.config.reconnect?.enabled) {
-        this.scheduleReconnect();
-      }
+      this.scheduleReconnect();
     };
 
     ws.onerror = () => {
@@ -233,6 +148,43 @@ export class OCPP21Adapter implements EnergyAdapter {
 
     this.ws = ws;
   }
+
+  protected async _disconnect(): Promise<void> {
+    this.ws?.close();
+    this.ws = null;
+  }
+
+  protected async _sendCommand(command: AdapterCommand): Promise<boolean> {
+    if (this.ws?.readyState !== WebSocket.OPEN) return false;
+
+    switch (command.type) {
+      case 'SET_EV_CURRENT':
+        return this.sendSetChargingProfile(Number(command.value));
+      case 'START_CHARGING':
+        return this.sendRemoteStart();
+      case 'STOP_CHARGING':
+        return this.sendRemoteStop();
+      case 'SET_V2X_DISCHARGE':
+        return this.sendV2XDischarge(Number(command.value));
+      case 'SET_EV_POWER':
+        return this.sendSetChargingProfile(
+          Math.round(Number(command.value) / this.charger.voltageV),
+        );
+      default:
+        return false;
+    }
+  }
+
+  protected _cleanup(): void {
+    this.ws?.close();
+    this.ws = null;
+  }
+
+  override getSnapshot(): Partial<UnifiedEnergyModel> {
+    return { evCharger: this.toEVChargerData() };
+  }
+
+  // ─── Internal ─────────────────────────────────────────────────────
 
   private handleMessage(msg: OCPPCall): void {
     const messageType = msg[0];
@@ -270,7 +222,7 @@ export class OCPP21Adapter implements EnergyAdapter {
       this.charger.connectorStatus = status;
       this.charger.vehicleConnected = status === 'Occupied';
     }
-    this.emitData();
+    this.emitChargerData();
   }
 
   private handleTransactionEvent(event: OCPPTransactionEvent): void {
@@ -307,7 +259,7 @@ export class OCPP21Adapter implements EnergyAdapter {
       this.charger.currentA = 0;
     }
 
-    this.emitData();
+    this.emitChargerData();
   }
 
   private handleMeterValues(payload: Record<string, unknown>): void {
@@ -325,15 +277,14 @@ export class OCPP21Adapter implements EnergyAdapter {
       }
     }
 
-    this.emitData();
+    this.emitChargerData();
   }
 
-  private emitData(): void {
-    const model: Partial<UnifiedEnergyModel> = {
+  private emitChargerData(): void {
+    this.emitData({
       timestamp: Date.now(),
       evCharger: this.toEVChargerData(),
-    };
-    for (const cb of this.dataCallbacks) cb(model);
+    });
   }
 
   private toEVChargerData(): EVChargerData {
@@ -432,28 +383,5 @@ export class OCPP21Adapter implements EnergyAdapter {
     });
     this.charger.v2xActive = dischargePowerW > 0;
     return true;
-  }
-
-  private scheduleReconnect(): void {
-    this.clearReconnect();
-    this.reconnectTimer = setTimeout(() => {
-      const maxDelay = this.config.reconnect?.maxDelayMs ?? DEFAULT_RECONNECT.maxDelayMs;
-      const multiplier =
-        this.config.reconnect?.backoffMultiplier ?? DEFAULT_RECONNECT.backoffMultiplier;
-      this.retryDelay = Math.min(this.retryDelay * multiplier, maxDelay);
-      this.doConnect();
-    }, this.retryDelay);
-  }
-
-  private clearReconnect(): void {
-    if (this.reconnectTimer) {
-      clearTimeout(this.reconnectTimer);
-      this.reconnectTimer = null;
-    }
-  }
-
-  private setStatus(status: AdapterStatus, error?: string): void {
-    this._status = status;
-    for (const cb of this.statusCallbacks) cb(status, error);
   }
 }

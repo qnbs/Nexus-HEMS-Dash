@@ -30,9 +30,9 @@ import { ModbusSunSpecAdapter } from './adapters/ModbusSunSpecAdapter';
 import { KNXAdapter } from './adapters/KNXAdapter';
 import { OCPP21Adapter } from './adapters/OCPP21Adapter';
 import { EEBUSAdapter } from './adapters/EEBUSAdapter';
-import { CircuitBreaker } from './circuit-breaker';
+import { BaseAdapter } from './adapters/BaseAdapter';
 import type { CircuitState } from './circuit-breaker';
-import { validateCommand, logCommandAudit } from './command-safety';
+import { validateCommand } from './command-safety';
 
 // ─── Adapter registry ────────────────────────────────────────────────
 
@@ -43,7 +43,6 @@ export interface AdapterEntry {
   enabled: boolean;
   status: AdapterStatus;
   error?: string;
-  circuitBreaker: CircuitBreaker;
   circuitState: CircuitState;
 }
 
@@ -99,35 +98,30 @@ function createDefaultAdapters(): Record<AdapterId, AdapterEntry> {
       adapter: createAdapterInstance('victron-mqtt'),
       enabled: true, // Primary adapter — always enabled by default
       status: 'disconnected',
-      circuitBreaker: new CircuitBreaker(),
       circuitState: 'closed',
     },
     'modbus-sunspec': {
       adapter: createAdapterInstance('modbus-sunspec'),
       enabled: false,
       status: 'disconnected',
-      circuitBreaker: new CircuitBreaker(),
       circuitState: 'closed',
     },
     knx: {
       adapter: createAdapterInstance('knx'),
       enabled: false,
       status: 'disconnected',
-      circuitBreaker: new CircuitBreaker(),
       circuitState: 'closed',
     },
     'ocpp-21': {
       adapter: createAdapterInstance('ocpp-21'),
       enabled: false,
       status: 'disconnected',
-      circuitBreaker: new CircuitBreaker(),
       circuitState: 'closed',
     },
     eebus: {
       adapter: createAdapterInstance('eebus'),
       enabled: false,
       status: 'disconnected',
-      circuitBreaker: new CircuitBreaker(),
       circuitState: 'closed',
     },
   };
@@ -202,24 +196,15 @@ function deepMergeModel(
 
 /**
  * sendAdapterCommand — Sends a command to all connected adapters.
- * Validates input via Zod schemas and logs to audit trail.
- * Pure function using getState(), no React hook required.
+ * BaseAdapter.sendCommand() handles validation, circuit breaker, audit trail.
  */
 export function sendAdapterCommand(command: AdapterCommand): void {
-  // Validate command before sending
+  // Quick pre-check (adapter validates again independently — defense in depth)
   const validation = validateCommand(command);
   if (!validation.valid) {
     if (import.meta.env.DEV) {
       console.warn(`[sendAdapterCommand] Rejected: ${validation.error}`);
     }
-    void logCommandAudit({
-      timestamp: Date.now(),
-      commandType: command.type,
-      value: command.value,
-      targetDeviceId: command.targetDeviceId,
-      status: 'rejected',
-      error: validation.error,
-    });
     return;
   }
 
@@ -227,19 +212,10 @@ export function sendAdapterCommand(command: AdapterCommand): void {
     AdapterId,
     AdapterEntry,
   ][];
-  for (const [id, entry] of entries) {
-    if (entry.enabled && entry.status === 'connected' && entry.circuitBreaker.canExecute()) {
-      void entry.adapter.sendCommand(command).then((success) => {
-        void logCommandAudit({
-          timestamp: Date.now(),
-          commandType: command.type,
-          value: command.value,
-          targetDeviceId: command.targetDeviceId,
-          status: success ? 'executed' : 'failed',
-          adapterId: id,
-          error: success ? undefined : 'Adapter rejected command',
-        });
-      });
+  for (const [, entry] of entries) {
+    if (entry.enabled && entry.status === 'connected') {
+      // BaseAdapter.sendCommand() handles CB + validation + confirm + audit internally
+      void entry.adapter.sendCommand(command);
     }
   }
 }
@@ -267,8 +243,10 @@ export function useAdapterBridge() {
     for (const [id, entry] of entries) {
       if (!entry.enabled) continue;
 
+      const baseAdapter = entry.adapter as BaseAdapter;
+
       // Wire circuit breaker state changes into the store
-      entry.circuitBreaker.onStateChange((circuitState) => {
+      baseAdapter.circuitBreaker.onStateChange((circuitState) => {
         useEnergyStoreBase.setState((state) => {
           const existing = state.adapters[id];
           if (!existing) return state;
@@ -284,7 +262,6 @@ export function useAdapterBridge() {
       // Subscribe to data
       entry.adapter.onData((data) => {
         mergeData(id, data);
-        entry.circuitBreaker.recordSuccess();
 
         // Bridge to legacy store
         bridgeToAppStore(data, setEnergyData);
@@ -299,10 +276,6 @@ export function useAdapterBridge() {
       entry.adapter.onStatus((status, error) => {
         setAdapterStatus(id, status, error);
 
-        if (status === 'error') {
-          entry.circuitBreaker.recordFailure();
-        }
-
         // Bridge connection status (connected if any adapter is connected)
         const currentAdapters = useEnergyStoreBase.getState().adapters;
         const anyConn = Object.values(currentAdapters).some(
@@ -312,14 +285,13 @@ export function useAdapterBridge() {
       });
 
       // Connect (only if circuit breaker allows)
-      if (entry.circuitBreaker.canExecute()) {
+      if (baseAdapter.circuitBreaker.canExecute()) {
         void entry.adapter.connect();
       }
     }
 
     return () => {
       for (const [, entry] of entries) {
-        entry.circuitBreaker.destroy();
         entry.adapter.destroy();
       }
     };

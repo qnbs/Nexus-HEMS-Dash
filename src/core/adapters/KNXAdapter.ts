@@ -14,16 +14,13 @@
  */
 
 import type {
-  EnergyAdapter,
-  AdapterStatus,
   AdapterCapability,
   AdapterConnectionConfig,
   AdapterCommand,
-  AdapterDataCallback,
-  AdapterStatusCallback,
   UnifiedEnergyModel,
   KNXRoom,
 } from './EnergyAdapter';
+import { BaseAdapter } from './BaseAdapter';
 
 // ─── KNX telegram message from bridge ────────────────────────────────
 
@@ -91,81 +88,80 @@ const DEFAULT_RECONNECT = {
   backoffMultiplier: 1.5,
 };
 
-export class KNXAdapter implements EnergyAdapter {
+export class KNXAdapter extends BaseAdapter {
   readonly id = 'knx';
   readonly name = 'KNX/IP Gateway';
   readonly capabilities: AdapterCapability[] = ['knx'];
 
-  private _status: AdapterStatus = 'disconnected';
   private ws: WebSocket | null = null;
-  private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
-  private retryDelay: number;
-  private destroyed = false;
-
-  private dataCallbacks: AdapterDataCallback[] = [];
-  private statusCallbacks: AdapterStatusCallback[] = [];
 
   /** Live room state, keyed by room id */
   private rooms: Map<string, KNXRoom> = new Map();
   /** GA → room id + field mapping */
   private gaIndex: Map<string, { roomId: string; field: string }> = new Map();
 
-  private readonly config: AdapterConnectionConfig;
   private readonly roomConfigs: KNXRoomConfig[];
 
   constructor(config?: Partial<AdapterConnectionConfig>, roomConfigs?: KNXRoomConfig[]) {
-    this.config = {
+    super({
       name: 'KNX/IP',
       host: config?.host ?? '192.168.1.101',
       port: config?.port ?? 3671,
       tls: config?.tls ?? false,
       reconnect: { ...DEFAULT_RECONNECT, ...config?.reconnect },
       ...config,
-    };
-    this.retryDelay = this.config.reconnect?.initialDelayMs ?? DEFAULT_RECONNECT.initialDelayMs;
+    });
     this.roomConfigs = roomConfigs ?? DEFAULT_ROOMS;
     this.initRooms();
   }
 
-  get status(): AdapterStatus {
-    return this._status;
+  override getSnapshot(): Partial<UnifiedEnergyModel> {
+    return {
+      knx: { rooms: Array.from(this.rooms.values()) },
+    };
   }
 
-  // ─── Lifecycle ────────────────────────────────────────────────────
+  // ─── BaseAdapter abstract implementations ─────────────────────────
 
-  async connect(): Promise<void> {
-    if (this._status === 'connected' || this._status === 'connecting') return;
-    this.destroyed = false;
-    this.doConnect();
+  protected async _connect(): Promise<void> {
+    this.setStatus('connecting');
+
+    const protocol = this.config.tls ? 'wss:' : 'ws:';
+    const wsUrl = `${protocol}//${this.config.host}:${this.config.port}`;
+    const ws = new WebSocket(wsUrl);
+
+    ws.onopen = () => {
+      this.resetRetryDelay();
+      this.setStatus('connected');
+    };
+
+    ws.onmessage = (event: MessageEvent) => {
+      try {
+        const telegram = JSON.parse(String(event.data)) as KNXTelegram;
+        this.handleTelegram(telegram);
+      } catch {
+        // Ignore non-JSON
+      }
+    };
+
+    ws.onclose = () => {
+      this.setStatus('disconnected');
+      this.scheduleReconnect();
+    };
+
+    ws.onerror = () => {
+      ws.close();
+    };
+
+    this.ws = ws;
   }
 
-  async disconnect(): Promise<void> {
-    this.clearReconnect();
+  protected async _disconnect(): Promise<void> {
     this.ws?.close();
     this.ws = null;
-    this.setStatus('disconnected');
   }
 
-  destroy(): void {
-    this.destroyed = true;
-    void this.disconnect();
-    this.dataCallbacks = [];
-    this.statusCallbacks = [];
-  }
-
-  // ─── Subscriptions ───────────────────────────────────────────────
-
-  onData(callback: AdapterDataCallback): void {
-    this.dataCallbacks.push(callback);
-  }
-
-  onStatus(callback: AdapterStatusCallback): void {
-    this.statusCallbacks.push(callback);
-  }
-
-  // ─── Commands ─────────────────────────────────────────────────────
-
-  async sendCommand(command: AdapterCommand): Promise<boolean> {
+  protected async _sendCommand(command: AdapterCommand): Promise<boolean> {
     if (this.ws?.readyState !== WebSocket.OPEN) return false;
 
     let telegram: { ga: string; value: boolean | number | string } | null = null;
@@ -188,10 +184,9 @@ export class KNXAdapter implements EnergyAdapter {
     return true;
   }
 
-  getSnapshot(): Partial<UnifiedEnergyModel> {
-    return {
-      knx: { rooms: Array.from(this.rooms.values()) },
-    };
+  protected _cleanup(): void {
+    this.ws?.close();
+    this.ws = null;
   }
 
   // ─── Internal ─────────────────────────────────────────────────────
@@ -215,41 +210,6 @@ export class KNXAdapter implements EnergyAdapter {
       if (cfg.humidityGA) this.gaIndex.set(cfg.humidityGA, { roomId: cfg.id, field: 'humidity' });
       if (cfg.co2GA) this.gaIndex.set(cfg.co2GA, { roomId: cfg.id, field: 'co2ppm' });
     }
-  }
-
-  private doConnect(): void {
-    this.setStatus('connecting');
-
-    const protocol = this.config.tls ? 'wss:' : 'ws:';
-    const wsUrl = `${protocol}//${this.config.host}:${this.config.port}`;
-    const ws = new WebSocket(wsUrl);
-
-    ws.onopen = () => {
-      this.retryDelay = this.config.reconnect?.initialDelayMs ?? DEFAULT_RECONNECT.initialDelayMs;
-      this.setStatus('connected');
-    };
-
-    ws.onmessage = (event: MessageEvent) => {
-      try {
-        const telegram = JSON.parse(String(event.data)) as KNXTelegram;
-        this.handleTelegram(telegram);
-      } catch {
-        // Ignore non-JSON
-      }
-    };
-
-    ws.onclose = () => {
-      this.setStatus('disconnected');
-      if (!this.destroyed && this.config.reconnect?.enabled) {
-        this.scheduleReconnect();
-      }
-    };
-
-    ws.onerror = () => {
-      ws.close();
-    };
-
-    this.ws = ws;
   }
 
   private handleTelegram(telegram: KNXTelegram): void {
@@ -287,33 +247,9 @@ export class KNXAdapter implements EnergyAdapter {
     this.rooms.set(mapping.roomId, room);
 
     // Emit snapshot with all rooms
-    const model: Partial<UnifiedEnergyModel> = {
+    this.emitData({
       timestamp: Date.now(),
       knx: { rooms: Array.from(this.rooms.values()) },
-    };
-    for (const cb of this.dataCallbacks) cb(model);
-  }
-
-  private scheduleReconnect(): void {
-    this.clearReconnect();
-    this.reconnectTimer = setTimeout(() => {
-      const maxDelay = this.config.reconnect?.maxDelayMs ?? DEFAULT_RECONNECT.maxDelayMs;
-      const multiplier =
-        this.config.reconnect?.backoffMultiplier ?? DEFAULT_RECONNECT.backoffMultiplier;
-      this.retryDelay = Math.min(this.retryDelay * multiplier, maxDelay);
-      this.doConnect();
-    }, this.retryDelay);
-  }
-
-  private clearReconnect(): void {
-    if (this.reconnectTimer) {
-      clearTimeout(this.reconnectTimer);
-      this.reconnectTimer = null;
-    }
-  }
-
-  private setStatus(status: AdapterStatus, error?: string): void {
-    this._status = status;
-    for (const cb of this.statusCallbacks) cb(status, error);
+    });
   }
 }

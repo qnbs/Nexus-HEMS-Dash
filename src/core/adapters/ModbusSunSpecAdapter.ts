@@ -18,18 +18,15 @@
  */
 
 import type {
-  EnergyAdapter,
-  AdapterStatus,
   AdapterCapability,
   AdapterConnectionConfig,
   AdapterCommand,
-  AdapterDataCallback,
-  AdapterStatusCallback,
   UnifiedEnergyModel,
   PVData,
   BatteryData,
   GridData,
 } from './EnergyAdapter';
+import { BaseAdapter } from './BaseAdapter';
 
 // ─── SunSpec register response shapes ────────────────────────────────
 
@@ -83,25 +80,17 @@ const DEFAULT_RECONNECT = {
   backoffMultiplier: 2,
 };
 
-export class ModbusSunSpecAdapter implements EnergyAdapter {
+export class ModbusSunSpecAdapter extends BaseAdapter {
   readonly id = 'modbus-sunspec';
   readonly name = 'Modbus TCP / SunSpec';
   readonly capabilities: AdapterCapability[] = ['pv', 'battery', 'grid'];
 
-  private _status: AdapterStatus = 'disconnected';
   private pollTimer: ReturnType<typeof setInterval> | null = null;
-  private destroyed = false;
   private consecutiveErrors = 0;
-
-  private dataCallbacks: AdapterDataCallback[] = [];
-  private statusCallbacks: AdapterStatusCallback[] = [];
-  private snapshot: Partial<UnifiedEnergyModel> = {};
-
-  private readonly config: AdapterConnectionConfig;
   private readonly baseUrl: string;
 
   constructor(config?: Partial<AdapterConnectionConfig>) {
-    this.config = {
+    super({
       name: 'Modbus SunSpec',
       host: config?.host ?? '192.168.1.100',
       port: config?.port ?? 502,
@@ -109,24 +98,17 @@ export class ModbusSunSpecAdapter implements EnergyAdapter {
       pollIntervalMs: config?.pollIntervalMs ?? DEFAULT_POLL_INTERVAL_MS,
       reconnect: { ...DEFAULT_RECONNECT, ...config?.reconnect },
       ...config,
-    };
+    });
     const proto = this.config.tls ? 'https' : 'http';
     this.baseUrl = `${proto}://${this.config.host}:${this.config.port}`;
   }
 
-  get status(): AdapterStatus {
-    return this._status;
-  }
+  // ─── BaseAdapter abstract implementations ─────────────────────────
 
-  // ─── Lifecycle ────────────────────────────────────────────────────
-
-  async connect(): Promise<void> {
-    if (this._status === 'connected' || this._status === 'connecting') return;
-    this.destroyed = false;
+  protected async _connect(): Promise<void> {
     this.setStatus('connecting');
 
     try {
-      // Test connectivity with a lightweight probe
       await this.fetchModel('common');
       this.consecutiveErrors = 0;
       this.setStatus('connected');
@@ -134,38 +116,15 @@ export class ModbusSunSpecAdapter implements EnergyAdapter {
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Connection failed';
       this.setStatus('error', msg);
-      if (this.config.reconnect?.enabled) {
-        this.scheduleReconnect();
-      }
+      this.scheduleReconnect();
     }
   }
 
-  async disconnect(): Promise<void> {
+  protected async _disconnect(): Promise<void> {
     this.stopPolling();
-    this.setStatus('disconnected');
   }
 
-  destroy(): void {
-    this.destroyed = true;
-    this.stopPolling();
-    this.dataCallbacks = [];
-    this.statusCallbacks = [];
-  }
-
-  // ─── Subscriptions ───────────────────────────────────────────────
-
-  onData(callback: AdapterDataCallback): void {
-    this.dataCallbacks.push(callback);
-  }
-
-  onStatus(callback: AdapterStatusCallback): void {
-    this.statusCallbacks.push(callback);
-  }
-
-  // ─── Commands ─────────────────────────────────────────────────────
-
-  async sendCommand(command: AdapterCommand): Promise<boolean> {
-    // Modbus write — only battery & grid limit supported
+  protected async _sendCommand(command: AdapterCommand): Promise<boolean> {
     const allowed = ['SET_BATTERY_POWER', 'SET_BATTERY_MODE', 'SET_GRID_LIMIT'];
     if (!allowed.includes(command.type)) return false;
 
@@ -183,6 +142,12 @@ export class ModbusSunSpecAdapter implements EnergyAdapter {
       return false;
     }
   }
+
+  protected _cleanup(): void {
+    this.stopPolling();
+  }
+
+  // ─── Poll (public — used by EnergyAdapter.poll?) ──────────────────
 
   async poll(): Promise<Partial<UnifiedEnergyModel>> {
     const [inverter, battery, meter] = await Promise.allSettled([
@@ -206,23 +171,18 @@ export class ModbusSunSpecAdapter implements EnergyAdapter {
     return model;
   }
 
-  getSnapshot(): Partial<UnifiedEnergyModel> {
-    return { ...this.snapshot };
-  }
-
   // ─── Internal ─────────────────────────────────────────────────────
 
   private startPolling(): void {
     this.stopPolling();
     const interval = this.config.pollIntervalMs ?? DEFAULT_POLL_INTERVAL_MS;
 
-    // Throttled polling: runs poll, waits for result, then schedules next
     const doPoll = async () => {
       try {
         const model = await this.poll();
         this.consecutiveErrors = 0;
         if (this._status !== 'connected') this.setStatus('connected');
-        for (const cb of this.dataCallbacks) cb(model);
+        this.emitData(model);
       } catch {
         this.consecutiveErrors++;
         if (this.consecutiveErrors >= 5) {
@@ -231,7 +191,7 @@ export class ModbusSunSpecAdapter implements EnergyAdapter {
       }
     };
 
-    void doPoll(); // Initial poll immediately
+    void doPoll();
     this.pollTimer = setInterval(() => void doPoll(), interval);
   }
 
@@ -240,19 +200,6 @@ export class ModbusSunSpecAdapter implements EnergyAdapter {
       clearInterval(this.pollTimer);
       this.pollTimer = null;
     }
-  }
-
-  private scheduleReconnect(): void {
-    if (this.destroyed) return;
-    const delay = this.config.reconnect?.initialDelayMs ?? DEFAULT_RECONNECT.initialDelayMs;
-    setTimeout(() => {
-      if (!this.destroyed) void this.connect();
-    }, delay);
-  }
-
-  private setStatus(status: AdapterStatus, error?: string): void {
-    this._status = status;
-    for (const cb of this.statusCallbacks) cb(status, error);
   }
 
   private async fetchModel<T>(model: string): Promise<T> {

@@ -12,15 +12,12 @@
  */
 
 import type {
-  EnergyAdapter,
-  AdapterStatus,
   AdapterCapability,
   AdapterConnectionConfig,
   AdapterCommand,
-  AdapterDataCallback,
-  AdapterStatusCallback,
   UnifiedEnergyModel,
 } from './EnergyAdapter';
+import { BaseAdapter } from './BaseAdapter';
 
 // ─── Gateway device type ─────────────────────────────────────────────
 
@@ -115,78 +112,75 @@ const DEFAULT_RECONNECT = {
   backoffMultiplier: 1.6,
 };
 
-export class VictronMQTTAdapter implements EnergyAdapter {
+export class VictronMQTTAdapter extends BaseAdapter {
   readonly id = 'victron-mqtt';
   readonly name = 'Victron Cerbo GX (Node-RED)';
   readonly capabilities: AdapterCapability[] = ['pv', 'battery', 'grid', 'load'];
 
-  private _status: AdapterStatus = 'disconnected';
   private ws: WebSocket | null = null;
-  private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
-  private retryDelay: number;
-  private destroyed = false;
-
-  private dataCallbacks: AdapterDataCallback[] = [];
-  private statusCallbacks: AdapterStatusCallback[] = [];
-  private snapshot: Partial<UnifiedEnergyModel> = {};
-
-  private readonly config: AdapterConnectionConfig;
 
   /** Detected or configured gateway hardware type */
   gatewayType: VictronGatewayType = 'cerbo-gx';
 
   constructor(config?: Partial<AdapterConnectionConfig> & { gatewayType?: VictronGatewayType }) {
-    this.config = {
+    super({
       name: 'Victron Cerbo GX',
       host: config?.host ?? window.location.hostname,
       port: config?.port ?? (window.location.port ? Number(window.location.port) : 443),
       tls: config?.tls ?? window.location.protocol === 'https:',
       reconnect: { ...DEFAULT_RECONNECT, ...config?.reconnect },
       ...config,
-    };
+    });
     this.gatewayType = config?.gatewayType ?? 'cerbo-gx';
-    this.retryDelay = this.config.reconnect?.initialDelayMs ?? DEFAULT_RECONNECT.initialDelayMs;
   }
 
-  get status(): AdapterStatus {
-    return this._status;
+  // ─── BaseAdapter abstract implementations ─────────────────────────
+
+  protected async _connect(): Promise<void> {
+    this.setStatus('connecting');
+
+    const protocol = this.config.tls ? 'wss:' : 'ws:';
+    const wsUrl = `${protocol}//${this.config.host}:${this.config.port}`;
+    const ws = new WebSocket(wsUrl);
+
+    ws.onopen = () => {
+      this.resetRetryDelay();
+      this.setStatus('connected');
+    };
+
+    ws.onmessage = (event: MessageEvent) => {
+      try {
+        const message = JSON.parse(String(event.data)) as NodeREDEnergyMessage;
+        if (message.type === 'ENERGY_UPDATE') {
+          if (message.data.gatewayType) {
+            this.gatewayType = message.data.gatewayType;
+          }
+          const model = this.toUnifiedModel(message.data);
+          this.emitData(model);
+        }
+      } catch {
+        // Non-JSON or unknown message format — ignore
+      }
+    };
+
+    ws.onclose = () => {
+      this.setStatus('disconnected');
+      this.scheduleReconnect();
+    };
+
+    ws.onerror = () => {
+      ws.close();
+    };
+
+    this.ws = ws;
   }
 
-  // ─── Lifecycle ────────────────────────────────────────────────────
-
-  async connect(): Promise<void> {
-    if (this._status === 'connected' || this._status === 'connecting') return;
-    this.destroyed = false;
-    this.doConnect();
-  }
-
-  async disconnect(): Promise<void> {
-    this.clearReconnect();
+  protected async _disconnect(): Promise<void> {
     this.ws?.close();
     this.ws = null;
-    this.setStatus('disconnected');
   }
 
-  destroy(): void {
-    this.destroyed = true;
-    void this.disconnect();
-    this.dataCallbacks = [];
-    this.statusCallbacks = [];
-  }
-
-  // ─── Subscriptions ───────────────────────────────────────────────
-
-  onData(callback: AdapterDataCallback): void {
-    this.dataCallbacks.push(callback);
-  }
-
-  onStatus(callback: AdapterStatusCallback): void {
-    this.statusCallbacks.push(callback);
-  }
-
-  // ─── Commands ─────────────────────────────────────────────────────
-
-  async sendCommand(command: AdapterCommand): Promise<boolean> {
+  protected async _sendCommand(command: AdapterCommand): Promise<boolean> {
     const mapped = this.mapCommand(command);
     if (!mapped) return false;
 
@@ -197,77 +191,12 @@ export class VictronMQTTAdapter implements EnergyAdapter {
     return false;
   }
 
-  getSnapshot(): Partial<UnifiedEnergyModel> {
-    return { ...this.snapshot };
+  protected _cleanup(): void {
+    this.ws?.close();
+    this.ws = null;
   }
 
-  // ─── Internal ─────────────────────────────────────────────────────
-
-  private doConnect(): void {
-    this.setStatus('connecting');
-
-    const protocol = this.config.tls ? 'wss:' : 'ws:';
-    const wsUrl = `${protocol}//${this.config.host}:${this.config.port}`;
-    const ws = new WebSocket(wsUrl);
-
-    ws.onopen = () => {
-      this.retryDelay = this.config.reconnect?.initialDelayMs ?? DEFAULT_RECONNECT.initialDelayMs;
-      this.setStatus('connected');
-    };
-
-    ws.onmessage = (event: MessageEvent) => {
-      try {
-        const message = JSON.parse(String(event.data)) as NodeREDEnergyMessage;
-        if (message.type === 'ENERGY_UPDATE') {
-          // Auto-detect gateway type if reported by Node-RED
-          if (message.data.gatewayType) {
-            this.gatewayType = message.data.gatewayType;
-          }
-          const model = this.toUnifiedModel(message.data);
-          this.snapshot = model;
-          for (const cb of this.dataCallbacks) cb(model);
-        }
-      } catch {
-        // Non-JSON or unknown message format — ignore
-      }
-    };
-
-    ws.onclose = () => {
-      this.setStatus('disconnected');
-      if (!this.destroyed && this.config.reconnect?.enabled) {
-        this.scheduleReconnect();
-      }
-    };
-
-    ws.onerror = () => {
-      ws.close();
-    };
-
-    this.ws = ws;
-  }
-
-  private scheduleReconnect(): void {
-    this.clearReconnect();
-    this.reconnectTimer = setTimeout(() => {
-      const maxDelay = this.config.reconnect?.maxDelayMs ?? DEFAULT_RECONNECT.maxDelayMs;
-      const multiplier =
-        this.config.reconnect?.backoffMultiplier ?? DEFAULT_RECONNECT.backoffMultiplier;
-      this.retryDelay = Math.min(this.retryDelay * multiplier, maxDelay);
-      this.doConnect();
-    }, this.retryDelay);
-  }
-
-  private clearReconnect(): void {
-    if (this.reconnectTimer) {
-      clearTimeout(this.reconnectTimer);
-      this.reconnectTimer = null;
-    }
-  }
-
-  private setStatus(status: AdapterStatus, error?: string): void {
-    this._status = status;
-    for (const cb of this.statusCallbacks) cb(status, error);
-  }
+  // ─── Private helpers ──────────────────────────────────────────────
 
   /** Map Node-RED's flat data to UnifiedEnergyModel */
   private toUnifiedModel(data: NodeREDEnergyMessage['data']): Partial<UnifiedEnergyModel> {

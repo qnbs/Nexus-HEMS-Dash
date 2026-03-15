@@ -22,16 +22,13 @@
  */
 
 import type {
-  EnergyAdapter,
-  AdapterStatus,
   AdapterCapability,
   AdapterCommand,
-  AdapterDataCallback,
-  AdapterStatusCallback,
   AdapterConnectionConfig,
   UnifiedEnergyModel,
   EVChargerData,
 } from './EnergyAdapter';
+import { BaseAdapter } from './BaseAdapter';
 
 // ─── EEBUS SPINE Data Types ──────────────────────────────────────────
 
@@ -166,18 +163,13 @@ interface SPINEMessage {
 
 // ─── Adapter Implementation ─────────────────────────────────────────
 
-export class EEBUSAdapter implements EnergyAdapter {
+export class EEBUSAdapter extends BaseAdapter {
   readonly id = 'eebus';
   readonly name = 'EEBUS SPINE/SHIP';
   readonly capabilities: AdapterCapability[] = ['evCharger', 'load', 'grid'];
 
-  private _status: AdapterStatus = 'disconnected';
-  private statusCallbacks: AdapterStatusCallback[] = [];
-  private dataCallbacks: AdapterDataCallback[] = [];
   private eventCallbacks: Array<(event: EEBUSConnectionEvent) => void> = [];
   private ws: WebSocket | null = null;
-  private config: AdapterConnectionConfig | null = null;
-  private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   private msgCounter = 0;
   private shipState: SHIPConnectionState = 'init';
   private discoveredDevices: Map<string, EEBUSDiscoveredDevice> = new Map();
@@ -186,10 +178,22 @@ export class EEBUSAdapter implements EnergyAdapter {
   private loadLimits: Map<number, EEBUSLoadControlLimit> = new Map();
   private incentives: EEBUSIncentive[] = [];
   private heartbeatInterval: ReturnType<typeof setInterval> | null = null;
-  private lastModel: Partial<UnifiedEnergyModel> = {};
 
-  get status(): AdapterStatus {
-    return this._status;
+  constructor(config?: Partial<AdapterConnectionConfig>) {
+    super({
+      name: 'EEBUS SPINE/SHIP',
+      host: config?.host ?? 'localhost',
+      port: config?.port ?? 4712,
+      tls: config?.tls ?? true,
+      reconnect: {
+        enabled: true,
+        initialDelayMs: 5000,
+        maxDelayMs: 30_000,
+        backoffMultiplier: 2,
+        ...config?.reconnect,
+      },
+      ...config,
+    });
   }
 
   get devices(): EEBUSDiscoveredDevice[] {
@@ -212,13 +216,12 @@ export class EEBUSAdapter implements EnergyAdapter {
     this.eventCallbacks.push(callback);
   }
 
-  async connect(config?: AdapterConnectionConfig): Promise<void> {
-    if (config) this.config = config;
-    if (!this.config) {
-      this.setStatus('error', 'No EEBUS connection configuration provided');
-      return;
-    }
+  override async connect(config?: AdapterConnectionConfig): Promise<void> {
+    if (config) Object.assign(this.config, config);
+    return super.connect();
+  }
 
+  protected async _connect(): Promise<void> {
     this.setStatus('connecting');
     this.shipState = 'init';
 
@@ -248,15 +251,11 @@ export class EEBUSAdapter implements EnergyAdapter {
       this.ws.onclose = (event) => {
         if (import.meta.env.DEV)
           console.log(`[EEBUS] WebSocket closed: ${event.code} ${event.reason}`);
-        this.cleanup();
+        this.stopHeartbeat();
         this.setStatus('disconnected');
         this.shipState = 'closed';
         this.emitEvent({ type: 'ship_state', shipState: 'closed' });
-
-        if (this.config?.reconnect?.enabled) {
-          const delay = this.config.reconnect.initialDelayMs ?? 5000;
-          this.reconnectTimer = setTimeout(() => this.connect(), delay);
-        }
+        this.scheduleReconnect();
       };
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'Connection failed';
@@ -265,40 +264,33 @@ export class EEBUSAdapter implements EnergyAdapter {
     }
   }
 
-  async disconnect(): Promise<void> {
-    this.cleanup();
+  protected async _disconnect(): Promise<void> {
+    this.stopHeartbeat();
     if (this.ws) {
       this.ws.close(1000, 'Client disconnect');
       this.ws = null;
     }
-    this.setStatus('disconnected');
     this.shipState = 'closed';
   }
 
-  destroy(): void {
-    this.cleanup();
-    if (this.ws) {
-      this.ws.close(1000, 'Adapter destroyed');
-      this.ws = null;
-    }
-    this.statusCallbacks = [];
-    this.dataCallbacks = [];
+  override destroy(): void {
     this.eventCallbacks = [];
     this.discoveredDevices.clear();
     this.pairedDevices.clear();
     this.measurements.clear();
     this.loadLimits.clear();
+    super.destroy();
   }
 
-  onData(callback: AdapterDataCallback): void {
-    this.dataCallbacks.push(callback);
+  protected _cleanup(): void {
+    this.stopHeartbeat();
+    if (this.ws) {
+      this.ws.close(1000, 'Adapter destroyed');
+      this.ws = null;
+    }
   }
 
-  onStatus(callback: AdapterStatusCallback): void {
-    this.statusCallbacks.push(callback);
-  }
-
-  async sendCommand(command: AdapterCommand): Promise<boolean> {
+  protected async _sendCommand(command: AdapterCommand): Promise<boolean> {
     if (this._status !== 'connected' || !this.ws) return false;
 
     try {
@@ -391,8 +383,8 @@ export class EEBUSAdapter implements EnergyAdapter {
         brand: 'EEBUS',
         model: 'EV Charging Station Pro',
         deviceType: 'EVCharger',
-        host: this.config?.host ?? '192.168.1.120',
-        port: this.config?.port ?? 4712,
+        host: this.config.host ?? '192.168.1.120',
+        port: this.config.port ?? 4712,
         path: '/ship/',
         register: true,
         trusted: this.pairedDevices.has('a1b2c3d4e5f6-evse'),
@@ -402,7 +394,7 @@ export class EEBUSAdapter implements EnergyAdapter {
         brand: 'EEBUS',
         model: 'SG-Ready Heat Pump CEM',
         deviceType: 'Compressor',
-        host: this.config?.host ?? '192.168.1.121',
+        host: this.config.host ?? '192.168.1.121',
         port: 4712,
         path: '/ship/',
         register: true,
@@ -413,7 +405,7 @@ export class EEBUSAdapter implements EnergyAdapter {
         brand: 'EEBUS',
         model: 'Hybrid Inverter CEM',
         deviceType: 'Inverter',
-        host: this.config?.host ?? '192.168.1.122',
+        host: this.config.host ?? '192.168.1.122',
         port: 4712,
         path: '/ship/',
         register: true,
@@ -427,10 +419,6 @@ export class EEBUSAdapter implements EnergyAdapter {
     }
 
     return mockDevices;
-  }
-
-  getSnapshot(): Partial<UnifiedEnergyModel> {
-    return { ...this.lastModel };
   }
 
   // ─── SHIP Protocol ────────────────────────────────────────────────
@@ -587,8 +575,8 @@ export class EEBUSAdapter implements EnergyAdapter {
       };
     }
 
-    this.lastModel = { ...this.lastModel, ...model };
-    for (const cb of this.dataCallbacks) cb(model);
+    this.snapshot = { ...this.snapshot, ...model };
+    this.emitData(this.snapshot);
     this.emitEvent({ type: 'data', data: model });
   }
 
@@ -625,8 +613,8 @@ export class EEBUSAdapter implements EnergyAdapter {
       };
     }
 
-    this.lastModel = { ...this.lastModel, ...model };
-    for (const cb of this.dataCallbacks) cb(model);
+    this.snapshot = { ...this.snapshot, ...model };
+    this.emitData(this.snapshot);
     this.emitEvent({ type: 'data', data: model });
   }
 
@@ -737,20 +725,11 @@ export class EEBUSAdapter implements EnergyAdapter {
     }, 30000);
   }
 
-  private cleanup(): void {
-    if (this.reconnectTimer) {
-      clearTimeout(this.reconnectTimer);
-      this.reconnectTimer = null;
-    }
+  private stopHeartbeat(): void {
     if (this.heartbeatInterval) {
       clearInterval(this.heartbeatInterval);
       this.heartbeatInterval = null;
     }
-  }
-
-  private setStatus(status: AdapterStatus, error?: string): void {
-    this._status = status;
-    for (const cb of this.statusCallbacks) cb(status, error);
   }
 
   private emitEvent(event: EEBUSConnectionEvent): void {

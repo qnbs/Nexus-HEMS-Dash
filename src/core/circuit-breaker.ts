@@ -85,6 +85,24 @@ export class CircuitBreaker {
     }
   }
 
+  /**
+   * Execute a function through the circuit breaker.
+   * Automatically records success/failure and throws if the circuit is open.
+   */
+  async execute<T>(fn: () => Promise<T>): Promise<T> {
+    if (!this.canExecute()) {
+      throw new Error('Circuit breaker is open');
+    }
+    try {
+      const result = await fn();
+      this.recordSuccess();
+      return result;
+    } catch (error) {
+      this.recordFailure();
+      throw error;
+    }
+  }
+
   /** Force the circuit to open (e.g. emergency stop) */
   forceOpen(): void {
     this.state = 'open';
