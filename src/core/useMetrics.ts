@@ -2,11 +2,15 @@
  * useMetrics – React hook for real-time Prometheus metrics
  *
  * Polls /api/metrics/json and exposes typed metric data for UI components.
+ * Also provides useAdapterMetrics() for per-adapter performance tracking.
  */
 
 import { useState, useEffect, useRef } from 'react';
 import type { MetricFamily } from '../lib/metrics';
 import { metricsCollector } from '../lib/metrics';
+import { useEnergyStoreBase } from './useEnergyStore';
+import type { AdapterId } from './useEnergyStore';
+import { BaseAdapter, type AdapterPerfMetrics } from './adapters/BaseAdapter';
 
 export interface MetricSnapshot {
   families: MetricFamily[];
@@ -82,4 +86,89 @@ export function getMetricFromSnapshot(
     Object.entries(labels).every(([k, v]) => s.labels[k] === v),
   );
   return match?.value ?? null;
+}
+
+// ─── Per-Adapter Metrics ─────────────────────────────────────────────
+
+export interface AdapterMetricsSnapshot {
+  /** Per-adapter perf metrics (latency, error rate, freshness, etc.) */
+  adapters: Record<AdapterId, AdapterPerfMetrics>;
+  /** Overall system data freshness (oldest adapter) */
+  worstFreshnessMs: number;
+  /** Overall average latency across all connected adapters */
+  systemAvgLatencyMs: number;
+  /** Total errors across all adapters */
+  systemTotalErrors: number;
+  /** Whether any adapter has data older than threshold */
+  hasStaleData: boolean;
+}
+
+const STALE_THRESHOLD_MS = 30_000; // 30s without data = stale
+
+/**
+ * useAdapterMetrics — Per-adapter performance monitoring
+ *
+ * Samples latency, error rate, data freshness from BaseAdapter.perfMetrics
+ * at the given interval. Lightweight: reads from adapter instances directly.
+ */
+export function useAdapterMetrics(intervalMs: number = 2000): AdapterMetricsSnapshot {
+  const [snapshot, setSnapshot] = useState<AdapterMetricsSnapshot>({
+    adapters: {} as Record<AdapterId, AdapterPerfMetrics>,
+    worstFreshnessMs: 0,
+    systemAvgLatencyMs: 0,
+    systemTotalErrors: 0,
+    hasStaleData: false,
+  });
+
+  useEffect(() => {
+    const collect = () => {
+      const entries = useEnergyStoreBase.getState().adapters;
+      const adapterMetrics: Record<string, AdapterPerfMetrics> = {};
+      let totalLatency = 0;
+      let latencyCount = 0;
+      let worstFreshness = 0;
+      let totalErrors = 0;
+
+      for (const [id, entry] of Object.entries(entries)) {
+        if (!entry.enabled) continue;
+
+        const adapter = entry.adapter;
+        if (adapter instanceof BaseAdapter) {
+          const perf = adapter.perfMetrics;
+          adapterMetrics[id] = perf;
+
+          if (perf.avgLatencyMs > 0) {
+            totalLatency += perf.avgLatencyMs;
+            latencyCount++;
+          }
+          if (perf.dataFreshnessMs > worstFreshness && perf.lastDataAt > 0) {
+            worstFreshness = perf.dataFreshnessMs;
+          }
+          totalErrors += perf.totalErrors;
+
+          // Push per-adapter metrics to Prometheus
+          metricsCollector.recordAdapterStatus(
+            id,
+            adapter.name,
+            entry.status === 'connected',
+            perf.avgLatencyMs,
+          );
+        }
+      }
+
+      setSnapshot({
+        adapters: adapterMetrics as Record<AdapterId, AdapterPerfMetrics>,
+        worstFreshnessMs: worstFreshness,
+        systemAvgLatencyMs: latencyCount > 0 ? totalLatency / latencyCount : 0,
+        systemTotalErrors: totalErrors,
+        hasStaleData: worstFreshness > STALE_THRESHOLD_MS,
+      });
+    };
+
+    collect();
+    const timer = setInterval(collect, intervalMs);
+    return () => clearInterval(timer);
+  }, [intervalMs]);
+
+  return snapshot;
 }

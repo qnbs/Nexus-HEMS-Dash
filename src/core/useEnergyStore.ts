@@ -5,14 +5,18 @@
  * adapters into a single UnifiedEnergyModel, and bridges backwards to the
  * existing useAppStore for 100% compatibility with current components.
  *
+ * Performance: useEnergyStore() uses useShallow by default so components
+ * only re-render when their selected slice actually changes (shallow compare).
+ *
  * Usage in pages:
- *   const { unified, adapterStatus, sendCommand } = useEnergyStore();
+ *   const { pv, battery } = useEnergyStore((s) => ({ pv: s.unified.pv, battery: s.unified.battery }));
  *
  * Page-level adapter selection:
- *   const { evCharger } = useEnergyStore((s) => ({ evCharger: s.unified.evCharger }));
+ *   const evCharger = useEnergyStore((s) => s.unified.evCharger);
  */
 
 import { create } from 'zustand';
+import { useShallow } from 'zustand/react/shallow';
 import { useEffect } from 'react';
 import { useAppStore } from '../store';
 import { persistSnapshot } from '../lib/db';
@@ -389,3 +393,22 @@ export const selectAdapterStatuses = (state: EnergyStoreState) =>
       },
     ]),
   );
+
+// ─── useShallow-wrapped store access ─────────────────────────────────
+
+/**
+ * useEnergyStore — Shallow-comparing wrapper for useEnergyStoreBase.
+ *
+ * Prevents unnecessary re-renders by doing shallow comparison on the
+ * selected slice. Use this instead of useEnergyStoreBase in components.
+ *
+ * Examples:
+ *   // Only re-renders when pv or battery values change (shallow compare):
+ *   const { pv, battery } = useEnergyStore((s) => ({ pv: s.unified.pv, battery: s.unified.battery }));
+ *
+ *   // Single value — shallow compare on primitive:
+ *   const anyConnected = useEnergyStore((s) => s.anyConnected);
+ */
+export function useEnergyStore<T>(selector: (state: EnergyStoreState) => T): T {
+  return useEnergyStoreBase(useShallow(selector));
+}

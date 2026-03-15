@@ -8,8 +8,9 @@
  *   2. Zod Validation   — every command validated before dispatch
  *   3. Double-Confirm   — injectable confirmation delegate for danger commands
  *   4. Audit Trail      — every command logged to IndexedDB + Prometheus
- *   5. Reconnect Logic  — exponential backoff with jitter, navigator.onLine
+ *   5. Reconnect Logic  — exponential backoff with jitter + navigator.onLine
  *   6. Lifecycle Mgmt   — connect/disconnect/destroy with guard checks
+ *   7. Per-Adapter Metrics — latency, error-rate, data-freshness tracking
  *
  * Subclasses implement three abstract methods:
  *   _connect()     — establish the actual connection
@@ -59,6 +60,29 @@ const BASE_RECONNECT = {
 
 // ─── Abstract Base Class ─────────────────────────────────────────────
 
+// ─── Per-adapter performance metrics ─────────────────────────────────
+
+export interface AdapterPerfMetrics {
+  /** Last successful data timestamp */
+  lastDataAt: number;
+  /** Last connection attempt timestamp */
+  lastConnectAttemptAt: number;
+  /** Rolling average latency (ms) for the last N data updates */
+  avgLatencyMs: number;
+  /** Total error count since creation */
+  totalErrors: number;
+  /** Total successful data updates */
+  totalUpdates: number;
+  /** Data freshness: ms since last data update */
+  dataFreshnessMs: number;
+  /** Error rate: errors / (errors + successes) */
+  errorRate: number;
+  /** Consecutive reconnect attempts */
+  reconnectAttempts: number;
+  /** Whether the browser is currently online */
+  isOnline: boolean;
+}
+
 export abstract class BaseAdapter implements EnergyAdapter {
   abstract readonly id: string;
   abstract readonly name: string;
@@ -79,6 +103,17 @@ export abstract class BaseAdapter implements EnergyAdapter {
   /** Injected by the React layer for double-confirm on danger commands */
   confirmCommand?: CommandConfirmFn;
 
+  // ─── Per-adapter performance tracking ─────────────────────────
+  private _lastDataAt = 0;
+  private _lastConnectAttemptAt = 0;
+  private _totalErrors = 0;
+  private _totalUpdates = 0;
+  private _reconnectAttempts = 0;
+  private _latencyBuffer: number[] = [];
+  private readonly _latencyBufferSize = 20;
+  private _onlineHandler: (() => void) | null = null;
+  private _offlineHandler: (() => void) | null = null;
+
   constructor(
     config: AdapterConnectionConfig,
     circuitBreakerConfig?: Partial<CircuitBreakerConfig>,
@@ -96,6 +131,22 @@ export abstract class BaseAdapter implements EnergyAdapter {
     this.circuitBreaker.onStateChange((state) => {
       metricsCollector.recordCircuitBreakerState(this.id, state);
     });
+
+    // navigator.onLine listeners — auto-reconnect on network recovery
+    if (typeof window !== 'undefined') {
+      this._onlineHandler = () => {
+        if (this._status === 'disconnected' && !this.destroyed) {
+          this.resetRetryDelay();
+          this._reconnectAttempts = 0;
+          void this.connect();
+        }
+      };
+      this._offlineHandler = () => {
+        this.clearReconnect();
+      };
+      window.addEventListener('online', this._onlineHandler);
+      window.addEventListener('offline', this._offlineHandler);
+    }
   }
 
   // ─── Public getters ─────────────────────────────────────────────
@@ -104,12 +155,35 @@ export abstract class BaseAdapter implements EnergyAdapter {
     return this._status;
   }
 
+  /** Get per-adapter performance snapshot */
+  get perfMetrics(): AdapterPerfMetrics {
+    const now = Date.now();
+    const total = this._totalErrors + this._totalUpdates;
+    return {
+      lastDataAt: this._lastDataAt,
+      lastConnectAttemptAt: this._lastConnectAttemptAt,
+      avgLatencyMs:
+        this._latencyBuffer.length > 0
+          ? this._latencyBuffer.reduce((a, b) => a + b, 0) / this._latencyBuffer.length
+          : 0,
+      totalErrors: this._totalErrors,
+      totalUpdates: this._totalUpdates,
+      dataFreshnessMs: this._lastDataAt > 0 ? now - this._lastDataAt : Infinity,
+      errorRate: total > 0 ? this._totalErrors / total : 0,
+      reconnectAttempts: this._reconnectAttempts,
+      isOnline: typeof navigator !== 'undefined' ? navigator.onLine : true,
+    };
+  }
+
   // ─── Lifecycle (Template Method) ────────────────────────────────
 
   async connect(): Promise<void> {
     if (this._status === 'connected' || this._status === 'connecting') return;
     if (!this.circuitBreaker.canExecute()) return;
+    // Don't attempt connection when offline
+    if (typeof navigator !== 'undefined' && !navigator.onLine) return;
     this.destroyed = false;
+    this._lastConnectAttemptAt = Date.now();
     await this._connect();
   }
 
@@ -126,6 +200,11 @@ export abstract class BaseAdapter implements EnergyAdapter {
     this.dataCallbacks = [];
     this.statusCallbacks = [];
     this.circuitBreaker.destroy();
+    // Remove navigator.onLine listeners
+    if (typeof window !== 'undefined') {
+      if (this._onlineHandler) window.removeEventListener('online', this._onlineHandler);
+      if (this._offlineHandler) window.removeEventListener('offline', this._offlineHandler);
+    }
   }
 
   // ─── Subscriptions ──────────────────────────────────────────────
@@ -244,6 +323,17 @@ export abstract class BaseAdapter implements EnergyAdapter {
   }
 
   protected emitData(model: Partial<UnifiedEnergyModel>): void {
+    const now = Date.now();
+    // Track latency: time between last data and this data
+    if (this._lastDataAt > 0) {
+      const latency = now - this._lastDataAt;
+      this._latencyBuffer.push(latency);
+      if (this._latencyBuffer.length > this._latencyBufferSize) {
+        this._latencyBuffer.shift();
+      }
+    }
+    this._lastDataAt = now;
+    this._totalUpdates++;
     this.snapshot = model;
     for (const cb of this.dataCallbacks) cb(model);
   }
@@ -251,20 +341,30 @@ export abstract class BaseAdapter implements EnergyAdapter {
   protected scheduleReconnect(): void {
     this.clearReconnect();
     if (this.destroyed) return;
+    // Don't attempt reconnect when offline — the 'online' handler will do it
+    if (typeof navigator !== 'undefined' && !navigator.onLine) return;
 
     const reconnectCfg = this.config.reconnect ?? BASE_RECONNECT;
     if (!reconnectCfg.enabled) return;
 
+    this._reconnectAttempts++;
+    this._totalErrors++;
+
+    // Exponential backoff with random jitter (±25%) to prevent thundering herd
+    const maxDelay = reconnectCfg.maxDelayMs ?? BASE_RECONNECT.maxDelayMs;
+    const multiplier = reconnectCfg.backoffMultiplier ?? BASE_RECONNECT.backoffMultiplier;
+    const jitter = 0.75 + Math.random() * 0.5; // 0.75–1.25
+    const delay = Math.min(this.retryDelay * jitter, maxDelay);
+    this.retryDelay = Math.min(this.retryDelay * multiplier, maxDelay);
+
     this.reconnectTimer = setTimeout(() => {
-      const maxDelay = reconnectCfg.maxDelayMs ?? BASE_RECONNECT.maxDelayMs;
-      const multiplier = reconnectCfg.backoffMultiplier ?? BASE_RECONNECT.backoffMultiplier;
-      this.retryDelay = Math.min(this.retryDelay * multiplier, maxDelay);
-      void this._connect();
-    }, this.retryDelay);
+      void this.connect();
+    }, delay);
   }
 
   protected resetRetryDelay(): void {
     this.retryDelay = this.config.reconnect?.initialDelayMs ?? BASE_RECONNECT.initialDelayMs;
+    this._reconnectAttempts = 0;
   }
 
   protected clearReconnect(): void {

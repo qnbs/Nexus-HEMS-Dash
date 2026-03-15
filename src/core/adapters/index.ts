@@ -29,7 +29,7 @@ export type {
 
 // Base class & error types
 export { BaseAdapter, CommandCancelledError } from './BaseAdapter';
-export type { CommandConfirmFn } from './BaseAdapter';
+export type { CommandConfirmFn, AdapterPerfMetrics } from './BaseAdapter';
 
 // Adapter implementations
 export { VictronMQTTAdapter, VENUS_DBUS_PATHS, VENUS_MQTT_PREFIX } from './VictronMQTTAdapter';
