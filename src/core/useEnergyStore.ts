@@ -41,10 +41,15 @@ import type { EEBUSAdapterConfig } from './adapters/EEBUSAdapter';
 import { BaseAdapter } from './adapters/BaseAdapter';
 import type { CircuitState } from './circuit-breaker';
 import { validateCommand } from './command-safety';
+import { registerBuiltinAdapters, createRegisteredAdapter } from './adapters/adapter-registry';
 
 // ─── Adapter registry ────────────────────────────────────────────────
 
-export type AdapterId = 'victron-mqtt' | 'modbus-sunspec' | 'knx' | 'ocpp-21' | 'eebus';
+/** Built-in adapter identifiers */
+export type BuiltinAdapterId = 'victron-mqtt' | 'modbus-sunspec' | 'knx' | 'ocpp-21' | 'eebus';
+
+/** Adapter ID — built-in or dynamically registered contrib/npm adapter */
+export type AdapterId = BuiltinAdapterId | (string & {});
 
 export interface AdapterEntry {
   adapter: EnergyAdapter;
@@ -68,6 +73,10 @@ export interface EnergyStoreState {
   mergeData: (adapterId: string, data: Partial<UnifiedEnergyModel>) => void;
   setAdapterStatus: (adapterId: AdapterId, status: AdapterStatus, error?: string) => void;
   enableAdapter: (adapterId: AdapterId, enabled: boolean) => void;
+  /** Add a dynamically loaded contrib/npm adapter to the store */
+  addContribAdapter: (id: string, config?: Partial<AdapterConnectionConfig>) => boolean;
+  /** Remove a contrib adapter from the store */
+  removeContribAdapter: (id: string) => boolean;
 }
 
 // ─── Default empty model ─────────────────────────────────────────────
@@ -82,10 +91,14 @@ const emptyModel: UnifiedEnergyModel = {
 
 // ─── Adapter factory ─────────────────────────────────────────────────
 
+// Ensure built-in adapters are registered in the global registry
+registerBuiltinAdapters();
+
 function createAdapterInstance(
   id: AdapterId,
   config?: Partial<AdapterConnectionConfig>,
 ): EnergyAdapter {
+  // Try built-in adapters first (direct imports — no registry overhead)
   switch (id) {
     case 'victron-mqtt':
       return new VictronMQTTAdapter(config as VictronAdapterConfig | undefined);
@@ -98,6 +111,14 @@ function createAdapterInstance(
     case 'eebus':
       return new EEBUSAdapter(config as EEBUSAdapterConfig | undefined);
   }
+
+  // Fall through to registry for contrib/npm adapters
+  const registered = createRegisteredAdapter(id, config);
+  if (registered) return registered;
+
+  throw new Error(
+    `[useEnergyStore] Unknown adapter id: "${id}". Register it via registerAdapter() first.`,
+  );
 }
 
 function createDefaultAdapters(): Record<AdapterId, AdapterEntry> {
@@ -179,6 +200,52 @@ export const useEnergyStoreBase = create<EnergyStoreState>()((set) => ({
         },
       };
     });
+  },
+
+  addContribAdapter: (id, config) => {
+    const state = useEnergyStoreBase.getState();
+    if (state.adapters[id]) return false; // Already exists
+
+    try {
+      const adapter = createAdapterInstance(id, config);
+      set((s) => ({
+        adapters: {
+          ...s.adapters,
+          [id]: {
+            adapter,
+            enabled: false,
+            status: 'disconnected' as AdapterStatus,
+            circuitState: 'closed' as CircuitState,
+          },
+        },
+      }));
+      return true;
+    } catch {
+      return false;
+    }
+  },
+
+  removeContribAdapter: (id) => {
+    const BUILTIN_IDS: BuiltinAdapterId[] = [
+      'victron-mqtt',
+      'modbus-sunspec',
+      'knx',
+      'ocpp-21',
+      'eebus',
+    ];
+    if ((BUILTIN_IDS as string[]).includes(id)) return false;
+
+    const state = useEnergyStoreBase.getState();
+    const entry = state.adapters[id];
+    if (!entry) return false;
+
+    entry.adapter.destroy();
+    set((s) => {
+      const newAdapters = { ...s.adapters };
+      delete newAdapters[id];
+      return { adapters: newAdapters };
+    });
+    return true;
   },
 }));
 

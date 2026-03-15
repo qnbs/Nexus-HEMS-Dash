@@ -1,7 +1,8 @@
 /**
  * HEMS Protocol Adapters — Barrel Export
  *
- * All adapter implementations and the core interface are re-exported from here.
+ * All adapter implementations, the core interface, and the plugin registry
+ * are re-exported from here.
  */
 
 // Core types & interface
@@ -30,6 +31,20 @@ export type {
 // Base class & error types
 export { BaseAdapter, CommandCancelledError } from './BaseAdapter';
 export type { CommandConfirmFn, AdapterPerfMetrics } from './BaseAdapter';
+
+// Plugin registry
+export {
+  registerAdapter,
+  unregisterAdapter,
+  getRegisteredAdapter,
+  listRegisteredAdapters,
+  isAdapterRegistered,
+  createRegisteredAdapter,
+  loadContribAdapter,
+  loadAllContribAdapters,
+  registerBuiltinAdapters,
+} from './adapter-registry';
+export type { AdapterFactory, AdapterRegistration } from './adapter-registry';
 
 // Adapter implementations
 export { VictronMQTTAdapter, VENUS_DBUS_PATHS, VENUS_MQTT_PREFIX } from './VictronMQTTAdapter';
