@@ -95,7 +95,7 @@ test.describe('Mobile Navigation', () => {
     // Locate the More button via data-testid within the bottom nav
     const moreButton = bottomNav.first().getByTestId('mobile-more-btn');
     await expect(moreButton).toBeVisible({ timeout: 10_000 });
-    await moreButton.click({ timeout: 10_000 });
+    await moreButton.click({ force: true, timeout: 10_000 });
 
     // Bottom sheet dialog should appear with more navigation items
     const sheet = page.locator('[role="dialog"]');

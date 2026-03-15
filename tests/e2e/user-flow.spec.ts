@@ -72,8 +72,11 @@ test.describe('User Flow', () => {
     // Get current lang
     const initialLang = await page.getAttribute('html', 'lang');
 
-    // Click the other language button (not the currently active one)
-    const inactiveButton = page.locator('button[aria-pressed="false"]').first();
+    // Find the language switcher group and click the inactive language button
+    const langGroup = page
+      .locator('[role="group"]')
+      .filter({ has: page.locator('button[aria-pressed]') });
+    const inactiveButton = langGroup.locator('button[aria-pressed="false"]').first();
     await inactiveButton.click();
 
     // Verify language attribute changed
