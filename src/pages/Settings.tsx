@@ -36,6 +36,7 @@ import {
   Moon,
   ArrowRight,
   OctagonX,
+  Cable,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -46,6 +47,7 @@ import { resolveTheme, type ThemePreference } from '../lib/theme';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { EmergencyStop } from '../components/EmergencyStop';
 import { ConfirmDialog, useConfirmDialog } from '../components/ConfirmDialog';
+import { AdapterConfigPanel } from '../components/AdapterConfigPanel';
 import { usePWAInstall } from '../lib/pwa-install';
 import { SETTINGS_TABS, type SettingsTabId } from '../lib/page-relations';
 import { PAGE_REGISTRY } from '../lib/page-relations';
@@ -89,6 +91,7 @@ type SettingsTab =
   | 'appearance'
   | 'system'
   | 'energy'
+  | 'adapters'
   | 'security'
   | 'storage'
   | 'notifications'
@@ -467,6 +470,7 @@ export function Settings() {
     'appearance',
     'system',
     'energy',
+    'adapters',
     'security',
     'storage',
     'notifications',
@@ -594,6 +598,11 @@ export function Settings() {
     },
     { key: 'system', icon: <Server size={18} />, label: t('settings.system') },
     { key: 'energy', icon: <Zap size={18} />, label: t('settings.energyShort', 'Energy') },
+    {
+      key: 'adapters',
+      icon: <Cable size={18} />,
+      label: t('adapterConfig.tabLabel', 'Adapters'),
+    },
     { key: 'security', icon: <Shield size={18} />, label: t('settings.security') },
     { key: 'storage', icon: <Database size={18} />, label: t('settings.storageShort', 'Storage') },
     {
@@ -2104,6 +2113,22 @@ export function Settings() {
                       </div>
                     </div>
                   </section>
+                </motion.div>
+              )}
+
+              {/* === ADAPTER CONFIGURATION === */}
+              {activeTab === 'adapters' && (
+                <motion.div
+                  key="adapters"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.3 }}
+                  role="tabpanel"
+                  id="tabpanel-adapters"
+                  aria-labelledby="tab-adapters"
+                >
+                  <AdapterConfigPanel />
                 </motion.div>
               )}
 
