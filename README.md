@@ -107,7 +107,7 @@
 | **Connectivity**        | Cloud-dependent | Offline-first PWA with local IndexedDB                          |
 | **Visualization**       | Static charts   | Live D3.js Sankey energy flow diagrams                          |
 | **i18n**                | Single language | Full EN/DE with persistent preference                           |
-| **Security**            | API keys in env | AES-GCM 256-bit encrypted BYOK key vault                        |
+| **Security**            | API keys in env | AES-GCM 256 BYOK vault + Helmet + CORS + JWT + rate limiting    |
 
 ---
 
@@ -216,7 +216,10 @@ EEBUS CEM ──────────┘                    Dexie.js IndexedD
 <tr><td>PWA</td><td>vite-plugin-pwa + Workbox</td><td>1.2 / 7.4</td></tr>
 <tr><td>Icons</td><td>Lucide React</td><td>0.546</td></tr>
 <tr><td>Encryption</td><td>Web Crypto API (AES-GCM 256)</td><td>Native</td></tr>
-<tr><td>Server</td><td>Express + WebSocket</td><td>4.21</td></tr>
+<tr><td>Server</td><td>Express + WebSocket + Helmet + CORS</td><td>4.21</td></tr>
+<tr><td>Auth</td><td>jsonwebtoken (JWT HS256)</td><td>9</td></tr>
+<tr><td>Validation</td><td>express-validator + Zod</td><td>7 / 4</td></tr>
+<tr><td>Rate Limiting</td><td>express-rate-limit</td><td>8</td></tr>
 <tr><td>Unit Tests</td><td>Vitest + @vitest/coverage-v8</td><td>4.0</td></tr>
 <tr><td>E2E Tests</td><td>Playwright + @axe-core</td><td>1.58</td></tr>
 <tr><td>Linting</td><td>ESLint (flat config)</td><td>9</td></tr>
@@ -272,8 +275,14 @@ npm run dev
 > **Note:** Since v3.2.0, all AI API keys are managed via the BYOK Settings page (`/settings/ai`) with AES-GCM 256-bit encryption in IndexedDB. No `.env` file required for AI features.
 
 ```bash
-# Optional: only needed for server-side Gemini proxy
+# Optional: server-side Gemini proxy
 GEMINI_API_KEY=your-key-here
+
+# Security (optional — auto-generated if not set)
+JWT_SECRET=your-32-byte-hex-secret     # JWT signing key (auto-generated per run if omitted)
+CORS_ORIGINS=https://my-domain.com     # Comma-separated additional CORS origins
+PORT=3000                               # Server port (default: 3000)
+NODE_ENV=production                     # Enables WS JWT auth requirement
 ```
 
 ---
@@ -357,14 +366,49 @@ Nexus-HEMS runs as a full Progressive Web App with sophisticated offline capabil
 
 ## 🔒 Security & Compliance
 
-| Area                   | Implementation                                                |
-| :--------------------- | :------------------------------------------------------------ |
-| **AI Key Encryption**  | AES-GCM 256-bit + PBKDF2 600k iterations, stored in IndexedDB |
-| **Transport Security** | TLS 1.3 + mutual TLS for EEBUS, client certificates for OCPP  |
-| **Content Security**   | Trusted Types support, no inline eval                         |
-| **§14a EnWG**          | Smart meter gateway integration for controllable loads        |
-| **Data Sovereignty**   | Local-first architecture — no cloud dependency                |
-| **WCAG 2.2 AA**        | Axe-core automated testing, semantic HTML, focus management   |
+| Area                    | Implementation                                                                  |
+| :---------------------- | :------------------------------------------------------------------------------ |
+| **Backend Hardening**   | Helmet CSP + HSTS, CORS origin whitelist, express-validator, trust-proxy        |
+| **Rate Limiting**       | 100 req/min global (express-rate-limit), 60 req/min API, 30 cmd/min per WS      |
+| **WebSocket Auth**      | JWT (HS256) token-based auth, BYOK vault check, 64 KB max payload               |
+| **Auth Endpoints**      | `/api/auth/token` (issue), `/api/auth/refresh` (renew), 24h expiry              |
+| **AI Key Encryption**   | AES-GCM 256-bit + PBKDF2 600k iterations, stored in IndexedDB                   |
+| **Transport Security**  | TLS 1.3 + mutual TLS for EEBUS, client certificates for OCPP                    |
+| **Content Security**    | Trusted Types, no inline eval, `frame-ancestors 'none'`, `base-uri 'self'`      |
+| **Nginx Hardening**     | `server_tokens off`, rate limiting zones, HSTS preload, deny dotfiles/sensitive |
+| **Dependency Scanning** | Dependabot (weekly, npm+Actions+Docker+Cargo), npm audit in CI, Snyk optional   |
+| **CodeQL Analysis**     | GitHub CodeQL for JS/TS SAST on every push/PR                                   |
+| **§14a EnWG**           | Smart meter gateway integration for controllable loads                          |
+| **Data Sovereignty**    | Local-first architecture — no cloud dependency                                  |
+| **WCAG 2.2 AA**         | Axe-core automated testing, semantic HTML, focus management                     |
+
+### Backend Architecture
+
+```
+Client ──→ nginx (rate limit, CSP, HSTS)
+              │
+              ├── Static Assets (SPA)
+              └── Express Server
+                    ├── Helmet (security headers)
+                    ├── CORS (origin whitelist)
+                    ├── Rate Limiter (100 req/min/IP)
+                    ├── express-validator (input sanitization)
+                    ├── /api/auth/token (JWT issue)
+                    ├── /api/auth/refresh (JWT renew)
+                    ├── /api/health (status)
+                    ├── /api/eebus/* (validated)
+                    ├── /metrics (Prometheus)
+                    └── WebSocket (JWT auth + cmd validation + rate limit)
+```
+
+### Dependency Update Strategy
+
+| Tool           | Scope                              | Schedule      | Configuration                    |
+| :------------- | :--------------------------------- | :------------ | :------------------------------- |
+| **Dependabot** | npm, GitHub Actions, Docker, Cargo | Weekly (Mon)  | `.github/dependabot.yml`         |
+| **npm audit**  | Runtime + dev deps                 | Every CI run  | `npm audit --audit-level=high`   |
+| **Snyk**       | Deep vulnerability scan            | Weekly + PR   | `.github/workflows/security.yml` |
+| **CodeQL**     | SAST (JS/TS)                       | Every push/PR | `.github/workflows/security.yml` |
 
 ---
 
@@ -422,6 +466,7 @@ Nexus-HEMS runs as a full Progressive Web App with sophisticated offline capabil
 ```
 push/PR → ci.yml (5-stage pipeline)
 ├── Stage 1: lint-typecheck
+│   ├── npm audit (high severity gate)
 │   ├── ESLint (zero warnings)
 │   ├── TypeScript strict check
 │   └── Prettier format check
@@ -436,6 +481,15 @@ push/PR → ci.yml (5-stage pipeline)
 │   └── WCAG 2.2 AA + user flow tests
 └── Stage 5: docker-build
     └── Docker image validation
+
+push/PR → security.yml (3-stage pipeline)
+├── npm-audit: Critical vulnerability gate
+├── snyk: Deep dependency scan (optional, needs SNYK_TOKEN)
+└── codeql: GitHub CodeQL JS/TS SAST analysis
+
+push/PR + weekly schedule → security.yml
+├── Automated dependency vulnerability scanning
+└── CodeQL static analysis for injection/XSS/SSRF
 
 push to main → deploy.yml
 ├── npm ci → build
@@ -491,13 +545,21 @@ npm run preview        # Local preview on port 4173
 
 ### Docker
 
-Multi-stage build (node:22-alpine → nginx:1.27-alpine):
+Multi-stage build (node:22-alpine → nginx:1.27-alpine) with hardened nginx:
 
 ```bash
 npm run docker:build   # Build production image
 npm run docker:up      # Start container (port 8080)
 npm run docker:down    # Stop container
 ```
+
+**Docker security features:**
+
+- Non-root user, read-only filesystem support
+- nginx: `server_tokens off`, rate limiting, HSTS preload, CSP, COOP/CORP
+- Deny access to dotfiles & sensitive file extensions
+- Healthcheck with 30s interval
+- Dependabot monitors Docker base image updates
 
 ### Tauri Desktop
 
@@ -532,6 +594,7 @@ cd src-tauri && cargo tauri build
 | Q3      | Global Audit: TS-strict, 0 lint warnings, dead code purge | ✅ Shipped  |
 | Q3      | Cross-page navigation system (PageCrossLinks)             | ✅ Shipped  |
 | Q3      | IndexedDB consolidation (single Dexie database)           | ✅ Shipped  |
+| Q3      | Backend hardening: CORS, JWT, rate limiting, Dependabot   | ✅ Shipped  |
 | Q4      | Historical Data Analytics Dashboard                       | 🔄 Planned  |
 | Q4      | Matter / Thread Smart Home Integration                    | 🔜 Upcoming |
 | Q4      | Multi-Tenant SaaS Mode                                    | 🔜 Upcoming |
@@ -539,6 +602,23 @@ cd src-tauri && cargo tauri build
 ---
 
 ## 📝 Changelog
+
+<details open>
+<summary><b>v4.3.0</b> — Backend Security Hardening & Compliance</summary>
+
+- **CORS origin whitelist**: Configurable allowed origins via `CORS_ORIGINS` env, default dev+prod whitelist
+- **Rate limiting**: Global 100 req/min per IP (express-rate-limit) + 60 req/min for `/api/` + 30 cmd/min per WebSocket client
+- **JWT WebSocket auth**: Token-based authentication via `?token=` query param or `Authorization: Bearer` header, HS256 signing
+- **Auth endpoints**: `POST /api/auth/token` (issue JWT), `POST /api/auth/refresh` (renew), express-validator input sanitization
+- **express-validator**: Input validation on all POST endpoints (`/api/auth/token`, `/api/eebus/pair`)
+- **Helmet hardening**: `trust proxy`, `x-powered-by` disabled, HSTS preload, `frame-ancestors 'none'`
+- **WebSocket security**: 64 KB max payload, production mode requires JWT auth, anonymous allowed in dev
+- **nginx hardening**: `server_tokens off`, rate limiting zones (100r/m global), HSTS, COOP, CORP, deny sensitive files, request size limits
+- **Dependabot**: Weekly automated dependency updates for npm, GitHub Actions, Docker, Cargo (Tauri)
+- **Security CI pipeline**: `security.yml` with npm audit gate, optional Snyk deep scan, GitHub CodeQL SAST
+- **npm audit**: Integrated into CI lint-typecheck stage
+- **Dependencies**: Added `cors`, `jsonwebtoken`, `express-validator` + `@types/cors`, `@types/jsonwebtoken`
+</details>
 
 <details>
 <summary><b>v4.2.0</b> — Global Audit, React Compiler Cleanup & IndexedDB Consolidation</summary>
@@ -752,6 +832,7 @@ Gebaut mit **React 19**, **Zustand**, **D3.js** und **Tailwind CSS v4** liefert 
 | 📱 **PWA Offline-First**      | Service Worker, IndexedDB, Background Sync                             | ✅ Live    |
 | 🔌 **5 Adapter**              | Victron MQTT, Modbus/SunSpec, KNX/IP, OCPP 2.1, EEBUS                  | ✅ Live    |
 | 📊 **Monitoring**             | 10 Live-Metriken, System-Health, Lastdiagramme, Adapter-Matrix, Alerts | ✅ Live    |
+| 🔒 **Backend-Härtung**        | Helmet, CORS, JWT-Auth, Rate-Limiting, express-validator, Dependabot   | ✅ Live    |
 
 ### 📦 Erste Schritte
 
@@ -804,6 +885,7 @@ npm run dev
 | Q3      | Docker/Kubernetes, Tauri Desktop, Lighthouse CI       | ✅ Ausgeliefert |
 | Q3      | React Compiler (60% Index-Reduktion), WCAG 2.2 AA     | ✅ Ausgeliefert |
 | Q3      | Global Audit, IndexedDB-Konsolidierung, Cross-Links   | ✅ Ausgeliefert |
+| Q3      | Backend-Härtung: CORS, JWT, Rate-Limit, Dependabot    | ✅ Ausgeliefert |
 | Q4      | Historische Datenanalyse, Matter/Thread, Multi-Tenant | 🔜 Geplant      |
 
 ### 📄 Lizenz

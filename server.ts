@@ -2,8 +2,13 @@ import express from 'express';
 import { createServer as createViteServer } from 'vite';
 import { WebSocketServer } from 'ws';
 import http from 'http';
+import crypto from 'crypto';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
+import cors from 'cors';
+import jwt from 'jsonwebtoken';
+import { body, validationResult } from 'express-validator';
+import type { IncomingMessage } from 'http';
 
 // ─── Prometheus Metrics (server-side) ─────────────────────────────
 interface ServerMetricSample {
@@ -139,7 +144,48 @@ function updateServerMetrics(data: Record<string, number>): void {
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const PORT = Number(process.env.PORT) || 3000;
+
+  // ─── JWT Secret (from env or auto-generated per run) ─────────────────
+  const JWT_SECRET = process.env.JWT_SECRET || crypto.randomBytes(32).toString('hex');
+  const JWT_EXPIRY = '24h';
+
+  // ─── CORS — Origin Whitelist ─────────────────────────────────────────
+  const ALLOWED_ORIGINS = (process.env.CORS_ORIGINS || '')
+    .split(',')
+    .map((o) => o.trim())
+    .filter(Boolean);
+  // Default origins for development and production
+  const DEFAULT_ORIGINS = [
+    'http://localhost:3000',
+    'http://localhost:5173',
+    'http://localhost:4173',
+    'https://qnbs.github.io',
+  ];
+  const allowedOriginSet = new Set([...DEFAULT_ORIGINS, ...ALLOWED_ORIGINS]);
+
+  app.use(
+    cors({
+      origin: (origin, callback) => {
+        // Allow requests with no origin (non-browser like curl, mobile apps)
+        if (!origin || allowedOriginSet.has(origin)) {
+          callback(null, true);
+        } else {
+          callback(new Error('Not allowed by CORS'));
+        }
+      },
+      credentials: true,
+      methods: ['GET', 'POST'],
+      allowedHeaders: ['Content-Type', 'Authorization'],
+      maxAge: 86400,
+    }),
+  );
+
+  // ─── Trust Proxy (required behind nginx/Docker) ───────────────────
+  app.set('trust proxy', 1);
+
+  // ─── Disable Express fingerprint ─────────────────────────────────
+  app.disable('x-powered-by');
 
   // ─── Security Headers (Helmet) ───────────────────────────────────────
   app.use(
@@ -175,12 +221,30 @@ async function startServer() {
   );
 
   // ─── Rate Limiting ───────────────────────────────────────────────────
+  // Global rate limit: 100 requests/min per IP
+  const globalLimiter = rateLimit({
+    windowMs: 60_000,
+    max: 100,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Too many requests, please try again later.' },
+    keyGenerator: (req) => {
+      // Use X-Forwarded-For behind reverse proxy, fall back to socket address
+      const forwarded = req.headers['x-forwarded-for'];
+      if (typeof forwarded === 'string') return forwarded.split(',')[0].trim();
+      return req.socket.remoteAddress || 'unknown';
+    },
+  });
+
+  app.use(globalLimiter);
+
+  // Stricter limit for API endpoints (60 req/min)
   const apiLimiter = rateLimit({
     windowMs: 60_000,
     max: 60,
     standardHeaders: true,
     legacyHeaders: false,
-    message: { error: 'Too many requests, please try again later.' },
+    message: { error: 'Too many API requests, please try again later.' },
   });
 
   app.use('/api/', apiLimiter);
@@ -232,8 +296,16 @@ async function startServer() {
   // Per-client WS command rate tracking
   const wsRateLimits = new WeakMap<import('ws').WebSocket, { count: number; resetAt: number }>();
 
+  // ─── Authenticated client tracking ─────────────────────────────────
+  interface AuthenticatedClient {
+    clientId: string;
+    authenticated: boolean;
+    connectedAt: number;
+  }
+  const wsAuthMap = new WeakMap<import('ws').WebSocket, AuthenticatedClient>();
+
   const server = http.createServer(app);
-  const wss = new WebSocketServer({ server });
+  const wss = new WebSocketServer({ server, maxPayload: 64 * 1024 }); // 64 KB max message size
 
   // API routes FIRST
   app.get('/api/health', (_req, res) => {
@@ -244,6 +316,52 @@ async function startServer() {
       adapters: adapters.map((a) => ({ id: a, status: 'connected' })),
       metrics: { totalSamples: serverMetrics.size },
     });
+  });
+
+  // ─── JWT Token Endpoint ──────────────────────────────────────────────
+  // Clients authenticate to obtain a JWT for WebSocket connections.
+  // In production, this should verify credentials against an external IdP.
+  app.post(
+    '/api/auth/token',
+    body('clientId').isString().trim().isLength({ min: 1, max: 64 }).escape(),
+    body('scope').optional().isString().isIn(['read', 'readwrite', 'admin']),
+    (req, res) => {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        res.status(400).json({ errors: errors.array() });
+        return;
+      }
+
+      const { clientId, scope } = req.body as { clientId: string; scope?: string };
+      const token = jwt.sign(
+        { sub: clientId, scope: scope || 'readwrite', iat: Math.floor(Date.now() / 1000) },
+        JWT_SECRET,
+        { expiresIn: JWT_EXPIRY, algorithm: 'HS256' },
+      );
+      res.json({ token, expiresIn: JWT_EXPIRY });
+    },
+  );
+
+  // ─── JWT Token Refresh ───────────────────────────────────────────────
+  app.post('/api/auth/refresh', (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader?.startsWith('Bearer ')) {
+      res.status(401).json({ error: 'Missing Authorization header' });
+      return;
+    }
+    try {
+      const decoded = jwt.verify(authHeader.slice(7), JWT_SECRET, {
+        algorithms: ['HS256'],
+      }) as jwt.JwtPayload;
+      const token = jwt.sign(
+        { sub: decoded.sub, scope: decoded.scope, iat: Math.floor(Date.now() / 1000) },
+        JWT_SECRET,
+        { expiresIn: JWT_EXPIRY, algorithm: 'HS256' },
+      );
+      res.json({ token, expiresIn: JWT_EXPIRY });
+    } catch {
+      res.status(401).json({ error: 'Invalid or expired token' });
+    }
   });
 
   // ─── Prometheus scrape endpoint ───────────────────────────────────
@@ -293,26 +411,32 @@ async function startServer() {
     }
   });
 
-  app.post('/api/eebus/pair', (req, res) => {
-    const { ski } = req.body as { ski?: string; host?: string; port?: number };
-    if (!ski || typeof ski !== 'string' || ski.length < 4) {
-      res.status(400).json({ error: 'Invalid SKI' });
-      return;
-    }
+  app.post(
+    '/api/eebus/pair',
+    body('ski').isString().trim().isLength({ min: 4, max: 128 }).escape(),
+    (req, res) => {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        res.status(400).json({ errors: errors.array() });
+        return;
+      }
 
-    // In production, this would:
-    // 1. Resolve the device via cached mDNS record
-    // 2. Establish TLS 1.3 connection with certificate pinning
-    // 3. Verify SKI matches the device's TLS certificate
-    // 4. Complete SHIP PIN verification handshake
-    // 5. Store trust relationship persistently
+      const { ski } = req.body as { ski: string };
 
-    eebusTrustedSKIs.add(ski);
-    const device = eebusDeviceCache.get(ski);
-    if (device) device.trusted = true;
+      // In production, this would:
+      // 1. Resolve the device via cached mDNS record
+      // 2. Establish TLS 1.3 connection with certificate pinning
+      // 3. Verify SKI matches the device's TLS certificate
+      // 4. Complete SHIP PIN verification handshake
+      // 5. Store trust relationship persistently
 
-    res.json({ success: true, ski });
-  });
+      eebusTrustedSKIs.add(ski);
+      const device = eebusDeviceCache.get(ski);
+      if (device) device.trusted = true;
+
+      res.json({ success: true, ski });
+    },
+  );
 
   // ─── JSON metrics endpoint (for in-app dashboard) ────────────────
   app.get('/api/metrics/json', (_req, res) => {
@@ -460,8 +584,49 @@ async function startServer() {
     });
   }, 2000);
 
-  wss.on('connection', (ws) => {
-    console.log('Client connected');
+  // ─── WebSocket JWT Authentication Helper ──────────────────────────
+  function authenticateWS(req: IncomingMessage): AuthenticatedClient | null {
+    try {
+      const url = new URL(req.url || '', `http://${req.headers.host || 'localhost'}`);
+      const token = url.searchParams.get('token');
+
+      // Also check Authorization header (Sec-WebSocket-Protocol or upgrade header)
+      const authHeader = req.headers.authorization;
+      const bearerToken = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
+
+      const jwtToken = token || bearerToken;
+      if (!jwtToken) return null;
+
+      const decoded = jwt.verify(jwtToken, JWT_SECRET, { algorithms: ['HS256'] }) as jwt.JwtPayload;
+      return {
+        clientId: (decoded.sub as string) || 'unknown',
+        authenticated: true,
+        connectedAt: Date.now(),
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  // Allow unauthenticated WS in dev mode, require auth in production
+  const requireWSAuth = process.env.NODE_ENV === 'production';
+
+  wss.on('connection', (ws, req) => {
+    const authResult = authenticateWS(req);
+
+    if (requireWSAuth && !authResult) {
+      ws.close(4001, 'Authentication required');
+      console.warn('[WS] Rejected unauthenticated connection');
+      return;
+    }
+
+    wsAuthMap.set(
+      ws,
+      authResult || { clientId: 'anonymous', authenticated: false, connectedAt: Date.now() },
+    );
+    const clientInfo = authResult ? `authenticated:${authResult.clientId}` : 'anonymous';
+    console.log(`[WS] Client connected (${clientInfo})`);
+
     // Send initial data
     ws.send(JSON.stringify({ type: 'ENERGY_UPDATE', data: mockData }));
 
@@ -515,7 +680,8 @@ async function startServer() {
     });
 
     ws.on('close', () => {
-      console.log('Client disconnected');
+      const info = wsAuthMap.get(ws);
+      console.log(`[WS] Client disconnected (${info?.clientId || 'unknown'})`);
     });
   });
 
