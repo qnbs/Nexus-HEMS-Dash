@@ -232,20 +232,24 @@ export class ModbusSunSpecAdapter extends BaseAdapter {
 
     // Determine which models to poll based on discovery
     const hasInverter = availableModels.some((m) =>
-      [
-        SUNSPEC_MODELS.INVERTER_SINGLE,
-        SUNSPEC_MODELS.INVERTER_SPLIT,
-        SUNSPEC_MODELS.INVERTER_THREE,
-      ].includes(m),
+      (
+        [
+          SUNSPEC_MODELS.INVERTER_SINGLE,
+          SUNSPEC_MODELS.INVERTER_SPLIT,
+          SUNSPEC_MODELS.INVERTER_THREE,
+        ] as number[]
+      ).includes(m),
     );
-    const hasBattery = availableModels.includes(SUNSPEC_MODELS.STORAGE);
+    const hasBattery = (availableModels as number[]).includes(SUNSPEC_MODELS.STORAGE);
     const hasMeter = availableModels.some((m) =>
-      [
-        SUNSPEC_MODELS.METER_SINGLE,
-        SUNSPEC_MODELS.METER_SPLIT,
-        SUNSPEC_MODELS.METER_THREE_WYE,
-        SUNSPEC_MODELS.METER_THREE_DELTA,
-      ].includes(m),
+      (
+        [
+          SUNSPEC_MODELS.METER_SINGLE,
+          SUNSPEC_MODELS.METER_SPLIT,
+          SUNSPEC_MODELS.METER_THREE_WYE,
+          SUNSPEC_MODELS.METER_THREE_DELTA,
+        ] as number[]
+      ).includes(m),
     );
 
     const fetches: Promise<unknown>[] = [];

@@ -70,7 +70,7 @@ test.describe('WCAG 2.2 AA Accessibility', () => {
   });
 
   test('Language switcher should be keyboard accessible', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/settings');
     await page.waitForSelector('h1', { timeout: 15_000 });
 
     // Language switcher has DE and EN buttons with aria-pressed

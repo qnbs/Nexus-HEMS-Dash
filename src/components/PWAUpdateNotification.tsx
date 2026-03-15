@@ -5,7 +5,7 @@
  * skipWaiting + clientsClaim, then the page auto-reloads.
  */
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { RefreshCw, AlertCircle, WifiOff, CheckCircle2, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -17,14 +17,15 @@ export function PWAUpdateNotification() {
   const [showUpdating, setShowUpdating] = useState(false);
   const [isRestarting, setIsRestarting] = useState(false);
   const [updateError, setUpdateError] = useState<string | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  useRegisterSW({
+  const { updateServiceWorker } = useRegisterSW({
     onRegisteredSW(swUrl, registration) {
       if (import.meta.env.DEV) console.log('[PWA] Service Worker registered:', swUrl);
 
       // Check for updates every 30 minutes
       if (registration) {
-        setInterval(
+        intervalRef.current = setInterval(
           () => {
             registration.update().catch((error: unknown) => {
               console.error('[PWA] Update check failed:', error);
@@ -39,7 +40,6 @@ export function PWAUpdateNotification() {
       setUpdateError(t('pwa.registrationError', 'Failed to register Service Worker'));
     },
     onNeedRefresh() {
-      // Show "update ready" notification with manual restart option
       setShowUpdating(true);
     },
     onOfflineReady() {
@@ -48,6 +48,23 @@ export function PWAUpdateNotification() {
       setTimeout(() => setShowOfflineReady(false), 5000);
     },
   });
+
+  // Cleanup interval on unmount
+  useEffect(() => {
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, []);
+
+  const handleUpdate = () => {
+    setIsRestarting(true);
+    updateServiceWorker(true).catch(() => {
+      // Fallback: force reload if SW update fails
+      setTimeout(() => window.location.reload(), 500);
+    });
+  };
 
   // "Update ready — restart to apply" toast
   if (showUpdating) {
@@ -71,10 +88,7 @@ export function PWAUpdateNotification() {
               </p>
             </div>
             <button
-              onClick={() => {
-                setIsRestarting(true);
-                setTimeout(() => window.location.reload(), 500);
-              }}
+              onClick={handleUpdate}
               disabled={isRestarting}
               className="focus-ring shrink-0 rounded-lg bg-(--color-primary) px-3 py-1.5 text-xs font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
             >

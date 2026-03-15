@@ -483,6 +483,11 @@ export class EEBUSAdapter extends BaseAdapter {
       if (message.connectionPinState) {
         this.shipState = 'pin_verify';
         this.emitEvent({ type: 'ship_state', shipState: 'pin_verify' });
+        // Auto-respond with PIN OK using the device SKI from the message
+        const ski = message.connectionPinState?.[0]?.ski;
+        if (typeof ski === 'string') {
+          this.sendSHIPPinVerification(ski);
+        }
         return;
       }
 

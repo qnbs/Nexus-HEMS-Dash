@@ -147,7 +147,7 @@ export async function logCommandAudit(entry: Omit<CommandAuditEntry, 'id'>): Pro
   // Increment Prometheus counter for every command event
   if (entry.status === 'rejected') {
     metricsCollector.recordCommandRejected(entry.commandType, entry.error ?? 'unknown');
-  } else {
+  } else if (entry.status !== 'confirmed') {
     metricsCollector.recordCommand(entry.commandType, entry.status);
   }
 

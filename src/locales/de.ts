@@ -362,6 +362,7 @@ export const de = {
     glowEffects: 'Leuchteffekte',
     glowEffectsHint: 'Neon-Leuchten und Glasmorphismus-Effekte',
     languageTitle: 'Sprache & Region',
+    quickSwitch: 'Schnellwechsel',
     units: 'Einheiten',
     metric: 'Metrisch (kW, kWh, °C)',
     imperial: 'Imperial (BTU, °F)',
@@ -1583,6 +1584,9 @@ export const de = {
   },
   safety: {
     emergencyStop: 'Notaus — Alle Geräte sofort abschalten',
+    emergencyStopShort: 'NOTAUS',
+    emergencyStopSettingsHint:
+      'Trennt sofort alle Adapter und öffnet alle Schutzschalter. §14a EnWG konform.',
     emergencyStopTitle: 'NOTAUS — Alle Geräte abschalten?',
     emergencyStopDesc:
       'Alle Adapter werden sofort getrennt. Batterie, EV-Ladung, Wärmepumpe und KNX-Aktoren werden abgeschaltet. Nur Netzbezug bleibt aktiv. Dieser Vorgang kann nicht automatisch rückgängig gemacht werden.',

@@ -120,7 +120,8 @@ export class OCPP21Adapter extends BaseAdapter {
   private msgCounter = 0;
   private pendingCalls: Map<string, PendingCall> = new Map();
   private stationId: string;
-  private securityProfile: OCPPSecurityProfile;
+  /** Security profile — used during TLS negotiation with charging station */
+  readonly securityProfile: OCPPSecurityProfile;
   private iso15118Enabled: boolean;
 
   private charger: ChargerState = {

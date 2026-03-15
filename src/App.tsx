@@ -9,7 +9,6 @@ import { themeDefinitions } from './design-tokens';
 const Onboarding = lazy(() =>
   import('./components/Onboarding').then((m) => ({ default: m.Onboarding })),
 );
-import { LanguageSwitcher } from './components/LanguageSwitcher';
 import { CommandPalette, useCommandPalette } from './components/ui/CommandPalette';
 import { MobileNavigation } from './components/ui/MobileNavigation';
 import { Sidebar } from './components/layout/Sidebar';
@@ -17,7 +16,6 @@ import { Breadcrumbs } from './components/layout/Breadcrumbs';
 import { OfflineBanner } from './components/OfflineBanner';
 import { PWAInstallPrompt } from './components/PWAInstallPrompt';
 import { PWAUpdateNotification } from './components/PWAUpdateNotification';
-import { EmergencyStop } from './components/EmergencyStop';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { watchSystemTheme, resolveTheme } from './lib/theme';
 import { backgroundSyncService } from './lib/background-sync';
@@ -95,7 +93,12 @@ export default function App() {
     document.documentElement.dataset.theme = theme;
     document.documentElement.lang = locale;
     document.documentElement.style.colorScheme = themeDefinitions[theme].isDark ? 'dark' : 'light';
-  }, [locale, theme]);
+    // Update PWA title bar color to match theme background
+    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+    if (metaThemeColor) {
+      metaThemeColor.setAttribute('content', themeDefinition.colors.background);
+    }
+  }, [locale, theme, themeDefinition.colors.background]);
 
   // Apply accessibility settings to the DOM
   useEffect(() => {
@@ -229,12 +232,10 @@ export default function App() {
 
                 {/* Right Side Actions */}
                 <div className="flex items-center gap-2">
-                  <LanguageSwitcher />
-
-                  {/* Settings Link (hidden on mobile — accessible via sidebar/bottom nav) */}
+                  {/* Settings Link */}
                   <Link
                     to="/settings"
-                    className="focus-ring hidden items-center justify-center rounded-full border border-(--color-border) bg-(--color-surface-strong) p-2 text-(--color-muted) transition-all duration-300 hover:bg-(--color-primary)/10 hover:text-(--color-primary) sm:inline-flex"
+                    className="focus-ring inline-flex items-center justify-center rounded-full border border-(--color-border) bg-(--color-surface-strong) p-2 text-(--color-muted) transition-all duration-300 hover:bg-(--color-primary)/10 hover:text-(--color-primary)"
                     aria-label={t('nav.settings')}
                     title={t('nav.settings')}
                   >
@@ -350,9 +351,6 @@ export default function App() {
 
           {/* Mobile Bottom Navigation */}
           <MobileNavigation />
-
-          {/* Emergency Stop — Global safety button */}
-          <EmergencyStop />
         </div>
       </Router>
     </ErrorBoundary>

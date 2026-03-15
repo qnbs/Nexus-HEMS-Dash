@@ -83,15 +83,16 @@ export function EmergencyStop({ circuitBreakers }: EmergencyStopProps) {
       {/* Emergency Stop Trigger Button */}
       <button
         onClick={() => setShowConfirm(true)}
-        className="focus-ring group fixed right-4 bottom-20 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-red-600 shadow-lg shadow-red-600/40 transition-all hover:scale-110 hover:bg-red-500 hover:shadow-xl hover:shadow-red-500/50 active:scale-95 lg:right-6 lg:bottom-6"
+        className="focus-ring group flex items-center gap-2 rounded-xl border border-red-500/30 bg-red-600 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-red-600/40 transition-all hover:scale-105 hover:bg-red-500 hover:shadow-xl hover:shadow-red-500/50 active:scale-95"
         aria-label={t('safety.emergencyStop', 'Notaus – Alle Geräte sofort abschalten')}
         title={t('safety.emergencyStop', 'Notaus – Alle Geräte sofort abschalten')}
         type="button"
       >
         <OctagonX
-          className="h-7 w-7 text-white transition-transform group-hover:rotate-12"
+          className="h-5 w-5 text-white transition-transform group-hover:rotate-12"
           aria-hidden="true"
         />
+        {t('safety.emergencyStopShort', 'NOTAUS')}
       </button>
 
       {/* Confirmation Dialog */}

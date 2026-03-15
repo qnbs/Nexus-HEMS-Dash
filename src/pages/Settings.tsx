@@ -1,5 +1,5 @@
 import { useState, useEffect, type FormEvent, lazy, Suspense } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Settings as SettingsIcon,
@@ -34,15 +34,17 @@ import {
   Clock,
   Keyboard,
   Moon,
+  ArrowRight,
+  OctagonX,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-import { Link } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
 import { themeDefinitions, themeOrder, type ThemeName } from '../design-tokens';
 import { useAppStore, defaultSettings } from '../store';
 import { SYSTEM_PRESETS, type PVConfig } from '../types';
 import { resolveTheme, type ThemePreference } from '../lib/theme';
+import { LanguageSwitcher } from '../components/LanguageSwitcher';
+import { EmergencyStop } from '../components/EmergencyStop';
 import { ConfirmDialog, useConfirmDialog } from '../components/ConfirmDialog';
 import { usePWAInstall } from '../lib/pwa-install';
 import { SETTINGS_TABS, type SettingsTabId } from '../lib/page-relations';
@@ -865,6 +867,12 @@ export function Settings() {
                       <Globe size={20} className="text-cyan-400" />
                       {t('settings.languageTitle', 'Language & Region')}
                     </h2>
+                    <div className="mb-4 flex items-center gap-3">
+                      <span className="text-sm text-(--color-muted)">
+                        {t('settings.quickSwitch', 'Quick switch')}:
+                      </span>
+                      <LanguageSwitcher />
+                    </div>
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <div className="space-y-2">
                         <label htmlFor="settings-language" className="text-sm font-medium">
@@ -2791,6 +2799,30 @@ export function Settings() {
                       <AlertTriangle size={20} className="text-rose-400" />
                       {t('settings.dangerZone', 'Danger Zone')}
                     </h2>
+
+                    {/* Emergency Stop */}
+                    <div className="mb-4 rounded-xl border border-red-500/30 bg-red-500/5 p-4">
+                      <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                        <div className="flex min-w-0 flex-1 items-start gap-3">
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-500/15">
+                            <OctagonX size={20} className="text-red-400" />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium text-red-400">
+                              {t('safety.emergencyStop', 'Notaus – Alle Geräte sofort abschalten')}
+                            </p>
+                            <p className="mt-1 text-xs text-(--color-muted)">
+                              {t(
+                                'safety.emergencyStopSettingsHint',
+                                'Instantly disconnects all adapters and opens all circuit breakers. §14a EnWG compliant.',
+                              )}
+                            </p>
+                          </div>
+                        </div>
+                        <EmergencyStop />
+                      </div>
+                    </div>
+
                     <div className="rounded-xl border border-rose-500/30 bg-rose-500/5 p-4">
                       <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
                         <div className="min-w-0 flex-1">

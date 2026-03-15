@@ -360,6 +360,7 @@ export const en = {
     glowEffects: 'Glow effects',
     glowEffectsHint: 'Neon glow and glassmorphism effects',
     languageTitle: 'Language & Region',
+    quickSwitch: 'Quick switch',
     units: 'Units',
     metric: 'Metric (kW, kWh, °C)',
     imperial: 'Imperial (BTU, °F)',
@@ -1568,6 +1569,9 @@ export const en = {
   },
   safety: {
     emergencyStop: 'Emergency Stop — Shut down all devices immediately',
+    emergencyStopShort: 'E-STOP',
+    emergencyStopSettingsHint:
+      'Instantly disconnects all adapters and opens all circuit breakers. §14a EnWG compliant.',
     emergencyStopTitle: 'EMERGENCY STOP — Shut down all devices?',
     emergencyStopDesc:
       'All adapters will be disconnected immediately. Battery, EV charging, heat pump and KNX actuators will be shut down. Only grid supply remains active. This action cannot be undone automatically.',

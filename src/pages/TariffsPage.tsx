@@ -40,6 +40,7 @@ import {
 } from 'recharts';
 import { useAppStore } from '../store';
 import { PageHeader } from '../components/layout/PageHeader';
+import { ErrorBoundary } from '../components/ErrorBoundary';
 import { LivePriceWidget } from '../components/LivePriceWidget';
 import { PredictiveForecast } from '../components/PredictiveForecast';
 import { PageCrossLinks } from '../components/ui/PageCrossLinks';
@@ -1136,12 +1137,16 @@ function TariffsPageComponent() {
 
       {/* ── Live Price Widget ──────────────────────────── */}
       <motion.div {...sectionAnim} transition={{ ...sectionAnim.transition, delay: 0.55 }}>
-        <LivePriceWidget />
+        <ErrorBoundary>
+          <LivePriceWidget />
+        </ErrorBoundary>
       </motion.div>
 
       {/* ── Predictive Forecast ────────────────────────── */}
       <motion.div {...sectionAnim} transition={{ ...sectionAnim.transition, delay: 0.6 }}>
-        <PredictiveForecast />
+        <ErrorBoundary>
+          <PredictiveForecast />
+        </ErrorBoundary>
       </motion.div>
 
       {/* ── Insights Summary ──────────────────────────── */}

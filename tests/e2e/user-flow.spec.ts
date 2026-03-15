@@ -66,7 +66,7 @@ test.describe('User Flow', () => {
   });
 
   test('should switch language', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/settings');
     await page.waitForSelector('h1', { timeout: 15_000 });
 
     // Get current lang

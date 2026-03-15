@@ -39,13 +39,18 @@ async function fetchWeatherForecast(lat: number, lon: number): Promise<WeatherFo
     const response = await fetch(
       `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,cloudcover,shortwave_radiation&forecast_days=7`,
     );
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const data = await response.json();
+
+    if (!data?.hourly?.time || !Array.isArray(data.hourly.time)) {
+      throw new Error('Invalid API response structure');
+    }
 
     return data.hourly.time.map((time: string, i: number) => ({
       timestamp: new Date(time),
-      temperature: data.hourly.temperature_2m[i],
-      cloudCover: data.hourly.cloudcover[i],
-      pvPotential: data.hourly.shortwave_radiation[i] / 10, // Convert W/m² to kW
+      temperature: data.hourly.temperature_2m?.[i] ?? 15,
+      cloudCover: data.hourly.cloudcover?.[i] ?? 50,
+      pvPotential: (data.hourly.shortwave_radiation?.[i] ?? 0) / 10,
     }));
   } catch (error) {
     console.error('Weather forecast fetch error:', error);
@@ -188,9 +193,10 @@ export function PredictiveForecast() {
             <span className="text-sm text-blue-400">{t('forecast.avgPvGeneration')}</span>
           </div>
           <p className="mt-2 text-2xl font-semibold text-blue-300">
-            {(forecastData.reduce((sum, d) => sum + d.pvForecast, 0) / forecastData.length).toFixed(
-              1,
-            )}{' '}
+            {(forecastData.length > 0
+              ? forecastData.reduce((sum, d) => sum + d.pvForecast, 0) / forecastData.length
+              : 0
+            ).toFixed(1)}{' '}
             kW
           </p>
         </div>
