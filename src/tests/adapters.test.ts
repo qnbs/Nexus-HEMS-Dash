@@ -96,7 +96,11 @@ describe('VictronMQTTAdapter (without real WebSocket)', () => {
 
   it('should connect and emit connected status', async () => {
     const { VictronMQTTAdapter } = await import('../core/adapters/VictronMQTTAdapter');
-    const adapter = new VictronMQTTAdapter({ host: 'localhost', port: 8080 });
+    const adapter = new VictronMQTTAdapter({
+      host: 'localhost',
+      port: 8080,
+      mode: 'websocket-legacy',
+    });
 
     const statusCb = vi.fn() as unknown as AdapterStatusCallback;
     adapter.onStatus(statusCb);
@@ -115,7 +119,11 @@ describe('VictronMQTTAdapter (without real WebSocket)', () => {
 
   it('should parse ENERGY_UPDATE messages into UnifiedEnergyModel', async () => {
     const { VictronMQTTAdapter } = await import('../core/adapters/VictronMQTTAdapter');
-    const adapter = new VictronMQTTAdapter({ host: 'localhost', port: 8080 });
+    const adapter = new VictronMQTTAdapter({
+      host: 'localhost',
+      port: 8080,
+      mode: 'websocket-legacy',
+    });
 
     const dataCb = vi.fn() as unknown as AdapterDataCallback;
     adapter.onData(dataCb);
@@ -163,7 +171,11 @@ describe('VictronMQTTAdapter (without real WebSocket)', () => {
 
   it('should return snapshot of last received data', async () => {
     const { VictronMQTTAdapter } = await import('../core/adapters/VictronMQTTAdapter');
-    const adapter = new VictronMQTTAdapter({ host: 'localhost', port: 8080 });
+    const adapter = new VictronMQTTAdapter({
+      host: 'localhost',
+      port: 8080,
+      mode: 'websocket-legacy',
+    });
 
     adapter.onData(() => {}); // register listener
 

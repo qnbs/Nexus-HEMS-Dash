@@ -152,6 +152,18 @@ export const useAppStore = create<AppState>()(
         settings: state.settings,
         onboardingCompleted: state.onboardingCompleted,
       }),
+      // Deep-merge persisted settings with defaults so newly added keys
+      // are always present even when the user has stale localStorage data.
+      merge: (persisted, current) => {
+        const p = persisted as Partial<AppState> | undefined;
+        if (!p) return current;
+        return {
+          ...current,
+          ...p,
+          settings: { ...defaultSettings, ...(p.settings ?? {}) },
+          floorplan: { ...current.floorplan, ...(p.floorplan ?? {}) },
+        };
+      },
     },
   ),
 );

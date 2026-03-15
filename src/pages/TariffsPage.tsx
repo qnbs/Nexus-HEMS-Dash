@@ -259,8 +259,8 @@ function TariffsPageComponent() {
   const [expandedWindow, setExpandedWindow] = useState<number | null>(null);
   const [view48h, setView48h] = useState<'price' | 'renewable'>('price');
 
-  const currentPrice = energyData.priceCurrent;
-  const isGoodPrice = currentPrice < settings.chargeThreshold;
+  const currentPrice = energyData.priceCurrent ?? 0.18;
+  const isGoodPrice = currentPrice < (settings.chargeThreshold ?? 0.15);
   const priceZone =
     currentPrice < PRICE_AVG * 0.7 ? 'low' : currentPrice < PRICE_AVG * 1.2 ? 'mid' : 'high';
 
@@ -271,7 +271,8 @@ function TariffsPageComponent() {
         ? 'aWATTar'
         : t('settings.none');
 
-  const monthlyBudgetPct = Math.min(100, (MONTHLY_TOTAL / settings.monthlyBudget) * 100);
+  const feedInTariff = settings.feedInTariff ?? 0.082;
+  const monthlyBudgetPct = Math.min(100, (MONTHLY_TOTAL / (settings.monthlyBudget || 80)) * 100);
 
   return (
     <div className="space-y-6">
@@ -417,7 +418,7 @@ function TariffsPageComponent() {
           },
           {
             label: t('tariffs.kpiFeedIn'),
-            value: `${settings.feedInTariff.toFixed(3)}`,
+            value: `${feedInTariff.toFixed(3)}`,
             unit: '€/kWh',
             icon: <Sun className="h-5 w-5" aria-hidden="true" />,
             color: 'text-amber-400',
@@ -517,7 +518,7 @@ function TariffsPageComponent() {
                   label={{ value: 'Ø', fill: '#eab308', fontSize: 11, position: 'right' }}
                 />
                 <ReferenceLine
-                  y={settings.chargeThreshold}
+                  y={settings.chargeThreshold ?? 0.15}
                   stroke="#22c55e"
                   strokeDasharray="3 3"
                   label={{ value: '⚡', fill: '#22c55e', fontSize: 11, position: 'left' }}
@@ -903,7 +904,7 @@ function TariffsPageComponent() {
                 €{MONTHLY_TOTAL.toFixed(2)}
                 <span className="text-sm font-normal text-(--color-muted)">
                   {' '}
-                  / €{settings.monthlyBudget}
+                  / €{settings.monthlyBudget ?? 80}
                 </span>
               </p>
             </div>
@@ -1023,7 +1024,7 @@ function TariffsPageComponent() {
               <div>
                 <p className="text-sm text-(--color-muted)">{t('tariffs.feedInRate')}</p>
                 <p className="text-2xl font-bold text-amber-400">
-                  {(settings.feedInTariff * 100).toFixed(1)}{' '}
+                  {(feedInTariff * 100).toFixed(1)}{' '}
                   <span className="text-sm font-normal">ct/kWh</span>
                 </p>
               </div>
@@ -1034,7 +1035,7 @@ function TariffsPageComponent() {
               <div className="rounded-xl bg-(--color-surface) p-3">
                 <p className="text-[10px] text-(--color-muted)">{t('tariffs.feedInToday')}</p>
                 <p className="text-lg font-bold text-amber-400">
-                  €{(energyData.pvYieldToday * settings.feedInTariff).toFixed(2)}
+                  €{(energyData.pvYieldToday * feedInTariff).toFixed(2)}
                 </p>
                 <p className="text-[10px] text-(--color-muted)">
                   {energyData.pvYieldToday.toFixed(1)} kWh
@@ -1043,7 +1044,7 @@ function TariffsPageComponent() {
               <div className="rounded-xl bg-(--color-surface) p-3">
                 <p className="text-[10px] text-(--color-muted)">{t('tariffs.feedInMonthly')}</p>
                 <p className="text-lg font-bold text-amber-400">
-                  €{(energyData.pvYieldToday * settings.feedInTariff * 30 * 0.4).toFixed(2)}
+                  €{(energyData.pvYieldToday * feedInTariff * 30 * 0.4).toFixed(2)}
                 </p>
                 <p className="text-[10px] text-(--color-muted)">{t('tariffs.estimated')}</p>
               </div>
@@ -1052,7 +1053,7 @@ function TariffsPageComponent() {
             <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-3 text-center">
               <p className="text-xs text-(--color-muted)">{t('tariffs.feedInAnnual')}</p>
               <p className="text-xl font-bold text-amber-400">
-                €{(energyData.pvYieldToday * settings.feedInTariff * 365 * 0.4).toFixed(0)}
+                €{(energyData.pvYieldToday * feedInTariff * 365 * 0.4).toFixed(0)}
               </p>
             </div>
           </div>
@@ -1104,7 +1105,7 @@ function TariffsPageComponent() {
               <div className="rounded-xl bg-(--color-surface) p-3">
                 <p className="text-[10px] text-(--color-muted)">{t('tariffs.chargeThreshold')}</p>
                 <p className="font-semibold text-emerald-400">
-                  {(settings.chargeThreshold * 100).toFixed(1)} ct
+                  {((settings.chargeThreshold ?? 0.15) * 100).toFixed(1)} ct
                 </p>
               </div>
             </div>
@@ -1127,7 +1128,7 @@ function TariffsPageComponent() {
               </span>
               {settings.priceAlerts && (
                 <span className="ml-auto text-xs font-medium">
-                  &lt; {(settings.priceAlertThreshold * 100).toFixed(0)} ct
+                  &lt; {((settings.priceAlertThreshold ?? 0.1) * 100).toFixed(0)} ct
                 </span>
               )}
             </div>
