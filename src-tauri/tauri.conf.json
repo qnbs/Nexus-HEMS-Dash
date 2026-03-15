@@ -55,6 +55,10 @@
   "plugins": {
     "shell": {
       "open": true
+    },
+    "updater": {
+      "endpoints": ["https://github.com/qnbs/Nexus-HEMS-Dash/releases/latest/download/latest.json"],
+      "pubkey": "REPLACE_WITH_YOUR_PUBLIC_KEY"
     }
   }
 }

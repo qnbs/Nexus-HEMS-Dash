@@ -261,6 +261,52 @@ export const HEMS_METRICS: MetricDefinition[] = [
     type: 'gauge',
     labels: ['adapter'],
   },
+
+  // ── Per-Adapter Performance (Prometheus-Exporter) ─────────────
+  {
+    name: 'hems_adapter_commands_per_second',
+    help: 'Commands per second rate per adapter',
+    type: 'gauge',
+    labels: ['adapter', 'protocol'],
+  },
+  {
+    name: 'hems_adapter_commands_total',
+    help: 'Total commands sent per adapter',
+    type: 'counter',
+    labels: ['adapter', 'protocol', 'status'],
+  },
+  {
+    name: 'hems_adapter_latency_histogram_bucket',
+    help: 'Adapter response latency histogram (seconds)',
+    type: 'histogram',
+    unit: 'seconds',
+    labels: ['adapter', 'le'],
+  },
+  {
+    name: 'hems_adapter_data_updates_total',
+    help: 'Total data updates received per adapter',
+    type: 'counter',
+    labels: ['adapter', 'protocol'],
+  },
+  {
+    name: 'hems_adapter_reconnects_total',
+    help: 'Total reconnect attempts per adapter',
+    type: 'counter',
+    labels: ['adapter'],
+  },
+  {
+    name: 'hems_adapter_data_freshness_seconds',
+    help: 'Seconds since last data update per adapter',
+    type: 'gauge',
+    unit: 'seconds',
+    labels: ['adapter'],
+  },
+  {
+    name: 'hems_adapter_error_rate',
+    help: 'Error rate per adapter (0.0–1.0)',
+    type: 'gauge',
+    labels: ['adapter'],
+  },
 ];
 
 // ─── Metrics Collector (Client-side) ────────────────────────────────
@@ -429,6 +475,76 @@ export class MetricsCollector {
     const stateMap = { closed: 0, open: 1, 'half-open': 2 };
     this.setSample('hems_circuit_breaker_state', stateMap[state], Date.now(), {
       adapter: adapterId,
+    });
+  }
+
+  /**
+   * Record per-adapter command execution
+   */
+  recordAdapterCommand(adapterId: string, protocol: string, status: 'success' | 'error'): void {
+    const labels = { adapter_id: adapterId, protocol, status };
+    this.incrementCounter('hems_adapter_commands_total', labels);
+  }
+
+  /**
+   * Record per-adapter latency (histogram bucket style)
+   */
+  recordAdapterLatency(adapterId: string, protocol: string, latencyMs: number): void {
+    const ts = Date.now();
+    this.setSample('hems_adapter_latency_histogram_bucket', latencyMs, ts, {
+      adapter_id: adapterId,
+      protocol,
+      le: String(latencyMs),
+    });
+  }
+
+  /**
+   * Record per-adapter data update
+   */
+  recordAdapterDataUpdate(adapterId: string, protocol: string): void {
+    this.incrementCounter('hems_adapter_data_updates_total', {
+      adapter_id: adapterId,
+      protocol,
+    });
+  }
+
+  /**
+   * Record per-adapter reconnect
+   */
+  recordAdapterReconnect(adapterId: string, protocol: string): void {
+    this.incrementCounter('hems_adapter_reconnects_total', {
+      adapter_id: adapterId,
+      protocol,
+    });
+  }
+
+  /**
+   * Record per-adapter data freshness (seconds since last update)
+   */
+  recordAdapterDataFreshness(adapterId: string, protocol: string, ageSec: number): void {
+    this.setSample('hems_adapter_data_freshness_seconds', ageSec, Date.now(), {
+      adapter_id: adapterId,
+      protocol,
+    });
+  }
+
+  /**
+   * Record per-adapter error rate (0..1)
+   */
+  recordAdapterErrorRate(adapterId: string, protocol: string, rate: number): void {
+    this.setSample('hems_adapter_error_rate', rate, Date.now(), {
+      adapter_id: adapterId,
+      protocol,
+    });
+  }
+
+  /**
+   * Record per-adapter commands per second (gauge)
+   */
+  recordAdapterCommandRate(adapterId: string, protocol: string, rate: number): void {
+    this.setSample('hems_adapter_commands_per_second', rate, Date.now(), {
+      adapter_id: adapterId,
+      protocol,
     });
   }
 

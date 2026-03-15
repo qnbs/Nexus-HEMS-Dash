@@ -1,0 +1,37 @@
+# Nexus HEMS — Prometheus Configuration
+#
+# Scrapes metrics from the backend server's /metrics endpoint.
+# Adapter-specific metrics are exported per adapter label.
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  scrape_timeout: 10s
+
+  external_labels:
+    deployment: 'nexus-hems'
+    environment: 'production'
+
+scrape_configs:
+  # ── HEMS Server Metrics ───────────────────────────────────────
+  - job_name: 'nexus-hems-server'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['nexus-hems-server:3000']
+        labels:
+          instance: 'hems-server'
+    metrics_path: '/metrics'
+
+  # ── Adapter Bridge Metrics ────────────────────────────────────
+  - job_name: 'nexus-adapter-bridge'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['nexus-adapter-bridge:3001']
+        labels:
+          instance: 'adapter-bridge'
+    metrics_path: '/metrics'
+
+  # ── Prometheus self-monitoring ────────────────────────────────
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
