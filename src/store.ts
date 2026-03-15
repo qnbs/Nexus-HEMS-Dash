@@ -167,3 +167,8 @@ export const useAppStore = create<AppState>()(
     },
   ),
 );
+
+// Expose store for E2E / Playwright tests in dev mode
+if (import.meta.env.DEV) {
+  (window as unknown as Record<string, unknown>).__NEXUS_STORE__ = useAppStore;
+}
