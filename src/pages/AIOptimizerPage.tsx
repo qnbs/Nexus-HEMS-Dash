@@ -39,7 +39,7 @@ import { PageHeader } from '../components/layout/PageHeader';
 import { AIOptimizerPanel } from '../components/AIOptimizerPanel';
 import { EnhancedAIOptimizer } from '../components/EnhancedAIOptimizer';
 import { PageCrossLinks } from '../components/ui/PageCrossLinks';
-import { useAppStore } from '../store';
+import { useAppStoreShallow } from '../store';
 import { formatPower } from '../lib/format';
 
 // ─── Static data (generated once, outside render) ────────────────────
@@ -92,26 +92,30 @@ const ACTION_COLORS: Record<string, string> = {
 function AIOptimizerPageComponent() {
   const { t, i18n } = useTranslation();
   const locale = i18n.language;
-  const energyData = useAppStore((s) => s.energyData);
+  const { pvPower, houseLoad, gridPower, batterySoC, priceCurrent, heatPumpPower, evPower } =
+    useAppStoreShallow((s) => ({
+      pvPower: s.energyData.pvPower,
+      houseLoad: s.energyData.houseLoad,
+      gridPower: s.energyData.gridPower,
+      batterySoC: s.energyData.batterySoC,
+      priceCurrent: s.energyData.priceCurrent,
+      heatPumpPower: s.energyData.heatPumpPower,
+      evPower: s.energyData.evPower,
+    }));
   const [expandedStrategy, setExpandedStrategy] = useState<number | null>(null);
 
   // ─── Derived metrics ───────────────────────────────────────────────
-  const pvSurplus = Math.max(0, energyData.pvPower - energyData.houseLoad);
+  const pvSurplus = Math.max(0, pvPower - houseLoad);
   const selfConsumption =
-    energyData.pvPower > 0
-      ? Math.min(
-          100,
-          Math.round(
-            ((energyData.pvPower - Math.max(0, -energyData.gridPower)) / energyData.pvPower) * 100,
-          ),
-        )
+    pvPower > 0
+      ? Math.min(100, Math.round(((pvPower - Math.max(0, -gridPower)) / pvPower) * 100))
       : 0;
   const optimizationScore = Math.min(
     100,
     Math.round(
       selfConsumption * 0.4 +
-        (energyData.batterySoC > 20 ? 25 : energyData.batterySoC) +
-        (energyData.priceCurrent < 0.2 ? 20 : 10) +
+        (batterySoC > 20 ? 25 : batterySoC) +
+        (priceCurrent < 0.2 ? 20 : 10) +
         (pvSurplus > 0 ? 15 : 5),
     ),
   );
@@ -127,48 +131,48 @@ function AIOptimizerPageComponent() {
     {
       icon: Sun,
       label: t('energyFlow.pvGeneration', 'PV-Erzeugung'),
-      value: formatPower(energyData.pvPower, locale),
+      value: formatPower(pvPower, locale),
       color: 'text-yellow-400',
       bg: 'bg-yellow-400/10 border-yellow-400/20',
     },
     {
       icon: Battery,
       label: t('energyFlow.batterySoC', 'Batterie-SoC'),
-      value: `${energyData.batterySoC}%`,
+      value: `${batterySoC}%`,
       color: 'text-emerald-400',
       bg: 'bg-emerald-400/10 border-emerald-400/20',
     },
     {
       icon: Zap,
       label: t('energyFlow.gridExchange', 'Netzaustausch'),
-      value: formatPower(Math.abs(energyData.gridPower), locale),
-      color: energyData.gridPower > 0 ? 'text-red-400' : 'text-emerald-400',
+      value: formatPower(Math.abs(gridPower), locale),
+      color: gridPower > 0 ? 'text-red-400' : 'text-emerald-400',
       bg:
-        energyData.gridPower > 0
+        gridPower > 0
           ? 'bg-red-400/10 border-red-400/20'
           : 'bg-emerald-400/10 border-emerald-400/20',
     },
     {
       icon: Flame,
       label: t('ai.heatPumpStrategy', 'Wärmepumpe'),
-      value: formatPower(energyData.heatPumpPower, locale),
+      value: formatPower(heatPumpPower, locale),
       color: 'text-orange-400',
       bg: 'bg-orange-400/10 border-orange-400/20',
     },
     {
       icon: Car,
       label: t('ai.evStrategy', 'EV-Laden'),
-      value: formatPower(energyData.evPower, locale),
+      value: formatPower(evPower, locale),
       color: 'text-cyan-400',
       bg: 'bg-cyan-400/10 border-cyan-400/20',
     },
     {
       icon: Wallet,
       label: t('energyFlow.currentPrice', 'Aktueller Preis'),
-      value: `${energyData.priceCurrent.toFixed(3)} €`,
-      color: energyData.priceCurrent < 0.15 ? 'text-emerald-400' : 'text-orange-400',
+      value: `${priceCurrent.toFixed(3)} €`,
+      color: priceCurrent < 0.15 ? 'text-emerald-400' : 'text-orange-400',
       bg:
-        energyData.priceCurrent < 0.15
+        priceCurrent < 0.15
           ? 'bg-emerald-400/10 border-emerald-400/20'
           : 'bg-orange-400/10 border-orange-400/20',
     },

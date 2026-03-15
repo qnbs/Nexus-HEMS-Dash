@@ -144,6 +144,8 @@ export const useEnergyStoreBase = create<EnergyStoreState>()((set) => ({
   mergeData: (_adapterId, data) => {
     set((state) => {
       const merged = deepMergeModel(state.unified, data);
+      // Skip state update if nothing actually changed (referential stability)
+      if (merged === state.unified) return state;
       return { unified: merged, lastUpdated: Date.now() };
     });
   },
@@ -152,6 +154,8 @@ export const useEnergyStoreBase = create<EnergyStoreState>()((set) => ({
     set((state) => {
       const entry = state.adapters[adapterId];
       if (!entry) return state;
+      // Skip update if status hasn't changed
+      if (entry.status === status && entry.error === error) return state;
 
       const newAdapters = {
         ...state.adapters,
@@ -226,22 +230,48 @@ export const useEnergyStoreBase = create<EnergyStoreState>()((set) => ({
   },
 }));
 
-// ─── Deep merge helper ───────────────────────────────────────────────
+// ─── Deep merge helper (referentially stable) ───────────────────────
 
+/** Shallow-merge two objects, returning the original if nothing changed. */
+function stableMerge<T extends object>(base: T, partial: Partial<T>): T {
+  const keys = Object.keys(partial) as (keyof T)[];
+  if (keys.every((k) => base[k] === partial[k])) return base;
+  return { ...base, ...partial };
+}
+
+/**
+ * Deep-merge adapter data into the unified model.
+ * Returns the original `base` reference (===) if no values actually changed,
+ * which lets Zustand's shallow selectors skip re-renders.
+ */
 function deepMergeModel(
   base: UnifiedEnergyModel,
   partial: Partial<UnifiedEnergyModel>,
 ): UnifiedEnergyModel {
-  return {
-    timestamp: partial.timestamp ?? base.timestamp,
-    pv: partial.pv ? { ...base.pv, ...partial.pv } : base.pv,
-    battery: partial.battery ? { ...base.battery, ...partial.battery } : base.battery,
-    grid: partial.grid ? { ...base.grid, ...partial.grid } : base.grid,
-    load: partial.load ? { ...base.load, ...partial.load } : base.load,
-    evCharger: partial.evCharger ?? base.evCharger,
-    knx: partial.knx ?? base.knx,
-    tariff: partial.tariff ?? base.tariff,
-  };
+  const pv = partial.pv ? stableMerge(base.pv, partial.pv) : base.pv;
+  const battery = partial.battery ? stableMerge(base.battery, partial.battery) : base.battery;
+  const grid = partial.grid ? stableMerge(base.grid, partial.grid) : base.grid;
+  const load = partial.load ? stableMerge(base.load, partial.load) : base.load;
+  const timestamp = partial.timestamp ?? base.timestamp;
+  const evCharger = partial.evCharger ?? base.evCharger;
+  const knx = partial.knx ?? base.knx;
+  const tariff = partial.tariff ?? base.tariff;
+
+  // If every sub-object is the same reference, skip the update
+  if (
+    pv === base.pv &&
+    battery === base.battery &&
+    grid === base.grid &&
+    load === base.load &&
+    timestamp === base.timestamp &&
+    evCharger === base.evCharger &&
+    knx === base.knx &&
+    tariff === base.tariff
+  ) {
+    return base;
+  }
+
+  return { timestamp, pv, battery, grid, load, evCharger, knx, tariff };
 }
 
 // ─── Standalone command dispatcher ───────────────────────────────────
@@ -424,9 +454,17 @@ export const selectGrid = (state: EnergyStoreState) => state.unified.grid;
 /** Selector: get tariff data (for /tariffs page) */
 export const selectTariff = (state: EnergyStoreState) => state.unified.tariff;
 
-/** Selector: get adapter status map */
-export const selectAdapterStatuses = (state: EnergyStoreState) =>
-  Object.fromEntries(
+/** Selector: get adapter status map (memoized — stable reference when values unchanged) */
+let _prevAdapters: Record<AdapterId, AdapterEntry> | null = null;
+let _cachedStatuses: Record<
+  string,
+  { status: AdapterStatus; enabled: boolean; name: string; error?: string }
+> | null = null;
+
+export const selectAdapterStatuses = (state: EnergyStoreState) => {
+  if (state.adapters === _prevAdapters && _cachedStatuses) return _cachedStatuses;
+  _prevAdapters = state.adapters;
+  _cachedStatuses = Object.fromEntries(
     Object.entries(state.adapters).map(([id, entry]) => [
       id,
       {
@@ -437,6 +475,8 @@ export const selectAdapterStatuses = (state: EnergyStoreState) =>
       },
     ]),
   );
+  return _cachedStatuses;
+};
 
 // ─── useShallow-wrapped store access ─────────────────────────────────
 

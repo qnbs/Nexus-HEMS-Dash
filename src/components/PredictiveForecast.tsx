@@ -14,7 +14,7 @@ import {
   AreaChart,
 } from 'recharts';
 
-import { useAppStore } from '../store';
+import { useAppStoreShallow } from '../store';
 
 interface ForecastDataPoint {
   time: string;
@@ -66,7 +66,7 @@ async function fetchWeatherForecast(lat: number, lon: number): Promise<WeatherFo
 
 export function PredictiveForecast() {
   const { t, i18n } = useTranslation();
-  const settings = useAppStore((s) => s.settings);
+  const settings = useAppStoreShallow((s) => s.settings);
   const [forecastData, setForecastData] = useState<ForecastDataPoint[]>([]);
   const [timeRange, setTimeRange] = useState<'24h' | '7d'>('24h');
   const [totalSavings, setTotalSavings] = useState(0);

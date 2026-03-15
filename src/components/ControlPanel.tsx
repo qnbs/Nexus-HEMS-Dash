@@ -12,7 +12,7 @@ import {
   type HpMode,
 } from '../types';
 import { hapticClick, hapticModeChange, hapticSuccess } from '../lib/haptics';
-import { useAppStore } from '../store';
+import { useAppStoreShallow } from '../store';
 
 export function ControlPanel({
   sendCommand,
@@ -22,7 +22,7 @@ export function ControlPanel({
   data: EnergyData;
 }) {
   const { t } = useTranslation();
-  const settings = useAppStore((s) => s.settings);
+  const settings = useAppStoreShallow((s) => s.settings);
 
   // Mock action for EV charging
   const [evState, evAction, isEvPending] = useActionState(

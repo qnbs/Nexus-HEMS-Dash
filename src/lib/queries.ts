@@ -13,7 +13,8 @@ export function usePriceForecast(provider: TariffProvider = 'tibber') {
       const forecast = await getForecast(prices);
       return { prices, forecast };
     },
-    staleTime: 1000 * 60 * 15, // 15 minutes
+    staleTime: 1000 * 60 * 15, // 15 min — tariff data changes infrequently
+    gcTime: 1000 * 60 * 60, // 1 h cache — avoid refetch on tab switch
     retry: 3,
   });
 }
@@ -31,7 +32,8 @@ export function useWeatherForecast(lat: number = 52.52, lon: number = 13.405) {
       if (!response.ok) throw new Error('Weather API failed');
       return response.json();
     },
-    staleTime: 1000 * 60 * 60, // 1 hour
+    staleTime: 1000 * 60 * 60, // 1 h — weather forecasts are slow-changing
+    gcTime: 1000 * 60 * 60 * 2, // 2 h cache — reduces API calls
     retry: 2,
   });
 }

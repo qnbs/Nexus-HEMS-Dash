@@ -38,7 +38,7 @@ import {
   Cell,
   ReferenceLine,
 } from 'recharts';
-import { useAppStore } from '../store';
+import { useAppStoreShallow } from '../store';
 import { PageHeader } from '../components/layout/PageHeader';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { LivePriceWidget } from '../components/LivePriceWidget';
@@ -254,12 +254,16 @@ const sectionAnim = {
 
 function TariffsPageComponent() {
   const { t } = useTranslation();
-  const energyData = useAppStore((s) => s.energyData);
-  const settings = useAppStore((s) => s.settings);
+  // Granular selectors — only re-render when these 2 fields change
+  const { priceCurrent, pvYieldToday } = useAppStoreShallow((s) => ({
+    priceCurrent: s.energyData.priceCurrent,
+    pvYieldToday: s.energyData.pvYieldToday,
+  }));
+  const settings = useAppStoreShallow((s) => s.settings);
   const [expandedWindow, setExpandedWindow] = useState<number | null>(null);
   const [view48h, setView48h] = useState<'price' | 'renewable'>('price');
 
-  const currentPrice = energyData.priceCurrent ?? 0.18;
+  const currentPrice = priceCurrent ?? 0.18;
   const isGoodPrice = currentPrice < (settings.chargeThreshold ?? 0.15);
   const priceZone =
     currentPrice < PRICE_AVG * 0.7 ? 'low' : currentPrice < PRICE_AVG * 1.2 ? 'mid' : 'high';
@@ -1035,16 +1039,14 @@ function TariffsPageComponent() {
               <div className="rounded-xl bg-(--color-surface) p-3">
                 <p className="text-[10px] text-(--color-muted)">{t('tariffs.feedInToday')}</p>
                 <p className="text-lg font-bold text-amber-400">
-                  €{(energyData.pvYieldToday * feedInTariff).toFixed(2)}
+                  €{(pvYieldToday * feedInTariff).toFixed(2)}
                 </p>
-                <p className="text-[10px] text-(--color-muted)">
-                  {energyData.pvYieldToday.toFixed(1)} kWh
-                </p>
+                <p className="text-[10px] text-(--color-muted)">{pvYieldToday.toFixed(1)} kWh</p>
               </div>
               <div className="rounded-xl bg-(--color-surface) p-3">
                 <p className="text-[10px] text-(--color-muted)">{t('tariffs.feedInMonthly')}</p>
                 <p className="text-lg font-bold text-amber-400">
-                  €{(energyData.pvYieldToday * feedInTariff * 30 * 0.4).toFixed(2)}
+                  €{(pvYieldToday * feedInTariff * 30 * 0.4).toFixed(2)}
                 </p>
                 <p className="text-[10px] text-(--color-muted)">{t('tariffs.estimated')}</p>
               </div>
@@ -1053,7 +1055,7 @@ function TariffsPageComponent() {
             <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-3 text-center">
               <p className="text-xs text-(--color-muted)">{t('tariffs.feedInAnnual')}</p>
               <p className="text-xl font-bold text-amber-400">
-                €{(energyData.pvYieldToday * feedInTariff * 365 * 0.4).toFixed(0)}
+                €{(pvYieldToday * feedInTariff * 365 * 0.4).toFixed(0)}
               </p>
             </div>
           </div>

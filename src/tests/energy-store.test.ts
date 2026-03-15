@@ -70,6 +70,21 @@ describe('useEnergyStore', () => {
       anyConnected: false,
       lastUpdated: null,
     });
+    // Reset all adapter statuses to 'disconnected' so equality guards don't skip updates
+    const { adapters } = useEnergyStoreBase.getState();
+    for (const id of Object.keys(adapters)) {
+      useEnergyStoreBase.setState((s) => ({
+        adapters: {
+          ...s.adapters,
+          [id]: {
+            ...s.adapters[id],
+            status: 'disconnected',
+            error: undefined,
+            enabled: id === 'victron-mqtt',
+          },
+        },
+      }));
+    }
   });
 
   it('should initialize with empty unified model', () => {

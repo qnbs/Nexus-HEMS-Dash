@@ -34,7 +34,7 @@ import {
   Cell,
   Legend,
 } from 'recharts';
-import { useAppStore } from '../store';
+import { useAppStoreShallow } from '../store';
 import { PageHeader } from '../components/layout/PageHeader';
 import { PredictiveForecast } from '../components/PredictiveForecast';
 import { ExportAndSharing } from '../components/ExportAndSharing';
@@ -93,7 +93,7 @@ function generateMonthlyComparison(pvYieldToday: number) {
 
 function AnalyticsPageComponent() {
   const { t } = useTranslation();
-  const energyData = useAppStore((s) => s.energyData);
+  const energyData = useAppStoreShallow((s) => s.energyData);
 
   // ─── Computed metrics ──────────────────────────────────────────────
   const selfConsumed = Math.min(

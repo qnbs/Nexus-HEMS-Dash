@@ -121,11 +121,18 @@ export const useAppStore = create<AppState>()(
       onboardingCompleted: false,
       setOnboardingCompleted: (completed) => set({ onboardingCompleted: completed }),
       setEnergyData: (data) =>
-        set((state) => ({
-          energyData: { ...state.energyData, ...data },
-          lastUpdated: Date.now(),
-        })),
-      setConnected: (status) => set({ connected: status }),
+        set((state) => {
+          // Skip update if all incoming values match current state
+          const cur = state.energyData;
+          const keys = Object.keys(data) as (keyof EnergyData)[];
+          if (keys.length > 0 && keys.every((k) => cur[k] === data[k])) return state;
+          return {
+            energyData: { ...cur, ...data },
+            lastUpdated: Date.now(),
+          };
+        }),
+      setConnected: (status) =>
+        set((state) => (state.connected === status ? state : { connected: status })),
       setLocale: (locale) => set({ locale }),
       setTheme: (theme) =>
         set((state) => ({ theme, themeTransitionKey: state.themeTransitionKey + 1 })),
@@ -134,9 +141,18 @@ export const useAppStore = create<AppState>()(
           themePreference: preference,
           themeTransitionKey: state.themeTransitionKey + 1,
         })),
-      updateFloorplan: (data) => set((state) => ({ floorplan: { ...state.floorplan, ...data } })),
+      updateFloorplan: (data) =>
+        set((state) => {
+          const cur = state.floorplan;
+          const keys = Object.keys(data) as (keyof FloorplanState)[];
+          if (keys.length > 0 && keys.every((k) => cur[k] === data[k])) return state;
+          return { floorplan: { ...cur, ...data } };
+        }),
       updateSettings: (data) => {
-        const nextSettings = { ...get().settings, ...data };
+        const cur = get().settings;
+        const keys = Object.keys(data) as (keyof StoredSettings)[];
+        if (keys.length > 0 && keys.every((k) => cur[k] === data[k])) return;
+        const nextSettings = { ...cur, ...data };
         set({ settings: nextSettings });
         void persistSettings(nextSettings);
       },

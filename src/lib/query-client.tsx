@@ -10,11 +10,17 @@ const ReactQueryDevtools = import.meta.env.DEV
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes
-      gcTime: 1000 * 60 * 30, // 30 minutes (formerly cacheTime)
+      // Live energy data updates arrive via Zustand (WebSocket/MQTT),
+      // not via React Query. Queries here are for tariff, weather, and
+      // AI APIs — stale after 10 min, cached for 1 hour.
+      staleTime: 1000 * 60 * 10, // 10 minutes
+      gcTime: 1000 * 60 * 60, // 1 hour
       retry: 2,
       refetchOnWindowFocus: false,
       refetchOnReconnect: true,
+      // Structural sharing keeps stable object references when query
+      // data hasn't changed — prevents unnecessary re-renders.
+      structuralSharing: true,
     },
   },
 });

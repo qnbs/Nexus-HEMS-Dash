@@ -14,7 +14,7 @@ import {
   HelpCircle,
 } from 'lucide-react';
 import { PAGE_REGISTRY, PAGE_RELATIONS, SETUP_STEPS, type PageId } from '../../lib/page-relations';
-import { useAppStore } from '../../store';
+import { useAppStoreShallow } from '../../store';
 
 // ─── Path → PageId resolver ────────────────────────────────────────────────
 function pathToPageId(pathname: string): PageId | null {
@@ -74,7 +74,7 @@ function SetupProgress({ completed, total }: { completed: number; total: number 
 export function PageCrossLinks() {
   const { t } = useTranslation();
   const { pathname } = useLocation();
-  const settings = useAppStore((s) => s.settings);
+  const settings = useAppStoreShallow((s) => s.settings);
 
   const pageId = pathToPageId(pathname);
   if (!pageId || !PAGE_RELATIONS[pageId]) return null;

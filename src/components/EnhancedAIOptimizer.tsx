@@ -8,7 +8,7 @@ import { Sparkles, Loader2, Key } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
-import { useAppStore } from '../store';
+import { useAppStoreShallow } from '../store';
 import { buildOptimizerRecommendations } from '../lib/optimizer';
 import { callAI } from '../core/aiClient';
 import { getActiveProvider } from '../lib/ai-keys';
@@ -22,8 +22,8 @@ interface GeminiRecommendation {
 
 export function EnhancedAIOptimizer() {
   const { t } = useTranslation();
-  const energyData = useAppStore((s) => s.energyData);
-  const settings = useAppStore((s) => s.settings);
+  const energyData = useAppStoreShallow((s) => s.energyData);
+  const settings = useAppStoreShallow((s) => s.settings);
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [geminiRecommendations, setGeminiRecommendations] = useState<GeminiRecommendation[]>([]);
   const [error, setError] = useState<string | null>(null);

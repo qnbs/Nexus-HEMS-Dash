@@ -3,7 +3,7 @@ import { BrainCircuit, TriangleAlert, TrendingUp, Zap } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { buildOptimizerRecommendations } from '../lib/optimizer';
-import { useAppStore } from '../store';
+import { useAppStoreShallow } from '../store';
 
 const severityStyles = {
   positive: 'border-emerald-400/35 bg-emerald-400/10 text-emerald-100',
@@ -21,8 +21,8 @@ const severityIcons = {
 
 export function AIOptimizerPanel() {
   const { t } = useTranslation();
-  const energyData = useAppStore((state) => state.energyData);
-  const settings = useAppStore((state) => state.settings);
+  const energyData = useAppStoreShallow((state) => state.energyData);
+  const settings = useAppStoreShallow((state) => state.settings);
   const recommendations = buildOptimizerRecommendations(energyData, settings);
 
   return (
