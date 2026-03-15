@@ -33,10 +33,17 @@ export type { CommandConfirmFn } from './BaseAdapter';
 
 // Adapter implementations
 export { VictronMQTTAdapter, VENUS_DBUS_PATHS, VENUS_MQTT_PREFIX } from './VictronMQTTAdapter';
-export type { VictronGatewayType } from './VictronMQTTAdapter';
-export { ModbusSunSpecAdapter } from './ModbusSunSpecAdapter';
+export type {
+  VictronGatewayType,
+  VictronConnectionMode,
+  VictronAdapterConfig,
+} from './VictronMQTTAdapter';
+export { ModbusSunSpecAdapter, SUNSPEC_MODELS } from './ModbusSunSpecAdapter';
+export type { SunSpecDeviceInfo } from './ModbusSunSpecAdapter';
 export { KNXAdapter } from './KNXAdapter';
+export type { KNXRoomConfig, KNXTransport, KNXMQTTConfig, KNXAdapterConfig } from './KNXAdapter';
 export { OCPP21Adapter } from './OCPP21Adapter';
+export type { OCPPSecurityProfile, OCPPAdapterConfig } from './OCPP21Adapter';
 export { EEBUSAdapter } from './EEBUSAdapter';
 export type {
   EEBUSDeviceType,
@@ -49,4 +56,5 @@ export type {
   SHIPConnectionState,
   EEBUSDiscoveredDevice,
   EEBUSConnectionEvent,
+  EEBUSAdapterConfig,
 } from './EEBUSAdapter';

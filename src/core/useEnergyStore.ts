@@ -26,10 +26,14 @@ import type {
 } from './adapters/EnergyAdapter';
 
 import { VictronMQTTAdapter } from './adapters/VictronMQTTAdapter';
+import type { VictronAdapterConfig } from './adapters/VictronMQTTAdapter';
 import { ModbusSunSpecAdapter } from './adapters/ModbusSunSpecAdapter';
 import { KNXAdapter } from './adapters/KNXAdapter';
+import type { KNXAdapterConfig } from './adapters/KNXAdapter';
 import { OCPP21Adapter } from './adapters/OCPP21Adapter';
+import type { OCPPAdapterConfig } from './adapters/OCPP21Adapter';
 import { EEBUSAdapter } from './adapters/EEBUSAdapter';
+import type { EEBUSAdapterConfig } from './adapters/EEBUSAdapter';
 import { BaseAdapter } from './adapters/BaseAdapter';
 import type { CircuitState } from './circuit-breaker';
 import { validateCommand } from './command-safety';
@@ -80,15 +84,15 @@ function createAdapterInstance(
 ): EnergyAdapter {
   switch (id) {
     case 'victron-mqtt':
-      return new VictronMQTTAdapter(config);
+      return new VictronMQTTAdapter(config as VictronAdapterConfig | undefined);
     case 'modbus-sunspec':
       return new ModbusSunSpecAdapter(config);
     case 'knx':
-      return new KNXAdapter(config);
+      return new KNXAdapter(config as KNXAdapterConfig | undefined);
     case 'ocpp-21':
-      return new OCPP21Adapter(config);
+      return new OCPP21Adapter(config as OCPPAdapterConfig | undefined);
     case 'eebus':
-      return new EEBUSAdapter();
+      return new EEBUSAdapter(config as EEBUSAdapterConfig | undefined);
   }
 }
 

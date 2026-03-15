@@ -1,16 +1,22 @@
 /**
- * KNXAdapter — KNX/IP building automation adapter
+ * KNXAdapter — Production KNX/IP building automation adapter
  *
- * Connects to a KNX/IP gateway (e.g. Weinzierl, ABB, MDT) via a WebSocket
- * bridge that translates KNX group addresses to JSON payloads.
+ * Connects via one of two transports:
+ *   1. WebSocket bridge (default) — knxd / custom bridge exposing KNX telegrams as JSON
+ *   2. MQTT bridge — KNX/MQTT gateway (e.g. knx2mqtt, Weinzierl KNX/MQTT)
  *
  * Architecture:
- *   KNX Bus → KNX/IP Gateway → knx-bridge (Node.js / knxd) → WebSocket → This Adapter
+ *   KNX Bus → KNX/IP Gateway → Bridge (knxd/MQTT) → WebSocket/MQTT → This Adapter
  *
- * Supported group address conventions (ETS export):
- *   • 1/x/x  – Lighting (switch, dimming)
- *   • 2/x/x  – Heating / Climate (setpoint, actual, valve)
- *   • 3/x/x  – Sensors (temperature, humidity, CO₂, window contact)
+ * Supported DPT (KNX Datapoint Types):
+ *   • DPT1  — Boolean (switch, window contact)
+ *   • DPT5  — 8-bit unsigned (dimming 0–255, percentage 0–100)
+ *   • DPT9  — 16-bit float (temperature, humidity, CO₂)
+ *   • DPT14 — 32-bit float (energy, power)
+ *
+ * ETS Project Import:
+ *   Room configs can be loaded from an ETS export (JSON) via setRoomConfigs()
+ *   to map group addresses to room entities automatically.
  */
 
 import type {
@@ -33,10 +39,12 @@ interface KNXTelegram {
   value: boolean | number | string;
   /** Source physical address */
   src?: string;
+  /** Timestamp from bridge */
+  ts?: number;
 }
 
-/** Room definition from KNX project config */
-interface KNXRoomConfig {
+/** Room definition from KNX project config / ETS export */
+export interface KNXRoomConfig {
   id: string;
   name: string;
   /** Group address for light switching */
@@ -53,6 +61,21 @@ interface KNXRoomConfig {
   humidityGA?: string;
   /** Group address for CO₂ */
   co2GA?: string;
+  /** Group address for power metering (DPT14) */
+  powerGA?: string;
+}
+
+/** Transport mode for the KNX adapter */
+export type KNXTransport = 'websocket' | 'mqtt';
+
+/** MQTT topic layout for KNX/MQTT bridges */
+export interface KNXMQTTConfig {
+  /** Topic prefix (e.g. "knx" → knx/1/1/0) */
+  topicPrefix: string;
+  /** State topic template, {ga} is replaced (e.g. "knx/{ga}/state") */
+  stateTopic: string;
+  /** Command topic template for writes */
+  commandTopic: string;
 }
 
 const DEFAULT_ROOMS: KNXRoomConfig[] = [
@@ -88,21 +111,42 @@ const DEFAULT_RECONNECT = {
   backoffMultiplier: 1.5,
 };
 
+const DEFAULT_MQTT_CONFIG: KNXMQTTConfig = {
+  topicPrefix: 'knx',
+  stateTopic: 'knx/{ga}/state',
+  commandTopic: 'knx/{ga}/set',
+};
+
+export interface KNXAdapterConfig extends Partial<AdapterConnectionConfig> {
+  transport?: KNXTransport;
+  mqttConfig?: Partial<KNXMQTTConfig>;
+  roomConfigs?: KNXRoomConfig[];
+}
+
 export class KNXAdapter extends BaseAdapter {
   readonly id = 'knx';
   readonly name = 'KNX/IP Gateway';
   readonly capabilities: AdapterCapability[] = ['knx'];
 
   private ws: WebSocket | null = null;
+  private mqttClient: {
+    on: (event: string, cb: (...args: unknown[]) => void) => void;
+    subscribe: (topic: string | string[]) => void;
+    publish: (topic: string, message: string) => void;
+    end: (force?: boolean) => void;
+    connected: boolean;
+  } | null = null;
+  private transport: KNXTransport;
+  private mqttConfig: KNXMQTTConfig;
 
   /** Live room state, keyed by room id */
   private rooms: Map<string, KNXRoom> = new Map();
   /** GA → room id + field mapping */
   private gaIndex: Map<string, { roomId: string; field: string }> = new Map();
 
-  private readonly roomConfigs: KNXRoomConfig[];
+  private roomConfigs: KNXRoomConfig[];
 
-  constructor(config?: Partial<AdapterConnectionConfig>, roomConfigs?: KNXRoomConfig[]) {
+  constructor(config?: KNXAdapterConfig) {
     super({
       name: 'KNX/IP',
       host: config?.host ?? '192.168.1.101',
@@ -111,8 +155,23 @@ export class KNXAdapter extends BaseAdapter {
       reconnect: { ...DEFAULT_RECONNECT, ...config?.reconnect },
       ...config,
     });
-    this.roomConfigs = roomConfigs ?? DEFAULT_ROOMS;
+    this.transport = config?.transport ?? 'websocket';
+    this.mqttConfig = { ...DEFAULT_MQTT_CONFIG, ...config?.mqttConfig };
+    this.roomConfigs = config?.roomConfigs ?? DEFAULT_ROOMS;
     this.initRooms();
+  }
+
+  /** Update room configs (e.g. from ETS import) and rebuild GA index */
+  setRoomConfigs(configs: KNXRoomConfig[]): void {
+    this.roomConfigs = configs;
+    this.rooms.clear();
+    this.gaIndex.clear();
+    this.initRooms();
+  }
+
+  /** Get current room configs (for serialization / Settings UI) */
+  getRoomConfigs(): KNXRoomConfig[] {
+    return [...this.roomConfigs];
   }
 
   override getSnapshot(): Partial<UnifiedEnergyModel> {
@@ -124,6 +183,13 @@ export class KNXAdapter extends BaseAdapter {
   // ─── BaseAdapter abstract implementations ─────────────────────────
 
   protected async _connect(): Promise<void> {
+    if (this.transport === 'mqtt') {
+      return this._connectMQTT();
+    }
+    return this._connectWebSocket();
+  }
+
+  private _connectWebSocket(): void {
     this.setStatus('connecting');
 
     const protocol = this.config.tls ? 'wss:' : 'ws:';
@@ -133,6 +199,8 @@ export class KNXAdapter extends BaseAdapter {
     ws.onopen = () => {
       this.resetRetryDelay();
       this.setStatus('connected');
+      // Request initial state of all configured GAs
+      this.requestInitialState();
     };
 
     ws.onmessage = (event: MessageEvent) => {
@@ -156,14 +224,67 @@ export class KNXAdapter extends BaseAdapter {
     this.ws = ws;
   }
 
+  private async _connectMQTT(): Promise<void> {
+    this.setStatus('connecting');
+
+    try {
+      const mqtt = await import('mqtt');
+      const protocol = this.config.tls ? 'wss' : 'ws';
+      const url = `${protocol}://${this.config.host}:${this.config.port}/mqtt`;
+
+      const client = (
+        mqtt.connect as unknown as (
+          url: string,
+          opts?: Record<string, unknown>,
+        ) => typeof this.mqttClient
+      )(url, {
+        protocolVersion: 4,
+        clean: true,
+        connectTimeout: 10_000,
+        ...(this.config.authToken ? { password: this.config.authToken } : {}),
+      })!;
+
+      this.mqttClient = client;
+
+      client.on('connect', () => {
+        this.resetRetryDelay();
+        this.setStatus('connected');
+        // Subscribe to all KNX state topics
+        const prefix = this.mqttConfig.topicPrefix;
+        client.subscribe(`${prefix}/+/+/+/state`);
+        client.subscribe(`${prefix}/#`);
+      });
+
+      client.on('message', (_topic: unknown, _payload: unknown) => {
+        const topic = _topic as string;
+        const payload = (_payload as Buffer).toString();
+        this.handleMQTTMessage(topic, payload);
+      });
+
+      client.on('close', () => {
+        this.setStatus('disconnected');
+        this.scheduleReconnect();
+      });
+
+      client.on('error', () => {
+        this.setStatus('error', 'KNX MQTT connection error');
+      });
+    } catch {
+      this.setStatus('error', 'Failed to load MQTT library');
+      this.scheduleReconnect();
+    }
+  }
+
   protected async _disconnect(): Promise<void> {
     this.ws?.close();
     this.ws = null;
+    if (this.mqttClient) {
+      this.mqttClient.end(true);
+      this.mqttClient = null;
+    }
   }
 
   protected async _sendCommand(command: AdapterCommand): Promise<boolean> {
-    if (this.ws?.readyState !== WebSocket.OPEN) return false;
-
     let telegram: { ga: string; value: boolean | number | string } | null = null;
 
     if (command.type === 'KNX_TOGGLE_LIGHTS' && command.targetDeviceId) {
@@ -180,13 +301,64 @@ export class KNXAdapter extends BaseAdapter {
 
     if (!telegram) return false;
 
-    this.ws.send(JSON.stringify({ type: 'WRITE', ...telegram }));
-    return true;
+    if (this.transport === 'mqtt' && this.mqttClient?.connected) {
+      const topic = this.mqttConfig.commandTopic.replace('{ga}', telegram.ga.replace(/\//g, '-'));
+      this.mqttClient.publish(topic, JSON.stringify(telegram.value));
+      return true;
+    }
+
+    if (this.ws?.readyState === WebSocket.OPEN) {
+      this.ws.send(JSON.stringify({ type: 'WRITE', ...telegram }));
+      return true;
+    }
+
+    return false;
   }
 
   protected _cleanup(): void {
     this.ws?.close();
     this.ws = null;
+    if (this.mqttClient) {
+      this.mqttClient.end(true);
+      this.mqttClient = null;
+    }
+  }
+
+  // ─── MQTT message handling ────────────────────────────────────────
+
+  private handleMQTTMessage(topic: string, payload: string): void {
+    // Extract GA from topic (e.g. "knx/1/1/0/state" → "1/1/0")
+    const prefix = this.mqttConfig.topicPrefix;
+    const stripped = topic.startsWith(prefix + '/') ? topic.slice(prefix.length + 1) : topic;
+    const parts = stripped.split('/');
+
+    // GA is first three parts, rest is suffix (state/set)
+    if (parts.length < 3) return;
+    const ga = `${parts[0]}/${parts[1]}/${parts[2]}`;
+
+    try {
+      const value = JSON.parse(payload) as boolean | number | string;
+      this.handleTelegram({ ga, dpt: '', value });
+    } catch {
+      // Try plain value
+      const num = parseFloat(payload);
+      if (!isNaN(num)) {
+        this.handleTelegram({ ga, dpt: '', value: num });
+      } else if (payload === 'true' || payload === 'false') {
+        this.handleTelegram({ ga, dpt: '', value: payload === 'true' });
+      }
+    }
+  }
+
+  // ─── Request initial state ────────────────────────────────────────
+
+  private requestInitialState(): void {
+    if (this.ws?.readyState !== WebSocket.OPEN) return;
+
+    // Request read for all configured GAs
+    for (const ga of this.gaIndex.keys()) {
+      this.ws.send(JSON.stringify({ type: 'READ', ga }));
+    }
   }
 
   // ─── Internal ─────────────────────────────────────────────────────
@@ -201,7 +373,6 @@ export class KNXAdapter extends BaseAdapter {
         windowOpen: false,
       });
 
-      // Build reverse lookup: GA → room + field
       this.gaIndex.set(cfg.lightGA, { roomId: cfg.id, field: 'lightsOn' });
       if (cfg.dimGA) this.gaIndex.set(cfg.dimGA, { roomId: cfg.id, field: 'brightness' });
       this.gaIndex.set(cfg.tempGA, { roomId: cfg.id, field: 'temperature' });
@@ -219,7 +390,6 @@ export class KNXAdapter extends BaseAdapter {
     const room = this.rooms.get(mapping.roomId);
     if (!room) return;
 
-    // Update the specific field
     switch (mapping.field) {
       case 'lightsOn':
         room.lightsOn = Boolean(telegram.value);
@@ -246,7 +416,6 @@ export class KNXAdapter extends BaseAdapter {
 
     this.rooms.set(mapping.roomId, room);
 
-    // Emit snapshot with all rooms
     this.emitData({
       timestamp: Date.now(),
       knx: { rooms: Array.from(this.rooms.values()) },

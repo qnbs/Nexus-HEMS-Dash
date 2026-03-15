@@ -1,14 +1,20 @@
 /**
- * VictronMQTTAdapter — Adapter for Victron Cerbo GX / Cerbo GX MK2 via Node-RED WebSocket
+ * VictronMQTTAdapter — Direct MQTT connection to Victron Venus OS
+ *
+ * Connects directly to the Venus OS dbus-mqtt bridge via MQTT-over-WebSocket,
+ * eliminating the need for a Node-RED relay.
  *
  * Supports:
- *  1. Node-RED WebSocket relay  (Cerbo GX → Node-RED → WebSocket → This Adapter)
- *  2. Direct Venus OS MQTT      (dbus-mqtt bridge on port 1883/9001)
+ *  1. Direct Venus OS MQTT (dbus-mqtt bridge on port 9001 for WS, 1883 for TCP)
+ *  2. Fallback: Node-RED WebSocket relay for legacy setups
  *
- * Works with both Cerbo GX (original) and Cerbo GX MK2 (faster CPU, USB-C, Wi-Fi 5).
- * Also compatible with Raspberry Pi 4/5 running Venus OS Large.
+ * MQTT Topic Layout (Venus OS dbus-mqtt):
+ *   N/<portalId>/<service>/<instance>/<path>  — Notification (read values)
+ *   R/<portalId>/<service>/<instance>/<path>  — Read request
+ *   W/<portalId>/<service>/<instance>/<path>  — Write command  { "value": ... }
  *
- * D-Bus service paths follow the com.victronenergy.* namespace used on Venus OS.
+ * Works with Cerbo GX, Cerbo GX MK2, and Raspberry Pi running Venus OS Large.
+ * D-Bus service paths follow the com.victronenergy.* namespace.
  */
 
 import type {
@@ -18,6 +24,24 @@ import type {
   UnifiedEnergyModel,
 } from './EnergyAdapter';
 import { BaseAdapter } from './BaseAdapter';
+
+// Lazy-load mqtt.js only when needed (keeps initial bundle small)
+type MqttClient = {
+  on(event: string, cb: (...args: unknown[]) => void): void;
+  subscribe(topic: string | string[], cb?: (err?: Error) => void): void;
+  publish(topic: string, message: string, cb?: (err?: Error) => void): void;
+  end(force?: boolean, cb?: () => void): void;
+  connected: boolean;
+};
+type MqttConnectFn = (url: string, opts?: Record<string, unknown>) => MqttClient;
+let mqttConnect: MqttConnectFn | null = null;
+
+async function loadMqtt(): Promise<MqttConnectFn> {
+  if (mqttConnect) return mqttConnect;
+  const mod = await import('mqtt');
+  mqttConnect = mod.connect as unknown as MqttConnectFn;
+  return mqttConnect;
+}
 
 // ─── Gateway device type ─────────────────────────────────────────────
 
@@ -83,9 +107,18 @@ export const VENUS_DBUS_PATHS = {
 /** MQTT topic prefix for Venus OS dbus-mqtt bridge (N/<portalId>/...) */
 export const VENUS_MQTT_PREFIX = 'N';
 
-// ─── Node-RED WebSocket message ──────────────────────────────────────
+// ─── Connection mode ─────────────────────────────────────────────────
 
-/** Raw message from Node-RED WebSocket (current format) */
+export type VictronConnectionMode = 'mqtt' | 'websocket-legacy';
+
+// ─── MQTT value payload from Venus OS ────────────────────────────────
+
+interface VenusMQTTValue {
+  value: number | string | null;
+}
+
+// ─── Node-RED WebSocket message (legacy fallback) ────────────────────
+
 interface NodeREDEnergyMessage {
   type: 'ENERGY_UPDATE';
   data: {
@@ -100,7 +133,6 @@ interface NodeREDEnergyMessage {
     batteryVoltage?: number;
     pvYieldToday?: number;
     priceCurrent?: number;
-    /** Gateway hardware detected (populated on MK2 and RPi) */
     gatewayType?: VictronGatewayType;
   };
 }
@@ -112,31 +144,112 @@ const DEFAULT_RECONNECT = {
   backoffMultiplier: 1.6,
 };
 
+export interface VictronAdapterConfig extends Partial<AdapterConnectionConfig> {
+  gatewayType?: VictronGatewayType;
+  /** Venus OS portal ID for MQTT topic prefix. Auto-detected if omitted. */
+  portalId?: string;
+  /** Connection mode: 'mqtt' (direct) or 'websocket-legacy' (Node-RED) */
+  mode?: VictronConnectionMode;
+}
+
 export class VictronMQTTAdapter extends BaseAdapter {
   readonly id = 'victron-mqtt';
-  readonly name = 'Victron Cerbo GX (Node-RED)';
+  readonly name = 'Victron Cerbo GX (MQTT)';
   readonly capabilities: AdapterCapability[] = ['pv', 'battery', 'grid', 'load'];
 
-  private ws: WebSocket | null = null;
+  private mqttClient: MqttClient | null = null;
+  private legacyWs: WebSocket | null = null;
+  private portalId: string | null = null;
+  private connectionMode: VictronConnectionMode;
 
   /** Detected or configured gateway hardware type */
   gatewayType: VictronGatewayType = 'cerbo-gx';
 
-  constructor(config?: Partial<AdapterConnectionConfig> & { gatewayType?: VictronGatewayType }) {
+  /** Live values keyed by D-Bus path suffix */
+  private values: Map<string, number> = new Map();
+
+  /** Keepalive timer for MQTT reads */
+  private keepaliveTimer: ReturnType<typeof setInterval> | null = null;
+
+  constructor(config?: VictronAdapterConfig) {
     super({
       name: 'Victron Cerbo GX',
       host: config?.host ?? window.location.hostname,
-      port: config?.port ?? (window.location.port ? Number(window.location.port) : 443),
+      port: config?.port ?? 9001, // Venus OS MQTT-over-WebSocket default
       tls: config?.tls ?? window.location.protocol === 'https:',
       reconnect: { ...DEFAULT_RECONNECT, ...config?.reconnect },
       ...config,
     });
     this.gatewayType = config?.gatewayType ?? 'cerbo-gx';
+    this.portalId = config?.portalId ?? null;
+    this.connectionMode = config?.mode ?? 'mqtt';
   }
 
   // ─── BaseAdapter abstract implementations ─────────────────────────
 
   protected async _connect(): Promise<void> {
+    if (this.connectionMode === 'websocket-legacy') {
+      return this._connectLegacyWebSocket();
+    }
+    return this._connectMQTT();
+  }
+
+  private async _connectMQTT(): Promise<void> {
+    this.setStatus('connecting');
+
+    try {
+      const connect = await loadMqtt();
+      const protocol = this.config.tls ? 'wss' : 'ws';
+      const url = `${protocol}://${this.config.host}:${this.config.port}/mqtt`;
+
+      const opts: Record<string, unknown> = {
+        protocolVersion: 4,
+        clean: true,
+        connectTimeout: 10_000,
+        keepalive: 30,
+      };
+
+      if (this.config.authToken) {
+        opts.username = '';
+        opts.password = this.config.authToken;
+      }
+
+      const client = connect(url, opts);
+      this.mqttClient = client;
+
+      client.on('connect', () => {
+        this.resetRetryDelay();
+        this.setStatus('connected');
+
+        // Subscribe to all Venus OS notifications to detect portalId
+        client.subscribe('N/+/+/+/#');
+
+        // Start keepalive reads (Venus OS requires periodic R/ reads to keep N/ flowing)
+        this.startKeepalive();
+      });
+
+      client.on('message', (_topic: unknown, _payload: unknown) => {
+        const topic = _topic as string;
+        const payload = _payload as Buffer;
+        this.handleMQTTMessage(topic, payload.toString());
+      });
+
+      client.on('close', () => {
+        this.setStatus('disconnected');
+        this.stopKeepalive();
+        this.scheduleReconnect();
+      });
+
+      client.on('error', () => {
+        this.setStatus('error', 'MQTT connection error');
+      });
+    } catch {
+      this.setStatus('error', 'Failed to load MQTT library');
+      this.scheduleReconnect();
+    }
+  }
+
+  private _connectLegacyWebSocket(): void {
     this.setStatus('connecting');
 
     const protocol = this.config.tls ? 'wss:' : 'ws:';
@@ -155,11 +268,11 @@ export class VictronMQTTAdapter extends BaseAdapter {
           if (message.data.gatewayType) {
             this.gatewayType = message.data.gatewayType;
           }
-          const model = this.toUnifiedModel(message.data);
+          const model = this.legacyToUnifiedModel(message.data);
           this.emitData(model);
         }
       } catch {
-        // Non-JSON or unknown message format — ignore
+        // Non-JSON or unknown message format
       }
     };
 
@@ -172,34 +285,221 @@ export class VictronMQTTAdapter extends BaseAdapter {
       ws.close();
     };
 
-    this.ws = ws;
+    this.legacyWs = ws;
   }
 
   protected async _disconnect(): Promise<void> {
-    this.ws?.close();
-    this.ws = null;
+    this.stopKeepalive();
+    if (this.mqttClient) {
+      this.mqttClient.end(true);
+      this.mqttClient = null;
+    }
+    if (this.legacyWs) {
+      this.legacyWs.close();
+      this.legacyWs = null;
+    }
   }
 
   protected async _sendCommand(command: AdapterCommand): Promise<boolean> {
-    const mapped = this.mapCommand(command);
+    if (this.connectionMode === 'websocket-legacy') {
+      return this._sendLegacyCommand(command);
+    }
+    return this._sendMQTTCommand(command);
+  }
+
+  private _sendMQTTCommand(command: AdapterCommand): boolean {
+    if (!this.mqttClient?.connected || !this.portalId) return false;
+
+    const mapping = this.mapCommandToDBus(command);
+    if (!mapping) return false;
+
+    const topic = `W/${this.portalId}/${mapping.service}/${mapping.path}`;
+    this.mqttClient.publish(topic, JSON.stringify({ value: mapping.value }));
+    return true;
+  }
+
+  private _sendLegacyCommand(command: AdapterCommand): boolean {
+    const mapped = this.mapLegacyCommand(command);
     if (!mapped) return false;
 
-    if (this.ws?.readyState === WebSocket.OPEN) {
-      this.ws.send(JSON.stringify(mapped));
+    if (this.legacyWs?.readyState === WebSocket.OPEN) {
+      this.legacyWs.send(JSON.stringify(mapped));
       return true;
     }
     return false;
   }
 
   protected _cleanup(): void {
-    this.ws?.close();
-    this.ws = null;
+    this.stopKeepalive();
+    this.mqttClient?.end(true);
+    this.mqttClient = null;
+    this.legacyWs?.close();
+    this.legacyWs = null;
+    this.values.clear();
   }
 
-  // ─── Private helpers ──────────────────────────────────────────────
+  // ─── MQTT message handling ────────────────────────────────────────
 
-  /** Map Node-RED's flat data to UnifiedEnergyModel */
-  private toUnifiedModel(data: NodeREDEnergyMessage['data']): Partial<UnifiedEnergyModel> {
+  private handleMQTTMessage(topic: string, payload: string): void {
+    // Topic: N/<portalId>/<service>/<instance>/<path...>
+    const parts = topic.split('/');
+    if (parts.length < 4 || parts[0] !== 'N') return;
+
+    // Auto-detect portal ID from first message
+    if (!this.portalId) {
+      this.portalId = parts[1];
+      if (import.meta.env.DEV) {
+        console.log(`[Victron] Auto-detected portal ID: ${this.portalId}`);
+      }
+    }
+
+    try {
+      const msg = JSON.parse(payload) as VenusMQTTValue;
+      if (msg.value === null || msg.value === undefined) return;
+
+      const value = typeof msg.value === 'string' ? parseFloat(msg.value) : msg.value;
+      if (typeof value !== 'number' || !Number.isFinite(value)) return;
+
+      // Build a normalized key: service/path (skip portalId and instance)
+      const service = parts[2]; // e.g. "com.victronenergy.grid"
+      const path = parts.slice(4).join('/'); // e.g. "Ac/Power"
+      const key = `${service}/${path}`;
+
+      this.values.set(key, value);
+      this.emitCurrentModel();
+    } catch {
+      // Invalid JSON payload
+    }
+  }
+
+  private emitCurrentModel(): void {
+    const v = (key: string) => this.values.get(key);
+
+    const pvPower =
+      v('com.victronenergy.pvinverter/Ac/Power') ??
+      v('com.victronenergy.solarcharger/Yield/Power') ??
+      0;
+    const pvYield =
+      v('com.victronenergy.pvinverter/Ac/Energy/Forward') ??
+      v('com.victronenergy.solarcharger/Yield/System') ??
+      0;
+
+    const battPower = v('com.victronenergy.battery/Dc/0/Power') ?? 0;
+    const battSoc = v('com.victronenergy.battery/Soc') ?? 0;
+    const battVoltage = v('com.victronenergy.battery/Dc/0/Voltage') ?? 51.2;
+    const battCurrent = v('com.victronenergy.battery/Dc/0/Current') ?? 0;
+
+    const gridPower = v('com.victronenergy.grid/Ac/Power') ?? 0;
+    const gridVoltage = v('com.victronenergy.grid/Ac/L1/Voltage') ?? 230;
+    const gridEnergyFwd = v('com.victronenergy.grid/Ac/Energy/Forward');
+    const gridEnergyRev = v('com.victronenergy.grid/Ac/Energy/Reverse');
+
+    const gridL1V = v('com.victronenergy.grid/Ac/L1/Voltage');
+    const gridL2V = v('com.victronenergy.grid/Ac/L2/Voltage');
+    const gridL3V = v('com.victronenergy.grid/Ac/L3/Voltage');
+
+    const vebusPower = v('com.victronenergy.vebus/Ac/Out/P') ?? 0;
+
+    // House load = PV + Battery discharge + Grid import - Battery charge - Grid export
+    // Or use VE.Bus AC out power if available
+    const houseLoad = vebusPower > 0 ? vebusPower : Math.max(0, pvPower - battPower + gridPower);
+
+    const model: Partial<UnifiedEnergyModel> = {
+      timestamp: Date.now(),
+      pv: {
+        totalPowerW: pvPower,
+        yieldTodayKWh: pvYield / 1000,
+      },
+      battery: {
+        powerW: battPower,
+        socPercent: battSoc,
+        voltageV: battVoltage,
+        currentA: battCurrent,
+      },
+      grid: {
+        powerW: gridPower,
+        voltageV: gridVoltage,
+        energyImportKWh: gridEnergyFwd ? gridEnergyFwd / 1000 : undefined,
+        energyExportKWh: gridEnergyRev ? gridEnergyRev / 1000 : undefined,
+        phases:
+          gridL1V != null
+            ? [
+                { voltageV: gridL1V, currentA: 0, powerW: 0 },
+                ...(gridL2V != null ? [{ voltageV: gridL2V, currentA: 0, powerW: 0 }] : []),
+                ...(gridL3V != null ? [{ voltageV: gridL3V, currentA: 0, powerW: 0 }] : []),
+              ]
+            : undefined,
+      },
+      load: {
+        totalPowerW: houseLoad,
+        heatPumpPowerW: 0,
+        evPowerW: 0,
+        otherPowerW: houseLoad,
+      },
+    };
+
+    this.emitData(model);
+  }
+
+  // ─── Keepalive (Venus OS requires periodic R/ reads) ──────────────
+
+  private startKeepalive(): void {
+    this.stopKeepalive();
+    this.keepaliveTimer = setInterval(() => {
+      if (!this.mqttClient?.connected || !this.portalId) return;
+      // Send keepalive read to system service to keep N/ messages flowing
+      this.mqttClient.publish(`R/${this.portalId}/system/0/Serial`, '');
+    }, 25_000);
+  }
+
+  private stopKeepalive(): void {
+    if (this.keepaliveTimer) {
+      clearInterval(this.keepaliveTimer);
+      this.keepaliveTimer = null;
+    }
+  }
+
+  // ─── Command mapping → Venus OS D-Bus writes ─────────────────────
+
+  private mapCommandToDBus(
+    command: AdapterCommand,
+  ): { service: string; path: string; value: number | string | boolean } | null {
+    switch (command.type) {
+      case 'SET_BATTERY_POWER':
+        return {
+          service: 'com.victronenergy.settings/0',
+          path: 'Settings/CGwacs/MaxDischargePower',
+          value: Number(command.value),
+        };
+      case 'SET_BATTERY_MODE':
+        // VE.Bus mode: 1=Charger, 2=Inverter, 3=On, 4=Off
+        return {
+          service: 'com.victronenergy.vebus/276',
+          path: 'Mode',
+          value: Number(command.value),
+        };
+      case 'SET_GRID_LIMIT':
+        return {
+          service: 'com.victronenergy.settings/0',
+          path: 'Settings/CGwacs/MaxFeedInPower',
+          value: Number(command.value),
+        };
+      case 'SET_EV_POWER':
+      case 'SET_HEAT_PUMP_POWER':
+        // These go through the relay on the Cerbo GX
+        return {
+          service: 'com.victronenergy.system/0',
+          path: `Relay/${command.type === 'SET_EV_POWER' ? '1' : '0'}/State`,
+          value: Number(command.value) > 0 ? 1 : 0,
+        };
+      default:
+        return null;
+    }
+  }
+
+  // ─── Legacy helpers ───────────────────────────────────────────────
+
+  private legacyToUnifiedModel(data: NodeREDEnergyMessage['data']): Partial<UnifiedEnergyModel> {
     return {
       timestamp: Date.now(),
       pv: {
@@ -232,8 +532,7 @@ export class VictronMQTTAdapter extends BaseAdapter {
     };
   }
 
-  /** Map adapter-agnostic commands to Node-RED format */
-  private mapCommand(
+  private mapLegacyCommand(
     command: AdapterCommand,
   ): { type: string; value: number | string | boolean } | null {
     const mapping: Record<string, string> = {

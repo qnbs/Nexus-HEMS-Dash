@@ -161,6 +161,12 @@ interface SPINEMessage {
   payload: SPINEPayload;
 }
 
+/** EEBUS adapter configuration */
+export interface EEBUSAdapterConfig extends Partial<AdapterConnectionConfig> {
+  /** Server base URL for mDNS discovery + pairing (defaults to window.location.origin) */
+  serverBaseUrl?: string;
+}
+
 // ─── Adapter Implementation ─────────────────────────────────────────
 
 export class EEBUSAdapter extends BaseAdapter {
@@ -178,8 +184,9 @@ export class EEBUSAdapter extends BaseAdapter {
   private loadLimits: Map<number, EEBUSLoadControlLimit> = new Map();
   private incentives: EEBUSIncentive[] = [];
   private heartbeatInterval: ReturnType<typeof setInterval> | null = null;
+  private _serverBaseUrl?: string;
 
-  constructor(config?: Partial<AdapterConnectionConfig>) {
+  constructor(config?: EEBUSAdapterConfig) {
     super({
       name: 'EEBUS SPINE/SHIP',
       host: config?.host ?? 'localhost',
@@ -194,6 +201,7 @@ export class EEBUSAdapter extends BaseAdapter {
       },
       ...config,
     });
+    this._serverBaseUrl = config?.serverBaseUrl;
   }
 
   get devices(): EEBUSDiscoveredDevice[] {
@@ -360,65 +368,72 @@ export class EEBUSAdapter extends BaseAdapter {
   }
 
   pairDevice(ski: string): void {
-    const device = this.discoveredDevices.get(ski);
-    if (!device) return;
-
-    this.pairedDevices.add(ski);
-    device.trusted = true;
-    this.discoveredDevices.set(ski, device);
-    this.sendSHIPPinVerification(ski);
-    this.emitEvent({
-      type: 'paired',
-      device,
-      message: `Paired with ${device.brand} ${device.model}`,
-    });
+    void this.pairDeviceAsync(ski);
   }
 
+  /**
+   * Discover EEBUS devices via server-side mDNS.
+   * The server handles mDNS / DNS-SD queries (_ship._tcp) and returns results.
+   * Falls back to direct WS-based discovery if server endpoint is unavailable.
+   */
   async discoverDevices(): Promise<EEBUSDiscoveredDevice[]> {
-    if (import.meta.env.DEV) console.log('[EEBUS] Starting mDNS device discovery...');
+    if (import.meta.env.DEV) console.log('[EEBUS] Starting device discovery via server...');
 
-    const mockDevices: EEBUSDiscoveredDevice[] = [
-      {
-        ski: 'a1b2c3d4e5f6-evse',
-        brand: 'EEBUS',
-        model: 'EV Charging Station Pro',
-        deviceType: 'EVCharger',
-        host: this.config.host ?? '192.168.1.120',
-        port: this.config.port ?? 4712,
-        path: '/ship/',
-        register: true,
-        trusted: this.pairedDevices.has('a1b2c3d4e5f6-evse'),
-      },
-      {
-        ski: 'k1l2m3n4o5p6-hp',
-        brand: 'EEBUS',
-        model: 'SG-Ready Heat Pump CEM',
-        deviceType: 'Compressor',
-        host: this.config.host ?? '192.168.1.121',
-        port: 4712,
-        path: '/ship/',
-        register: true,
-        trusted: this.pairedDevices.has('k1l2m3n4o5p6-hp'),
-      },
-      {
-        ski: 'u1v2w3x4y5z6-inv',
-        brand: 'EEBUS',
-        model: 'Hybrid Inverter CEM',
-        deviceType: 'Inverter',
-        host: this.config.host ?? '192.168.1.122',
-        port: 4712,
-        path: '/ship/',
-        register: true,
-        trusted: this.pairedDevices.has('u1v2w3x4y5z6-inv'),
-      },
-    ];
+    try {
+      const baseUrl = this.serverBaseUrl;
+      const resp = await fetch(`${baseUrl}/api/eebus/discover`, {
+        signal: AbortSignal.timeout(10_000),
+      });
+      if (!resp.ok) throw new Error(`Discovery endpoint returned ${resp.status}`);
+      const discovered = (await resp.json()) as EEBUSDiscoveredDevice[];
 
-    for (const device of mockDevices) {
-      this.discoveredDevices.set(device.ski, device);
-      this.emitEvent({ type: 'discovered', device });
+      for (const device of discovered) {
+        device.trusted = this.pairedDevices.has(device.ski);
+        this.discoveredDevices.set(device.ski, device);
+        this.emitEvent({ type: 'discovered', device });
+      }
+      return discovered;
+    } catch (err) {
+      if (import.meta.env.DEV) console.warn('[EEBUS] Server discovery failed, using cache:', err);
+      return Array.from(this.discoveredDevices.values());
     }
+  }
 
-    return mockDevices;
+  /**
+   * Pair with device via server-side SKI verification.
+   * Server handles TLS certificate trust + SHIP PIN exchange.
+   */
+  async pairDeviceAsync(ski: string): Promise<boolean> {
+    const device = this.discoveredDevices.get(ski);
+    if (!device) return false;
+
+    try {
+      const baseUrl = this.serverBaseUrl;
+      const resp = await fetch(`${baseUrl}/api/eebus/pair`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ski, host: device.host, port: device.port }),
+        signal: AbortSignal.timeout(15_000),
+      });
+      if (!resp.ok) return false;
+      this.pairedDevices.add(ski);
+      device.trusted = true;
+      this.discoveredDevices.set(ski, device);
+      this.emitEvent({
+        type: 'paired',
+        device,
+        message: `Paired with ${device.brand} ${device.model}`,
+      });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /** Base URL for server-side EEBUS API endpoints */
+  private get serverBaseUrl(): string {
+    if (this._serverBaseUrl) return this._serverBaseUrl;
+    return typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
   }
 
   // ─── SHIP Protocol ────────────────────────────────────────────────

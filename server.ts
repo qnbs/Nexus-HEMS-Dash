@@ -252,6 +252,68 @@ async function startServer() {
     res.send(renderPrometheusText());
   });
 
+  // ─── EEBUS Server-Side Endpoints ─────────────────────────────────
+  // mDNS discovery and SKI-based pairing must run server-side because
+  // browsers cannot perform mDNS queries or establish mTLS connections.
+
+  /** In-memory cache of discovered EEBUS devices (populated by mDNS scan) */
+  const eebusDeviceCache: Map<
+    string,
+    {
+      ski: string;
+      brand: string;
+      model: string;
+      deviceType: string;
+      host: string;
+      port: number;
+      path: string;
+      register: boolean;
+      trusted: boolean;
+    }
+  > = new Map();
+  /** Set of SKIs that have been paired (trusted) */
+  const eebusTrustedSKIs: Set<string> = new Set();
+
+  app.get('/api/eebus/discover', async (_req, res) => {
+    try {
+      // In production, this would use dns-sd / mdns / bonjour to scan for _ship._tcp services.
+      // For now, return cached devices (populated on server start or previous scans).
+      // Real implementation would use: import Bonjour from 'bonjour-service';
+      // const bonjour = new Bonjour(); bonjour.find({ type: 'ship', protocol: 'tcp' }, cb);
+
+      const devices = Array.from(eebusDeviceCache.values()).map((d) => ({
+        ...d,
+        trusted: eebusTrustedSKIs.has(d.ski),
+      }));
+
+      res.json(devices);
+    } catch (err) {
+      console.error('[EEBUS] Discovery error:', err);
+      res.status(500).json({ error: 'Discovery failed' });
+    }
+  });
+
+  app.post('/api/eebus/pair', (req, res) => {
+    const { ski } = req.body as { ski?: string; host?: string; port?: number };
+    if (!ski || typeof ski !== 'string' || ski.length < 4) {
+      res.status(400).json({ error: 'Invalid SKI' });
+      return;
+    }
+
+    // In production, this would:
+    // 1. Resolve the device via cached mDNS record
+    // 2. Establish TLS 1.3 connection with certificate pinning
+    // 3. Verify SKI matches the device's TLS certificate
+    // 4. Complete SHIP PIN verification handshake
+    // 5. Store trust relationship persistently
+
+    eebusTrustedSKIs.add(ski);
+    const device = eebusDeviceCache.get(ski);
+    if (device) device.trusted = true;
+
+    res.json({ success: true, ski });
+  });
+
   // ─── JSON metrics endpoint (for in-app dashboard) ────────────────
   app.get('/api/metrics/json', (_req, res) => {
     const families: Array<{

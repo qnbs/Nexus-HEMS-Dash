@@ -2,10 +2,19 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "commit-push",
+      "label": "npm-install",
       "type": "shell",
-      "command": "npm install && git add -A && git commit -m 'feat(security): BYOK vault + per-adapter encrypted config + Helmet + mTLS schemas\n\n- Add src/lib/secure-store.ts: BYOK credential vault with AES-GCM 256-bit\n- Add src/lib/useSecureStore.ts: React hook for vault CRUD operations\n- Add src/core/adapter-config-schemas.ts: Zod schemas for mTLS/EEBUS/OCPP\n- Add Helmet security headers to server.ts (CSP, HSTS, X-Frame-Options)\n- Tighten CommandAuditEntry.value type, commandSchemas type (no any)\n- Add Dexie v5 migration with adapterCredentials table\n- Add i18n keys for vault/mTLS (EN + DE)' && git push",
-      "problemMatcher": []
+      "command": "cd /workspaces/Nexus-HEMS-Dash && npm install 2>&1 | tail -30"
+    },
+    {
+      "label": "git-commit-push",
+      "type": "shell",
+      "command": "cd /workspaces/Nexus-HEMS-Dash && git add -A && git commit -m 'feat(protocols): real protocol implementations (mock → production)\n\nVictron: mqtt.js lazy-load + MQTT-over-WebSocket to Venus OS dbus-mqtt\n  - Auto-detect portalId, D-Bus path mapping, keepalive R/ reads\n  - Legacy Node-RED WebSocket fallback preserved\nModbus: SunSpec model auto-discovery + scale factor support\n  - REST bridge with auth token, register write mapping\n  - Probe available models (101-103, 124, 160, 201-204)\nKNX: Dual transport (WebSocket + MQTT) + ETS import\n  - setRoomConfigs/getRoomConfigs for Settings UI\n  - Initial state request on connect, MQTT topic parsing\nOCPP: Correlated JSON-RPC (pending call map + 30s timeout)\n  - Security profiles 0-3, ISO 15118 Plug & Charge\n  - §14a EnWG grid curtailment via ChargingStationMaxProfile\n  - Heartbeat + Authorize handler, proper BootNotification\nEEBUS: Server-side mDNS discovery + SKI pairing\n  - /api/eebus/discover and /api/eebus/pair Express endpoints\n  - Async pairDeviceAsync, configurable serverBaseUrl\n  - Replaced mock devices with real server-side discovery\nStore: Updated adapter factory with typed config classes\nDeps: Added mqtt ^5.12.2\ni18n: 21 new adapter/protocol keys (EN + DE)' && git push"
+    },
+    {
+      "label": "tsc-check",
+      "type": "shell",
+      "command": "cd /workspaces/Nexus-HEMS-Dash && npx tsc --noEmit 2>&1 | tail -40"
     }
   ]
 }

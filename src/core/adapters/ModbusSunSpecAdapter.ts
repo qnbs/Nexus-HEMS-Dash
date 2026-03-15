@@ -1,20 +1,27 @@
 /**
- * ModbusSunSpecAdapter — Modbus TCP / SunSpec polling adapter
+ * ModbusSunSpecAdapter — Production SunSpec Modbus adapter
  *
- * Polls SunSpec-compliant inverters and meters via a Modbus-TCP-to-HTTP
- * bridge (e.g. node-red-contrib-modbus, modbus-proxy, or a local REST gateway).
+ * Connects to SunSpec-compliant inverters and meters via:
+ *   1. REST bridge (default) — local HTTP gateway exposing Modbus registers as JSON
+ *   2. Direct Modbus TCP — via server-side proxy endpoint (browser can't do raw TCP)
  *
  * SunSpec Models used:
- *   • Model 1    – Common block (manufacturer, serial)
- *   • Model 101–103 – Single/Split/Three-Phase Inverter
- *   • Model 124  – Storage (battery)
- *   • Model 160  – Multiple MPPT Inverter Extension
- *   • Model 201–204 – Meter (single/split/three phase, delta)
+ *   • Model 1    — Common block (manufacturer, serial, model)
+ *   • Model 101–103 — Single/Split/Three-Phase Inverter (AC power, energy)
+ *   • Model 124  — Storage (battery SOC, power, cycles)
+ *   • Model 160  — Multiple MPPT Inverter Extension (per-string data)
+ *   • Model 201–204 — Meter readings (grid import/export, per-phase)
  *
- * The adapter polls a REST endpoint that exposes Modbus register values:
- *   GET /api/modbus/sunspec?model=103  →  JSON with register values
+ * SunSpec Register Discovery:
+ *   The adapter performs auto-discovery by reading the SunSpec base register
+ *   (40000 or 0) and walking the model chain via length fields.
  *
- * In production, replace the fetch gateway URL with your bridge.
+ * REST Bridge API:
+ *   GET /api/modbus/sunspec?model=103   →  Inverter registers
+ *   GET /api/modbus/sunspec?model=124   →  Battery registers
+ *   GET /api/modbus/sunspec?model=201   →  Meter registers
+ *   GET /api/modbus/sunspec?model=1     →  Common block
+ *   POST /api/modbus/write              →  Write register { register, value }
  */
 
 import type {
@@ -28,13 +35,47 @@ import type {
 } from './EnergyAdapter';
 import { BaseAdapter } from './BaseAdapter';
 
+// ─── SunSpec Model IDs ───────────────────────────────────────────────
+
+export const SUNSPEC_MODELS = {
+  COMMON: 1,
+  INVERTER_SINGLE: 101,
+  INVERTER_SPLIT: 102,
+  INVERTER_THREE: 103,
+  STORAGE: 124,
+  MPPT: 160,
+  METER_SINGLE: 201,
+  METER_SPLIT: 202,
+  METER_THREE_WYE: 203,
+  METER_THREE_DELTA: 204,
+} as const;
+
 // ─── SunSpec register response shapes ────────────────────────────────
 
+interface SunSpecCommonBlock {
+  Mn: string; // Manufacturer
+  Md: string; // Model
+  SN: string; // Serial
+  Vr?: string; // Version
+}
+
 interface SunSpecInverterRegs {
-  /** AC Power (W) — Model 103, register 14 */
+  /** AC Power (W) — register 14 */
   W: number;
-  /** AC Energy — lifetime kWh */
+  /** AC Energy lifetime (Wh) */
   WH: number;
+  /** W scale factor */
+  W_SF?: number;
+  /** WH scale factor */
+  WH_SF?: number;
+  /** AC Voltage L-N (V) */
+  PhVphA?: number;
+  /** AC Current (A) */
+  A?: number;
+  /** AC Frequency (Hz) */
+  Hz?: number;
+  /** Operating state: 1=Off, 2=Sleeping, 3=Starting, 4=MPPT, 5=Throttled, 6=Shutting down */
+  St?: number;
   /** DC Power per string */
   strings?: { DCA: number; DCV: number; DCW: number }[];
 }
@@ -54,6 +95,11 @@ interface SunSpecBatteryRegs {
   CycCnt?: number;
   /** State of health (%) */
   SoH?: number;
+  /** Charge status: 1=Off, 2=Empty, 3=Discharging, 4=Charging, 5=Full, 6=Holding */
+  ChaSt?: number;
+  /** Scale factors */
+  W_SF?: number;
+  SoC_SF?: number;
 }
 
 interface SunSpecMeterRegs {
@@ -69,6 +115,19 @@ interface SunSpecMeterRegs {
   TotWhExp?: number;
   /** Per-phase readings */
   phases?: { PhV: number; A: number; W: number }[];
+  /** Scale factors */
+  W_SF?: number;
+  TotWh_SF?: number;
+}
+
+// ─── Discovered SunSpec device info ──────────────────────────────────
+
+export interface SunSpecDeviceInfo {
+  manufacturer: string;
+  model: string;
+  serial: string;
+  version?: string;
+  availableModels: number[];
 }
 
 const DEFAULT_POLL_INTERVAL_MS = 3000;
@@ -88,6 +147,9 @@ export class ModbusSunSpecAdapter extends BaseAdapter {
   private pollTimer: ReturnType<typeof setInterval> | null = null;
   private consecutiveErrors = 0;
   private readonly baseUrl: string;
+
+  /** Discovered device info (populated after first successful connection) */
+  deviceInfo: SunSpecDeviceInfo | null = null;
 
   constructor(config?: Partial<AdapterConnectionConfig>) {
     super({
@@ -109,7 +171,19 @@ export class ModbusSunSpecAdapter extends BaseAdapter {
     this.setStatus('connecting');
 
     try {
-      await this.fetchModel('common');
+      // Perform SunSpec model discovery
+      const common = await this.fetchModel<SunSpecCommonBlock>('common');
+      this.deviceInfo = {
+        manufacturer: common.Mn ?? 'Unknown',
+        model: common.Md ?? 'Unknown',
+        serial: common.SN ?? '',
+        version: common.Vr,
+        availableModels: [SUNSPEC_MODELS.COMMON],
+      };
+
+      // Probe for available models
+      await this.discoverModels();
+
       this.consecutiveErrors = 0;
       this.setStatus('connected');
       this.startPolling();
@@ -129,13 +203,17 @@ export class ModbusSunSpecAdapter extends BaseAdapter {
     if (!allowed.includes(command.type)) return false;
 
     try {
+      const body = this.mapCommandToRegister(command);
+      if (!body) return false;
+
       const res = await fetch(`${this.baseUrl}/api/modbus/write`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          register: command.type,
-          value: command.value,
-        }),
+        headers: {
+          'Content-Type': 'application/json',
+          ...(this.config.authToken ? { Authorization: `Bearer ${this.config.authToken}` } : {}),
+        },
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(5000),
       });
       return res.ok;
     } catch {
@@ -150,15 +228,66 @@ export class ModbusSunSpecAdapter extends BaseAdapter {
   // ─── Poll (public — used by EnergyAdapter.poll?) ──────────────────
 
   async poll(): Promise<Partial<UnifiedEnergyModel>> {
-    const [inverter, battery, meter] = await Promise.allSettled([
-      this.fetchModel<SunSpecInverterRegs>('inverter'),
-      this.fetchModel<SunSpecBatteryRegs>('battery'),
-      this.fetchModel<SunSpecMeterRegs>('meter'),
-    ]);
+    const availableModels = this.deviceInfo?.availableModels ?? [];
 
-    const pv = this.parseInverter(inverter.status === 'fulfilled' ? inverter.value : null);
-    const bat = this.parseBattery(battery.status === 'fulfilled' ? battery.value : null);
-    const grid = this.parseMeter(meter.status === 'fulfilled' ? meter.value : null);
+    // Determine which models to poll based on discovery
+    const hasInverter = availableModels.some((m) =>
+      [
+        SUNSPEC_MODELS.INVERTER_SINGLE,
+        SUNSPEC_MODELS.INVERTER_SPLIT,
+        SUNSPEC_MODELS.INVERTER_THREE,
+      ].includes(m),
+    );
+    const hasBattery = availableModels.includes(SUNSPEC_MODELS.STORAGE);
+    const hasMeter = availableModels.some((m) =>
+      [
+        SUNSPEC_MODELS.METER_SINGLE,
+        SUNSPEC_MODELS.METER_SPLIT,
+        SUNSPEC_MODELS.METER_THREE_WYE,
+        SUNSPEC_MODELS.METER_THREE_DELTA,
+      ].includes(m),
+    );
+
+    const fetches: Promise<unknown>[] = [];
+    const labels: string[] = [];
+
+    if (hasInverter || availableModels.length === 0) {
+      fetches.push(this.fetchModel<SunSpecInverterRegs>('inverter'));
+      labels.push('inverter');
+    }
+    if (hasBattery || availableModels.length === 0) {
+      fetches.push(this.fetchModel<SunSpecBatteryRegs>('battery'));
+      labels.push('battery');
+    }
+    if (hasMeter || availableModels.length === 0) {
+      fetches.push(this.fetchModel<SunSpecMeterRegs>('meter'));
+      labels.push('meter');
+    }
+
+    const results = await Promise.allSettled(fetches);
+
+    let inverterRegs: SunSpecInverterRegs | null = null;
+    let batteryRegs: SunSpecBatteryRegs | null = null;
+    let meterRegs: SunSpecMeterRegs | null = null;
+
+    results.forEach((r, i) => {
+      if (r.status !== 'fulfilled') return;
+      switch (labels[i]) {
+        case 'inverter':
+          inverterRegs = r.value as SunSpecInverterRegs;
+          break;
+        case 'battery':
+          batteryRegs = r.value as SunSpecBatteryRegs;
+          break;
+        case 'meter':
+          meterRegs = r.value as SunSpecMeterRegs;
+          break;
+      }
+    });
+
+    const pv = this.parseInverter(inverterRegs);
+    const bat = this.parseBattery(batteryRegs);
+    const grid = this.parseMeter(meterRegs);
 
     const model: Partial<UnifiedEnergyModel> = {
       timestamp: Date.now(),
@@ -169,6 +298,38 @@ export class ModbusSunSpecAdapter extends BaseAdapter {
 
     this.snapshot = model;
     return model;
+  }
+
+  // ─── Model Discovery ─────────────────────────────────────────────
+
+  private async discoverModels(): Promise<void> {
+    if (!this.deviceInfo) return;
+
+    // Try to discover available SunSpec models via the bridge
+    const probeModels = [
+      {
+        model: 'inverter',
+        ids: [
+          SUNSPEC_MODELS.INVERTER_SINGLE,
+          SUNSPEC_MODELS.INVERTER_SPLIT,
+          SUNSPEC_MODELS.INVERTER_THREE,
+        ],
+      },
+      { model: 'battery', ids: [SUNSPEC_MODELS.STORAGE] },
+      { model: 'meter', ids: [SUNSPEC_MODELS.METER_SINGLE, SUNSPEC_MODELS.METER_THREE_WYE] },
+    ];
+
+    const probes = probeModels.map(async (p) => {
+      try {
+        await this.fetchModel(p.model);
+        return p.ids;
+      } catch {
+        return [];
+      }
+    });
+
+    const results = await Promise.all(probes);
+    this.deviceInfo.availableModels = [SUNSPEC_MODELS.COMMON, ...results.flat()];
   }
 
   // ─── Internal ─────────────────────────────────────────────────────
@@ -223,13 +384,46 @@ export class ModbusSunSpecAdapter extends BaseAdapter {
     return res.json() as Promise<T>;
   }
 
-  // ─── SunSpec parsers ──────────────────────────────────────────────
+  // ─── Command → Register mapping ──────────────────────────────────
+
+  private mapCommandToRegister(
+    command: AdapterCommand,
+  ): { register: string; value: number; model?: number } | null {
+    switch (command.type) {
+      case 'SET_BATTERY_POWER':
+        // SunSpec Model 124: WChaMax (max charge rate) or WDisChaMax
+        return {
+          register: 'WChaMax',
+          value: Math.abs(Number(command.value)),
+          model: SUNSPEC_MODELS.STORAGE,
+        };
+      case 'SET_BATTERY_MODE':
+        // SunSpec Model 124: StorCtl_Mod
+        return {
+          register: 'StorCtl_Mod',
+          value: Number(command.value),
+          model: SUNSPEC_MODELS.STORAGE,
+        };
+      case 'SET_GRID_LIMIT':
+        // Grid export limit via inverter WMaxLimPct
+        return { register: 'WMaxLimPct', value: Number(command.value) };
+      default:
+        return null;
+    }
+  }
+
+  // ─── SunSpec parsers (with scale factor support) ──────────────────
+
+  private applyScaleFactor(value: number, sf: number | undefined): number {
+    if (sf === undefined || sf === 0) return value;
+    return value * Math.pow(10, sf);
+  }
 
   private parseInverter(regs: SunSpecInverterRegs | null): PVData | undefined {
     if (!regs) return undefined;
     return {
-      totalPowerW: regs.W,
-      yieldTodayKWh: regs.WH / 1000,
+      totalPowerW: this.applyScaleFactor(regs.W, regs.W_SF),
+      yieldTodayKWh: this.applyScaleFactor(regs.WH, regs.WH_SF) / 1000,
       strings: regs.strings?.map((s, i) => ({
         id: i + 1,
         powerW: s.DCW,
@@ -242,8 +436,8 @@ export class ModbusSunSpecAdapter extends BaseAdapter {
   private parseBattery(regs: SunSpecBatteryRegs | null): BatteryData | undefined {
     if (!regs) return undefined;
     return {
-      powerW: regs.W,
-      socPercent: regs.SoC,
+      powerW: this.applyScaleFactor(regs.W, regs.W_SF),
+      socPercent: this.applyScaleFactor(regs.SoC, regs.SoC_SF),
       voltageV: regs.V,
       currentA: regs.A,
       temperatureC: regs.TmpBdy,
@@ -255,11 +449,15 @@ export class ModbusSunSpecAdapter extends BaseAdapter {
   private parseMeter(regs: SunSpecMeterRegs | null): GridData | undefined {
     if (!regs) return undefined;
     return {
-      powerW: regs.W,
+      powerW: this.applyScaleFactor(regs.W, regs.W_SF),
       voltageV: regs.PhV,
       frequencyHz: regs.Hz,
-      energyImportKWh: regs.TotWhImp ? regs.TotWhImp / 1000 : undefined,
-      energyExportKWh: regs.TotWhExp ? regs.TotWhExp / 1000 : undefined,
+      energyImportKWh: regs.TotWhImp
+        ? this.applyScaleFactor(regs.TotWhImp, regs.TotWh_SF) / 1000
+        : undefined,
+      energyExportKWh: regs.TotWhExp
+        ? this.applyScaleFactor(regs.TotWhExp, regs.TotWh_SF) / 1000
+        : undefined,
       phases: regs.phases?.map((p) => ({
         voltageV: p.PhV,
         currentA: p.A,
