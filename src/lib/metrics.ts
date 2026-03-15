@@ -399,6 +399,40 @@ export class MetricsCollector {
   }
 
   /**
+   * Record a hardware command execution (IndexedDB audit + Prometheus counter)
+   */
+  recordCommand(
+    commandType: string,
+    status: 'executed' | 'failed' | 'rejected' | 'emergency_stop',
+  ): void {
+    this.incrementCounter('hems_commands_total', { command_type: commandType, status });
+  }
+
+  /**
+   * Record a rejected command with reason
+   */
+  recordCommandRejected(commandType: string, reason: string): void {
+    this.incrementCounter('hems_commands_rejected_total', { command_type: commandType, reason });
+  }
+
+  /**
+   * Record an emergency stop activation
+   */
+  recordEmergencyStop(): void {
+    this.incrementCounter('hems_emergency_stops_total');
+  }
+
+  /**
+   * Record circuit breaker state change
+   */
+  recordCircuitBreakerState(adapterId: string, state: 'closed' | 'open' | 'half-open'): void {
+    const stateMap = { closed: 0, open: 1, 'half-open': 2 };
+    this.setSample('hems_circuit_breaker_state', stateMap[state], Date.now(), {
+      adapter: adapterId,
+    });
+  }
+
+  /**
    * Get current health status
    */
   getHealthStatus(): HealthStatus {

@@ -18,6 +18,7 @@ import { OctagonX, ShieldAlert, RotateCcw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useEnergyStoreBase } from '../core/useEnergyStore';
 import { logCommandAudit } from '../core/command-safety';
+import { metricsCollector } from '../lib/metrics';
 import type { AdapterId } from '../core/useEnergyStore';
 
 interface EmergencyStopProps {
@@ -33,7 +34,10 @@ export function EmergencyStop({ circuitBreakers }: EmergencyStopProps) {
     setIsActive(true);
     setShowConfirm(false);
 
-    // 1. Log the emergency stop event
+    // 1. Prometheus metric for emergency stop
+    metricsCollector.recordEmergencyStop();
+
+    // 2. Log the emergency stop event
     await logCommandAudit({
       timestamp: Date.now(),
       commandType: 'SET_GRID_LIMIT',
@@ -41,7 +45,7 @@ export function EmergencyStop({ circuitBreakers }: EmergencyStopProps) {
       status: 'emergency_stop',
     });
 
-    // 2. Destroy all adapters
+    // 3. Destroy all adapters
     const { adapters } = useEnergyStoreBase.getState();
     const entries = Object.entries(adapters) as [AdapterId, (typeof adapters)[AdapterId]][];
     for (const [, entry] of entries) {
@@ -54,14 +58,14 @@ export function EmergencyStop({ circuitBreakers }: EmergencyStopProps) {
       }
     }
 
-    // 3. Force-open all circuit breakers
+    // 4. Force-open all circuit breakers
     if (circuitBreakers) {
       for (const [, cb] of circuitBreakers) {
         cb.forceOpen();
       }
     }
 
-    // 4. Set all adapter statuses to disconnected
+    // 5. Set all adapter statuses to disconnected
     const { setAdapterStatus } = useEnergyStoreBase.getState();
     for (const [id] of entries) {
       setAdapterStatus(id, 'disconnected', 'Emergency stop activated');

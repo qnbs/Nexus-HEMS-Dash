@@ -1586,6 +1586,23 @@ export const de = {
     validationFailed: 'Validierung fehlgeschlagen',
     rateLimitExceeded: 'Befehlsrate überschritten (max. 30/min)',
     circuitBreakerOpen: 'Schutzschalter offen — Adapter gesperrt',
+    // Credential Vault
+    vaultTitle: 'Credential-Tresor',
+    vaultDesc: 'Verschlüsselte Speicherung für Adapter-Zugangsdaten (AES-GCM 256-Bit)',
+    vaultReady: 'Tresor entsperrt',
+    vaultLocked: 'Tresor gesperrt — Zugangsdaten erneut eingeben',
+    vaultSaveSuccess: 'Zugangsdaten sicher gespeichert',
+    vaultSaveError: 'Speichern der Zugangsdaten fehlgeschlagen',
+    vaultDeleteConfirm: 'Gespeicherte Zugangsdaten für {{adapter}} löschen?',
+    vaultEmpty: 'Noch keine Zugangsdaten gespeichert',
+    vaultReset: 'Tresor zurücksetzen — alle Zugangsdaten löschen',
+    vaultResetConfirm:
+      'Alle gespeicherten Adapter-Zugangsdaten werden dauerhaft gelöscht. Fortfahren?',
+    mtlsRequired: 'mTLS erforderlich — Client-Zertifikat und Schlüssel angeben',
+    mtlsActive: 'mTLS aktiv — gegenseitige Authentifizierung aktiviert',
+    mtlsInvalid: 'Ungültige mTLS-Konfiguration: {{error}}',
+    certExpiry: 'Zertifikat läuft ab: {{date}}',
+    credentialsMissing: 'Adapter-Zugangsdaten nicht konfiguriert',
   },
   monitoring: {
     title: 'Systemüberwachung',

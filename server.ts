@@ -3,6 +3,7 @@ import { createServer as createViteServer } from 'vite';
 import { WebSocketServer } from 'ws';
 import http from 'http';
 import rateLimit from 'express-rate-limit';
+import helmet from 'helmet';
 
 // ─── Prometheus Metrics (server-side) ─────────────────────────────
 interface ServerMetricSample {
@@ -139,6 +140,39 @@ function updateServerMetrics(data: Record<string, number>): void {
 async function startServer() {
   const app = express();
   const PORT = 3000;
+
+  // ─── Security Headers (Helmet) ───────────────────────────────────────
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'", "'unsafe-inline'"],
+          styleSrc: ["'self'", "'unsafe-inline'"],
+          imgSrc: ["'self'", 'data:', 'blob:'],
+          connectSrc: [
+            "'self'",
+            'ws://localhost:*',
+            'wss://localhost:*',
+            'https://api.tibber.com',
+            'https://api.awattar.at',
+            'https://api.awattar.de',
+            'https://api.open-meteo.com',
+            'https://generativelanguage.googleapis.com',
+          ],
+          fontSrc: ["'self'"],
+          objectSrc: ["'none'"],
+          frameAncestors: ["'none'"],
+          baseUri: ["'self'"],
+          formAction: ["'self'"],
+        },
+      },
+      crossOriginEmbedderPolicy: false, // Required for PWA service worker
+      hsts: { maxAge: 31536000, includeSubDomains: true, preload: true },
+      referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+      xFrameOptions: { action: 'deny' },
+    }),
+  );
 
   // ─── Rate Limiting ───────────────────────────────────────────────────
   const apiLimiter = rateLimit({

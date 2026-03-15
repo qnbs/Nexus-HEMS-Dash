@@ -13,8 +13,12 @@
 import { z } from 'zod';
 import type { AdapterCommand, AdapterCommandType } from './adapters/EnergyAdapter';
 import { nexusDb } from '../lib/db';
+import { metricsCollector } from '../lib/metrics';
 
 // ─── Zod Validation Schemas per Command ──────────────────────────────
+
+/** Allowed command value type — no `any` or untyped values */
+type CommandValue = number | string | boolean;
 
 const positiveNumber = z.number().nonnegative();
 const currentAmps = z.number().min(0).max(80); // IEC 61851 max 80A
@@ -22,7 +26,7 @@ const powerWatts = z.number().min(0).max(50_000); // 50 kW safety cap
 const batteryPowerWatts = z.number().min(-25_000).max(25_000); // Bidirectional
 const temperatureSetpoint = z.number().min(5).max(35); // °C sane range
 
-export const commandSchemas: Record<AdapterCommandType, z.ZodType> = {
+export const commandSchemas: Record<AdapterCommandType, z.ZodType<CommandValue>> = {
   SET_EV_POWER: powerWatts,
   SET_EV_CURRENT: currentAmps,
   START_CHARGING: z.union([z.boolean(), z.number()]),
@@ -128,7 +132,7 @@ export interface CommandAuditEntry {
   id?: number;
   timestamp: number;
   commandType: AdapterCommandType;
-  value: unknown;
+  value: number | string | boolean;
   targetDeviceId?: string;
   status: 'confirmed' | 'rejected' | 'executed' | 'failed' | 'emergency_stop';
   error?: string;
@@ -140,6 +144,13 @@ export interface CommandAuditEntry {
  * Non-blocking — errors are swallowed silently.
  */
 export async function logCommandAudit(entry: Omit<CommandAuditEntry, 'id'>): Promise<void> {
+  // Increment Prometheus counter for every command event
+  if (entry.status === 'rejected') {
+    metricsCollector.recordCommandRejected(entry.commandType, entry.error ?? 'unknown');
+  } else {
+    metricsCollector.recordCommand(entry.commandType, entry.status);
+  }
+
   try {
     await nexusDb.table('commandAudit').add(entry);
 

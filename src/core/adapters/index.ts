@@ -27,6 +27,10 @@ export type {
   TariffData,
 } from './EnergyAdapter';
 
+// Base class & error types
+export { BaseAdapter, CommandCancelledError } from './BaseAdapter';
+export type { CommandConfirmFn } from './BaseAdapter';
+
 // Adapter implementations
 export { VictronMQTTAdapter, VENUS_DBUS_PATHS, VENUS_MQTT_PREFIX } from './VictronMQTTAdapter';
 export type { VictronGatewayType } from './VictronMQTTAdapter';

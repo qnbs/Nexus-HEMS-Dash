@@ -2,6 +2,7 @@ import Dexie, { type Table } from 'dexie';
 
 import type { EnergyData, StoredSettings } from '../types';
 import type { CommandAuditEntry } from '../core/command-safety';
+import type { EncryptedAdapterCredential } from './secure-store';
 
 export interface EnergySnapshot extends EnergyData {
   id?: number;
@@ -68,6 +69,7 @@ class NexusDatabase extends Dexie {
   settings!: Table<SettingsRecord, string>;
   aiKeys!: Table<AIKeyRecord, string>;
   commandAudit!: Table<CommandAuditEntry, number>;
+  adapterCredentials!: Table<EncryptedAdapterCredential, string>;
 
   constructor() {
     super('nexus-hems-dash');
@@ -109,6 +111,19 @@ class NexusDatabase extends Dexie {
       settings: 'key',
       aiKeys: 'provider',
       commandAudit: '++id, timestamp, commandType, status',
+    });
+
+    // Version 5: Add encrypted adapter credential vault (BYOK per-adapter)
+    this.version(5).stores({
+      energySnapshots: '++id, timestamp',
+      sankeySnapshots: '++id, timestamp',
+      offlineActions: '++id, timestamp, status, type',
+      cacheMetadata: 'key, timestamp, expiresAt, type',
+      errorLogs: '++id, timestamp, severity',
+      settings: 'key',
+      aiKeys: 'provider',
+      commandAudit: '++id, timestamp, commandType, status',
+      adapterCredentials: 'adapterId',
     });
   }
 }

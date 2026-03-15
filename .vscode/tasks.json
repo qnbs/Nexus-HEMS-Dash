@@ -1,0 +1,11 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "commit-push",
+      "type": "shell",
+      "command": "npm install && git add -A && git commit -m 'feat(security): BYOK vault + per-adapter encrypted config + Helmet + mTLS schemas\n\n- Add src/lib/secure-store.ts: BYOK credential vault with AES-GCM 256-bit\n- Add src/lib/useSecureStore.ts: React hook for vault CRUD operations\n- Add src/core/adapter-config-schemas.ts: Zod schemas for mTLS/EEBUS/OCPP\n- Add Helmet security headers to server.ts (CSP, HSTS, X-Frame-Options)\n- Tighten CommandAuditEntry.value type, commandSchemas type (no any)\n- Add Dexie v5 migration with adapterCredentials table\n- Add i18n keys for vault/mTLS (EN + DE)' && git push",
+      "problemMatcher": []
+    }
+  ]
+}

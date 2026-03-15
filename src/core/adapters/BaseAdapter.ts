@@ -29,6 +29,7 @@ import type {
 } from './EnergyAdapter';
 import { CircuitBreaker, type CircuitBreakerConfig } from '../circuit-breaker';
 import { validateCommand, logCommandAudit, requiresConfirmation } from '../command-safety';
+import { metricsCollector } from '../../lib/metrics';
 
 // ─── Error types ─────────────────────────────────────────────────────
 
@@ -90,6 +91,11 @@ export abstract class BaseAdapter implements EnergyAdapter {
       ...circuitBreakerConfig,
     });
     this.retryDelay = config.reconnect?.initialDelayMs ?? BASE_RECONNECT.initialDelayMs;
+
+    // Track circuit breaker state changes in Prometheus
+    this.circuitBreaker.onStateChange((state) => {
+      metricsCollector.recordCircuitBreakerState(this.id, state);
+    });
   }
 
   // ─── Public getters ─────────────────────────────────────────────
