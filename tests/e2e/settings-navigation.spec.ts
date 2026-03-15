@@ -92,10 +92,10 @@ test.describe('Mobile Navigation', () => {
     const bottomNav = page.locator('nav[aria-label*="Mobile" i], nav[aria-label*="Mobil" i]');
     await expect(bottomNav.first()).toBeVisible({ timeout: 10_000 });
 
-    // Look for the "More" button via aria-expanded attribute (unique to the More button)
-    const moreButton = page.locator('button[aria-expanded]').first();
-    await expect(moreButton).toBeVisible({ timeout: 5_000 });
-    await moreButton.click({ timeout: 5_000 });
+    // Locate the More button via data-testid within the bottom nav
+    const moreButton = bottomNav.first().getByTestId('mobile-more-btn');
+    await expect(moreButton).toBeVisible({ timeout: 10_000 });
+    await moreButton.click({ timeout: 10_000 });
 
     // Bottom sheet dialog should appear with more navigation items
     const sheet = page.locator('[role="dialog"]');

@@ -92,7 +92,7 @@ export function ControlPanel({
             aria-label={t('control.evTitle')}
           >
             <label
-              className={`min-w-0 cursor-pointer rounded-lg border px-2 py-2 text-center transition-all duration-300 focus-within:ring-2 focus-within:ring-(--color-primary)/40 ${evState.mode === 'off' ? 'border-(--color-primary) bg-(--color-primary)/20 text-(--color-primary)' : 'border-(--color-border) bg-(--color-surface) text-(--color-muted) hover:border-(--color-primary)/40'}`}
+              className={`min-w-0 cursor-pointer overflow-hidden rounded-lg border px-2 py-2 text-center transition-all duration-300 focus-within:ring-2 focus-within:ring-(--color-primary)/40 ${evState.mode === 'off' ? 'border-(--color-primary) bg-(--color-primary)/20 text-(--color-primary)' : 'border-(--color-border) bg-(--color-surface) text-(--color-muted) hover:border-(--color-primary)/40'}`}
             >
               <input
                 type="radio"
@@ -102,10 +102,12 @@ export function ControlPanel({
                 checked={evState.mode === 'off'}
                 onChange={hapticClick}
               />
-              <span className="block truncate text-sm font-medium">{t('control.evOff')}</span>
+              <span className="block truncate text-xs font-medium sm:text-sm">
+                {t('control.evOff')}
+              </span>
             </label>
             <label
-              className={`min-w-0 cursor-pointer rounded-lg border px-2 py-2 text-center transition-all duration-300 focus-within:ring-2 focus-within:ring-(--color-primary)/40 ${evState.mode === 'pv' ? 'border-(--color-primary) bg-(--color-primary)/20 text-(--color-primary)' : 'border-(--color-border) bg-(--color-surface) text-(--color-muted) hover:border-(--color-primary)/40'}`}
+              className={`min-w-0 cursor-pointer overflow-hidden rounded-lg border px-2 py-2 text-center transition-all duration-300 focus-within:ring-2 focus-within:ring-(--color-primary)/40 ${evState.mode === 'pv' ? 'border-(--color-primary) bg-(--color-primary)/20 text-(--color-primary)' : 'border-(--color-border) bg-(--color-surface) text-(--color-muted) hover:border-(--color-primary)/40'}`}
               title={t('control.evPv')}
             >
               <input
@@ -116,10 +118,12 @@ export function ControlPanel({
                 checked={evState.mode === 'pv'}
                 onChange={hapticClick}
               />
-              <span className="block truncate text-sm font-medium">{t('control.evPv')}</span>
+              <span className="block truncate text-xs font-medium sm:text-sm">
+                {t('control.evPv')}
+              </span>
             </label>
             <label
-              className={`min-w-0 cursor-pointer rounded-lg border px-2 py-2 text-center transition-all duration-300 focus-within:ring-2 focus-within:ring-(--color-primary)/40 ${evState.mode === 'fast' ? 'border-(--color-primary) bg-(--color-primary)/20 text-(--color-primary)' : 'border-(--color-border) bg-(--color-surface) text-(--color-muted) hover:border-(--color-primary)/40'}`}
+              className={`min-w-0 cursor-pointer overflow-hidden rounded-lg border px-2 py-2 text-center transition-all duration-300 focus-within:ring-2 focus-within:ring-(--color-primary)/40 ${evState.mode === 'fast' ? 'border-(--color-primary) bg-(--color-primary)/20 text-(--color-primary)' : 'border-(--color-border) bg-(--color-surface) text-(--color-muted) hover:border-(--color-primary)/40'}`}
             >
               <input
                 type="radio"
@@ -129,7 +133,9 @@ export function ControlPanel({
                 checked={evState.mode === 'fast'}
                 onChange={hapticClick}
               />
-              <span className="block truncate text-sm font-medium">{t('control.evFast')}</span>
+              <span className="block truncate text-xs font-medium sm:text-sm">
+                {t('control.evFast')}
+              </span>
             </label>
           </div>
           {evState.message && (

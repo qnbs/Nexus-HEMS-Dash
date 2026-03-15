@@ -1,5 +1,7 @@
 /// <reference types="vite/client" />
 
+declare const __APP_VERSION__: string;
+
 // Virtual modules from vite-plugin-pwa
 declare module 'virtual:pwa-register/react' {
   import type { Dispatch, SetStateAction } from 'react';

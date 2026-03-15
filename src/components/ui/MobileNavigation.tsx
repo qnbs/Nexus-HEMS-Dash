@@ -182,19 +182,21 @@ function MobileNavigationComponent() {
                   <X size={18} />
                 </button>
               </div>
-              <div className="grid grid-cols-4 gap-3">
+              <div className="grid grid-cols-4 gap-2">
                 {moreItems.map((item) => (
                   <button
                     key={item.id}
                     onClick={() => handleNavigation(item.path)}
-                    className={`focus-ring flex flex-col items-center gap-1.5 rounded-xl p-3 transition-colors ${
+                    className={`focus-ring flex flex-col items-center gap-1.5 rounded-xl p-2.5 transition-colors ${
                       location.pathname === item.path
                         ? 'bg-(--color-primary)/15 text-(--color-primary)'
                         : 'text-(--color-muted) hover:bg-(--color-surface-strong)'
                     }`}
                   >
                     {item.icon}
-                    <span className="text-[10px] leading-tight font-medium">{item.label}</span>
+                    <span className="max-w-full truncate text-[10px] leading-tight font-medium">
+                      {item.label}
+                    </span>
                   </button>
                 ))}
               </div>
@@ -211,7 +213,7 @@ function MobileNavigationComponent() {
         <div className="absolute inset-0 border-t border-(--color-border) bg-(--color-surface) backdrop-blur-3xl">
           <div className="absolute top-0 right-0 left-0 h-px bg-gradient-to-r from-transparent via-(--color-primary)/20 to-transparent" />
         </div>
-        <div className="relative flex items-center justify-around px-2 py-2">
+        <div className="relative flex items-center justify-around px-2 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
           {primaryItems.map((item) => {
             const isActive =
               item.path === '/'
@@ -259,6 +261,7 @@ function MobileNavigationComponent() {
             className="relative flex flex-col items-center gap-0.5 px-3 py-1"
             aria-expanded={moreOpen}
             aria-label={t('accessibility.moreNavPages', 'More pages')}
+            data-testid="mobile-more-btn"
             whileTap={{ scale: 0.92 }}
           >
             <div

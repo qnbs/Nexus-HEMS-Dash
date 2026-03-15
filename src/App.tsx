@@ -230,20 +230,20 @@ export default function App() {
                 <div className="flex items-center gap-2">
                   <LanguageSwitcher />
 
-                  {/* Settings Link */}
+                  {/* Settings Link (hidden on mobile — accessible via sidebar/bottom nav) */}
                   <Link
                     to="/settings"
-                    className="focus-ring inline-flex items-center justify-center rounded-full border border-(--color-border) bg-(--color-surface-strong) p-2 text-(--color-muted) transition-all duration-300 hover:bg-(--color-primary)/10 hover:text-(--color-primary)"
+                    className="focus-ring hidden items-center justify-center rounded-full border border-(--color-border) bg-(--color-surface-strong) p-2 text-(--color-muted) transition-all duration-300 hover:bg-(--color-primary)/10 hover:text-(--color-primary) sm:inline-flex"
                     aria-label={t('nav.settings')}
                     title={t('nav.settings')}
                   >
                     <SettingsIcon className="h-4 w-4" />
                   </Link>
 
-                  {/* Help Link */}
+                  {/* Help Link (hidden on mobile — accessible via sidebar/bottom nav) */}
                   <Link
                     to="/help"
-                    className="focus-ring inline-flex items-center justify-center rounded-full border border-(--color-border) bg-(--color-surface-strong) p-2 text-(--color-muted) transition-all duration-300 hover:bg-(--color-primary)/10 hover:text-(--color-primary)"
+                    className="focus-ring hidden items-center justify-center rounded-full border border-(--color-border) bg-(--color-surface-strong) p-2 text-(--color-muted) transition-all duration-300 hover:bg-(--color-primary)/10 hover:text-(--color-primary) sm:inline-flex"
                     aria-label={t('nav.help')}
                     title={t('nav.help')}
                   >
@@ -304,7 +304,7 @@ export default function App() {
             <main
               id="main-content"
               tabIndex={-1}
-              className="pattern-grid mx-auto max-w-7xl px-4 py-6 pb-20 outline-none sm:px-6 lg:pb-6"
+              className="pattern-grid mx-auto max-w-7xl px-4 py-6 pb-[max(5rem,calc(5rem+env(safe-area-inset-bottom)))] outline-none sm:px-6 lg:px-8 lg:pb-6"
             >
               <Breadcrumbs />
               <ErrorBoundary>
