@@ -29,15 +29,6 @@ import type {
   AdapterConnectionConfig,
 } from './adapters/EnergyAdapter';
 
-import { VictronMQTTAdapter } from './adapters/VictronMQTTAdapter';
-import type { VictronAdapterConfig } from './adapters/VictronMQTTAdapter';
-import { ModbusSunSpecAdapter } from './adapters/ModbusSunSpecAdapter';
-import { KNXAdapter } from './adapters/KNXAdapter';
-import type { KNXAdapterConfig } from './adapters/KNXAdapter';
-import { OCPP21Adapter } from './adapters/OCPP21Adapter';
-import type { OCPPAdapterConfig } from './adapters/OCPP21Adapter';
-import { EEBUSAdapter } from './adapters/EEBUSAdapter';
-import type { EEBUSAdapterConfig } from './adapters/EEBUSAdapter';
 import { BaseAdapter } from './adapters/BaseAdapter';
 import type { CircuitState } from './circuit-breaker';
 import { validateCommand } from './command-safety';
@@ -98,23 +89,9 @@ function createAdapterInstance(
   id: AdapterId,
   config?: Partial<AdapterConnectionConfig>,
 ): EnergyAdapter {
-  // Try built-in adapters first (direct imports — no registry overhead)
-  switch (id) {
-    case 'victron-mqtt':
-      return new VictronMQTTAdapter(config as VictronAdapterConfig | undefined);
-    case 'modbus-sunspec':
-      return new ModbusSunSpecAdapter(config);
-    case 'knx':
-      return new KNXAdapter(config as KNXAdapterConfig | undefined);
-    case 'ocpp-21':
-      return new OCPP21Adapter(config as OCPPAdapterConfig | undefined);
-    case 'eebus':
-      return new EEBUSAdapter(config as EEBUSAdapterConfig | undefined);
-  }
-
-  // Fall through to registry for contrib/npm adapters
-  const registered = createRegisteredAdapter(id, config);
-  if (registered) return registered;
+  // Use the global adapter registry (built-in + contrib/npm adapters)
+  const adapter = createRegisteredAdapter(id, config);
+  if (adapter) return adapter;
 
   throw new Error(
     `[useEnergyStore] Unknown adapter id: "${id}". Register it via registerAdapter() first.`,

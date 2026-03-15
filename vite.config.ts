@@ -170,8 +170,8 @@ export default defineConfig(({ mode }) => {
       modulePreload: { polyfill: false },
       // Strip legal comments for smaller output
       minify: 'esbuild',
-      // Warn when chunks exceed 250 KB (compressed)
-      chunkSizeWarningLimit: 250,
+      // Warn when chunks exceed 150 KB (compressed)
+      chunkSizeWarningLimit: 150,
 
       rollupOptions: {
         output: {
@@ -231,6 +231,9 @@ export default defineConfig(({ mode }) => {
 
             // ── Radix UI primitives ──
             if (id.includes('/@radix-ui/')) return 'vendor-radix';
+
+            // ── MQTT — lazy-loaded by VictronMQTTAdapter ──
+            if (/\/mqtt\/|mqtt\.js/.test(id)) return 'vendor-mqtt';
 
             // ── Micro-utilities ──
             if (/\/clsx\/|\/tailwind-merge\//.test(id)) return 'vendor-utils';
