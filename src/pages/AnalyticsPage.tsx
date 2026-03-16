@@ -1019,7 +1019,7 @@ function AnalyticsPageComponent() {
               label: t('analytics.co2SelfSavings'),
               value: monthlyCo2.selfSavings,
               color: 'text-emerald-400',
-              icon: '☀️',
+              icon: '☀',
             },
             {
               label: t('analytics.co2FeedInSavings'),
@@ -1031,7 +1031,7 @@ function AnalyticsPageComponent() {
               label: t('analytics.co2NetBalance'),
               value: monthlyCo2.netBalance,
               color: monthlyCo2.netBalance <= 0 ? 'text-emerald-400' : 'text-red-400',
-              icon: monthlyCo2.netBalance <= 0 ? '✅' : '⚠️',
+              icon: monthlyCo2.netBalance <= 0 ? '✅' : '⚠',
             },
           ].map((item) => (
             <div key={item.label} className="rounded-xl bg-white/5 p-3 text-center">

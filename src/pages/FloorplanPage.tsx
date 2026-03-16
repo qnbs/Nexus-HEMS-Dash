@@ -40,7 +40,7 @@ const ROOMS = [
   },
   {
     id: 'living',
-    icon: '🛋️',
+    icon: '🛋',
     temp: 21.5,
     setpoint: 22.0,
     humidity: 48,
@@ -66,7 +66,7 @@ const ROOMS = [
   },
   {
     id: 'bedroom',
-    icon: '🛏️',
+    icon: '🛏',
     temp: 19.8,
     setpoint: 19.0,
     humidity: 45,
@@ -106,7 +106,7 @@ const ROOMS = [
 ];
 
 const SCENES = [
-  { key: 'sceneComfort', icon: '☀️', ga: '14/0/0' },
+  { key: 'sceneComfort', icon: '☀', ga: '14/0/0' },
   { key: 'sceneEvening', icon: '🌙', ga: '14/0/1' },
   { key: 'sceneAway', icon: '🚪', ga: '14/0/2' },
   { key: 'sceneAllOff', icon: '⭕', ga: '14/0/3' },

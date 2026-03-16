@@ -57,8 +57,8 @@ const ROOM_CENTERS: Record<string, { x: number; y: number }> = {
 const ROOM_ICONS: Record<string, string> = {
   kitchen: '🍳',
   bathroom: '🚿',
-  living: '🛋️',
-  bedroom: '🛏️',
+  living: '🛋',
+  bedroom: '🛏',
   office: '💻',
 };
 
