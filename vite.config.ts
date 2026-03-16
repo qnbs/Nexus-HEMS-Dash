@@ -74,6 +74,17 @@ export default defineConfig(({ mode }) => {
                 cacheableResponse: { statuses: [0, 200] },
               },
             },
+            // ── Tariffs: Octopus Energy (UK/DE Agile) ──
+            {
+              urlPattern: /^https:\/\/api\.octopus\.energy\//,
+              handler: 'NetworkFirst',
+              options: {
+                cacheName: 'octopus-api',
+                expiration: { maxEntries: 80, maxAgeSeconds: 21_600 },
+                networkTimeoutSeconds: 8,
+                cacheableResponse: { statuses: [0, 200] },
+              },
+            },
             // ── AI: Google Gemini ──
             {
               urlPattern: /^https:\/\/generativelanguage\.googleapis\.com\//,

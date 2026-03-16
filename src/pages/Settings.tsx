@@ -1285,11 +1285,15 @@ export function Settings() {
                           value={settings.tariffProvider}
                           onChange={(e) =>
                             updateSettings({
-                              tariffProvider: e.target.value as 'tibber' | 'awattar' | 'none',
+                              tariffProvider: e.target.value as import('../types').TariffProvider,
                             })
                           }
                         >
                           <option value="tibber">{t('settings.tibber')}</option>
+                          <option value="tibber-pulse">{t('settings.tibberPulse')}</option>
+                          <option value="awattar-de">{t('settings.awattarDE')}</option>
+                          <option value="awattar-at">{t('settings.awattarAT')}</option>
+                          <option value="octopus">{t('settings.octopus')}</option>
                           <option value="awattar">{t('settings.awattar')}</option>
                           <option value="none">{t('settings.none')}</option>
                         </select>
@@ -1364,6 +1368,47 @@ export function Settings() {
                             '§14a EnWG limit: 4.2 kW for controllable consumers',
                           )}
                         </p>
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">
+                          {t('settings.dynamicGridFees')}
+                        </label>
+                        <div className="flex items-center gap-3">
+                          <button
+                            type="button"
+                            role="switch"
+                            aria-checked={settings.dynamicGridFees}
+                            onClick={() =>
+                              updateSettings({ dynamicGridFees: !settings.dynamicGridFees })
+                            }
+                            className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors ${settings.dynamicGridFees ? 'bg-(--color-primary)' : 'bg-(--color-border)'}`}
+                          >
+                            <span
+                              className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${settings.dynamicGridFees ? 'translate-x-5' : 'translate-x-0.5'} mt-0.5`}
+                            />
+                          </button>
+                          <span className="text-sm">
+                            {settings.dynamicGridFees
+                              ? t('settings.dynamicGridFeesActive')
+                              : t('settings.dynamicGridFeesInactive')}
+                          </span>
+                        </div>
+                        <p className="text-xs text-(--color-muted)">
+                          {t('settings.dynamicGridFeesHint')}
+                        </p>
+                      </div>
+                      <div className="space-y-2">
+                        <label htmlFor="settings-grid-operator" className="text-sm font-medium">
+                          {t('settings.gridOperatorLabel')}
+                        </label>
+                        <input
+                          id="settings-grid-operator"
+                          type="text"
+                          className={inputClass}
+                          value={settings.gridOperatorName}
+                          onChange={(e) => updateSettings({ gridOperatorName: e.target.value })}
+                          placeholder={t('settings.gridOperatorInputPlaceholder')}
+                        />
                       </div>
                     </div>
                   </section>

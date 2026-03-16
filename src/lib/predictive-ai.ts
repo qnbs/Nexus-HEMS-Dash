@@ -111,7 +111,14 @@ export async function queryGeminiForOptimization(
 
 // ─── Additional exports needed by queries.ts ─────────────────────────
 
-export type TariffProvider = 'tibber' | 'awattar' | 'none';
+export type TariffProvider =
+  | 'tibber'
+  | 'tibber-pulse'
+  | 'awattar'
+  | 'awattar-de'
+  | 'awattar-at'
+  | 'octopus'
+  | 'none';
 
 export interface PricePoint {
   timestamp: Date;

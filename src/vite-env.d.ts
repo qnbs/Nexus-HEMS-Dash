@@ -100,3 +100,23 @@ declare module 'keycloak-js' {
     onAuthLogout?: (() => void) | undefined;
   }
 }
+
+// ── Capacitor (optional — only available in native mobile builds) ──
+
+declare module '@capacitor/push-notifications' {
+  export const PushNotifications: {
+    requestPermissions(): Promise<{ receive: string }>;
+    register(): Promise<void>;
+    addListener(
+      event: string,
+      callback: (...args: never[]) => void,
+    ): Promise<{ remove: () => void }>;
+  };
+}
+
+declare module '@capacitor/local-notifications' {
+  export const LocalNotifications: {
+    schedule(options: { notifications: Array<Record<string, unknown>> }): Promise<void>;
+    createChannel(channel: Record<string, unknown>): Promise<void>;
+  };
+}

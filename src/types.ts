@@ -14,7 +14,14 @@ export interface EnergyData {
   priceCurrent: number;
 }
 
-export type TariffProvider = 'tibber' | 'awattar' | 'none';
+export type TariffProvider =
+  | 'tibber'
+  | 'tibber-pulse'
+  | 'awattar'
+  | 'awattar-de'
+  | 'awattar-at'
+  | 'octopus'
+  | 'none';
 
 export type LocaleCode = 'de' | 'en';
 
@@ -202,6 +209,9 @@ export interface StoredSettings {
   wsPort: number;
   refreshRateMs: number;
   tariffProvider: TariffProvider;
+  tariffRegion: string;
+  dynamicGridFees: boolean;
+  gridOperatorName: string;
   chargeThreshold: number;
   maxGridImportKw: number;
   mtls: boolean;
