@@ -23,6 +23,7 @@ import { Breadcrumbs } from './components/layout/Breadcrumbs';
 import { OfflineBanner } from './components/OfflineBanner';
 import { PWAInstallPrompt } from './components/PWAInstallPrompt';
 import { PWAUpdateNotification } from './components/PWAUpdateNotification';
+import { TauriAutoUpdater } from './components/TauriAutoUpdater';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { watchSystemTheme, resolveTheme } from './lib/theme';
 import { backgroundSyncService } from './lib/background-sync';
@@ -198,6 +199,7 @@ export default function App() {
       <Router basename={import.meta.env.BASE_URL}>
         <ScrollToTop />
         <PWAUpdateNotification />
+        <TauriAutoUpdater />
 
         {/* Onboarding: render fullscreen, hide entire app shell behind it */}
         {!onboardingCompleted ? (

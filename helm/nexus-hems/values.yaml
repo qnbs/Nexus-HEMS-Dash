@@ -1,0 +1,108 @@
+# ─── Image ───────────────────────────────────────────────────────────
+image:
+  frontend:
+    repository: ghcr.io/qnbs/nexus-hems-dash
+    tag: 'latest'
+    pullPolicy: IfNotPresent
+  server:
+    repository: ghcr.io/qnbs/nexus-hems-server
+    tag: 'latest'
+    pullPolicy: IfNotPresent
+
+# ─── Replicas ────────────────────────────────────────────────────────
+replicaCount:
+  frontend: 2
+  server: 2
+
+# ─── Service ─────────────────────────────────────────────────────────
+service:
+  frontend:
+    type: ClusterIP
+    port: 8080
+  server:
+    type: ClusterIP
+    port: 3000
+
+# ─── Ingress ─────────────────────────────────────────────────────────
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: 'true'
+    nginx.ingress.kubernetes.io/proxy-read-timeout: '60'
+    nginx.ingress.kubernetes.io/proxy-send-timeout: '60'
+    nginx.ingress.kubernetes.io/websocket-services: nexus-hems-server
+  host: hems.example.com
+  tls:
+    secretName: nexus-hems-tls
+
+# ─── Resources ───────────────────────────────────────────────────────
+resources:
+  frontend:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+  server:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+# ─── HPA ─────────────────────────────────────────────────────────────
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 8
+  targetCPUUtilization: 70
+  targetMemoryUtilization: 80
+
+# ─── Monitoring ──────────────────────────────────────────────────────
+monitoring:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    interval: 15s
+    scrapeTimeout: 10s
+  prometheusRule:
+    enabled: true
+  grafanaDashboard:
+    enabled: true
+
+# ─── Security ────────────────────────────────────────────────────────
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  fsGroup: 1000
+  seccompProfile:
+    type: RuntimeDefault
+
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+
+# ─── Environment ─────────────────────────────────────────────────────
+env:
+  NODE_ENV: production
+  PORT: '3000'
+
+# ─── Secrets (reference existing K8s secret) ─────────────────────────
+existingSecret: ''
+# If set, expects keys: JWT_SECRET, SENTRY_DSN
+
+# ─── Network Policy ─────────────────────────────────────────────────
+networkPolicy:
+  enabled: true
+
+# ─── PDB ─────────────────────────────────────────────────────────────
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1

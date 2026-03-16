@@ -1,0 +1,82 @@
+# Nexus HEMS — Prometheus Alert Rules
+groups:
+  - name: hems_energy
+    rules:
+      - alert: HighGridImport
+        expr: hems_grid_power_watts > 4200
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'Grid import exceeds 4200W for 5+ minutes'
+          description: 'Current grid import: {{ $value }}W'
+
+      - alert: BatteryLow
+        expr: hems_battery_soc_percent < 10
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'Battery SoC below 10% for 10+ minutes'
+          description: 'Battery SoC: {{ $value }}%'
+
+      - alert: HighElectricityPrice
+        expr: hems_tariff_price_eur_per_kwh > 0.40
+        for: 1m
+        labels:
+          severity: info
+        annotations:
+          summary: 'Electricity price exceeds 40 ct/kWh'
+          description: 'Current price: {{ $value }} EUR/kWh'
+
+      - alert: GridVoltageAnomaly
+        expr: hems_grid_voltage_volts < 210 or hems_grid_voltage_volts > 250
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: 'Grid voltage outside 210–250V tolerance'
+          description: 'Voltage: {{ $value }}V'
+
+  - name: hems_system
+    rules:
+      - alert: AdapterDisconnected
+        expr: hems_adapter_connected == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: 'Adapter {{ $labels.adapter_id }} disconnected for 2+ minutes'
+
+      - alert: HighAdapterErrorRate
+        expr: rate(hems_adapter_errors_total[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'High error rate for adapter {{ $labels.adapter_id }}'
+          description: 'Error rate: {{ $value }}/s'
+
+      - alert: ServerDown
+        expr: up{job="nexus-hems-server"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: 'HEMS server is down'
+
+      - alert: HighMemoryUsage
+        expr: node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes < 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'Host memory usage above 90%'
+
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 85
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'Host CPU usage above 85% for 10+ minutes'

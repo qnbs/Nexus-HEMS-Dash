@@ -6,6 +6,7 @@
 import { Component, type ReactNode, type ErrorInfo } from 'react';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 import i18next from 'i18next';
+import { logger } from '../lib/logger';
 
 interface Props {
   children: ReactNode;
@@ -48,10 +49,10 @@ export class ErrorBoundary extends Component<Props, State> {
     // Call optional error handler
     this.props.onError?.(error, errorInfo);
 
-    // Send to error tracking service (e.g., Sentry)
-    if (import.meta.env.PROD) {
-      // window.Sentry?.captureException(error, { extra: errorInfo });
-    }
+    // Log to structured logger (sends to Sentry in production)
+    logger.error('Uncaught component error', error, 'ErrorBoundary', {
+      componentStack: errorInfo.componentStack ?? undefined,
+    });
   }
 
   handleReset = () => {

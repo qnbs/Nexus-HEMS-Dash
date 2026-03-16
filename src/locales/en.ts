@@ -2068,4 +2068,14 @@ export const en = {
       notAuthorized: 'Not authorized for this action',
     },
   },
+  updater: {
+    available: 'Update available',
+    install: 'Install',
+    downloading: 'Downloading update…',
+    ready: 'Update installed',
+    restartHint: 'Restart to apply the new version.',
+    installFailed: 'Update installation failed',
+    checkingForUpdates: 'Checking for updates…',
+    upToDate: 'App is up to date',
+  },
 } as const;

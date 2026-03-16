@@ -12,6 +12,16 @@ global:
     deployment: 'nexus-hems'
     environment: 'production'
 
+# ─── Alert Rules ─────────────────────────────────────────────────────
+rule_files:
+  - 'rules/*.yml'
+
+# ─── Alertmanager ────────────────────────────────────────────────────
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ['nexus-alertmanager:9093']
+
 scrape_configs:
   # ── HEMS Server Metrics ───────────────────────────────────────
   - job_name: 'nexus-hems-server'
@@ -35,3 +45,11 @@ scrape_configs:
   - job_name: 'prometheus'
     static_configs:
       - targets: ['localhost:9090']
+
+  # ── Node Exporter (host metrics) ──────────────────────────────
+  - job_name: 'node-exporter'
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['nexus-node-exporter:9100']
+        labels:
+          instance: 'host'

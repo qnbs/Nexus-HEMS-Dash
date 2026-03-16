@@ -165,6 +165,38 @@ services:
     labels:
       - 'com.nexus-hems.component=grafana'
 
+  # ── Alertmanager (monitoring profile) ───────────────────────────
+  alertmanager:
+    image: prom/alertmanager:v0.28.1
+    container_name: nexus-alertmanager
+    profiles:
+      - monitoring
+    restart: unless-stopped
+    ports:
+      - '9093:9093'
+    networks:
+      - backend
+    security_opt:
+      - no-new-privileges:true
+    labels:
+      - 'com.nexus-hems.component=alertmanager'
+
+  # ── Node Exporter (monitoring profile) ──────────────────────────
+  node-exporter:
+    image: prom/node-exporter:v1.9.0
+    container_name: nexus-node-exporter
+    profiles:
+      - monitoring
+    restart: unless-stopped
+    ports:
+      - '9100:9100'
+    networks:
+      - backend
+    security_opt:
+      - no-new-privileges:true
+    labels:
+      - 'com.nexus-hems.component=node-exporter'
+
 # ── Networks ──────────────────────────────────────────────────────
 networks:
   frontend:
