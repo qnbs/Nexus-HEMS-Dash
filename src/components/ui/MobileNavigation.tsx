@@ -236,13 +236,7 @@ function MobileNavigationComponent() {
                 aria-current={isActive ? 'page' : undefined}
                 aria-label={item.label}
               >
-                <div
-                  className={`flex h-8 w-8 items-center justify-center rounded-xl transition-colors ${
-                    isActive ? 'bg-(--color-primary)/15' : ''
-                  }`}
-                >
-                  {item.icon}
-                </div>
+                <div className="flex h-8 w-8 items-center justify-center">{item.icon}</div>
                 <span className="text-[10px] font-medium">{item.label}</span>
               </button>
             );
@@ -258,11 +252,7 @@ function MobileNavigationComponent() {
             aria-label={t('accessibility.moreNavPages', 'More pages')}
             data-testid="mobile-more-btn"
           >
-            <div
-              className={`flex h-8 w-8 items-center justify-center rounded-xl transition-colors ${
-                moreOpen || isMorePageActive ? 'bg-(--color-primary)/15' : ''
-              }`}
-            >
+            <div className="flex h-8 w-8 items-center justify-center">
               <MoreHorizontal className="h-5 w-5" />
             </div>
             <span className="text-[10px] font-medium">{t('nav.more', 'More')}</span>
