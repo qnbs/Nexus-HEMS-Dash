@@ -1,0 +1,49 @@
+# CODEOWNERS — Nexus HEMS Dashboard
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+#
+# Jede Zeile definiert: Pfad-Pattern → Owner(s)
+# Der letzte passende Eintrag gewinnt.
+
+# ─── Global (Fallback) ──────────────────────────────────────────
+*                                       @qnbs
+
+# ─── Core Architecture ──────────────────────────────────────────
+src/store.ts                            @qnbs
+src/types.ts                            @qnbs
+src/App.tsx                             @qnbs
+src/main.tsx                            @qnbs
+src/core/                               @qnbs
+
+# ─── Adapter System (Protokolle) ────────────────────────────────
+src/core/adapters/                      @qnbs
+
+# ─── Design System & Themes ─────────────────────────────────────
+src/design-tokens.ts                    @qnbs
+src/index.css                           @qnbs
+
+# ─── Critical Components (nie brechen!) ─────────────────────────
+src/components/SankeyDiagram.tsx         @qnbs
+src/components/Floorplan.tsx             @qnbs
+
+# ─── Lokalisierung ──────────────────────────────────────────────
+src/locales/                            @qnbs
+
+# ─── Security & CI ──────────────────────────────────────────────
+.github/                                @qnbs
+SECURITY.md                             @qnbs
+.gitleaks.toml                          @qnbs
+
+# ─── Infrastruktur ──────────────────────────────────────────────
+Dockerfile                              @qnbs
+Dockerfile.server                       @qnbs
+docker-compose.yml                      @qnbs
+nginx.conf                              @qnbs
+vite.config.ts                          @qnbs
+tsconfig.json                           @qnbs
+
+# ─── Tauri Desktop ──────────────────────────────────────────────
+src-tauri/                              @qnbs
+
+# ─── Tests ───────────────────────────────────────────────────────
+src/tests/                              @qnbs
+tests/                                  @qnbs
