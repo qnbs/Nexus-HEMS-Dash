@@ -81,4 +81,147 @@ test.describe('WCAG 2.2 AA Accessibility', () => {
 
     await expect(page.locator('html')).toHaveAttribute('lang', /^(de|en)$/);
   });
+
+  test('Skip-to-content link should be present and functional', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForSelector('h1', { timeout: 15_000 });
+
+    // The skip link should exist
+    const skipLink = page.locator('a[href="#main-content"]');
+    await expect(skipLink).toHaveCount(1);
+
+    // Tab to the skip link (should be first focusable element)
+    await page.keyboard.press('Tab');
+    const focused = page.locator(':focus');
+    await expect(focused).toHaveAttribute('href', '#main-content');
+  });
+
+  test('High contrast mode should apply CSS class to <html>', async ({ page }) => {
+    await page.goto('/settings');
+    await page.waitForSelector('h1', { timeout: 15_000 });
+
+    // Enable high contrast via localStorage
+    await page.evaluate(() => {
+      const raw = localStorage.getItem('nexus-hems-store');
+      if (raw) {
+        const store = JSON.parse(raw);
+        store.state = {
+          ...store.state,
+          settings: { ...store.state?.settings, highContrast: true },
+        };
+        localStorage.setItem('nexus-hems-store', JSON.stringify(store));
+      }
+    });
+    await page.reload();
+    await page.waitForSelector('h1', { timeout: 15_000 });
+
+    await expect(page.locator('html')).toHaveClass(/high-contrast/);
+  });
+
+  test('Reduced motion mode should apply CSS class to <html>', async ({ page }) => {
+    await page.goto('/settings');
+    await page.waitForSelector('h1', { timeout: 15_000 });
+
+    // Enable reduced motion via localStorage
+    await page.evaluate(() => {
+      const raw = localStorage.getItem('nexus-hems-store');
+      if (raw) {
+        const store = JSON.parse(raw);
+        store.state = {
+          ...store.state,
+          settings: { ...store.state?.settings, reducedMotion: true },
+        };
+        localStorage.setItem('nexus-hems-store', JSON.stringify(store));
+      }
+    });
+    await page.reload();
+    await page.waitForSelector('h1', { timeout: 15_000 });
+
+    await expect(page.locator('html')).toHaveClass(/reduced-motion/);
+  });
+
+  test('Heading hierarchy should be correct (no skipped levels)', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForSelector('h1', { timeout: 15_000 });
+
+    const headings = await page.evaluate(() => {
+      const hs = document.querySelectorAll('h1, h2, h3, h4, h5, h6');
+      return Array.from(hs).map((h) => parseInt(h.tagName.replace('H', ''), 10));
+    });
+
+    // Verify headings start at h1
+    expect(headings[0]).toBe(1);
+
+    // Verify no heading level is skipped (e.g. h1 → h3 without h2)
+    for (let i = 1; i < headings.length; i++) {
+      const jump = headings[i] - headings[i - 1];
+      expect(jump).toBeLessThanOrEqual(1); // can go same level, up (negative), or +1
+    }
+  });
+
+  test('Sankey energy flow should have ARIA-live region for screen readers', async ({ page }) => {
+    await page.goto('/energy-flow');
+    await page.waitForSelector('h1', { timeout: 15_000 });
+
+    // Check for ARIA-live region
+    const liveRegion = page.locator('[role="status"][aria-live="polite"]');
+    await expect(liveRegion).toHaveCount(1);
+  });
+
+  test('Sankey energy flow should have accessible sr-only data table', async ({ page }) => {
+    await page.goto('/energy-flow');
+    await page.waitForSelector('h1', { timeout: 15_000 });
+
+    // Check for sr-only data table
+    const dataTable = page.locator('table.sr-only');
+    await expect(dataTable).toHaveCount(1);
+
+    // Table should have headers
+    const headers = dataTable.locator('th');
+    await expect(headers).toHaveCount(3);
+  });
+
+  test('Focus order should follow visual layout', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForSelector('h1', { timeout: 15_000 });
+
+    // Tab through first 5 interactive elements and capture their bounding boxes
+    const positions: number[] = [];
+    for (let i = 0; i < 5; i++) {
+      await page.keyboard.press('Tab');
+      const box = await page.locator(':focus').boundingBox();
+      if (box) positions.push(box.y);
+    }
+
+    // Y positions should be generally non-decreasing (top-to-bottom flow)
+    // Allow some tolerance for elements at the same vertical position
+    for (let i = 1; i < positions.length; i++) {
+      // Elements can be on the same line (within 50px tolerance)
+      expect(positions[i]).toBeGreaterThanOrEqual(positions[i - 1] - 50);
+    }
+  });
+
+  test('All images should have alt text', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForSelector('h1', { timeout: 15_000 });
+
+    const imagesWithoutAlt = await page.evaluate(() => {
+      const imgs = document.querySelectorAll('img');
+      return Array.from(imgs).filter((img) => !img.hasAttribute('alt') && !img.hasAttribute('role'))
+        .length;
+    });
+
+    expect(imagesWithoutAlt).toBe(0);
+  });
+
+  test('All interactive elements should have accessible names', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForSelector('h1', { timeout: 15_000 });
+
+    const accessibilityScanResults = await new AxeBuilder({ page })
+      .withRules(['button-name', 'link-name', 'input-button-has-value', 'label'])
+      .analyze();
+
+    expect(accessibilityScanResults.violations).toEqual([]);
+  });
 });

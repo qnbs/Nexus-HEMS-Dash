@@ -1212,6 +1212,12 @@ export const en = {
     floorplanRoomStatus: '{{room}}: {{temp}}°C, {{humidity}}% humidity, lights {{light}}',
     moreNavPages: 'More navigation pages',
     skipOnboarding: 'Skip onboarding and go to dashboard',
+    sankeyAnnouncePV: 'PV generation {{power}} watts',
+    sankeyAnnounceGridImport: 'Grid import {{power}} watts',
+    sankeyAnnounceGridExport: 'Grid export {{power}} watts',
+    sankeyAnnounceBatteryDischarge: 'Battery discharging {{power}} watts',
+    sankeyAnnounceBatteryCharge: 'Battery charging {{power}} watts',
+    sankeyAnnounceLoad: 'House consumption {{power}} watts',
   },
   production: {
     subtitle: 'Solar PV generation & forecast',

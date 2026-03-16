@@ -10,11 +10,55 @@ import type {
   SankeyWorkerOutput,
 } from '../workers/sankey-worker';
 
+/**
+ * Builds a concise screen-reader announcement string for the current energy state.
+ * Debounced externally — only called when the live region should update.
+ */
+function buildAnnouncement(
+  data: EnergyData,
+  t: (key: string, opts?: Record<string, unknown>) => string,
+): string {
+  const parts: string[] = [];
+  if (data.pvPower > 0)
+    parts.push(t('accessibility.sankeyAnnouncePV', { power: Math.round(data.pvPower) }));
+  if (data.gridPower > 0)
+    parts.push(t('accessibility.sankeyAnnounceGridImport', { power: Math.round(data.gridPower) }));
+  if (data.gridPower < 0)
+    parts.push(
+      t('accessibility.sankeyAnnounceGridExport', { power: Math.abs(Math.round(data.gridPower)) }),
+    );
+  if (data.batteryPower > 0)
+    parts.push(
+      t('accessibility.sankeyAnnounceBatteryDischarge', { power: Math.round(data.batteryPower) }),
+    );
+  if (data.batteryPower < 0)
+    parts.push(
+      t('accessibility.sankeyAnnounceBatteryCharge', {
+        power: Math.abs(Math.round(data.batteryPower)),
+      }),
+    );
+  parts.push(t('accessibility.sankeyAnnounceLoad', { power: Math.round(data.houseLoad) }));
+  return parts.join('. ');
+}
+
 export function SankeyDiagram({ data }: { data: EnergyData }) {
   const { t } = useTranslation();
   const svgRef = useRef<SVGSVGElement>(null);
   const workerRef = useRef<Worker | null>(null);
   const [graph, setGraph] = useState<SankeyGraphResult | null>(null);
+  const [liveAnnouncement, setLiveAnnouncement] = useState('');
+  const announceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Debounced ARIA-live announcements (every 5s max to avoid screen-reader spam)
+  useEffect(() => {
+    if (announceTimerRef.current) clearTimeout(announceTimerRef.current);
+    announceTimerRef.current = setTimeout(() => {
+      setLiveAnnouncement(buildAnnouncement(data, t));
+    }, 5000);
+    return () => {
+      if (announceTimerRef.current) clearTimeout(announceTimerRef.current);
+    };
+  }, [data, t]);
 
   // Initialise the Web Worker once
   useEffect(() => {
@@ -188,13 +232,15 @@ export function SankeyDiagram({ data }: { data: EnergyData }) {
 
   return (
     <>
+      {/* Screen-reader live region for energy flow changes */}
+      <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">
+        {liveAnnouncement}
+      </div>
       <svg
         ref={svgRef}
         className="absolute inset-0 h-full w-full"
         role="img"
         aria-label={t('sankey.ariaLabel')}
-        aria-live="polite"
-        aria-atomic="false"
       >
         <title>{t('sankey.title')}</title>
         <desc>

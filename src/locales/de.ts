@@ -1226,6 +1226,12 @@ export const de = {
     floorplanRoomStatus: '{{room}}: {{temp}}°C, {{humidity}}% Luftfeuchtigkeit, Licht {{light}}',
     moreNavPages: 'Weitere Navigationsseiten',
     skipOnboarding: 'Onboarding überspringen und zum Dashboard gehen',
+    sankeyAnnouncePV: 'PV-Erzeugung {{power}} Watt',
+    sankeyAnnounceGridImport: 'Netzbezug {{power}} Watt',
+    sankeyAnnounceGridExport: 'Netzeinspeisung {{power}} Watt',
+    sankeyAnnounceBatteryDischarge: 'Batterieentladung {{power}} Watt',
+    sankeyAnnounceBatteryCharge: 'Batterieladung {{power}} Watt',
+    sankeyAnnounceLoad: 'Hausverbrauch {{power}} Watt',
   },
   production: {
     subtitle: 'Solar-PV-Erzeugung & Prognose',

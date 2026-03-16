@@ -777,21 +777,63 @@ html.reduced-motion *::after {
   transition-duration: 0.01ms !important;
 }
 
+/* Reduced motion: keep opacity changes but remove transforms */
+html.reduced-motion .hover-lift:hover,
+html.reduced-motion .hover-scale:hover,
+html.reduced-motion .hover-rotate:hover,
+html.reduced-motion .metric-card:hover,
+html.reduced-motion .btn-primary:hover,
+html.reduced-motion .btn-secondary:hover,
+html.reduced-motion .btn-primary:active,
+html.reduced-motion .btn-secondary:active {
+  transform: none !important;
+}
+
+/* Reduced motion: disable pulsing status indicators */
+html.reduced-motion .status-indicator::before {
+  animation: none !important;
+  display: none;
+}
+
+/* Reduced motion: disable Sankey flow animations */
+html.reduced-motion .energy-flow-path {
+  stroke-dasharray: none !important;
+  animation: none !important;
+}
+
+/* Reduced motion: disable battery pulse animations */
+html.reduced-motion .battery-charging,
+html.reduced-motion .battery-discharging {
+  animation: none !important;
+}
+
+/* Reduced motion: icon float and shimmer */
+html.reduced-motion .icon-float,
+html.reduced-motion .cyber-shimmer,
+html.reduced-motion .energy-pulse {
+  animation: none !important;
+}
+
 /* ========== APP-CONTROLLED HIGH CONTRAST ========== */
 html.high-contrast {
-  --color-border: rgba(255, 255, 255, 0.4);
-  --color-muted: #b8c4d4;
+  --color-border: rgba(255, 255, 255, 0.5);
+  --color-muted: #c8d4e4;
+  --color-surface: rgba(14, 22, 42, 0.92);
+  --color-surface-strong: rgba(18, 28, 52, 0.96);
 }
 
 html.high-contrast [data-theme='solar-light'],
 html.high-contrast [data-theme='minimal-white'] {
-  --color-border: rgba(0, 0, 0, 0.4);
-  --color-muted: #374151;
+  --color-border: rgba(0, 0, 0, 0.5);
+  --color-muted: #1f2937;
+  --color-surface: rgba(255, 255, 255, 0.92);
+  --color-surface-strong: rgba(243, 244, 246, 0.98);
 }
 
 html.high-contrast .glass-panel,
 html.high-contrast .glass-panel-strong {
   border-width: 2px;
+  backdrop-filter: blur(6px);
 }
 
 html.high-contrast button,
@@ -802,6 +844,77 @@ html.high-contrast a {
 html.high-contrast .focus-ring:focus-visible {
   outline-width: 3px;
   outline-offset: 3px;
+}
+
+/* High contrast: strengthen text on glowing elements */
+html.high-contrast .neon-glow-green,
+html.high-contrast .neon-glow-blue,
+html.high-contrast .neon-glow-orange {
+  text-shadow: none;
+  font-weight: 700;
+}
+
+/* High contrast: ensure chart colors are distinguishable without opacity/glow */
+html.high-contrast .neon-border-green,
+html.high-contrast .neon-border-blue,
+html.high-contrast .neon-border-orange {
+  box-shadow: none;
+  border-width: 2px;
+}
+
+/* High contrast: metric cards with solid background */
+html.high-contrast .metric-card {
+  background: var(--color-surface-strong);
+  border-width: 2px;
+}
+
+/* High contrast: status indicator without animation, just solid color */
+html.high-contrast .status-indicator::before {
+  animation: none;
+}
+
+/* Windows High Contrast / forced-colors support */
+@media (forced-colors: active) {
+  .glass-panel,
+  .glass-panel-strong,
+  .metric-card {
+    border: 2px solid ButtonText;
+    background: Canvas;
+    forced-color-adjust: none;
+  }
+
+  .neon-glow-green,
+  .neon-glow-blue,
+  .neon-glow-orange {
+    color: LinkText;
+    text-shadow: none;
+  }
+
+  .focus-ring:focus-visible {
+    outline: 3px solid Highlight;
+    outline-offset: 3px;
+  }
+
+  .btn-primary {
+    background: ButtonText;
+    color: ButtonFace;
+    border: 2px solid ButtonText;
+  }
+
+  .btn-secondary {
+    background: ButtonFace;
+    color: ButtonText;
+    border: 2px solid ButtonText;
+  }
+
+  .status-online,
+  .status-offline {
+    forced-color-adjust: none;
+  }
+
+  .energy-flow-path {
+    stroke: LinkText !important;
+  }
 }
 
 /* ========== APP-CONTROLLED COMPACT MODE ========== */
