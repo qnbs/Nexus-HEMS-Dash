@@ -17,10 +17,7 @@ on:
   pull_request:
     branches: [main]
 
-permissions:
-  contents: read
-  pull-requests: write
-  statuses: write
+permissions: read-all
 
 concurrency:
   group: perf-${{ github.ref }}
@@ -44,15 +41,15 @@ jobs:
       total-css-size: ${{ steps.sizes.outputs.total_css }}
       build-time: ${{ steps.build-time.outputs.duration }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Cache node_modules
         id: deps-cache
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: node_modules
           key: deps-${{ runner.os }}-node${{ env.NODE_VERSION }}-${{ hashFiles('package-lock.json') }}
@@ -121,7 +118,7 @@ jobs:
 
       # ── Upload reports ──
       - name: Upload bundle reports
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()
         with:
           name: bundle-reports
@@ -139,14 +136,14 @@ jobs:
     name: 🔍 Dependency Check
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Cache node_modules
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: node_modules
           key: deps-${{ runner.os }}-node${{ env.NODE_VERSION }}-${{ hashFiles('package-lock.json') }}
@@ -188,14 +185,14 @@ jobs:
     name: ⚡ Biome Lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Cache node_modules
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: node_modules
           key: deps-${{ runner.os }}-node${{ env.NODE_VERSION }}-${{ hashFiles('package-lock.json') }}
@@ -216,9 +213,11 @@ jobs:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     needs: [bundle-analysis, dependency-check]
+    permissions:
+      pull-requests: write
     steps:
       - name: Comment PR with performance report
-        uses: actions/github-script@v7
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
         with:
           script: |
             const totalJs = '${{ needs.bundle-analysis.outputs.total-js-size }}';
@@ -237,12 +236,12 @@ jobs:
 
             | Chunk | Limit |
             |-------|-------|
-            | Framework (React+Router) | 50 kB |
-            | App Entry | 80 kB |
+            | Framework (React+Router) | 75 kB |
+            | App Entry | 85 kB |
             | Vendor D3 | 30 kB |
-            | Vendor Recharts | 120 kB |
-            | Vendor Motion | 40 kB |
-            | Vendor Icons | 25 kB |
+            | Vendor Recharts | 110 kB |
+            | Vendor Motion | 45 kB |
+            | Vendor Icons | 20 kB |
 
             </details>
 

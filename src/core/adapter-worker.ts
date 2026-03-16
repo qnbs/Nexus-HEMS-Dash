@@ -133,20 +133,26 @@ function transformSunSpecMeter(raw: Record<string, unknown>): Record<string, unk
 
 // ─── URL allowlist for SSRF prevention ───────────────────────────────
 
-const ALLOWED_URL_PATTERNS = [
-  /^https?:\/\/localhost[:/]/,
-  /^https?:\/\/127\.0\.0\.1[:/]/,
-  /^https?:\/\/\[::1\][:/]/,
-  /^https?:\/\/192\.168\./,
-  /^https?:\/\/10\./,
-  /^https?:\/\/172\.(1[6-9]|2\d|3[01])\./,
+const ALLOWED_HOSTNAME_PATTERNS = [
+  /^localhost$/,
+  /^127\.0\.0\.1$/,
+  /^\[::1\]$/,
+  /^192\.168\.\d{1,3}\.\d{1,3}$/,
+  /^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$/,
+  /^172\.(1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3}$/,
 ];
 
 function isAllowedUrl(url: string): boolean {
   try {
     const parsed = new URL(url);
+    // Only allow http/https protocols
     if (!['http:', 'https:'].includes(parsed.protocol)) return false;
-    return ALLOWED_URL_PATTERNS.some((p) => p.test(url));
+    // Block URLs with credentials (prevent credential leakage)
+    if (parsed.username || parsed.password) return false;
+    // Block non-standard ports on non-private hosts
+    const hostname = parsed.hostname;
+    // Only allow requests to private/local network hosts
+    return ALLOWED_HOSTNAME_PATTERNS.some((p) => p.test(hostname));
   } catch {
     return false;
   }
@@ -167,11 +173,15 @@ async function executePoll(
     });
     return;
   }
+  // Re-parse to construct a clean URL object (SSRF mitigation: use parsed
+  // URL to prevent URL manipulation via path traversal or encoding tricks)
+  const sanitizedUrl = new URL(url);
   const start = performance.now();
   try {
-    const resp = await fetch(url, {
+    const resp = await fetch(sanitizedUrl.href, {
       headers: headers ?? {},
       signal: AbortSignal.timeout(10_000),
+      redirect: 'error', // Block redirects to prevent SSRF via open redirect
     });
     if (!resp.ok) {
       postOut({ type: 'error', adapterId, error: `HTTP ${resp.status}` });
