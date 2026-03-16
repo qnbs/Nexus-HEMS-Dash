@@ -26,6 +26,7 @@ import { PWAUpdateNotification } from './components/PWAUpdateNotification';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { watchSystemTheme, resolveTheme } from './lib/theme';
 import { backgroundSyncService } from './lib/background-sync';
+import { useNotifications } from './lib/useNotifications';
 import { logError } from './lib/db';
 
 // Lazy-loaded pages
@@ -108,6 +109,10 @@ export default function App() {
 
   // Adapter bridge replaces the old useWebSocket hook
   useAdapterBridge();
+
+  // Push notifications for energy events (EV ready, tariff spike, battery low, etc.)
+  useNotifications();
+
   const themeDefinition = themeDefinitions[theme];
 
   useEffect(() => {
