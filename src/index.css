@@ -478,7 +478,7 @@
 
   /* ========== PRICE BADGE (ENHANCED) ========== */
   .price-pill {
-    @apply inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-semibold tabular-nums;
+    @apply items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-semibold tabular-nums;
     @apply text-(--color-primary) transition-all duration-300;
     background: linear-gradient(
       135deg,
