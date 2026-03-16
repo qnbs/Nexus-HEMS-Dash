@@ -1,0 +1,323 @@
+name: Security Full
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Weekly comprehensive scan — Monday 05:00 UTC
+    - cron: '0 5 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  # ════════════════════════════════════════════════════════════════
+  #  1. CodeQL — Static Application Security Testing (GitHub)
+  # ════════════════════════════════════════════════════════════════
+  codeql:
+    name: 'CodeQL Analysis'
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@38b3b7bf288d49ccf58644769dc7a6afdccd05eb # v3
+        with:
+          languages: javascript-typescript
+          queries: security-and-quality
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@38b3b7bf288d49ccf58644769dc7a6afdccd05eb # v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@38b3b7bf288d49ccf58644769dc7a6afdccd05eb # v3
+        with:
+          category: '/language:javascript-typescript'
+
+  # ════════════════════════════════════════════════════════════════
+  #  2. Gitleaks — Secret Detection
+  # ════════════════════════════════════════════════════════════════
+  gitleaks:
+    name: 'Gitleaks Secret Scan'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc # v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_CONFIG: .gitleaks.toml
+
+  # ════════════════════════════════════════════════════════════════
+  #  3. Trivy — Vulnerability, Secret & Misconfiguration Scanner
+  # ════════════════════════════════════════════════════════════════
+  trivy:
+    name: 'Trivy Security Scan'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Trivy filesystem scan (SARIF)
+        uses: aquasecurity/trivy-action@6c175e9c4083a92bbca2f9724c8a5e33bc2d97a5 # 0.30.0
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          scanners: 'vuln,secret,misconfig'
+          severity: 'HIGH,CRITICAL'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          trivy-config: trivy.yaml
+
+      - name: Upload Trivy SARIF
+        uses: github/codeql-action/upload-sarif@38b3b7bf288d49ccf58644769dc7a6afdccd05eb # v3
+        if: always()
+        with:
+          sarif_file: trivy-results.sarif
+        continue-on-error: true
+
+      - name: Trivy table output (logs)
+        uses: aquasecurity/trivy-action@6c175e9c4083a92bbca2f9724c8a5e33bc2d97a5 # 0.30.0
+        if: always()
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          scanners: 'vuln,secret'
+          severity: 'HIGH,CRITICAL'
+          format: 'table'
+          trivy-config: trivy.yaml
+
+  # ════════════════════════════════════════════════════════════════
+  #  4. Semgrep — SAST Rules
+  # ════════════════════════════════════════════════════════════════
+  semgrep:
+    name: 'Semgrep SAST'
+    runs-on: ubuntu-latest
+    container:
+      image: semgrep/semgrep
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Run Semgrep
+        run: semgrep scan --config auto --error --sarif -o semgrep-results.sarif src/
+        env:
+          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+
+      - name: Upload Semgrep SARIF
+        uses: github/codeql-action/upload-sarif@38b3b7bf288d49ccf58644769dc7a6afdccd05eb # v3
+        if: always()
+        with:
+          sarif_file: semgrep-results.sarif
+        continue-on-error: true
+
+  # ════════════════════════════════════════════════════════════════
+  #  5. Anti-Trojan-Source — Unicode Bidi Attack Detection
+  # ════════════════════════════════════════════════════════════════
+  anti-trojan-source:
+    name: 'Anti-Trojan-Source'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Scan for Unicode Bidi characters
+        run: npx anti-trojan-source --files='src/**/*.{ts,tsx,js,jsx}' --verbose
+
+      - name: ESLint anti-trojan-source/no-bidi
+        run: "npx eslint src/ --rule 'anti-trojan-source/no-bidi: error' --max-warnings 0"
+
+  # ════════════════════════════════════════════════════════════════
+  #  6. Dependabot / npm Audit — Dependency Check
+  # ════════════════════════════════════════════════════════════════
+  dependency-check:
+    name: 'Dependency Audit'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: npm audit (production)
+        run: npm audit --audit-level=high --omit=dev
+        continue-on-error: true
+
+      - name: Check for critical vulnerabilities
+        run: |
+          CRITICAL=$(npm audit --json 2>/dev/null | jq '.metadata.vulnerabilities.critical // 0')
+          HIGH=$(npm audit --json 2>/dev/null | jq '.metadata.vulnerabilities.high // 0')
+          echo "## Dependency Audit Results" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Severity | Count |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|----------|-------|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Critical | $CRITICAL |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| High     | $HIGH |" >> "$GITHUB_STEP_SUMMARY"
+          if [ "$CRITICAL" -gt 0 ]; then
+            echo "::error::Critical vulnerabilities found!"
+            exit 1
+          fi
+
+      - name: Verify Dependabot config exists
+        run: |
+          if [ ! -f .github/dependabot.yml ]; then
+            echo "::error::Missing .github/dependabot.yml — Dependabot is not configured!"
+            exit 1
+          fi
+          echo "✓ Dependabot config found"
+
+      - name: License compliance check
+        run: npx license-checker --production --failOn 'GPL-3.0;AGPL-3.0' --summary
+        continue-on-error: true
+
+  # ════════════════════════════════════════════════════════════════
+  #  7. OpenSSF Scorecard — Supply Chain Security Score
+  # ════════════════════════════════════════════════════════════════
+  scorecard:
+    name: 'OpenSSF Scorecard'
+    runs-on: ubuntu-latest
+    # Scorecard only works on default branch push or schedule
+    if: github.event_name != 'pull_request'
+    permissions:
+      security-events: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      - name: Run OpenSSF Scorecard
+        uses: ossf/scorecard-action@ff5dd8929f96a8a4dc67d13f32b8c75057829621 # v2.4.0
+        with:
+          results_file: scorecard-results.sarif
+          results_format: sarif
+          publish_results: true
+
+      - name: Upload Scorecard SARIF
+        uses: github/codeql-action/upload-sarif@38b3b7bf288d49ccf58644769dc7a6afdccd05eb # v3
+        if: always()
+        with:
+          sarif_file: scorecard-results.sarif
+
+  # ════════════════════════════════════════════════════════════════
+  #  8. Branch Protection Reminder — Verify repo hardening
+  # ════════════════════════════════════════════════════════════════
+  branch-protection-reminder:
+    name: 'Branch Protection Check'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Check required files exist
+        run: |
+          echo "## Branch Protection & Repo Hardening Checklist" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          PASS=0
+          FAIL=0
+
+          check_file() {
+            if [ -f "$1" ]; then
+              echo "- ✅ \`$1\` exists" >> "$GITHUB_STEP_SUMMARY"
+              PASS=$((PASS + 1))
+            else
+              echo "- ❌ \`$1\` **missing**" >> "$GITHUB_STEP_SUMMARY"
+              FAIL=$((FAIL + 1))
+            fi
+          }
+
+          echo "### Required Files" >> "$GITHUB_STEP_SUMMARY"
+          check_file "SECURITY.md"
+          check_file "CODE_OF_CONDUCT.md"
+          check_file "CONTRIBUTING.md"
+          check_file "LICENSE"
+          check_file ".github/CODEOWNERS"
+          check_file ".github/dependabot.yml"
+          check_file ".github/ISSUE_TEMPLATE/bug_report.md"
+          check_file ".github/ISSUE_TEMPLATE/feature_request.md"
+          check_file ".github/PULL_REQUEST_TEMPLATE.md"
+          check_file ".gitleaks.toml"
+
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "### Summary: $PASS passed, $FAIL missing" >> "$GITHUB_STEP_SUMMARY"
+
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "### 🔒 Branch Protection Reminder" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Ensure the following are enabled in **Settings → Branches → main**:" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "- [ ] Require pull request before merging" >> "$GITHUB_STEP_SUMMARY"
+          echo "- [ ] Require at least 1 approval" >> "$GITHUB_STEP_SUMMARY"
+          echo "- [ ] Require status checks to pass (CI, Security Full)" >> "$GITHUB_STEP_SUMMARY"
+          echo "- [ ] Require branches to be up to date" >> "$GITHUB_STEP_SUMMARY"
+          echo "- [ ] Require signed commits" >> "$GITHUB_STEP_SUMMARY"
+          echo "- [ ] Include administrators" >> "$GITHUB_STEP_SUMMARY"
+          echo "- [ ] Restrict force pushes" >> "$GITHUB_STEP_SUMMARY"
+          echo "- [ ] Restrict deletions" >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$FAIL" -gt 0 ]; then
+            echo "::warning::$FAIL required files are missing — see Job Summary"
+          fi
+
+  # ════════════════════════════════════════════════════════════════
+  #  Gate — All security checks must pass
+  # ════════════════════════════════════════════════════════════════
+  security-gate:
+    name: 'Security Gate ✓'
+    runs-on: ubuntu-latest
+    if: always()
+    needs:
+      - codeql
+      - gitleaks
+      - trivy
+      - semgrep
+      - anti-trojan-source
+      - dependency-check
+      - branch-protection-reminder
+    steps:
+      - name: Evaluate security results
+        run: |
+          echo "## Security Gate Results" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Job | Status |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|-----|--------|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| CodeQL | ${{ needs.codeql.result }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Gitleaks | ${{ needs.gitleaks.result }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Trivy | ${{ needs.trivy.result }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Semgrep | ${{ needs.semgrep.result }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Anti-Trojan-Source | ${{ needs.anti-trojan-source.result }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Dependency Audit | ${{ needs.dependency-check.result }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Branch Protection | ${{ needs.branch-protection-reminder.result }} |" >> "$GITHUB_STEP_SUMMARY"
+
+          # Fail the gate if any critical job failed
+          if [[ "${{ needs.codeql.result }}" == "failure" || \
+                "${{ needs.gitleaks.result }}" == "failure" || \
+                "${{ needs.trivy.result }}" == "failure" || \
+                "${{ needs.anti-trojan-source.result }}" == "failure" || \
+                "${{ needs.dependency-check.result }}" == "failure" ]]; then
+            echo ""
+            echo "::error::Security Gate FAILED — one or more critical checks did not pass"
+            exit 1
+          fi
+
+          echo ""
+          echo "✅ Security Gate passed — all critical checks succeeded"
