@@ -79,6 +79,15 @@ Every contrib adapter automatically gets:
 
 ## Naming Convention
 
-- File name: `kebab-case.ts` (e.g. `shelly-pro.ts`)
-- Adapter ID: same as file name (e.g. `shelly-pro`)
+- File name: `kebab-case.ts` (e.g. `shelly-rest.ts`)
+- Adapter ID: same as file name (e.g. `shelly-rest`)
 - Pattern: `/^[a-z][a-z0-9-]*$/`
+
+## Included Contrib Adapters
+
+| Adapter             | File                    | Protocol                      | Capabilities                       |
+| ------------------- | ----------------------- | ----------------------------- | ---------------------------------- |
+| Home Assistant MQTT | `homeassistant-mqtt.ts` | MQTT Discovery (Mosquitto WS) | pv, battery, grid, load, evCharger |
+| Matter/Thread       | `matter-thread.ts`      | Matter WS Controller          | pv, grid, load                     |
+| Zigbee2MQTT         | `zigbee2mqtt.ts`        | Zigbee2MQTT MQTT Bridge       | load, grid                         |
+| Shelly REST         | `shelly-rest.ts`        | Shelly Gen2+ HTTP RPC         | grid, load                         |
