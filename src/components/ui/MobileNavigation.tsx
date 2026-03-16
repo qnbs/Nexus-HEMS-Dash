@@ -38,7 +38,6 @@ function MobileNavigationComponent() {
   // Focus trap for the more sheet
   useEffect(() => {
     if (!moreOpen) {
-      // Restore focus to trigger button on close
       moreButtonRef.current?.focus();
       return;
     }
@@ -146,26 +145,31 @@ function MobileNavigationComponent() {
     setMoreOpen(false);
   };
 
+  /** Check if any of the "more" pages is currently active */
+  const isMorePageActive = moreItems.some((item) => location.pathname.startsWith(item.path));
+
   return (
     <>
       {/* More Pages Sheet */}
       <AnimatePresence>
         {moreOpen && (
           <>
+            {/* Backdrop — covers the page but stops above the navbar */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setMoreOpen(false)}
-              className="z-modal-backdrop fixed inset-0 bg-black/60 backdrop-blur-sm lg:hidden"
+              className="z-modal-backdrop fixed inset-0 bottom-[calc(3.5rem+env(safe-area-inset-bottom,0px))] bg-black/60 backdrop-blur-sm lg:hidden"
             />
+            {/* Sheet */}
             <motion.div
               ref={moreSheetRef}
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
-              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              className="z-modal fixed right-0 bottom-16 left-0 rounded-t-3xl border-t border-(--color-border) bg-(--color-surface) p-4 backdrop-blur-3xl lg:hidden"
+              initial={{ y: '100%', opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: '100%', opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+              className="z-modal fixed right-0 bottom-[calc(3.5rem+env(safe-area-inset-bottom,0px))] left-0 rounded-t-3xl border-t border-(--color-border) bg-(--color-surface) p-4 shadow-[0_-8px_30px_rgba(0,0,0,0.3)] backdrop-blur-3xl lg:hidden"
               role="dialog"
               aria-modal="true"
               aria-label={t('nav.allPages', 'All Pages')}
@@ -176,29 +180,32 @@ function MobileNavigationComponent() {
                 </span>
                 <button
                   onClick={() => setMoreOpen(false)}
-                  className="focus-ring rounded-full p-1.5 hover:bg-white/10"
+                  className="focus-ring rounded-full p-1.5 text-(--color-muted) transition-colors hover:bg-white/10 hover:text-(--color-text)"
                   aria-label={t('common.close', 'Close')}
                 >
                   <X size={18} />
                 </button>
               </div>
               <div className="grid grid-cols-4 gap-2">
-                {moreItems.map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => handleNavigation(item.path)}
-                    className={`focus-ring flex flex-col items-center gap-1.5 rounded-xl p-2.5 transition-colors ${
-                      location.pathname === item.path
-                        ? 'bg-(--color-primary)/15 text-(--color-primary)'
-                        : 'text-(--color-muted) hover:bg-(--color-surface-strong)'
-                    }`}
-                  >
-                    {item.icon}
-                    <span className="max-w-full truncate text-[10px] leading-tight font-medium">
-                      {item.label}
-                    </span>
-                  </button>
-                ))}
+                {moreItems.map((item) => {
+                  const isActive = location.pathname === item.path;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => handleNavigation(item.path)}
+                      className={`focus-ring flex flex-col items-center gap-1.5 rounded-xl p-2.5 transition-colors ${
+                        isActive
+                          ? 'bg-(--color-primary)/15 text-(--color-primary)'
+                          : 'text-(--color-muted) active:bg-(--color-surface-strong)'
+                      }`}
+                    >
+                      {item.icon}
+                      <span className="max-w-full truncate text-[10px] leading-tight font-medium">
+                        {item.label}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
             </motion.div>
           </>
@@ -220,61 +227,46 @@ function MobileNavigationComponent() {
                 ? location.pathname === '/'
                 : location.pathname.startsWith(item.path);
             return (
-              <motion.button
+              <button
                 key={item.id}
                 onClick={() => handleNavigation(item.path)}
-                className="focus-ring relative flex flex-col items-center gap-0.5 px-3 py-1"
+                className={`focus-ring relative flex flex-col items-center gap-0.5 rounded-xl px-3 py-1 transition-colors active:scale-95 ${
+                  isActive ? 'text-(--color-primary)' : 'text-(--color-muted)'
+                }`}
                 aria-current={isActive ? 'page' : undefined}
                 aria-label={item.label}
-                whileTap={{ scale: 0.92 }}
               >
                 <div
-                  className={`flex h-10 w-10 items-center justify-center rounded-2xl transition-colors ${
-                    isActive
-                      ? 'bg-(--color-primary)/20 text-(--color-primary)'
-                      : 'text-(--color-muted)'
+                  className={`flex h-8 w-8 items-center justify-center rounded-xl transition-colors ${
+                    isActive ? 'bg-(--color-primary)/15' : ''
                   }`}
                 >
                   {item.icon}
                 </div>
-                {isActive && (
-                  <motion.div
-                    layoutId="mobile-nav-indicator"
-                    className="absolute -bottom-0.5 h-1 w-8 rounded-full bg-(--color-primary)"
-                    transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                  />
-                )}
-                <span
-                  className={`text-[10px] font-medium ${
-                    isActive ? 'text-(--color-primary)' : 'text-(--color-muted)'
-                  }`}
-                >
-                  {item.label}
-                </span>
-              </motion.button>
+                <span className="text-[10px] font-medium">{item.label}</span>
+              </button>
             );
           })}
           {/* More button */}
-          <motion.button
+          <button
             ref={moreButtonRef}
             onClick={() => setMoreOpen(!moreOpen)}
-            className="relative flex flex-col items-center gap-0.5 px-3 py-1"
+            className={`focus-ring relative flex flex-col items-center gap-0.5 rounded-xl px-3 py-1 transition-colors active:scale-95 ${
+              moreOpen || isMorePageActive ? 'text-(--color-primary)' : 'text-(--color-muted)'
+            }`}
             aria-expanded={moreOpen}
             aria-label={t('accessibility.moreNavPages', 'More pages')}
             data-testid="mobile-more-btn"
-            whileTap={{ scale: 0.92 }}
           >
             <div
-              className={`flex h-10 w-10 items-center justify-center rounded-2xl transition-colors ${moreOpen ? 'bg-(--color-primary)/20 text-(--color-primary)' : 'text-(--color-muted)'}`}
+              className={`flex h-8 w-8 items-center justify-center rounded-xl transition-colors ${
+                moreOpen || isMorePageActive ? 'bg-(--color-primary)/15' : ''
+              }`}
             >
               <MoreHorizontal className="h-5 w-5" />
             </div>
-            <span
-              className={`text-[10px] font-medium ${moreOpen ? 'text-(--color-primary)' : 'text-(--color-muted)'}`}
-            >
-              {t('nav.more', 'More')}
-            </span>
-          </motion.button>
+            <span className="text-[10px] font-medium">{t('nav.more', 'More')}</span>
+          </button>
         </div>
       </nav>
     </>
