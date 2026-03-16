@@ -1,4 +1,5 @@
 import { motion } from 'motion/react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   BarChart3,
@@ -18,6 +19,10 @@ import {
   Activity,
   Shield,
   ChevronRight,
+  BrainCircuit,
+  TreePine,
+  Car,
+  Plane,
 } from 'lucide-react';
 import {
   AreaChart,
@@ -33,6 +38,8 @@ import {
   Pie,
   Cell,
   Legend,
+  LineChart,
+  Line,
 } from 'recharts';
 import { useAppStoreShallow } from '../store';
 import { PageHeader } from '../components/layout/PageHeader';
@@ -40,6 +47,10 @@ import { PredictiveForecast } from '../components/PredictiveForecast';
 import { ExportAndSharing } from '../components/ExportAndSharing';
 import { calculateCo2Savings } from '../lib/format';
 import { PageCrossLinks } from '../components/ui/PageCrossLinks';
+import { getUbaFactor } from '../lib/co2-report';
+import { runForecast, getForecastableMetrics } from '../lib/ml-forecast';
+import type { ForecastResult } from '../lib/ml-forecast';
+import type { EnergySnapshot } from '../lib/db';
 
 // ─── Deterministic data generators (module-level, pure per call) ──────
 
@@ -95,6 +106,15 @@ function AnalyticsPageComponent() {
   const { t } = useTranslation();
   const energyData = useAppStoreShallow((s) => s.energyData);
 
+  // ─── ML Forecast state ──────────────────────────────────────────────
+  const [selectedMetric, setSelectedMetric] = useState<string>('pvPower');
+  const [forecastResult, setForecastResult] = useState<ForecastResult | null>(null);
+  const [forecastLoading, setForecastLoading] = useState(false);
+
+  // ─── CO₂ Report state ──────────────────────────────────────────────
+  const currentYear = new Date().getFullYear();
+  const ubaFactor = getUbaFactor(currentYear);
+
   // ─── Computed metrics ──────────────────────────────────────────────
   const selfConsumed = Math.min(
     energyData.pvPower,
@@ -147,6 +167,61 @@ function AnalyticsPageComponent() {
       : 0;
   const inverterEfficiency = energyData.pvPower > 0 ? 96.2 + (energyData.pvPower % 100) / 100 : 0;
   const batteryRoundTrip = energyData.batterySoC > 10 ? 92.5 + (energyData.batterySoC % 10) / 5 : 0;
+
+  // ─── ML Forecast runner ──────────────────────────────────────────────
+  const handleRunForecast = () => {
+    setForecastLoading(true);
+    // Generate synthetic historical data for demo forecast
+    const now = Date.now();
+    const syntheticSnapshots: EnergySnapshot[] = Array.from({ length: 72 }, (_, i) => {
+      const hour = new Date(now - (72 - i) * 3_600_000).getHours();
+      const sunFactor = hour >= 6 && hour <= 20 ? Math.sin(((hour - 6) / 14) * Math.PI) : 0;
+      return {
+        timestamp: now - (72 - i) * 3_600_000,
+        gridPower: 500 + Math.sin(i / 4) * 300 + Math.sin(i * 0.7) * 100,
+        pvPower: Math.round(energyData.pvPower * sunFactor * (0.5 + Math.sin(i * 0.3) * 0.3)),
+        batteryPower: Math.sin(i / 6) * 1500,
+        houseLoad: 800 + Math.sin(i / 3) * 400 + (hour >= 17 && hour <= 21 ? 600 : 0),
+        batterySoC: 40 + Math.sin(i / 12) * 30,
+        heatPumpPower: hour >= 6 && hour <= 22 ? 800 + Math.sin(i / 5) * 400 : 200,
+        evPower: hour >= 22 || hour <= 6 ? 3500 : 0,
+        gridVoltage: 230 + Math.sin(i / 8) * 3,
+        batteryVoltage: 51.2 + Math.sin(i / 10) * 1.5,
+        pvYieldToday: energyData.pvYieldToday,
+        priceCurrent: 0.25 + Math.sin(i / 6) * 0.08,
+      };
+    });
+
+    const result = runForecast(syntheticSnapshots, selectedMetric as keyof typeof energyData, 24);
+    setForecastResult(result);
+    setForecastLoading(false);
+  };
+
+  // ─── Monthly CO₂ balance (demo) ─────────────────────────────────────
+  const monthlyCo2 = (() => {
+    const pvKwh = energyData.pvYieldToday * 30; // extrapolate
+    const selfConsumedKwh = pvKwh * (selfRate / 100);
+    const exportedKwh = pvKwh - selfConsumedKwh;
+    const importedKwh = (gridImport / 1000) * 24 * 30;
+    const factorKg = ubaFactor / 1000;
+
+    const gridEmissions = importedKwh * factorKg;
+    const selfSavings = selfConsumedKwh * factorKg;
+    const feedInSavings = exportedKwh * factorKg;
+    const netBalance = gridEmissions - selfSavings - feedInSavings;
+    const totalSaved = selfSavings + feedInSavings;
+
+    return {
+      gridEmissions,
+      selfSavings,
+      feedInSavings,
+      netBalance,
+      totalSaved,
+      treesEquiv: totalSaved / (22 / 12),
+      carKmEquiv: totalSaved / 0.12,
+      flightsEquiv: totalSaved / 250,
+    };
+  })();
 
   // ─── 8 KPI stat cards ──────────────────────────────────────────────
   const kpiCards = [
@@ -784,6 +859,220 @@ function AnalyticsPageComponent() {
           </div>
         </motion.section>
       </div>
+
+      {/* ─── ML Forecast ─────────────────────────────────────────── */}
+      <motion.section
+        className="glass-panel space-y-4 rounded-2xl p-5"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.44 }}
+      >
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <BrainCircuit size={20} className="text-purple-400" aria-hidden="true" />
+            <div>
+              <h3 className="fluid-text-base font-semibold text-(--color-text)">
+                {t('analytics.mlForecastTitle')}
+              </h3>
+              <p className="text-xs text-(--color-muted)">{t('analytics.mlForecastSubtitle')}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <select
+              value={selectedMetric}
+              onChange={(e) => setSelectedMetric(e.target.value)}
+              className="focus-ring rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-(--color-text)"
+              aria-label={t('analytics.mlForecastSelectMetric')}
+            >
+              {getForecastableMetrics().map((m) => (
+                <option key={m.key} value={m.key}>
+                  {m.label} ({m.unit})
+                </option>
+              ))}
+            </select>
+            <button
+              onClick={handleRunForecast}
+              disabled={forecastLoading}
+              className="focus-ring flex items-center gap-1.5 rounded-lg bg-purple-500/20 px-3 py-1.5 text-xs font-medium text-purple-300 transition hover:bg-purple-500/30 disabled:opacity-50"
+            >
+              <BrainCircuit size={14} aria-hidden="true" />
+              {forecastLoading ? '…' : t('analytics.mlForecastRun')}
+            </button>
+          </div>
+        </div>
+
+        {forecastResult && (
+          <div className="space-y-3">
+            {/* Accuracy badges */}
+            <div className="flex flex-wrap gap-2">
+              <span className="rounded-full bg-purple-500/15 px-2.5 py-1 text-[10px] font-medium text-purple-300">
+                {t('analytics.mlForecastModel')}: {forecastResult.model}
+              </span>
+              <span className="rounded-full bg-emerald-500/15 px-2.5 py-1 text-[10px] font-medium text-emerald-300">
+                R² {(forecastResult.accuracy.r2 * 100).toFixed(1)}%
+              </span>
+              <span className="rounded-full bg-blue-400/15 px-2.5 py-1 text-[10px] font-medium text-blue-300">
+                MAPE {forecastResult.accuracy.mape.toFixed(1)}%
+              </span>
+              <span className="rounded-full bg-yellow-400/15 px-2.5 py-1 text-[10px] font-medium text-yellow-300">
+                RMSE {forecastResult.accuracy.rmse.toFixed(0)} {forecastResult.unit}
+              </span>
+            </div>
+
+            {/* Forecast chart */}
+            <div className="h-48">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart
+                  data={forecastResult.points.map((p) => ({
+                    time: new Date(p.timestamp).getHours() + ':00',
+                    value: Math.round(p.value),
+                    lower: Math.round(p.lower),
+                    upper: Math.round(p.upper),
+                  }))}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+                  <XAxis dataKey="time" tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 10 }} />
+                  <YAxis tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 10 }} />
+                  <Tooltip
+                    contentStyle={{
+                      background: 'rgba(0,0,0,0.8)',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      borderRadius: 8,
+                      fontSize: 11,
+                    }}
+                  />
+                  <Area dataKey="upper" stroke="none" fill="rgba(168,85,247,0.1)" />
+                  <Area dataKey="lower" stroke="none" fill="rgba(168,85,247,0.0)" />
+                  <Line
+                    type="monotone"
+                    dataKey="value"
+                    stroke="#a855f7"
+                    strokeWidth={2}
+                    dot={false}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="upper"
+                    stroke="rgba(168,85,247,0.3)"
+                    strokeWidth={1}
+                    strokeDasharray="3 3"
+                    dot={false}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="lower"
+                    stroke="rgba(168,85,247,0.3)"
+                    strokeWidth={1}
+                    strokeDasharray="3 3"
+                    dot={false}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+            <p className="text-center text-[10px] text-(--color-muted)">
+              {t('analytics.mlForecastConfidence')} · {forecastResult.training.samplesUsed}{' '}
+              {t('analytics.mlForecastDataPoints')}
+            </p>
+          </div>
+        )}
+
+        {!forecastResult && (
+          <div className="flex flex-col items-center justify-center gap-2 py-8 text-center text-(--color-muted)">
+            <BrainCircuit size={32} className="opacity-30" aria-hidden="true" />
+            <p className="text-xs">{t('analytics.mlForecastNoData')}</p>
+          </div>
+        )}
+      </motion.section>
+
+      {/* ─── CO₂ Report ───────────────────────────────────────────── */}
+      <motion.section
+        className="glass-panel space-y-4 rounded-2xl p-5"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.45 }}
+      >
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <TreePine size={20} className="text-emerald-400" aria-hidden="true" />
+            <div>
+              <h3 className="fluid-text-base font-semibold text-(--color-text)">
+                {t('analytics.co2ReportTitle')}
+              </h3>
+              <p className="text-xs text-(--color-muted)">{t('analytics.co2ReportSubtitle')}</p>
+            </div>
+          </div>
+          <span className="rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-medium text-emerald-300">
+            UBA {currentYear}: {ubaFactor} g CO₂/kWh
+          </span>
+        </div>
+
+        {/* CO₂ KPI cards */}
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            {
+              label: t('analytics.co2GridEmissions'),
+              value: monthlyCo2.gridEmissions,
+              color: 'text-red-400',
+              icon: '⚡',
+            },
+            {
+              label: t('analytics.co2SelfSavings'),
+              value: monthlyCo2.selfSavings,
+              color: 'text-emerald-400',
+              icon: '☀️',
+            },
+            {
+              label: t('analytics.co2FeedInSavings'),
+              value: monthlyCo2.feedInSavings,
+              color: 'text-blue-400',
+              icon: '🔌',
+            },
+            {
+              label: t('analytics.co2NetBalance'),
+              value: monthlyCo2.netBalance,
+              color: monthlyCo2.netBalance <= 0 ? 'text-emerald-400' : 'text-red-400',
+              icon: monthlyCo2.netBalance <= 0 ? '✅' : '⚠️',
+            },
+          ].map((item) => (
+            <div key={item.label} className="rounded-xl bg-white/5 p-3 text-center">
+              <span className="text-lg">{item.icon}</span>
+              <p className={`fluid-text-lg font-bold ${item.color}`}>
+                {Math.abs(item.value).toFixed(1)} kg
+              </p>
+              <p className="text-[10px] text-(--color-muted)">{item.label}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Equivalences */}
+        {monthlyCo2.totalSaved > 0 && (
+          <div className="flex flex-wrap items-center justify-center gap-4 rounded-xl bg-emerald-500/5 px-4 py-3">
+            <div className="flex items-center gap-1.5">
+              <TreePine size={16} className="text-emerald-400" aria-hidden="true" />
+              <span className="text-xs text-(--color-text)">
+                <strong>{monthlyCo2.treesEquiv.toFixed(1)}</strong> {t('analytics.co2Trees')}
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Car size={16} className="text-blue-400" aria-hidden="true" />
+              <span className="text-xs text-(--color-text)">
+                <strong>{monthlyCo2.carKmEquiv.toFixed(0)}</strong> {t('analytics.co2CarKm')}
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Plane size={16} className="text-yellow-400" aria-hidden="true" />
+              <span className="text-xs text-(--color-text)">
+                <strong>{monthlyCo2.flightsEquiv.toFixed(2)}</strong> {t('analytics.co2Flights')}
+              </span>
+            </div>
+          </div>
+        )}
+
+        <p className="text-center text-[10px] text-(--color-muted)">
+          {monthlyCo2.netBalance <= 0 ? t('analytics.co2NetSaver') : t('analytics.co2NetEmitter')} ·{' '}
+          {t('analytics.co2ReportMonthly')}
+        </p>
+      </motion.section>
 
       {/* ─── Predictive Forecast ──────────────────────────────────── */}
       <motion.div

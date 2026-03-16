@@ -141,6 +141,20 @@ class NexusDatabase extends Dexie {
       adapterCredentials: 'adapterId',
       shareLinks: 'id, token, expiresAt, active',
     });
+
+    // Version 7: Extended history retention (50k snapshots) for ML forecast & CO₂ reports
+    this.version(7).stores({
+      energySnapshots: '++id, timestamp',
+      sankeySnapshots: '++id, timestamp',
+      offlineActions: '++id, timestamp, status, type',
+      cacheMetadata: 'key, timestamp, expiresAt, type',
+      errorLogs: '++id, timestamp, severity',
+      settings: 'key',
+      aiKeys: 'provider',
+      commandAudit: '++id, timestamp, commandType, status',
+      adapterCredentials: 'adapterId',
+      shareLinks: 'id, token, expiresAt, active',
+    });
   }
 }
 
@@ -152,11 +166,13 @@ export const nexusDb = new NexusDatabase();
 export async function persistSnapshot(snapshot: EnergyData) {
   await nexusDb.energySnapshots.add({ ...snapshot, timestamp: Date.now() });
 
+  // Extended retention: 50 000 snapshots ≈ 30 days at 1 snapshot/min
+  const MAX_SNAPSHOTS = 50_000;
   const count = await nexusDb.energySnapshots.count();
-  if (count > 1000) {
+  if (count > MAX_SNAPSHOTS) {
     const oldest = await nexusDb.energySnapshots
       .orderBy('timestamp')
-      .limit(count - 1000)
+      .limit(count - MAX_SNAPSHOTS)
       .primaryKeys();
     await nexusDb.energySnapshots.bulkDelete(oldest);
   }
