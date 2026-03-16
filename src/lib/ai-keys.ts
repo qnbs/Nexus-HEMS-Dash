@@ -1,7 +1,9 @@
 /**
  * Encrypted AI key storage using Dexie + Web Crypto API.
  * Keys are encrypted with AES-GCM 256-bit before storage.
- * A device-bound passphrase is derived on first use and stored in sessionStorage.
+ * A device-bound passphrase is derived on first use and held in-memory only.
+ * The passphrase is never written to sessionStorage, localStorage, or any
+ * persistent / inspectable Web Storage API — it is discarded on page unload.
  */
 
 import { nexusDb } from './db';
@@ -63,17 +65,18 @@ export const AI_PROVIDERS: Record<AIProvider, AIProviderConfig> = {
 
 /**
  * Gets or creates a device-bound passphrase for this session.
- * The passphrase is kept in sessionStorage (cleared on tab close).
+ * The passphrase is held in a module-scope closure (in-memory only),
+ * never written to sessionStorage or any other Web Storage API.
+ * It is automatically discarded when the page is unloaded / tab is closed.
  */
+let _sessionPassphrase: string | null = null;
+
 function getSessionPassphrase(): string {
-  const key = 'nexus-hems-session-key';
-  let passphrase = sessionStorage.getItem(key);
-  if (!passphrase) {
+  if (!_sessionPassphrase) {
     const array = crypto.getRandomValues(new Uint8Array(32));
-    passphrase = btoa(String.fromCharCode(...array));
-    sessionStorage.setItem(key, passphrase);
+    _sessionPassphrase = btoa(String.fromCharCode(...array));
   }
-  return passphrase;
+  return _sessionPassphrase;
 }
 
 /**

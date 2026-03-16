@@ -7,19 +7,7 @@ vi.mock('../lib/crypto', () => ({
   decrypt: vi.fn(async (cipher: string, _pass: string) => cipher.replace('ENC:', '')),
 }));
 
-// Mock sessionStorage for passphrase generation
-const sessionStore: Record<string, string> = {};
-Object.defineProperty(globalThis, 'sessionStorage', {
-  value: {
-    getItem: (k: string) => sessionStore[k] ?? null,
-    setItem: (k: string, v: string) => {
-      sessionStore[k] = v;
-    },
-    removeItem: (k: string) => {
-      delete sessionStore[k];
-    },
-  },
-});
+// Passphrase is now held in-memory (module-scope variable), no sessionStorage mock needed.
 
 import { saveAIKey, getAIKey, removeAIKey, listAIKeys, AI_PROVIDERS } from '../lib/ai-keys';
 import { nexusDb } from '../lib/db';

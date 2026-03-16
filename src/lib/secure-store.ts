@@ -8,7 +8,7 @@
  *   1. Per-session master key derived via PBKDF2 from a random passphrase
  *   2. Each adapter config encrypted individually with unique IV
  *   3. Credentials NEVER stored in plaintext — only encrypted blobs in Dexie
- *   4. Session passphrase cleared on tab close (sessionStorage)
+ *   4. Session passphrase held in-memory only (cleared on page unload)
  *
  * Supports: mTLS client certs/keys, auth tokens, MQTT passwords,
  *           EEBUS SHIP SKI fingerprints, OCPP security profiles.
@@ -47,16 +47,18 @@ export interface EncryptedAdapterCredential {
 
 // ─── Session Passphrase ──────────────────────────────────────────────
 
-const SESSION_KEY = 'nexus-hems-vault-key';
+/**
+ * Module-scope vault passphrase — never written to sessionStorage or any
+ * other Web Storage API. Automatically discarded on page unload / tab close.
+ */
+let _vaultPassphrase: string | null = null;
 
 function getVaultPassphrase(): string {
-  let passphrase = sessionStorage.getItem(SESSION_KEY);
-  if (!passphrase) {
+  if (!_vaultPassphrase) {
     const array = crypto.getRandomValues(new Uint8Array(32));
-    passphrase = btoa(String.fromCharCode(...array));
-    sessionStorage.setItem(SESSION_KEY, passphrase);
+    _vaultPassphrase = btoa(String.fromCharCode(...array));
   }
-  return passphrase;
+  return _vaultPassphrase;
 }
 
 // ─── Public API ──────────────────────────────────────────────────────
@@ -152,5 +154,5 @@ export async function mergeCredentialsIntoConfig(
  */
 export async function clearVault(): Promise<void> {
   await nexusDb.adapterCredentials.clear();
-  sessionStorage.removeItem(SESSION_KEY);
+  _vaultPassphrase = null;
 }
