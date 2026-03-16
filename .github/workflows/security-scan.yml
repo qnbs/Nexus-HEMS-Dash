@@ -9,9 +9,7 @@ on:
     # Weekly full scan every Monday at 06:00 UTC
     - cron: '0 6 * * 1'
 
-permissions:
-  contents: read
-  security-events: write
+permissions: read-all
 
 jobs:
   # ──────────────────────────────────────────────
@@ -20,6 +18,8 @@ jobs:
   anti-trojan-source:
     name: Anti-Trojan-Source Scan
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
@@ -44,6 +44,8 @@ jobs:
   gitleaks:
     name: Gitleaks Secret Scan
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
@@ -61,6 +63,9 @@ jobs:
   semgrep:
     name: Semgrep SAST
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
     container:
       image: semgrep/semgrep
     steps:
@@ -117,6 +122,9 @@ jobs:
   snyk:
     name: Snyk Security Scan
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
     if: ${{ vars.SNYK_ENABLED == 'true' }}
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
@@ -151,12 +159,15 @@ jobs:
   socket:
     name: Socket.dev Dependency Analysis
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     if: ${{ vars.SOCKET_ENABLED == 'true' }}
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Socket Security Analysis
-        uses: SocketDev/socket-security-action@v1
+        # Note: SocketDev action repo is private — cannot SHA-pin
+        uses: SocketDev/socket-security-action@v1 # private repo, cannot SHA-pin
         with:
           api_key: ${{ secrets.SOCKET_SECURITY_API_KEY }}
 
@@ -166,6 +177,8 @@ jobs:
   aikido:
     name: Aikido Safe Chain
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     if: ${{ vars.AIKIDO_ENABLED == 'true' }}
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
@@ -180,7 +193,8 @@ jobs:
         run: npm ci
 
       - name: Aikido Security Scan
-        uses: AikidoSec/github-actions-wf@v1.0.17
+        # Note: AikidoSec action repo is private — cannot SHA-pin
+        uses: AikidoSec/github-actions-wf@v1.0.17 # private repo, cannot SHA-pin
         with:
           secret-key: ${{ secrets.AIKIDO_SECRET_KEY }}
           fail-on-timeout: false
@@ -192,6 +206,9 @@ jobs:
   codeql:
     name: CodeQL Analysis
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
@@ -234,6 +251,9 @@ jobs:
   trivy:
     name: Trivy Security Scan
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 

@@ -195,11 +195,23 @@ async function startServer() {
   app.use(
     helmet({
       contentSecurityPolicy: isDev
-        ? false // Vite dev server requires eval() for HMR
+        ? {
+            directives: {
+              defaultSrc: ["'self'"],
+              scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+              styleSrc: ["'self'", "'unsafe-inline'"],
+              imgSrc: ["'self'", 'data:', 'blob:'],
+              connectSrc: ["'self'", 'ws:', 'wss:', 'http:', 'https:'],
+              fontSrc: ["'self'"],
+              objectSrc: ["'none'"],
+              baseUri: ["'self'"],
+              formAction: ["'self'"],
+            },
+          }
         : {
             directives: {
               defaultSrc: ["'self'"],
-              scriptSrc: ["'self'", "'unsafe-inline'"],
+              scriptSrc: ["'self'"],
               styleSrc: ["'self'", "'unsafe-inline'"],
               imgSrc: ["'self'", 'data:', 'blob:'],
               connectSrc: [
@@ -221,7 +233,7 @@ async function startServer() {
               formAction: ["'self'"],
             },
           },
-      crossOriginEmbedderPolicy: false, // Required for PWA service worker
+      crossOriginEmbedderPolicy: { policy: 'credentialless' },
       hsts: { maxAge: 31536000, includeSubDomains: true, preload: true },
       referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
       xFrameOptions: { action: 'deny' },

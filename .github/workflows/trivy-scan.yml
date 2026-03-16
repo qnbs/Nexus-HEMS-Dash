@@ -9,9 +9,7 @@ on:
     # Daily at 04:00 UTC
     - cron: '0 4 * * *'
 
-permissions:
-  contents: read
-  security-events: write
+permissions: read-all
 
 jobs:
   # ──────────────────────────────────────────────
@@ -20,6 +18,9 @@ jobs:
   trivy-fs:
     name: Filesystem Scan
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
@@ -58,6 +59,9 @@ jobs:
   trivy-image:
     name: Docker Image Scan
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4

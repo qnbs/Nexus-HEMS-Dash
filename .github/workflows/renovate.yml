@@ -16,21 +16,22 @@ on:
           - 'true'
           - 'false'
 
-permissions:
-  contents: write
-  pull-requests: write
-  issues: write
+permissions: read-all
 
 jobs:
   renovate:
     name: Renovate
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
     if: github.repository == 'qnbs/Nexus-HEMS-Dash'
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Self-hosted Renovate
-        uses: renovatebot/github-action@v42.1.0
+        uses: renovatebot/github-action@87c405b9750f1b6affae06311395b50e3882d54f # v42.0.6
         with:
           configurationFile: .renovaterc.json
           token: ${{ secrets.RENOVATE_TOKEN }}

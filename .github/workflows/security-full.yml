@@ -10,9 +10,7 @@ on:
     - cron: '0 5 * * 1'
   workflow_dispatch:
 
-permissions:
-  contents: read
-  security-events: write
+permissions: read-all
 
 jobs:
   # ════════════════════════════════════════════════════════════════
@@ -22,6 +20,7 @@ jobs:
     name: 'CodeQL Analysis'
     runs-on: ubuntu-latest
     permissions:
+      contents: read
       security-events: write
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
@@ -46,6 +45,8 @@ jobs:
   gitleaks:
     name: 'Gitleaks Secret Scan'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
@@ -63,6 +64,9 @@ jobs:
   trivy:
     name: 'Trivy Security Scan'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
@@ -101,6 +105,9 @@ jobs:
   semgrep:
     name: 'Semgrep SAST'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
     container:
       image: semgrep/semgrep
     steps:

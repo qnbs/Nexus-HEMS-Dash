@@ -5,11 +5,12 @@ on:
   release:
     types: [published]
 
-permissions:
-  contents: write # required for release uploads
+permissions: read-all
 
 jobs:
   build-tauri:
+    permissions:
+      contents: write
     strategy:
       fail-fast: false
       matrix:
