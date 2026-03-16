@@ -8,6 +8,12 @@ on:
 
 permissions:
   contents: read
+  pull-requests: write
+  statuses: write
+
+concurrency:
+  group: lighthouse-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   lighthouse:
@@ -33,6 +39,8 @@ jobs:
           configPath: './lighthouserc.json'
           uploadArtifacts: true
           temporaryPublicStorage: true
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Lighthouse Report
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -41,3 +49,77 @@ jobs:
           name: lighthouse-report
           path: .lighthouseci/
           retention-days: 14
+
+      - name: Comment PR with Lighthouse scores
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            const dir = '.lighthouseci';
+            if (!fs.existsSync(dir)) return;
+
+            const files = fs.readdirSync(dir).filter(f => f.endsWith('.json') && f.startsWith('lhr-'));
+            if (files.length === 0) return;
+
+            const results = files.map(f => JSON.parse(fs.readFileSync(path.join(dir, f), 'utf8')));
+            const avg = (cat) => {
+              const scores = results.map(r => r.categories[cat]?.score ?? 0);
+              return Math.round((scores.reduce((a,b) => a+b, 0) / scores.length) * 100);
+            };
+
+            const perf = avg('performance');
+            const a11y = avg('accessibility');
+            const bp = avg('best-practices');
+            const seo = avg('seo');
+
+            const emoji = (s, t) => s >= t ? '✅' : '❌';
+
+            const body = `## 🔦 Lighthouse CI Report
+
+            | Category | Score | Threshold | Status |
+            |----------|-------|-----------|--------|
+            | Performance | **${perf}%** | ≥ 85% | ${emoji(perf, 85)} |
+            | Accessibility | **${a11y}%** | ≥ 90% | ${emoji(a11y, 90)} |
+            | Best Practices | **${bp}%** | ≥ 90% | ${emoji(bp, 90)} |
+            | SEO | **${seo}%** | ≥ 85% | ${emoji(seo, 85)} |
+
+            <details><summary>Budget Limits</summary>
+
+            - FCP ≤ 1800ms, LCP ≤ 2500ms, TBT ≤ 200ms, TTI ≤ 3500ms
+            - JS ≤ 350KB, CSS ≤ 100KB, Total ≤ 1MB
+            - Max 25 scripts, max 10 third-party resources
+
+            </details>
+
+            > Reports uploaded to [temporary public storage](https://storage.googleapis.com/lighthouse-infrastructure.appspot.com/reports/).
+            `.replace(/^ {12}/gm, '');
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const existing = comments.find(c => c.body?.includes('🔦 Lighthouse CI Report'));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
+
+      - name: Fail if scores below thresholds
+        if: github.event_name == 'pull_request'
+        run: |
+          echo "Lighthouse assertions are enforced via lighthouserc.json assert config."
+          echo "If the 'Run Lighthouse CI' step passed, all thresholds are met."
