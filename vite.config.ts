@@ -37,52 +37,109 @@ export default defineConfig(({ mode }) => {
           navigateFallbackAllowlist: [/^(?!\/__).*/],
           navigationPreload: true,
           runtimeCaching: [
+            // ── Weather: Open-Meteo (free, no auth) ──
+            // StaleWhileRevalidate → instant offline, revalidate in background.
+            // 48h expiration so predictive AI has forecast data even offline.
             {
               urlPattern: /^https:\/\/api\.open-meteo\.com\//,
               handler: 'StaleWhileRevalidate',
               options: {
                 cacheName: 'weather-api',
-                expiration: { maxEntries: 50, maxAgeSeconds: 86_400 },
+                expiration: { maxEntries: 80, maxAgeSeconds: 172_800 },
                 cacheableResponse: { statuses: [0, 200] },
               },
             },
+            // ── Tariffs: Tibber GraphQL ──
+            // NetworkFirst with 6h offline fallback (prices update hourly,
+            // but stale prices are better than no prices offline).
             {
               urlPattern: /^https:\/\/api\.tibber\.com\//,
               handler: 'NetworkFirst',
               options: {
                 cacheName: 'tibber-api',
-                expiration: { maxEntries: 50, maxAgeSeconds: 3_600 },
+                expiration: { maxEntries: 80, maxAgeSeconds: 21_600 },
                 networkTimeoutSeconds: 8,
                 cacheableResponse: { statuses: [0, 200] },
               },
             },
+            // ── Tariffs: aWATTar REST (DE + AT) ──
+            // Day-ahead prices published once daily → 12h cache is safe.
             {
               urlPattern: /^https:\/\/api\.awattar\.(de|at)\//,
               handler: 'NetworkFirst',
               options: {
                 cacheName: 'awattar-api',
-                expiration: { maxEntries: 50, maxAgeSeconds: 3_600 },
+                expiration: { maxEntries: 80, maxAgeSeconds: 43_200 },
                 networkTimeoutSeconds: 8,
                 cacheableResponse: { statuses: [0, 200] },
               },
             },
+            // ── AI: Google Gemini ──
             {
               urlPattern: /^https:\/\/generativelanguage\.googleapis\.com\//,
               handler: 'NetworkFirst',
               options: {
                 cacheName: 'gemini-api',
-                expiration: { maxEntries: 20, maxAgeSeconds: 3_600 },
-                networkTimeoutSeconds: 10,
+                expiration: { maxEntries: 40, maxAgeSeconds: 43_200 },
+                networkTimeoutSeconds: 15,
+                cacheableResponse: { statuses: [0, 200] },
               },
             },
+            // ── AI: OpenAI ──
+            {
+              urlPattern: /^https:\/\/api\.openai\.com\/v1\//,
+              handler: 'NetworkFirst',
+              options: {
+                cacheName: 'openai-api',
+                expiration: { maxEntries: 40, maxAgeSeconds: 43_200 },
+                networkTimeoutSeconds: 15,
+                cacheableResponse: { statuses: [0, 200] },
+              },
+            },
+            // ── AI: Anthropic ──
+            {
+              urlPattern: /^https:\/\/api\.anthropic\.com\/v1\//,
+              handler: 'NetworkFirst',
+              options: {
+                cacheName: 'anthropic-api',
+                expiration: { maxEntries: 40, maxAgeSeconds: 43_200 },
+                networkTimeoutSeconds: 15,
+                cacheableResponse: { statuses: [0, 200] },
+              },
+            },
+            // ── AI: xAI (Grok) ──
+            {
+              urlPattern: /^https:\/\/api\.x\.ai\/v1\//,
+              handler: 'NetworkFirst',
+              options: {
+                cacheName: 'xai-api',
+                expiration: { maxEntries: 40, maxAgeSeconds: 43_200 },
+                networkTimeoutSeconds: 15,
+                cacheableResponse: { statuses: [0, 200] },
+              },
+            },
+            // ── AI: Groq ──
+            {
+              urlPattern: /^https:\/\/api\.groq\.com\//,
+              handler: 'NetworkFirst',
+              options: {
+                cacheName: 'groq-api',
+                expiration: { maxEntries: 40, maxAgeSeconds: 43_200 },
+                networkTimeoutSeconds: 15,
+                cacheableResponse: { statuses: [0, 200] },
+              },
+            },
+            // ── Fonts: Google Fonts (immutable) ──
             {
               urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\//,
               handler: 'CacheFirst',
               options: {
                 cacheName: 'google-fonts',
                 expiration: { maxEntries: 30, maxAgeSeconds: 31_536_000 },
+                cacheableResponse: { statuses: [0, 200] },
               },
             },
+            // ── Static assets: images ──
             {
               urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|avif|ico)$/,
               handler: 'CacheFirst',
@@ -92,14 +149,17 @@ export default defineConfig(({ mode }) => {
                 cacheableResponse: { statuses: [0, 200] },
               },
             },
+            // ── Static assets: web fonts ──
             {
               urlPattern: /\.(?:woff2?|ttf|otf|eot)$/,
               handler: 'CacheFirst',
               options: {
                 cacheName: 'fonts',
                 expiration: { maxEntries: 30, maxAgeSeconds: 31_536_000 },
+                cacheableResponse: { statuses: [0, 200] },
               },
             },
+            // ── PWA manifest ──
             {
               urlPattern: /\/manifest\.json$/,
               handler: 'StaleWhileRevalidate',
