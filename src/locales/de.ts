@@ -453,6 +453,11 @@ export const de = {
     updateHint: 'Benachrichtigen, wenn eine neue App-Version verfügbar ist',
     debugMode: 'Debug-Modus',
     debugHint: 'Detaillierte Logs und Entwickler-Tools anzeigen',
+    i18nInspector: 'i18n-Inspector',
+    i18nInspectorHint:
+      'Übersetzungsschlüssel statt Werte anzeigen — fehlende Keys werden in der Konsole geloggt',
+    i18nInspectorActivate: 'Inspector aktivieren (Neuladen erforderlich)',
+    i18nInspectorDeactivate: 'Inspector deaktivieren (Neuladen erforderlich)',
     experimentalFeatures: 'Experimentelle Features',
     experimentalHint: 'Beta-Funktionen aktivieren, die instabil sein können',
     performanceMode: 'Leistungsmodus',

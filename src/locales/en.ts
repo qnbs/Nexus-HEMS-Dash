@@ -450,6 +450,11 @@ export const en = {
     updateHint: 'Notify when a new app version is available',
     debugMode: 'Debug mode',
     debugHint: 'Show detailed logs and developer tools',
+    i18nInspector: 'i18n Inspector',
+    i18nInspectorHint:
+      'Show translation keys instead of values — missing keys are logged to the console',
+    i18nInspectorActivate: 'Activate Inspector (reload required)',
+    i18nInspectorDeactivate: 'Deactivate Inspector (reload required)',
     experimentalFeatures: 'Experimental features',
     experimentalHint: 'Enable beta features that may be unstable',
     performanceMode: 'Performance mode',

@@ -2685,6 +2685,36 @@ export function Settings() {
                       <div className="flex items-center justify-between rounded-xl border border-(--color-border) bg-(--color-surface) p-4">
                         <div>
                           <p className="text-sm font-medium">
+                            {t('settings.i18nInspector', 'i18n Inspector')}
+                          </p>
+                          <p className="text-xs text-(--color-muted)">
+                            {t(
+                              'settings.i18nInspectorHint',
+                              'Show translation keys instead of values',
+                            )}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          className="rounded-lg border border-(--color-border) bg-(--color-surface) px-3 py-1.5 text-xs font-medium transition-colors hover:bg-(--color-surface-hover)"
+                          onClick={() => {
+                            const current = localStorage.getItem('i18n-inspector');
+                            if (current === 'true') {
+                              localStorage.removeItem('i18n-inspector');
+                            } else {
+                              localStorage.setItem('i18n-inspector', 'true');
+                            }
+                            window.location.reload();
+                          }}
+                        >
+                          {localStorage.getItem('i18n-inspector') === 'true'
+                            ? t('settings.i18nInspectorDeactivate', 'Deactivate Inspector')
+                            : t('settings.i18nInspectorActivate', 'Activate Inspector')}
+                        </button>
+                      </div>
+                      <div className="flex items-center justify-between rounded-xl border border-(--color-border) bg-(--color-surface) p-4">
+                        <div>
+                          <p className="text-sm font-medium">
                             {t('settings.experimentalFeatures', 'Experimental features')}
                           </p>
                           <p className="text-xs text-(--color-muted)">

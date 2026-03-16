@@ -7,6 +7,13 @@ import { initReactI18next } from 'react-i18next';
 // in the sidebar, header, and every component that renders on first paint.
 import { de } from './locales/de';
 
+// i18next Inspector Mode — activate via localStorage:
+//   localStorage.setItem('i18n-inspector', 'true')
+// Shows translation keys instead of values (e.g. "settings.victronIp")
+// and logs missing keys to console. Useful for verifying full coverage.
+const inspectorMode =
+  typeof window !== 'undefined' && window.localStorage.getItem('i18n-inspector') === 'true';
+
 void i18n
   .use(LanguageDetector)
   .use(initReactI18next)
@@ -28,6 +35,21 @@ void i18n
       caches: ['localStorage'],
       lookupLocalStorage: 'nexus-hems-language',
     },
+
+    // Inspector: show raw keys instead of translated values
+    ...(inspectorMode && {
+      parseMissingKeyHandler: (key: string) => `[MISSING] ${key}`,
+      appendNamespaceToMissingKey: true,
+    }),
+
+    // Debug: log missing keys + init info in development or inspector mode
+    debug: inspectorMode || import.meta.env.DEV,
+    saveMissing: inspectorMode,
+    missingKeyHandler: inspectorMode
+      ? (_lngs: readonly string[], _ns: string, key: string) => {
+          console.warn(`[i18n-inspector] Missing key: ${key}`);
+        }
+      : undefined,
   })
   .then(async () => {
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'de';

@@ -681,3 +681,13 @@ In IndexedDB (Dexie.js), encrypted with AES-GCM 256-bit. See `src/lib/ai-keys.ts
 2. Add validation in `src/core/command-safety.ts`
 3. Handle in your adapter's `doSendCommand()`
 4. Optionally add danger-confirm classification
+
+---
+
+## Related Documentation
+
+- **[Security Architecture](./Security-Architecture.md)** — Threat model, encryption, audit, incident response
+- **[Deployment Checklist](./Deployment-Checklist.md)** — TLS, Reverse-Proxy, Docker, Failover
+- **[DESIGN-SYSTEM.md](../DESIGN-SYSTEM.md)** — Neo-Energy Cyber-Glassmorphism patterns
+- **[CONTRIBUTING.md](../CONTRIBUTING.md)** — Contribution guidelines
+- **[CHANGELOG.md](../CHANGELOG.md)** — Release history (automated via semantic-release)
