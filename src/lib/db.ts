@@ -3,6 +3,7 @@ import Dexie, { type Table } from 'dexie';
 import type { EnergyData, StoredSettings } from '../types';
 import type { CommandAuditEntry } from '../core/command-safety';
 import type { EncryptedAdapterCredential } from './secure-store';
+import type { ShareLink } from './auth/auth-provider';
 
 export interface EnergySnapshot extends EnergyData {
   id?: number;
@@ -70,6 +71,7 @@ class NexusDatabase extends Dexie {
   aiKeys!: Table<AIKeyRecord, string>;
   commandAudit!: Table<CommandAuditEntry, number>;
   adapterCredentials!: Table<EncryptedAdapterCredential, string>;
+  shareLinks!: Table<ShareLink, string>;
 
   constructor() {
     super('nexus-hems-dash');
@@ -124,6 +126,20 @@ class NexusDatabase extends Dexie {
       aiKeys: 'provider',
       commandAudit: '++id, timestamp, commandType, status',
       adapterCredentials: 'adapterId',
+    });
+
+    // Version 6: Add share links for time-limited QR sharing
+    this.version(6).stores({
+      energySnapshots: '++id, timestamp',
+      sankeySnapshots: '++id, timestamp',
+      offlineActions: '++id, timestamp, status, type',
+      cacheMetadata: 'key, timestamp, expiresAt, type',
+      errorLogs: '++id, timestamp, severity',
+      settings: 'key',
+      aiKeys: 'provider',
+      commandAudit: '++id, timestamp, commandType, status',
+      adapterCredentials: 'adapterId',
+      shareLinks: 'id, token, expiresAt, active',
     });
   }
 }
@@ -364,5 +380,59 @@ export async function clearAllData() {
     nexusDb.offlineActions.clear(),
     nexusDb.cacheMetadata.clear(),
     nexusDb.errorLogs.clear(),
+    nexusDb.shareLinks.clear(),
   ]);
+}
+
+// ─── Share Link Persistence ─────────────────────────────────────────
+
+/**
+ * Save a share link to IndexedDB (for offline-first providers like Keycloak)
+ */
+export async function persistShareLink(link: ShareLink): Promise<void> {
+  await nexusDb.shareLinks.put(link);
+}
+
+/**
+ * Get all active, non-expired share links
+ */
+export async function getActiveShareLinks(): Promise<ShareLink[]> {
+  const now = Date.now();
+  return nexusDb.shareLinks
+    .where('active')
+    .equals(1) // Dexie boolean indexing
+    .and((link) => link.expiresAt > now)
+    .toArray();
+}
+
+/**
+ * Validate a share token against the local DB
+ */
+export async function validateLocalShareToken(
+  token: string,
+): Promise<{ valid: boolean; permissions?: 'view' | 'control'; expiresAt?: number }> {
+  const link = await nexusDb.shareLinks.where('token').equals(token).first();
+  if (!link || !link.active) return { valid: false };
+  if (link.expiresAt < Date.now()) return { valid: false };
+  if (link.maxUses > 0 && link.useCount >= link.maxUses) return { valid: false };
+
+  // Increment use count
+  await nexusDb.shareLinks.update(link.id, { useCount: link.useCount + 1 });
+
+  return { valid: true, permissions: link.permissions, expiresAt: link.expiresAt };
+}
+
+/**
+ * Revoke a share link by ID
+ */
+export async function revokeLocalShareLink(linkId: string): Promise<void> {
+  await nexusDb.shareLinks.update(linkId, { active: false });
+}
+
+/**
+ * Clean expired share links
+ */
+export async function cleanExpiredShareLinks(): Promise<void> {
+  const now = Date.now();
+  await nexusDb.shareLinks.where('expiresAt').below(now).delete();
 }

@@ -75,3 +75,28 @@ interface SyncManager {
 interface ServiceWorkerRegistration {
   sync: SyncManager;
 }
+
+// ── Optional Auth SDK modules (lazy-loaded when configured) ─────────
+
+declare module '@supabase/supabase-js' {
+  export function createClient(url: string, anonKey: string): unknown;
+}
+
+declare module 'keycloak-js' {
+  export default class Keycloak {
+    constructor(config: { url: string; realm: string; clientId: string });
+    init(options: Record<string, unknown>): Promise<boolean>;
+    login(options?: Record<string, unknown>): Promise<void>;
+    logout(options?: Record<string, unknown>): Promise<void>;
+    register(options?: Record<string, unknown>): Promise<void>;
+    updateToken(minValidity: number): Promise<boolean>;
+    token?: string;
+    refreshToken?: string;
+    tokenParsed?: Record<string, unknown>;
+    authenticated?: boolean;
+    subject?: string;
+    onTokenExpired?: (() => void) | undefined;
+    onAuthSuccess?: (() => void) | undefined;
+    onAuthLogout?: (() => void) | undefined;
+  }
+}
