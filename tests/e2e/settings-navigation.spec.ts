@@ -86,7 +86,7 @@ test.describe('Mobile Navigation', () => {
 
   test('should toggle mobile bottom sheet via More button', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 });
-    await page.goto('/', { waitUntil: 'networkidle' });
+    await page.goto('/');
 
     // Bottom navigation bar should be visible on mobile
     const bottomNav = page.locator('nav[aria-label*="Mobile" i], nav[aria-label*="Mobil" i]');
@@ -104,7 +104,7 @@ test.describe('Mobile Navigation', () => {
 
   test('should show responsive layout on mobile', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 });
-    await page.goto('/', { waitUntil: 'networkidle' });
+    await page.goto('/');
 
     // Main content should still be visible
     await expect(page.locator('#main-content').first()).toBeVisible({ timeout: 10_000 });

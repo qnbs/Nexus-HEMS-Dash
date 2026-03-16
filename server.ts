@@ -145,6 +145,7 @@ function updateServerMetrics(data: Record<string, number>): void {
 async function startServer() {
   const app = express();
   const PORT = Number(process.env.PORT) || 3000;
+  const isDev = process.env.NODE_ENV !== 'production';
 
   // ─── JWT Secret (from env or auto-generated per run) ─────────────────
   const JWT_SECRET = process.env.JWT_SECRET || crypto.randomBytes(32).toString('hex');
@@ -160,6 +161,9 @@ async function startServer() {
     'http://localhost:3000',
     'http://localhost:5173',
     'http://localhost:4173',
+    'http://127.0.0.1:3000',
+    'http://127.0.0.1:5173',
+    'http://127.0.0.1:4173',
     'https://qnbs.github.io',
   ];
   const allowedOriginSet = new Set([...DEFAULT_ORIGINS, ...ALLOWED_ORIGINS]);
@@ -190,29 +194,33 @@ async function startServer() {
   // ─── Security Headers (Helmet) ───────────────────────────────────────
   app.use(
     helmet({
-      contentSecurityPolicy: {
-        directives: {
-          defaultSrc: ["'self'"],
-          scriptSrc: ["'self'", "'unsafe-inline'"],
-          styleSrc: ["'self'", "'unsafe-inline'"],
-          imgSrc: ["'self'", 'data:', 'blob:'],
-          connectSrc: [
-            "'self'",
-            'ws://localhost:*',
-            'wss://localhost:*',
-            'https://api.tibber.com',
-            'https://api.awattar.at',
-            'https://api.awattar.de',
-            'https://api.open-meteo.com',
-            'https://generativelanguage.googleapis.com',
-          ],
-          fontSrc: ["'self'"],
-          objectSrc: ["'none'"],
-          frameAncestors: ["'none'"],
-          baseUri: ["'self'"],
-          formAction: ["'self'"],
-        },
-      },
+      contentSecurityPolicy: isDev
+        ? false // Vite dev server requires eval() for HMR
+        : {
+            directives: {
+              defaultSrc: ["'self'"],
+              scriptSrc: ["'self'", "'unsafe-inline'"],
+              styleSrc: ["'self'", "'unsafe-inline'"],
+              imgSrc: ["'self'", 'data:', 'blob:'],
+              connectSrc: [
+                "'self'",
+                'ws://localhost:*',
+                'wss://localhost:*',
+                'ws://127.0.0.1:*',
+                'wss://127.0.0.1:*',
+                'https://api.tibber.com',
+                'https://api.awattar.at',
+                'https://api.awattar.de',
+                'https://api.open-meteo.com',
+                'https://generativelanguage.googleapis.com',
+              ],
+              fontSrc: ["'self'"],
+              objectSrc: ["'none'"],
+              frameAncestors: ["'none'"],
+              baseUri: ["'self'"],
+              formAction: ["'self'"],
+            },
+          },
       crossOriginEmbedderPolicy: false, // Required for PWA service worker
       hsts: { maxAge: 31536000, includeSubDomains: true, preload: true },
       referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
@@ -221,10 +229,10 @@ async function startServer() {
   );
 
   // ─── Rate Limiting ───────────────────────────────────────────────────
-  // Global rate limit: 100 requests/min per IP
+  // Global rate limit: relaxed in dev/test (Vite serves many modules per page load)
   const globalLimiter = rateLimit({
     windowMs: 60_000,
-    max: 100,
+    max: isDev ? 0 : 100, // 0 = disabled in dev mode
     standardHeaders: true,
     legacyHeaders: false,
     message: { error: 'Too many requests, please try again later.' },
@@ -236,18 +244,18 @@ async function startServer() {
     },
   });
 
-  app.use(globalLimiter);
+  if (!isDev) app.use(globalLimiter);
 
   // Stricter limit for API endpoints (60 req/min)
   const apiLimiter = rateLimit({
     windowMs: 60_000,
-    max: 60,
+    max: isDev ? 0 : 60,
     standardHeaders: true,
     legacyHeaders: false,
     message: { error: 'Too many API requests, please try again later.' },
   });
 
-  app.use('/api/', apiLimiter);
+  if (!isDev) app.use('/api/', apiLimiter);
 
   // Parse JSON for POST routes
   app.use(express.json({ limit: '10kb' }));
