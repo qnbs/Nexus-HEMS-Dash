@@ -665,7 +665,7 @@ function FloorplanPageComponent() {
             <div className="glass-panel rounded-xl p-3 text-center">
               <p className="text-[10px] text-(--color-muted)">CO₂ Ø</p>
               <p
-                className={`text-lg font-light ${avgCo2 > 800 ? 'text-yellow-400' : avgCo2 > 1000 ? 'text-red-400' : 'text-emerald-400'}`}
+                className={`text-lg font-light ${avgCo2 > 1000 ? 'text-red-400' : avgCo2 > 800 ? 'text-yellow-400' : 'text-emerald-400'}`}
               >
                 {avgCo2.toFixed(0)}
               </p>

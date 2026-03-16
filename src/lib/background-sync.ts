@@ -109,7 +109,11 @@ class BackgroundSyncService {
         } catch (error) {
           const errMsg = error instanceof Error ? error.message : 'Unknown error';
           console.error(
-            `[BackgroundSync] Action ${action.id} failed (attempt ${retryCount + 1}):`,
+            '[BackgroundSync] Action',
+            action.id,
+            'failed (attempt',
+            retryCount + 1,
+            '):',
             errMsg,
           );
 

@@ -81,7 +81,7 @@ export class ExampleContribAdapter extends BaseAdapter {
     // Implement command dispatch to your hardware
     // BaseAdapter already validates, checks circuit breaker, and logs audit
     if (import.meta.env.DEV) {
-      console.log(`[ExampleContrib] Would send command: ${command.type}`, command.value);
+      console.log('[ExampleContrib] Would send command:', command.type, command.value);
     }
     return true;
   }

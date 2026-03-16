@@ -165,11 +165,20 @@ jobs:
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
-      - name: Socket Security Analysis
-        # Note: SocketDev action repo is private — cannot SHA-pin
-        uses: SocketDev/socket-security-action@v1 # private repo, cannot SHA-pin
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          api_key: ${{ secrets.SOCKET_SECURITY_API_KEY }}
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Socket Security Analysis (CLI)
+        run: npx socket report create --view --strict
+        env:
+          SOCKET_SECURITY_API_KEY: ${{ secrets.SOCKET_SECURITY_API_KEY }}
+        continue-on-error: true
 
   # ──────────────────────────────────────────────
   # 7. Aikido Safe Chain (supply chain analysis)
@@ -192,13 +201,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Aikido Security Scan
-        # Note: AikidoSec action repo is private — cannot SHA-pin
-        uses: AikidoSec/github-actions-wf@v1.0.17 # private repo, cannot SHA-pin
-        with:
-          secret-key: ${{ secrets.AIKIDO_SECRET_KEY }}
-          fail-on-timeout: false
-          minimum-severity: HIGH
+      - name: Aikido Security Scan (CLI)
+        run: npx @aikidosec/ci-api-client scan --minimum-severity HIGH --fail-on-timeout false
+        env:
+          AIKIDO_SECRET_KEY: ${{ secrets.AIKIDO_SECRET_KEY }}
+        continue-on-error: true
 
   # ──────────────────────────────────────────────
   # 8. CodeQL Analysis

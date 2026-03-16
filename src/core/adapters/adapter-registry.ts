@@ -74,7 +74,7 @@ export function registerAdapter(
 
   if (registry.has(id)) {
     if (import.meta.env.DEV) {
-      console.warn(`[AdapterRegistry] Adapter "${id}" is already registered — skipping.`);
+      console.warn('[AdapterRegistry] Adapter already registered, skipping:', id);
     }
     return;
   }
@@ -88,7 +88,7 @@ export function registerAdapter(
   });
 
   if (import.meta.env.DEV) {
-    console.log(`[AdapterRegistry] Registered adapter: ${id} (${meta?.source ?? 'contrib'})`);
+    console.log('[AdapterRegistry] Registered adapter:', id, meta?.source ?? 'contrib');
   }
 }
 
@@ -100,7 +100,7 @@ export function unregisterAdapter(id: string): boolean {
   if (!entry) return false;
   if (entry.source === 'builtin') {
     if (import.meta.env.DEV) {
-      console.warn(`[AdapterRegistry] Cannot unregister built-in adapter "${id}".`);
+      console.warn('[AdapterRegistry] Cannot unregister built-in adapter:', id);
     }
     return false;
   }
@@ -167,7 +167,7 @@ export async function loadContribAdapter(id: string): Promise<boolean> {
 
   // Validate id to prevent path traversal
   if (!/^[a-z][a-z0-9-]*$/.test(id)) {
-    console.error(`[AdapterRegistry] Invalid contrib adapter id: "${id}"`);
+    console.error('[AdapterRegistry] Invalid contrib adapter id:', id);
     return false;
   }
 
@@ -184,7 +184,7 @@ export async function loadContribAdapter(id: string): Promise<boolean> {
     const loader = contribModules[modulePath];
 
     if (!loader) {
-      console.error(`[AdapterRegistry] Contrib adapter "${id}" not found at ${modulePath}`);
+      console.error('[AdapterRegistry] Contrib adapter not found:', id, 'at', modulePath);
       return false;
     }
 
@@ -216,11 +216,11 @@ export async function loadContribAdapter(id: string): Promise<boolean> {
     loadedContribs.add(id);
 
     if (import.meta.env.DEV) {
-      console.log(`[AdapterRegistry] Loaded contrib adapter: ${id}`);
+      console.log('[AdapterRegistry] Loaded contrib adapter:', id);
     }
     return true;
   } catch (err) {
-    console.error(`[AdapterRegistry] Failed to load contrib adapter "${id}":`, err);
+    console.error('[AdapterRegistry] Failed to load contrib adapter:', id, err);
     return false;
   }
 }

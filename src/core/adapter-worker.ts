@@ -131,6 +131,27 @@ function transformSunSpecMeter(raw: Record<string, unknown>): Record<string, unk
   };
 }
 
+// ─── URL allowlist for SSRF prevention ───────────────────────────────
+
+const ALLOWED_URL_PATTERNS = [
+  /^https?:\/\/localhost[:/]/,
+  /^https?:\/\/127\.0\.0\.1[:/]/,
+  /^https?:\/\/\[::1\][:/]/,
+  /^https?:\/\/192\.168\./,
+  /^https?:\/\/10\./,
+  /^https?:\/\/172\.(1[6-9]|2\d|3[01])\./,
+];
+
+function isAllowedUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    if (!['http:', 'https:'].includes(parsed.protocol)) return false;
+    return ALLOWED_URL_PATTERNS.some((p) => p.test(url));
+  } catch {
+    return false;
+  }
+}
+
 // ─── Polling logic ───────────────────────────────────────────────────
 
 async function executePoll(
@@ -138,6 +159,14 @@ async function executePoll(
   url: string,
   headers?: Record<string, string>,
 ): Promise<void> {
+  if (!isAllowedUrl(url)) {
+    postOut({
+      type: 'error',
+      adapterId,
+      error: `Blocked request to disallowed URL: ${new URL(url).hostname}`,
+    });
+    return;
+  }
   const start = performance.now();
   try {
     const resp = await fetch(url, {
@@ -171,6 +200,10 @@ function postOut(msg: WorkerOutMessage): void {
 // ─── Message handler ─────────────────────────────────────────────────
 
 self.onmessage = (event: MessageEvent<WorkerInMessage>) => {
+  // Origin verification: only accept messages from same origin
+  if (event.origin && event.origin !== '' && event.origin !== self.location?.origin) {
+    return;
+  }
   const msg = event.data;
 
   switch (msg.type) {

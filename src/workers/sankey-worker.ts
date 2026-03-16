@@ -220,6 +220,10 @@ function computeSankeyGraph(input: SankeyWorkerInput): SankeyGraphResult | null 
 // ─── Worker message handler ──────────────────────────────────────────
 
 self.onmessage = (e: MessageEvent<SankeyWorkerInput>) => {
+  // Origin verification: only accept messages from same origin
+  if (e.origin && e.origin !== '' && e.origin !== self.location?.origin) {
+    return;
+  }
   const result = computeSankeyGraph(e.data);
   const msg: SankeyWorkerOutput = { type: 'result', graph: result };
   self.postMessage(msg);

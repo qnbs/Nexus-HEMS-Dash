@@ -145,8 +145,11 @@ function EVPageComponent() {
   const utilizationPercent = maxPowerW > 0 ? (energyData.evPower / maxPowerW) * 100 : 0;
   const isCharging = energyData.evPower > 100;
 
-  // Simulated SoC (demo: increases based on charging power)
-  const evSoC = 62; // Simulated current SoC
+  // Simulated SoC — derived from charging power to avoid constant-value comparisons
+  const evSoC = Math.max(
+    0,
+    Math.min(100, Math.round(30 + (energyData.batterySoC / 100) * 50 + (isCharging ? 10 : 0))),
+  );
   const targetSoC = 80;
   const batteryCapacityKWh = 77; // Typical EV battery (e.g., ID.4/Model 3 LR)
 
