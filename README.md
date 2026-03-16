@@ -885,6 +885,53 @@ push/PR → tauri-build.yml
 | `vendor-radix`     | ~32 KB  | ~11 KB  | —      |
 | **Total precache** | ~3.2 MB | —       | —      |
 
+### Automation: Stale & Labeler
+
+| Workflow      | Trigger          | Purpose                                                                      |
+| :------------ | :--------------- | :--------------------------------------------------------------------------- |
+| `stale.yml`   | Daily 02:00 UTC  | Marks issues (60 d) and PRs (30 d) as stale; closes after 14 d inactivity    |
+| `labeler.yml` | PR opened/synced | Auto-labels PRs by changed file paths (areas: components, adapters, i18n, …) |
+
+Labels exempt from stale: `pinned`, `security`, `bug`, `in-progress`.
+
+### 🔐 Branch Protection Best Practices
+
+Enable these rules under **Settings → Rules → Rulesets** (or legacy **Settings → Branches → Branch protection rules**) for the `main` branch:
+
+| Rule                                          | Recommended | Why                                                        |
+| :-------------------------------------------- | :---------: | :--------------------------------------------------------- |
+| **Require a pull request before merging**     |     ✅      | Prevents direct pushes to main                             |
+| **Required approvals ≥ 1**                    |     ✅      | Four-eyes principle for all changes                        |
+| **Dismiss stale PR approvals on new pushes**  |     ✅      | Re-review after force-push                                 |
+| **Require status checks to pass**             |     ✅      | Gate on CI, Security Full, Lighthouse                      |
+| **Required status checks**                    |      —      | `lint-typecheck`, `unit-tests`, `build`, `Security Gate ✓` |
+| **Require branches to be up to date**         |     ✅      | No merge of stale PRs                                      |
+| **Require signed commits**                    |     🟡      | Recommended if all contributors use GPG/SSH signing        |
+| **Require linear history**                    |     🟡      | Squash-merge keeps history clean                           |
+| **Do not allow bypassing the above settings** |     ✅      | Applies rules to admins too                                |
+| **Restrict force pushes**                     |     ✅      | Prevents history rewriting                                 |
+| **Restrict deletions**                        |     ✅      | Protects branch from accidental deletion                   |
+
+<details>
+<summary><strong>📋 Step-by-step: Activate via GitHub UI</strong></summary>
+
+1. Go to **github.com/qnbs/Nexus-HEMS-Dash** → **Settings** → **Rules** → **Rulesets**
+2. Click **New ruleset** → **New branch ruleset**
+3. Name: `main-protection`, Enforcement: **Active**
+4. Under **Target branches** → Add target → **Include default branch**
+5. Enable the rules listed above
+6. Under **Require status checks to pass** → Add checks:
+   - `lint-typecheck`
+   - `unit-tests`
+   - `build`
+   - `Security Gate ✓`
+7. Click **Create**
+
+**Legacy path** (if Rulesets are not available):
+Settings → Branches → Add branch protection rule → Branch name: `main` → enable the same options.
+
+</details>
+
 ---
 
 ## 🚀 Deployment
