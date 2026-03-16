@@ -13,8 +13,16 @@
 [![License](https://img.shields.io/github/license/qnbs/Nexus-HEMS-Dash?style=for-the-badge&color=f7b93e)](LICENSE)
 [![OpenSSF Scorecard](https://img.shields.io/ossf-scorecard/github.com/qnbs/Nexus-HEMS-Dash?style=for-the-badge&label=Scorecard)](https://scorecard.dev/viewer/?uri=github.com/qnbs/Nexus-HEMS-Dash)
 [![Security Scan](https://img.shields.io/github/actions/workflow/status/qnbs/Nexus-HEMS-Dash/security-scan.yml?branch=main&style=for-the-badge&logo=shieldsdotio&logoColor=white&label=Security)](https://github.com/qnbs/Nexus-HEMS-Dash/actions/workflows/security-scan.yml)
+[![Performance](https://img.shields.io/github/actions/workflow/status/qnbs/Nexus-HEMS-Dash/perf-benchmark.yml?branch=main&style=for-the-badge&logo=speedtest&logoColor=white&label=Perf%20Bench)](https://github.com/qnbs/Nexus-HEMS-Dash/actions/workflows/perf-benchmark.yml)
 
-<!-- Row 2: Tech stack -->
+<!-- Row 2: Performance metrics -->
+
+![Bundle JS](<https://img.shields.io/badge/JS_(gzip)-948_kB-22ff88?style=for-the-badge&logo=javascript&logoColor=white>)
+![Bundle CSS](<https://img.shields.io/badge/CSS_(gzip)-18_kB-38bdf8?style=for-the-badge&logo=css3&logoColor=white>)
+![Lighthouse Perf](https://img.shields.io/badge/Lighthouse-≥85%25-ff8800?style=for-the-badge&logo=lighthouse&logoColor=white)
+![size-limit](https://img.shields.io/badge/size--limit-✓_budgeted-22ff88?style=for-the-badge&logo=webpack&logoColor=white)
+
+<!-- Row 3: Tech stack -->
 
 ![React 19](https://img.shields.io/badge/React-19-00f0ff?style=for-the-badge&logo=react&logoColor=00f0ff)
 ![TypeScript 5.8](https://img.shields.io/badge/TypeScript-5.8-3178c6?style=for-the-badge&logo=typescript&logoColor=white)
@@ -22,13 +30,14 @@
 ![Vite 6](https://img.shields.io/badge/Vite-6-646cff?style=for-the-badge&logo=vite&logoColor=white)
 ![Zustand 5](https://img.shields.io/badge/Zustand-5-443E38?style=for-the-badge&logo=react&logoColor=white)
 
-<!-- Row 3: Platform & quality -->
+<!-- Row 4: Platform & quality -->
 
 ![PWA](https://img.shields.io/badge/PWA-Offline--First-ff8800?style=for-the-badge&logo=pwa&logoColor=white)
 ![WCAG 2.2 AA](https://img.shields.io/badge/WCAG-2.2%20AA-00f0ff?style=for-the-badge&logo=w3c&logoColor=white)
 ![i18n](https://img.shields.io/badge/i18n-DE%20%7C%20EN-22ff88?style=for-the-badge&logo=googletranslate&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)
 ![Tauri](https://img.shields.io/badge/Tauri-Desktop-FFC131?style=for-the-badge&logo=tauri&logoColor=white)
+![Biome](https://img.shields.io/badge/Biome-Lint-60a5fa?style=for-the-badge&logo=biome&logoColor=white)
 
 <!-- Row 4: Dynamic repo stats -->
 

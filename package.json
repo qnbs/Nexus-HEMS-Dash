@@ -34,6 +34,8 @@
     "clean": "rm -rf dist",
     "lint": "eslint src/ --max-warnings 0",
     "lint:fix": "eslint src/ --fix",
+    "lint:biome": "biome check src/",
+    "lint:all": "npm run lint && npm run lint:biome",
     "format": "prettier --write \"src/**/*.{ts,tsx,css,json}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,css,json}\"",
     "type-check": "tsc --noEmit",
@@ -54,8 +56,65 @@
     "docker:build": "docker build -t nexus-hems-dash .",
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down",
-    "lighthouse": "lhci autorun"
+    "lighthouse": "lhci autorun",
+    "size": "size-limit",
+    "size:check": "size-limit --json",
+    "analyze": "source-map-explorer dist/assets/*.js --html dist/source-map-report.html",
+    "analyze:json": "source-map-explorer dist/assets/*.js --json dist/source-map-report.json",
+    "depcheck": "depcheck --ignores='@types/*,autoprefixer,babel-plugin-react-compiler,eslint-*,prettier-*,@commitlint/*,anti-trojan-source,fake-indexeddb,globals,@tailwindcss/*,typescript-eslint,better-sqlite3,@biomejs/biome,@size-limit/*,source-map-explorer,depcheck,size-limit,@lhci/*,@vitest/*,@typescript-eslint/*,husky,lint-staged,workbox-window,vite-plugin-pwa,rollup-plugin-visualizer'",
+    "perf": "npm run build && npm run size && npm run analyze",
+    "bench": "npm run build && npm run size:check > .perf/size-limit.json 2>&1 && echo 'Benchmark complete'"
   },
+  "size-limit": [
+    {
+      "name": "Framework (React + Router)",
+      "path": "dist/assets/framework-*.js",
+      "limit": "75 kB",
+      "gzip": true
+    },
+    {
+      "name": "App Entry",
+      "path": "dist/assets/index-*.js",
+      "limit": "85 kB",
+      "gzip": true
+    },
+    {
+      "name": "Vendor D3",
+      "path": "dist/assets/vendor-d3-*.js",
+      "limit": "30 kB",
+      "gzip": true
+    },
+    {
+      "name": "Vendor Recharts",
+      "path": "dist/assets/vendor-recharts-*.js",
+      "limit": "110 kB",
+      "gzip": true
+    },
+    {
+      "name": "Vendor Motion",
+      "path": "dist/assets/vendor-motion-*.js",
+      "limit": "45 kB",
+      "gzip": true
+    },
+    {
+      "name": "Vendor Icons",
+      "path": "dist/assets/vendor-icons-*.js",
+      "limit": "20 kB",
+      "gzip": true
+    },
+    {
+      "name": "Total JS",
+      "path": "dist/assets/*.js",
+      "limit": "1050 kB",
+      "gzip": true
+    },
+    {
+      "name": "Total CSS",
+      "path": "dist/assets/*.css",
+      "limit": "25 kB",
+      "gzip": true
+    }
+  ],
   "dependencies": {
     "@google/genai": "^1.29.0",
     "@radix-ui/react-dialog": "^1.1.15",
@@ -97,10 +156,12 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.11.1",
+    "@biomejs/biome": "2.4.7",
     "@commitlint/cli": "^20.5.0",
     "@commitlint/config-conventional": "^20.5.0",
     "@lhci/cli": "^0.15.1",
     "@playwright/test": "^1.58.2",
+    "@size-limit/file": "^12.0.1",
     "@tailwindcss/container-queries": "^0.1.1",
     "@tailwindcss/vite": "^4.1.14",
     "@testing-library/dom": "^10.4.1",
@@ -127,6 +188,7 @@
     "autoprefixer": "^10.4.21",
     "babel-plugin-react-compiler": "^1.0.0",
     "better-sqlite3": "^12.4.1",
+    "depcheck": "^1.4.7",
     "eslint": "^9.39.3",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-anti-trojan-source": "^1.1.2",
@@ -142,6 +204,8 @@
     "prettier": "^3.8.1",
     "prettier-plugin-tailwindcss": "^0.7.2",
     "rollup-plugin-visualizer": "^7.0.1",
+    "size-limit": "^12.0.1",
+    "source-map-explorer": "^2.5.3",
     "tailwindcss": "^4.1.14",
     "tsx": "^4.21.0",
     "typescript": "~5.8.2",
