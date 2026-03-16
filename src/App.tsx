@@ -1,6 +1,13 @@
 import { useEffect, lazy, Suspense } from 'react';
 import { motion } from 'motion/react';
-import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Link,
+  NavLink,
+  useLocation,
+} from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAdapterBridge } from './core/useEnergyStore';
 import { useAppStoreShallow } from './store';
@@ -65,6 +72,34 @@ function ScrollToTop(): null {
     }
   }, [pathname]);
   return null;
+}
+
+/** Displays the current page title in the header, adapting to the active route */
+function PageTitle() {
+  const { t } = useTranslation();
+  const { pathname } = useLocation();
+  const titleKeys: Record<string, string> = {
+    '/': 'common.appName',
+    '/energy-flow': 'nav.energyFlow',
+    '/production': 'nav.production',
+    '/storage': 'nav.storage',
+    '/consumption': 'nav.consumption',
+    '/ev': 'nav.ev',
+    '/floorplan': 'nav.floorplan',
+    '/ai-optimizer': 'nav.aiOptimizer',
+    '/tariffs': 'nav.tariffs',
+    '/analytics': 'nav.analytics',
+    '/monitoring': 'nav.monitoring',
+    '/settings': 'nav.settings',
+    '/settings/ai': 'nav.aiKeys',
+    '/help': 'nav.help',
+  };
+  const key = titleKeys[pathname] || 'common.appName';
+  return (
+    <span className="truncate text-sm font-semibold tracking-tight text-(--color-text)">
+      {t(key)}
+    </span>
+  );
 }
 
 export default function App() {
@@ -217,62 +252,76 @@ export default function App() {
 
           {/* Main Content Area (with sidebar offset on desktop) */}
           <div className="relative lg:ml-64">
-            {/* Top Bar (mobile + desktop header) */}
+            {/* Top Bar — sticky header (mobile + desktop) */}
             <motion.header
-              className="glass-panel-strong header-accent-line z-sticky sticky top-0 overflow-hidden px-4 py-2 sm:px-6 sm:py-3"
+              className="glass-panel-strong header-accent-line z-sticky sticky top-0 overflow-hidden px-3 py-2 sm:px-6 sm:py-3"
               initial={{ opacity: 0, y: -12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
             >
-              <div className="flex items-center justify-between gap-4">
-                {/* Mobile Logo */}
-                <div
-                  className="flex flex-col items-center lg:hidden"
-                  aria-label={t('common.appName')}
-                >
-                  <motion.img
-                    src={`${import.meta.env.BASE_URL}icon.svg`}
-                    alt=""
-                    className="h-7 w-7 rounded-lg"
-                    aria-hidden="true"
-                    whileHover={{ rotate: 10, scale: 1.1 }}
-                    transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-                  />
-                  <span className="text-[0.55rem] leading-tight font-bold tracking-widest text-(--color-primary) uppercase">
-                    HEMS
-                  </span>
+              <div className="flex items-center justify-between gap-3">
+                {/* Left: Logo + dynamic page title (mobile/tablet) */}
+                <div className="flex min-w-0 items-center gap-2.5 lg:hidden">
+                  <Link
+                    to="/"
+                    className="focus-ring shrink-0 rounded-lg"
+                    aria-label={t('nav.home')}
+                  >
+                    <motion.img
+                      src={`${import.meta.env.BASE_URL}icon.svg`}
+                      alt=""
+                      className="h-7 w-7 rounded-lg"
+                      aria-hidden="true"
+                      whileHover={{ rotate: 10, scale: 1.1 }}
+                      transition={{ type: 'spring', stiffness: 400, damping: 17 }}
+                    />
+                  </Link>
+                  <PageTitle />
                 </div>
 
-                {/* Desktop: Breadcrumb area placeholder */}
+                {/* Desktop: spacer (sidebar provides branding, breadcrumbs below) */}
                 <div className="hidden lg:block" />
 
-                {/* Right Side Actions */}
-                <div className="flex items-center gap-2">
-                  {/* Settings Link */}
-                  <Link
-                    to="/settings"
-                    className="focus-ring inline-flex items-center justify-center rounded-full border border-(--color-border) bg-(--color-surface-strong) p-2 text-(--color-muted) transition-all duration-300 hover:bg-(--color-primary)/10 hover:text-(--color-primary)"
-                    aria-label={t('nav.settings')}
-                    title={t('nav.settings')}
-                  >
-                    <SettingsIcon className="h-4 w-4" />
-                  </Link>
-
-                  {/* Help Link (hidden on mobile — accessible via sidebar/bottom nav) */}
-                  <Link
+                {/* Right: action icons */}
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  {/* Help */}
+                  <NavLink
                     to="/help"
-                    className="focus-ring hidden items-center justify-center rounded-full border border-(--color-border) bg-(--color-surface-strong) p-2 text-(--color-muted) transition-all duration-300 hover:bg-(--color-primary)/10 hover:text-(--color-primary) sm:inline-flex"
+                    className={({ isActive }) =>
+                      `focus-ring inline-flex items-center justify-center rounded-full border p-2 transition-colors duration-200 ${
+                        isActive
+                          ? 'border-(--color-primary)/40 bg-(--color-primary)/15 text-(--color-primary)'
+                          : 'border-(--color-border) bg-(--color-surface-strong) text-(--color-muted) hover:bg-(--color-primary)/10 hover:text-(--color-primary)'
+                      }`
+                    }
                     aria-label={t('nav.help')}
                     title={t('nav.help')}
                   >
                     <HelpCircle className="h-4 w-4" />
-                  </Link>
+                  </NavLink>
 
-                  {/* Command Palette Trigger */}
+                  {/* Settings */}
+                  <NavLink
+                    to="/settings"
+                    className={({ isActive }) =>
+                      `focus-ring inline-flex items-center justify-center rounded-full border p-2 transition-colors duration-200 ${
+                        isActive
+                          ? 'border-(--color-primary)/40 bg-(--color-primary)/15 text-(--color-primary)'
+                          : 'border-(--color-border) bg-(--color-surface-strong) text-(--color-muted) hover:bg-(--color-primary)/10 hover:text-(--color-primary)'
+                      }`
+                    }
+                    aria-label={t('nav.settings')}
+                    title={t('nav.settings')}
+                  >
+                    <SettingsIcon className="h-4 w-4" />
+                  </NavLink>
+
+                  {/* Command Palette */}
                   <button
                     onClick={() => setCommandPaletteOpen(true)}
-                    className="focus-ring inline-flex items-center gap-2 rounded-full border border-(--color-border) bg-(--color-surface-strong) px-3 py-2 text-sm transition-colors duration-200 hover:bg-(--color-primary)/10"
+                    className="focus-ring inline-flex items-center gap-2 rounded-full border border-(--color-border) bg-(--color-surface-strong) p-2 text-sm transition-colors duration-200 hover:bg-(--color-primary)/10 sm:px-3"
                     aria-label={t('command.open', 'Open command palette')}
+                    title={t('command.open', 'Open command palette')}
                   >
                     <Command className="h-4 w-4" aria-hidden="true" />
                     <span className="hidden sm:inline">{t('command.search', 'Search')}</span>
@@ -286,7 +335,7 @@ export default function App() {
 
                   {/* Connection Status */}
                   <div
-                    className="inline-flex items-center gap-2 rounded-full border border-(--color-border) bg-(--color-surface-strong) px-3 py-2 text-sm transition-all duration-300"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-(--color-border) bg-(--color-surface-strong) p-2 text-sm transition-colors duration-200 sm:gap-2 sm:px-3"
                     role="status"
                     aria-live="polite"
                     aria-atomic="true"
@@ -297,7 +346,7 @@ export default function App() {
                       transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
                     >
                       <Wifi
-                        className={`h-4 w-4 transition-colors duration-300 ${connected ? 'text-(--color-primary)' : 'text-rose-400'}`}
+                        className={`h-4 w-4 transition-colors duration-200 ${connected ? 'text-(--color-primary)' : 'text-rose-400'}`}
                         aria-hidden="true"
                       />
                     </motion.div>
@@ -306,6 +355,7 @@ export default function App() {
                     </span>
                   </div>
 
+                  {/* Electricity Price (tablet+) */}
                   <motion.div
                     className="price-pill hidden sm:inline-flex"
                     aria-label={t('dashboard.currentPrice', 'Current electricity price')}
