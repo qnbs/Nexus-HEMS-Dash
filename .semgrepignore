@@ -1,0 +1,14 @@
+# Semgrep ignore patterns
+dist/
+node_modules/
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+src/tests/
+tests/
+coverage/
+*.min.js
+*.bundle.js
+public/
+docs/

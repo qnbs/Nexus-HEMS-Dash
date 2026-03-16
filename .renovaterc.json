@@ -1,0 +1,160 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    "security:openssf-scorecard",
+    ":dependencyDashboard",
+    ":semanticCommits",
+    ":automergeMinor",
+    "group:monorepos",
+    "group:recommended",
+    "replacements:all",
+    "workarounds:all"
+  ],
+  "schedule": ["before 7am on monday"],
+  "timezone": "Europe/Berlin",
+  "labels": ["dependencies", "renovate"],
+  "assignees": ["qnbs"],
+  "prHourlyLimit": 4,
+  "prConcurrentLimit": 10,
+  "rangeStrategy": "bump",
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["before 5am on monday"]
+  },
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "labels": ["security"],
+    "schedule": ["at any time"],
+    "prPriority": 10,
+    "automerge": true
+  },
+  "packageRules": [
+    {
+      "description": "Security updates — highest priority, auto-merge",
+      "matchUpdateTypes": ["patch"],
+      "matchCategories": ["security"],
+      "prPriority": 10,
+      "automerge": true,
+      "schedule": ["at any time"]
+    },
+    {
+      "description": "Patch updates — auto-merge",
+      "matchUpdateTypes": ["patch"],
+      "automerge": true,
+      "prPriority": 5
+    },
+    {
+      "description": "Minor updates — auto-merge after CI passes",
+      "matchUpdateTypes": ["minor"],
+      "automerge": true,
+      "prPriority": 3
+    },
+    {
+      "description": "Major updates — manual review required",
+      "matchUpdateTypes": ["major"],
+      "automerge": false,
+      "prPriority": 1,
+      "labels": ["dependencies", "breaking"]
+    },
+    {
+      "description": "Group: React ecosystem",
+      "groupName": "React",
+      "matchPackageNames": [
+        "react",
+        "react-dom",
+        "@types/react",
+        "@types/react-dom",
+        "react-router-dom",
+        "react-i18next"
+      ]
+    },
+    {
+      "description": "Group: Testing tools",
+      "groupName": "Testing",
+      "matchPackageNames": [
+        "vitest",
+        "@vitest/coverage-v8",
+        "@vitest/ui",
+        "@playwright/test",
+        "@axe-core/playwright",
+        "@testing-library/react",
+        "@testing-library/dom",
+        "@testing-library/jest-dom"
+      ]
+    },
+    {
+      "description": "Group: TypeScript & ESLint",
+      "groupName": "TypeScript & Linting",
+      "matchPackageNames": [
+        "typescript",
+        "typescript-eslint",
+        "@typescript-eslint/eslint-plugin",
+        "@typescript-eslint/parser",
+        "eslint",
+        "eslint-config-prettier",
+        "eslint-plugin-prettier",
+        "eslint-plugin-react",
+        "eslint-plugin-react-hooks",
+        "eslint-plugin-react-refresh",
+        "prettier",
+        "prettier-plugin-tailwindcss"
+      ]
+    },
+    {
+      "description": "Group: Tailwind CSS",
+      "groupName": "Tailwind CSS",
+      "matchPackageNames": [
+        "tailwindcss",
+        "@tailwindcss/vite",
+        "@tailwindcss/container-queries",
+        "tailwind-merge"
+      ]
+    },
+    {
+      "description": "Group: Vite & build tools",
+      "groupName": "Vite & Build",
+      "matchPackageNames": [
+        "vite",
+        "@vitejs/plugin-react",
+        "vite-plugin-pwa",
+        "rollup-plugin-visualizer",
+        "workbox-window"
+      ]
+    },
+    {
+      "description": "Group: Radix UI primitives",
+      "groupName": "Radix UI",
+      "matchPackagePatterns": ["^@radix-ui/"]
+    },
+    {
+      "description": "Group: TanStack",
+      "groupName": "TanStack",
+      "matchPackagePatterns": ["^@tanstack/"]
+    },
+    {
+      "description": "Group: D3 visualization",
+      "groupName": "D3",
+      "matchPackageNames": ["d3-sankey", "d3-selection", "@types/d3-sankey", "@types/d3-selection"]
+    },
+    {
+      "description": "Group: Express server",
+      "groupName": "Express",
+      "matchPackageNames": [
+        "express",
+        "@types/express",
+        "cors",
+        "@types/cors",
+        "helmet",
+        "express-rate-limit",
+        "express-validator"
+      ]
+    },
+    {
+      "description": "Pin TypeScript to ~5.8 (project constraint)",
+      "matchPackageNames": ["typescript"],
+      "allowedVersions": "~5.8"
+    }
+  ],
+  "ignoreDeps": []
+}

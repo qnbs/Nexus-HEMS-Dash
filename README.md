@@ -11,6 +11,8 @@
 [![Deploy](https://img.shields.io/github/actions/workflow/status/qnbs/Nexus-HEMS-Dash/deploy.yml?branch=main&style=for-the-badge&logo=githubactions&logoColor=white&label=Deploy&color=22ff88)](https://github.com/qnbs/Nexus-HEMS-Dash/actions/workflows/deploy.yml)
 [![Lighthouse](https://img.shields.io/github/actions/workflow/status/qnbs/Nexus-HEMS-Dash/lighthouse.yml?branch=main&style=for-the-badge&logo=lighthouse&logoColor=white&label=Lighthouse)](https://github.com/qnbs/Nexus-HEMS-Dash/actions/workflows/lighthouse.yml)
 [![License](https://img.shields.io/github/license/qnbs/Nexus-HEMS-Dash?style=for-the-badge&color=f7b93e)](LICENSE)
+[![OpenSSF Scorecard](https://img.shields.io/ossf-scorecard/github.com/qnbs/Nexus-HEMS-Dash?style=for-the-badge&label=Scorecard)](https://scorecard.dev/viewer/?uri=github.com/qnbs/Nexus-HEMS-Dash)
+[![Security Scan](https://img.shields.io/github/actions/workflow/status/qnbs/Nexus-HEMS-Dash/security-scan.yml?branch=main&style=for-the-badge&logo=shieldsdotio&logoColor=white&label=Security)](https://github.com/qnbs/Nexus-HEMS-Dash/actions/workflows/security-scan.yml)
 
 <!-- Row 2: Tech stack -->
 

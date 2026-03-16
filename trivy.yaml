@@ -1,0 +1,26 @@
+# Trivy configuration for Nexus HEMS Dashboard
+# https://trivy.dev/docs/references/configuration/config-file/
+
+scan:
+  scanners:
+    - vuln
+    - secret
+    - misconfig
+  skip-dirs:
+    - node_modules
+    - dist
+    - coverage
+    - playwright-report
+    - test-results
+    - .git
+
+vulnerability:
+  type:
+    - os
+    - library
+
+secret:
+  config: trivy-secret.yaml
+
+misconfiguration:
+  include-non-failures: false

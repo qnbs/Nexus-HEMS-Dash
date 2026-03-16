@@ -5,6 +5,7 @@ You are an expert full-stack React 19 + TypeScript architect specialized in real
 ## PROJECT RULES — THIS IS LAW (always follow strictly)
 
 ### Core Stack (never deviate)
+
 - **React 19** + **Vite 6** + **TypeScript ~5.8** (strict mode)
 - **React Compiler** (`babel-plugin-react-compiler`) — auto-memoization, never add manual `memo`/`useMemo`/`useCallback` unless React Compiler cannot handle it
 - **Zustand v5** for state — never introduce Redux, MobX or other state libraries
@@ -20,12 +21,15 @@ You are an expert full-stack React 19 + TypeScript architect specialized in real
 - **jsPDF** + **QRCode** for PDF reports and QR sharing
 
 ### State Architecture (dual Zustand stores)
+
 - **`useAppStore`** (`src/store.ts`) — UI/settings store with `persist` middleware (localStorage). Holds `EnergyData`, `FloorplanState`, `StoredSettings`, locale, theme, onboarding state.
 - **`useEnergyStore`** (`src/core/useEnergyStore.ts`) — Adapter aggregation store. Merges all active adapters into a `UnifiedEnergyModel`. No persistence. Bridge hook `useAdapterBridge()` syncs data back to `useAppStore`.
 - When adding new state: settings/UI → `useAppStore`; real-time energy data → `useEnergyStore`.
 
 ### Adapter System (5 protocols)
+
 All adapters in `src/core/adapters/` implement the `EnergyAdapter` interface (`EnergyAdapter.ts`):
+
 - **VictronMQTTAdapter** — Victron Cerbo GX / Venus OS via MQTT-over-WebSocket
 - **ModbusSunSpecAdapter** — SunSpec Models via REST bridge (polling)
 - **KNXAdapter** — KNX/IP via knxd WebSocket bridge
@@ -34,12 +38,14 @@ All adapters in `src/core/adapters/` implement the `EnergyAdapter` interface (`E
 - Tariff integration (Tibber/aWATTar) via `TariffData` model + `predictive-ai.ts`
 
 ### i18n
+
 - **react-i18next** with 2 locales: `de` (fallback) and `en`
 - Locale files are TypeScript objects in `src/locales/{de,en}.ts`
 - Persistent language switcher in header + Cmd+K command palette
 - Every user-facing string must use `t()` — never hardcode display text
 
 ### Design System — Neo-Energy Cyber-Glassmorphism
+
 - 5 themes defined in `src/design-tokens.ts`: `energy-dark`, `solar-light`, `ocean-dark` (default), `nature-green`, `minimal-white`
 - CSS custom properties via Tailwind v4 `@theme` block in `src/index.css`
 - Brand colors: `neon-green` (#22ff88), `electric-blue` (#00f0ff), `power-orange` (#ff8800)
@@ -49,11 +55,13 @@ All adapters in `src/core/adapters/` implement the `EnergyAdapter` interface (`E
 - Reference `DESIGN-SYSTEM.md` for full pattern catalog
 
 ### Accessibility (WCAG 2.2 AA — mandatory)
+
 - Skip-to-content link, visible focus rings (`.focus-ring:focus-visible`), aria attributes everywhere
 - Semantic HTML, keyboard navigation, color contrast ratios
 - Automated a11y testing via `@axe-core/playwright`
 
 ### PWA & Offline
+
 - `vite-plugin-pwa` with Workbox, autoUpdate registration
 - Offline cache via Dexie.js (`src/lib/offline-cache.ts`)
 - Background sync with exponential backoff (`src/lib/background-sync.ts`)
@@ -61,11 +69,13 @@ All adapters in `src/core/adapters/` implement the `EnergyAdapter` interface (`E
 - Components: `OfflineBanner`, `PWAUpdateNotification`, `PWAInstallPrompt`
 
 ### AI Features
+
 - Multi-provider AI client (`src/core/aiClient.ts`): OpenAI, Anthropic, Google Gemini, xAI, Groq, Ollama, Custom
 - API keys encrypted in Dexie.js via `src/lib/ai-keys.ts` — never store in env vars or plain text
 - Deterministic optimizer (`src/lib/optimizer.ts`) + predictive AI (`src/lib/predictive-ai.ts`)
 
 ### Quality & Tooling
+
 - **ESLint v9** flat config with `typescript-eslint` + Prettier integration
 - **Prettier** for formatting
 - **Husky** + **lint-staged** for pre-commit hooks
@@ -75,6 +85,7 @@ All adapters in `src/core/adapters/` implement the `EnergyAdapter` interface (`E
 - `.devcontainer` for reproducible dev environments
 
 ### Deployment
+
 - **GitHub Pages**: `base: '/Nexus-HEMS-Dash/'` in production
 - **Docker**: multi-stage build (Node 22 → nginx 1.27), `read_only`, non-root, healthcheck
 - **Tauri v2**: desktop distribution (Linux/macOS/Windows), strict CSP

@@ -1,0 +1,91 @@
+name: Trivy Security Scan
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Daily at 04:00 UTC
+    - cron: '0 4 * * *'
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  # ──────────────────────────────────────────────
+  # Filesystem scan (npm deps + secrets + misconfig)
+  # ──────────────────────────────────────────────
+  trivy-fs:
+    name: Filesystem Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Trivy vulnerability scan
+        uses: aquasecurity/trivy-action@6c175e9c4083a92bbca2f9724c8a5e33bc2d97a5 # 0.30.0
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          scanners: 'vuln,secret,misconfig'
+          severity: 'HIGH,CRITICAL'
+          format: 'sarif'
+          output: 'trivy-fs.sarif'
+          trivy-config: trivy.yaml
+
+      - name: Upload SARIF
+        uses: github/codeql-action/upload-sarif@38b3b7bf288d49ccf58644769dc7a6afdccd05eb # v3
+        if: always()
+        with:
+          sarif_file: trivy-fs.sarif
+        continue-on-error: true
+
+      - name: Trivy table output
+        uses: aquasecurity/trivy-action@6c175e9c4083a92bbca2f9724c8a5e33bc2d97a5 # 0.30.0
+        if: always()
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          scanners: 'vuln'
+          severity: 'HIGH,CRITICAL'
+          format: 'table'
+          trivy-config: trivy.yaml
+
+  # ──────────────────────────────────────────────
+  # Docker image scan (on push to main only)
+  # ──────────────────────────────────────────────
+  trivy-image:
+    name: Docker Image Scan
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Build Docker image
+        run: docker build -t nexus-hems-dash:scan .
+
+      - name: Trivy image scan
+        uses: aquasecurity/trivy-action@6c175e9c4083a92bbca2f9724c8a5e33bc2d97a5 # 0.30.0
+        with:
+          image-ref: 'nexus-hems-dash:scan'
+          scanners: 'vuln'
+          severity: 'HIGH,CRITICAL'
+          format: 'sarif'
+          output: 'trivy-image.sarif'
+
+      - name: Upload image SARIF
+        uses: github/codeql-action/upload-sarif@38b3b7bf288d49ccf58644769dc7a6afdccd05eb # v3
+        if: always()
+        with:
+          sarif_file: trivy-image.sarif
+        continue-on-error: true
+
+      - name: Trivy image table
+        uses: aquasecurity/trivy-action@6c175e9c4083a92bbca2f9724c8a5e33bc2d97a5 # 0.30.0
+        if: always()
+        with:
+          image-ref: 'nexus-hems-dash:scan'
+          scanners: 'vuln'
+          severity: 'HIGH,CRITICAL'
+          format: 'table'

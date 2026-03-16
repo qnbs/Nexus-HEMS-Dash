@@ -89,5 +89,12 @@
   },
 
   // ─── Testing ──────────────────────────────────────────────────
-  "testing.automaticallyOpenPeekView": "failureVisible"
+  "testing.automaticallyOpenPeekView": "failureVisible",
+
+  // ─── Security: Unicode Highlight (Trojan-Source Protection) ───
+  "editor.unicodeHighlight.ambiguousCharacters": true,
+  "editor.unicodeHighlight.invisibleCharacters": true,
+  "editor.unicodeHighlight.nonBasicASCII": true,
+  "editor.unicodeHighlight.includeComments": true,
+  "editor.unicodeHighlight.includeStrings": "true"
 }
