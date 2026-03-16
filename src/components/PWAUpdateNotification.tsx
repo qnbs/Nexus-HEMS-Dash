@@ -1,15 +1,26 @@
 /**
  * PWA Update Notification Component
- * Auto-updates service worker and shows informational toasts.
+ *
  * Uses registerType: 'autoUpdate' — the SW activates immediately via
- * skipWaiting + clientsClaim, then the page auto-reloads.
+ * skipWaiting + clientsClaim. Shows informational toasts for update-ready,
+ * offline-ready, and error states.
+ *
+ * Update check strategy:
+ * - On visibility change (tab re-focus) with 10-minute cooldown
+ * - Periodic check every 15 minutes while the page is active
+ * - Immediate check on online event (reconnecting after offline)
  */
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { RefreshCw, AlertCircle, WifiOff, CheckCircle2, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useRegisterSW } from 'virtual:pwa-register/react';
+
+/** Minimum time between consecutive update checks (10 min) */
+const UPDATE_CHECK_COOLDOWN_MS = 10 * 60 * 1000;
+/** Periodic update check interval (15 min) */
+const UPDATE_CHECK_INTERVAL_MS = 15 * 60 * 1000;
 
 export function PWAUpdateNotification() {
   const { t } = useTranslation();
@@ -17,22 +28,32 @@ export function PWAUpdateNotification() {
   const [showUpdating, setShowUpdating] = useState(false);
   const [isRestarting, setIsRestarting] = useState(false);
   const [updateError, setUpdateError] = useState<string | null>(null);
+  const lastCheckRef = useRef(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const registrationRef = useRef<ServiceWorkerRegistration | null>(null);
+
+  /** Throttled SW update check */
+  const checkForUpdate = useCallback(() => {
+    const now = Date.now();
+    if (now - lastCheckRef.current < UPDATE_CHECK_COOLDOWN_MS) return;
+    lastCheckRef.current = now;
+    registrationRef.current?.update().catch((error: unknown) => {
+      console.error('[PWA] Update check failed:', error);
+    });
+  }, []);
 
   const { updateServiceWorker } = useRegisterSW({
     onRegisteredSW(swUrl, registration) {
       if (import.meta.env.DEV) console.log('[PWA] Service Worker registered:', swUrl);
 
-      // Check for updates every 30 minutes
       if (registration) {
-        intervalRef.current = setInterval(
-          () => {
-            registration.update().catch((error: unknown) => {
-              console.error('[PWA] Update check failed:', error);
-            });
-          },
-          30 * 60 * 1000,
-        );
+        registrationRef.current = registration;
+
+        // Periodic update check
+        intervalRef.current = setInterval(checkForUpdate, UPDATE_CHECK_INTERVAL_MS);
+
+        // Immediately check once on registration
+        registration.update().catch(() => {});
       }
     },
     onRegisterError(error) {
@@ -49,14 +70,21 @@ export function PWAUpdateNotification() {
     },
   });
 
-  // Cleanup interval on unmount
+  // Check for updates when the tab becomes visible or when coming back online
   useEffect(() => {
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') checkForUpdate();
     };
-  }, []);
+
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    window.addEventListener('online', checkForUpdate);
+
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+      window.removeEventListener('online', checkForUpdate);
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, [checkForUpdate]);
 
   const handleUpdate = () => {
     setIsRestarting(true);

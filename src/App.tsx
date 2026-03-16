@@ -279,8 +279,10 @@ export default function App() {
                   <PageTitle />
                 </div>
 
-                {/* Desktop: spacer (sidebar provides branding, breadcrumbs below) */}
-                <div className="hidden lg:block" />
+                {/* Desktop: dynamic page title (sidebar provides branding) */}
+                <div className="hidden items-center gap-2 lg:flex">
+                  <PageTitle />
+                </div>
 
                 {/* Right: action icons */}
                 <div className="flex items-center gap-1.5 sm:gap-2">
@@ -333,9 +335,9 @@ export default function App() {
                     </kbd>
                   </button>
 
-                  {/* Connection Status */}
+                  {/* Connection Status (md+ only — mobile uses compact dot below) */}
                   <div
-                    className="inline-flex items-center gap-1.5 rounded-full border border-(--color-border) bg-(--color-surface-strong) p-2 text-sm transition-colors duration-200 sm:gap-2 sm:px-3"
+                    className="hidden items-center gap-2 rounded-full border border-(--color-border) bg-(--color-surface-strong) px-3 py-2 text-sm transition-colors duration-200 md:inline-flex"
                     role="status"
                     aria-live="polite"
                     aria-atomic="true"
@@ -350,14 +352,27 @@ export default function App() {
                         aria-hidden="true"
                       />
                     </motion.div>
-                    <span className="hidden sm:inline">
-                      {connected ? t('common.connected') : t('common.disconnected')}
-                    </span>
+                    <span>{connected ? t('common.connected') : t('common.disconnected')}</span>
+                  </div>
+
+                  {/* Connection dot (mobile only — compact indicator) */}
+                  <div
+                    className="inline-flex md:hidden"
+                    role="status"
+                    aria-label={connected ? t('common.connected') : t('common.disconnected')}
+                  >
+                    <span
+                      className={`h-2.5 w-2.5 rounded-full ${
+                        connected
+                          ? 'bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.6)]'
+                          : 'bg-rose-400 shadow-[0_0_6px_rgba(251,113,133,0.6)]'
+                      }`}
+                    />
                   </div>
 
                   {/* Electricity Price (tablet+) */}
                   <motion.div
-                    className="price-pill hidden sm:inline-flex"
+                    className="price-pill hidden md:inline-flex"
                     aria-label={t('dashboard.currentPrice', 'Current electricity price')}
                     whileHover={{ scale: 1.05 }}
                     transition={{ type: 'spring', stiffness: 400, damping: 17 }}
