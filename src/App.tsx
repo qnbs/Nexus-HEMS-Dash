@@ -222,15 +222,25 @@ export default function App() {
     >
       <Router basename={import.meta.env.BASE_URL}>
         <ScrollToTop />
-        <OfflineBanner />
-        <PWAInstallPrompt />
         <PWAUpdateNotification />
-        {!onboardingCompleted && (
+
+        {/* Onboarding: render fullscreen, hide entire app shell behind it */}
+        {!onboardingCompleted ? (
           <Suspense fallback={null}>
             <Onboarding />
           </Suspense>
+        ) : (
+          <>
+            <OfflineBanner />
+            <PWAInstallPrompt />
+          </>
         )}
-        <div className="theme-shell min-h-screen font-sans text-(--color-text) selection:bg-(--color-primary)/30">
+
+        <div
+          className="theme-shell min-h-screen font-sans text-(--color-text) selection:bg-(--color-primary)/30"
+          aria-hidden={!onboardingCompleted || undefined}
+          inert={!onboardingCompleted || undefined}
+        >
           <div
             className="pointer-events-none fixed inset-0 z-0"
             aria-hidden="true"

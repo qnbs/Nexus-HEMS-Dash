@@ -67,7 +67,7 @@ export class ErrorBoundary extends Component<Props, State> {
   };
 
   handleGoHome = () => {
-    window.location.href = '/Nexus-HEMS-Dash/';
+    window.location.href = import.meta.env.BASE_URL;
   };
 
   render() {

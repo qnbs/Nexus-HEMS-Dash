@@ -148,7 +148,7 @@ export function EmergencyStop({ circuitBreakers }: EmergencyStopProps) {
       {/* Active Emergency Stop Overlay */}
       {isActive && (
         <div
-          className="fixed inset-0 z-100 flex items-center justify-center bg-red-950/95 backdrop-blur-md"
+          className="z-priority fixed inset-0 flex items-center justify-center bg-red-950/95 backdrop-blur-md"
           role="alert"
           aria-live="assertive"
         >
