@@ -80,3 +80,32 @@ groups:
           severity: warning
         annotations:
           summary: 'Host CPU usage above 85% for 10+ minutes'
+
+  - name: hems_frontend_errors
+    rules:
+      - alert: HighFrontendErrorRate
+        expr: rate(hems_frontend_errors_total[5m]) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'High frontend error rate ({{ $value }}/s)'
+          description: 'Source: {{ $labels.source }}, Severity: {{ $labels.severity }}'
+
+      - alert: ErrorBoundaryTriggered
+        expr: increase(hems_error_boundary_catches_total[10m]) > 3
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: 'ErrorBoundary caught {{ $value }} errors in 10 minutes'
+          description: 'Component: {{ $labels.component }}'
+
+      - alert: CircuitBreakerOpen
+        expr: hems_circuit_breaker_state == 1
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: 'Circuit breaker OPEN for adapter {{ $labels.adapter }}'
+          description: 'Adapter is isolated — manual intervention may be needed'

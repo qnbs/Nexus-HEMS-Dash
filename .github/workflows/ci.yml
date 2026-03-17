@@ -80,6 +80,22 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Sentry Source Maps Upload
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+        run: |
+          if [ -n "$SENTRY_AUTH_TOKEN" ]; then
+            npx @sentry/cli releases new "nexus-hems@$(node -p 'require("./package.json").version')"
+            npx @sentry/cli releases files "nexus-hems@$(node -p 'require("./package.json").version')" upload-sourcemaps dist/assets --url-prefix '~/Nexus-HEMS-Dash/assets'
+            npx @sentry/cli releases finalize "nexus-hems@$(node -p 'require("./package.json").version')"
+            echo "✅ Sentry source maps uploaded"
+          else
+            echo "⏭️ SENTRY_AUTH_TOKEN not set — skipping source map upload"
+          fi
+
       - name: Bundle Size Check
         run: |
           MAX_KB=600

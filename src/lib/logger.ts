@@ -25,10 +25,8 @@ export interface LogEntry {
 export interface LoggerConfig {
   /** Minimum level to output (default: 'info' in prod, 'debug' in dev) */
   minLevel: LogLevel;
-  /** Enable Sentry integration (requires VITE_SENTRY_DSN) */
+  /** Enable Sentry integration (from centralized sentry.ts) */
   sentryEnabled: boolean;
-  /** Sentry DSN (from environment) */
-  sentryDsn?: string;
   /** Max log ring buffer size */
   bufferSize: number;
 }
@@ -43,42 +41,15 @@ const LEVEL_ORDER: Record<LogLevel, number> = {
   fatal: 4,
 };
 
-// ─── Sentry Lazy Loader ─────────────────────────────────────────────
+// ─── Sentry Integration ─────────────────────────────────────────────
 
-let sentryInitialized = false;
+// Sentry is initialized centrally via src/lib/sentry.ts (called in main.tsx).
+// The logger imports the already-initialized SDK and checks sentryEnabled.
+import { Sentry, sentryEnabled } from './sentry';
 
-async function initSentry(dsn: string): Promise<void> {
-  if (sentryInitialized) return;
+function captureToSentry(entry: LogEntry): void {
+  if (!sentryEnabled) return;
   try {
-    const Sentry = await import('@sentry/browser');
-
-    Sentry.init({
-      dsn,
-      environment: import.meta.env.MODE,
-      release: `nexus-hems@${__APP_VERSION__}`,
-      tracesSampleRate: 0.1,
-      sampleRate: 1.0,
-      beforeSend(event) {
-        // Scrub sensitive data: API keys, tokens
-        if (event.request?.headers) {
-          delete event.request.headers['Authorization'];
-        }
-        return event;
-      },
-    });
-
-    sentryInitialized = true;
-  } catch {
-    // Sentry not available — proceed without it
-    console.warn('[Logger] Sentry SDK not available, proceeding without error tracking');
-  }
-}
-
-async function captureToSentry(entry: LogEntry): Promise<void> {
-  if (!sentryInitialized) return;
-  try {
-    const Sentry = await import('@sentry/browser');
-
     if (entry.error) {
       Sentry.captureException(entry.error, {
         tags: { context: entry.context ?? 'unknown' },
@@ -114,19 +85,12 @@ class Logger {
 
   constructor() {
     const isProd = import.meta.env.PROD;
-    const sentryDsn = import.meta.env.VITE_SENTRY_DSN as string | undefined;
 
     this.config = {
       minLevel: isProd ? 'info' : 'debug',
-      sentryEnabled: isProd && !!sentryDsn,
-      sentryDsn,
+      sentryEnabled,
       bufferSize: 200,
     };
-
-    // Initialize Sentry lazily in production
-    if (this.config.sentryEnabled && this.config.sentryDsn) {
-      void initSentry(this.config.sentryDsn);
-    }
   }
 
   private shouldLog(level: LogLevel): boolean {

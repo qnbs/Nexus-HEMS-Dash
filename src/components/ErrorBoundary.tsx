@@ -4,9 +4,11 @@
  */
 
 import { Component, type ReactNode, type ErrorInfo } from 'react';
-import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
+import { AlertTriangle, RefreshCw, Home, Bug } from 'lucide-react';
 import i18next from 'i18next';
 import { logger } from '../lib/logger';
+import { Sentry, sentryEnabled } from '../lib/sentry';
+import { metricsCollector } from '../lib/metrics';
 
 interface Props {
   children: ReactNode;
@@ -49,10 +51,25 @@ export class ErrorBoundary extends Component<Props, State> {
     // Call optional error handler
     this.props.onError?.(error, errorInfo);
 
-    // Log to structured logger (sends to Sentry in production)
+    // Record to Prometheus metrics
+    metricsCollector.recordErrorBoundaryCatch('ErrorBoundary');
+    metricsCollector.recordFrontendError('ErrorBoundary', 'error');
+
+    // Log to structured logger
     logger.error('Uncaught component error', error, 'ErrorBoundary', {
       componentStack: errorInfo.componentStack ?? undefined,
     });
+
+    // Report to Sentry with component stack context
+    if (sentryEnabled) {
+      Sentry.withScope((scope) => {
+        scope.setTag('boundary', 'ErrorBoundary');
+        scope.setContext('react', {
+          componentStack: errorInfo.componentStack ?? undefined,
+        });
+        Sentry.captureException(error);
+      });
+    }
   }
 
   handleReset = () => {
@@ -157,6 +174,24 @@ export class ErrorBoundary extends Component<Props, State> {
                     {i18next.t('error.goHome')}
                   </button>
                 </div>
+
+                {/* Sentry User Feedback */}
+                {sentryEnabled && (
+                  <button
+                    onClick={() => {
+                      Sentry.showReportDialog({
+                        eventId: Sentry.lastEventId(),
+                        title: i18next.t('error.reportTitle'),
+                        subtitle: i18next.t('error.reportSubtitle'),
+                        labelSubmit: i18next.t('error.reportSubmit'),
+                      });
+                    }}
+                    className="btn-secondary focus-ring flex items-center gap-2"
+                  >
+                    <Bug className="h-4 w-4" aria-hidden="true" />
+                    {i18next.t('error.reportBug')}
+                  </button>
+                )}
 
                 {/* Additional Help */}
                 <div className="mt-6 rounded-xl border border-(--color-border) bg-(--color-surface)/50 p-4">

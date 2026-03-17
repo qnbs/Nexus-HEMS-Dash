@@ -2,8 +2,12 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import { QueryProvider } from './lib/query-client.tsx';
+import { initSentry } from './lib/sentry';
 import './i18n';
 import './index.css';
+
+// Initialize Sentry before React renders (no-op without VITE_SENTRY_DSN)
+initSentry();
 
 // Handle service worker controller change (auto-reload on SW update)
 if ('serviceWorker' in navigator) {

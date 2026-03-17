@@ -268,7 +268,8 @@ export default defineConfig(({ mode }) => {
             if (/\/react\/|\/react-dom\/|\/scheduler\/|\/react-router/.test(id)) return 'framework';
 
             // ── Sentry error tracking — lazy-loaded, isolated chunk ──
-            if (/\/@sentry\/|\/sentry-internal\//.test(id)) return 'vendor-sentry';
+            if (/\/@sentry\/|\/@sentry-internal\/|\/sentry-internal\//.test(id))
+              return 'vendor-sentry';
 
             // ── D3 visualization — only Sankey pages ──
             // After tree-shaking: only d3-selection + d3-sankey (~30 KB)

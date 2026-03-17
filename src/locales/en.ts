@@ -1181,6 +1181,10 @@ export const en = {
     goHome: 'Go to Dashboard',
     helpTitle: 'Need help?',
     helpText: 'If the problem persists, try clearing your browser cache or contact support at',
+    reportBug: 'Report Bug',
+    reportTitle: 'Report an Error',
+    reportSubtitle: 'Please describe what you were doing when the error occurred.',
+    reportSubmit: 'Submit',
   },
   export: {
     title: 'Export & Sharing',

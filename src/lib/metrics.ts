@@ -307,6 +307,26 @@ export const HEMS_METRICS: MetricDefinition[] = [
     type: 'gauge',
     labels: ['adapter'],
   },
+
+  // ── Frontend Error Tracking ──────────────────────────────────────
+  {
+    name: 'hems_frontend_errors_total',
+    help: 'Total frontend JavaScript errors',
+    type: 'counter',
+    labels: ['source', 'severity'],
+  },
+  {
+    name: 'hems_error_boundary_catches_total',
+    help: 'Total React ErrorBoundary catches',
+    type: 'counter',
+    labels: ['component'],
+  },
+  {
+    name: 'hems_sentry_events_total',
+    help: 'Total events sent to Sentry',
+    type: 'counter',
+    labels: ['level'],
+  },
 ];
 
 // ─── Metrics Collector (Client-side) ────────────────────────────────
@@ -476,6 +496,27 @@ export class MetricsCollector {
     this.setSample('hems_circuit_breaker_state', stateMap[state], Date.now(), {
       adapter: adapterId,
     });
+  }
+
+  /**
+   * Record a frontend error (ErrorBoundary, unhandled rejection, etc.)
+   */
+  recordFrontendError(source: string, severity: 'error' | 'fatal' = 'error'): void {
+    this.incrementCounter('hems_frontend_errors_total', { source, severity });
+  }
+
+  /**
+   * Record an ErrorBoundary catch
+   */
+  recordErrorBoundaryCatch(component: string = 'unknown'): void {
+    this.incrementCounter('hems_error_boundary_catches_total', { component });
+  }
+
+  /**
+   * Record a Sentry event dispatch
+   */
+  recordSentryEvent(level: string): void {
+    this.incrementCounter('hems_sentry_events_total', { level });
   }
 
   /**

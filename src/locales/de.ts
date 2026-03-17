@@ -1195,6 +1195,10 @@ export const de = {
     helpTitle: 'Brauchen Sie Hilfe?',
     helpText:
       'Falls das Problem weiterhin besteht, leeren Sie den Browser-Cache oder kontaktieren Sie den Support unter',
+    reportBug: 'Fehler melden',
+    reportTitle: 'Fehler melden',
+    reportSubtitle: 'Beschreiben Sie bitte, was Sie getan haben, als der Fehler auftrat.',
+    reportSubmit: 'Absenden',
   },
   export: {
     title: 'Export & Teilen',
