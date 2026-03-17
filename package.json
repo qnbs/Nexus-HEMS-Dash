@@ -1,8 +1,8 @@
 {
   "name": "nexus-hems-dash",
   "private": true,
-  "version": "4.4.0",
-  "description": "Real-time Home Energy Management System dashboard — Victron Cerbo GX, KNX/IP, EEBUS SPINE/SHIP, OCPP 2.1, dynamic tariffs (Tibber/Tibber Pulse/aWATTar DE+AT/Octopus Energy), SG Ready heat pump control, AI-assisted optimization, WCAG 2.2 AA accessible",
+  "version": "4.5.0",
+  "description": "Real-time Home Energy Management System dashboard — 10 protocol adapters (Victron, Modbus, KNX, OCPP 2.1, EEBUS + Home Assistant, Matter/Thread, Zigbee2MQTT, Shelly), plugin system with adapter registry, dynamic tariffs (Tibber/aWATTar/Octopus/Nordpool), SG Ready, AI optimizer, WCAG 2.2 AA",
   "keywords": [
     "hems",
     "energy-management",
@@ -14,6 +14,12 @@
     "tibber",
     "awattar",
     "octopus-energy",
+    "home-assistant",
+    "matter-thread",
+    "zigbee2mqtt",
+    "shelly",
+    "adapter-registry",
+    "plugin-system",
     "capacitor",
     "sg-ready",
     "react",

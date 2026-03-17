@@ -33,7 +33,10 @@ import {
   CircleAlert,
   CircleMinus,
   Circle,
+  Download,
+  Package,
 } from 'lucide-react';
+import { loadAllContribAdapters, listRegisteredAdapters } from '../core/adapters/adapter-registry';
 
 // ─── Types ───────────────────────────────────────────────────────────
 
@@ -237,6 +240,137 @@ const STATUS_CONFIG: Record<
   partial: { icon: CircleAlert, color: 'text-amber-400', labelKey: 'adapterConfig.partial' },
   na: { icon: CircleMinus, color: 'text-(--color-muted)', labelKey: 'adapterConfig.notApplicable' },
 };
+
+// ─── Contrib Adapter Section ─────────────────────────────────────────
+
+const CONTRIB_ADAPTERS = [
+  {
+    id: 'homeassistant-mqtt',
+    nameKey: 'monitoring.contribHomeAssistantMqtt',
+    descKey: 'monitoring.contribHomeAssistantMqttDesc',
+    icon: Server,
+    color: 'text-cyan-400',
+    capabilities: ['pv', 'battery', 'grid', 'load', 'evCharger'],
+  },
+  {
+    id: 'matter-thread',
+    nameKey: 'monitoring.contribMatterThread',
+    descKey: 'monitoring.contribMatterThreadDesc',
+    icon: Radio,
+    color: 'text-violet-400',
+    capabilities: ['pv', 'grid', 'load'],
+  },
+  {
+    id: 'zigbee2mqtt',
+    nameKey: 'monitoring.contribZigbee2mqtt',
+    descKey: 'monitoring.contribZigbee2mqttDesc',
+    icon: Wifi,
+    color: 'text-amber-400',
+    capabilities: ['load', 'grid'],
+  },
+  {
+    id: 'shelly-rest',
+    nameKey: 'monitoring.contribShellyRest',
+    descKey: 'monitoring.contribShellyRestDesc',
+    icon: Gauge,
+    color: 'text-emerald-400',
+    capabilities: ['grid', 'load'],
+  },
+] as const;
+
+function ContribAdapterSection() {
+  const { t } = useTranslation();
+  const [loadedIds, setLoadedIds] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const handleLoadAll = async () => {
+    setLoading(true);
+    try {
+      const ids = await loadAllContribAdapters();
+      setLoadedIds(ids);
+    } catch {
+      // Error handled by registry
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const registeredAdapters = listRegisteredAdapters();
+  const contribRegistered = registeredAdapters.filter((a) => a.source === 'contrib');
+
+  return (
+    <section className="glass-panel-strong space-y-6 rounded-2xl p-6">
+      <div className="flex items-center justify-between border-b border-(--color-border) pb-4">
+        <h2 className="fluid-text-lg flex items-center gap-2 font-medium">
+          <Package size={20} className="text-(--color-primary)" />
+          {t('monitoring.contribAdapters')}
+        </h2>
+        <motion.button
+          type="button"
+          onClick={handleLoadAll}
+          disabled={loading}
+          className="focus-ring flex items-center gap-2 rounded-xl border border-(--color-border) bg-(--color-surface-strong) px-3 py-2 text-xs transition-colors hover:border-(--color-primary)/30 hover:bg-(--color-primary)/5 disabled:opacity-50"
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+        >
+          <Download size={14} />
+          {t('monitoring.loadAllContrib')}
+        </motion.button>
+      </div>
+      <p className="text-sm text-(--color-muted)">{t('monitoring.contribAdaptersDesc')}</p>
+
+      {loadedIds.length > 0 && (
+        <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-3 py-2 text-xs text-emerald-400">
+          {t('monitoring.contribLoaded', { ids: loadedIds.join(', ') })}
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        {CONTRIB_ADAPTERS.map((adapter) => {
+          const Icon = adapter.icon;
+          const isRegistered =
+            contribRegistered.some((r) => r.id === adapter.id) || loadedIds.includes(adapter.id);
+          return (
+            <div
+              key={adapter.id}
+              className="flex items-center gap-3 rounded-xl border border-(--color-border) bg-(--color-surface)/50 p-4 transition-colors hover:bg-(--color-surface)"
+            >
+              <span
+                className={`flex h-10 w-10 items-center justify-center rounded-lg bg-(--color-surface-strong) ${adapter.color}`}
+              >
+                <Icon size={20} />
+              </span>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <span className="truncate text-sm font-medium text-(--color-text)">
+                    {t(adapter.nameKey)}
+                  </span>
+                  {isRegistered && <Check size={14} className="shrink-0 text-emerald-400" />}
+                </div>
+                <p className="truncate text-[10px] text-(--color-muted)">{t(adapter.descKey)}</p>
+                <div className="mt-1 flex flex-wrap gap-1">
+                  {adapter.capabilities.map((cap) => (
+                    <span
+                      key={cap}
+                      className="rounded bg-(--color-primary)/10 px-1.5 py-0.5 text-[9px] text-(--color-primary)"
+                    >
+                      {t(`adapterConfig.cap_${cap}`)}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="rounded-lg border border-(--color-primary)/20 bg-(--color-primary)/5 p-3 text-xs text-(--color-muted)">
+        <span className="font-medium text-(--color-primary)">💡 </span>
+        {t('monitoring.pluginDynamicLoad')} · {t('monitoring.pluginNpmFormat')}
+      </div>
+    </section>
+  );
+}
 
 // ─── ComplianceChecklist ─────────────────────────────────────────────
 
@@ -1034,6 +1168,9 @@ export function AdapterConfigPanel() {
           );
         })}
       </AnimatePresence>
+
+      {/* Contrib / Community Adapters */}
+      <ContribAdapterSection />
 
       {/* §14a EnWG + VDE-AR-N 4105 Compliance Checklist */}
       <ComplianceChecklist activeAdapters={adapters.map((a) => a.type)} />
