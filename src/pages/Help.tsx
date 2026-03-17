@@ -36,6 +36,7 @@ import {
   CheckCircle2,
   Github,
   ExternalLink,
+  Clock,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -810,6 +811,34 @@ export function Help() {
                       description={t('help.featureSecurityDesc')}
                       color="bg-red-500/15"
                     />
+                    <FeatureCard
+                      icon={<Cpu size={20} className="text-cyan-400" />}
+                      title={t('help.featureControllers')}
+                      description={t('help.featureControllersDesc')}
+                      color="bg-cyan-500/15"
+                      link="/controllers"
+                    />
+                    <FeatureCard
+                      icon={<Network size={20} className="text-violet-400" />}
+                      title={t('help.featurePlugins')}
+                      description={t('help.featurePluginsDesc')}
+                      color="bg-violet-500/15"
+                      link="/plugins"
+                    />
+                    <FeatureCard
+                      icon={<HardDrive size={20} className="text-lime-400" />}
+                      title={t('help.featureHardwareRegistry')}
+                      description={t('help.featureHardwareRegistryDesc')}
+                      color="bg-lime-500/15"
+                      link="/hardware"
+                    />
+                    <FeatureCard
+                      icon={<Clock size={20} className="text-sky-400" />}
+                      title={t('help.featureHistorical')}
+                      description={t('help.featureHistoricalDesc')}
+                      color="bg-sky-500/15"
+                      link="/historical-analytics"
+                    />
                   </div>
                 </div>
 
@@ -1194,7 +1223,7 @@ export function Help() {
                         { category: 'State', items: 'Zustand, React Query, Dexie.js' },
                         {
                           category: t('help.visualization'),
-                          items: 'D3.js Sankey, Recharts, Framer Motion',
+                          items: 'D3.js Sankey, Recharts, Motion',
                         },
                         { category: 'Backend', items: 'Node.js, Express, WebSockets, MQTT' },
                         { category: 'AI', items: 'Google Gemini 3.1, OpenAI, Anthropic' },
@@ -1246,6 +1275,9 @@ export function Help() {
                       <p>• Tibber & aWATTar — Dynamic electricity tariff APIs</p>
                       <p>• D3.js — Data-driven visualization library</p>
                       <p>• Google — Gemini 3.1 AI model</p>
+                      <p>• EMHASS — MPC/LP optimization concepts</p>
+                      <p>• OpenEMS — OSGi controller architecture inspiration</p>
+                      <p>• evcc — EV charging integration patterns</p>
                     </div>
                   </div>
                 </div>

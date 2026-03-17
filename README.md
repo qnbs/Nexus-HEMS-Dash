@@ -24,15 +24,15 @@ Nexus-HEMS unifies **10 protocol adapters** (5 core + 5 contrib) behind a single
 
 ## Key Features
 
-| Category                | Features                                                                                                                                                                                                 |
-| :---------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Energy**              | Real-time D3.js Sankey flow · AI optimizer (Gemini 3.1) · 24h/7d predictive forecast · Live tariff widget (Tibber/aWATTar/Octopus/Nordpool) · Smart EV charging (§14a EnWG) · SG Ready heat pump control |
-| **Protocols (Core)**    | Victron MQTT (Cerbo GX / Venus OS) · Modbus/SunSpec (103/124/201) · KNX/IP floorplan · OCPP 2.1 V2X (ISO 15118) · EEBUS SPINE/SHIP (TLS 1.3 mTLS)                                                        |
-| **Protocols (Contrib)** | Home Assistant MQTT · Matter/Thread · Zigbee2MQTT · Shelly REST (Gen2+) · Example template                                                                                                               |
-| **Plugin System**       | Adapter Registry with dynamic `import()` loading · npm-package format · `BaseAdapter` class for rapid development · Hot-loading from Settings UI                                                         |
-| **Platform**            | PWA offline-first (Workbox + IndexedDB) · 5 themes · Full i18n (DE/EN) · WCAG 2.2 AA · PDF reports + QR sharing · Prometheus monitoring                                                                  |
-| **Security**            | BYOK AI vault (AES-GCM 256) · JWT WebSocket auth · Helmet CSP · Rate limiting · CORS · Zod schema validation                                                                                             |
-| **Desktop & Mobile**    | Tauri v2 (Windows/macOS/Linux) · Capacitor 7 (iOS/Android)                                                                                                                                               |
+| Category                | Features                                                                                                                                                                                                                                                                                        |
+| :---------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Energy**              | Real-time D3.js Sankey flow · AI optimizer (Gemini 3.1) · MPC day-ahead optimizer · 7 real-time controllers · 24h/7d predictive forecast · Live tariff widget (Tibber/aWATTar/Octopus/Nordpool) · Smart EV charging (§14a EnWG) · SG Ready heat pump control · Hardware registry (120+ devices) |
+| **Protocols (Core)**    | Victron MQTT (Cerbo GX / Venus OS) · Modbus/SunSpec (103/124/201) · KNX/IP floorplan · OCPP 2.1 V2X (ISO 15118) · EEBUS SPINE/SHIP (TLS 1.3 mTLS)                                                                                                                                               |
+| **Protocols (Contrib)** | Home Assistant MQTT · Matter/Thread · Zigbee2MQTT · Shelly REST (Gen2+) · Example template                                                                                                                                                                                                      |
+| **Plugin System**       | Adapter Registry with dynamic `import()` loading · npm-package format · `BaseAdapter` class for rapid development · Hot-loading from Settings UI                                                                                                                                                |
+| **Platform**            | PWA offline-first (Workbox + IndexedDB) · 5 themes · Full i18n (DE/EN) · WCAG 2.2 AA · PDF reports + QR sharing · Prometheus monitoring · 19 pages                                                                                                                                              |
+| **Security**            | BYOK AI vault (AES-GCM 256) · JWT WebSocket auth · Helmet CSP · Rate limiting · CORS · Zod schema validation                                                                                                                                                                                    |
+| **Desktop & Mobile**    | Tauri v2 (Windows/macOS/Linux) · Capacitor 7 (iOS/Android)                                                                                                                                                                                                                                      |
 
 ## Architecture
 
@@ -55,7 +55,10 @@ Nexus-HEMS unifies **10 protocol adapters** (5 core + 5 contrib) behind a single
           useEnergyStore (Zustand) ──→ UnifiedEnergyModel
                      │
                      ├──→ D3.js Sankey + Recharts (UI)
+                     ├──→ ControllerPipeline (7 real-time controllers)
+                     ├──→ MPC Optimizer (LP day-ahead scheduling)
                      ├──→ AI Optimizer (Gemini / OpenAI / Anthropic / xAI / Groq / Ollama)
+                     ├──→ Hardware Registry (120+ certified devices)
                      └──→ Dexie.js IndexedDB (Offline Cache)
 ```
 
@@ -100,21 +103,26 @@ PORT=3000                    # Default: 3000
 
 ## Pages
 
-| Route           | Page         | Description                              |
-| :-------------- | :----------- | :--------------------------------------- |
-| `/`             | Home         | KPI dashboard, mini Sankey, quick nav    |
-| `/energy-flow`  | Energy Flow  | Full D3.js Sankey + live price widget    |
-| `/production`   | Production   | PV generation, self-consumption          |
-| `/storage`      | Storage      | Battery SoC, charge/discharge            |
-| `/consumption`  | Consumption  | Load breakdown, grid exchange            |
-| `/ev`           | EV Charging  | PV surplus / fast / dynamic modes        |
-| `/floorplan`    | Floorplan    | KNX room automation                      |
-| `/ai-optimizer` | AI Optimizer | Gemini analysis + optimizer              |
-| `/tariffs`      | Tariffs      | Live prices, forecasts, optimal windows  |
-| `/analytics`    | Analytics    | 8 KPIs, energy balance, costs            |
-| `/monitoring`   | Monitoring   | System health, metrics, adapter matrix   |
-| `/settings`     | Settings     | Appearance, system, energy, security, AI |
-| `/help`         | Help         | Docs, keyboard shortcuts, FAQ            |
+| Route                   | Page                 | Description                                      |
+| :---------------------- | :------------------- | :----------------------------------------------- |
+| `/`                     | Home                 | KPI dashboard, mini Sankey, quick nav            |
+| `/energy-flow`          | Energy Flow          | Full D3.js Sankey + live price widget            |
+| `/production`           | Production           | PV generation, self-consumption                  |
+| `/storage`              | Storage              | Battery SoC, charge/discharge                    |
+| `/consumption`          | Consumption          | Load breakdown, grid exchange                    |
+| `/ev`                   | EV Charging          | PV surplus / fast / dynamic modes                |
+| `/floorplan`            | Floorplan            | KNX room automation                              |
+| `/ai-optimizer`         | AI Optimizer         | Gemini analysis + optimizer                      |
+| `/tariffs`              | Tariffs              | Live prices, forecasts, optimal windows          |
+| `/analytics`            | Analytics            | 8 KPIs, energy balance, costs                    |
+| `/historical-analytics` | Historical Analytics | Long-term energy data analysis, trend comparison |
+| `/monitoring`           | Monitoring           | System health, metrics, adapter matrix           |
+| `/controllers`          | Controllers          | Energy controller pipeline (7 real-time loops)   |
+| `/plugins`              | Plugins              | OSGi-style plugin lifecycle management           |
+| `/hardware`             | Hardware             | Device registry browser (120+ devices)           |
+| `/settings`             | Settings             | Appearance, system, energy, security, adapters   |
+| `/settings/ai`          | AI Settings          | Multi-provider AI key vault (AES-GCM 256)        |
+| `/help`                 | Help                 | Docs, FAQ, troubleshooting, keyboard shortcuts   |
 
 ## Protocol Adapters
 
@@ -184,7 +192,7 @@ For the full threat model, trust boundaries, STRIDE analysis, and GDPR/DSGVO com
 
 | Type       | Tool                                 | Scope                   |
 | :--------- | :----------------------------------- | :---------------------- |
-| Unit       | Vitest + jsdom + V8 coverage         | 106 tests, 16 suites    |
+| Unit       | Vitest + jsdom + V8 coverage         | 265 tests, 26 suites    |
 | E2E        | Playwright (Chromium/Firefox/WebKit) | Multi-route, a11y audit |
 | a11y       | @axe-core/playwright                 | WCAG 2.2 AA (15 tests)  |
 | Lighthouse | Lighthouse CI                        | Perf ≥ 85%, A11y ≥ 90%  |
@@ -225,11 +233,25 @@ Brand colors: `neon-green` (#22ff88) · `electric-blue` (#00f0ff) · `power-oran
 | :------ | :----------------------------------------------------------------------------------------------------------------------------- | :--------- |
 | Q1–Q3   | 5 core adapters, 5 themes, AI optimizer, EEBUS, PWA, Monitoring, Docker, Tauri, WCAG 2.2 AA, React Compiler, Backend hardening | ✅ Shipped |
 | Q3      | Plugin system, adapter registry, 5 contrib adapters (Home Assistant, Matter/Thread, Zigbee2MQTT, Shelly), Capacitor Mobile     | ✅ Shipped |
+| Q3–Q4   | Energy controllers (7 loops), MPC optimizer, hardware registry (120+ devices), plugin lifecycle, command safety, 265 tests     | ✅ Shipped |
 | Q4      | Historical analytics, multi-tenant SaaS, contrib marketplace                                                                   | 🔜 Planned |
 
 ## Changelog
 
 <details open>
+<summary><b>v4.6.0</b> — Energy Controllers + MPC Optimizer + Hardware Registry</summary>
+
+- **Energy Controllers:** 7 real-time control loops (ESS Symmetric, Peak Shaving, Grid-Optimized Charge, Self-Consumption, Emergency Capacity, HeatPump SG Ready, EV Smart Charge) with ControllerPipeline orchestration
+- **MPC Optimizer:** EMHASS-inspired LP day-ahead scheduler with PV/load forecasting, battery constraints, and tariff-aware cost minimization
+- **Hardware Registry:** 120+ certified devices across 5 categories (inverters, wallboxes, meters, batteries, heat pumps) with manufacturer specs and protocol support
+- **Plugin System Lifecycle:** OSGi-inspired plugin manager with install → resolve → start → stop → uninstall lifecycle, dependency injection, service registry, event bus, semver matching
+- **3 New Pages:** Controllers (`/controllers`), Plugins (`/plugins`), Hardware (`/hardware`) with full i18n, a11y, and cross-page navigation
+- **Command Safety Layer:** Zod schema validation, rate limiting (30 cmd/min), audit trail in IndexedDB, danger command confirmation dialog
+- **Hardening:** Null guards on all controller data fields, div-by-zero protection in MPC, plugin activation timeout (10s), WebSocket leak fix, settings hash cache invalidation
+- **Testing:** 265 unit tests across 26 suites (was 106/16), edge case coverage for MPC and controllers
+</details>
+
+<details>
 <summary><b>v4.5.0</b> — Plugin System + 5 Contrib Adapters + Full Integration</summary>
 
 - **Plugin System:** Adapter Registry with dynamic `import()` loading, npm-package format, `BaseAdapter` class
@@ -292,13 +314,16 @@ MIT — see [LICENSE](LICENSE).
 - ⚡ Echtzeit D3.js Sankey-Energiefluss mit KI-Optimierung (Gemini 3.1)
 - 🔌 10 Adapter: Victron, Modbus, KNX, OCPP, EEBUS + Home Assistant, Matter/Thread, Zigbee2MQTT, Shelly
 - 🧩 Plugin-System: Adapter-Registry mit dynamischem Laden, npm-Paket-Format, BaseAdapter-Klasse
+- 🎛️ 7 Echtzeit-Energieregler: ESS, Peak Shaving, Netz-optimiert, Eigenverbrauch, Notstrom, SG Ready, EV Smart
+- 📐 MPC-Optimierer: EMHASS-inspirierter LP Day-Ahead-Scheduler mit Tariferkennung
+- 🗃️ Hardware-Registry: 120+ zertifizierte Geräte (Wechselrichter, Wallboxen, Zähler, Batterien, Wärmepumpen)
 - 🚗 Intelligentes EV-Laden (PV-Überschuss, §14a EnWG, SG Ready, V2X)
 - 🏠 KNX-Grundriss mit interaktiver Gebäudeautomation
 - 📈 Prädiktive Vorhersage + Live-Tarif-Widget (5 Anbieter)
 - 🔐 BYOK KI-Tresor (7 Anbieter, AES-GCM 256-bit)
 - 📱 PWA Offline-First + Tauri Desktop + Capacitor Mobile
-- ♿ WCAG 2.2 AA · 🌐 i18n DE/EN · 🎨 5 Themes
-- 📊 Prometheus Monitoring · 📄 PDF-Berichte · 🔒 JWT + Helmet + CORS
+- ♿ WCAG 2.2 AA · 🌐 i18n DE/EN · 🎨 5 Themes · 📊 19 Seiten
+- 🧪 265 Unit-Tests · 📄 PDF-Berichte · 🔒 JWT + Helmet + CORS
 
 ```bash
 git clone https://github.com/qnbs/Nexus-HEMS-Dash.git && cd Nexus-HEMS-Dash

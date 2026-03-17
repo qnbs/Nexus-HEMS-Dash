@@ -687,6 +687,18 @@ export const en = {
     featureSecurity: 'Security',
     featureSecurityDesc:
       'mTLS, AES-GCM 256-bit encryption for API keys, 2FA, and local-first data storage. No cloud dependency.',
+    featureControllers: 'Energy Controllers',
+    featureControllersDesc:
+      '7 real-time control loops: ESS Symmetric, Peak Shaving, Grid-Optimized Charge, Self-Consumption, Emergency Capacity, SG Ready Heat Pump, EV Smart Charge.',
+    featurePlugins: 'Plugin System',
+    featurePluginsDesc:
+      'OSGi-inspired plugin lifecycle with install, resolve, start, stop, uninstall. Dependency injection, service registry, and event bus.',
+    featureHardwareRegistry: 'Hardware Registry',
+    featureHardwareRegistryDesc:
+      'Browse 120+ certified devices across inverters, wallboxes, meters, batteries, and heat pumps with manufacturer specs.',
+    featureHistorical: 'Historical Analytics',
+    featureHistoricalDesc:
+      'Long-term energy data analysis with trend comparison, cost tracking, and performance metrics over weeks and months.',
     protocols: 'Supported Protocols & Standards',
 
     // Glossary extended
@@ -812,7 +824,7 @@ export const en = {
     perf4: 'Periodically clear the local cache in Settings → Storage to free up IndexedDB space',
 
     // About
-    versionFull: 'Version 4.1.0 — Build 2026.03',
+    versionFull: 'Version 4.6.0 — Build 2026.03',
     visualization: 'Visualization',
     testing: 'Testing',
     a11yTitle: 'Accessibility',

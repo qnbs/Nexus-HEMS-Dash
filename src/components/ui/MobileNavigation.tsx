@@ -18,6 +18,7 @@ import {
   Cpu,
   Puzzle,
   HardDrive,
+  Settings,
 } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -151,6 +152,12 @@ function MobileNavigationComponent() {
       icon: <HardDrive className="h-5 w-5" />,
       label: t('nav.hardware', 'Hardware'),
       path: '/hardware',
+    },
+    {
+      id: 'settings',
+      icon: <Settings className="h-5 w-5" />,
+      label: t('nav.settings', 'Settings'),
+      path: '/settings',
     },
     {
       id: 'help',

@@ -691,6 +691,18 @@ export const de = {
     featureSecurity: 'Sicherheit',
     featureSecurityDesc:
       'mTLS, AES-GCM 256-Bit-Verschlüsselung für API-Schlüssel, 2FA und lokale Datenhaltung. Keine Cloud-Abhängigkeit.',
+    featureControllers: 'Energieregler',
+    featureControllersDesc:
+      '7 Echtzeit-Regelkreise: ESS Symmetrisch, Peak Shaving, Netz-optimiertes Laden, Eigenverbrauch, Notstromreserve, SG Ready Wärmepumpe, EV Smart Charge.',
+    featurePlugins: 'Plugin-System',
+    featurePluginsDesc:
+      'OSGi-inspirierter Plugin-Lebenszyklus mit Installieren, Auflösen, Starten, Stoppen, Deinstallieren. Dependency Injection, Service-Registry und Event-Bus.',
+    featureHardwareRegistry: 'Hardware-Registry',
+    featureHardwareRegistryDesc:
+      'Durchsuchen Sie 120+ zertifizierte Geräte in den Kategorien Wechselrichter, Wallboxen, Zähler, Batterien und Wärmepumpen.',
+    featureHistorical: 'Historische Analytik',
+    featureHistoricalDesc:
+      'Langzeit-Energiedatenanalyse mit Trendvergleich, Kostenverfolgung und Leistungskennzahlen über Wochen und Monate.',
     protocols: 'Unterstützte Protokolle & Standards',
 
     // Glossar erweitert
@@ -822,7 +834,7 @@ export const de = {
       'Leeren Sie regelmäßig den lokalen Cache in Einstellungen → Speicher, um IndexedDB-Speicherplatz freizugeben',
 
     // Über
-    versionFull: 'Version 4.1.0 — Build 2026.03',
+    versionFull: 'Version 4.6.0 — Build 2026.03',
     visualization: 'Visualisierung',
     testing: 'Tests',
     a11yTitle: 'Barrierefreiheit',
