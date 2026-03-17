@@ -88,10 +88,12 @@ export function usePWAInstall() {
   const isInstalled = state.installed || isStandalone();
 
   const install = async () => {
-    if (!_deferredPrompt) return false;
+    const prompt = _deferredPrompt;
+    if (!prompt) return false;
     try {
-      await _deferredPrompt.prompt();
-      const { outcome } = await _deferredPrompt.userChoice;
+      await prompt.prompt();
+      const { outcome } = await prompt.userChoice;
+      // eslint-disable-next-line react-compiler/react-compiler -- module-level singleton for useSyncExternalStore
       _deferredPrompt = null;
       notify();
       return outcome === 'accepted';

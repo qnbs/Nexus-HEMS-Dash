@@ -17,7 +17,7 @@
 
 import { create } from 'zustand';
 import { useShallow } from 'zustand/react/shallow';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useAppStore } from '../store';
 import { persistSnapshot } from '../lib/db';
 
@@ -317,6 +317,14 @@ export function sendAdapterCommand(command: AdapterCommand): void {
 export function useAdapterBridge() {
   const setEnergyData = useAppStore((s) => s.setEnergyData);
   const setConnected = useAppStore((s) => s.setConnected);
+  const setEnergyDataRef = useRef(setEnergyData);
+  const setConnectedRef = useRef(setConnected);
+
+  // Sync latest callbacks into refs (outside of render, per react-hooks/refs)
+  useEffect(() => {
+    setEnergyDataRef.current = setEnergyData;
+    setConnectedRef.current = setConnected;
+  });
 
   useEffect(() => {
     const { adapters, mergeData, setAdapterStatus } = useEnergyStoreBase.getState();
@@ -346,7 +354,7 @@ export function useAdapterBridge() {
         mergeData(id, data);
 
         // Bridge to legacy store
-        bridgeToAppStore(data, setEnergyData);
+        bridgeToAppStore(data, setEnergyDataRef.current);
 
         // Persist to Dexie.js (single write — no duplicate)
         if (data.timestamp) {
@@ -363,7 +371,7 @@ export function useAdapterBridge() {
         const anyConn = Object.values(currentAdapters).some(
           (a) => a.enabled && a.status === 'connected',
         );
-        setConnected(anyConn);
+        setConnectedRef.current(anyConn);
       });
 
       // Connect (only if circuit breaker allows)
@@ -377,8 +385,7 @@ export function useAdapterBridge() {
         entry.adapter.destroy();
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Only on mount — adapters are stable references
+  }, []); // Only on mount — adapters are stable references, callbacks via refs
 }
 
 // ─── Legacy bridge helpers ───────────────────────────────────────────

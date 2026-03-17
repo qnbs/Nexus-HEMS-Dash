@@ -1,4 +1,4 @@
-import { useEffect, lazy, Suspense } from 'react';
+import { useEffect, useRef, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   BrowserRouter as Router,
@@ -250,13 +250,15 @@ export default function App() {
   }, [i18n, locale]);
 
   // Initialize theme from preference on mount
+  const themeInitRef = useRef(false);
   useEffect(() => {
+    if (themeInitRef.current) return;
+    themeInitRef.current = true;
     if (themePreference === 'system') {
       const resolvedTheme = resolveTheme('system');
       setTheme(resolvedTheme);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Run only once on mount
+  }, [themePreference, setTheme]);
 
   // Watch system theme preference
   useEffect(() => {

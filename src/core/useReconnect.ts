@@ -52,9 +52,16 @@ export function useReconnect(
   circuitBreaker: CircuitBreaker | null,
   config: Partial<ReconnectConfig> = {},
 ) {
-  const mergedConfig = { ...DEFAULT_RECONNECT_CONFIG, ...config };
+  const mergedConfigRef = useRef({ ...DEFAULT_RECONNECT_CONFIG, ...config });
+  const circuitBreakerRef = useRef(circuitBreaker);
   const attemptRef = useRef(0);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Sync latest config/circuitBreaker into refs (outside of render, per react-hooks/refs)
+  useEffect(() => {
+    mergedConfigRef.current = { ...DEFAULT_RECONNECT_CONFIG, ...config };
+    circuitBreakerRef.current = circuitBreaker;
+  });
 
   useEffect(() => {
     let prevStatus = useEnergyStoreBase.getState().adapters[adapterId]?.status;
@@ -64,15 +71,18 @@ export function useReconnect(
       if (status === prevStatus) return;
       prevStatus = status;
 
+      const cb = circuitBreakerRef.current;
+      const cfg = mergedConfigRef.current;
+
       if (status === 'connected') {
         // Reset on successful connection
         attemptRef.current = 0;
-        circuitBreaker?.recordSuccess();
+        cb?.recordSuccess();
       } else if (status === 'disconnected' || status === 'error') {
-        circuitBreaker?.recordFailure();
+        cb?.recordFailure();
 
         // Don't reconnect if circuit breaker is open
-        if (circuitBreaker && !circuitBreaker.canExecute()) {
+        if (cb && !cb.canExecute()) {
           if (import.meta.env.DEV) {
             console.warn(
               `[useReconnect] Circuit breaker open for ${adapterId}, skipping reconnect`,
@@ -82,16 +92,14 @@ export function useReconnect(
         }
 
         // Don't exceed max retries
-        if (attemptRef.current >= mergedConfig.maxRetries) {
+        if (attemptRef.current >= cfg.maxRetries) {
           if (import.meta.env.DEV) {
-            console.warn(
-              `[useReconnect] Max retries (${mergedConfig.maxRetries}) reached for ${adapterId}`,
-            );
+            console.warn(`[useReconnect] Max retries (${cfg.maxRetries}) reached for ${adapterId}`);
           }
           return;
         }
 
-        const delay = calcBackoffDelay(attemptRef.current, mergedConfig);
+        const delay = calcBackoffDelay(attemptRef.current, cfg);
         attemptRef.current++;
 
         if (timerRef.current) clearTimeout(timerRef.current);
@@ -110,6 +118,5 @@ export function useReconnect(
         clearTimeout(timerRef.current);
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [adapterId]);
 }
