@@ -19,6 +19,7 @@ import { create } from 'zustand';
 import { useShallow } from 'zustand/react/shallow';
 import { useEffect, useRef } from 'react';
 import { useAppStore } from '../store';
+import { queryClient } from '../lib/query-client';
 import { persistSnapshot } from '../lib/db';
 
 import type {
@@ -309,7 +310,8 @@ export function sendAdapterCommand(command: AdapterCommand): void {
  * 1. Connects enabled adapters on mount
  * 2. Merges adapter data into useEnergyStore
  * 3. Bridges data to useAppStore (backwards compat)
- * 4. Persists snapshots to Dexie.js
+ * 4. Syncs to TanStack Query cache (queryClient.setQueryData)
+ * 5. Persists snapshots to Dexie.js
  *
  * Mount this ONCE in App.tsx (replaces the old useWebSocket hook).
  * Uses getState() for actions to avoid full-store subscription.
@@ -356,9 +358,19 @@ export function useAdapterBridge() {
         // Bridge to legacy store
         bridgeToAppStore(data, setEnergyDataRef.current);
 
+        // Sync to TanStack Query cache — components using useQuery(['energy-live'])
+        // get push-based updates without polling. staleTime: Infinity ensures
+        // React Query never refetches; Zustand is the single source of truth.
+        const currentUnified = useEnergyStoreBase.getState().unified;
+        const legacySnapshot = unifiedToLegacy(currentUnified);
+        queryClient.setQueryData(['energy-live'], legacySnapshot);
+
+        // Cache energy snapshot for offline fallback
+        queryClient.setQueryData(['energy-snapshot', Date.now()], legacySnapshot);
+
         // Persist to Dexie.js (single write — no duplicate)
         if (data.timestamp) {
-          void persistSnapshot(unifiedToLegacy(useEnergyStoreBase.getState().unified));
+          void persistSnapshot(legacySnapshot);
         }
       });
 

@@ -1,7 +1,8 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import * as Comlink from 'comlink';
 import type { AIWorkerAPI } from '../workers/worker-types';
 import type { TariffProvider } from './predictive-ai';
+import type { EnergyData } from '../types';
 
 // Singleton AI worker for query hooks — shared across all usePriceForecast calls
 let _aiWorker: Comlink.Remote<AIWorkerAPI> | null = null;
@@ -14,6 +15,32 @@ function getAIWorkerProxy(): Comlink.Remote<AIWorkerAPI> {
   }
   return _aiWorker;
 }
+
+// ─── Live Energy Data (push-based via useAdapterBridge) ──────────────
+
+/**
+ * Hook to read live energy data from the TanStack Query cache.
+ *
+ * Data is pushed into the cache by useAdapterBridge via queryClient.setQueryData.
+ * staleTime: Infinity ensures React Query **never** refetches on its own —
+ * Zustand + adapters are the single source of truth for real-time data.
+ *
+ * Use this hook when components need TanStack Query benefits (Suspense,
+ * error boundaries, devtools inspection) alongside Zustand.
+ */
+export function useEnergyLive() {
+  return useQuery<EnergyData | null>({
+    queryKey: ['energy-live'],
+    queryFn: () => null, // Never called — data arrives via setQueryData
+    staleTime: Infinity, // Push-based: adapters update cache directly
+    gcTime: 1000 * 60 * 5, // Keep in cache for 5 min after unmount
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+  });
+}
+
+// ─── Tariff Price Forecast ───────────────────────────────────────────
 
 /**
  * Hook to fetch tariff price forecast for the next 24 hours.
@@ -32,50 +59,49 @@ export function usePriceForecast(provider: TariffProvider = 'tibber') {
       };
     },
     staleTime: 1000 * 60 * 15, // 15 min — tariff data changes infrequently
-    gcTime: 1000 * 60 * 60, // 1 h cache — avoid refetch on tab switch
+    gcTime: 1000 * 60 * 60, // 1 h cache
     retry: 3,
   });
 }
 
+// ─── Weather Forecast ────────────────────────────────────────────────
+
 /**
- * Hook to fetch weather forecast data for PV prediction
+ * Hook to fetch weather forecast data for PV prediction.
+ * Uses Open-Meteo free API (no API key needed).
  */
 export function useWeatherForecast(lat: number = 52.52, lon: number = 13.405) {
-  return useQuery({
+  return useQuery<{
+    hourly: {
+      time: string[];
+      temperature_2m: number[];
+      cloudcover: number[];
+      shortwave_radiation: number[];
+      relative_humidity_2m?: number[];
+      cloud_cover?: number[];
+      direct_radiation?: number[];
+      diffuse_radiation?: number[];
+    };
+  }>({
     queryKey: ['weather-forecast', lat, lon],
     queryFn: async () => {
       const response = await fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,relative_humidity_2m,cloud_cover,direct_radiation,diffuse_radiation&forecast_days=3&timezone=auto`,
+        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,cloudcover,shortwave_radiation&forecast_days=7`,
       );
       if (!response.ok) throw new Error('Weather API failed');
       return response.json();
     },
-    staleTime: 1000 * 60 * 60, // 1 h — weather forecasts are slow-changing
-    gcTime: 1000 * 60 * 60 * 2, // 2 h cache — reduces API calls
+    staleTime: 1000 * 60 * 60, // 1 h — weather data is slow-changing
+    gcTime: 1000 * 60 * 60 * 2, // 2 h cache
     retry: 2,
   });
 }
 
-/**
- * Hook to cache energy data for offline mode
- */
-export function useCacheEnergyData() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (data: { timestamp: number; energyData: unknown }) => {
-      // Store in TanStack Query cache
-      queryClient.setQueryData(['energy-snapshot', data.timestamp], data.energyData);
-      return data;
-    },
-    onSettled: () => {
-      void queryClient.invalidateQueries({ queryKey: ['latest-energy-snapshot'] });
-    },
-  });
-}
+// ─── Offline Energy Snapshot ─────────────────────────────────────────
 
 /**
- * Hook to get latest cached energy snapshot
+ * Hook to get latest cached energy snapshot for offline fallback.
+ * Snapshots are pushed by useAdapterBridge into ['energy-snapshot', timestamp].
  */
 export function useLatestEnergySnapshot() {
   const queryClient = useQueryClient();
@@ -84,7 +110,6 @@ export function useLatestEnergySnapshot() {
   return useQuery({
     queryKey: ['latest-energy-snapshot'],
     queryFn: () => {
-      // Find most recent energy snapshot
       const snapshots = cache
         .findAll({ queryKey: ['energy-snapshot'] })
         .filter((query) => query.state.data)
@@ -107,7 +132,7 @@ export function useLatestEnergySnapshot() {
         ageMinutes: Math.floor(age / 1000 / 60),
       };
     },
-    staleTime: Infinity,
-    gcTime: 1000 * 60 * 5, // Limit cache to 5 minutes to prevent snapshot accumulation
+    staleTime: Infinity, // Only refetch manually when needed
+    gcTime: 1000 * 60 * 5,
   });
 }

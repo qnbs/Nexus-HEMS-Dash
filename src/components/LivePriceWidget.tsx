@@ -1,10 +1,9 @@
-import { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { TrendingDown, TrendingUp, Zap } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { useAppStore } from '../store';
-import type { TariffForecast } from '../lib/predictive-ai';
+import { usePriceForecast } from '../lib/queries';
 
 export function LivePriceWidget() {
   const { t, i18n } = useTranslation();
@@ -12,37 +11,24 @@ export function LivePriceWidget() {
   const priceCurrent = useAppStore((s) => s.energyData.priceCurrent);
   const tariffProvider = useAppStore((s) => s.settings.tariffProvider);
   const chargeThreshold = useAppStore((s) => s.settings.chargeThreshold);
-  const [forecast, setForecast] = useState<TariffForecast[]>([]);
-  const [nextBestSlot, setNextBestSlot] = useState<TariffForecast | null>(null);
 
-  useEffect(() => {
-    const loadForecast = () => {
-      // Simulate fetching forecast
-      const simulatedForecast: TariffForecast[] = Array.from({ length: 24 }, (_, i) => ({
-        timestamp: new Date(Date.now() + i * 3600000),
-        pricePerKwh: 0.15 + Math.sin(i / 4) * 0.08,
-        renewable: 40 + Math.sin(i / 6) * 20,
-        co2Intensity: 200 + Math.sin(i / 8) * 80,
-      }));
+  // Forecast via TanStack Query + AI Worker (cached 15 min, off-main-thread)
+  const { data: forecastData } = usePriceForecast(
+    tariffProvider === 'none' ? 'tibber' : tariffProvider,
+  );
 
-      setForecast(simulatedForecast);
-
-      // Find next best price slot
-      const sorted = [...simulatedForecast].sort((a, b) => a.pricePerKwh - b.pricePerKwh);
-      setNextBestSlot(sorted[0]);
-    };
-
-    loadForecast();
-  }, []);
+  const forecast = forecastData?.prices ?? [];
+  const nextBestSlot =
+    forecast.length > 0 ? [...forecast].sort((a, b) => a.price - b.price)[0] : null;
 
   const currentPrice = priceCurrent;
   const isGoodPrice = currentPrice < chargeThreshold;
-  const trend = nextBestSlot && currentPrice > nextBestSlot.pricePerKwh ? 'down' : 'up';
+  const trend = nextBestSlot && currentPrice > nextBestSlot.price ? 'down' : 'up';
 
   const chartSlice = forecast.slice(0, 12);
   const { maxPrice, minPrice } = (() => {
     if (chartSlice.length === 0) return { maxPrice: 1, minPrice: 0 };
-    const prices = chartSlice.map((s) => s.pricePerKwh);
+    const prices = chartSlice.map((s) => s.price);
     return { maxPrice: Math.max(...prices), minPrice: Math.min(...prices) };
   })();
 
@@ -97,7 +83,7 @@ export function LivePriceWidget() {
                 minute: '2-digit',
               })}
             </span>{' '}
-            ({nextBestSlot.pricePerKwh.toFixed(3)} {t('units.euroPerKwh')})
+            ({nextBestSlot.price.toFixed(3)} {t('units.euroPerKwh')})
           </p>
         </div>
       )}
@@ -110,14 +96,14 @@ export function LivePriceWidget() {
       >
         {chartSlice.map((slot, i) => {
           const range = maxPrice - minPrice || 1;
-          const height = ((slot.pricePerKwh - minPrice) / range) * 100;
+          const height = ((slot.price - minPrice) / range) * 100;
 
           return (
             <div
               key={i}
               className="flex-1 rounded-t-sm bg-(--color-primary)/40 transition-all hover:bg-(--color-primary)"
               style={{ height: `${height}%` }}
-              title={`${slot.timestamp.toLocaleTimeString(dateLocale, { hour: '2-digit' })}: ${slot.pricePerKwh.toFixed(3)} ${t('units.euroPerKwh')}`}
+              title={`${slot.timestamp.toLocaleTimeString(dateLocale, { hour: '2-digit' })}: ${slot.price.toFixed(3)} ${t('units.euroPerKwh')}`}
             />
           );
         })}

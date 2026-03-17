@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { motion } from 'motion/react';
 import { CloudSun, TrendingUp, Leaf } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -15,6 +15,7 @@ import {
 } from 'recharts';
 
 import { useAppStoreShallow } from '../store';
+import { useWeatherForecast } from '../lib/queries';
 
 interface ForecastDataPoint {
   time: string;
@@ -24,104 +25,56 @@ interface ForecastDataPoint {
   consumption: number;
 }
 
-interface WeatherForecast {
-  timestamp: Date;
-  temperature: number;
-  cloudCover: number;
-  pvPotential: number;
-}
-
-/**
- * Fetches weather forecast from Open-Meteo API
- */
-async function fetchWeatherForecast(lat: number, lon: number): Promise<WeatherForecast[]> {
-  try {
-    const response = await fetch(
-      `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,cloudcover,shortwave_radiation&forecast_days=7`,
-    );
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const data = await response.json();
-
-    if (!data?.hourly?.time || !Array.isArray(data.hourly.time)) {
-      throw new Error('Invalid API response structure');
-    }
-
-    return data.hourly.time.map((time: string, i: number) => ({
-      timestamp: new Date(time),
-      temperature: data.hourly.temperature_2m?.[i] ?? 15,
-      cloudCover: data.hourly.cloudcover?.[i] ?? 50,
-      pvPotential: (data.hourly.shortwave_radiation?.[i] ?? 0) / 10,
-    }));
-  } catch (error) {
-    console.error('Weather forecast fetch error:', error);
-    // Fallback simulation
-    return Array.from({ length: 168 }, (_, i) => ({
-      timestamp: new Date(Date.now() + i * 3600000),
-      temperature: 15 + Math.sin(i / 6) * 10,
-      cloudCover: 30 + Math.sin(i / 8) * 40,
-      pvPotential: Math.max(0, Math.sin(((i % 24) / 24) * Math.PI * 2) * 8),
-    }));
-  }
-}
-
 export function PredictiveForecast() {
   const { t, i18n } = useTranslation();
   const settings = useAppStoreShallow((s) => s.settings);
-  const [forecastData, setForecastData] = useState<ForecastDataPoint[]>([]);
   const [timeRange, setTimeRange] = useState<'24h' | '7d'>('24h');
-  const [totalSavings, setTotalSavings] = useState(0);
-  const [co2Saved, setCo2Saved] = useState(0);
+  const dateLocale = i18n.language === 'de' ? 'de-DE' : 'en-US';
 
-  useEffect(() => {
-    const run = async () => {
-      // Default location: Hamburg, Germany
-      const lat = settings.location?.lat || 53.5511;
-      const lon = settings.location?.lon || 9.9937;
+  // Default location: Hamburg, Germany
+  const lat = settings.location?.lat || 53.5511;
+  const lon = settings.location?.lon || 9.9937;
 
-      const weather = await fetchWeatherForecast(lat, lon);
-      const hours = timeRange === '24h' ? 24 : 168;
+  // Weather data via TanStack Query (cached 1 h, auto-retry)
+  const { data: weatherData } = useWeatherForecast(lat, lon);
 
-      const data: ForecastDataPoint[] = weather.slice(0, hours).map((w) => {
-        // Simulate tariff pricing (peak hours: 17-21)
-        const hour = w.timestamp.getHours();
-        const isPeak = hour >= 17 && hour <= 21;
-        const basePrice = settings.gridPriceAvg || 0.25;
-        const price = isPeak ? basePrice * 1.5 : basePrice * 0.8;
+  const { forecastData, totalSavings, co2Saved } = useMemo(() => {
+    const hourly = weatherData?.hourly;
+    if (!hourly?.time?.length)
+      return { forecastData: [] as ForecastDataPoint[], totalSavings: 0, co2Saved: 0 };
 
-        // Estimate consumption pattern (higher during day and evening)
-        const consumption = 1.5 + Math.sin((hour / 24) * Math.PI * 2) * 1.2;
+    const hours = timeRange === '24h' ? 24 : 168;
+    const basePrice = settings.gridPriceAvg || 0.25;
 
-        const dateLocale = i18n.language === 'de' ? 'de-DE' : 'en-US';
+    const data: ForecastDataPoint[] = hourly.time.slice(0, hours).map((time, i) => {
+      const ts = new Date(time);
+      const hour = ts.getHours();
+      const isPeak = hour >= 17 && hour <= 21;
+      const price = isPeak ? basePrice * 1.5 : basePrice * 0.8;
+      const consumption = 1.5 + Math.sin((hour / 24) * Math.PI * 2) * 1.2;
+      const pvPotential = (hourly.shortwave_radiation?.[i] ?? 0) / 10;
 
-        return {
-          time:
-            timeRange === '24h'
-              ? w.timestamp.toLocaleTimeString(dateLocale, { hour: '2-digit', minute: '2-digit' })
-              : w.timestamp.toLocaleDateString(dateLocale, { weekday: 'short', day: 'numeric' }),
-          pvForecast: w.pvPotential,
-          price: price,
-          co2Intensity: 300 + (100 - w.pvPotential * 5), // Lower CO2 when solar is high
-          consumption: consumption,
-        };
-      });
+      return {
+        time:
+          timeRange === '24h'
+            ? ts.toLocaleTimeString(dateLocale, { hour: '2-digit', minute: '2-digit' })
+            : ts.toLocaleDateString(dateLocale, { weekday: 'short', day: 'numeric' }),
+        pvForecast: pvPotential,
+        price,
+        co2Intensity: 300 + (100 - pvPotential * 5),
+        consumption,
+      };
+    });
 
-      setForecastData(data);
+    const savings = data.reduce((sum, d) => {
+      const pvSurplus = Math.max(0, d.pvForecast - d.consumption);
+      return sum + pvSurplus * d.price;
+    }, 0);
 
-      // Calculate total savings if optimizing with PV
-      const savings = data.reduce((sum, d) => {
-        const pvSurplus = Math.max(0, d.pvForecast - d.consumption);
-        return sum + pvSurplus * d.price;
-      }, 0);
-      setTotalSavings(savings);
+    const co2 = data.reduce((sum, d) => sum + d.pvForecast * 0.5, 0);
 
-      // Calculate CO2 savings
-      const co2 = data.reduce((sum, d) => {
-        return sum + d.pvForecast * 0.5; // 500g CO2/kWh grid equivalent
-      }, 0);
-      setCo2Saved(co2);
-    };
-    run();
-  }, [timeRange, settings.location, settings.gridPriceAvg, i18n.language]);
+    return { forecastData: data, totalSavings: savings, co2Saved: co2 };
+  }, [weatherData, timeRange, settings.gridPriceAvg, dateLocale]);
 
   return (
     <motion.div
