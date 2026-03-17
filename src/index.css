@@ -1156,3 +1156,26 @@ body {
     0 2px 6px rgba(0, 0, 0, 0.12);
   backdrop-filter: blur(12px);
 }
+
+/* ========== CONTENT-VISIBILITY — CLS/TTI OPTIMIZATION ========== */
+/* Defers rendering of off-screen sections → reduces initial TTI on mobile. */
+/* contain-intrinsic-size reserves layout space → prevents CLS. */
+.cv-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 400px;
+}
+
+.cv-auto-sm {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 250px;
+}
+
+.cv-auto-lg {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 600px;
+}
+
+/* Contain layout scope for animated panels — limits reflow cascade */
+.contain-layout {
+  contain: layout style;
+}

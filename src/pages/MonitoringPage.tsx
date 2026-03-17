@@ -1,3 +1,5 @@
+import { useRef } from 'react';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -56,6 +58,78 @@ function generateSystemLoadHistory(currentLoad: number) {
       isFuture: h > currentHour,
     };
   });
+}
+
+// ─── Virtualized Event Log ────────────────────────────────────────────
+// Uses @tanstack/react-virtual to minimize DOM nodes for long event lists.
+// Reduces TTI on mobile by deferring off-viewport row rendering.
+
+type EventLogEntry = {
+  time: string;
+  level: 'info' | 'warn' | 'error';
+  source: string;
+  msg: string;
+};
+
+function VirtualEventLog({ events }: { events: EventLogEntry[] }) {
+  const parentRef = useRef<HTMLDivElement>(null);
+  // eslint-disable-next-line react-hooks/incompatible-library
+  const virtualizer = useVirtualizer({
+    count: events.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 36,
+    overscan: 3,
+  });
+
+  return (
+    <div ref={parentRef} className="max-h-[280px] overflow-y-auto" role="log" aria-live="polite">
+      <div style={{ height: `${virtualizer.getTotalSize()}px`, position: 'relative' }}>
+        {virtualizer.getVirtualItems().map((virtualRow) => {
+          const evt = events[virtualRow.index]!;
+          return (
+            <div
+              key={virtualRow.key}
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: `${virtualRow.size}px`,
+                transform: `translateY(${virtualRow.start}px)`,
+              }}
+            >
+              <div className="flex items-center gap-3 rounded-xl bg-white/5 px-3 py-2 text-xs">
+                <span className="shrink-0 font-mono text-[10px] text-(--color-muted)">
+                  {evt.time}
+                </span>
+                <span
+                  className={`flex h-5 w-5 shrink-0 items-center justify-center rounded ${
+                    evt.level === 'error'
+                      ? 'bg-red-500/15 text-red-400'
+                      : evt.level === 'warn'
+                        ? 'bg-yellow-500/15 text-yellow-400'
+                        : 'bg-blue-500/15 text-blue-400'
+                  }`}
+                >
+                  {evt.level === 'error' ? (
+                    <XCircle size={10} />
+                  ) : evt.level === 'warn' ? (
+                    <AlertTriangle size={10} />
+                  ) : (
+                    <CheckCircle2 size={10} />
+                  )}
+                </span>
+                <span className="shrink-0 rounded bg-white/10 px-1.5 py-0.5 font-mono text-[9px] text-(--color-muted)">
+                  {evt.source}
+                </span>
+                <span className="min-w-0 flex-1 truncate text-(--color-text)">{evt.msg}</span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
 }
 
 // ─── Component ────────────────────────────────────────────────────────
@@ -603,7 +677,7 @@ function MonitoringPageComponent() {
 
         {/* Resource Utilization */}
         <motion.section
-          className="glass-panel-strong hover-lift p-6"
+          className="glass-panel-strong hover-lift cv-auto-sm p-6"
           aria-labelledby="resources-title"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -679,7 +753,7 @@ function MonitoringPageComponent() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Adapter Connectivity */}
         <motion.section
-          className="glass-panel-strong hover-lift p-6"
+          className="glass-panel-strong hover-lift cv-auto p-6"
           aria-labelledby="adapters-title"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -797,7 +871,7 @@ function MonitoringPageComponent() {
 
         {/* Alert Rules */}
         <motion.section
-          className="glass-panel-strong hover-lift p-6"
+          className="glass-panel-strong hover-lift cv-auto-sm p-6"
           aria-labelledby="alerts-title"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -844,7 +918,7 @@ function MonitoringPageComponent() {
 
       {/* ─── Event Log Timeline ────────────────────────────────────── */}
       <motion.section
-        className="glass-panel-strong hover-lift p-6"
+        className="glass-panel-strong hover-lift cv-auto p-6"
         aria-labelledby="event-log-title"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -854,44 +928,12 @@ function MonitoringPageComponent() {
           <Terminal size={20} className="text-(--color-secondary)" aria-hidden="true" />
           {t('monitoring.eventLog')}
         </h2>
-        <div className="space-y-1.5">
-          {eventLog.map((evt) => (
-            <div
-              key={evt.time + evt.source}
-              className="flex items-center gap-3 rounded-xl bg-white/5 px-3 py-2 text-xs"
-            >
-              <span className="shrink-0 font-mono text-[10px] text-(--color-muted)">
-                {evt.time}
-              </span>
-              <span
-                className={`flex h-5 w-5 shrink-0 items-center justify-center rounded ${
-                  evt.level === 'error'
-                    ? 'bg-red-500/15 text-red-400'
-                    : evt.level === 'warn'
-                      ? 'bg-yellow-500/15 text-yellow-400'
-                      : 'bg-blue-500/15 text-blue-400'
-                }`}
-              >
-                {evt.level === 'error' ? (
-                  <XCircle size={10} />
-                ) : evt.level === 'warn' ? (
-                  <AlertTriangle size={10} />
-                ) : (
-                  <CheckCircle2 size={10} />
-                )}
-              </span>
-              <span className="shrink-0 rounded bg-white/10 px-1.5 py-0.5 font-mono text-[9px] text-(--color-muted)">
-                {evt.source}
-              </span>
-              <span className="min-w-0 flex-1 truncate text-(--color-text)">{evt.msg}</span>
-            </div>
-          ))}
-        </div>
+        <VirtualEventLog events={eventLog} />
       </motion.section>
 
       {/* ─── Grafana Integration ───────────────────────────────────── */}
       <motion.section
-        className="glass-panel-strong hover-lift p-6"
+        className="glass-panel-strong hover-lift cv-auto-sm p-6"
         aria-labelledby="grafana-title"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

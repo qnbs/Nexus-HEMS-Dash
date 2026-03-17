@@ -579,7 +579,7 @@ function AnalyticsPageComponent() {
 
       {/* ─── Monthly Comparison Bar Chart ─────────────────────────── */}
       <motion.section
-        className="glass-panel-strong hover-lift p-6"
+        className="glass-panel-strong hover-lift cv-auto p-6"
         aria-labelledby="monthly-chart-title"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -700,7 +700,7 @@ function AnalyticsPageComponent() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* System Efficiency Panel */}
         <motion.section
-          className="glass-panel-strong hover-lift p-6"
+          className="glass-panel-strong hover-lift cv-auto-sm p-6"
           aria-labelledby="efficiency-title"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -782,7 +782,7 @@ function AnalyticsPageComponent() {
 
         {/* Data Quality & System Health */}
         <motion.section
-          className="glass-panel-strong hover-lift p-6"
+          className="glass-panel-strong hover-lift cv-auto-sm p-6"
           aria-labelledby="data-quality-title"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
