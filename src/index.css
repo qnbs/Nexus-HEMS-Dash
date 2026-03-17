@@ -1315,3 +1315,219 @@ body {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
+
+/* ================================================================
+   UNIFIED UI PRINCIPLES v1 — New Utility Classes
+   ================================================================ */
+
+/* ========== ENERGY CARD (Level 1: Summary + Details) ========== */
+.energy-card {
+  border-radius: 1.5rem;
+  backdrop-filter: blur(64px);
+  min-height: 160px;
+  display: flex;
+  flex-direction: column;
+  padding: 1.25rem;
+  overflow: hidden;
+  transition: all 500ms cubic-bezier(0, 0, 0.2, 1);
+  position: relative;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--color-surface) 76%, transparent),
+    color-mix(in srgb, var(--color-surface) 58%, transparent)
+  );
+  border: 1px solid var(--color-border);
+  box-shadow:
+    0 8px 28px rgba(0, 0, 0, 0.12),
+    0 2px 8px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.energy-card:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 14px 44px rgba(0, 0, 0, 0.18),
+    0 6px 12px rgba(0, 0, 0, 0.12),
+    0 0 0 1px color-mix(in srgb, var(--color-primary) 22%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.energy-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.energy-card-details {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid color-mix(in srgb, var(--color-border) 50%, transparent);
+}
+
+@media (min-width: 640px) {
+  .energy-card {
+    padding: 1.5rem;
+  }
+}
+
+/* ========== CONTROL PANEL (Level 2: Full Control) ========== */
+.control-panel {
+  border-radius: 1.5rem;
+  border: 1px solid var(--color-border);
+  backdrop-filter: blur(64px);
+  max-width: 64rem;
+  overflow: hidden;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--color-surface-strong) 88%, transparent),
+    color-mix(in srgb, var(--color-surface-strong) 72%, transparent)
+  );
+  box-shadow:
+    0 12px 48px rgba(0, 0, 0, 0.18),
+    0 4px 12px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.06);
+}
+
+.control-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  min-height: 3.5rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-border) 60%, transparent);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-surface-strong) 40%, transparent),
+    transparent
+  );
+}
+
+.control-panel-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+}
+
+@media (min-width: 640px) {
+  .control-panel-body {
+    padding: 2rem;
+  }
+}
+
+/* ========== FLOATING ACTION BAR ========== */
+.floating-action-bar {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  max-width: 32rem;
+  width: max-content;
+  padding: 0.5rem 1.5rem;
+  height: 3.5rem;
+  border-radius: 9999px;
+  backdrop-filter: blur(48px);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--color-surface-strong) 90%, transparent),
+    color-mix(in srgb, var(--color-surface-strong) 74%, transparent)
+  );
+  border: 1px solid color-mix(in srgb, var(--color-border) 80%, transparent);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.24),
+    0 4px 12px rgba(0, 0, 0, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  z-index: 60; /* z-notification tier */
+  animation: slide-up 0.4s ease-out;
+}
+
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .floating-action-bar {
+    padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
+  }
+}
+
+@media (max-width: 639px) {
+  .floating-action-bar {
+    left: 1rem;
+    right: 1rem;
+    transform: none;
+    width: auto;
+    max-width: none;
+    justify-content: center;
+  }
+}
+
+/* ========== WIZARD STEP ========== */
+.wizard-step {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.wizard-step-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 500;
+  color: var(--color-muted);
+}
+
+.wizard-step[data-step='active'] .wizard-step-indicator {
+  color: var(--color-text);
+}
+
+.wizard-step[data-step='completed'] .wizard-step-indicator {
+  color: var(--color-primary);
+}
+
+.wizard-step-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 9999px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  border: 2px solid var(--color-border);
+  color: var(--color-muted);
+  transition: all 300ms ease;
+}
+
+.wizard-step[data-step='active'] .wizard-step-number {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--color-primary) 25%, transparent);
+}
+
+.wizard-step[data-step='completed'] .wizard-step-number {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-background);
+}
+
+.wizard-step-content {
+  min-height: 12rem;
+  padding: 0 0 0 3.25rem; /* Align with text after indicator */
+}
+
+/* ========== LIVE METRIC ========== */
+.live-metric {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(1.4375rem, 1.3rem + 0.6875vw, 1.5rem); /* fluid-text-2xl equivalent */
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--color-text);
+  transition: color 300ms ease;
+}
+
+.live-metric[data-changing='true'] {
+  animation: energy-pulse 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}

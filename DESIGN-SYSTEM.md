@@ -236,3 +236,289 @@ Each theme provides CSS variables:
   <!-- Mobile: 1rem, Tablet: 1.5rem, Desktop: 2rem -->
 </div>
 ```
+
+---
+
+## 🔍 Full Utility Class Audit (as of 2026-03-17)
+
+### Actively Used Classes (24)
+
+| Class                                                                                     | Usage                                            | Files                                                                                                                |
+| ----------------------------------------------------------------------------------------- | ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
+| `glass-panel`                                                                             | Card/panel surfaces, backdrop-blur + gradient bg | ProductionPage, StoragePage, AIOptimizerPage, MonitoringPage, EnergyFlowPage, App, ConfirmDialog                     |
+| `glass-panel-strong`                                                                      | Higher-opacity surfaces (modals, overlays)       | ProductionPage, StoragePage, AIOptimizerPage                                                                         |
+| `glass-panel-hover`                                                                       | Hover lift + glow transition for panels          | CSS-only definition, auto-applied via hover                                                                          |
+| `energy-pulse`                                                                            | Pulsing dot/icon for live status                 | ProductionPage, StoragePage, MonitoringPage, EnergyFlowPage, EVPage, FloorplanPage, AnalyticsPage, Sidebar, HomePage |
+| `cyber-shimmer`                                                                           | Loading spinner gradient                         | App.tsx                                                                                                              |
+| `metric-card`                                                                             | KPI/metric display cards                         | MonitoringPage, AnalyticsPage, HomePage                                                                              |
+| `btn-primary`                                                                             | Primary CTA buttons                              | Settings, AISettingsPage, NotFoundPage                                                                               |
+| `btn-secondary`                                                                           | Secondary action buttons                         | AISettingsPage                                                                                                       |
+| `eyebrow`                                                                                 | Small uppercase label                            | LivePriceWidget, AIOptimizerPanel                                                                                    |
+| `price-pill`                                                                              | Tariff/price badge                               | EnergyFlowPage, TariffsPage, ConsumptionPage, App                                                                    |
+| `focus-ring`                                                                              | WCAG 2.2 AA focus indicator                      | 20+ files (all interactive elements)                                                                                 |
+| `hover-lift`                                                                              | Subtle translateY on hover                       | ProductionPage, StoragePage, MonitoringPage, EnergyFlowPage                                                          |
+| `header-accent-line`                                                                      | Gradient accent on sticky header                 | App.tsx                                                                                                              |
+| `scrollbar-hide`                                                                          | Hide scrollbar (tabs, breadcrumbs)               | App, Settings, Help                                                                                                  |
+| `fluid-text-*`                                                                            | Responsive clamp-based typography                | All pages                                                                                                            |
+| `pattern-grid`                                                                            | Subtle grid background                           | App.tsx main content                                                                                                 |
+| `energy-flow-path`                                                                        | SVG stroke animation for Sankey                  | SankeyDiagram                                                                                                        |
+| `battery-charging` / `battery-discharging`                                                | Battery state animations                         | HomePage                                                                                                             |
+| `spotlight`                                                                               | Mouse-tracking radial gradient                   | NeonCard                                                                                                             |
+| `gradient-border`                                                                         | Animated gradient border                         | NeonCard                                                                                                             |
+| `sidebar-link` / `sidebar-link-active`                                                    | Sidebar nav item styles                          | Sidebar                                                                                                              |
+| `z-sticky` / `z-modal` / `z-modal-backdrop` / `z-notification` / `z-priority` / `z-fixed` | Z-index layering system                          | App, PWAUpdateNotification, Onboarding, CommandPalette, MobileNavigation                                             |
+| `cv-auto` / `cv-auto-sm` / `cv-auto-lg`                                                   | Content-visibility optimization                  | MonitoringPage, other pages                                                                                          |
+| `reduced-motion` / `high-contrast` / `compact-mode` / `no-glow` / `no-animations`         | Accessibility overrides                          | Root-level toggle classes                                                                                            |
+
+### Defined But Not Used in Components
+
+| Class                                                           | Purpose                                                |
+| --------------------------------------------------------------- | ------------------------------------------------------ |
+| `neon-glow-green` / `neon-glow-blue` / `neon-glow-orange`       | Text shadow glow                                       |
+| `neon-border-green` / `neon-border-blue` / `neon-border-orange` | Box shadow glow borders                                |
+| `skeleton`                                                      | Shimmer loading placeholder                            |
+| `nav-pill` / `nav-pill-active`                                  | Pill-shaped nav buttons                                |
+| `status-indicator` / `status-online` / `status-offline`         | Status dot with ping                                   |
+| `section-divider`                                               | Gradient horizontal rule                               |
+| `hover-glow` / `hover-scale` / `hover-rotate`                   | Hover effect modifiers                                 |
+| `text-gradient`                                                 | Gradient text fill                                     |
+| `stagger-fade-in`                                               | Staggered entrance animation                           |
+| `scroll-fade-in` / `scroll-scale-in`                            | Scroll-linked animations (`@supports scroll-timeline`) |
+| `animated-underline`                                            | Animated underline on hover                            |
+| `icon-float`                                                    | Gentle floating animation                              |
+
+### Keyframe Animations (12)
+
+`energy-pulse` · `energy-dash` · `stagger-item` · `btn-shimmer` · `ping` · `cyber-shimmer` · `scroll-fade-in` · `scroll-scale-in` · `battery-pulse-charging` · `battery-pulse-discharging` · `icon-float` · `pulse-slow`
+
+### CSS Custom Properties (10 theme vars)
+
+`--color-primary` · `--color-secondary` · `--color-accent` · `--color-background` · `--color-surface` · `--color-surface-strong` · `--color-text` · `--color-muted` · `--color-border` · `--color-glow`
+
+### Static Color Tokens (@theme)
+
+`--color-neon-green` · `--color-electric-blue` · `--color-power-orange` · `--color-deep-space` · `--color-void-blue` · `--color-polar-mist` · `--color-solar-sand` · `--color-midnight`
+
+### Themes (5)
+
+| Theme           | Label       | Dark | Preview                       |
+| --------------- | ----------- | ---- | ----------------------------- |
+| `energy-dark`   | Energy Dark | ✓    | `#22ff88` `#00d4e0` `#0a1520` |
+| `ocean-dark`    | Ocean Deep  | ✓    | `#38bdf8` `#818cf8` `#0c1222` |
+| `nature-green`  | Forest      | ✓    | `#4ade80` `#a3e635` `#0f1a12` |
+| `solar-light`   | Solar Light | ✗    | `#0bbf73` `#0084ff` `#fef9ef` |
+| `minimal-white` | Minimal     | ✗    | `#111827` `#6366f1` `#ffffff` |
+
+### Container Queries
+
+| Container       | Breakpoints                                    |
+| --------------- | ---------------------------------------------- |
+| `cq-kpi-grid`   | 32rem → 3 cols, 56rem → 5 cols                 |
+| `cq-panel-grid` | 40rem → 2 cols, 64rem → 3 cols                 |
+| `cq-card-grid`  | 24rem → 2 cols, 40rem → 3 cols, 56rem → 4 cols |
+
+### Container Sizes (Tailwind)
+
+`dashboard: 80rem` · `panel: 40rem` · `card: 24rem` · `sidebar: 16rem` · `kpi: 56rem`
+
+---
+
+## 🏗️ Unified UI Principles v1
+
+### 1. Progressive Disclosure
+
+Reveal complexity gradually. Default views show summarized data; details expand on demand.
+
+**Rules:**
+
+1. **Level 0 — Glance**: Show the single most important metric per card (e.g. "3.2 kW"). Use `metric-card` or `live-metric`.
+2. **Level 1 — Summary**: On hover or tap, reveal secondary details (trend arrow, %-change). Use `energy-card` with a collapsible details slot.
+3. **Level 2 — Full Detail**: Expand into a modal, drawer, or dedicated page. Use `control-panel` with section headers.
+4. **Never auto-expand** content that pushes other content off-screen on mobile.
+5. **Lazy-load** Level 2 content; keep Level 0 data in the Zustand store for instant rendering.
+
+```tsx
+{/* Level 0 */}
+<div className="metric-card">
+  <span className="eyebrow">PV Generation</span>
+  <span className="live-metric">3.2 kW</span>
+</div>
+
+{/* Level 1 — expands on click */}
+<div className="energy-card">
+  <span className="eyebrow">PV Generation</span>
+  <span className="live-metric">3.2 kW</span>
+  <div className="energy-card-details">
+    <span>+12% vs yesterday</span>
+    <MiniSparkline data={pvHistory} />
+  </div>
+</div>
+
+{/* Level 2 — full control */}
+<div className="control-panel">
+  <h2>Solar Array Configuration</h2>
+  <!-- Full settings, charts, adapter config -->
+</div>
+```
+
+### 2. Consistent Card Hierarchy
+
+Three tiers of content containers, each building on the previous:
+
+#### `metric-card` — KPI / Glance (Existing)
+
+- **Purpose**: Single value display for dashboards and summary grids.
+- **Content**: One primary value, optional eyebrow label, optional icon.
+- **Behavior**: Hover shows top-border glow accent; click navigates or expands.
+- **Grid**: Use inside `cq-kpi-grid` or `cq-card-grid`.
+
+#### `energy-card` — Summary + Details (New)
+
+- **Purpose**: Mid-level card for energy subsystems (PV, battery, grid, EV).
+- **Content**: Primary metric + secondary details slot + optional mini-chart.
+- **Behavior**: Collapsible details section; neon-border accent on active state.
+- **Sizing**: Min-height 160px; respects `@container` breakpoints.
+- **Composition**: Wraps a `metric-card` header + expandable body.
+
+```tsx
+<div className="energy-card">
+  <div className="energy-card-header">
+    <Zap className="h-5 w-5" />
+    <span className="eyebrow">Battery</span>
+    <span className="live-metric">78%</span>
+  </div>
+  <div className="energy-card-details">
+    <p>Charging · 1.4 kW · ETA 14:30</p>
+  </div>
+</div>
+```
+
+#### `control-panel` — Full Control (New)
+
+- **Purpose**: Top-level container for settings, configuration, and detailed views.
+- **Content**: Section header + form controls / charts / tables.
+- **Behavior**: Fixed width (max 64rem); internal scroll if content overflows.
+- **Decoration**: Stronger glass effect (`glass-panel-strong` base), subtle top-border gradient.
+- **Sections**: Use `section-divider` between logical groups.
+
+```tsx
+<div className="control-panel">
+  <div className="control-panel-header">
+    <h2>Adapter Configuration</h2>
+  </div>
+  <div className="section-divider" />
+  <div className="control-panel-body">
+    <!-- Form fields, toggles, etc. -->
+  </div>
+</div>
+```
+
+### 3. Global Action Bar (`floating-action-bar`)
+
+A persistent action bar for page-level actions (save, apply, reset).
+
+**Rules:**
+
+1. Appears **only** when the user has unsaved changes or pending actions.
+2. Fixed to the bottom of the viewport, centered, with `z-notification` layering.
+3. Semi-transparent glass background with blur, slides up on entry (`slide-up` animation).
+4. Maximum 3 actions: one primary (`btn-primary`), up to two secondary (`btn-secondary`).
+5. **Dismiss**: Auto-hides when changes are saved; can be manually dismissed.
+6. **Mobile**: Full-width with `safe-area-inset-bottom` padding.
+
+```tsx
+<div className="floating-action-bar">
+  <button className="btn-secondary">Reset</button>
+  <button className="btn-primary">Save Changes</button>
+</div>
+```
+
+### 4. Sidebar + Contextual Panels
+
+**Sidebar Rules (main navigation):**
+
+1. Use `sidebar-link` / `sidebar-link-active` for nav items.
+2. Desktop: persistent, 16rem width (`@container sidebar`). Collapsible to icon-only (4rem).
+3. Mobile: hidden by default, opens as overlay with `z-modal` + backdrop.
+4. Active route indicated by `sidebar-link-active` (primary color accent + fill).
+5. Group links by category with small uppercase section labels (`eyebrow`).
+
+**Contextual Panels (detail drawers):**
+
+1. Slide in from the right, max-width 28rem, `glass-panel-strong` background.
+2. Push content on desktop (≥ lg), overlay on mobile.
+3. Close via Escape key, backdrop click, or explicit close button.
+4. Use for: adapter detail, device config, AI insights, notification detail.
+5. Apply `z-modal` layering when open.
+
+```tsx
+{/* Contextual panel: adapter detail */}
+<aside className="glass-panel-strong fixed right-0 top-0 h-full w-[28rem] z-modal">
+  <header className="control-panel-header">
+    <h3>Victron Cerbo GX</h3>
+    <button className="focus-ring" aria-label="Close">
+      <X className="w-5 h-5" />
+    </button>
+  </header>
+  <div className="control-panel-body">
+    <!-- Adapter details -->
+  </div>
+</aside>
+```
+
+### 5. Wizard Steps (`wizard-step`)
+
+Multi-step flows (onboarding, adapter setup, export config).
+
+**Rules:**
+
+1. Each step is a `wizard-step` container with step indicator, title, and content area.
+2. Step indicator shows completed (checkmark), current (primary ring), and upcoming (muted) states.
+3. Navigation via Next / Back buttons in a `floating-action-bar` at the bottom.
+4. Validate the current step before allowing progression.
+5. Step content uses `control-panel-body` layout internally.
+
+```tsx
+<div className="wizard-step" data-step="active">
+  <div className="wizard-step-indicator">
+    <span className="wizard-step-number">2</span>
+    <span>Configure Adapter</span>
+  </div>
+  <div className="wizard-step-content">
+    <!-- Step form content -->
+  </div>
+</div>
+```
+
+### 6. Live Metric Display (`live-metric`)
+
+Specialized typography for real-time numeric values.
+
+**Rules:**
+
+1. Monospace font (`font-mono`) for stable digit width — no layout shifts.
+2. Tabular-nums (`font-variant-numeric: tabular-nums`) for aligned columns.
+3. Subtle `energy-pulse` animation when value changes (controlled via `data-changing` attribute).
+4. Size scales with container via `fluid-text-2xl` by default.
+
+```tsx
+<span className="live-metric" data-changing="true">3.247 kW</span>
+<span className="live-metric fluid-text-xl">78 %</span>
+```
+
+### 7. New Utility Class Reference
+
+| Class                   | Purpose                         | Base                                   |
+| ----------------------- | ------------------------------- | -------------------------------------- |
+| `energy-card`           | Mid-level energy subsystem card | `glass-panel` + collapsible body       |
+| `energy-card-header`    | Header row inside energy-card   | Flex row, gap, align-center            |
+| `energy-card-details`   | Collapsible detail section      | Grid, reveal on expand                 |
+| `control-panel`         | Full-control container          | `glass-panel-strong` + max-width       |
+| `control-panel-header`  | Header inside control-panel     | Flex, sticky, border-bottom            |
+| `control-panel-body`    | Scrollable body                 | Padding, overflow-y auto               |
+| `floating-action-bar`   | Bottom-fixed action bar         | Fixed, glass, z-notification, slide-up |
+| `wizard-step`           | Multi-step wizard container     | Flex column, step indicator            |
+| `wizard-step-indicator` | Step progress indicator         | Flex row, numbered circles             |
+| `wizard-step-number`    | Circle with step number         | Rounded-full, primary border           |
+| `wizard-step-content`   | Step body content               | Padding, min-height                    |
+| `live-metric`           | Real-time numeric readout       | Mono, tabular-nums, fluid-text-2xl     |

@@ -135,3 +135,70 @@ export const themeOrder: ThemeName[] = [
   'solar-light',
   'minimal-white',
 ];
+
+// ========== Unified UI Principles v1 — Component Tokens ==========
+
+/** Card hierarchy z-index and elevation mapping */
+export const cardHierarchy = {
+  /** Level 0: KPI/Glance — single metric display */
+  metricCard: {
+    minHeight: '96px',
+    padding: '1rem',
+    paddingSm: '1.5rem',
+    borderRadius: '1.5rem',
+    blur: '64px',
+  },
+  /** Level 1: Summary + expandable details for energy subsystems */
+  energyCard: {
+    minHeight: '160px',
+    padding: '1.25rem',
+    paddingSm: '1.5rem',
+    borderRadius: '1.5rem',
+    blur: '64px',
+    detailsGap: '0.75rem',
+  },
+  /** Level 2: Full control surface for config/settings */
+  controlPanel: {
+    maxWidth: '64rem',
+    padding: '1.5rem',
+    paddingSm: '2rem',
+    borderRadius: '1.5rem',
+    blur: '64px',
+    headerHeight: '3.5rem',
+  },
+} as const;
+
+/** Floating action bar tokens */
+export const floatingActionBar = {
+  height: '3.5rem',
+  maxWidth: '32rem',
+  blur: '48px',
+  borderRadius: '9999px',
+  paddingX: '1.5rem',
+  gap: '0.75rem',
+  /** z-index tier: matches z-notification (60) */
+  zIndex: 60,
+} as const;
+
+/** Wizard step tokens */
+export const wizardStep = {
+  indicatorSize: '2.5rem',
+  indicatorBorderWidth: '2px',
+  contentMinHeight: '12rem',
+  gap: '1.5rem',
+} as const;
+
+/** Live metric display tokens */
+export const liveMetric = {
+  fontFamily: 'var(--font-mono)',
+  fontVariantNumeric: 'tabular-nums',
+  /** Default fluid size — override with fluid-text-* */
+  defaultSize: 'fluid-text-2xl',
+} as const;
+
+/** Contextual panel (right drawer) tokens */
+export const contextualPanel = {
+  width: '28rem',
+  maxWidthMobile: '100vw',
+  blur: '64px',
+} as const;
