@@ -26,7 +26,7 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --ignore-scripts --omit=dev && npm cache clean --force
 
-COPY server.ts ./
+COPY server.ts jwt-utils.ts ./
 COPY --from=build /app/dist ./dist
 
 # Security: non-root

@@ -2,13 +2,12 @@ import express from 'express';
 import { createServer as createViteServer } from 'vite';
 import { WebSocketServer } from 'ws';
 import http from 'http';
-import crypto from 'crypto';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import cors from 'cors';
-import jwt from 'jsonwebtoken';
 import { body, validationResult } from 'express-validator';
 import type { IncomingMessage } from 'http';
+import { initKeys, signToken, verifyToken, getKeyHealth } from './jwt-utils.js';
 
 // ─── Prometheus Metrics (server-side) ─────────────────────────────
 interface ServerMetricSample {
@@ -147,8 +146,8 @@ async function startServer() {
   const PORT = Number(process.env.PORT) || 3000;
   const isDev = process.env.NODE_ENV !== 'production';
 
-  // ─── JWT Secret (from env or auto-generated per run) ─────────────────
-  const JWT_SECRET = process.env.JWT_SECRET || crypto.randomBytes(32).toString('hex');
+  // ─── JWT Key Initialization ───────────────────────────────────────
+  initKeys();
   const JWT_EXPIRY = '24h';
 
   // ─── CORS — Origin Whitelist ─────────────────────────────────────────
@@ -330,11 +329,16 @@ async function startServer() {
   // API routes FIRST
   app.get('/api/health', (_req, res) => {
     const adapters = ['victron-mqtt', 'modbus-sunspec', 'knx', 'ocpp', 'eebus'];
+    const keyHealth = getKeyHealth();
     res.json({
       status: 'ok',
       uptime: (Date.now() - serverStartTime) / 1000,
       adapters: adapters.map((a) => ({ id: a, status: 'connected' })),
       metrics: { totalSamples: serverMetrics.size },
+      jwt: {
+        kid: keyHealth.currentKid,
+        rotationDueIn: Math.floor(keyHealth.rotationDueMs / 86400000) + 'd',
+      },
     });
   });
 
@@ -345,7 +349,7 @@ async function startServer() {
     '/api/auth/token',
     body('clientId').isString().trim().isLength({ min: 1, max: 64 }).escape(),
     body('scope').optional().isString().isIn(['read', 'readwrite', 'admin']),
-    (req, res) => {
+    async (req, res) => {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
         res.status(400).json({ errors: errors.array() });
@@ -353,31 +357,21 @@ async function startServer() {
       }
 
       const { clientId, scope } = req.body as { clientId: string; scope?: string };
-      const token = jwt.sign(
-        { sub: clientId, scope: scope || 'readwrite', iat: Math.floor(Date.now() / 1000) },
-        JWT_SECRET,
-        { expiresIn: JWT_EXPIRY, algorithm: 'HS256' },
-      );
+      const token = await signToken({ sub: clientId, scope: scope || 'readwrite' }, JWT_EXPIRY);
       res.json({ token, expiresIn: JWT_EXPIRY });
     },
   );
 
   // ─── JWT Token Refresh ───────────────────────────────────────────────
-  app.post('/api/auth/refresh', (req, res) => {
+  app.post('/api/auth/refresh', async (req, res) => {
     const authHeader = req.headers.authorization;
     if (!authHeader?.startsWith('Bearer ')) {
       res.status(401).json({ error: 'Missing Authorization header' });
       return;
     }
     try {
-      const decoded = jwt.verify(authHeader.slice(7), JWT_SECRET, {
-        algorithms: ['HS256'],
-      }) as jwt.JwtPayload;
-      const token = jwt.sign(
-        { sub: decoded.sub, scope: decoded.scope, iat: Math.floor(Date.now() / 1000) },
-        JWT_SECRET,
-        { expiresIn: JWT_EXPIRY, algorithm: 'HS256' },
-      );
+      const decoded = await verifyToken(authHeader.slice(7));
+      const token = await signToken({ sub: decoded.sub, scope: decoded.scope }, JWT_EXPIRY);
       res.json({ token, expiresIn: JWT_EXPIRY });
     } catch {
       res.status(401).json({ error: 'Invalid or expired token' });
@@ -605,7 +599,7 @@ async function startServer() {
   }, 2000);
 
   // ─── WebSocket JWT Authentication Helper ──────────────────────────
-  function authenticateWS(req: IncomingMessage): AuthenticatedClient | null {
+  async function authenticateWS(req: IncomingMessage): Promise<AuthenticatedClient | null> {
     try {
       const url = new URL(req.url || '', `http://${req.headers.host || 'localhost'}`);
       const token = url.searchParams.get('token');
@@ -617,9 +611,9 @@ async function startServer() {
       const jwtToken = token || bearerToken;
       if (!jwtToken) return null;
 
-      const decoded = jwt.verify(jwtToken, JWT_SECRET, { algorithms: ['HS256'] }) as jwt.JwtPayload;
+      const decoded = await verifyToken(jwtToken);
       return {
-        clientId: (decoded.sub as string) || 'unknown',
+        clientId: decoded.sub || 'unknown',
         authenticated: true,
         connectedAt: Date.now(),
       };
@@ -631,8 +625,8 @@ async function startServer() {
   // Allow unauthenticated WS in dev mode, require auth in production
   const requireWSAuth = process.env.NODE_ENV === 'production';
 
-  wss.on('connection', (ws, req) => {
-    const authResult = authenticateWS(req);
+  wss.on('connection', async (ws, req) => {
+    const authResult = await authenticateWS(req);
 
     if (requireWSAuth && !authResult) {
       ws.close(4001, 'Authentication required');

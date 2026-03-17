@@ -65,6 +65,8 @@ services:
     environment:
       - TZ=Europe/Berlin
       - NODE_ENV=production
+    secrets:
+      - jwt_secret
     networks:
       - backend
       - adapters
@@ -226,3 +228,10 @@ volumes:
     name: nexus-prometheus-data
   grafana-data:
     name: nexus-grafana-data
+
+# ── Secrets ───────────────────────────────────────────────────────
+# Create the secret file before running:
+#   openssl rand -base64 64 > .secrets/jwt_secret
+secrets:
+  jwt_secret:
+    file: .secrets/jwt_secret
