@@ -9,9 +9,10 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
 import { useAppStoreShallow } from '../store';
-import { buildOptimizerRecommendations } from '../lib/optimizer';
+import { useAIWorker } from '../core/useAIWorker';
 import { callAI } from '../core/aiClient';
 import { getActiveProvider } from '../lib/ai-keys';
+import type { OptimizerRecommendation } from '../workers/worker-types';
 
 interface GeminiRecommendation {
   title: string;
@@ -34,8 +35,24 @@ export function EnhancedAIOptimizer() {
     void getActiveProvider().then((p) => setHasProvider(p !== null));
   }, []);
 
-  // Get basic recommendations
-  const basicRecommendations = buildOptimizerRecommendations(energyData, settings);
+  // Get basic recommendations via AI Worker (off main thread)
+  const aiWorker = useAIWorker();
+  const [basicRecommendations, setBasicRecommendations] = useState<OptimizerRecommendation[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    aiWorker
+      .computeRecommendations(
+        { ...energyData },
+        { chargeThreshold: settings.chargeThreshold, maxGridImportKw: settings.maxGridImportKw },
+      )
+      .then((recs) => {
+        if (!cancelled) setBasicRecommendations(recs);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [aiWorker, energyData, settings.chargeThreshold, settings.maxGridImportKw]);
 
   const handleOptimizeNow = async () => {
     setIsOptimizing(true);

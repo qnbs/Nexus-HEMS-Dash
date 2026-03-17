@@ -1,14 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 import { select } from 'd3-selection';
 import { sankeyLinkHorizontal } from 'd3-sankey';
+import * as Comlink from 'comlink';
 import { useTranslation } from 'react-i18next';
 import { EnergyData } from '../types';
 import { persistSankeySnapshot } from '../lib/db';
 import type {
   SankeyGraphResult,
   SankeyWorkerInput,
-  SankeyWorkerOutput,
-} from '../workers/sankey-worker';
+  SankeyWorkerAPI,
+} from '../workers/worker-types';
 
 /**
  * Builds a concise screen-reader announcement string for the current energy state.
@@ -44,7 +45,8 @@ function buildAnnouncement(
 export function SankeyDiagram({ data }: { data: EnergyData }) {
   const { t } = useTranslation();
   const svgRef = useRef<SVGSVGElement>(null);
-  const workerRef = useRef<Worker | null>(null);
+  const workerRef = useRef<Comlink.Remote<SankeyWorkerAPI> | null>(null);
+  const rawWorkerRef = useRef<Worker | null>(null);
   const [graph, setGraph] = useState<SankeyGraphResult | null>(null);
   const [liveAnnouncement, setLiveAnnouncement] = useState('');
   const announceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -60,18 +62,17 @@ export function SankeyDiagram({ data }: { data: EnergyData }) {
     };
   }, [data, t]);
 
-  // Initialise the Web Worker once
+  // Initialise the Web Worker once via Comlink
   useEffect(() => {
     const w = new Worker(new URL('../workers/sankey-worker.ts', import.meta.url), {
       type: 'module',
     });
-    w.onmessage = (e: MessageEvent<SankeyWorkerOutput>) => {
-      if (e.data.type === 'result') setGraph(e.data.graph);
-    };
-    workerRef.current = w;
+    workerRef.current = Comlink.wrap<SankeyWorkerAPI>(w);
+    rawWorkerRef.current = w;
     return () => {
       w.terminate();
       workerRef.current = null;
+      rawWorkerRef.current = null;
     };
   }, []);
 
@@ -94,7 +95,14 @@ export function SankeyDiagram({ data }: { data: EnergyData }) {
       width,
       height,
     };
-    workerRef.current.postMessage(msg);
+
+    let cancelled = false;
+    workerRef.current.computeSankeyGraph(msg).then((result) => {
+      if (!cancelled) setGraph(result);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [data]);
 
   // D3 DOM rendering on main thread — only when graph result arrives

@@ -164,6 +164,7 @@
     "@tanstack/react-query-devtools": "^5.91.3",
     "@tanstack/react-virtual": "^3.13.21",
     "clsx": "^2.1.1",
+    "comlink": "^4.4.2",
     "cors": "^2.8.6",
     "d3-sankey": "^0.12.3",
     "d3-selection": "^3.0.0",

@@ -2,22 +2,23 @@
  * sankey-worker.ts — Off-main-thread energy flow graph computation.
  *
  * Receives EnergyData, computes node/link distribution and runs the
- * d3-sankey layout algorithm, then posts back the positioned graph
+ * d3-sankey layout algorithm, then returns the positioned graph
  * ready for DOM rendering on the main thread.
+ *
+ * Uses Comlink for type-safe RPC — no manual postMessage plumbing.
  */
 
+import * as Comlink from 'comlink';
 import { sankey as sankeyLayout } from 'd3-sankey';
+import type {
+  SankeyWorkerInput,
+  SankeyGraphResult,
+  SankeyWorkerAPI,
+  EnergyDataInput,
+} from './worker-types';
 
-// ─── Shared types (duplicated to avoid bundler issues in workers) ────
-
-interface EnergyDataInput {
-  pvPower: number;
-  batteryPower: number;
-  houseLoad: number;
-  heatPumpPower: number;
-  evPower: number;
-  gridPower: number;
-}
+// Re-export types for consumers that import from this file
+export type { SankeyWorkerInput, SankeyGraphResult } from './worker-types';
 
 interface SankeyNode {
   name: string;
@@ -38,43 +39,6 @@ interface SankeyLink {
   y1?: number;
   sourceNode?: SankeyNode;
   targetNode?: SankeyNode;
-}
-
-export interface SankeyWorkerInput {
-  data: EnergyDataInput;
-  width: number;
-  height: number;
-}
-
-export interface SankeyGraphResult {
-  nodes: Array<{
-    name: string;
-    color: string;
-    x0: number;
-    y0: number;
-    x1: number;
-    y1: number;
-    value: number;
-  }>;
-  links: Array<{
-    sourceIndex: number;
-    targetIndex: number;
-    sourceName: string;
-    targetName: string;
-    sourceColor: string;
-    targetColor: string;
-    value: number;
-    width: number;
-    y0: number;
-    y1: number;
-    sourceX1: number;
-    targetX0: number;
-  }>;
-}
-
-export interface SankeyWorkerOutput {
-  type: 'result';
-  graph: SankeyGraphResult | null;
 }
 
 // ─── Core computation ────────────────────────────────────────────────
@@ -217,14 +181,10 @@ function computeSankeyGraph(input: SankeyWorkerInput): SankeyGraphResult | null 
   };
 }
 
-// ─── Worker message handler ──────────────────────────────────────────
+// ─── Comlink-exposed API ─────────────────────────────────────────────
 
-self.onmessage = (e: MessageEvent<SankeyWorkerInput>) => {
-  // Origin verification: only accept messages from same origin
-  if (e.origin && e.origin !== '' && e.origin !== self.location?.origin) {
-    return;
-  }
-  const result = computeSankeyGraph(e.data);
-  const msg: SankeyWorkerOutput = { type: 'result', graph: result };
-  self.postMessage(msg);
+const api: SankeyWorkerAPI = {
+  computeSankeyGraph,
 };
+
+Comlink.expose(api);

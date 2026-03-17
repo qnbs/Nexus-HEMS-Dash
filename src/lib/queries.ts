@@ -1,17 +1,35 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getPriceHistory, getForecast, type TariffProvider } from './predictive-ai';
+import * as Comlink from 'comlink';
+import type { AIWorkerAPI } from '../workers/worker-types';
+import type { TariffProvider } from './predictive-ai';
+
+// Singleton AI worker for query hooks — shared across all usePriceForecast calls
+let _aiWorker: Comlink.Remote<AIWorkerAPI> | null = null;
+function getAIWorkerProxy(): Comlink.Remote<AIWorkerAPI> {
+  if (!_aiWorker) {
+    const w = new Worker(new URL('../workers/ai-worker.ts', import.meta.url), {
+      type: 'module',
+    });
+    _aiWorker = Comlink.wrap<AIWorkerAPI>(w);
+  }
+  return _aiWorker;
+}
 
 /**
- * Hook to fetch tariff price forecast for the next 24 hours
+ * Hook to fetch tariff price forecast for the next 24 hours.
+ * Price history generation + forecast analysis run in the AI Web Worker.
  */
 export function usePriceForecast(provider: TariffProvider = 'tibber') {
   return useQuery({
     queryKey: ['price-forecast', provider],
     queryFn: async () => {
-      const now = new Date();
-      const prices = await getPriceHistory(provider, now, 24);
-      const forecast = await getForecast(prices);
-      return { prices, forecast };
+      const api = getAIWorkerProxy();
+      const prices = await api.computePriceHistory(24);
+      const forecast = await api.computeForecast(prices);
+      return {
+        prices: prices.map((p) => ({ ...p, timestamp: new Date(p.timestamp) })),
+        forecast,
+      };
     },
     staleTime: 1000 * 60 * 15, // 15 min — tariff data changes infrequently
     gcTime: 1000 * 60 * 60, // 1 h cache — avoid refetch on tab switch

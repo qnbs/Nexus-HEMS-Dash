@@ -1,9 +1,12 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { BrainCircuit, TriangleAlert, TrendingUp, Zap } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-import { buildOptimizerRecommendations } from '../lib/optimizer';
+import { useAIWorker } from '../core/useAIWorker';
 import { useAppStoreShallow } from '../store';
+import type { OptimizerRecommendation } from '../workers/worker-types';
+import type { EnergyDataFull } from '../workers/worker-types';
 
 const severityStyles = {
   positive: 'border-emerald-400/35 bg-emerald-400/10 text-emerald-100',
@@ -23,7 +26,24 @@ export function AIOptimizerPanel() {
   const { t } = useTranslation();
   const energyData = useAppStoreShallow((state) => state.energyData);
   const settings = useAppStoreShallow((state) => state.settings);
-  const recommendations = buildOptimizerRecommendations(energyData, settings);
+  const aiWorker = useAIWorker();
+  const [recommendations, setRecommendations] = useState<OptimizerRecommendation[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const input: EnergyDataFull = { ...energyData };
+    aiWorker
+      .computeRecommendations(input, {
+        chargeThreshold: settings.chargeThreshold,
+        maxGridImportKw: settings.maxGridImportKw,
+      })
+      .then((recs) => {
+        if (!cancelled) setRecommendations(recs);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [aiWorker, energyData, settings.chargeThreshold, settings.maxGridImportKw]);
 
   return (
     <div className="glass-panel grid gap-3 p-4 sm:gap-4 sm:p-5">
