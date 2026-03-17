@@ -19,6 +19,7 @@ import {
   Puzzle,
   HardDrive,
   Settings,
+  Clock,
 } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -128,6 +129,12 @@ function MobileNavigationComponent() {
       icon: <BarChart3 className="h-5 w-5" />,
       label: t('nav.analytics', 'Analytics'),
       path: '/analytics',
+    },
+    {
+      id: 'historical-analytics',
+      icon: <Clock className="h-5 w-5" />,
+      label: t('nav.historicalAnalytics', 'History'),
+      path: '/historical-analytics',
     },
     {
       id: 'monitoring',

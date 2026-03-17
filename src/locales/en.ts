@@ -42,6 +42,7 @@ export const en = {
     mode: 'Mode',
     errors: 'Errors',
     reset: 'Reset',
+    page: 'page',
   },
   pwa: {
     installTitle: 'Install Nexus HEMS',
@@ -631,7 +632,7 @@ export const en = {
     faqTitle: 'Frequently Asked Questions (FAQ)',
     about: 'About',
     aboutTitle: 'About the App',
-    version: 'Version 4.1.0',
+    version: 'Version 4.6.0',
     hems: 'Home Energy Management System',
     hemsDesc:
       'A system for monitoring, controlling, and optimizing energy consumption in a building.',

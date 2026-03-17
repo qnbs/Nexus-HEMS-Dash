@@ -27,6 +27,7 @@ import {
   Cpu,
   Puzzle,
   HardDrive,
+  Clock,
 } from 'lucide-react';
 
 // ─── Route IDs ──────────────────────────────────────────────────────────────
@@ -45,6 +46,7 @@ export type PageId =
   | 'controllers'
   | 'plugins'
   | 'hardware'
+  | 'historical-analytics'
   | 'settings'
   | 'ai-settings'
   | 'help';
@@ -134,6 +136,13 @@ export const PAGE_REGISTRY: Record<PageId, PageMeta> = {
     path: '/monitoring',
     i18nKey: 'nav.monitoring',
     icon: Activity,
+    group: 'tools',
+  },
+  'historical-analytics': {
+    id: 'historical-analytics',
+    path: '/historical-analytics',
+    i18nKey: 'nav.historicalAnalytics',
+    icon: Clock,
     group: 'tools',
   },
   settings: {
@@ -289,7 +298,19 @@ export const PAGE_RELATIONS: Record<PageId, PageRelation> = {
     ],
   },
   analytics: {
-    related: ['production', 'consumption', 'tariffs', 'monitoring'],
+    related: ['production', 'consumption', 'tariffs', 'monitoring', 'historical-analytics'],
+    settingsLinks: [{ tab: 'storage', i18nKey: 'crossLinks.configureStorage', icon: Database }],
+    helpTab: 'features',
+    setupRequirements: [
+      {
+        settingsTab: 'storage',
+        i18nKey: 'crossLinks.setupStorage',
+        checkField: 'influxUrl',
+      },
+    ],
+  },
+  'historical-analytics': {
+    related: ['analytics', 'production', 'consumption', 'monitoring'],
     settingsLinks: [{ tab: 'storage', i18nKey: 'crossLinks.configureStorage', icon: Database }],
     helpTab: 'features',
     setupRequirements: [
@@ -393,9 +414,9 @@ export const SETTINGS_TABS: Record<SettingsTabId, SettingsTabMeta> = {
   },
   storage: {
     id: 'storage',
-    i18nKey: 'settings.storageTab',
+    i18nKey: 'settings.storageShort',
     icon: Database,
-    relatedPages: ['analytics'],
+    relatedPages: ['analytics', 'historical-analytics'],
   },
   notifications: {
     id: 'notifications',

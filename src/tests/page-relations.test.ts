@@ -17,6 +17,7 @@ const ALL_PAGE_IDS: PageId[] = [
   'ai-optimizer',
   'tariffs',
   'analytics',
+  'historical-analytics',
   'monitoring',
   'controllers',
   'plugins',
@@ -32,6 +33,7 @@ const VALID_SETTINGS_TABS: SettingsTabId[] = [
   'appearance',
   'system',
   'energy',
+  'controllers',
   'security',
   'storage',
   'notifications',
@@ -40,9 +42,9 @@ const VALID_SETTINGS_TABS: SettingsTabId[] = [
 ];
 
 describe('PAGE_REGISTRY', () => {
-  it('should define all 17 pages', () => {
+  it('should define all 18 pages', () => {
     const ids = Object.keys(PAGE_REGISTRY);
-    expect(ids).toHaveLength(17);
+    expect(ids).toHaveLength(18);
     for (const id of ALL_PAGE_IDS) {
       expect(PAGE_REGISTRY[id]).toBeDefined();
     }
@@ -83,7 +85,7 @@ describe('PAGE_REGISTRY', () => {
 });
 
 describe('PAGE_RELATIONS', () => {
-  it('should define relations for all 14 pages', () => {
+  it('should define relations for all pages', () => {
     for (const id of ALL_PAGE_IDS) {
       expect(PAGE_RELATIONS[id]).toBeDefined();
     }

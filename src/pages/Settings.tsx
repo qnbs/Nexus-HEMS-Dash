@@ -379,7 +379,7 @@ function PWASettingsSection() {
                     ? t('settings_pwa.forceUpdateFound', 'Update found — restarting…')
                     : updateStatus === 'none'
                       ? t('settings_pwa.forceUpdateNone', 'Already up to date')
-                      : t('settings_pwa.appVersion', 'App Version') + ' 4.5.0'}
+                      : t('settings_pwa.appVersion', 'App Version') + ' 4.6.0'}
               </p>
             </div>
             <motion.button
@@ -472,6 +472,7 @@ export function Settings() {
     'appearance',
     'system',
     'energy',
+    'controllers',
     'adapters',
     'security',
     'storage',
