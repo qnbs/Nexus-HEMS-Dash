@@ -117,8 +117,8 @@ describe('Dexie Migration Safety', () => {
     expect(snapshots[0].gridPower).toBe(500);
     expect(snapshots[0].timestamp).toBe(1000);
 
-    // Verify _schemaVersion was backfilled
-    expect(snapshots[0]._schemaVersion).toBe(8);
+    // Verify _schemaVersion was backfilled (V9 sets to 9)
+    expect(snapshots[0]._schemaVersion).toBe(9);
 
     // Verify settings survived
     const settings = await upgraded.settings.get('ui-settings');
@@ -167,7 +167,7 @@ describe('Dexie Migration Safety', () => {
     expect(snap.batteryVoltage).toBe(48);
     expect(snap.pvYieldToday).toBe(0);
     expect(snap.priceCurrent).toBe(0);
-    expect(snap._schemaVersion).toBe(8);
+    expect(snap._schemaVersion).toBe(9);
   });
 
   it('should fix invalid offline action status during migration', async () => {

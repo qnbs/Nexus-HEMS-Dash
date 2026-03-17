@@ -48,6 +48,7 @@ const FloorplanPage = lazy(() => import('./pages/FloorplanPage'));
 const AIOptimizerPage = lazy(() => import('./pages/AIOptimizerPage'));
 const TariffsPage = lazy(() => import('./pages/TariffsPage'));
 const AnalyticsPage = lazy(() => import('./pages/AnalyticsPage'));
+const HistoricalAnalyticsPage = lazy(() => import('./pages/HistoricalAnalyticsPage'));
 const Settings = lazy(() => import('./pages/Settings').then((m) => ({ default: m.Settings })));
 const Help = lazy(() => import('./pages/Help').then((m) => ({ default: m.Help })));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
@@ -81,6 +82,7 @@ const headerRouteLabels: Record<string, string> = {
   '/ai-optimizer': 'nav.aiOptimizer',
   '/tariffs': 'nav.tariffs',
   '/analytics': 'nav.analytics',
+  '/historical-analytics': 'nav.historicalAnalytics',
   '/monitoring': 'nav.monitoring',
   '/settings': 'nav.settings',
   '/settings/ai': 'nav.aiKeys',
@@ -545,6 +547,7 @@ export default function App() {
                     <Route path="/ai-optimizer" element={<AIOptimizerPage />} />
                     <Route path="/tariffs" element={<TariffsPage />} />
                     <Route path="/analytics" element={<AnalyticsPage />} />
+                    <Route path="/historical-analytics" element={<HistoricalAnalyticsPage />} />
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/settings/ai" element={<AISettingsPage />} />
                     <Route path="/monitoring" element={<MonitoringPage />} />

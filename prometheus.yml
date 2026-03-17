@@ -53,3 +53,28 @@ scrape_configs:
       - targets: ['nexus-node-exporter:9100']
         labels:
           instance: 'host'
+
+  # ── InfluxDB Exporter (historical metrics bridge) ─────────────
+  - job_name: 'influxdb'
+    scrape_interval: 30s
+    static_configs:
+      - targets: ['nexus-influxdb:8086']
+        labels:
+          instance: 'influxdb'
+    metrics_path: '/metrics'
+
+  # ── Grafana self-monitoring ───────────────────────────────────
+  - job_name: 'grafana'
+    scrape_interval: 30s
+    static_configs:
+      - targets: ['nexus-grafana:3000']
+        labels:
+          instance: 'grafana'
+
+# ── Remote Write (Prometheus → InfluxDB) ─────────────────────────
+remote_write:
+  - url: 'http://nexus-influxdb:8086/api/v1/prom/write?db=nexus_hems'
+    queue_config:
+      max_samples_per_send: 1000
+      batch_send_deadline: 5s
+      capacity: 5000

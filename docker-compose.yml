@@ -155,6 +155,7 @@ services:
       - '3001:3000'
     volumes:
       - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
     networks:
       - backend
     environment:
@@ -164,6 +165,9 @@ services:
       - GF_FEATURE_TOGGLES_ENABLE=newPanelChromeUI
     security_opt:
       - no-new-privileges:true
+    depends_on:
+      influxdb:
+        condition: service_healthy
     labels:
       - 'com.nexus-hems.component=grafana'
 
@@ -199,6 +203,39 @@ services:
     labels:
       - 'com.nexus-hems.component=node-exporter'
 
+  # ── InfluxDB (time-series database for historical analytics) ────
+  influxdb:
+    image: influxdb:2.7
+    container_name: nexus-influxdb
+    profiles:
+      - monitoring
+    restart: unless-stopped
+    ports:
+      - '8086:8086'
+    volumes:
+      - influxdb-data:/var/lib/influxdb2
+      - influxdb-config:/etc/influxdb2
+    networks:
+      - backend
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=nexus
+      - DOCKER_INFLUXDB_INIT_PASSWORD=${INFLUXDB_PASSWORD:-nexus-hems-2026}
+      - DOCKER_INFLUXDB_INIT_ORG=nexus-hems
+      - DOCKER_INFLUXDB_INIT_BUCKET=energy_data
+      - DOCKER_INFLUXDB_INIT_RETENTION=365d
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=${INFLUXDB_TOKEN:-nexus-hems-influx-token}
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ['CMD', 'influx', 'ping']
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    labels:
+      - 'com.nexus-hems.component=influxdb'
+
 # ── Networks ──────────────────────────────────────────────────────
 networks:
   frontend:
@@ -228,6 +265,10 @@ volumes:
     name: nexus-prometheus-data
   grafana-data:
     name: nexus-grafana-data
+  influxdb-data:
+    name: nexus-influxdb-data
+  influxdb-config:
+    name: nexus-influxdb-config
 
 # ── Secrets ───────────────────────────────────────────────────────
 # Create the secret file before running:

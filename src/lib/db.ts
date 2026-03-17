@@ -63,8 +63,19 @@ export interface AIKeyRecord {
   lastUsed: number;
 }
 
+export interface AIForecastRecord {
+  id?: number;
+  metric: string;
+  model: string;
+  createdAt: number;
+  horizonHours: number;
+  accuracy: { mae: number; mape: number; rmse: number; r2: number };
+  points: Array<{ timestamp: number; value: number; lower: number; upper: number }>;
+  persistedToInflux: boolean;
+}
+
 /** Current schema version constant — bump when adding a new Dexie version */
-export const DB_CURRENT_VERSION = 8;
+export const DB_CURRENT_VERSION = 9;
 
 /** Shared store definitions (DRY — single source of truth for the latest schema) */
 const LATEST_STORES = {
@@ -78,6 +89,7 @@ const LATEST_STORES = {
   commandAudit: '++id, timestamp, commandType, status',
   adapterCredentials: 'adapterId',
   shareLinks: 'id, token, expiresAt, active',
+  aiForecastHistory: '++id, metric, createdAt, model',
 } as const;
 
 export class NexusDatabase extends Dexie {
@@ -91,6 +103,7 @@ export class NexusDatabase extends Dexie {
   commandAudit!: Table<CommandAuditEntry, number>;
   adapterCredentials!: Table<EncryptedAdapterCredential, string>;
   shareLinks!: Table<ShareLink, string>;
+  aiForecastHistory!: Table<AIForecastRecord, number>;
 
   constructor(dbName = 'nexus-hems-dash') {
     super(dbName);
@@ -266,6 +279,18 @@ export class NexusDatabase extends Dexie {
               action.status = 'failed';
             }
             action.retries ??= 0;
+          });
+      });
+
+    // ── Version 9: AI forecast history table for persistence ────────
+    this.version(9)
+      .stores(LATEST_STORES)
+      .upgrade(async (tx) => {
+        await tx
+          .table('energySnapshots')
+          .toCollection()
+          .modify((snap: Record<string, unknown>) => {
+            snap._schemaVersion = 9;
           });
       });
   }
