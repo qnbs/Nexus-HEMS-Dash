@@ -28,8 +28,17 @@ import { BaseAdapter } from './BaseAdapter';
 // Lazy-load mqtt.js only when needed (keeps initial bundle small)
 type MqttClient = {
   on(event: string, cb: (...args: unknown[]) => void): void;
-  subscribe(topic: string | string[], cb?: (err?: Error) => void): void;
-  publish(topic: string, message: string, cb?: (err?: Error) => void): void;
+  subscribe(
+    topic: string | string[],
+    opts?: Record<string, unknown>,
+    cb?: (err?: Error) => void,
+  ): void;
+  publish(
+    topic: string,
+    message: string,
+    opts?: Record<string, unknown>,
+    cb?: (err?: Error) => void,
+  ): void;
   end(force?: boolean, cb?: () => void): void;
   connected: boolean;
 };
@@ -202,12 +211,39 @@ export class VictronMQTTAdapter extends BaseAdapter {
       const protocol = this.config.tls ? 'wss' : 'ws';
       const url = `${protocol}://${this.config.host}:${this.config.port}/mqtt`;
 
+      // Unique, identifiable client ID (prefix + random hex to avoid collisions)
+      const clientSuffix =
+        typeof crypto !== 'undefined' && crypto.randomUUID
+          ? crypto.randomUUID().slice(0, 8)
+          : Math.random().toString(36).slice(2, 10);
+      const clientId = `nexus-hems-victron-${clientSuffix}`;
+
       const opts: Record<string, unknown> = {
+        clientId,
         protocolVersion: 4,
         clean: true,
         connectTimeout: 10_000,
         keepalive: 30,
+        // Disable mqtt.js built-in reconnect — BaseAdapter handles it with
+        // exponential backoff, jitter, circuit breaker, and navigator.onLine
+        reconnectPeriod: 0,
+        // Last Will and Testament: inform subscribers on unexpected disconnect
+        will: {
+          topic: `nexus-hems/victron/${clientId}/status`,
+          payload: JSON.stringify({ online: false, timestamp: Date.now() }),
+          qos: 1,
+          retain: true,
+        },
       };
+
+      // TLS hardening: reject untrusted certificates in production
+      if (this.config.tls) {
+        opts.rejectUnauthorized = true;
+      }
+
+      // Forward mTLS client certificates if configured
+      if (this.config.clientCert) opts.cert = this.config.clientCert;
+      if (this.config.clientKey) opts.key = this.config.clientKey;
 
       if (this.config.authToken) {
         opts.username = '';
@@ -221,8 +257,8 @@ export class VictronMQTTAdapter extends BaseAdapter {
         this.resetRetryDelay();
         this.setStatus('connected');
 
-        // Subscribe to all Venus OS notifications to detect portalId
-        client.subscribe('N/+/+/+/#');
+        // Subscribe to all Venus OS notifications with QoS 1 for reliable delivery
+        client.subscribe('N/+/+/+/#', { qos: 1 } as Record<string, unknown>);
 
         // Start keepalive reads (Venus OS requires periodic R/ reads to keep N/ flowing)
         this.startKeepalive();

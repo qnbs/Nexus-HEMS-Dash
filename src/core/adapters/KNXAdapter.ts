@@ -131,8 +131,8 @@ export class KNXAdapter extends BaseAdapter {
   private ws: WebSocket | null = null;
   private mqttClient: {
     on: (event: string, cb: (...args: unknown[]) => void) => void;
-    subscribe: (topic: string | string[]) => void;
-    publish: (topic: string, message: string) => void;
+    subscribe: (topic: string | string[], opts?: Record<string, unknown>) => void;
+    publish: (topic: string, message: string, opts?: Record<string, unknown>) => void;
     end: (force?: boolean) => void;
     connected: boolean;
   } | null = null;
@@ -232,27 +232,47 @@ export class KNXAdapter extends BaseAdapter {
       const protocol = this.config.tls ? 'wss' : 'ws';
       const url = `${protocol}://${this.config.host}:${this.config.port}/mqtt`;
 
+      // Unique client ID
+      const clientSuffix =
+        typeof crypto !== 'undefined' && crypto.randomUUID
+          ? crypto.randomUUID().slice(0, 8)
+          : Math.random().toString(36).slice(2, 10);
+      const clientId = `nexus-hems-knx-${clientSuffix}`;
+
+      const connectOpts: Record<string, unknown> = {
+        clientId,
+        protocolVersion: 4,
+        clean: true,
+        connectTimeout: 10_000,
+        reconnectPeriod: 0, // BaseAdapter handles reconnect
+        will: {
+          topic: `nexus-hems/knx/${clientId}/status`,
+          payload: JSON.stringify({ online: false, timestamp: Date.now() }),
+          qos: 1,
+          retain: true,
+        },
+        ...(this.config.tls ? { rejectUnauthorized: true } : {}),
+        ...(this.config.clientCert ? { cert: this.config.clientCert } : {}),
+        ...(this.config.clientKey ? { key: this.config.clientKey } : {}),
+        ...(this.config.authToken ? { password: this.config.authToken } : {}),
+      };
+
       const client = (
         mqtt.connect as unknown as (
           url: string,
           opts?: Record<string, unknown>,
         ) => typeof this.mqttClient
-      )(url, {
-        protocolVersion: 4,
-        clean: true,
-        connectTimeout: 10_000,
-        ...(this.config.authToken ? { password: this.config.authToken } : {}),
-      })!;
+      )(url, connectOpts)!;
 
       this.mqttClient = client;
 
       client.on('connect', () => {
         this.resetRetryDelay();
         this.setStatus('connected');
-        // Subscribe to all KNX state topics
+        // Subscribe to all KNX state topics with QoS 1
         const prefix = this.mqttConfig.topicPrefix;
-        client.subscribe(`${prefix}/+/+/+/state`);
-        client.subscribe(`${prefix}/#`);
+        client.subscribe(`${prefix}/+/+/+/state`, { qos: 1 } as Record<string, unknown>);
+        client.subscribe(`${prefix}/#`, { qos: 1 } as Record<string, unknown>);
       });
 
       client.on('message', (_topic: unknown, _payload: unknown) => {
