@@ -54,6 +54,7 @@ export type SettingsTabId =
   | 'appearance'
   | 'system'
   | 'energy'
+  | 'controllers'
   | 'security'
   | 'storage'
   | 'notifications'
@@ -376,7 +377,13 @@ export const SETTINGS_TABS: Record<SettingsTabId, SettingsTabMeta> = {
     id: 'energy',
     i18nKey: 'settings.energy',
     icon: Zap,
-    relatedPages: ['production', 'storage', 'consumption', 'ev', 'energy-flow'],
+    relatedPages: ['production', 'storage', 'consumption', 'ev', 'energy-flow', 'controllers'],
+  },
+  controllers: {
+    id: 'controllers',
+    i18nKey: 'settings.controllersTab',
+    icon: Cpu,
+    relatedPages: ['controllers', 'plugins', 'hardware'],
   },
   security: {
     id: 'security',
@@ -400,7 +407,7 @@ export const SETTINGS_TABS: Record<SettingsTabId, SettingsTabMeta> = {
     id: 'advanced',
     i18nKey: 'settings.advanced',
     icon: Wrench,
-    relatedPages: ['monitoring'],
+    relatedPages: ['monitoring', 'controllers', 'plugins', 'hardware'],
   },
   ai: {
     id: 'ai',
