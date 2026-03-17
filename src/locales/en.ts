@@ -37,6 +37,11 @@ export const en = {
     copySuccess: 'Copied to clipboard',
     deleteConfirm: 'Are you sure you want to delete this?',
     unsavedChanges: 'You have unsaved changes',
+    collapse: 'Collapse',
+    expand: 'Expand',
+    mode: 'Mode',
+    errors: 'Errors',
+    reset: 'Reset',
   },
   pwa: {
     installTitle: 'Install Nexus HEMS',
@@ -2169,6 +2174,11 @@ export const en = {
     runCycle: 'Run cycle',
     lastRun: 'Last run',
     mergedOutput: 'Merged output',
+    essPower: 'ESS Power',
+    evCurrent: 'EV Current',
+    sgReady: 'SG Ready',
+    gridLimit: 'Grid Limit',
+    confidence: 'Confidence',
   },
   hardware: {
     title: 'Hardware Registry',

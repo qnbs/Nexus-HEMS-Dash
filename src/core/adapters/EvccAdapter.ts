@@ -337,7 +337,11 @@ export class EvccAdapter extends BaseAdapter {
       };
 
       this.ws.onerror = () => {
-        // Fallback to polling (already active)
+        // Close broken connection and rely on polling fallback
+        if (this.ws) {
+          this.ws.close();
+          this.ws = null;
+        }
       };
 
       this.ws.onclose = () => {

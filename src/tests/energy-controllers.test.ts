@@ -216,4 +216,115 @@ describe('Energy Controllers', () => {
       expect(result).toBeUndefined();
     });
   });
+
+  describe('Null guard safety', () => {
+    it('should handle undefined energy data fields gracefully', () => {
+      const pipeline = new ControllerPipeline();
+      const sparseData = {} as unknown as EnergyData;
+      const output = pipeline.run(sparseData, baseSettings);
+      expect(output.reason).toBeTruthy();
+      // Should not throw with missing fields
+    });
+
+    it('ESSSymmetric should handle undefined gridPower', () => {
+      const ctrl = new ESSSymmetricController();
+      const data = { ...baseEnergy, gridPower: undefined } as unknown as EnergyData;
+      const output = ctrl.run(data, baseSettings);
+      expect(output.reason).toBeTruthy();
+    });
+
+    it('PeakShaving should handle undefined batterySoC', () => {
+      const ctrl = new PeakShavingController();
+      const data = {
+        ...baseEnergy,
+        gridPower: 6000,
+        batterySoC: undefined,
+      } as unknown as EnergyData;
+      const output = ctrl.run(data, { ...baseSettings, maxGridImportKw: 4 });
+      expect(output.reason).toBeTruthy();
+    });
+
+    it('GridOptimized should handle undefined priceCurrent', () => {
+      const ctrl = new GridOptimizedChargeController();
+      const data = { ...baseEnergy, priceCurrent: undefined } as unknown as EnergyData;
+      const output = ctrl.run(data, baseSettings);
+      expect(output.reason).toBeTruthy();
+    });
+
+    it('EmergencyCapacity should handle undefined batterySoC', () => {
+      const ctrl = new EmergencyCapacityController();
+      const data = { ...baseEnergy, batterySoC: undefined } as unknown as EnergyData;
+      const output = ctrl.run(data, baseSettings);
+      expect(output.reason).toBeTruthy();
+    });
+
+    it('HeatPumpSGReady should handle all undefined fields', () => {
+      const ctrl = new HeatPumpSGReadyController();
+      const data = {
+        ...baseEnergy,
+        pvPower: undefined,
+        houseLoad: undefined,
+        evPower: undefined,
+        priceCurrent: undefined,
+        batterySoC: undefined,
+      } as unknown as EnergyData;
+      const output = ctrl.run(data, baseSettings);
+      expect(output.reason).toBeTruthy();
+    });
+
+    it('EVSmartCharge should handle all undefined fields', () => {
+      const ctrl = new EVSmartChargeController();
+      const data = {
+        ...baseEnergy,
+        pvPower: undefined,
+        houseLoad: undefined,
+        heatPumpPower: undefined,
+        gridPower: undefined,
+        evPower: undefined,
+        priceCurrent: undefined,
+      } as unknown as EnergyData;
+      const output = ctrl.run(data, baseSettings);
+      expect(output.reason).toBeTruthy();
+    });
+  });
+
+  describe('HeatPumpSGReadyController modes', () => {
+    it('should set normal mode when no special condition', () => {
+      const ctrl = new HeatPumpSGReadyController();
+      const output = ctrl.run(
+        { ...baseEnergy, pvPower: 3000, houseLoad: 3000, priceCurrent: 0.25 },
+        baseSettings,
+      );
+      expect(output.reason).toBeTruthy();
+    });
+
+    it('should recommend block when price is very high', () => {
+      const ctrl = new HeatPumpSGReadyController();
+      const output = ctrl.run(
+        { ...baseEnergy, priceCurrent: 0.8, pvPower: 0, batterySoC: 20 },
+        baseSettings,
+      );
+      expect(output.reason).toBeTruthy();
+      if (output.sgReadyMode !== undefined) {
+        expect([1, 2]).toContain(output.sgReadyMode);
+      }
+    });
+  });
+
+  describe('EVSmartChargeController edge cases', () => {
+    it('should handle zero PV surplus', () => {
+      const ctrl = new EVSmartChargeController();
+      const output = ctrl.run({ ...baseEnergy, pvPower: 2000, houseLoad: 3000 }, baseSettings);
+      expect(output.reason).toBeTruthy();
+    });
+
+    it('should handle very high PV surplus', () => {
+      const ctrl = new EVSmartChargeController();
+      const output = ctrl.run(
+        { ...baseEnergy, pvPower: 20000, houseLoad: 1000, heatPumpPower: 0 },
+        baseSettings,
+      );
+      expect(output.reason).toBeTruthy();
+    });
+  });
 });

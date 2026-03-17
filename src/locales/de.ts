@@ -37,6 +37,11 @@ export const de = {
     copySuccess: 'In Zwischenablage kopiert',
     deleteConfirm: 'Sind Sie sicher, dass Sie dies löschen möchten?',
     unsavedChanges: 'Sie haben ungespeicherte Änderungen',
+    collapse: 'Einklappen',
+    expand: 'Ausklappen',
+    mode: 'Modus',
+    errors: 'Fehler',
+    reset: 'Zurücksetzen',
   },
   pwa: {
     installTitle: 'Nexus HEMS installieren',
@@ -2187,6 +2192,11 @@ export const de = {
     runCycle: 'Zyklus ausführen',
     lastRun: 'Letzter Lauf',
     mergedOutput: 'Zusammengeführte Ausgabe',
+    essPower: 'ESS-Leistung',
+    evCurrent: 'EV-Strom',
+    sgReady: 'SG Ready',
+    gridLimit: 'Netzlimit',
+    confidence: 'Konfidenz',
   },
   hardware: {
     title: 'Hardware Registry',

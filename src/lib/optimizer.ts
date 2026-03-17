@@ -11,7 +11,13 @@ import type { OptimizationResult, TariffSlot } from './mpc-optimizer';
 
 let lastMpcRun = 0;
 let cachedMpcResult: OptimizationResult | null = null;
+let lastSettingsHash = '';
 const MPC_INTERVAL_MS = 15 * 60 * 1000; // Re-optimize every 15 min
+
+/** Simple hash of settings fields that affect MPC optimization */
+function settingsHash(s: StoredSettings): string {
+  return `${s.pvPeakKw}-${s.batteryCapacityKWh}-${s.batteryMaxChargeKW}-${s.batteryMinSoC}-${s.maxGridImportKw}-${s.chargeThreshold}-${s.feedInTariffEurKWh}`;
+}
 
 /**
  * Run MPC day-ahead optimization (non-blocking, cached).
@@ -22,6 +28,12 @@ export function runMpcOptimization(
   settings: StoredSettings,
 ): OptimizationResult | null {
   const now = Date.now();
+  const currentHash = settingsHash(settings);
+  // Invalidate cache if settings changed
+  if (currentHash !== lastSettingsHash) {
+    cachedMpcResult = null;
+    lastSettingsHash = currentHash;
+  }
   if (cachedMpcResult && now - lastMpcRun < MPC_INTERVAL_MS) {
     return cachedMpcResult;
   }

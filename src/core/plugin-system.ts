@@ -135,9 +135,9 @@ class ServiceRegistry {
 // ─── Semver Utilities ───────────────────────────────────────────────
 
 function parseSemver(version: string): [number, number, number] | null {
-  const match = version.match(/^(\d+)\.(\d+)\.(\d+)/);
+  const match = version.match(/^(\d+)(?:\.(\d+))?(?:\.(\d+))?/);
   if (!match) return null;
-  return [parseInt(match[1], 10), parseInt(match[2], 10), parseInt(match[3], 10)];
+  return [parseInt(match[1], 10), parseInt(match[2] ?? '0', 10), parseInt(match[3] ?? '0', 10)];
 }
 
 function satisfiesSemver(version: string, range: string): boolean {
@@ -271,7 +271,13 @@ export class PluginManager {
 
     try {
       const context = this.createContext(id);
-      await entry.plugin.activate(context);
+      // Timeout plugin activation to prevent indefinite hangs
+      await Promise.race([
+        entry.plugin.activate(context),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Plugin activation timed out (10s)')), 10_000),
+        ),
+      ]);
       entry.state = 'active';
       entry.activatedAt = Date.now();
       this.eventBus.emit('plugin:started', { id });
@@ -295,7 +301,13 @@ export class PluginManager {
 
     try {
       if (entry.plugin.deactivate) {
-        await entry.plugin.deactivate();
+        // Timeout deactivation to prevent indefinite hangs
+        await Promise.race([
+          entry.plugin.deactivate(),
+          new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Plugin deactivation timed out (10s)')), 10_000),
+          ),
+        ]);
       }
 
       // Remove services provided by this plugin

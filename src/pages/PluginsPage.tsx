@@ -158,7 +158,9 @@ function PluginCard({
               onClick={() => setExpanded(!expanded)}
               className="focus-ring rounded-lg p-1 text-(--color-muted) hover:text-(--color-text)"
               aria-expanded={expanded}
-              aria-label={expanded ? 'Collapse' : 'Expand'}
+              aria-label={
+                expanded ? t('common.collapse', 'Einklappen') : t('common.expand', 'Ausklappen')
+              }
             >
               {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
             </button>

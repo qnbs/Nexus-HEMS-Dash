@@ -88,7 +88,7 @@ export class ESSSymmetricController implements EnergyController {
     try {
       // Target: zero grid power (self-consumption mode)
       const gridTarget = 0;
-      const error = data.gridPower - gridTarget;
+      const error = (data.gridPower ?? 0) - gridTarget;
 
       this.integralError += error * dt;
       // Anti-windup: clamp integral
@@ -106,8 +106,7 @@ export class ESSSymmetricController implements EnergyController {
       const maxDischargePower = 10000;
       const essPower = Math.max(-maxDischargePower, Math.min(maxChargePower, pidOutput));
 
-      // SoC protection
-      const soc = data.batterySoC;
+      const soc = data.batterySoC ?? 0;
       const minSoC = settings.batteryMinSoC ?? 10;
       let adjustedPower = essPower;
 
@@ -173,7 +172,7 @@ export class PeakShavingController implements EnergyController {
     const start = performance.now();
     try {
       const gridLimitW = (settings.maxGridImportKw ?? 4.2) * 1000;
-      const gridPower = data.gridPower;
+      const gridPower = data.gridPower ?? 0;
 
       // Track peak
       if (gridPower > this.peakRecordW) {
@@ -183,7 +182,7 @@ export class PeakShavingController implements EnergyController {
       if (gridPower > gridLimitW + this.hysteresisW) {
         // Grid import exceeds limit → discharge battery
         const excess = gridPower - gridLimitW;
-        const dischargePower = Math.min(excess, data.batterySoC > 10 ? 10000 : 0);
+        const dischargePower = Math.min(excess, (data.batterySoC ?? 0) > 10 ? 10000 : 0);
 
         this.lastOutput = {
           essPowerW: -dischargePower,
@@ -191,7 +190,7 @@ export class PeakShavingController implements EnergyController {
           reason: `Peak shaving: grid=${(gridPower / 1000).toFixed(1)}kW > limit=${(gridLimitW / 1000).toFixed(1)}kW, discharging ${(dischargePower / 1000).toFixed(1)}kW`,
           confidence: 0.95,
         };
-      } else if (gridPower < gridLimitW - this.hysteresisW && data.batterySoC < 95) {
+      } else if (gridPower < gridLimitW - this.hysteresisW && (data.batterySoC ?? 0) < 95) {
         // Below limit with hysteresis → allow normal operation
         this.lastOutput = {
           gridLimitW,
@@ -253,8 +252,8 @@ export class GridOptimizedChargeController implements EnergyController {
     const start = performance.now();
     try {
       const threshold = settings.chargeThreshold;
-      const currentPrice = data.priceCurrent;
-      const soc = data.batterySoC;
+      const currentPrice = data.priceCurrent ?? 0;
+      const soc = data.batterySoC ?? 0;
 
       if (currentPrice <= threshold && soc < 95) {
         // Low tariff → charge battery from grid
@@ -269,7 +268,7 @@ export class GridOptimizedChargeController implements EnergyController {
         };
       } else if (currentPrice > threshold * 1.5 && soc > 30) {
         // High tariff → discharge battery to house
-        const dischargeRate = Math.min(5000, data.houseLoad);
+        const dischargeRate = Math.min(5000, data.houseLoad ?? 0);
 
         this.lastOutput = {
           essPowerW: -dischargeRate,
@@ -328,8 +327,8 @@ export class SelfConsumptionController implements EnergyController {
   run(data: EnergyData, settings: StoredSettings): ControllerOutput {
     const start = performance.now();
     try {
-      const pvSurplus = Math.max(0, data.pvPower - data.houseLoad);
-      const soc = data.batterySoC;
+      const pvSurplus = Math.max(0, (data.pvPower ?? 0) - (data.houseLoad ?? 0));
+      const soc = data.batterySoC ?? 0;
       const minSoC = settings.batteryMinSoC ?? 10;
 
       if (pvSurplus > 100 && soc < 98) {
@@ -402,7 +401,7 @@ export class EmergencyCapacityController implements EnergyController {
   run(data: EnergyData, _settings?: StoredSettings): ControllerOutput {
     const start = performance.now();
     try {
-      const soc = data.batterySoC;
+      const soc = data.batterySoC ?? 0;
 
       if (soc < this.reserveSoCPercent) {
         // Below reserve → force charge
@@ -473,10 +472,13 @@ export class HeatPumpSGReadyController implements EnergyController {
   run(data: EnergyData, settings: StoredSettings): ControllerOutput {
     const start = performance.now();
     try {
-      const pvSurplus = Math.max(0, data.pvPower - data.houseLoad - data.evPower);
-      const price = data.priceCurrent;
+      const pvSurplus = Math.max(
+        0,
+        (data.pvPower ?? 0) - (data.houseLoad ?? 0) - (data.evPower ?? 0),
+      );
+      const price = data.priceCurrent ?? 0;
       const threshold = settings.chargeThreshold;
-      const soc = data.batterySoC;
+      const soc = data.batterySoC ?? 0;
       const now = Date.now();
 
       // Prevent mode oscillation (minimum 5 minutes between changes)
@@ -561,8 +563,11 @@ export class EVSmartChargeController implements EnergyController {
   run(data: EnergyData, settings: StoredSettings): ControllerOutput {
     const start = performance.now();
     try {
-      const pvSurplus = Math.max(0, data.pvPower - data.houseLoad - data.heatPumpPower);
-      const price = data.priceCurrent;
+      const pvSurplus = Math.max(
+        0,
+        (data.pvPower ?? 0) - (data.houseLoad ?? 0) - (data.heatPumpPower ?? 0),
+      );
+      const price = data.priceCurrent ?? 0;
       const threshold = settings.chargeThreshold;
 
       // Calculate available current for EV (3-phase, 230V)
@@ -589,7 +594,7 @@ export class EVSmartChargeController implements EnergyController {
       // Grid-limited § 14a EnWG
       else {
         const gridLimit = (settings.maxGridImportKw ?? 4.2) * 1000;
-        const available = gridLimit - data.gridPower + data.evPower;
+        const available = gridLimit - (data.gridPower ?? 0) + (data.evPower ?? 0);
         if (available > 1380) {
           targetCurrentA = Math.min(maxCurrentA, Math.floor(available / 230 / 3));
           reason = `Grid-limited: ${targetCurrentA}A (§14a headroom)`;

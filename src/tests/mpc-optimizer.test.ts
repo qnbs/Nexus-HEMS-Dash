@@ -224,4 +224,54 @@ describe('MPC Optimizer', () => {
       expect(mpc.getLastResult()?.status).toBe('optimal');
     });
   });
+
+  describe('Edge cases', () => {
+    it('should handle zero battery capacity without crashing', () => {
+      const constraints = buildConstraints(baseEnergy, {
+        ...baseSettings,
+        batteryCapacityKWh: 0,
+        batteryMaxChargeKW: 0,
+      });
+      expect(constraints.batteryCapacityWh).toBeGreaterThanOrEqual(100);
+      expect(constraints.maxBatteryChargeW).toBeGreaterThanOrEqual(100);
+    });
+
+    it('should handle negative prices in tariff', () => {
+      const mpc = new MPCOptimizer();
+      const slots = 24;
+      const pv = generatePVForecast(slots, 10000);
+      const load = generateLoadForecast(slots, 500);
+      const constraints = buildConstraints(baseEnergy, baseSettings);
+      const tariff: TariffSlot[] = pv.map((p) => ({
+        timestamp: p.timestamp,
+        priceEurKWh: -0.05,
+        co2GPerKWh: 200,
+      }));
+
+      const result = mpc.optimizeDayAhead(pv, load, tariff, constraints);
+      expect(result.status).toBe('optimal');
+      expect(result.schedule.length).toBe(slots);
+    });
+
+    it('should handle single-slot forecast', () => {
+      const mpc = new MPCOptimizer();
+      const pv = generatePVForecast(1, 10000);
+      const load = generateLoadForecast(1, 500);
+      const constraints = buildConstraints(baseEnergy, baseSettings);
+      const tariff: TariffSlot[] = [
+        { timestamp: pv[0].timestamp, priceEurKWh: 0.3, co2GPerKWh: 400 },
+      ];
+
+      const result = mpc.optimizeDayAhead(pv, load, tariff, constraints);
+      expect(result.schedule.length).toBe(1);
+    });
+
+    it('should clamp batterySoC to 0-1 range', () => {
+      const constraints = buildConstraints({ ...baseEnergy, batterySoC: 150 }, baseSettings);
+      expect(constraints.currentBatterySoC).toBeLessThanOrEqual(1);
+
+      const constraints2 = buildConstraints({ ...baseEnergy, batterySoC: -20 }, baseSettings);
+      expect(constraints2.currentBatterySoC).toBeGreaterThanOrEqual(0);
+    });
+  });
 });

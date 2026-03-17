@@ -201,7 +201,9 @@ function ControllerCard({
               onClick={() => setExpanded(!expanded)}
               className="focus-ring rounded-lg p-1 text-(--color-muted) hover:text-(--color-text)"
               aria-expanded={expanded}
-              aria-label={expanded ? 'Collapse' : 'Expand'}
+              aria-label={
+                expanded ? t('common.collapse', 'Einklappen') : t('common.expand', 'Ausklappen')
+              }
             >
               {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
             </button>
@@ -241,7 +243,7 @@ function ControllerCard({
                 </h4>
                 {state.lastOutput.essPowerW !== undefined && (
                   <div className="fluid-text-sm flex justify-between">
-                    <span>ESS Power</span>
+                    <span>{t('controllers.essPower', 'ESS-Leistung')}</span>
                     <span className="font-mono">
                       {state.lastOutput.essPowerW > 0 ? '+' : ''}
                       {(state.lastOutput.essPowerW / 1000).toFixed(2)} kW
@@ -250,13 +252,13 @@ function ControllerCard({
                 )}
                 {state.lastOutput.evCurrentA !== undefined && (
                   <div className="fluid-text-sm flex justify-between">
-                    <span>EV Current</span>
+                    <span>{t('controllers.evCurrent', 'EV-Strom')}</span>
                     <span className="font-mono">{state.lastOutput.evCurrentA} A</span>
                   </div>
                 )}
                 {state.lastOutput.sgReadyMode !== undefined && (
                   <div className="fluid-text-sm flex justify-between">
-                    <span>SG Ready</span>
+                    <span>{t('controllers.sgReady', 'SG Ready')}</span>
                     <span className="font-mono">
                       {t('common.mode', 'Modus')} {state.lastOutput.sgReadyMode}
                     </span>
@@ -264,14 +266,14 @@ function ControllerCard({
                 )}
                 {state.lastOutput.gridLimitW !== undefined && (
                   <div className="fluid-text-sm flex justify-between">
-                    <span>Grid Limit</span>
+                    <span>{t('controllers.gridLimit', 'Netzlimit')}</span>
                     <span className="font-mono">
                       {(state.lastOutput.gridLimitW / 1000).toFixed(1)} kW
                     </span>
                   </div>
                 )}
                 <div className="fluid-text-sm flex justify-between">
-                  <span>Confidence</span>
+                  <span>{t('controllers.confidence', 'Konfidenz')}</span>
                   <span className="font-mono">
                     {(state.lastOutput.confidence * 100).toFixed(0)}%
                   </span>
@@ -349,7 +351,9 @@ function ControllersPageComponent() {
                   <div className="rounded-xl border border-(--color-border) bg-white/[0.02] p-4">
                     <div className="mb-1 flex items-center gap-2">
                       <Battery className="h-4 w-4 text-(--color-primary)" />
-                      <span className="fluid-text-xs text-(--color-muted)">ESS Power</span>
+                      <span className="fluid-text-xs text-(--color-muted)">
+                        {t('controllers.essPower', 'ESS-Leistung')}
+                      </span>
                     </div>
                     <span className="fluid-text-xl font-mono font-bold">
                       {merged.essPowerW > 0 ? '+' : ''}
@@ -362,7 +366,9 @@ function ControllersPageComponent() {
                   <div className="rounded-xl border border-(--color-border) bg-white/[0.02] p-4">
                     <div className="mb-1 flex items-center gap-2">
                       <Car className="h-4 w-4 text-blue-400" />
-                      <span className="fluid-text-xs text-(--color-muted)">EV Current</span>
+                      <span className="fluid-text-xs text-(--color-muted)">
+                        {t('controllers.evCurrent', 'EV-Strom')}
+                      </span>
                     </div>
                     <span className="fluid-text-xl font-mono font-bold">
                       {merged.evCurrentA}
@@ -374,7 +380,9 @@ function ControllersPageComponent() {
                   <div className="rounded-xl border border-(--color-border) bg-white/[0.02] p-4">
                     <div className="mb-1 flex items-center gap-2">
                       <ThermometerSun className="h-4 w-4 text-orange-400" />
-                      <span className="fluid-text-xs text-(--color-muted)">SG Ready</span>
+                      <span className="fluid-text-xs text-(--color-muted)">
+                        {t('controllers.sgReady', 'SG Ready')}
+                      </span>
                     </div>
                     <span className="fluid-text-xl font-mono font-bold">
                       {t('common.mode', 'Modus')} {merged.sgReadyMode}
@@ -385,7 +393,9 @@ function ControllersPageComponent() {
                   <div className="rounded-xl border border-(--color-border) bg-white/[0.02] p-4">
                     <div className="mb-1 flex items-center gap-2">
                       <Zap className="h-4 w-4 text-yellow-400" />
-                      <span className="fluid-text-xs text-(--color-muted)">Grid Limit</span>
+                      <span className="fluid-text-xs text-(--color-muted)">
+                        {t('controllers.gridLimit', 'Netzlimit')}
+                      </span>
                     </div>
                     <span className="fluid-text-xl font-mono font-bold">
                       {(merged.gridLimitW / 1000).toFixed(1)}

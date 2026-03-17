@@ -138,13 +138,16 @@ class LPSolver {
     constraints: OptimizationConstraints,
   ): OptimizationSlot[] {
     const n = Math.min(pvForecast.length, loadForecast.length, tariff.length);
-    if (n === 0) return [];
+    if (n === 0) {
+      // Return a safe empty-ish result instead of crashing downstream
+      return [];
+    }
 
     const slots: OptimizationSlot[] = [];
     let currentSoC = constraints.currentBatterySoC;
     const dt = 0.25; // 15-minute slots in hours
-    const capWh = constraints.batteryCapacityWh;
-    const eta = constraints.batteryEfficiency;
+    const capWh = Math.max(1, constraints.batteryCapacityWh); // Guard div-by-zero
+    const eta = Math.max(0.01, constraints.batteryEfficiency ?? 0.92); // Guard NaN/zero
 
     // Pass 1: Sort slots by price to identify cheap/expensive periods
     const priceRanked = tariff
@@ -397,14 +400,14 @@ export function buildConstraints(
   return {
     maxGridImportW: (settings.maxGridImportKw ?? 4.2) * 1000,
     maxGridExportW: 70_000, // 70kW default
-    batteryCapacityWh: (settings.batteryCapacityKWh ?? 10) * 1000,
-    maxBatteryChargeW: (settings.batteryMaxChargeKW ?? 5) * 1000,
-    maxBatteryDischargeW: (settings.batteryMaxChargeKW ?? 5) * 1000,
+    batteryCapacityWh: Math.max(100, (settings.batteryCapacityKWh ?? 10) * 1000),
+    maxBatteryChargeW: Math.max(100, (settings.batteryMaxChargeKW ?? 5) * 1000),
+    maxBatteryDischargeW: Math.max(100, (settings.batteryMaxChargeKW ?? 5) * 1000),
     minBatterySoC: (settings.batteryMinSoC ?? 10) / 100,
     maxBatterySoC: 0.98,
-    currentBatterySoC: _data.batterySoC / 100,
+    currentBatterySoC: Math.max(0, Math.min(1, _data.batterySoC / 100)),
     ev: {
-      connected: _data.evPower > 0,
+      connected: (_data.evPower ?? 0) > 0,
       currentSoC: 0.5,
       targetSoC: 0.8,
       capacityKWh: 60,
