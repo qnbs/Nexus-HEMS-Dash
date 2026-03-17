@@ -19,12 +19,20 @@ const routes = [
 
 test.describe('WCAG 2.2 AA Accessibility', () => {
   test.beforeEach(async ({ page }) => {
-    // Dismiss Onboarding overlay (CI starts with clean localStorage)
+    // Dismiss Onboarding overlay (CI starts with clean localStorage).
+    // Merge with existing localStorage so test-specific overrides survive reloads.
     await page.addInitScript(() => {
-      localStorage.setItem(
-        'nexus-hems-store',
-        JSON.stringify({ state: { onboardingCompleted: true }, version: 0 }),
-      );
+      const raw = localStorage.getItem('nexus-hems-store');
+      if (raw) {
+        const store = JSON.parse(raw);
+        store.state = { ...store.state, onboardingCompleted: true };
+        localStorage.setItem('nexus-hems-store', JSON.stringify(store));
+      } else {
+        localStorage.setItem(
+          'nexus-hems-store',
+          JSON.stringify({ state: { onboardingCompleted: true }, version: 0 }),
+        );
+      }
     });
   });
 
@@ -97,47 +105,41 @@ test.describe('WCAG 2.2 AA Accessibility', () => {
   });
 
   test('High contrast mode should apply CSS class to <html>', async ({ page }) => {
+    // Inject high-contrast setting into localStorage before the page loads
+    await page.addInitScript(() => {
+      const raw = localStorage.getItem('nexus-hems-store');
+      const store = raw ? JSON.parse(raw) : { state: {}, version: 0 };
+      store.state = {
+        ...store.state,
+        onboardingCompleted: true,
+        settings: { ...store.state?.settings, highContrast: true },
+      };
+      localStorage.setItem('nexus-hems-store', JSON.stringify(store));
+    });
+
     await page.goto('/settings');
     await page.waitForSelector('h1', { timeout: 15_000 });
 
-    // Enable high contrast via localStorage
-    await page.evaluate(() => {
-      const raw = localStorage.getItem('nexus-hems-store');
-      if (raw) {
-        const store = JSON.parse(raw);
-        store.state = {
-          ...store.state,
-          settings: { ...store.state?.settings, highContrast: true },
-        };
-        localStorage.setItem('nexus-hems-store', JSON.stringify(store));
-      }
-    });
-    await page.reload();
-    await page.waitForSelector('h1', { timeout: 15_000 });
-
-    await expect(page.locator('html')).toHaveClass(/high-contrast/);
+    await expect(page.locator('html')).toHaveClass(/high-contrast/, { timeout: 10_000 });
   });
 
   test('Reduced motion mode should apply CSS class to <html>', async ({ page }) => {
+    // Inject reduced-motion setting into localStorage before the page loads
+    await page.addInitScript(() => {
+      const raw = localStorage.getItem('nexus-hems-store');
+      const store = raw ? JSON.parse(raw) : { state: {}, version: 0 };
+      store.state = {
+        ...store.state,
+        onboardingCompleted: true,
+        settings: { ...store.state?.settings, reducedMotion: true },
+      };
+      localStorage.setItem('nexus-hems-store', JSON.stringify(store));
+    });
+
     await page.goto('/settings');
     await page.waitForSelector('h1', { timeout: 15_000 });
 
-    // Enable reduced motion via localStorage
-    await page.evaluate(() => {
-      const raw = localStorage.getItem('nexus-hems-store');
-      if (raw) {
-        const store = JSON.parse(raw);
-        store.state = {
-          ...store.state,
-          settings: { ...store.state?.settings, reducedMotion: true },
-        };
-        localStorage.setItem('nexus-hems-store', JSON.stringify(store));
-      }
-    });
-    await page.reload();
-    await page.waitForSelector('h1', { timeout: 15_000 });
-
-    await expect(page.locator('html')).toHaveClass(/reduced-motion/);
+    await expect(page.locator('html')).toHaveClass(/reduced-motion/, { timeout: 10_000 });
   });
 
   test('Heading hierarchy should be correct (no skipped levels)', async ({ page }) => {
@@ -219,7 +221,7 @@ test.describe('WCAG 2.2 AA Accessibility', () => {
     await page.waitForSelector('h1', { timeout: 15_000 });
 
     const accessibilityScanResults = await new AxeBuilder({ page })
-      .withRules(['button-name', 'link-name', 'input-button-has-value', 'label'])
+      .withRules(['button-name', 'link-name', 'input-button-name', 'label'])
       .analyze();
 
     expect(accessibilityScanResults.violations).toEqual([]);

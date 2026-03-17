@@ -14,6 +14,11 @@ import { useTranslation } from 'react-i18next';
 /** Check interval: every 30 minutes */
 const CHECK_INTERVAL_MS = 30 * 60 * 1000;
 
+// Tauri plugin module paths — kept as variables so Rollup/Vite
+// does not attempt to resolve the optional native dependencies.
+const TAURI_UPDATER_MODULE = '@tauri-apps/plugin-updater';
+const TAURI_PROCESS_MODULE = '@tauri-apps/plugin-process';
+
 interface UpdateInfo {
   version: string;
   body: string;
@@ -37,7 +42,7 @@ export function TauriAutoUpdater() {
 
     const checkForUpdate = async () => {
       try {
-        const { check } = await import('@tauri-apps/plugin-updater');
+        const { check } = await import(/* @vite-ignore */ TAURI_UPDATER_MODULE);
         const update = await check();
 
         if (update) {
@@ -69,7 +74,7 @@ export function TauriAutoUpdater() {
     setError(null);
 
     try {
-      const { check } = await import('@tauri-apps/plugin-updater');
+      const { check } = await import(/* @vite-ignore */ TAURI_UPDATER_MODULE);
       const update = await check();
 
       if (!update) return;
@@ -92,7 +97,7 @@ export function TauriAutoUpdater() {
       });
 
       // Restart the app
-      const { relaunch } = await import('@tauri-apps/plugin-process');
+      const { relaunch } = await import(/* @vite-ignore */ TAURI_PROCESS_MODULE);
       await relaunch();
     } catch (err) {
       console.error('[Tauri Updater] Install failed:', err);
