@@ -1645,6 +1645,12 @@ export const en = {
   },
   header: {
     controlMesh: 'HEMS Control Mesh',
+    liveStatus: 'Live energy status',
+    pvPower: 'PV power',
+    batterySoC: 'Battery charge',
+    gridImport: 'Grid import',
+    gridExport: 'Grid export',
+    selfSufficiency: 'Self-sufficiency',
   },
   safety: {
     emergencyStop: 'Emergency Stop — Shut down all devices immediately',

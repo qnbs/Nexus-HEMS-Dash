@@ -1660,6 +1660,12 @@ export const de = {
   },
   header: {
     controlMesh: 'HEMS-Steuerungsnetz',
+    liveStatus: 'Live-Energiestatus',
+    pvPower: 'PV-Leistung',
+    batterySoC: 'Batterieladung',
+    gridImport: 'Netzbezug',
+    gridExport: 'Netzeinspeisung',
+    selfSufficiency: 'Autarkiegrad',
   },
   safety: {
     emergencyStop: 'Notaus — Alle Geräte sofort abschalten',
