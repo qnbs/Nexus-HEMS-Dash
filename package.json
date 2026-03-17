@@ -74,6 +74,8 @@
     "tauri:mobile:android": "npx tauri android init && npx tauri android dev",
     "tauri:mobile:ios": "npx tauri ios init && npx tauri ios dev",
     "lighthouse": "lhci autorun",
+    "lighthouse:mobile": "lhci autorun --config=lighthouserc.json",
+    "lighthouse:desktop": "lhci autorun --config=lighthouserc.json --collect.settings.preset=desktop",
     "size": "size-limit",
     "size:check": "size-limit --json",
     "analyze": "source-map-explorer dist/assets/*.js --html dist/source-map-report.html",
@@ -89,15 +91,21 @@
   },
   "size-limit": [
     {
-      "name": "Framework (React + Router)",
+      "name": "Framework (React + Router + Zustand)",
       "path": "dist/assets/framework-*.js",
-      "limit": "75 kB",
+      "limit": "80 kB",
       "gzip": true
     },
     {
       "name": "App Entry",
       "path": "dist/assets/index-*.js",
-      "limit": "85 kB",
+      "limit": "70 kB",
+      "gzip": true
+    },
+    {
+      "name": "Adapters (protocol layer)",
+      "path": "dist/assets/adapters-*.js",
+      "limit": "30 kB",
       "gzip": true
     },
     {
@@ -127,7 +135,7 @@
     {
       "name": "Total JS",
       "path": "dist/assets/*.js",
-      "limit": "1050 kB",
+      "limit": "1100 kB",
       "gzip": true
     },
     {

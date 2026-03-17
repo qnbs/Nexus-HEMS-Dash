@@ -256,10 +256,19 @@ export default defineConfig(({ mode }) => {
           // Strategy: separate heavy libs into dedicated chunks so pages
           // only download what they actually render.
           manualChunks(id) {
+            // ── Source code: adapter implementations → own chunk ──
+            // Adapters are 2800+ LOC with heavy protocol logic.
+            // Splitting them out reduces the main entry chunk significantly.
+            if (/\/core\/adapters\/(?:Victron|Modbus|KNX|OCPP|EEBUS|adapter-registry)/.test(id))
+              return 'adapters';
+
             if (!id.includes('node_modules')) return;
 
             // ── Framework core — loaded on every page ──
             if (/\/react\/|\/react-dom\/|\/scheduler\/|\/react-router/.test(id)) return 'framework';
+
+            // ── Sentry error tracking — lazy-loaded, isolated chunk ──
+            if (/\/@sentry\/|\/sentry-internal\//.test(id)) return 'vendor-sentry';
 
             // ── D3 visualization — only Sankey pages ──
             // After tree-shaking: only d3-selection + d3-sankey (~30 KB)
@@ -294,8 +303,11 @@ export default defineConfig(({ mode }) => {
             // ── Date utilities — analytics/monitoring ──
             if (id.includes('/date-fns/')) return 'vendor-date';
 
-            // ── State + offline storage ──
-            if (/\/zustand\/|\/dexie\//.test(id)) return 'vendor-state';
+            // ── Zustand — tiny, loaded on every page ──
+            if (/\/zustand\//.test(id)) return 'framework';
+
+            // ── Dexie (IndexedDB) — offline/storage features ──
+            if (/\/dexie\//.test(id)) return 'vendor-dexie';
 
             // ── Google Gemini AI — only AI pages ──
             if (id.includes('/@google/genai/')) return 'vendor-ai';

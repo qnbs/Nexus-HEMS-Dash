@@ -10,7 +10,6 @@
  * Supports PDF export via jsPDF integration.
  */
 
-import { jsPDF } from 'jspdf';
 import { aggregateDaily } from './ml-forecast';
 import type { DailyAggregate, MonthlyAggregate } from './ml-forecast';
 import type { EnergySnapshot } from './db';
@@ -224,6 +223,7 @@ function fmt(value: number | null | undefined, decimals = 1): string {
  * Generate a CO₂ monthly report PDF.
  */
 export async function generateCo2ReportPdf(balance: Co2Balance): Promise<Blob> {
+  const { jsPDF } = await import('jspdf');
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   const pageW = doc.internal.pageSize.getWidth();
   const margin = 20;

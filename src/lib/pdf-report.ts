@@ -4,7 +4,6 @@
  * using jsPDF for valid PDF output.
  */
 
-import { jsPDF } from 'jspdf';
 import { calculateCo2Savings } from './format';
 
 // Re-export so existing test imports keep working
@@ -82,6 +81,7 @@ function fmt(value: number | null | undefined, decimals = 1): string {
  * Gracefully handles null/zero data without producing an invalid file.
  */
 export async function generatePdfReport(stats: MonthlyStats): Promise<Blob> {
+  const { jsPDF } = await import('jspdf');
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   const pageW = doc.internal.pageSize.getWidth();
   const margin = 20;
