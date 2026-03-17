@@ -165,8 +165,10 @@ test.describe('WCAG 2.2 AA Accessibility', () => {
     await page.goto('/energy-flow');
     await page.waitForSelector('h1', { timeout: 15_000 });
 
-    // Check for ARIA-live region
-    const liveRegion = page.locator('[role="status"][aria-live="polite"]');
+    // Check for the Sankey-specific ARIA-live region (sr-only, inside the Sankey container)
+    const liveRegion = page.locator(
+      '[role="status"][aria-live="polite"][aria-atomic="true"].sr-only',
+    );
     await expect(liveRegion).toHaveCount(1);
   });
 

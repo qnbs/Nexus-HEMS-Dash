@@ -41,6 +41,7 @@ jobs:
 
       - name: Semantic Release
         id: semantic
+        continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN || secrets.GITHUB_TOKEN }}
           GIT_AUTHOR_NAME: github-actions[bot]
@@ -48,6 +49,12 @@ jobs:
           GIT_COMMITTER_NAME: github-actions[bot]
           GIT_COMMITTER_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
         run: npx semantic-release
+
+      - name: Release status
+        if: steps.semantic.outcome == 'failure'
+        run: |
+          echo "::warning::Semantic Release failed — likely due to branch protection rules."
+          echo "To fix: create a GH_TOKEN (PAT) secret with 'repo' scope, or adjust branch protection to allow the GitHub Actions bot."
 
   # ─── Tauri Signed Desktop Binaries ─────────────────────────────
   tauri-release:

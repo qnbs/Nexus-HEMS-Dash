@@ -1,12 +1,14 @@
 {
   "ci": {
     "collect": {
-      "staticDistDir": "./dist",
+      "startServerCommand": "npx vite preview --port 9876 --strictPort",
+      "startServerReadyPattern": "Local:",
+      "startServerReadyTimeout": 15000,
       "url": [
-        "http://localhost/index.html",
-        "http://localhost/energy-flow",
-        "http://localhost/tariffs",
-        "http://localhost/analytics"
+        "http://localhost:9876/Nexus-HEMS-Dash/",
+        "http://localhost:9876/Nexus-HEMS-Dash/energy-flow",
+        "http://localhost:9876/Nexus-HEMS-Dash/tariffs",
+        "http://localhost:9876/Nexus-HEMS-Dash/analytics"
       ],
       "numberOfRuns": 3,
       "settings": {

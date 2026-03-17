@@ -1,5 +1,14 @@
 #!/bin/sh
 
-# Run tests before push (disabled temporarily - missing @testing-library/dom)
-# npm run test -- --run
-echo "Tests skipped - install @testing-library/dom first"
+# Pre-push gate: type-check + unit tests to prevent CI failures
+echo "🔍 Pre-push checks..."
+
+# 1. TypeScript type-check (fast, catches most CI failures)
+echo "  → tsc --noEmit"
+npx tsc --noEmit || { echo "❌ TypeScript errors — fix before pushing"; exit 1; }
+
+# 2. Run unit tests (fast, non-watch mode)
+echo "  → vitest run"
+npx vitest run --reporter=dot 2>/dev/null || { echo "❌ Unit tests failed — fix before pushing"; exit 1; }
+
+echo "✅ Pre-push checks passed"
