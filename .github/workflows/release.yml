@@ -4,14 +4,15 @@ on:
   push:
     branches: [main]
 
-permissions:
-  contents: write
-  issues: write
-  pull-requests: write
+permissions: read-all
 
 jobs:
   release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     timeout-minutes: 15
     outputs:
@@ -19,13 +20,15 @@ jobs:
       new_release_version: ${{ steps.semantic.outputs.new_release_version }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           fetch-depth: 0
           persist-credentials: false
+          # GH_TOKEN (PAT) needed to push to protected branches
+          token: ${{ secrets.GH_TOKEN || secrets.GITHUB_TOKEN }}
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
           cache: npm
@@ -39,7 +42,11 @@ jobs:
       - name: Semantic Release
         id: semantic
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN || secrets.GITHUB_TOKEN }}
+          GIT_AUTHOR_NAME: github-actions[bot]
+          GIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+          GIT_COMMITTER_NAME: github-actions[bot]
+          GIT_COMMITTER_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
         run: npx semantic-release
 
   # ─── Tauri Signed Desktop Binaries ─────────────────────────────
@@ -60,19 +67,19 @@ jobs:
             target: windows
     runs-on: ${{ matrix.platform }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
           cache: npm
 
       - name: Install Rust stable
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@631a55b12751854ce901bb631d5902ceb48146f7 # stable
 
       - name: Rust cache
-        uses: swatinem/rust-cache@v2
+        uses: swatinem/rust-cache@42dc69e1aa15d09112580998cf2ef0119e2e91ae # v2
         with:
           workspaces: src-tauri
 
@@ -90,7 +97,7 @@ jobs:
         run: npm ci
 
       - name: Build Tauri app (signed)
-        uses: tauri-apps/tauri-action@v0
+        uses: tauri-apps/tauri-action@fce9c6108b31ea247710505d3aaaa893ee6768d4 # v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}

@@ -142,20 +142,14 @@ const ALLOWED_HOSTNAME_PATTERNS = [
   /^172\.(1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3}$/,
 ];
 
-function isAllowedUrl(url: string): boolean {
-  try {
-    const parsed = new URL(url);
-    // Only allow http/https protocols
-    if (!['http:', 'https:'].includes(parsed.protocol)) return false;
-    // Block URLs with credentials (prevent credential leakage)
-    if (parsed.username || parsed.password) return false;
-    // Block non-standard ports on non-private hosts
-    const hostname = parsed.hostname;
-    // Only allow requests to private/local network hosts
-    return ALLOWED_HOSTNAME_PATTERNS.some((p) => p.test(hostname));
-  } catch {
-    return false;
-  }
+function isAllowedUrl(parsed: URL): boolean {
+  // Only allow http/https protocols
+  if (!['http:', 'https:'].includes(parsed.protocol)) return false;
+  // Block URLs with credentials (prevent credential leakage)
+  if (parsed.username || parsed.password) return false;
+  // Only allow requests to private/local network hosts
+  const hostname = parsed.hostname;
+  return ALLOWED_HOSTNAME_PATTERNS.some((p) => p.test(hostname));
 }
 
 // ─── Polling logic ───────────────────────────────────────────────────
@@ -165,17 +159,20 @@ async function executePoll(
   url: string,
   headers?: Record<string, string>,
 ): Promise<void> {
-  if (!isAllowedUrl(url)) {
-    postOut({
-      type: 'error',
-      adapterId,
-      error: `Blocked request to disallowed URL: ${new URL(url).hostname}`,
-    });
+  // Validate URL before any use (SSRF mitigation)
+  let sanitizedUrl: URL;
+  try {
+    sanitizedUrl = new URL(url);
+  } catch {
+    postOut({ type: 'error', adapterId, error: 'Invalid URL' });
     return;
   }
-  // Re-parse to construct a clean URL object (SSRF mitigation: use parsed
-  // URL to prevent URL manipulation via path traversal or encoding tricks)
-  const sanitizedUrl = new URL(url);
+
+  if (!isAllowedUrl(sanitizedUrl)) {
+    postOut({ type: 'error', adapterId, error: 'Request blocked: URL not in allowlist' });
+    return;
+  }
+
   const start = performance.now();
   try {
     const resp = await fetch(sanitizedUrl.href, {

@@ -2,11 +2,13 @@
 image:
   frontend:
     repository: ghcr.io/qnbs/nexus-hems-dash
-    tag: 'latest'
+    # Overridden by --set image.frontend.tag during CI/CD; defaults to Chart appVersion
+    tag: ''
     pullPolicy: IfNotPresent
   server:
     repository: ghcr.io/qnbs/nexus-hems-server
-    tag: 'latest'
+    # Overridden by --set image.server.tag during CI/CD; defaults to Chart appVersion
+    tag: ''
     pullPolicy: IfNotPresent
 
 # ─── Replicas ────────────────────────────────────────────────────────
@@ -77,8 +79,9 @@ monitoring:
 # ─── Security ────────────────────────────────────────────────────────
 podSecurityContext:
   runAsNonRoot: true
-  runAsUser: 1000
-  fsGroup: 1000
+  runAsUser: 65534
+  runAsGroup: 65534
+  fsGroup: 65534
   seccompProfile:
     type: RuntimeDefault
 
