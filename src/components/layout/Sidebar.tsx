@@ -18,6 +18,9 @@ import {
   Zap,
   Key,
   Monitor,
+  Cpu,
+  Puzzle,
+  HardDrive,
 } from 'lucide-react';
 import { useAppStore } from '../../store';
 
@@ -51,6 +54,9 @@ const navItems: NavItem[] = [
     group: 'tools',
   },
   { path: '/monitoring', labelKey: 'nav.monitoring', icon: <Monitor size={20} />, group: 'tools' },
+  { path: '/controllers', labelKey: 'nav.controllers', icon: <Cpu size={20} />, group: 'tools' },
+  { path: '/plugins', labelKey: 'nav.plugins', icon: <Puzzle size={20} />, group: 'tools' },
+  { path: '/hardware', labelKey: 'nav.hardware', icon: <HardDrive size={20} />, group: 'tools' },
   { path: '/settings', labelKey: 'nav.settings', icon: <Settings size={20} />, group: 'system' },
   { path: '/settings/ai', labelKey: 'nav.aiKeys', icon: <Key size={20} />, group: 'system' },
   { path: '/help', labelKey: 'nav.help', icon: <HelpCircle size={20} />, group: 'system' },

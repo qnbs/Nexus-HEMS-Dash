@@ -54,6 +54,9 @@ const Help = lazy(() => import('./pages/Help').then((m) => ({ default: m.Help })
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 const AISettingsPage = lazy(() => import('./pages/AISettingsPage'));
 const MonitoringPage = lazy(() => import('./pages/MonitoringPage'));
+const ControllersPage = lazy(() => import('./pages/ControllersPage'));
+const PluginsPage = lazy(() => import('./pages/PluginsPage'));
+const HardwarePage = lazy(() => import('./pages/HardwarePage'));
 
 function PageLoadingFallback() {
   const { t } = useTranslation();
@@ -84,6 +87,9 @@ const headerRouteLabels: Record<string, string> = {
   '/analytics': 'nav.analytics',
   '/historical-analytics': 'nav.historicalAnalytics',
   '/monitoring': 'nav.monitoring',
+  '/controllers': 'nav.controllers',
+  '/plugins': 'nav.plugins',
+  '/hardware': 'nav.hardware',
   '/settings': 'nav.settings',
   '/settings/ai': 'nav.aiKeys',
   '/help': 'nav.help',
@@ -551,6 +557,9 @@ export default function App() {
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/settings/ai" element={<AISettingsPage />} />
                     <Route path="/monitoring" element={<MonitoringPage />} />
+                    <Route path="/controllers" element={<ControllersPage />} />
+                    <Route path="/plugins" element={<PluginsPage />} />
+                    <Route path="/hardware" element={<HardwarePage />} />
                     <Route path="/help" element={<Help />} />
                     <Route path="*" element={<NotFoundPage />} />
                   </Routes>

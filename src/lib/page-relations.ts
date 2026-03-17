@@ -24,6 +24,9 @@ import {
   Wrench,
   Palette,
   Network,
+  Cpu,
+  Puzzle,
+  HardDrive,
 } from 'lucide-react';
 
 // ─── Route IDs ──────────────────────────────────────────────────────────────
@@ -39,6 +42,9 @@ export type PageId =
   | 'tariffs'
   | 'analytics'
   | 'monitoring'
+  | 'controllers'
+  | 'plugins'
+  | 'hardware'
   | 'settings'
   | 'ai-settings'
   | 'help';
@@ -142,6 +148,27 @@ export const PAGE_REGISTRY: Record<PageId, PageMeta> = {
     i18nKey: 'nav.aiKeys',
     icon: Key,
     group: 'system',
+  },
+  controllers: {
+    id: 'controllers',
+    path: '/controllers',
+    i18nKey: 'nav.controllers',
+    icon: Cpu,
+    group: 'tools',
+  },
+  plugins: {
+    id: 'plugins',
+    path: '/plugins',
+    i18nKey: 'nav.plugins',
+    icon: Puzzle,
+    group: 'tools',
+  },
+  hardware: {
+    id: 'hardware',
+    path: '/hardware',
+    i18nKey: 'nav.hardware',
+    icon: HardDrive,
+    group: 'tools',
   },
   help: { id: 'help', path: '/help', i18nKey: 'nav.help', icon: HelpCircle, group: 'system' },
 };
@@ -293,6 +320,26 @@ export const PAGE_RELATIONS: Record<PageId, PageRelation> = {
     related: ['ai-optimizer', 'settings'],
     settingsLinks: [],
     helpTab: 'features',
+    setupRequirements: [],
+  },
+  controllers: {
+    related: ['ai-optimizer', 'monitoring', 'storage', 'plugins'],
+    settingsLinks: [{ tab: 'energy', i18nKey: 'crossLinks.configureSystem', icon: Settings }],
+    helpTab: 'features',
+    setupRequirements: [
+      { settingsTab: 'energy', i18nKey: 'crossLinks.setupEnergy', checkField: 'systemConfig' },
+    ],
+  },
+  plugins: {
+    related: ['controllers', 'hardware', 'monitoring'],
+    settingsLinks: [{ tab: 'advanced', i18nKey: 'crossLinks.configureDebug', icon: Wrench }],
+    helpTab: 'integration',
+    setupRequirements: [],
+  },
+  hardware: {
+    related: ['controllers', 'plugins', 'settings'],
+    settingsLinks: [{ tab: 'energy', i18nKey: 'crossLinks.configureSystem', icon: Settings }],
+    helpTab: 'integration',
     setupRequirements: [],
   },
   help: {

@@ -15,6 +15,9 @@ import {
   HelpCircle,
   Monitor,
   X,
+  Cpu,
+  Puzzle,
+  HardDrive,
 } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -130,6 +133,24 @@ function MobileNavigationComponent() {
       icon: <Monitor className="h-5 w-5" />,
       label: t('nav.monitoring', 'Monitoring'),
       path: '/monitoring',
+    },
+    {
+      id: 'controllers',
+      icon: <Cpu className="h-5 w-5" />,
+      label: t('nav.controllers', 'Controllers'),
+      path: '/controllers',
+    },
+    {
+      id: 'plugins',
+      icon: <Puzzle className="h-5 w-5" />,
+      label: t('nav.plugins', 'Plugins'),
+      path: '/plugins',
+    },
+    {
+      id: 'hardware',
+      icon: <HardDrive className="h-5 w-5" />,
+      label: t('nav.hardware', 'Hardware'),
+      path: '/hardware',
     },
     {
       id: 'help',
