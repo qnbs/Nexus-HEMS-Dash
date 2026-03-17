@@ -146,8 +146,7 @@
         "cors",
         "@types/cors",
         "helmet",
-        "express-rate-limit",
-        "express-validator"
+        "express-rate-limit"
       ]
     },
     {

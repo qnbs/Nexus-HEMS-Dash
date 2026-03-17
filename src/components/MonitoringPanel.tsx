@@ -159,7 +159,7 @@ export default function MonitoringPanel() {
       </NeonCard>
 
       {/* Key Metric Cards */}
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4">
+      <div className="@container grid grid-cols-2 gap-2 @sm:grid-cols-3 @sm:gap-3 @xl:grid-cols-4">
         <MetricCard
           label={t('monitoring.pvPower', 'PV Power')}
           value={pvPower.toFixed(0)}
@@ -268,7 +268,7 @@ export default function MonitoringPanel() {
         <h3 className="mb-2 text-sm font-semibold text-(--color-text)">
           {t('monitoring.alertRules', 'Active Alert Rules')}
         </h3>
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="@container grid grid-cols-1 gap-2 @sm:grid-cols-2 @lg:grid-cols-3">
           {[
             { name: 'HighGridImport', threshold: '> 4200W / 5m', severity: 'warning' },
             { name: 'BatteryLow', threshold: '< 10% / 10m', severity: 'critical' },

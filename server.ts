@@ -5,9 +5,14 @@ import http from 'http';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import cors from 'cors';
-import { body, validationResult } from 'express-validator';
 import type { IncomingMessage } from 'http';
 import { initKeys, signToken, verifyToken, getKeyHealth } from './jwt-utils.js';
+import {
+  WSCommandSchema,
+  AuthTokenRequestSchema,
+  EEBUSPairRequestSchema,
+  type EnergyData,
+} from './src/types/protocol.js';
 
 // ─── Prometheus Metrics (server-side) ─────────────────────────────
 interface ServerMetricSample {
@@ -271,43 +276,12 @@ async function startServer() {
   // Parse JSON for POST routes
   app.use(express.json({ limit: '10kb' }));
 
-  // ─── Input Validation for WS commands ────────────────────────────
-  const VALID_COMMAND_TYPES = new Set([
-    'SET_EV_POWER',
-    'SET_HEAT_PUMP_POWER',
-    'SET_BATTERY_POWER',
-    'SET_EV_CURRENT',
-    'START_CHARGING',
-    'STOP_CHARGING',
-    'SET_V2X_DISCHARGE',
-    'SET_HEAT_PUMP_MODE',
-    'SET_BATTERY_MODE',
-    'SET_GRID_LIMIT',
-    'KNX_TOGGLE_LIGHTS',
-    'KNX_SET_TEMPERATURE',
-    'KNX_TOGGLE_WINDOW',
-  ]);
-
-  function validateWSCommand(parsed: Record<string, unknown>): { valid: boolean; error?: string } {
-    if (!parsed || typeof parsed !== 'object')
-      return { valid: false, error: 'Invalid message format' };
-    const type = parsed.type as string;
-    if (!type || !VALID_COMMAND_TYPES.has(type))
-      return { valid: false, error: `Unknown command: ${type}` };
-    const value = parsed.value;
-    if (value === undefined || value === null) return { valid: false, error: 'Missing value' };
-    if (typeof value === 'number') {
-      if (!Number.isFinite(value)) return { valid: false, error: 'Value must be finite' };
-      // Reject negative power values for power-setting commands
-      if (
-        type.startsWith('SET_EV_') ||
-        type === 'SET_HEAT_PUMP_POWER' ||
-        type === 'SET_GRID_LIMIT'
-      ) {
-        if (value < 0) return { valid: false, error: `Negative value not allowed for ${type}` };
-      }
-      if (Math.abs(value) > 50_000)
-        return { valid: false, error: 'Value exceeds safety limit (50 kW)' };
+  // ─── Input Validation for WS commands (Zod) ──────────────────────
+  function validateWSCommand(parsed: unknown): { valid: boolean; error?: string } {
+    const result = WSCommandSchema.safeParse(parsed);
+    if (!result.success) {
+      const firstIssue = result.error.issues[0];
+      return { valid: false, error: firstIssue?.message ?? 'Invalid command' };
     }
     return { valid: true };
   }
@@ -345,22 +319,17 @@ async function startServer() {
   // ─── JWT Token Endpoint ──────────────────────────────────────────────
   // Clients authenticate to obtain a JWT for WebSocket connections.
   // In production, this should verify credentials against an external IdP.
-  app.post(
-    '/api/auth/token',
-    body('clientId').isString().trim().isLength({ min: 1, max: 64 }).escape(),
-    body('scope').optional().isString().isIn(['read', 'readwrite', 'admin']),
-    async (req, res) => {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        res.status(400).json({ errors: errors.array() });
-        return;
-      }
+  app.post('/api/auth/token', async (req, res) => {
+    const parsed = AuthTokenRequestSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ errors: parsed.error.issues });
+      return;
+    }
 
-      const { clientId, scope } = req.body as { clientId: string; scope?: string };
-      const token = await signToken({ sub: clientId, scope: scope || 'readwrite' }, JWT_EXPIRY);
-      res.json({ token, expiresIn: JWT_EXPIRY });
-    },
-  );
+    const { clientId, scope } = parsed.data;
+    const token = await signToken({ sub: clientId, scope: scope || 'readwrite' }, JWT_EXPIRY);
+    res.json({ token, expiresIn: JWT_EXPIRY });
+  });
 
   // ─── JWT Token Refresh ───────────────────────────────────────────────
   app.post('/api/auth/refresh', async (req, res) => {
@@ -425,32 +394,28 @@ async function startServer() {
     }
   });
 
-  app.post(
-    '/api/eebus/pair',
-    body('ski').isString().trim().isLength({ min: 4, max: 128 }).escape(),
-    (req, res) => {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        res.status(400).json({ errors: errors.array() });
-        return;
-      }
+  app.post('/api/eebus/pair', (req, res) => {
+    const parsed = EEBUSPairRequestSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ errors: parsed.error.issues });
+      return;
+    }
 
-      const { ski } = req.body as { ski: string };
+    const { ski } = parsed.data;
 
-      // In production, this would:
-      // 1. Resolve the device via cached mDNS record
-      // 2. Establish TLS 1.3 connection with certificate pinning
-      // 3. Verify SKI matches the device's TLS certificate
-      // 4. Complete SHIP PIN verification handshake
-      // 5. Store trust relationship persistently
+    // In production, this would:
+    // 1. Resolve the device via cached mDNS record
+    // 2. Establish TLS 1.3 connection with certificate pinning
+    // 3. Verify SKI matches the device's TLS certificate
+    // 4. Complete SHIP PIN verification handshake
+    // 5. Store trust relationship persistently
 
-      eebusTrustedSKIs.add(ski);
-      const device = eebusDeviceCache.get(ski);
-      if (device) device.trusted = true;
+    eebusTrustedSKIs.add(ski);
+    const device = eebusDeviceCache.get(ski);
+    if (device) device.trusted = true;
 
-      res.json({ success: true, ski });
-    },
-  );
+    res.json({ success: true, ski });
+  });
 
   // ─── JSON metrics endpoint (for in-app dashboard) ────────────────
   app.get('/api/metrics/json', (_req, res) => {
@@ -550,7 +515,7 @@ async function startServer() {
   });
 
   // Mock data generation for the dashboard
-  const mockData = {
+  const mockData: EnergyData = {
     gridPower: 0,
     pvPower: 2500,
     batteryPower: -500,

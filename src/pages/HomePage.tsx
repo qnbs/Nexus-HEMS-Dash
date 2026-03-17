@@ -152,9 +152,10 @@ function HomePageComponent() {
         aria-label={t('metrics.overview', 'Key metrics')}
         aria-live="polite"
         aria-atomic="false"
+        className="@container"
       >
         <motion.div
-          className="grid grid-cols-2 gap-4 lg:grid-cols-5"
+          className="grid grid-cols-2 gap-4 @lg:grid-cols-3 @3xl:grid-cols-5"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
@@ -292,10 +293,10 @@ function HomePageComponent() {
       )}
 
       {/* ─── Sankey + Controls Row ─────────────────────────────── */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <div className="@container grid grid-cols-1 gap-6 @3xl:grid-cols-3">
         {/* Compact Sankey */}
         <motion.section
-          className="glass-panel-strong hover-lift p-6 lg:col-span-2"
+          className="glass-panel-strong hover-lift p-6 @3xl:col-span-2"
           aria-labelledby="home-flow-title"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -339,10 +340,10 @@ function HomePageComponent() {
       </div>
 
       {/* ─── Today's Highlights + Load Breakdown ─────────────── */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <div className="@container grid grid-cols-1 gap-6 @3xl:grid-cols-3">
         {/* Today's Highlights */}
         <motion.section
-          className="glass-panel-strong hover-lift p-6 lg:col-span-2"
+          className="glass-panel-strong hover-lift p-6 @3xl:col-span-2"
           aria-labelledby="home-highlights-title"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -355,7 +356,7 @@ function HomePageComponent() {
             <BarChart3 size={20} className="text-(--color-secondary)" aria-hidden="true" />
             {t('dashboard.todayHighlights')}
           </h2>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="@container grid grid-cols-2 gap-3 @md:grid-cols-4">
             <HighlightCard
               icon={<Sun size={16} className="text-yellow-400" />}
               label={t('dashboard.pvYieldToday')}

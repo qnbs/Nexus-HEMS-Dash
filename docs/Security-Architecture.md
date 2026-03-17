@@ -58,7 +58,7 @@
 
 - **Helmet.js** — sets security headers (HSTS, X-Frame-Options, X-Content-Type-Options)
 - **express-rate-limit** — 100 req/15 min per IP (configurable)
-- **express-validator** — input sanitization on all endpoints
+- **Zod** — runtime schema validation on all API endpoints and WebSocket commands
 - **JWT** (`jsonwebtoken`) — stateless auth tokens, HS256, 24 h expiry
 - No session storage; tokens validated per request
 

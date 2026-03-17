@@ -190,7 +190,7 @@ Return ONLY a valid JSON array with this structure:
       {/* Basic Recommendations (Always Visible) */}
       {!geminiRecommendations.length && (
         <section aria-label={t('optimizer.basicRecommendations', 'Basic Recommendations')}>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
+          <div className="@container grid grid-cols-1 gap-3 @sm:grid-cols-2 @sm:gap-4">
             {basicRecommendations.map((rec, i) => (
               <motion.div
                 key={rec.id}

@@ -139,6 +139,13 @@ const config: Config = {
       transitionTimingFunction: {
         spring: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
       },
+      containers: {
+        dashboard: '80rem',
+        panel: '40rem',
+        card: '24rem',
+        sidebar: '16rem',
+        kpi: '56rem',
+      },
     },
   },
   plugins: [containerQueries],

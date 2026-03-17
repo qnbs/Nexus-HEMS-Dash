@@ -123,7 +123,7 @@ export function PredictiveForecast() {
       </div>
 
       {/* Metrics */}
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="@container mb-6 grid grid-cols-1 gap-4 @sm:grid-cols-3">
         <div className="rounded-2xl bg-emerald-500/10 p-4">
           <div className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5 text-emerald-400" aria-hidden="true" />

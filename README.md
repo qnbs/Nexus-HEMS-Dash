@@ -31,7 +31,7 @@ Nexus-HEMS unifies **10 protocol adapters** (5 core + 5 contrib) behind a single
 | **Protocols (Contrib)** | Home Assistant MQTT · Matter/Thread · Zigbee2MQTT · Shelly REST (Gen2+) · Example template                                                                                                               |
 | **Plugin System**       | Adapter Registry with dynamic `import()` loading · npm-package format · `BaseAdapter` class for rapid development · Hot-loading from Settings UI                                                         |
 | **Platform**            | PWA offline-first (Workbox + IndexedDB) · 5 themes · Full i18n (DE/EN) · WCAG 2.2 AA · PDF reports + QR sharing · Prometheus monitoring                                                                  |
-| **Security**            | BYOK AI vault (AES-GCM 256) · JWT WebSocket auth · Helmet CSP · Rate limiting · CORS · express-validator                                                                                                 |
+| **Security**            | BYOK AI vault (AES-GCM 256) · JWT WebSocket auth · Helmet CSP · Rate limiting · CORS · Zod schema validation                                                                                             |
 | **Desktop & Mobile**    | Tauri v2 (Windows/macOS/Linux) · Capacitor 7 (iOS/Android)                                                                                                                                               |
 
 ## Architecture
@@ -171,7 +171,7 @@ See [Adapter Dev Guide](docs/Adapter-Dev-Guide.md) and [Contrib README](src/core
 
 ## Security
 
-- **Backend:** Helmet CSP + HSTS, CORS whitelist, express-validator, JWT (HS256) auth, rate limiting (100 req/min)
+- **Backend:** Helmet CSP + HSTS, CORS whitelist, Zod schema validation, JWT (HS256) auth, rate limiting (100 req/min)
 - **WebSocket:** JWT token auth, command whitelist, 64 KB max payload, 30 cmd/min per client
 - **Encryption:** AES-GCM 256-bit + PBKDF2 600k iterations for API keys in IndexedDB
 - **Transport:** TLS 1.3 everywhere, mTLS for EEBUS, client certs for OCPP
@@ -254,7 +254,7 @@ Brand colors: `neon-green` (#22ff88) · `electric-blue` (#00f0ff) · `power-oran
 <details>
 <summary><b>v4.3.0</b> — Backend Security Hardening</summary>
 
-- CORS whitelist, JWT WebSocket auth, express-validator, rate limiting
+- CORS whitelist, JWT WebSocket auth, Zod schema validation, rate limiting
 - Helmet CSP + HSTS, 64 KB max payload, Dependabot, CodeQL SAST
 </details>
 
