@@ -8,6 +8,8 @@ import type { ShareLink } from './auth/auth-provider';
 export interface EnergySnapshot extends EnergyData {
   id?: number;
   timestamp: number;
+  /** Schema version that created this record (for forward-compat checks) */
+  _schemaVersion?: number;
 }
 
 export interface SankeySnapshot {
@@ -61,7 +63,24 @@ export interface AIKeyRecord {
   lastUsed: number;
 }
 
-class NexusDatabase extends Dexie {
+/** Current schema version constant — bump when adding a new Dexie version */
+export const DB_CURRENT_VERSION = 8;
+
+/** Shared store definitions (DRY — single source of truth for the latest schema) */
+const LATEST_STORES = {
+  energySnapshots: '++id, timestamp',
+  sankeySnapshots: '++id, timestamp',
+  offlineActions: '++id, timestamp, status, type',
+  cacheMetadata: 'key, timestamp, expiresAt, type',
+  errorLogs: '++id, timestamp, severity',
+  settings: 'key',
+  aiKeys: 'provider',
+  commandAudit: '++id, timestamp, commandType, status',
+  adapterCredentials: 'adapterId',
+  shareLinks: 'id, token, expiresAt, active',
+} as const;
+
+export class NexusDatabase extends Dexie {
   energySnapshots!: Table<EnergySnapshot, number>;
   sankeySnapshots!: Table<SankeySnapshot, number>;
   offlineActions!: Table<OfflineAction, number>;
@@ -73,88 +92,182 @@ class NexusDatabase extends Dexie {
   adapterCredentials!: Table<EncryptedAdapterCredential, string>;
   shareLinks!: Table<ShareLink, string>;
 
-  constructor() {
-    super('nexus-hems-dash');
+  constructor(dbName = 'nexus-hems-dash') {
+    super(dbName);
 
-    // Version 1: Original schema
+    // ── Version 1: Original schema ──────────────────────────────────
     this.version(1).stores({
       energySnapshots: '++id, timestamp',
       settings: 'key',
     });
 
-    // Version 2: Add advanced PWA features
-    this.version(2).stores({
-      energySnapshots: '++id, timestamp',
-      sankeySnapshots: '++id, timestamp',
-      offlineActions: '++id, timestamp, status, type',
-      cacheMetadata: 'key, timestamp, expiresAt, type',
-      errorLogs: '++id, timestamp, severity',
-      settings: 'key',
-    });
+    // ── Version 2: Add advanced PWA features ────────────────────────
+    this.version(2)
+      .stores({
+        energySnapshots: '++id, timestamp',
+        sankeySnapshots: '++id, timestamp',
+        offlineActions: '++id, timestamp, status, type',
+        cacheMetadata: 'key, timestamp, expiresAt, type',
+        errorLogs: '++id, timestamp, severity',
+        settings: 'key',
+      })
+      .upgrade((tx) => {
+        // Backfill _schemaVersion on existing snapshots
+        return tx
+          .table('energySnapshots')
+          .toCollection()
+          .modify((snap: EnergySnapshot) => {
+            snap._schemaVersion ??= 1;
+          });
+      });
 
-    // Version 3: Add encrypted AI key storage (BYOK)
-    this.version(3).stores({
-      energySnapshots: '++id, timestamp',
-      sankeySnapshots: '++id, timestamp',
-      offlineActions: '++id, timestamp, status, type',
-      cacheMetadata: 'key, timestamp, expiresAt, type',
-      errorLogs: '++id, timestamp, severity',
-      settings: 'key',
-      aiKeys: 'provider',
-    });
+    // ── Version 3: Add encrypted AI key storage (BYOK) ─────────────
+    this.version(3)
+      .stores({
+        energySnapshots: '++id, timestamp',
+        sankeySnapshots: '++id, timestamp',
+        offlineActions: '++id, timestamp, status, type',
+        cacheMetadata: 'key, timestamp, expiresAt, type',
+        errorLogs: '++id, timestamp, severity',
+        settings: 'key',
+        aiKeys: 'provider',
+      })
+      .upgrade((tx) => {
+        return tx
+          .table('energySnapshots')
+          .toCollection()
+          .modify((snap: EnergySnapshot) => {
+            snap._schemaVersion = 3;
+          });
+      });
 
-    // Version 4: Add command audit trail for safety logging
-    this.version(4).stores({
-      energySnapshots: '++id, timestamp',
-      sankeySnapshots: '++id, timestamp',
-      offlineActions: '++id, timestamp, status, type',
-      cacheMetadata: 'key, timestamp, expiresAt, type',
-      errorLogs: '++id, timestamp, severity',
-      settings: 'key',
-      aiKeys: 'provider',
-      commandAudit: '++id, timestamp, commandType, status',
-    });
+    // ── Version 4: Add command audit trail for safety logging ───────
+    this.version(4)
+      .stores({
+        energySnapshots: '++id, timestamp',
+        sankeySnapshots: '++id, timestamp',
+        offlineActions: '++id, timestamp, status, type',
+        cacheMetadata: 'key, timestamp, expiresAt, type',
+        errorLogs: '++id, timestamp, severity',
+        settings: 'key',
+        aiKeys: 'provider',
+        commandAudit: '++id, timestamp, commandType, status',
+      })
+      .upgrade((tx) => {
+        return tx
+          .table('energySnapshots')
+          .toCollection()
+          .modify((snap: EnergySnapshot) => {
+            snap._schemaVersion = 4;
+          });
+      });
 
-    // Version 5: Add encrypted adapter credential vault (BYOK per-adapter)
-    this.version(5).stores({
-      energySnapshots: '++id, timestamp',
-      sankeySnapshots: '++id, timestamp',
-      offlineActions: '++id, timestamp, status, type',
-      cacheMetadata: 'key, timestamp, expiresAt, type',
-      errorLogs: '++id, timestamp, severity',
-      settings: 'key',
-      aiKeys: 'provider',
-      commandAudit: '++id, timestamp, commandType, status',
-      adapterCredentials: 'adapterId',
-    });
+    // ── Version 5: Add encrypted adapter credential vault ──────────
+    this.version(5)
+      .stores({
+        energySnapshots: '++id, timestamp',
+        sankeySnapshots: '++id, timestamp',
+        offlineActions: '++id, timestamp, status, type',
+        cacheMetadata: 'key, timestamp, expiresAt, type',
+        errorLogs: '++id, timestamp, severity',
+        settings: 'key',
+        aiKeys: 'provider',
+        commandAudit: '++id, timestamp, commandType, status',
+        adapterCredentials: 'adapterId',
+      })
+      .upgrade((tx) => {
+        return tx
+          .table('energySnapshots')
+          .toCollection()
+          .modify((snap: EnergySnapshot) => {
+            snap._schemaVersion = 5;
+          });
+      });
 
-    // Version 6: Add share links for time-limited QR sharing
-    this.version(6).stores({
-      energySnapshots: '++id, timestamp',
-      sankeySnapshots: '++id, timestamp',
-      offlineActions: '++id, timestamp, status, type',
-      cacheMetadata: 'key, timestamp, expiresAt, type',
-      errorLogs: '++id, timestamp, severity',
-      settings: 'key',
-      aiKeys: 'provider',
-      commandAudit: '++id, timestamp, commandType, status',
-      adapterCredentials: 'adapterId',
-      shareLinks: 'id, token, expiresAt, active',
-    });
+    // ── Version 6: Add share links for time-limited QR sharing ─────
+    this.version(6)
+      .stores({
+        energySnapshots: '++id, timestamp',
+        sankeySnapshots: '++id, timestamp',
+        offlineActions: '++id, timestamp, status, type',
+        cacheMetadata: 'key, timestamp, expiresAt, type',
+        errorLogs: '++id, timestamp, severity',
+        settings: 'key',
+        aiKeys: 'provider',
+        commandAudit: '++id, timestamp, commandType, status',
+        adapterCredentials: 'adapterId',
+        shareLinks: 'id, token, expiresAt, active',
+      })
+      .upgrade((tx) => {
+        return tx
+          .table('energySnapshots')
+          .toCollection()
+          .modify((snap: EnergySnapshot) => {
+            snap._schemaVersion = 6;
+          });
+      });
 
-    // Version 7: Extended history retention (50k snapshots) for ML forecast & CO₂ reports
-    this.version(7).stores({
-      energySnapshots: '++id, timestamp',
-      sankeySnapshots: '++id, timestamp',
-      offlineActions: '++id, timestamp, status, type',
-      cacheMetadata: 'key, timestamp, expiresAt, type',
-      errorLogs: '++id, timestamp, severity',
-      settings: 'key',
-      aiKeys: 'provider',
-      commandAudit: '++id, timestamp, commandType, status',
-      adapterCredentials: 'adapterId',
-      shareLinks: 'id, token, expiresAt, active',
-    });
+    // ── Version 7: Extended history retention (50k snapshots) ───────
+    this.version(7)
+      .stores({
+        energySnapshots: '++id, timestamp',
+        sankeySnapshots: '++id, timestamp',
+        offlineActions: '++id, timestamp, status, type',
+        cacheMetadata: 'key, timestamp, expiresAt, type',
+        errorLogs: '++id, timestamp, severity',
+        settings: 'key',
+        aiKeys: 'provider',
+        commandAudit: '++id, timestamp, commandType, status',
+        adapterCredentials: 'adapterId',
+        shareLinks: 'id, token, expiresAt, active',
+      })
+      .upgrade((tx) => {
+        return tx
+          .table('energySnapshots')
+          .toCollection()
+          .modify((snap: EnergySnapshot) => {
+            snap._schemaVersion = 7;
+          });
+      });
+
+    // ── Version 8: Migration-safe upgrade with data validation ──────
+    // Ensures all existing records have required fields with safe defaults
+    this.version(8)
+      .stores(LATEST_STORES)
+      .upgrade(async (tx) => {
+        // Backfill energy snapshots with safe defaults for any missing fields
+        await tx
+          .table('energySnapshots')
+          .toCollection()
+          .modify((snap: Record<string, unknown>) => {
+            snap._schemaVersion = 8;
+            // Ensure all EnergyData fields exist with safe defaults
+            snap.gridPower ??= 0;
+            snap.pvPower ??= 0;
+            snap.batteryPower ??= 0;
+            snap.houseLoad ??= 0;
+            snap.batterySoC ??= 0;
+            snap.heatPumpPower ??= 0;
+            snap.evPower ??= 0;
+            snap.gridVoltage ??= 230;
+            snap.batteryVoltage ??= 48;
+            snap.pvYieldToday ??= 0;
+            snap.priceCurrent ??= 0;
+            snap.timestamp ??= Date.now();
+          });
+
+        // Ensure offline actions have valid status
+        await tx
+          .table('offlineActions')
+          .toCollection()
+          .modify((action: Record<string, unknown>) => {
+            const validStatuses = ['pending', 'syncing', 'failed', 'completed'];
+            if (!validStatuses.includes(action.status as string)) {
+              action.status = 'failed';
+            }
+            action.retries ??= 0;
+          });
+      });
   }
 }
 
@@ -451,4 +564,91 @@ export async function revokeLocalShareLink(linkId: string): Promise<void> {
 export async function cleanExpiredShareLinks(): Promise<void> {
   const now = Date.now();
   await nexusDb.shareLinks.where('expiresAt').below(now).delete();
+}
+
+// ─── Migration Health & Backup ──────────────────────────────────────
+
+export interface MigrationHealthResult {
+  ok: boolean;
+  currentVersion: number;
+  expectedVersion: number;
+  tableCounts: Record<string, number>;
+  errors: string[];
+}
+
+/**
+ * Verify all tables exist and are accessible after a migration.
+ * Call this at app startup to detect migration corruption early.
+ */
+export async function checkMigrationHealth(
+  db: NexusDatabase = nexusDb,
+): Promise<MigrationHealthResult> {
+  const errors: string[] = [];
+  const tableCounts: Record<string, number> = {};
+  const expectedTables = Object.keys(LATEST_STORES);
+
+  for (const tableName of expectedTables) {
+    try {
+      const table = db.table(tableName);
+      tableCounts[tableName] = await table.count();
+    } catch (e) {
+      errors.push(
+        `Table "${tableName}" inaccessible: ${e instanceof Error ? e.message : String(e)}`,
+      );
+    }
+  }
+
+  const currentVersion = db.verno;
+  return {
+    ok: errors.length === 0 && currentVersion === DB_CURRENT_VERSION,
+    currentVersion,
+    expectedVersion: DB_CURRENT_VERSION,
+    tableCounts,
+    errors,
+  };
+}
+
+export interface DatabaseBackup {
+  version: number;
+  timestamp: number;
+  tables: Record<string, unknown[]>;
+}
+
+/**
+ * Export all database tables as a JSON-serialisable object.
+ * Useful for pre-migration backup or diagnostics.
+ */
+export async function exportDatabaseBackup(db: NexusDatabase = nexusDb): Promise<DatabaseBackup> {
+  const tables: Record<string, unknown[]> = {};
+  for (const tableName of Object.keys(LATEST_STORES)) {
+    try {
+      tables[tableName] = await db.table(tableName).toArray();
+    } catch {
+      tables[tableName] = [];
+    }
+  }
+  return {
+    version: db.verno,
+    timestamp: Date.now(),
+    tables,
+  };
+}
+
+/**
+ * Restore database from a backup object (e.g. after failed migration).
+ * Clears existing data before inserting backup data.
+ */
+export async function restoreDatabaseBackup(
+  backup: DatabaseBackup,
+  db: NexusDatabase = nexusDb,
+): Promise<void> {
+  await db.transaction('rw', db.tables, async () => {
+    for (const table of db.tables) {
+      await table.clear();
+      const rows = backup.tables[table.name];
+      if (rows && rows.length > 0) {
+        await table.bulkAdd(rows);
+      }
+    }
+  });
 }
