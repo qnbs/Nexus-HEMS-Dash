@@ -251,6 +251,14 @@ export interface StoredSettings {
   feedInTariff: number;
   gridOperator: string;
   monthlyBudget: number;
+  // PV/Battery/EV sizing
+  pvPeakKw: number;
+  batteryCapacityKWh: number;
+  batteryMaxChargeKW: number;
+  batteryMinSoC: number;
+  evMaxPowerKW: number;
+  heatPumpPowerKW: number;
+  feedInTariffEurKWh: number;
   // Dashboard
   dashboardRefreshSec: number;
   sidebarPosition: 'left' | 'right';

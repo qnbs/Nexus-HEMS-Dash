@@ -46,6 +46,17 @@ export const commandSchemas: Record<AdapterCommandType, z.ZodType<CommandValue>>
   KNX_TOGGLE_LIGHTS: z.boolean(),
   KNX_SET_TEMPERATURE: temperatureSetpoint,
   KNX_TOGGLE_WINDOW: z.boolean(),
+  SET_EV_MODE: z.union([
+    z.literal('off'),
+    z.literal('now'),
+    z.literal('minpv'),
+    z.literal('pv'),
+    z.string(),
+  ]),
+  SET_EV_TARGET_SOC: z.number().min(0).max(100),
+  SET_EV_PHASES: z.union([z.literal(1), z.literal(3), z.number().min(1).max(3)]),
+  SET_EV_MIN_CURRENT: currentAmps,
+  SET_SMART_COST_LIMIT: z.number().min(0).max(1), // €/kWh
 };
 
 /** Commands that modify high-power hardware and need user confirmation */

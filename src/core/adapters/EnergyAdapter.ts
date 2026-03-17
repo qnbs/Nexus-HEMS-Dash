@@ -20,6 +20,7 @@ export interface BatteryData {
   socPercent: number;
   voltageV: number;
   currentA: number;
+  capacityWh?: number;
   temperatureC?: number;
   cycleCount?: number;
   stateOfHealthPercent?: number;
@@ -128,6 +129,11 @@ export interface AdapterConnectionConfig {
 export type AdapterCommandType =
   | 'SET_EV_POWER'
   | 'SET_EV_CURRENT'
+  | 'SET_EV_MODE'
+  | 'SET_EV_TARGET_SOC'
+  | 'SET_EV_PHASES'
+  | 'SET_EV_MIN_CURRENT'
+  | 'SET_SMART_COST_LIMIT'
   | 'START_CHARGING'
   | 'STOP_CHARGING'
   | 'SET_V2X_DISCHARGE'
