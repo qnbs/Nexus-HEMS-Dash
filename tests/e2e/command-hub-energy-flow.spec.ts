@@ -129,28 +129,4 @@ test.describe('Live Energy Flow', () => {
       await expect(page.locator('svg').first()).toBeVisible();
     }
   });
-
-  test('legacy routes should redirect to /energy-flow', async ({ page }) => {
-    for (const legacy of ['/production', '/storage', '/consumption']) {
-      await page.goto(legacy);
-      await expect(page).toHaveURL(/energy-flow/, { timeout: 10_000 });
-    }
-  });
-
-  test('legacy device routes should redirect to /devices', async ({ page }) => {
-    for (const legacy of ['/ev', '/floorplan', '/controllers', '/hardware']) {
-      await page.goto(legacy);
-      await expect(page).toHaveURL(/devices/, { timeout: 10_000 });
-    }
-  });
-
-  test('legacy /ai-optimizer should redirect to /optimization-ai', async ({ page }) => {
-    await page.goto('/ai-optimizer');
-    await expect(page).toHaveURL(/optimization-ai/, { timeout: 10_000 });
-  });
-
-  test('legacy /historical-analytics should redirect to /analytics', async ({ page }) => {
-    await page.goto('/historical-analytics');
-    await expect(page).toHaveURL(/analytics/, { timeout: 10_000 });
-  });
 });

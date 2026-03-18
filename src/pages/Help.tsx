@@ -837,7 +837,7 @@ export function Help() {
                       title={t('help.featureHistorical')}
                       description={t('help.featureHistoricalDesc')}
                       color="bg-sky-500/15"
-                      link="/historical-analytics"
+                      link="/analytics"
                     />
                   </div>
                 </div>

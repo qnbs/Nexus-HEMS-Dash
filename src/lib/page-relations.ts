@@ -22,7 +22,6 @@ import {
   Cpu,
   Puzzle,
   LayoutDashboard,
-  Clock,
   Boxes,
 } from 'lucide-react';
 
@@ -35,7 +34,6 @@ export type PageId =
   | 'tariffs'
   | 'analytics'
   | 'monitoring'
-  | 'historical-analytics'
   | 'settings'
   | 'ai-settings'
   | 'plugins'
@@ -104,13 +102,6 @@ export const PAGE_REGISTRY: Record<PageId, PageMeta> = {
     path: '/monitoring',
     i18nKey: 'nav.monitoring',
     icon: Activity,
-    group: 'tools',
-  },
-  'historical-analytics': {
-    id: 'historical-analytics',
-    path: '/analytics/historical',
-    i18nKey: 'nav.historicalAnalytics',
-    icon: Clock,
     group: 'tools',
   },
   settings: {
@@ -212,19 +203,7 @@ export const PAGE_RELATIONS: Record<PageId, PageRelation> = {
     ],
   },
   analytics: {
-    related: ['energy-flow', 'tariffs', 'monitoring', 'historical-analytics'],
-    settingsLinks: [{ tab: 'storage', i18nKey: 'crossLinks.configureStorage', icon: Database }],
-    helpTab: 'features',
-    setupRequirements: [
-      {
-        settingsTab: 'storage',
-        i18nKey: 'crossLinks.setupStorage',
-        checkField: 'influxUrl',
-      },
-    ],
-  },
-  'historical-analytics': {
-    related: ['analytics', 'energy-flow', 'monitoring'],
+    related: ['energy-flow', 'tariffs', 'monitoring'],
     settingsLinks: [{ tab: 'storage', i18nKey: 'crossLinks.configureStorage', icon: Database }],
     helpTab: 'features',
     setupRequirements: [
@@ -316,7 +295,7 @@ export const SETTINGS_TABS: Record<SettingsTabId, SettingsTabMeta> = {
     id: 'storage',
     i18nKey: 'settings.storageShort',
     icon: Database,
-    relatedPages: ['analytics', 'historical-analytics'],
+    relatedPages: ['analytics'],
   },
   notifications: {
     id: 'notifications',

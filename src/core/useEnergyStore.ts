@@ -455,22 +455,22 @@ function bridgeToAppStore(
 
 // ─── Convenience selectors ───────────────────────────────────────────
 
-/** Selector: get EV charger data (for /ev page) */
+/** Selector: get EV charger data (for Devices page) */
 export const selectEVCharger = (state: EnergyStoreState) => state.unified.evCharger;
 
-/** Selector: get KNX room data (for /floorplan page) */
+/** Selector: get KNX room data (for Devices page) */
 export const selectKNXRooms = (state: EnergyStoreState) => state.unified.knx?.rooms ?? [];
 
-/** Selector: get PV data (for /production page) */
+/** Selector: get PV data (for Live Energy Flow page) */
 export const selectPV = (state: EnergyStoreState) => state.unified.pv;
 
-/** Selector: get battery data (for /storage page) */
+/** Selector: get battery data (for Live Energy Flow page) */
 export const selectBattery = (state: EnergyStoreState) => state.unified.battery;
 
-/** Selector: get grid data (for /consumption page) */
+/** Selector: get grid data (for Live Energy Flow page) */
 export const selectGrid = (state: EnergyStoreState) => state.unified.grid;
 
-/** Selector: get tariff data (for /tariffs page) */
+/** Selector: get tariff data (for Tariffs page) */
 export const selectTariff = (state: EnergyStoreState) => state.unified.tariff;
 
 /** Selector: get adapter status map (memoized — stable reference when values unchanged) */

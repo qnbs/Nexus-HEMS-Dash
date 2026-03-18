@@ -13,7 +13,6 @@ const ALL_PAGE_IDS: PageId[] = [
   'optimization-ai',
   'tariffs',
   'analytics',
-  'historical-analytics',
   'monitoring',
   'settings',
   'ai-settings',
@@ -36,9 +35,9 @@ const VALID_SETTINGS_TABS: SettingsTabId[] = [
 ];
 
 describe('PAGE_REGISTRY', () => {
-  it('should define all 12 pages', () => {
+  it('should define all 11 pages', () => {
     const ids = Object.keys(PAGE_REGISTRY);
-    expect(ids).toHaveLength(12);
+    expect(ids).toHaveLength(11);
     for (const id of ALL_PAGE_IDS) {
       expect(PAGE_REGISTRY[id]).toBeDefined();
     }

@@ -1,5 +1,5 @@
 import { useEffect, useRef, lazy, Suspense } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAdapterBridge } from './core/useEnergyStore';
 import { useAppStoreShallow } from './store';
@@ -50,15 +50,11 @@ const DevicesAutomation = lazy(() => import('./pages/DevicesAutomation'));
 
 const OptimizationAI = lazy(() => import('./pages/OptimizationAI'));
 const TariffsPage = lazy(() => import('./pages/TariffsPage'));
-const AnalyticsPage = lazy(() => import('./pages/AnalyticsPage'));
-const HistoricalAnalyticsPage = lazy(() => import('./pages/HistoricalAnalyticsPage'));
 const AnalyticsUnified = lazy(() => import('./pages/Analytics'));
-const Settings = lazy(() => import('./pages/Settings').then((m) => ({ default: m.Settings })));
 const Help = lazy(() => import('./pages/Help').then((m) => ({ default: m.Help })));
 const SettingsUnified = lazy(() => import('./pages/SettingsUnified'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 const AISettingsPage = lazy(() => import('./pages/AISettingsPage'));
-const MonitoringPage = lazy(() => import('./pages/MonitoringPage'));
 const MonitoringUnified = lazy(() => import('./pages/Monitoring'));
 const PluginsPage = lazy(() => import('./pages/PluginsPage'));
 
@@ -237,60 +233,33 @@ export default function App() {
                   {/* ── Section 2: Live Energy ── */}
                   <Route element={<LiveEnergyLayout />}>
                     <Route path="/energy-flow" element={<LiveEnergyFlow />} />
-                    {/* Legacy redirects — remove after 2025-08-15 */}
-                    <Route
-                      path="/energy-flow-classic"
-                      element={<Navigate to="/energy-flow" replace />}
-                    />
-                    <Route path="/production" element={<Navigate to="/energy-flow" replace />} />
-                    <Route path="/storage" element={<Navigate to="/energy-flow" replace />} />
-                    <Route path="/consumption" element={<Navigate to="/energy-flow" replace />} />
                   </Route>
 
                   {/* ── Section 3: Devices & Automation ── */}
                   <Route element={<DevicesLayout />}>
                     <Route path="/devices" element={<DevicesAutomation />} />
-                    {/* Legacy redirects — remove after 2025-08-15 */}
-                    <Route path="/ev" element={<Navigate to="/devices" replace />} />
-                    <Route path="/floorplan" element={<Navigate to="/devices" replace />} />
-                    <Route path="/controllers" element={<Navigate to="/devices" replace />} />
-                    <Route path="/hardware" element={<Navigate to="/devices" replace />} />
                   </Route>
 
                   {/* ── Section 4: Optimization & AI ── */}
                   <Route element={<OptimizationLayout />}>
                     <Route path="/optimization-ai" element={<OptimizationAI />} />
                     <Route path="/tariffs" element={<TariffsPage />} />
-                    {/* Legacy redirect — remove after 2025-08-15 */}
-                    <Route
-                      path="/ai-optimizer"
-                      element={<Navigate to="/optimization-ai" replace />}
-                    />
                   </Route>
 
                   {/* ── Section 5: Analytics & Reports ── */}
                   <Route element={<AnalyticsLayout />}>
                     <Route path="/analytics" element={<AnalyticsUnified />} />
-                    <Route path="/analytics/realtime" element={<AnalyticsPage />} />
-                    <Route path="/analytics/historical" element={<HistoricalAnalyticsPage />} />
-                    {/* Legacy redirect */}
-                    <Route
-                      path="/historical-analytics"
-                      element={<Navigate to="/analytics" replace />}
-                    />
                   </Route>
 
                   {/* ── Section 6: Monitoring & Health ── */}
                   <Route element={<MonitoringLayout />}>
                     <Route path="/monitoring" element={<MonitoringUnified />} />
-                    <Route path="/monitoring/full" element={<MonitoringPage />} />
                   </Route>
 
                   {/* ── Section 7: Settings & Plugins ── */}
                   <Route element={<SettingsLayout />}>
                     <Route path="/settings" element={<SettingsUnified />} />
                     <Route path="/settings/ai" element={<AISettingsPage />} />
-                    <Route path="/settings/config" element={<Settings />} />
                     <Route path="/plugins" element={<PluginsPage />} />
                     <Route path="/help" element={<Help />} />
                   </Route>

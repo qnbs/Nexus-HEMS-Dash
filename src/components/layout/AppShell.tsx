@@ -25,14 +25,10 @@ const headerRouteLabels: Record<string, string> = {
   '/optimization-ai': 'nav.aiOptimizer',
   '/tariffs': 'nav.tariffs',
   '/analytics': 'nav.analytics',
-  '/analytics/realtime': 'nav.analytics',
-  '/analytics/historical': 'nav.historicalAnalytics',
   '/monitoring': 'nav.monitoring',
-  '/monitoring/full': 'nav.monitoring',
   '/plugins': 'nav.plugins',
   '/settings': 'nav.settings',
   '/settings/ai': 'nav.aiKeys',
-  '/settings/config': 'nav.settings',
   '/help': 'nav.help',
 };
 

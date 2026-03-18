@@ -5,12 +5,12 @@ export function CommandHubLayout() {
   return <Outlet />;
 }
 
-/** Live Energy section layout — wraps energy-flow, production, storage, consumption */
+/** Live Energy section layout — wraps Live Energy Flow */
 export function LiveEnergyLayout() {
   return <Outlet />;
 }
 
-/** Devices & Automation section layout — wraps EV, floorplan, controllers, hardware */
+/** Devices & Automation section layout — wraps Devices & Automation */
 export function DevicesLayout() {
   return <Outlet />;
 }
@@ -20,7 +20,7 @@ export function OptimizationLayout() {
   return <Outlet />;
 }
 
-/** Analytics & Reports section layout — wraps analytics, historical-analytics */
+/** Analytics & Reports section layout — wraps unified Analytics */
 export function AnalyticsLayout() {
   return <Outlet />;
 }
