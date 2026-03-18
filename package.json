@@ -241,7 +241,7 @@
     "chromatic": "^12.1.0",
     "conventional-changelog-conventionalcommits": "^8.0.0",
     "depcheck": "^1.4.7",
-    "eslint": "^9.39.3",
+    "eslint": "^10.0.3",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-anti-trojan-source": "^1.1.2",
     "eslint-plugin-prettier": "^5.5.5",
