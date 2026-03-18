@@ -1,5 +1,5 @@
 import { useEffect, useRef, lazy, Suspense } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAdapterBridge } from './core/useEnergyStore';
 import { useAppStoreShallow } from './store';
@@ -263,6 +263,23 @@ export default function App() {
                     <Route path="/plugins" element={<PluginsPage />} />
                     <Route path="/help" element={<Help />} />
                   </Route>
+
+                  {/* ── Legacy Redirects ── */}
+                  <Route path="/production" element={<Navigate to="/energy-flow" replace />} />
+                  <Route path="/storage" element={<Navigate to="/energy-flow" replace />} />
+                  <Route path="/consumption" element={<Navigate to="/energy-flow" replace />} />
+                  <Route path="/ev" element={<Navigate to="/devices" replace />} />
+                  <Route path="/floorplan" element={<Navigate to="/devices" replace />} />
+                  <Route path="/controllers" element={<Navigate to="/settings" replace />} />
+                  <Route path="/hardware" element={<Navigate to="/devices" replace />} />
+                  <Route
+                    path="/historical-analytics"
+                    element={<Navigate to="/analytics" replace />}
+                  />
+                  <Route
+                    path="/ai-optimizer"
+                    element={<Navigate to="/optimization-ai" replace />}
+                  />
 
                   {/* Catch-all */}
                   <Route path="*" element={<NotFoundPage />} />
