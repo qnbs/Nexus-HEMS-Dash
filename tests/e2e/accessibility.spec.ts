@@ -2,14 +2,10 @@ import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
 const routes = [
-  { path: '/', name: 'Home' },
-  { path: '/energy-flow', name: 'Energy Flow' },
-  { path: '/production', name: 'Production' },
-  { path: '/storage', name: 'Storage' },
-  { path: '/consumption', name: 'Consumption' },
-  { path: '/ev', name: 'EV Charging' },
-  { path: '/floorplan', name: 'Floorplan' },
-  { path: '/ai-optimizer', name: 'AI Optimizer' },
+  { path: '/', name: 'Command Hub' },
+  { path: '/energy-flow', name: 'Live Energy Flow' },
+  { path: '/devices', name: 'Devices & Automation' },
+  { path: '/optimization-ai', name: 'AI Optimization' },
   { path: '/tariffs', name: 'Tariffs' },
   { path: '/analytics', name: 'Analytics' },
   { path: '/monitoring', name: 'Monitoring' },

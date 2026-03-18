@@ -1,32 +1,14 @@
 import { useEffect, useRef, lazy, Suspense } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Link,
-  NavLink,
-  useLocation,
-} from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAdapterBridge } from './core/useEnergyStore';
 import { useAppStoreShallow } from './store';
-import {
-  Command,
-  Settings as SettingsIcon,
-  HelpCircle,
-  Sun,
-  BatteryMedium,
-  Zap,
-} from 'lucide-react';
 import { themeDefinitions } from './design-tokens';
+import { EnergyProvider } from './core/EnergyContext';
 const Onboarding = lazy(() =>
   import('./components/Onboarding').then((m) => ({ default: m.Onboarding })),
 );
-import { CommandPalette, useCommandPalette } from './components/ui/CommandPalette';
-import { MobileNavigation } from './components/ui/MobileNavigation';
-import { Sidebar } from './components/layout/Sidebar';
-import { Breadcrumbs } from './components/layout/Breadcrumbs';
+import { AppShell } from './components/layout/AppShell';
 import { OfflineBanner } from './components/OfflineBanner';
 import { PWAInstallPrompt } from './components/PWAInstallPrompt';
 import { PWAUpdateNotification } from './components/PWAUpdateNotification';
@@ -37,26 +19,48 @@ import { backgroundSyncService } from './lib/background-sync';
 import { useNotifications } from './lib/useNotifications';
 import { logError } from './lib/db';
 
-// Lazy-loaded pages
-const HomePage = lazy(() => import('./pages/HomePage'));
-const EnergyFlowPage = lazy(() => import('./pages/EnergyFlowPage'));
-const ProductionPage = lazy(() => import('./pages/ProductionPage'));
-const StoragePage = lazy(() => import('./pages/StoragePage'));
-const ConsumptionPage = lazy(() => import('./pages/ConsumptionPage'));
-const EVPage = lazy(() => import('./pages/EVPage'));
-const FloorplanPage = lazy(() => import('./pages/FloorplanPage'));
-const AIOptimizerPage = lazy(() => import('./pages/AIOptimizerPage'));
+// ─── Lazy-loaded section layouts (7 groups) ──────────────────────────
+const CommandHubLayout = lazy(() =>
+  import('./components/layout/SectionLayouts').then((m) => ({ default: m.CommandHubLayout })),
+);
+const LiveEnergyLayout = lazy(() =>
+  import('./components/layout/SectionLayouts').then((m) => ({ default: m.LiveEnergyLayout })),
+);
+const DevicesLayout = lazy(() =>
+  import('./components/layout/SectionLayouts').then((m) => ({ default: m.DevicesLayout })),
+);
+const OptimizationLayout = lazy(() =>
+  import('./components/layout/SectionLayouts').then((m) => ({ default: m.OptimizationLayout })),
+);
+const AnalyticsLayout = lazy(() =>
+  import('./components/layout/SectionLayouts').then((m) => ({ default: m.AnalyticsLayout })),
+);
+const MonitoringLayout = lazy(() =>
+  import('./components/layout/SectionLayouts').then((m) => ({ default: m.MonitoringLayout })),
+);
+const SettingsLayout = lazy(() =>
+  import('./components/layout/SectionLayouts').then((m) => ({ default: m.SettingsLayout })),
+);
+
+// ─── Lazy-loaded pages ───────────────────────────────────────────────
+const CommandHub = lazy(() => import('./pages/CommandHub'));
+const LiveEnergyFlow = lazy(() => import('./pages/LiveEnergyFlow'));
+
+const DevicesAutomation = lazy(() => import('./pages/DevicesAutomation'));
+
+const OptimizationAI = lazy(() => import('./pages/OptimizationAI'));
 const TariffsPage = lazy(() => import('./pages/TariffsPage'));
 const AnalyticsPage = lazy(() => import('./pages/AnalyticsPage'));
 const HistoricalAnalyticsPage = lazy(() => import('./pages/HistoricalAnalyticsPage'));
+const AnalyticsUnified = lazy(() => import('./pages/Analytics'));
 const Settings = lazy(() => import('./pages/Settings').then((m) => ({ default: m.Settings })));
 const Help = lazy(() => import('./pages/Help').then((m) => ({ default: m.Help })));
+const SettingsUnified = lazy(() => import('./pages/SettingsUnified'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 const AISettingsPage = lazy(() => import('./pages/AISettingsPage'));
 const MonitoringPage = lazy(() => import('./pages/MonitoringPage'));
-const ControllersPage = lazy(() => import('./pages/ControllersPage'));
+const MonitoringUnified = lazy(() => import('./pages/Monitoring'));
 const PluginsPage = lazy(() => import('./pages/PluginsPage'));
-const HardwarePage = lazy(() => import('./pages/HardwarePage'));
 
 function PageLoadingFallback() {
   const { t } = useTranslation();
@@ -73,88 +77,11 @@ function PageLoadingFallback() {
   );
 }
 
-/** Route → i18n label map for the mobile page title */
-const headerRouteLabels: Record<string, string> = {
-  '/': 'nav.home',
-  '/energy-flow': 'nav.energyFlow',
-  '/production': 'nav.production',
-  '/storage': 'nav.storage',
-  '/consumption': 'nav.consumption',
-  '/ev': 'nav.ev',
-  '/floorplan': 'nav.floorplan',
-  '/ai-optimizer': 'nav.aiOptimizer',
-  '/tariffs': 'nav.tariffs',
-  '/analytics': 'nav.analytics',
-  '/historical-analytics': 'nav.historicalAnalytics',
-  '/monitoring': 'nav.monitoring',
-  '/controllers': 'nav.controllers',
-  '/plugins': 'nav.plugins',
-  '/hardware': 'nav.hardware',
-  '/settings': 'nav.settings',
-  '/settings/ai': 'nav.aiKeys',
-  '/help': 'nav.help',
-};
-
-/** Displays the current page name in the mobile header */
-function MobilePageTitle() {
-  const { t } = useTranslation();
-  const { pathname } = useLocation();
-  const labelKey = headerRouteLabels[pathname] ?? 'nav.home';
-
-  return (
-    <AnimatePresence mode="wait">
-      <motion.span
-        key={pathname}
-        className="min-w-0 truncate text-sm font-semibold text-(--color-text) lg:hidden"
-        initial={{ opacity: 0, y: 4 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -4 }}
-        transition={{ duration: 0.15 }}
-      >
-        {t(labelKey)}
-      </motion.span>
-    </AnimatePresence>
-  );
-}
-
-/** Tiny SVG ring showing self-sufficiency percentage */
-function SelfSufficiencyRing({ percentage }: { percentage: number }) {
-  const r = 5;
-  const circumference = 2 * Math.PI * r;
-  const offset = circumference - (percentage / 100) * circumference;
-  const color =
-    percentage >= 80
-      ? 'var(--color-neon-green)'
-      : percentage >= 40
-        ? 'var(--color-primary)'
-        : 'var(--color-power-orange)';
-
-  return (
-    <svg width="14" height="14" viewBox="0 0 14 14" className="shrink-0" aria-hidden="true">
-      <circle cx="7" cy="7" r={r} fill="none" stroke="var(--color-border)" strokeWidth="2" />
-      <circle
-        cx="7"
-        cy="7"
-        r={r}
-        fill="none"
-        stroke={color}
-        strokeWidth="2"
-        strokeDasharray={circumference}
-        strokeDashoffset={offset}
-        strokeLinecap="round"
-        transform="rotate(-90 7 7)"
-        style={{ transition: 'stroke-dashoffset 0.6s ease' }}
-      />
-    </svg>
-  );
-}
-
 /** Scrolls to the top and moves focus to main content on every route change */
 function ScrollToTop(): null {
   const { pathname } = useLocation();
   useEffect(() => {
     window.scrollTo(0, 0);
-    // Move focus to main content area for screen reader users
     const main = document.getElementById('main-content');
     if (main) {
       main.focus({ preventScroll: true });
@@ -164,15 +91,8 @@ function ScrollToTop(): null {
 }
 
 export default function App() {
-  const { t, i18n } = useTranslation();
-  // Shallow-compared selector — re-renders only when selected values change
+  const { i18n } = useTranslation();
   const {
-    priceCurrent,
-    pvPower,
-    batterySoC,
-    gridPower,
-    houseLoad,
-    connected,
     theme,
     locale,
     setTheme,
@@ -185,12 +105,6 @@ export default function App() {
     animations,
     onboardingCompleted,
   } = useAppStoreShallow((s) => ({
-    priceCurrent: s.energyData.priceCurrent,
-    pvPower: s.energyData.pvPower,
-    batterySoC: s.energyData.batterySoC,
-    gridPower: s.energyData.gridPower,
-    houseLoad: s.energyData.houseLoad,
-    connected: s.connected,
     theme: s.theme,
     locale: s.locale,
     setTheme: s.setTheme,
@@ -203,7 +117,6 @@ export default function App() {
     animations: s.settings.animations,
     onboardingCompleted: s.onboardingCompleted,
   }));
-  const { isOpen: isCommandPaletteOpen, setIsOpen: setCommandPaletteOpen } = useCommandPalette();
 
   // Adapter bridge replaces the old useWebSocket hook
   useAdapterBridge();
@@ -217,14 +130,12 @@ export default function App() {
     document.documentElement.dataset.theme = theme;
     document.documentElement.lang = locale;
     document.documentElement.style.colorScheme = themeDefinitions[theme].isDark ? 'dark' : 'light';
-    // Update PWA title bar color to match theme background
     const metaThemeColor = document.querySelector('meta[name="theme-color"]');
     if (metaThemeColor) {
       metaThemeColor.setAttribute('content', themeDefinition.colors.background);
     }
   }, [locale, theme, themeDefinition.colors.background]);
 
-  // Apply accessibility settings to the DOM
   useEffect(() => {
     const scale = fontScale ?? 1.0;
     document.documentElement.style.fontSize = `${scale * 100}%`;
@@ -238,7 +149,6 @@ export default function App() {
     document.documentElement.classList.toggle('high-contrast', highContrast ?? false);
   }, [highContrast]);
 
-  // Apply display settings to the DOM
   useEffect(() => {
     document.documentElement.classList.toggle('compact-mode', compactMode ?? false);
   }, [compactMode]);
@@ -283,7 +193,6 @@ export default function App() {
   // Initialize background sync service
   useEffect(() => {
     backgroundSyncService.init();
-
     return () => {
       backgroundSyncService.destroy();
     };
@@ -312,281 +221,84 @@ export default function App() {
           </>
         )}
 
-        <div
-          className="theme-shell min-h-screen font-sans text-(--color-text) selection:bg-(--color-primary)/30"
-          aria-hidden={!onboardingCompleted || undefined}
-          inert={!onboardingCompleted || undefined}
-        >
-          <div
-            className="pointer-events-none fixed inset-0 z-0"
-            aria-hidden="true"
-            style={{
-              background: `linear-gradient(145deg, ${themeDefinition.colors.background} 0%, ${themeDefinition.colors.background} 60%, ${themeDefinition.colors.glow} 100%)`,
-            }}
-          />
-
-          {/* Skip to content link (WCAG 2.2 AA) */}
-          <a
-            href="#main-content"
-            className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-100 focus:rounded-xl focus:bg-(--color-primary) focus:px-4 focus:py-2 focus:text-white focus:shadow-lg"
+        <EnergyProvider>
+          <AppShell
+            aria-hidden={!onboardingCompleted || undefined}
+            inert={!onboardingCompleted || undefined}
           >
-            {t('accessibility.skipToContent', 'Skip to main content')}
-          </a>
+            <ErrorBoundary>
+              <Suspense fallback={<PageLoadingFallback />}>
+                <Routes>
+                  {/* ── Section 1: Command Hub ── */}
+                  <Route element={<CommandHubLayout />}>
+                    <Route path="/" element={<CommandHub />} />
+                  </Route>
 
-          {/* Desktop Sidebar */}
-          <Sidebar />
+                  {/* ── Section 2: Live Energy ── */}
+                  <Route element={<LiveEnergyLayout />}>
+                    <Route path="/energy-flow" element={<LiveEnergyFlow />} />
+                    {/* Legacy redirects — remove after 2025-08-15 */}
+                    <Route
+                      path="/energy-flow-classic"
+                      element={<Navigate to="/energy-flow" replace />}
+                    />
+                    <Route path="/production" element={<Navigate to="/energy-flow" replace />} />
+                    <Route path="/storage" element={<Navigate to="/energy-flow" replace />} />
+                    <Route path="/consumption" element={<Navigate to="/energy-flow" replace />} />
+                  </Route>
 
-          {/* Main Content Area (with sidebar offset on desktop) */}
-          <div className="relative lg:ml-64">
-            {/* Top Bar — sticky header (mobile + desktop) */}
-            <motion.header
-              className="glass-panel-strong header-accent-line z-sticky sticky top-0 overflow-hidden px-3 py-1.5 sm:px-6 sm:py-3"
-              initial={{ opacity: 0, y: -12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-            >
-              {/* Row 1: Logo + Page Title + Actions */}
-              <div className="flex items-center gap-2 sm:gap-3">
-                {/* Left: Logo + Connection Dot (mobile/tablet) */}
-                <Link
-                  to="/"
-                  className="focus-ring relative shrink-0 rounded-lg lg:hidden"
-                  aria-label={t('nav.home')}
-                >
-                  <motion.img
-                    src={`${import.meta.env.BASE_URL}icon.svg`}
-                    alt=""
-                    className="h-7 w-7 rounded-lg"
-                    aria-hidden="true"
-                    whileHover={{ rotate: 10, scale: 1.1 }}
-                    transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-                  />
-                  {/* Connection status indicator */}
-                  <span
-                    className={`absolute -right-0.5 -bottom-0.5 h-2.5 w-2.5 rounded-full border-2 border-(--color-surface-strong) ${
-                      connected
-                        ? 'bg-(--color-neon-green) shadow-[0_0_6px_var(--color-neon-green)]'
-                        : 'bg-red-500 shadow-[0_0_6px_theme(colors.red.500)]'
-                    }`}
-                    aria-hidden="true"
-                  />
-                </Link>
+                  {/* ── Section 3: Devices & Automation ── */}
+                  <Route element={<DevicesLayout />}>
+                    <Route path="/devices" element={<DevicesAutomation />} />
+                    {/* Legacy redirects — remove after 2025-08-15 */}
+                    <Route path="/ev" element={<Navigate to="/devices" replace />} />
+                    <Route path="/floorplan" element={<Navigate to="/devices" replace />} />
+                    <Route path="/controllers" element={<Navigate to="/devices" replace />} />
+                    <Route path="/hardware" element={<Navigate to="/devices" replace />} />
+                  </Route>
 
-                {/* Page Title (mobile/tablet) — shows current route name */}
-                <MobilePageTitle />
-
-                {/* Right: action icons */}
-                <div className="ml-auto flex items-center gap-1 sm:gap-2">
-                  {/* Electricity Price (tablet+) */}
-                  <motion.div
-                    className="price-pill hidden md:inline-flex"
-                    aria-label={t('dashboard.currentPrice', 'Current electricity price')}
-                    whileHover={{ scale: 1.05 }}
-                    transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-                  >
-                    {priceCurrent.toFixed(3)} €/kWh
-                  </motion.div>
-
-                  {/* Command Palette */}
-                  <button
-                    onClick={() => setCommandPaletteOpen(true)}
-                    className="focus-ring inline-flex items-center gap-2 rounded-full border border-(--color-border) bg-(--color-surface-strong) p-2 text-sm transition-colors duration-200 hover:bg-(--color-primary)/10 sm:px-3"
-                    aria-label={t('command.open', 'Open command palette')}
-                    title={t('command.open', 'Open command palette')}
-                  >
-                    <Command className="h-4 w-4" aria-hidden="true" />
-                    <span className="hidden sm:inline">{t('command.search', 'Search')}</span>
-                    <kbd
-                      className="hidden rounded bg-(--color-surface-strong) px-1.5 py-0.5 text-xs lg:inline"
-                      aria-hidden="true"
-                    >
-                      ⌘K
-                    </kbd>
-                  </button>
-
-                  {/* Help (desktop only — mobile accesses via More sheet) */}
-                  <NavLink
-                    to="/help"
-                    className={({ isActive }) =>
-                      `focus-ring hidden items-center justify-center rounded-full border p-2 transition-colors duration-200 lg:inline-flex ${
-                        isActive
-                          ? 'border-(--color-primary)/40 bg-(--color-primary)/15 text-(--color-primary)'
-                          : 'border-(--color-border) bg-(--color-surface-strong) text-(--color-muted) hover:bg-(--color-primary)/10 hover:text-(--color-primary)'
-                      }`
-                    }
-                    aria-label={t('nav.help')}
-                    title={t('nav.help')}
-                  >
-                    <HelpCircle className="h-4 w-4" />
-                  </NavLink>
-
-                  {/* Settings */}
-                  <NavLink
-                    to="/settings"
-                    className={({ isActive }) =>
-                      `focus-ring inline-flex items-center justify-center rounded-full border p-2 transition-colors duration-200 ${
-                        isActive
-                          ? 'border-(--color-primary)/40 bg-(--color-primary)/15 text-(--color-primary)'
-                          : 'border-(--color-border) bg-(--color-surface-strong) text-(--color-muted) hover:bg-(--color-primary)/10 hover:text-(--color-primary)'
-                      }`
-                    }
-                    aria-label={t('nav.settings')}
-                    title={t('nav.settings')}
-                  >
-                    <SettingsIcon className="h-4 w-4" />
-                  </NavLink>
-                </div>
-              </div>
-
-              {/* Row 2: Live Energy Status Ticker (mobile/tablet only) */}
-              <div
-                className="scrollbar-hide mt-1.5 flex items-center gap-1 overflow-x-auto lg:hidden"
-                role="status"
-                aria-label={t('header.liveStatus', 'Live energy status')}
-                aria-live="polite"
-              >
-                {/* PV Power */}
-                <div
-                  className="inline-flex shrink-0 items-center gap-1 rounded-full bg-(--color-surface)/60 px-2 py-0.5 text-xs font-medium"
-                  title={t('header.pvPower', 'PV power')}
-                >
-                  <Sun className="h-3 w-3 text-amber-400" aria-hidden="true" />
-                  <span className="text-(--color-text)">
-                    {pvPower >= 1000
-                      ? `${(pvPower / 1000).toFixed(1)} kW`
-                      : `${Math.round(pvPower)} W`}
-                  </span>
-                </div>
-
-                {/* Battery SoC */}
-                <div
-                  className="inline-flex shrink-0 items-center gap-1 rounded-full bg-(--color-surface)/60 px-2 py-0.5 text-xs font-medium"
-                  title={t('header.batterySoC', 'Battery charge')}
-                >
-                  <BatteryMedium
-                    className={`h-3 w-3 ${
-                      batterySoC > 50
-                        ? 'text-(--color-neon-green)'
-                        : batterySoC > 20
-                          ? 'text-amber-400'
-                          : 'text-red-400'
-                    }`}
-                    aria-hidden="true"
-                  />
-                  <span className="text-(--color-text)">{Math.round(batterySoC)}%</span>
-                </div>
-
-                {/* Grid Power (import/export) */}
-                <div
-                  className="inline-flex shrink-0 items-center gap-1 rounded-full bg-(--color-surface)/60 px-2 py-0.5 text-xs font-medium"
-                  title={
-                    gridPower >= 0
-                      ? t('header.gridImport', 'Grid import')
-                      : t('header.gridExport', 'Grid export')
-                  }
-                >
-                  <Zap
-                    className={`h-3 w-3 ${gridPower >= 0 ? 'text-red-400' : 'text-(--color-neon-green)'}`}
-                    aria-hidden="true"
-                  />
-                  <span className="text-(--color-text)">
-                    {Math.abs(gridPower) >= 1000
-                      ? `${(Math.abs(gridPower) / 1000).toFixed(1)} kW`
-                      : `${Math.round(Math.abs(gridPower))} W`}
-                  </span>
-                  <span
-                    className={`text-[10px] ${gridPower >= 0 ? 'text-red-400' : 'text-(--color-neon-green)'}`}
-                  >
-                    {gridPower >= 0 ? '↓' : '↑'}
-                  </span>
-                </div>
-
-                {/* Price Pill (mobile — compact) */}
-                <div
-                  className="inline-flex shrink-0 items-center gap-1 rounded-full bg-(--color-surface)/60 px-2 py-0.5 text-xs font-medium md:hidden"
-                  title={t('dashboard.currentPrice', 'Current electricity price')}
-                >
-                  <span className="text-(--color-primary)">{priceCurrent.toFixed(2)} ct</span>
-                </div>
-
-                {/* Self-sufficiency mini indicator */}
-                <div
-                  className="inline-flex shrink-0 items-center gap-1 rounded-full bg-(--color-surface)/60 px-2 py-0.5 text-xs font-medium"
-                  title={t('header.selfSufficiency', 'Self-sufficiency')}
-                >
-                  <SelfSufficiencyRing
-                    percentage={
-                      houseLoad > 0
-                        ? Math.min(
-                            100,
-                            Math.round(((houseLoad - Math.max(0, gridPower)) / houseLoad) * 100),
-                          )
-                        : 0
-                    }
-                  />
-                  <span className="text-(--color-text)">
-                    {houseLoad > 0
-                      ? `${Math.min(100, Math.round(((houseLoad - Math.max(0, gridPower)) / houseLoad) * 100))}%`
-                      : '0%'}
-                  </span>
-                </div>
-              </div>
-            </motion.header>
-
-            {/* Page Content */}
-            <main
-              id="main-content"
-              tabIndex={-1}
-              className="pattern-grid mx-auto max-w-7xl px-4 py-6 pb-[max(5rem,calc(5rem+env(safe-area-inset-bottom)))] outline-none sm:px-6 lg:px-8 lg:pb-6"
-            >
-              <Breadcrumbs />
-              <ErrorBoundary>
-                <Suspense fallback={<PageLoadingFallback />}>
-                  <Routes>
-                    <Route path="/" element={<HomePage />} />
-                    <Route path="/energy-flow" element={<EnergyFlowPage />} />
-                    <Route path="/production" element={<ProductionPage />} />
-                    <Route path="/storage" element={<StoragePage />} />
-                    <Route path="/consumption" element={<ConsumptionPage />} />
-                    <Route path="/ev" element={<EVPage />} />
-                    <Route path="/floorplan" element={<FloorplanPage />} />
-                    <Route path="/ai-optimizer" element={<AIOptimizerPage />} />
+                  {/* ── Section 4: Optimization & AI ── */}
+                  <Route element={<OptimizationLayout />}>
+                    <Route path="/optimization-ai" element={<OptimizationAI />} />
                     <Route path="/tariffs" element={<TariffsPage />} />
-                    <Route path="/analytics" element={<AnalyticsPage />} />
+                    {/* Legacy redirect — remove after 2025-08-15 */}
+                    <Route
+                      path="/ai-optimizer"
+                      element={<Navigate to="/optimization-ai" replace />}
+                    />
+                  </Route>
+
+                  {/* ── Section 5: Analytics & Reports ── */}
+                  <Route element={<AnalyticsLayout />}>
+                    <Route path="/analytics" element={<AnalyticsUnified />} />
+                    <Route path="/analytics/realtime" element={<AnalyticsPage />} />
+                    <Route path="/analytics/historical" element={<HistoricalAnalyticsPage />} />
+                    {/* Legacy redirects */}
                     <Route path="/historical-analytics" element={<HistoricalAnalyticsPage />} />
-                    <Route path="/settings" element={<Settings />} />
+                  </Route>
+
+                  {/* ── Section 6: Monitoring & Health ── */}
+                  <Route element={<MonitoringLayout />}>
+                    <Route path="/monitoring" element={<MonitoringUnified />} />
+                    <Route path="/monitoring/full" element={<MonitoringPage />} />
+                  </Route>
+
+                  {/* ── Section 7: Settings & Plugins ── */}
+                  <Route element={<SettingsLayout />}>
+                    <Route path="/settings" element={<SettingsUnified />} />
                     <Route path="/settings/ai" element={<AISettingsPage />} />
-                    <Route path="/monitoring" element={<MonitoringPage />} />
-                    <Route path="/controllers" element={<ControllersPage />} />
+                    <Route path="/settings/config" element={<Settings />} />
                     <Route path="/plugins" element={<PluginsPage />} />
-                    <Route path="/hardware" element={<HardwarePage />} />
                     <Route path="/help" element={<Help />} />
-                    <Route path="*" element={<NotFoundPage />} />
-                  </Routes>
-                </Suspense>
-              </ErrorBoundary>
-            </main>
-          </div>
+                  </Route>
 
-          {/* Command Palette */}
-          <CommandPalette
-            isOpen={isCommandPaletteOpen}
-            onClose={() => setCommandPaletteOpen(false)}
-            onOptimize={() => {
-              const optimizer = document.getElementById('ai-optimizer');
-              optimizer?.scrollIntoView({ behavior: 'smooth' });
-            }}
-            onExportReport={() => {
-              const exportButton = document.querySelector(
-                '[data-export-report]',
-              ) as HTMLButtonElement;
-              exportButton?.click();
-            }}
-          />
-
-          {/* Mobile Bottom Navigation */}
-          <MobileNavigation />
-        </div>
+                  {/* Catch-all */}
+                  <Route path="*" element={<NotFoundPage />} />
+                </Routes>
+              </Suspense>
+            </ErrorBoundary>
+          </AppShell>
+        </EnergyProvider>
       </Router>
     </ErrorBoundary>
   );

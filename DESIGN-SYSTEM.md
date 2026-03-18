@@ -522,3 +522,204 @@ Specialized typography for real-time numeric values.
 | `wizard-step-number`    | Circle with step number         | Rounded-full, primary border           |
 | `wizard-step-content`   | Step body content               | Padding, min-height                    |
 | `live-metric`           | Real-time numeric readout       | Mono, tabular-nums, fluid-text-2xl     |
+
+---
+
+## How to Add New Features in 1 Day
+
+This section is a practical checklist for adding a new feature — from idea to deployed — within a single working day. The design system, adapter architecture, and tooling are specifically designed to make this possible.
+
+### Morning: Foundation (2 hours)
+
+#### 1. Create the Page Component
+
+```bash
+# New page file
+touch src/pages/MyFeature.tsx
+```
+
+```tsx
+import { useTranslation } from 'react-i18next';
+import { MyIcon } from 'lucide-react';
+import { PageHeader } from '../components/layout/PageHeader';
+import { PageTour } from '../components/ui/PageTour';
+import { HelpTooltip } from '../components/ui/HelpTooltip';
+import { EmptyState } from '../components/ui/EmptyState';
+import { DemoBadge } from '../components/DemoBadge';
+
+export default function MyFeature() {
+  const { t } = useTranslation();
+
+  return (
+    <div className="space-y-6">
+      <PageTour tourId="my-feature" steps={TOUR_STEPS} />
+      <DemoBadge />
+      <PageHeader
+        title={t('myFeature.title')}
+        subtitle={t('myFeature.subtitle')}
+        icon={<MyIcon size={22} />}
+      />
+      {/* Your feature content using glass-panel, energy-card, etc. */}
+    </div>
+  );
+}
+```
+
+#### 2. Add Route and Lazy Loading
+
+In `src/App.tsx`:
+
+```tsx
+const MyFeature = lazy(() => import('./pages/MyFeature'));
+
+// Inside the appropriate section layout:
+<Route path="/my-feature" element={<MyFeature />} />;
+```
+
+#### 3. Add i18n Keys
+
+Add keys to **both** `src/locales/de.ts` and `src/locales/en.ts`:
+
+```typescript
+myFeature: {
+  title: 'Mein Feature',
+  subtitle: 'Beschreibung des Features',
+},
+```
+
+#### 4. Add Sidebar Navigation
+
+In `src/components/layout/Sidebar.tsx`, add to the appropriate section group:
+
+```tsx
+{ path: '/my-feature', labelKey: 'nav.myFeature', icon: <MyIcon size={20} /> }
+```
+
+### Midday: Real-Time Data (2 hours)
+
+#### 5. Connect to Energy Data
+
+Use the dual-store architecture:
+
+```tsx
+import { useAppStoreShallow } from '../store';
+import { useEnergyStore } from '../core/useEnergyStore';
+
+// UI settings from useAppStore
+const settings = useAppStoreShallow((s) => s.settings);
+
+// Real-time data from useEnergyStore
+const unified = useEnergyStore((s) => s.unified);
+```
+
+#### 6. Use Design System Components
+
+| Need            | Use                                                                               |
+| :-------------- | :-------------------------------------------------------------------------------- |
+| Data container  | `<div className="glass-panel rounded-2xl p-4">`                                   |
+| Metric display  | `<span className="live-metric">3.2 kW</span>`                                     |
+| Device card     | `<div className="energy-card">` with `energy-card-header` + `energy-card-details` |
+| Action bar      | `<FloatingActionBar>` at bottom                                                   |
+| Multi-step flow | `<WizardStepper>` + `<WizardContent>`                                             |
+| Empty state     | `<EmptyState icon={Search} title={t('...')} pulse />`                             |
+| Contextual help | `<HelpTooltip content={t('...')} />`                                              |
+
+#### 7. Charts with Recharts
+
+```tsx
+import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip } from 'recharts';
+
+<ResponsiveContainer width="100%" height={200}>
+  <AreaChart data={data}>
+    <XAxis dataKey="time" />
+    <YAxis />
+    <Tooltip contentStyle={{ backgroundColor: 'var(--color-surface)', border: 'none' }} />
+    <Area
+      type="monotone"
+      dataKey="value"
+      stroke="var(--color-primary)"
+      fill="var(--color-primary)"
+      fillOpacity={0.15}
+    />
+  </AreaChart>
+</ResponsiveContainer>;
+```
+
+### Afternoon: Polish & Quality (3 hours)
+
+#### 8. Add Guided Tour
+
+```tsx
+const TOUR_STEPS: TourStep[] = [
+  {
+    icon: MyIcon,
+    titleKey: 'tour.myFeature.step1Title',
+    descKey: 'tour.myFeature.step1Desc',
+    color: '#00f0ff',
+  },
+  {
+    icon: Sparkles,
+    titleKey: 'tour.myFeature.step2Title',
+    descKey: 'tour.myFeature.step2Desc',
+    color: '#22ff88',
+  },
+];
+```
+
+#### 9. Accessibility Checklist
+
+- [ ] All buttons have `type="button"`
+- [ ] Decorative icons have `aria-hidden="true"`
+- [ ] Interactive elements have `aria-label` or visible labels
+- [ ] Focus rings via `.focus-ring` class
+- [ ] Semantic HTML (`<nav>`, `<main>`, `<section>`)
+- [ ] No hardcoded text — all strings use `t()`
+
+#### 10. Write Tests
+
+```bash
+# Unit test
+touch src/tests/MyFeature.test.tsx
+```
+
+```tsx
+import { render, screen } from '@testing-library/react';
+import { describe, it, expect } from 'vitest';
+
+describe('MyFeature', () => {
+  it('renders title', () => {
+    render(<MyFeature />);
+    expect(screen.getByRole('heading')).toBeInTheDocument();
+  });
+});
+```
+
+#### 11. Create Storybook Story
+
+```bash
+touch src/components/MyFeature.stories.tsx
+```
+
+#### 12. Verify & Deploy
+
+```bash
+npx tsc --noEmit          # TypeScript check
+npm run lint              # ESLint zero-warning policy
+npm run test:run          # Unit tests
+npm run build             # Bundle size < 600 KB
+git add -A && git commit -m "feat: add MyFeature page"
+git push                  # CI runs: lint → type-check → unit → e2e → deploy
+```
+
+### Design System Rules Summary
+
+| Rule             | Enforcement                                       |
+| :--------------- | :------------------------------------------------ |
+| No inline colors | Use `var(--color-*)` CSS variables                |
+| No manual memo   | React Compiler handles it                         |
+| No Redux/MobX    | Zustand only (useAppStore + useEnergyStore)       |
+| No Tailwind v3   | Use v4 `@theme` syntax                            |
+| All strings i18n | `t()` for every user-facing string                |
+| WCAG 2.2 AA      | axe-core + Playwright a11y tests                  |
+| Lazy loading     | `React.lazy()` + `Suspense` for all pages         |
+| 5 themes         | All components use CSS variables, never hardcoded |

@@ -8,11 +8,8 @@ import {
   Settings,
   HelpCircle,
   Zap,
-  Sun,
-  Battery,
   Activity,
   Car,
-  Map,
   TrendingUp,
   BarChart3,
   SearchX,
@@ -97,66 +94,22 @@ export function CommandPalette({
       keywords: ['sankey', 'flow', 'energiefluss'],
     },
     {
-      id: 'nav-production',
-      label: t('nav.production', 'Production'),
-      icon: <Sun className="h-5 w-5 text-yellow-400" />,
-      action: () => {
-        navigate('/production');
-        onClose();
-      },
-      category: 'navigation',
-      keywords: ['solar', 'pv', 'photovoltaic', 'erzeugung'],
-    },
-    {
-      id: 'nav-storage',
-      label: t('nav.storage', 'Storage'),
-      icon: <Battery className="h-5 w-5 text-emerald-400" />,
-      action: () => {
-        navigate('/storage');
-        onClose();
-      },
-      category: 'navigation',
-      keywords: ['battery', 'soc', 'batterie', 'speicher'],
-    },
-    {
-      id: 'nav-consumption',
-      label: t('nav.consumption', 'Consumption'),
-      icon: <Home className="h-5 w-5 text-blue-400" />,
-      action: () => {
-        navigate('/consumption');
-        onClose();
-      },
-      category: 'navigation',
-      keywords: ['house', 'load', 'verbrauch', 'haus'],
-    },
-    {
-      id: 'nav-ev',
-      label: t('nav.ev', 'EV Charging'),
+      id: 'nav-devices',
+      label: t('nav.devices', 'Devices & Automation'),
       icon: <Car className="h-5 w-5 text-green-400" />,
       action: () => {
-        navigate('/ev');
+        navigate('/devices');
         onClose();
       },
       category: 'navigation',
-      keywords: ['wallbox', 'car', 'charging', 'auto', 'laden'],
-    },
-    {
-      id: 'nav-floorplan',
-      label: t('nav.floorplan', 'Floorplan'),
-      icon: <Map className="h-5 w-5" />,
-      action: () => {
-        navigate('/floorplan');
-        onClose();
-      },
-      category: 'navigation',
-      keywords: ['knx', 'building', 'automation', 'grundriss'],
+      keywords: ['wallbox', 'car', 'ev', 'floorplan', 'knx', 'hardware', 'geräte'],
     },
     {
       id: 'nav-ai',
       label: t('nav.aiOptimizer', 'AI Optimizer'),
       icon: <Sparkles className="h-5 w-5 text-purple-400" />,
       action: () => {
-        navigate('/ai-optimizer');
+        navigate('/optimization-ai');
         onClose();
       },
       category: 'navigation',

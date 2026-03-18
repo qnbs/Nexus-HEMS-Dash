@@ -748,21 +748,21 @@ export function Help() {
                       title={t('help.featureFloorplan')}
                       description={t('help.featureFloorplanDesc')}
                       color="bg-blue-500/15"
-                      link="/floorplan"
+                      link="/devices"
                     />
                     <FeatureCard
                       icon={<Sparkles size={20} className="text-purple-400" />}
                       title={t('help.featureAI')}
                       description={t('help.featureAIDesc')}
                       color="bg-purple-500/15"
-                      link="/ai-optimizer"
+                      link="/optimization-ai"
                     />
                     <FeatureCard
                       icon={<Car size={20} className="text-amber-400" />}
                       title={t('help.featureEV')}
                       description={t('help.featureEVDesc')}
                       color="bg-amber-500/15"
-                      link="/ev"
+                      link="/devices"
                     />
                     <FeatureCard
                       icon={<TrendingUp size={20} className="text-rose-400" />}
@@ -776,14 +776,14 @@ export function Help() {
                       title={t('help.featureForecast')}
                       description={t('help.featureForecastDesc')}
                       color="bg-yellow-500/15"
-                      link="/production"
+                      link="/energy-flow"
                     />
                     <FeatureCard
                       icon={<Battery size={20} className="text-green-400" />}
                       title={t('help.featureBattery')}
                       description={t('help.featureBatteryDesc')}
                       color="bg-green-500/15"
-                      link="/storage"
+                      link="/energy-flow"
                     />
                     <FeatureCard
                       icon={<BarChart3 size={20} className="text-indigo-400" />}
@@ -797,7 +797,7 @@ export function Help() {
                       title={t('help.featureHA')}
                       description={t('help.featureHADesc')}
                       color="bg-teal-500/15"
-                      link="/consumption"
+                      link="/energy-flow"
                     />
                     <FeatureCard
                       icon={<WifiOff size={20} className="text-orange-400" />}
@@ -816,7 +816,7 @@ export function Help() {
                       title={t('help.featureControllers')}
                       description={t('help.featureControllersDesc')}
                       color="bg-cyan-500/15"
-                      link="/controllers"
+                      link="/devices"
                     />
                     <FeatureCard
                       icon={<Network size={20} className="text-violet-400" />}
@@ -830,7 +830,7 @@ export function Help() {
                       title={t('help.featureHardwareRegistry')}
                       description={t('help.featureHardwareRegistryDesc')}
                       color="bg-lime-500/15"
-                      link="/hardware"
+                      link="/devices"
                     />
                     <FeatureCard
                       icon={<Clock size={20} className="text-sky-400" />}
@@ -1274,10 +1274,53 @@ export function Help() {
                       <p>• KNX Association — KNX/IP building automation standard</p>
                       <p>• Tibber & aWATTar — Dynamic electricity tariff APIs</p>
                       <p>• D3.js — Data-driven visualization library</p>
-                      <p>• Google — Gemini 3.1 AI model</p>
+                      <p>• Google — Gemini 2.5 Pro AI model</p>
                       <p>• EMHASS — MPC/LP optimization concepts</p>
                       <p>• OpenEMS — OSGi controller architecture inspiration</p>
                       <p>• evcc — EV charging integration patterns</p>
+                    </div>
+                  </div>
+
+                  {/* AI Acknowledgments */}
+                  <div className="mt-6 border-t border-(--color-border) pt-6">
+                    <h3 className="mb-3 font-medium">{t('help.aiAcknowledgments')}</h3>
+                    <p className="mb-4 text-sm leading-relaxed text-(--color-muted)">
+                      {t('help.aiAcknowledgmentsDesc')}
+                    </p>
+                    <div className="grid gap-3 sm:grid-cols-3">
+                      {[
+                        {
+                          name: 'Gemini 2.5 Pro',
+                          provider: 'Google AI Studio',
+                          desc: t('help.aiGeminiDesc'),
+                          color: '#4285F4',
+                        },
+                        {
+                          name: 'Claude Opus 4.6',
+                          provider: 'GitHub Copilot',
+                          desc: t('help.aiClaudeDesc'),
+                          color: '#D97706',
+                        },
+                        {
+                          name: 'Grok',
+                          provider: 'xAI',
+                          desc: t('help.aiGrokDesc'),
+                          color: '#10B981',
+                        },
+                      ].map((ai) => (
+                        <div
+                          key={ai.name}
+                          className="rounded-xl border border-(--color-border) bg-(--color-surface) p-3"
+                        >
+                          <p className="mb-0.5 text-sm font-semibold" style={{ color: ai.color }}>
+                            {ai.name}
+                          </p>
+                          <p className="mb-1 text-xs font-medium text-(--color-muted)">
+                            {ai.provider}
+                          </p>
+                          <p className="text-xs text-(--color-muted)">{ai.desc}</p>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>

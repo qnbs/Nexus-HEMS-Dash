@@ -6,20 +6,12 @@ import {
   Sparkles,
   TrendingUp,
   MoreHorizontal,
-  Sun,
-  Battery,
-  Home,
-  Car,
-  Map,
+  Zap,
   BarChart3,
   HelpCircle,
   Monitor,
   X,
-  Cpu,
-  Puzzle,
-  HardDrive,
   Settings,
-  Clock,
 } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -85,10 +77,10 @@ function MobileNavigationComponent() {
       path: '/energy-flow',
     },
     {
-      id: 'ai-optimizer',
-      icon: <Sparkles className="h-5 w-5" />,
-      label: t('nav.aiOptimizer', 'AI'),
-      path: '/ai-optimizer',
+      id: 'devices',
+      icon: <Zap className="h-5 w-5" />,
+      label: t('nav.devicesOverview', 'Devices'),
+      path: '/devices',
     },
     {
       id: 'tariffs',
@@ -100,29 +92,10 @@ function MobileNavigationComponent() {
 
   const moreItems: NavItem[] = [
     {
-      id: 'production',
-      icon: <Sun className="h-5 w-5" />,
-      label: t('nav.production', 'Production'),
-      path: '/production',
-    },
-    {
-      id: 'storage',
-      icon: <Battery className="h-5 w-5" />,
-      label: t('nav.storage', 'Storage'),
-      path: '/storage',
-    },
-    {
-      id: 'consumption',
-      icon: <Home className="h-5 w-5" />,
-      label: t('nav.consumption', 'Consumption'),
-      path: '/consumption',
-    },
-    { id: 'ev', icon: <Car className="h-5 w-5" />, label: t('nav.ev', 'EV'), path: '/ev' },
-    {
-      id: 'floorplan',
-      icon: <Map className="h-5 w-5" />,
-      label: t('nav.floorplan', 'Floorplan'),
-      path: '/floorplan',
+      id: 'optimization-ai',
+      icon: <Sparkles className="h-5 w-5" />,
+      label: t('nav.aiOptimizer', 'AI'),
+      path: '/optimization-ai',
     },
     {
       id: 'analytics',
@@ -131,34 +104,10 @@ function MobileNavigationComponent() {
       path: '/analytics',
     },
     {
-      id: 'historical-analytics',
-      icon: <Clock className="h-5 w-5" />,
-      label: t('nav.historicalAnalytics', 'History'),
-      path: '/historical-analytics',
-    },
-    {
       id: 'monitoring',
       icon: <Monitor className="h-5 w-5" />,
       label: t('nav.monitoring', 'Monitoring'),
       path: '/monitoring',
-    },
-    {
-      id: 'controllers',
-      icon: <Cpu className="h-5 w-5" />,
-      label: t('nav.controllers', 'Controllers'),
-      path: '/controllers',
-    },
-    {
-      id: 'plugins',
-      icon: <Puzzle className="h-5 w-5" />,
-      label: t('nav.plugins', 'Plugins'),
-      path: '/plugins',
-    },
-    {
-      id: 'hardware',
-      icon: <HardDrive className="h-5 w-5" />,
-      label: t('nav.hardware', 'Hardware'),
-      path: '/hardware',
     },
     {
       id: 'settings',

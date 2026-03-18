@@ -2,7 +2,7 @@
 
 # ⚡ Nexus-HEMS Dashboard
 
-**Production-grade Home Energy Management System for the decentralized energy era**
+**Production-grade Home Energy Management System — One Command Center for the decentralized energy era**
 
 [![CI](https://img.shields.io/github/actions/workflow/status/qnbs/Nexus-HEMS-Dash/ci.yml?branch=main&style=flat-square&logo=githubactions&logoColor=white&label=CI)](https://github.com/qnbs/Nexus-HEMS-Dash/actions/workflows/ci.yml)
 [![Deploy](https://img.shields.io/github/actions/workflow/status/qnbs/Nexus-HEMS-Dash/deploy.yml?branch=main&style=flat-square&logo=githubactions&logoColor=white&label=Deploy)](https://github.com/qnbs/Nexus-HEMS-Dash/actions/workflows/deploy.yml)
@@ -18,7 +18,7 @@
 
 ---
 
-Nexus-HEMS unifies **10 protocol adapters** (5 core + 5 contrib) behind a single dashboard to orchestrate photovoltaic generation, battery storage, heat pumps, EV charging, and building automation — optimized for dynamic electricity tariffs. A **plugin system** with adapter registry allows dynamic loading and third-party extensions via npm packages.
+Nexus-HEMS is a **unified Command Center** that consolidates **10 protocol adapters** (5 core + 5 contrib) into **7 focused sections** — orchestrating photovoltaic generation, battery storage, heat pumps, EV charging, and building automation with dynamic electricity tariffs. Instead of 18+ separate pages, every feature is accessible from a **single streamlined interface** with guided tours, contextual help, and zero-config onboarding.
 
 **Stack:** React 19 · TypeScript 5.8 · Vite 6 · Tailwind CSS v4 · Zustand 5 · D3.js Sankey · Recharts · Motion · Dexie.js · Radix UI · React Compiler
 
@@ -30,7 +30,7 @@ Nexus-HEMS unifies **10 protocol adapters** (5 core + 5 contrib) behind a single
 | **Protocols (Core)**    | Victron MQTT (Cerbo GX / Venus OS) · Modbus/SunSpec (103/124/201) · KNX/IP floorplan · OCPP 2.1 V2X (ISO 15118) · EEBUS SPINE/SHIP (TLS 1.3 mTLS)                                                                                                                                               |
 | **Protocols (Contrib)** | Home Assistant MQTT · Matter/Thread · Zigbee2MQTT · Shelly REST (Gen2+) · Example template                                                                                                                                                                                                      |
 | **Plugin System**       | Adapter Registry with dynamic `import()` loading · npm-package format · `BaseAdapter` class for rapid development · Hot-loading from Settings UI                                                                                                                                                |
-| **Platform**            | PWA offline-first (Workbox + IndexedDB) · 5 themes · Full i18n (DE/EN) · WCAG 2.2 AA · PDF reports + QR sharing · Prometheus monitoring · 19 pages                                                                                                                                              |
+| **Platform**            | Unified Command Center (7 sections) · PWA offline-first (Workbox + IndexedDB) · 5 themes · Full i18n (DE/EN) · WCAG 2.2 AA · PDF reports + QR sharing · Prometheus monitoring                                                                                                                   |
 | **Security**            | BYOK AI vault (AES-GCM 256) · JWT WebSocket auth · Helmet CSP · Rate limiting · CORS · Zod schema validation                                                                                                                                                                                    |
 | **Desktop & Mobile**    | Tauri v2 (Windows/macOS/Linux) · Capacitor 7 (iOS/Android)                                                                                                                                                                                                                                      |
 
@@ -101,28 +101,21 @@ CORS_ORIGINS=https://...     # Optional: additional CORS origins
 PORT=3000                    # Default: 3000
 ```
 
-## Pages
+## Pages — 7 Unified Sections
 
-| Route                   | Page                 | Description                                      |
-| :---------------------- | :------------------- | :----------------------------------------------- |
-| `/`                     | Home                 | KPI dashboard, mini Sankey, quick nav            |
-| `/energy-flow`          | Energy Flow          | Full D3.js Sankey + live price widget            |
-| `/production`           | Production           | PV generation, self-consumption                  |
-| `/storage`              | Storage              | Battery SoC, charge/discharge                    |
-| `/consumption`          | Consumption          | Load breakdown, grid exchange                    |
-| `/ev`                   | EV Charging          | PV surplus / fast / dynamic modes                |
-| `/floorplan`            | Floorplan            | KNX room automation                              |
-| `/ai-optimizer`         | AI Optimizer         | Gemini analysis + optimizer                      |
-| `/tariffs`              | Tariffs              | Live prices, forecasts, optimal windows          |
-| `/analytics`            | Analytics            | 8 KPIs, energy balance, costs                    |
-| `/historical-analytics` | Historical Analytics | Long-term energy data analysis, trend comparison |
-| `/monitoring`           | Monitoring           | System health, metrics, adapter matrix           |
-| `/controllers`          | Controllers          | Energy controller pipeline (7 real-time loops)   |
-| `/plugins`              | Plugins              | OSGi-style plugin lifecycle management           |
-| `/hardware`             | Hardware             | Device registry browser (120+ devices)           |
-| `/settings`             | Settings             | Appearance, system, energy, security, adapters   |
-| `/settings/ai`          | AI Settings          | Multi-provider AI key vault (AES-GCM 256)        |
-| `/help`                 | Help                 | Docs, FAQ, troubleshooting, keyboard shortcuts   |
+| Section                  | Route              | Description                                                      |
+| :----------------------- | :----------------- | :--------------------------------------------------------------- |
+| **Command Hub**          | `/`                | KPI dashboard, mini Sankey, quick-nav to all sections            |
+| **Live Energy Flow**     | `/energy-flow`     | Full D3.js Sankey + live price widget + fullscreen mode          |
+| **Devices & Automation** | `/devices`         | Device cards, KNX floorplan, controllers, hardware — all in one  |
+| **AI Optimization**      | `/optimization-ai` | 3-step AI wizard (Gemini + MPC), predictive forecast             |
+| **Tariffs**              | `/tariffs`         | Live prices, forecasts, optimal charging windows                 |
+| **Analytics**            | `/analytics`       | 8 KPIs, energy balance, costs, historical trends                 |
+| **Monitoring**           | `/monitoring`      | System health, adapter matrix, metrics, power-user mode          |
+| **Settings**             | `/settings`        | Appearance, system, energy, security, adapters, plugins, AI keys |
+| **Help**                 | `/help`            | Docs, FAQ, glossary, shortcuts, troubleshooting, about & credits |
+
+> Legacy routes (`/production`, `/storage`, `/consumption`, `/ev`, `/floorplan`, `/ai-optimizer`, `/controllers`, `/hardware`) automatically redirect to their new unified sections.
 
 ## Protocol Adapters
 
@@ -234,11 +227,30 @@ Brand colors: `neon-green` (#22ff88) · `electric-blue` (#00f0ff) · `power-oran
 | Q1–Q3   | 5 core adapters, 5 themes, AI optimizer, EEBUS, PWA, Monitoring, Docker, Tauri, WCAG 2.2 AA, React Compiler, Backend hardening | ✅ Shipped |
 | Q3      | Plugin system, adapter registry, 5 contrib adapters (Home Assistant, Matter/Thread, Zigbee2MQTT, Shelly), Capacitor Mobile     | ✅ Shipped |
 | Q3–Q4   | Energy controllers (7 loops), MPC optimizer, hardware registry (120+ devices), plugin lifecycle, command safety, 265 tests     | ✅ Shipped |
-| Q4      | Historical analytics, multi-tenant SaaS, contrib marketplace                                                                   | 🔜 Planned |
+| Q4      | **Unified Command Center** — 7 focused sections, guided tours, contextual help, zero-config onboarding, full a11y audit        | ✅ Shipped |
+| Q4+     | Historical analytics, multi-tenant SaaS, contrib marketplace                                                                   | 🔜 Planned |
 
 ## Changelog
 
 <details open>
+<summary><b>v5.0.0</b> — Unified Command Center</summary>
+
+- **One Command Center:** Consolidated 18+ pages into 7 focused sections with unified navigation
+- **Command Hub** (`/`): KPI dashboard with mini Sankey, metric cards, and quick-nav to all sections
+- **Live Energy Flow** (`/energy-flow`): Full D3.js Sankey with draggable panels, fullscreen mode, live price widget
+- **Devices & Automation** (`/devices`): Device cards, KNX floorplan, controllers, hardware — all unified with filter/search
+- **AI Optimization** (`/optimization-ai`): 3-step AI wizard with Gemini 3.1 Pro, MPC day-ahead, predictive forecast
+- **Guided Tours:** First-visit modal tours for every section (PageTour component, localStorage tracking)
+- **Contextual Help:** HelpTooltip on every page, WizardStepper for multi-step flows
+- **Empty States:** Animated empty-state components with energy-pulse, action buttons
+- **A11y Audit:** 26 fixes — `type="button"` on all buttons, `aria-hidden` on decorative icons, i18n for hardcoded strings
+- **React Compiler:** Full compliance — all manual `useCallback`/`useMemo` removed
+- **Storybook:** 20+ stories covering all new components (PageTour, HelpTooltip, WizardStepper, EmptyState)
+- **E2E Tests:** Updated Playwright tests for unified navigation, legacy route redirects, Command Hub + Live Energy Flow
+- **Design System:** Extended with EnergyCard, ControlPanel, FloatingActionBar, WizardStep, LiveMetric utility classes
+</details>
+
+<details>
 <summary><b>v4.6.0</b> — Energy Controllers + MPC Optimizer + Hardware Registry</summary>
 
 - **Energy Controllers:** 7 real-time control loops (ESS Symmetric, Peak Shaving, Grid-Optimized Charge, Self-Consumption, Emergency Capacity, HeatPump SG Ready, EV Smart Charge) with ControllerPipeline orchestration
@@ -289,6 +301,29 @@ Brand colors: `neon-green` (#22ff88) · `electric-blue` (#00f0ff) · `power-oran
 
 Full changelog: [git history](https://github.com/qnbs/Nexus-HEMS-Dash/commits/main)
 
+## Acknowledgments
+
+This project was built with the assistance of cutting-edge AI tools that accelerated development, improved code quality, and enabled rapid iteration:
+
+| AI Assistant        | Provider                   | Contribution                                                                               |
+| :------------------ | :------------------------- | :----------------------------------------------------------------------------------------- |
+| **Gemini 2.5 Pro**  | Google AI Studio           | Energy optimization algorithms, predictive forecasting, MPC solver design, tariff analysis |
+| **Claude Opus 4.6** | Anthropic (GitHub Copilot) | Architecture design, React Compiler compliance, a11y audit, E2E tests, design system, i18n |
+| **Grok**            | xAI                        | Code review, debugging assistance, protocol adapter research                               |
+
+We are deeply grateful to these AI platforms for enabling a solo developer to build what would traditionally require a full engineering team. The combination of human domain expertise in energy management with AI-assisted development has made Nexus-HEMS possible.
+
+**Additional thanks to:**
+
+- **Victron Energy** — Cerbo GX, VE.Bus, Venus OS open documentation
+- **KNX Association** — KNX/IP building automation standard
+- **Tibber & aWATTar** — Dynamic electricity tariff APIs
+- **D3.js community** — Data-driven visualization excellence
+- **EMHASS** — MPC/LP optimization concepts and research
+- **OpenEMS** — OSGi controller architecture inspiration
+- **evcc** — EV charging integration patterns
+- **React, Vite, Tailwind CSS** — The incredible open-source ecosystem that powers everything
+
 ## Contributing
 
 Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md).
@@ -309,9 +344,10 @@ MIT — see [LICENSE](LICENSE).
 
 </div>
 
-**Nexus-HEMS Dashboard** ist ein produktionsreifes Echtzeit-Home-Energy-Management-System. Es vereint **10 Protokolladapter** (5 Core + 5 Contrib) zur Orchestrierung von PV, Batteriespeicher, Wärmepumpen und E-Mobilität — optimiert für dynamische Stromtarife (Tibber/aWATTar/Octopus/Nordpool).
+**Nexus-HEMS Dashboard** ist ein produktionsreifes Echtzeit-Home-Energy-Management-System — **ein einziges Command Center** für die dezentrale Energiewende. Es vereint **10 Protokolladapter** (5 Core + 5 Contrib) in **7 fokussierten Sektionen** zur Orchestrierung von PV, Batteriespeicher, Wärmepumpen und E-Mobilität — optimiert für dynamische Stromtarife (Tibber/aWATTar/Octopus/Nordpool).
 
-- ⚡ Echtzeit D3.js Sankey-Energiefluss mit KI-Optimierung (Gemini 3.1)
+- ⚡ Echtzeit D3.js Sankey-Energiefluss mit KI-Optimierung (Gemini 2.5 Pro)
+- 🎯 Unified Command Center: 7 Sektionen statt 18+ Einzelseiten
 - 🔌 10 Adapter: Victron, Modbus, KNX, OCPP, EEBUS + Home Assistant, Matter/Thread, Zigbee2MQTT, Shelly
 - 🧩 Plugin-System: Adapter-Registry mit dynamischem Laden, npm-Paket-Format, BaseAdapter-Klasse
 - 🎛️ 7 Echtzeit-Energieregler: ESS, Peak Shaving, Netz-optimiert, Eigenverbrauch, Notstrom, SG Ready, EV Smart
@@ -322,8 +358,9 @@ MIT — see [LICENSE](LICENSE).
 - 📈 Prädiktive Vorhersage + Live-Tarif-Widget (5 Anbieter)
 - 🔐 BYOK KI-Tresor (7 Anbieter, AES-GCM 256-bit)
 - 📱 PWA Offline-First + Tauri Desktop + Capacitor Mobile
-- ♿ WCAG 2.2 AA · 🌐 i18n DE/EN · 🎨 5 Themes · 📊 19 Seiten
+- ♿ WCAG 2.2 AA · 🌐 i18n DE/EN · 🎨 5 Themes
 - 🧪 265 Unit-Tests · 📄 PDF-Berichte · 🔒 JWT + Helmet + CORS
+- 🤖 KI-unterstützt: Gemini 2.5 Pro, Claude Opus 4.6, Grok (xAI)
 
 ```bash
 git clone https://github.com/qnbs/Nexus-HEMS-Dash.git && cd Nexus-HEMS-Dash

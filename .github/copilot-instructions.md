@@ -41,7 +41,7 @@ All adapters in `src/core/adapters/` implement the `EnergyAdapter` interface (`E
 
 - **react-i18next** with 2 locales: `de` (fallback) and `en`
 - Locale files are TypeScript objects in `src/locales/{de,en}.ts`
-- Persistent language switcher in header + Cmd+K command palette
+- Persistent language switcher in Settings page + Cmd+K command palette
 - Every user-facing string must use `t()` — never hardcode display text
 
 ### Design System — Neo-Energy Cyber-Glassmorphism
@@ -112,6 +112,24 @@ All adapters in `src/core/adapters/` implement the `EnergyAdapter` interface (`E
 - Never remove or downgrade accessibility features
 - All lazy-loaded pages use `React.lazy` + `Suspense`
 
+### Unified Architecture (7 Sections)
+
+The app uses a **unified Command Center** with 7 top-level sections, each a `SectionLayout` with tabs:
+
+| Route              | Page Component      | Description                                                     |
+| ------------------ | ------------------- | --------------------------------------------------------------- |
+| `/`                | `CommandHub`        | Dashboard: KPI cards, mini Sankey, quick-nav, connection status |
+| `/energy-flow`     | `LiveEnergyFlow`    | Full Sankey diagram, production/storage/consumption/grid tabs   |
+| `/devices`         | `DevicesAutomation` | EV/OCPP, floorplan, controllers, hardware, plugins              |
+| `/optimization-ai` | `OptimizationAI`    | AI optimizer, schedules, predictive forecast                    |
+| `/tariffs`         | `TariffsPage`       | Live prices, tariff comparison, cost analytics                  |
+| `/analytics`       | `Analytics`         | Charts, historical data, export/sharing                         |
+| `/monitoring`      | `Monitoring`        | Adapter status, circuit breakers, system health                 |
+| `/settings`        | `SettingsUnified`   | Config, adapters, language, theme, danger zone                  |
+| `/help`            | `Help`              | Docs, FAQ, about, AI acknowledgments                            |
+
+Legacy routes (`/production`, `/storage`, `/consumption`, `/ev`, `/floorplan`, `/controllers`, `/hardware`, `/historical-analytics`, `/ai-optimizer`, `/plugins`) redirect to unified equivalents.
+
 ---
 
 ## FILE STRUCTURE REFERENCE
@@ -137,7 +155,7 @@ src/
 │   └── adapters/              # 5 protocol adapters + interface
 ├── lib/                       # Utilities (db, crypto, offline, PWA, etc.)
 ├── locales/                   # en.ts, de.ts
-├── pages/                     # 15 lazy-loaded route pages
+├── pages/                     # 7 unified section pages (lazy-loaded) + legacy redirects
 └── tests/                     # Vitest unit tests
 ```
 

@@ -5,17 +5,15 @@ import { useTranslation } from 'react-i18next';
 const routeLabels: Record<string, string> = {
   '/': 'nav.home',
   '/energy-flow': 'nav.energyFlow',
-  '/production': 'nav.production',
-  '/storage': 'nav.storage',
-  '/consumption': 'nav.consumption',
-  '/ev': 'nav.ev',
-  '/floorplan': 'nav.floorplan',
-  '/ai-optimizer': 'nav.aiOptimizer',
+  '/devices': 'nav.devicesOverview',
+  '/optimization-ai': 'nav.aiOptimizer',
   '/tariffs': 'nav.tariffs',
   '/analytics': 'nav.analytics',
   '/monitoring': 'nav.monitoring',
   '/settings': 'nav.settings',
   '/settings/ai': 'nav.aiKeys',
+  '/settings/config': 'nav.settings',
+  '/plugins': 'nav.plugins',
   '/help': 'nav.help',
 };
 

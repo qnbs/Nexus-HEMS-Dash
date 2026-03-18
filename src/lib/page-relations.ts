@@ -6,11 +6,6 @@ import type { LucideIcon } from 'lucide-react';
 import {
   Home,
   Zap,
-  Sun,
-  Battery,
-  Plug,
-  Car,
-  LayoutDashboard,
   Brain,
   Coins,
   BarChart3,
@@ -26,29 +21,24 @@ import {
   Network,
   Cpu,
   Puzzle,
-  HardDrive,
+  LayoutDashboard,
   Clock,
+  Boxes,
 } from 'lucide-react';
 
 // ─── Route IDs ──────────────────────────────────────────────────────────────
 export type PageId =
   | 'home'
   | 'energy-flow'
-  | 'production'
-  | 'storage'
-  | 'consumption'
-  | 'ev'
-  | 'floorplan'
-  | 'ai-optimizer'
+  | 'devices'
+  | 'optimization-ai'
   | 'tariffs'
   | 'analytics'
   | 'monitoring'
-  | 'controllers'
-  | 'plugins'
-  | 'hardware'
   | 'historical-analytics'
   | 'settings'
   | 'ai-settings'
+  | 'plugins'
   | 'help';
 
 // ─── Settings Tab IDs ───────────────────────────────────────────────────────
@@ -81,38 +71,16 @@ export const PAGE_REGISTRY: Record<PageId, PageMeta> = {
     icon: Zap,
     group: 'energy',
   },
-  production: {
-    id: 'production',
-    path: '/production',
-    i18nKey: 'nav.production',
-    icon: Sun,
+  devices: {
+    id: 'devices',
+    path: '/devices',
+    i18nKey: 'nav.devices',
+    icon: Boxes,
     group: 'energy',
   },
-  storage: {
-    id: 'storage',
-    path: '/storage',
-    i18nKey: 'nav.storage',
-    icon: Battery,
-    group: 'energy',
-  },
-  consumption: {
-    id: 'consumption',
-    path: '/consumption',
-    i18nKey: 'nav.consumption',
-    icon: Plug,
-    group: 'energy',
-  },
-  ev: { id: 'ev', path: '/ev', i18nKey: 'nav.ev', icon: Car, group: 'energy' },
-  floorplan: {
-    id: 'floorplan',
-    path: '/floorplan',
-    i18nKey: 'nav.floorplan',
-    icon: LayoutDashboard,
-    group: 'energy',
-  },
-  'ai-optimizer': {
-    id: 'ai-optimizer',
-    path: '/ai-optimizer',
+  'optimization-ai': {
+    id: 'optimization-ai',
+    path: '/optimization-ai',
     i18nKey: 'nav.aiOptimizer',
     icon: Brain,
     group: 'tools',
@@ -140,7 +108,7 @@ export const PAGE_REGISTRY: Record<PageId, PageMeta> = {
   },
   'historical-analytics': {
     id: 'historical-analytics',
-    path: '/historical-analytics',
+    path: '/analytics/historical',
     i18nKey: 'nav.historicalAnalytics',
     icon: Clock,
     group: 'tools',
@@ -159,25 +127,11 @@ export const PAGE_REGISTRY: Record<PageId, PageMeta> = {
     icon: Key,
     group: 'system',
   },
-  controllers: {
-    id: 'controllers',
-    path: '/controllers',
-    i18nKey: 'nav.controllers',
-    icon: Cpu,
-    group: 'tools',
-  },
   plugins: {
     id: 'plugins',
     path: '/plugins',
     i18nKey: 'nav.plugins',
     icon: Puzzle,
-    group: 'tools',
-  },
-  hardware: {
-    id: 'hardware',
-    path: '/hardware',
-    i18nKey: 'nav.hardware',
-    icon: HardDrive,
     group: 'tools',
   },
   help: { id: 'help', path: '/help', i18nKey: 'nav.help', icon: HelpCircle, group: 'system' },
@@ -202,7 +156,7 @@ export interface PageRelation {
 // ─── Cross-Reference Map ────────────────────────────────────────────────────
 export const PAGE_RELATIONS: Record<PageId, PageRelation> = {
   home: {
-    related: ['energy-flow', 'production', 'storage', 'consumption', 'analytics'],
+    related: ['energy-flow', 'devices', 'analytics'],
     settingsLinks: [
       { tab: 'energy', i18nKey: 'crossLinks.configureSystem', icon: Settings },
       { tab: 'appearance', i18nKey: 'crossLinks.customizeTheme', icon: Palette },
@@ -214,67 +168,27 @@ export const PAGE_RELATIONS: Record<PageId, PageRelation> = {
     ],
   },
   'energy-flow': {
-    related: ['production', 'storage', 'consumption', 'ev', 'analytics'],
+    related: ['devices', 'analytics', 'tariffs'],
     settingsLinks: [{ tab: 'energy', i18nKey: 'crossLinks.configureSystem', icon: Settings }],
     helpTab: 'features',
     setupRequirements: [
       { settingsTab: 'energy', i18nKey: 'crossLinks.setupEnergy', checkField: 'systemConfig' },
     ],
   },
-  production: {
-    related: ['energy-flow', 'storage', 'analytics', 'tariffs'],
-    settingsLinks: [{ tab: 'energy', i18nKey: 'crossLinks.configurePV', icon: Sun }],
-    helpTab: 'features',
-    setupRequirements: [
-      { settingsTab: 'energy', i18nKey: 'crossLinks.setupPV', checkField: 'systemConfig' },
-      { settingsTab: 'system', i18nKey: 'crossLinks.setupGateway', checkField: 'victronIp' },
-    ],
-  },
-  storage: {
-    related: ['production', 'consumption', 'tariffs', 'ai-optimizer'],
-    settingsLinks: [{ tab: 'energy', i18nKey: 'crossLinks.configureBattery', icon: Battery }],
-    helpTab: 'features',
-    setupRequirements: [
-      {
-        settingsTab: 'energy',
-        i18nKey: 'crossLinks.setupBattery',
-        checkField: 'systemConfig',
-      },
-    ],
-  },
-  consumption: {
-    related: ['production', 'storage', 'ev', 'floorplan', 'tariffs'],
+  devices: {
+    related: ['energy-flow', 'optimization-ai', 'monitoring', 'tariffs'],
     settingsLinks: [
-      { tab: 'energy', i18nKey: 'crossLinks.configureLoads', icon: Plug },
-      { tab: 'notifications', i18nKey: 'crossLinks.configureAlerts', icon: Bell },
+      { tab: 'energy', i18nKey: 'crossLinks.configureSystem', icon: Settings },
+      { tab: 'system', i18nKey: 'crossLinks.configureKNX', icon: Network },
     ],
     helpTab: 'features',
     setupRequirements: [
       { settingsTab: 'energy', i18nKey: 'crossLinks.setupEnergy', checkField: 'systemConfig' },
-    ],
-  },
-  ev: {
-    related: ['tariffs', 'production', 'storage', 'ai-optimizer'],
-    settingsLinks: [
-      { tab: 'energy', i18nKey: 'crossLinks.configureEV', icon: Car },
-      { tab: 'system', i18nKey: 'crossLinks.configureOCPP', icon: Network },
-    ],
-    helpTab: 'integration',
-    setupRequirements: [
-      { settingsTab: 'energy', i18nKey: 'crossLinks.setupEV', checkField: 'systemConfig' },
       { settingsTab: 'system', i18nKey: 'crossLinks.setupGateway', checkField: 'victronIp' },
     ],
   },
-  floorplan: {
-    related: ['consumption', 'monitoring', 'analytics'],
-    settingsLinks: [{ tab: 'system', i18nKey: 'crossLinks.configureKNX', icon: LayoutDashboard }],
-    helpTab: 'integration',
-    setupRequirements: [
-      { settingsTab: 'system', i18nKey: 'crossLinks.setupKNX', checkField: 'knxIp' },
-    ],
-  },
-  'ai-optimizer': {
-    related: ['tariffs', 'production', 'storage', 'ev', 'analytics'],
+  'optimization-ai': {
+    related: ['tariffs', 'energy-flow', 'devices', 'analytics'],
     settingsLinks: [{ tab: 'ai', i18nKey: 'crossLinks.configureAI', icon: Key }],
     helpTab: 'features',
     setupRequirements: [
@@ -283,7 +197,7 @@ export const PAGE_RELATIONS: Record<PageId, PageRelation> = {
     ],
   },
   tariffs: {
-    related: ['ev', 'storage', 'ai-optimizer', 'consumption', 'analytics'],
+    related: ['devices', 'optimization-ai', 'analytics'],
     settingsLinks: [
       { tab: 'energy', i18nKey: 'crossLinks.configureTariff', icon: Coins },
       { tab: 'notifications', i18nKey: 'crossLinks.configurePriceAlerts', icon: Bell },
@@ -298,7 +212,7 @@ export const PAGE_RELATIONS: Record<PageId, PageRelation> = {
     ],
   },
   analytics: {
-    related: ['production', 'consumption', 'tariffs', 'monitoring', 'historical-analytics'],
+    related: ['energy-flow', 'tariffs', 'monitoring', 'historical-analytics'],
     settingsLinks: [{ tab: 'storage', i18nKey: 'crossLinks.configureStorage', icon: Database }],
     helpTab: 'features',
     setupRequirements: [
@@ -310,7 +224,7 @@ export const PAGE_RELATIONS: Record<PageId, PageRelation> = {
     ],
   },
   'historical-analytics': {
-    related: ['analytics', 'production', 'consumption', 'monitoring'],
+    related: ['analytics', 'energy-flow', 'monitoring'],
     settingsLinks: [{ tab: 'storage', i18nKey: 'crossLinks.configureStorage', icon: Database }],
     helpTab: 'features',
     setupRequirements: [
@@ -339,28 +253,14 @@ export const PAGE_RELATIONS: Record<PageId, PageRelation> = {
     setupRequirements: [],
   },
   'ai-settings': {
-    related: ['ai-optimizer', 'settings'],
+    related: ['optimization-ai', 'settings'],
     settingsLinks: [],
     helpTab: 'features',
     setupRequirements: [],
   },
-  controllers: {
-    related: ['ai-optimizer', 'monitoring', 'storage', 'plugins'],
-    settingsLinks: [{ tab: 'energy', i18nKey: 'crossLinks.configureSystem', icon: Settings }],
-    helpTab: 'features',
-    setupRequirements: [
-      { settingsTab: 'energy', i18nKey: 'crossLinks.setupEnergy', checkField: 'systemConfig' },
-    ],
-  },
   plugins: {
-    related: ['controllers', 'hardware', 'monitoring'],
+    related: ['devices', 'monitoring'],
     settingsLinks: [{ tab: 'advanced', i18nKey: 'crossLinks.configureDebug', icon: Wrench }],
-    helpTab: 'integration',
-    setupRequirements: [],
-  },
-  hardware: {
-    related: ['controllers', 'plugins', 'settings'],
-    settingsLinks: [{ tab: 'energy', i18nKey: 'crossLinks.configureSystem', icon: Settings }],
     helpTab: 'integration',
     setupRequirements: [],
   },
@@ -392,19 +292,19 @@ export const SETTINGS_TABS: Record<SettingsTabId, SettingsTabMeta> = {
     id: 'system',
     i18nKey: 'settings.system',
     icon: Network,
-    relatedPages: ['monitoring', 'ev', 'floorplan', 'production'],
+    relatedPages: ['monitoring', 'devices', 'energy-flow'],
   },
   energy: {
     id: 'energy',
     i18nKey: 'settings.energy',
     icon: Zap,
-    relatedPages: ['production', 'storage', 'consumption', 'ev', 'energy-flow', 'controllers'],
+    relatedPages: ['energy-flow', 'devices'],
   },
   controllers: {
     id: 'controllers',
     i18nKey: 'settings.controllersTab',
     icon: Cpu,
-    relatedPages: ['controllers', 'plugins', 'hardware'],
+    relatedPages: ['devices', 'plugins'],
   },
   security: {
     id: 'security',
@@ -422,19 +322,19 @@ export const SETTINGS_TABS: Record<SettingsTabId, SettingsTabMeta> = {
     id: 'notifications',
     i18nKey: 'settings.notifications',
     icon: Bell,
-    relatedPages: ['tariffs', 'consumption', 'monitoring'],
+    relatedPages: ['tariffs', 'devices', 'monitoring'],
   },
   advanced: {
     id: 'advanced',
     i18nKey: 'settings.advanced',
     icon: Wrench,
-    relatedPages: ['monitoring', 'controllers', 'plugins', 'hardware'],
+    relatedPages: ['monitoring', 'devices', 'plugins'],
   },
   ai: {
     id: 'ai',
     i18nKey: 'settings.aiTab',
     icon: Brain,
-    relatedPages: ['ai-optimizer', 'ai-settings'],
+    relatedPages: ['optimization-ai', 'ai-settings'],
   },
 };
 

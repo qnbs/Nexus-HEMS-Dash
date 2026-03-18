@@ -9,21 +9,15 @@ import {
 const ALL_PAGE_IDS: PageId[] = [
   'home',
   'energy-flow',
-  'production',
-  'storage',
-  'consumption',
-  'ev',
-  'floorplan',
-  'ai-optimizer',
+  'devices',
+  'optimization-ai',
   'tariffs',
   'analytics',
   'historical-analytics',
   'monitoring',
-  'controllers',
-  'plugins',
-  'hardware',
   'settings',
   'ai-settings',
+  'plugins',
   'help',
 ];
 
@@ -42,9 +36,9 @@ const VALID_SETTINGS_TABS: SettingsTabId[] = [
 ];
 
 describe('PAGE_REGISTRY', () => {
-  it('should define all 18 pages', () => {
+  it('should define all 12 pages', () => {
     const ids = Object.keys(PAGE_REGISTRY);
-    expect(ids).toHaveLength(18);
+    expect(ids).toHaveLength(12);
     for (const id of ALL_PAGE_IDS) {
       expect(PAGE_REGISTRY[id]).toBeDefined();
     }
@@ -121,13 +115,13 @@ describe('PAGE_RELATIONS', () => {
     }
   });
 
-  it('home should relate to energy-flow and production', () => {
+  it('home should relate to energy-flow and devices', () => {
     expect(PAGE_RELATIONS.home.related).toContain('energy-flow');
-    expect(PAGE_RELATIONS.home.related).toContain('production');
+    expect(PAGE_RELATIONS.home.related).toContain('devices');
   });
 
   it('energy pages should have setup requirements', () => {
-    const energyPages: PageId[] = ['home', 'energy-flow', 'production', 'storage'];
+    const energyPages: PageId[] = ['home', 'energy-flow', 'devices'];
     for (const id of energyPages) {
       expect(PAGE_RELATIONS[id].setupRequirements.length).toBeGreaterThan(0);
     }

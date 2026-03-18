@@ -23,12 +23,8 @@ test.describe('User Flow', () => {
 
     const navRoutes = [
       { linkText: /energy flow|energiefluss/i, url: '/energy-flow' },
-      { linkText: /production|erzeugung/i, url: '/production' },
-      { linkText: /storage|speicher/i, url: '/storage' },
-      { linkText: /consumption|verbrauch/i, url: '/consumption' },
-      { linkText: /ev|e-auto/i, url: '/ev' },
-      { linkText: /floorplan|grundriss/i, url: '/floorplan' },
-      { linkText: /ai optimizer|ki-optimierer/i, url: '/ai-optimizer' },
+      { linkText: /devices|geräte/i, url: '/devices' },
+      { linkText: /ai optim|ki-optim/i, url: '/optimization-ai' },
       { linkText: /tariffs|tarife/i, url: '/tariffs' },
       { linkText: /analytics|analysen/i, url: '/analytics' },
       { linkText: /monitoring/i, url: '/monitoring' },

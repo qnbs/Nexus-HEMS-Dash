@@ -2317,7 +2317,7 @@ export function Settings() {
                           'Manage controller states, enable/disable, and view live outputs on the',
                         )}{' '}
                         <Link
-                          to="/controllers"
+                          to="/devices"
                           className="font-medium text-(--color-primary) underline-offset-2 hover:underline"
                         >
                           {t('nav.controllers', 'Controllers')}
@@ -2552,7 +2552,7 @@ export function Settings() {
                     </h2>
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                       <Link
-                        to="/controllers"
+                        to="/devices"
                         className="flex items-center gap-3 rounded-xl border border-(--color-border) bg-(--color-surface) p-4 transition-all hover:border-(--color-primary)/40 hover:bg-(--color-primary)/5"
                       >
                         <Cpu size={20} className="text-cyan-400" />
@@ -2578,7 +2578,7 @@ export function Settings() {
                         </div>
                       </Link>
                       <Link
-                        to="/hardware"
+                        to="/devices"
                         className="flex items-center gap-3 rounded-xl border border-(--color-border) bg-(--color-surface) p-4 transition-all hover:border-(--color-primary)/40 hover:bg-(--color-primary)/5"
                       >
                         <HardDrive size={20} className="text-orange-400" />
@@ -3323,6 +3323,87 @@ export function Settings() {
                           label={t('settings.keyboardShortcuts', 'Keyboard shortcuts')}
                         />
                       </div>
+
+                      {/* Keyboard Shortcuts Reference */}
+                      {(settings.keyboardShortcuts ?? true) && (
+                        <div className="mt-4 rounded-xl border border-(--color-border) bg-(--color-surface)/40 p-4">
+                          <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-(--color-text)">
+                            <Keyboard size={16} className="text-(--color-primary)" />
+                            {t('settings.shortcutsReference', 'Tastaturkürzel-Referenz')}
+                          </h3>
+                          <div className="space-y-3">
+                            <div>
+                              <p className="mb-1.5 text-xs font-medium tracking-wider text-(--color-muted) uppercase">
+                                {t('help.shortcutNav', 'Navigation')}
+                              </p>
+                              <div className="space-y-1">
+                                {[
+                                  {
+                                    key: '⌘ K',
+                                    label: t('help.shortcutCmdK', 'Befehlspalette öffnen'),
+                                  },
+                                  {
+                                    key: '⌘ /',
+                                    label: t('help.shortcutSearch', 'Suche fokussieren'),
+                                  },
+                                  {
+                                    key: 'Esc',
+                                    label: t('help.shortcutClose', 'Dialog schließen / zurück'),
+                                  },
+                                ].map((s) => (
+                                  <div
+                                    key={s.key}
+                                    className="flex items-center justify-between text-xs"
+                                  >
+                                    <span className="text-(--color-muted)">{s.label}</span>
+                                    <kbd className="rounded-md border border-(--color-border) bg-(--color-surface) px-2 py-0.5 font-mono text-xs text-(--color-text)">
+                                      {s.key}
+                                    </kbd>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                            <div className="section-divider" />
+                            <div>
+                              <p className="mb-1.5 text-xs font-medium tracking-wider text-(--color-muted) uppercase">
+                                {t('help.shortcutActions', 'Aktionen')}
+                              </p>
+                              <div className="space-y-1">
+                                {[
+                                  {
+                                    key: '⌘ S',
+                                    label: t('help.shortcutSave', 'Einstellungen speichern'),
+                                  },
+                                  {
+                                    key: '⌘ E',
+                                    label: t('help.shortcutExport', 'Bericht exportieren'),
+                                  },
+                                  {
+                                    key: '⌘ L',
+                                    label: t('help.shortcutLang', 'Sprache umschalten'),
+                                  },
+                                ].map((s) => (
+                                  <div
+                                    key={s.key}
+                                    className="flex items-center justify-between text-xs"
+                                  >
+                                    <span className="text-(--color-muted)">{s.label}</span>
+                                    <kbd className="rounded-md border border-(--color-border) bg-(--color-surface) px-2 py-0.5 font-mono text-xs text-(--color-text)">
+                                      {s.key}
+                                    </kbd>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                          <p className="mt-3 text-[10px] leading-relaxed text-(--color-muted)">
+                            {t(
+                              'help.shortcutNote',
+                              'Auf macOS wird ⌘ verwendet, auf Windows/Linux Strg.',
+                            )}
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </section>
 
