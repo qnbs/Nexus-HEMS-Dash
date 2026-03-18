@@ -854,7 +854,7 @@ export const en = {
       'Control lights, windows, and climate via an interactive floor plan. Commands are sent via Node-RED to your KNX bus.',
     featureAI: 'AI Optimizer',
     featureAIDesc:
-      'Gemini 3.1-powered recommendations for EV, battery, and heat pump strategy based on tariffs, weather, and consumption patterns.',
+      'AI-powered recommendations for EV, battery, and heat pump strategy based on tariffs, weather, and consumption patterns.',
     featureEV: 'EV Charging Control',
     featureEVDesc:
       'Smart wallbox control with PV surplus, low-price, and scheduled charging modes. §14a EnWG compliant.',
@@ -1203,7 +1203,7 @@ export const en = {
     highEndNet5: 'mTLS certificates for encrypted WebSocket connections',
   },
   ai: {
-    title: 'AI Optimizer (Gemini 3.1)',
+    title: 'AI Optimizer',
     subtitle: 'Intelligent real-time optimization for EV, battery and heat pump',
     statusOptimal: 'Optimal export window: sell surplus PV to the grid.',
     statusCharge: 'Tariff valley detected: charge battery and EV now.',
@@ -1223,7 +1223,7 @@ export const en = {
     recommendations: 'Recommendations',
     costSaving: 'Cost savings',
     co2Reduction: 'CO₂ reduction',
-    geminiPowered: 'Powered by Google Gemini 3.1',
+    aiPowered: 'AI-powered analysis',
   },
   aiOptimizer: {
     engineStatus: 'Optimization Engine',
@@ -2545,7 +2545,7 @@ export const en = {
         'The first step analyzes current electricity tariffs and weather forecasts to find optimal time windows.',
       aiTitle: 'AI Recommendations',
       aiDesc:
-        'Gemini AI and the MPC optimizer generate tailored suggestions for charging, heating and storage management.',
+        'The AI and MPC optimizer generate tailored suggestions for charging, heating and storage management.',
       confirmTitle: 'Confirm & Apply',
       confirmDesc:
         'Review the recommendations and apply them to all connected adapters with a single click.',

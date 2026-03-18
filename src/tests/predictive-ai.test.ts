@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   fetchTariffForecast,
   generatePredictiveRecommendation,
-  queryGeminiForOptimization,
+  queryAIForOptimization,
   getPriceHistory,
   getForecast,
 } from '../lib/predictive-ai';
@@ -72,9 +72,9 @@ describe('Predictive AI', () => {
     });
   });
 
-  describe('queryGeminiForOptimization', () => {
+  describe('queryAIForOptimization', () => {
     it('should return a non-empty string', async () => {
-      const result = await queryGeminiForOptimization('test prompt', 'key');
+      const result = await queryAIForOptimization('test prompt', 'key');
       expect(result).toBeTruthy();
       expect(result.length).toBeGreaterThan(10);
     });

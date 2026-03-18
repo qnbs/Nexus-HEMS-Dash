@@ -1,7 +1,7 @@
 /**
  * AI Forecast Persistence — Stores forecasts to Dexie + InfluxDB
  *
- * Uses @google/genai for enhanced AI-powered energy forecasts.
+ * Uses the configured BYOK AI provider for enhanced energy forecasts.
  * Results are persisted to:
  *   1. Dexie.js (IndexedDB) — offline-first local cache
  *   2. InfluxDB — long-term time-series storage (when configured)
@@ -9,32 +9,24 @@
  * Retention: max 500 forecast records in Dexie, InfluxDB uses bucket retention.
  */
 
-import { GoogleGenAI } from '@google/genai';
+import { callAI } from '../core/aiClient';
 import { nexusDb, type AIForecastRecord } from './db';
 import { writeAIForecast, type InfluxConfig, checkInfluxHealth } from './influxdb-client';
 import type { ForecastResult } from './ml-forecast';
 import type { EnergyData } from '../types';
-import { getAIKey } from './ai-keys';
 
 const MAX_FORECAST_RECORDS = 500;
 
-// ─── Gemini AI Forecast ─────────────────────────────────────────────
+// ─── AI-Enhanced Forecast ───────────────────────────────────────────
 
 /**
- * Generate an AI-enhanced energy forecast using Google Gemini.
+ * Generate an AI-enhanced energy forecast using the active BYOK provider.
  * Combines real-time data with ML forecasts for improved accuracy.
  */
-export async function generateGeminiForecast(
+export async function generateAIForecast(
   energyData: EnergyData,
   mlForecast: ForecastResult,
 ): Promise<{ analysis: string; adjustedPoints: ForecastResult['points'] }> {
-  const keyData = await getAIKey('google');
-  if (!keyData) {
-    return { analysis: 'Gemini API key not configured.', adjustedPoints: mlForecast.points };
-  }
-
-  const ai = new GoogleGenAI({ apiKey: keyData.apiKey });
-
   const prompt = `Analyze this HEMS energy data and ML forecast. Return JSON only.
 
 Current state:
@@ -49,13 +41,9 @@ ${JSON.stringify(mlForecast.points.slice(0, 12).map((p) => ({ h: new Date(p.time
 Return JSON: { "analysis": "string with optimization insights", "adjustmentFactors": [numbers for each of 24 hours, 1.0 = no change] }`;
 
   try {
-    const response = await ai.models.generateContent({
-      model: keyData.model || 'gemini-2.0-flash',
-      contents: prompt,
-      config: { temperature: 0.3, maxOutputTokens: 512 },
-    });
+    const result = await callAI({ prompt, temperature: 0.3, maxTokens: 512 });
+    const text = result.text;
 
-    const text = response.text ?? '';
     // Extract JSON from markdown code block if present
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
@@ -80,7 +68,7 @@ Return JSON: { "analysis": "string with optimization insights", "adjustmentFacto
 
     return { analysis: parsed.analysis, adjustedPoints };
   } catch (err) {
-    console.warn('[Gemini] Forecast enhancement failed:', err);
+    console.warn('[AI] Forecast enhancement failed:', err);
     return {
       analysis: 'AI enhancement unavailable. Using ML forecast.',
       adjustedPoints: mlForecast.points,

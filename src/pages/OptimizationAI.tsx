@@ -403,7 +403,7 @@ export default function OptimizationAI() {
                   <div className="flex items-center gap-2">
                     <Sparkles size={18} className="text-(--color-primary)" aria-hidden="true" />
                     <span className="text-sm font-semibold text-(--color-primary)">
-                      {t('ai.geminiPowered')}
+                      {t('ai.aiPowered')}
                     </span>
                     <span className="ml-auto rounded-full bg-(--color-primary)/15 px-2.5 py-0.5 text-xs font-medium text-(--color-primary)">
                       {Math.round(aiRecommendation.confidence * 100)}%

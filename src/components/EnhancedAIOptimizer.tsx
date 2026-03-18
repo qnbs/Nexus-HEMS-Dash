@@ -14,7 +14,7 @@ import { callAI } from '../core/aiClient';
 import { getActiveProvider } from '../lib/ai-keys';
 import type { OptimizerRecommendation } from '../workers/worker-types';
 
-interface GeminiRecommendation {
+interface AIRecommendation {
   title: string;
   description: string;
   impact: string;
@@ -26,7 +26,7 @@ export function EnhancedAIOptimizer() {
   const energyData = useAppStoreShallow((s) => s.energyData);
   const settings = useAppStoreShallow((s) => s.settings);
   const [isOptimizing, setIsOptimizing] = useState(false);
-  const [geminiRecommendations, setGeminiRecommendations] = useState<GeminiRecommendation[]>([]);
+  const [aiRecommendations, setAIRecommendations] = useState<AIRecommendation[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [hasProvider, setHasProvider] = useState<boolean | null>(null);
 
@@ -97,9 +97,9 @@ Return ONLY a valid JSON array with this structure:
 
       try {
         const recommendations = JSON.parse(result.text);
-        setGeminiRecommendations(recommendations);
+        setAIRecommendations(recommendations);
       } catch {
-        setGeminiRecommendations([
+        setAIRecommendations([
           {
             title: 'AI Optimization',
             description: result.text,
@@ -188,7 +188,7 @@ Return ONLY a valid JSON array with this structure:
       )}
 
       {/* Basic Recommendations (Always Visible) */}
-      {!geminiRecommendations.length && (
+      {!aiRecommendations.length && (
         <section aria-label={t('optimizer.basicRecommendations', 'Basic Recommendations')}>
           <div className="@container grid grid-cols-1 gap-3 @sm:grid-cols-2 @sm:gap-4">
             {basicRecommendations.map((rec, i) => (
@@ -212,16 +212,16 @@ Return ONLY a valid JSON array with this structure:
         </section>
       )}
 
-      {/* Gemini AI Recommendations */}
+      {/* AI Recommendations */}
       <AnimatePresence mode="wait">
-        {geminiRecommendations.length > 0 && (
+        {aiRecommendations.length > 0 && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             className="space-y-3 sm:space-y-4"
           >
-            {geminiRecommendations.map((rec, i) => (
+            {aiRecommendations.map((rec, i) => (
               <motion.div
                 key={i}
                 initial={{ opacity: 0, x: -20 }}

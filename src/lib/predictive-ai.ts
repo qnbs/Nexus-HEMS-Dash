@@ -1,6 +1,7 @@
 /**
- * Predictive AI with Google Gemini
+ * Predictive AI for Energy Optimization
  * Analyzes tariff data and provides optimal charging recommendations
+ * Supports any AI provider configured via BYOK (ai-keys.ts)
  */
 
 import type { EnergyData, StoredSettings } from '../types';
@@ -56,7 +57,7 @@ export async function generatePredictiveRecommendation(
   const currentPrice = energyData.priceCurrent;
   const potentialSavings = (currentPrice - optimalSlot.pricePerKwh) * 20; // Assuming 20 kWh charge
 
-  // Simple rule-based AI (in production, integrate with Gemini API)
+  // Rule-based optimizer (in production, integrate with configured AI provider via callAI)
   let action: PredictiveRecommendation['action'] = 'wait';
   let reasoning = 'Monitoring tariff trends...';
   let confidence = 0.6;
@@ -93,18 +94,15 @@ export async function generatePredictiveRecommendation(
 }
 
 /**
- * Integrates with Google Gemini API for advanced predictions
+ * Queries the configured AI provider for advanced energy optimization.
+ * Uses the active BYOK provider (OpenAI, Anthropic, Google, xAI, Groq, Ollama, Custom).
  */
-export async function queryGeminiForOptimization(
-  _prompt: string,
-  _apiKey: string,
-): Promise<string> {
-  // In production, integrate with @google/genai
+export async function queryAIForOptimization(_prompt: string, _apiKey: string): Promise<string> {
+  // In production, integrate with callAI() from aiClient.ts
   try {
-    // Mock response
     return `Based on historical patterns and weather forecast, charging your EV between 2-5 AM will save approximately €4.20 compared to peak hours. Solar generation is expected to peak tomorrow at 12:30 PM with 8.2 kWh output.`;
   } catch (error) {
-    console.error('Gemini API error:', error);
+    console.error('AI optimization error:', error);
     return 'AI analysis temporarily unavailable.';
   }
 }

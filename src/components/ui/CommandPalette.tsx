@@ -57,7 +57,7 @@ export function CommandPalette({
         onClose();
       },
       category: 'action',
-      keywords: ['ai', 'optimize', 'gemini', 'energy'],
+      keywords: ['ai', 'optimize', 'energy', 'ki'],
     },
     {
       id: 'export-report',
@@ -114,7 +114,7 @@ export function CommandPalette({
         onClose();
       },
       category: 'navigation',
-      keywords: ['gemini', 'optimize', 'ki'],
+      keywords: ['ai', 'optimize', 'ki'],
     },
     {
       id: 'nav-ai-settings',

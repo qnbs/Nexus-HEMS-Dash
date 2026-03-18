@@ -93,7 +93,7 @@ const metricCards: MetricDef[] = [
     link: '/energy-flow',
     variant: 'success',
     detailKey: 'commandHub.pvDetail',
-    getDetail: (d) => `${d.energyData.pvYieldToday.toFixed(1)} kWh heute`,
+    getDetail: (d) => `${d.energyData.pvYieldToday.toFixed(1)} kWh`,
   },
   {
     id: 'battery',
@@ -105,7 +105,8 @@ const metricCards: MetricDef[] = [
     link: '/energy-flow',
     variant: 'success',
     detailKey: 'commandHub.batteryDetail',
-    getDetail: (d) => (d.battKW < -0.05 ? 'Lädt' : d.battKW > 0.05 ? 'Entlädt' : 'Leerlauf'),
+    getDetail: (d) =>
+      d.battKW < -0.05 ? 'batteryCharging' : d.battKW > 0.05 ? 'batteryDischarging' : 'batteryIdle',
   },
   {
     id: 'house',
@@ -129,7 +130,7 @@ const metricCards: MetricDef[] = [
     link: '/energy-flow',
     variant: 'danger',
     detailKey: 'commandHub.gridDetail',
-    getDetail: (d) => (d.gridKW > 0 ? 'Bezug' : 'Einspeisung'),
+    getDetail: (d) => (d.gridKW > 0 ? 'import' : 'export'),
   },
   {
     id: 'selfSufficiency',
@@ -264,7 +265,7 @@ function CommandHubComponent() {
                 details={
                   card.getDetail(metrics) ? (
                     <p className="text-xs text-(--color-muted)">
-                      {t(card.detailKey, card.getDetail(metrics))}
+                      {t(`metrics.${card.getDetail(metrics)}`, card.getDetail(metrics))}
                     </p>
                   ) : undefined
                 }
