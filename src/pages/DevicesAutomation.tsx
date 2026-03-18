@@ -1,4 +1,4 @@
-import { useState, useActionState } from 'react';
+import { useState, useActionState, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -16,6 +16,8 @@ import {
   Leaf,
   Power,
   ArrowUpDown,
+  LayoutGrid,
+  Map,
 } from 'lucide-react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
@@ -34,6 +36,13 @@ import { PageTour, type TourStep } from '../components/ui/PageTour';
 import { DemoBadge } from '../components/DemoBadge';
 import { hapticClick, hapticModeChange, hapticSuccess } from '../lib/haptics';
 import type { CommandType, EvMode, EvState, HpMode, HpState } from '../types';
+
+// ─── Lazy-load Floorplan (heavy SVG component) ──────────────────────
+const Floorplan = lazy(() =>
+  import('../components/Floorplan').then((m) => ({ default: m.Floorplan })),
+);
+
+type DeviceView = 'grid' | 'floorplan';
 
 // ─── Device category filter ──────────────────────────────────────────
 
@@ -128,6 +137,7 @@ export default function DevicesAutomation() {
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState<DeviceCategory>('all');
   const [detailDevice, setDetailDevice] = useState<string | null>(null);
+  const [view, setView] = useState<DeviceView>('grid');
 
   // Filter devices
   const filtered = DEVICES.filter((d) => {
@@ -147,105 +157,181 @@ export default function DevicesAutomation() {
         title={t('devicesAuto.title')}
         subtitle={t('devicesAuto.subtitle')}
         icon={<Zap size={22} />}
+        actions={
+          <div
+            className="flex gap-1 rounded-xl bg-(--color-surface)/50 p-1"
+            role="tablist"
+            aria-label={t('devicesAuto.viewToggle', 'Ansicht wechseln')}
+          >
+            <button
+              role="tab"
+              aria-selected={view === 'grid'}
+              onClick={() => {
+                hapticClick();
+                setView('grid');
+              }}
+              className={`focus-ring flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
+                view === 'grid'
+                  ? 'bg-(--color-primary)/15 text-(--color-primary)'
+                  : 'text-(--color-muted) hover:text-(--color-text)'
+              }`}
+            >
+              <LayoutGrid size={14} />
+              {t('devicesAuto.viewGrid', 'Geräte')}
+            </button>
+            <button
+              role="tab"
+              aria-selected={view === 'floorplan'}
+              onClick={() => {
+                hapticClick();
+                setView('floorplan');
+              }}
+              className={`focus-ring flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
+                view === 'floorplan'
+                  ? 'bg-(--color-primary)/15 text-(--color-primary)'
+                  : 'text-(--color-muted) hover:text-(--color-text)'
+              }`}
+            >
+              <Map size={14} />
+              {t('devicesAuto.viewFloorplan', 'Grundriss')}
+            </button>
+          </div>
+        }
       />
 
-      {/* ── Filter & Search Bar ── */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        {/* Search */}
-        <div className="relative flex-1 sm:max-w-xs">
-          <Search
-            size={16}
-            className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-(--color-muted)"
-            aria-hidden="true"
-          />
-          <input
-            type="search"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder={t('devicesAuto.searchPlaceholder')}
-            className="focus-ring w-full rounded-lg border border-(--color-border) bg-(--color-surface) py-2 pr-3 pl-9 text-sm text-(--color-text) placeholder:text-(--color-muted)"
-            aria-label={t('devicesAuto.searchPlaceholder')}
-          />
-        </div>
-
-        {/* Category filters + help */}
-        <div className="flex items-center gap-2">
-          <HelpTooltip
-            content={t(
-              'tour.devices.filterHelp',
-              'Filtern Sie Geräte nach Kategorie oder nutzen Sie die Suche',
-            )}
-          />
-          <div
-            className="flex flex-wrap gap-1.5"
-            role="radiogroup"
-            aria-label={t('devicesAuto.filterLabel')}
+      <AnimatePresence mode="wait">
+        {view === 'floorplan' ? (
+          <motion.div
+            key="floorplan"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.25 }}
           >
-            {CATEGORY_FILTERS.map((f) => (
-              <button
-                key={f.key}
-                type="button"
-                role="radio"
-                aria-checked={category === f.key}
-                onClick={() => {
-                  hapticClick();
-                  setCategory(f.key);
-                }}
-                className={`focus-ring flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-all ${
-                  category === f.key
-                    ? 'border-(--color-primary) bg-(--color-primary)/15 text-(--color-primary)'
-                    : 'border-(--color-border) bg-(--color-surface) text-(--color-muted) hover:border-(--color-primary)/40'
-                }`}
-              >
-                <span aria-hidden="true">{f.icon}</span>
-                {t(f.labelKey)}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-      {/* ── Device Grid ── */}
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        <AnimatePresence mode="popLayout">
-          {filtered.map((device) => (
-            <DeviceCard
-              key={device.id}
-              device={device}
-              data={displayData}
-              unified={unified}
-              settings={settings}
-              sendCommand={sendCommand}
-              onOpenDetail={() => setDetailDevice(device.id)}
-            />
-          ))}
-        </AnimatePresence>
-      </div>
-
-      {filtered.length === 0 && (
-        <EmptyState
-          icon={Search}
-          title={t('devicesAuto.noResults')}
-          description={t(
-            'tour.devices.emptyDesc',
-            'Versuchen Sie einen anderen Suchbegriff oder setzen Sie den Filter zurück.',
-          )}
-          pulse
-          action={
-            <button
-              type="button"
-              onClick={() => {
-                setSearch('');
-                setCategory('all');
-              }}
-              className="focus-ring rounded-xl bg-(--color-primary)/15 px-4 py-2 text-xs font-semibold text-(--color-primary) transition-colors hover:bg-(--color-primary)/25"
+            <section
+              className="glass-panel-strong overflow-hidden rounded-2xl p-4 sm:p-6"
+              aria-label={t('dashboard.floorplan')}
             >
-              {t('devicesAuto.filterAll')}
-            </button>
-          }
-        />
-      )}
+              <Suspense
+                fallback={
+                  <div className="flex min-h-[40vh] items-center justify-center" role="status">
+                    <div className="h-6 w-6 animate-spin rounded-full border-2 border-(--color-primary) border-t-transparent" />
+                  </div>
+                }
+              >
+                <Floorplan />
+              </Suspense>
+            </section>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="grid"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            transition={{ duration: 0.25 }}
+            className="space-y-6"
+          >
+            {/* ── Filter & Search Bar ── */}
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              {/* Search */}
+              <div className="relative flex-1 sm:max-w-xs">
+                <Search
+                  size={16}
+                  className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-(--color-muted)"
+                  aria-hidden="true"
+                />
+                <input
+                  type="search"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder={t('devicesAuto.searchPlaceholder')}
+                  className="focus-ring w-full rounded-lg border border-(--color-border) bg-(--color-surface) py-2 pr-3 pl-9 text-sm text-(--color-text) placeholder:text-(--color-muted)"
+                  aria-label={t('devicesAuto.searchPlaceholder')}
+                />
+              </div>
 
-      {/* ── Detail Dialog ── */}
+              {/* Category filters + help */}
+              <div className="flex items-center gap-2">
+                <HelpTooltip
+                  content={t(
+                    'tour.devices.filterHelp',
+                    'Filtern Sie Geräte nach Kategorie oder nutzen Sie die Suche',
+                  )}
+                />
+                <div
+                  className="flex flex-wrap gap-1.5"
+                  role="radiogroup"
+                  aria-label={t('devicesAuto.filterLabel')}
+                >
+                  {CATEGORY_FILTERS.map((f) => (
+                    <button
+                      key={f.key}
+                      type="button"
+                      role="radio"
+                      aria-checked={category === f.key}
+                      onClick={() => {
+                        hapticClick();
+                        setCategory(f.key);
+                      }}
+                      className={`focus-ring flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-all ${
+                        category === f.key
+                          ? 'border-(--color-primary) bg-(--color-primary)/15 text-(--color-primary)'
+                          : 'border-(--color-border) bg-(--color-surface) text-(--color-muted) hover:border-(--color-primary)/40'
+                      }`}
+                    >
+                      <span aria-hidden="true">{f.icon}</span>
+                      {t(f.labelKey)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+            {/* ── Device Grid ── */}
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              <AnimatePresence mode="popLayout">
+                {filtered.map((device) => (
+                  <DeviceCard
+                    key={device.id}
+                    device={device}
+                    data={displayData}
+                    unified={unified}
+                    settings={settings}
+                    sendCommand={sendCommand}
+                    onOpenDetail={() => setDetailDevice(device.id)}
+                  />
+                ))}
+              </AnimatePresence>
+            </div>
+
+            {filtered.length === 0 && (
+              <EmptyState
+                icon={Search}
+                title={t('devicesAuto.noResults')}
+                description={t(
+                  'tour.devices.emptyDesc',
+                  'Versuchen Sie einen anderen Suchbegriff oder setzen Sie den Filter zurück.',
+                )}
+                pulse
+                action={
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSearch('');
+                      setCategory('all');
+                    }}
+                    className="focus-ring rounded-xl bg-(--color-primary)/15 px-4 py-2 text-xs font-semibold text-(--color-primary) transition-colors hover:bg-(--color-primary)/25"
+                  >
+                    {t('devicesAuto.filterAll')}
+                  </button>
+                }
+              />
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Detail Dialog (portal, available from both views) ── */}
       <DeviceDetailDialog
         deviceId={detailDevice}
         onClose={() => setDetailDevice(null)}

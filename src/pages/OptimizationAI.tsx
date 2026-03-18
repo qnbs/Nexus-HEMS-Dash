@@ -35,6 +35,7 @@ import { FloatingActionBar } from '../components/ui/FloatingActionBar';
 import { HelpTooltip } from '../components/ui/HelpTooltip';
 import { EmptyState } from '../components/ui/EmptyState';
 import { PageTour, type TourStep } from '../components/ui/PageTour';
+import { DemoBadge } from '../components/DemoBadge';
 import {
   WizardStepper,
   WizardContent,
@@ -42,6 +43,8 @@ import {
   type WizardStepDef,
 } from '../components/ui/WizardStepper';
 import { useAppStoreShallow } from '../store';
+import { useEnergyContext } from '../core/EnergyContext';
+import { getDisplayData } from '../lib/demo-data';
 import { buildOptimizerRecommendations, runMpcOptimization } from '../lib/optimizer';
 import {
   fetchTariffForecast,
@@ -96,10 +99,10 @@ const TOUR_STEPS: TourStep[] = [
 
 export default function OptimizationAI() {
   const { t } = useTranslation();
-  const { energyData, settings } = useAppStoreShallow((s) => ({
-    energyData: s.energyData,
-    settings: s.settings,
-  }));
+  const { data, connected } = useEnergyContext();
+  const settings = useAppStoreShallow((s) => s.settings);
+  const energyData = getDisplayData(data, connected);
+  const isDemo = !connected && energyData !== data;
 
   // Wizard state
   const [wizardOpen, setWizardOpen] = useState(false);
@@ -202,6 +205,7 @@ export default function OptimizationAI() {
           subtitle={t('optimizationWizard.pageSubtitle')}
           icon={<Sparkles size={22} />}
         />
+        {isDemo && <DemoBadge />}
         <HelpTooltip
           content={t(
             'tour.optimization.help',

@@ -284,6 +284,9 @@ export const de = {
     sgReadyBoost: 'SG Ready Boost',
     allLightsOff: 'Alle Lichter aus',
     noKnxRooms: 'Keine KNX-Räume konfiguriert',
+    viewToggle: 'Ansicht wechseln',
+    viewGrid: 'Geräte',
+    viewFloorplan: 'Grundriss',
   },
   liveEnergy: {
     title: 'Live-Energiefluss',
@@ -1033,10 +1036,13 @@ export const de = {
     credits: 'Danksagungen & Credits',
     aiAcknowledgments: 'KI-Unterstützung',
     aiAcknowledgmentsDesc:
-      'Dieses Projekt wurde mit Unterstützung modernster KI-Tools entwickelt, die die Entwicklung beschleunigt, die Codequalität verbessert und schnelle Iteration ermöglicht haben.',
-    aiGeminiDesc: 'Energieoptimierung, prädiktive Vorhersage, MPC-Solver, Tarifanalyse',
-    aiClaudeDesc: 'Architektur, React-Compiler-Compliance, a11y-Audit, E2E-Tests, Design-System',
-    aiGrokDesc: 'Code-Review, Debugging, Protokoll-Adapter-Recherche',
+      'Dieses Projekt wurde mit Unterstützung modernster KI-Tools entwickelt. Prototyping erfolgte in Google AI Studio, die Hauptentwicklung mit Claude in GitHub Copilot, beratende Unterstützung durch Grok.',
+    aiGeminiDesc:
+      'Rapid Prototyping im Google AI Studio Apps-Bereich, initiale Architektur, Energieoptimierung, MPC-Solver-Design',
+    aiClaudeDesc:
+      'Hauptentwicklung in GitHub Codespaces — Architektur, React-Compiler-Compliance, a11y-Audit, E2E-Tests, Design-System, UI/UX-Transformation',
+    aiGrokDesc:
+      'Beratung, Code-Review, Debugging, Protokoll-Adapter-Recherche, Architekturentscheidungen',
 
     // Integrationsanleitung
     integrationGuide: 'Integrationsanleitung',

@@ -1226,7 +1226,7 @@ export function Help() {
                           items: 'D3.js Sankey, Recharts, Motion',
                         },
                         { category: 'Backend', items: 'Node.js, Express, WebSockets, MQTT' },
-                        { category: 'AI', items: 'Google Gemini 3.1, OpenAI, Anthropic' },
+                        { category: 'AI', items: 'Gemini 2.5 Pro, Claude Opus 4, Grok (xAI)' },
                         { category: 'PWA', items: 'Workbox, Service Worker, Background Sync' },
                         {
                           category: t('help.protocols'),
@@ -1274,7 +1274,7 @@ export function Help() {
                       <p>• KNX Association — KNX/IP building automation standard</p>
                       <p>• Tibber & aWATTar — Dynamic electricity tariff APIs</p>
                       <p>• D3.js — Data-driven visualization library</p>
-                      <p>• Google — Gemini 2.5 Pro AI model</p>
+                      <p>• Google — Gemini 2.5 Pro AI model (Prototyping in AI Studio)</p>
                       <p>• EMHASS — MPC/LP optimization concepts</p>
                       <p>• OpenEMS — OSGi controller architecture inspiration</p>
                       <p>• evcc — EV charging integration patterns</p>
@@ -1296,7 +1296,7 @@ export function Help() {
                           color: '#4285F4',
                         },
                         {
-                          name: 'Claude Opus 4.6',
+                          name: 'Claude Opus 4',
                           provider: 'GitHub Copilot',
                           desc: t('help.aiClaudeDesc'),
                           color: '#D97706',
