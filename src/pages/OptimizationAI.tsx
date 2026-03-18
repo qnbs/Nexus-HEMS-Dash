@@ -44,7 +44,6 @@ import {
 } from '../components/ui/WizardStepper';
 import { useAppStoreShallow } from '../store';
 import { useEnergyContext } from '../core/EnergyContext';
-import { getDisplayData } from '../lib/demo-data';
 import { buildOptimizerRecommendations, runMpcOptimization } from '../lib/optimizer';
 import {
   fetchTariffForecast,
@@ -99,10 +98,9 @@ const TOUR_STEPS: TourStep[] = [
 
 export default function OptimizationAI() {
   const { t } = useTranslation();
-  const { data, connected } = useEnergyContext();
+  const { data: energyData, connected } = useEnergyContext();
   const settings = useAppStoreShallow((s) => s.settings);
-  const energyData = getDisplayData(data, connected);
-  const isDemo = !connected && energyData !== data;
+  const isDemo = !connected;
 
   // Wizard state
   const [wizardOpen, setWizardOpen] = useState(false);

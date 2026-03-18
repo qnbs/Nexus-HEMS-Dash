@@ -13,6 +13,7 @@
  */
 
 import { test, expect } from '@playwright/test';
+import { setupLocalStorage } from './e2e-setup';
 
 /** Helper: call setEnergyData + setConnected on the Zustand store */
 async function setStoreEnergy(
@@ -34,12 +35,7 @@ async function setStoreEnergy(
 
 test.describe('OCPP Charging Session → Sankey Update', () => {
   test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => {
-      localStorage.setItem(
-        'nexus-hems-store',
-        JSON.stringify({ state: { onboardingCompleted: true }, version: 0 }),
-      );
-    });
+    await page.addInitScript(setupLocalStorage);
   });
 
   test('Sankey updates on EV charging start / update / stop', async ({ page }) => {

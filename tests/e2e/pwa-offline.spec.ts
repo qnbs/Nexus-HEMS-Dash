@@ -1,13 +1,9 @@
 import { test, expect } from '@playwright/test';
+import { setupLocalStorage } from './e2e-setup';
 
 test.describe('PWA & Offline Behavior', () => {
   test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => {
-      localStorage.setItem(
-        'nexus-hems-store',
-        JSON.stringify({ state: { onboardingCompleted: true }, version: 0 }),
-      );
-    });
+    await page.addInitScript(setupLocalStorage);
   });
 
   test('should load the app and show main heading', async ({ page }) => {
@@ -61,12 +57,7 @@ test.describe('PWA & Offline Behavior', () => {
 
 test.describe('Error Recovery', () => {
   test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => {
-      localStorage.setItem(
-        'nexus-hems-store',
-        JSON.stringify({ state: { onboardingCompleted: true }, version: 0 }),
-      );
-    });
+    await page.addInitScript(setupLocalStorage);
   });
 
   test('should show 404 page for unknown routes', async ({ page }) => {
@@ -86,12 +77,7 @@ test.describe('Error Recovery', () => {
 
 test.describe('Performance', () => {
   test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => {
-      localStorage.setItem(
-        'nexus-hems-store',
-        JSON.stringify({ state: { onboardingCompleted: true }, version: 0 }),
-      );
-    });
+    await page.addInitScript(setupLocalStorage);
   });
 
   test('should load the first contentful paint within reasonable time', async ({ page }) => {

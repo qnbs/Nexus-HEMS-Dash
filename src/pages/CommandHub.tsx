@@ -18,7 +18,6 @@ import {
 } from 'lucide-react';
 
 import { useEnergyContext } from '../core/EnergyContext';
-import { getDisplayData } from '../lib/demo-data';
 import { useAppStoreShallow } from '../store';
 import { PageHeader } from '../components/layout/PageHeader';
 import { DemoBadge } from '../components/DemoBadge';
@@ -47,8 +46,7 @@ interface MetricDef {
 }
 
 function useMetrics() {
-  const { data, connected } = useEnergyContext();
-  const energyData = getDisplayData(data, connected);
+  const { data: energyData, connected } = useEnergyContext();
   const settings = useAppStoreShallow((s) => s.settings);
 
   const pvKW = energyData.pvPower / 1000;
@@ -188,9 +186,14 @@ function CommandHubComponent() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const metrics = useMetrics();
-  const { data, connected, detailPanel, selfSufficiencyPercent, isExporting } = useEnergyContext();
-  const energyData = getDisplayData(data, connected);
-  const isDemo = !connected && energyData !== data;
+  const {
+    data: energyData,
+    connected,
+    detailPanel,
+    selfSufficiencyPercent,
+    isExporting,
+  } = useEnergyContext();
+  const isDemo = !connected;
 
   // Quick-actions bar — always visible on this page
   const [actionsOpen] = useState(true);

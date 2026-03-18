@@ -1,13 +1,9 @@
 import { test, expect } from '@playwright/test';
+import { setupLocalStorage } from './e2e-setup';
 
 test.describe('Settings & Command Palette', () => {
   test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => {
-      localStorage.setItem(
-        'nexus-hems-store',
-        JSON.stringify({ state: { onboardingCompleted: true }, version: 0 }),
-      );
-    });
+    await page.addInitScript(setupLocalStorage);
   });
 
   test('should render settings page with tab sections', async ({ page }) => {
@@ -76,12 +72,7 @@ test.describe('Settings & Command Palette', () => {
 
 test.describe('Mobile Navigation', () => {
   test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => {
-      localStorage.setItem(
-        'nexus-hems-store',
-        JSON.stringify({ state: { onboardingCompleted: true }, version: 0 }),
-      );
-    });
+    await page.addInitScript(setupLocalStorage);
   });
 
   test('should toggle mobile bottom sheet via More button', async ({ page }) => {
@@ -119,12 +110,7 @@ test.describe('Mobile Navigation', () => {
 
 test.describe('Error Boundary', () => {
   test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => {
-      localStorage.setItem(
-        'nexus-hems-store',
-        JSON.stringify({ state: { onboardingCompleted: true }, version: 0 }),
-      );
-    });
+    await page.addInitScript(setupLocalStorage);
   });
 
   test('should recover gracefully from broken routes', async ({ page }) => {

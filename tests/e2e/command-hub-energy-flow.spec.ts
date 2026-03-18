@@ -1,13 +1,9 @@
 import { test, expect } from '@playwright/test';
+import { setupLocalStorage } from './e2e-setup';
 
 test.describe('Command Hub', () => {
   test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => {
-      localStorage.setItem(
-        'nexus-hems-store',
-        JSON.stringify({ state: { onboardingCompleted: true }, version: 0 }),
-      );
-    });
+    await page.addInitScript(setupLocalStorage);
   });
 
   test('should render Command Hub with KPI metric cards', async ({ page }) => {
@@ -68,12 +64,7 @@ test.describe('Command Hub', () => {
 
 test.describe('Live Energy Flow', () => {
   test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => {
-      localStorage.setItem(
-        'nexus-hems-store',
-        JSON.stringify({ state: { onboardingCompleted: true }, version: 0 }),
-      );
-    });
+    await page.addInitScript(setupLocalStorage);
   });
 
   test('should render the full Sankey diagram', async ({ page }) => {

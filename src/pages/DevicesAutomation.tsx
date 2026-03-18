@@ -25,7 +25,6 @@ import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { useEnergyContext } from '../core/EnergyContext';
 import { useLegacySendCommand } from '../core/useLegacySendCommand';
 import { useAppStoreShallow } from '../store';
-import { getDisplayData } from '../lib/demo-data';
 import { PageHeader } from '../components/layout/PageHeader';
 import { EnergyCard, type EnergyCardVariant } from '../components/ui/EnergyCard';
 import { LiveMetric } from '../components/ui/LiveMetric';
@@ -129,8 +128,7 @@ const TOUR_STEPS: TourStep[] = [
 
 export default function DevicesAutomation() {
   const { t } = useTranslation();
-  const { data, unified, connected } = useEnergyContext();
-  const displayData = getDisplayData(data, connected);
+  const { data: displayData, unified } = useEnergyContext();
   const { sendCommand } = useLegacySendCommand();
   const settings = useAppStoreShallow((s) => s.settings);
 

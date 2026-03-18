@@ -2,6 +2,7 @@ import { createContext, useContext, useState } from 'react';
 import type { ReactNode } from 'react';
 import { useAppStore } from '../store';
 import { useEnergyStore } from './useEnergyStore';
+import { getDisplayData } from '../lib/demo-data';
 import type { EnergyData } from '../types';
 import type { UnifiedEnergyModel } from './adapters/EnergyAdapter';
 
@@ -44,8 +45,11 @@ const EnergyContext = createContext<EnergyContextValue | null>(null);
 // ─── Provider ────────────────────────────────────────────────────────
 
 export function EnergyProvider({ children }: { children: ReactNode }) {
-  const data = useAppStore((s) => s.energyData);
+  const rawData = useAppStore((s) => s.energyData);
   const connected = useAppStore((s) => s.connected);
+
+  // Centralised demo-data fallback — all consumers get realistic data when disconnected
+  const data = getDisplayData(rawData, connected);
 
   const unified = useEnergyStore((s) => s.unified);
   const lastUpdated = useEnergyStore((s) => s.lastUpdated);

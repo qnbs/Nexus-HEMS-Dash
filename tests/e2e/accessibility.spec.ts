@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { setupLocalStorage } from './e2e-setup';
 
 const routes = [
   { path: '/', name: 'Command Hub' },
@@ -15,21 +16,7 @@ const routes = [
 
 test.describe('WCAG 2.2 AA Accessibility', () => {
   test.beforeEach(async ({ page }) => {
-    // Dismiss Onboarding overlay (CI starts with clean localStorage).
-    // Merge with existing localStorage so test-specific overrides survive reloads.
-    await page.addInitScript(() => {
-      const raw = localStorage.getItem('nexus-hems-store');
-      if (raw) {
-        const store = JSON.parse(raw);
-        store.state = { ...store.state, onboardingCompleted: true };
-        localStorage.setItem('nexus-hems-store', JSON.stringify(store));
-      } else {
-        localStorage.setItem(
-          'nexus-hems-store',
-          JSON.stringify({ state: { onboardingCompleted: true }, version: 0 }),
-        );
-      }
-    });
+    await page.addInitScript(setupLocalStorage);
   });
 
   for (const route of routes) {
@@ -111,6 +98,16 @@ test.describe('WCAG 2.2 AA Accessibility', () => {
         settings: { ...store.state?.settings, highContrast: true },
       };
       localStorage.setItem('nexus-hems-store', JSON.stringify(store));
+      // Dismiss tours
+      [
+        'command-hub',
+        'live-energy-flow',
+        'devices-automation',
+        'optimization-ai',
+        'settings',
+        'analytics',
+        'monitoring',
+      ].forEach((id) => localStorage.setItem(`nexus-tour-${id}`, '1'));
     });
 
     await page.goto('/settings');
@@ -130,6 +127,16 @@ test.describe('WCAG 2.2 AA Accessibility', () => {
         settings: { ...store.state?.settings, reducedMotion: true },
       };
       localStorage.setItem('nexus-hems-store', JSON.stringify(store));
+      // Dismiss tours
+      [
+        'command-hub',
+        'live-energy-flow',
+        'devices-automation',
+        'optimization-ai',
+        'settings',
+        'analytics',
+        'monitoring',
+      ].forEach((id) => localStorage.setItem(`nexus-tour-${id}`, '1'));
     });
 
     await page.goto('/settings');
