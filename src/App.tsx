@@ -273,8 +273,11 @@ export default function App() {
                     <Route path="/analytics" element={<AnalyticsUnified />} />
                     <Route path="/analytics/realtime" element={<AnalyticsPage />} />
                     <Route path="/analytics/historical" element={<HistoricalAnalyticsPage />} />
-                    {/* Legacy redirects */}
-                    <Route path="/historical-analytics" element={<HistoricalAnalyticsPage />} />
+                    {/* Legacy redirect */}
+                    <Route
+                      path="/historical-analytics"
+                      element={<Navigate to="/analytics" replace />}
+                    />
                   </Route>
 
                   {/* ── Section 6: Monitoring & Health ── */}

@@ -63,7 +63,7 @@ export interface PageMeta {
 }
 
 export const PAGE_REGISTRY: Record<PageId, PageMeta> = {
-  home: { id: 'home', path: '/', i18nKey: 'nav.dashboard', icon: Home, group: 'energy' },
+  home: { id: 'home', path: '/', i18nKey: 'nav.home', icon: Home, group: 'energy' },
   'energy-flow': {
     id: 'energy-flow',
     path: '/energy-flow',
@@ -74,7 +74,7 @@ export const PAGE_REGISTRY: Record<PageId, PageMeta> = {
   devices: {
     id: 'devices',
     path: '/devices',
-    i18nKey: 'nav.devices',
+    i18nKey: 'nav.devicesOverview',
     icon: Boxes,
     group: 'energy',
   },

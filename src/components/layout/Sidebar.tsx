@@ -11,6 +11,7 @@ import {
   Settings,
   Zap,
   Monitor,
+  HelpCircle,
   PanelLeftClose,
   PanelLeftOpen,
 } from 'lucide-react';
@@ -68,7 +69,10 @@ const navSections: NavSection[] = [
   {
     id: 'settings',
     labelKey: 'nav.groupSettingsPlugins',
-    items: [{ path: '/settings', labelKey: 'nav.settingsPlugins', icon: <Settings size={20} /> }],
+    items: [
+      { path: '/settings', labelKey: 'nav.settingsPlugins', icon: <Settings size={20} /> },
+      { path: '/help', labelKey: 'nav.help', icon: <HelpCircle size={20} /> },
+    ],
   },
 ];
 

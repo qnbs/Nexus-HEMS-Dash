@@ -44,7 +44,7 @@
           - src/lib/ml-forecast.ts
           - src/lib/ai-keys.ts
           - src/pages/AISettingsPage.tsx
-          - src/pages/AIOptimizerPage.tsx
+          - src/pages/OptimizationAI.tsx
           - src/components/AIOptimizerPanel.tsx
           - src/components/EnhancedAIOptimizer.tsx
 

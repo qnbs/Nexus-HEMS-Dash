@@ -12,6 +12,7 @@ import {
   Car,
   TrendingUp,
   BarChart3,
+  Monitor,
   SearchX,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -95,7 +96,7 @@ export function CommandPalette({
     },
     {
       id: 'nav-devices',
-      label: t('nav.devices', 'Devices & Automation'),
+      label: t('nav.devicesOverview', 'Devices & Automation'),
       icon: <Car className="h-5 w-5 text-green-400" />,
       action: () => {
         navigate('/devices');
@@ -147,6 +148,17 @@ export function CommandPalette({
       },
       category: 'navigation',
       keywords: ['report', 'chart', 'bericht', 'analyse'],
+    },
+    {
+      id: 'nav-monitoring',
+      label: t('nav.monitoring', 'Monitoring'),
+      icon: <Monitor className="h-5 w-5" />,
+      action: () => {
+        navigate('/monitoring');
+        onClose();
+      },
+      category: 'navigation',
+      keywords: ['health', 'status', 'adapter', 'gesundheit'],
     },
     {
       id: 'nav-settings',
