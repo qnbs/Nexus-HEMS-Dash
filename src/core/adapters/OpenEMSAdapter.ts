@@ -52,6 +52,30 @@ interface OpenEMSComponent {
   channels: Record<string, unknown>;
 }
 
+const COMPONENT_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/;
+const PROPERTY_NAME_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/;
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function isSafeComponentId(id: string): boolean {
+  return COMPONENT_ID_PATTERN.test(id);
+}
+
+function isSafePropertyName(name: string): boolean {
+  return PROPERTY_NAME_PATTERN.test(name);
+}
+
+function sanitizePropertyValue(value: unknown): number | string | boolean | null {
+  if (value === null) return null;
+  if (typeof value === 'number' || typeof value === 'boolean') return value;
+  if (typeof value === 'string') {
+    return value.length > 256 ? value.slice(0, 256) : value;
+  }
+  return null;
+}
+
 // ─── Channel Address Constants (OpenEMS convention) ──────────────────
 
 const CH = {
@@ -350,8 +374,23 @@ export class OpenEMSAdapter extends BaseAdapter {
     componentId: string,
     properties: Array<{ name: string; value: unknown }>,
   ): Promise<boolean> {
+    if (!isSafeComponentId(componentId)) {
+      return false;
+    }
+
+    const safeProperties = properties
+      .filter((p) => isSafePropertyName(p.name))
+      .map((p) => ({ name: p.name, value: sanitizePropertyValue(p.value) }));
+
+    if (safeProperties.length === 0) {
+      return false;
+    }
+
     try {
-      await this.rpcCall('updateComponentConfig', { componentId, properties });
+      await this.rpcCall('updateComponentConfig', {
+        componentId,
+        properties: safeProperties,
+      });
       return true;
     } catch {
       return false;
@@ -372,23 +411,35 @@ export class OpenEMSAdapter extends BaseAdapter {
   private async discoverComponents(): Promise<void> {
     try {
       const response = await this.rpcCall('getEdgeConfig', {});
-      const components = response.result?.components as
-        | Record<string, OpenEMSComponent>
-        | undefined;
-      if (!components) return;
+      const components = response.result?.components;
+      if (!isPlainObject(components)) return;
       this.edgeComponents.clear();
       this.controllerConfigs = [];
       for (const [id, comp] of Object.entries(components)) {
-        comp.id = id;
-        this.edgeComponents.set(id, comp);
+        if (!isSafeComponentId(id) || !isPlainObject(comp)) continue;
+
+        const factoryId = typeof comp.factoryId === 'string' ? comp.factoryId : '';
+        const alias = typeof comp.alias === 'string' ? comp.alias : id;
+        const properties = isPlainObject(comp.properties) ? comp.properties : {};
+        const channels = isPlainObject(comp.channels) ? comp.channels : {};
+
+        const normalized: OpenEMSComponent = {
+          id,
+          factoryId,
+          alias,
+          properties,
+          channels,
+        };
+
+        this.edgeComponents.set(id, normalized);
         // Collect controller configs
-        if (id.startsWith('ctrl') || comp.factoryId?.startsWith('Controller.')) {
+        if (id.startsWith('ctrl') || factoryId.startsWith('Controller.')) {
           this.controllerConfigs.push({
             id,
-            factoryId: comp.factoryId,
-            alias: comp.alias ?? id,
-            enabled: comp.properties?.['enabled'] !== false,
-            properties: comp.properties ?? {},
+            factoryId,
+            alias,
+            enabled: properties['enabled'] !== false,
+            properties,
           });
         }
       }

@@ -73,7 +73,9 @@ npm install
 npm run dev
 ```
 
-**Requirements:** Node.js 22+, npm 10+
+**Requirements:** Node.js 22 LTS (production baseline), npm 10+
+
+Node.js 25 is validated as a non-blocking CI canary only and is not used for production runtime images.
 
 ### Scripts
 
@@ -177,7 +179,8 @@ See [Adapter Dev Guide](docs/Adapter-Dev-Guide.md) and [Contrib README](src/core
 - **Encryption:** AES-GCM 256-bit + PBKDF2 600k iterations for API keys in IndexedDB
 - **Transport:** TLS 1.3 everywhere, mTLS for EEBUS, client certs for OCPP
 - **Docker:** Non-root, read-only filesystem, `no-new-privileges`, isolated networks
-- **CI:** CodeQL SAST, npm audit, Dependabot (npm + Actions + Docker + Cargo)
+- **Runtime Hardening:** strict OpenEMS component/property validation, worker URL allowlist + private-IP checks, sanitized plugin/event logging
+- **CI:** CodeQL SAST, npm audit, Dependabot (npm + Actions + Docker + Cargo), SHA-pinned GitHub Actions, Node 25 canary matrix
 
 For the full threat model, trust boundaries, STRIDE analysis, and GDPR/DSGVO compliance details, see [SECURITY.md](SECURITY.md).
 
@@ -192,13 +195,15 @@ For the full threat model, trust boundaries, STRIDE analysis, and GDPR/DSGVO com
 
 ## Deployment
 
-**GitHub Pages** — automatic on push to `main` via GitHub Actions.
+**GitHub Pages** — manual deployment via GitHub Actions `workflow_dispatch` with explicit `DEPLOY` approval token.
 
 **Docker** — multi-stage build (node:22-alpine → nginx:1.27-alpine):
 
 ```bash
 npm run docker:build && npm run docker:up
 ```
+
+**Helm/Kubernetes** — supports immutable image digests (`repository@sha256:...`), rolling update strategy controls, and revision history for rollback.
 
 **Tauri Desktop** — native builds for Windows, macOS, Linux:
 

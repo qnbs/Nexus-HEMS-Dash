@@ -4,12 +4,25 @@ image:
     repository: ghcr.io/qnbs/nexus-hems-dash
     # Overridden by --set image.frontend.tag during CI/CD; defaults to Chart appVersion
     tag: ''
+    # Optional immutable pin: if set, deployment uses repository@digest instead of tag
+    digest: ''
     pullPolicy: IfNotPresent
   server:
     repository: ghcr.io/qnbs/nexus-hems-server
     # Overridden by --set image.server.tag during CI/CD; defaults to Chart appVersion
     tag: ''
+    # Optional immutable pin: if set, deployment uses repository@digest instead of tag
+    digest: ''
     pullPolicy: IfNotPresent
+
+# ─── Deployment Strategy & Rollback ─────────────────────────────────
+deployment:
+  revisionHistoryLimit: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
 
 # ─── Replicas ────────────────────────────────────────────────────────
 replicaCount:

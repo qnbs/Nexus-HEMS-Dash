@@ -8,6 +8,9 @@ metadata:
     app.kubernetes.io/component: server
 spec:
   replicas: {{ .Values.replicaCount.server }}
+  revisionHistoryLimit: {{ .Values.deployment.revisionHistoryLimit }}
+  strategy:
+    {{- toYaml .Values.deployment.strategy | nindent 4 }}
   selector:
     matchLabels:
       {{- include "nexus-hems.selectorLabels" . | nindent 6 }}
@@ -26,7 +29,11 @@ spec:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
         - name: server
+          {{- if .Values.image.server.digest }}
+          image: "{{ .Values.image.server.repository }}@{{ .Values.image.server.digest }}"
+          {{- else }}
           image: "{{ .Values.image.server.repository }}:{{ .Values.image.server.tag | default .Chart.AppVersion }}"
+          {{- end }}
           imagePullPolicy: {{ .Values.image.server.pullPolicy }}
           ports:
             - name: http

@@ -133,23 +133,37 @@ function transformSunSpecMeter(raw: Record<string, unknown>): Record<string, unk
 
 // ─── URL allowlist for SSRF prevention ───────────────────────────────
 
-const ALLOWED_HOSTNAME_PATTERNS = [
-  /^localhost$/,
-  /^127\.0\.0\.1$/,
-  /^\[::1\]$/,
-  /^192\.168\.\d{1,3}\.\d{1,3}$/,
-  /^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$/,
-  /^172\.(1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3}$/,
-];
+const ALLOWED_HOSTNAME_PATTERNS = [/^localhost$/, /^127\.0\.0\.1$/, /^::1$/, /^\[::1\]$/];
 
-function isAllowedUrl(parsed: URL): boolean {
+export function isPrivateIPv4(hostname: string): boolean {
+  const parts = hostname.split('.');
+  if (parts.length !== 4) return false;
+
+  const octets: number[] = [];
+  for (const part of parts) {
+    if (!/^\d{1,3}$/.test(part)) return false;
+    const n = Number(part);
+    if (n < 0 || n > 255) return false;
+    octets.push(n);
+  }
+
+  const [a, b] = octets;
+  if (a === 10) return true;
+  if (a === 127) return true;
+  if (a === 192 && b === 168) return true;
+  if (a === 172 && b >= 16 && b <= 31) return true;
+  return false;
+}
+
+export function isAllowedUrl(parsed: URL): boolean {
   // Only allow http/https protocols
   if (!['http:', 'https:'].includes(parsed.protocol)) return false;
   // Block URLs with credentials (prevent credential leakage)
   if (parsed.username || parsed.password) return false;
   // Only allow requests to private/local network hosts
-  const hostname = parsed.hostname;
-  return ALLOWED_HOSTNAME_PATTERNS.some((p) => p.test(hostname));
+  const hostname = parsed.hostname.toLowerCase();
+  if (ALLOWED_HOSTNAME_PATTERNS.some((p) => p.test(hostname))) return true;
+  return isPrivateIPv4(hostname);
 }
 
 // ─── Polling logic ───────────────────────────────────────────────────

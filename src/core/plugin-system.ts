@@ -77,6 +77,14 @@ export interface Plugin {
 
 type EventHandler = (data: unknown) => void;
 
+function sanitizeLogToken(value: string): string {
+  return value.replace(/[^A-Za-z0-9._:-]/g, '_').slice(0, 64);
+}
+
+function sanitizeLogMessage(value: string): string {
+  return value.replace(/[\r\n\t]/g, ' ').slice(0, 500);
+}
+
 class PluginEventBus {
   private handlers = new Map<string, Set<EventHandler>>();
 
@@ -95,7 +103,8 @@ class PluginEventBus {
         try {
           handler(data);
         } catch (e) {
-          console.error(`[PluginEventBus] Handler error for "${event}":`, e);
+          const safeEvent = sanitizeLogToken(event);
+          console.error(`[PluginEventBus] Handler error for "${safeEvent}": ${String(e)}`);
         }
       }
     }
@@ -423,19 +432,21 @@ export class PluginManager {
         this.configs.get(pluginId)![key] = value;
       },
       log: (level: 'debug' | 'info' | 'warn' | 'error', message: string) => {
-        const prefix = `[Plugin:${pluginId}]`;
+        const safePluginId = sanitizeLogToken(pluginId);
+        const safeMessage = sanitizeLogMessage(message);
+        const line = `[Plugin:${safePluginId}] ${safeMessage}`;
         switch (level) {
           case 'debug':
-            console.debug(prefix, message);
+            console.debug(line);
             break;
           case 'info':
-            console.info(prefix, message);
+            console.info(line);
             break;
           case 'warn':
-            console.warn(prefix, message);
+            console.warn(line);
             break;
           case 'error':
-            console.error(prefix, message);
+            console.error(line);
             break;
         }
       },

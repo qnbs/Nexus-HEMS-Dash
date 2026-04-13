@@ -8,6 +8,9 @@ metadata:
     app.kubernetes.io/component: frontend
 spec:
   replicas: {{ .Values.replicaCount.frontend }}
+  revisionHistoryLimit: {{ .Values.deployment.revisionHistoryLimit }}
+  strategy:
+    {{- toYaml .Values.deployment.strategy | nindent 4 }}
   selector:
     matchLabels:
       {{- include "nexus-hems.selectorLabels" . | nindent 6 }}
@@ -22,7 +25,11 @@ spec:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
         - name: frontend
+          {{- if .Values.image.frontend.digest }}
+          image: "{{ .Values.image.frontend.repository }}@{{ .Values.image.frontend.digest }}"
+          {{- else }}
           image: "{{ .Values.image.frontend.repository }}:{{ .Values.image.frontend.tag | default .Chart.AppVersion }}"
+          {{- end }}
           imagePullPolicy: {{ .Values.image.frontend.pullPolicy }}
           ports:
             - name: http

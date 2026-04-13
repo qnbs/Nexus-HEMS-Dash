@@ -14,6 +14,17 @@ RUN npm run build
 # ── Stage 2: Serve with nginx ───────────────────────────────────
 FROM nginx:1.27-alpine@sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10 AS production
 
+ARG VCS_REF=unknown
+ARG BUILD_DATE=unknown
+ARG VERSION=dev
+
+LABEL org.opencontainers.image.title="Nexus-HEMS Dashboard Frontend" \
+  org.opencontainers.image.description="Production frontend image for Nexus-HEMS-Dash" \
+  org.opencontainers.image.source="https://github.com/qnbs/Nexus-HEMS-Dash" \
+  org.opencontainers.image.revision="$VCS_REF" \
+  org.opencontainers.image.created="$BUILD_DATE" \
+  org.opencontainers.image.version="$VERSION"
+
 # Security: upgrade all OS packages to fix CVEs (libxml2, openssl, libpng, etc.)
 RUN apk update && apk upgrade --no-cache && rm -rf /var/cache/apk/*
 

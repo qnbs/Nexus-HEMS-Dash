@@ -22,6 +22,8 @@
 
 ### Build & Quality Gates
 
+- [ ] `node -v` zeigt Node.js 22.x für Produktions-Builds
+- [ ] Node.js 25 nur als Canary/Matrix (nicht für Release-Deploy)
 - [ ] `npm ci` — saubere Installation (kein `npm install`)
 - [ ] `npx tsc --noEmit` — keine TypeScript-Fehler
 - [ ] `npm run lint` — keine ESLint-Warnings (`--max-warnings 0`)
@@ -196,7 +198,9 @@ server {
 ```yaml
 services:
   nexus-hems:
-    image: nexus-hems-dash:latest
+    image: ghcr.io/qnbs/nexus-hems-dash:4.4.0
+    # Optional immutable pin:
+    # image: ghcr.io/qnbs/nexus-hems-dash@sha256:<digest>
     build:
       context: .
       dockerfile: Dockerfile
@@ -232,6 +236,8 @@ services:
 - [ ] Healthcheck konfiguriert
 - [ ] Resource-Limits gesetzt (CPU, RAM)
 - [ ] Keine Secrets im Image oder `docker-compose.yml`
+- [ ] OCI-Image-Metadaten gesetzt (`org.opencontainers.image.*`)
+- [ ] Produktiv-Deploy bevorzugt via immutable Digest statt mutablem Tag
 - [ ] `docker scan` / Trivy Image-Scan bestanden
 - [ ] `restart: unless-stopped` für Auto-Recovery
 
@@ -242,8 +248,9 @@ services:
 ### Deployment
 
 ```bash
-# Automatisch via .github/workflows/deploy.yml
-# Bei Push auf main oder manuell via workflow_dispatch
+# Manuell via .github/workflows/deploy.yml
+# GitHub Actions → Deploy → Run workflow
+# Input: approveDeploy=DEPLOY
 ```
 
 ### GitHub-Pages-Checkliste
@@ -252,6 +259,7 @@ services:
 - [ ] `public/404.html` mit SPA-Redirect vorhanden
 - [ ] `public/manifest.json` korrekte `start_url` + `scope`
 - [ ] `public/robots.txt` aktuell
+- [ ] Deploy nur nach expliziter manueller Freigabe (`approveDeploy=DEPLOY`)
 - [ ] CNAME-Datei bei Custom Domain
 - [ ] HTTPS erzwungen in GitHub Pages Settings
 
@@ -373,9 +381,24 @@ docker compose up -d
 docker service update --rollback nexus-hems
 ```
 
+### Helm / Kubernetes
+
+```bash
+# Letzte erfolgreiche Revision ermitteln
+helm history nexus-hems -n nexus
+
+# Rollback auf Revision 12
+helm rollback nexus-hems 12 -n nexus
+
+# Alternativ Deployment-Ebene
+kubectl rollout undo deploy/nexus-hems-server -n nexus
+kubectl rollout undo deploy/nexus-hems-frontend -n nexus
+```
+
 ### Rollback-Checkliste
 
 - [ ] Vorheriges Docker-Image verfügbar (tagged)
+- [ ] Vorherige Helm-Revision vorhanden und getestet
 - [ ] Git-Revert getestet
 - [ ] Datenbank-Migration rückwärtskompatibel (falls zutreffend)
 - [ ] DNS-TTL niedrig genug für schnellen Switch (≤ 300 s)

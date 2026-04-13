@@ -84,6 +84,16 @@ All adapters in `src/core/adapters/` implement the `EnergyAdapter` interface (`E
 - **Lighthouse CI** (Perf ≥ 85%, A11y ≥ 90%, Best Practices ≥ 90%)
 - `.devcontainer` for reproducible dev environments
 
+### Execution Strategy (Local vs Cloud CI)
+
+- **Default local loop:** keep local verification fast and deterministic (`type-check`, `lint`, targeted unit tests, changed-file tests, focused smoke checks)
+- **Long-running suites belong primarily to CI:** full **Playwright E2E** matrix, **Lighthouse**, broad **security scans** (CodeQL/Semgrep/Trivy/Scorecard), and other heavy end-to-end validations should run mainly in cloud CI pipelines
+- Only run full local E2E/perf/security suites when explicitly requested by the user or when CI is unavailable
+- If a local long-running test is already running and is needed for diagnosis, monitor it; otherwise prefer CI execution and continue with productive implementation work
+- For local E2E confidence, prefer **targeted spec files** or **single-browser smoke subsets** before triggering full suites
+- Always report clearly which checks were run locally vs deferred to CI, and why
+- Never block implementation progress solely on non-critical local long-suite runtime when equivalent CI gates exist
+
 ### Deployment
 
 - **GitHub Pages**: `base: '/Nexus-HEMS-Dash/'` in production
@@ -99,6 +109,15 @@ All adapters in `src/core/adapters/` implement the `EnergyAdapter` interface (`E
 3. **LOCALIZE** — add/update i18n keys in both `src/locales/en.ts` and `src/locales/de.ts`
 4. **DEPS** — update `package.json` automatically when new packages are needed
 5. **VERIFY** — ensure no TypeScript errors (`tsc --noEmit`), no lint warnings, existing tests pass
+
+### Verification Policy
+
+- Use a staged verification order: `type-check` → `lint` → targeted unit tests → build
+- Treat full E2E/performance/security suites as CI-first gates; link outcomes to the corresponding workflow runs
+- For runtime-major changes (e.g., Express major), require at least:
+  - local TypeScript + lint + relevant unit tests + production build
+  - CI E2E/security completion before final merge/deploy
+- Document any intentionally deferred local heavy checks in the PR/summary output
 
 ---
 

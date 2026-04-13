@@ -1,6 +1,6 @@
 # Security Architecture — Nexus-HEMS-Dash
 
-> Version 1.0 · March 2026
+> Version 1.1 · April 2026
 
 ---
 
@@ -54,13 +54,14 @@
 
 ## Authentication & Authorization
 
-### API Server (Express)
+### API Server (Express 5)
 
 - **Helmet.js** — sets security headers (HSTS, X-Frame-Options, X-Content-Type-Options)
 - **express-rate-limit** — 100 req/15 min per IP (configurable)
 - **Zod** — runtime schema validation on all API endpoints and WebSocket commands
 - **JWT** (`jsonwebtoken`) — stateless auth tokens, HS256, 24 h expiry
 - No session storage; tokens validated per request
+- Production baseline runs on Node.js 22 LTS; Node.js 25 is validated in CI canary only
 
 ### EEBUS SPINE/SHIP
 
@@ -193,11 +194,18 @@ Each adapter uses `src/core/circuit-breaker.ts`:
 | **Renovate**           | Automated dependency updates              |
 | **Chromatic**          | Visual regression + Storybook CI          |
 
+### Runtime Governance
+
+- Production containers and release workflows are pinned to Node.js 22 LTS
+- A dedicated Node.js 25 canary job validates forward compatibility without blocking merges
+- Deploy workflow requires explicit manual confirmation token before GitHub Pages rollout
+
 ### Dependency Pinning
 
 - All GitHub Actions pinned to commit SHA (not tags)
 - `package-lock.json` committed; `npm ci` in CI
 - Renovate auto-updates with lockfile maintenance
+- Helm chart supports immutable digest-based image references (`repository@sha256:...`) for auditable rollouts
 
 ### Docker Security
 
