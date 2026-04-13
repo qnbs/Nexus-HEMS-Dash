@@ -109,15 +109,16 @@ Use `useTranslation()` hook, never hardcode strings.
 - Squash merge is the default and recommended merge method.
 - Rebase and merge is acceptable for a clean, already well-structured commit series.
 - Merge commits should stay disabled on `main` to preserve linear history.
-- At least one approval is required, stale approvals are dismissed after new commits, and Code Owner review is required for owned paths.
-- The latest reviewable push must be approved before merge.
+- This repository currently runs in a single-maintainer mode: approvals are optional and not a hard merge gate.
+- Merge readiness is determined by passing required status checks and resolved review conversations.
+- If the maintainer team grows, re-enable required approvals and Code Owner review as a policy hardening step.
 
 ## Pull Request Expectations
 
 - Target branch: always `main`
 - Required status checks: CI baseline, build, E2E, Lighthouse, security scanning, and supply-chain checks
 - Required review hygiene: all review conversations resolved before merge
-- Copilot review may be auto-requested for draft PRs and subsequent pushes; treat it as an additional review signal, not as a replacement for human review
+- Copilot review may be auto-requested for draft PRs and subsequent pushes; treat it as an additional review signal
 
 ## Commit Convention
 

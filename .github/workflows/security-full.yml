@@ -320,7 +320,7 @@ jobs:
           echo "Ensure the following are enabled in **Settings → Branches → main**:" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "- [ ] Require pull request before merging" >> "$GITHUB_STEP_SUMMARY"
-          echo "- [ ] Require at least 1 approval" >> "$GITHUB_STEP_SUMMARY"
+          echo "- [ ] Require approvals (optional in single-maintainer mode)" >> "$GITHUB_STEP_SUMMARY"
           echo "- [ ] Require status checks to pass (CI, Security Full)" >> "$GITHUB_STEP_SUMMARY"
           echo "- [ ] Require branches to be up to date" >> "$GITHUB_STEP_SUMMARY"
           echo "- [ ] Require signed commits" >> "$GITHUB_STEP_SUMMARY"

@@ -166,10 +166,10 @@ The following findings are not fully solvable from repository code alone and req
 
 Repository-side recommendations:
 
-1. Require pull-request reviews for `main`
-2. Require status checks before merge
-3. Disallow direct pushes to `main`
-4. Require linear history or merge queue
+1. Require status checks before merge
+2. Disallow direct pushes to `main`
+3. Require linear history or merge queue
+4. In single-maintainer mode, keep approvals optional and enforce merge quality via CI/Security gates
 5. Review stale Dependabot PRs and close superseded ones
 6. Keep weekly Scorecard, Security, and Fuzz workflows enabled
 
