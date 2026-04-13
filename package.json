@@ -233,13 +233,13 @@
     "yaml@^2.0.0": "2.8.3"
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.4",
     "@axe-core/playwright": "^4.11.1",
     "@biomejs/biome": "2.4.7",
     "@capacitor/cli": "^7.0.0",
     "@chromatic-com/storybook": "^3.2.6",
     "@commitlint/cli": "^20.5.0",
     "@commitlint/config-conventional": "^20.5.0",
+    "@eslint/js": "^9.39.4",
     "@lhci/cli": "^0.15.1",
     "@playwright/test": "^1.58.2",
     "@semantic-release/changelog": "^6.0.3",
@@ -267,9 +267,9 @@
     "@types/ws": "^8.18.1",
     "@typescript-eslint/eslint-plugin": "^8.56.1",
     "@typescript-eslint/parser": "^8.56.1",
-    "@vitejs/plugin-react": "^5.0.4",
-    "@vitest/coverage-v8": "^4.0.18",
-    "@vitest/ui": "^4.0.18",
+    "@vitejs/plugin-react": "^5.1.4",
+    "@vitest/coverage-v8": "^4.1.4",
+    "@vitest/ui": "^4.1.4",
     "anti-trojan-source": "^1.8.1",
     "autoprefixer": "^10.4.21",
     "babel-plugin-react-compiler": "^1.0.0",
@@ -289,9 +289,9 @@
     "fast-check": "^4.6.0",
     "globals": "^17.3.0",
     "husky": "^9.1.7",
-    "jsdom": "^28.1.0",
+    "jsdom": "^29.0.2",
     "lint-staged": "^16.3.2",
-    "prettier": "^3.8.1",
+    "prettier": "^3.8.2",
     "prettier-plugin-tailwindcss": "^0.7.2",
     "rollup-plugin-visualizer": "^7.0.1",
     "semantic-release": "^24.2.3",
@@ -304,7 +304,7 @@
     "typescript-eslint": "^8.56.1",
     "vite": "^6.4.2",
     "vite-plugin-pwa": "^1.2.0",
-    "vitest": "^4.0.18",
+    "vitest": "^4.1.4",
     "workbox-window": "^7.4.0"
   }
 }

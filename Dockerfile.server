@@ -50,4 +50,4 @@ HEALTHCHECK --interval=15s --timeout=3s --start-period=10s --retries=3 \
 
 EXPOSE 3000
 
-CMD ["node", "--import", "tsx", "server.ts"]
+CMD ["node", "--max-old-space-size=256", "--import", "tsx", "server.ts"]

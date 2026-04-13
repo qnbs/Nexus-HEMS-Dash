@@ -61,6 +61,8 @@ interface OpenEMSWritableComponentRule {
 
 const COMPONENT_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/;
 const PROPERTY_NAME_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/;
+/** Validates OpenEMS channel addresses (format: componentId/PropertyName) */
+const SAFE_CHANNEL_ADDRESS = /^[A-Za-z0-9][A-Za-z0-9._-]{0,63}\/[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/;
 
 const OPENEMS_WRITABLE_COMPONENT_RULES: readonly OpenEMSWritableComponentRule[] = [
   {
@@ -185,7 +187,9 @@ export class OpenEMSAdapter extends BaseAdapter {
     { resolve: (v: JsonRpcResponse) => void; reject: (e: Error) => void }
   >();
   private subscriptionTimer: ReturnType<typeof setInterval> | null = null;
-  private channelValues: Record<string, number | string | boolean | null> = {};
+  private channelValues: Record<string, number | string | boolean | null> = Object.create(
+    null,
+  ) as Record<string, number | string | boolean | null>;
   private sessionToken: string | null = null;
   private edgeComponents: Map<string, OpenEMSComponent> = new Map();
   private controllerConfigs: OpenEMSControllerConfig[] = [];
@@ -316,7 +320,7 @@ export class OpenEMSAdapter extends BaseAdapter {
   }
 
   protected _cleanup(): void {
-    this.channelValues = {};
+    this.channelValues = Object.create(null) as Record<string, number | string | boolean | null>;
     this.sessionToken = null;
     this.edgeComponents.clear();
     this.controllerConfigs = [];
@@ -583,7 +587,10 @@ export class OpenEMSAdapter extends BaseAdapter {
       // Handle channel subscription updates (notification)
       if (msg.method === 'currentData' && msg.params?.channels) {
         for (const ch of msg.params.channels) {
-          this.channelValues[ch.address] = ch.value;
+          // Validate channel address to prevent remote property injection
+          if (typeof ch.address === 'string' && SAFE_CHANNEL_ADDRESS.test(ch.address)) {
+            this.channelValues[ch.address] = sanitizePropertyValue(ch.value);
+          }
         }
         this.updateSnapshot();
       }

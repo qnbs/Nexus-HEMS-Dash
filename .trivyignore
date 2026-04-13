@@ -1,0 +1,17 @@
+# Trivy False Positives — documented and verified
+
+#
+
+# Helm trusted registry validation is enforced at template render time via
+
+# the `nexus-hems.assertTrustedImageRepository` helper in \_helpers.tpl.
+
+# Trivy cannot evaluate Helm templates and reports these as misconfigurations.
+
+# See: helm/nexus-hems/templates/\_helpers.tpl (assertTrustedImageRepository)
+
+# #174 — deployment-frontend.yaml: image validated by nexus-hems.imageRef helper
+
+# #175 — deployment-server.yaml: image validated by nexus-hems.imageRef helper
+
+AVD-KSV-0035

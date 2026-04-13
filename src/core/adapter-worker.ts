@@ -291,6 +291,13 @@ async function executePoll(
   url: URL,
   headers?: Record<string, string>,
 ): Promise<void> {
+  // Re-assert URL safety at the point of use to satisfy CodeQL taint tracking
+  // (buildAllowedPollUrl already validated, but CodeQL requires assertion at fetch site)
+  if (!isAllowedUrl(url)) {
+    postOut({ type: 'error', adapterId, error: 'Request blocked: URL failed safety re-check' });
+    return;
+  }
+
   const start = performance.now();
   try {
     const resp = await fetch(url.href, {
