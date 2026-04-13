@@ -7,7 +7,7 @@
  *   3. JSON deserialization of large MQTT/WebSocket payloads
  *
  * Communication Protocol:
- *   Main → Worker:  { type: 'poll', adapterId, target, headers?, interval? }
+ *   Main → Worker:  { type: 'poll', adapterId, target, headers?, intervalMs? }
  *   Main → Worker:  { type: 'transform', adapterId, rawData }
  *   Main → Worker:  { type: 'stop', adapterId }
  *   Main → Worker:  { type: 'stopAll' }

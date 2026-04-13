@@ -15,16 +15,9 @@
  */
 
 import { useEffect, useRef } from 'react';
+import type { PollTarget } from './adapter-worker';
 import { useEnergyStoreBase } from './useEnergyStore';
 import { metricsCollector } from '../lib/metrics';
-
-export interface WorkerPollTarget {
-  protocol: 'http' | 'https';
-  host: string;
-  port?: number;
-  path: string;
-  query?: Record<string, string | number | boolean>;
-}
 
 interface WorkerDataMessage {
   type: 'data';
@@ -49,7 +42,7 @@ type WorkerOutMessage = WorkerDataMessage | WorkerErrorMessage | WorkerLatencyMe
 export function useAdapterWorker() {
   const workerRef = useRef<Worker | null>(null);
 
-  const toPollTarget = (target: string | WorkerPollTarget): WorkerPollTarget | null => {
+  const toPollTarget = (target: string | PollTarget): PollTarget | null => {
     if (typeof target !== 'string') return target;
 
     try {
@@ -101,7 +94,7 @@ export function useAdapterWorker() {
 
   const startPolling = (
     adapterId: string,
-    target: string | WorkerPollTarget,
+    target: string | PollTarget,
     headers?: Record<string, string>,
     intervalMs?: number,
   ): void => {
