@@ -25,6 +25,7 @@ spec:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
         - name: frontend
+          # trivy:ignore:KSV037 -- Image registry is validated at render-time by nexus-hems.assertTrustedImageRepository helper
           image: {{ include "nexus-hems.imageRef" (dict "image" .Values.image.frontend "trustedRegistries" .Values.image.trustedRegistries "chartAppVersion" .Chart.AppVersion) | quote }}
           imagePullPolicy: {{ .Values.image.frontend.pullPolicy }}
           ports:

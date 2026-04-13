@@ -49,7 +49,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ci-optimized-${{ github.ref }}
   cancel-in-progress: true
 
 env:
