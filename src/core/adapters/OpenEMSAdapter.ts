@@ -52,8 +52,43 @@ interface OpenEMSComponent {
   channels: Record<string, unknown>;
 }
 
+interface OpenEMSWritableComponentRule {
+  idPattern: RegExp;
+  factoryPrefix?: string;
+  factoryId?: string;
+  allowedProperties: readonly string[];
+}
+
 const COMPONENT_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/;
 const PROPERTY_NAME_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/;
+
+const OPENEMS_WRITABLE_COMPONENT_RULES: readonly OpenEMSWritableComponentRule[] = [
+  {
+    idPattern: /^ctrlEssFixActivePower\d+$/,
+    factoryPrefix: 'Controller.Ess.FixActivePower',
+    allowedProperties: ['power', 'mode'],
+  },
+  {
+    idPattern: /^ctrlPeakShaving\d+$/,
+    factoryPrefix: 'Controller.Symmetric.PeakShaving',
+    allowedProperties: ['peakShavingPower'],
+  },
+  {
+    idPattern: /^evcs\d+$/,
+    factoryPrefix: 'Evcs.',
+    allowedProperties: ['setChargePowerLimit'],
+  },
+  {
+    idPattern: /^ctrlEvcs\d+$/,
+    factoryPrefix: 'Controller.Evcs',
+    allowedProperties: ['enabledCharging'],
+  },
+  {
+    idPattern: /^ctrl[A-Za-z0-9._-]+$/,
+    factoryId: 'Controller.Io.HeatPump.SgReady',
+    allowedProperties: ['mode'],
+  },
+];
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -221,80 +256,59 @@ export class OpenEMSAdapter extends BaseAdapter {
   protected async _sendCommand(command: AdapterCommand): Promise<boolean> {
     switch (command.type) {
       case 'SET_BATTERY_POWER': {
-        await this.rpcCall('updateComponentConfig', {
-          componentId: 'ctrlEssFixActivePower0',
-          properties: [
-            { name: 'power', value: Number(command.value) },
-            {
-              name: 'mode',
-              value: Number(command.value) >= 0 ? 'CHARGE_GRID' : 'DISCHARGE_TO_GRID',
-            },
-          ],
-        });
-        return true;
+        return this.updateSafeComponentConfig('ctrlEssFixActivePower0', [
+          { name: 'power', value: Number(command.value) },
+          {
+            name: 'mode',
+            value: Number(command.value) >= 0 ? 'CHARGE_GRID' : 'DISCHARGE_TO_GRID',
+          },
+        ]);
       }
       case 'SET_BATTERY_MODE': {
         const mode = String(command.value);
         if (mode === 'charge') {
-          await this.rpcCall('updateComponentConfig', {
-            componentId: 'ctrlEssFixActivePower0',
-            properties: [{ name: 'mode', value: 'CHARGE_GRID' }],
-          });
+          return this.updateSafeComponentConfig('ctrlEssFixActivePower0', [
+            { name: 'mode', value: 'CHARGE_GRID' },
+          ]);
         } else if (mode === 'discharge') {
-          await this.rpcCall('updateComponentConfig', {
-            componentId: 'ctrlEssFixActivePower0',
-            properties: [{ name: 'mode', value: 'DISCHARGE_TO_GRID' }],
-          });
+          return this.updateSafeComponentConfig('ctrlEssFixActivePower0', [
+            { name: 'mode', value: 'DISCHARGE_TO_GRID' },
+          ]);
         }
-        return true;
+        return false;
       }
       case 'SET_EV_POWER': {
-        await this.rpcCall('updateComponentConfig', {
-          componentId: this.findEvcsId(),
-          properties: [{ name: 'setChargePowerLimit', value: Number(command.value) }],
-        });
-        return true;
+        return this.updateSafeComponentConfig(this.findEvcsId(), [
+          { name: 'setChargePowerLimit', value: Number(command.value) },
+        ]);
       }
       case 'SET_EV_CURRENT': {
         const power = Number(command.value) * 230 * 3;
-        await this.rpcCall('updateComponentConfig', {
-          componentId: this.findEvcsId(),
-          properties: [{ name: 'setChargePowerLimit', value: power }],
-        });
-        return true;
+        return this.updateSafeComponentConfig(this.findEvcsId(), [
+          { name: 'setChargePowerLimit', value: power },
+        ]);
       }
       case 'START_CHARGING': {
-        await this.rpcCall('updateComponentConfig', {
-          componentId: this.findEvcsControllerId(),
-          properties: [{ name: 'enabledCharging', value: true }],
-        });
-        return true;
+        return this.updateSafeComponentConfig(this.findEvcsControllerId(), [
+          { name: 'enabledCharging', value: true },
+        ]);
       }
       case 'STOP_CHARGING': {
-        await this.rpcCall('updateComponentConfig', {
-          componentId: this.findEvcsControllerId(),
-          properties: [{ name: 'enabledCharging', value: false }],
-        });
-        return true;
+        return this.updateSafeComponentConfig(this.findEvcsControllerId(), [
+          { name: 'enabledCharging', value: false },
+        ]);
       }
       case 'SET_GRID_LIMIT': {
-        await this.rpcCall('updateComponentConfig', {
-          componentId: 'ctrlPeakShaving0',
-          properties: [{ name: 'peakShavingPower', value: Number(command.value) * 1000 }],
-        });
-        return true;
+        return this.updateSafeComponentConfig('ctrlPeakShaving0', [
+          { name: 'peakShavingPower', value: Number(command.value) * 1000 },
+        ]);
       }
       case 'SET_HEAT_PUMP_MODE': {
         const sgReadyValue = Number(command.value);
         // OpenEMS SG Ready heat pump controller
         const hpCtrl = this.findComponentByFactory('Controller.Io.HeatPump.SgReady');
-        if (hpCtrl) {
-          await this.rpcCall('updateComponentConfig', {
-            componentId: hpCtrl.id,
-            properties: [{ name: 'mode', value: sgReadyValue }],
-          });
-        }
-        return true;
+        if (!hpCtrl) return false;
+        return this.updateSafeComponentConfig(hpCtrl.id, [{ name: 'mode', value: sgReadyValue }]);
       }
       default:
         return false;
@@ -374,27 +388,7 @@ export class OpenEMSAdapter extends BaseAdapter {
     componentId: string,
     properties: Array<{ name: string; value: unknown }>,
   ): Promise<boolean> {
-    if (!isSafeComponentId(componentId)) {
-      return false;
-    }
-
-    const safeProperties = properties
-      .filter((p) => isSafePropertyName(p.name))
-      .map((p) => ({ name: p.name, value: sanitizePropertyValue(p.value) }));
-
-    if (safeProperties.length === 0) {
-      return false;
-    }
-
-    try {
-      await this.rpcCall('updateComponentConfig', {
-        componentId,
-        properties: safeProperties,
-      });
-      return true;
-    } catch {
-      return false;
-    }
+    return this.updateSafeComponentConfig(componentId, properties);
   }
 
   // ─── Private Helpers ─────────────────────────────────────────────
@@ -470,6 +464,59 @@ export class OpenEMSAdapter extends BaseAdapter {
       if (comp.factoryId?.startsWith('Controller.Evcs') || id.startsWith('ctrlEvcs')) return id;
     }
     return 'ctrlEvcs0';
+  }
+
+  private getWritablePropertyAllowlist(componentId: string): Set<string> | null {
+    const component = this.edgeComponents.get(componentId);
+
+    for (const rule of OPENEMS_WRITABLE_COMPONENT_RULES) {
+      if (!rule.idPattern.test(componentId)) continue;
+      if (rule.factoryId && (!component || component.factoryId !== rule.factoryId)) continue;
+      if (rule.factoryPrefix && (!component || !component.factoryId.startsWith(rule.factoryPrefix)))
+        continue;
+      return new Set(rule.allowedProperties);
+    }
+
+    return null;
+  }
+
+  private sanitizeWritableProperties(
+    componentId: string,
+    properties: Array<{ name: string; value: unknown }>,
+  ): Array<{ name: string; value: number | string | boolean | null }> {
+    const allowlist = this.getWritablePropertyAllowlist(componentId);
+    if (!allowlist) return [];
+
+    return properties
+      .filter((property) => allowlist.has(property.name) && isSafePropertyName(property.name))
+      .map((property) => ({
+        name: property.name,
+        value: sanitizePropertyValue(property.value),
+      }));
+  }
+
+  private async updateSafeComponentConfig(
+    componentId: string,
+    properties: Array<{ name: string; value: unknown }>,
+  ): Promise<boolean> {
+    if (!isSafeComponentId(componentId)) {
+      return false;
+    }
+
+    const safeProperties = this.sanitizeWritableProperties(componentId, properties);
+    if (safeProperties.length === 0) {
+      return false;
+    }
+
+    try {
+      await this.rpcCall('updateComponentConfig', {
+        componentId,
+        properties: safeProperties,
+      });
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   private async subscribeChannels(): Promise<void> {

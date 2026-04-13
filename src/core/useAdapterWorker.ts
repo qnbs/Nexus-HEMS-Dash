@@ -6,12 +6,25 @@
  *
  * Usage:
  *   const { startPolling, stopPolling, stopAll } = useAdapterWorker();
- *   startPolling('modbus-sunspec', 'http://192.168.1.50/api/modbus/sunspec?model=inverter');
+ *   startPolling('modbus-sunspec', {
+ *     protocol: 'http',
+ *     host: '192.168.1.50',
+ *     path: '/api/modbus/sunspec',
+ *     query: { model: 'inverter' },
+ *   });
  */
 
 import { useEffect, useRef } from 'react';
 import { useEnergyStoreBase } from './useEnergyStore';
 import { metricsCollector } from '../lib/metrics';
+
+export interface WorkerPollTarget {
+  protocol: 'http' | 'https';
+  host: string;
+  port?: number;
+  path: string;
+  query?: Record<string, string | number | boolean>;
+}
 
 interface WorkerDataMessage {
   type: 'data';
@@ -35,6 +48,26 @@ type WorkerOutMessage = WorkerDataMessage | WorkerErrorMessage | WorkerLatencyMe
 
 export function useAdapterWorker() {
   const workerRef = useRef<Worker | null>(null);
+
+  const toPollTarget = (target: string | WorkerPollTarget): WorkerPollTarget | null => {
+    if (typeof target !== 'string') return target;
+
+    try {
+      const parsed = new URL(target);
+      if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return null;
+
+      const query = Object.fromEntries(parsed.searchParams.entries());
+      return {
+        protocol: parsed.protocol === 'https:' ? 'https' : 'http',
+        host: parsed.hostname,
+        port: parsed.port ? Number(parsed.port) : undefined,
+        path: parsed.pathname,
+        query: Object.keys(query).length > 0 ? query : undefined,
+      };
+    } catch {
+      return null;
+    }
+  };
 
   useEffect(() => {
     const worker = new Worker(new URL('./adapter-worker.ts', import.meta.url), { type: 'module' });
@@ -68,11 +101,25 @@ export function useAdapterWorker() {
 
   const startPolling = (
     adapterId: string,
-    url: string,
+    target: string | WorkerPollTarget,
     headers?: Record<string, string>,
     intervalMs?: number,
   ): void => {
-    workerRef.current?.postMessage({ type: 'poll', adapterId, url, headers, intervalMs });
+    const normalizedTarget = toPollTarget(target);
+    if (!normalizedTarget) {
+      if (import.meta.env.DEV) {
+        console.warn('[useAdapterWorker] Ignored invalid poll target for', adapterId);
+      }
+      return;
+    }
+
+    workerRef.current?.postMessage({
+      type: 'poll',
+      adapterId,
+      target: normalizedTarget,
+      headers,
+      intervalMs,
+    });
   };
 
   const stopPolling = (adapterId: string): void => {

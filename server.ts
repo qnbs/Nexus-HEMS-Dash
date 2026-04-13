@@ -210,6 +210,7 @@ async function startServer() {
               objectSrc: ["'none'"],
               baseUri: ["'self'"],
               formAction: ["'self'"],
+              upgradeInsecureRequests: null,
             },
           }
         : {
@@ -235,10 +236,13 @@ async function startServer() {
               frameAncestors: ["'none'"],
               baseUri: ["'self'"],
               formAction: ["'self'"],
+              upgradeInsecureRequests: [],
             },
           },
       crossOriginEmbedderPolicy: { policy: 'credentialless' },
-      hsts: { maxAge: 31536000, includeSubDomains: true, preload: true },
+      // HSTS must stay production-only. On the local HTTP dev server it can
+      // make Firefox/WebKit upgrade module requests to HTTPS and break boot.
+      hsts: isDev ? false : { maxAge: 31536000, includeSubDomains: true, preload: true },
       referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
       xFrameOptions: { action: 'deny' },
     }),

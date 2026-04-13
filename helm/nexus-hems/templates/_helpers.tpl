@@ -38,3 +38,33 @@ Selector labels
 app.kubernetes.io/name: {{ include "nexus-hems.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
+
+{{/*
+Validate image repositories against a trusted registry allowlist.
+*/}}
+{{- define "nexus-hems.assertTrustedImageRepository" -}}
+{{- $repository := .repository -}}
+{{- $trustedRegistries := .trustedRegistries | default (list) -}}
+{{- $trusted := false -}}
+{{- range $trustedRegistries -}}
+	{{- if hasPrefix . $repository -}}
+		{{- $trusted = true -}}
+	{{- end -}}
+{{- end -}}
+{{- if not $trusted -}}
+	{{- fail (printf "image repository %q must use one of the trusted registry prefixes: %s" $repository (join ", " $trustedRegistries)) -}}
+{{- end -}}
+{{- end }}
+
+{{/*
+Build a validated image reference.
+*/}}
+{{- define "nexus-hems.imageRef" -}}
+{{- $image := .image -}}
+{{- include "nexus-hems.assertTrustedImageRepository" (dict "repository" $image.repository "trustedRegistries" .trustedRegistries) -}}
+{{- if $image.digest -}}
+{{- printf "%s@%s" $image.repository $image.digest -}}
+{{- else -}}
+{{- printf "%s:%s" $image.repository ($image.tag | default .chartAppVersion) -}}
+{{- end -}}
+{{- end }}

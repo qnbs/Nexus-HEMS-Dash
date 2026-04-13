@@ -1,5 +1,11 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { setupLocalStorage } from './e2e-setup';
+
+async function waitForMainHeading(page: Page) {
+  const heading = page.locator('#main-content h1').first();
+  await expect(heading).toBeVisible({ timeout: 15_000 });
+  return heading;
+}
 
 test.describe('Settings & Command Palette', () => {
   test.beforeEach(async ({ page }) => {
@@ -8,10 +14,10 @@ test.describe('Settings & Command Palette', () => {
 
   test('should render settings page with tab sections', async ({ page }) => {
     await page.goto('/settings');
-    await page.waitForSelector('h1', { timeout: 15_000 });
+    const heading = await waitForMainHeading(page);
 
     // Settings page should show configuration sections
-    await expect(page.locator('h1')).toBeVisible();
+    await expect(heading).toBeVisible();
 
     // Should have tab buttons or settings sections
     const buttons = page.locator('button');
@@ -20,7 +26,7 @@ test.describe('Settings & Command Palette', () => {
 
   test('should open command palette with Cmd+K / Ctrl+K', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('h1', { timeout: 15_000 });
+    await waitForMainHeading(page);
 
     // Open command palette with keyboard shortcut
     const isMac = process.platform === 'darwin';
@@ -45,13 +51,13 @@ test.describe('Settings & Command Palette', () => {
 
   test('should navigate settings tabs via query params', async ({ page }) => {
     await page.goto('/settings?tab=appearance');
-    await page.waitForSelector('h1', { timeout: 15_000 });
-    await expect(page.locator('h1')).toBeVisible();
+    const heading = await waitForMainHeading(page);
+    await expect(heading).toBeVisible();
   });
 
   test('should show skip-to-content link on Tab', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('h1', { timeout: 15_000 });
+    await waitForMainHeading(page);
 
     // First Tab should reveal skip-to-content
     await page.keyboard.press('Tab');
@@ -116,7 +122,7 @@ test.describe('Error Boundary', () => {
   test('should recover gracefully from broken routes', async ({ page }) => {
     // Visit a valid route first
     await page.goto('/');
-    await page.waitForSelector('h1', { timeout: 15_000 });
+    await waitForMainHeading(page);
 
     // Navigate to 404
     await page.goto('/totally-broken-route');
@@ -126,6 +132,6 @@ test.describe('Error Boundary', () => {
 
     // Navigate back should work
     await page.goto('/');
-    await expect(page.locator('h1')).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator('#main-content h1').first()).toBeVisible({ timeout: 15_000 });
   });
 });

@@ -1,7 +1,7 @@
 # ─────────────────────────────────────────────────────────────────────────────
 # Continuous Performance Benchmarking
 # ─────────────────────────────────────────────────────────────────────────────
-# Runs on every push to main and PRs. Tracks:
+# Runs on pushes to main and manual dispatch. Tracks:
 # - Bundle size budgets via size-limit
 # - Source map analysis via source-map-explorer
 # - Dependency audit via depcheck
@@ -14,8 +14,7 @@ name: Performance Benchmark
 on:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
+  workflow_dispatch:
 
 permissions: read-all
 
@@ -47,25 +46,28 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
+      - name: Enable Corepack
+        run: corepack enable
+
       - name: Cache node_modules
         id: deps-cache
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: node_modules
-          key: deps-${{ runner.os }}-node${{ env.NODE_VERSION }}-${{ hashFiles('package-lock.json') }}
+          key: deps-${{ runner.os }}-node${{ env.NODE_VERSION }}-${{ hashFiles('pnpm-lock.yaml') }}
           restore-keys: |
             deps-${{ runner.os }}-node${{ env.NODE_VERSION }}-
 
       - name: Install dependencies
         if: steps.deps-cache.outputs.cache-hit != 'true'
-        run: npm ci --prefer-offline
+        run: pnpm install --frozen-lockfile --prefer-offline
 
       # ── Build with timing ──
       - name: Build (timed)
         id: build-time
         run: |
           START=$(date +%s%N)
-          npm run build
+          pnpm build
           END=$(date +%s%N)
           DURATION=$(( (END - START) / 1000000 ))
           echo "duration=${DURATION}ms" >> "$GITHUB_OUTPUT"
@@ -142,16 +144,19 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
+      - name: Enable Corepack
+        run: corepack enable
+
       - name: Cache node_modules
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: node_modules
-          key: deps-${{ runner.os }}-node${{ env.NODE_VERSION }}-${{ hashFiles('package-lock.json') }}
+          key: deps-${{ runner.os }}-node${{ env.NODE_VERSION }}-${{ hashFiles('pnpm-lock.yaml') }}
           restore-keys: |
             deps-${{ runner.os }}-node${{ env.NODE_VERSION }}-
 
       - name: Install dependencies
-        run: npm ci --prefer-offline 2>/dev/null || npm ci
+        run: pnpm install --frozen-lockfile --prefer-offline
 
       - name: depcheck — unused dependencies
         run: |
@@ -172,11 +177,11 @@ jobs:
           echo "$UNUSED" >> "$GITHUB_STEP_SUMMARY"
           echo '```' >> "$GITHUB_STEP_SUMMARY"
 
-      - name: npm audit summary
+      - name: Dependency audit summary
         run: |
           echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "### npm audit" >> "$GITHUB_STEP_SUMMARY"
-          npm audit --omit=dev 2>&1 | tail -5 >> "$GITHUB_STEP_SUMMARY" || true
+          echo "### pnpm audit" >> "$GITHUB_STEP_SUMMARY"
+          pnpm audit --prod 2>&1 | tail -5 >> "$GITHUB_STEP_SUMMARY" || true
 
   # ─────────────────────────────────────────────────────────────
   # Job 3: Biome Fast Lint
@@ -191,16 +196,19 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
+      - name: Enable Corepack
+        run: corepack enable
+
       - name: Cache node_modules
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: node_modules
-          key: deps-${{ runner.os }}-node${{ env.NODE_VERSION }}-${{ hashFiles('package-lock.json') }}
+          key: deps-${{ runner.os }}-node${{ env.NODE_VERSION }}-${{ hashFiles('pnpm-lock.yaml') }}
           restore-keys: |
             deps-${{ runner.os }}-node${{ env.NODE_VERSION }}-
 
       - name: Install dependencies
-        run: npm ci --prefer-offline 2>/dev/null || npm ci
+        run: pnpm install --frozen-lockfile --prefer-offline
 
       - name: Biome check
         run: npx biome check src/ --reporter=summary 2>&1 || true

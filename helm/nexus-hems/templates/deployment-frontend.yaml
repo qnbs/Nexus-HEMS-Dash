@@ -25,11 +25,7 @@ spec:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
         - name: frontend
-          {{- if .Values.image.frontend.digest }}
-          image: "{{ .Values.image.frontend.repository }}@{{ .Values.image.frontend.digest }}"
-          {{- else }}
-          image: "{{ .Values.image.frontend.repository }}:{{ .Values.image.frontend.tag | default .Chart.AppVersion }}"
-          {{- end }}
+          image: {{ include "nexus-hems.imageRef" (dict "image" .Values.image.frontend "trustedRegistries" .Values.image.trustedRegistries "chartAppVersion" .Chart.AppVersion) | quote }}
           imagePullPolicy: {{ .Values.image.frontend.pullPolicy }}
           ports:
             - name: http

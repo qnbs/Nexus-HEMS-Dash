@@ -3,8 +3,6 @@ name: Security Scan
 on:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
   schedule:
     # Weekly full scan every Monday at 06:00 UTC
     - cron: '0 6 * * 1'
@@ -27,10 +25,14 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22'
-          cache: 'npm'
+          cache: 'pnpm'
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Enable Corepack
+        run: corepack enable
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Run anti-trojan-source CLI
         run: npx anti-trojan-source --files='src/**/*.{ts,tsx,js,jsx}' --verbose
@@ -85,10 +87,10 @@ jobs:
         continue-on-error: true
 
   # ──────────────────────────────────────────────
-  # 4. npm Audit
+  # 4. Dependency Audit
   # ──────────────────────────────────────────────
-  npm-audit:
-    name: npm Audit
+  dependency-audit:
+    name: Dependency Audit
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -97,24 +99,48 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22'
-          cache: 'npm'
+          cache: 'pnpm'
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Enable Corepack
+        run: corepack enable
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
-      - name: Run npm audit
-        run: npm audit --audit-level=high
+      - name: Run dependency audit
+        run: pnpm audit --audit-level=high
         continue-on-error: true
 
       - name: Check for critical vulnerabilities
         run: |
-          CRITICAL=$(npm audit --json 2>/dev/null | jq '.metadata.vulnerabilities.critical // 0')
-          HIGH=$(npm audit --json 2>/dev/null | jq '.metadata.vulnerabilities.high // 0')
-          echo "Critical: $CRITICAL, High: $HIGH"
-          if [ "$CRITICAL" -gt 0 ]; then
-            echo "::error::Critical vulnerabilities found!"
-            exit 1
-          fi
+          pnpm audit --json --audit-level=high > audit.json || true
+          node <<'NODE'
+          const fs = require('fs');
+          const text = fs.readFileSync('audit.json', 'utf8').trim();
+          const docs = text
+            ? text
+                .split(/\n+/)
+                .map((line) => {
+                  try {
+                    return JSON.parse(line);
+                  } catch {
+                    return null;
+                  }
+                })
+                .filter(Boolean)
+            : [];
+          const flattened = docs.flatMap((doc) => (Array.isArray(doc) ? doc : [doc]));
+          const summary =
+            [...flattened].reverse().find((doc) => doc?.metadata?.vulnerabilities || doc?.vulnerabilities) ?? {};
+          const vulnerabilities = summary.metadata?.vulnerabilities ?? summary.vulnerabilities ?? {};
+          const critical = Number(vulnerabilities.critical ?? 0);
+          const high = Number(vulnerabilities.high ?? 0);
+          console.log(`Critical: ${critical}, High: ${high}`);
+          if (critical > 0) {
+            process.exit(1);
+          }
+          NODE
 
   # ──────────────────────────────────────────────
   # 5. Snyk (requires SNYK_TOKEN secret)
@@ -133,10 +159,14 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22'
-          cache: 'npm'
+          cache: 'pnpm'
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Enable Corepack
+        run: corepack enable
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Run Snyk test
         uses: snyk/actions/node@9adf32b1121593767fc3c057af55b55db032dc04 # master
@@ -169,10 +199,14 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22'
-          cache: 'npm'
+          cache: 'pnpm'
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Enable Corepack
+        run: corepack enable
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Socket Security Analysis (CLI)
         run: npx socket report create --view --strict
@@ -196,10 +230,14 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22'
-          cache: 'npm'
+          cache: 'pnpm'
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Enable Corepack
+        run: corepack enable
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Aikido Security Scan (CLI)
         run: npx @aikidosec/ci-api-client scan --minimum-severity HIGH --fail-on-timeout false
@@ -243,10 +281,14 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22'
-          cache: 'npm'
+          cache: 'pnpm'
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Enable Corepack
+        run: corepack enable
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Check licenses
         run: npx license-checker --production --failOn 'GPL-3.0;AGPL-3.0' --summary

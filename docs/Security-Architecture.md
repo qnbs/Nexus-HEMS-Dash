@@ -189,7 +189,7 @@ Each adapter uses `src/core/circuit-breaker.ts`:
 | **Trivy**              | Container + filesystem vulnerability scan |
 | **Gitleaks**           | Secret detection (pre-commit + CI)        |
 | **anti-trojan-source** | Unicode Bidi character detection          |
-| **npm audit**          | Dependency vulnerability check            |
+| **pnpm audit**         | Dependency vulnerability check            |
 | **OpenSSF Scorecard**  | Supply chain security rating              |
 | **Renovate**           | Automated dependency updates              |
 | **Chromatic**          | Visual regression + Storybook CI          |
@@ -203,7 +203,7 @@ Each adapter uses `src/core/circuit-breaker.ts`:
 ### Dependency Pinning
 
 - All GitHub Actions pinned to commit SHA (not tags)
-- `package-lock.json` committed; `npm ci` in CI
+- `pnpm-lock.yaml` committed; `pnpm install --frozen-lockfile` in CI
 - Renovate auto-updates with lockfile maintenance
 - Helm chart supports immutable digest-based image references (`repository@sha256:...`) for auditable rollouts
 

@@ -8,20 +8,21 @@ Thank you for your interest in contributing! This guide will help you get starte
 # Clone and install
 git clone https://github.com/qnbs/Nexus-HEMS-Dash.git
 cd Nexus-HEMS-Dash
-npm install --legacy-peer-deps
+corepack enable
+pnpm install
 
 # Start dev server
-npm run dev
+pnpm dev
 ```
 
 ### Prerequisites
 
 - Node.js 22+
-- npm 10+
+- pnpm 10+
 
 ## Project Structure
 
-```
+```text
 src/
 ├── components/       # React components (UI, panels, widgets)
 │   └── ui/           # Shared UI primitives (Gauge, NeonCard, etc.)
@@ -45,16 +46,16 @@ src/
 - **D3.js** for Sankey — No alternative charting for energy flow
 - **Tailwind CSS 4** — Neo-Energy Cyber-Glassmorphism design system
 - **Dexie.js** — IndexedDB for offline-first persistence
-- **Framer Motion** — All animations
+- **motion** — All animations
 
 ### Code Quality
 
 ```bash
-npm run lint          # ESLint (must pass, no warnings)
-npm run format:check  # Prettier formatting
-npm run type-check    # TypeScript strict mode
+pnpm lint             # ESLint (must pass, no warnings)
+pnpm format:check     # Prettier formatting
+pnpm type-check       # TypeScript strict mode
 npx vitest run        # Unit tests (63+ tests, all must pass)
-npm run build         # Production build (bundle < 600 KB)
+pnpm build            # Production build (bundle < 600 KB)
 ```
 
 ### i18n
@@ -87,12 +88,36 @@ Use `useTranslation()` hook, never hardcode strings.
 
 ## Pull Request Process
 
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feat/my-feature`
+1. Branch from the latest `main`
+2. Create a focused branch such as `feat/my-feature`, `fix/my-bug`, or `docs/my-update`
 3. Make your changes following the guidelines above
-4. Ensure all checks pass: `npm run lint && npm run type-check && npx vitest run && npm run build`
-5. Commit with conventional commits: `feat:`, `fix:`, `test:`, `docs:`, `refactor:`
+4. Ensure all required checks pass: `pnpm lint && pnpm type-check && npx vitest run && pnpm build`
+5. Commit with Conventional Commits: `feat:`, `fix:`, `test:`, `docs:`, `refactor:`
 6. Open a PR against `main`
+7. Resolve all review threads and keep the branch up to date with `main`
+
+## Branching Strategy
+
+- `main` is the protected production branch. Direct pushes, force pushes, and deletions are not part of the normal workflow.
+- All work starts in a short-lived branch created from the latest `main`.
+- Preferred branch prefixes: `feat/`, `fix/`, `docs/`, `refactor/`, `test/`, `chore/`, `perf/`, `hotfix/`.
+- Open a pull request back to `main` as soon as the change is reviewable. Draft PRs are encouraged for early feedback.
+- Keep PRs focused. Large mixed PRs make Code Owner review, CodeQL findings, and release notes materially worse.
+
+## Merge Strategy
+
+- Squash merge is the default and recommended merge method.
+- Rebase and merge is acceptable for a clean, already well-structured commit series.
+- Merge commits should stay disabled on `main` to preserve linear history.
+- At least one approval is required, stale approvals are dismissed after new commits, and Code Owner review is required for owned paths.
+- The latest reviewable push must be approved before merge.
+
+## Pull Request Expectations
+
+- Target branch: always `main`
+- Required status checks: CI baseline, build, E2E, Lighthouse, security scanning, and supply-chain checks
+- Required review hygiene: all review conversations resolved before merge
+- Copilot review may be auto-requested for draft PRs and subsequent pushes; treat it as an additional review signal, not as a replacement for human review
 
 ## Commit Convention
 

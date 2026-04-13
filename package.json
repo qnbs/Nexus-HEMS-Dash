@@ -34,6 +34,7 @@
     "vite"
   ],
   "type": "module",
+  "packageManager": "pnpm@10.31.0",
   "scripts": {
     "dev": "tsx server.ts",
     "build": "vite build",
@@ -43,12 +44,13 @@
     "lint": "eslint src/ --max-warnings 0",
     "lint:fix": "eslint src/ --fix",
     "lint:biome": "biome check src/",
-    "lint:all": "npm run lint && npm run lint:biome",
+    "lint:all": "pnpm lint && pnpm lint:biome",
     "format": "prettier --write \"src/**/*.{ts,tsx,css,json}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,css,json}\"",
     "type-check": "tsc --noEmit",
     "test": "vitest",
     "test:run": "vitest run",
+    "test:fuzz": "vitest run src/tests/security-fuzz.test.ts",
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",
     "test:e2e": "playwright test",
@@ -70,7 +72,7 @@
     "cap:sync": "npx cap sync",
     "cap:open:android": "npx cap open android",
     "cap:open:ios": "npx cap open ios",
-    "cap:build": "npm run build && npx cap sync",
+    "cap:build": "pnpm build && npx cap sync",
     "tauri:mobile:android": "npx tauri android init && npx tauri android dev",
     "tauri:mobile:ios": "npx tauri ios init && npx tauri ios dev",
     "lighthouse": "lhci autorun",
@@ -81,8 +83,8 @@
     "analyze": "source-map-explorer dist/assets/*.js --html dist/source-map-report.html",
     "analyze:json": "source-map-explorer dist/assets/*.js --json dist/source-map-report.json",
     "depcheck": "depcheck --ignores='@types/*,autoprefixer,babel-plugin-react-compiler,eslint-*,prettier-*,@commitlint/*,anti-trojan-source,fake-indexeddb,globals,@tailwindcss/*,typescript-eslint,better-sqlite3,@biomejs/biome,@size-limit/*,source-map-explorer,depcheck,size-limit,@lhci/*,@vitest/*,@typescript-eslint/*,husky,lint-staged,workbox-window,vite-plugin-pwa,rollup-plugin-visualizer'",
-    "perf": "npm run build && npm run size && npm run analyze",
-    "bench": "npm run build && npm run size:check > .perf/size-limit.json 2>&1 && echo 'Benchmark complete'",
+    "perf": "pnpm build && pnpm size && pnpm analyze",
+    "bench": "pnpm build && pnpm size:check > .perf/size-limit.json 2>&1 && echo 'Benchmark complete'",
     "storybook": "storybook dev -p 6006",
     "storybook:build": "storybook build --output-dir storybook-static",
     "chromatic": "chromatic --exit-zero-on-changes",
@@ -193,8 +195,31 @@
     "zustand": "^5.0.11"
   },
   "overrides": {
-    "serialize-javascript": ">=7.0.3",
-    "@rollup/plugin-terser": ">=0.4.5"
+    "serialize-javascript": ">=7.0.5",
+    "@rollup/plugin-terser": ">=0.4.5",
+    "@xmldom/xmldom": "0.8.12",
+    "basic-ftp": "5.2.2",
+    "brace-expansion@^1.0.0": "1.1.14",
+    "brace-expansion@^2.0.0": "2.1.0",
+    "brace-expansion@^5.0.0": "5.0.5",
+    "flatted": "3.4.2",
+    "handlebars": "4.7.9",
+    "lodash": "4.18.1",
+    "lodash-es": "4.18.1",
+    "npm": {
+      "brace-expansion": "2.1.0",
+      "picomatch": "4.0.4"
+    },
+    "picomatch@^2.0.0": "2.3.2",
+    "picomatch@^4.0.0": "4.0.4",
+    "@lhci/cli": {
+      "tmp": "0.2.5"
+    },
+    "external-editor": {
+      "tmp": "0.2.5"
+    },
+    "yaml@^1.0.0": "1.10.3",
+    "yaml@^2.0.0": "2.8.3"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.11.1",
@@ -249,6 +274,7 @@
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "fake-indexeddb": "^6.2.5",
+    "fast-check": "^4.6.0",
     "globals": "^17.3.0",
     "husky": "^9.1.7",
     "jsdom": "^28.1.0",
@@ -264,7 +290,7 @@
     "tsx": "^4.21.0",
     "typescript": "~5.8.2",
     "typescript-eslint": "^8.56.1",
-    "vite": "^6.2.0",
+    "vite": "^6.4.2",
     "vite-plugin-pwa": "^1.2.0",
     "vitest": "^4.0.18",
     "workbox-window": "^7.4.0"

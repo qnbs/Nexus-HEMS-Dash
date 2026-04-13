@@ -7,7 +7,7 @@
  *   3. JSON deserialization of large MQTT/WebSocket payloads
  *
  * Communication Protocol:
- *   Main → Worker:  { type: 'poll', adapterId, url, headers?, interval? }
+ *   Main → Worker:  { type: 'poll', adapterId, target, headers?, interval? }
  *   Main → Worker:  { type: 'transform', adapterId, rawData }
  *   Main → Worker:  { type: 'stop', adapterId }
  *   Main → Worker:  { type: 'stopAll' }
@@ -26,9 +26,17 @@
 interface PollMessage {
   type: 'poll';
   adapterId: string;
-  url: string;
+  target: PollTarget;
   headers?: Record<string, string>;
   intervalMs?: number;
+}
+
+export interface PollTarget {
+  protocol: 'http' | 'https';
+  host: string;
+  port?: number;
+  path: string;
+  query?: Record<string, string | number | boolean>;
 }
 
 interface TransformMessage {
@@ -72,6 +80,30 @@ type WorkerOutMessage = DataOutMessage | ErrorOutMessage | LatencyOutMessage;
 // ─── Polling state ───────────────────────────────────────────────────
 
 const pollers: Map<string, ReturnType<typeof setInterval>> = new Map();
+const DEFAULT_POLL_INTERVAL_MS = 3000;
+const MIN_POLL_INTERVAL_MS = 1000;
+const MAX_POLL_INTERVAL_MS = 60_000;
+const MAX_HEADER_COUNT = 16;
+const MAX_HEADER_VALUE_LENGTH = 512;
+const BLOCKED_HEADER_NAMES = new Set([
+  'connection',
+  'content-length',
+  'cookie',
+  'host',
+  'origin',
+  'proxy-authorization',
+  'proxy-authenticate',
+  'referer',
+  'set-cookie',
+  'transfer-encoding',
+  'upgrade',
+  'x-forwarded-for',
+  'x-forwarded-host',
+  'x-forwarded-proto',
+]);
+const SAFE_HEADER_NAME = /^[A-Za-z0-9-]{1,64}$/;
+const SAFE_QUERY_KEY = /^[A-Za-z0-9._-]{1,64}$/;
+const SAFE_PATH = /^\/[A-Za-z0-9._~%!$&'()*+,;=:@/-]*$/;
 
 // ─── SunSpec scale factor helper (compute-heavy, offloaded here) ─────
 
@@ -166,30 +198,99 @@ export function isAllowedUrl(parsed: URL): boolean {
   return isPrivateIPv4(hostname);
 }
 
+function sanitizeHeaderValue(value: string): string | null {
+  if (/[\r\n\0]/.test(value)) return null;
+  const trimmed = value.trim();
+  if (trimmed.length === 0 || trimmed.length > MAX_HEADER_VALUE_LENGTH) return null;
+  return trimmed;
+}
+
+export function sanitizePollHeaders(
+  headers?: Record<string, string>,
+): Record<string, string> | undefined {
+  if (!headers) return undefined;
+
+  const entries = Object.entries(headers).slice(0, MAX_HEADER_COUNT);
+  const sanitizedEntries = entries.flatMap(([rawName, rawValue]) => {
+    const name = rawName.trim();
+    if (!SAFE_HEADER_NAME.test(name)) return [];
+
+    const lowerName = name.toLowerCase();
+    if (BLOCKED_HEADER_NAMES.has(lowerName)) return [];
+
+    const sanitizedValue = sanitizeHeaderValue(rawValue);
+    if (!sanitizedValue) return [];
+
+    return [[name, sanitizedValue] as const];
+  });
+
+  if (sanitizedEntries.length === 0) return undefined;
+  return Object.fromEntries(sanitizedEntries);
+}
+
+function clampPollInterval(intervalMs?: number): number {
+  if (!Number.isFinite(intervalMs)) return DEFAULT_POLL_INTERVAL_MS;
+  return Math.min(MAX_POLL_INTERVAL_MS, Math.max(MIN_POLL_INTERVAL_MS, Math.round(intervalMs!)));
+}
+
+export function buildAllowedPollUrl(target: PollTarget): URL | null {
+  const protocol =
+    target.protocol === 'https' ? 'https:' : target.protocol === 'http' ? 'http:' : null;
+  if (!protocol) return null;
+
+  const host = target.host.trim().toLowerCase();
+  if (!host) return null;
+
+  const normalizedPath = target.path.trim();
+  if (
+    !SAFE_PATH.test(normalizedPath) ||
+    normalizedPath.includes('..') ||
+    normalizedPath.includes('\\') ||
+    /[\r\n\t]/.test(normalizedPath)
+  ) {
+    return null;
+  }
+
+  if (
+    target.port !== undefined &&
+    (!Number.isInteger(target.port) || target.port < 1 || target.port > 65535)
+  ) {
+    return null;
+  }
+
+  const authority = target.port ? `${host}:${target.port}` : host;
+
+  let url: URL;
+  try {
+    url = new URL(`${protocol}//${authority}${normalizedPath}`);
+  } catch {
+    return null;
+  }
+
+  if (!isAllowedUrl(url)) return null;
+
+  if (target.query) {
+    for (const [key, value] of Object.entries(target.query)) {
+      if (!SAFE_QUERY_KEY.test(key)) return null;
+      const normalizedValue = String(value);
+      if (/[\r\n\0]/.test(normalizedValue) || normalizedValue.length > 256) return null;
+      url.searchParams.set(key, normalizedValue);
+    }
+  }
+
+  return url;
+}
+
 // ─── Polling logic ───────────────────────────────────────────────────
 
 async function executePoll(
   adapterId: string,
-  url: string,
+  url: URL,
   headers?: Record<string, string>,
 ): Promise<void> {
-  // Validate URL before any use (SSRF mitigation)
-  let sanitizedUrl: URL;
-  try {
-    sanitizedUrl = new URL(url);
-  } catch {
-    postOut({ type: 'error', adapterId, error: 'Invalid URL' });
-    return;
-  }
-
-  if (!isAllowedUrl(sanitizedUrl)) {
-    postOut({ type: 'error', adapterId, error: 'Request blocked: URL not in allowlist' });
-    return;
-  }
-
   const start = performance.now();
   try {
-    const resp = await fetch(sanitizedUrl.href, {
+    const resp = await fetch(url.href, {
       headers: headers ?? {},
       signal: AbortSignal.timeout(10_000),
       redirect: 'error', // Block redirects to prevent SSRF via open redirect
@@ -233,12 +334,27 @@ self.onmessage = (event: MessageEvent<WorkerInMessage>) => {
       const existing = pollers.get(msg.adapterId);
       if (existing) clearInterval(existing);
 
-      const interval = msg.intervalMs ?? 3000;
+      const sanitizedUrl = buildAllowedPollUrl(msg.target);
+      if (!sanitizedUrl) {
+        postOut({
+          type: 'error',
+          adapterId: msg.adapterId,
+          error: 'Request blocked: invalid poll target',
+        });
+        break;
+      }
+
+      const sanitizedHeaders = sanitizePollHeaders(msg.headers);
+
+      const interval = clampPollInterval(msg.intervalMs);
       // Execute immediately, then schedule
-      void executePoll(msg.adapterId, msg.url, msg.headers);
+      void executePoll(msg.adapterId, sanitizedUrl, sanitizedHeaders);
       pollers.set(
         msg.adapterId,
-        setInterval(() => void executePoll(msg.adapterId, msg.url, msg.headers), interval),
+        setInterval(
+          () => void executePoll(msg.adapterId, sanitizedUrl, sanitizedHeaders),
+          interval,
+        ),
       );
       break;
     }

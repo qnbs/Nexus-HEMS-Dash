@@ -2,9 +2,9 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "npm-install",
+      "label": "pnpm-install",
       "type": "shell",
-      "command": "cd /workspaces/Nexus-HEMS-Dash && npm install 2>&1 | tail -30"
+      "command": "cd /workspaces/Nexus-HEMS-Dash && pnpm install 2>&1 | tail -30"
     },
     {
       "label": "git-commit-push",
@@ -14,7 +14,7 @@
     {
       "label": "tsc-check",
       "type": "shell",
-      "command": "cd /workspaces/Nexus-HEMS-Dash && npx tsc --noEmit 2>&1 | tail -40"
+      "command": "cd /workspaces/Nexus-HEMS-Dash && pnpm exec tsc --noEmit 2>&1 | tail -40"
     }
   ]
 }

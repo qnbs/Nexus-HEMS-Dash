@@ -704,9 +704,9 @@ touch src/components/MyFeature.stories.tsx
 
 ```bash
 npx tsc --noEmit          # TypeScript check
-npm run lint              # ESLint zero-warning policy
-npm run test:run          # Unit tests
-npm run build             # Bundle size < 600 KB
+pnpm lint                 # ESLint zero-warning policy
+pnpm test:run             # Unit tests
+pnpm build                # Bundle size < 600 KB
 git add -A && git commit -m "feat: add MyFeature page"
 git push                  # CI runs: lint → type-check → unit → e2e → deploy
 ```

@@ -29,11 +29,7 @@ spec:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
         - name: server
-          {{- if .Values.image.server.digest }}
-          image: "{{ .Values.image.server.repository }}@{{ .Values.image.server.digest }}"
-          {{- else }}
-          image: "{{ .Values.image.server.repository }}:{{ .Values.image.server.tag | default .Chart.AppVersion }}"
-          {{- end }}
+          image: {{ include "nexus-hems.imageRef" (dict "image" .Values.image.server "trustedRegistries" .Values.image.trustedRegistries "chartAppVersion" .Chart.AppVersion) | quote }}
           imagePullPolicy: {{ .Values.image.server.pullPolicy }}
           ports:
             - name: http

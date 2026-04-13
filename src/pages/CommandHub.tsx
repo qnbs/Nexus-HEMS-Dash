@@ -349,12 +349,13 @@ function CommandHubComponent() {
               </Link>
             </div>
           </div>
-          <div className="min-h-[240px] p-4 sm:min-h-[320px]">
+          <div className="h-60 p-4 sm:h-80">
             <OptimizedSankey
               data={energyData}
               detailOpen={detailPanel.open}
               onDetailClose={detailPanel.close}
               allowFullscreen
+              className="h-full"
             />
           </div>
         </motion.section>

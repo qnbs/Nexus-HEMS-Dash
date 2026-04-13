@@ -29,9 +29,9 @@ Fixes #<!-- Issue-Nummer -->
 
 ### Qualität
 
-- [ ] `npm run type-check` — keine TypeScript-Fehler
-- [ ] `npm run lint` — keine ESLint-Warnungen
-- [ ] `npm run format:check` — Formatting korrekt
+- [ ] `pnpm type-check` — keine TypeScript-Fehler
+- [ ] `pnpm lint` — keine ESLint-Warnungen
+- [ ] `pnpm format:check` — Formatting korrekt
 - [ ] Bestehende Tests bestehen
 - [ ] Ich habe neue Tests für meine Änderungen geschrieben (falls zutreffend)
 

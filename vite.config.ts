@@ -1,7 +1,7 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
-import { defineConfig, loadEnv } from 'vite';
+import { defineConfig, loadEnv, type PluginOption } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 import { visualizer } from 'rollup-plugin-visualizer';
 
@@ -9,195 +9,199 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, '.', '');
   const isProd = mode === 'production';
 
+  const plugins: PluginOption[] = [
+    // React Compiler auto-memoizes — requires Babel (no SWC alternative yet).
+    // Babel is limited to React Compiler transform only; esbuild handles
+    // the rest of TS/JSX compilation for near-SWC dev speed.
+    react({
+      babel: {
+        plugins: [['babel-plugin-react-compiler', {}]],
+      },
+    }),
+
+    tailwindcss(),
+
+    VitePWA({
+      registerType: 'autoUpdate',
+      includeAssets: ['favicon.ico', 'robots.txt', 'icon.svg', 'apple-touch-icon.png'],
+      manifest: false, // Use public/manifest.json
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
+        globIgnores: ['**/bundle-stats.html'],
+        maximumFileSizeToCacheInBytes: 4 * 1024 * 1024, // 4 MB
+        sourcemap: false,
+        navigateFallback: isProd ? '/Nexus-HEMS-Dash/index.html' : 'index.html',
+        navigateFallbackAllowlist: [/^(?!\/__).*/],
+        navigationPreload: true,
+        runtimeCaching: [
+          // ── Weather: Open-Meteo (free, no auth) ──
+          // StaleWhileRevalidate → instant offline, revalidate in background.
+          // 48h expiration so predictive AI has forecast data even offline.
+          {
+            urlPattern: /^https:\/\/api\.open-meteo\.com\//,
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'weather-api',
+              expiration: { maxEntries: 80, maxAgeSeconds: 172_800 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          // ── Tariffs: Tibber GraphQL ──
+          // NetworkFirst with 6h offline fallback (prices update hourly,
+          // but stale prices are better than no prices offline).
+          {
+            urlPattern: /^https:\/\/api\.tibber\.com\//,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'tibber-api',
+              expiration: { maxEntries: 80, maxAgeSeconds: 21_600 },
+              networkTimeoutSeconds: 8,
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          // ── Tariffs: aWATTar REST (DE + AT) ──
+          // Day-ahead prices published once daily → 12h cache is safe.
+          {
+            urlPattern: /^https:\/\/api\.awattar\.(de|at)\//,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'awattar-api',
+              expiration: { maxEntries: 80, maxAgeSeconds: 43_200 },
+              networkTimeoutSeconds: 8,
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          // ── Tariffs: Octopus Energy (UK/DE Agile) ──
+          {
+            urlPattern: /^https:\/\/api\.octopus\.energy\//,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'octopus-api',
+              expiration: { maxEntries: 80, maxAgeSeconds: 21_600 },
+              networkTimeoutSeconds: 8,
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          // ── AI: Google Gemini ──
+          {
+            urlPattern: /^https:\/\/generativelanguage\.googleapis\.com\//,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'gemini-api',
+              expiration: { maxEntries: 40, maxAgeSeconds: 43_200 },
+              networkTimeoutSeconds: 15,
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          // ── AI: OpenAI ──
+          {
+            urlPattern: /^https:\/\/api\.openai\.com\/v1\//,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'openai-api',
+              expiration: { maxEntries: 40, maxAgeSeconds: 43_200 },
+              networkTimeoutSeconds: 15,
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          // ── AI: Anthropic ──
+          {
+            urlPattern: /^https:\/\/api\.anthropic\.com\/v1\//,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'anthropic-api',
+              expiration: { maxEntries: 40, maxAgeSeconds: 43_200 },
+              networkTimeoutSeconds: 15,
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          // ── AI: xAI (Grok) ──
+          {
+            urlPattern: /^https:\/\/api\.x\.ai\/v1\//,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'xai-api',
+              expiration: { maxEntries: 40, maxAgeSeconds: 43_200 },
+              networkTimeoutSeconds: 15,
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          // ── AI: Groq ──
+          {
+            urlPattern: /^https:\/\/api\.groq\.com\//,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'groq-api',
+              expiration: { maxEntries: 40, maxAgeSeconds: 43_200 },
+              networkTimeoutSeconds: 15,
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          // ── Fonts: Google Fonts (immutable) ──
+          {
+            urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\//,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'google-fonts',
+              expiration: { maxEntries: 30, maxAgeSeconds: 31_536_000 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          // ── Static assets: images ──
+          {
+            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|avif|ico)$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'images',
+              expiration: { maxEntries: 150, maxAgeSeconds: 2_592_000 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          // ── Static assets: web fonts ──
+          {
+            urlPattern: /\.(?:woff2?|ttf|otf|eot)$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'fonts',
+              expiration: { maxEntries: 30, maxAgeSeconds: 31_536_000 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          // ── PWA manifest ──
+          {
+            urlPattern: /\/manifest\.json$/,
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'manifest',
+              expiration: { maxEntries: 1, maxAgeSeconds: 86_400 },
+            },
+          },
+        ],
+        cleanupOutdatedCaches: true,
+        skipWaiting: true,
+        clientsClaim: true,
+      },
+      /* Ensure old precache entries from previous SW versions are purged */
+      selfDestroying: false,
+      devOptions: { enabled: false, type: 'module' },
+    }),
+  ];
+
+  if (isProd) {
+    plugins.push(
+      visualizer({
+        filename: 'dist/bundle-stats.html',
+        gzipSize: true,
+        brotliSize: true,
+        template: 'treemap', // treemap view for better chunk analysis
+      }) as PluginOption,
+    );
+  }
+
   return {
     base: isProd ? '/Nexus-HEMS-Dash/' : '/',
 
-    plugins: [
-      // React Compiler auto-memoizes — requires Babel (no SWC alternative yet).
-      // Babel is limited to React Compiler transform only; esbuild handles
-      // the rest of TS/JSX compilation for near-SWC dev speed.
-      react({
-        babel: {
-          plugins: [['babel-plugin-react-compiler', {}]],
-        },
-      }),
-
-      tailwindcss(),
-
-      VitePWA({
-        registerType: 'autoUpdate',
-        includeAssets: ['favicon.ico', 'robots.txt', 'icon.svg', 'apple-touch-icon.png'],
-        manifest: false, // Use public/manifest.json
-        workbox: {
-          globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
-          globIgnores: ['**/bundle-stats.html'],
-          maximumFileSizeToCacheInBytes: 4 * 1024 * 1024, // 4 MB
-          sourcemap: false,
-          navigateFallback: isProd ? '/Nexus-HEMS-Dash/index.html' : 'index.html',
-          navigateFallbackAllowlist: [/^(?!\/__).*/],
-          navigationPreload: true,
-          runtimeCaching: [
-            // ── Weather: Open-Meteo (free, no auth) ──
-            // StaleWhileRevalidate → instant offline, revalidate in background.
-            // 48h expiration so predictive AI has forecast data even offline.
-            {
-              urlPattern: /^https:\/\/api\.open-meteo\.com\//,
-              handler: 'StaleWhileRevalidate',
-              options: {
-                cacheName: 'weather-api',
-                expiration: { maxEntries: 80, maxAgeSeconds: 172_800 },
-                cacheableResponse: { statuses: [0, 200] },
-              },
-            },
-            // ── Tariffs: Tibber GraphQL ──
-            // NetworkFirst with 6h offline fallback (prices update hourly,
-            // but stale prices are better than no prices offline).
-            {
-              urlPattern: /^https:\/\/api\.tibber\.com\//,
-              handler: 'NetworkFirst',
-              options: {
-                cacheName: 'tibber-api',
-                expiration: { maxEntries: 80, maxAgeSeconds: 21_600 },
-                networkTimeoutSeconds: 8,
-                cacheableResponse: { statuses: [0, 200] },
-              },
-            },
-            // ── Tariffs: aWATTar REST (DE + AT) ──
-            // Day-ahead prices published once daily → 12h cache is safe.
-            {
-              urlPattern: /^https:\/\/api\.awattar\.(de|at)\//,
-              handler: 'NetworkFirst',
-              options: {
-                cacheName: 'awattar-api',
-                expiration: { maxEntries: 80, maxAgeSeconds: 43_200 },
-                networkTimeoutSeconds: 8,
-                cacheableResponse: { statuses: [0, 200] },
-              },
-            },
-            // ── Tariffs: Octopus Energy (UK/DE Agile) ──
-            {
-              urlPattern: /^https:\/\/api\.octopus\.energy\//,
-              handler: 'NetworkFirst',
-              options: {
-                cacheName: 'octopus-api',
-                expiration: { maxEntries: 80, maxAgeSeconds: 21_600 },
-                networkTimeoutSeconds: 8,
-                cacheableResponse: { statuses: [0, 200] },
-              },
-            },
-            // ── AI: Google Gemini ──
-            {
-              urlPattern: /^https:\/\/generativelanguage\.googleapis\.com\//,
-              handler: 'NetworkFirst',
-              options: {
-                cacheName: 'gemini-api',
-                expiration: { maxEntries: 40, maxAgeSeconds: 43_200 },
-                networkTimeoutSeconds: 15,
-                cacheableResponse: { statuses: [0, 200] },
-              },
-            },
-            // ── AI: OpenAI ──
-            {
-              urlPattern: /^https:\/\/api\.openai\.com\/v1\//,
-              handler: 'NetworkFirst',
-              options: {
-                cacheName: 'openai-api',
-                expiration: { maxEntries: 40, maxAgeSeconds: 43_200 },
-                networkTimeoutSeconds: 15,
-                cacheableResponse: { statuses: [0, 200] },
-              },
-            },
-            // ── AI: Anthropic ──
-            {
-              urlPattern: /^https:\/\/api\.anthropic\.com\/v1\//,
-              handler: 'NetworkFirst',
-              options: {
-                cacheName: 'anthropic-api',
-                expiration: { maxEntries: 40, maxAgeSeconds: 43_200 },
-                networkTimeoutSeconds: 15,
-                cacheableResponse: { statuses: [0, 200] },
-              },
-            },
-            // ── AI: xAI (Grok) ──
-            {
-              urlPattern: /^https:\/\/api\.x\.ai\/v1\//,
-              handler: 'NetworkFirst',
-              options: {
-                cacheName: 'xai-api',
-                expiration: { maxEntries: 40, maxAgeSeconds: 43_200 },
-                networkTimeoutSeconds: 15,
-                cacheableResponse: { statuses: [0, 200] },
-              },
-            },
-            // ── AI: Groq ──
-            {
-              urlPattern: /^https:\/\/api\.groq\.com\//,
-              handler: 'NetworkFirst',
-              options: {
-                cacheName: 'groq-api',
-                expiration: { maxEntries: 40, maxAgeSeconds: 43_200 },
-                networkTimeoutSeconds: 15,
-                cacheableResponse: { statuses: [0, 200] },
-              },
-            },
-            // ── Fonts: Google Fonts (immutable) ──
-            {
-              urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\//,
-              handler: 'CacheFirst',
-              options: {
-                cacheName: 'google-fonts',
-                expiration: { maxEntries: 30, maxAgeSeconds: 31_536_000 },
-                cacheableResponse: { statuses: [0, 200] },
-              },
-            },
-            // ── Static assets: images ──
-            {
-              urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|avif|ico)$/,
-              handler: 'CacheFirst',
-              options: {
-                cacheName: 'images',
-                expiration: { maxEntries: 150, maxAgeSeconds: 2_592_000 },
-                cacheableResponse: { statuses: [0, 200] },
-              },
-            },
-            // ── Static assets: web fonts ──
-            {
-              urlPattern: /\.(?:woff2?|ttf|otf|eot)$/,
-              handler: 'CacheFirst',
-              options: {
-                cacheName: 'fonts',
-                expiration: { maxEntries: 30, maxAgeSeconds: 31_536_000 },
-                cacheableResponse: { statuses: [0, 200] },
-              },
-            },
-            // ── PWA manifest ──
-            {
-              urlPattern: /\/manifest\.json$/,
-              handler: 'StaleWhileRevalidate',
-              options: {
-                cacheName: 'manifest',
-                expiration: { maxEntries: 1, maxAgeSeconds: 86_400 },
-              },
-            },
-          ],
-          cleanupOutdatedCaches: true,
-          skipWaiting: true,
-          clientsClaim: true,
-        },
-        /* Ensure old precache entries from previous SW versions are purged */
-        selfDestroying: false,
-        devOptions: { enabled: false, type: 'module' },
-      }),
-
-      // Bundle analyzer — generates dist/bundle-stats.html for Lighthouse audits
-      isProd &&
-        visualizer({
-          filename: 'dist/bundle-stats.html',
-          gzipSize: true,
-          brotliSize: true,
-          template: 'treemap', // treemap view for better chunk analysis
-        }),
-    ].filter(Boolean),
+    plugins,
 
     define: {
       'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
