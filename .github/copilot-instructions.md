@@ -98,7 +98,7 @@ All adapters in `src/core/adapters/` implement the `EnergyAdapter` interface (`E
 ### Deployment
 
 - **GitHub Pages**: `base: '/Nexus-HEMS-Dash/'` in production
-- **Docker**: multi-stage build (Node 22 → nginx 1.27), `read_only`, non-root, healthcheck
+- **Docker**: multi-stage build (Node 24 → nginx 1.27), `read_only`, non-root, healthcheck
 - **Tauri v2**: desktop distribution (Linux/macOS/Windows), strict CSP
 
 ---

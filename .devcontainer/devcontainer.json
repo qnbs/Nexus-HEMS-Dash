@@ -1,28 +1,70 @@
 {
   "name": "Nexus-HEMS-Dash",
-  "image": "mcr.microsoft.com/devcontainers/typescript-node:22",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:24",
+
+  // ── Dev Container Features ──────────────────────────────────────
   "features": {
-    "ghcr.io/devcontainers/features/github-cli:1": {}
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
   },
-  "forwardPorts": [5173],
-  "postCreateCommand": "corepack enable && pnpm install",
+
+  // ── Codespaces Machine Requirements ─────────────────────────────
+  "hostRequirements": {
+    "cpus": 4,
+    "memory": "8gb",
+    "storage": "32gb"
+  },
+
+  // ── Port Forwarding ─────────────────────────────────────────────
+  "forwardPorts": [5173, 3000, 6006, 9090],
+  "portsAttributes": {
+    "5173": { "label": "Vite Dev Server", "onAutoForward": "notify" },
+    "3000": { "label": "Backend Server", "onAutoForward": "silent" },
+    "6006": { "label": "Storybook", "onAutoForward": "silent" },
+    "9090": { "label": "Prometheus", "onAutoForward": "ignore" }
+  },
+
+  // ── Lifecycle Hooks ─────────────────────────────────────────────
+  // postCreateCommand: runs ONCE when the container is created (heavy ops)
+  "postCreateCommand": "corepack enable && pnpm install && pnpm exec playwright install --with-deps chromium",
+  // postStartCommand: runs every time the container starts (lightweight)
+  "postStartCommand": "git config pull.rebase true && pnpm install --prefer-offline --silent",
+
+  // ── VS Code Customizations ──────────────────────────────────────
   "customizations": {
     "vscode": {
       "extensions": [
+        // Core Formatting & Linting
         "esbenp.prettier-vscode",
         "dbaeumer.vscode-eslint",
+        "biomejs.biome",
+
+        // Language & Framework Support
         "bradlc.vscode-tailwindcss",
         "ms-playwright.playwright",
-        "GitHub.copilot",
-        "GitHub.copilot-chat",
+        "vitest.explorer",
+
+        // DX Enhancements
         "christian-kohler.path-intellisense",
         "mikestead.dotenv",
         "streetsidesoftware.code-spell-checker",
         "streetsidesoftware.code-spell-checker-german",
         "usernamehw.errorlens",
         "editorconfig.editorconfig",
+        "lokalise.i18n-ally",
+
+        // Git & GitHub
         "eamodio.gitlens",
-        "mhutchie.git-graph"
+        "mhutchie.git-graph",
+        "GitHub.vscode-pull-request-github",
+
+        // AI
+        "GitHub.copilot",
+        "GitHub.copilot-chat",
+
+        // Containers & Infrastructure
+        "ms-azuretools.vscode-docker",
+        "redhat.vscode-yaml"
       ],
       "settings": {
         "editor.defaultFormatter": "esbenp.prettier-vscode",

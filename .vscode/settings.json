@@ -91,6 +91,13 @@
   // ─── Testing ──────────────────────────────────────────────────
   "testing.automaticallyOpenPeekView": "failureVisible",
 
+  // ─── i18n (react-i18next) ─────────────────────────────────────
+  "i18n-ally.localesPaths": ["src/locales"],
+  "i18n-ally.keystyle": "nested",
+  "i18n-ally.sourceLanguage": "de",
+  "i18n-ally.displayLanguage": "de",
+  "i18n-ally.enabledFrameworks": ["react-i18next"],
+
   // ─── Security: Unicode Highlight (Trojan-Source Protection) ───
   "editor.unicodeHighlight.ambiguousCharacters": true,
   "editor.unicodeHighlight.invisibleCharacters": true,

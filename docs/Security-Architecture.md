@@ -61,7 +61,7 @@
 - **Zod** — runtime schema validation on all API endpoints and WebSocket commands
 - **JWT** (`jsonwebtoken`) — stateless auth tokens, HS256, 24 h expiry
 - No session storage; tokens validated per request
-- Production baseline runs on Node.js 22 LTS; Node.js 25 is validated in CI canary only
+- Production baseline runs on Node.js 24 LTS; Node.js 26 is validated in CI canary only
 
 ### EEBUS SPINE/SHIP
 
@@ -196,8 +196,8 @@ Each adapter uses `src/core/circuit-breaker.ts`:
 
 ### Runtime Governance
 
-- Production containers and release workflows are pinned to Node.js 22 LTS
-- A dedicated Node.js 25 canary job validates forward compatibility without blocking merges
+- Production containers and release workflows are pinned to Node.js 24 LTS
+- A dedicated Node.js 26 canary job validates forward compatibility without blocking merges
 - Deploy workflow requires explicit manual confirmation token before GitHub Pages rollout
 
 ### Dependency Pinning
@@ -211,7 +211,7 @@ Each adapter uses `src/core/circuit-breaker.ts`:
 
 ```dockerfile
 # Multi-stage build
-FROM node:22-alpine AS build    # Build stage (discarded)
+FROM node:24-alpine AS build    # Build stage (discarded)
 FROM nginx:1.27-alpine AS prod  # Minimal runtime
 
 # Security hardening

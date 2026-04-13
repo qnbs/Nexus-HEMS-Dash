@@ -74,9 +74,19 @@ pnpm install
 pnpm dev
 ```
 
-**Requirements:** Node.js 22 LTS (production baseline), pnpm 10+ via Corepack
+**Requirements:** Node.js 24 LTS (production baseline), pnpm 10+ via Corepack
 
-Node.js 25 is validated as a non-blocking CI canary only and is not used for production runtime images.
+Node.js 26 is validated as a non-blocking CI canary only and is not used for production runtime images.
+
+### GitHub Codespaces (Zero-Config)
+
+Click the button below to open a fully configured development environment in your browser:
+
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/qnbs/Nexus-HEMS-Dash?quickstart=1)
+
+**Recommended machine type:** 4-core / 8 GB RAM (builds complete in ~30s)
+
+The Codespace includes Node.js 24, pnpm, Playwright, Docker, and all VS Code extensions pre-installed. Dependencies are cached via Codespaces prebuilds for near-instant startup.
 
 ### Scripts
 
@@ -181,7 +191,7 @@ See [Adapter Dev Guide](docs/Adapter-Dev-Guide.md) and [Contrib README](src/core
 - **Transport:** TLS 1.3 everywhere, mTLS for EEBUS, client certs for OCPP
 - **Docker:** Non-root, read-only filesystem, `no-new-privileges`, isolated networks
 - **Runtime Hardening:** strict OpenEMS component/property validation, worker URL allowlist + private-IP checks, sanitized plugin/event logging
-- **CI:** CodeQL SAST, pnpm audit, Dependabot (npm ecosystem + Actions + Docker + Cargo), SHA-pinned GitHub Actions, Node 25 canary matrix
+- **CI:** CodeQL SAST, pnpm audit, Dependabot (npm ecosystem + Actions + Docker + Cargo), SHA-pinned GitHub Actions, Node 26 canary matrix
 
 For the full threat model, trust boundaries, STRIDE analysis, and GDPR/DSGVO compliance details, see [SECURITY.md](SECURITY.md).
 
@@ -198,7 +208,7 @@ For the full threat model, trust boundaries, STRIDE analysis, and GDPR/DSGVO com
 
 **GitHub Pages** — manual deployment via GitHub Actions `workflow_dispatch` with explicit `DEPLOY` approval token.
 
-**Docker** — multi-stage build (node:22-alpine → nginx:1.27-alpine):
+**Docker** — multi-stage build (node:24-alpine → nginx:1.27-alpine):
 
 ```bash
 pnpm docker:build && pnpm docker:up

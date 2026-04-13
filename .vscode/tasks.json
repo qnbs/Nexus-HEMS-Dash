@@ -2,19 +2,75 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "pnpm-install",
+      "label": "Dev Server",
       "type": "shell",
-      "command": "cd /workspaces/Nexus-HEMS-Dash && pnpm install 2>&1 | tail -30"
+      "command": "pnpm dev",
+      "isBackground": true,
+      "problemMatcher": [],
+      "group": "build"
     },
     {
-      "label": "git-commit-push",
+      "label": "Build",
       "type": "shell",
-      "command": "cd /workspaces/Nexus-HEMS-Dash && git add -A && git commit -m 'fix: PWA update, TariffsPage crash, EmergencyStop, theme color, Settings, CI, E2E' -m 'PWA: fix update notification interval leak, use updateServiceWorker(true)' -m 'PWA: theme_color green to dark navy (manifest+index.html+dynamic meta)' -m 'TariffsPage: wrap LivePriceWidget/PredictiveForecast in ErrorBoundary' -m 'PredictiveForecast: API response validation, division-by-zero guard' -m 'EmergencyStop: move from global fixed FAB to Settings Danger Zone' -m 'LanguageSwitcher: move from header to Settings Language section' -m 'Header: Settings icon always visible' -m 'TypeScript: fix 5 errors (EEBUSAdapter, ModbusSunSpec, OCPP21, command-safety)' -m 'Settings: consolidate duplicate imports' -m 'E2E: update lang switcher tests to navigate to /settings' -m 'i18n: add emergencyStopShort, emergencyStopSettingsHint, quickSwitch keys' && git push"
+      "command": "pnpm build",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": ["$tsc"]
     },
     {
-      "label": "tsc-check",
+      "label": "Type Check",
       "type": "shell",
-      "command": "cd /workspaces/Nexus-HEMS-Dash && pnpm type-check && pnpm lint"
+      "command": "pnpm type-check",
+      "group": "build",
+      "problemMatcher": ["$tsc"]
+    },
+    {
+      "label": "Lint",
+      "type": "shell",
+      "command": "pnpm lint",
+      "group": "build",
+      "problemMatcher": ["$eslint-stylish"]
+    },
+    {
+      "label": "Type Check + Lint",
+      "type": "shell",
+      "command": "pnpm type-check && pnpm lint",
+      "group": "build",
+      "problemMatcher": ["$tsc", "$eslint-stylish"]
+    },
+    {
+      "label": "Test (Watch)",
+      "type": "shell",
+      "command": "pnpm test",
+      "isBackground": true,
+      "problemMatcher": [],
+      "group": "test"
+    },
+    {
+      "label": "Test (Run)",
+      "type": "shell",
+      "command": "pnpm test:run",
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Install Dependencies",
+      "type": "shell",
+      "command": "pnpm install",
+      "problemMatcher": []
+    },
+    {
+      "label": "Storybook",
+      "type": "shell",
+      "command": "pnpm storybook",
+      "isBackground": true,
+      "problemMatcher": [],
+      "group": "build"
     }
   ]
 }

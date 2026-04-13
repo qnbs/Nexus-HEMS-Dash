@@ -23,7 +23,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  NODE_VERSION: '22'
+  NODE_VERSION: '24'
   npm_config_fund: 'false'
   npm_config_audit: 'false'
   npm_config_loglevel: 'error'

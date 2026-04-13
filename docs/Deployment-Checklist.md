@@ -22,8 +22,8 @@
 
 ### Build & Quality Gates
 
-- [ ] `node -v` zeigt Node.js 22.x für Produktions-Builds
-- [ ] Node.js 25 nur als Canary/Matrix (nicht für Release-Deploy)
+- [ ] `node -v` zeigt Node.js 24.x für Produktions-Builds
+- [ ] Node.js 26 nur als Canary/Matrix (nicht für Release-Deploy)
 - [ ] `pnpm install --frozen-lockfile` — saubere Installation
 - [ ] `npx tsc --noEmit` — keine TypeScript-Fehler
 - [ ] `pnpm lint` — keine ESLint-Warnings (`--max-warnings 0`)

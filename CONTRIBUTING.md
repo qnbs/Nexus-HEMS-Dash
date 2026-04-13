@@ -17,7 +17,7 @@ pnpm dev
 
 ### Prerequisites
 
-- Node.js 22+
+- Node.js 24+
 - pnpm 10+
 
 ## Project Structure
@@ -95,6 +95,37 @@ Use `useTranslation()` hook, never hardcode strings.
 5. Commit with Conventional Commits: `feat:`, `fix:`, `test:`, `docs:`, `refactor:`
 6. Open a PR against `main`
 7. Resolve all review threads and keep the branch up to date with `main`
+
+## GitHub Codespaces
+
+The fastest way to start contributing is via Codespaces:
+
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/qnbs/Nexus-HEMS-Dash?quickstart=1)
+
+**Recommended machine type:** 4-core / 8 GB RAM
+
+The dev container includes Node.js 24, pnpm, Playwright (Chromium), Docker, and all VS Code extensions. Dependencies are installed automatically via `postCreateCommand`.
+
+### Codespaces Secrets
+
+Optional secrets you can configure in your [Codespaces settings](https://github.com/settings/codespaces):
+
+| Secret                    | Purpose                     | Required         |
+| ------------------------- | --------------------------- | ---------------- |
+| `TIBBER_API_TOKEN`        | Tibber tariff API access    | No               |
+| `CHROMATIC_PROJECT_TOKEN` | Storybook visual regression | No (Maintainers) |
+| `SENTRY_AUTH_TOKEN`       | Error reporting source maps | No (Maintainers) |
+
+AI API keys (OpenAI, Anthropic, Gemini, etc.) are managed through the in-app BYOK Settings page with AES-GCM 256-bit encryption — never store them as environment variables.
+
+### Forwarded Ports
+
+| Port | Service                              | Auto-Forward |
+| ---- | ------------------------------------ | ------------ |
+| 5173 | Vite Dev Server                      | Notify       |
+| 3000 | Backend Server (Express + WebSocket) | Silent       |
+| 6006 | Storybook                            | Silent       |
+| 9090 | Prometheus                           | Ignore       |
 
 ## Branching Strategy
 
