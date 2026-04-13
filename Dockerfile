@@ -12,7 +12,7 @@ COPY . .
 RUN npm run build
 
 # ── Stage 2: Serve with nginx ───────────────────────────────────
-FROM nginx:1.27-alpine@sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10 AS production
+FROM nginx:1.29-alpine@sha256:582c496ccf79d8aa6f8203a79d32aaf7ffd8b13362c60a701a2f9ac64886c93d AS production
 
 ARG VCS_REF=unknown
 ARG BUILD_DATE=unknown
