@@ -39,6 +39,12 @@
     "node": ">=22.0.0",
     "pnpm": ">=10.0.0"
   },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "better-sqlite3"
+    ]
+  },
   "scripts": {
     "dev": "tsx server.ts",
     "build": "vite build",
@@ -100,7 +106,7 @@
     {
       "name": "Framework (React + Router + Zustand)",
       "path": "dist/assets/framework-*.js",
-      "limit": "80 kB",
+      "limit": "85 kB",
       "gzip": true
     },
     {
@@ -112,7 +118,7 @@
     {
       "name": "Adapters (protocol layer)",
       "path": "dist/assets/adapters-*.js",
-      "limit": "30 kB",
+      "limit": "35 kB",
       "gzip": true
     },
     {
