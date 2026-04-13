@@ -14,7 +14,7 @@
     {
       "label": "tsc-check",
       "type": "shell",
-      "command": "cd /workspaces/Nexus-HEMS-Dash && pnpm exec tsc --noEmit 2>&1 | tail -40"
+      "command": "cd /workspaces/Nexus-HEMS-Dash && pnpm type-check && pnpm lint"
     }
   ]
 }

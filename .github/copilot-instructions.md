@@ -83,6 +83,7 @@ All adapters in `src/core/adapters/` implement the `EnergyAdapter` interface (`E
 - **Playwright** (Chromium/Firefox/WebKit + mobile viewports) — e2e in `tests/e2e/`
 - **Lighthouse CI** (Perf ≥ 85%, A11y ≥ 90%, Best Practices ≥ 90%)
 - `.devcontainer` for reproducible dev environments
+- **Project-wide no-any policy** — do not introduce explicit `any` in app code, tests, or TypeScript tooling files; prefer `unknown`, precise interfaces, discriminated unions, or narrowly scoped helper types
 
 ### Execution Strategy (Local vs Cloud CI)
 
