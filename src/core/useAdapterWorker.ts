@@ -107,6 +107,7 @@ export function useAdapterWorker() {
   ): void => {
     const normalizedTarget = toPollTarget(target);
     if (!normalizedTarget) {
+      workerRef.current?.postMessage({ type: 'stop', adapterId });
       if (import.meta.env.DEV) {
         console.warn('[useAdapterWorker] Ignored invalid poll target for', adapterId);
       }

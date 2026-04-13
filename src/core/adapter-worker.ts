@@ -241,10 +241,13 @@ export function buildAllowedPollUrl(target: PollTarget): URL | null {
   const host = target.host.trim().toLowerCase();
   if (!host) return null;
 
+  const normalizedHost = host.includes(':') && !host.startsWith('[') ? `[${host}]` : host;
+
   const normalizedPath = target.path.trim();
   if (
     !SAFE_PATH.test(normalizedPath) ||
     normalizedPath.includes('..') ||
+    /%2e/i.test(normalizedPath) ||
     normalizedPath.includes('\\') ||
     /[\r\n\t]/.test(normalizedPath)
   ) {
@@ -258,7 +261,7 @@ export function buildAllowedPollUrl(target: PollTarget): URL | null {
     return null;
   }
 
-  const authority = target.port ? `${host}:${target.port}` : host;
+  const authority = target.port ? `${normalizedHost}:${target.port}` : normalizedHost;
 
   let url: URL;
   try {
@@ -347,15 +350,18 @@ self.onmessage = (event: MessageEvent<WorkerInMessage>) => {
       const sanitizedHeaders = sanitizePollHeaders(msg.headers);
 
       const interval = clampPollInterval(msg.intervalMs);
+      let inFlight = false;
+      const pollOnce = () => {
+        if (inFlight) return;
+        inFlight = true;
+        void executePoll(msg.adapterId, sanitizedUrl, sanitizedHeaders).finally(() => {
+          inFlight = false;
+        });
+      };
+
       // Execute immediately, then schedule
-      void executePoll(msg.adapterId, sanitizedUrl, sanitizedHeaders);
-      pollers.set(
-        msg.adapterId,
-        setInterval(
-          () => void executePoll(msg.adapterId, sanitizedUrl, sanitizedHeaders),
-          interval,
-        ),
-      );
+      pollOnce();
+      pollers.set(msg.adapterId, setInterval(pollOnce, interval));
       break;
     }
 

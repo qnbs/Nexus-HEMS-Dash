@@ -266,16 +266,16 @@ export class OpenEMSAdapter extends BaseAdapter {
       }
       case 'SET_BATTERY_MODE': {
         const mode = String(command.value);
-        if (mode === 'charge') {
-          return this.updateSafeComponentConfig('ctrlEssFixActivePower0', [
-            { name: 'mode', value: 'CHARGE_GRID' },
-          ]);
-        } else if (mode === 'discharge') {
-          return this.updateSafeComponentConfig('ctrlEssFixActivePower0', [
-            { name: 'mode', value: 'DISCHARGE_TO_GRID' },
-          ]);
-        }
-        return false;
+        const mappedMode =
+          mode === 'charge'
+            ? 'CHARGE_GRID'
+            : mode === 'discharge'
+              ? 'DISCHARGE_TO_GRID'
+              : command.value;
+
+        return this.updateSafeComponentConfig('ctrlEssFixActivePower0', [
+          { name: 'mode', value: mappedMode },
+        ]);
       }
       case 'SET_EV_POWER': {
         return this.updateSafeComponentConfig(this.findEvcsId(), [
