@@ -1,5 +1,6 @@
 import tailwindcss from '@tailwindcss/vite';
-import react from '@vitejs/plugin-react';
+import react, { reactCompilerPreset } from '@vitejs/plugin-react';
+import babel from '@rolldown/plugin-babel';
 import path from 'path';
 import { defineConfig, loadEnv, type PluginOption } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
@@ -10,14 +11,12 @@ export default defineConfig(({ mode }) => {
   const isProd = mode === 'production';
 
   const plugins: PluginOption[] = [
-    // React Compiler auto-memoizes — requires Babel (no SWC alternative yet).
-    // Babel is limited to React Compiler transform only; esbuild handles
-    // the rest of TS/JSX compilation for near-SWC dev speed.
-    react({
-      babel: {
-        plugins: [['babel-plugin-react-compiler', {}]],
-      },
-    }),
+    // React Compiler auto-memoizes — requires @rolldown/plugin-babel in Vite 8.
+    // OXC handles TS/JSX compilation; Babel runs only for React Compiler.
+    react(),
+
+    // React Compiler via Rolldown Babel preset (replaces old babel-plugin-react-compiler config)
+    babel({ presets: [reactCompilerPreset()] }),
 
     tailwindcss(),
 
@@ -241,12 +240,10 @@ export default defineConfig(({ mode }) => {
       target: 'es2022',
       cssCodeSplit: true,
       reportCompressedSize: true,
-      // Strip legal comments for smaller output
-      minify: 'esbuild',
       // Warn when chunks exceed 150 KB (compressed)
       chunkSizeWarningLimit: 150,
 
-      rollupOptions: {
+      rolldownOptions: {
         output: {
           // Deterministic short hashes for aggressive long-term caching
           chunkFileNames: 'assets/[name]-[hash:8].js',
@@ -326,11 +323,6 @@ export default defineConfig(({ mode }) => {
           },
         },
       },
-    },
-
-    // Strip legal comments from output for smaller bundles
-    esbuild: {
-      legalComments: 'none',
     },
 
     // Web Workers use ES modules for tree-shaking

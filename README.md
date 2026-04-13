@@ -20,7 +20,7 @@
 
 Nexus-HEMS is a **unified Command Center** that consolidates **10 protocol adapters** (5 core + 5 contrib) into **7 focused sections** — orchestrating photovoltaic generation, battery storage, heat pumps, EV charging, and building automation with dynamic electricity tariffs. Instead of 18+ separate pages, every feature is accessible from a **single streamlined interface** with guided tours, contextual help, and zero-config onboarding.
 
-**Stack:** React 19 · TypeScript 5.8 · Vite 6 · Tailwind CSS v4 · Zustand 5 · D3.js Sankey · Recharts · Motion · Dexie.js · Radix UI · React Compiler
+**Stack:** React 19 · TypeScript 5.8 · Vite 8 (Rolldown) · Tailwind CSS v4 · Zustand 5 · D3.js Sankey · Recharts · Motion · Dexie.js · Radix UI · React Compiler
 
 ## Key Features
 

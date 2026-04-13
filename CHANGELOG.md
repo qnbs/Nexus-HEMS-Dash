@@ -1,3 +1,19 @@
+## [Unreleased]
+
+### Features
+
+- **Vite 8 Migration**: Migrated from Vite 6.4.2 to Vite 8.0.8 with Rolldown (Rust-based bundler)
+  - Replaced Rollup + esbuild with Rolldown for production builds
+  - OXC minification replaces esbuild minification
+  - `@vitejs/plugin-react` v5 → v6 with native `reactCompilerPreset`
+  - React Compiler now uses `@rolldown/plugin-babel` instead of inline Babel config
+  - `build.rolldownOptions` replaces deprecated `build.rollupOptions`
+  - LightningCSS default for CSS minification
+- **Storybook 10**: Upgraded from Storybook 8.6 to 10.3.5 (Vite 8 compatible)
+  - `addon-essentials` and `addon-interactions` merged into Storybook core
+  - `@chromatic-com/storybook` upgraded to v5.1.2
+- **Tailwind CSS**: `@tailwindcss/vite` upgraded to v4.2.2
+
 ## 1.0.0 (2026-04-13)
 
 ### ⚠ BREAKING CHANGES

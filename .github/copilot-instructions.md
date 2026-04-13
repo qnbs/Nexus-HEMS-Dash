@@ -6,8 +6,8 @@ You are an expert full-stack React 19 + TypeScript architect specialized in real
 
 ### Core Stack (never deviate)
 
-- **React 19** + **Vite 6** + **TypeScript ~5.8** (strict mode)
-- **React Compiler** (`babel-plugin-react-compiler`) — auto-memoization, never add manual `memo`/`useMemo`/`useCallback` unless React Compiler cannot handle it
+- **React 19** + **Vite 8** + **TypeScript ~5.8** (strict mode)
+- **React Compiler** (`@rolldown/plugin-babel` + `babel-plugin-react-compiler` + `reactCompilerPreset`) — auto-memoization, never add manual `memo`/`useMemo`/`useCallback` unless React Compiler cannot handle it
 - **Zustand v5** for state — never introduce Redux, MobX or other state libraries
 - **TanStack React Query v5** for async data fetching/caching
 - **React Router DOM v7** with `BrowserRouter`, `basename` from `import.meta.env.BASE_URL`

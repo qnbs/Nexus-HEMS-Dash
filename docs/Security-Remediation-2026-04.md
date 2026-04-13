@@ -191,8 +191,8 @@ Based on the current `main` branch state:
 
 ### Defer For Dedicated Review
 
-- PR #14 `vite 8` — major toolchain shift; current branch intentionally stays on the safe patched Vite 6 line
-- PR #15 `@vitejs/plugin-react 6` — review together with any future Vite major migration
+- PR #14 `vite 8` — ✅ COMPLETED: migrated to Vite 8.0.8 with Rolldown bundler
+- PR #15 `@vitejs/plugin-react 6` — ✅ COMPLETED: migrated to v6.0.1 with `reactCompilerPreset`
 - PR #12 `eslint 10` — major linting/tooling shift; review separately
 - PR #13 `jsdom 29` — low urgency, but should be validated against Vitest DOM behavior
 - PR #3 `node:25-alpine` — defer; project baseline remains Node 22 with Node 25 only as canary
