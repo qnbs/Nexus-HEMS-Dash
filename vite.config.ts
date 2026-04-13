@@ -241,9 +241,6 @@ export default defineConfig(({ mode }) => {
       target: 'es2022',
       cssCodeSplit: true,
       reportCompressedSize: true,
-      // Disable eager modulepreload hints so route-specific heavy chunks
-      // are fetched on demand instead of during initial page load.
-      modulePreload: false,
       // Strip legal comments for smaller output
       minify: 'esbuild',
       // Warn when chunks exceed 150 KB (compressed)

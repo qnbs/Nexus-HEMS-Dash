@@ -12,6 +12,7 @@
       ],
       "numberOfRuns": 3,
       "settings": {
+        "preset": "desktop",
         "chromeFlags": "--no-sandbox --headless --disable-gpu --disable-dev-shm-usage",
         "onlyCategories": ["performance", "accessibility", "best-practices", "seo"],
         "budgets": [
