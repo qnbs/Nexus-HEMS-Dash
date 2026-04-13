@@ -17,7 +17,7 @@ jobs:
   #  1. CodeQL — Static Application Security Testing (GitHub)
   # ════════════════════════════════════════════════════════════════
   codeql:
-    name: 'CodeQL Analysis'
+    name: CodeQL
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -29,6 +29,7 @@ jobs:
         uses: github/codeql-action/init@f0213c31c702f929cf06ddb900ac315d246a8997 # v4.33.0
         with:
           languages: javascript-typescript
+          # Security and quality queries back both code-scanning and code-quality rules.
           queries: security-and-quality
 
       - name: Autobuild
@@ -62,7 +63,7 @@ jobs:
   #  3. Trivy — Vulnerability, Secret & Misconfiguration Scanner
   # ════════════════════════════════════════════════════════════════
   trivy:
-    name: 'Trivy Security Scan'
+    name: Trivy
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -103,7 +104,7 @@ jobs:
   #  4. Semgrep — SAST Rules
   # ════════════════════════════════════════════════════════════════
   semgrep:
-    name: 'Semgrep SAST'
+    name: Semgrep OSS
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -130,19 +131,29 @@ jobs:
   #  5. Anti-Trojan-Source — Unicode Bidi Attack Detection
   # ════════════════════════════════════════════════════════════════
   anti-trojan-source:
-    name: 'Anti-Trojan-Source'
+    name: Anti-Trojan-Source
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+        with:
+          version: 10.31.0
+          run_install: false
+
       - name: Setup Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          node-version: '22'
-          cache: 'npm'
+          node-version: '24'
+          cache: 'pnpm'
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Enable Corepack
+        run: corepack enable
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Scan for Unicode Bidi characters
         run: npx anti-trojan-source --files='src/**/*.{ts,tsx,js,jsx}' --verbose
@@ -151,31 +162,66 @@ jobs:
         run: "npx eslint src/ --rule 'anti-trojan-source/no-bidi: error' --max-warnings 0"
 
   # ════════════════════════════════════════════════════════════════
-  #  6. Dependabot / npm Audit — Dependency Check
+  #  6. Dependabot / Dependency Audit — Dependency Check
   # ════════════════════════════════════════════════════════════════
   dependency-check:
-    name: 'Dependency Audit'
+    name: Dependency Audit
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+        with:
+          version: 10.31.0
+          run_install: false
+
       - name: Setup Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          node-version: '22'
-          cache: 'npm'
+          node-version: '24'
+          cache: 'pnpm'
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Enable Corepack
+        run: corepack enable
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
-      - name: npm audit (production)
-        run: npm audit --audit-level=high --omit=dev
+      - name: Dependency audit (production)
+        run: pnpm audit --audit-level=high --prod
         continue-on-error: true
 
       - name: Check for critical vulnerabilities
         run: |
-          CRITICAL=$(npm audit --json 2>/dev/null | jq '.metadata.vulnerabilities.critical // 0')
-          HIGH=$(npm audit --json 2>/dev/null | jq '.metadata.vulnerabilities.high // 0')
+          pnpm audit --json --audit-level=high --prod > audit.json || true
+          node <<'NODE'
+          const fs = require('fs');
+          const text = fs.readFileSync('audit.json', 'utf8').trim();
+          const docs = text
+            ? text
+                .split(/\n+/)
+                .map((line) => {
+                  try {
+                    return JSON.parse(line);
+                  } catch {
+                    return null;
+                  }
+                })
+                .filter(Boolean)
+            : [];
+          const flattened = docs.flatMap((doc) => (Array.isArray(doc) ? doc : [doc]));
+          const summary =
+            [...flattened].reverse().find((doc) => doc?.metadata?.vulnerabilities || doc?.vulnerabilities) ?? {};
+          const vulnerabilities = summary.metadata?.vulnerabilities ?? summary.vulnerabilities ?? {};
+          const critical = Number(vulnerabilities.critical ?? 0);
+          const high = Number(vulnerabilities.high ?? 0);
+          console.log(`critical=${critical}`);
+          console.log(`high=${high}`);
+          NODE
+          CRITICAL=$(node -e "const fs=require('fs'); const text=fs.readFileSync('audit.json','utf8').trim(); const docs=text?text.split(/\\n+/).map((line)=>{try{return JSON.parse(line)}catch{return null}}).filter(Boolean):[]; const flattened=docs.flatMap((doc)=>Array.isArray(doc)?doc:[doc]); const summary=[...flattened].reverse().find((doc)=>doc?.metadata?.vulnerabilities||doc?.vulnerabilities) ?? {}; const vulnerabilities=summary.metadata?.vulnerabilities ?? summary.vulnerabilities ?? {}; process.stdout.write(String(Number(vulnerabilities.critical ?? 0)));" )
+          HIGH=$(node -e "const fs=require('fs'); const text=fs.readFileSync('audit.json','utf8').trim(); const docs=text?text.split(/\\n+/).map((line)=>{try{return JSON.parse(line)}catch{return null}}).filter(Boolean):[]; const flattened=docs.flatMap((doc)=>Array.isArray(doc)?doc:[doc]); const summary=[...flattened].reverse().find((doc)=>doc?.metadata?.vulnerabilities||doc?.vulnerabilities) ?? {}; const vulnerabilities=summary.metadata?.vulnerabilities ?? summary.vulnerabilities ?? {}; process.stdout.write(String(Number(vulnerabilities.high ?? 0)));" )
           echo "## Dependency Audit Results" >> "$GITHUB_STEP_SUMMARY"
           echo "| Severity | Count |" >> "$GITHUB_STEP_SUMMARY"
           echo "|----------|-------|" >> "$GITHUB_STEP_SUMMARY"
@@ -231,7 +277,7 @@ jobs:
   #  8. Branch Protection Reminder — Verify repo hardening
   # ════════════════════════════════════════════════════════════════
   branch-protection-reminder:
-    name: 'Branch Protection Check'
+    name: Branch Protection Check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -274,7 +320,7 @@ jobs:
           echo "Ensure the following are enabled in **Settings → Branches → main**:" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "- [ ] Require pull request before merging" >> "$GITHUB_STEP_SUMMARY"
-          echo "- [ ] Require at least 1 approval" >> "$GITHUB_STEP_SUMMARY"
+          echo "- [ ] Require approvals (optional in single-maintainer mode)" >> "$GITHUB_STEP_SUMMARY"
           echo "- [ ] Require status checks to pass (CI, Security Full)" >> "$GITHUB_STEP_SUMMARY"
           echo "- [ ] Require branches to be up to date" >> "$GITHUB_STEP_SUMMARY"
           echo "- [ ] Require signed commits" >> "$GITHUB_STEP_SUMMARY"
@@ -290,7 +336,7 @@ jobs:
   #  Gate — All security checks must pass
   # ════════════════════════════════════════════════════════════════
   security-gate:
-    name: 'Security Gate ✓'
+    name: Security Gate
     runs-on: ubuntu-latest
     if: always()
     needs:

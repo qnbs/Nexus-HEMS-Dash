@@ -26,9 +26,9 @@ This project employs multiple layers of security:
 
 - **Static Analysis**: CodeQL, Semgrep, ESLint security rules
 - **Secret Detection**: Gitleaks (pre-commit + CI), Trivy secret scanner
-- **Dependency Scanning**: npm audit, Snyk, Socket.dev, Aikido Safe Chain
+- **Dependency Scanning**: pnpm audit, Snyk, Socket.dev, Aikido Safe Chain
 - **Supply Chain**: OpenSSF Scorecard, Renovate automated updates, Dependabot
-- **CI Hardening**: GitHub Actions pinned to commit SHA, mandatory security workflow gate, Node 25 canary (non-blocking)
+- **CI Hardening**: GitHub Actions pinned to commit SHA, mandatory security workflow gate, Node 26 canary (non-blocking)
 - **Deploy Governance**: GitHub Pages deploy requires manual `workflow_dispatch` confirmation (`approveDeploy=DEPLOY`)
 - **Container Security**: Trivy image scanning, read-only containers, non-root user
 - **Anti-Trojan-Source**: Unicode Bidi character detection

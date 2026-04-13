@@ -15,6 +15,13 @@
 import { test, expect } from '@playwright/test';
 import { setupLocalStorage } from './e2e-setup';
 
+type DevStoreHandle = {
+  getState(): {
+    setConnected(connected: boolean): void;
+    setEnergyData(data: Record<string, number>): void;
+  };
+};
+
 /** Helper: call setEnergyData + setConnected on the Zustand store */
 async function setStoreEnergy(
   page: import('@playwright/test').Page,
@@ -23,8 +30,7 @@ async function setStoreEnergy(
 ) {
   await page.evaluate(
     ({ d, c }) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const store = (window as any).__NEXUS_STORE__;
+      const store = (window as Window & { __NEXUS_STORE__?: DevStoreHandle }).__NEXUS_STORE__;
       if (!store) throw new Error('__NEXUS_STORE__ not exposed – is DEV mode active?');
       store.getState().setConnected(c);
       store.getState().setEnergyData(d);

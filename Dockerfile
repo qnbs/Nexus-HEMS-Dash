@@ -1,15 +1,15 @@
 # ── Stage 1: Build ───────────────────────────────────────────────
-FROM node:22-alpine@sha256:8094c002d08262dba12645a3b4a15cd6cd627d30bc782f53229a2ec13ee22a00 AS build
+FROM node:24-alpine@sha256:01743339035a5c3c11a373cd7c83aeab6ed1457b55da6a69e014a95ac4e4700b AS build
 
 WORKDIR /app
 
 # Install deps first (layer cache)
-COPY package.json package-lock.json ./
-RUN npm ci --ignore-scripts
+COPY package.json pnpm-lock.yaml ./
+RUN corepack enable && pnpm install --frozen-lockfile --ignore-scripts
 
 # Copy source & build
 COPY . .
-RUN npm run build
+RUN pnpm build
 
 # ── Stage 2: Serve with nginx ───────────────────────────────────
 FROM nginx:1.27-alpine@sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10 AS production

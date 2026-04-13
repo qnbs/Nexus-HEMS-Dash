@@ -69,28 +69,39 @@ All adapters implement the `EnergyAdapter` interface (`src/core/adapters/EnergyA
 ```bash
 git clone https://github.com/qnbs/Nexus-HEMS-Dash.git
 cd Nexus-HEMS-Dash
-npm install
-npm run dev
+corepack enable
+pnpm install
+pnpm dev
 ```
 
-**Requirements:** Node.js 22 LTS (production baseline), npm 10+
+**Requirements:** Node.js 24 LTS (production baseline), pnpm 10+ via Corepack
 
-Node.js 25 is validated as a non-blocking CI canary only and is not used for production runtime images.
+Node.js 26 is validated as a non-blocking CI canary only and is not used for production runtime images.
+
+### GitHub Codespaces (Zero-Config)
+
+Click the button below to open a fully configured development environment in your browser:
+
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/qnbs/Nexus-HEMS-Dash?quickstart=1)
+
+**Recommended machine type:** 4-core / 8 GB RAM (builds complete in ~30s)
+
+The Codespace includes Node.js 24, pnpm, Playwright, Docker, and all VS Code extensions pre-installed. Dependencies are cached via Codespaces prebuilds for near-instant startup.
 
 ### Scripts
 
-| Command                 | Description                     |
-| :---------------------- | :------------------------------ |
-| `npm run dev`           | Dev server (Express + Vite HMR) |
-| `npm run build`         | Production build with PWA       |
-| `npm run test`          | Vitest watch mode               |
-| `npm run test:run`      | All unit tests once             |
-| `npm run test:e2e`      | Playwright E2E + a11y           |
-| `npm run test:coverage` | V8 coverage report              |
-| `npm run lint`          | ESLint (zero-warning policy)    |
-| `npm run type-check`    | TypeScript strict check         |
-| `npm run docker:build`  | Build Docker image              |
-| `npm run docker:up`     | Start container (port 8080)     |
+| Command              | Description                     |
+| :------------------- | :------------------------------ |
+| `pnpm dev`           | Dev server (Express + Vite HMR) |
+| `pnpm build`         | Production build with PWA       |
+| `pnpm test`          | Vitest watch mode               |
+| `pnpm test:run`      | All unit tests once             |
+| `pnpm test:e2e`      | Playwright E2E + a11y           |
+| `pnpm test:coverage` | V8 coverage report              |
+| `pnpm lint`          | ESLint (zero-warning policy)    |
+| `pnpm type-check`    | TypeScript strict check         |
+| `pnpm docker:build`  | Build Docker image              |
+| `pnpm docker:up`     | Start container (port 8080)     |
 
 ### Environment Variables
 
@@ -180,7 +191,7 @@ See [Adapter Dev Guide](docs/Adapter-Dev-Guide.md) and [Contrib README](src/core
 - **Transport:** TLS 1.3 everywhere, mTLS for EEBUS, client certs for OCPP
 - **Docker:** Non-root, read-only filesystem, `no-new-privileges`, isolated networks
 - **Runtime Hardening:** strict OpenEMS component/property validation, worker URL allowlist + private-IP checks, sanitized plugin/event logging
-- **CI:** CodeQL SAST, npm audit, Dependabot (npm + Actions + Docker + Cargo), SHA-pinned GitHub Actions, Node 25 canary matrix
+- **CI:** CodeQL SAST, pnpm audit, Dependabot (npm ecosystem + Actions + Docker + Cargo), SHA-pinned GitHub Actions, Node 26 canary matrix
 
 For the full threat model, trust boundaries, STRIDE analysis, and GDPR/DSGVO compliance details, see [SECURITY.md](SECURITY.md).
 
@@ -197,10 +208,10 @@ For the full threat model, trust boundaries, STRIDE analysis, and GDPR/DSGVO com
 
 **GitHub Pages** — manual deployment via GitHub Actions `workflow_dispatch` with explicit `DEPLOY` approval token.
 
-**Docker** — multi-stage build (node:22-alpine → nginx:1.27-alpine):
+**Docker** — multi-stage build (node:24-alpine → nginx:1.27-alpine):
 
 ```bash
-npm run docker:build && npm run docker:up
+pnpm docker:build && pnpm docker:up
 ```
 
 **Helm/Kubernetes** — supports immutable image digests (`repository@sha256:...`), rolling update strategy controls, and revision history for rollback.
@@ -334,7 +345,7 @@ We are deeply grateful to these AI platforms for enabling a solo developer to bu
 Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ```bash
-npm run lint && npm run test:run && npm run build
+pnpm lint && pnpm test:run && pnpm build
 ```
 
 ## License
@@ -369,7 +380,7 @@ MIT — see [LICENSE](LICENSE).
 
 ```bash
 git clone https://github.com/qnbs/Nexus-HEMS-Dash.git && cd Nexus-HEMS-Dash
-npm install && npm run dev
+corepack enable && pnpm install && pnpm dev
 ```
 
 **Docs:** [DESIGN-SYSTEM.md](DESIGN-SYSTEM.md) · [CONTRIBUTING.md](CONTRIBUTING.md) · [SECURITY.md](SECURITY.md) · [Adapter-Dev-Guide](docs/Adapter-Dev-Guide.md) · [Contrib-Adapter-README](src/core/adapters/contrib/README.md)

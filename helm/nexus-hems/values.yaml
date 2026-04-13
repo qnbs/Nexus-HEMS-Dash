@@ -1,5 +1,7 @@
 # ─── Image ───────────────────────────────────────────────────────────
 image:
+  trustedRegistries:
+    - ghcr.io/qnbs/
   frontend:
     repository: ghcr.io/qnbs/nexus-hems-dash
     # Overridden by --set image.frontend.tag during CI/CD; defaults to Chart appVersion

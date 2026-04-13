@@ -1,49 +1,40 @@
-# CODEOWNERS — Nexus HEMS Dashboard
-# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
-#
-# Jede Zeile definiert: Pfad-Pattern → Owner(s)
-# Der letzte passende Eintrag gewinnt.
+# CODEOWNERS
 
-# ─── Global (Fallback) ──────────────────────────────────────────
-*                                       @qnbs
+* @qnbs
 
-# ─── Core Architecture ──────────────────────────────────────────
-src/store.ts                            @qnbs
-src/types.ts                            @qnbs
-src/App.tsx                             @qnbs
-src/main.tsx                            @qnbs
-src/core/                               @qnbs
+/.github/ @qnbs
+/.github/workflows/ @qnbs
+/.github/CODEOWNERS @qnbs
+/CONTRIBUTING.md @qnbs
+/SECURITY.md @qnbs
+/.gitleaks.toml @qnbs
 
-# ─── Adapter System (Protokolle) ────────────────────────────────
-src/core/adapters/                      @qnbs
+/src/App.tsx @qnbs
+/src/main.tsx @qnbs
+/src/store.ts @qnbs
+/src/types.ts @qnbs
+/server.ts @qnbs
 
-# ─── Design System & Themes ─────────────────────────────────────
-src/design-tokens.ts                    @qnbs
-src/index.css                           @qnbs
+/src/core/ @qnbs
+/src/core/adapters/ @qnbs
 
-# ─── Critical Components (nie brechen!) ─────────────────────────
-src/components/SankeyDiagram.tsx         @qnbs
-src/components/Floorplan.tsx             @qnbs
+/src/components/SankeyDiagram.tsx @qnbs
+/src/components/Floorplan.tsx @qnbs
+/src/design-tokens.ts @qnbs
+/src/index.css @qnbs
+/src/locales/ @qnbs
 
-# ─── Lokalisierung ──────────────────────────────────────────────
-src/locales/                            @qnbs
+/package.json @qnbs
+/pnpm-lock.yaml @qnbs
+/vite.config.ts @qnbs
+/tsconfig.json @qnbs
 
-# ─── Security & CI ──────────────────────────────────────────────
-.github/                                @qnbs
-SECURITY.md                             @qnbs
-.gitleaks.toml                          @qnbs
+/Dockerfile @qnbs
+/Dockerfile.server @qnbs
+/docker-compose.yml @qnbs
+/nginx.conf @qnbs
+/helm/ @qnbs
+/src-tauri/ @qnbs
 
-# ─── Infrastruktur ──────────────────────────────────────────────
-Dockerfile                              @qnbs
-Dockerfile.server                       @qnbs
-docker-compose.yml                      @qnbs
-nginx.conf                              @qnbs
-vite.config.ts                          @qnbs
-tsconfig.json                           @qnbs
-
-# ─── Tauri Desktop ──────────────────────────────────────────────
-src-tauri/                              @qnbs
-
-# ─── Tests ───────────────────────────────────────────────────────
-src/tests/                              @qnbs
-tests/                                  @qnbs
+/src/tests/ @qnbs
+/tests/ @qnbs

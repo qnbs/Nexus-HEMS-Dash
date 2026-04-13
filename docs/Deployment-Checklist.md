@@ -22,24 +22,24 @@
 
 ### Build & Quality Gates
 
-- [ ] `node -v` zeigt Node.js 22.x für Produktions-Builds
-- [ ] Node.js 25 nur als Canary/Matrix (nicht für Release-Deploy)
-- [ ] `npm ci` — saubere Installation (kein `npm install`)
+- [ ] `node -v` zeigt Node.js 24.x für Produktions-Builds
+- [ ] Node.js 26 nur als Canary/Matrix (nicht für Release-Deploy)
+- [ ] `pnpm install --frozen-lockfile` — saubere Installation
 - [ ] `npx tsc --noEmit` — keine TypeScript-Fehler
-- [ ] `npm run lint` — keine ESLint-Warnings (`--max-warnings 0`)
-- [ ] `npm run format:check` — Prettier-konform
-- [ ] `npm run test:run` — alle Unit-Tests grün
-- [ ] `npm run test:e2e` — alle E2E-Tests grün (Playwright)
-- [ ] `npm run test:a11y` — Accessibility-Tests bestanden (WCAG 2.2 AA)
-- [ ] `npm run build` — Build erfolgreich
-- [ ] `npm run size` — Bundle-Size innerhalb der Limits
+- [ ] `pnpm lint` — keine ESLint-Warnings (`--max-warnings 0`)
+- [ ] `pnpm format:check` — Prettier-konform
+- [ ] `pnpm test:run` — alle Unit-Tests grün
+- [ ] `pnpm test:e2e` — alle E2E-Tests grün (Playwright)
+- [ ] `pnpm test:a11y` — Accessibility-Tests bestanden (WCAG 2.2 AA)
+- [ ] `pnpm build` — Build erfolgreich
+- [ ] `pnpm size` — Bundle-Size innerhalb der Limits
 
 ### Security Checks
 
-- [ ] `npm audit --audit-level=high` — keine High/Critical-Schwachstellen
-- [ ] `npm run security:trojan` — keine Trojan-Source-Zeichen
-- [ ] `npm run security:secrets` — keine Secrets im Code (Gitleaks)
-- [ ] `npm run security:trivy` — Trivy Filesystem-Scan bestanden
+- [ ] `pnpm audit --audit-level=high` — keine High/Critical-Schwachstellen
+- [ ] `pnpm security:trojan` — keine Trojan-Source-Zeichen
+- [ ] `pnpm security:secrets` — keine Secrets im Code (Gitleaks)
+- [ ] `pnpm security:trivy` — Trivy Filesystem-Scan bestanden
 - [ ] Alle API-Schlüssel nur über verschlüsseltes IndexedDB (`ai-keys.ts`)
 - [ ] Keine Secrets in `.env`, `docker-compose.yml` oder CI-Logs
 
