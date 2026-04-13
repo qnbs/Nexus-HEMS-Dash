@@ -142,9 +142,21 @@ export async function mergeCredentialsIntoConfig(
 
   return {
     ...config,
-    authToken: creds.authToken ?? config.authToken,
-    clientCert: creds.clientCert ?? config.clientCert,
-    clientKey: creds.clientKey ?? config.clientKey,
+    ...(creds.authToken != null
+      ? { authToken: creds.authToken }
+      : config.authToken != null
+        ? { authToken: config.authToken }
+        : {}),
+    ...(creds.clientCert != null
+      ? { clientCert: creds.clientCert }
+      : config.clientCert != null
+        ? { clientCert: config.clientCert }
+        : {}),
+    ...(creds.clientKey != null
+      ? { clientKey: creds.clientKey }
+      : config.clientKey != null
+        ? { clientKey: config.clientKey }
+        : {}),
     tls: !!(creds.clientCert || config.tls),
   };
 }

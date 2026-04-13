@@ -381,9 +381,9 @@ export function applyDynamicGridFees(
       ...p,
       gridFee: dynamicFee,
       total: newTotal,
-      // Preserve sign of difference (dynamic fees may lower total)
-      renewablePercent: p.renewablePercent,
-      co2gPerKwh: p.co2gPerKwh,
+      // Preserve original optional fields (dynamic fees may lower total)
+      ...(p.renewablePercent != null && { renewablePercent: p.renewablePercent }),
+      ...(p.co2gPerKwh != null && { co2gPerKwh: p.co2gPerKwh }),
     };
   });
 }

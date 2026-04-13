@@ -68,9 +68,11 @@ export function useNotifications(): void {
 
       // Update previous state for edge detection
       prev.current = {
-        evStatus: unified.evCharger?.status,
+        ...(unified.evCharger?.status != null && { evStatus: unified.evCharger.status }),
         batterySoC: unified.battery.socPercent,
-        price: unified.tariff?.currentPriceEurKWh,
+        ...(unified.tariff?.currentPriceEurKWh != null && {
+          price: unified.tariff.currentPriceEurKWh,
+        }),
       };
     });
 

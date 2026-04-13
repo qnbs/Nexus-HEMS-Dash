@@ -246,7 +246,6 @@ export const PAGE_RELATIONS: Record<PageId, PageRelation> = {
   help: {
     related: ['settings', 'monitoring'],
     settingsLinks: [],
-    helpTab: undefined,
     setupRequirements: [],
   },
 };

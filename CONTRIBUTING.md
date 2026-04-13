@@ -165,6 +165,60 @@ We use [Conventional Commits](https://www.conventionalcommits.org/):
 | `perf:`     | Performance improvement                |
 | `chore:`    | Build, CI, dependency updates          |
 
+## Architecture Decision Records (ADRs)
+
+Major technical decisions are documented as ADRs in `docs/adr/`. When proposing a change that affects:
+
+- State management approach
+- New external dependency (>50 KB gzipped)
+- Protocol adapter architecture
+- Security model changes
+- Build toolchain changes
+
+Create an ADR using this template:
+
+```markdown
+# ADR-NNN: Title
+
+**Status:** Proposed | Accepted | Deprecated | Superseded
+**Date:** YYYY-MM-DD
+**Context:** Why is this decision needed?
+**Decision:** What was decided?
+**Consequences:** What are the trade-offs?
+```
+
+## Testing Strategy
+
+| Layer        | Tool                             | Threshold                      | Focus                                     |
+| ------------ | -------------------------------- | ------------------------------ | ----------------------------------------- |
+| **Unit**     | Vitest + jsdom                   | Statements ≥55%, Branches ≥45% | Store logic, adapters, crypto, formatters |
+| **E2E**      | Playwright (3 browsers + mobile) | All specs pass                 | User flows, navigation, settings          |
+| **A11y**     | @axe-core/playwright             | WCAG 2.2 AA on all routes      | Keyboard nav, contrast, ARIA              |
+| **Visual**   | Chromatic + Storybook            | No unreviewed changes          | Component regression                      |
+| **Security** | security-fuzz.test.ts + CodeQL   | Zero critical/high in runtime  | Input validation, injection               |
+
+**When to write tests:**
+
+- New adapter → unit test for connect/disconnect/data-flow + E2E smoke
+- New UI component → Storybook story + a11y check
+- Bug fix → regression test proving the fix
+- Security change → fuzz test + hardening test
+
+## Performance Budgets
+
+| Metric              | Budget   | Enforcement           |
+| ------------------- | -------- | --------------------- |
+| Total JS (gzipped)  | ≤1100 KB | `pnpm size` in CI     |
+| Total CSS (gzipped) | ≤25 KB   | `pnpm size` in CI     |
+| Framework chunk     | ≤85 KB   | size-limit            |
+| Vendor Recharts     | ≤110 KB  | size-limit            |
+| FCP                 | ≤3000 ms | Lighthouse CI         |
+| LCP                 | ≤4000 ms | Lighthouse CI         |
+| TBT                 | ≤400 ms  | Lighthouse CI (error) |
+| CLS                 | ≤0.1     | Lighthouse CI (error) |
+| Perf score          | ≥85%     | Lighthouse CI         |
+| A11y score          | ≥90%     | Lighthouse CI         |
+
 ## License
 
 By contributing, you agree that your contributions will be licensed under the MIT License.

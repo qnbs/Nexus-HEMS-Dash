@@ -5,10 +5,8 @@ const config: Config = {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   darkMode: [
     'class',
-    '[data-theme="energy-dark"]',
-    '[data-theme="ocean-dark"]',
-    '[data-theme="nature-green"]',
-  ] as unknown as Config['darkMode'],
+    '[data-theme="energy-dark"],[data-theme="ocean-dark"],[data-theme="nature-green"]',
+  ] as Config['darkMode'],
   theme: {
     extend: {
       screens: {

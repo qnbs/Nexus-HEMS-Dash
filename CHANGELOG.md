@@ -14,6 +14,39 @@
   - `@chromatic-com/storybook` upgraded to v5.1.2
 - **Tailwind CSS**: `@tailwindcss/vite` upgraded to v4.2.2
 
+### 🛠️ Infrastructure & Tooling
+
+- **pnpm 10.31.0** enforced via Corepack (`packageManager` field in package.json)
+  - Removed npm lockfile; `pnpm-lock.yaml` (v9.0) is the canonical lockfile
+  - All 17 CI workflows updated to use `pnpm/action-setup@v4` + `corepack enable` + `--frozen-lockfile`
+  - Docker builds use `corepack enable && pnpm install --frozen-lockfile`
+  - DevContainer + Codespaces setup fully aligned with pnpm
+  - `.npmrc` configured: `engine-strict`, `strict-peer-dependencies`, `prefer-frozen-lockfile`
+  - No `--legacy-peer-deps` anywhere in the codebase
+- **Node.js version matrix clarified**:
+  - Production baseline: **Node.js 24 LTS** (all builds, containers, release workflows)
+  - Development minimum: **Node.js 22+** (per `engines` field in package.json)
+  - CI canary: **Node.js 25+** (non-blocking forward-compatibility signal)
+- **Rolldown bundler** delivers OXC minification with deterministic 8-char content hashes
+- **Express 5.x** deployed with full backward compatibility in API layer
+- **Semantic Release** with Conventional Commits for automated versioning and changelog
+- **Biome 2.4** as secondary lint layer alongside ESLint (cognitive complexity, hook-at-top-level)
+  - `noAccumulatingSpread` elevated to error level
+
+### 🔒 Security
+
+- **CSP meta-tag** added to `index.html` for static hosting (GitHub Pages) — covers `default-src`, `script-src`, `connect-src` with whitelisted API domains, `frame-ancestors 'none'`, `object-src 'none'`
+- **Rate-limit jitter** (±25%) on Express global + API limiters to prevent thundering-herd synchronisation
+- **Docker Compose** containers enforced with `read_only: true` + `tmpfs` volumes
+- All GitHub Actions pinned to commit SHA (prevents tag-rollback supply chain attacks)
+- Security fuzz testing (`security-fuzz.test.ts`) in CI pipeline
+
+### 📊 Quality
+
+- **Vitest coverage thresholds raised**: Statements 55%, Branches 45%, Functions 55%, Lines 55%
+- **Tailwind v4 `darkMode` config** fixed: combined selector for 3 dark themes (energy-dark, ocean-dark, nature-green)
+- **TypeScript strictness**: `strict: true` baseline maintained; `exactOptionalPropertyTypes` tracked for future PR (42 adapter/auth fixes needed)
+
 ## 1.0.0 (2026-04-13)
 
 ### ⚠ BREAKING CHANGES

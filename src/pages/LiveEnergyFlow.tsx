@@ -399,7 +399,7 @@ function FloatingDevicePanel({
   return (
     <motion.div
       className="absolute z-10 w-80 touch-none select-none"
-      style={posStyle}
+      style={posStyle as React.CSSProperties}
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.9 }}

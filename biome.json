@@ -24,7 +24,7 @@
         "noUselessEscapeInRegex": "warn"
       },
       "performance": {
-        "noAccumulatingSpread": "warn",
+        "noAccumulatingSpread": "error",
         "noBarrelFile": "off",
         "noReExportAll": "off"
       },

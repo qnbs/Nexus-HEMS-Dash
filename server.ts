@@ -251,7 +251,8 @@ async function startServer() {
   // ─── Rate Limiting ───────────────────────────────────────────────────
   // Global rate limit: relaxed in dev/test (Vite serves many modules per page load)
   const globalLimiter = rateLimit({
-    windowMs: 60_000,
+    // ±25% jitter to prevent thundering-herd synchronisation across clients
+    windowMs: 60_000 + Math.floor((Math.random() - 0.5) * 30_000),
     max: isDev ? 0 : 100, // 0 = disabled in dev mode
     standardHeaders: true,
     legacyHeaders: false,
@@ -268,7 +269,8 @@ async function startServer() {
 
   // Stricter limit for API endpoints (60 req/min)
   const apiLimiter = rateLimit({
-    windowMs: 60_000,
+    // ±25% jitter to desynchronise client retry storms
+    windowMs: 60_000 + Math.floor((Math.random() - 0.5) * 30_000),
     max: isDev ? 0 : 60,
     standardHeaders: true,
     legacyHeaders: false,

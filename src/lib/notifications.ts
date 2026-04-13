@@ -111,15 +111,19 @@ export async function showNotification(n: HemsNotification): Promise<void> {
     const reg = await navigator.serviceWorker.ready;
     await reg.showNotification(n.title, {
       body: n.body,
-      icon: n.icon,
+      ...(n.icon != null && { icon: n.icon }),
       tag: n.tag ?? n.category,
-      badge: n.icon,
+      ...(n.icon != null && { badge: n.icon }),
     });
     return;
   }
 
   // Fallback: basic Notification constructor
-  new Notification(n.title, { body: n.body, icon: n.icon, tag: n.tag ?? n.category });
+  new Notification(n.title, {
+    body: n.body,
+    ...(n.icon != null && { icon: n.icon }),
+    tag: n.tag ?? n.category,
+  });
 }
 
 // ---------------------------------------------------------------------------

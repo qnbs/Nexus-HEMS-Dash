@@ -50,22 +50,21 @@ import { Sentry, sentryEnabled } from './sentry';
 function captureToSentry(entry: LogEntry): void {
   if (!sentryEnabled) return;
   try {
+    const captureCtx = {
+      tags: { context: entry.context ?? 'unknown' },
+      ...(entry.data != null && { extra: entry.data }),
+    };
     if (entry.error) {
-      Sentry.captureException(entry.error, {
-        tags: { context: entry.context ?? 'unknown' },
-        extra: entry.data,
-      });
+      Sentry.captureException(entry.error, captureCtx);
     } else if (entry.level === 'error' || entry.level === 'fatal') {
       Sentry.captureMessage(entry.message, {
         level: entry.level === 'fatal' ? 'fatal' : 'error',
-        tags: { context: entry.context ?? 'unknown' },
-        extra: entry.data,
+        ...captureCtx,
       });
     } else if (entry.level === 'warn') {
       Sentry.captureMessage(entry.message, {
         level: 'warning',
-        tags: { context: entry.context ?? 'unknown' },
-        extra: entry.data,
+        ...captureCtx,
       });
     }
   } catch {
@@ -116,10 +115,10 @@ class Logger {
     const entry: LogEntry = {
       level,
       message,
-      context,
-      data,
+      ...(context != null && { context }),
+      ...(data != null && { data }),
       timestamp: Date.now(),
-      error,
+      ...(error != null && { error }),
     };
 
     this.addToBuffer(entry);

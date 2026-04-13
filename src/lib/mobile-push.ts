@@ -277,9 +277,9 @@ export async function attachPushListeners(onReceive: PushHandler): Promise<() =>
       'pushNotificationReceived',
       (notification: { title?: string; body?: string; data?: Record<string, unknown> }) => {
         onReceive({
-          title: notification.title ?? undefined,
-          body: notification.body ?? undefined,
-          data: notification.data as Record<string, string> | undefined,
+          ...(notification.title != null && { title: notification.title }),
+          ...(notification.body != null && { body: notification.body }),
+          ...(notification.data != null && { data: notification.data as Record<string, string> }),
         });
       },
     );
@@ -290,9 +290,11 @@ export async function attachPushListeners(onReceive: PushHandler): Promise<() =>
         notification: { title?: string; body?: string; data?: Record<string, unknown> };
       }) => {
         onReceive({
-          title: action.notification.title ?? undefined,
-          body: action.notification.body ?? undefined,
-          data: action.notification.data as Record<string, string> | undefined,
+          ...(action.notification.title != null && { title: action.notification.title }),
+          ...(action.notification.body != null && { body: action.notification.body }),
+          ...(action.notification.data != null && {
+            data: action.notification.data as Record<string, string>,
+          }),
         });
       },
     );
