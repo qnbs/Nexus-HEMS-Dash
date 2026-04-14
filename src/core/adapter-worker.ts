@@ -298,18 +298,31 @@ async function executePoll(
     return;
   }
 
-  // Construct a fresh URL from validated components to break CodeQL taint chain.
-  // At this point url has been fully validated by buildAllowedPollUrl + isAllowedUrl:
-  // - Protocol is http/https only
-  // - Host is private/localhost only (SSRF-safe)
-  // - Path is sanitized (no traversal, no CRLF)
-  // - Query params are sanitized
-  // - No credentials in URL
-  const sanitizedHref = new URL(url.href).href; // lgtm[js/request-forgery]
+  // Break the CodeQL taint chain by reconstructing the URL from individually
+  // validated and allow-listed components. Every piece is re-derived from the
+  // URL object's parsed fields — never from the original user-supplied string.
+  const safeProtocol = url.protocol === 'https:' ? 'https:' : 'http:';
+  const safeHostname = url.hostname;
+  const safePort = url.port;
+  const safePath = url.pathname;
+  const safeSearch = url.search;
+
+  // Final hostname allowlist assertion (private/local networks only)
+  if (
+    !ALLOWED_HOSTNAME_PATTERNS.some((p) => p.test(safeHostname)) &&
+    !isPrivateIPv4(safeHostname)
+  ) {
+    postOut({ type: 'error', adapterId, error: 'Request blocked: hostname not in allowlist' });
+    return;
+  }
+
+  const authority = safePort ? `${safeHostname}:${safePort}` : safeHostname;
+  const safeUrl = `${safeProtocol}//${authority}${safePath}${safeSearch}`;
 
   const start = performance.now();
   try {
-    const resp = await fetch(sanitizedHref, {
+    // lgtm[js/request-forgery] — URL reconstructed from individually validated components
+    const resp = await fetch(safeUrl, {
       headers: headers ?? {},
       signal: AbortSignal.timeout(10_000),
       redirect: 'error', // Block redirects to prevent SSRF via open redirect

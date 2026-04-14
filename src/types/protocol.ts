@@ -271,6 +271,7 @@ export type WSMessage = z.infer<typeof WSMessageSchema>;
 /** POST /api/auth/token */
 export const AuthTokenRequestSchema = z.object({
   clientId: z.string().trim().min(1).max(64),
+  apiKey: z.string().trim().min(1).max(256).optional(),
   scope: z.enum(['read', 'readwrite', 'admin']).optional(),
 });
 

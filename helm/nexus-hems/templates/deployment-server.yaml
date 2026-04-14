@@ -30,6 +30,7 @@ spec:
       containers:
         - name: server
           # trivy:ignore:KSV037 -- Image registry is validated at render-time by nexus-hems.assertTrustedImageRepository helper
+          # trivy:ignore:KSV-0125 -- Image registry is validated at render-time by nexus-hems.assertTrustedImageRepository helper (see _helpers.tpl)
           image: {{ include "nexus-hems.imageRef" (dict "image" .Values.image.server "trustedRegistries" .Values.image.trustedRegistries "chartAppVersion" .Chart.AppVersion) | quote }}
           imagePullPolicy: {{ .Values.image.server.pullPolicy }}
           ports:
