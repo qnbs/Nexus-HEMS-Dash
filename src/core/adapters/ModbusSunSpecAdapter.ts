@@ -161,8 +161,40 @@ export class ModbusSunSpecAdapter extends BaseAdapter {
       reconnect: { ...DEFAULT_RECONNECT, ...config?.reconnect },
       ...config,
     });
+
+    // SSRF guard: validate host is a private/local IP or hostname
+    const host = this.config.host;
+    if (!ModbusSunSpecAdapter.isAllowedHost(host)) {
+      throw new Error(
+        `[ModbusSunSpec] Host "${host}" is not a local/private address. ` +
+          'Only RFC 1918 / link-local addresses and localhost are allowed.',
+      );
+    }
+
     const proto = this.config.tls ? 'https' : 'http';
     this.baseUrl = `${proto}://${this.config.host}:${this.config.port}`;
+  }
+
+  /**
+   * Validate that a host is a private/local address to prevent SSRF.
+   * Allows: localhost, 127.x, 10.x, 172.16-31.x, 192.168.x, fe80::, ::1, .local hostnames
+   */
+  private static isAllowedHost(host: string): boolean {
+    // localhost / loopback
+    if (host === 'localhost' || host === '127.0.0.1' || host === '::1') return true;
+    // mDNS .local hostnames (common for inverters)
+    if (host.endsWith('.local')) return true;
+    // RFC 1918 private ranges
+    if (/^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(host)) return true;
+    if (/^172\.(1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3}$/.test(host)) return true;
+    if (/^192\.168\.\d{1,3}\.\d{1,3}$/.test(host)) return true;
+    // Link-local IPv4 (169.254.x.x)
+    if (/^169\.254\.\d{1,3}\.\d{1,3}$/.test(host)) return true;
+    // IPv6 link-local
+    if (host.toLowerCase().startsWith('fe80:')) return true;
+    // 127.x.x.x loopback range
+    if (/^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(host)) return true;
+    return false;
   }
 
   // ─── BaseAdapter abstract implementations ─────────────────────────

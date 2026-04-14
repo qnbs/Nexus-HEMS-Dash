@@ -239,7 +239,18 @@ export class EEBUSAdapter extends BaseAdapter {
 
       this.ws = new WebSocket(url);
 
+      // Connection timeout: abort if WebSocket doesn't open within 30s
+      const connectionTimeout = setTimeout(() => {
+        if (this.ws && this.ws.readyState !== WebSocket.OPEN) {
+          if (import.meta.env.DEV) console.warn('[EEBUS] Connection timeout after 30s');
+          this.ws.close();
+          this.setStatus('error', 'Connection timeout (30s)');
+          this.emitEvent({ type: 'error', message: 'Connection timeout (30s)' });
+        }
+      }, 30_000);
+
       this.ws.onopen = () => {
+        clearTimeout(connectionTimeout);
         if (import.meta.env.DEV)
           console.log('[EEBUS] WebSocket connected, initiating SHIP handshake');
         this.shipState = 'cmi';
@@ -252,11 +263,13 @@ export class EEBUSAdapter extends BaseAdapter {
       };
 
       this.ws.onerror = () => {
+        clearTimeout(connectionTimeout);
         this.setStatus('error', 'WebSocket connection failed');
         this.emitEvent({ type: 'error', message: 'WebSocket connection error' });
       };
 
       this.ws.onclose = (event) => {
+        clearTimeout(connectionTimeout);
         if (import.meta.env.DEV)
           console.log(`[EEBUS] WebSocket closed: ${event.code} ${event.reason}`);
         this.stopHeartbeat();

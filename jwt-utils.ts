@@ -72,12 +72,11 @@ function loadSecret(): string {
 
   // 3. Auto-generated (dev only)
   if (process.env.NODE_ENV === 'production') {
-    console.error(
-      '[JWT] CRITICAL: No JWT_SECRET configured in production! ' +
-        'Set JWT_SECRET env var or mount Docker secret at ' +
+    throw new Error(
+      '[JWT] FATAL: No JWT_SECRET configured in production! ' +
+        'Set JWT_SECRET env var (min 32 chars) or mount Docker secret at ' +
         DOCKER_SECRET_PATH,
     );
-    // Still generate one so the server can start, but log the security risk
   }
 
   const generated = crypto.randomBytes(64).toString('hex');

@@ -117,8 +117,9 @@ class BackgroundSyncService {
             errMsg,
           );
 
-          // Exponential backoff retry
-          const delay = BASE_RETRY_DELAY_MS * Math.pow(2, retryCount);
+          // Exponential backoff retry with jitter to prevent thundering herd
+          const delay =
+            BASE_RETRY_DELAY_MS * Math.pow(2, retryCount) + Math.floor(Math.random() * 1000);
           await updateActionStatus(action.id!, 'failed', errMsg);
 
           if (retryCount + 1 < MAX_RETRIES) {

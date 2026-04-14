@@ -409,16 +409,23 @@ async function startServer() {
 
     const { ski } = parsed.data;
 
-    // In production, this would:
-    // 1. Resolve the device via cached mDNS record
-    // 2. Establish TLS 1.3 connection with certificate pinning
-    // 3. Verify SKI matches the device's TLS certificate
-    // 4. Complete SHIP PIN verification handshake
-    // 5. Store trust relationship persistently
+    // Security: verify SKI corresponds to a known discovered device
+    const device = eebusDeviceCache.get(ski);
+    if (!device) {
+      res.status(404).json({
+        error: 'Unknown SKI — device must be discovered via /api/eebus/discover first',
+      });
+      return;
+    }
+
+    // TODO (production): Before trusting, implement full SHIP handshake:
+    // 1. Establish TLS 1.3 connection to device.host:device.port
+    // 2. Verify TLS certificate SKI matches the requested SKI
+    // 3. Complete SHIP PIN verification (5/6-digit code exchange)
+    // 4. Store trust relationship persistently (not in-memory)
 
     eebusTrustedSKIs.add(ski);
-    const device = eebusDeviceCache.get(ski);
-    if (device) device.trusted = true;
+    device.trusted = true;
 
     res.json({ success: true, ski });
   });

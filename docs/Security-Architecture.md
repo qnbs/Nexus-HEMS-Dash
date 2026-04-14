@@ -61,7 +61,7 @@
 - **Zod** — runtime schema validation on all API endpoints and WebSocket commands
 - **JWT** (`jsonwebtoken`) — stateless auth tokens, HS256, 24 h expiry
 - No session storage; tokens validated per request
-- Production baseline runs on Node.js 24 LTS; Node.js 26 is validated in CI canary only
+- Production baseline runs on Node.js 24 LTS
 
 ### EEBUS SPINE/SHIP
 
@@ -132,7 +132,7 @@ Enforced via Helmet.js and Tauri CSP:
 default-src 'self';
 script-src 'self';
 style-src 'self' 'unsafe-inline';
-connect-src 'self' wss: https://api.tibber.com https://api.awattar.de
+connect-src 'self' wss://localhost:* wss://127.0.0.1:* https://api.tibber.com https://api.awattar.de
   https://api.open-meteo.com https://generativelanguage.googleapis.com;
 img-src 'self' data: blob:;
 font-src 'self';
@@ -177,6 +177,22 @@ Each adapter uses `src/core/circuit-breaker.ts`:
 - Max retries: 10 (configurable)
 - Dead letter: after max retries, adapter marked `error` + user notified
 
+### SSRF Prevention (ModbusSunSpec)
+
+`src/core/adapters/ModbusSunSpecAdapter.ts`:
+
+- Host validation restricts connections to RFC 1918 / link-local / localhost addresses
+- Rejects public IPs to prevent server-side request forgery via adapter configuration
+- Patterns: `10.x`, `172.16–31.x`, `192.168.x`, `169.254.x`, `127.x`, `::1`, `fe80::`, `.local`
+
+### EEBUS Connection Timeout
+
+`src/core/adapters/EEBUSAdapter.ts`:
+
+- 30-second connection timeout on WebSocket open
+- Prevents indefinite hang if SPINE/SHIP peer is unreachable
+- Auto-close + error status on timeout
+
 ---
 
 ## Supply Chain Security
@@ -197,8 +213,8 @@ Each adapter uses `src/core/circuit-breaker.ts`:
 ### Runtime Governance
 
 - Production containers and release workflows are pinned to Node.js 24 LTS
-- A dedicated Node.js 26 canary job validates forward compatibility without blocking merges
 - Deploy workflow requires explicit manual confirmation token before GitHub Pages rollout
+- `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true` environment variable set across all CI workflows
 
 ### Dependency Pinning
 
@@ -212,7 +228,7 @@ Each adapter uses `src/core/circuit-breaker.ts`:
 ```dockerfile
 # Multi-stage build
 FROM node:24-alpine AS build    # Build stage (discarded)
-FROM nginx:1.27-alpine AS prod  # Minimal runtime
+FROM nginx:1.29-alpine AS prod  # Minimal runtime
 
 # Security hardening
 USER nginx                      # Non-root

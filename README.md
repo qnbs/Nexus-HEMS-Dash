@@ -81,8 +81,6 @@ pnpm dev
 
 **Requirements:** Node.js 24 LTS (production baseline), pnpm 10+ via Corepack
 
-Node.js 26 is validated as a non-blocking CI canary only and is not used for production runtime images.
-
 ### GitHub Codespaces (Zero-Config)
 
 Click the button below to open a fully configured development environment in your browser:
@@ -196,7 +194,7 @@ See [Adapter Dev Guide](docs/Adapter-Dev-Guide.md) and [Contrib README](src/core
 - **Transport:** TLS 1.3 everywhere, mTLS for EEBUS, client certs for OCPP
 - **Docker:** Non-root, read-only filesystem, `no-new-privileges`, isolated networks
 - **Runtime Hardening:** strict OpenEMS component/property validation, worker URL allowlist + private-IP checks, sanitized plugin/event logging
-- **CI:** CodeQL SAST, pnpm audit, Dependabot (npm ecosystem + Actions + Docker + Cargo), SHA-pinned GitHub Actions, Node 26 canary matrix
+- **CI:** CodeQL SAST, pnpm audit, Dependabot (npm ecosystem + Actions + Docker + Cargo), SHA-pinned GitHub Actions
 
 For the full threat model, trust boundaries, STRIDE analysis, and GDPR/DSGVO compliance details, see [SECURITY.md](SECURITY.md).
 
@@ -213,7 +211,7 @@ For the full threat model, trust boundaries, STRIDE analysis, and GDPR/DSGVO com
 
 **GitHub Pages** — manual deployment via GitHub Actions `workflow_dispatch` with explicit `DEPLOY` approval token.
 
-**Docker** — multi-stage build (node:24-alpine → nginx:1.27-alpine):
+**Docker** — multi-stage build (node:24-alpine → nginx:1.29-alpine):
 
 ```bash
 pnpm docker:build && pnpm docker:up
@@ -344,6 +342,16 @@ We are deeply grateful to these AI platforms for enabling a solo developer to bu
 - **OpenEMS** — OSGi controller architecture inspiration
 - **evcc** — EV charging integration patterns
 - **React, Vite, Tailwind CSS** — The incredible open-source ecosystem that powers everything
+
+## Troubleshooting
+
+| Problem                                           | Fix                                                                            |
+| :------------------------------------------------ | :----------------------------------------------------------------------------- |
+| Deploy workflow fails with `HttpError: Not Found` | Enable GitHub Pages Source → **GitHub Actions** in repo Settings → Pages       |
+| Node.js 20 deprecation warnings in CI             | `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true` env is already set in all workflows |
+| Lighthouse `errors-in-console` assertion failures | Expected in demo mode without real backend — assertion is set to `off`         |
+| `pnpm install` fails with Corepack error          | Run `corepack enable && corepack prepare pnpm@latest --activate`               |
+| TypeScript errors after pull                      | Run `pnpm install` then `pnpm type-check`                                      |
 
 ## Contributing
 

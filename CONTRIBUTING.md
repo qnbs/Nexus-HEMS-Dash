@@ -41,7 +41,7 @@ src/
 
 ### Tech Stack (Do Not Change)
 
-- **React 19** + **Vite 6** — No Next.js, no Remix
+- **React 19** + **Vite 8** — No Next.js, no Remix
 - **Zustand** — No Redux, no MobX
 - **D3.js** for Sankey — No alternative charting for energy flow
 - **Tailwind CSS 4** — Neo-Energy Cyber-Glassmorphism design system
@@ -54,8 +54,8 @@ src/
 pnpm lint             # ESLint (must pass, no warnings)
 pnpm format:check     # Prettier formatting
 pnpm type-check       # TypeScript strict mode
-npx vitest run        # Unit tests (63+ tests, all must pass)
-pnpm build            # Production build (bundle < 600 KB)
+npx vitest run        # Unit tests (265+ tests, all must pass)
+pnpm build            # Production build
 ```
 
 ### i18n
@@ -191,7 +191,7 @@ Create an ADR using this template:
 
 | Layer        | Tool                             | Threshold                      | Focus                                     |
 | ------------ | -------------------------------- | ------------------------------ | ----------------------------------------- |
-| **Unit**     | Vitest + jsdom                   | Statements ≥55%, Branches ≥45% | Store logic, adapters, crypto, formatters |
+| **Unit**     | Vitest + jsdom                   | Statements ≥60%, Branches ≥50% | Store logic, adapters, crypto, formatters |
 | **E2E**      | Playwright (3 browsers + mobile) | All specs pass                 | User flows, navigation, settings          |
 | **A11y**     | @axe-core/playwright             | WCAG 2.2 AA on all routes      | Keyboard nav, contrast, ARIA              |
 | **Visual**   | Chromatic + Storybook            | No unreviewed changes          | Component regression                      |
