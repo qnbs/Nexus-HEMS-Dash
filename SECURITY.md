@@ -25,12 +25,12 @@ If you discover a security vulnerability in Nexus-HEMS Dashboard, please report 
 This project employs multiple layers of security:
 
 - **Static Analysis**: CodeQL, Semgrep, ESLint security rules
-- **Secret Detection**: Gitleaks (pre-commit + CI), Trivy secret scanner
+- **Secret Detection**: Gitleaks (pre-commit + CI)
 - **Dependency Scanning**: pnpm audit, Snyk, Socket.dev, Aikido Safe Chain
 - **Supply Chain**: OpenSSF Scorecard, Renovate automated updates, Dependabot
 - **CI Hardening**: GitHub Actions pinned to commit SHA, mandatory security workflow gate
 - **Deploy Governance**: GitHub Pages deploy requires manual `workflow_dispatch` confirmation (`approveDeploy=DEPLOY`)
-- **Container Security**: Trivy image scanning, read-only containers, non-root user, per-IP connection limits (`limit_conn`)
+- **Container Security**: Grype/Snyk image scanning (Trivy removed), read-only containers, non-root user, per-IP connection limits (`limit_conn`)
 - **Anti-Trojan-Source**: Unicode Bidi character detection
 - **Pre-commit Hooks**: Gitleaks, detect-private-key, anti-trojan-source
 - **Conventional Commits**: Enforced via commitlint

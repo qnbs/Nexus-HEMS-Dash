@@ -32,7 +32,7 @@ export function PWAUpdateNotification() {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const registrationRef = useRef<ServiceWorkerRegistration | null>(null);
 
-  /** Throttled SW update check */
+  /** Throttled SW update check — stable identity needed for useEffect dep array */
   const checkForUpdate = useCallback(() => {
     const now = Date.now();
     if (now - lastCheckRef.current < UPDATE_CHECK_COOLDOWN_MS) return;

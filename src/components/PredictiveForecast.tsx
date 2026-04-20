@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { motion } from 'motion/react';
 import { CloudSun, TrendingUp, Leaf } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -38,7 +38,8 @@ export function PredictiveForecast() {
   // Weather data via TanStack Query (cached 1 h, auto-retry)
   const { data: weatherData } = useWeatherForecast(lat, lon);
 
-  const { forecastData, totalSavings, co2Saved } = useMemo(() => {
+  // React Compiler auto-memoizes this derivation — no useMemo wrapper needed.
+  const { forecastData, totalSavings, co2Saved } = (() => {
     const hourly = weatherData?.hourly;
     if (!hourly?.time?.length)
       return { forecastData: [] as ForecastDataPoint[], totalSavings: 0, co2Saved: 0 };
@@ -74,7 +75,7 @@ export function PredictiveForecast() {
     const co2 = data.reduce((sum, d) => sum + d.pvForecast * 0.5, 0);
 
     return { forecastData: data, totalSavings: savings, co2Saved: co2 };
-  }, [weatherData, timeRange, settings.gridPriceAvg, dateLocale]);
+  })();
 
   return (
     <motion.div

@@ -1,4 +1,4 @@
-import { type ReactNode, forwardRef } from 'react';
+import { type ReactNode, type Ref } from 'react';
 import { motion } from 'motion/react';
 import { X } from 'lucide-react';
 
@@ -15,6 +15,8 @@ export interface ControlPanelProps {
   children: ReactNode;
   /** Additional CSS classes */
   className?: string;
+  /** React 19: ref is a plain prop — no forwardRef wrapper needed */
+  ref?: Ref<HTMLDivElement>;
 }
 
 /**
@@ -31,10 +33,15 @@ export interface ControlPanelProps {
  * </ControlPanel>
  * ```
  */
-export const ControlPanel = forwardRef<HTMLDivElement, ControlPanelProps>(function ControlPanel(
-  { title, headerActions, onClose, closeLabel = 'Close', children, className = '' },
+export function ControlPanel({
+  title,
+  headerActions,
+  onClose,
+  closeLabel = 'Close',
+  children,
+  className = '',
   ref,
-) {
+}: ControlPanelProps) {
   return (
     <motion.div
       ref={ref}
@@ -62,7 +69,7 @@ export const ControlPanel = forwardRef<HTMLDivElement, ControlPanelProps>(functi
       <div className="control-panel-body">{children}</div>
     </motion.div>
   );
-});
+}
 
 /** Horizontal separator between sections inside a ControlPanel body */
 export function ControlPanelDivider() {

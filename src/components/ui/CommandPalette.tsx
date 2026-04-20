@@ -35,6 +35,23 @@ interface CommandPaletteProps {
   onExportReport?: () => void;
 }
 
+// ─── Module-level icon constants ────────────────────────────────────────────
+// Allocated once at module load; never re-created on re-renders.
+// React Compiler can treat these as stable references.
+const ICON_SPARKLES = <Sparkles className="h-5 w-5" />;
+const ICON_SPARKLES_PURPLE = <Sparkles className="h-5 w-5 text-purple-400" />;
+const ICON_SPARKLES_CYAN = <Sparkles className="h-5 w-5 text-cyan-400" />;
+const ICON_FILEDOWN = <FileDown className="h-5 w-5" />;
+const ICON_HOME = <Home className="h-5 w-5" />;
+const ICON_ACTIVITY = <Activity className="h-5 w-5" />;
+const ICON_CAR = <Car className="h-5 w-5 text-green-400" />;
+const ICON_TRENDING_UP = <TrendingUp className="h-5 w-5 text-orange-400" />;
+const ICON_BAR_CHART = <BarChart3 className="h-5 w-5" />;
+const ICON_MONITOR = <Monitor className="h-5 w-5" />;
+const ICON_SETTINGS = <Settings className="h-5 w-5" />;
+const ICON_HELP = <HelpCircle className="h-5 w-5" />;
+const ICON_ZAP = <Zap className="h-5 w-5 text-red-400" />;
+
 export function CommandPalette({
   isOpen,
   onClose,
@@ -51,7 +68,7 @@ export function CommandPalette({
     {
       id: 'optimize',
       label: t('command.optimizeNow', 'Optimize Energy Now'),
-      icon: <Sparkles className="h-5 w-5" />,
+      icon: ICON_SPARKLES,
       action: () => {
         onOptimize?.();
         onClose();
@@ -62,7 +79,7 @@ export function CommandPalette({
     {
       id: 'export-report',
       label: t('command.exportReport', 'Export Monthly Report'),
-      icon: <FileDown className="h-5 w-5" />,
+      icon: ICON_FILEDOWN,
       action: () => {
         onExportReport?.();
         onClose();
@@ -75,7 +92,7 @@ export function CommandPalette({
     {
       id: 'nav-dashboard',
       label: t('nav.home', 'Overview'),
-      icon: <Home className="h-5 w-5" />,
+      icon: ICON_HOME,
       action: () => {
         navigate('/');
         onClose();
@@ -86,7 +103,7 @@ export function CommandPalette({
     {
       id: 'nav-energy-flow',
       label: t('nav.energyFlow', 'Energy Flow'),
-      icon: <Activity className="h-5 w-5" />,
+      icon: ICON_ACTIVITY,
       action: () => {
         navigate('/energy-flow');
         onClose();
@@ -97,7 +114,7 @@ export function CommandPalette({
     {
       id: 'nav-devices',
       label: t('nav.devicesOverview', 'Devices & Automation'),
-      icon: <Car className="h-5 w-5 text-green-400" />,
+      icon: ICON_CAR,
       action: () => {
         navigate('/devices');
         onClose();
@@ -108,7 +125,7 @@ export function CommandPalette({
     {
       id: 'nav-ai',
       label: t('nav.aiOptimizer', 'AI Optimizer'),
-      icon: <Sparkles className="h-5 w-5 text-purple-400" />,
+      icon: ICON_SPARKLES_PURPLE,
       action: () => {
         navigate('/optimization-ai');
         onClose();
@@ -119,7 +136,7 @@ export function CommandPalette({
     {
       id: 'nav-ai-settings',
       label: t('command.aiSettings', 'AI Provider Keys'),
-      icon: <Sparkles className="h-5 w-5 text-cyan-400" />,
+      icon: ICON_SPARKLES_CYAN,
       action: () => {
         navigate('/settings/ai');
         onClose();
@@ -130,7 +147,7 @@ export function CommandPalette({
     {
       id: 'nav-tariffs',
       label: t('nav.tariffs', 'Tariffs'),
-      icon: <TrendingUp className="h-5 w-5 text-orange-400" />,
+      icon: ICON_TRENDING_UP,
       action: () => {
         navigate('/tariffs');
         onClose();
@@ -141,7 +158,7 @@ export function CommandPalette({
     {
       id: 'nav-analytics',
       label: t('nav.analytics', 'Analytics'),
-      icon: <BarChart3 className="h-5 w-5" />,
+      icon: ICON_BAR_CHART,
       action: () => {
         navigate('/analytics');
         onClose();
@@ -152,7 +169,7 @@ export function CommandPalette({
     {
       id: 'nav-monitoring',
       label: t('nav.monitoring', 'Monitoring'),
-      icon: <Monitor className="h-5 w-5" />,
+      icon: ICON_MONITOR,
       action: () => {
         navigate('/monitoring');
         onClose();
@@ -163,7 +180,7 @@ export function CommandPalette({
     {
       id: 'nav-settings',
       label: t('nav.settings', 'Settings'),
-      icon: <Settings className="h-5 w-5" />,
+      icon: ICON_SETTINGS,
       action: () => {
         navigate('/settings');
         onClose();
@@ -174,7 +191,7 @@ export function CommandPalette({
     {
       id: 'nav-help',
       label: t('nav.help', 'Help'),
-      icon: <HelpCircle className="h-5 w-5" />,
+      icon: ICON_HELP,
       action: () => {
         navigate('/help');
         onClose();
@@ -187,7 +204,7 @@ export function CommandPalette({
     {
       id: 'device-grid',
       label: t('command.viewGrid', 'View Grid Status'),
-      icon: <Zap className="h-5 w-5 text-red-400" />,
+      icon: ICON_ZAP,
       action: () => {
         navigate('/energy-flow');
         onClose();

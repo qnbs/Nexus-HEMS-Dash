@@ -1,4 +1,4 @@
-import { type ReactNode, type HTMLAttributes, useState, useRef, useCallback } from 'react';
+import { type ReactNode, type HTMLAttributes, useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AnimatePresence, motion } from 'motion/react';
 import { X, Maximize2, Minimize2 } from 'lucide-react';
@@ -55,14 +55,14 @@ export function OptimizedSankey({
   const containerRef = useRef<HTMLDivElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  const toggleFullscreen = useCallback(() => {
+  function toggleFullscreen() {
     if (!containerRef.current) return;
     if (!document.fullscreenElement) {
       containerRef.current.requestFullscreen().then(() => setIsFullscreen(true));
     } else {
       document.exitFullscreen().then(() => setIsFullscreen(false));
     }
-  }, []);
+  }
 
   return (
     <div
@@ -99,9 +99,7 @@ export function OptimizedSankey({
       <div className="relative flex flex-1 overflow-hidden">
         {/* Sankey canvas — shrinks when detail panel is open on desktop */}
         <div
-          className={`relative flex-1 transition-all duration-300 ${
-            detailOpen ? 'lg:mr-[28rem]' : ''
-          }`}
+          className={`relative flex-1 transition-all duration-300 ${detailOpen ? 'lg:mr-112' : ''}`}
         >
           <SankeyDiagram data={data} />
         </div>
@@ -122,7 +120,7 @@ export function OptimizedSankey({
 
               {/* Panel */}
               <motion.aside
-                className="glass-panel-strong z-modal fixed top-0 right-0 flex h-full w-full max-w-[28rem] flex-col lg:absolute"
+                className="glass-panel-strong z-modal fixed top-0 right-0 flex h-full w-full max-w-md flex-col lg:absolute"
                 initial={{ x: '100%' }}
                 animate={{ x: 0 }}
                 exit={{ x: '100%' }}

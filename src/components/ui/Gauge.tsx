@@ -1,5 +1,5 @@
+import { useId } from 'react';
 import { motion } from 'motion/react';
-import { useEffect, useState } from 'react';
 
 interface GaugeProps {
   value: number; // 0-100
@@ -12,23 +12,20 @@ interface GaugeProps {
   animate?: boolean;
 }
 
-const colorMap = {
-  primary: {
-    stroke: 'url(#gradient-primary)',
-    glow: 'drop-shadow(0 0 8px var(--color-primary))',
-  },
-  success: {
-    stroke: 'url(#gradient-success)',
-    glow: 'drop-shadow(0 0 8px #10b981)',
-  },
-  warning: {
-    stroke: 'url(#gradient-warning)',
-    glow: 'drop-shadow(0 0 8px #f59e0b)',
-  },
-  danger: {
-    stroke: 'url(#gradient-danger)',
-    glow: 'drop-shadow(0 0 8px #ef4444)',
-  },
+/** Glow filter per color variant */
+const glowMap: Record<NonNullable<GaugeProps['color']>, string> = {
+  primary: 'drop-shadow(0 0 8px var(--color-primary))',
+  success: 'drop-shadow(0 0 8px #10b981)',
+  warning: 'drop-shadow(0 0 8px #f59e0b)',
+  danger: 'drop-shadow(0 0 8px #ef4444)',
+};
+
+/** Gradient stop colors per color variant [from, to] */
+const gradientStops: Record<NonNullable<GaugeProps['color']>, [string, string]> = {
+  primary: ['var(--color-primary)', 'var(--color-secondary)'],
+  success: ['#10b981', '#22ff88'],
+  warning: ['#f59e0b', '#ff8800'],
+  danger: ['#ef4444', '#dc2626'],
 };
 
 const sizeMap = {
@@ -47,34 +44,17 @@ export function Gauge({
   showValue = true,
   animate = true,
 }: GaugeProps) {
-  const [displayValue, setDisplayValue] = useState(0);
+  // useId ensures gradient IDs are unique per Gauge instance —
+  // prevents SVG gradient collision when multiple Gauges share the same color.
+  const uid = useId();
+  const gradientId = `${uid}-gradient`;
+
   const { size: gaugeSize, strokeWidth, fontSize } = sizeMap[size];
   const radius = (gaugeSize - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const percentage = Math.min(Math.max(value / max, 0), 1);
   const strokeDashoffset = circumference * (1 - percentage);
-
-  useEffect(() => {
-    if (animate) {
-      const duration = 1000;
-      const steps = 60;
-      const stepValue = value / steps;
-      let currentStep = 0;
-
-      const interval = setInterval(() => {
-        currentStep++;
-        setDisplayValue(stepValue * currentStep);
-        if (currentStep >= steps) {
-          clearInterval(interval);
-          setDisplayValue(value);
-        }
-      }, duration / steps);
-
-      return () => clearInterval(interval);
-    } else {
-      setDisplayValue(value);
-    }
-  }, [value, animate]);
+  const [fromColor, toColor] = gradientStops[color];
 
   return (
     <div
@@ -85,23 +65,12 @@ export function Gauge({
       aria-valuenow={value}
       aria-label={label}
     >
-      <svg width={gaugeSize} height={gaugeSize} className="rotate-[-90deg]">
+      <svg width={gaugeSize} height={gaugeSize} className="-rotate-90">
         <defs>
-          <linearGradient id="gradient-primary" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="var(--color-primary)" stopOpacity="1" />
-            <stop offset="100%" stopColor="var(--color-secondary)" stopOpacity="1" />
-          </linearGradient>
-          <linearGradient id="gradient-success" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#10b981" stopOpacity="1" />
-            <stop offset="100%" stopColor="#22ff88" stopOpacity="1" />
-          </linearGradient>
-          <linearGradient id="gradient-warning" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#f59e0b" stopOpacity="1" />
-            <stop offset="100%" stopColor="#ff8800" stopOpacity="1" />
-          </linearGradient>
-          <linearGradient id="gradient-danger" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#ef4444" stopOpacity="1" />
-            <stop offset="100%" stopColor="#dc2626" stopOpacity="1" />
+          {/* Unique gradient ID prevents cross-instance color pollution */}
+          <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor={fromColor} stopOpacity="1" />
+            <stop offset="100%" stopColor={toColor} stopOpacity="1" />
           </linearGradient>
         </defs>
 
@@ -115,23 +84,23 @@ export function Gauge({
           strokeWidth={strokeWidth}
         />
 
-        {/* Progress circle */}
+        {/* Progress circle — Motion handles the arc animation */}
         <motion.circle
           cx={gaugeSize / 2}
           cy={gaugeSize / 2}
           r={radius}
           fill="none"
-          stroke={colorMap[color].stroke}
+          stroke={`url(#${gradientId})`}
           strokeWidth={strokeWidth}
           strokeLinecap="round"
           strokeDasharray={circumference}
           initial={{ strokeDashoffset: circumference }}
           animate={{ strokeDashoffset }}
-          transition={{ duration: 1, ease: 'easeInOut' }}
-          style={{ filter: colorMap[color].glow }}
+          transition={animate ? { duration: 1, ease: 'easeInOut' } : { duration: 0 }}
+          style={{ filter: glowMap[color] }}
         />
 
-        {/* Center value */}
+        {/* Center value — displayed in de-rotated coordinate space */}
         {showValue && (
           <text
             x="50%"
@@ -144,7 +113,7 @@ export function Gauge({
             fontSize={fontSize}
             fontWeight="bold"
           >
-            {Math.round(displayValue)}
+            {Math.round(value)}
           </text>
         )}
       </svg>
@@ -153,7 +122,7 @@ export function Gauge({
         <p className="text-xs font-medium tracking-wide text-(--color-muted) uppercase">{label}</p>
         {showValue && (
           <p className="mt-1 text-sm text-(--color-text)">
-            {displayValue.toFixed(1)} {unit}
+            {value.toFixed(1)} {unit}
           </p>
         )}
       </div>
