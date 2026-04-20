@@ -1128,9 +1128,7 @@ function TariffsPageComponent() {
             {/* Alert config */}
             <div
               className={`flex items-center gap-3 rounded-xl p-3 ${
-                priceAlerts
-                  ? 'bg-emerald-500/10 text-emerald-400'
-                  : 'bg-zinc-500/10 text-zinc-400'
+                priceAlerts ? 'bg-emerald-500/10 text-emerald-400' : 'bg-zinc-500/10 text-zinc-400'
               }`}
             >
               {priceAlerts ? (
