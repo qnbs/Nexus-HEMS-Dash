@@ -50,13 +50,27 @@ src/
 
 ### Code Quality
 
+The project uses **Biome** as the primary linter and formatter, with a minimal ESLint configuration for React-specific rules that have no Biome equivalent.
+
 ```bash
-pnpm lint             # ESLint (must pass, no warnings)
-pnpm format:check     # Prettier formatting
+pnpm lint             # Biome check + React ESLint (zero-warning policy)
+pnpm lint:fix         # Biome auto-fix + ESLint fix
+pnpm format           # Biome format --write (all src files)
+pnpm format:check     # Biome format check (no write)
 pnpm type-check       # TypeScript strict mode
-npx vitest run        # Unit tests (428 tests, all must pass)
+pnpm test:run         # Unit tests (all must pass)
 pnpm build            # Production build
 ```
+
+**Toolchain architecture:**
+
+| Tool                | Role                                                                       |
+| ------------------- | -------------------------------------------------------------------------- |
+| **Biome 2.x**       | Primary linter + formatter (Rust-native, ~10× faster than ESLint+Prettier) |
+| **ESLint 9** (slim) | React-only rules: `react-compiler`, `react-hooks`, `react-refresh`         |
+| **tsc**             | Type checking only                                                         |
+
+See [docs/Toolchain-Architecture.md](docs/Toolchain-Architecture.md) for the full architecture reference and [docs/Biome-Migration-Roadmap.md](docs/Biome-Migration-Roadmap.md) for migration context.
 
 ### i18n
 
@@ -91,7 +105,7 @@ Use `useTranslation()` hook, never hardcode strings.
 1. Branch from the latest `main`
 2. Create a focused branch such as `feat/my-feature`, `fix/my-bug`, or `docs/my-update`
 3. Make your changes following the guidelines above
-4. Ensure all required checks pass: `pnpm lint && pnpm type-check && npx vitest run && pnpm build`
+4. Ensure all required checks pass: `pnpm lint && pnpm type-check && pnpm test:run && pnpm build`
 5. Commit with Conventional Commits: `feat:`, `fix:`, `test:`, `docs:`, `refactor:`
 6. Open a PR against `main`
 7. Resolve all review threads and keep the branch up to date with `main`
@@ -189,13 +203,13 @@ Create an ADR using this template:
 
 ## Testing Strategy
 
-| Layer        | Tool                             | Threshold                      | Focus                                     |
-| ------------ | -------------------------------- | ------------------------------ | ----------------------------------------- |
+| Layer        | Tool                             | Threshold                      | Focus                                                                                       |
+| ------------ | -------------------------------- | ------------------------------ | ------------------------------------------------------------------------------------------- |
 | **Unit**     | Vitest + jsdom                   | Statements ≥48%, Branches ≥40% | Store logic, adapters, crypto, formatters, circuit-breaker, tariff-providers, notifications |
-| **E2E**      | Playwright (3 browsers + mobile) | All specs pass                 | User flows, navigation, settings          |
-| **A11y**     | @axe-core/playwright             | WCAG 2.2 AA on all routes      | Keyboard nav, contrast, ARIA              |
-| **Visual**   | Chromatic + Storybook            | No unreviewed changes          | Component regression                      |
-| **Security** | security-fuzz.test.ts + CodeQL   | Zero critical/high in runtime  | Input validation, injection               |
+| **E2E**      | Playwright (3 browsers + mobile) | All specs pass                 | User flows, navigation, settings                                                            |
+| **A11y**     | @axe-core/playwright             | WCAG 2.2 AA on all routes      | Keyboard nav, contrast, ARIA                                                                |
+| **Visual**   | Chromatic + Storybook            | No unreviewed changes          | Component regression                                                                        |
+| **Security** | security-fuzz.test.ts + CodeQL   | Zero critical/high in runtime  | Input validation, injection                                                                 |
 
 **When to write tests:**
 
@@ -207,23 +221,23 @@ Create an ADR using this template:
 
 **Test file map** (`src/tests/`):
 
-| File | Source module | Focus |
-| ---- | ------------- | ----- |
-| `circuit-breaker.test.ts` | `src/core/circuit-breaker.ts` | FSM states, execute(), callbacks |
-| `tariff-providers.test.ts` | `src/lib/tariff-providers.ts` | §14a grid fees, peak hours, applyDynamicGridFees |
-| `notifications.test.ts` | `src/lib/notifications.ts` | Quiet hours, cooldown windows |
-| `energy-context.test.tsx` | `src/core/EnergyContext.tsx` | Provider state, derived values |
-| `energy-store.test.ts` | `src/core/useEnergyStore.ts` | Adapter bridge, getState() contract |
-| `store.test.ts` | `src/store.ts` | Zustand selectors, equality-skip guards |
-| `adapters.test.ts` | `src/core/adapters/` | Protocol adapter contracts |
-| `send-command.test.ts` | `src/core/command-safety.ts` | OCPP/Victron pipeline, rate limiting |
-| `security-fuzz.test.ts` | multiple | Input validation, injection resistance |
-| `security-hardening.test.ts` | multiple | Rate limits, CSP, auth |
-| `optimizer.test.ts` | `src/lib/optimizer.ts` | LP schedule optimizer |
-| `mpc-optimizer.test.ts` | `src/lib/mpc-optimizer.ts` | EMHASS-inspired MPC |
-| `predictive-ai.test.ts` | `src/lib/predictive-ai.ts` | AI forecast pipeline |
-| `pdf-report.test.ts` | `src/lib/pdf-report.ts` | PDF generation |
-| `sharing.test.ts` | `src/lib/sharing.ts` | Export/share flows |
+| File                         | Source module                 | Focus                                            |
+| ---------------------------- | ----------------------------- | ------------------------------------------------ |
+| `circuit-breaker.test.ts`    | `src/core/circuit-breaker.ts` | FSM states, execute(), callbacks                 |
+| `tariff-providers.test.ts`   | `src/lib/tariff-providers.ts` | §14a grid fees, peak hours, applyDynamicGridFees |
+| `notifications.test.ts`      | `src/lib/notifications.ts`    | Quiet hours, cooldown windows                    |
+| `energy-context.test.tsx`    | `src/core/EnergyContext.tsx`  | Provider state, derived values                   |
+| `energy-store.test.ts`       | `src/core/useEnergyStore.ts`  | Adapter bridge, getState() contract              |
+| `store.test.ts`              | `src/store.ts`                | Zustand selectors, equality-skip guards          |
+| `adapters.test.ts`           | `src/core/adapters/`          | Protocol adapter contracts                       |
+| `send-command.test.ts`       | `src/core/command-safety.ts`  | OCPP/Victron pipeline, rate limiting             |
+| `security-fuzz.test.ts`      | multiple                      | Input validation, injection resistance           |
+| `security-hardening.test.ts` | multiple                      | Rate limits, CSP, auth                           |
+| `optimizer.test.ts`          | `src/lib/optimizer.ts`        | LP schedule optimizer                            |
+| `mpc-optimizer.test.ts`      | `src/lib/mpc-optimizer.ts`    | EMHASS-inspired MPC                              |
+| `predictive-ai.test.ts`      | `src/lib/predictive-ai.ts`    | AI forecast pipeline                             |
+| `pdf-report.test.ts`         | `src/lib/pdf-report.ts`       | PDF generation                                   |
+| `sharing.test.ts`            | `src/lib/sharing.ts`          | Export/share flows                               |
 
 ## Performance Budgets
 

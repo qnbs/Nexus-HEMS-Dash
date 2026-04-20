@@ -30,7 +30,7 @@ repos:
     hooks:
       - id: anti-trojan-source
         name: Anti-Trojan-Source (Unicode Bidi)
-        entry: bash -c 'echo "" | npx anti-trojan-source --files="src/**/*.{ts,tsx,js,jsx}" || true'
+        entry: bash -c 'pnpm exec anti-trojan-source --files="src/**/*.{ts,tsx,js,jsx}" || true'
         language: system
         files: \.(ts|tsx|js|jsx)$
         pass_filenames: false

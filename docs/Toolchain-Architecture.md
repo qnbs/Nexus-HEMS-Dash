@@ -1,0 +1,165 @@
+# Toolchain Architecture — Nexus-HEMS-Dash
+
+**Last updated:** 2026-04-20
+**Status:** Active (post-Biome-migration)
+
+---
+
+## Overview
+
+The project uses a **Biome-first** toolchain for maximum speed and minimal resource usage while preserving React-specific linting via a minimal ESLint configuration.
+
+```
+Source Files (*.ts, *.tsx, *.json, *.css, *.html, *.md, *.yml)
+       │
+       ▼
+┌──────────────────────────────────────────────────────┐
+│  Biome 2.4.7  (Rust, single process)                 │
+│  • Linter — TS/JS rules, security, style, nursery    │
+│  • Formatter — TS/JS/JSON/CSS/HTML/YAML/MD           │
+│  • Assist — organize imports                         │
+└──────────────────────┬───────────────────────────────┘
+                       │  *.ts, *.tsx only
+                       ▼
+┌──────────────────────────────────────────────────────┐
+│  ESLint 9 (slim React-only)                          │
+│  • react-compiler/react-compiler → error             │
+│  • react-hooks/rules-of-hooks    → error             │
+│  • react-hooks/exhaustive-deps   → warn              │
+│  • react-refresh/only-export-components → warn       │
+└──────────────────────┬───────────────────────────────┘
+                       │
+                       ▼
+┌──────────────────────────────────────────────────────┐
+│  TypeScript Compiler (tsc --noEmit)                  │
+│  • Type checking only — no emit                      │
+│  • Strict mode: noImplicitAny, noUnusedLocals, etc.  │
+└──────────────────────────────────────────────────────┘
+```
+
+---
+
+## Tool Responsibilities Matrix
+
+| Concern                         | Tool               | Config                                                 |
+| ------------------------------- | ------------------ | ------------------------------------------------------ |
+| **TS/JS formatting**            | Biome              | `biome.json` → `formatter`                             |
+| **JSON formatting**             | Biome              | `biome.json` → `formatter` (json overrides)            |
+| **CSS/HTML/YAML/MD formatting** | Biome              | `biome.json` → `formatter`                             |
+| **TS/JS linting**               | Biome              | `biome.json` → `linter.rules`                          |
+| **Import organization**         | Biome              | `biome.json` → `assist.actions.source.organizeImports` |
+| **Tailwind class sorting**      | Biome              | `nursery.useSortedClasses` (warn)                      |
+| **React Compiler violations**   | ESLint (slim)      | `eslint.config.js`                                     |
+| **React Hooks rules**           | ESLint (slim)      | `eslint.config.js`                                     |
+| **HMR compatibility**           | ESLint (slim)      | `eslint.config.js`                                     |
+| **Type checking**               | tsc                | `tsconfig.json`                                        |
+| **Secret detection**            | Gitleaks           | `.gitleaks.toml` + pre-commit                          |
+| **Unicode bidi**                | anti-trojan-source | `.pre-commit-config.yaml`                              |
+
+---
+
+## Developer Workflow
+
+### Installed ESLint Packages (Minimal Set)
+
+```json
+"eslint": "^9.x",
+"eslint-plugin-react-compiler": "^19.x",
+"eslint-plugin-react-hooks": "^7.x",
+"eslint-plugin-react-refresh": "^0.5.x"
+```
+
+### Scripts Reference
+
+| Script              | Command                                                     | Runs                          |
+| ------------------- | ----------------------------------------------------------- | ----------------------------- |
+| `pnpm lint`         | `biome check --write=false && eslint src/ --max-warnings 0` | Biome check + React ESLint    |
+| `pnpm lint:fix`     | `biome check --write && eslint src/ --fix --max-warnings 0` | Biome fix + ESLint fix        |
+| `pnpm format`       | `biome format --write src/`                                 | Biome format all src files    |
+| `pnpm format:check` | `biome format --write=false src/`                           | Biome format check (no write) |
+| `pnpm type-check`   | `tsc --noEmit`                                              | TypeScript type checking      |
+| `pnpm verify:basis` | `pnpm type-check && pnpm lint && pnpm test:run`             | Full local verification       |
+
+---
+
+## Pre-commit Hook Pipeline
+
+```
+.husky/pre-commit
+  │
+  ├─ pre-commit framework (if installed)
+  │    ├─ trailing-whitespace
+  │    ├─ end-of-file-fixer
+  │    ├─ check-yaml
+  │    ├─ check-json
+  │    ├─ detect-private-key
+  │    ├─ check-merge-conflict
+  │    ├─ check-added-large-files (max 500 kB)
+  │    ├─ gitleaks (secret detection)
+  │    └─ anti-trojan-source (Unicode bidi detection)
+  │
+  └─ lint-staged
+       ├─ *.{ts,tsx}  → biome check --write + eslint --fix
+       ├─ *.{json,css,html,yml,yaml}  → biome format --write
+       └─ *.md  → biome format --write
+```
+
+---
+
+## CI Pipeline (ci.yml)
+
+```
+lint-typecheck (parallel with unit-tests + build)
+  ├─ pnpm audit
+  ├─ pnpm lint       (biome check + slim eslint)
+  └─ pnpm type-check (tsc --noEmit)
+
+unit-tests (needs: lint-typecheck)
+  └─ vitest run --coverage
+
+build (needs: lint-typecheck)
+  └─ vite build → size-limit → sentry source maps
+
+e2e-tests (needs: build)
+  └─ playwright test (chromium)
+
+docker-build (needs: build)
+  └─ docker build
+```
+
+---
+
+## Biome Version Policy
+
+- Biome version is **pinned** in `package.json` devDependencies (no `^` range in CI context)
+- Schema URL in `biome.json` must match the installed version
+- Upgrade process: update version → update `$schema` URL → run `biome check --write` for any new autofixes → commit
+- Biome upgrades are treated as `build(toolchain):` commits
+
+---
+
+## Adding New Rules
+
+### Biome Rule
+
+1. Find the rule in [Biome rule reference](https://biomejs.dev/linter/rules/)
+2. Add to appropriate `linter.rules.<group>.<ruleName>` section in `biome.json`
+3. Test: `pnpm lint` must pass with `--write=false`
+
+### ESLint React Rule
+
+Only add ESLint rules if they target React/JSX-specific behaviour with no Biome equivalent:
+
+1. Verify no Biome equivalent exists
+2. Add to the `rules` section in `eslint.config.js`
+3. Document in this file under the Tool Responsibilities Matrix
+
+---
+
+## Performance Benchmarks
+
+Run `./scripts/bench-tooling.sh` to collect baseline metrics.
+
+Benchmark reports are stored in `.perf/toolchain-bench-YYYYMMDD.json`.
+
+See [docs/Biome-Migration-Roadmap.md](./Biome-Migration-Roadmap.md) for full migration context, risk assessment, and rollback procedure.

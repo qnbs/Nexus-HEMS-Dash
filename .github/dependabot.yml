@@ -31,14 +31,14 @@ updates:
         exclude-patterns:
           - '@types/*'
           - 'eslint*'
-          - 'prettier*'
+          - '@biomejs/*'
           - 'vitest*'
           - 'playwright*'
       dev-deps:
         patterns:
           - '@types/*'
+          - '@biomejs/*'
           - 'eslint*'
-          - 'prettier*'
           - 'vitest*'
           - 'playwright*'
         update-types:

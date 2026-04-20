@@ -93,18 +93,18 @@ The Codespace includes Node.js 24, pnpm, Playwright, Docker, and all VS Code ext
 
 ### Scripts
 
-| Command              | Description                     |
-| :------------------- | :------------------------------ |
-| `pnpm dev`           | Dev server (Express + Vite HMR) |
-| `pnpm build`         | Production build with PWA       |
-| `pnpm test`          | Vitest watch mode               |
-| `pnpm test:run`      | All unit tests once             |
-| `pnpm test:e2e`      | Playwright E2E + a11y           |
-| `pnpm test:coverage` | V8 coverage report              |
-| `pnpm lint`          | ESLint (zero-warning policy)    |
-| `pnpm type-check`    | TypeScript strict check         |
-| `pnpm docker:build`  | Build Docker image              |
-| `pnpm docker:up`     | Start container (port 8080)     |
+| Command              | Description                                |
+| :------------------- | :----------------------------------------- |
+| `pnpm dev`           | Dev server (Express + Vite HMR)            |
+| `pnpm build`         | Production build with PWA                  |
+| `pnpm test`          | Vitest watch mode                          |
+| `pnpm test:run`      | All unit tests once                        |
+| `pnpm test:e2e`      | Playwright E2E + a11y                      |
+| `pnpm test:coverage` | V8 coverage report                         |
+| `pnpm lint`          | Biome + React ESLint (zero-warning policy) |
+| `pnpm type-check`    | TypeScript strict check                    |
+| `pnpm docker:build`  | Build Docker image                         |
+| `pnpm docker:up`     | Start container (port 8080)                |
 
 ### Environment Variables
 
@@ -245,14 +245,14 @@ Brand colors: `neon-green` (#22ff88) · `electric-blue` (#00f0ff) · `power-oran
 
 ## Roadmap 2026
 
-| Quarter | Feature                                                                                                                        | Status     |
-| :------ | :----------------------------------------------------------------------------------------------------------------------------- | :--------- |
-| Q1–Q3   | 5 core adapters, 5 themes, AI optimizer, EEBUS, PWA, Monitoring, Docker, Tauri, WCAG 2.2 AA, React Compiler, Backend hardening | ✅ Shipped |
-| Q3      | Plugin system, adapter registry, 5 contrib adapters (Home Assistant, Matter/Thread, Zigbee2MQTT, Shelly), Capacitor Mobile     | ✅ Shipped |
-| Q3–Q4   | Energy controllers (7 loops), MPC optimizer, hardware registry (120+ devices), plugin lifecycle, command safety, 265 tests     | ✅ Shipped |
+| Quarter | Feature                                                                                                                                            | Status     |
+| :------ | :------------------------------------------------------------------------------------------------------------------------------------------------- | :--------- |
+| Q1–Q3   | 5 core adapters, 5 themes, AI optimizer, EEBUS, PWA, Monitoring, Docker, Tauri, WCAG 2.2 AA, React Compiler, Backend hardening                     | ✅ Shipped |
+| Q3      | Plugin system, adapter registry, 5 contrib adapters (Home Assistant, Matter/Thread, Zigbee2MQTT, Shelly), Capacitor Mobile                         | ✅ Shipped |
+| Q3–Q4   | Energy controllers (7 loops), MPC optimizer, hardware registry (120+ devices), plugin lifecycle, command safety, 265 tests                         | ✅ Shipped |
 | Q1 2026 | Opt#1 + Opt#2 Zustand/React 19 compiler cleanup, 6 new test suites (circuit-breaker, tariff-providers, notifications, energy-context, +extensions) | ✅ Shipped |
-| Q4      | **Unified Command Center** — 7 focused sections, guided tours, contextual help, zero-config onboarding, full a11y audit        | ✅ Shipped |
-| Q4+     | Historical analytics, multi-tenant SaaS, contrib marketplace                                                                   | 🔜 Planned |
+| Q4      | **Unified Command Center** — 7 focused sections, guided tours, contextual help, zero-config onboarding, full a11y audit                            | ✅ Shipped |
+| Q4+     | Historical analytics, multi-tenant SaaS, contrib marketplace                                                                                       | 🔜 Planned |
 
 ## Changelog
 

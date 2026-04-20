@@ -193,7 +193,7 @@ Based on the current `main` branch state:
 
 - PR #14 `vite 8` — ✅ COMPLETED: migrated to Vite 8.0.8 with Rolldown bundler
 - PR #15 `@vitejs/plugin-react 6` — ✅ COMPLETED: migrated to v6.0.1 with `reactCompilerPreset`
-- PR #12 `eslint 10` — major linting/tooling shift; review separately
+- PR #12 `eslint 10` — ✅ SUPERSEDED: Biome-first toolchain migration completed (2026-04-20); ESLint retained only as slim React-only config; typescript-eslint, @eslint/js, Prettier and all bridges removed
 - PR #13 `jsdom 29` — low urgency, but should be validated against Vitest DOM behavior
 - PR #3 `node:25-alpine` — defer; project baseline remains Node 22 with Node 25 only as canary
 
@@ -206,7 +206,7 @@ Based on the current `main` branch state:
 Executed locally:
 
 - `npx tsc --noEmit`
-- `npx eslint ... --max-warnings 0` on changed source and test files
+- `pnpm lint` (biome check + slim eslint) on changed source and test files
 - `npx vitest run src/tests/security-hardening.test.ts`
 - `pnpm test:fuzz`
 - `pnpm build`

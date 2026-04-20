@@ -1,41 +1,23 @@
-import js from '@eslint/js';
-import globals from 'globals';
+// ESLint — React-only rules (Biome handles all TS/JS linting + formatting)
+// Only rules with no Biome equivalent are enforced here.
+// See docs/Toolchain-Architecture.md for the full toolchain reference.
 import reactHooks from 'eslint-plugin-react-hooks';
 import reactCompiler from 'eslint-plugin-react-compiler';
 import reactRefresh from 'eslint-plugin-react-refresh';
-import tseslint from 'typescript-eslint';
-import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
-import antiTrojanSource from 'eslint-plugin-anti-trojan-source';
 
-export default tseslint.config(
-  { ignores: ['dist'] },
+export default [
+  { ignores: ['dist', 'node_modules', 'coverage', 'storybook-static'] },
   {
-    extends: [
-      js.configs.recommended,
-      ...tseslint.configs.recommended,
-      eslintPluginPrettierRecommended,
-    ],
     files: ['**/*.{ts,tsx}'],
-    languageOptions: {
-      ecmaVersion: 2020,
-      globals: globals.browser,
-    },
     plugins: {
       'react-hooks': reactHooks,
       'react-compiler': reactCompiler,
       'react-refresh': reactRefresh,
-      'anti-trojan-source': antiTrojanSource,
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
       'react-compiler/react-compiler': 'error',
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
-      '@typescript-eslint/no-explicit-any': 'error',
-      '@typescript-eslint/no-unused-vars': [
-        'error',
-        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
-      ],
-      'anti-trojan-source/no-bidi': 'warn',
     },
   },
-);
+];

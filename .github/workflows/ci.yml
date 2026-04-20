@@ -51,9 +51,6 @@ jobs:
       - name: Type Check
         run: pnpm type-check
 
-      - name: Format Check
-        run: pnpm format:check
-
   unit-tests:
     name: Unit Tests
     runs-on: ubuntu-latest

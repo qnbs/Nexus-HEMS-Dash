@@ -25,8 +25,8 @@
 - [ ] `node -v` zeigt Node.js 24.x für Produktions-Builds
 - [ ] `pnpm install --frozen-lockfile` — saubere Installation
 - [ ] `npx tsc --noEmit` — keine TypeScript-Fehler
-- [ ] `pnpm lint` — keine ESLint-Warnings (`--max-warnings 0`)
-- [ ] `pnpm format:check` — Prettier-konform
+- [ ] `pnpm lint` — Biome check + React ESLint (zero warnings, `--max-warnings 0`)
+- [ ] `pnpm format:check` — Biome-konform (kein Prettier mehr)
 - [ ] `pnpm test:run` — alle Unit-Tests grün
 - [ ] `pnpm test:e2e` — alle E2E-Tests grün (Playwright)
 - [ ] `pnpm test:a11y` — Accessibility-Tests bestanden (WCAG 2.2 AA)

@@ -10,10 +10,4 @@ else
   fi
 fi
 
-# Format check: catch formatting issues before they reach CI
-pnpm format:check --no-error-on-unmatched-pattern 2>/dev/null || {
-  echo "⚠ Formatting issues detected — run 'pnpm format' to fix"
-  exit 1
-}
-
 npx lint-staged

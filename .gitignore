@@ -13,3 +13,6 @@ test-results/
 # Local Chrome for testing
 chrome/
 .lighthouseci/
+
+# Toolchain benchmark reports
+.perf/
