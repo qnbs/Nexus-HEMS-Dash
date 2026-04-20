@@ -1,10 +1,10 @@
-import { useState, lazy, Suspense } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { BarChart3, ChevronRight, Clock, Database, FileText, Leaf, TrendingUp } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
+import { lazy, Suspense, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { BarChart3, Clock, Database, Leaf, TrendingUp, FileText, ChevronRight } from 'lucide-react';
 import { PageHeader } from '../components/layout/PageHeader';
-import { PageCrossLinks } from '../components/ui/PageCrossLinks';
 import { HelpTooltip } from '../components/ui/HelpTooltip';
+import { PageCrossLinks } from '../components/ui/PageCrossLinks';
 import { PageTour, type TourStep } from '../components/ui/PageTour';
 
 // ─── Lazy-load heavy sub-pages into tab panels ───────────────────────

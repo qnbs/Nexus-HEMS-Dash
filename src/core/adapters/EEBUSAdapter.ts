@@ -21,14 +21,14 @@
  *                                                            This Adapter → Dashboard
  */
 
+import { BaseAdapter } from './BaseAdapter';
 import type {
   AdapterCapability,
   AdapterCommand,
   AdapterConnectionConfig,
-  UnifiedEnergyModel,
   EVChargerData,
+  UnifiedEnergyModel,
 } from './EnergyAdapter';
-import { BaseAdapter } from './BaseAdapter';
 
 // ─── EEBUS SPINE Data Types ──────────────────────────────────────────
 

@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { triggerHaptic, isHapticSupported, hapticClick, hapticSuccess } from '../lib/haptics';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { hapticClick, hapticSuccess, isHapticSupported, triggerHaptic } from '../lib/haptics';
 
 describe('Haptic Feedback', () => {
   beforeEach(() => {

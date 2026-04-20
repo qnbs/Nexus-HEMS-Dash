@@ -1,9 +1,8 @@
-import { motion } from 'motion/react';
 import { TrendingDown, TrendingUp, Zap } from 'lucide-react';
+import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
-
-import { useAppStore } from '../store';
 import { usePriceForecast } from '../lib/queries';
+import { useAppStore } from '../store';
 
 export function LivePriceWidget() {
   const { t, i18n } = useTranslation();

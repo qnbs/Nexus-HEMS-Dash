@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { Inbox, WifiOff, Search } from 'lucide-react';
+import { Inbox, Search, WifiOff } from 'lucide-react';
 import { EmptyState } from './EmptyState';
 
 const meta: Meta<typeof EmptyState> = {

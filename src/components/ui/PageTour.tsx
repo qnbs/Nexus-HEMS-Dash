@@ -1,8 +1,8 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { useTranslation } from 'react-i18next';
-import { X, ChevronRight, ChevronLeft, Sparkles } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Sparkles, X } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export interface TourStep {
   icon: LucideIcon;

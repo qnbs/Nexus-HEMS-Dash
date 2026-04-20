@@ -19,14 +19,14 @@
  *   to map group addresses to room entities automatically.
  */
 
+import { BaseAdapter } from './BaseAdapter';
 import type {
   AdapterCapability,
-  AdapterConnectionConfig,
   AdapterCommand,
-  UnifiedEnergyModel,
+  AdapterConnectionConfig,
   KNXRoom,
+  UnifiedEnergyModel,
 } from './EnergyAdapter';
-import { BaseAdapter } from './BaseAdapter';
 
 // ─── KNX telegram message from bridge ────────────────────────────────
 

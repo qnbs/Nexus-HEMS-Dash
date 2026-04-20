@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import { requireJWT } from '../middleware/auth.js';
-import { renderPrometheusText, getServerMetrics, serverStartTime } from '../middleware/metrics.js';
 import type { WebSocketServer } from 'ws';
+import { requireJWT } from '../middleware/auth.js';
+import { getServerMetrics, renderPrometheusText, serverStartTime } from '../middleware/metrics.js';
 
 export function createMetricsRoutes(wss: WebSocketServer): Router {
   const router = Router();

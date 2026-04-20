@@ -1,10 +1,10 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
   fetchTariffForecast,
   generatePredictiveRecommendation,
-  queryAIForOptimization,
-  getPriceHistory,
   getForecast,
+  getPriceHistory,
+  queryAIForOptimization,
 } from '../lib/predictive-ai';
 import type { EnergyData, StoredSettings } from '../types';
 

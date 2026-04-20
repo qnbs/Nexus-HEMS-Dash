@@ -1,14 +1,14 @@
-import { useEffect, useRef, useState } from 'react';
-import { select } from 'd3-selection';
-import { sankeyLinkHorizontal } from 'd3-sankey';
 import * as Comlink from 'comlink';
+import { sankeyLinkHorizontal } from 'd3-sankey';
+import { select } from 'd3-selection';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { EnergyData } from '../types';
 import { persistSankeySnapshot } from '../lib/db';
+import type { EnergyData } from '../types';
 import type {
   SankeyGraphResult,
-  SankeyWorkerInput,
   SankeyWorkerAPI,
+  SankeyWorkerInput,
 } from '../workers/worker-types';
 
 /**

@@ -1,5 +1,5 @@
+import { AnimatePresence, motion } from 'motion/react';
 import { type ReactNode, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
 
 export interface FloatingActionBarProps {
   /** Whether the bar is currently visible */

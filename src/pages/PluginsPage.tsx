@@ -1,26 +1,26 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { useTranslation } from 'react-i18next';
 import {
-  Puzzle,
-  Play,
-  Square,
-  Trash2,
+  AlertTriangle,
+  CheckCircle2,
   ChevronDown,
   ChevronUp,
-  CheckCircle2,
-  XCircle,
-  AlertTriangle,
   Clock,
-  Package,
-  Link2,
-  Layers,
   Info,
+  Layers,
+  Link2,
+  Package,
+  Play,
+  Puzzle,
+  Square,
+  Trash2,
+  XCircle,
 } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { PageHeader } from '../components/layout/PageHeader';
 import { NeonCard, NeonCardBody } from '../components/ui/NeonCard';
 import { PageCrossLinks } from '../components/ui/PageCrossLinks';
-import { pluginManager, type PluginEntry, type PluginState } from '../core/plugin-system';
+import { type PluginEntry, type PluginState, pluginManager } from '../core/plugin-system';
 
 // ─── State badge colors ─────────────────────────────────────────────
 

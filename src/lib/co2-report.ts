@@ -10,9 +10,9 @@
  * Supports PDF export via jsPDF integration.
  */
 
-import { aggregateDaily } from './ml-forecast';
-import type { DailyAggregate, MonthlyAggregate } from './ml-forecast';
 import type { EnergySnapshot } from './db';
+import type { DailyAggregate, MonthlyAggregate } from './ml-forecast';
+import { aggregateDaily } from './ml-forecast';
 
 // ─── UBA Emission Factors ───────────────────────────────────────────
 

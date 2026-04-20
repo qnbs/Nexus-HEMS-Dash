@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from './test-utils';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ErrorBoundary } from '../components/ErrorBoundary';
+import { render, screen } from './test-utils';
 
 // Mock i18next for ErrorBoundary (uses direct i18next.t)
 vi.mock('i18next', () => ({

@@ -1,21 +1,20 @@
-import { useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
 import {
-  LayoutDashboard,
   Activity,
-  Sparkles,
-  TrendingUp,
-  MoreHorizontal,
-  Zap,
   BarChart3,
   HelpCircle,
+  LayoutDashboard,
   Monitor,
-  X,
+  MoreHorizontal,
   Settings,
+  Sparkles,
+  TrendingUp,
+  X,
+  Zap,
 } from 'lucide-react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { AnimatePresence, motion } from 'motion/react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 interface NavItem {
   id: string;

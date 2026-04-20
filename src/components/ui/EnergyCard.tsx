@@ -1,6 +1,6 @@
-import { type ReactNode, useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
 import { ChevronDown } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
+import { type ReactNode, useState } from 'react';
 
 /** Variant determines the accent border color on hover/active */
 export type EnergyCardVariant = 'primary' | 'success' | 'warning' | 'danger' | 'neutral';

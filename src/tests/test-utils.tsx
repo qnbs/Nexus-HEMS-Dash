@@ -1,6 +1,5 @@
-import { type ReactElement } from 'react';
-import { render, type RenderOptions } from '@testing-library/react';
-import { StrictMode } from 'react';
+import { type RenderOptions, render } from '@testing-library/react';
+import { type ReactElement, StrictMode } from 'react';
 
 /**
  * Custom render that wraps components in React.StrictMode,

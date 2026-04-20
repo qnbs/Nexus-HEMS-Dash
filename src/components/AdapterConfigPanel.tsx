@@ -8,35 +8,36 @@
  *   - OCPP 2.1 (endpoint, security profile, station ID, mTLS)
  *   - EEBUS SPINE/SHIP (host, port, SKI, mTLS)
  */
-import { useState, useRef } from 'react';
-import { useTranslation } from 'react-i18next';
-import { motion, AnimatePresence } from 'motion/react';
+
 import {
-  Server,
-  Wifi,
-  Shield,
-  Plus,
-  Trash2,
-  ChevronDown,
-  ChevronRight,
-  Eye,
-  EyeOff,
-  Check,
+  Activity,
   AlertTriangle,
   Cable,
-  Gauge,
-  Plug,
-  Radio,
-  Activity,
-  ShieldCheck,
-  CircleCheck,
-  CircleAlert,
-  CircleMinus,
+  Check,
+  ChevronDown,
+  ChevronRight,
   Circle,
+  CircleAlert,
+  CircleCheck,
+  CircleMinus,
   Download,
+  Eye,
+  EyeOff,
+  Gauge,
   Package,
+  Plug,
+  Plus,
+  Radio,
+  Server,
+  Shield,
+  ShieldCheck,
+  Trash2,
+  Wifi,
 } from 'lucide-react';
-import { loadAllContribAdapters, listRegisteredAdapters } from '../core/adapters/adapter-registry';
+import { AnimatePresence, motion } from 'motion/react';
+import { useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { listRegisteredAdapters, loadAllContribAdapters } from '../core/adapters/adapter-registry';
 
 // ─── Types ───────────────────────────────────────────────────────────
 

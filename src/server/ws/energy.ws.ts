@@ -1,9 +1,9 @@
-import type { WebSocketServer, WebSocket } from 'ws';
 import type { IncomingMessage } from 'http';
-import { authenticateWS, type AuthenticatedClient } from '../middleware/auth.js';
-import { mockData, updateMockData } from '../data/mock-data.js';
-import { updateServerMetrics, setMetric, wsMessageCount } from '../middleware/metrics.js';
+import type { WebSocket, WebSocketServer } from 'ws';
 import { WSCommandSchema } from '../../types/protocol.js';
+import { mockData, updateMockData } from '../data/mock-data.js';
+import { type AuthenticatedClient, authenticateWS } from '../middleware/auth.js';
+import { setMetric, updateServerMetrics, wsMessageCount } from '../middleware/metrics.js';
 
 function validateWSCommand(parsed: unknown): { valid: boolean; error?: string } {
   const result = WSCommandSchema.safeParse(parsed);

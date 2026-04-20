@@ -1,15 +1,15 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import 'fake-indexeddb/auto';
 import {
-  db,
   cacheEnergySnapshot,
-  getLatestEnergySnapshot,
   cacheSankeyData,
-  getLatestSankeyData,
   cacheTariffData,
+  clearOfflineCache,
+  db,
+  getLatestEnergySnapshot,
+  getLatestSankeyData,
   getLatestTariffData,
   getStorageStats,
-  clearOfflineCache,
 } from '../lib/offline-cache';
 
 describe('Offline Cache (IndexedDB)', () => {

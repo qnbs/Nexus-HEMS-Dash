@@ -14,18 +14,18 @@
  *   execute({ type: 'SET_BATTERY_POWER', value: 2000 });
  */
 
-import { useState, useRef, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { AdapterCommand } from './adapters/EnergyAdapter';
-import { sendAdapterCommand } from './useEnergyStore';
-import {
-  validateCommand,
-  requiresConfirmation,
-  logCommandAudit,
-  describeCommand,
-} from './command-safety';
-import { ConfirmDialog } from '../components/ConfirmDialog';
 import type { ConfirmVariant } from '../components/ConfirmDialog';
+import { ConfirmDialog } from '../components/ConfirmDialog';
+import type { AdapterCommand } from './adapters/EnergyAdapter';
+import {
+  describeCommand,
+  logCommandAudit,
+  requiresConfirmation,
+  validateCommand,
+} from './command-safety';
+import { sendAdapterCommand } from './useEnergyStore';
 
 interface SafeCommandState {
   pending: boolean;

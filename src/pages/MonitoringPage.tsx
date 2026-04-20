@@ -1,42 +1,42 @@
-import { useRef } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { motion } from 'motion/react';
-import { useTranslation } from 'react-i18next';
 import {
   Activity,
+  AlertTriangle,
+  BarChart3,
+  CheckCircle2,
+  Cpu,
+  Eye,
+  Gauge,
+  HardDrive,
+  MemoryStick,
+  Radio,
   Server,
-  Wifi,
-  WifiOff,
   Shield,
   ShieldAlert,
   ShieldCheck,
-  Cpu,
-  HardDrive,
-  MemoryStick,
-  Zap,
-  ThermometerSun,
-  Gauge,
-  AlertTriangle,
-  CheckCircle2,
-  XCircle,
-  Radio,
   Terminal,
-  BarChart3,
-  Eye,
+  ThermometerSun,
+  Wifi,
+  WifiOff,
+  XCircle,
+  Zap,
 } from 'lucide-react';
+import { motion } from 'motion/react';
+import { useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
-  AreaChart,
   Area,
+  AreaChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
 } from 'recharts';
-import { useAppStoreShallow } from '../store';
 import { PageHeader } from '../components/layout/PageHeader';
-import { useMetrics, getMetricFromSnapshot } from '../core/useMetrics';
 import { PageCrossLinks } from '../components/ui/PageCrossLinks';
+import { getMetricFromSnapshot, useMetrics } from '../core/useMetrics';
+import { useAppStoreShallow } from '../store';
 
 // ─── Deterministic system load history ────────────────────────────────
 

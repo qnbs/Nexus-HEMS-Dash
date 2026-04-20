@@ -1,8 +1,7 @@
-import { describe, expect, it, vi } from 'vitest';
 import fc from 'fast-check';
-
-import { OpenEMSAdapter } from '../core/adapters/OpenEMSAdapter';
+import { describe, expect, it, vi } from 'vitest';
 import { buildAllowedPollUrl, isPrivateIPv4, sanitizePollHeaders } from '../core/adapter-worker';
+import { OpenEMSAdapter } from '../core/adapters/OpenEMSAdapter';
 
 const BLOCKED_HEADER_NAMES = new Set([
   'connection',

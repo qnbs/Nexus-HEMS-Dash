@@ -10,10 +10,10 @@
  */
 
 import { callAI } from '../core/aiClient';
-import { nexusDb, type AIForecastRecord } from './db';
-import { writeAIForecast, type InfluxConfig, checkInfluxHealth } from './influxdb-client';
-import type { ForecastResult } from './ml-forecast';
 import type { EnergyData } from '../types';
+import { type AIForecastRecord, nexusDb } from './db';
+import { checkInfluxHealth, type InfluxConfig, writeAIForecast } from './influxdb-client';
+import type { ForecastResult } from './ml-forecast';
 
 const MAX_FORECAST_RECORDS = 500;
 

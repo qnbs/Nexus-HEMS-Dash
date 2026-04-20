@@ -8,10 +8,10 @@
  *  - Demo-data fallback when disconnected
  *  - useEnergyContext throws outside provider
  */
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, act, waitFor } from './test-utils';
-import { useEnergyContext, EnergyProvider } from '../core/EnergyContext';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { EnergyProvider, useEnergyContext } from '../core/EnergyContext';
 import { useAppStore } from '../store';
+import { act, render, screen, waitFor } from './test-utils';
 
 // ── Mocks ─────────────────────────────────────────────────────────────
 

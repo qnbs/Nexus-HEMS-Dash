@@ -1,11 +1,11 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import {
+  createRegisteredAdapter,
+  getRegisteredAdapter,
+  isAdapterRegistered,
+  listRegisteredAdapters,
   registerAdapter,
   unregisterAdapter,
-  getRegisteredAdapter,
-  listRegisteredAdapters,
-  isAdapterRegistered,
-  createRegisteredAdapter,
 } from '../core/adapters/adapter-registry';
 
 // Simple mock adapter factory

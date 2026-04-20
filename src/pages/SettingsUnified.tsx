@@ -1,27 +1,27 @@
-import { useState, lazy, Suspense } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { motion, AnimatePresence } from 'motion/react';
-import { useTranslation } from 'react-i18next';
 import {
-  Settings as SettingsIcon,
-  Palette,
-  Server,
-  Zap,
-  Shield,
-  Database,
   Bell,
-  Gauge,
-  Sparkles,
   Cable,
-  Cpu,
-  Puzzle,
-  HelpCircle,
   ChevronRight,
+  Cpu,
+  Database,
+  Gauge,
+  HelpCircle,
+  Palette,
+  Puzzle,
+  Server,
+  Settings as SettingsIcon,
+  Shield,
+  Sparkles,
   Wrench,
+  Zap,
 } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
+import { lazy, Suspense, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useSearchParams } from 'react-router-dom';
 import { PageHeader } from '../components/layout/PageHeader';
-import { PageCrossLinks } from '../components/ui/PageCrossLinks';
 import { HelpTooltip } from '../components/ui/HelpTooltip';
+import { PageCrossLinks } from '../components/ui/PageCrossLinks';
 import { PageTour, type TourStep } from '../components/ui/PageTour';
 
 // ─── Lazy-load existing pages ────────────────────────────────────────

@@ -17,13 +17,13 @@
  * D-Bus service paths follow the com.victronenergy.* namespace.
  */
 
+import { BaseAdapter } from './BaseAdapter';
 import type {
   AdapterCapability,
-  AdapterConnectionConfig,
   AdapterCommand,
+  AdapterConnectionConfig,
   UnifiedEnergyModel,
 } from './EnergyAdapter';
-import { BaseAdapter } from './BaseAdapter';
 
 // Lazy-load mqtt.js only when needed (keeps initial bundle small)
 type MqttClient = {

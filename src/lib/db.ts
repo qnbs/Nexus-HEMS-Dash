@@ -1,9 +1,8 @@
 import Dexie, { type Table } from 'dexie';
-
-import type { EnergyData, StoredSettings } from '../types';
 import type { CommandAuditEntry } from '../core/command-safety';
-import type { EncryptedAdapterCredential } from './secure-store';
+import type { EnergyData, StoredSettings } from '../types';
 import type { ShareLink } from './auth/auth-provider';
+import type { EncryptedAdapterCredential } from './secure-store';
 
 export interface EnergySnapshot extends EnergyData {
   id?: number;

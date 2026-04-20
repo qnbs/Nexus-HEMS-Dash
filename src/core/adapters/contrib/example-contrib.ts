@@ -21,6 +21,7 @@
  *   Or export `{ id, factory }` as default export.
  */
 
+import { registerAdapter } from '../adapter-registry';
 import { BaseAdapter } from '../BaseAdapter';
 import type {
   AdapterCapability,
@@ -28,7 +29,6 @@ import type {
   AdapterConnectionConfig,
   UnifiedEnergyModel,
 } from '../EnergyAdapter';
-import { registerAdapter } from '../adapter-registry';
 
 // ─── Example Adapter Config ─────────────────────────────────────────
 

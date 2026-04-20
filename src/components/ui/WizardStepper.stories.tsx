@@ -1,7 +1,7 @@
-import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
-import { Settings, Cpu, CheckCircle2 } from 'lucide-react';
-import { WizardStepper, WizardContent, useWizard, type WizardStepDef } from './WizardStepper';
+import { CheckCircle2, Cpu, Settings } from 'lucide-react';
+import { useState } from 'react';
+import { useWizard, WizardContent, type WizardStepDef, WizardStepper } from './WizardStepper';
 
 const DEMO_STEPS: WizardStepDef[] = [
   { id: 'configure', label: 'Konfigurieren', icon: <Settings size={14} aria-hidden="true" /> },

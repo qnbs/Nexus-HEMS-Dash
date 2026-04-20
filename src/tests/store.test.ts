@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { useAppStore, defaultSettings } from '../store';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { defaultSettings, useAppStore } from '../store';
 
 // Mock persistSettings to avoid Dexie in unit tests
 vi.mock('../lib/db', () => ({

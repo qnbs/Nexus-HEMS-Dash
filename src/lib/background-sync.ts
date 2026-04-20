@@ -5,10 +5,10 @@
  */
 
 import {
-  getPendingActions,
-  updateActionStatus,
   cleanupCompletedActions,
+  getPendingActions,
   type OfflineAction,
+  updateActionStatus,
 } from './db';
 
 const MAX_RETRIES = 5;
@@ -118,8 +118,7 @@ class BackgroundSyncService {
           );
 
           // Exponential backoff retry with jitter to prevent thundering herd
-          const delay =
-            BASE_RETRY_DELAY_MS * Math.pow(2, retryCount) + Math.floor(Math.random() * 1000);
+          const delay = BASE_RETRY_DELAY_MS * 2 ** retryCount + Math.floor(Math.random() * 1000);
           await updateActionStatus(action.id!, 'failed', errMsg);
 
           if (retryCount + 1 < MAX_RETRIES) {

@@ -12,14 +12,14 @@
  * §14a EnWG conformance: provides manual override for all controllable consumers.
  */
 
-import { useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
-import { OctagonX, ShieldAlert, RotateCcw } from 'lucide-react';
+import { OctagonX, RotateCcw, ShieldAlert } from 'lucide-react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useEnergyStoreBase } from '../core/useEnergyStore';
 import { logCommandAudit } from '../core/command-safety';
-import { metricsCollector } from '../lib/metrics';
 import type { AdapterId } from '../core/useEnergyStore';
+import { useEnergyStoreBase } from '../core/useEnergyStore';
+import { metricsCollector } from '../lib/metrics';
 
 interface EmergencyStopProps {
   circuitBreakers?: Map<string, { forceOpen: () => void }>;

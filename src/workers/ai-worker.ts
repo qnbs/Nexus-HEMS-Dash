@@ -18,12 +18,12 @@ import * as Comlink from 'comlink';
 import type {
   AIWorkerAPI,
   EnergyDataFull,
-  OptimizerSettings,
-  OptimizerRecommendation,
-  PricePoint,
   ForecastSummary,
+  OptimizerRecommendation,
+  OptimizerSettings,
   PredictiveInput,
   PredictiveResult,
+  PricePoint,
 } from './worker-types';
 
 // ─── Optimizer (ported from src/lib/optimizer.ts) ────────────────────

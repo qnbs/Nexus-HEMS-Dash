@@ -1,10 +1,9 @@
-import { type ReactNode, type HTMLAttributes, useState, useRef } from 'react';
-import { useTranslation } from 'react-i18next';
+import { Maximize2, Minimize2, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
-import { X, Maximize2, Minimize2 } from 'lucide-react';
-
-import { SankeyDiagram } from '../SankeyDiagram';
+import { type HTMLAttributes, type ReactNode, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { EnergyData } from '../../types';
+import { SankeyDiagram } from '../SankeyDiagram';
 
 export interface OptimizedSankeyProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children'> {
   /** Current energy data to visualize */

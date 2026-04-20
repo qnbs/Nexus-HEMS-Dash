@@ -1,39 +1,38 @@
-import { useState, useActionState, lazy, Suspense } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { useTranslation } from 'react-i18next';
-import {
-  Sun,
-  Battery,
-  Car,
-  Thermometer,
-  Building2,
-  Search,
-  Filter,
-  ChevronRight,
-  Zap,
-  PlugZap,
-  Gauge,
-  Leaf,
-  Power,
-  ArrowUpDown,
-  LayoutGrid,
-  Map,
-} from 'lucide-react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
-
+import {
+  ArrowUpDown,
+  Battery,
+  Building2,
+  Car,
+  ChevronRight,
+  Filter,
+  Gauge,
+  LayoutGrid,
+  Leaf,
+  Map,
+  PlugZap,
+  Power,
+  Search,
+  Sun,
+  Thermometer,
+  Zap,
+} from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
+import { lazy, Suspense, useActionState, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { DemoBadge } from '../components/DemoBadge';
+import { PageHeader } from '../components/layout/PageHeader';
+import { ControlPanel as ControlPanelUI } from '../components/ui/ControlPanel';
+import { EmptyState } from '../components/ui/EmptyState';
+import { EnergyCard, type EnergyCardVariant } from '../components/ui/EnergyCard';
+import { HelpTooltip } from '../components/ui/HelpTooltip';
+import { LiveMetric } from '../components/ui/LiveMetric';
+import { PageTour, type TourStep } from '../components/ui/PageTour';
 import { useEnergyContext } from '../core/EnergyContext';
 import { useLegacySendCommand } from '../core/useLegacySendCommand';
-import { useAppStoreShallow } from '../store';
-import { PageHeader } from '../components/layout/PageHeader';
-import { EnergyCard, type EnergyCardVariant } from '../components/ui/EnergyCard';
-import { LiveMetric } from '../components/ui/LiveMetric';
-import { ControlPanel as ControlPanelUI } from '../components/ui/ControlPanel';
-import { HelpTooltip } from '../components/ui/HelpTooltip';
-import { EmptyState } from '../components/ui/EmptyState';
-import { PageTour, type TourStep } from '../components/ui/PageTour';
-import { DemoBadge } from '../components/DemoBadge';
 import { hapticClick, hapticModeChange, hapticSuccess } from '../lib/haptics';
+import { useAppStoreShallow } from '../store';
 import type { CommandType, EvMode, EvState, HpMode, HpState } from '../types';
 
 // ─── Lazy-load Floorplan (heavy SVG component) ──────────────────────

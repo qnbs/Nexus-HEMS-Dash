@@ -8,13 +8,13 @@
 import { create } from 'zustand';
 
 import type {
+  AuthCredentials,
   AuthProvider,
   AuthProviderType,
   AuthSession,
   AuthUser,
-  AuthCredentials,
-  OAuthProvider,
   CreateShareLinkOptions,
+  OAuthProvider,
   ShareLink,
 } from './auth-provider';
 

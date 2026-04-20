@@ -12,7 +12,7 @@
  * via the HiL mocks.
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { OCPPMockServer } from './mocks/ocpp-mock-server';
 import { VictronSimulator } from './mocks/victron-simulator';
 

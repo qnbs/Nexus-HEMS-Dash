@@ -2,30 +2,30 @@
  * BYOK AI Settings Page — Manage encrypted API keys for multiple AI providers.
  */
 
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { useTranslation } from 'react-i18next';
 import {
-  Key,
-  Shield,
-  Trash2,
-  Check,
   AlertTriangle,
+  Check,
   Eye,
   EyeOff,
-  Sparkles,
+  Key,
   KeyRound,
+  Shield,
+  Sparkles,
+  Trash2,
 } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
+import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { EmptyState } from '../components/ui/EmptyState';
 import {
   AI_PROVIDERS,
-  saveAIKey,
-  removeAIKey,
-  listAIKeys,
-  getActiveProvider,
-  setActiveProvider,
   type AIProvider,
+  getActiveProvider,
+  listAIKeys,
+  removeAIKey,
+  saveAIKey,
+  setActiveProvider,
 } from '../lib/ai-keys';
 
 interface StoredKeyInfo {

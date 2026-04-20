@@ -1,11 +1,11 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+import type { ThemeName } from '../lib/theme';
 import {
-  resolveTheme,
   detectSystemTheme,
   getThemeFromSystemPreference,
+  resolveTheme,
   watchSystemTheme,
 } from '../lib/theme';
-import type { ThemeName } from '../lib/theme';
 
 describe('Theme System', () => {
   it('should resolve system theme to actual theme', () => {

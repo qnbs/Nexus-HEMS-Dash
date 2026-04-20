@@ -1,20 +1,20 @@
-import { useState } from 'react';
-import { NavLink } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { motion } from 'motion/react';
 import {
-  LayoutDashboard,
   Activity,
-  Sparkles,
-  TrendingUp,
   BarChart3,
-  Settings,
-  Zap,
-  Monitor,
   HelpCircle,
+  LayoutDashboard,
+  Monitor,
   PanelLeftClose,
   PanelLeftOpen,
+  Settings,
+  Sparkles,
+  TrendingUp,
+  Zap,
 } from 'lucide-react';
+import { motion } from 'motion/react';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { NavLink } from 'react-router-dom';
 import { useAppStore } from '../../store';
 
 interface NavItem {

@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from './test-utils';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
+import { fireEvent, render, screen } from './test-utils';
 
 // Mock react-i18next
 const mockChangeLanguage = vi.fn();

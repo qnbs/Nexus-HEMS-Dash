@@ -1,42 +1,41 @@
-import { useState, useRef, useActionState, type PointerEvent as RPointerEvent } from 'react';
-import { useTranslation } from 'react-i18next';
-import { AnimatePresence, motion } from 'motion/react';
 import {
   Activity,
   Battery,
+  Blinds,
   Car,
-  Thermometer,
-  Home,
-  Sun,
-  Zap,
-  Leaf,
   Gauge,
+  GripHorizontal,
+  Home,
+  Leaf,
+  Lightbulb,
   Maximize2,
   Minimize2,
-  GripHorizontal,
-  Lightbulb,
-  Blinds,
+  Sun,
+  Thermometer,
   ThermometerSun,
+  WifiOff,
+  Zap,
 } from 'lucide-react';
-
+import { AnimatePresence, motion } from 'motion/react';
+import { type PointerEvent as RPointerEvent, useActionState, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { DemoBadge } from '../components/DemoBadge';
+import { SankeyDiagram } from '../components/SankeyDiagram';
+import {
+  ControlPanelDivider,
+  ControlPanelSection,
+  ControlPanel as ControlPanelUI,
+} from '../components/ui/ControlPanel';
+import { EmptyState } from '../components/ui/EmptyState';
+import { HelpTooltip } from '../components/ui/HelpTooltip';
+import { PageTour, type TourStep } from '../components/ui/PageTour';
 import { useEnergyContext } from '../core/EnergyContext';
 import { useLegacySendCommand } from '../core/useLegacySendCommand';
-import { SankeyDiagram } from '../components/SankeyDiagram';
-import { DemoBadge } from '../components/DemoBadge';
-import { HelpTooltip } from '../components/ui/HelpTooltip';
-import { EmptyState } from '../components/ui/EmptyState';
-import { PageTour, type TourStep } from '../components/ui/PageTour';
-import { WifiOff } from 'lucide-react';
-import {
-  ControlPanel as ControlPanelUI,
-  ControlPanelSection,
-  ControlPanelDivider,
-} from '../components/ui/ControlPanel';
-import { formatPower, formatPercent } from '../lib/format';
+import { formatPercent, formatPower } from '../lib/format';
 import { hapticClick, hapticModeChange, hapticSuccess } from '../lib/haptics';
 import { useAppStore } from '../store';
 
-import type { CommandType, EvState, HpState, EvMode, HpMode } from '../types';
+import type { CommandType, EvMode, EvState, HpMode, HpState } from '../types';
 
 // ─── Draggable position hook ──────────────────────────────────────────
 type Position = { x: number; y: number };

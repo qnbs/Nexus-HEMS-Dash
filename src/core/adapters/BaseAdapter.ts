@@ -18,19 +18,19 @@
  *   _sendCommand() — send a command to the hardware
  */
 
+import { metricsCollector } from '../../lib/metrics';
+import { CircuitBreaker, type CircuitBreakerConfig } from '../circuit-breaker';
+import { logCommandAudit, requiresConfirmation, validateCommand } from '../command-safety';
 import type {
-  EnergyAdapter,
-  AdapterStatus,
   AdapterCapability,
-  AdapterConnectionConfig,
   AdapterCommand,
+  AdapterConnectionConfig,
   AdapterDataCallback,
+  AdapterStatus,
   AdapterStatusCallback,
+  EnergyAdapter,
   UnifiedEnergyModel,
 } from './EnergyAdapter';
-import { CircuitBreaker, type CircuitBreakerConfig } from '../circuit-breaker';
-import { validateCommand, logCommandAudit, requiresConfirmation } from '../command-safety';
-import { metricsCollector } from '../../lib/metrics';
 
 // ─── Error types ─────────────────────────────────────────────────────
 

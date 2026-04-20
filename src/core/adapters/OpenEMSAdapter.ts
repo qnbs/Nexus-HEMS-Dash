@@ -16,8 +16,8 @@
 import { BaseAdapter } from './BaseAdapter';
 import type {
   AdapterCapability,
-  AdapterConnectionConfig,
   AdapterCommand,
+  AdapterConnectionConfig,
   UnifiedEnergyModel,
 } from './EnergyAdapter';
 

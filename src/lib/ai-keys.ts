@@ -6,8 +6,8 @@
  * persistent / inspectable Web Storage API — it is discarded on page unload.
  */
 
+import { decrypt, encrypt } from './crypto';
 import { nexusDb } from './db';
-import { encrypt, decrypt } from './crypto';
 
 export type AIProvider = 'openai' | 'anthropic' | 'google' | 'xai' | 'groq' | 'ollama' | 'custom';
 

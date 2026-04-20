@@ -1,12 +1,11 @@
-import { describe, it, expect, vi } from 'vitest';
-
-import { OpenEMSAdapter } from '../core/adapters/OpenEMSAdapter';
+import { describe, expect, it, vi } from 'vitest';
 import {
   buildAllowedPollUrl,
   isAllowedUrl,
   isPrivateIPv4,
   sanitizePollHeaders,
 } from '../core/adapter-worker';
+import { OpenEMSAdapter } from '../core/adapters/OpenEMSAdapter';
 import { PluginManager } from '../core/plugin-system';
 
 function seedOpenEMSComponent(adapter: OpenEMSAdapter, componentId: string, factoryId: string) {

@@ -1,7 +1,7 @@
+import { AlertTriangle, Home } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { Home, AlertTriangle } from 'lucide-react';
 
 export default function NotFoundPage() {
   const { t } = useTranslation();

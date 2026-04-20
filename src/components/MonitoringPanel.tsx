@@ -1,6 +1,6 @@
-import { useTranslation } from 'react-i18next';
 import { motion } from 'motion/react';
-import { useMetrics, getMetricFromSnapshot } from '../core/useMetrics';
+import { useTranslation } from 'react-i18next';
+import { getMetricFromSnapshot, useMetrics } from '../core/useMetrics';
 import { NeonCard } from './ui/NeonCard';
 
 interface MetricCardProps {

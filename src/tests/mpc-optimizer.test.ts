@@ -1,11 +1,11 @@
-import { describe, it, expect } from 'vitest';
-import {
-  MPCOptimizer,
-  generatePVForecast,
-  generateLoadForecast,
-  buildConstraints,
-} from '../lib/mpc-optimizer';
+import { describe, expect, it } from 'vitest';
 import type { TariffSlot } from '../lib/mpc-optimizer';
+import {
+  buildConstraints,
+  generateLoadForecast,
+  generatePVForecast,
+  MPCOptimizer,
+} from '../lib/mpc-optimizer';
 import type { EnergyData, StoredSettings } from '../types';
 import { SYSTEM_PRESETS } from '../types';
 

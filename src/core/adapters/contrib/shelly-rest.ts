@@ -24,6 +24,7 @@
  *   - Optional: device password for authenticated access
  */
 
+import { registerAdapter } from '../adapter-registry';
 import { BaseAdapter } from '../BaseAdapter';
 import type {
   AdapterCapability,
@@ -31,7 +32,6 @@ import type {
   AdapterConnectionConfig,
   UnifiedEnergyModel,
 } from '../EnergyAdapter';
-import { registerAdapter } from '../adapter-registry';
 
 // ─── Shelly Gen2 API types ──────────────────────────────────────────
 

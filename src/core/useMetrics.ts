@@ -5,12 +5,12 @@
  * Also provides useAdapterMetrics() for per-adapter performance tracking.
  */
 
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { MetricFamily } from '../lib/metrics';
 import { metricsCollector } from '../lib/metrics';
-import { useEnergyStoreBase } from './useEnergyStore';
+import { type AdapterPerfMetrics, BaseAdapter } from './adapters/BaseAdapter';
 import type { AdapterId } from './useEnergyStore';
-import { BaseAdapter, type AdapterPerfMetrics } from './adapters/BaseAdapter';
+import { useEnergyStoreBase } from './useEnergyStore';
 
 export interface MetricSnapshot {
   families: MetricFamily[];

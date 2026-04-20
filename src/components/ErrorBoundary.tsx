@@ -3,12 +3,12 @@
  * Catches JavaScript errors in component tree and displays fallback
  */
 
-import { Component, type ReactNode, type ErrorInfo } from 'react';
-import { AlertTriangle, RefreshCw, Home, Bug } from 'lucide-react';
 import i18next from 'i18next';
+import { AlertTriangle, Bug, Home, RefreshCw } from 'lucide-react';
+import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { logger } from '../lib/logger';
-import { Sentry, sentryEnabled } from '../lib/sentry';
 import { metricsCollector } from '../lib/metrics';
+import { Sentry, sentryEnabled } from '../lib/sentry';
 
 interface Props {
   children: ReactNode;

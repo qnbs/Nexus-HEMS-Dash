@@ -1,10 +1,10 @@
-import { createContext, useContext, useState } from 'react';
 import type { ReactNode } from 'react';
-import { useAppStoreShallow } from '../store';
-import { useEnergyStore } from './useEnergyStore';
+import { createContext, useContext, useState } from 'react';
 import { getDisplayData } from '../lib/demo-data';
+import { useAppStoreShallow } from '../store';
 import type { EnergyData } from '../types';
 import type { UnifiedEnergyModel } from './adapters/EnergyAdapter';
+import { useEnergyStore } from './useEnergyStore';
 
 // ─── Detail panel state (shared between Sankey and floating panels) ──
 

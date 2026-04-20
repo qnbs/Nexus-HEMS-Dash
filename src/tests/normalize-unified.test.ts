@@ -9,14 +9,14 @@
  * Uses the VictronSimulator and OCPPMockServer HiL mocks.
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type {
   AdapterDataCallback,
   AdapterStatusCallback,
   UnifiedEnergyModel,
 } from '../core/adapters/EnergyAdapter';
-import { VictronSimulator } from './mocks/victron-simulator';
 import { OCPPMockServer } from './mocks/ocpp-mock-server';
+import { VictronSimulator } from './mocks/victron-simulator';
 
 // ─── Victron normalizeToUnified (Legacy Mode) ────────────────────────
 

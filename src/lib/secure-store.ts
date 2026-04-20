@@ -14,9 +14,9 @@
  *           EEBUS SHIP SKI fingerprints, OCPP security profiles.
  */
 
-import { nexusDb } from './db';
-import { encrypt, decrypt } from './crypto';
 import type { AdapterConnectionConfig } from '../core/adapters/EnergyAdapter';
+import { decrypt, encrypt } from './crypto';
+import { nexusDb } from './db';
 
 // ─── Types ───────────────────────────────────────────────────────────
 

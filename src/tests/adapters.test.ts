@@ -1,11 +1,11 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { EEBUSAdapter } from '../core/adapters/EEBUSAdapter';
 import type {
-  EnergyAdapter,
   AdapterDataCallback,
   AdapterStatusCallback,
+  EnergyAdapter,
   UnifiedEnergyModel,
 } from '../core/adapters/EnergyAdapter';
-import { EEBUSAdapter } from '../core/adapters/EEBUSAdapter';
 
 // ────────────────────────────────────────────────────────────────────
 // Test the adapter interface contract using the EEBUSAdapter (simplest)

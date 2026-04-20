@@ -118,6 +118,7 @@ export function updateServerMetrics(data: Record<string, number>, wsConnectionCo
 }
 
 const serverStartTime = Date.now();
+
 export { serverStartTime };
 
 export const wsMessageCount = { inbound: 0, outbound: 0 };

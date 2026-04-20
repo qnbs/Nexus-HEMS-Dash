@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { OptimizedSankey } from './OptimizedSankey';
 import type { EnergyData } from '../../types';
+import { OptimizedSankey } from './OptimizedSankey';
 
 const mockData: EnergyData = {
   pvPower: 3200,

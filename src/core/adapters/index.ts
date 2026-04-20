@@ -5,71 +5,68 @@
  * are re-exported from here.
  */
 
-// Core types & interface
-export type {
-  EnergyAdapter,
-  AdapterStatus,
-  AdapterCapability,
-  AdapterConnectionConfig,
-  AdapterCommand,
-  AdapterCommandType,
-  AdapterDataCallback,
-  AdapterStatusCallback,
-  AdapterEvent,
-  AdapterEventType,
-  UnifiedEnergyModel,
-  PVData,
-  BatteryData,
-  GridData,
-  LoadData,
-  EVChargerData,
-  KNXData,
-  KNXRoom,
-  TariffData,
-} from './EnergyAdapter';
-
-// Base class & error types
-export { BaseAdapter, CommandCancelledError } from './BaseAdapter';
-export type { CommandConfirmFn, AdapterPerfMetrics } from './BaseAdapter';
-
+export type { AdapterFactory, AdapterRegistration } from './adapter-registry';
 // Plugin registry
 export {
-  registerAdapter,
-  unregisterAdapter,
-  getRegisteredAdapter,
-  listRegisteredAdapters,
-  isAdapterRegistered,
   createRegisteredAdapter,
-  loadContribAdapter,
+  getRegisteredAdapter,
+  isAdapterRegistered,
+  listRegisteredAdapters,
   loadAllContribAdapters,
+  loadContribAdapter,
+  registerAdapter,
   registerBuiltinAdapters,
+  unregisterAdapter,
 } from './adapter-registry';
-export type { AdapterFactory, AdapterRegistration } from './adapter-registry';
-
-// Adapter implementations
-export { VictronMQTTAdapter, VENUS_DBUS_PATHS, VENUS_MQTT_PREFIX } from './VictronMQTTAdapter';
+export type { AdapterPerfMetrics, CommandConfirmFn } from './BaseAdapter';
+// Base class & error types
+export { BaseAdapter, CommandCancelledError } from './BaseAdapter';
 export type {
-  VictronGatewayType,
-  VictronConnectionMode,
-  VictronAdapterConfig,
-} from './VictronMQTTAdapter';
-export { ModbusSunSpecAdapter, SUNSPEC_MODELS } from './ModbusSunSpecAdapter';
-export type { SunSpecDeviceInfo } from './ModbusSunSpecAdapter';
-export { KNXAdapter } from './KNXAdapter';
-export type { KNXRoomConfig, KNXTransport, KNXMQTTConfig, KNXAdapterConfig } from './KNXAdapter';
-export { OCPP21Adapter } from './OCPP21Adapter';
-export type { OCPPSecurityProfile, OCPPAdapterConfig } from './OCPP21Adapter';
-export { EEBUSAdapter } from './EEBUSAdapter';
-export type {
+  EEBUSAdapterConfig,
+  EEBUSConnectionEvent,
   EEBUSDeviceType,
+  EEBUSDiscoveredDevice,
   EEBUSEntity,
   EEBUSFeature,
   EEBUSFeatureType,
-  EEBUSMeasurement,
-  EEBUSLoadControlLimit,
   EEBUSIncentive,
+  EEBUSLoadControlLimit,
+  EEBUSMeasurement,
   SHIPConnectionState,
-  EEBUSDiscoveredDevice,
-  EEBUSConnectionEvent,
-  EEBUSAdapterConfig,
 } from './EEBUSAdapter';
+export { EEBUSAdapter } from './EEBUSAdapter';
+// Core types & interface
+export type {
+  AdapterCapability,
+  AdapterCommand,
+  AdapterCommandType,
+  AdapterConnectionConfig,
+  AdapterDataCallback,
+  AdapterEvent,
+  AdapterEventType,
+  AdapterStatus,
+  AdapterStatusCallback,
+  BatteryData,
+  EnergyAdapter,
+  EVChargerData,
+  GridData,
+  KNXData,
+  KNXRoom,
+  LoadData,
+  PVData,
+  TariffData,
+  UnifiedEnergyModel,
+} from './EnergyAdapter';
+export type { KNXAdapterConfig, KNXMQTTConfig, KNXRoomConfig, KNXTransport } from './KNXAdapter';
+export { KNXAdapter } from './KNXAdapter';
+export type { SunSpecDeviceInfo } from './ModbusSunSpecAdapter';
+export { ModbusSunSpecAdapter, SUNSPEC_MODELS } from './ModbusSunSpecAdapter';
+export type { OCPPAdapterConfig, OCPPSecurityProfile } from './OCPP21Adapter';
+export { OCPP21Adapter } from './OCPP21Adapter';
+export type {
+  VictronAdapterConfig,
+  VictronConnectionMode,
+  VictronGatewayType,
+} from './VictronMQTTAdapter';
+// Adapter implementations
+export { VENUS_DBUS_PATHS, VENUS_MQTT_PREFIX, VictronMQTTAdapter } from './VictronMQTTAdapter';

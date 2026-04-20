@@ -20,16 +20,16 @@
  */
 
 import type {
+  AuthCredentials,
   AuthProvider,
   AuthProviderType,
   AuthSession,
   AuthUser,
-  AuthCredentials,
-  OAuthProvider,
-  UserRole,
   CreateShareLinkOptions,
+  OAuthProvider,
   ShareLink,
   UserInvitation,
+  UserRole,
 } from './auth-provider';
 import { SHARE_TTL_MS } from './auth-provider';
 

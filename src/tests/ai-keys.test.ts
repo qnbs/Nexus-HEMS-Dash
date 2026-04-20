@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import 'fake-indexeddb/auto';
 
 // Mock crypto module
@@ -9,7 +9,7 @@ vi.mock('../lib/crypto', () => ({
 
 // Passphrase is now held in-memory (module-scope variable), no sessionStorage mock needed.
 
-import { saveAIKey, getAIKey, removeAIKey, listAIKeys, AI_PROVIDERS } from '../lib/ai-keys';
+import { AI_PROVIDERS, getAIKey, listAIKeys, removeAIKey, saveAIKey } from '../lib/ai-keys';
 import { nexusDb } from '../lib/db';
 
 describe('AI Key Storage', () => {

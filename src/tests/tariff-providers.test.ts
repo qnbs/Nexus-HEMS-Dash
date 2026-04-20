@@ -9,16 +9,16 @@
  *  - TARIFF_PROVIDERS metadata — structural integrity
  *  - fetchTariffPrices() with provider='none' — generateFixedPrices (no network)
  */
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
+import type { GridFeeSchedule, TariffPricePoint } from '../lib/tariff-providers';
 import {
-  getDynamicGridFee,
-  isPeakHour,
-  getGridFeeSchedule,
   applyDynamicGridFees,
-  TARIFF_PROVIDERS,
   fetchTariffPrices,
+  getDynamicGridFee,
+  getGridFeeSchedule,
+  isPeakHour,
+  TARIFF_PROVIDERS,
 } from '../lib/tariff-providers';
-import type { TariffPricePoint, GridFeeSchedule } from '../lib/tariff-providers';
 
 // ─── getDynamicGridFee ───────────────────────────────────────────────
 

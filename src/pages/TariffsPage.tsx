@@ -1,49 +1,49 @@
+import {
+  Activity,
+  AlertTriangle,
+  ArrowRight,
+  BarChart3,
+  Battery,
+  Calendar,
+  Car,
+  CheckCircle2,
+  ChevronDown,
+  CircleDot,
+  Clock,
+  Flame,
+  Gauge,
+  Leaf,
+  Receipt,
+  Signal,
+  Sun,
+  Target,
+  TrendingDown,
+  TrendingUp,
+  Wallet,
+  Zap,
+} from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import {
-  TrendingUp,
-  TrendingDown,
-  Zap,
-  Clock,
-  Calendar,
-  BarChart3,
-  ArrowRight,
-  CheckCircle2,
-  AlertTriangle,
-  Wallet,
-  Leaf,
-  Sun,
-  Battery,
-  Car,
-  Flame,
-  Activity,
-  CircleDot,
-  ChevronDown,
-  Signal,
-  Target,
-  Receipt,
-  Gauge,
-} from 'lucide-react';
-import {
-  BarChart,
-  Bar,
-  AreaChart,
   Area,
-  XAxis,
-  YAxis,
+  AreaChart,
+  Bar,
+  BarChart,
   CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
   Cell,
   ReferenceLine,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
 } from 'recharts';
-import { useAppStoreShallow } from '../store';
-import { PageHeader } from '../components/layout/PageHeader';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { LivePriceWidget } from '../components/LivePriceWidget';
+import { PageHeader } from '../components/layout/PageHeader';
 import { PredictiveForecast } from '../components/PredictiveForecast';
 import { PageCrossLinks } from '../components/ui/PageCrossLinks';
+import { useAppStoreShallow } from '../store';
 
 // ─── Static data (generated once, outside render) ────────────────────
 

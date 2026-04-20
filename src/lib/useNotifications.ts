@@ -16,15 +16,15 @@
 
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import type { UnifiedEnergyModel } from '../core/adapters/EnergyAdapter';
 import { useEnergyStoreBase } from '../core/useEnergyStore';
 import { useAppStore } from '../store';
-import type { UnifiedEnergyModel } from '../core/adapters/EnergyAdapter';
 import {
-  showNotification,
-  isInQuietHours,
   isCoolingDown,
+  isInQuietHours,
   markSent,
   type NotificationCategory,
+  showNotification,
 } from './notifications';
 
 // ---------------------------------------------------------------------------

@@ -1,21 +1,20 @@
-import { useState } from 'react';
+import { CloudSun, Leaf, TrendingUp } from 'lucide-react';
 import { motion } from 'motion/react';
-import { CloudSun, TrendingUp, Leaf } from 'lucide-react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
   Area,
   AreaChart,
+  CartesianGrid,
+  Legend,
+  Line,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
 } from 'recharts';
-
-import { useAppStoreShallow } from '../store';
 import { useWeatherForecast } from '../lib/queries';
+import { useAppStoreShallow } from '../store';
 
 interface ForecastDataPoint {
   time: string;

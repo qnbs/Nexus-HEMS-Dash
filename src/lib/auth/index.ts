@@ -7,26 +7,24 @@
 
 // ── Types & Interface ───────────────────────────────────────────────
 export type {
+  AuthCredentials,
   AuthProvider,
   AuthProviderType,
   AuthSession,
   AuthUser,
-  AuthCredentials,
-  OAuthProvider,
-  UserRole,
-  UserInvitation,
-  ShareLink,
   CreateShareLinkOptions,
+  OAuthProvider,
+  ShareLink,
+  UserInvitation,
+  UserRole,
 } from './auth-provider';
 
-export { ROLE_PERMISSIONS, SHARE_TTL_MS, hasPermission, roleLevel } from './auth-provider';
-
-// ── Providers ───────────────────────────────────────────────────────
-export { SupabaseAuthProvider } from './supabase-provider';
-export type { SupabaseAuthConfig } from './supabase-provider';
-
-export { KeycloakAuthProvider } from './keycloak-provider';
-export type { KeycloakAuthConfig } from './keycloak-provider';
-
+export { hasPermission, ROLE_PERMISSIONS, roleLevel, SHARE_TTL_MS } from './auth-provider';
 // ── Store & Hooks ───────────────────────────────────────────────────
 export { useAuthStore, useAuthUser, useIsAuthenticated, useUserRole } from './auth-store';
+export type { KeycloakAuthConfig } from './keycloak-provider';
+
+export { KeycloakAuthProvider } from './keycloak-provider';
+export type { SupabaseAuthConfig } from './supabase-provider';
+// ── Providers ───────────────────────────────────────────────────────
+export { SupabaseAuthProvider } from './supabase-provider';

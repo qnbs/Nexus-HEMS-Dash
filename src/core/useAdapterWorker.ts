@@ -15,9 +15,9 @@
  */
 
 import { useEffect, useRef } from 'react';
+import { metricsCollector } from '../lib/metrics';
 import type { PollTarget } from './adapter-worker';
 import { useEnergyStoreBase } from './useEnergyStore';
-import { metricsCollector } from '../lib/metrics';
 
 interface WorkerDataMessage {
   type: 'data';

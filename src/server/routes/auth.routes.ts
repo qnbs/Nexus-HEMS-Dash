@@ -1,8 +1,8 @@
 import { Router } from 'express';
-import { initKeys, signToken, verifyToken, getKeyHealth } from '../../../jwt-utils.js';
+import { getKeyHealth, initKeys, signToken, verifyToken } from '../../../jwt-utils.js';
 import { AuthTokenRequestSchema } from '../../types/protocol.js';
 import { validateApiKey } from '../middleware/auth.js';
-import { serverStartTime, getServerMetrics } from '../middleware/metrics.js';
+import { getServerMetrics, serverStartTime } from '../middleware/metrics.js';
 
 const JWT_EXPIRY = '24h';
 

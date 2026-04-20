@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { MetricsCollector, HEMS_METRICS } from '../lib/metrics';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { HEMS_METRICS, MetricsCollector } from '../lib/metrics';
 import type { EnergyData } from '../types';
 
 const SAMPLE_ENERGY: EnergyData = {

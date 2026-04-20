@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import {
-  generateShareLink,
   createSharedDashboard,
+  generateShareLink,
   joinSharedDashboard,
   listSharedDashboards,
 } from '../lib/sharing';

@@ -1,18 +1,10 @@
-import { useActionState } from 'react';
 import { Battery, Car, Thermometer } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import { motion } from 'motion/react';
-
-import {
-  type CommandType,
-  type EnergyData,
-  type EvState,
-  type HpState,
-  type EvMode,
-  type HpMode,
-} from '../types';
+import { useActionState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { hapticClick, hapticModeChange, hapticSuccess } from '../lib/haptics';
 import { useAppStoreShallow } from '../store';
+import type { CommandType, EnergyData, EvMode, EvState, HpMode, HpState } from '../types';
 
 export function ControlPanel({
   sendCommand,

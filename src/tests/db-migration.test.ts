@@ -1,14 +1,14 @@
-import { describe, it, expect, afterEach } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import 'fake-indexeddb/auto';
 import Dexie from 'dexie';
 import {
-  NexusDatabase,
-  DB_CURRENT_VERSION,
   checkMigrationHealth,
-  exportDatabaseBackup,
-  restoreDatabaseBackup,
+  DB_CURRENT_VERSION,
   type EnergySnapshot,
+  exportDatabaseBackup,
+  NexusDatabase,
   type OfflineAction,
+  restoreDatabaseBackup,
 } from '../lib/db';
 
 let testDbCounter = 0;

@@ -109,7 +109,7 @@ const SAFE_PATH = /^\/[A-Za-z0-9._~%!$&'()*+,;=:@/-]*$/;
 
 function applyScaleFactor(value: number, sf: number | undefined): number {
   if (sf === undefined || sf === 0) return value;
-  return value * Math.pow(10, sf);
+  return value * 10 ** sf;
 }
 
 // ─── Transform functions ─────────────────────────────────────────────

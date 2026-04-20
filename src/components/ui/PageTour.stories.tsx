@@ -1,6 +1,6 @@
-import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
-import { Activity, Sparkles, Maximize2, HelpCircle } from 'lucide-react';
+import { Activity, HelpCircle, Maximize2, Sparkles } from 'lucide-react';
+import { useState } from 'react';
 import { PageTour, type TourStep } from './PageTour';
 
 const DEMO_STEPS: TourStep[] = [

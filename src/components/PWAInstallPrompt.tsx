@@ -4,9 +4,9 @@
  * Features: deferred prompt, smart timing, platform-aware messaging
  */
 
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { Download, X, Smartphone, Monitor, Zap, CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, Download, Monitor, Smartphone, X, Zap } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { usePWAInstall } from '../lib/pwa-install';
 

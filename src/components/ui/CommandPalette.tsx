@@ -1,22 +1,22 @@
-import { motion, AnimatePresence } from 'motion/react';
-import { useEffect, useState } from 'react';
 import {
-  Search,
-  Sparkles,
-  FileDown,
-  Home,
-  Settings,
-  HelpCircle,
-  Zap,
   Activity,
-  Car,
-  TrendingUp,
   BarChart3,
+  Car,
+  FileDown,
+  HelpCircle,
+  Home,
   Monitor,
+  Search,
   SearchX,
+  Settings,
+  Sparkles,
+  TrendingUp,
+  Zap,
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { AnimatePresence, motion } from 'motion/react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { EmptyState } from './EmptyState';
 
 export interface Command {

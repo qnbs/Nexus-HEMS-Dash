@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { DEMO_ENERGY_DATA, getDisplayData } from '../lib/demo-data';
 import type { EnergyData } from '../types';
 

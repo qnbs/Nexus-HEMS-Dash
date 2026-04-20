@@ -1,20 +1,20 @@
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { useTranslation } from 'react-i18next';
 import {
-  Zap,
-  Sun,
-  Battery,
-  Car,
-  Home,
-  Brain,
-  ChevronRight,
-  ChevronLeft,
-  Globe,
-  Rocket,
   ArrowRight,
+  Battery,
+  Brain,
+  Car,
   Check,
+  ChevronLeft,
+  ChevronRight,
+  Globe,
+  Home,
+  Rocket,
+  Sun,
+  Zap,
 } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
+import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { useAppStore } from '../store';
 import type { LocaleCode } from '../types';

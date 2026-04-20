@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import i18n from '../i18n';
 import { de } from '../locales/de';
 import { en } from '../locales/en';

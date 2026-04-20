@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { Droplets, Lightbulb, Moon, Sun, Thermometer, Wind } from 'lucide-react';
 import { motion } from 'motion/react';
-import { Lightbulb, Thermometer, Wind, Droplets, Sun, Moon } from 'lucide-react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 interface RoomState {

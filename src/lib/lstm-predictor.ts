@@ -342,13 +342,13 @@ export class EnergyPredictor {
         normP,
         hourMs,
       );
-    } else if (values.length >= 48) {
+    }
+    if (values.length >= 48) {
       // Holt-Winters with daily seasonality
       return this.holtWintersPrediction(target, values, lastTimestamp, horizonHours, normP, hourMs);
-    } else {
-      // Linear regression fallback
-      return this.linearPrediction(target, values, lastTimestamp, horizonHours, hourMs);
     }
+    // Linear regression fallback
+    return this.linearPrediction(target, values, lastTimestamp, horizonHours, hourMs);
   }
 
   /** Online learning: update LSTM weights with new data */

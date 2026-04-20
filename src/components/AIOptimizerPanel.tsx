@@ -1,12 +1,11 @@
-import { useState, useEffect } from 'react';
+import { BrainCircuit, TrendingUp, TriangleAlert, Zap } from 'lucide-react';
 import { motion } from 'motion/react';
-import { BrainCircuit, TriangleAlert, TrendingUp, Zap } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { useAIWorker } from '../core/useAIWorker';
 import { useAppStoreShallow } from '../store';
-import type { OptimizerRecommendation } from '../workers/worker-types';
-import type { EnergyDataFull } from '../workers/worker-types';
+import type { EnergyDataFull, OptimizerRecommendation } from '../workers/worker-types';
 
 const severityStyles = {
   positive: 'border-emerald-400/35 bg-emerald-400/10 text-emerald-100',

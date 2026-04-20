@@ -1,6 +1,6 @@
-import { type ReactNode, type Ref } from 'react';
-import { motion } from 'motion/react';
 import { X } from 'lucide-react';
+import { motion } from 'motion/react';
+import type { ReactNode, Ref } from 'react';
 
 export interface ControlPanelProps {
   /** Panel title shown in the sticky header */

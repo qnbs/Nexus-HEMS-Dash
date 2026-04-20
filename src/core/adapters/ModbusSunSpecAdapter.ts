@@ -24,16 +24,16 @@
  *   POST /api/modbus/write              →  Write register { register, value }
  */
 
+import { BaseAdapter } from './BaseAdapter';
 import type {
   AdapterCapability,
-  AdapterConnectionConfig,
   AdapterCommand,
-  UnifiedEnergyModel,
-  PVData,
+  AdapterConnectionConfig,
   BatteryData,
   GridData,
+  PVData,
+  UnifiedEnergyModel,
 } from './EnergyAdapter';
-import { BaseAdapter } from './BaseAdapter';
 
 // ─── SunSpec Model IDs ───────────────────────────────────────────────
 
@@ -452,7 +452,7 @@ export class ModbusSunSpecAdapter extends BaseAdapter {
 
   private applyScaleFactor(value: number, sf: number | undefined): number {
     if (sf === undefined || sf === 0) return value;
-    return value * Math.pow(10, sf);
+    return value * 10 ** sf;
   }
 
   private parseInverter(regs: SunSpecInverterRegs | null): PVData | undefined {

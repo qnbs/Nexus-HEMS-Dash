@@ -1,23 +1,23 @@
-import { useState, lazy, Suspense } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { useTranslation } from 'react-i18next';
 import {
-  Eye,
-  ShieldCheck,
-  ShieldAlert,
   Activity,
-  Server,
-  Wifi,
-  Lock,
   ChevronDown,
   ChevronUp,
+  Eye,
+  Lock,
+  Server,
+  ShieldAlert,
+  ShieldCheck,
+  Wifi,
 } from 'lucide-react';
-import { useAppStoreShallow } from '../store';
+import { AnimatePresence, motion } from 'motion/react';
+import { lazy, Suspense, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { PageHeader } from '../components/layout/PageHeader';
-import { PageCrossLinks } from '../components/ui/PageCrossLinks';
-import { HelpTooltip } from '../components/ui/HelpTooltip';
 import { EmptyState } from '../components/ui/EmptyState';
+import { HelpTooltip } from '../components/ui/HelpTooltip';
+import { PageCrossLinks } from '../components/ui/PageCrossLinks';
 import { PageTour, type TourStep } from '../components/ui/PageTour';
+import { useAppStoreShallow } from '../store';
 
 // ─── Lazy-load the full monitoring panel ─────────────────────────────
 const MonitoringPage = lazy(() => import('./MonitoringPage'));

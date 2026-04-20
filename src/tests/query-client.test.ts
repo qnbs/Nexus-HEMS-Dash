@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Use the real QueryClient — it works in jsdom without network
 vi.mock('@tanstack/react-query-devtools', () => ({

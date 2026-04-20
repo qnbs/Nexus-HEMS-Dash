@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { lazy, ReactNode, Suspense } from 'react';
+import { lazy, type ReactNode, Suspense } from 'react';
 
 const ReactQueryDevtools = import.meta.env.DEV
   ? lazy(() =>

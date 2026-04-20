@@ -11,11 +11,11 @@
  * - Immediate check on online event (reconnecting after offline)
  */
 
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { RefreshCw, AlertCircle, WifiOff, CheckCircle2, X } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import { useRegisterSW } from 'virtual:pwa-register/react';
+import { AlertCircle, CheckCircle2, RefreshCw, WifiOff, X } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 /** Minimum time between consecutive update checks (10 min) */
 const UPDATE_CHECK_COOLDOWN_MS = 10 * 60 * 1000;

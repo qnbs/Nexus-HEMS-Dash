@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { buildOptimizerRecommendations } from '../lib/optimizer';
 import type { EnergyData, StoredSettings } from '../types';
 import { SYSTEM_PRESETS } from '../types';

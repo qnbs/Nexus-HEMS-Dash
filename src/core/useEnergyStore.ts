@@ -15,25 +15,24 @@
  *   const evCharger = useEnergyStore((s) => s.unified.evCharger);
  */
 
+import { useEffect } from 'react';
 import { create } from 'zustand';
 import { useShallow } from 'zustand/react/shallow';
-import { useEffect } from 'react';
-import { useAppStore } from '../store';
-import { queryClient } from '../lib/query-client';
 import { persistSnapshot } from '../lib/db';
+import { queryClient } from '../lib/query-client';
+import { useAppStore } from '../store';
+import { createRegisteredAdapter, registerBuiltinAdapters } from './adapters/adapter-registry';
 
+import type { BaseAdapter } from './adapters/BaseAdapter';
 import type {
-  EnergyAdapter,
-  AdapterStatus,
   AdapterCommand,
-  UnifiedEnergyModel,
   AdapterConnectionConfig,
+  AdapterStatus,
+  EnergyAdapter,
+  UnifiedEnergyModel,
 } from './adapters/EnergyAdapter';
-
-import { BaseAdapter } from './adapters/BaseAdapter';
 import type { CircuitState } from './circuit-breaker';
 import { validateCommand } from './command-safety';
-import { registerBuiltinAdapters, createRegisteredAdapter } from './adapters/adapter-registry';
 
 // ─── Adapter registry ────────────────────────────────────────────────
 

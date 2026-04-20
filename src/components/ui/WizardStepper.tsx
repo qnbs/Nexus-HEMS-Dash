@@ -1,6 +1,6 @@
-import { type ReactNode } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
 import { Check } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
+import type { ReactNode } from 'react';
 import { wizardStep } from '../../design-tokens';
 
 // ─── Types ───────────────────────────────────────────────────────────

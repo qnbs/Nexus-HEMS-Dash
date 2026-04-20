@@ -1,5 +1,5 @@
-import { motion, type HTMLMotionProps } from 'motion/react';
-import { type ReactNode, type MouseEvent } from 'react';
+import { type HTMLMotionProps, motion } from 'motion/react';
+import type { MouseEvent, ReactNode } from 'react';
 
 interface NeonCardProps extends Omit<HTMLMotionProps<'div'>, 'children'> {
   children: ReactNode;

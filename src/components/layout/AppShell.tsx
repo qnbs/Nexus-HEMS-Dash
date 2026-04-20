@@ -1,21 +1,21 @@
-import type { ReactNode } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { Link, NavLink, useLocation } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
 import {
-  Command,
-  Settings as SettingsIcon,
-  HelpCircle,
-  Sun,
   BatteryMedium,
+  Command,
+  HelpCircle,
+  Settings as SettingsIcon,
+  Sun,
   Zap,
 } from 'lucide-react';
-import { useAppStoreShallow } from '../../store';
+import { AnimatePresence, motion } from 'motion/react';
+import type { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Link, NavLink, useLocation } from 'react-router-dom';
 import { themeDefinitions } from '../../design-tokens';
+import { useAppStoreShallow } from '../../store';
 import { CommandPalette, useCommandPalette } from '../ui/CommandPalette';
 import { MobileNavigation } from '../ui/MobileNavigation';
-import { Sidebar } from './Sidebar';
 import { Breadcrumbs } from './Breadcrumbs';
+import { Sidebar } from './Sidebar';
 
 /** Route → i18n label map for the mobile page title */
 const headerRouteLabels: Record<string, string> = {

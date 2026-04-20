@@ -1,42 +1,42 @@
-import { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
-import { motion } from 'motion/react';
 import {
-  Database,
-  Clock,
-  TrendingUp,
   Activity,
-  Sun,
-  Battery,
-  Zap,
-  CloudSun,
-  RefreshCw,
   AlertCircle,
-  CheckCircle,
-  ExternalLink,
+  Battery,
   BrainCircuit,
+  CheckCircle,
+  Clock,
+  CloudSun,
+  Database,
+  ExternalLink,
+  RefreshCw,
+  Sun,
+  TrendingUp,
+  Zap,
 } from 'lucide-react';
+import { motion } from 'motion/react';
+import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
-  AreaChart,
   Area,
-  Line,
-  BarChart,
+  AreaChart,
   Bar,
+  BarChart,
+  Brush,
+  CartesianGrid,
+  ComposedChart,
+  Legend,
+  Line,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
-  Brush,
-  ComposedChart,
 } from 'recharts';
 import { PageHeader } from '../components/layout/PageHeader';
 import { PageCrossLinks } from '../components/ui/PageCrossLinks';
-import { useAppStoreShallow } from '../store';
-import { type AIForecastRecord } from '../lib/db';
-import { checkInfluxHealth, queryTimeSeries, type InfluxConfig } from '../lib/influxdb-client';
 import { getForecastHistory, syncPendingForecasts } from '../lib/ai-forecast-persistence';
+import type { AIForecastRecord } from '../lib/db';
+import { checkInfluxHealth, type InfluxConfig, queryTimeSeries } from '../lib/influxdb-client';
+import { useAppStoreShallow } from '../store';
 
 // ─── Time Range Options ─────────────────────────────────────────────
 
@@ -229,9 +229,7 @@ export default function HistoricalAnalyticsPage() {
             // Fall through to demo data
           }
         }
-      } else {
-        if (!cancelled) setInfluxHealthy(null);
-      }
+      } else if (!cancelled) setInfluxHealthy(null);
 
       // Fallback: demo data
       if (!cancelled) {

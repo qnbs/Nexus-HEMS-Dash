@@ -1,13 +1,13 @@
 import express from 'express';
+import http from 'http';
 import { createServer as createViteServer } from 'vite';
 import { WebSocketServer } from 'ws';
-import http from 'http';
 import { initKeys } from '../../jwt-utils.js';
 import { configureCors, configureHelmet, configureRateLimiting } from './middleware/security.js';
 import { createAuthRoutes } from './routes/auth.routes.js';
 import { createEebusRoutes } from './routes/eebus.routes.js';
-import { createMetricsRoutes } from './routes/metrics.routes.js';
 import { createGrafanaRoutes } from './routes/grafana.routes.js';
+import { createMetricsRoutes } from './routes/metrics.routes.js';
 import { setupWebSocket } from './ws/energy.ws.js';
 
 export async function startServer(): Promise<void> {

@@ -3,11 +3,11 @@
  * Provides proper focus trapping, Escape handling, portal rendering, and ARIA
  */
 
-import { useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { AlertTriangle, Info } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import type { ReactNode } from 'react';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export type ConfirmVariant = 'danger' | 'warning' | 'info';
 

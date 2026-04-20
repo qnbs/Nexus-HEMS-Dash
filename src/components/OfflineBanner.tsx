@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { WifiOff, RefreshCw } from 'lucide-react';
+import { RefreshCw, WifiOff } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { getLatestEnergySnapshot } from '../lib/db';

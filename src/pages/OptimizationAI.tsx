@@ -1,56 +1,56 @@
-import { useState } from 'react';
-import { motion } from 'motion/react';
-import { useTranslation } from 'react-i18next';
 import {
+  ArrowLeft,
+  ArrowRight,
   BarChart3,
+  Battery,
   BrainCircuit,
+  Car,
   CheckCircle2,
+  Clock,
+  Flame,
+  Leaf,
+  Loader2,
   Sparkles,
+  Sun,
   TrendingDown,
   Zap,
-  Battery,
-  Sun,
-  Clock,
-  ArrowRight,
-  ArrowLeft,
-  Loader2,
-  Flame,
-  Car,
-  Leaf,
 } from 'lucide-react';
+import { motion } from 'motion/react';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
-  AreaChart,
   Area,
-  BarChart,
+  AreaChart,
   Bar,
+  BarChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
 } from 'recharts';
+import { DemoBadge } from '../components/DemoBadge';
 import { PageHeader } from '../components/layout/PageHeader';
-import { PageCrossLinks } from '../components/ui/PageCrossLinks';
+import { EmptyState } from '../components/ui/EmptyState';
 import { FloatingActionBar } from '../components/ui/FloatingActionBar';
 import { HelpTooltip } from '../components/ui/HelpTooltip';
-import { EmptyState } from '../components/ui/EmptyState';
+import { PageCrossLinks } from '../components/ui/PageCrossLinks';
 import { PageTour, type TourStep } from '../components/ui/PageTour';
-import { DemoBadge } from '../components/DemoBadge';
 import {
-  WizardStepper,
-  WizardContent,
   useWizard,
+  WizardContent,
   type WizardStepDef,
+  WizardStepper,
 } from '../components/ui/WizardStepper';
-import { useAppStoreShallow } from '../store';
 import { useEnergyContext } from '../core/EnergyContext';
 import { buildOptimizerRecommendations, runMpcOptimization } from '../lib/optimizer';
 import {
   fetchTariffForecast,
   generatePredictiveRecommendation,
-  type TariffForecast,
   type PredictiveRecommendation,
+  type TariffForecast,
 } from '../lib/predictive-ai';
+import { useAppStoreShallow } from '../store';
 import type { OptimizerRecommendation } from '../types';
 
 // ─── Severity styling helper ─────────────────────────────────────────

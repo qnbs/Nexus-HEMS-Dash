@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import { PluginManager } from '../core/plugin-system';
+import { beforeEach, describe, expect, it } from 'vitest';
 import type { Plugin } from '../core/plugin-system';
+import { PluginManager } from '../core/plugin-system';
 
 function createTestPlugin(overrides: Partial<Plugin['descriptor']> = {}): Plugin {
   return {

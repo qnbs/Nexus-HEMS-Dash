@@ -1,6 +1,6 @@
-import { Link, useLocation } from 'react-router-dom';
 import { ChevronRight, Home } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { Link, useLocation } from 'react-router-dom';
 
 const routeLabels: Record<string, string> = {
   '/': 'nav.home',

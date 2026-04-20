@@ -22,6 +22,7 @@
  *   - Zigbee energy devices paired (Aqara, NOUS, Sonoff, Tuya, etc.)
  */
 
+import { registerAdapter } from '../adapter-registry';
 import { BaseAdapter } from '../BaseAdapter';
 import type {
   AdapterCapability,
@@ -29,7 +30,6 @@ import type {
   AdapterConnectionConfig,
   UnifiedEnergyModel,
 } from '../EnergyAdapter';
-import { registerAdapter } from '../adapter-registry';
 
 // ─── Config ─────────────────────────────────────────────────────────
 

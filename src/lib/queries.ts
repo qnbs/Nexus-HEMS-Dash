@@ -1,8 +1,8 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import * as Comlink from 'comlink';
+import type { EnergyData } from '../types';
 import type { AIWorkerAPI } from '../workers/worker-types';
 import type { TariffProvider } from './predictive-ai';
-import type { EnergyData } from '../types';
 
 // Singleton AI worker for query hooks — shared across all usePriceForecast calls
 let _aiWorker: Comlink.Remote<AIWorkerAPI> | null = null;

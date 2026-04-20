@@ -4,7 +4,7 @@
  * API keys are always fetched from encrypted Dexie storage — never from env vars or localStorage.
  */
 
-import { getAIKey, getActiveProvider, type AIProvider } from '../lib/ai-keys';
+import { type AIProvider, getActiveProvider, getAIKey } from '../lib/ai-keys';
 
 export interface AICompletionRequest {
   prompt: string;

@@ -6,9 +6,9 @@
  *  - isPermissionGranted() — browser Notification.permission stub
  *  - isCoolingDown() / markSent() — cooldown map logic
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { isInQuietHours, isCoolingDown, markSent } from '../lib/notifications';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { NotificationCategory } from '../lib/notifications';
+import { isCoolingDown, isInQuietHours, markSent } from '../lib/notifications';
 
 // ─── isInQuietHours ──────────────────────────────────────────────────
 

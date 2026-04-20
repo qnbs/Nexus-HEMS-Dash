@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { requireJWT } from '../middleware/auth.js';
 import { EEBUSPairRequestSchema } from '../../types/protocol.js';
+import { requireJWT } from '../middleware/auth.js';
 
 export function createEebusRoutes(): Router {
   const router = Router();

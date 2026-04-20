@@ -20,7 +20,7 @@
  *   registerAdapter('my-package', (config) => new MyPackageAdapter(config));
  */
 
-import type { EnergyAdapter, AdapterConnectionConfig } from './EnergyAdapter';
+import type { AdapterConnectionConfig, EnergyAdapter } from './EnergyAdapter';
 
 // ─── Types ───────────────────────────────────────────────────────────
 
@@ -257,15 +257,15 @@ export async function loadAllContribAdapters(): Promise<string[]> {
 
 // ─── Built-in registration ──────────────────────────────────────────
 
-import { VictronMQTTAdapter } from './VictronMQTTAdapter';
-import type { VictronAdapterConfig } from './VictronMQTTAdapter';
-import { ModbusSunSpecAdapter } from './ModbusSunSpecAdapter';
-import { KNXAdapter } from './KNXAdapter';
-import type { KNXAdapterConfig } from './KNXAdapter';
-import { OCPP21Adapter } from './OCPP21Adapter';
-import type { OCPPAdapterConfig } from './OCPP21Adapter';
-import { EEBUSAdapter } from './EEBUSAdapter';
 import type { EEBUSAdapterConfig } from './EEBUSAdapter';
+import { EEBUSAdapter } from './EEBUSAdapter';
+import type { KNXAdapterConfig } from './KNXAdapter';
+import { KNXAdapter } from './KNXAdapter';
+import { ModbusSunSpecAdapter } from './ModbusSunSpecAdapter';
+import type { OCPPAdapterConfig } from './OCPP21Adapter';
+import { OCPP21Adapter } from './OCPP21Adapter';
+import type { VictronAdapterConfig } from './VictronMQTTAdapter';
+import { VictronMQTTAdapter } from './VictronMQTTAdapter';
 
 /**
  * Register all built-in adapters. Called once during store initialization.

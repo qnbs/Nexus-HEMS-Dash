@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Create a mock adapter class factory
 function createMockAdapterClass(id: string, name: string) {
@@ -59,8 +59,8 @@ vi.mock('../store', () => ({
   ),
 }));
 
-import { useEnergyStoreBase } from '../core/useEnergyStore';
 import type { AdapterId } from '../core/useEnergyStore';
+import { useEnergyStoreBase } from '../core/useEnergyStore';
 
 describe('useEnergyStore', () => {
   beforeEach(() => {

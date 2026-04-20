@@ -1,11 +1,11 @@
 import type { EnergyData, OptimizerRecommendation, StoredSettings } from '../types';
-import {
-  mpcOptimizer,
-  buildConstraints,
-  generatePVForecast,
-  generateLoadForecast,
-} from './mpc-optimizer';
 import type { OptimizationResult, TariffSlot } from './mpc-optimizer';
+import {
+  buildConstraints,
+  generateLoadForecast,
+  generatePVForecast,
+  mpcOptimizer,
+} from './mpc-optimizer';
 
 // ─── MPC-enhanced optimization cache ────────────────────────────────
 

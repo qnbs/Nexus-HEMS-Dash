@@ -5,9 +5,9 @@
  * All transitions, canExecute(), execute(), forceOpen(), reset(),
  * onStateChange callbacks, and the cooldown auto-transition tested.
  */
-import { describe, it, expect, vi, afterEach } from 'vitest';
-import { CircuitBreaker } from '../core/circuit-breaker';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { CircuitState } from '../core/circuit-breaker';
+import { CircuitBreaker } from '../core/circuit-breaker';
 
 describe('CircuitBreaker', () => {
   afterEach(() => {

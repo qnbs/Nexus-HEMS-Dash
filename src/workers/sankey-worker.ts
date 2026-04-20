@@ -11,14 +11,14 @@
 import * as Comlink from 'comlink';
 import { sankey as sankeyLayout } from 'd3-sankey';
 import type {
-  SankeyWorkerInput,
+  EnergyDataInput,
   SankeyGraphResult,
   SankeyWorkerAPI,
-  EnergyDataInput,
+  SankeyWorkerInput,
 } from './worker-types';
 
 // Re-export types for consumers that import from this file
-export type { SankeyWorkerInput, SankeyGraphResult } from './worker-types';
+export type { SankeyGraphResult, SankeyWorkerInput } from './worker-types';
 
 interface SankeyNode {
   name: string;

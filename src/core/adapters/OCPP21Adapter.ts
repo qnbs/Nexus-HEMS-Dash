@@ -17,14 +17,14 @@
  * to an existing CSMS backend as a monitoring client.
  */
 
+import { BaseAdapter } from './BaseAdapter';
 import type {
   AdapterCapability,
-  AdapterConnectionConfig,
   AdapterCommand,
-  UnifiedEnergyModel,
+  AdapterConnectionConfig,
   EVChargerData,
+  UnifiedEnergyModel,
 } from './EnergyAdapter';
-import { BaseAdapter } from './BaseAdapter';
 
 // ─── OCPP 2.1 message types (JSON-RPC) ──────────────────────────────
 

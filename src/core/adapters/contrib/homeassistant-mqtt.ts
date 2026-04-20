@@ -20,6 +20,7 @@
  *   - Energy entities configured in HA energy dashboard
  */
 
+import { registerAdapter } from '../adapter-registry';
 import { BaseAdapter } from '../BaseAdapter';
 import type {
   AdapterCapability,
@@ -27,7 +28,6 @@ import type {
   AdapterConnectionConfig,
   UnifiedEnergyModel,
 } from '../EnergyAdapter';
-import { registerAdapter } from '../adapter-registry';
 
 // ─── HA Entity → HEMS mapping ───────────────────────────────────────
 

@@ -2,16 +2,15 @@
  * Enhanced AI Optimizer with BYOK multi-provider support
  */
 
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { Sparkles, Loader2, Key } from 'lucide-react';
+import { Key, Loader2, Sparkles } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-
-import { useAppStoreShallow } from '../store';
-import { useAIWorker } from '../core/useAIWorker';
 import { callAI } from '../core/aiClient';
+import { useAIWorker } from '../core/useAIWorker';
 import { getActiveProvider } from '../lib/ai-keys';
+import { useAppStoreShallow } from '../store';
 import type { OptimizerRecommendation } from '../workers/worker-types';
 
 interface AIRecommendation {

@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { encrypt, decrypt } from '../lib/crypto';
+import { describe, expect, it } from 'vitest';
+import { decrypt, encrypt } from '../lib/crypto';
 
 describe('Web Crypto AES-GCM 256-bit', () => {
   const passphrase = 'test-passphrase-2026';

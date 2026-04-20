@@ -1,19 +1,19 @@
 // ─── PageCrossLinks — Contextual navigation footer for every feature page ───
 // Shows: related pages, settings shortcuts, setup progress, and help links.
 
+import {
+  ArrowRight,
+  CheckCircle2,
+  ChevronRight,
+  Circle,
+  ExternalLink,
+  HelpCircle,
+  Lightbulb,
+} from 'lucide-react';
 import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
-import {
-  ArrowRight,
-  ChevronRight,
-  CheckCircle2,
-  Circle,
-  Lightbulb,
-  ExternalLink,
-  HelpCircle,
-} from 'lucide-react';
-import { PAGE_REGISTRY, PAGE_RELATIONS, SETUP_STEPS, type PageId } from '../../lib/page-relations';
+import { PAGE_REGISTRY, PAGE_RELATIONS, type PageId, SETUP_STEPS } from '../../lib/page-relations';
 import { useAppStoreShallow } from '../../store';
 
 // ─── Path → PageId resolver ────────────────────────────────────────────────

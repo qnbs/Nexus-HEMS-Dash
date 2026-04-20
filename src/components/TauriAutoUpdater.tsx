@@ -6,9 +6,9 @@
  * Only renders in Tauri desktop environment (window.__TAURI__).
  */
 
-import { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { Download, RefreshCw, CheckCircle2, X } from 'lucide-react';
+import { CheckCircle2, Download, RefreshCw, X } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 /** Check interval: every 30 minutes */

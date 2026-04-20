@@ -1,34 +1,33 @@
-import { useState } from 'react';
-import { motion } from 'motion/react';
-import { useTranslation } from 'react-i18next';
-import { Link, useNavigate } from 'react-router-dom';
 import {
-  Sun,
-  Battery,
-  Home,
-  Zap,
   Activity,
-  Leaf,
-  Thermometer,
+  Battery,
   Car,
   ChevronRight,
-  Sparkles,
   FileBarChart,
+  Home,
+  Leaf,
   ShieldAlert,
+  Sparkles,
+  Sun,
+  Thermometer,
+  Zap,
 } from 'lucide-react';
-
-import { useEnergyContext } from '../core/EnergyContext';
-import { useAppStoreShallow } from '../store';
-import { PageHeader } from '../components/layout/PageHeader';
+import { motion } from 'motion/react';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Link, useNavigate } from 'react-router-dom';
+import { AIOptimizerPanel } from '../components/AIOptimizerPanel';
 import { DemoBadge } from '../components/DemoBadge';
 import { OptimizedSankey } from '../components/energy/OptimizedSankey';
-import { EnergyCard } from '../components/ui/EnergyCard';
-import { LiveMetric } from '../components/ui/LiveMetric';
-import { FloatingActionBar } from '../components/ui/FloatingActionBar';
-import { AIOptimizerPanel } from '../components/AIOptimizerPanel';
-import { HelpTooltip } from '../components/ui/HelpTooltip';
+import { PageHeader } from '../components/layout/PageHeader';
 import { EmptyState } from '../components/ui/EmptyState';
+import { EnergyCard } from '../components/ui/EnergyCard';
+import { FloatingActionBar } from '../components/ui/FloatingActionBar';
+import { HelpTooltip } from '../components/ui/HelpTooltip';
+import { LiveMetric } from '../components/ui/LiveMetric';
 import { PageTour, type TourStep } from '../components/ui/PageTour';
+import { useEnergyContext } from '../core/EnergyContext';
+import { useAppStoreShallow } from '../store';
 
 // ─── 8 metric card definitions ───────────────────────────────────────
 

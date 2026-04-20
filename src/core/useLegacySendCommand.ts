@@ -8,9 +8,9 @@
  * that still use ControlPanel with the legacy signature.
  */
 
-import { sendAdapterCommand } from './useEnergyStore';
 import type { CommandType } from '../types';
 import type { AdapterCommand } from './adapters/EnergyAdapter';
+import { sendAdapterCommand } from './useEnergyStore';
 
 /** Map legacy CommandType to AdapterCommand */
 function toLegacyCommand(type: CommandType, value: number): AdapterCommand {

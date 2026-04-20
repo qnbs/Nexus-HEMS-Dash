@@ -1,12 +1,11 @@
 import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
 import { useShallow } from 'zustand/react/shallow';
-import { persist, createJSONStorage } from 'zustand/middleware';
-
-import type { LocaleCode, EnergyData, FloorplanState, StoredSettings } from './types';
-import { SYSTEM_PRESETS } from './types';
 import type { ThemeName } from './design-tokens';
-import type { ThemePreference } from './lib/theme';
 import { persistSettings } from './lib/db';
+import type { ThemePreference } from './lib/theme';
+import type { EnergyData, FloorplanState, LocaleCode, StoredSettings } from './types';
+import { SYSTEM_PRESETS } from './types';
 
 interface AppState {
   energyData: EnergyData;

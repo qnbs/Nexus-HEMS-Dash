@@ -1,57 +1,55 @@
-import { useState, useEffect, type FormEvent, lazy, Suspense } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'motion/react';
 import {
-  Settings as SettingsIcon,
-  Save,
-  Server,
-  Shield,
-  Zap,
-  Database,
-  Check,
-  Palette,
-  Monitor,
+  AlertTriangle,
+  ArrowRight,
   Bell,
-  Gauge,
-  Globe,
+  Cable,
+  Check,
+  CheckCircle2,
+  Clock,
+  Cpu,
+  Database,
   Download,
-  Upload,
   Eye,
   EyeOff,
-  Info,
-  Wifi,
-  RefreshCw,
-  Trash2,
+  Gauge,
+  Globe,
   HardDrive,
-  Lock,
-  RotateCcw,
-  AlertTriangle,
-  Sparkles,
-  Smartphone,
-  CheckCircle2,
-  MapPin,
-  Type,
-  Clock,
+  Info,
   Keyboard,
+  Lock,
+  MapPin,
+  Monitor,
   Moon,
-  ArrowRight,
   OctagonX,
-  Cable,
-  Cpu,
+  Palette,
+  RefreshCw,
+  RotateCcw,
+  Save,
+  Server,
+  Settings as SettingsIcon,
+  Shield,
+  Smartphone,
+  Sparkles,
+  Trash2,
+  Type,
+  Upload,
+  Wifi,
+  Zap,
 } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
+import { type FormEvent, lazy, Suspense, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-
-import { themeDefinitions, themeOrder, type ThemeName } from '../design-tokens';
-import { useAppStore, useAppStoreShallow, defaultSettings } from '../store';
-import { SYSTEM_PRESETS, type PVConfig } from '../types';
-import { resolveTheme, type ThemePreference } from '../lib/theme';
-import { LanguageSwitcher } from '../components/LanguageSwitcher';
-import { EmergencyStop } from '../components/EmergencyStop';
-import { ConfirmDialog, useConfirmDialog } from '../components/ConfirmDialog';
+import { Link, useSearchParams } from 'react-router-dom';
 import { AdapterConfigPanel } from '../components/AdapterConfigPanel';
+import { ConfirmDialog, useConfirmDialog } from '../components/ConfirmDialog';
+import { EmergencyStop } from '../components/EmergencyStop';
+import { LanguageSwitcher } from '../components/LanguageSwitcher';
+import { type ThemeName, themeDefinitions, themeOrder } from '../design-tokens';
+import { PAGE_REGISTRY, SETTINGS_TABS, type SettingsTabId } from '../lib/page-relations';
 import { usePWAInstall } from '../lib/pwa-install';
-import { SETTINGS_TABS, type SettingsTabId } from '../lib/page-relations';
-import { PAGE_REGISTRY } from '../lib/page-relations';
+import { resolveTheme, type ThemePreference } from '../lib/theme';
+import { defaultSettings, useAppStore, useAppStoreShallow } from '../store';
+import { type PVConfig, SYSTEM_PRESETS } from '../types';
 
 const AISettingsPage = lazy(() => import('./AISettingsPage'));
 

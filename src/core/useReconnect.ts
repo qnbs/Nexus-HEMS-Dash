@@ -9,9 +9,9 @@
  */
 
 import { useEffect, useRef } from 'react';
+import type { CircuitBreaker } from './circuit-breaker';
 import type { AdapterId } from './useEnergyStore';
 import { useEnergyStoreBase } from './useEnergyStore';
-import type { CircuitBreaker } from './circuit-breaker';
 
 export interface ReconnectConfig {
   initialDelayMs: number;
@@ -36,7 +36,7 @@ export function calcBackoffDelay(
   attempt: number,
   config: ReconnectConfig = DEFAULT_RECONNECT_CONFIG,
 ): number {
-  const base = config.initialDelayMs * Math.pow(config.backoffMultiplier, attempt);
+  const base = config.initialDelayMs * config.backoffMultiplier ** attempt;
   const capped = Math.min(base, config.maxDelayMs);
   const jitter = capped * config.jitterFactor * (Math.random() * 2 - 1);
   return Math.max(config.initialDelayMs, capped + jitter);

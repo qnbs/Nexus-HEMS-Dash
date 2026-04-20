@@ -1,56 +1,56 @@
+import {
+  Activity,
+  ArrowDownRight,
+  ArrowUpRight,
+  BarChart3,
+  Battery,
+  BrainCircuit,
+  CalendarDays,
+  Car,
+  ChevronRight,
+  Clock,
+  DollarSign,
+  Gauge,
+  Leaf,
+  PieChart as PieIcon,
+  Plane,
+  Shield,
+  Sun,
+  TreePine,
+  TrendingDown,
+  TrendingUp,
+  Zap,
+} from 'lucide-react';
 import { motion } from 'motion/react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  BarChart3,
-  TrendingUp,
-  TrendingDown,
-  Leaf,
-  Zap,
-  Sun,
-  DollarSign,
-  Battery,
-  Gauge,
-  ArrowUpRight,
-  ArrowDownRight,
-  Clock,
-  CalendarDays,
-  PieChart as PieIcon,
-  Activity,
-  Shield,
-  ChevronRight,
-  BrainCircuit,
-  TreePine,
-  Car,
-  Plane,
-} from 'lucide-react';
-import {
-  AreaChart,
   Area,
-  BarChart,
+  AreaChart,
   Bar,
-  XAxis,
-  YAxis,
+  BarChart,
   CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart as RechartsPie,
-  Pie,
   Cell,
   Legend,
-  LineChart,
   Line,
+  LineChart,
+  Pie,
+  PieChart as RechartsPie,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
 } from 'recharts';
-import { useAppStoreShallow } from '../store';
+import { ExportAndSharing } from '../components/ExportAndSharing';
 import { PageHeader } from '../components/layout/PageHeader';
 import { PredictiveForecast } from '../components/PredictiveForecast';
-import { ExportAndSharing } from '../components/ExportAndSharing';
-import { calculateCo2Savings } from '../lib/format';
 import { PageCrossLinks } from '../components/ui/PageCrossLinks';
 import { getUbaFactor } from '../lib/co2-report';
-import { runForecast, getForecastableMetrics } from '../lib/ml-forecast';
-import type { ForecastResult } from '../lib/ml-forecast';
 import type { EnergySnapshot } from '../lib/db';
+import { calculateCo2Savings } from '../lib/format';
+import type { ForecastResult } from '../lib/ml-forecast';
+import { getForecastableMetrics, runForecast } from '../lib/ml-forecast';
+import { useAppStoreShallow } from '../store';
 
 // ─── Deterministic data generators (module-level, pure per call) ──────
 
