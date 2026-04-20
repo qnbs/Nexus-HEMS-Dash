@@ -53,13 +53,18 @@ docker compose --profile monitoring up -d
 
 ### Environment Variables
 
-| Variable           | Default         | Description                     |
-| ------------------ | --------------- | ------------------------------- |
-| `PORT`             | `3000`          | Server listen port              |
-| `NODE_ENV`         | `production`    | Environment mode                |
-| `CORS_ORIGINS`     | —               | Comma-separated allowed origins |
-| `TZ`               | `Europe/Berlin` | Timezone                        |
-| `GRAFANA_PASSWORD` | —               | Grafana admin password          |
+| Variable                 | Default         | Description                                                                  |
+| ------------------------ | --------------- | ---------------------------------------------------------------------------- |
+| `PORT`                   | `3000`          | Server listen port                                                           |
+| `NODE_ENV`               | `production`    | Environment mode                                                             |
+| `JWT_SECRET`             | —               | HMAC-SHA256 secret (min 32 chars, 64+ recommended); auto-generated in dev    |
+| `API_KEYS`               | —               | Comma-separated API keys for `/api/auth/token`; required in production       |
+| `CORS_ORIGINS`           | —               | Comma-separated allowed CORS origins                                         |
+| `WS_ORIGINS`             | —               | Comma-separated allowed WebSocket origins for CSP `connect-src` (production) |
+| `RATE_LIMIT_TRUSTED_IPS` | —               | Comma-separated IPs that bypass rate limiting (load balancers, proxies)      |
+| `TZ`                     | `Europe/Berlin` | Timezone                                                                     |
+| `GRAFANA_PASSWORD`       | —               | Grafana admin password                                                       |
+| `ADAPTER_MODE`           | `live`          | `mock` for demo data; `live` for real protocol adapters                      |
 
 ### Security
 
@@ -67,6 +72,8 @@ docker compose --profile monitoring up -d
 - `no-new-privileges` security opt enabled
 - JWT secret loaded via Docker secrets (`/run/secrets/jwt_secret`)
 - tmpfs mounts for nginx cache/run directories
+- Auth endpoints rate-limited to 10 req/min per IP (brute-force protection)
+- Trusted IPs can bypass rate limiting via `RATE_LIMIT_TRUSTED_IPS` env var
 
 ### Networks
 
@@ -135,13 +142,20 @@ Desktop builds are produced by the `release.yml` workflow via `tauri-apps/tauri-
 
 Configuration: `src-tauri/tauri.conf.json`
 
+| Property             | Value |
+| -------------------- | ----- |
+| Tauri version        | 2.2   |
+| Rust edition         | 2024  |
+| Minimum rust-version | 1.85  |
+| Crate version        | 4.5.0 |
+
 ### Build Locally
 
 ```bash
 pnpm tauri build
 ```
 
-Requires Rust toolchain and platform-specific dependencies (see [Tauri prerequisites](https://v2.tauri.app/start/prerequisites/)).
+Requires Rust toolchain ≥ 1.85 and platform-specific dependencies (see [Tauri prerequisites](https://v2.tauri.app/start/prerequisites/)).
 
 ---
 
@@ -149,12 +163,15 @@ Requires Rust toolchain and platform-specific dependencies (see [Tauri prerequis
 
 The production nginx (`nginx.conf`) enforces:
 
+- **Connection limits**: `limit_conn conn_limit 50` per IP (DoS hardening)
 - **Rate limiting**: 100 req/min global, 30 req/min for `/api/`
-- **Security headers**: HSTS (1 year, preload), CSP, X-Frame-Options: DENY, COOP/COEP
+- **Security headers**: HSTS (1 year, preload), CSP, X-Frame-Options: DENY, COOP/CORP, COEP `credentialless`
 - **Caching**: `/assets/` → 1 year immutable, `/sw.js` → no-cache
 - **Compression**: gzip level 6
 - **SPA fallback**: `try_files $uri $uri/ /index.html`
 - **Blocked paths**: dotfiles, `.env`, `.git`, lockfiles
+
+> Replace `wss://localhost:*` in CSP `connect-src` with your actual WebSocket origins via the `WS_ORIGINS` env var or nginx `envsubst`.
 
 ---
 

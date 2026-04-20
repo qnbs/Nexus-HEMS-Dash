@@ -28,18 +28,21 @@ This project employs multiple layers of security:
 - **Secret Detection**: Gitleaks (pre-commit + CI), Trivy secret scanner
 - **Dependency Scanning**: pnpm audit, Snyk, Socket.dev, Aikido Safe Chain
 - **Supply Chain**: OpenSSF Scorecard, Renovate automated updates, Dependabot
-- **CI Hardening**: GitHub Actions pinned to commit SHA, mandatory security workflow gate, Node 26 canary (non-blocking)
+- **CI Hardening**: GitHub Actions pinned to commit SHA, mandatory security workflow gate
 - **Deploy Governance**: GitHub Pages deploy requires manual `workflow_dispatch` confirmation (`approveDeploy=DEPLOY`)
-- **Container Security**: Trivy image scanning, read-only containers, non-root user
+- **Container Security**: Trivy image scanning, read-only containers, non-root user, per-IP connection limits (`limit_conn`)
 - **Anti-Trojan-Source**: Unicode Bidi character detection
 - **Pre-commit Hooks**: Gitleaks, detect-private-key, anti-trojan-source
 - **Conventional Commits**: Enforced via commitlint
+- **JWT Entropy Validation**: `jwt-utils.ts` warns on low-entropy secrets, dictionary words, and short keys at startup (production only)
+- **Auth Rate Limiting**: `/api/auth/token` and `/api/auth/refresh` limited to 10 req/min per IP (brute-force protection)
+- **Trusted-IP Bypass**: `RATE_LIMIT_TRUSTED_IPS` env var allows internal load balancers to bypass rate limits safely
 
 ## Runtime Baselines
 
-- **Production runtime**: Node.js 22 LTS (Docker + CI release path)
+- **Production runtime**: Node.js 24 LTS (Docker + CI release path)
 - **Runtime framework**: Express 5.x + `@types/express` 5.x
-- **Canary coverage**: Node.js 25 executes as CI canary only (`continue-on-error: true`) and does not block releases
+- **Package manager**: pnpm 10.33.0 (pinned via `packageManager` field and corepack)
 
 ## Encryption & Data Handling
 

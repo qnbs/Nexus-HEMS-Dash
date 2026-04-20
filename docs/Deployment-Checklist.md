@@ -23,7 +23,6 @@
 ### Build & Quality Gates
 
 - [ ] `node -v` zeigt Node.js 24.x für Produktions-Builds
-- [ ] Node.js 26 nur als Canary/Matrix (nicht für Release-Deploy)
 - [ ] `pnpm install --frozen-lockfile` — saubere Installation
 - [ ] `npx tsc --noEmit` — keine TypeScript-Fehler
 - [ ] `pnpm lint` — keine ESLint-Warnings (`--max-warnings 0`)
@@ -183,11 +182,12 @@ server {
 
 - [ ] WebSocket-Upgrade für `/ws/` konfiguriert
 - [ ] Proxy-Timeout ≥ 24 h für langlebige WS-Verbindungen
-- [ ] Security-Header gesetzt (CSP, HSTS, X-Frame-Options)
+- [ ] Security-Header gesetzt (CSP, HSTS, X-Frame-Options, COEP `credentialless`)
 - [ ] SPA-Fallback `try_files $uri /index.html`
 - [ ] Service Worker `sw.js` ohne Cache
 - [ ] Statische Assets mit `Cache-Control: immutable`
 - [ ] Gzip/Brotli aktiviert
+- [ ] `limit_conn conn_limit 50` gesetzt (nginx Connection-Limit pro IP)
 
 ---
 
@@ -240,6 +240,10 @@ services:
 - [ ] Produktiv-Deploy bevorzugt via immutable Digest statt mutablem Tag
 - [ ] `docker scan` / Trivy Image-Scan bestanden
 - [ ] `restart: unless-stopped` für Auto-Recovery
+- [ ] `JWT_SECRET` als Docker Secret (min. 64 Zeichen, kryptographisch zufällig)
+- [ ] `API_KEYS` gesetzt (min. 1 Key, generiert via `openssl rand -hex 32`)
+- [ ] `WS_ORIGINS` gesetzt (nur eigene WebSocket-Origins, kein `ws://localhost:*`)
+- [ ] `RATE_LIMIT_TRUSTED_IPS` für interne Load-Balancer/Proxies konfiguriert (optional)
 
 ---
 

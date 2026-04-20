@@ -37,7 +37,7 @@ Nexus-HEMS is a **unified Command Center** that consolidates **10 protocol adapt
 | **Plugin System**       | Adapter Registry with dynamic `import()` loading · npm-package format · `BaseAdapter` class for rapid development · Hot-loading from Settings UI                                                                                                                                                         |
 | **Platform**            | Unified Command Center (7 sections) · PWA offline-first (Workbox + IndexedDB) · 5 themes · Full i18n (DE/EN) · WCAG 2.2 AA · PDF reports + QR sharing · Prometheus monitoring                                                                                                                            |
 | **Security**            | BYOK AI vault (AES-GCM 256) · JWT WebSocket auth · Helmet CSP · Rate limiting · CORS · Zod schema validation                                                                                                                                                                                             |
-| **Desktop & Mobile**    | Tauri v2 (Windows/macOS/Linux) · Capacitor 7 (iOS/Android)                                                                                                                                                                                                                                               |
+| **Desktop & Mobile**    | Tauri v2.2 (Windows/macOS/Linux) · Capacitor 7 (iOS/Android)                                                                                                                                                                                                                                             |
 
 ## Architecture
 
@@ -111,9 +111,11 @@ The Codespace includes Node.js 24, pnpm, Playwright, Docker, and all VS Code ext
 All AI API keys are managed via the BYOK Settings page (`/settings/ai`) with AES-GCM 256-bit encryption — no `.env` file needed for AI features.
 
 ```bash
-GEMINI_API_KEY=...           # Optional: server-side Gemini proxy
-JWT_SECRET=...               # Optional: auto-generated if omitted
+JWT_SECRET=...               # HMAC-SHA256 secret (min 32 chars, 64+ recommended)
+API_KEYS=...                 # Comma-separated API keys for /api/auth/token (production)
 CORS_ORIGINS=https://...     # Optional: additional CORS origins
+WS_ORIGINS=wss://...         # Optional: WebSocket origins for CSP connect-src (production)
+RATE_LIMIT_TRUSTED_IPS=...   # Optional: IPs exempt from rate limiting (load balancers)
 PORT=3000                    # Default: 3000
 ```
 
@@ -188,11 +190,13 @@ See [Adapter Dev Guide](docs/Adapter-Dev-Guide.md) and [Contrib README](src/core
 
 ## Security
 
-- **Backend:** Helmet CSP + HSTS, CORS whitelist, Zod schema validation, JWT (HS256) auth, rate limiting (100 req/min)
+- **Backend:** Helmet CSP + HSTS + COEP, CORS allowlist, Zod schema validation, JWT (HS256) auth, rate limiting (global 100/min, API 60/min, auth 10/min per IP), brute-force protection on auth endpoints
 - **WebSocket:** JWT token auth, command whitelist, 64 KB max payload, 30 cmd/min per client
+- **JWT Hardening:** Entropy validation at startup — warns on weak secrets, dictionary words, keys < 64 chars
+- **Trusted-IP Bypass:** `RATE_LIMIT_TRUSTED_IPS` env var for load balancers and internal proxies
 - **Encryption:** AES-GCM 256-bit + PBKDF2 600k iterations for API keys in IndexedDB
 - **Transport:** TLS 1.3 everywhere, mTLS for EEBUS, client certs for OCPP
-- **Docker:** Non-root, read-only filesystem, `no-new-privileges`, isolated networks
+- **Docker:** Non-root, read-only filesystem, `no-new-privileges`, isolated networks, per-IP connection limits (`limit_conn 50`)
 - **Runtime Hardening:** strict OpenEMS component/property validation, worker URL allowlist + private-IP checks, sanitized plugin/event logging
 - **CI:** CodeQL SAST, pnpm audit, Dependabot (npm ecosystem + Actions + Docker + Cargo), SHA-pinned GitHub Actions
 

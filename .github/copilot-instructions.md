@@ -79,12 +79,12 @@ All adapters in `src/core/adapters/` implement the `EnergyAdapter` interface (`E
 - **ESLint v9** flat config with `typescript-eslint` + Prettier integration (single lint source of truth; Biome linter disabled)
 - **Prettier** for formatting
 - **Husky** + **lint-staged** for pre-commit hooks
-- **Vitest v4** (jsdom, V8 coverage — thresholds: statements 60%, branches 50%, functions 55%, lines 60%) — unit tests in `src/tests/`
+- **Vitest v4** (jsdom, V8 coverage — thresholds: statements 48%, branches 40%, functions 49%, lines 49%) — unit tests in `src/tests/`
 - **Playwright** (Chromium/Firefox/WebKit + mobile viewports) — e2e in `tests/e2e/`
 - **Lighthouse CI** (Perf ≥ 85%, A11y ≥ 90%, Best Practices ≥ 90%; `errors-in-console` disabled for demo mode)
-- `.devcontainer` for reproducible dev environments
+- `.devcontainer` for reproducible dev environments (Node 24 image, Rust stable, pnpm 10.33.0 via corepack)
 - **Project-wide no-any policy** — do not introduce explicit `any` in app code, tests, or TypeScript tooling files; prefer `unknown`, precise interfaces, discriminated unions, or narrowly scoped helper types
-- **CI Node.js baseline**: Node.js 24 LTS (Node 26 canary removed — does not exist yet)
+- **CI Node.js baseline**: Node.js 24 LTS (no canary/Node 26 matrix — does not exist yet)
 
 ### Execution Strategy (Local vs Cloud CI)
 
@@ -99,8 +99,8 @@ All adapters in `src/core/adapters/` implement the `EnergyAdapter` interface (`E
 ### Deployment
 
 - **GitHub Pages**: `base: '/Nexus-HEMS-Dash/'` in production
-- **Docker**: multi-stage build (Node 24 → nginx 1.29), `read_only`, non-root, healthcheck
-- **Tauri v2**: desktop distribution (Linux/macOS/Windows), strict CSP
+- **Docker**: multi-stage build (Node 24 → nginx 1.29), `read_only`, non-root, healthcheck; requires `JWT_SECRET`, `API_KEYS`, `WS_ORIGINS`
+- **Tauri v2.2**: desktop distribution (Linux/macOS/Windows), strict CSP; Rust edition 2024, rust-version ≥ 1.85
 
 ---
 
@@ -204,6 +204,8 @@ src/
 - Production mode requires `API_KEYS` env var for `/api/auth/token`
 - Production CSP uses `WS_ORIGINS` env var instead of `ws://localhost:*`
 - Mock data vs live adapters controlled via `ADAPTER_MODE=mock|live` env var
+- Rate limiting: global (100/min), API (60/min), auth endpoints (10/min); bypass via `RATE_LIMIT_TRUSTED_IPS`
+- JWT entropy validated at startup: warns on weak secrets, dictionary words, short keys < 64 chars
 
 ### CHANGELOG Convention
 
@@ -218,6 +220,9 @@ src/
 - Use `pnpm.overrides` (inside the `"pnpm"` key), NOT top-level `"overrides"` (npm-only)
 - Nested overrides use `parent>child` syntax, e.g. `"@lhci/cli>tmp": "0.2.5"`
 - Run `pnpm audit` after any override change to verify resolution
+- Current active security overrides: `protobufjs>=7.5.5`, `undici>=7.0.0`, `cross-spawn>=7.0.6`, `@xmldom/xmldom>=0.9.0`, `basic-ftp>=5.3.0`, `serialize-javascript>=7.0.5`
+- `pnpm.onlyBuiltDependencies`: include all `@rolldown/binding-*` platform entries to suppress install warnings
+- `pnpm.peerDependencyRules.allowedVersions`: add `@storybook/react>react: ^19.0.0` etc. when Storybook lags behind React version
 
 ---
 

@@ -5,7 +5,11 @@
   // ── Dev Container Features ──────────────────────────────────────
   "features": {
     "ghcr.io/devcontainers/features/github-cli:1": {},
-    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    "ghcr.io/devcontainers/features/rust:1": {
+      "version": "stable",
+      "profile": "default"
+    }
   },
 
   // ── Codespaces Machine Requirements ─────────────────────────────
@@ -26,7 +30,7 @@
 
   // ── Lifecycle Hooks ─────────────────────────────────────────────
   // postCreateCommand: runs ONCE when the container is created (heavy ops)
-  "postCreateCommand": "corepack enable && pnpm install && pnpm exec playwright install --with-deps chromium",
+  "postCreateCommand": "corepack enable && corepack prepare pnpm@10.33.0 --activate && pnpm install && pnpm exec playwright install --with-deps chromium",
   // postStartCommand: runs every time the container starts (lightweight)
   "postStartCommand": "git config pull.rebase true && pnpm install --prefer-offline --silent",
 

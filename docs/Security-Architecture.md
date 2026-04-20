@@ -1,6 +1,6 @@
 # Security Architecture — Nexus-HEMS-Dash
 
-> Version 1.1 · April 2026
+> Version 1.2 · April 2026
 
 ---
 
@@ -41,14 +41,14 @@
 
 ### STRIDE Analysis
 
-| Threat              | Mitigation                                               |
-| ------------------- | -------------------------------------------------------- |
-| **Spoofing**        | mTLS for EEBUS SPINE/SHIP; JWT for API auth              |
-| **Tampering**       | CSP headers; integrity checks on service worker cache    |
-| **Repudiation**     | Command audit trail in `BaseAdapter`; structured logging |
-| **Info Disclosure** | AES-GCM encrypted keys in IndexedDB; no env-var secrets  |
-| **Denial of Svc**   | Express rate limiting; circuit breaker per adapter       |
-| **Priv. Elevation** | Read-only Docker containers; non-root nginx; strict CSP  |
+| Threat              | Mitigation                                                                               |
+| ------------------- | ---------------------------------------------------------------------------------------- |
+| **Spoofing**        | mTLS for EEBUS SPINE/SHIP; JWT for API auth                                              |
+| **Tampering**       | CSP headers; integrity checks on service worker cache                                    |
+| **Repudiation**     | Command audit trail in `BaseAdapter`; structured logging                                 |
+| **Info Disclosure** | AES-GCM encrypted keys in IndexedDB; no env-var secrets                                  |
+| **Denial of Svc**   | Express rate limiting (global/API/auth); nginx `limit_conn`; circuit breaker per adapter |
+| **Priv. Elevation** | Read-only Docker containers; non-root nginx; strict CSP                                  |
 
 ---
 
@@ -56,10 +56,14 @@
 
 ### API Server (Express 5)
 
-- **Helmet.js** — sets security headers (HSTS, X-Frame-Options, X-Content-Type-Options)
-- **express-rate-limit** — 100 req/15 min per IP (configurable)
+- **Helmet.js** — sets security headers (HSTS, X-Frame-Options, X-Content-Type-Options, COEP `credentialless`)
+- **express-rate-limit** — three tiers: global (100 req/min), API (60 req/min), auth endpoints (10 req/min)
+  - `RATE_LIMIT_TRUSTED_IPS` env var allows load-balancer IPs to bypass rate limits
+  - Window randomized ±15 s to mitigate timing attacks
 - **Zod** — runtime schema validation on all API endpoints and WebSocket commands
-- **JWT** (`jsonwebtoken`) — stateless auth tokens, HS256, 24 h expiry
+- **JWT** (`jose`) — stateless auth tokens, HS256, 24 h expiry; secret entropy validated at startup
+  - `jwt-utils.ts`: warns on low-entropy secrets (< 128 bits), short keys (< 64 chars), dictionary words
+  - Secret sources: `JWT_SECRET` env var → Docker secrets file → auto-generated (dev only)
 - No session storage; tokens validated per request
 - Production baseline runs on Node.js 24 LTS
 
@@ -139,12 +143,31 @@ font-src 'self';
 object-src 'none';
 base-uri 'self';
 frame-ancestors 'none';
+cross-origin-embedder-policy: credentialless;
+```
+
+> **Production**: `ws://localhost:*` is replaced by `WS_ORIGINS` env var. Never expose dev WebSocket origins in production.
+
+```
+
 ```
 
 ### CORS
 
-- Express CORS middleware restricts origins to deployment domain
+- Express CORS middleware restricts origins to deployment domain + `CORS_ORIGINS` env var
 - No wildcard `*` origins in production
+
+### nginx Connection Limits
+
+`nginx.conf` enforces per-IP connection limits:
+
+```nginx
+limit_conn_zone $binary_remote_addr zone=conn_limit:10m;
+limit_conn conn_limit 50;   # max 50 concurrent connections per IP
+client_max_body_size 1m;    # request body limit
+```
+
+Prevents connection-exhaustion DoS without impacting legitimate users.
 
 ---
 

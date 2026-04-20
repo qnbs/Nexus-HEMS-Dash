@@ -30,6 +30,7 @@ const ALGORITHM = 'HS256' as const;
 const DOCKER_SECRET_PATH = '/run/secrets/jwt_secret';
 const KEY_ROTATION_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 const JWT_MIN_SECRET_LENGTH = 32; // bytes
+const JWT_RECOMMENDED_SECRET_LENGTH = 64; // recommended for HS256
 
 // ─── Key Store ──────────────────────────────────────────────────────
 
@@ -45,15 +46,63 @@ function secretToUint8Array(secret: string): Uint8Array {
 }
 
 /**
+ * Estimate entropy of a secret string (rough heuristic).
+ * Warns if the secret appears to have low entropy (dictionary words, patterns).
+ */
+function checkSecretEntropy(secret: string, source: string): void {
+  // Basic entropy checks
+  const hasLower = /[a-z]/.test(secret);
+  const hasUpper = /[A-Z]/.test(secret);
+  const hasDigit = /\d/.test(secret);
+  const hasSpecial = /[^a-zA-Z0-9]/.test(secret);
+  const charsetSize =
+    (hasLower ? 26 : 0) + (hasUpper ? 26 : 0) + (hasDigit ? 10 : 0) + (hasSpecial ? 32 : 0);
+  const estimatedEntropy = secret.length * Math.log2(charsetSize || 1);
+
+  // Warn if entropy is low (< 128 bits is weak for cryptographic use)
+  if (estimatedEntropy < 128) {
+    console.warn(
+      `[JWT] WARNING: ${source} appears to have low entropy (est. ${Math.floor(estimatedEntropy)} bits). ` +
+        'Use a cryptographically random secret (e.g., openssl rand -base64 64).',
+    );
+  }
+
+  // Warn if secret is shorter than recommended
+  if (secret.length < JWT_RECOMMENDED_SECRET_LENGTH) {
+    console.warn(
+      `[JWT] WARNING: ${source} is shorter than recommended (${secret.length} < ${JWT_RECOMMENDED_SECRET_LENGTH} chars). ` +
+        'Consider using a longer secret for HS256.',
+    );
+  }
+
+  // Warn about common weak patterns
+  const weakPatterns = ['password', 'secret', '123456', 'admin', 'test', 'changeme', 'default'];
+  const lowerSecret = secret.toLowerCase();
+  for (const pattern of weakPatterns) {
+    if (lowerSecret.includes(pattern)) {
+      console.error(
+        `[JWT] SECURITY RISK: ${source} contains weak pattern "${pattern}". ` +
+          'Use a cryptographically random secret in production!',
+      );
+      break;
+    }
+  }
+}
+
+/**
  * Load the JWT secret from available sources (priority order):
  * 1. JWT_SECRET environment variable
  * 2. Docker secret file (/run/secrets/jwt_secret)
  * 3. Auto-generated (development only — logged as warning)
  */
 function loadSecret(): string {
+  const isProd = process.env.NODE_ENV === 'production';
+
   // 1. Environment variable
   const envSecret = process.env.JWT_SECRET;
   if (envSecret && envSecret.length >= JWT_MIN_SECRET_LENGTH) {
+    console.log('[JWT] Secret loaded from JWT_SECRET environment variable');
+    if (isProd) checkSecretEntropy(envSecret, 'JWT_SECRET env var');
     return envSecret;
   }
 
@@ -63,11 +112,19 @@ function loadSecret(): string {
       const fileSecret = fs.readFileSync(DOCKER_SECRET_PATH, 'utf-8').trim();
       if (fileSecret.length >= JWT_MIN_SECRET_LENGTH) {
         console.log('[JWT] Secret loaded from Docker secret file');
+        if (isProd) checkSecretEntropy(fileSecret, 'Docker secret file');
         return fileSecret;
+      } else {
+        console.warn(
+          `[JWT] Docker secret file exists but is too short (${fileSecret.length} < ${JWT_MIN_SECRET_LENGTH} chars)`,
+        );
       }
     }
-  } catch {
+  } catch (err) {
     // File not accessible — continue to fallback
+    if (isProd) {
+      console.warn('[JWT] Docker secret file not accessible:', (err as Error).message);
+    }
   }
 
   // 3. Auto-generated (dev only)

@@ -97,30 +97,68 @@ export function configureHelmet(app: Express, isDev: boolean): void {
 }
 
 // ─── Rate Limiting ───────────────────────────────────────────────────
+// Note: windowMs is randomized ±15s to mitigate timing attacks and
+// prevent synchronized retry storms.
 
 export function configureRateLimiting(app: Express, isDev: boolean): void {
+  // Skip rate limiting for trusted proxy IPs (e.g., internal load balancers)
+  const trustedIPs = new Set(
+    (process.env.RATE_LIMIT_TRUSTED_IPS || '')
+      .split(',')
+      .map((ip) => ip.trim())
+      .filter(Boolean),
+  );
+
+  const skipIfTrusted = (req: Request): boolean => {
+    const clientIP = getClientIP(req);
+    return trustedIPs.has(clientIP);
+  };
+
+  const getClientIP = (req: Request): string => {
+    const forwarded = req.headers['x-forwarded-for'];
+    if (typeof forwarded === 'string') return forwarded.split(',')[0].trim();
+    return req.socket.remoteAddress || 'unknown';
+  };
+
+  // Global rate limiter: 100 req/min
   const globalLimiter = rateLimit({
     windowMs: 60_000 + Math.floor((Math.random() - 0.5) * 30_000),
     max: isDev ? 0 : 100,
     standardHeaders: true,
     legacyHeaders: false,
     message: { error: 'Too many requests, please try again later.' },
-    keyGenerator: (req: Request) => {
-      const forwarded = req.headers['x-forwarded-for'];
-      if (typeof forwarded === 'string') return forwarded.split(',')[0].trim();
-      return req.socket.remoteAddress || 'unknown';
-    },
+    keyGenerator: getClientIP,
+    skip: skipIfTrusted,
   });
 
   if (!isDev) app.use(globalLimiter);
 
+  // API rate limiter: 60 req/min
   const apiLimiter = rateLimit({
     windowMs: 60_000 + Math.floor((Math.random() - 0.5) * 30_000),
     max: isDev ? 0 : 60,
     standardHeaders: true,
     legacyHeaders: false,
     message: { error: 'Too many API requests, please try again later.' },
+    keyGenerator: getClientIP,
+    skip: skipIfTrusted,
   });
 
   if (!isDev) app.use('/api/', apiLimiter);
+
+  // Auth endpoint rate limiter: 10 req/min (stricter to prevent brute force)
+  const authLimiter = rateLimit({
+    windowMs: 60_000 + Math.floor((Math.random() - 0.5) * 30_000),
+    max: isDev ? 0 : 10,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Too many authentication attempts, please try again later.' },
+    keyGenerator: getClientIP,
+    skip: skipIfTrusted,
+  });
+
+  if (!isDev) {
+    app.use('/api/auth/token', authLimiter);
+    app.use('/api/auth/refresh', authLimiter);
+  }
 }

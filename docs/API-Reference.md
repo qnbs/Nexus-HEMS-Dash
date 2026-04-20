@@ -27,6 +27,9 @@ Health check (no auth required).
 
 Request a JWT for WebSocket authentication.
 
+> **Production**: Requires a valid API key set in the `API_KEYS` env var (comma-separated). In development, anonymous access is accepted.
+> **Rate limit**: 10 req/min per IP (brute-force protection). Trusted IPs in `RATE_LIMIT_TRUSTED_IPS` bypass this limit.
+
 **Body** (validated by `AuthTokenRequestSchema`)
 
 ```json
@@ -162,9 +165,14 @@ Validated by `WSCommandSchema`. Rate-limited to **30 commands/min** per client.
 
 ## Security
 
-- **Helmet** CSP, HSTS, X-Frame-Options: DENY
-- **CORS** allowlist (configurable via `CORS_ORIGINS` env var)
-- **Rate limiting**: 100 req/min global, 60 req/min `/api/*`, 30 cmd/min per WS client
-- **JWT**: Ed25519 (EdDSA), 24 h expiry, automatic key rotation
-- **WebSocket**: 64 KB max payload, Zod command validation
+- **Helmet** CSP, HSTS, X-Frame-Options: DENY, Cross-Origin-Embedder-Policy: `credentialless`
+- **CORS** allowlist (configurable via `CORS_ORIGINS` env var; no wildcard `*` in production)
+- **Rate limiting** (three tiers, window randomized ±15 s):
+  - Global: 100 req/min per IP
+  - API (`/api/*`): 60 req/min per IP
+  - Auth (`/api/auth/token`, `/api/auth/refresh`): 10 req/min per IP
+  - WebSocket commands: 30 cmd/min per client
+  - Trusted IPs bypass all limiters via `RATE_LIMIT_TRUSTED_IPS` env var
+- **JWT**: HS256, 24 h expiry; entropy-validated at startup (warns on weak secrets)
+- **WebSocket**: 64 KB max payload, Zod command validation, JWT required in production
 - **Input validation**: All request bodies validated with Zod schemas
