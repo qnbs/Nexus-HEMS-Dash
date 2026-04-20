@@ -61,27 +61,29 @@ function checkSecretEntropy(secret: string, source: string): void {
 
   // Warn if entropy is low (< 128 bits is weak for cryptographic use)
   if (estimatedEntropy < 128) {
+    // Do NOT log estimatedEntropy (derived from secret) — CodeQL [js/clear-text-logging]
     console.warn(
-      `[JWT] WARNING: ${source} appears to have low entropy (est. ${Math.floor(estimatedEntropy)} bits). ` +
+      `[JWT] WARNING: ${source} appears to have low entropy. ` +
         'Use a cryptographically random secret (e.g., openssl rand -base64 64).',
     );
   }
 
   // Warn if secret is shorter than recommended
+  // Compare against a pre-defined constant so the secret length itself is never logged
   if (secret.length < JWT_RECOMMENDED_SECRET_LENGTH) {
     console.warn(
-      `[JWT] WARNING: ${source} is shorter than recommended (${secret.length} < ${JWT_RECOMMENDED_SECRET_LENGTH} chars). ` +
+      `[JWT] WARNING: ${source} is shorter than the recommended ${JWT_RECOMMENDED_SECRET_LENGTH} characters. ` +
         'Consider using a longer secret for HS256.',
     );
   }
 
-  // Warn about common weak patterns
+  // Warn about common weak patterns — only the matched pattern name is logged, never the secret
   const weakPatterns = ['password', 'secret', '123456', 'admin', 'test', 'changeme', 'default'];
   const lowerSecret = secret.toLowerCase();
   for (const pattern of weakPatterns) {
     if (lowerSecret.includes(pattern)) {
       console.error(
-        `[JWT] SECURITY RISK: ${source} contains weak pattern "${pattern}". ` +
+        `[JWT] SECURITY RISK: ${source} contains a known-weak pattern. ` +
           'Use a cryptographically random secret in production!',
       );
       break;
@@ -115,8 +117,9 @@ function loadSecret(): string {
         if (isProd) checkSecretEntropy(fileSecret, 'Docker secret file');
         return fileSecret;
       } else {
+        // Do NOT log fileSecret.length — derived from the secret value — CodeQL [js/clear-text-logging]
         console.warn(
-          `[JWT] Docker secret file exists but is too short (${fileSecret.length} < ${JWT_MIN_SECRET_LENGTH} chars)`,
+          `[JWT] Docker secret file exists but is too short (minimum ${JWT_MIN_SECRET_LENGTH} chars required)`,
         );
       }
     }

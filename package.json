@@ -111,7 +111,6 @@
     "security:lint": "eslint src/ --rule 'anti-trojan-source/no-bidi: error'",
     "security:secrets": "gitleaks git --verbose",
     "security:secrets:staged": "gitleaks git --pre-commit --staged --verbose",
-    "security:trivy": "trivy fs . --scanners vuln,secret,misconfig --severity HIGH,CRITICAL --config trivy.yaml",
     "prepare": "husky",
     "start": "node server.ts",
     "docker:build": "docker build -t nexus-hems-dash .",

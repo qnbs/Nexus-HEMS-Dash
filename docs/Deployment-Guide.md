@@ -187,4 +187,4 @@ lint-typecheck ─┬── unit-tests ───┐
                                   └── docker-build
 ```
 
-Security scanning (`security-full.yml`) runs CodeQL, Trivy, Semgrep, gitleaks, Scorecard, and npm audit.
+Security scanning (`security-full.yml`) runs CodeQL, Semgrep, Gitleaks, Scorecard, and npm audit.

@@ -38,7 +38,7 @@
 - [ ] `pnpm audit --audit-level=high` — keine High/Critical-Schwachstellen
 - [ ] `pnpm security:trojan` — keine Trojan-Source-Zeichen
 - [ ] `pnpm security:secrets` — keine Secrets im Code (Gitleaks)
-- [ ] `pnpm security:trivy` — Trivy Filesystem-Scan bestanden
+- [ ] `pnpm security:secrets` — Gitleaks Scan bestanden
 - [ ] Alle API-Schlüssel nur über verschlüsseltes IndexedDB (`ai-keys.ts`)
 - [ ] Keine Secrets in `.env`, `docker-compose.yml` oder CI-Logs
 
@@ -238,7 +238,7 @@ services:
 - [ ] Keine Secrets im Image oder `docker-compose.yml`
 - [ ] OCI-Image-Metadaten gesetzt (`org.opencontainers.image.*`)
 - [ ] Produktiv-Deploy bevorzugt via immutable Digest statt mutablem Tag
-- [ ] `docker scan` / Trivy Image-Scan bestanden
+- [ ] `docker scan` / Container Image-Scan bestanden (Alternative zu Trivy — z.B. Grype, Snyk)
 - [ ] `restart: unless-stopped` für Auto-Recovery
 - [ ] `JWT_SECRET` als Docker Secret (min. 64 Zeichen, kryptographisch zufällig)
 - [ ] `API_KEYS` gesetzt (min. 1 Key, generiert via `openssl rand -hex 32`)

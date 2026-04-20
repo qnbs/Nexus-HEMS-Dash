@@ -321,7 +321,9 @@ async function executePoll(
 
   const start = performance.now();
   try {
-    // lgtm[js/request-forgery] — URL reconstructed from individually validated components
+    // codeql[js/request-forgery] -- safeUrl is fully reconstructed from individually
+    // validated components (protocol allowlist, hostname allowlist + private-IP check,
+    // port range check, path/query sanitisation). Redirects are blocked via `redirect:'error'`.
     const resp = await fetch(safeUrl, {
       headers: headers ?? {},
       signal: AbortSignal.timeout(10_000),

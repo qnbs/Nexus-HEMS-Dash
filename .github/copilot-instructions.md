@@ -89,7 +89,7 @@ All adapters in `src/core/adapters/` implement the `EnergyAdapter` interface (`E
 ### Execution Strategy (Local vs Cloud CI)
 
 - **Default local loop:** keep local verification fast and deterministic (`type-check`, `lint`, targeted unit tests, changed-file tests, focused smoke checks)
-- **Long-running suites belong primarily to CI:** full **Playwright E2E** matrix, **Lighthouse**, broad **security scans** (CodeQL/Semgrep/Trivy/Scorecard), and other heavy end-to-end validations should run mainly in cloud CI pipelines
+- **Long-running suites belong primarily to CI:** full **Playwright E2E** matrix, **Lighthouse**, broad **security scans** (CodeQL/Semgrep/Scorecard), and other heavy end-to-end validations should run mainly in cloud CI pipelines
 - Only run full local E2E/perf/security suites when explicitly requested by the user or when CI is unavailable
 - If a local long-running test is already running and is needed for diagnosis, monitor it; otherwise prefer CI execution and continue with productive implementation work
 - For local E2E confidence, prefer **targeted spec files** or **single-browser smoke subsets** before triggering full suites

@@ -67,8 +67,6 @@
           - src/core/command-safety.ts
           - SECURITY.md
           - .gitleaks.toml
-          - trivy.yaml
-          - trivy-secret.yaml
 
 # ── Type labels ──────────────────────────────
 

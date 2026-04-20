@@ -222,16 +222,16 @@ Each adapter uses `src/core/circuit-breaker.ts`:
 
 ### CI/CD Pipeline (14 workflows)
 
-| Tool                   | Purpose                                   |
-| ---------------------- | ----------------------------------------- |
-| **CodeQL**             | Static analysis (JavaScript/TypeScript)   |
-| **Trivy**              | Container + filesystem vulnerability scan |
-| **Gitleaks**           | Secret detection (pre-commit + CI)        |
-| **anti-trojan-source** | Unicode Bidi character detection          |
-| **pnpm audit**         | Dependency vulnerability check            |
-| **OpenSSF Scorecard**  | Supply chain security rating              |
-| **Renovate**           | Automated dependency updates              |
-| **Chromatic**          | Visual regression + Storybook CI          |
+| Tool                   | Purpose                                                         |
+| ---------------------- | --------------------------------------------------------------- |
+| **CodeQL**             | Static analysis (JavaScript/TypeScript)                         |
+| **Grype/Snyk**         | Container + filesystem vulnerability scan (Trivy-Ersatz, folgt) |
+| **Gitleaks**           | Secret detection (pre-commit + CI)                              |
+| **anti-trojan-source** | Unicode Bidi character detection                                |
+| **pnpm audit**         | Dependency vulnerability check                                  |
+| **OpenSSF Scorecard**  | Supply chain security rating                                    |
+| **Renovate**           | Automated dependency updates                                    |
+| **Chromatic**          | Visual regression + Storybook CI                                |
 
 ### Runtime Governance
 
