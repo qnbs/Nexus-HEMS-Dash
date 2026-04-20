@@ -254,29 +254,42 @@ const sectionAnim = {
 
 function TariffsPageComponent() {
   const { t } = useTranslation();
-  // Granular selectors — only re-render when these 2 fields change
-  const { priceCurrent, pvYieldToday } = useAppStoreShallow((s) => ({
+  // Granular selectors — only re-render when these specific fields change
+  const {
+    priceCurrent,
+    pvYieldToday,
+    chargeThreshold,
+    tariffProvider,
+    feedInTariff,
+    monthlyBudget,
+    priceAlerts,
+    priceAlertThreshold,
+  } = useAppStoreShallow((s) => ({
     priceCurrent: s.energyData.priceCurrent,
     pvYieldToday: s.energyData.pvYieldToday,
+    chargeThreshold: s.settings.chargeThreshold ?? 0.15,
+    tariffProvider: s.settings.tariffProvider,
+    feedInTariff: s.settings.feedInTariff ?? 0.082,
+    monthlyBudget: s.settings.monthlyBudget ?? 80,
+    priceAlerts: s.settings.priceAlerts,
+    priceAlertThreshold: s.settings.priceAlertThreshold ?? 0.1,
   }));
-  const settings = useAppStoreShallow((s) => s.settings);
   const [expandedWindow, setExpandedWindow] = useState<number | null>(null);
   const [view48h, setView48h] = useState<'price' | 'renewable'>('price');
 
   const currentPrice = priceCurrent ?? 0.18;
-  const isGoodPrice = currentPrice < (settings.chargeThreshold ?? 0.15);
+  const isGoodPrice = currentPrice < chargeThreshold;
   const priceZone =
     currentPrice < PRICE_AVG * 0.7 ? 'low' : currentPrice < PRICE_AVG * 1.2 ? 'mid' : 'high';
 
   const providerLabel =
-    settings.tariffProvider === 'tibber'
+    tariffProvider === 'tibber'
       ? 'Tibber'
-      : settings.tariffProvider === 'awattar'
+      : tariffProvider === 'awattar'
         ? 'aWATTar'
         : t('settings.none');
 
-  const feedInTariff = settings.feedInTariff ?? 0.082;
-  const monthlyBudgetPct = Math.min(100, (MONTHLY_TOTAL / (settings.monthlyBudget || 80)) * 100);
+  const monthlyBudgetPct = Math.min(100, (MONTHLY_TOTAL / monthlyBudget) * 100);
 
   return (
     <div className="space-y-6">
@@ -289,7 +302,7 @@ function TariffsPageComponent() {
           <div className="flex items-center gap-3">
             <span
               className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${
-                settings.tariffProvider !== 'none'
+                tariffProvider !== 'none'
                   ? 'bg-emerald-500/15 text-emerald-400'
                   : 'bg-zinc-500/15 text-zinc-400'
               }`}
@@ -522,7 +535,7 @@ function TariffsPageComponent() {
                   label={{ value: 'Ø', fill: '#eab308', fontSize: 11, position: 'right' }}
                 />
                 <ReferenceLine
-                  y={settings.chargeThreshold ?? 0.15}
+                  y={chargeThreshold}
                   stroke="#22c55e"
                   strokeDasharray="3 3"
                   label={{ value: '⚡', fill: '#22c55e', fontSize: 11, position: 'left' }}
@@ -908,7 +921,7 @@ function TariffsPageComponent() {
                 €{MONTHLY_TOTAL.toFixed(2)}
                 <span className="text-sm font-normal text-(--color-muted)">
                   {' '}
-                  / €{settings.monthlyBudget ?? 80}
+                  / €{monthlyBudget}
                 </span>
               </p>
             </div>
@@ -1107,7 +1120,7 @@ function TariffsPageComponent() {
               <div className="rounded-xl bg-(--color-surface) p-3">
                 <p className="text-[10px] text-(--color-muted)">{t('tariffs.chargeThreshold')}</p>
                 <p className="font-semibold text-emerald-400">
-                  {((settings.chargeThreshold ?? 0.15) * 100).toFixed(1)} ct
+                  {(chargeThreshold * 100).toFixed(1)} ct
                 </p>
               </div>
             </div>
@@ -1115,22 +1128,22 @@ function TariffsPageComponent() {
             {/* Alert config */}
             <div
               className={`flex items-center gap-3 rounded-xl p-3 ${
-                settings.priceAlerts
+                priceAlerts
                   ? 'bg-emerald-500/10 text-emerald-400'
                   : 'bg-zinc-500/10 text-zinc-400'
               }`}
             >
-              {settings.priceAlerts ? (
+              {priceAlerts ? (
                 <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
               ) : (
                 <AlertTriangle className="h-4 w-4" aria-hidden="true" />
               )}
               <span className="text-sm">
-                {settings.priceAlerts ? t('tariffs.alertsActive') : t('tariffs.alertsInactive')}
+                {priceAlerts ? t('tariffs.alertsActive') : t('tariffs.alertsInactive')}
               </span>
-              {settings.priceAlerts && (
+              {priceAlerts && (
                 <span className="ml-auto text-xs font-medium">
-                  &lt; {((settings.priceAlertThreshold ?? 0.1) * 100).toFixed(0)} ct
+                  &lt; {(priceAlertThreshold * 100).toFixed(0)} ct
                 </span>
               )}
             </div>

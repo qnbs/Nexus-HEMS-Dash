@@ -1,6 +1,6 @@
 import { createContext, useContext, useState } from 'react';
 import type { ReactNode } from 'react';
-import { useAppStore } from '../store';
+import { useAppStoreShallow } from '../store';
 import { useEnergyStore } from './useEnergyStore';
 import { getDisplayData } from '../lib/demo-data';
 import type { EnergyData } from '../types';
@@ -45,8 +45,11 @@ const EnergyContext = createContext<EnergyContextValue | null>(null);
 // ─── Provider ────────────────────────────────────────────────────────
 
 export function EnergyProvider({ children }: { children: ReactNode }) {
-  const rawData = useAppStore((s) => s.energyData);
-  const connected = useAppStore((s) => s.connected);
+  // Single combined subscription — one render trigger instead of two
+  const { energyData: rawData, connected } = useAppStoreShallow((s) => ({
+    energyData: s.energyData,
+    connected: s.connected,
+  }));
 
   // Centralised demo-data fallback — all consumers get realistic data when disconnected
   const data = getDisplayData(rawData, connected);

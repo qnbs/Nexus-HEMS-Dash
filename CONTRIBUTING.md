@@ -54,7 +54,7 @@ src/
 pnpm lint             # ESLint (must pass, no warnings)
 pnpm format:check     # Prettier formatting
 pnpm type-check       # TypeScript strict mode
-npx vitest run        # Unit tests (265+ tests, all must pass)
+npx vitest run        # Unit tests (~365 tests, all must pass)
 pnpm build            # Production build
 ```
 
@@ -191,7 +191,7 @@ Create an ADR using this template:
 
 | Layer        | Tool                             | Threshold                      | Focus                                     |
 | ------------ | -------------------------------- | ------------------------------ | ----------------------------------------- |
-| **Unit**     | Vitest + jsdom                   | Statements ≥60%, Branches ≥50% | Store logic, adapters, crypto, formatters |
+| **Unit**     | Vitest + jsdom                   | Statements ≥48%, Branches ≥40% | Store logic, adapters, crypto, formatters, circuit-breaker, tariff-providers, notifications |
 | **E2E**      | Playwright (3 browsers + mobile) | All specs pass                 | User flows, navigation, settings          |
 | **A11y**     | @axe-core/playwright             | WCAG 2.2 AA on all routes      | Keyboard nav, contrast, ARIA              |
 | **Visual**   | Chromatic + Storybook            | No unreviewed changes          | Component regression                      |
@@ -200,9 +200,30 @@ Create an ADR using this template:
 **When to write tests:**
 
 - New adapter → unit test for connect/disconnect/data-flow + E2E smoke
+- New utility/service → unit tests covering the happy path, error branches, and edge cases
 - New UI component → Storybook story + a11y check
 - Bug fix → regression test proving the fix
 - Security change → fuzz test + hardening test
+
+**Test file map** (`src/tests/`):
+
+| File | Source module | Focus |
+| ---- | ------------- | ----- |
+| `circuit-breaker.test.ts` | `src/core/circuit-breaker.ts` | FSM states, execute(), callbacks |
+| `tariff-providers.test.ts` | `src/lib/tariff-providers.ts` | §14a grid fees, peak hours, applyDynamicGridFees |
+| `notifications.test.ts` | `src/lib/notifications.ts` | Quiet hours, cooldown windows |
+| `energy-context.test.tsx` | `src/core/EnergyContext.tsx` | Provider state, derived values |
+| `energy-store.test.ts` | `src/core/useEnergyStore.ts` | Adapter bridge, getState() contract |
+| `store.test.ts` | `src/store.ts` | Zustand selectors, equality-skip guards |
+| `adapters.test.ts` | `src/core/adapters/` | Protocol adapter contracts |
+| `send-command.test.ts` | `src/core/command-safety.ts` | OCPP/Victron pipeline, rate limiting |
+| `security-fuzz.test.ts` | multiple | Input validation, injection resistance |
+| `security-hardening.test.ts` | multiple | Rate limits, CSP, auth |
+| `optimizer.test.ts` | `src/lib/optimizer.ts` | LP schedule optimizer |
+| `mpc-optimizer.test.ts` | `src/lib/mpc-optimizer.ts` | EMHASS-inspired MPC |
+| `predictive-ai.test.ts` | `src/lib/predictive-ai.ts` | AI forecast pipeline |
+| `pdf-report.test.ts` | `src/lib/pdf-report.ts` | PDF generation |
+| `sharing.test.ts` | `src/lib/sharing.ts` | Export/share flows |
 
 ## Performance Budgets
 

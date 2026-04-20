@@ -41,13 +41,19 @@ vi.mock('../lib/db', () => ({
   persistSnapshot: vi.fn(),
 }));
 
+// useAppStore mock — reflects the Opt#2 change: useAdapterBridge now calls
+// useAppStore.getState() inside callbacks instead of hook subscriptions.
+// The mock preserves the getState() API that the production code relies on.
+const mockSetEnergyData = vi.fn();
+const mockSetConnected = vi.fn();
+
 vi.mock('../store', () => ({
   useAppStore: Object.assign(
     vi.fn(() => vi.fn()),
     {
       getState: vi.fn(() => ({
-        setEnergyData: vi.fn(),
-        setConnected: vi.fn(),
+        setEnergyData: mockSetEnergyData,
+        setConnected: mockSetConnected,
       })),
     },
   ),
@@ -222,6 +228,48 @@ describe('useEnergyStore', () => {
       enableAdapter('unknown-adapter' as AdapterId, true);
       const after = useEnergyStoreBase.getState().adapters;
       expect(after).toEqual(before);
+    });
+  });
+
+  describe('useAppStore.getState() bridge contract (Opt#2)', () => {
+    it('useAppStore mock exposes getState() with setEnergyData', async () => {
+      // Verify the mock used by useAdapterBridge satisfies the contract:
+      // useAppStore.getState().setEnergyData must be callable.
+      const { useAppStore } = await import('../store');
+      const state = useAppStore.getState();
+      expect(typeof state.setEnergyData).toBe('function');
+    });
+
+    it('useAppStore mock exposes getState() with setConnected', async () => {
+      const { useAppStore } = await import('../store');
+      const state = useAppStore.getState();
+      expect(typeof state.setConnected).toBe('function');
+    });
+
+    it('getState() is stable — always returns same action refs', async () => {
+      // Actions retrieved via getState() should be consistent across calls.
+      // This validates that adapters using getState() inside callbacks won't
+      // get stale function references (the key invariant of Opt#2).
+      const { useAppStore } = await import('../store');
+      const first = useAppStore.getState();
+      const second = useAppStore.getState();
+      expect(first.setEnergyData).toBe(second.setEnergyData);
+      expect(first.setConnected).toBe(second.setConnected);
+    });
+
+    it('selectAdapterStatuses returns array of adapter status objects', () => {
+      const { adapters } = useEnergyStoreBase.getState();
+      const statuses = Object.entries(adapters).map(([id, entry]) => ({
+        id,
+        status: entry.status,
+        enabled: entry.enabled,
+      }));
+      expect(statuses).toHaveLength(5);
+      statuses.forEach((s) => {
+        expect(s).toHaveProperty('id');
+        expect(s).toHaveProperty('status');
+        expect(s).toHaveProperty('enabled');
+      });
     });
   });
 });

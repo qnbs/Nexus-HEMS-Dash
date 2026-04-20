@@ -17,7 +17,7 @@
 
 import { create } from 'zustand';
 import { useShallow } from 'zustand/react/shallow';
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { useAppStore } from '../store';
 import { queryClient } from '../lib/query-client';
 import { persistSnapshot } from '../lib/db';
@@ -317,17 +317,8 @@ export function sendAdapterCommand(command: AdapterCommand): void {
  * Uses getState() for actions to avoid full-store subscription.
  */
 export function useAdapterBridge() {
-  const setEnergyData = useAppStore((s) => s.setEnergyData);
-  const setConnected = useAppStore((s) => s.setConnected);
-  const setEnergyDataRef = useRef(setEnergyData);
-  const setConnectedRef = useRef(setConnected);
-
-  // Sync latest callbacks into refs (outside of render, per react-hooks/refs)
-  useEffect(() => {
-    setEnergyDataRef.current = setEnergyData;
-    setConnectedRef.current = setConnected;
-  });
-
+  // Zustand actions are stable — no hook subscriptions needed.
+  // Retrieve via getState() inside callbacks to avoid stale closures.
   useEffect(() => {
     const { adapters, mergeData, setAdapterStatus } = useEnergyStoreBase.getState();
     const entries = Object.entries(adapters) as [AdapterId, AdapterEntry][];
@@ -356,7 +347,7 @@ export function useAdapterBridge() {
         mergeData(id, data);
 
         // Bridge to legacy store
-        bridgeToAppStore(data, setEnergyDataRef.current);
+        bridgeToAppStore(data, useAppStore.getState().setEnergyData);
 
         // Sync to TanStack Query cache — components using useQuery(['energy-live'])
         // get push-based updates without polling. staleTime: Infinity ensures
@@ -383,7 +374,7 @@ export function useAdapterBridge() {
         const anyConn = Object.values(currentAdapters).some(
           (a) => a.enabled && a.status === 'connected',
         );
-        setConnectedRef.current(anyConn);
+        useAppStore.getState().setConnected(anyConn);
       });
 
       // Connect (only if circuit breaker allows)

@@ -41,8 +41,10 @@ function TabFallback() {
 
 function MonitoringUnifiedComponent() {
   const { t } = useTranslation();
-  const connected = useAppStoreShallow((s) => s.connected);
-  const debugMode = useAppStoreShallow((s) => s.settings.debugMode);
+  const { connected, debugMode } = useAppStoreShallow((s) => ({
+    connected: s.connected,
+    debugMode: s.settings.debugMode ?? false,
+  }));
   const [powerUserMode, setPowerUserMode] = useState(debugMode ?? false);
   const [showAdvancedHint, setShowAdvancedHint] = useState(false);
 

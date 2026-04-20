@@ -34,7 +34,7 @@ import {
 } from '../components/ui/ControlPanel';
 import { formatPower, formatPercent } from '../lib/format';
 import { hapticClick, hapticModeChange, hapticSuccess } from '../lib/haptics';
-import { useAppStoreShallow } from '../store';
+import { useAppStore } from '../store';
 
 import type { CommandType, EvState, HpState, EvMode, HpMode } from '../types';
 
@@ -449,7 +449,7 @@ function EVPanel({
   data: { evPower: number; pvPower: number; houseLoad: number };
 }) {
   const { t } = useTranslation();
-  const settings = useAppStoreShallow((s) => s.settings);
+  const maxEvPowerKW = useAppStore((s) => s.settings.systemConfig.evCharger.maxPowerKW);
 
   const [evState, evAction, isEvPending] = useActionState(
     async (_state: EvState, formData: FormData) => {
@@ -457,7 +457,7 @@ function EVPanel({
       const mode = (formData.get('evMode') ?? 'off') as EvMode;
       const power =
         mode === 'fast'
-          ? settings.systemConfig.evCharger.maxPowerKW * 1000
+          ? maxEvPowerKW * 1000
           : mode === 'pv'
             ? Math.max(0, data.pvPower - data.houseLoad)
             : 0;
@@ -612,7 +612,9 @@ function BatteryPanel({
   data: { batteryPower: number; batterySoC: number };
 }) {
   const { t } = useTranslation();
-  const settings = useAppStoreShallow((s) => s.settings);
+  const maxBatteryChargeRateKW = useAppStore(
+    (s) => s.settings.systemConfig.battery.maxChargeRateKW,
+  );
   const charging = data.batteryPower < 0;
 
   return (
@@ -655,10 +657,7 @@ function BatteryPanel({
             whileTap={{ scale: 0.95 }}
             onClick={() => {
               hapticModeChange();
-              sendCommand(
-                'SET_BATTERY_POWER',
-                -(settings.systemConfig.battery.maxChargeRateKW * 1000),
-              );
+              sendCommand('SET_BATTERY_POWER', -(maxBatteryChargeRateKW * 1000));
             }}
             className="btn-secondary focus-ring flex-1 text-sm"
           >

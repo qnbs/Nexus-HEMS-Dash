@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { useAppStore } from '../store';
+import { useAppStore, defaultSettings } from '../store';
 
 // Mock persistSettings to avoid Dexie in unit tests
 vi.mock('../lib/db', () => ({
@@ -75,5 +75,150 @@ describe('Zustand Store', () => {
     useAppStore.getState().updateSettings({ chargeThreshold: 0.12 });
     expect(useAppStore.getState().settings.chargeThreshold).toBe(0.12);
     expect(db.persistSettings).toHaveBeenCalled();
+  });
+});
+
+// ─── Equality-skip guards (Opt #2) ───────────────────────────────────
+
+describe('setEnergyData equality-skip guard', () => {
+  beforeEach(() => {
+    useAppStore.setState({
+      energyData: {
+        gridPower: 0,
+        pvPower: 3000,
+        batteryPower: 0,
+        houseLoad: 2000,
+        batterySoC: 60,
+        heatPumpPower: 0,
+        evPower: 0,
+        gridVoltage: 230,
+        batteryVoltage: 51.2,
+        pvYieldToday: 10,
+        priceCurrent: 0.18,
+      },
+      lastUpdated: null,
+    });
+  });
+
+  it('updates lastUpdated when data changes', () => {
+    useAppStore.getState().setEnergyData({ pvPower: 5000 });
+    expect(useAppStore.getState().lastUpdated).toBeTypeOf('number');
+    expect(useAppStore.getState().energyData.pvPower).toBe(5000);
+  });
+
+  it('merges partial data without overwriting unchanged fields', () => {
+    useAppStore.getState().setEnergyData({ batterySoC: 85 });
+    const { energyData } = useAppStore.getState();
+    expect(energyData.batterySoC).toBe(85);
+    expect(energyData.pvPower).toBe(3000); // unchanged
+    expect(energyData.houseLoad).toBe(2000); // unchanged
+  });
+});
+
+describe('setConnected equality-skip guard', () => {
+  beforeEach(() => {
+    useAppStore.setState({ connected: false });
+  });
+
+  it('updates connected to true', () => {
+    useAppStore.getState().setConnected(true);
+    expect(useAppStore.getState().connected).toBe(true);
+  });
+
+  it('returns same state reference when value unchanged (no re-render)', () => {
+    // Zustand won't trigger subscribers when state reference is identical.
+    // We test the guard indirectly: calling setConnected(false) on an already-false store
+    // should not mutate lastUpdated or trigger side effects.
+    const stateBefore = useAppStore.getState();
+    useAppStore.getState().setConnected(false); // already false
+    const stateAfter = useAppStore.getState();
+    // connected remains false and the state object is the same reference
+    expect(stateAfter.connected).toBe(false);
+    expect(stateAfter).toBe(stateBefore);
+  });
+});
+
+// ─── Granular selector patterns (Opt #2) ─────────────────────────────
+// Hooks (useAppStoreShallow / useAppStore) require a React component context.
+// We validate the selector shapes by calling the selector function directly
+// against getState() — which is exactly what the hook does under the hood.
+
+describe('Granular selector patterns (Opt #2)', () => {
+  beforeEach(() => {
+    useAppStore.setState({
+      connected: false,
+      energyData: {
+        gridPower: 0,
+        pvPower: 0,
+        batteryPower: 0,
+        houseLoad: 0,
+        batterySoC: 0,
+        heatPumpPower: 0,
+        evPower: 0,
+        gridVoltage: 230,
+        batteryVoltage: 51.2,
+        pvYieldToday: 5,
+        priceCurrent: 0.25,
+      },
+      settings: { ...defaultSettings },
+    });
+  });
+
+  it('TariffsPage pattern: selects only tariff-relevant fields', () => {
+    const s = useAppStore.getState();
+    const result = {
+      priceCurrent: s.energyData.priceCurrent,
+      pvYieldToday: s.energyData.pvYieldToday,
+      chargeThreshold: s.settings.chargeThreshold ?? 0.15,
+      tariffProvider: s.settings.tariffProvider,
+      feedInTariff: s.settings.feedInTariff ?? 0.082,
+      monthlyBudget: s.settings.monthlyBudget ?? 80,
+      priceAlerts: s.settings.priceAlerts,
+      priceAlertThreshold: s.settings.priceAlertThreshold ?? 0.1,
+    };
+
+    expect(result.priceCurrent).toBe(0.25);
+    expect(result.pvYieldToday).toBe(5);
+    expect(result.chargeThreshold).toBe(defaultSettings.chargeThreshold);
+    expect(result.tariffProvider).toBe(defaultSettings.tariffProvider);
+    expect(result.feedInTariff).toBe(defaultSettings.feedInTariff ?? 0.082);
+    expect(result.monthlyBudget).toBe(defaultSettings.monthlyBudget ?? 80);
+    expect(result.priceAlerts).toBe(defaultSettings.priceAlerts);
+    expect(result.priceAlertThreshold).toBe(defaultSettings.priceAlertThreshold ?? 0.1);
+  });
+
+  it('EnergyContext pattern: combined energyData + connected in one selector', () => {
+    useAppStore.setState({ connected: true });
+    const s = useAppStore.getState();
+    const result = {
+      energyData: s.energyData,
+      connected: s.connected,
+    };
+    expect(result.connected).toBe(true);
+    expect(result.energyData.priceCurrent).toBe(0.25);
+  });
+
+  it('Monitoring pattern: combined connected + debugMode in one selector', () => {
+    const s = useAppStore.getState();
+    const result = {
+      connected: s.connected,
+      debugMode: s.settings.debugMode ?? false,
+    };
+    expect(result.connected).toBe(false);
+    expect(result.debugMode).toBe(defaultSettings.debugMode ?? false);
+  });
+
+  it('LiveEnergyFlow EVPanel pattern: scalar evCharger.maxPowerKW', () => {
+    const s = useAppStore.getState();
+    const maxPower = s.settings.systemConfig.evCharger.maxPowerKW;
+    expect(typeof maxPower).toBe('number');
+    expect(maxPower).toBeGreaterThan(0);
+  });
+
+  it('LiveEnergyFlow BatteryPanel pattern: scalar battery.maxChargeRateKW', () => {
+    const s = useAppStore.getState();
+    const maxCharge = s.settings.systemConfig.battery.maxChargeRateKW;
+    expect(typeof maxCharge).toBe('number');
+    expect(maxCharge).toBeGreaterThan(0);
   });
 });

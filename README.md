@@ -13,7 +13,7 @@
 [![pnpm](https://img.shields.io/badge/pnpm-10-F69220?style=flat-square&logo=pnpm&logoColor=white)](https://pnpm.io/)
 [![Node.js](https://img.shields.io/badge/Node.js-24_LTS-339933?style=flat-square&logo=nodedotjs&logoColor=white)](.nvmrc)
 [![Storybook](https://img.shields.io/badge/Storybook-10.3-FF4785?style=flat-square&logo=storybook&logoColor=white)](.storybook/main.ts)
-[![Tests](https://img.shields.io/badge/Tests-265+-22ff88?style=flat-square&logo=vitest&logoColor=white)](src/tests/)
+[![Tests](https://img.shields.io/badge/Tests-365+-22ff88?style=flat-square&logo=vitest&logoColor=white)](src/tests/)
 [![E2E](https://img.shields.io/badge/E2E-Playwright-00A0E9?style=flat-square&logo=playwright&logoColor=white)](tests/e2e/)
 [![Adapters](<https://img.shields.io/badge/Adapters-10_(5+5)-22ff88?style=flat-square>)](#protocol-adapters)
 
@@ -206,7 +206,7 @@ For the full threat model, trust boundaries, STRIDE analysis, and GDPR/DSGVO com
 
 | Type       | Tool                                 | Scope                   |
 | :--------- | :----------------------------------- | :---------------------- |
-| Unit       | Vitest + jsdom + V8 coverage         | 265 tests, 26 suites    |
+| Unit       | Vitest + jsdom + V8 coverage         | ~365 tests, 37 files    |
 | E2E        | Playwright (Chromium/Firefox/WebKit) | Multi-route, a11y audit |
 | a11y       | @axe-core/playwright                 | WCAG 2.2 AA (15 tests)  |
 | Lighthouse | Lighthouse CI                        | Perf ≥ 85%, A11y ≥ 90%  |
@@ -250,6 +250,7 @@ Brand colors: `neon-green` (#22ff88) · `electric-blue` (#00f0ff) · `power-oran
 | Q1–Q3   | 5 core adapters, 5 themes, AI optimizer, EEBUS, PWA, Monitoring, Docker, Tauri, WCAG 2.2 AA, React Compiler, Backend hardening | ✅ Shipped |
 | Q3      | Plugin system, adapter registry, 5 contrib adapters (Home Assistant, Matter/Thread, Zigbee2MQTT, Shelly), Capacitor Mobile     | ✅ Shipped |
 | Q3–Q4   | Energy controllers (7 loops), MPC optimizer, hardware registry (120+ devices), plugin lifecycle, command safety, 265 tests     | ✅ Shipped |
+| Q1 2026 | Opt#1 + Opt#2 Zustand/React 19 compiler cleanup, 6 new test suites (circuit-breaker, tariff-providers, notifications, energy-context, +extensions) | ✅ Shipped |
 | Q4      | **Unified Command Center** — 7 focused sections, guided tours, contextual help, zero-config onboarding, full a11y audit        | ✅ Shipped |
 | Q4+     | Historical analytics, multi-tenant SaaS, contrib marketplace                                                                   | 🔜 Planned |
 
