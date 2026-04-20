@@ -54,7 +54,7 @@ src/
 pnpm lint             # ESLint (must pass, no warnings)
 pnpm format:check     # Prettier formatting
 pnpm type-check       # TypeScript strict mode
-npx vitest run        # Unit tests (~365 tests, all must pass)
+npx vitest run        # Unit tests (428 tests, all must pass)
 pnpm build            # Production build
 ```
 

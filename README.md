@@ -13,7 +13,7 @@
 [![pnpm](https://img.shields.io/badge/pnpm-10-F69220?style=flat-square&logo=pnpm&logoColor=white)](https://pnpm.io/)
 [![Node.js](https://img.shields.io/badge/Node.js-24_LTS-339933?style=flat-square&logo=nodedotjs&logoColor=white)](.nvmrc)
 [![Storybook](https://img.shields.io/badge/Storybook-10.3-FF4785?style=flat-square&logo=storybook&logoColor=white)](.storybook/main.ts)
-[![Tests](https://img.shields.io/badge/Tests-365+-22ff88?style=flat-square&logo=vitest&logoColor=white)](src/tests/)
+[![Tests](https://img.shields.io/badge/Tests-428-22ff88?style=flat-square&logo=vitest&logoColor=white)](src/tests/)
 [![E2E](https://img.shields.io/badge/E2E-Playwright-00A0E9?style=flat-square&logo=playwright&logoColor=white)](tests/e2e/)
 [![Adapters](<https://img.shields.io/badge/Adapters-10_(5+5)-22ff88?style=flat-square>)](#protocol-adapters)
 
@@ -206,7 +206,7 @@ For the full threat model, trust boundaries, STRIDE analysis, and GDPR/DSGVO com
 
 | Type       | Tool                                 | Scope                   |
 | :--------- | :----------------------------------- | :---------------------- |
-| Unit       | Vitest + jsdom + V8 coverage         | ~365 tests, 37 files    |
+| Unit       | Vitest + jsdom + V8 coverage         | 428 tests, 37 files     |
 | E2E        | Playwright (Chromium/Firefox/WebKit) | Multi-route, a11y audit |
 | a11y       | @axe-core/playwright                 | WCAG 2.2 AA (15 tests)  |
 | Lighthouse | Lighthouse CI                        | Perf ≥ 85%, A11y ≥ 90%  |
