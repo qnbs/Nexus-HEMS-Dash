@@ -29,7 +29,7 @@
       "!**/test-results",
       "!pnpm-lock.yaml",
       "!src/vite-env.d.ts",
-      "!grafana/**"
+      "!grafana"
     ]
   },
   "assist": {
