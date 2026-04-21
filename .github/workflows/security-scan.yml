@@ -46,8 +46,8 @@ jobs:
       - name: Run anti-trojan-source CLI
         run: npx anti-trojan-source --files='src/**/*.{ts,tsx,js,jsx}' --verbose
 
-      - name: Run ESLint anti-trojan-source/no-bidi
-        run: "npx eslint src/ --rule 'anti-trojan-source/no-bidi: error' --max-warnings 0"
+      - name: Biome check (Unicode bidi + lint)
+        run: pnpm biome check
 
   # ──────────────────────────────────────────────
   # 2. Gitleaks (Secret Detection)

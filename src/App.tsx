@@ -1,23 +1,25 @@
-import { useEffect, useRef, lazy, Suspense } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { lazy, Suspense, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useAdapterBridge } from './core/useEnergyStore';
-import { useAppStoreShallow } from './store';
-import { themeDefinitions } from './design-tokens';
+import { Navigate, Route, BrowserRouter as Router, Routes, useLocation } from 'react-router-dom';
 import { EnergyProvider } from './core/EnergyContext';
+import { useAdapterBridge } from './core/useEnergyStore';
+import { themeDefinitions } from './design-tokens';
+import { useAppStoreShallow } from './store';
+
 const Onboarding = lazy(() =>
   import('./components/Onboarding').then((m) => ({ default: m.Onboarding })),
 );
+
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { AppShell } from './components/layout/AppShell';
 import { OfflineBanner } from './components/OfflineBanner';
 import { PWAInstallPrompt } from './components/PWAInstallPrompt';
 import { PWAUpdateNotification } from './components/PWAUpdateNotification';
 import { TauriAutoUpdater } from './components/TauriAutoUpdater';
-import { ErrorBoundary } from './components/ErrorBoundary';
-import { watchSystemTheme, resolveTheme } from './lib/theme';
 import { backgroundSyncService } from './lib/background-sync';
-import { useNotifications } from './lib/useNotifications';
 import { logError } from './lib/db';
+import { resolveTheme, watchSystemTheme } from './lib/theme';
+import { useNotifications } from './lib/useNotifications';
 
 // ─── Lazy-loaded section layouts (7 groups) ──────────────────────────
 const CommandHubLayout = lazy(() =>

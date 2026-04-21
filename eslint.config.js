@@ -1,14 +1,24 @@
 // ESLint — React-only rules (Biome handles all TS/JS linting + formatting)
 // Only rules with no Biome equivalent are enforced here.
 // See docs/Toolchain-Architecture.md for the full toolchain reference.
+import babelParser from '@babel/eslint-parser';
 import reactHooks from 'eslint-plugin-react-hooks';
 import reactCompiler from 'eslint-plugin-react-compiler';
 import reactRefresh from 'eslint-plugin-react-refresh';
 
 export default [
-  { ignores: ['dist', 'node_modules', 'coverage', 'storybook-static'] },
+  { ignores: ['dist', 'node_modules', 'coverage', 'storybook-static', '**/*.ts'] },
   {
     files: ['src/**/*.tsx'],
+    languageOptions: {
+      parser: babelParser,
+      parserOptions: {
+        requireConfigFile: false,
+        babelOptions: {
+          presets: ['@babel/preset-react', '@babel/preset-typescript'],
+        },
+      },
+    },
     plugins: {
       'react-hooks': reactHooks,
       'react-compiler': reactCompiler,

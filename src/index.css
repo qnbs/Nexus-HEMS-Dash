@@ -636,12 +636,6 @@
 
   .metric-card:hover {
     transform: translateY(-4px) scale(1.01);
-    border-color: color-mix(
-      in srgb,
-      var(--color-primary) 25%,
-      var(--color-border) color-mix(in srgb, var(--color-surface) 80%, transparent),
-      color-mix(in srgb, var(--color-surface) 60%, transparent)
-    );
     border: 1px solid color-mix(in srgb, var(--color-border) 100%, transparent);
     box-shadow:
       0 8px 24px rgba(0, 0, 0, 0.12),

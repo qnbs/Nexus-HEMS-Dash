@@ -177,10 +177,7 @@
         "defaults": {
           "color": { "mode": "thresholds" },
           "thresholds": {
-            "steps": [
-              { "color": "green", "value": null },
-              { "color": "red", "value": 1 }
-            ]
+            "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 1 }]
           }
         }
       }

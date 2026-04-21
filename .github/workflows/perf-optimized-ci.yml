@@ -54,6 +54,7 @@ concurrency:
 
 env:
   NODE_VERSION: '24'
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   # Reduce package-manager noise and speed up installs
   npm_config_fund: 'false'
   npm_config_audit: 'false'
@@ -62,8 +63,6 @@ env:
 # ─────────────────────────────────────────────────────────────────────────────
 # Phase 1: Install & Cache (single job, shared by all downstream)
 # ─────────────────────────────────────────────────────────────────────────────
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   install:

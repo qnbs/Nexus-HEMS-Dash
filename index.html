@@ -39,7 +39,7 @@
     <link rel="manifest" href="/Nexus-HEMS-Dash/manifest.json" />
     <!-- Set theme from localStorage BEFORE any CSS/React loads to prevent blank screen -->
     <script>
-      (function () {
+      (() => {
         try {
           var stored = localStorage.getItem('nexus-hems-store');
           if (stored) {
@@ -56,15 +56,13 @@
     </script>
     <!-- GitHub Pages SPA redirect handler -->
     <script>
-      (function () {
+      (() => {
         var l = window.location;
         if (l.search[1] === '/') {
           var decoded = l.search
             .slice(1)
             .split('&')
-            .map(function (s) {
-              return s.replace(/~and~/g, '&');
-            })
+            .map((s) => s.replace(/~and~/g, '&'))
             .join('&');
           window.history.replaceState(null, null, l.pathname.slice(0, -1) + decoded + l.hash);
         }
@@ -107,7 +105,7 @@
     <script>
       // Fallback: if app hasn't rendered after 5s, show retry option
       // This also works as recovery when React crashes or SW serves stale cache
-      setTimeout(function () {
+      setTimeout(() => {
         var root = document.getElementById('root');
         if (!root) return;
         // Check if app rendered: look for theme-shell or visible content
@@ -132,26 +130,24 @@
           btn.textContent = 'Clear Cache & Reload';
           btn.style.cssText =
             'margin-top:0.5rem;padding:0.75rem 2rem;border-radius:0.75rem;border:1px solid #22ff88;background:transparent;color:#22ff88;cursor:pointer;font-size:0.875rem;font-weight:600;transition:all 0.2s';
-          btn.onmouseenter = function () {
+          btn.onmouseenter = () => {
             btn.style.background = 'rgba(34,255,136,0.15)';
           };
-          btn.onmouseleave = function () {
+          btn.onmouseleave = () => {
             btn.style.background = 'transparent';
           };
-          btn.onclick = function () {
+          btn.onclick = () => {
             btn.disabled = true;
             btn.textContent = 'Clearing…';
             if ('serviceWorker' in navigator) {
-              navigator.serviceWorker.getRegistrations().then(function (regs) {
-                regs.forEach(function (r) {
+              navigator.serviceWorker.getRegistrations().then((regs) => {
+                regs.forEach((r) => {
                   r.unregister();
                 });
-                caches.keys().then(function (names) {
+                caches.keys().then((names) => {
                   Promise.all(
-                    names.map(function (n) {
-                      return caches.delete(n);
-                    }),
-                  ).then(function () {
+                    names.map((n) => caches.delete(n)),
+                  ).then(() => {
                     window.location.reload();
                   });
                 });

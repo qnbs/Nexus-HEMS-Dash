@@ -10,7 +10,7 @@ import {
   Gauge,
   LayoutGrid,
   Leaf,
-  Map,
+  Map as MapIcon,
   PlugZap,
   Power,
   Search,
@@ -189,7 +189,7 @@ export default function DevicesAutomation() {
                   : 'text-(--color-muted) hover:text-(--color-text)'
               }`}
             >
-              <Map size={14} />
+              <MapIcon size={14} />
               {t('devicesAuto.viewFloorplan', 'Grundriss')}
             </button>
           </div>

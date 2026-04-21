@@ -27,7 +27,9 @@
       "!**/storybook-static",
       "!**/playwright-report",
       "!**/test-results",
-      "!pnpm-lock.yaml"
+      "!pnpm-lock.yaml",
+      "!src/vite-env.d.ts",
+      "!grafana/**"
     ]
   },
   "assist": {
@@ -78,6 +80,19 @@
         "noUselessElse": "warn",
         "useCollapsedElseIf": "warn"
       },
+      "a11y": {
+        "noLabelWithoutControl": "warn",
+        "useButtonType": "warn",
+        "useSemanticElements": "warn",
+        "noSvgWithoutTitle": "warn",
+        "noAriaHiddenOnFocusable": "warn",
+        "noRedundantRoles": "warn",
+        "useAriaPropsSupportedByRole": "warn",
+        "noAutofocus": "warn",
+        "useAriaPropsForRole": "warn",
+        "useFocusableInteractive": "warn",
+        "noStaticElementInteractions": "warn"
+      },
       "suspicious": {
         "noExplicitAny": "error",
         "noArrayIndexKey": "warn",
@@ -85,7 +100,10 @@
         "noDuplicateElseIf": "warn",
         "noAssignInExpressions": "warn",
         "noDoubleEquals": "warn",
-        "noImplicitAnyLet": "error"
+        "noImplicitAnyLet": "error",
+        "noShadowRestrictedNames": "warn",
+        "noShorthandPropertyOverrides": "warn",
+        "useIterableCallbackReturn": "warn"
       },
       "nursery": {
         "useSortedClasses": {
@@ -133,6 +151,9 @@
     "formatter": {
       "quoteStyle": "single"
     },
+    "parser": {
+      "tailwindDirectives": true
+    },
     "linter": {
       "enabled": true
     }
@@ -144,6 +165,17 @@
         "rules": {
           "complexity": {
             "noExcessiveCognitiveComplexity": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["index.html"],
+      "linter": {
+        "rules": {
+          "correctness": {
+            "noInnerDeclarations": "off",
+            "noUnusedVariables": "off"
           }
         }
       }

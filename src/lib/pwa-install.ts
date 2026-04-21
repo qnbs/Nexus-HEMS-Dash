@@ -45,7 +45,9 @@ let _cachedSnapshot: {
 function notify() {
   // Rebuild cached snapshot before notifying subscribers
   _cachedSnapshot = { deferredPrompt: _deferredPrompt, installed: _installed, isIOSDevice: _isIOS };
-  _listeners.forEach((fn) => fn());
+  _listeners.forEach((fn) => {
+    fn();
+  });
 }
 
 function subscribe(fn: () => void) {

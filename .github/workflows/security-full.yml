@@ -121,8 +121,8 @@ jobs:
       - name: Scan for Unicode Bidi characters
         run: npx anti-trojan-source --files='src/**/*.{ts,tsx,js,jsx}' --verbose
 
-      - name: ESLint anti-trojan-source/no-bidi
-        run: "npx eslint src/ --rule 'anti-trojan-source/no-bidi: error' --max-warnings 0"
+      - name: Biome check (Unicode bidi + lint)
+        run: pnpm biome check
 
   # ════════════════════════════════════════════════════════════════
   #  6. Dependabot / Dependency Audit — Dependency Check

@@ -21,7 +21,7 @@ import {
   Info,
   Keyboard,
   Lightbulb,
-  Map,
+  Map as MapIcon,
   MessageCircleQuestion,
   Monitor,
   Network,
@@ -744,7 +744,7 @@ export function Help() {
                       link="/energy-flow"
                     />
                     <FeatureCard
-                      icon={<Map size={20} className="text-blue-400" />}
+                      icon={<MapIcon size={20} className="text-blue-400" />}
                       title={t('help.featureFloorplan')}
                       description={t('help.featureFloorplanDesc')}
                       color="bg-blue-500/15"
