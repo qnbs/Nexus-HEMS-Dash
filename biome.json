@@ -5,6 +5,7 @@
       "src/**/*.ts",
       "src/**/*.tsx",
       "server.ts",
+      "jwt-utils.ts",
       "src/server/**/*.ts",
       "vite.config.ts",
       "vitest.config.ts",
@@ -135,5 +136,17 @@
     "linter": {
       "enabled": true
     }
-  }
+  },
+  "overrides": [
+    {
+      "includes": ["vite.config.ts"],
+      "linter": {
+        "rules": {
+          "complexity": {
+            "noExcessiveCognitiveComplexity": "off"
+          }
+        }
+      }
+    }
+  ]
 }

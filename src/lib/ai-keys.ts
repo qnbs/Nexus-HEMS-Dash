@@ -1,13 +1,16 @@
 /**
  * Encrypted AI key storage using Dexie + Web Crypto API.
  * Keys are encrypted with AES-GCM 256-bit before storage.
- * A device-bound passphrase is derived on first use and held in-memory only.
- * The passphrase is never written to sessionStorage, localStorage, or any
- * persistent / inspectable Web Storage API — it is discarded on page unload.
+ *
+ * HIGH-09 fix: The vault passphrase is now persisted in Dexie `settings` table
+ * (key 'vault-passphrase-v1') via secure-store.ts. This survives page reloads
+ * while remaining origin-isolated. The passphrase is never written to
+ * sessionStorage, localStorage, or any other inspectable Web Storage API.
  */
 
 import { decrypt, encrypt } from './crypto';
 import { nexusDb } from './db';
+import { getVaultPassphrase } from './secure-store';
 
 export type AIProvider = 'openai' | 'anthropic' | 'google' | 'xai' | 'groq' | 'ollama' | 'custom';
 
@@ -64,23 +67,8 @@ export const AI_PROVIDERS: Record<AIProvider, AIProviderConfig> = {
 };
 
 /**
- * Gets or creates a device-bound passphrase for this session.
- * The passphrase is held in a module-scope closure (in-memory only),
- * never written to sessionStorage or any other Web Storage API.
- * It is automatically discarded when the page is unloaded / tab is closed.
- */
-let _sessionPassphrase: string | null = null;
-
-function getSessionPassphrase(): string {
-  if (!_sessionPassphrase) {
-    const array = crypto.getRandomValues(new Uint8Array(32));
-    _sessionPassphrase = btoa(String.fromCharCode(...array));
-  }
-  return _sessionPassphrase;
-}
-
-/**
  * Stores an encrypted AI API key in Dexie.
+ * HIGH-09: Uses persistent vault passphrase from getVaultPassphrase().
  */
 export async function saveAIKey(
   provider: AIProvider,
@@ -88,7 +76,7 @@ export async function saveAIKey(
   model: string,
   customBaseUrl?: string,
 ): Promise<void> {
-  const passphrase = getSessionPassphrase();
+  const passphrase = await getVaultPassphrase();
   const encryptedKey = await encrypt(apiKey, passphrase);
 
   await nexusDb.aiKeys.put({
@@ -113,7 +101,7 @@ export async function getAIKey(provider: AIProvider): Promise<{
   if (!record) return null;
 
   try {
-    const passphrase = getSessionPassphrase();
+    const passphrase = await getVaultPassphrase();
     const apiKey = await decrypt(record.encryptedKey, passphrase);
 
     // Update last used timestamp

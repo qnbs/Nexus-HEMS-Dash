@@ -1,36 +1,47 @@
+import crypto from 'crypto';
 import { Router } from 'express';
-import { getKeyHealth, initKeys, signToken, verifyToken } from '../../../jwt-utils.js';
+import { revokeToken, signToken, verifyToken } from '../../../jwt-utils.js';
 import { AuthTokenRequestSchema } from '../../types/protocol.js';
-import { validateApiKey } from '../middleware/auth.js';
-import { getServerMetrics, serverStartTime } from '../middleware/metrics.js';
+import type { JWTScope } from '../middleware/auth.js';
+import { clampScope, requireJWT, requireScope, validateApiKey } from '../middleware/auth.js';
+import { serverStartTime } from '../middleware/metrics.js';
 
 const JWT_EXPIRY = '24h';
+
+// HIGH-04: Single-use WS ticket store (60-second TTL, consumed on first use)
+// Exported so energy.ws.ts can pass it to authenticateWS
+export const wsTickets = new Map<
+  string,
+  { clientId: string; scope: JWTScope; expiresAt: number }
+>();
+
+// Periodically clean up expired tickets (every 2 minutes)
+setInterval(() => {
+  const now = Date.now();
+  for (const [ticket, data] of wsTickets) {
+    if (data.expiresAt < now) wsTickets.delete(ticket);
+  }
+}, 120_000);
 
 export function createAuthRoutes(): Router {
   const router = Router();
 
-  // Initialize JWT keys
-  initKeys();
+  // LOW-02 fix: initKeys() is called once in server/index.ts — do NOT call it here again
 
   // ─── Health check (no auth required — load balancer needs it) ────
+  // MED-05 fix: Removed JWT key metadata (kid, rotationDueIn) from health response
   router.get('/api/health', (_req, res) => {
     const adapters = ['victron-mqtt', 'modbus-sunspec', 'knx', 'ocpp', 'eebus'];
-    const keyHealth = getKeyHealth();
     res.json({
       status: 'ok',
-      uptime: (Date.now() - serverStartTime) / 1000,
+      uptime: Math.floor((Date.now() - serverStartTime) / 1000),
       adapters: adapters.map((a) => ({ id: a, status: 'connected' })),
-      metrics: { totalSamples: getServerMetrics().size },
-      jwt: {
-        kid: keyHealth.currentKid,
-        rotationDueIn: Math.floor(keyHealth.rotationDueMs / 86400000) + 'd',
-      },
     });
   });
 
   // ─── JWT Token Endpoint ──────────────────────────────────────────
-  // In production, clients must provide a valid API key to obtain a JWT.
-  // In dev mode, API key validation is skipped (auto-accept).
+  // CRIT-01 fix: Scope is clamped to the maximum allowed for the given API key.
+  // API_KEY_SCOPES env var: "key:scope,key2:scope2" — defaults to 'readwrite' if unset.
   router.post('/api/auth/token', async (req, res) => {
     const parsed = AuthTokenRequestSchema.safeParse(req.body);
     if (!parsed.success) {
@@ -46,11 +57,14 @@ export function createAuthRoutes(): Router {
       return;
     }
 
-    const token = await signToken({ sub: clientId, scope: scope || 'readwrite' }, JWT_EXPIRY);
-    res.json({ token, expiresIn: JWT_EXPIRY });
+    // CRIT-01: Clamp scope to maximum allowed for this API key
+    const grantedScope = clampScope(scope as JWTScope | undefined, apiKey ?? '');
+    const token = await signToken({ sub: clientId, scope: grantedScope }, JWT_EXPIRY);
+    res.json({ token, expiresIn: JWT_EXPIRY, scope: grantedScope });
   });
 
   // ─── JWT Token Refresh ───────────────────────────────────────────
+  // MED-02: New tokens include jti; old token's jti is not revoked (not logout)
   router.post('/api/auth/refresh', async (req, res) => {
     const authHeader = req.headers.authorization;
     if (!authHeader?.startsWith('Bearer ')) {
@@ -64,6 +78,48 @@ export function createAuthRoutes(): Router {
     } catch {
       res.status(401).json({ error: 'Invalid or expired token' });
     }
+  });
+
+  // ─── JWT Token Revocation ────────────────────────────────────────
+  // MED-02 fix: Revoke a specific token by its jti claim.
+  // Requires readwrite scope minimum (own token revocation) or admin for others.
+  router.post('/api/auth/revoke', requireJWT, requireScope('readwrite'), async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader?.startsWith('Bearer ')) {
+      res.status(400).json({ error: 'Missing token to revoke' });
+      return;
+    }
+    try {
+      const decoded = await verifyToken(authHeader.slice(7));
+      if (decoded.jti && decoded.exp) {
+        revokeToken(decoded.jti, decoded.exp * 1000);
+        res.json({ revoked: true });
+      } else {
+        res.status(400).json({ error: 'Token has no jti claim — cannot revoke' });
+      }
+    } catch {
+      res.status(401).json({ error: 'Invalid token' });
+    }
+  });
+
+  // ─── WebSocket Ticket Endpoint ───────────────────────────────────
+  // HIGH-04 fix: Issues a short-lived (60s) single-use WS ticket.
+  // Browser connects via wss://...?ticket=<uuid> — the JWT never appears in URL logs.
+  router.post('/api/auth/ws-ticket', requireJWT, (_req, res) => {
+    const payload = res.locals.jwtPayload as { sub?: string; scope?: string } | undefined;
+    const clientId = payload?.sub ?? 'unknown';
+    const scope = (
+      ['read', 'readwrite', 'admin'].includes(payload?.scope ?? '') ? payload!.scope : 'readwrite'
+    ) as JWTScope;
+
+    const ticket = crypto.randomUUID();
+    wsTickets.set(ticket, {
+      clientId,
+      scope,
+      expiresAt: Date.now() + 60_000, // 60-second TTL
+    });
+
+    res.json({ ticket, expiresIn: 60 });
   });
 
   return router;

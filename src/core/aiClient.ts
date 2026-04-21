@@ -24,6 +24,32 @@ Analyze real-time energy data and provide actionable optimization recommendation
 Focus on: cost minimization, self-consumption maximization, CO₂ reduction, battery optimization, smart EV charging.
 Always respond with valid JSON arrays when structured output is requested.`;
 
+// ─── MED-09: Prompt Injection Sanitization ───────────────────────────
+
+/**
+ * Sanitizes a user-controlled or sensor-derived string before interpolating
+ * it into an AI prompt. Strips control characters, prompt injection sequences,
+ * and truncates to maxLength.
+ *
+ * @param value   The raw input string (device name, user label, API value, etc.)
+ * @param maxLength   Maximum allowed length after sanitization (default: 64)
+ */
+export function sanitizeForPrompt(value: string, maxLength = 64): string {
+  if (typeof value !== 'string') return '';
+
+  return (
+    value
+      // Remove all Unicode control characters (NUL, SOH, … DEL, etc.)
+      .replace(/\p{Cc}/gu, '')
+      // Strip common prompt-injection prefixes
+      .replace(/\b(ignore|disregard|forget|override)\b.*?(instruction|prompt|above|system)/gi, '')
+      // Collapse repeated whitespace
+      .replace(/\s{3,}/g, '  ')
+      .trim()
+      .slice(0, maxLength)
+  );
+}
+
 /**
  * Calls the configured AI provider with the given prompt.
  */

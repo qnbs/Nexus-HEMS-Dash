@@ -470,7 +470,8 @@ export async function cleanExpiredCache() {
 }
 
 /**
- * Log error for diagnostics
+ * Log error for diagnostics.
+ * LOW-03: Enforces max 100 entries AND a 7-day TTL to prevent unbounded growth.
  */
 export async function logError(
   error: Error,
@@ -487,7 +488,7 @@ export async function logError(
     severity,
   });
 
-  // Keep only last 100 errors
+  // Enforce 100-entry cap
   const count = await nexusDb.errorLogs.count();
   if (count > 100) {
     const oldest = await nexusDb.errorLogs
@@ -495,6 +496,13 @@ export async function logError(
       .limit(count - 100)
       .primaryKeys();
     await nexusDb.errorLogs.bulkDelete(oldest);
+  }
+
+  // LOW-03: Enforce 7-day TTL — delete entries older than 7 days
+  const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  const expired = await nexusDb.errorLogs.where('timestamp').below(sevenDaysAgo).primaryKeys();
+  if (expired.length > 0) {
+    await nexusDb.errorLogs.bulkDelete(expired);
   }
 }
 

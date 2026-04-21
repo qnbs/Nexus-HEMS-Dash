@@ -12,6 +12,11 @@
  *
  * Supports: mTLS client certs/keys, auth tokens, MQTT passwords,
  *           EEBUS SHIP SKI fingerprints, OCPP security profiles.
+ *
+ * HIGH-09 fix: The vault passphrase is now persisted in Dexie `settings` table
+ * under key 'vault-passphrase-v1'. This survives page reloads while remaining
+ * origin-isolated (same protection level as the encrypted keys themselves).
+ * The passphrase is never written to localStorage or sessionStorage.
  */
 
 import type { AdapterConnectionConfig } from '../core/adapters/EnergyAdapter';
@@ -20,7 +25,14 @@ import { nexusDb } from './db';
 
 // ─── Types ───────────────────────────────────────────────────────────
 
-export type AdapterCredentialId = 'victron-mqtt' | 'modbus-sunspec' | 'knx' | 'ocpp-21' | 'eebus';
+// HIGH-01: InfluxDB is now a supported credential ID (moved from localStorage)
+export type AdapterCredentialId =
+  | 'victron-mqtt'
+  | 'modbus-sunspec'
+  | 'knx'
+  | 'ocpp-21'
+  | 'eebus'
+  | 'influxdb';
 
 export interface AdapterCredentials {
   /** Auth token / password for the connection */
@@ -45,20 +57,52 @@ export interface EncryptedAdapterCredential {
   updatedAt: number;
 }
 
-// ─── Session Passphrase ──────────────────────────────────────────────
+// ─── Persistent Vault Passphrase (HIGH-09) ───────────────────────────
 
 /**
- * Module-scope vault passphrase — never written to sessionStorage or any
- * other Web Storage API. Automatically discarded on page unload / tab close.
+ * Dexie settings key used to store the vault passphrase.
+ * This is an origin-bound key — same protection level as the encrypted vault entries.
+ * It is never written to localStorage, sessionStorage, or any other non-IndexedDB storage.
  */
-let _vaultPassphrase: string | null = null;
+const VAULT_PASSPHRASE_KEY = 'vault-passphrase-v1';
 
-function getVaultPassphrase(): string {
-  if (!_vaultPassphrase) {
-    const array = crypto.getRandomValues(new Uint8Array(32));
-    _vaultPassphrase = btoa(String.fromCharCode(...array));
+/**
+ * In-memory cache of the passphrase for the current page session.
+ * Populated lazily on first call to getVaultPassphrase().
+ */
+let _cachedVaultPassphrase: string | null = null;
+
+/**
+ * Returns the vault passphrase.
+ * HIGH-09: Passphrase is loaded from Dexie on first call (persists across reloads).
+ * If not found, generates a new random passphrase and persists it to Dexie.
+ */
+export async function getVaultPassphrase(): Promise<string> {
+  if (_cachedVaultPassphrase) return _cachedVaultPassphrase;
+
+  try {
+    const record = await nexusDb.settings.get(VAULT_PASSPHRASE_KEY);
+    if (record?.value && typeof record.value === 'string') {
+      _cachedVaultPassphrase = record.value;
+      return _cachedVaultPassphrase;
+    }
+  } catch {
+    // Dexie unavailable — fall through to generate new passphrase
   }
-  return _vaultPassphrase;
+
+  // Generate and persist a new passphrase
+  const array = crypto.getRandomValues(new Uint8Array(32));
+  const passphrase = btoa(String.fromCharCode(...array));
+
+  try {
+    // biome-ignore lint/suspicious/noExplicitAny: StoredSettings is a complex union type
+    await nexusDb.settings.put({ key: VAULT_PASSPHRASE_KEY, value: passphrase as any });
+  } catch (err) {
+    console.warn('[SecureStore] Could not persist vault passphrase to IndexedDB:', err);
+  }
+
+  _cachedVaultPassphrase = passphrase;
+  return passphrase;
 }
 
 // ─── Public API ──────────────────────────────────────────────────────
@@ -70,7 +114,7 @@ export async function saveAdapterCredentials(
   adapterId: AdapterCredentialId,
   credentials: AdapterCredentials,
 ): Promise<void> {
-  const passphrase = getVaultPassphrase();
+  const passphrase = await getVaultPassphrase();
   const payload = JSON.stringify(credentials);
   const encryptedPayload = await encrypt(payload, passphrase);
 
@@ -92,7 +136,7 @@ export async function getAdapterCredentials(
   if (!record) return null;
 
   try {
-    const passphrase = getVaultPassphrase();
+    const passphrase = await getVaultPassphrase();
     const decrypted = await decrypt(record.encryptedPayload, passphrase);
     return JSON.parse(decrypted) as AdapterCredentials;
   } catch {

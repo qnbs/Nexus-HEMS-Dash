@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { EEBUSPairRequestSchema } from '../../types/protocol.js';
-import { requireJWT } from '../middleware/auth.js';
+import { requireJWT, requireScope } from '../middleware/auth.js';
 
 export function createEebusRoutes(): Router {
   const router = Router();
@@ -37,7 +37,11 @@ export function createEebusRoutes(): Router {
     }
   });
 
-  router.post('/api/eebus/pair', requireJWT, (req, res) => {
+  // HIGH-06: EEBUS pairing requires admin scope — only trusted operators can pair devices.
+  // The eebusTrustedSKIs store is in-memory; server restart clears all pairings.
+  // PRODUCTION NOTE: Implement persistent Dexie/DB-backed trust store + full SHIP TLS cert
+  // SKI verification + PIN exchange before deploying EEBUS in production environments.
+  router.post('/api/eebus/pair', requireJWT, requireScope('admin'), (req, res) => {
     const parsed = EEBUSPairRequestSchema.safeParse(req.body);
     if (!parsed.success) {
       res.status(400).json({ errors: parsed.error.issues });

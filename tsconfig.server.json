@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "dist-server",
+    "noEmit": false,
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "types": ["node"],
+    // Remove browser globals — server code must not reference DOM APIs
+    "skipLibCheck": true
+  },
+  "include": ["server.ts", "jwt-utils.ts", "src/server/**/*.ts"],
+  "exclude": ["node_modules", "dist", "dist-server", "src/**/*.test.ts", "src/tests/**", "tests/**"]
+}

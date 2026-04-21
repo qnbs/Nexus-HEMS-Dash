@@ -82,59 +82,35 @@ export default defineConfig(({ mode }) => {
             },
           },
           // ── AI: Google Gemini ──
+          // MED-07: NetworkOnly — AI API keys must never be cached in ServiceWorker storage.
+          // Caching AI responses could expose user queries and API key bearer tokens.
           {
             urlPattern: /^https:\/\/generativelanguage\.googleapis\.com\//,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'gemini-api',
-              expiration: { maxEntries: 40, maxAgeSeconds: 43_200 },
-              networkTimeoutSeconds: 15,
-              cacheableResponse: { statuses: [0, 200] },
-            },
+            handler: 'NetworkOnly',
           },
           // ── AI: OpenAI ──
+          // MED-07: NetworkOnly — see above.
           {
             urlPattern: /^https:\/\/api\.openai\.com\/v1\//,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'openai-api',
-              expiration: { maxEntries: 40, maxAgeSeconds: 43_200 },
-              networkTimeoutSeconds: 15,
-              cacheableResponse: { statuses: [0, 200] },
-            },
+            handler: 'NetworkOnly',
           },
           // ── AI: Anthropic ──
+          // MED-07: NetworkOnly — see above.
           {
             urlPattern: /^https:\/\/api\.anthropic\.com\/v1\//,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'anthropic-api',
-              expiration: { maxEntries: 40, maxAgeSeconds: 43_200 },
-              networkTimeoutSeconds: 15,
-              cacheableResponse: { statuses: [0, 200] },
-            },
+            handler: 'NetworkOnly',
           },
           // ── AI: xAI (Grok) ──
+          // MED-07: NetworkOnly — see above.
           {
             urlPattern: /^https:\/\/api\.x\.ai\/v1\//,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'xai-api',
-              expiration: { maxEntries: 40, maxAgeSeconds: 43_200 },
-              networkTimeoutSeconds: 15,
-              cacheableResponse: { statuses: [0, 200] },
-            },
+            handler: 'NetworkOnly',
           },
           // ── AI: Groq ──
+          // MED-07: NetworkOnly — see above.
           {
             urlPattern: /^https:\/\/api\.groq\.com\//,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'groq-api',
-              expiration: { maxEntries: 40, maxAgeSeconds: 43_200 },
-              networkTimeoutSeconds: 15,
-              cacheableResponse: { statuses: [0, 200] },
-            },
+            handler: 'NetworkOnly',
           },
           // ── Fonts: Google Fonts (immutable) ──
           {

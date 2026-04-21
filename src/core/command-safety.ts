@@ -22,7 +22,7 @@ type CommandValue = number | string | boolean;
 
 const positiveNumber = z.number().nonnegative();
 const currentAmps = z.number().min(0).max(80); // IEC 61851 max 80A
-const powerWatts = z.number().min(0).max(50_000); // 50 kW safety cap
+const powerWatts = z.number().min(0).max(25_000); // MED-08: 25 kW safety cap (§14a EnWG residential)
 const batteryPowerWatts = z.number().min(-25_000).max(25_000); // Bidirectional
 const temperatureSetpoint = z.number().min(5).max(35); // °C sane range
 

@@ -65,6 +65,9 @@ services:
     environment:
       - TZ=Europe/Berlin
       - NODE_ENV=production
+      # API_KEY_SCOPES: comma-separated "key:scope" pairs to bind scopes to keys
+      # e.g., API_KEY_SCOPES=monitorkey:read,appkey:readwrite,adminkey:admin
+      # If unset, all keys default to "readwrite" scope
     secrets:
       - jwt_secret
     networks:
@@ -160,7 +163,9 @@ services:
       - backend
     environment:
       - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-nexus-hems}
+      # CRIT-04: No default password — GRAFANA_PASSWORD env var is mandatory.
+      # docker compose will fail with a clear error if this is not set.
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:?GRAFANA_PASSWORD env var is required for Grafana. Set it before starting the monitoring stack.}
       - GF_USERS_ALLOW_SIGN_UP=false
       - GF_FEATURE_TOGGLES_ENABLE=newPanelChromeUI
     security_opt:

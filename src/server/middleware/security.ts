@@ -6,20 +6,30 @@ import helmet from 'helmet';
 // ─── CORS — Origin Whitelist ─────────────────────────────────────────
 
 export function configureCors(app: Express): void {
+  const isProduction = process.env.NODE_ENV === 'production';
   const ALLOWED_ORIGINS = (process.env.CORS_ORIGINS || '')
     .split(',')
     .map((o) => o.trim())
     .filter(Boolean);
-  const DEFAULT_ORIGINS = [
+
+  // HIGH-08: Localhost origins are ONLY included in non-production environments.
+  // Including localhost in production CORS enables CSRF-style attacks from any website
+  // against users whose browsers route localhost to the HEMS server.
+  const LOCALHOST_ORIGINS = [
     'http://localhost:3000',
     'http://localhost:5173',
     'http://localhost:4173',
     'http://127.0.0.1:3000',
     'http://127.0.0.1:5173',
     'http://127.0.0.1:4173',
-    'https://qnbs.github.io',
   ];
-  const allowedOriginSet = new Set([...DEFAULT_ORIGINS, ...ALLOWED_ORIGINS]);
+  const STATIC_PRODUCTION_ORIGINS = ['https://qnbs.github.io'];
+
+  const defaultOrigins = isProduction
+    ? STATIC_PRODUCTION_ORIGINS
+    : [...LOCALHOST_ORIGINS, ...STATIC_PRODUCTION_ORIGINS];
+
+  const allowedOriginSet = new Set([...defaultOrigins, ...ALLOWED_ORIGINS]);
 
   app.use(
     cors({
@@ -114,11 +124,9 @@ export function configureRateLimiting(app: Express, isDev: boolean): void {
     return trustedIPs.has(clientIP);
   };
 
-  const getClientIP = (req: Request): string => {
-    const forwarded = req.headers['x-forwarded-for'];
-    if (typeof forwarded === 'string') return forwarded.split(',')[0].trim();
-    return req.socket.remoteAddress || 'unknown';
-  };
+  // MED-04: Use req.ip (resolved by Express trust-proxy setting) instead of reading
+  // x-forwarded-for directly, which can be spoofed to bypass rate limiting.
+  const getClientIP = (req: Request): string => req.ip ?? req.socket.remoteAddress ?? 'unknown';
 
   // Global rate limiter: 100 req/min
   const globalLimiter = rateLimit({

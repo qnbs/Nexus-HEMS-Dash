@@ -242,9 +242,11 @@ export const WSCommandSchema = z
       }
     }
 
-    // Safety cap: 50 kW max
-    if (typeof v === 'number' && Math.abs(v) > 50_000) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Value exceeds safety limit (50 kW)' });
+    // MED-08: Safety cap reduced to 25 kW — aligns with §14a EnWG 4.2kW grid limit
+    // and realistic residential system sizes (10kW PV + 5kW battery + 11kW wallbox).
+    // A 50kW cap was unreachable for any certified residential hardware.
+    if (typeof v === 'number' && Math.abs(v) > 25_000) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Value exceeds safety limit (25 kW)' });
     }
   });
 

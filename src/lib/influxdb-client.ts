@@ -14,6 +14,93 @@ import type { ForecastResult } from './ml-forecast';
 const INFLUX_ORG = 'nexus-hems';
 const INFLUX_BUCKET = 'energy_data';
 
+// HIGH-03: Allowlist of permitted Flux field identifiers.
+// Only these values may be used in Flux query field filters.
+// Any attempt to use an unrecognized field name throws an error.
+const ALLOWED_ENERGY_FIELDS = new Set([
+  'pvPower',
+  'gridPower',
+  'batteryPower',
+  'houseLoad',
+  'batterySoC',
+  'heatPumpPower',
+  'evPower',
+  'gridVoltage',
+  'batteryVoltage',
+  'pvYieldToday',
+  'priceCurrent',
+]);
+const ALLOWED_FORECAST_METRICS = new Set(['pvPower', 'gridPower', 'batteryPower', 'houseLoad']);
+const ALLOWED_AGGREGATE_WINDOWS = new Set([
+  '5m',
+  '15m',
+  '30m',
+  '1h',
+  '2h',
+  '4h',
+  '6h',
+  '12h',
+  '1d',
+  '7d',
+]);
+const ALLOWED_RANGE_PATTERN = /^(-\d+[smhdw]|[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9:Z.+-]+)$/;
+
+function validateFluxField(field: string): void {
+  if (!ALLOWED_ENERGY_FIELDS.has(field)) {
+    throw new Error(
+      `Invalid Flux field: "${field}". Must be one of: ${[...ALLOWED_ENERGY_FIELDS].join(', ')}`,
+    );
+  }
+}
+
+function validateFluxMetric(metric: string): void {
+  if (!ALLOWED_FORECAST_METRICS.has(metric)) {
+    throw new Error(
+      `Invalid forecast metric: "${metric}". Must be one of: ${[...ALLOWED_FORECAST_METRICS].join(', ')}`,
+    );
+  }
+}
+
+function validateFluxAggregateWindow(window: string): void {
+  if (!ALLOWED_AGGREGATE_WINDOWS.has(window)) {
+    throw new Error(
+      `Invalid aggregate window: "${window}". Must be one of: ${[...ALLOWED_AGGREGATE_WINDOWS].join(', ')}`,
+    );
+  }
+}
+
+function validateFluxRange(range: HistoricalRange): void {
+  if (!ALLOWED_RANGE_PATTERN.test(range.start)) {
+    throw new Error(`Invalid range.start: "${range.start}". Must be relative (-7d) or ISO 8601.`);
+  }
+  if (range.stop !== undefined && !ALLOWED_RANGE_PATTERN.test(range.stop)) {
+    throw new Error(`Invalid range.stop: "${range.stop}". Must be relative or ISO 8601.`);
+  }
+}
+
+// LOW-01: SSRF protection — only allow known InfluxDB endpoints (no private/internal network IPs)
+const BLOCKED_HOSTNAMES = new Set([
+  'metadata.google.internal',
+  '169.254.169.254', // AWS/GCP/Azure IMDS
+  '100.100.100.200', // Alibaba IMDS
+]);
+
+function isAllowedInfluxUrl(urlStr: string): boolean {
+  try {
+    const parsed = new URL(urlStr);
+    // Only allow http and https
+    if (!['http:', 'https:'].includes(parsed.protocol)) return false;
+    const host = parsed.hostname.toLowerCase();
+    // Block cloud metadata endpoints
+    if (BLOCKED_HOSTNAMES.has(host)) return false;
+    // Block link-local addresses (169.254.x.x)
+    if (/^169\.254\./.test(host)) return false;
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 // ─── Types ──────────────────────────────────────────────────────────
 
 export interface InfluxConfig {
@@ -44,6 +131,11 @@ export interface AggregatedSeries {
 // ─── Health Check ───────────────────────────────────────────────────
 
 export async function checkInfluxHealth(config: InfluxConfig): Promise<boolean> {
+  // LOW-01: Validate URL before making network request (SSRF protection)
+  if (!isAllowedInfluxUrl(config.url)) {
+    console.warn('[InfluxDB] Blocked request to disallowed URL:', config.url);
+    return false;
+  }
   try {
     const resp = await fetch(`${config.url}/health`, {
       signal: AbortSignal.timeout(5000),
@@ -105,6 +197,11 @@ export async function writeAIForecast(
 }
 
 async function writeLine(config: InfluxConfig, lineData: string): Promise<boolean> {
+  // LOW-01: SSRF protection — validate URL before making network request
+  if (!isAllowedInfluxUrl(config.url)) {
+    console.warn('[InfluxDB] Blocked write to disallowed URL:', config.url);
+    return false;
+  }
   const org = config.org ?? INFLUX_ORG;
   const bucket = config.bucket ?? INFLUX_BUCKET;
   try {
@@ -139,9 +236,24 @@ export async function queryTimeSeries(
   aggregateWindow: string = '1h',
   aggregateFn: 'mean' | 'sum' | 'max' | 'min' = 'mean',
 ): Promise<AggregatedSeries> {
+  // HIGH-03: Validate all user-controlled inputs against allowlists before Flux interpolation
+  validateFluxField(field);
+  validateFluxRange(range);
+  validateFluxAggregateWindow(aggregateWindow);
+  // aggregateFn is constrained by TypeScript type — double-check at runtime
+  if (!['mean', 'sum', 'max', 'min'].includes(aggregateFn)) {
+    throw new Error(`Invalid aggregateFn: "${aggregateFn}"`);
+  }
+  // LOW-01: SSRF protection
+  if (!isAllowedInfluxUrl(config.url)) {
+    console.warn('[InfluxDB] Blocked query to disallowed URL:', config.url);
+    return { field, points: [], aggregation: aggregateFn };
+  }
+
   const org = config.org ?? INFLUX_ORG;
   const bucket = config.bucket ?? INFLUX_BUCKET;
 
+  // All interpolated values are now validated against strict allowlists (HIGH-03)
   const flux = `from(bucket: "${bucket}")
   |> range(start: ${range.start}${range.stop ? `, stop: ${range.stop}` : ''})
   |> filter(fn: (r) => r._measurement == "energy" and r._field == "${field}")
@@ -184,6 +296,15 @@ export async function queryForecastHistory(
 ): Promise<
   Array<{ timestamp: number; value: number; lower: number; upper: number; model: string }>
 > {
+  // HIGH-03: Validate metric against allowlist before Flux interpolation
+  validateFluxMetric(metric);
+  validateFluxRange(range);
+  // LOW-01: SSRF protection
+  if (!isAllowedInfluxUrl(config.url)) {
+    console.warn('[InfluxDB] Blocked query to disallowed URL:', config.url);
+    return [];
+  }
+
   const org = config.org ?? INFLUX_ORG;
   const bucket = config.bucket ?? INFLUX_BUCKET;
 
@@ -246,7 +367,7 @@ function parseFluxCSV(csv: string): Array<{ timestamp: number; value: number }> 
     if (timeIdx >= 0) {
       const timestamp = new Date(cols[timeIdx]).getTime();
       const value = parseFloat(cols[valueIdx]);
-      if (!isNaN(timestamp) && !isNaN(value)) {
+      if (!Number.isNaN(timestamp) && !Number.isNaN(value)) {
         points.push({ timestamp, value });
       }
     }
@@ -274,13 +395,13 @@ function parseForecastCSV(
     if (timeIdx < 0) continue;
 
     const timestamp = new Date(cols[timeIdx]).getTime();
-    if (isNaN(timestamp)) continue;
+    if (Number.isNaN(timestamp)) continue;
 
     // After pivot: columns include value, lower, upper, model
     const value = parseFloat(cols.find((_, i) => i > timeIdx) ?? '0');
     results.push({
       timestamp,
-      value: isNaN(value) ? 0 : value,
+      value: Number.isNaN(value) ? 0 : value,
       lower: 0,
       upper: 0,
       model: 'unknown',

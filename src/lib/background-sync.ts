@@ -154,16 +154,41 @@ class BackgroundSyncService {
   }
 
   /**
-   * Execute a specific action
+   * HIGH-05: Retrieve the current JWT from localStorage (set by auth flow).
+   * Returns null if no token is available (user not authenticated).
+   * The background sync service must NOT send unauthenticated hardware commands.
+   */
+  private getAuthHeader(): Record<string, string> | null {
+    try {
+      // The auth token is stored in Dexie by the auth flow, but for background-sync
+      // we read it from a well-known localStorage key (set on login, cleared on logout).
+      // This avoids an async Dexie read in every fetch call.
+      const token = localStorage.getItem('nexus-hems-auth-token');
+      if (!token) return null;
+      return { Authorization: `Bearer ${token}` };
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Execute a specific action.
+   * HIGH-05: All requests include Authorization header. Actions are rejected if
+   * no auth token is available — never dispatch control commands unauthenticated.
    */
   private async executeAction(action: OfflineAction): Promise<void> {
     const baseUrl = import.meta.env.VITE_API_URL || window.location.origin;
+    const authHeaders = this.getAuthHeader();
+
+    if (!authHeaders) {
+      throw new Error('No auth token available — cannot sync action. User must be authenticated.');
+    }
 
     switch (action.type) {
       case 'ev-control':
         await fetch(`${baseUrl}/api/ev/control`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', ...authHeaders },
           body: JSON.stringify(action.payload),
         });
         break;
@@ -171,7 +196,7 @@ class BackgroundSyncService {
       case 'hp-control':
         await fetch(`${baseUrl}/api/heatpump/control`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', ...authHeaders },
           body: JSON.stringify(action.payload),
         });
         break;
@@ -179,7 +204,7 @@ class BackgroundSyncService {
       case 'battery-control':
         await fetch(`${baseUrl}/api/battery/control`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', ...authHeaders },
           body: JSON.stringify(action.payload),
         });
         break;
@@ -187,7 +212,7 @@ class BackgroundSyncService {
       case 'settings':
         await fetch(`${baseUrl}/api/settings`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', ...authHeaders },
           body: JSON.stringify(action.payload),
         });
         break;
@@ -195,7 +220,7 @@ class BackgroundSyncService {
       case 'ai-optimize':
         await fetch(`${baseUrl}/api/ai/optimize`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', ...authHeaders },
           body: JSON.stringify(action.payload),
         });
         break;

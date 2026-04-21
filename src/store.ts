@@ -169,15 +169,26 @@ export const useAppStore = create<AppState>()(
     {
       name: 'nexus-hems-store',
       storage: createJSONStorage(() => localStorage),
-      partialize: (state): Pick<AppState, PersistedKey> => ({
-        locale: state.locale,
-        theme: state.theme,
-        themePreference: state.themePreference,
-        themeTransitionKey: state.themeTransitionKey,
-        floorplan: state.floorplan,
-        settings: state.settings,
-        onboardingCompleted: state.onboardingCompleted,
-      }),
+      partialize: (state): Pick<AppState, PersistedKey> => {
+        // HIGH-01: Exclude influxToken and influxUrl from localStorage persistence.
+        // These credentials are stored in the encrypted Dexie vault via secure-store.ts.
+        const {
+          influxToken: _influxToken,
+          influxUrl: _influxUrl,
+          ...safeSettings
+        } = state.settings;
+        void _influxToken;
+        void _influxUrl;
+        return {
+          locale: state.locale,
+          theme: state.theme,
+          themePreference: state.themePreference,
+          themeTransitionKey: state.themeTransitionKey,
+          floorplan: state.floorplan,
+          settings: safeSettings as StoredSettings,
+          onboardingCompleted: state.onboardingCompleted,
+        };
+      },
       // Deep-merge persisted settings with defaults so newly added keys
       // are always present even when the user has stale localStorage data.
       merge: (persisted, current) => {

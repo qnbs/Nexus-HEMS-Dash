@@ -31,11 +31,8 @@ RUN apk update && apk upgrade --no-cache && rm -rf /var/cache/apk/*
 # Security: run as non-root
 RUN addgroup -S app && adduser -S app -G app
 
-# Remove default config
-RUN rm /etc/nginx/conf.d/default.conf
-
-# Copy custom nginx config
-COPY nginx.conf /etc/nginx/conf.d/nexus-hems.conf
+# Copy custom nginx config template
+COPY nginx.conf /etc/nginx/templates/nexus-hems.conf.template
 
 # Copy built assets from build stage
 COPY --from=build /app/dist /usr/share/nginx/html
@@ -44,7 +41,13 @@ COPY --from=build /app/dist /usr/share/nginx/html
 RUN chown -R app:app /usr/share/nginx/html && \
     chown -R app:app /var/cache/nginx && \
     chown -R app:app /var/log/nginx && \
+    chown -R app:app /etc/nginx/templates && \
     touch /var/run/nginx.pid && chown app:app /var/run/nginx.pid
+
+# MED-03: nginx official image processes /etc/nginx/templates/*.template via envsubst
+# at startup — WS_ORIGINS env var is injected into the CSP connect-src header.
+# Default: WS_ORIGINS="wss://localhost:8081" (safe fallback for dev/compose; override in prod)
+ENV WS_ORIGINS="wss://localhost:8081"
 
 # Security headers are in nginx.conf
 # Health check for orchestration

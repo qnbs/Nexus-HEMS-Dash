@@ -24,6 +24,11 @@ alerting:
 
 scrape_configs:
   # ── HEMS Server Metrics ───────────────────────────────────────
+  # LOW-04: Set PROMETHEUS_BEARER_TOKEN env var and configure nexus-hems
+  # server to validate it on /metrics. Without it, metrics are public.
+  # Example (docker-compose):
+  #   environment:
+  #     PROMETHEUS_BEARER_TOKEN: "${PROMETHEUS_BEARER_TOKEN}"
   - job_name: 'nexus-hems-server'
     scrape_interval: 5s
     static_configs:
@@ -31,6 +36,8 @@ scrape_configs:
         labels:
           instance: 'hems-server'
     metrics_path: '/metrics'
+    authorization:
+      credentials: '${PROMETHEUS_BEARER_TOKEN}'
 
   # ── Adapter Bridge Metrics ────────────────────────────────────
   - job_name: 'nexus-adapter-bridge'

@@ -2,8 +2,15 @@ import type { IncomingMessage } from 'http';
 import type { WebSocket, WebSocketServer } from 'ws';
 import { WSCommandSchema } from '../../types/protocol.js';
 import { mockData, updateMockData } from '../data/mock-data.js';
-import { type AuthenticatedClient, authenticateWS } from '../middleware/auth.js';
+import { type AuthenticatedClient, authenticateWS, type JWTScope } from '../middleware/auth.js';
 import { setMetric, updateServerMetrics, wsMessageCount } from '../middleware/metrics.js';
+import { wsTickets } from '../routes/auth.routes.js';
+
+// CRIT-02: Command authorization levels
+// Commands that require at minimum 'readwrite' scope
+const WRITE_COMMANDS = new Set(['SET_EV_POWER', 'SET_HEAT_PUMP_POWER', 'SET_BATTERY_POWER']);
+// Commands that require at minimum 'admin' scope
+const ADMIN_COMMANDS = new Set(['SET_GRID_LIMIT']);
 
 function validateWSCommand(parsed: unknown): { valid: boolean; error?: string } {
   const result = WSCommandSchema.safeParse(parsed);
@@ -13,6 +20,17 @@ function validateWSCommand(parsed: unknown): { valid: boolean; error?: string } 
   }
   return { valid: true };
 }
+
+// HIGH-07: Per-IP connection rate limiting
+const wsConnectionsPerIP = new Map<string, number>();
+const WS_MAX_CONNECTIONS_PER_IP = 10;
+
+function getWSClientIP(req: IncomingMessage): string {
+  // Use the socket address (not x-forwarded-for, which can be spoofed)
+  return req.socket.remoteAddress ?? 'unknown';
+}
+
+const SCOPE_ORDER: Record<JWTScope, number> = { read: 0, readwrite: 1, admin: 2 };
 
 export function setupWebSocket(wss: WebSocketServer): void {
   const requireWSAuth = process.env.NODE_ENV === 'production';
@@ -49,20 +67,44 @@ export function setupWebSocket(wss: WebSocketServer): void {
   }, 2000);
 
   wss.on('connection', async (ws: WebSocket, req: IncomingMessage) => {
-    const authResult = await authenticateWS(req);
+    // HIGH-07: Per-IP connection limit
+    const clientIP = getWSClientIP(req);
+    const currentConnections = wsConnectionsPerIP.get(clientIP) ?? 0;
+    if (currentConnections >= WS_MAX_CONNECTIONS_PER_IP) {
+      ws.close(4429, 'Too many connections from this IP');
+      console.warn(
+        `[WS] Rejected connection from ${clientIP} (limit: ${WS_MAX_CONNECTIONS_PER_IP})`,
+      );
+      return;
+    }
+    wsConnectionsPerIP.set(clientIP, currentConnections + 1);
+
+    // CRIT-02 + HIGH-04: Authenticate and extract scope via ticket or JWT
+    const authResult = await authenticateWS(req, wsTickets);
 
     if (requireWSAuth && !authResult) {
       ws.close(4001, 'Authentication required');
+      // Clean up per-IP counter on failed auth
+      const remaining = (wsConnectionsPerIP.get(clientIP) ?? 1) - 1;
+      if (remaining <= 0) wsConnectionsPerIP.delete(clientIP);
+      else wsConnectionsPerIP.set(clientIP, remaining);
       console.warn('[WS] Rejected unauthenticated connection');
       return;
     }
 
     wsAuthMap.set(
       ws,
-      authResult || { clientId: 'anonymous', authenticated: false, connectedAt: Date.now() },
+      authResult || {
+        clientId: 'anonymous',
+        scope: 'read' as JWTScope, // anonymous gets read-only
+        authenticated: false,
+        connectedAt: Date.now(),
+      },
     );
-    const clientInfo = authResult ? `authenticated:${authResult.clientId}` : 'anonymous';
-    console.log(`[WS] Client connected (${clientInfo})`);
+    const clientInfo = authResult
+      ? `authenticated:${authResult.clientId}(scope:${authResult.scope})`
+      : 'anonymous(read)';
+    console.log(`[WS] Client connected (${clientInfo}) from ${clientIP}`);
 
     // Send initial data
     ws.send(JSON.stringify({ type: 'ENERGY_UPDATE', data: mockData }));
@@ -70,7 +112,7 @@ export function setupWebSocket(wss: WebSocketServer): void {
     ws.on('message', (message) => {
       wsMessageCount.inbound++;
 
-      // Rate limit per WebSocket client
+      // Rate limit per WebSocket client (30 cmd/min)
       const now = Date.now();
       let rl = wsRateLimits.get(ws);
       if (!rl || now > rl.resetAt) {
@@ -89,6 +131,29 @@ export function setupWebSocket(wss: WebSocketServer): void {
         const validation = validateWSCommand(parsed);
         if (!validation.valid) {
           ws.send(JSON.stringify({ type: 'ERROR', error: validation.error }));
+          return;
+        }
+
+        // CRIT-02: Enforce scope-based command authorization
+        const client = wsAuthMap.get(ws);
+        const clientScope: JWTScope = client?.scope ?? 'read';
+
+        if (WRITE_COMMANDS.has(parsed.type) && SCOPE_ORDER[clientScope] < SCOPE_ORDER.readwrite) {
+          ws.send(
+            JSON.stringify({
+              type: 'ERROR',
+              error: 'Insufficient scope: readwrite required for hardware commands',
+            }),
+          );
+          return;
+        }
+        if (ADMIN_COMMANDS.has(parsed.type) && SCOPE_ORDER[clientScope] < SCOPE_ORDER.admin) {
+          ws.send(
+            JSON.stringify({
+              type: 'ERROR',
+              error: 'Insufficient scope: admin required for grid limit commands',
+            }),
+          );
           return;
         }
 
@@ -119,6 +184,10 @@ export function setupWebSocket(wss: WebSocketServer): void {
     ws.on('close', () => {
       const info = wsAuthMap.get(ws);
       console.log(`[WS] Client disconnected (${info?.clientId || 'unknown'})`);
+      // HIGH-07: Clean up per-IP connection count
+      const remaining = (wsConnectionsPerIP.get(clientIP) ?? 1) - 1;
+      if (remaining <= 0) wsConnectionsPerIP.delete(clientIP);
+      else wsConnectionsPerIP.set(clientIP, remaining);
     });
   });
 }

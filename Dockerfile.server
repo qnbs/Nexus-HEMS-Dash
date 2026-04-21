@@ -1,5 +1,7 @@
 # ── Nexus HEMS Server — Node.js backend ─────────────────────────
 # Runs the Express + WebSocket server with Prometheus /metrics endpoint
+# LOW-05: TypeScript is now precompiled in the build stage — tsx is not
+# needed at runtime. This reduces attack surface and cold-start latency.
 # ─────────────────────────────────────────────────────────────────
 
 FROM node:24-alpine@sha256:01743339035a5c3c11a373cd7c83aeab6ed1457b55da6a69e014a95ac4e4700b AS build
@@ -10,7 +12,8 @@ COPY package.json pnpm-lock.yaml ./
 RUN corepack enable && pnpm install --frozen-lockfile --ignore-scripts
 
 COPY . .
-RUN pnpm build
+# LOW-05: Compile TypeScript server to dist-server/ using tsconfig.server.json
+RUN pnpm exec tsc --project tsconfig.server.json
 
 # ── Production stage ────────────────────────────────────────────
 FROM node:24-alpine@sha256:01743339035a5c3c11a373cd7c83aeab6ed1457b55da6a69e014a95ac4e4700b AS production
@@ -33,12 +36,12 @@ RUN addgroup -S app && adduser -S app -G app
 
 WORKDIR /app
 
-# Copy only production dependencies + compiled server
+# Copy only production dependencies — no tsx/ts-node needed at runtime
 COPY package.json pnpm-lock.yaml ./
 RUN corepack enable && pnpm install --frozen-lockfile --prod --ignore-scripts
 
-COPY server.ts jwt-utils.ts ./
-COPY --from=build /app/dist ./dist
+# LOW-05: Copy precompiled JS output (no TypeScript source in production image)
+COPY --from=build /app/dist-server ./dist-server
 
 ENV NODE_ENV=production
 
@@ -50,4 +53,5 @@ HEALTHCHECK --interval=15s --timeout=3s --start-period=10s --retries=3 \
 
 EXPOSE 3000
 
-CMD ["node", "--max-old-space-size=256", "--import", "tsx", "server.ts"]
+# LOW-05: Run precompiled JS — no tsx, no source-map overhead, reduced attack surface
+CMD ["node", "--max-old-space-size=256", "dist-server/server.js"]

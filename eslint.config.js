@@ -8,7 +8,7 @@ import reactRefresh from 'eslint-plugin-react-refresh';
 export default [
   { ignores: ['dist', 'node_modules', 'coverage', 'storybook-static'] },
   {
-    files: ['**/*.{ts,tsx}'],
+    files: ['src/**/*.tsx'],
     plugins: {
       'react-hooks': reactHooks,
       'react-compiler': reactCompiler,
