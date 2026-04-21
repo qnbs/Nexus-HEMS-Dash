@@ -245,6 +245,9 @@
   "devDependencies": {
     "@axe-core/playwright": "^4.11.1",
     "@babel/core": "^7.29.0",
+    "@babel/eslint-parser": "^7.28.6",
+    "@babel/preset-react": "^7.28.5",
+    "@babel/preset-typescript": "^7.28.5",
     "@biomejs/biome": "2.4.7",
     "@capacitor/cli": "^7.0.0",
     "@chromatic-com/storybook": "^5.1.2",
