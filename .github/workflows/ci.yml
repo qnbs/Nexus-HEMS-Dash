@@ -48,8 +48,12 @@ jobs:
       - name: Lint
         run: pnpm lint
 
-      - name: Type Check
+      - name: Type Check (tsc)
         run: pnpm type-check
+
+      - name: Type Check (tsgo — TS 7 native Go compiler)
+        run: pnpm exec tsgo --noEmit
+        continue-on-error: true
 
   unit-tests:
     name: Unit Tests
