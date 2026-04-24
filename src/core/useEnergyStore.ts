@@ -50,6 +50,9 @@ export interface AdapterEntry {
   circuitState: CircuitState;
 }
 
+/** One time-series snapshot appended to the ring buffer on every 250 ms flush */
+export type HistoryPoint = UnifiedEnergyModel & { ts: number };
+
 export interface EnergyStoreState {
   /** Merged model from all adapters */
   unified: UnifiedEnergyModel;
@@ -59,6 +62,8 @@ export interface EnergyStoreState {
   anyConnected: boolean;
   /** Timestamp of last data update */
   lastUpdated: number | null;
+  /** Sliding-window ring buffer — up to 1 000 flushed snapshots, newest last */
+  history: HistoryPoint[];
 
   // Actions
   mergeData: (adapterId: string, data: Partial<UnifiedEnergyModel>) => void;
@@ -133,6 +138,17 @@ function createDefaultAdapters(): Record<AdapterId, AdapterEntry> {
   };
 }
 
+// ─── 250 ms UI-throttle accumulator ─────────────────────────────────
+// WS frames can arrive every 10–100 ms. Accumulate all incoming partials
+// and flush to Zustand at most once per UI_THROTTLE_MS to keep re-render
+// pressure off the main thread.
+
+const UI_THROTTLE_MS = 250;
+const HISTORY_MAX_POINTS = 1000;
+
+let _pendingMerge: Partial<UnifiedEnergyModel> | null = null;
+let _flushTimer: ReturnType<typeof setTimeout> | null = null;
+
 // ─── Store ───────────────────────────────────────────────────────────
 
 export const useEnergyStoreBase = create<EnergyStoreState>()((set) => ({
@@ -140,14 +156,18 @@ export const useEnergyStoreBase = create<EnergyStoreState>()((set) => ({
   adapters: createDefaultAdapters(),
   anyConnected: false,
   lastUpdated: null,
+  history: [],
 
   mergeData: (_adapterId, data) => {
-    set((state) => {
-      const merged = deepMergeModel(state.unified, data);
-      // Skip state update if nothing actually changed (referential stability)
-      if (merged === state.unified) return state;
-      return { unified: merged, lastUpdated: Date.now() };
-    });
+    // Accumulate into pending buffer; single flush dispatched per 250 ms window
+    if (_pendingMerge) {
+      accumulatePending(_pendingMerge, data);
+    } else {
+      _pendingMerge = { ...data };
+    }
+    if (_flushTimer === null) {
+      _flushTimer = setTimeout(flushMerge, UI_THROTTLE_MS);
+    }
   },
 
   setAdapterStatus: (adapterId, status, error) => {
@@ -229,6 +249,45 @@ export const useEnergyStoreBase = create<EnergyStoreState>()((set) => ({
     return true;
   },
 }));
+
+// ─── Throttle flush & accumulator ────────────────────────────────────
+// Declared with `function` so declarations are hoisted above the
+// store's create() call — mergeData() can reference them before they
+// appear in the source text.
+
+/** Deep-merge incoming partial into a pending accumulator in place. */
+function accumulatePending(
+  p: Partial<UnifiedEnergyModel>,
+  data: Partial<UnifiedEnergyModel>,
+): void {
+  if (data.pv) p.pv = p.pv ? { ...p.pv, ...data.pv } : data.pv;
+  if (data.battery) p.battery = p.battery ? { ...p.battery, ...data.battery } : data.battery;
+  if (data.grid) p.grid = p.grid ? { ...p.grid, ...data.grid } : data.grid;
+  if (data.load) p.load = p.load ? { ...p.load, ...data.load } : data.load;
+  if (data.timestamp !== undefined) p.timestamp = data.timestamp;
+  if (data.evCharger !== undefined) p.evCharger = data.evCharger;
+  if (data.knx !== undefined) p.knx = data.knx;
+  if (data.tariff !== undefined) p.tariff = data.tariff;
+}
+
+function flushMerge(): void {
+  _flushTimer = null;
+  const pending = _pendingMerge;
+  _pendingMerge = null;
+  if (!pending) return;
+  useEnergyStoreBase.setState((state) => {
+    const merged = deepMergeModel(state.unified, pending);
+    if (merged === state.unified) return state;
+    const ts = Date.now();
+    const point: HistoryPoint = { ...merged, ts };
+    // Ring buffer: when full, drop oldest entry before appending newest
+    const history =
+      state.history.length >= HISTORY_MAX_POINTS
+        ? [...state.history.slice(1), point]
+        : [...state.history, point];
+    return { unified: merged, lastUpdated: ts, history };
+  });
+}
 
 // ─── Deep merge helper (referentially stable) ───────────────────────
 
@@ -462,6 +521,9 @@ export const selectGrid = (state: EnergyStoreState) => state.unified.grid;
 
 /** Selector: get tariff data (for Tariffs page) */
 export const selectTariff = (state: EnergyStoreState) => state.unified.tariff;
+
+/** Selector: get sliding-window history ring buffer (for time-series charts) */
+export const selectHistory = (state: EnergyStoreState) => state.history;
 
 /** Selector: get adapter status map (memoized — stable reference when values unchanged) */
 let _prevAdapters: Record<AdapterId, AdapterEntry> | null = null;
