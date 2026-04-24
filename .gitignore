@@ -9,6 +9,10 @@ coverage/
 .secrets/
 playwright-report/
 test-results/
+storybook-static/
+
+# Turborepo local cache
+.turbo/
 
 # Local Chrome for testing
 chrome/

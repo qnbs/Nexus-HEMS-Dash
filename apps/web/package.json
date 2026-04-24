@@ -9,9 +9,9 @@
     "build": "vite build",
     "preview": "vite preview",
     "type-check": "tsc --noEmit",
-    "lint": "biome check src/ --config-path ../../biome.json && eslint src/ --config ../../eslint.config.js --max-warnings 0",
-    "lint:fix": "biome check --write src/ --config-path ../../biome.json && eslint src/ --config ../../eslint.config.js --fix --max-warnings 0",
-    "format": "biome format --write src/ --config-path ../../biome.json",
+    "lint": "biome check src/ && eslint src/ --max-warnings 0",
+    "lint:fix": "biome check --write src/ && eslint src/ --fix --max-warnings 0",
+    "format": "biome format --write src/",
     "test": "vitest",
     "test:run": "vitest run",
     "test:fuzz": "vitest run src/tests/security-fuzz.test.ts",
@@ -124,14 +124,59 @@
     "workbox-window": "^7.4.0"
   },
   "size-limit": [
-    { "name": "Framework (React + Router + Zustand)", "path": "dist/assets/framework-*.js", "limit": "85 kB", "gzip": true },
-    { "name": "App Entry", "path": "dist/assets/index-*.js", "limit": "70 kB", "gzip": true },
-    { "name": "Adapters (protocol layer)", "path": "dist/assets/adapters-*.js", "limit": "35 kB", "gzip": true },
-    { "name": "Vendor D3", "path": "dist/assets/vendor-d3-*.js", "limit": "30 kB", "gzip": true },
-    { "name": "Vendor Recharts", "path": "dist/assets/vendor-recharts-*.js", "limit": "110 kB", "gzip": true },
-    { "name": "Vendor Motion", "path": "dist/assets/vendor-motion-*.js", "limit": "45 kB", "gzip": true },
-    { "name": "Vendor Icons", "path": "dist/assets/vendor-icons-*.js", "limit": "20 kB", "gzip": true },
-    { "name": "Total JS", "path": "dist/assets/*.js", "limit": "1100 kB", "gzip": true },
-    { "name": "Total CSS", "path": "dist/assets/*.css", "limit": "25 kB", "gzip": true }
+    {
+      "name": "Framework (React + Router + Zustand)",
+      "path": "dist/assets/framework-*.js",
+      "limit": "85 kB",
+      "gzip": true
+    },
+    {
+      "name": "App Entry",
+      "path": "dist/assets/index-*.js",
+      "limit": "70 kB",
+      "gzip": true
+    },
+    {
+      "name": "Adapters (protocol layer)",
+      "path": "dist/assets/adapters-*.js",
+      "limit": "35 kB",
+      "gzip": true
+    },
+    {
+      "name": "Vendor D3",
+      "path": "dist/assets/vendor-d3-*.js",
+      "limit": "30 kB",
+      "gzip": true
+    },
+    {
+      "name": "Vendor Recharts",
+      "path": "dist/assets/vendor-recharts-*.js",
+      "limit": "110 kB",
+      "gzip": true
+    },
+    {
+      "name": "Vendor Motion",
+      "path": "dist/assets/vendor-motion-*.js",
+      "limit": "45 kB",
+      "gzip": true
+    },
+    {
+      "name": "Vendor Icons",
+      "path": "dist/assets/vendor-icons-*.js",
+      "limit": "20 kB",
+      "gzip": true
+    },
+    {
+      "name": "Total JS",
+      "path": "dist/assets/*.js",
+      "limit": "1100 kB",
+      "gzip": true
+    },
+    {
+      "name": "Total CSS",
+      "path": "dist/assets/*.css",
+      "limit": "25 kB",
+      "gzip": true
+    }
   ]
 }

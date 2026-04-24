@@ -50,6 +50,7 @@ jobs:
 
       - name: Validate PWA
         id: pwa
+        working-directory: apps/web
         run: |
           echo "=== PWA Validation ==="
           ERRORS=0

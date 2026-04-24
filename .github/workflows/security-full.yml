@@ -115,11 +115,11 @@ jobs:
       - name: Enable Corepack
         run: corepack enable
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
       - name: Scan for Unicode Bidi characters
         run: npx anti-trojan-source --files='apps/**/*.{ts,tsx,js,jsx}' --verbose
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Biome check (Unicode bidi + lint)
         run: pnpm lint

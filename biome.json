@@ -2,9 +2,8 @@
   "$schema": "https://biomejs.dev/schemas/2.4.7/schema.json",
   "files": {
     "includes": [
-      "apps/**/*.ts",
-      "apps/**/*.tsx",
-      "packages/**/*.ts",
+      "apps/**",
+      "packages/**",
       "commitlint.config.js",
       "**/*.json",
       "**/*.css",

@@ -1,7 +1,7 @@
+import { AuthTokenRequestSchema } from '@nexus-hems/shared-types';
 import crypto from 'crypto';
 import { Router } from 'express';
 import { revokeToken, signToken, verifyToken } from '../jwt-utils.js';
-import { AuthTokenRequestSchema } from '@nexus-hems/shared-types';
 import type { JWTScope } from '../middleware/auth.js';
 import { clampScope, requireJWT, requireScope, validateApiKey } from '../middleware/auth.js';
 import { serverStartTime } from '../middleware/metrics.js';

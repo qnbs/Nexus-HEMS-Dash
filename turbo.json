@@ -57,6 +57,19 @@
       "dependsOn": ["build"],
       "inputs": ["tests/**", "playwright.config.ts"],
       "outputs": ["playwright-report/**", "test-results/**"]
+    },
+    "test:fuzz": {
+      "inputs": ["src/tests/security-fuzz.test.ts", "vitest.config.ts"],
+      "outputs": []
+    },
+    "test:coverage": {
+      "dependsOn": ["^build"],
+      "inputs": ["src/**", "tsconfig.json", "vitest.config.ts"],
+      "outputs": ["coverage/**"]
+    },
+    "storybook:build": {
+      "inputs": ["src/**", ".storybook/**"],
+      "outputs": ["storybook-static/**"]
     }
   }
 }

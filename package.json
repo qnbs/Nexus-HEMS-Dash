@@ -121,6 +121,10 @@
     "release:dry": "semantic-release --dry-run"
   },
   "devDependencies": {
+    "@babel/core": "^7.29.0",
+    "@babel/eslint-parser": "^7.28.6",
+    "@babel/preset-react": "^7.28.5",
+    "@babel/preset-typescript": "^7.28.5",
     "@biomejs/biome": "2.4.7",
     "@commitlint/cli": "^20.5.0",
     "@commitlint/config-conventional": "^20.5.0",
@@ -128,6 +132,10 @@
     "@semantic-release/git": "^10.0.1",
     "anti-trojan-source": "^1.8.1",
     "conventional-changelog-conventionalcommits": "^8.0.0",
+    "eslint": "^9.39.3",
+    "eslint-plugin-react-compiler": "^19.1.0-rc.2",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.5.2",
     "husky": "^9.1.7",
     "lint-staged": "^16.3.2",
     "semantic-release": "^24.2.3",

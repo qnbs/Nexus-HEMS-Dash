@@ -13,7 +13,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "type-check": "tsc --noEmit -p tsconfig.json",
-    "lint": "biome check src/ --config-path ../../biome.json"
+    "lint": "biome check src/"
   },
   "dependencies": {
     "zod": "^4.3.6"
