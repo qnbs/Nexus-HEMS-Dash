@@ -185,6 +185,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Download build artifacts
+        uses: actions/download-artifact@e2f7e6d262a56f00a040e7af5b4f5c01c9b27e56 # v4.1.8
+        with:
+          name: build
+          path: apps/web/dist
+
       - name: Install Playwright Browsers
         run: pnpm --filter @nexus-hems/web exec playwright install --with-deps chromium
 
