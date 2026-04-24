@@ -340,16 +340,9 @@ export class NexusDatabase extends Dexie {
     // ── Version 10: Downsampling — energyAggregates with compound index ──
     // Compound index [resolution+bucketTs] enables efficient time-range
     // queries per resolution tier (15m / 1h) without full-table scans.
-    this.version(10)
-      .stores(LATEST_STORES)
-      .upgrade(async (tx) => {
-        await tx
-          .table('energySnapshots')
-          .toCollection()
-          .modify((snap: Record<string, unknown>) => {
-            snap._schemaVersion = 10;
-          });
-      });
+    // No data migration needed: energyAggregates starts empty; existing
+    // energySnapshots are unchanged so _schemaVersion stays at 9.
+    this.version(10).stores(LATEST_STORES);
   }
 }
 
