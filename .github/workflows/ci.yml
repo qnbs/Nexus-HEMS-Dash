@@ -48,11 +48,11 @@ jobs:
       - name: Lint
         run: pnpm lint
 
-      - name: Type Check (tsc)
-        run: pnpm type-check
+      - name: Type Check (tsgo — primary gate)
+        run: pnpm typecheck
 
-      - name: Type Check (tsgo — TS 7 native Go compiler)
-        run: pnpm exec tsgo --noEmit
+      - name: Type Check (tsc — legacy verification, non-blocking)
+        run: pnpm type-check
         continue-on-error: true
 
   unit-tests:

@@ -100,7 +100,7 @@
     "typecheck:compare": "tsc --noEmit && tsgo --noEmit",
     "build:legacy": "tsc --noEmit",
     "build:tsgo": "tsgo --noEmit",
-    "verify:basis": "pnpm type-check && pnpm lint && pnpm test:run",
+    "verify:basis": "pnpm typecheck && pnpm lint && pnpm test:run",
     "lint:biome": "biome check src/",
     "test": "vitest",
     "test:run": "vitest run",

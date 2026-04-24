@@ -1,5 +1,5 @@
 {
-  "*.{ts,tsx}": ["biome check --write"],
+  "*.{ts,tsx}": ["biome check --write", "tsgo --noEmit"],
   "src/**/*.tsx": ["eslint --fix --max-warnings 0"],
   "*.{json,css,html,yml,yaml}": ["biome format --write"]
 }
