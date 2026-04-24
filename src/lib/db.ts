@@ -4,6 +4,48 @@ import type { EnergyData, StoredSettings } from '../types';
 import type { ShareLink } from './auth/auth-provider';
 import type { EncryptedAdapterCredential } from './secure-store';
 
+// ─── Downsampling types ──────────────────────────────────────────────
+
+export type AggregateResolution = '15m' | '1h';
+export type HistoryRange = '24h' | '7d' | '30d' | '90d';
+
+/** One averaged bucket written by the downsampling engine. */
+export interface EnergyAggregate {
+  id?: number | undefined;
+  resolution: AggregateResolution;
+  /** Start of the time bucket (ms since epoch). */
+  bucketTs: number;
+  sampleCount: number;
+  pvPower: number;
+  batteryPower: number;
+  gridPower: number;
+  houseLoad: number;
+  batterySoC: number;
+  heatPumpPower: number;
+  evPower: number;
+  gridVoltage: number;
+  batteryVoltage: number;
+  pvYieldToday: number;
+  priceCurrent: number;
+}
+
+/** Unified shape returned by getHistory() regardless of resolution. */
+export interface HistoryEntry {
+  ts: number;
+  resolution: 'raw' | AggregateResolution;
+  pvPower: number;
+  batteryPower: number;
+  gridPower: number;
+  houseLoad: number;
+  batterySoC: number;
+  heatPumpPower: number;
+  evPower: number;
+  gridVoltage: number;
+  batteryVoltage: number;
+  pvYieldToday: number;
+  priceCurrent: number;
+}
+
 export interface EnergySnapshot extends EnergyData {
   id?: number;
   timestamp: number;
@@ -74,7 +116,7 @@ export interface AIForecastRecord {
 }
 
 /** Current schema version constant — bump when adding a new Dexie version */
-export const DB_CURRENT_VERSION = 9;
+export const DB_CURRENT_VERSION = 10;
 
 /** Shared store definitions (DRY — single source of truth for the latest schema) */
 const LATEST_STORES = {
@@ -89,6 +131,7 @@ const LATEST_STORES = {
   adapterCredentials: 'adapterId',
   shareLinks: 'id, token, expiresAt, active',
   aiForecastHistory: '++id, metric, createdAt, model',
+  energyAggregates: '++id, [resolution+bucketTs]',
 } as const;
 
 export class NexusDatabase extends Dexie {
@@ -103,6 +146,7 @@ export class NexusDatabase extends Dexie {
   adapterCredentials!: Table<EncryptedAdapterCredential, string>;
   shareLinks!: Table<ShareLink, string>;
   aiForecastHistory!: Table<AIForecastRecord, number>;
+  energyAggregates!: Table<EnergyAggregate, number>;
 
   constructor(dbName = 'nexus-hems-dash') {
     super(dbName);
@@ -290,6 +334,20 @@ export class NexusDatabase extends Dexie {
           .toCollection()
           .modify((snap: Record<string, unknown>) => {
             snap._schemaVersion = 9;
+          });
+      });
+
+    // ── Version 10: Downsampling — energyAggregates with compound index ──
+    // Compound index [resolution+bucketTs] enables efficient time-range
+    // queries per resolution tier (15m / 1h) without full-table scans.
+    this.version(10)
+      .stores(LATEST_STORES)
+      .upgrade(async (tx) => {
+        await tx
+          .table('energySnapshots')
+          .toCollection()
+          .modify((snap: Record<string, unknown>) => {
+            snap._schemaVersion = 10;
           });
       });
   }
@@ -683,4 +741,154 @@ export async function restoreDatabaseBackup(
       }
     }
   });
+}
+
+// ─── History query (resolution-aware) ──────────────────────────────
+
+const HISTORY_RANGE_MS: Record<HistoryRange, number> = {
+  '24h': 24 * 60 * 60 * 1000,
+  '7d': 7 * 24 * 60 * 60 * 1000,
+  '30d': 30 * 24 * 60 * 60 * 1000,
+  '90d': 90 * 24 * 60 * 60 * 1000,
+};
+
+function snapshotToEntry(s: EnergySnapshot): Omit<HistoryEntry, 'ts' | 'resolution'> {
+  return {
+    pvPower: s.pvPower,
+    batteryPower: s.batteryPower,
+    gridPower: s.gridPower,
+    houseLoad: s.houseLoad,
+    batterySoC: s.batterySoC,
+    heatPumpPower: s.heatPumpPower,
+    evPower: s.evPower,
+    gridVoltage: s.gridVoltage,
+    batteryVoltage: s.batteryVoltage,
+    pvYieldToday: s.pvYieldToday,
+    priceCurrent: s.priceCurrent,
+  };
+}
+
+function aggregateToEntry(a: EnergyAggregate): Omit<HistoryEntry, 'ts' | 'resolution'> {
+  return {
+    pvPower: a.pvPower,
+    batteryPower: a.batteryPower,
+    gridPower: a.gridPower,
+    houseLoad: a.houseLoad,
+    batterySoC: a.batterySoC,
+    heatPumpPower: a.heatPumpPower,
+    evPower: a.evPower,
+    gridVoltage: a.gridVoltage,
+    batteryVoltage: a.batteryVoltage,
+    pvYieldToday: a.pvYieldToday,
+    priceCurrent: a.priceCurrent,
+  };
+}
+
+// ─── On-the-fly aggregation ──────────────────────────────────────────
+
+function msToResolutionLabel(ms: number): 'raw' | AggregateResolution {
+  if (ms >= 60 * 60 * 1000) return '1h';
+  if (ms >= 15 * 60 * 1000) return '15m';
+  return 'raw';
+}
+
+/**
+ * Fetch raw EnergySnapshots in [startTime, endTime] and aggregate them
+ * on-the-fly into fixed-size time buckets of `resolutionMs` milliseconds.
+ *
+ * Each bucket's value is the arithmetic mean of all samples that fall
+ * within it. Empty buckets are omitted.
+ *
+ * Typical resolutions:
+ *   ≤ 24 h  →  5 min  (300 000 ms)
+ *   ≤ 7 d   → 15 min  (900 000 ms)
+ *   > 7 d   →  1 h   (3 600 000 ms)
+ */
+export async function getAggregatedSnapshots(
+  startTime: number,
+  endTime: number,
+  resolutionMs: number,
+): Promise<HistoryEntry[]> {
+  const effectiveRes = Math.max(1, resolutionMs);
+  const label = msToResolutionLabel(effectiveRes);
+
+  const snaps = await nexusDb.energySnapshots
+    .where('timestamp')
+    .between(startTime, endTime, true, true)
+    .toArray();
+
+  if (snaps.length === 0) return [];
+
+  // Bucket snapshots by floor(ts / resolutionMs) * resolutionMs
+  const buckets = new Map<number, EnergySnapshot[]>();
+  for (const snap of snaps) {
+    const key = Math.floor(snap.timestamp / effectiveRes) * effectiveRes;
+    let group = buckets.get(key);
+    if (!group) {
+      group = [];
+      buckets.set(key, group);
+    }
+    group.push(snap);
+  }
+
+  // Average each bucket and emit a HistoryEntry
+  const result: HistoryEntry[] = [];
+  for (const [bucketTs, group] of buckets) {
+    const n = group.length;
+    const sum = (f: keyof EnergyData) => group.reduce((acc, s) => acc + (s[f] as number), 0);
+    result.push({
+      ts: bucketTs,
+      resolution: label,
+      pvPower: sum('pvPower') / n,
+      batteryPower: sum('batteryPower') / n,
+      gridPower: sum('gridPower') / n,
+      houseLoad: sum('houseLoad') / n,
+      batterySoC: sum('batterySoC') / n,
+      heatPumpPower: sum('heatPumpPower') / n,
+      evPower: sum('evPower') / n,
+      gridVoltage: sum('gridVoltage') / n,
+      batteryVoltage: sum('batteryVoltage') / n,
+      pvYieldToday: sum('pvYieldToday') / n,
+      priceCurrent: sum('priceCurrent') / n,
+    });
+  }
+
+  result.sort((a, b) => a.ts - b.ts);
+  return result;
+}
+
+// ─── Pre-aggregated history query (uses energyAggregates table) ──────
+
+/**
+ * Resolution-aware history query:
+ *   24h / 7d  → raw EnergySnapshots (full resolution)
+ *   30d       → 15-minute EnergyAggregates (downsampled)
+ *   90d       → 1-hour EnergyAggregates (downsampled)
+ *
+ * Returns entries sorted ascending by timestamp.
+ */
+export async function getHistory(range: HistoryRange): Promise<HistoryEntry[]> {
+  const now = Date.now();
+  const from = now - HISTORY_RANGE_MS[range];
+
+  if (range === '24h' || range === '7d') {
+    const snaps = await nexusDb.energySnapshots
+      .where('timestamp')
+      .aboveOrEqual(from)
+      .sortBy('timestamp');
+    return snaps.map((s) => ({
+      ts: s.timestamp,
+      resolution: 'raw' as const,
+      ...snapshotToEntry(s),
+    }));
+  }
+
+  const res: AggregateResolution = range === '30d' ? '15m' : '1h';
+  const aggs = await nexusDb.energyAggregates
+    .where('[resolution+bucketTs]')
+    .between([res, from], [res, now], true, true)
+    .toArray();
+  // Compound index returns in insertion order — sort ascending by bucketTs
+  aggs.sort((a, b) => a.bucketTs - b.bucketTs);
+  return aggs.map((a) => ({ ts: a.bucketTs, resolution: res, ...aggregateToEntry(a) }));
 }
