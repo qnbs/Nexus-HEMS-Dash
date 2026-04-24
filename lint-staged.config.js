@@ -9,5 +9,10 @@ export default {
     'tsgo --noEmit',
   ],
   'src/**/*.tsx': (files) => [`eslint --fix --max-warnings 0 ${files.join(' ')}`],
-  '*.{json,css,html,yml,yaml}': (files) => [`biome format --write ${files.join(' ')}`],
+  '*.{json,css,html,yml,yaml}': (files) => {
+    // Biome's VCS integration excludes .github/ even though **/*.yml is in includes.
+    // Filter those paths out to avoid "No files processed" exit-1 from biome format.
+    const biomeFiles = files.filter((f) => !f.includes('/.github/'));
+    return biomeFiles.length > 0 ? [`biome format --write ${biomeFiles.join(' ')}`] : [];
+  },
 };

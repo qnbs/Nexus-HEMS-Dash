@@ -27,8 +27,6 @@ env:
   npm_config_fund: 'false'
   npm_config_audit: 'false'
   npm_config_loglevel: 'error'
-
-env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
