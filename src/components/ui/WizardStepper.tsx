@@ -67,7 +67,7 @@ export function WizardStepper({ steps, currentStep, onStepClick }: WizardStepper
               disabled={!isClickable}
               aria-current={isCurrent ? 'step' : undefined}
               aria-label={`${step.label} – Step ${i + 1} of ${steps.length}`}
-              className={`focus-ring flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
+              className={`focus-ring flex items-center gap-2 rounded-full px-3 py-1.5 font-medium text-sm transition-colors ${
                 isCurrent
                   ? 'border border-(--color-primary)/40 bg-(--color-primary)/15 text-(--color-primary)'
                   : isCompleted
@@ -76,7 +76,7 @@ export function WizardStepper({ steps, currentStep, onStepClick }: WizardStepper
               } ${isClickable ? 'cursor-pointer hover:bg-(--color-primary)/20' : 'cursor-default'}`}
             >
               <span
-                className="flex items-center justify-center rounded-full text-xs font-bold"
+                className="flex items-center justify-center rounded-full font-bold text-xs"
                 style={{
                   width: wizardStep.indicatorSize,
                   height: wizardStep.indicatorSize,

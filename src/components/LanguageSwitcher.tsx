@@ -18,6 +18,7 @@ export function LanguageSwitcher() {
   };
 
   return (
+    // biome-ignore lint/a11y/useSemanticElements: div with role=group for button group; fieldset would require legend and is not appropriate for inline button group
     <div
       role="group"
       aria-label={t('common.language')}
@@ -30,7 +31,7 @@ export function LanguageSwitcher() {
           key={entry}
           type="button"
           onClick={() => handleLocaleChange(entry)}
-          className={`focus-visible:focus-ring rounded-full px-3 py-1 text-xs font-semibold tracking-[0.22em] uppercase transition ${
+          className={`focus-visible:focus-ring rounded-full px-3 py-1 font-semibold text-xs uppercase tracking-[0.22em] transition ${
             locale === entry
               ? 'bg-(--color-primary) text-(--color-background) shadow-[0_0_20px_var(--color-glow)]'
               : 'text-(--color-muted) hover:text-(--color-text)'

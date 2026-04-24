@@ -76,9 +76,9 @@ export function ConfirmDialog({
       }}
     >
       <Dialog.Portal>
-        <Dialog.Overlay className="data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 z-modal-backdrop fixed inset-0 bg-black/80 backdrop-blur-sm" />
+        <Dialog.Overlay className="data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-modal-backdrop bg-black/80 backdrop-blur-sm data-[state=closed]:animate-out data-[state=open]:animate-in" />
         <Dialog.Content
-          className="glass-panel z-modal fixed top-1/2 left-1/2 mx-4 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-2xl p-6 shadow-2xl"
+          className="glass-panel fixed top-1/2 left-1/2 z-modal mx-4 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-2xl p-6 shadow-2xl"
           aria-describedby="confirm-dialog-message"
           aria-labelledby="confirm-dialog-title"
         >
@@ -91,12 +91,12 @@ export function ConfirmDialog({
             <div className="flex-1">
               <Dialog.Title
                 id="confirm-dialog-title"
-                className="text-lg font-semibold text-(--color-text)"
+                className="font-semibold text-(--color-text) text-lg"
               >
                 {title}
               </Dialog.Title>
               <Dialog.Description
-                className="mt-2 text-sm text-(--color-muted)"
+                className="mt-2 text-(--color-muted) text-sm"
                 id="confirm-dialog-message"
               >
                 {typeof message === 'string' ? message : <div>{message}</div>}

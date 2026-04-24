@@ -255,7 +255,7 @@ export default function OptimizationAI() {
           >
             <div className={`${card.color} rounded-xl bg-current/10 p-2.5`}>{card.icon}</div>
             <div>
-              <p className="text-xs text-(--color-muted)">{card.label}</p>
+              <p className="text-(--color-muted) text-xs">{card.label}</p>
               <p className="fluid-text-lg font-semibold tabular-nums">{card.value}</p>
             </div>
           </motion.div>
@@ -298,14 +298,14 @@ export default function OptimizationAI() {
                     className="animate-spin text-(--color-primary)"
                     aria-hidden="true"
                   />
-                  <p className="text-sm text-(--color-muted)">{t('ai.analyzing')}</p>
+                  <p className="text-(--color-muted) text-sm">{t('ai.analyzing')}</p>
                 </div>
               ) : (
                 <>
                   {/* Tariff forecast chart */}
                   {chartData.length > 0 && (
                     <div className="glass-panel rounded-2xl p-4">
-                      <h3 className="mb-3 text-sm font-medium text-(--color-muted)">
+                      <h3 className="mb-3 font-medium text-(--color-muted) text-sm">
                         {t('forecast.tariffForecast')}
                       </h3>
                       <ResponsiveContainer width="100%" height={180}>
@@ -349,7 +349,7 @@ export default function OptimizationAI() {
                   {/* Renewable % bar chart */}
                   {chartData.length > 0 && (
                     <div className="glass-panel rounded-2xl p-4">
-                      <h3 className="mb-3 text-sm font-medium text-(--color-muted)">
+                      <h3 className="mb-3 font-medium text-(--color-muted) text-sm">
                         {t('optimizationWizard.renewableShare')}
                       </h3>
                       <ResponsiveContainer width="100%" height={120}>
@@ -400,10 +400,10 @@ export default function OptimizationAI() {
                 >
                   <div className="flex items-center gap-2">
                     <Sparkles size={18} className="text-(--color-primary)" aria-hidden="true" />
-                    <span className="text-sm font-semibold text-(--color-primary)">
+                    <span className="font-semibold text-(--color-primary) text-sm">
                       {t('ai.aiPowered')}
                     </span>
-                    <span className="ml-auto rounded-full bg-(--color-primary)/15 px-2.5 py-0.5 text-xs font-medium text-(--color-primary)">
+                    <span className="ml-auto rounded-full bg-(--color-primary)/15 px-2.5 py-0.5 font-medium text-(--color-primary) text-xs">
                       {Math.round(aiRecommendation.confidence * 100)}%
                     </span>
                   </div>
@@ -420,14 +420,14 @@ export default function OptimizationAI() {
                       );
                     })()}
                     <div>
-                      <p className="text-sm font-medium">
+                      <p className="font-medium text-sm">
                         {t(`optimizationWizard.action_${aiRecommendation.action}`)}
                       </p>
-                      <p className="text-xs text-(--color-muted)">{aiRecommendation.reasoning}</p>
+                      <p className="text-(--color-muted) text-xs">{aiRecommendation.reasoning}</p>
                     </div>
                   </div>
 
-                  <div className="flex gap-4 pt-1 text-xs text-(--color-muted)">
+                  <div className="flex gap-4 pt-1 text-(--color-muted) text-xs">
                     <span className="flex items-center gap-1">
                       <Clock size={12} aria-hidden="true" />
                       {aiRecommendation.optimalTimeSlot.start.toLocaleTimeString([], {
@@ -466,9 +466,9 @@ export default function OptimizationAI() {
                         <Icon size={16} className={style.text} />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium">{t(rec.titleKey)}</p>
-                        <p className="text-xs text-(--color-muted)">{t(rec.descriptionKey)}</p>
-                        <span className="mt-1 inline-block rounded bg-(--color-primary)/10 px-2 py-0.5 text-xs font-semibold text-(--color-primary) tabular-nums">
+                        <p className="font-medium text-sm">{t(rec.titleKey)}</p>
+                        <p className="text-(--color-muted) text-xs">{t(rec.descriptionKey)}</p>
+                        <span className="mt-1 inline-block rounded bg-(--color-primary)/10 px-2 py-0.5 font-semibold text-(--color-primary) text-xs tabular-nums">
                           {rec.value}
                         </span>
                       </div>
@@ -492,7 +492,7 @@ export default function OptimizationAI() {
                 >
                   <CheckCircle2 size={48} className="text-emerald-400" />
                   <p className="fluid-text-lg font-semibold">{t('optimizationWizard.applied')}</p>
-                  <p className="text-sm text-(--color-muted)">
+                  <p className="text-(--color-muted) text-sm">
                     {t('optimizationWizard.appliedDesc')}
                   </p>
                 </motion.div>
@@ -505,7 +505,7 @@ export default function OptimizationAI() {
                         <span className="text-sm">
                           {t(`optimizationWizard.action_${aiRecommendation.action}`)}
                         </span>
-                        <span className="rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-medium text-emerald-400">
+                        <span className="rounded-full bg-emerald-500/15 px-2.5 py-0.5 font-medium text-emerald-400 text-xs">
                           {Math.round(aiRecommendation.confidence * 100)}%{' '}
                           {t('optimizationWizard.confidence')}
                         </span>
@@ -514,7 +514,7 @@ export default function OptimizationAI() {
                     {recommendations.slice(0, 4).map((rec) => (
                       <div key={rec.id} className="flex items-center justify-between px-5 py-3">
                         <span className="text-sm">{t(rec.titleKey)}</span>
-                        <span className="text-xs font-semibold text-(--color-primary) tabular-nums">
+                        <span className="font-semibold text-(--color-primary) text-xs tabular-nums">
                           {rec.value}
                         </span>
                       </div>
@@ -522,7 +522,7 @@ export default function OptimizationAI() {
                   </div>
 
                   {aiRecommendation && (
-                    <p className="text-center text-xs text-(--color-muted)">
+                    <p className="text-center text-(--color-muted) text-xs">
                       {t('optimizationWizard.estSavings')}:{' '}
                       <strong className="text-(--color-primary)">
                         €{aiRecommendation.estimatedSavings.toFixed(2)}
@@ -540,7 +540,7 @@ export default function OptimizationAI() {
               <button
                 type="button"
                 onClick={wizard.canGoBack(step) ? handleBack : handleClose}
-                className="focus-ring flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-medium text-(--color-muted) transition-colors hover:text-(--color-text)"
+                className="focus-ring flex items-center gap-1.5 rounded-xl px-4 py-2 font-medium text-(--color-muted) text-sm transition-colors hover:text-(--color-text)"
               >
                 <ArrowLeft size={16} />
                 {wizard.canGoBack(step)
@@ -552,7 +552,7 @@ export default function OptimizationAI() {
                 type="button"
                 onClick={handleNext}
                 disabled={loading}
-                className="focus-ring flex items-center gap-1.5 rounded-xl bg-(--color-primary) px-5 py-2 text-sm font-semibold text-(--color-background) transition-opacity hover:opacity-90 disabled:opacity-50"
+                className="focus-ring flex items-center gap-1.5 rounded-xl bg-(--color-primary) px-5 py-2 font-semibold text-(--color-background) text-sm transition-opacity hover:opacity-90 disabled:opacity-50"
               >
                 {wizard.isLastStep(step) ? (
                   <>
@@ -581,7 +581,7 @@ export default function OptimizationAI() {
           <button
             type="button"
             onClick={handleStart}
-            className="focus-ring flex items-center gap-2 rounded-full bg-(--color-primary) px-5 py-2.5 text-sm font-semibold text-(--color-background) transition-opacity hover:opacity-90"
+            className="focus-ring flex items-center gap-2 rounded-full bg-(--color-primary) px-5 py-2.5 font-semibold text-(--color-background) text-sm transition-opacity hover:opacity-90"
           >
             <Sparkles size={16} />
             {t('ai.optimizeNow')}

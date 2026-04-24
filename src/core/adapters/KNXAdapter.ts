@@ -349,7 +349,7 @@ export class KNXAdapter extends BaseAdapter {
   private handleMQTTMessage(topic: string, payload: string): void {
     // Extract GA from topic (e.g. "knx/1/1/0/state" → "1/1/0")
     const prefix = this.mqttConfig.topicPrefix;
-    const stripped = topic.startsWith(prefix + '/') ? topic.slice(prefix.length + 1) : topic;
+    const stripped = topic.startsWith(`${prefix}/`) ? topic.slice(prefix.length + 1) : topic;
     const parts = stripped.split('/');
 
     // GA is first three parts, rest is suffix (state/set)
@@ -362,7 +362,7 @@ export class KNXAdapter extends BaseAdapter {
     } catch {
       // Try plain value
       const num = parseFloat(payload);
-      if (!isNaN(num)) {
+      if (!Number.isNaN(num)) {
         this.handleTelegram({ ga, dpt: '', value: num });
       } else if (payload === 'true' || payload === 'false') {
         this.handleTelegram({ ga, dpt: '', value: payload === 'true' });

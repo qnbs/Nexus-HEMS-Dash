@@ -53,7 +53,7 @@ export function AIOptimizerPanel() {
             {t('dashboard.optimizerSubtitle')}
           </h3>
         </div>
-        <div className="inline-flex shrink-0 items-center gap-2 rounded-full border border-(--color-border) bg-white/5 px-2 py-1 text-xs font-semibold tracking-[0.22em] text-(--color-primary) uppercase sm:px-3">
+        <div className="inline-flex shrink-0 items-center gap-2 rounded-full border border-(--color-border) bg-white/5 px-2 py-1 font-semibold text-(--color-primary) text-xs uppercase tracking-[0.22em] sm:px-3">
           <BrainCircuit className="h-4 w-4" aria-hidden="true" />
           {t('common.live')}
         </div>
@@ -73,7 +73,7 @@ export function AIOptimizerPanel() {
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-xs font-semibold tracking-[0.18em] uppercase opacity-80">
+                  <p className="font-semibold text-xs uppercase tracking-[0.18em] opacity-80">
                     {t(recommendation.titleKey)}
                   </p>
                   <h4 className="fluid-text-base mt-2 font-semibold">
@@ -82,7 +82,7 @@ export function AIOptimizerPanel() {
                 </div>
                 <Icon className="h-5 w-5 shrink-0" aria-hidden="true" />
               </div>
-              <p className="mt-4 text-sm font-medium opacity-80">{recommendation.value}</p>
+              <p className="mt-4 font-medium text-sm opacity-80">{recommendation.value}</p>
             </motion.article>
           );
         })}

@@ -15,10 +15,10 @@ function MetricCard({ label, value, unit, status = 'normal' }: MetricCardProps) 
 
   return (
     <NeonCard variant={variant} className="p-3 sm:p-4">
-      <h3 className="truncate text-xs text-(--color-muted) sm:text-sm">{label}</h3>
-      <p className="mt-1 text-lg font-bold text-(--color-text)">
+      <h3 className="truncate text-(--color-muted) text-xs sm:text-sm">{label}</h3>
+      <p className="mt-1 font-bold text-(--color-text) text-lg">
         {value}
-        <span className="ml-1 text-xs font-normal text-(--color-muted) sm:text-sm">{unit}</span>
+        <span className="ml-1 font-normal text-(--color-muted) text-xs sm:text-sm">{unit}</span>
       </p>
     </NeonCard>
   );
@@ -34,12 +34,12 @@ interface AdapterRowProps {
 function AdapterRow({ name, protocol, connected, latencyMs }: AdapterRowProps) {
   const { t } = useTranslation();
   return (
-    <tr className="border-b border-(--color-border)/20 last:border-b-0">
-      <td className="px-3 py-2 text-sm text-(--color-text)">{name}</td>
-      <td className="px-3 py-2 text-xs text-(--color-muted)">{protocol}</td>
+    <tr className="border-(--color-border)/20 border-b last:border-b-0">
+      <td className="px-3 py-2 text-(--color-text) text-sm">{name}</td>
+      <td className="px-3 py-2 text-(--color-muted) text-xs">{protocol}</td>
       <td className="px-3 py-2">
         <span
-          className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium ${
+          className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 font-medium text-xs ${
             connected ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'
           }`}
         >
@@ -50,13 +50,14 @@ function AdapterRow({ name, protocol, connected, latencyMs }: AdapterRowProps) {
           {connected ? t('common.connected') : t('common.disconnected')}
         </span>
       </td>
-      <td className="px-3 py-2 text-right text-xs text-(--color-muted)">
+      <td className="px-3 py-2 text-right text-(--color-muted) text-xs">
         {latencyMs > 0 ? `${latencyMs.toFixed(0)}ms` : '—'}
       </td>
     </tr>
   );
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: metrics dashboard with multiple data paths
 export default function MonitoringPanel() {
   const { t } = useTranslation();
   const { families, health, lastUpdated, error } = useMetrics(5000);
@@ -114,13 +115,13 @@ export default function MonitoringPanel() {
           <h2 className="fluid-text-lg font-bold text-(--color-text)">
             {t('monitoring.title', 'System Monitoring')}
           </h2>
-          <p className="text-xs text-(--color-muted) sm:text-sm">
+          <p className="text-(--color-muted) text-xs sm:text-sm">
             Prometheus / Grafana · {t('monitoring.uptime', 'Uptime')}: {formatUptime(uptime)}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <span
-            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${
+            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-medium text-xs ${
               error ? 'bg-red-500/10 text-red-400' : 'bg-emerald-500/10 text-emerald-400'
             }`}
           >
@@ -130,7 +131,7 @@ export default function MonitoringPanel() {
             {error ? t('monitoring.error', 'Error') : t('monitoring.live', 'Live')}
           </span>
           {lastUpdated > 0 && (
-            <span className="text-xs text-(--color-muted)">
+            <span className="text-(--color-muted) text-xs">
               {new Date(lastUpdated).toLocaleTimeString()}
             </span>
           )}
@@ -141,25 +142,25 @@ export default function MonitoringPanel() {
       <NeonCard variant="primary" className="p-3 sm:p-4">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-medium text-(--color-primary)">Prometheus Scrape Endpoint</p>
-            <code className="mt-0.5 block truncate font-mono text-xs text-(--color-text) sm:text-sm">
+            <p className="font-medium text-(--color-primary) text-xs">Prometheus Scrape Endpoint</p>
+            <code className="mt-0.5 block truncate font-mono text-(--color-text) text-xs sm:text-sm">
               GET /metrics
             </code>
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-medium text-(--color-primary)">JSON API</p>
-            <code className="mt-0.5 block truncate font-mono text-xs text-(--color-text) sm:text-sm">
+            <p className="font-medium text-(--color-primary) text-xs">JSON API</p>
+            <code className="mt-0.5 block truncate font-mono text-(--color-text) text-xs sm:text-sm">
               GET /api/metrics/json
             </code>
           </div>
-          <div className="text-xs text-(--color-muted)">
+          <div className="text-(--color-muted) text-xs">
             {t('monitoring.interval', 'Scrape Interval')}: 5s
           </div>
         </div>
       </NeonCard>
 
       {/* Key Metric Cards */}
-      <div className="@container grid grid-cols-2 gap-2 @sm:grid-cols-3 @sm:gap-3 @xl:grid-cols-4">
+      <div className="@container grid @sm:grid-cols-3 @xl:grid-cols-4 grid-cols-2 @sm:gap-3 gap-2">
         <MetricCard
           label={t('monitoring.pvPower', 'PV Power')}
           value={pvPower.toFixed(0)}
@@ -218,28 +219,27 @@ export default function MonitoringPanel() {
 
       {/* Adapter Health Table */}
       <NeonCard className="overflow-x-auto p-3 sm:p-4">
-        <h3 className="mb-3 text-sm font-semibold text-(--color-text)">
+        <h3 className="mb-3 font-semibold text-(--color-text) text-sm">
           {t('monitoring.adapterHealth', 'Adapter Health')}
         </h3>
         <table
           className="w-full text-left"
-          role="table"
           aria-label={t('monitoring.adapterHealth', 'Adapter Health')}
         >
           <thead>
-            <tr className="border-b border-(--color-border)/30">
-              <th scope="col" className="px-3 py-2 text-xs font-medium text-(--color-muted)">
+            <tr className="border-(--color-border)/30 border-b">
+              <th scope="col" className="px-3 py-2 font-medium text-(--color-muted) text-xs">
                 Adapter
               </th>
-              <th scope="col" className="px-3 py-2 text-xs font-medium text-(--color-muted)">
+              <th scope="col" className="px-3 py-2 font-medium text-(--color-muted) text-xs">
                 Protocol
               </th>
-              <th scope="col" className="px-3 py-2 text-xs font-medium text-(--color-muted)">
+              <th scope="col" className="px-3 py-2 font-medium text-(--color-muted) text-xs">
                 Status
               </th>
               <th
                 scope="col"
-                className="px-3 py-2 text-right text-xs font-medium text-(--color-muted)"
+                className="px-3 py-2 text-right font-medium text-(--color-muted) text-xs"
               >
                 Latency
               </th>
@@ -265,10 +265,10 @@ export default function MonitoringPanel() {
 
       {/* Alert Rules Reference */}
       <NeonCard variant="warning" className="p-3 sm:p-4">
-        <h3 className="mb-2 text-sm font-semibold text-(--color-text)">
+        <h3 className="mb-2 font-semibold text-(--color-text) text-sm">
           {t('monitoring.alertRules', 'Active Alert Rules')}
         </h3>
-        <div className="@container grid grid-cols-1 gap-2 @sm:grid-cols-2 @lg:grid-cols-3">
+        <div className="@container grid @lg:grid-cols-3 @sm:grid-cols-2 grid-cols-1 gap-2">
           {[
             { name: 'HighGridImport', threshold: '> 4200W / 5m', severity: 'warning' },
             { name: 'BatteryLow', threshold: '< 10% / 10m', severity: 'critical' },
@@ -282,8 +282,8 @@ export default function MonitoringPanel() {
               className="flex items-center justify-between gap-2 rounded-lg border border-(--color-border)/20 bg-(--color-surface)/50 p-2"
             >
               <div className="min-w-0">
-                <p className="truncate text-xs font-medium text-(--color-text)">{rule.name}</p>
-                <p className="text-xs text-(--color-muted)">{rule.threshold}</p>
+                <p className="truncate font-medium text-(--color-text) text-xs">{rule.name}</p>
+                <p className="text-(--color-muted) text-xs">{rule.threshold}</p>
               </div>
               <span
                 className={`rounded px-1.5 py-0.5 text-xs ${
@@ -303,14 +303,14 @@ export default function MonitoringPanel() {
 
       {/* Grafana Integration Hint */}
       <NeonCard className="p-3 sm:p-4">
-        <h3 className="mb-2 text-sm font-semibold text-(--color-text)">Grafana Dashboard</h3>
-        <p className="mb-2 text-xs text-(--color-muted)">
+        <h3 className="mb-2 font-semibold text-(--color-text) text-sm">Grafana Dashboard</h3>
+        <p className="mb-2 text-(--color-muted) text-xs">
           {t(
             'monitoring.grafanaHint',
             'Import the pre-configured Grafana dashboard from the API or use the template UID:',
           )}
         </p>
-        <code className="block rounded border border-(--color-border)/20 bg-(--color-surface) p-2 font-mono text-xs text-(--color-primary)">
+        <code className="block rounded border border-(--color-border)/20 bg-(--color-surface) p-2 font-mono text-(--color-primary) text-xs">
           Dashboard UID: nexus-hems-overview
         </code>
       </NeonCard>

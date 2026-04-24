@@ -102,23 +102,24 @@ export function PWAUpdateNotification() {
           initial={{ opacity: 0, y: -50 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -50 }}
-          className="z-notification fixed top-4 right-4 left-4 md:right-4 md:left-auto md:max-w-sm"
+          className="fixed top-4 right-4 left-4 z-notification md:right-4 md:left-auto md:max-w-sm"
           role="alert"
         >
           <div className="relative flex items-center gap-3 rounded-2xl border border-(--color-primary)/30 bg-(--color-primary)/10 p-4 shadow-2xl backdrop-blur-xl">
             <RefreshCw className="h-5 w-5 shrink-0 text-(--color-primary)" aria-hidden="true" />
             <div className="flex-1">
-              <p className="text-sm font-semibold text-(--color-primary)">
+              <p className="font-semibold text-(--color-primary) text-sm">
                 {t('pwa.updateReady', 'Update ready')}
               </p>
-              <p className="text-xs text-(--color-muted)">
+              <p className="text-(--color-muted) text-xs">
                 {t('pwa.updateReadyDesc', 'A new version has been installed. Restart to apply.')}
               </p>
             </div>
             <button
+              type="button"
               onClick={handleUpdate}
               disabled={isRestarting}
-              className="focus-ring shrink-0 rounded-lg bg-(--color-primary) px-3 py-1.5 text-xs font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+              className="focus-ring shrink-0 rounded-lg bg-(--color-primary) px-3 py-1.5 font-medium text-white text-xs transition-opacity hover:opacity-90 disabled:opacity-50"
             >
               {isRestarting ? (
                 <RefreshCw className="h-3 w-3 animate-spin" aria-hidden="true" />
@@ -127,6 +128,7 @@ export function PWAUpdateNotification() {
               )}
             </button>
             <button
+              type="button"
               onClick={() => setShowUpdating(false)}
               className="absolute -top-2 -right-2 rounded-full border border-(--color-border) bg-(--color-surface) p-1 text-(--color-muted) shadow-md transition-colors hover:text-(--color-text)"
               aria-label={t('common.close', 'Close')}
@@ -147,7 +149,7 @@ export function PWAUpdateNotification() {
           initial={{ opacity: 0, y: -50 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -50 }}
-          className="z-notification fixed top-4 right-4 left-4 md:right-4 md:left-auto md:max-w-sm"
+          className="fixed top-4 right-4 left-4 z-notification md:right-4 md:left-auto md:max-w-sm"
         >
           <div
             className="flex items-center gap-3 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 shadow-2xl backdrop-blur-xl"
@@ -155,10 +157,10 @@ export function PWAUpdateNotification() {
           >
             <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-400" aria-hidden="true" />
             <div className="flex-1">
-              <p className="text-sm font-semibold text-emerald-400">
+              <p className="font-semibold text-emerald-400 text-sm">
                 {t('pwa.offlineReady', 'Offline Ready')}
               </p>
-              <p className="text-xs text-(--color-muted)">
+              <p className="text-(--color-muted) text-xs">
                 {t('pwa.offlineReadyDesc', 'App cached — works without internet')}
               </p>
             </div>
@@ -177,7 +179,7 @@ export function PWAUpdateNotification() {
           initial={{ opacity: 0, y: -50 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -50 }}
-          className="z-notification fixed top-4 right-4 left-4 md:right-4 md:left-auto md:max-w-md"
+          className="fixed top-4 right-4 left-4 z-notification md:right-4 md:left-auto md:max-w-md"
         >
           <div
             className="rounded-2xl border border-red-500/30 bg-red-500/10 p-4 backdrop-blur-3xl"
@@ -186,10 +188,11 @@ export function PWAUpdateNotification() {
             <div className="flex items-start gap-3">
               <AlertCircle className="h-5 w-5 shrink-0 text-red-400" aria-hidden="true" />
               <div className="flex-1">
-                <p className="text-sm font-medium text-red-400">{updateError}</p>
+                <p className="font-medium text-red-400 text-sm">{updateError}</p>
                 <button
+                  type="button"
                   onClick={() => setUpdateError(null)}
-                  className="mt-2 text-xs text-red-300 underline hover:text-red-200"
+                  className="mt-2 text-red-300 text-xs underline hover:text-red-200"
                 >
                   {t('common.dismiss', 'Dismiss')}
                 </button>

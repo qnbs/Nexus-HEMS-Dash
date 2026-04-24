@@ -1717,6 +1717,7 @@ export const en = {
     monthlyCostDesc: 'Daily cost vs. AI-optimized cost in the current month',
     monthlyCostAria: 'Bar chart of monthly electricity costs',
     budgetUsed: 'Budget used',
+    budgetProgress: 'Monthly budget progress',
     costActual: 'Actual',
     costOptimized: 'Optimized',
     costSavings: 'Savings',

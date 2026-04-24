@@ -143,7 +143,7 @@ function MobileNavigationComponent() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setMoreOpen(false)}
-              className="z-modal-backdrop fixed inset-0 bottom-[calc(3.5rem+env(safe-area-inset-bottom,0px))] bg-black/60 backdrop-blur-sm lg:hidden"
+              className="fixed inset-0 bottom-[calc(3.5rem+env(safe-area-inset-bottom,0px))] z-modal-backdrop bg-black/60 backdrop-blur-sm lg:hidden"
             />
             {/* Sheet */}
             <motion.div
@@ -152,16 +152,17 @@ function MobileNavigationComponent() {
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: '100%', opacity: 0 }}
               transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-              className="z-modal fixed right-0 bottom-[calc(3.5rem+env(safe-area-inset-bottom,0px))] left-0 rounded-t-3xl border-t border-(--color-border) bg-(--color-surface) p-4 shadow-[0_-8px_30px_rgba(0,0,0,0.3)] backdrop-blur-3xl lg:hidden"
+              className="fixed right-0 bottom-[calc(3.5rem+env(safe-area-inset-bottom,0px))] left-0 z-modal rounded-t-3xl border-(--color-border) border-t bg-(--color-surface) p-4 shadow-[0_-8px_30px_rgba(0,0,0,0.3)] backdrop-blur-3xl lg:hidden"
               role="dialog"
               aria-modal="true"
               aria-label={t('nav.allPages', 'All Pages')}
             >
               <div className="mb-3 flex items-center justify-between">
-                <span className="text-sm font-semibold text-(--color-text)">
+                <span className="font-semibold text-(--color-text) text-sm">
                   {t('nav.allPages', 'All Pages')}
                 </span>
                 <button
+                  type="button"
                   onClick={() => setMoreOpen(false)}
                   className="focus-ring rounded-full p-1.5 text-(--color-muted) transition-colors hover:bg-white/10 hover:text-(--color-text)"
                   aria-label={t('common.close', 'Close')}
@@ -174,6 +175,7 @@ function MobileNavigationComponent() {
                   const isActive = location.pathname === item.path;
                   return (
                     <button
+                      type="button"
                       key={item.id}
                       onClick={() => handleNavigation(item.path)}
                       className={`focus-ring flex flex-col items-center gap-1.5 rounded-xl p-2.5 transition-colors ${
@@ -183,7 +185,7 @@ function MobileNavigationComponent() {
                       }`}
                     >
                       {item.icon}
-                      <span className="max-w-full truncate text-[10px] leading-tight font-medium">
+                      <span className="max-w-full truncate font-medium text-[10px] leading-tight">
                         {item.label}
                       </span>
                     </button>
@@ -197,10 +199,10 @@ function MobileNavigationComponent() {
 
       {/* Bottom Navigation Bar */}
       <nav
-        className="z-fixed fixed right-0 bottom-0 left-0 lg:hidden"
+        className="fixed right-0 bottom-0 left-0 z-fixed lg:hidden"
         aria-label={t('mobile.navigation', 'Mobile Navigation')}
       >
-        <div className="absolute inset-0 border-t border-(--color-border) bg-(--color-surface) backdrop-blur-3xl">
+        <div className="absolute inset-0 border-(--color-border) border-t bg-(--color-surface) backdrop-blur-3xl">
           <div className="absolute top-0 right-0 left-0 h-px bg-gradient-to-r from-transparent via-(--color-primary)/20 to-transparent" />
         </div>
         <div className="relative flex items-center justify-around px-2 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
@@ -211,6 +213,7 @@ function MobileNavigationComponent() {
                 : location.pathname.startsWith(item.path);
             return (
               <button
+                type="button"
                 key={item.id}
                 onClick={() => handleNavigation(item.path)}
                 className={`focus-ring relative flex flex-col items-center gap-0.5 rounded-xl px-3 py-1 transition-colors active:scale-95 ${
@@ -220,12 +223,13 @@ function MobileNavigationComponent() {
                 aria-label={item.label}
               >
                 <div className="flex h-8 w-8 items-center justify-center">{item.icon}</div>
-                <span className="text-[10px] font-medium">{item.label}</span>
+                <span className="font-medium text-[10px]">{item.label}</span>
               </button>
             );
           })}
           {/* More button */}
           <button
+            type="button"
             ref={moreButtonRef}
             onClick={() => setMoreOpen(!moreOpen)}
             className={`focus-ring relative flex flex-col items-center gap-0.5 rounded-xl px-3 py-1 transition-colors active:scale-95 ${
@@ -238,7 +242,7 @@ function MobileNavigationComponent() {
             <div className="flex h-8 w-8 items-center justify-center">
               <MoreHorizontal className="h-5 w-5" />
             </div>
-            <span className="text-[10px] font-medium">{t('nav.more', 'More')}</span>
+            <span className="font-medium text-[10px]">{t('nav.more', 'More')}</span>
           </button>
         </div>
       </nav>

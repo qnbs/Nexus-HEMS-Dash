@@ -80,13 +80,12 @@ export function Floorplan() {
   };
 
   return (
-    <div className="relative w-full" role="group" aria-label={t('dashboard.floorplan')}>
+    <section className="relative w-full" aria-label={t('dashboard.floorplan')}>
       {/* SVG Floorplan — 5 rooms */}
       <svg
         viewBox="0 0 900 500"
         className="w-full opacity-80"
         preserveAspectRatio="xMidYMid meet"
-        role="group"
         aria-label={t('floorplan.interactiveView')}
       >
         <title>{t('dashboard.floorplan')}</title>
@@ -197,6 +196,7 @@ export function Floorplan() {
           const isSelected = selectedRoom === id;
           return (
             <g key={id}>
+              {/* biome-ignore lint/a11y/useSemanticElements: SVG rect with button role cannot be replaced with HTML button inside SVG */}
               <rect
                 x={c.x - 70}
                 y={c.y - 40}
@@ -232,7 +232,6 @@ export function Floorplan() {
                   strokeWidth="2"
                   rx="8"
                   className="pointer-events-none"
-                  aria-hidden="true"
                 />
               )}
               <text
@@ -253,7 +252,6 @@ export function Floorplan() {
                 fontSize="13"
                 textAnchor="middle"
                 fontFamily="monospace"
-                aria-hidden="true"
               >
                 {rooms[id].temp.toFixed(1)}°C · {rooms[id].humidity}%
               </text>
@@ -270,13 +268,13 @@ export function Floorplan() {
           className="glass-panel mt-4 space-y-4 rounded-2xl p-5"
         >
           <div className="flex items-center justify-between">
-            <h3 className="flex items-center gap-2 text-lg font-medium">
+            <h3 className="flex items-center gap-2 font-medium text-lg">
               <span className="text-xl" aria-hidden="true">
                 {ROOM_ICONS[selectedRoom]}
               </span>
               {roomLabels[selectedRoom]}
             </h3>
-            <span className="font-mono text-xs text-(--color-muted)">
+            <span className="font-mono text-(--color-muted) text-xs">
               GA {ROOM_GA[selectedRoom].light}
             </span>
           </div>
@@ -285,6 +283,7 @@ export function Floorplan() {
             {/* Lights */}
             <div className="flex flex-col items-center gap-2">
               <button
+                type="button"
                 onClick={() => updateRoom(selectedRoom, { lights: !rooms[selectedRoom].lights })}
                 className={`focus-ring rounded-full border p-3 transition-all active:scale-[0.93] ${
                   rooms[selectedRoom].lights
@@ -296,12 +295,13 @@ export function Floorplan() {
               >
                 <Lightbulb size={22} aria-hidden="true" />
               </button>
-              <span className="text-xs text-(--color-muted)">{t('floorplan.lights')}</span>
+              <span className="text-(--color-muted) text-xs">{t('floorplan.lights')}</span>
             </div>
 
             {/* Window */}
             <div className="flex flex-col items-center gap-2">
               <button
+                type="button"
                 onClick={() =>
                   updateRoom(selectedRoom, { windowOpen: !rooms[selectedRoom].windowOpen })
                 }
@@ -319,7 +319,7 @@ export function Floorplan() {
               >
                 <Wind size={22} aria-hidden="true" />
               </button>
-              <span className="text-xs text-(--color-muted)">{t('floorplan.window')}</span>
+              <span className="text-(--color-muted) text-xs">{t('floorplan.window')}</span>
             </div>
 
             {/* Temperature */}
@@ -328,7 +328,7 @@ export function Floorplan() {
                 <Thermometer size={16} className="text-orange-400" aria-hidden="true" />
                 <span className="font-mono text-sm">{rooms[selectedRoom].temp.toFixed(1)}°</span>
               </div>
-              <span className="text-xs text-(--color-muted)">{t('floorplan.actual')}</span>
+              <span className="text-(--color-muted) text-xs">{t('floorplan.actual')}</span>
             </div>
 
             {/* Humidity */}
@@ -337,21 +337,25 @@ export function Floorplan() {
                 <Droplets size={16} className="text-blue-400" aria-hidden="true" />
                 <span className="font-mono text-sm">{rooms[selectedRoom].humidity}%</span>
               </div>
-              <span className="text-xs text-(--color-muted)">{t('floorplan.humidity')}</span>
+              <span className="text-(--color-muted) text-xs">{t('floorplan.humidity')}</span>
             </div>
           </div>
 
           {/* Dimmer */}
           {rooms[selectedRoom].lights && (
             <div className="space-y-1">
-              <label className="flex items-center gap-1 text-xs text-(--color-muted)">
+              <label
+                htmlFor="floorplan-dimmer-control"
+                className="flex items-center gap-1 text-(--color-muted) text-xs"
+              >
                 <Sun size={12} aria-hidden="true" />
                 {t('floorplan.brightness')} · {rooms[selectedRoom].dimmer}%
-                <span className="ml-auto font-mono text-[10px] text-(--color-muted)">
+                <span className="ml-auto font-mono text-(--color-muted) text-[10px]">
                   GA {ROOM_GA[selectedRoom].dim}
                 </span>
               </label>
               <input
+                id="floorplan-dimmer-control"
                 type="range"
                 min={5}
                 max={100}
@@ -370,12 +374,13 @@ export function Floorplan() {
               <span className="text-sm">
                 {t('floorplan.setpoint')}: {rooms[selectedRoom].setpoint.toFixed(1)}°C
               </span>
-              <span className="font-mono text-[10px] text-(--color-muted)">
+              <span className="font-mono text-(--color-muted) text-[10px]">
                 GA {ROOM_GA[selectedRoom].setpoint}
               </span>
             </div>
             <div className="flex gap-1">
               <button
+                type="button"
                 onClick={() =>
                   updateRoom(selectedRoom, {
                     setpoint: Math.max(15, rooms[selectedRoom].setpoint - 0.5),
@@ -390,6 +395,7 @@ export function Floorplan() {
                 <Moon size={14} aria-hidden="true" />
               </button>
               <button
+                type="button"
                 onClick={() =>
                   updateRoom(selectedRoom, {
                     setpoint: Math.min(30, rooms[selectedRoom].setpoint + 0.5),
@@ -407,6 +413,6 @@ export function Floorplan() {
           </div>
         </motion.div>
       )}
-    </div>
+    </section>
   );
 }

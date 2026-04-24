@@ -72,7 +72,7 @@ export async function captureSankeyDiagram(): Promise<string> {
 
 /** Safe number formatting that handles NaN/null/undefined */
 function fmt(value: number | null | undefined, decimals = 1): string {
-  if (value == null || !Number.isFinite(value)) return '0.' + '0'.repeat(decimals);
+  if (value == null || !Number.isFinite(value)) return `0.${'0'.repeat(decimals)}`;
   return value.toFixed(decimals);
 }
 

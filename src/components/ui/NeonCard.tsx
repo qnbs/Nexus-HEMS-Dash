@@ -89,7 +89,7 @@ export function NeonCardHeader({
   children: ReactNode;
   className?: string;
 }) {
-  return <div className={`border-b border-(--color-border) p-6 ${className}`}>{children}</div>;
+  return <div className={`border-(--color-border) border-b p-6 ${className}`}>{children}</div>;
 }
 
 export function NeonCardBody({
@@ -109,5 +109,5 @@ export function NeonCardFooter({
   children: ReactNode;
   className?: string;
 }) {
-  return <div className={`border-t border-(--color-border) p-6 ${className}`}>{children}</div>;
+  return <div className={`border-(--color-border) border-t p-6 ${className}`}>{children}</div>;
 }

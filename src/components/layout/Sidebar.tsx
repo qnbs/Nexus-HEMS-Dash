@@ -87,7 +87,7 @@ function SidebarComponent() {
 
   return (
     <motion.nav
-      className={`z-fixed fixed top-0 left-0 hidden h-screen flex-col border-r border-(--color-border) bg-(--color-surface) backdrop-blur-3xl transition-[width] duration-300 lg:flex ${
+      className={`fixed top-0 left-0 z-fixed hidden h-screen flex-col border-(--color-border) border-r bg-(--color-surface) backdrop-blur-3xl transition-[width] duration-300 lg:flex ${
         collapsed ? 'w-16' : 'w-64'
       }`}
       aria-label={t('nav.mainNavigation', 'Main navigation')}
@@ -96,7 +96,7 @@ function SidebarComponent() {
       transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
     >
       {/* Logo + Collapse Toggle */}
-      <div className="flex items-center gap-3 border-b border-(--color-border) px-3 py-4">
+      <div className="flex items-center gap-3 border-(--color-border) border-b px-3 py-4">
         <motion.div
           className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-(--color-primary)/20 bg-(--color-primary)/10"
           whileHover={{ rotate: 10, scale: 1.1 }}
@@ -119,7 +119,7 @@ function SidebarComponent() {
                 className={`h-2 w-2 rounded-full ${connected ? 'bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.6)]' : 'bg-rose-400 shadow-[0_0_6px_rgba(251,113,133,0.6)]'}`}
                 aria-hidden="true"
               />
-              <span className="text-xs text-(--color-muted)">
+              <span className="text-(--color-muted) text-xs">
                 {connected ? t('common.connected') : t('common.disconnected')}
               </span>
             </div>
@@ -150,14 +150,13 @@ function SidebarComponent() {
             {!collapsed && (
               <h2
                 id={`nav-group-${section.id}`}
-                className="mb-1.5 px-2 text-[10px] font-semibold tracking-widest text-(--color-muted) uppercase"
+                className="mb-1.5 px-2 font-semibold text-(--color-muted) text-[10px] uppercase tracking-widest"
               >
                 {t(section.labelKey)}
               </h2>
             )}
             <ul
               className="space-y-0.5"
-              role="list"
               aria-labelledby={collapsed ? undefined : `nav-group-${section.id}`}
             >
               {section.items.map((item) => (
@@ -167,7 +166,7 @@ function SidebarComponent() {
                     end={item.path === '/'}
                     title={collapsed ? t(item.labelKey) : undefined}
                     className={({ isActive }) =>
-                      `sidebar-link group flex items-center rounded-xl text-sm font-medium transition-all duration-200 ${
+                      `sidebar-link group flex items-center rounded-xl font-medium text-sm transition-all duration-200 ${
                         collapsed ? 'justify-center px-0 py-2.5' : 'gap-3 px-3 py-2'
                       } ${
                         isActive
@@ -206,9 +205,9 @@ function SidebarComponent() {
       </div>
 
       {/* Footer */}
-      <div className="border-t border-(--color-border) px-3 py-3">
+      <div className="border-(--color-border) border-t px-3 py-3">
         <div
-          className={`flex items-center gap-2 text-xs text-(--color-muted) ${collapsed ? 'justify-center' : ''}`}
+          className={`flex items-center gap-2 text-(--color-muted) text-xs ${collapsed ? 'justify-center' : ''}`}
         >
           <span className="energy-pulse inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-(--color-primary)" />
           {!collapsed && <span>Nexus HEMS v{__APP_VERSION__}</span>}

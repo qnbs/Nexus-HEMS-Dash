@@ -219,6 +219,7 @@ Circuit Breaker (`src/core/circuit-breaker.ts`): FSM with CLOSED → OPEN → HA
 ### Verification Policy
 
 - Use a staged verification order: `type-check` → `lint` (Biome + slim ESLint) → targeted unit tests → build
+- Always run type-check as `time pnpm type-check` so that elapsed time is visible — `time` has no side-effects and helps diagnose slow hardware
 - `pnpm lint` subsumes format checking — no separate `format:check` step needed
 - Treat full E2E/performance/security suites as CI-first gates; link outcomes to the corresponding workflow runs
 - For runtime-major changes (e.g., Express major), require at least:

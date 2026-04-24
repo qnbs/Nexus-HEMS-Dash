@@ -20,10 +20,10 @@ function TabFallback() {
     <div className="flex min-h-[30vh] items-center justify-center" role="status">
       <div className="flex flex-col items-center gap-3">
         <div
-          className="cyber-shimmer h-6 w-6 animate-spin rounded-full border-2 border-(--color-primary) border-t-transparent"
+          className="cyber-shimmer h-6 w-6 animate-spin rounded-full border-(--color-primary) border-2 border-t-transparent"
           aria-hidden="true"
         />
-        <span className="text-xs text-(--color-muted)">Laden…</span>
+        <span className="text-(--color-muted) text-xs">Laden…</span>
       </div>
     </div>
   );
@@ -119,7 +119,7 @@ function AnalyticsUnifiedComponent() {
 
       {/* ─── Quick-Link Cards ──────────────────────────────────────── */}
       <div className="mb-1 flex items-center gap-2">
-        <h2 className="text-xs font-semibold tracking-widest text-(--color-muted) uppercase">
+        <h2 className="font-semibold text-(--color-muted) text-xs uppercase tracking-widest">
           {t('analyticsUnified.quickLinks', 'Schnellzugriff')}
         </h2>
         <HelpTooltip
@@ -151,8 +151,8 @@ function AnalyticsUnifiedComponent() {
                 aria-hidden="true"
               />
             </div>
-            <p className="text-xs font-medium text-(--color-text)">{link.label}</p>
-            <p className="mt-0.5 text-[10px] text-(--color-muted)">{link.value}</p>
+            <p className="font-medium text-(--color-text) text-xs">{link.label}</p>
+            <p className="mt-0.5 text-(--color-muted) text-[10px]">{link.value}</p>
           </motion.button>
         ))}
       </div>
@@ -166,12 +166,13 @@ function AnalyticsUnifiedComponent() {
         {tabs.map((tab) => (
           <button
             key={tab.key}
+            type="button"
             role="tab"
             aria-selected={activeTab === tab.key}
             aria-controls={`tabpanel-${tab.key}`}
             id={`analytics-tab-${tab.key}`}
             onClick={() => setActiveTab(tab.key)}
-            className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200 ${
+            className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-4 py-2.5 font-medium text-sm transition-all duration-200 ${
               activeTab === tab.key
                 ? 'bg-(--color-primary)/15 text-(--color-primary) shadow-[inset_0_0_0_1px_var(--color-primary)/20]'
                 : 'text-(--color-muted) hover:bg-white/5 hover:text-(--color-text)'

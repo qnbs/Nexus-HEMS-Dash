@@ -436,7 +436,7 @@ export class OpenEMSAdapter extends BaseAdapter {
             id,
             factoryId,
             alias,
-            enabled: properties['enabled'] !== false,
+            enabled: properties.enabled !== false,
             properties,
           });
         }

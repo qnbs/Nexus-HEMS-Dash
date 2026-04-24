@@ -587,7 +587,7 @@ describe('OCPP21Adapter — normalizeToUnified', () => {
     // Find authorize response
     const authResponse = responses.find(
       (m: unknown[]) =>
-        m[2] && typeof m[2] === 'object' && (m[2] as Record<string, unknown>)['idTokenInfo'],
+        m[2] && typeof m[2] === 'object' && (m[2] as Record<string, unknown>).idTokenInfo,
     );
     expect(authResponse).toBeDefined();
 

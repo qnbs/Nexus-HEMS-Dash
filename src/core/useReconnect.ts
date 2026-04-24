@@ -66,6 +66,7 @@ export function useReconnect(
   useEffect(() => {
     let prevStatus = useEnergyStoreBase.getState().adapters[adapterId]?.status;
 
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: reconnect logic with multiple state transitions
     const unsubscribe = useEnergyStoreBase.subscribe((state) => {
       const status = state.adapters[adapterId]?.status;
       if (status === prevStatus) return;

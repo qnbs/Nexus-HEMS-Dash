@@ -34,7 +34,7 @@ export const Default: Story = {
         <LiveMetric value={3.247} unit="kW" />
       </>
     ),
-    details: <p className="text-sm text-(--color-muted)">+12 % gegenüber gestern</p>,
+    details: <p className="text-(--color-muted) text-sm">+12 % gegenüber gestern</p>,
   },
 };
 
@@ -49,7 +49,7 @@ export const Expanded: Story = {
       </>
     ),
     details: (
-      <div className="space-y-1 text-sm text-(--color-muted)">
+      <div className="space-y-1 text-(--color-muted) text-sm">
         <p>Laden · 1.4 kW</p>
         <p>ETA 14:30</p>
       </div>

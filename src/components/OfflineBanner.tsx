@@ -43,7 +43,7 @@ export function OfflineBanner() {
           initial={{ opacity: 0, y: -50 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -50 }}
-          className="z-notification fixed top-0 right-0 left-0 bg-orange-500/90 px-4 py-3 text-white shadow-lg backdrop-blur-3xl"
+          className="fixed top-0 right-0 left-0 z-notification bg-orange-500/90 px-4 py-3 text-white shadow-lg backdrop-blur-3xl"
           role="alert"
           aria-atomic="true"
         >
@@ -62,12 +62,13 @@ export function OfflineBanner() {
               </div>
             </div>
             <button
+              type="button"
               onClick={() => window.location.reload()}
               className="focus-ring flex items-center gap-2 rounded-lg bg-white/20 px-4 py-2 transition-colors hover:bg-white/30"
               aria-label={t('offline.retry')}
             >
               <RefreshCw className="h-4 w-4" aria-hidden="true" />
-              <span className="hidden text-sm font-medium sm:inline">{t('offline.retry')}</span>
+              <span className="hidden font-medium text-sm sm:inline">{t('offline.retry')}</span>
             </button>
           </div>
         </motion.div>

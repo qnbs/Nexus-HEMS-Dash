@@ -60,7 +60,7 @@ const HOURS_48 = Array.from({ length: 48 }, (_, i) => {
 
 /** Simulated 48h price curve with realistic day/night pattern */
 const PRICE_TIMELINE = HOURS_48.map((slot, i) => {
-  const h = parseInt(slot.hour);
+  const h = parseInt(slot.hour, 10);
   const base = 0.18;
   const nightDip = h >= 1 && h <= 5 ? -0.08 : 0;
   const morningPeak = h >= 7 && h <= 9 ? 0.06 : 0;
@@ -301,7 +301,7 @@ function TariffsPageComponent() {
         actions={
           <div className="flex items-center gap-3">
             <span
-              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${
+              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-semibold text-xs ${
                 tariffProvider !== 'none'
                   ? 'bg-emerald-500/15 text-emerald-400'
                   : 'bg-zinc-500/15 text-zinc-400'
@@ -339,7 +339,7 @@ function TariffsPageComponent() {
               <Zap className="h-6 w-6" aria-hidden="true" />
             </div>
             <div>
-              <p className="text-sm text-(--color-muted)">{t('tariffs.currentStatus')}</p>
+              <p className="text-(--color-muted) text-sm">{t('tariffs.currentStatus')}</p>
               <p
                 className={`font-semibold ${isGoodPrice ? 'text-emerald-400' : 'text-orange-400'}`}
               >
@@ -348,7 +348,7 @@ function TariffsPageComponent() {
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-(--color-muted) sm:gap-x-6">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-(--color-muted) text-sm sm:gap-x-6">
             <span className="flex items-center gap-1.5">
               <TrendingDown className="h-4 w-4 text-emerald-400" aria-hidden="true" />
               {t('tariffs.todayLow')}:{' '}
@@ -383,7 +383,7 @@ function TariffsPageComponent() {
               transition={{ repeat: Infinity, duration: 2 }}
             />
           </div>
-          <div className="mt-1 flex justify-between text-[10px] text-(--color-muted)">
+          <div className="mt-1 flex justify-between text-(--color-muted) text-[10px]">
             <span>{PRICE_MIN.toFixed(2)} €</span>
             <span>{PRICE_MAX.toFixed(2)} €</span>
           </div>
@@ -443,7 +443,7 @@ function TariffsPageComponent() {
           },
         ].map((kpi, i) => (
           <motion.div
-            key={i}
+            key={kpi.label}
             className="glass-panel-strong hover-lift rounded-2xl p-4"
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -454,11 +454,11 @@ function TariffsPageComponent() {
             >
               {kpi.icon}
             </div>
-            <p className="truncate text-xs text-(--color-muted)">{kpi.label}</p>
-            <p className={`mt-0.5 truncate text-xl font-bold tabular-nums ${kpi.color}`}>
+            <p className="truncate text-(--color-muted) text-xs">{kpi.label}</p>
+            <p className={`mt-0.5 truncate font-bold text-xl tabular-nums ${kpi.color}`}>
               {kpi.value}
             </p>
-            <p className="text-[10px] text-(--color-muted)">{kpi.unit}</p>
+            <p className="text-(--color-muted) text-[10px]">{kpi.unit}</p>
           </motion.div>
         ))}
       </div>
@@ -475,14 +475,15 @@ function TariffsPageComponent() {
               <Clock className="mr-2 inline h-5 w-5 text-(--color-primary)" aria-hidden="true" />
               {t('tariffs.timeline48h')}
             </h2>
-            <p className="mt-0.5 text-sm text-(--color-muted)">{t('tariffs.timelineDesc')}</p>
+            <p className="mt-0.5 text-(--color-muted) text-sm">{t('tariffs.timelineDesc')}</p>
           </div>
           <div className="flex gap-2">
             {(['price', 'renewable'] as const).map((v) => (
               <button
                 key={v}
+                type="button"
                 onClick={() => setView48h(v)}
-                className={`focus-ring rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+                className={`focus-ring rounded-lg px-3 py-1.5 font-medium text-xs transition-colors ${
                   view48h === v
                     ? 'bg-(--color-primary) text-(--color-background)'
                     : 'bg-(--color-surface) text-(--color-muted) hover:bg-white/10'
@@ -541,9 +542,9 @@ function TariffsPageComponent() {
                   label={{ value: '⚡', fill: '#22c55e', fontSize: 11, position: 'left' }}
                 />
                 <Bar dataKey="price" radius={[4, 4, 0, 0]}>
-                  {PRICE_TIMELINE.map((entry, idx) => (
+                  {PRICE_TIMELINE.map((entry) => (
                     <Cell
-                      key={idx}
+                      key={entry.time}
                       fill={getPriceColor(entry.price)}
                       fillOpacity={entry.isToday ? 1 : 0.5}
                     />
@@ -599,7 +600,7 @@ function TariffsPageComponent() {
         </div>
 
         {/* Legend */}
-        <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-(--color-muted)">
+        <div className="mt-3 flex flex-wrap items-center gap-4 text-(--color-muted) text-xs">
           <span className="flex items-center gap-1.5">
             <span className="inline-block h-2.5 w-2.5 rounded-full bg-emerald-500" />{' '}
             {t('tariffs.legendCheap')}
@@ -613,11 +614,11 @@ function TariffsPageComponent() {
             {t('tariffs.legendExpensive')}
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="inline-block h-0.5 w-4 border-t-2 border-dashed border-yellow-500" />{' '}
+            <span className="inline-block h-0.5 w-4 border-yellow-500 border-t-2 border-dashed" />{' '}
             {t('tariffs.legendAvg')}
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="inline-block h-0.5 w-4 border-t-2 border-dashed border-emerald-500" />{' '}
+            <span className="inline-block h-0.5 w-4 border-emerald-500 border-t-2 border-dashed" />{' '}
             {t('tariffs.legendThreshold')}
           </span>
         </div>
@@ -633,15 +634,19 @@ function TariffsPageComponent() {
           <Calendar className="mr-2 inline h-5 w-5 text-(--color-primary)" aria-hidden="true" />
           {t('tariffs.heatmapTitle')}
         </h2>
-        <p className="mb-4 text-sm text-(--color-muted)">{t('tariffs.heatmapDesc')}</p>
+        <p className="mb-4 text-(--color-muted) text-sm">{t('tariffs.heatmapDesc')}</p>
 
+        {/* biome-ignore lint/a11y/useSemanticElements: heatmap uses flexbox layout incompatible with HTML table element */}
         <div className="overflow-x-auto" role="table" aria-label={t('tariffs.heatmapAria')}>
           <div className="min-w-[700px]">
             {/* Hour labels */}
             <div className="mb-1 flex">
               <div className="w-16 shrink-0" />
-              {Array.from({ length: 24 }, (_, h) => (
-                <div key={h} className="flex-1 text-center text-[9px] text-(--color-muted)">
+              {Array.from({ length: 24 }, (_, h) => h).map((h) => (
+                <div
+                  key={`hour-label-${h}`}
+                  className="flex-1 text-center text-(--color-muted) text-[9px]"
+                >
                   {h % 3 === 0 ? `${String(h).padStart(2, '0')}` : ''}
                 </div>
               ))}
@@ -650,21 +655,23 @@ function TariffsPageComponent() {
             {/* Rows */}
             {HEATMAP_DATA.map((row) => (
               <div key={row.date} className="mb-0.5 flex items-center">
-                <div className="w-16 shrink-0 pr-2 text-right text-[10px] text-(--color-muted)">
+                <div className="w-16 shrink-0 pr-2 text-right text-(--color-muted) text-[10px]">
                   {row.day} {row.date}
                 </div>
-                {row.hours.map((price, h) => (
-                  <div
-                    key={h}
-                    className={`mx-px h-5 flex-1 rounded-sm transition-all hover:scale-110 hover:ring-1 hover:ring-white/30 ${getHeatmapBg(price)}`}
-                    title={`${row.day} ${String(h).padStart(2, '0')}:00 — ${(price * 100).toFixed(1)} ct/kWh`}
-                  />
-                ))}
+                {row.hours
+                  .map((price, h) => ({ price, h }))
+                  .map(({ price, h }) => (
+                    <div
+                      key={`${row.date}-${h}`}
+                      className={`mx-px h-5 flex-1 rounded-sm transition-all hover:scale-110 hover:ring-1 hover:ring-white/30 ${getHeatmapBg(price)}`}
+                      title={`${row.day} ${String(h).padStart(2, '0')}:00 — ${(price * 100).toFixed(1)} ct/kWh`}
+                    />
+                  ))}
               </div>
             ))}
 
             {/* Heatmap legend */}
-            <div className="mt-3 flex items-center gap-2 text-[10px] text-(--color-muted)">
+            <div className="mt-3 flex items-center gap-2 text-(--color-muted) text-[10px]">
               <span>{t('tariffs.cheap')}</span>
               <div className="flex gap-0.5">
                 <span className="inline-block h-3 w-5 rounded-sm bg-emerald-500/60" />
@@ -689,12 +696,12 @@ function TariffsPageComponent() {
           <CheckCircle2 className="mr-2 inline h-5 w-5 text-emerald-400" aria-hidden="true" />
           {t('tariffs.windowsTitle')}
         </h2>
-        <p className="mb-4 text-sm text-(--color-muted)">{t('tariffs.windowsDesc')}</p>
+        <p className="mb-4 text-(--color-muted) text-sm">{t('tariffs.windowsDesc')}</p>
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {CHARGE_WINDOWS.map((win, i) => (
             <motion.button
-              key={i}
+              key={`${win.start}-${win.end}`}
               className={`group relative overflow-hidden rounded-2xl border p-4 text-left transition-all ${
                 win.category === 'optimal'
                   ? 'border-emerald-500/30 bg-emerald-500/5 hover:bg-emerald-500/10'
@@ -708,7 +715,7 @@ function TariffsPageComponent() {
             >
               {/* Category badge */}
               <span
-                className={`absolute top-3 right-3 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${
+                className={`absolute top-3 right-3 rounded-full px-2 py-0.5 font-bold text-[10px] uppercase ${
                   win.category === 'optimal'
                     ? 'bg-emerald-500/20 text-emerald-400'
                     : win.category === 'good'
@@ -723,10 +730,10 @@ function TariffsPageComponent() {
                     : t('tariffs.catAcceptable')}
               </span>
 
-              <p className="text-lg font-semibold text-(--color-text)">
+              <p className="font-semibold text-(--color-text) text-lg">
                 {win.start} – {win.end}
               </p>
-              <p className="mt-1 text-sm text-(--color-muted) tabular-nums">
+              <p className="mt-1 text-(--color-muted) text-sm tabular-nums">
                 Ø {(win.avgPrice * 100).toFixed(1)} ct/kWh · {win.duration}h
               </p>
 
@@ -738,15 +745,15 @@ function TariffsPageComponent() {
                     exit={{ height: 0, opacity: 0 }}
                     className="overflow-hidden"
                   >
-                    <div className="mt-3 grid grid-cols-2 gap-2 border-t border-(--color-border) pt-3">
+                    <div className="mt-3 grid grid-cols-2 gap-2 border-(--color-border) border-t pt-3">
                       <div>
-                        <p className="text-[10px] text-(--color-muted)">
+                        <p className="text-(--color-muted) text-[10px]">
                           {t('tariffs.potentialSavings')}
                         </p>
                         <p className="font-semibold text-emerald-400">€{win.savings.toFixed(2)}</p>
                       </div>
                       <div>
-                        <p className="text-[10px] text-(--color-muted)">
+                        <p className="text-(--color-muted) text-[10px]">
                           {t('tariffs.renewableShare')}
                         </p>
                         <p className="font-semibold text-green-400">{win.renewable}%</p>
@@ -779,12 +786,12 @@ function TariffsPageComponent() {
             <Gauge className="mr-2 inline h-5 w-5 text-(--color-primary)" aria-hidden="true" />
             {t('tariffs.scheduleTitle')}
           </h2>
-          <p className="mb-4 text-sm text-(--color-muted)">{t('tariffs.scheduleDesc')}</p>
+          <p className="mb-4 text-(--color-muted) text-sm">{t('tariffs.scheduleDesc')}</p>
 
           <div className="space-y-3">
-            {DEVICE_SCHEDULES.map((sched, i) => (
+            {DEVICE_SCHEDULES.map((sched) => (
               <div
-                key={i}
+                key={`${sched.device}-${sched.time}`}
                 className="flex items-center gap-4 rounded-2xl border border-(--color-border) bg-(--color-surface)/50 p-3"
               >
                 <div
@@ -799,19 +806,19 @@ function TariffsPageComponent() {
                   {DEVICE_ICONS[sched.icon]}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-(--color-text)">
+                  <p className="font-medium text-(--color-text) text-sm">
                     {t(`tariffs.device_${sched.device}`)}
                   </p>
-                  <p className="text-xs text-(--color-muted)">
+                  <p className="text-(--color-muted) text-xs">
                     {sched.time} · {(sched.price * 100).toFixed(1)} ct/kWh
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-semibold text-emerald-400">
+                  <p className="font-semibold text-emerald-400 text-sm">
                     -€{sched.savings.toFixed(2)}
                   </p>
                   <p
-                    className={`text-[10px] font-bold uppercase ${
+                    className={`font-bold text-[10px] uppercase ${
                       sched.priority === 'high'
                         ? 'text-emerald-400'
                         : sched.priority === 'medium'
@@ -826,7 +833,7 @@ function TariffsPageComponent() {
             ))}
 
             <div className="rounded-2xl border border-(--color-primary)/20 bg-(--color-primary)/5 p-3 text-center">
-              <p className="text-sm font-medium text-(--color-primary)">
+              <p className="font-medium text-(--color-primary) text-sm">
                 {t('tariffs.totalDailySavings')}: €
                 {DEVICE_SCHEDULES.reduce((s, d) => s + d.savings, 0).toFixed(2)}
               </p>
@@ -844,7 +851,7 @@ function TariffsPageComponent() {
             <BarChart3 className="mr-2 inline h-5 w-5 text-purple-400" aria-hidden="true" />
             {t('tariffs.distributionTitle')}
           </h2>
-          <p className="mb-4 text-sm text-(--color-muted)">{t('tariffs.distributionDesc')}</p>
+          <p className="mb-4 text-(--color-muted) text-sm">{t('tariffs.distributionDesc')}</p>
 
           <div className="h-56" role="img" aria-label={t('tariffs.distributionAria')}>
             <ResponsiveContainer width="100%" height="100%">
@@ -884,9 +891,9 @@ function TariffsPageComponent() {
                   labelFormatter={(label: unknown) => `${label} ct/kWh`}
                 />
                 <Bar dataKey="count" radius={[6, 6, 0, 0]}>
-                  {PRICE_BINS.map((entry, idx) => (
+                  {PRICE_BINS.map((entry) => (
                     <Cell
-                      key={idx}
+                      key={entry.range}
                       fill={getPriceColor(parseFloat(entry.range) / 100)}
                       fillOpacity={0.8}
                     />
@@ -910,16 +917,16 @@ function TariffsPageComponent() {
               <Wallet className="mr-2 inline h-5 w-5 text-amber-400" aria-hidden="true" />
               {t('tariffs.monthlyCostTitle')}
             </h2>
-            <p className="mt-0.5 text-sm text-(--color-muted)">{t('tariffs.monthlyCostDesc')}</p>
+            <p className="mt-0.5 text-(--color-muted) text-sm">{t('tariffs.monthlyCostDesc')}</p>
           </div>
 
           {/* Budget gauge */}
           <div className="flex items-center gap-3">
             <div className="text-right">
-              <p className="text-xs text-(--color-muted)">{t('tariffs.budgetUsed')}</p>
-              <p className="text-lg font-bold text-(--color-text) tabular-nums">
+              <p className="text-(--color-muted) text-xs">{t('tariffs.budgetUsed')}</p>
+              <p className="font-bold text-(--color-text) text-lg tabular-nums">
                 €{MONTHLY_TOTAL.toFixed(2)}
-                <span className="text-sm font-normal text-(--color-muted)">
+                <span className="font-normal text-(--color-muted) text-sm">
                   {' '}
                   / €{monthlyBudget}
                 </span>
@@ -927,6 +934,7 @@ function TariffsPageComponent() {
             </div>
             <div className="relative h-12 w-12">
               <svg viewBox="0 0 36 36" className="h-12 w-12 -rotate-90">
+                <title>{t('tariffs.budgetProgress', 'Monthly budget progress')}</title>
                 <circle
                   cx="18"
                   cy="18"
@@ -953,7 +961,7 @@ function TariffsPageComponent() {
                   strokeLinecap="round"
                 />
               </svg>
-              <span className="absolute inset-0 flex items-center justify-center text-[9px] font-bold text-(--color-text)">
+              <span className="absolute inset-0 flex items-center justify-center font-bold text-(--color-text) text-[9px]">
                 {Math.round(monthlyBudgetPct)}%
               </span>
             </div>
@@ -1001,22 +1009,22 @@ function TariffsPageComponent() {
         {/* Summary cards */}
         <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
           <div className="rounded-xl bg-(--color-surface) p-3">
-            <p className="text-[10px] text-(--color-muted)">{t('tariffs.costActual')}</p>
-            <p className="text-lg font-bold text-orange-400">€{MONTHLY_TOTAL.toFixed(2)}</p>
+            <p className="text-(--color-muted) text-[10px]">{t('tariffs.costActual')}</p>
+            <p className="font-bold text-lg text-orange-400">€{MONTHLY_TOTAL.toFixed(2)}</p>
           </div>
           <div className="rounded-xl bg-(--color-surface) p-3">
-            <p className="text-[10px] text-(--color-muted)">{t('tariffs.costOptimized')}</p>
-            <p className="text-lg font-bold text-emerald-400">
+            <p className="text-(--color-muted) text-[10px]">{t('tariffs.costOptimized')}</p>
+            <p className="font-bold text-emerald-400 text-lg">
               €{(MONTHLY_TOTAL - MONTHLY_SAVINGS).toFixed(2)}
             </p>
           </div>
           <div className="rounded-xl bg-(--color-surface) p-3">
-            <p className="text-[10px] text-(--color-muted)">{t('tariffs.costSavings')}</p>
-            <p className="text-lg font-bold text-green-400">€{MONTHLY_SAVINGS.toFixed(2)}</p>
+            <p className="text-(--color-muted) text-[10px]">{t('tariffs.costSavings')}</p>
+            <p className="font-bold text-green-400 text-lg">€{MONTHLY_SAVINGS.toFixed(2)}</p>
           </div>
           <div className="rounded-xl bg-(--color-surface) p-3">
-            <p className="text-[10px] text-(--color-muted)">{t('tariffs.costProjected')}</p>
-            <p className="text-lg font-bold text-(--color-text)">
+            <p className="text-(--color-muted) text-[10px]">{t('tariffs.costProjected')}</p>
+            <p className="font-bold text-(--color-text) text-lg">
               €{((MONTHLY_TOTAL / Math.max(1, NOW.getDate())) * 30).toFixed(0)}
             </p>
           </div>
@@ -1039,10 +1047,10 @@ function TariffsPageComponent() {
           <div className="space-y-4">
             <div className="flex items-center justify-between rounded-2xl bg-amber-500/10 p-4">
               <div>
-                <p className="text-sm text-(--color-muted)">{t('tariffs.feedInRate')}</p>
-                <p className="text-2xl font-bold text-amber-400">
+                <p className="text-(--color-muted) text-sm">{t('tariffs.feedInRate')}</p>
+                <p className="font-bold text-2xl text-amber-400">
                   {(feedInTariff * 100).toFixed(1)}{' '}
-                  <span className="text-sm font-normal">ct/kWh</span>
+                  <span className="font-normal text-sm">ct/kWh</span>
                 </p>
               </div>
               <Sun className="h-10 w-10 text-amber-400/40" aria-hidden="true" />
@@ -1050,24 +1058,24 @@ function TariffsPageComponent() {
 
             <div className="grid grid-cols-2 gap-3">
               <div className="rounded-xl bg-(--color-surface) p-3">
-                <p className="text-[10px] text-(--color-muted)">{t('tariffs.feedInToday')}</p>
-                <p className="text-lg font-bold text-amber-400">
+                <p className="text-(--color-muted) text-[10px]">{t('tariffs.feedInToday')}</p>
+                <p className="font-bold text-amber-400 text-lg">
                   €{(pvYieldToday * feedInTariff).toFixed(2)}
                 </p>
-                <p className="text-[10px] text-(--color-muted)">{pvYieldToday.toFixed(1)} kWh</p>
+                <p className="text-(--color-muted) text-[10px]">{pvYieldToday.toFixed(1)} kWh</p>
               </div>
               <div className="rounded-xl bg-(--color-surface) p-3">
-                <p className="text-[10px] text-(--color-muted)">{t('tariffs.feedInMonthly')}</p>
-                <p className="text-lg font-bold text-amber-400">
+                <p className="text-(--color-muted) text-[10px]">{t('tariffs.feedInMonthly')}</p>
+                <p className="font-bold text-amber-400 text-lg">
                   €{(pvYieldToday * feedInTariff * 30 * 0.4).toFixed(2)}
                 </p>
-                <p className="text-[10px] text-(--color-muted)">{t('tariffs.estimated')}</p>
+                <p className="text-(--color-muted) text-[10px]">{t('tariffs.estimated')}</p>
               </div>
             </div>
 
             <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-3 text-center">
-              <p className="text-xs text-(--color-muted)">{t('tariffs.feedInAnnual')}</p>
-              <p className="text-xl font-bold text-amber-400">
+              <p className="text-(--color-muted) text-xs">{t('tariffs.feedInAnnual')}</p>
+              <p className="font-bold text-amber-400 text-xl">
                 €{(pvYieldToday * feedInTariff * 365 * 0.4).toFixed(0)}
               </p>
             </div>
@@ -1090,14 +1098,14 @@ function TariffsPageComponent() {
             <div className="rounded-2xl border border-(--color-primary)/20 bg-(--color-primary)/5 p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-(--color-muted)">{t('tariffs.activeProvider')}</p>
-                  <p className="text-xl font-bold text-(--color-text)">{providerLabel}</p>
+                  <p className="text-(--color-muted) text-sm">{t('tariffs.activeProvider')}</p>
+                  <p className="font-bold text-(--color-text) text-xl">{providerLabel}</p>
                 </div>
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/20">
                   <CircleDot className="h-5 w-5 text-emerald-400" aria-hidden="true" />
                 </div>
               </div>
-              <div className="mt-2 flex items-center gap-2 text-xs text-emerald-400">
+              <div className="mt-2 flex items-center gap-2 text-emerald-400 text-xs">
                 <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
                 {t('tariffs.apiConnected')}
               </div>
@@ -1106,19 +1114,19 @@ function TariffsPageComponent() {
             {/* Provider stats */}
             <div className="grid grid-cols-2 gap-3">
               <div className="rounded-xl bg-(--color-surface) p-3">
-                <p className="text-[10px] text-(--color-muted)">{t('tariffs.updateFreq')}</p>
+                <p className="text-(--color-muted) text-[10px]">{t('tariffs.updateFreq')}</p>
                 <p className="font-semibold text-(--color-text)">{t('tariffs.hourly')}</p>
               </div>
               <div className="rounded-xl bg-(--color-surface) p-3">
-                <p className="text-[10px] text-(--color-muted)">{t('tariffs.dataPoints')}</p>
+                <p className="text-(--color-muted) text-[10px]">{t('tariffs.dataPoints')}</p>
                 <p className="font-semibold text-(--color-text)">48h</p>
               </div>
               <div className="rounded-xl bg-(--color-surface) p-3">
-                <p className="text-[10px] text-(--color-muted)">{t('tariffs.priceModel')}</p>
+                <p className="text-(--color-muted) text-[10px]">{t('tariffs.priceModel')}</p>
                 <p className="font-semibold text-(--color-text)">{t('tariffs.spotMarket')}</p>
               </div>
               <div className="rounded-xl bg-(--color-surface) p-3">
-                <p className="text-[10px] text-(--color-muted)">{t('tariffs.chargeThreshold')}</p>
+                <p className="text-(--color-muted) text-[10px]">{t('tariffs.chargeThreshold')}</p>
                 <p className="font-semibold text-emerald-400">
                   {(chargeThreshold * 100).toFixed(1)} ct
                 </p>
@@ -1140,7 +1148,7 @@ function TariffsPageComponent() {
                 {priceAlerts ? t('tariffs.alertsActive') : t('tariffs.alertsInactive')}
               </span>
               {priceAlerts && (
-                <span className="ml-auto text-xs font-medium">
+                <span className="ml-auto font-medium text-xs">
                   &lt; {(priceAlertThreshold * 100).toFixed(0)} ct
                 </span>
               )}
@@ -1178,27 +1186,27 @@ function TariffsPageComponent() {
           <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-4">
             <div className="mb-2 flex items-center gap-2">
               <TrendingDown className="h-4 w-4 text-emerald-400" aria-hidden="true" />
-              <span className="text-sm font-medium text-emerald-400">
+              <span className="font-medium text-emerald-400 text-sm">
                 {t('tariffs.insightSavings')}
               </span>
             </div>
-            <p className="text-sm text-(--color-muted)">{t('tariffs.insightSavingsText')}</p>
+            <p className="text-(--color-muted) text-sm">{t('tariffs.insightSavingsText')}</p>
           </div>
 
           <div className="rounded-2xl border border-blue-500/20 bg-blue-500/5 p-4">
             <div className="mb-2 flex items-center gap-2">
               <Sun className="h-4 w-4 text-blue-400" aria-hidden="true" />
-              <span className="text-sm font-medium text-blue-400">{t('tariffs.insightSolar')}</span>
+              <span className="font-medium text-blue-400 text-sm">{t('tariffs.insightSolar')}</span>
             </div>
-            <p className="text-sm text-(--color-muted)">{t('tariffs.insightSolarText')}</p>
+            <p className="text-(--color-muted) text-sm">{t('tariffs.insightSolarText')}</p>
           </div>
 
           <div className="rounded-2xl border border-purple-500/20 bg-purple-500/5 p-4">
             <div className="mb-2 flex items-center gap-2">
               <ArrowRight className="h-4 w-4 text-purple-400" aria-hidden="true" />
-              <span className="text-sm font-medium text-purple-400">{t('tariffs.insightTip')}</span>
+              <span className="font-medium text-purple-400 text-sm">{t('tariffs.insightTip')}</span>
             </div>
-            <p className="text-sm text-(--color-muted)">{t('tariffs.insightTipText')}</p>
+            <p className="text-(--color-muted) text-sm">{t('tariffs.insightTipText')}</p>
           </div>
         </div>
       </motion.section>

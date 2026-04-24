@@ -255,7 +255,7 @@ export function aggregateMonthly(dailyData: DailyAggregate[]): MonthlyAggregate[
 
       return {
         month,
-        timestamp: new Date(month + '-01').getTime(),
+        timestamp: new Date(`${month}-01`).getTime(),
         pvGenerationKwh: totalPv,
         gridImportKwh: totalImport,
         gridExportKwh: totalExport,

@@ -131,6 +131,7 @@ class LPSolver {
    * Minimizes: sum(gridImport * price - gridExport * feedInTariff)
    * Subject to: power balance, battery limits, grid limits, SoC limits
    */
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: LP solver with multiple energy constraint paths
   solve(
     pvForecast: PVForecastSlot[],
     loadForecast: LoadForecastSlot[],

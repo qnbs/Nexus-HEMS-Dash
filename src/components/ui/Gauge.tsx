@@ -57,6 +57,7 @@ export function Gauge({
   const [fromColor, toColor] = gradientStops[color];
 
   return (
+    // biome-ignore lint/a11y/useSemanticElements: custom SVG gauge requires div wrapper for flexbox layout
     <div
       className="flex flex-col items-center gap-3"
       role="meter"
@@ -65,7 +66,14 @@ export function Gauge({
       aria-valuenow={value}
       aria-label={label}
     >
-      <svg width={gaugeSize} height={gaugeSize} className="-rotate-90">
+      <svg
+        width={gaugeSize}
+        height={gaugeSize}
+        className="-rotate-90"
+        role="img"
+        aria-label={label}
+      >
+        <title>{label}</title>
         <defs>
           {/* Unique gradient ID prevents cross-instance color pollution */}
           <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
@@ -119,9 +127,9 @@ export function Gauge({
       </svg>
 
       <div className="text-center">
-        <p className="text-xs font-medium tracking-wide text-(--color-muted) uppercase">{label}</p>
+        <p className="font-medium text-(--color-muted) text-xs uppercase tracking-wide">{label}</p>
         {showValue && (
-          <p className="mt-1 text-sm text-(--color-text)">
+          <p className="mt-1 text-(--color-text) text-sm">
             {value.toFixed(1)} {unit}
           </p>
         )}

@@ -162,6 +162,7 @@ export default function HistoricalAnalyticsPage() {
         ? { url: influxUrl, token: influxToken }
         : null;
 
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: InfluxDB data loading with multiple fallback paths
     async function loadData() {
       setIsLoading(true);
 
@@ -300,19 +301,19 @@ export default function HistoricalAnalyticsPage() {
         {/* InfluxDB Status */}
         <div className="flex items-center gap-2">
           {influxHealthy === true && (
-            <span className="flex items-center gap-1.5 rounded-full bg-green-500/10 px-3 py-1 text-xs font-medium text-green-400">
+            <span className="flex items-center gap-1.5 rounded-full bg-green-500/10 px-3 py-1 font-medium text-green-400 text-xs">
               <CheckCircle size={14} />
               {t('historicalAnalytics.influxConnected')}
             </span>
           )}
           {influxHealthy === false && (
-            <span className="flex items-center gap-1.5 rounded-full bg-red-500/10 px-3 py-1 text-xs font-medium text-red-400">
+            <span className="flex items-center gap-1.5 rounded-full bg-red-500/10 px-3 py-1 font-medium text-red-400 text-xs">
               <AlertCircle size={14} />
               {t('historicalAnalytics.influxDisconnected')}
             </span>
           )}
           {influxHealthy === null && (
-            <span className="flex items-center gap-1.5 rounded-full bg-(--color-border)/30 px-3 py-1 text-xs font-medium text-(--color-muted)">
+            <span className="flex items-center gap-1.5 rounded-full bg-(--color-border)/30 px-3 py-1 font-medium text-(--color-muted) text-xs">
               <Database size={14} />
               {t('historicalAnalytics.influxNotConfigured')}
             </span>
@@ -326,12 +327,14 @@ export default function HistoricalAnalyticsPage() {
           aria-label={t('historicalAnalytics.selectRange')}
         >
           {TIME_RANGES.map((r) => (
+            // biome-ignore lint/a11y/useSemanticElements: radio-style button inside radiogroup, input[type=radio] would break styled button layout
             <button
               key={r.value}
+              type="button"
               onClick={() => setTimeRange(r.value)}
               role="radio"
               aria-checked={timeRange === r.value}
-              className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+              className={`rounded-md px-3 py-1.5 font-medium text-xs transition-colors ${
                 timeRange === r.value
                   ? 'bg-(--color-primary) text-white shadow-sm'
                   : 'text-(--color-muted) hover:text-(--color-text)'
@@ -380,9 +383,9 @@ export default function HistoricalAnalyticsPage() {
           >
             <div className="flex items-center gap-2">
               <span className={card.color}>{card.icon}</span>
-              <span className="text-xs text-(--color-muted)">{card.label}</span>
+              <span className="text-(--color-muted) text-xs">{card.label}</span>
             </div>
-            <p className="mt-1 text-xl font-bold text-(--color-text)">
+            <p className="mt-1 font-bold text-(--color-text) text-xl">
               {isLoading ? '...' : card.value}
             </p>
           </motion.div>
@@ -396,7 +399,7 @@ export default function HistoricalAnalyticsPage() {
         animate={{ opacity: 1 }}
         transition={{ delay: 0.1 }}
       >
-        <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-(--color-text)">
+        <h2 className="mb-4 flex items-center gap-2 font-semibold text-(--color-text) text-lg">
           <Activity size={20} className="text-(--color-primary)" />
           {t('historicalAnalytics.energyOverview')}
         </h2>
@@ -485,7 +488,7 @@ export default function HistoricalAnalyticsPage() {
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
       >
-        <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-(--color-text)">
+        <h2 className="mb-4 flex items-center gap-2 font-semibold text-(--color-text) text-lg">
           <Battery size={20} className="text-purple-400" />
           {t('historicalAnalytics.batterySoCHistory')}
         </h2>
@@ -545,23 +548,24 @@ export default function HistoricalAnalyticsPage() {
         transition={{ delay: 0.3 }}
       >
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="flex items-center gap-2 text-lg font-semibold text-(--color-text)">
+          <h2 className="flex items-center gap-2 font-semibold text-(--color-text) text-lg">
             <BrainCircuit size={20} className="text-(--color-neon-green)" />
             {t('historicalAnalytics.aiForecastHistory')}
           </h2>
           <div className="flex items-center gap-2">
             {unsyncedCount > 0 && influxConfig && (
               <button
+                type="button"
                 onClick={handleSync}
                 disabled={syncing}
-                className="focus-ring flex items-center gap-1.5 rounded-lg bg-(--color-primary)/10 px-3 py-1.5 text-xs font-medium text-(--color-primary) transition-colors hover:bg-(--color-primary)/20 disabled:opacity-50"
+                className="focus-ring flex items-center gap-1.5 rounded-lg bg-(--color-primary)/10 px-3 py-1.5 font-medium text-(--color-primary) text-xs transition-colors hover:bg-(--color-primary)/20 disabled:opacity-50"
               >
                 <RefreshCw size={14} className={syncing ? 'animate-spin' : ''} />
                 {t('historicalAnalytics.syncToInflux', { count: unsyncedCount })}
               </button>
             )}
             {syncResult !== null && (
-              <span className="text-xs text-green-400">
+              <span className="text-green-400 text-xs">
                 {t('historicalAnalytics.synced', { count: syncResult })}
               </span>
             )}
@@ -631,7 +635,7 @@ export default function HistoricalAnalyticsPage() {
                 aria-label={t('historicalAnalytics.forecastTable')}
               >
                 <thead>
-                  <tr className="border-b border-(--color-border) bg-(--color-surface)/50">
+                  <tr className="border-(--color-border) border-b bg-(--color-surface)/50">
                     <th className="px-3 py-2 font-medium text-(--color-muted)">
                       {t('historicalAnalytics.metric')}
                     </th>
@@ -648,7 +652,7 @@ export default function HistoricalAnalyticsPage() {
                 </thead>
                 <tbody>
                   {forecastHistory.slice(0, 10).map((f) => (
-                    <tr key={f.id ?? f.createdAt} className="border-b border-(--color-border)/50">
+                    <tr key={f.id ?? f.createdAt} className="border-(--color-border)/50 border-b">
                       <td className="px-3 py-2 text-(--color-text)">{f.metric}</td>
                       <td className="px-3 py-2 text-(--color-muted)">{f.model}</td>
                       <td className="px-3 py-2 text-(--color-muted)">
@@ -684,7 +688,7 @@ export default function HistoricalAnalyticsPage() {
             </div>
           </div>
         ) : (
-          <p className="py-8 text-center text-sm text-(--color-muted)">
+          <p className="py-8 text-center text-(--color-muted) text-sm">
             {t('historicalAnalytics.noForecasts')}
           </p>
         )}
@@ -697,7 +701,7 @@ export default function HistoricalAnalyticsPage() {
         animate={{ opacity: 1 }}
         transition={{ delay: 0.4 }}
       >
-        <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-(--color-text)">
+        <h2 className="mb-4 flex items-center gap-2 font-semibold text-(--color-text) text-lg">
           <CloudSun size={20} className="text-(--color-electric-blue)" />
           {t('historicalAnalytics.infrastructure')}
         </h2>
@@ -724,12 +728,12 @@ export default function HistoricalAnalyticsPage() {
           ].map((svc) => (
             <div key={svc.name} className="rounded-lg border border-(--color-border) p-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-semibold text-(--color-text)">{svc.name}</span>
+                <span className="font-semibold text-(--color-text) text-sm">{svc.name}</span>
                 {svc.status === true && <CheckCircle size={14} className="text-green-400" />}
                 {svc.status === false && <AlertCircle size={14} className="text-red-400" />}
               </div>
-              <p className="mt-1 text-xs text-(--color-muted)">{svc.desc}</p>
-              <p className="mt-1 text-xs text-(--color-muted)">
+              <p className="mt-1 text-(--color-muted) text-xs">{svc.desc}</p>
+              <p className="mt-1 text-(--color-muted) text-xs">
                 Port: {svc.port}
                 {svc.name === 'Grafana' && (
                   <a

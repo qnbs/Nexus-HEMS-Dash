@@ -218,7 +218,7 @@ function LiveEnergyFlowComponent() {
           />
           {isDemo && <DemoBadge />}
           <span
-            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${connected ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}`}
+            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-medium text-xs ${connected ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}`}
           >
             <span
               className={`h-2 w-2 rounded-full ${connected ? 'energy-pulse bg-emerald-400' : 'bg-rose-400'}`}
@@ -279,7 +279,7 @@ function LiveEnergyFlowComponent() {
               key={btn.id}
               type="button"
               onClick={() => togglePanel(btn.id)}
-              className={`focus-ring flex shrink-0 items-center gap-2 rounded-xl border px-3 py-1.5 text-xs font-medium transition-all ${
+              className={`focus-ring flex shrink-0 items-center gap-2 rounded-xl border px-3 py-1.5 font-medium text-xs transition-all ${
                 isOpen
                   ? 'border-(--color-primary)/40 bg-(--color-primary)/10 text-(--color-primary)'
                   : 'border-(--color-border) bg-(--color-surface)/50 text-(--color-muted) hover:border-(--color-primary)/30'
@@ -484,7 +484,7 @@ function EVPanel({
           {(['off', 'pv', 'fast'] as EvMode[]).map((mode) => (
             <label
               key={mode}
-              className={`cursor-pointer rounded-lg border px-2 py-2 text-center text-xs font-medium transition-all focus-within:ring-2 focus-within:ring-(--color-primary)/40 ${
+              className={`cursor-pointer rounded-lg border px-2 py-2 text-center font-medium text-xs transition-all focus-within:ring-(--color-primary)/40 focus-within:ring-2 ${
                 evState.mode === mode
                   ? 'border-(--color-primary) bg-(--color-primary)/20 text-(--color-primary)'
                   : 'border-(--color-border) bg-(--color-surface) text-(--color-muted) hover:border-(--color-primary)/40'
@@ -510,7 +510,7 @@ function EVPanel({
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="text-xs text-(--color-primary)"
+            className="text-(--color-primary) text-xs"
             role="status"
             aria-live="polite"
           >
@@ -572,7 +572,7 @@ function HeatPumpPanel({
           defaultValue={hpState.mode}
           onChange={hapticClick}
           aria-label={t('control.hpTitle')}
-          className="focus-ring w-full rounded-lg border border-(--color-border) bg-(--color-surface) px-3 py-2 text-sm text-(--color-text)"
+          className="focus-ring w-full rounded-lg border border-(--color-border) bg-(--color-surface) px-3 py-2 text-(--color-text) text-sm"
         >
           <option value="1">{t('control.hpMode1')}</option>
           <option value="2">{t('control.hpMode2')}</option>
@@ -583,7 +583,7 @@ function HeatPumpPanel({
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="text-xs text-(--color-primary)"
+            className="text-(--color-primary) text-xs"
             role="status"
             aria-live="polite"
           >
@@ -639,7 +639,7 @@ function BatteryPanel({
               transition={{ duration: 1, ease: 'easeOut' }}
             />
           </div>
-          <p className="text-xs text-(--color-muted)">
+          <p className="text-(--color-muted) text-xs">
             {charging
               ? t('metrics.batteryCharging')
               : data.batteryPower > 0
@@ -688,7 +688,7 @@ function KNXPanel({ sendCommand }: { sendCommand: (type: CommandType, value: num
   return (
     <div className="space-y-3">
       {rooms.length === 0 && (
-        <p className="text-xs text-(--color-muted)">{t('liveEnergy.noKnxRooms')}</p>
+        <p className="text-(--color-muted) text-xs">{t('liveEnergy.noKnxRooms')}</p>
       )}
       {rooms.length > 0 ? (
         rooms.map((room, i) => (
@@ -868,7 +868,7 @@ function StatsPanel({
               </span>
               <div className="text-right">
                 <span className={`font-mono ${color}`}>{value}</span>
-                {sub && <span className="block text-[10px] text-(--color-muted)">{sub}</span>}
+                {sub && <span className="block text-(--color-muted) text-[10px]">{sub}</span>}
               </div>
             </div>
           ))}
@@ -894,20 +894,20 @@ function StatsPanel({
         <div className="flex gap-3 text-sm">
           <div className="flex-1 rounded-lg border border-red-500/20 bg-red-500/5 p-2 text-center">
             <p className="text-[10px] text-red-400">{t('metrics.import')}</p>
-            <p className="font-mono text-sm font-semibold text-red-400">
+            <p className="font-mono font-semibold text-red-400 text-sm">
               {formatPower(gridImport, locale)}
             </p>
           </div>
           <div className="flex-1 rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-2 text-center">
             <p className="text-[10px] text-emerald-400">{t('metrics.export')}</p>
-            <p className="font-mono text-sm font-semibold text-emerald-400">
+            <p className="font-mono font-semibold text-emerald-400 text-sm">
               {formatPower(gridExport, locale)}
             </p>
           </div>
         </div>
       </ControlPanelSection>
       <ControlPanelDivider />
-      <div className="flex items-center justify-between text-xs text-(--color-muted)">
+      <div className="flex items-center justify-between text-(--color-muted) text-xs">
         <span className="flex items-center gap-1">
           <Leaf size={12} className="text-emerald-400" />
           {t('dashboard.pvYieldToday')}: {energyData.pvYieldToday.toFixed(1)} kWh
@@ -927,7 +927,7 @@ function GaugeBar({ label, value, color }: { label: string; value: number; color
     <div>
       <div className="mb-1 flex items-center justify-between text-xs">
         <span className="text-(--color-muted)">{label}</span>
-        <span className="font-mono font-medium" style={{ color }}>
+        <span className="font-medium font-mono" style={{ color }}>
           {clamped.toFixed(0)}%
         </span>
       </div>

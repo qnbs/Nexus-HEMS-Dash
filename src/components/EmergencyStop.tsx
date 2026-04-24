@@ -83,7 +83,7 @@ export function EmergencyStop({ circuitBreakers }: EmergencyStopProps) {
       {/* Emergency Stop Trigger Button */}
       <button
         onClick={() => setShowConfirm(true)}
-        className="focus-ring group flex items-center gap-2 rounded-xl border border-red-500/30 bg-red-600 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-red-600/40 transition-all hover:scale-105 hover:bg-red-500 hover:shadow-xl hover:shadow-red-500/50 active:scale-95"
+        className="focus-ring group flex items-center gap-2 rounded-xl border border-red-500/30 bg-red-600 px-4 py-2 font-bold text-sm text-white shadow-lg shadow-red-600/40 transition-all hover:scale-105 hover:bg-red-500 hover:shadow-red-500/50 hover:shadow-xl active:scale-95"
         aria-label={t('safety.emergencyStop', 'Notaus – Alle Geräte sofort abschalten')}
         title={t('safety.emergencyStop', 'Notaus – Alle Geräte sofort abschalten')}
         type="button"
@@ -98,9 +98,9 @@ export function EmergencyStop({ circuitBreakers }: EmergencyStopProps) {
       {/* Confirmation Dialog */}
       <Dialog.Root open={showConfirm} onOpenChange={setShowConfirm}>
         <Dialog.Portal>
-          <Dialog.Overlay className="data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 z-modal-backdrop fixed inset-0 bg-black/80 backdrop-blur-sm" />
+          <Dialog.Overlay className="data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-modal-backdrop bg-black/80 backdrop-blur-sm data-[state=closed]:animate-out data-[state=open]:animate-in" />
           <Dialog.Content
-            className="z-modal fixed top-1/2 left-1/2 mx-4 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-2xl border-2 border-red-500/50 bg-red-950/90 p-6 shadow-2xl backdrop-blur-xl"
+            className="fixed top-1/2 left-1/2 z-modal mx-4 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-2xl border-2 border-red-500/50 bg-red-950/90 p-6 shadow-2xl backdrop-blur-xl"
             aria-describedby="emergency-stop-desc"
             aria-labelledby="emergency-stop-title"
           >
@@ -109,11 +109,11 @@ export function EmergencyStop({ circuitBreakers }: EmergencyStopProps) {
                 <ShieldAlert className="h-7 w-7 text-red-400" aria-hidden="true" />
               </div>
               <div className="flex-1">
-                <Dialog.Title id="emergency-stop-title" className="text-lg font-bold text-red-100">
+                <Dialog.Title id="emergency-stop-title" className="font-bold text-lg text-red-100">
                   {t('safety.emergencyStopTitle', 'NOTAUS — Alle Geräte abschalten?')}
                 </Dialog.Title>
                 <Dialog.Description
-                  className="mt-2 text-sm text-red-200/80"
+                  className="mt-2 text-red-200/80 text-sm"
                   id="emergency-stop-desc"
                 >
                   {t(
@@ -127,7 +127,7 @@ export function EmergencyStop({ circuitBreakers }: EmergencyStopProps) {
             <div className="mt-6 flex justify-end gap-3">
               <Dialog.Close asChild>
                 <button
-                  className="focus-ring rounded-xl px-4 py-2 text-sm font-medium text-red-200 transition-colors hover:bg-red-900/50"
+                  className="focus-ring rounded-xl px-4 py-2 font-medium text-red-200 text-sm transition-colors hover:bg-red-900/50"
                   type="button"
                 >
                   {t('common.cancel', 'Abbrechen')}
@@ -135,7 +135,7 @@ export function EmergencyStop({ circuitBreakers }: EmergencyStopProps) {
               </Dialog.Close>
               <button
                 onClick={() => void executeEmergencyStop()}
-                className="focus-ring animate-pulse rounded-xl bg-red-600 px-6 py-2 text-sm font-bold text-white shadow-lg shadow-red-600/50 transition-all hover:bg-red-500"
+                className="focus-ring animate-pulse rounded-xl bg-red-600 px-6 py-2 font-bold text-sm text-white shadow-lg shadow-red-600/50 transition-all hover:bg-red-500"
                 type="button"
               >
                 {t('safety.confirmEmergencyStop', 'NOTAUS BESTÄTIGEN')}
@@ -148,7 +148,7 @@ export function EmergencyStop({ circuitBreakers }: EmergencyStopProps) {
       {/* Active Emergency Stop Overlay */}
       {isActive && (
         <div
-          className="z-priority fixed inset-0 flex items-center justify-center bg-red-950/95 backdrop-blur-md"
+          className="fixed inset-0 z-priority flex items-center justify-center bg-red-950/95 backdrop-blur-md"
           role="alert"
           aria-live="assertive"
         >
@@ -156,7 +156,7 @@ export function EmergencyStop({ circuitBreakers }: EmergencyStopProps) {
             <div className="flex h-24 w-24 items-center justify-center rounded-full border-4 border-red-500 bg-red-600/20">
               <ShieldAlert className="h-14 w-14 text-red-400" aria-hidden="true" />
             </div>
-            <h1 className="text-3xl font-bold text-red-100">
+            <h1 className="font-bold text-3xl text-red-100">
               {t('safety.emergencyActive', 'NOTAUS AKTIV')}
             </h1>
             <p className="text-red-200/80">

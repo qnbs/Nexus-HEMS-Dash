@@ -238,9 +238,9 @@ describe('OCPP21Adapter — sendCommand dispatch', () => {
     expect(profileCalls.length).toBeGreaterThanOrEqual(1);
 
     const profile = profileCalls[profileCalls.length - 1].payload;
-    const schedule = (profile['chargingProfile'] as Record<string, unknown>)[
-      'chargingSchedule'
-    ] as { chargingSchedulePeriod: { limit: number }[] }[];
+    const schedule = (profile.chargingProfile as Record<string, unknown>).chargingSchedule as {
+      chargingSchedulePeriod: { limit: number }[];
+    }[];
     expect(schedule[0].chargingSchedulePeriod[0].limit).toBe(16);
 
     adapter.destroy();
@@ -259,9 +259,9 @@ describe('OCPP21Adapter — sendCommand dispatch', () => {
     expect(profileCalls.length).toBeGreaterThanOrEqual(1);
 
     const profile = profileCalls[profileCalls.length - 1].payload;
-    const schedule = (profile['chargingProfile'] as Record<string, unknown>)[
-      'chargingSchedule'
-    ] as { chargingSchedulePeriod: { limit: number }[] }[];
+    const schedule = (profile.chargingProfile as Record<string, unknown>).chargingSchedule as {
+      chargingSchedulePeriod: { limit: number }[];
+    }[];
     // 7360W / 230V ≈ 32A
     expect(schedule[0].chargingSchedulePeriod[0].limit).toBe(32);
 
@@ -329,10 +329,10 @@ describe('OCPP21Adapter — sendCommand dispatch', () => {
 
     const profileCalls = server.getCallsByAction('SetChargingProfile');
     const lastCall = profileCalls[profileCalls.length - 1];
-    const profile = lastCall.payload['chargingProfile'] as Record<string, unknown>;
+    const profile = lastCall.payload.chargingProfile as Record<string, unknown>;
 
-    expect(profile['chargingProfilePurpose']).toBe('ChargingStationMaxProfile');
-    expect(lastCall.payload['evseId']).toBe(0); // Station-wide
+    expect(profile.chargingProfilePurpose).toBe('ChargingStationMaxProfile');
+    expect(lastCall.payload.evseId).toBe(0); // Station-wide
 
     adapter.destroy();
   });
@@ -395,8 +395,8 @@ describe('OCPP21Adapter — sendCommand dispatch', () => {
     expect(startCalls.length).toBeGreaterThanOrEqual(1);
 
     const tokenPayload = startCalls[startCalls.length - 1].payload;
-    const idToken = tokenPayload['idToken'] as Record<string, string>;
-    expect(idToken['type']).toBe('eMAID');
+    const idToken = tokenPayload.idToken as Record<string, string>;
+    expect(idToken.type).toBe('eMAID');
 
     adapter.destroy();
   });

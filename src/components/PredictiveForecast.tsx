@@ -90,14 +90,15 @@ export function PredictiveForecast() {
             <CloudSun className="mr-2 inline h-6 w-6 text-(--color-primary)" aria-hidden="true" />
             {t('forecast.title')}
           </h2>
-          <p className="mt-1 text-sm text-(--color-muted)">{t('forecast.subtitle')}</p>
+          <p className="mt-1 text-(--color-muted) text-sm">{t('forecast.subtitle')}</p>
         </div>
 
         {/* Time Range Toggle */}
         <div className="flex gap-2">
           <button
+            type="button"
             onClick={() => setTimeRange('24h')}
-            className={`focus-ring rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+            className={`focus-ring rounded-lg px-4 py-2 font-medium text-sm transition-colors ${
               timeRange === '24h'
                 ? 'bg-(--color-primary) font-bold text-(--color-background)'
                 : 'bg-(--color-surface) text-(--color-muted) hover:bg-white/10'
@@ -108,8 +109,9 @@ export function PredictiveForecast() {
             {t('forecast.hours24')}
           </button>
           <button
+            type="button"
             onClick={() => setTimeRange('7d')}
-            className={`focus-ring rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+            className={`focus-ring rounded-lg px-4 py-2 font-medium text-sm transition-colors ${
               timeRange === '7d'
                 ? 'bg-(--color-primary) font-bold text-(--color-background)'
                 : 'bg-(--color-surface) text-(--color-muted) hover:bg-white/10'
@@ -123,29 +125,29 @@ export function PredictiveForecast() {
       </div>
 
       {/* Metrics */}
-      <div className="@container mb-6 grid grid-cols-1 gap-4 @sm:grid-cols-3">
+      <div className="@container mb-6 grid @sm:grid-cols-3 grid-cols-1 gap-4">
         <div className="rounded-2xl bg-emerald-500/10 p-4">
           <div className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5 text-emerald-400" aria-hidden="true" />
-            <span className="text-sm text-emerald-400">{t('forecast.potentialSavings')}</span>
+            <span className="text-emerald-400 text-sm">{t('forecast.potentialSavings')}</span>
           </div>
-          <p className="mt-2 text-2xl font-semibold text-emerald-300">€{totalSavings.toFixed(2)}</p>
+          <p className="mt-2 font-semibold text-2xl text-emerald-300">€{totalSavings.toFixed(2)}</p>
         </div>
 
         <div className="rounded-2xl bg-green-500/10 p-4">
           <div className="flex items-center gap-2">
             <Leaf className="h-5 w-5 text-green-400" aria-hidden="true" />
-            <span className="text-sm text-green-400">{t('forecast.co2Saved')}</span>
+            <span className="text-green-400 text-sm">{t('forecast.co2Saved')}</span>
           </div>
-          <p className="mt-2 text-2xl font-semibold text-green-300">{co2Saved.toFixed(1)} kg</p>
+          <p className="mt-2 font-semibold text-2xl text-green-300">{co2Saved.toFixed(1)} kg</p>
         </div>
 
         <div className="rounded-2xl bg-blue-500/10 p-4">
           <div className="flex items-center gap-2">
             <CloudSun className="h-5 w-5 text-blue-400" aria-hidden="true" />
-            <span className="text-sm text-blue-400">{t('forecast.avgPvGeneration')}</span>
+            <span className="text-blue-400 text-sm">{t('forecast.avgPvGeneration')}</span>
           </div>
-          <p className="mt-2 text-2xl font-semibold text-blue-300">
+          <p className="mt-2 font-semibold text-2xl text-blue-300">
             {(forecastData.length > 0
               ? forecastData.reduce((sum, d) => sum + d.pvForecast, 0) / forecastData.length
               : 0
@@ -238,8 +240,8 @@ export function PredictiveForecast() {
 
       {/* Best Action Recommendation */}
       <div className="mt-6 rounded-2xl border border-(--color-primary)/30 bg-(--color-primary)/10 p-4">
-        <p className="text-sm font-medium text-(--color-primary)">{t('forecast.recommendation')}</p>
-        <p className="mt-1 text-sm text-(--color-muted)">{t('forecast.recommendationText')}</p>
+        <p className="font-medium text-(--color-primary) text-sm">{t('forecast.recommendation')}</p>
+        <p className="mt-1 text-(--color-muted) text-sm">{t('forecast.recommendationText')}</p>
       </div>
     </motion.div>
   );

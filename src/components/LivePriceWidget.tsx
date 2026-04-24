@@ -52,10 +52,10 @@ export function LivePriceWidget() {
                 : t('settings.none')}
           </p>
           <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-semibold text-(--color-text) tabular-nums">
+            <span className="font-semibold text-(--color-text) text-3xl tabular-nums">
               {currentPrice.toFixed(3)}
             </span>
-            <span className="text-sm text-(--color-muted)">{t('units.euroPerKwh')}</span>
+            <span className="text-(--color-muted) text-sm">{t('units.euroPerKwh')}</span>
           </div>
         </div>
 
@@ -73,8 +73,8 @@ export function LivePriceWidget() {
       </div>
 
       {nextBestSlot && (
-        <div className="mt-4 border-t border-(--color-border) pt-4">
-          <p className="text-xs text-(--color-muted)">
+        <div className="mt-4 border-(--color-border) border-t pt-4">
+          <p className="text-(--color-muted) text-xs">
             {t('ai.nextBestAction')}:{' '}
             <span className="font-semibold text-(--color-primary)">
               {nextBestSlot.timestamp.toLocaleTimeString(dateLocale, {
@@ -93,13 +93,13 @@ export function LivePriceWidget() {
         role="img"
         aria-label={t('chart.priceAriaLabel', 'Price forecast chart for the next 12 hours')}
       >
-        {chartSlice.map((slot, i) => {
+        {chartSlice.map((slot, _i) => {
           const range = maxPrice - minPrice || 1;
           const height = ((slot.price - minPrice) / range) * 100;
 
           return (
             <div
-              key={i}
+              key={slot.timestamp.getTime()}
               className="flex-1 rounded-t-sm bg-(--color-primary)/40 transition-all hover:bg-(--color-primary)"
               style={{ height: `${height}%` }}
               title={`${slot.timestamp.toLocaleTimeString(dateLocale, { hour: '2-digit' })}: ${slot.price.toFixed(3)} ${t('units.euroPerKwh')}`}

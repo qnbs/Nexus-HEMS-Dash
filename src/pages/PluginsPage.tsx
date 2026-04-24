@@ -82,7 +82,7 @@ function PluginOverviewCard({ entries }: { entries: PluginEntry[] }) {
           </div>
           <div className="flex items-center gap-3">
             <div className="text-right">
-              <span className="fluid-text-2xl font-mono font-bold text-(--color-primary)">
+              <span className="fluid-text-2xl font-bold font-mono text-(--color-primary)">
                 {total}
               </span>
               <p className="fluid-text-xs text-(--color-muted)">{t('plugins.installed')}</p>
@@ -135,7 +135,7 @@ function PluginCard({
                 <span className="font-mono">v{descriptor.version}</span>
                 {descriptor.category && (
                   <span
-                    className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${categoryColor}`}
+                    className={`rounded-full px-2 py-0.5 font-medium text-[10px] ${categoryColor}`}
                   >
                     {descriptor.category}
                   </span>
@@ -147,7 +147,7 @@ function PluginCard({
           <div className="flex items-center gap-2">
             {/* State badge */}
             <span
-              className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium tracking-wider uppercase ${stateStyle.color}`}
+              className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 font-medium text-[10px] uppercase tracking-wider ${stateStyle.color}`}
             >
               <StateIcon className="h-3 w-3" />
               {t(STATE_I18N[state] ?? 'plugins.installed')}
@@ -155,6 +155,7 @@ function PluginCard({
 
             {/* Expand */}
             <button
+              type="button"
               onClick={() => setExpanded(!expanded)}
               className="focus-ring rounded-lg p-1 text-(--color-muted) hover:text-(--color-text)"
               aria-expanded={expanded}
@@ -184,16 +185,18 @@ function PluginCard({
         <div className="flex items-center gap-2">
           {state === 'installed' || state === 'resolved' ? (
             <button
+              type="button"
               onClick={() => onStart(descriptor.id)}
-              className="focus-ring flex items-center gap-1.5 rounded-xl bg-emerald-500/10 px-3 py-1.5 text-sm font-medium text-emerald-400 transition-colors hover:bg-emerald-500/20"
+              className="focus-ring flex items-center gap-1.5 rounded-xl bg-emerald-500/10 px-3 py-1.5 font-medium text-emerald-400 text-sm transition-colors hover:bg-emerald-500/20"
             >
               <Play className="h-3.5 w-3.5" />
               {t('plugins.start')}
             </button>
           ) : state === 'active' ? (
             <button
+              type="button"
               onClick={() => onStop(descriptor.id)}
-              className="focus-ring flex items-center gap-1.5 rounded-xl bg-orange-500/10 px-3 py-1.5 text-sm font-medium text-orange-400 transition-colors hover:bg-orange-500/20"
+              className="focus-ring flex items-center gap-1.5 rounded-xl bg-orange-500/10 px-3 py-1.5 font-medium text-orange-400 text-sm transition-colors hover:bg-orange-500/20"
             >
               <Square className="h-3.5 w-3.5" />
               {t('plugins.stop')}
@@ -202,8 +205,9 @@ function PluginCard({
 
           {state !== 'active' && state !== 'uninstalled' && (
             <button
+              type="button"
               onClick={() => onUninstall(descriptor.id)}
-              className="focus-ring flex items-center gap-1.5 rounded-xl bg-red-500/10 px-3 py-1.5 text-sm font-medium text-red-400 transition-colors hover:bg-red-500/20"
+              className="focus-ring flex items-center gap-1.5 rounded-xl bg-red-500/10 px-3 py-1.5 font-medium text-red-400 text-sm transition-colors hover:bg-red-500/20"
             >
               <Trash2 className="h-3.5 w-3.5" />
               {t('plugins.uninstall')}
@@ -242,14 +246,14 @@ function PluginCard({
                 )}
                 {descriptor.provides && descriptor.provides.length > 0 && (
                   <div>
-                    <span className="fluid-text-xs font-semibold tracking-wider text-(--color-muted) uppercase">
+                    <span className="fluid-text-xs font-semibold text-(--color-muted) uppercase tracking-wider">
                       {t('plugins.providesServices', 'Bereitgestellte Services')}
                     </span>
                     <div className="mt-1 flex flex-wrap gap-1">
                       {descriptor.provides.map((svc) => (
                         <span
                           key={svc}
-                          className="rounded-full bg-white/5 px-2 py-0.5 font-mono text-[10px] text-(--color-muted)"
+                          className="rounded-full bg-white/5 px-2 py-0.5 font-mono text-(--color-muted) text-[10px]"
                         >
                           {svc}
                         </span>
@@ -259,14 +263,14 @@ function PluginCard({
                 )}
                 {descriptor.dependencies && Object.keys(descriptor.dependencies).length > 0 && (
                   <div>
-                    <span className="fluid-text-xs font-semibold tracking-wider text-(--color-muted) uppercase">
+                    <span className="fluid-text-xs font-semibold text-(--color-muted) uppercase tracking-wider">
                       {t('plugins.dependencies')}
                     </span>
                     <div className="mt-1 flex flex-wrap gap-1">
                       {Object.entries(descriptor.dependencies).map(([depId, ver]) => (
                         <span
                           key={depId}
-                          className="rounded-full bg-white/5 px-2 py-0.5 font-mono text-[10px] text-(--color-muted)"
+                          className="rounded-full bg-white/5 px-2 py-0.5 font-mono text-(--color-muted) text-[10px]"
                         >
                           {depId}@{ver}
                         </span>

@@ -77,12 +77,12 @@ function InteractiveDemo() {
       <button
         type="button"
         onClick={reset}
-        className="rounded-xl bg-(--color-primary)/15 px-4 py-2 text-sm font-medium text-(--color-primary)"
+        className="rounded-xl bg-(--color-primary)/15 px-4 py-2 font-medium text-(--color-primary) text-sm"
       >
         Tour erneut anzeigen
       </button>
       <PageTour tourId={tourId} steps={DEMO_STEPS} />
-      <p className="text-sm text-(--color-muted)">
+      <p className="text-(--color-muted) text-sm">
         Tour wird beim ersten Besuch angezeigt. Klicke den Button, um sie erneut zu starten.
       </p>
     </div>

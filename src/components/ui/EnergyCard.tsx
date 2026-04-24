@@ -75,6 +75,8 @@ export function EnergyCard({
       transition={{ duration: 0.35, ease: 'easeOut' }}
     >
       {/* Header — clickable when details exist */}
+      {/* biome-ignore lint/a11y/noStaticElementInteractions: role and tabIndex applied conditionally when interactive */}
+      {/* biome-ignore lint/a11y/useAriaPropsSupportedByRole: aria-expanded is valid on role=button per ARIA 1.2 */}
       <div
         className="energy-card-header"
         role={hasDetails ? 'button' : undefined}

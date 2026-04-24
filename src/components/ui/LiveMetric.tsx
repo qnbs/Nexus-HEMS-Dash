@@ -79,7 +79,7 @@ export function LiveMetric({
     >
       {formatted}
       {unit && (
-        <span className="ml-1 text-[0.6em] font-normal tracking-wide text-(--color-muted)">
+        <span className="ml-1 font-normal text-(--color-muted) text-[0.6em] tracking-wide">
           {unit}
         </span>
       )}

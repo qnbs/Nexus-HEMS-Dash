@@ -47,7 +47,7 @@ function InteractiveDemo() {
           type="button"
           disabled={!canGoBack(step)}
           onClick={() => setStep((s) => s - 1)}
-          className="focus-ring rounded-lg bg-(--color-primary)/15 px-4 py-2 text-sm font-medium text-(--color-primary) disabled:opacity-40"
+          className="focus-ring rounded-lg bg-(--color-primary)/15 px-4 py-2 font-medium text-(--color-primary) text-sm disabled:opacity-40"
         >
           Zurück
         </button>
@@ -55,7 +55,7 @@ function InteractiveDemo() {
           type="button"
           disabled={!canGoForward(step)}
           onClick={() => setStep((s) => s + 1)}
-          className="focus-ring rounded-lg bg-(--color-primary)/15 px-4 py-2 text-sm font-medium text-(--color-primary) disabled:opacity-40"
+          className="focus-ring rounded-lg bg-(--color-primary)/15 px-4 py-2 font-medium text-(--color-primary) text-sm disabled:opacity-40"
         >
           Weiter
         </button>

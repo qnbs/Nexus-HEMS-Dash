@@ -31,7 +31,7 @@ function BreadcrumbsComponent() {
   return (
     <nav
       aria-label={t('nav.breadcrumbs', 'Breadcrumbs')}
-      className="mb-4 flex min-w-0 items-center gap-1.5 overflow-hidden text-sm text-(--color-muted)"
+      className="mb-4 flex min-w-0 items-center gap-1.5 overflow-hidden text-(--color-muted) text-sm"
     >
       <Link
         to="/"
@@ -42,7 +42,7 @@ function BreadcrumbsComponent() {
       </Link>
 
       {segments.map((segment, index) => {
-        const path = '/' + segments.slice(0, index + 1).join('/');
+        const path = `/${segments.slice(0, index + 1).join('/')}`;
         const isLast = index === segments.length - 1;
         const labelKey = routeLabels[path] || segment;
 

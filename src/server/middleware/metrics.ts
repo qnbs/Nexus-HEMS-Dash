@@ -38,7 +38,7 @@ export function setMetric(
 function formatMetricLabels(labels: Record<string, string>): string {
   const entries = Object.entries(labels);
   if (entries.length === 0) return '';
-  return '{' + entries.map(([k, v]) => `${k}="${v}"`).join(',') + '}';
+  return `{${entries.map(([k, v]) => `${k}="${v}"`).join(',')}}`;
 }
 
 export function renderPrometheusText(): string {

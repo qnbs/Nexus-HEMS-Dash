@@ -42,7 +42,7 @@ function MobilePageTitle() {
     <AnimatePresence mode="wait">
       <motion.span
         key={pathname}
-        className="min-w-0 truncate text-sm font-semibold text-(--color-text) lg:hidden"
+        className="min-w-0 truncate font-semibold text-(--color-text) text-sm lg:hidden"
         initial={{ opacity: 0, y: 4 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -4 }}
@@ -137,7 +137,7 @@ export function AppShell({ children, ...rest }: AppShellProps) {
       <div className="relative lg:ml-64">
         {/* Top Bar — sticky header (mobile + desktop) */}
         <motion.header
-          className="glass-panel-strong header-accent-line z-sticky sticky top-0 overflow-hidden px-3 py-1.5 sm:px-6 sm:py-3"
+          className="glass-panel-strong header-accent-line sticky top-0 z-sticky overflow-hidden px-3 py-1.5 sm:px-6 sm:py-3"
           initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
@@ -160,7 +160,7 @@ export function AppShell({ children, ...rest }: AppShellProps) {
               />
               {/* Connection status indicator */}
               <span
-                className={`absolute -right-0.5 -bottom-0.5 h-2.5 w-2.5 rounded-full border-2 border-(--color-surface-strong) ${
+                className={`absolute -right-0.5 -bottom-0.5 h-2.5 w-2.5 rounded-full border-(--color-surface-strong) border-2 ${
                   connected
                     ? 'bg-(--color-neon-green) shadow-[0_0_6px_var(--color-neon-green)]'
                     : 'bg-red-500 shadow-[0_0_6px_theme(colors.red.500)]'
@@ -186,6 +186,7 @@ export function AppShell({ children, ...rest }: AppShellProps) {
 
               {/* Command Palette */}
               <button
+                type="button"
                 onClick={() => setCommandPaletteOpen(true)}
                 className="focus-ring inline-flex items-center gap-2 rounded-full border border-(--color-border) bg-(--color-surface-strong) p-2 text-sm transition-colors duration-200 hover:bg-(--color-primary)/10 sm:px-3"
                 aria-label={t('command.open', 'Open command palette')}
@@ -193,10 +194,7 @@ export function AppShell({ children, ...rest }: AppShellProps) {
               >
                 <Command className="h-4 w-4" aria-hidden="true" />
                 <span className="hidden sm:inline">{t('command.search', 'Search')}</span>
-                <kbd
-                  className="hidden rounded bg-(--color-surface-strong) px-1.5 py-0.5 text-xs lg:inline"
-                  aria-hidden="true"
-                >
+                <kbd className="hidden rounded bg-(--color-surface-strong) px-1.5 py-0.5 text-xs lg:inline">
                   ⌘K
                 </kbd>
               </button>
@@ -244,7 +242,7 @@ export function AppShell({ children, ...rest }: AppShellProps) {
           >
             {/* PV Power */}
             <div
-              className="inline-flex shrink-0 items-center gap-1 rounded-full bg-(--color-surface)/60 px-2 py-0.5 text-xs font-medium"
+              className="inline-flex shrink-0 items-center gap-1 rounded-full bg-(--color-surface)/60 px-2 py-0.5 font-medium text-xs"
               title={t('header.pvPower', 'PV power')}
             >
               <Sun className="h-3 w-3 text-amber-400" aria-hidden="true" />
@@ -255,7 +253,7 @@ export function AppShell({ children, ...rest }: AppShellProps) {
 
             {/* Battery SoC */}
             <div
-              className="inline-flex shrink-0 items-center gap-1 rounded-full bg-(--color-surface)/60 px-2 py-0.5 text-xs font-medium"
+              className="inline-flex shrink-0 items-center gap-1 rounded-full bg-(--color-surface)/60 px-2 py-0.5 font-medium text-xs"
               title={t('header.batterySoC', 'Battery charge')}
             >
               <BatteryMedium
@@ -273,7 +271,7 @@ export function AppShell({ children, ...rest }: AppShellProps) {
 
             {/* Grid Power (import/export) */}
             <div
-              className="inline-flex shrink-0 items-center gap-1 rounded-full bg-(--color-surface)/60 px-2 py-0.5 text-xs font-medium"
+              className="inline-flex shrink-0 items-center gap-1 rounded-full bg-(--color-surface)/60 px-2 py-0.5 font-medium text-xs"
               title={
                 gridPower >= 0
                   ? t('header.gridImport', 'Grid import')
@@ -298,7 +296,7 @@ export function AppShell({ children, ...rest }: AppShellProps) {
 
             {/* Price Pill (mobile — compact) */}
             <div
-              className="inline-flex shrink-0 items-center gap-1 rounded-full bg-(--color-surface)/60 px-2 py-0.5 text-xs font-medium md:hidden"
+              className="inline-flex shrink-0 items-center gap-1 rounded-full bg-(--color-surface)/60 px-2 py-0.5 font-medium text-xs md:hidden"
               title={t('dashboard.currentPrice', 'Current electricity price')}
             >
               <span className="text-(--color-primary)">{priceCurrent.toFixed(2)} ct</span>
@@ -306,7 +304,7 @@ export function AppShell({ children, ...rest }: AppShellProps) {
 
             {/* Self-sufficiency mini indicator */}
             <div
-              className="inline-flex shrink-0 items-center gap-1 rounded-full bg-(--color-surface)/60 px-2 py-0.5 text-xs font-medium"
+              className="inline-flex shrink-0 items-center gap-1 rounded-full bg-(--color-surface)/60 px-2 py-0.5 font-medium text-xs"
               title={t('header.selfSufficiency', 'Self-sufficiency')}
             >
               <SelfSufficiencyRing

@@ -226,7 +226,7 @@ function CommandHubComponent() {
           <div className="flex items-center gap-2">
             {isDemo && <DemoBadge />}
             <span
-              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] font-semibold tracking-wider uppercase ${
+              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 font-semibold text-[10px] uppercase tracking-wider ${
                 connected ? 'bg-emerald-500/15 text-emerald-400' : 'bg-rose-500/15 text-rose-400'
               }`}
             >
@@ -244,7 +244,7 @@ function CommandHubComponent() {
       {/* ─── 8 LiveMetric Cards (responsive grid) ────────────── */}
       <section aria-label={t('commandHub.metricsOverview', 'Kennzahlen')} className="@container">
         <div className="mb-2 flex items-center gap-2">
-          <h2 className="text-xs font-semibold tracking-widest text-(--color-muted) uppercase">
+          <h2 className="font-semibold text-(--color-muted) text-xs uppercase tracking-widest">
             {t('commandHub.metricsOverview', 'Kennzahlen')}
           </h2>
           <HelpTooltip
@@ -255,7 +255,7 @@ function CommandHubComponent() {
           />
         </div>
         <motion.div
-          className="grid grid-cols-2 gap-3 @md:grid-cols-3 @xl:grid-cols-4"
+          className="grid @md:grid-cols-3 @xl:grid-cols-4 grid-cols-2 gap-3"
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.05 }}
@@ -266,7 +266,7 @@ function CommandHubComponent() {
                 variant={card.variant}
                 details={
                   card.getDetail(metrics) ? (
-                    <p className="text-xs text-(--color-muted)">
+                    <p className="text-(--color-muted) text-xs">
                       {t(`metrics.${card.getDetail(metrics)}`, card.getDetail(metrics))}
                     </p>
                   ) : undefined
@@ -274,7 +274,7 @@ function CommandHubComponent() {
               >
                 <span className="shrink-0">{card.icon}</span>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-[11px] font-medium tracking-wide text-(--color-muted) uppercase">
+                  <p className="truncate font-medium text-(--color-muted) text-[11px] uppercase tracking-wide">
                     {t(card.labelKey)}
                   </p>
                   <LiveMetric
@@ -308,8 +308,9 @@ function CommandHubComponent() {
           pulse
           action={
             <button
+              type="button"
               onClick={() => navigate('/settings')}
-              className="focus-ring rounded-xl bg-(--color-primary)/15 px-4 py-2 text-sm font-medium text-(--color-primary) transition-colors hover:bg-(--color-primary)/25"
+              className="focus-ring rounded-xl bg-(--color-primary)/15 px-4 py-2 font-medium text-(--color-primary) text-sm transition-colors hover:bg-(--color-primary)/25"
             >
               {t('empty.goToSettings', 'Einstellungen öffnen')}
             </button>
@@ -323,7 +324,7 @@ function CommandHubComponent() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
         >
-          <div className="flex items-center justify-between border-b border-(--color-border)/30 px-5 py-3">
+          <div className="flex items-center justify-between border-(--color-border)/30 border-b px-5 py-3">
             <h2
               id="hub-sankey-title"
               className="fluid-text-base flex items-center gap-2 font-medium"
@@ -331,7 +332,7 @@ function CommandHubComponent() {
               <Activity size={18} className="text-(--color-secondary)" aria-hidden="true" />
               {t('dashboard.realtimeFlow')}
             </h2>
-            <div className="flex items-center gap-3 text-xs text-(--color-muted)">
+            <div className="flex items-center gap-3 text-(--color-muted) text-xs">
               <span className="flex items-center gap-1.5">
                 <Leaf
                   size={12}
@@ -374,7 +375,7 @@ function CommandHubComponent() {
           </h2>
           <Link
             to="/optimization-ai"
-            className="focus-ring inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-(--color-primary) transition-colors hover:bg-(--color-primary)/10"
+            className="focus-ring inline-flex items-center gap-1 rounded-lg px-2 py-1 font-medium text-(--color-primary) text-xs transition-colors hover:bg-(--color-primary)/10"
           >
             {t('commandHub.allRecommendations', 'Alle Empfehlungen')}
             <ChevronRight size={14} />
@@ -393,7 +394,7 @@ function CommandHubComponent() {
           <button
             type="button"
             onClick={() => navigate('/optimization-ai')}
-            className="focus-ring inline-flex items-center gap-2 rounded-xl bg-(--color-primary) px-4 py-2 text-sm font-semibold text-white shadow-lg transition-colors hover:bg-(--color-primary)/80"
+            className="focus-ring inline-flex items-center gap-2 rounded-xl bg-(--color-primary) px-4 py-2 font-semibold text-sm text-white shadow-lg transition-colors hover:bg-(--color-primary)/80"
           >
             <Sparkles size={16} aria-hidden="true" />
             {t('command.optimizeNow', 'Jetzt optimieren')}
@@ -404,7 +405,7 @@ function CommandHubComponent() {
             <button
               type="button"
               onClick={() => navigate('/analytics')}
-              className="focus-ring inline-flex items-center gap-2 rounded-xl border border-(--color-border) bg-(--color-surface-strong) px-3 py-2 text-sm font-medium text-(--color-text) transition-colors hover:bg-white/5"
+              className="focus-ring inline-flex items-center gap-2 rounded-xl border border-(--color-border) bg-(--color-surface-strong) px-3 py-2 font-medium text-(--color-text) text-sm transition-colors hover:bg-white/5"
             >
               <FileBarChart size={16} aria-hidden="true" />
               <span className="hidden sm:inline">{t('command.exportReport', 'Bericht')}</span>
@@ -412,7 +413,7 @@ function CommandHubComponent() {
             <button
               type="button"
               onClick={() => navigate('/settings')}
-              className="focus-ring inline-flex items-center gap-2 rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm font-medium text-red-400 transition-colors hover:bg-red-500/20"
+              className="focus-ring inline-flex items-center gap-2 rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 font-medium text-red-400 text-sm transition-colors hover:bg-red-500/20"
             >
               <ShieldAlert size={16} aria-hidden="true" />
               <span className="hidden sm:inline">{t('emergencyStopShort', 'Notaus')}</span>

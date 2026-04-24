@@ -340,7 +340,7 @@ export const SETUP_STEPS: SetupStep[] = [
     icon: Zap,
     checkFn: (s) => {
       const sc = s.systemConfig as Record<string, unknown> | undefined;
-      return !!(sc && sc.presetId && sc.presetId !== 'custom-preset');
+      return !!(sc?.presetId && sc.presetId !== 'custom-preset');
     },
   },
   {

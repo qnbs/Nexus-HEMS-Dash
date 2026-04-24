@@ -353,7 +353,7 @@ export class OCPP21Adapter extends BaseAdapter {
   // ─── Data handlers ────────────────────────────────────────────────
 
   private handleStatusNotification(payload: Record<string, unknown>): void {
-    const status = payload['connectorStatus'] as OCPPConnectorStatus | undefined;
+    const status = payload.connectorStatus as OCPPConnectorStatus | undefined;
     if (status) {
       this.charger.connectorStatus = status;
       this.charger.vehicleConnected = status === 'Occupied';
@@ -423,7 +423,7 @@ export class OCPP21Adapter extends BaseAdapter {
   }
 
   private handleMeterValues(payload: Record<string, unknown>): void {
-    const meterValue = payload['meterValue'] as
+    const meterValue = payload.meterValue as
       | { sampledValue: { value: number; measurand?: string }[] }[]
       | undefined;
 

@@ -66,10 +66,10 @@ function PageLoadingFallback() {
     <div className="flex min-h-[40vh] items-center justify-center" role="status">
       <div className="flex flex-col items-center gap-3">
         <div
-          className="cyber-shimmer h-8 w-8 animate-spin rounded-full border-2 border-(--color-primary) border-t-transparent"
+          className="cyber-shimmer h-8 w-8 animate-spin rounded-full border-(--color-primary) border-2 border-t-transparent"
           aria-hidden="true"
         />
-        <span className="text-sm text-(--color-muted)">{t('loading.page')}</span>
+        <span className="text-(--color-muted) text-sm">{t('loading.page')}</span>
       </div>
     </div>
   );

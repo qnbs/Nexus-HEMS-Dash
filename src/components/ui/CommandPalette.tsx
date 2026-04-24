@@ -264,7 +264,7 @@ export function CommandPalette({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="z-modal-backdrop fixed inset-0 bg-black/80 backdrop-blur-sm"
+            className="fixed inset-0 z-modal-backdrop bg-black/80 backdrop-blur-sm"
           />
 
           {/* Command Palette */}
@@ -272,13 +272,13 @@ export function CommandPalette({
             initial={{ opacity: 0, scale: 0.95, y: -20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: -20 }}
-            className="z-modal fixed top-[10%] left-1/2 mx-4 w-full max-w-2xl -translate-x-1/2 overflow-hidden rounded-2xl border border-(--color-border) bg-(--color-surface) shadow-2xl backdrop-blur-3xl sm:top-1/4 sm:mx-0"
+            className="fixed top-[10%] left-1/2 z-modal mx-4 w-full max-w-2xl -translate-x-1/2 overflow-hidden rounded-2xl border border-(--color-border) bg-(--color-surface) shadow-2xl backdrop-blur-3xl sm:top-1/4 sm:mx-0"
             role="dialog"
             aria-modal="true"
             aria-labelledby="cmd-palette-title"
           >
             {/* Search Input */}
-            <div className="flex items-center gap-3 border-b border-(--color-border) p-4">
+            <div className="flex items-center gap-3 border-(--color-border) border-b p-4">
               <Search className="h-5 w-5 text-(--color-muted)" aria-hidden="true" />
               <input
                 type="text"
@@ -286,7 +286,6 @@ export function CommandPalette({
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder={t('command.searchPlaceholder', 'Search commands…')}
                 className="flex-1 bg-transparent text-(--color-text) outline-none placeholder:text-(--color-muted)"
-                autoFocus={window.innerWidth >= 1024}
                 role="combobox"
                 aria-expanded="true"
                 aria-controls="command-listbox"
@@ -301,7 +300,7 @@ export function CommandPalette({
               <span id="cmd-palette-title" className="sr-only">
                 {t('accessibility.commandPaletteTitle', 'Command palette')}
               </span>
-              <kbd className="rounded bg-(--color-surface-strong) px-2 py-1 text-xs text-(--color-muted)">
+              <kbd className="rounded bg-(--color-surface-strong) px-2 py-1 text-(--color-muted) text-xs">
                 ESC
               </kbd>
             </div>
@@ -340,7 +339,7 @@ export function CommandPalette({
                       </div>
                       <div className="flex-1">
                         <p className="font-medium">{cmd.label}</p>
-                        <p className="text-xs text-(--color-muted) capitalize">
+                        <p className="text-(--color-muted) text-xs capitalize">
                           {cmd.category === 'navigation'
                             ? t('command.categoryNavigation', 'Navigation')
                             : cmd.category === 'action'
@@ -349,7 +348,7 @@ export function CommandPalette({
                         </p>
                       </div>
                       {index === selectedIndex && (
-                        <kbd className="rounded bg-(--color-surface-strong) px-2 py-1 text-xs text-(--color-muted)">
+                        <kbd className="rounded bg-(--color-surface-strong) px-2 py-1 text-(--color-muted) text-xs">
                           ↵
                         </kbd>
                       )}
@@ -360,7 +359,7 @@ export function CommandPalette({
             </div>
 
             {/* Footer */}
-            <div className="flex items-center justify-between border-t border-(--color-border) px-4 py-3 text-xs text-(--color-muted)">
+            <div className="flex items-center justify-between border-(--color-border) border-t px-4 py-3 text-(--color-muted) text-xs">
               <span>{t('command.navigate', 'Navigate')}</span>
               <div className="flex gap-2">
                 <kbd className="rounded bg-(--color-surface-strong) px-2 py-1">↑↓</kbd>

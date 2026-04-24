@@ -215,7 +215,7 @@ export function calculateAnnualCo2(
 
 /** Safe number formatting for PDF */
 function fmt(value: number | null | undefined, decimals = 1): string {
-  if (value == null || !Number.isFinite(value)) return '0.' + '0'.repeat(decimals);
+  if (value == null || !Number.isFinite(value)) return `0.${'0'.repeat(decimals)}`;
   return value.toFixed(decimals);
 }
 
@@ -284,7 +284,7 @@ export async function generateCo2ReportPdf(balance: Co2Balance): Promise<Blob> {
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
   doc.setTextColor(100, 116, 139);
-  doc.text('UBA Emissionsfaktor ' + balance.year, margin + 10, y + 7);
+  doc.text(`UBA Emissionsfaktor ${balance.year}`, margin + 10, y + 7);
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(14);

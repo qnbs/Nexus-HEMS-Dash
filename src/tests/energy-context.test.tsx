@@ -61,10 +61,14 @@ function ContextInspector() {
       <span data-testid="isExporting">{String(ctx.isExporting)}</span>
       <span data-testid="panelOpen">{String(ctx.detailPanel.open)}</span>
       <span data-testid="panelNodeId">{ctx.detailPanel.nodeId ?? 'null'}</span>
-      <button data-testid="openBtn" onClick={() => ctx.detailPanel.openNode('pv-node')}>
+      <button
+        type="button"
+        data-testid="openBtn"
+        onClick={() => ctx.detailPanel.openNode('pv-node')}
+      >
         open
       </button>
-      <button data-testid="closeBtn" onClick={() => ctx.detailPanel.close()}>
+      <button type="button" data-testid="closeBtn" onClick={() => ctx.detailPanel.close()}>
         close
       </button>
     </div>

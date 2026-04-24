@@ -106,7 +106,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 <AlertTriangle className="h-8 w-8 text-red-400" aria-hidden="true" />
               </div>
               <div className="flex-1">
-                <h1 className="text-2xl font-bold text-(--color-text)">
+                <h1 className="font-bold text-(--color-text) text-2xl">
                   {i18next.t('error.title')}
                 </h1>
                 <p className="mt-2 text-(--color-muted)">{i18next.t('error.description')}</p>
@@ -114,34 +114,34 @@ export class ErrorBoundary extends Component<Props, State> {
                 {/* Error Details (only in development) */}
                 {import.meta.env.DEV && this.state.error && (
                   <details className="mt-4 rounded-xl border border-red-500/30 bg-red-500/5 p-4">
-                    <summary className="cursor-pointer font-mono text-sm text-red-400">
+                    <summary className="cursor-pointer font-mono text-red-400 text-sm">
                       {i18next.t('error.details')}
                     </summary>
                     <div className="mt-3 space-y-2">
                       <div>
-                        <p className="text-xs font-medium text-red-300">
+                        <p className="font-medium text-red-300 text-xs">
                           {i18next.t('error.message')}
                         </p>
-                        <p className="mt-1 font-mono text-xs text-red-400">
+                        <p className="mt-1 font-mono text-red-400 text-xs">
                           {this.state.error.message}
                         </p>
                       </div>
                       {this.state.error.stack && (
                         <div>
-                          <p className="text-xs font-medium text-red-300">
+                          <p className="font-medium text-red-300 text-xs">
                             {i18next.t('error.stack')}
                           </p>
-                          <pre className="mt-1 overflow-x-auto font-mono text-xs text-red-400">
+                          <pre className="mt-1 overflow-x-auto font-mono text-red-400 text-xs">
                             {this.state.error.stack}
                           </pre>
                         </div>
                       )}
                       {this.state.errorInfo?.componentStack && (
                         <div>
-                          <p className="text-xs font-medium text-red-300">
+                          <p className="font-medium text-red-300 text-xs">
                             {i18next.t('error.componentStack')}
                           </p>
-                          <pre className="mt-1 overflow-x-auto font-mono text-xs text-red-400">
+                          <pre className="mt-1 overflow-x-auto font-mono text-red-400 text-xs">
                             {this.state.errorInfo.componentStack}
                           </pre>
                         </div>
@@ -153,6 +153,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 {/* Actions */}
                 <div className="mt-6 flex flex-wrap gap-3">
                   <button
+                    type="button"
                     onClick={this.handleReset}
                     className="btn-primary focus-ring flex items-center gap-2"
                   >
@@ -160,6 +161,7 @@ export class ErrorBoundary extends Component<Props, State> {
                     {i18next.t('error.tryAgain')}
                   </button>
                   <button
+                    type="button"
                     onClick={this.handleReload}
                     className="btn-secondary focus-ring flex items-center gap-2"
                   >
@@ -167,6 +169,7 @@ export class ErrorBoundary extends Component<Props, State> {
                     {i18next.t('error.reload')}
                   </button>
                   <button
+                    type="button"
                     onClick={this.handleGoHome}
                     className="btn-secondary focus-ring flex items-center gap-2"
                   >
@@ -178,6 +181,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 {/* Sentry User Feedback */}
                 {sentryEnabled && (
                   <button
+                    type="button"
                     onClick={() => {
                       const sentryEventId = Sentry.lastEventId();
                       Sentry.showReportDialog({
@@ -196,7 +200,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
                 {/* Additional Help */}
                 <div className="mt-6 rounded-xl border border-(--color-border) bg-(--color-surface)/50 p-4">
-                  <p className="text-sm text-(--color-muted)">
+                  <p className="text-(--color-muted) text-sm">
                     <strong className="text-(--color-text)">{i18next.t('error.helpTitle')}</strong>
                     <br />
                     {i18next.t('error.helpText')}{' '}

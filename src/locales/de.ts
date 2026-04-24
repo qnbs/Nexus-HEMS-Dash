@@ -1733,6 +1733,7 @@ export const de = {
     monthlyCostDesc: 'Tägliche Kosten vs. KI-optimierte Kosten im aktuellen Monat',
     monthlyCostAria: 'Balkendiagramm der monatlichen Stromkosten',
     budgetUsed: 'Budget verbraucht',
+    budgetProgress: 'Monatlicher Budgetfortschritt',
     costActual: 'Tatsächlich',
     costOptimized: 'Optimiert',
     costSavings: 'Ersparnis',

@@ -131,11 +131,11 @@ Return ONLY a valid JSON array with this structure:
               aria-hidden="true"
             />
             <span className="truncate">{t('ai.optimizerTitle', 'AI Energy Optimizer')}</span>
-            <span className="shrink-0 rounded-full bg-(--color-primary)/20 px-2 py-0.5 text-xs font-medium text-(--color-primary)">
+            <span className="shrink-0 rounded-full bg-(--color-primary)/20 px-2 py-0.5 font-medium text-(--color-primary) text-xs">
               BYOK
             </span>
           </h2>
-          <p className="mt-1 text-xs text-(--color-muted) sm:text-sm">
+          <p className="mt-1 text-(--color-muted) text-xs sm:text-sm">
             {t('ai.optimizerSubtitle', 'AI-powered recommendations for optimal energy management')}
           </p>
         </div>
@@ -150,6 +150,7 @@ Return ONLY a valid JSON array with this structure:
             <span className="hidden sm:inline">{t('aiSettings.title', 'AI Provider Keys')}</span>
           </Link>
           <button
+            type="button"
             onClick={handleOptimizeNow}
             disabled={isOptimizing || hasProvider === false}
             className="btn-primary focus-ring flex items-center gap-2 text-sm"
@@ -182,14 +183,14 @@ Return ONLY a valid JSON array with this structure:
           aria-live="assertive"
           aria-atomic="true"
         >
-          <p className="text-sm text-red-400">{error}</p>
+          <p className="text-red-400 text-sm">{error}</p>
         </div>
       )}
 
       {/* Basic Recommendations (Always Visible) */}
       {!aiRecommendations.length && (
         <section aria-label={t('optimizer.basicRecommendations', 'Basic Recommendations')}>
-          <div className="@container grid grid-cols-1 gap-3 @sm:grid-cols-2 @sm:gap-4">
+          <div className="@container grid @sm:grid-cols-2 grid-cols-1 @sm:gap-4 gap-3">
             {basicRecommendations.map((rec, i) => (
               <motion.div
                 key={rec.id}
@@ -199,12 +200,12 @@ Return ONLY a valid JSON array with this structure:
                 className={`rounded-2xl border p-3 sm:p-4 ${getSeverityStyles(rec.severity)}`}
               >
                 <div className="mb-2 flex items-center justify-between gap-2">
-                  <span className="truncate text-xs font-medium sm:text-sm">{t(rec.titleKey)}</span>
-                  <span className="shrink-0 font-mono text-xs text-(--color-muted)">
+                  <span className="truncate font-medium text-xs sm:text-sm">{t(rec.titleKey)}</span>
+                  <span className="shrink-0 font-mono text-(--color-muted) text-xs">
                     {rec.value}
                   </span>
                 </div>
-                <p className="text-xs text-(--color-muted)">{t(rec.descriptionKey)}</p>
+                <p className="text-(--color-muted) text-xs">{t(rec.descriptionKey)}</p>
               </motion.div>
             ))}
           </div>
@@ -222,26 +223,26 @@ Return ONLY a valid JSON array with this structure:
           >
             {aiRecommendations.map((rec, i) => (
               <motion.div
-                key={i}
+                key={rec.title}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: i * 0.1 }}
                 className={`rounded-2xl border p-4 sm:p-5 ${getPriorityStyles(rec.priority)}`}
               >
                 <div className="mb-2 flex items-start justify-between gap-2 sm:mb-3">
-                  <h3 className="text-sm font-semibold text-(--color-text) sm:text-base">
+                  <h3 className="font-semibold text-(--color-text) text-sm sm:text-base">
                     {rec.title}
                   </h3>
                   <span
-                    className={`shrink-0 rounded-full px-2 py-1 text-xs font-medium ${getPriorityBadge(rec.priority)}`}
+                    className={`shrink-0 rounded-full px-2 py-1 font-medium text-xs ${getPriorityBadge(rec.priority)}`}
                   >
                     {rec.priority.toUpperCase()}
                   </span>
                 </div>
-                <p className="mb-2 text-xs text-(--color-muted) sm:mb-3 sm:text-sm">
+                <p className="mb-2 text-(--color-muted) text-xs sm:mb-3 sm:text-sm">
                   {rec.description}
                 </p>
-                <div className="flex items-center gap-2 text-xs text-(--color-primary)">
+                <div className="flex items-center gap-2 text-(--color-primary) text-xs">
                   <Sparkles className="h-4 w-4" aria-hidden="true" />
                   {rec.impact}
                 </div>

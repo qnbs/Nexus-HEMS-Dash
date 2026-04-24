@@ -330,7 +330,7 @@ export class SupabaseAuthProvider implements AuthProvider {
     if (!result.data) throw new Error('Invalid invitation');
 
     const invitation = result.data;
-    if (new Date(invitation['expires_at'] as string) < new Date()) {
+    if (new Date(invitation.expires_at as string) < new Date()) {
       throw new Error('Invitation expired');
     }
 
@@ -340,9 +340,9 @@ export class SupabaseAuthProvider implements AuthProvider {
 
     // Add user to household
     await this.client!.from('household_members').insert({
-      household_id: invitation['household_id'],
+      household_id: invitation.household_id,
       user_id: session.user.id,
-      role: invitation['role'],
+      role: invitation.role,
     });
 
     // Delete used invitation
@@ -350,8 +350,8 @@ export class SupabaseAuthProvider implements AuthProvider {
 
     return {
       ...session.user,
-      role: invitation['role'] as UserRole,
-      householdId: invitation['household_id'] as string,
+      role: invitation.role as UserRole,
+      householdId: invitation.household_id as string,
     };
   }
 
@@ -365,13 +365,13 @@ export class SupabaseAuthProvider implements AuthProvider {
           if (result.error) return reject(new Error(result.error.message));
           resolve(
             (result.data ?? []).map((row) => {
-              const profile = row['profiles'] as Record<string, unknown> | null;
+              const profile = row.profiles as Record<string, unknown> | null;
               return {
-                id: row['user_id'] as string,
-                email: (profile?.['email'] as string) ?? '',
-                displayName: (profile?.['display_name'] as string) ?? undefined,
-                avatarUrl: (profile?.['avatar_url'] as string) ?? undefined,
-                role: row['role'] as UserRole,
+                id: row.user_id as string,
+                email: (profile?.email as string) ?? '',
+                displayName: (profile?.display_name as string) ?? undefined,
+                avatarUrl: (profile?.avatar_url as string) ?? undefined,
+                role: row.role as UserRole,
                 householdId,
                 provider: 'supabase' as const,
                 emailVerified: true,
@@ -434,7 +434,7 @@ export class SupabaseAuthProvider implements AuthProvider {
     const result = await this.client!.from('share_links').insert(linkData).single();
     if (result.error) throw new Error(result.error.message);
 
-    const id = (result.data?.['id'] as string) ?? token;
+    const id = (result.data?.id as string) ?? token;
     const baseUrl = `${window.location.origin}${import.meta.env.BASE_URL}`;
     const url = `${baseUrl}?share=${encodeURIComponent(token)}`;
 
@@ -467,12 +467,12 @@ export class SupabaseAuthProvider implements AuthProvider {
     if (result.error || !result.data) return { valid: false };
 
     const link = result.data;
-    const expiresAt = new Date(link['expires_at'] as string).getTime();
+    const expiresAt = new Date(link.expires_at as string).getTime();
 
     if (expiresAt < Date.now()) return { valid: false };
 
-    const maxUses = link['max_uses'] as number;
-    const useCount = link['use_count'] as number;
+    const maxUses = link.max_uses as number;
+    const useCount = link.use_count as number;
     if (maxUses > 0 && useCount >= maxUses) return { valid: false };
 
     // Increment use count
@@ -482,7 +482,7 @@ export class SupabaseAuthProvider implements AuthProvider {
 
     return {
       valid: true,
-      permissions: link['permissions'] as 'view' | 'control',
+      permissions: link.permissions as 'view' | 'control',
       expiresAt,
     };
   }
@@ -498,18 +498,18 @@ export class SupabaseAuthProvider implements AuthProvider {
           const baseUrl = `${window.location.origin}${import.meta.env.BASE_URL}`;
           resolve(
             (result.data ?? []).map((row) => ({
-              id: row['id'] as string,
-              token: row['token'] as string,
-              url: `${baseUrl}?share=${encodeURIComponent(row['token'] as string)}`,
-              permissions: row['permissions'] as 'view' | 'control',
-              expiresAt: new Date(row['expires_at'] as string).getTime(),
+              id: row.id as string,
+              token: row.token as string,
+              url: `${baseUrl}?share=${encodeURIComponent(row.token as string)}`,
+              permissions: row.permissions as 'view' | 'control',
+              expiresAt: new Date(row.expires_at as string).getTime(),
               expiresInLabel: '',
-              createdBy: row['created_by'] as string,
-              createdAt: new Date(row['created_at'] as string).getTime(),
-              label: row['label'] != null ? (row['label'] as string) : undefined,
-              useCount: row['use_count'] as number,
-              maxUses: row['max_uses'] as number,
-              active: row['active'] as boolean,
+              createdBy: row.created_by as string,
+              createdAt: new Date(row.created_at as string).getTime(),
+              label: row.label != null ? (row.label as string) : undefined,
+              useCount: row.use_count as number,
+              maxUses: row.max_uses as number,
+              active: row.active as boolean,
             })),
           );
         });
@@ -545,9 +545,9 @@ export class SupabaseAuthProvider implements AuthProvider {
     return {
       id: user.id,
       email: user.email ?? '',
-      displayName: (user.user_metadata?.['display_name'] as string) ?? undefined,
-      avatarUrl: (user.user_metadata?.['avatar_url'] as string) ?? undefined,
-      role: (user.user_metadata?.['role'] as UserRole) ?? this.config.defaultRole ?? 'viewer',
+      displayName: (user.user_metadata?.display_name as string) ?? undefined,
+      avatarUrl: (user.user_metadata?.avatar_url as string) ?? undefined,
+      role: (user.user_metadata?.role as UserRole) ?? this.config.defaultRole ?? 'viewer',
       provider: 'supabase',
       lastSignIn: user.last_sign_in_at,
       emailVerified: Boolean(user.email_confirmed_at),

@@ -72,7 +72,7 @@ export function ControlPanel({
             <Car size={18} className="shrink-0 text-purple-400" aria-hidden="true" />
             {t('control.evTitle')}
           </h3>
-          <span className="shrink-0 font-mono text-sm text-(--color-muted)">
+          <span className="shrink-0 font-mono text-(--color-muted) text-sm">
             {(data.evPower / 1000).toFixed(1)} {t('units.kilowatt')}
           </span>
         </div>
@@ -84,7 +84,7 @@ export function ControlPanel({
             aria-label={t('control.evTitle')}
           >
             <label
-              className={`min-w-0 cursor-pointer overflow-hidden rounded-lg border px-2 py-2 text-center transition-all duration-300 focus-within:ring-2 focus-within:ring-(--color-primary)/40 ${evState.mode === 'off' ? 'border-(--color-primary) bg-(--color-primary)/20 text-(--color-primary)' : 'border-(--color-border) bg-(--color-surface) text-(--color-muted) hover:border-(--color-primary)/40'}`}
+              className={`min-w-0 cursor-pointer overflow-hidden rounded-lg border px-2 py-2 text-center transition-all duration-300 focus-within:ring-(--color-primary)/40 focus-within:ring-2 ${evState.mode === 'off' ? 'border-(--color-primary) bg-(--color-primary)/20 text-(--color-primary)' : 'border-(--color-border) bg-(--color-surface) text-(--color-muted) hover:border-(--color-primary)/40'}`}
             >
               <input
                 type="radio"
@@ -94,12 +94,12 @@ export function ControlPanel({
                 checked={evState.mode === 'off'}
                 onChange={hapticClick}
               />
-              <span className="block truncate text-xs font-medium sm:text-sm">
+              <span className="block truncate font-medium text-xs sm:text-sm">
                 {t('control.evOff')}
               </span>
             </label>
             <label
-              className={`min-w-0 cursor-pointer overflow-hidden rounded-lg border px-2 py-2 text-center transition-all duration-300 focus-within:ring-2 focus-within:ring-(--color-primary)/40 ${evState.mode === 'pv' ? 'border-(--color-primary) bg-(--color-primary)/20 text-(--color-primary)' : 'border-(--color-border) bg-(--color-surface) text-(--color-muted) hover:border-(--color-primary)/40'}`}
+              className={`min-w-0 cursor-pointer overflow-hidden rounded-lg border px-2 py-2 text-center transition-all duration-300 focus-within:ring-(--color-primary)/40 focus-within:ring-2 ${evState.mode === 'pv' ? 'border-(--color-primary) bg-(--color-primary)/20 text-(--color-primary)' : 'border-(--color-border) bg-(--color-surface) text-(--color-muted) hover:border-(--color-primary)/40'}`}
               title={t('control.evPv')}
             >
               <input
@@ -110,12 +110,12 @@ export function ControlPanel({
                 checked={evState.mode === 'pv'}
                 onChange={hapticClick}
               />
-              <span className="block truncate text-xs font-medium sm:text-sm">
+              <span className="block truncate font-medium text-xs sm:text-sm">
                 {t('control.evPv')}
               </span>
             </label>
             <label
-              className={`min-w-0 cursor-pointer overflow-hidden rounded-lg border px-2 py-2 text-center transition-all duration-300 focus-within:ring-2 focus-within:ring-(--color-primary)/40 ${evState.mode === 'fast' ? 'border-(--color-primary) bg-(--color-primary)/20 text-(--color-primary)' : 'border-(--color-border) bg-(--color-surface) text-(--color-muted) hover:border-(--color-primary)/40'}`}
+              className={`min-w-0 cursor-pointer overflow-hidden rounded-lg border px-2 py-2 text-center transition-all duration-300 focus-within:ring-(--color-primary)/40 focus-within:ring-2 ${evState.mode === 'fast' ? 'border-(--color-primary) bg-(--color-primary)/20 text-(--color-primary)' : 'border-(--color-border) bg-(--color-surface) text-(--color-muted) hover:border-(--color-primary)/40'}`}
             >
               <input
                 type="radio"
@@ -125,7 +125,7 @@ export function ControlPanel({
                 checked={evState.mode === 'fast'}
                 onChange={hapticClick}
               />
-              <span className="block truncate text-xs font-medium sm:text-sm">
+              <span className="block truncate font-medium text-xs sm:text-sm">
                 {t('control.evFast')}
               </span>
             </label>
@@ -134,7 +134,7 @@ export function ControlPanel({
             <motion.p
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="text-sm text-(--color-primary)"
+              className="text-(--color-primary) text-sm"
               role="status"
               aria-live="polite"
             >
@@ -164,7 +164,7 @@ export function ControlPanel({
             <Thermometer size={18} className="shrink-0 text-orange-400" aria-hidden="true" />
             {t('control.hpTitle')}
           </h3>
-          <span className="shrink-0 font-mono text-sm text-(--color-muted)">
+          <span className="shrink-0 font-mono text-(--color-muted) text-sm">
             {(data.heatPumpPower / 1000).toFixed(1)} {t('units.kilowatt')}
           </span>
         </div>
@@ -175,7 +175,7 @@ export function ControlPanel({
             defaultValue={hpState.mode}
             onChange={hapticClick}
             aria-label={t('control.hpTitle')}
-            className="focus-ring w-full rounded-lg border border-(--color-border) bg-(--color-surface) px-3 py-2 text-sm text-(--color-text) focus:outline-none"
+            className="focus-ring w-full rounded-lg border border-(--color-border) bg-(--color-surface) px-3 py-2 text-(--color-text) text-sm focus:outline-none"
           >
             <option value="1">{t('control.hpMode1')}</option>
             <option value="2">{t('control.hpMode2')}</option>
@@ -186,7 +186,7 @@ export function ControlPanel({
             <motion.p
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="text-sm text-(--color-primary)"
+              className="text-(--color-primary) text-sm"
               role="status"
               aria-live="polite"
             >
@@ -217,7 +217,7 @@ export function ControlPanel({
             {t('control.batteryTitle')}
           </h3>
         </div>
-        <div className="mb-3 text-sm text-(--color-muted)">
+        <div className="mb-3 text-(--color-muted) text-sm">
           {t('control.batteryMode')}:{' '}
           <span className="text-(--color-primary)">{t('control.selfConsumption')}</span>
         </div>

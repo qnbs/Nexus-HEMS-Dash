@@ -297,7 +297,7 @@ export class EvccAdapter extends BaseAdapter {
   private async fetchApi(path: string): Promise<Response> {
     const headers: Record<string, string> = { Accept: 'application/json' };
     if (this.config?.authToken) {
-      headers['Authorization'] = `Bearer ${this.config.authToken}`;
+      headers.Authorization = `Bearer ${this.config.authToken}`;
     }
     return fetch(`${this.baseUrl}${path}`, { headers, signal: AbortSignal.timeout(10000) });
   }
@@ -308,7 +308,7 @@ export class EvccAdapter extends BaseAdapter {
       'Content-Type': 'application/json',
     };
     if (this.config?.authToken) {
-      headers['Authorization'] = `Bearer ${this.config.authToken}`;
+      headers.Authorization = `Bearer ${this.config.authToken}`;
     }
     return fetch(`${this.baseUrl}${path}`, {
       method: 'POST',

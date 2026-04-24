@@ -827,9 +827,9 @@
     *,
     *::before,
     *::after {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
+      animation-duration: 0.01ms;
+      animation-iteration-count: 1;
+      transition-duration: 0.01ms;
     }
   }
 }
@@ -842,9 +842,9 @@ html.reduced-motion {
 html.reduced-motion *,
 html.reduced-motion *::before,
 html.reduced-motion *::after {
-  animation-duration: 0.01ms !important;
-  animation-iteration-count: 1 !important;
-  transition-duration: 0.01ms !important;
+  animation-duration: 0.01ms;
+  animation-iteration-count: 1;
+  transition-duration: 0.01ms;
 }
 
 /* Reduced motion: keep opacity changes but remove transforms */
@@ -856,32 +856,32 @@ html.reduced-motion .btn-primary:hover,
 html.reduced-motion .btn-secondary:hover,
 html.reduced-motion .btn-primary:active,
 html.reduced-motion .btn-secondary:active {
-  transform: none !important;
+  transform: none;
 }
 
 /* Reduced motion: disable pulsing status indicators */
 html.reduced-motion .status-indicator::before {
-  animation: none !important;
+  animation: none;
   display: none;
 }
 
 /* Reduced motion: disable Sankey flow animations */
 html.reduced-motion .energy-flow-path {
-  stroke-dasharray: none !important;
-  animation: none !important;
+  stroke-dasharray: none;
+  animation: none;
 }
 
 /* Reduced motion: disable battery pulse animations */
 html.reduced-motion .battery-charging,
 html.reduced-motion .battery-discharging {
-  animation: none !important;
+  animation: none;
 }
 
 /* Reduced motion: icon float and shimmer */
 html.reduced-motion .icon-float,
 html.reduced-motion .cyber-shimmer,
 html.reduced-motion .energy-pulse {
-  animation: none !important;
+  animation: none;
 }
 
 /* ========== APP-CONTROLLED HIGH CONTRAST ========== */
@@ -983,7 +983,7 @@ html.high-contrast .status-indicator::before {
   }
 
   .energy-flow-path {
-    stroke: LinkText !important;
+    stroke: LinkText;
   }
 }
 
@@ -1022,9 +1022,9 @@ html.no-glow .glass-panel-strong {
 html.no-animations *,
 html.no-animations *::before,
 html.no-animations *::after {
-  animation-duration: 0.01ms !important;
-  animation-iteration-count: 1 !important;
-  transition-duration: 0.01ms !important;
+  animation-duration: 0.01ms;
+  animation-iteration-count: 1;
+  transition-duration: 0.01ms;
 }
 
 /* Prevent white/blank flash before theme loads — ocean-dark as fallback */

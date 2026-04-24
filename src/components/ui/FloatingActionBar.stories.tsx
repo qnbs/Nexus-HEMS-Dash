@@ -9,7 +9,7 @@ const meta: Meta<typeof FloatingActionBar> = {
   decorators: [
     (Story) => (
       <div className="relative h-[300px] p-8">
-        <p className="text-sm text-(--color-muted)">Inhaltsbereich — Aktionsleiste unten</p>
+        <p className="text-(--color-muted) text-sm">Inhaltsbereich — Aktionsleiste unten</p>
         <Story />
       </div>
     ),

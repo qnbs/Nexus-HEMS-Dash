@@ -41,7 +41,7 @@ export const WithAction: Story = {
     action: (
       <button
         type="button"
-        className="rounded-xl bg-(--color-primary)/15 px-4 py-2 text-xs font-semibold text-(--color-primary)"
+        className="rounded-xl bg-(--color-primary)/15 px-4 py-2 font-semibold text-(--color-primary) text-xs"
       >
         Filter zurücksetzen
       </button>

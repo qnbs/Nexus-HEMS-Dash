@@ -221,11 +221,12 @@ export class ShellyRESTAdapter extends BaseAdapter {
     };
     // Gen2 uses digest auth, but basic auth header as fallback
     if (this.devicePassword) {
-      headers['Authorization'] = `Basic ${btoa(`admin:${this.devicePassword}`)}`;
+      headers.Authorization = `Basic ${btoa(`admin:${this.devicePassword}`)}`;
     }
     return headers;
   }
 
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Shelly REST device status parsing for multiple device types
   private parseDeviceStatus(
     device: { host: string; name: string; type: 'em' | 'plug' | 'relay' },
     status: ShellyDeviceStatus,

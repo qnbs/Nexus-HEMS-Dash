@@ -28,10 +28,10 @@ function TabFallback() {
     <div className="flex min-h-[30vh] items-center justify-center" role="status">
       <div className="flex flex-col items-center gap-3">
         <div
-          className="cyber-shimmer h-6 w-6 animate-spin rounded-full border-2 border-(--color-primary) border-t-transparent"
+          className="cyber-shimmer h-6 w-6 animate-spin rounded-full border-(--color-primary) border-2 border-t-transparent"
           aria-hidden="true"
         />
-        <span className="text-xs text-(--color-muted)">{t('common.loading', 'Laden…')}</span>
+        <span className="text-(--color-muted) text-xs">{t('common.loading', 'Laden…')}</span>
       </div>
     </div>
   );
@@ -81,7 +81,7 @@ function MonitoringUnifiedComponent() {
           <div className="flex items-center gap-3">
             {/* Connection status */}
             <span
-              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] font-semibold tracking-wider uppercase ${
+              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 font-semibold text-[10px] uppercase tracking-wider ${
                 connected ? 'bg-emerald-500/15 text-emerald-400' : 'bg-red-500/15 text-red-400'
               }`}
             >
@@ -113,12 +113,12 @@ function MonitoringUnifiedComponent() {
               </div>
             )}
             <div>
-              <h2 className="text-lg font-medium text-(--color-text)">
+              <h2 className="font-medium text-(--color-text) text-lg">
                 {connected
                   ? t('monitoringUnified.systemHealthy')
                   : t('monitoringUnified.systemDegraded')}
               </h2>
-              <p className="text-xs text-(--color-muted)">{t('monitoringUnified.statusHint')}</p>
+              <p className="text-(--color-muted) text-xs">{t('monitoringUnified.statusHint')}</p>
             </div>
           </div>
 
@@ -145,7 +145,7 @@ function MonitoringUnifiedComponent() {
               <Server size={20} className="text-(--color-primary)" />
             </div>
             <div>
-              <p className="flex items-center gap-1.5 text-sm font-medium text-(--color-text)">
+              <p className="flex items-center gap-1.5 font-medium text-(--color-text) text-sm">
                 {t('monitoringUnified.powerUserMode')}
                 <HelpTooltip
                   content={t(
@@ -154,7 +154,7 @@ function MonitoringUnifiedComponent() {
                   )}
                 />
               </p>
-              <p className="text-xs text-(--color-muted)">
+              <p className="text-(--color-muted) text-xs">
                 {t('monitoringUnified.powerUserModeHint')}
               </p>
             </div>
@@ -182,7 +182,7 @@ function MonitoringUnifiedComponent() {
                 className="peer sr-only"
               />
               <span className="sr-only">{t('monitoringUnified.powerUserMode')}</span>
-              <div className="h-6 w-11 rounded-full border border-(--color-border) bg-(--color-surface) transition-colors duration-300 peer-checked:bg-(--color-primary) peer-focus:ring-2 peer-focus:ring-(--color-primary)/30 after:absolute after:top-[2px] after:left-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow-sm after:transition-transform after:duration-300 peer-checked:after:translate-x-5" />
+              <div className="h-6 w-11 rounded-full border border-(--color-border) bg-(--color-surface) transition-colors duration-300 after:absolute after:top-[2px] after:left-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow-sm after:transition-transform after:duration-300 peer-checked:bg-(--color-primary) peer-checked:after:translate-x-5 peer-focus:ring-(--color-primary)/30 peer-focus:ring-2" />
             </label>
           </div>
         </div>
@@ -197,7 +197,7 @@ function MonitoringUnifiedComponent() {
               transition={{ duration: 0.2 }}
               className="overflow-hidden"
             >
-              <div className="mt-3 rounded-xl border border-(--color-primary)/20 bg-(--color-primary)/5 p-3 text-xs text-(--color-muted)">
+              <div className="mt-3 rounded-xl border border-(--color-primary)/20 bg-(--color-primary)/5 p-3 text-(--color-muted) text-xs">
                 <span className="font-medium text-(--color-primary)" aria-hidden="true">
                   💡{' '}
                 </span>
@@ -273,8 +273,9 @@ function MonitoringUnifiedComponent() {
           pulse
           action={
             <button
+              type="button"
               onClick={() => setPowerUserMode(true)}
-              className="focus-ring rounded-xl bg-(--color-primary)/15 px-4 py-2 text-sm font-medium text-(--color-primary) transition-colors hover:bg-(--color-primary)/25"
+              className="focus-ring rounded-xl bg-(--color-primary)/15 px-4 py-2 font-medium text-(--color-primary) text-sm transition-colors hover:bg-(--color-primary)/25"
             >
               {t('monitoringUnified.enableButton')}
             </button>
@@ -292,7 +293,7 @@ function MonitoringUnifiedComponent() {
 function StatusPill({ label, ok }: { label: string; ok: boolean }) {
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-medium ${
+      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-medium text-[10px] ${
         ok ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'
       }`}
     >
@@ -326,8 +327,8 @@ function SummaryCard({
           className={`h-2.5 w-2.5 rounded-full ${dot} ${status !== 'ok' ? 'energy-pulse' : ''}`}
         />
       </div>
-      <p className="text-lg font-medium text-(--color-text)">{value}</p>
-      <p className="mt-0.5 text-[10px] text-(--color-muted)">{label}</p>
+      <p className="font-medium text-(--color-text) text-lg">{value}</p>
+      <p className="mt-0.5 text-(--color-muted) text-[10px]">{label}</p>
     </div>
   );
 }

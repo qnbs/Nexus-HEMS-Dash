@@ -161,13 +161,14 @@ export default function DevicesAutomation() {
             aria-label={t('devicesAuto.viewToggle', 'Ansicht wechseln')}
           >
             <button
+              type="button"
               role="tab"
               aria-selected={view === 'grid'}
               onClick={() => {
                 hapticClick();
                 setView('grid');
               }}
-              className={`focus-ring flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
+              className={`focus-ring flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-medium text-xs transition-all ${
                 view === 'grid'
                   ? 'bg-(--color-primary)/15 text-(--color-primary)'
                   : 'text-(--color-muted) hover:text-(--color-text)'
@@ -177,13 +178,14 @@ export default function DevicesAutomation() {
               {t('devicesAuto.viewGrid', 'Geräte')}
             </button>
             <button
+              type="button"
               role="tab"
               aria-selected={view === 'floorplan'}
               onClick={() => {
                 hapticClick();
                 setView('floorplan');
               }}
-              className={`focus-ring flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
+              className={`focus-ring flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-medium text-xs transition-all ${
                 view === 'floorplan'
                   ? 'bg-(--color-primary)/15 text-(--color-primary)'
                   : 'text-(--color-muted) hover:text-(--color-text)'
@@ -212,7 +214,7 @@ export default function DevicesAutomation() {
               <Suspense
                 fallback={
                   <div className="flex min-h-[40vh] items-center justify-center" role="status">
-                    <div className="h-6 w-6 animate-spin rounded-full border-2 border-(--color-primary) border-t-transparent" />
+                    <div className="h-6 w-6 animate-spin rounded-full border-(--color-primary) border-2 border-t-transparent" />
                   </div>
                 }
               >
@@ -243,7 +245,7 @@ export default function DevicesAutomation() {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder={t('devicesAuto.searchPlaceholder')}
-                  className="focus-ring w-full rounded-lg border border-(--color-border) bg-(--color-surface) py-2 pr-3 pl-9 text-sm text-(--color-text) placeholder:text-(--color-muted)"
+                  className="focus-ring w-full rounded-lg border border-(--color-border) bg-(--color-surface) py-2 pr-3 pl-9 text-(--color-text) text-sm placeholder:text-(--color-muted)"
                   aria-label={t('devicesAuto.searchPlaceholder')}
                 />
               </div>
@@ -262,6 +264,7 @@ export default function DevicesAutomation() {
                   aria-label={t('devicesAuto.filterLabel')}
                 >
                   {CATEGORY_FILTERS.map((f) => (
+                    // biome-ignore lint/a11y/useSemanticElements: radio-style button inside radiogroup, input[type=radio] would break styled layout
                     <button
                       key={f.key}
                       type="button"
@@ -271,7 +274,7 @@ export default function DevicesAutomation() {
                         hapticClick();
                         setCategory(f.key);
                       }}
-                      className={`focus-ring flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-all ${
+                      className={`focus-ring flex items-center gap-1.5 rounded-full border px-3 py-1.5 font-medium text-xs transition-all ${
                         category === f.key
                           ? 'border-(--color-primary) bg-(--color-primary)/15 text-(--color-primary)'
                           : 'border-(--color-border) bg-(--color-surface) text-(--color-muted) hover:border-(--color-primary)/40'
@@ -317,7 +320,7 @@ export default function DevicesAutomation() {
                       setSearch('');
                       setCategory('all');
                     }}
-                    className="focus-ring rounded-xl bg-(--color-primary)/15 px-4 py-2 text-xs font-semibold text-(--color-primary) transition-colors hover:bg-(--color-primary)/25"
+                    className="focus-ring rounded-xl bg-(--color-primary)/15 px-4 py-2 font-semibold text-(--color-primary) text-xs transition-colors hover:bg-(--color-primary)/25"
                   >
                     {t('devicesAuto.filterAll')}
                   </button>
@@ -395,7 +398,7 @@ function DeviceCard({
             <button
               type="button"
               onClick={onOpenDetail}
-              className="focus-ring ml-auto flex items-center gap-1 rounded-lg border border-(--color-border) bg-(--color-surface) px-3 py-1.5 text-xs font-medium text-(--color-muted) transition-colors hover:border-(--color-primary)/40 hover:text-(--color-primary)"
+              className="focus-ring ml-auto flex items-center gap-1 rounded-lg border border-(--color-border) bg-(--color-surface) px-3 py-1.5 font-medium text-(--color-muted) text-xs transition-colors hover:border-(--color-primary)/40 hover:text-(--color-primary)"
             >
               {t('devicesAuto.details')}
               <ChevronRight size={14} aria-hidden="true" />
@@ -423,7 +426,7 @@ function DeviceStatusBadge({
   const { label, color } = getDeviceStatus(deviceId, data, unified);
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${color}`}
+      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-medium text-xs ${color}`}
     >
       <span className="h-1.5 w-1.5 rounded-full bg-current" aria-hidden="true" />
       {t(label)}
@@ -493,7 +496,7 @@ function DeviceMetricRow({
       return (
         <div className="flex items-baseline justify-between gap-2">
           <LiveMetric value={data.pvPower / 1000} unit="kW" format="power" size="sm" />
-          <span className="text-xs text-(--color-muted)">
+          <span className="text-(--color-muted) text-xs">
             {t('devicesAuto.yieldToday')}: {data.pvYieldToday.toFixed(1)} kWh
           </span>
         </div>
@@ -516,7 +519,7 @@ function DeviceMetricRow({
                 transition={{ duration: 0.5 }}
               />
             </div>
-            <span className="font-mono text-xs text-(--color-muted)">
+            <span className="font-mono text-(--color-muted) text-xs">
               {data.batterySoC.toFixed(0)}%
             </span>
           </div>
@@ -526,7 +529,7 @@ function DeviceMetricRow({
       return (
         <div className="flex items-baseline justify-between gap-2">
           <LiveMetric value={data.evPower / 1000} unit="kW" format="power" size="sm" />
-          <span className="text-xs text-(--color-muted)">
+          <span className="text-(--color-muted) text-xs">
             {t('devicesAuto.maxPower')}: {settings.systemConfig.evCharger.maxPowerKW} kW
           </span>
         </div>
@@ -535,7 +538,7 @@ function DeviceMetricRow({
       return (
         <div className="flex items-baseline justify-between gap-2">
           <LiveMetric value={data.heatPumpPower / 1000} unit="kW" format="power" size="sm" />
-          <span className="flex items-center gap-1 text-xs text-(--color-muted)">
+          <span className="flex items-center gap-1 text-(--color-muted) text-xs">
             <Gauge size={12} /> SG Ready
           </span>
         </div>
@@ -545,10 +548,10 @@ function DeviceMetricRow({
       const lightsOn = rooms.filter((r) => r.lightsOn).length;
       return (
         <div className="flex items-baseline justify-between gap-2">
-          <span className="font-mono text-lg font-semibold text-(--color-text) tabular-nums">
+          <span className="font-mono font-semibold text-(--color-text) text-lg tabular-nums">
             {rooms.length} {t('devicesAuto.rooms')}
           </span>
-          <span className="text-xs text-(--color-muted)">
+          <span className="text-(--color-muted) text-xs">
             {lightsOn} {t('devicesAuto.lightsOn')}
           </span>
         </div>
@@ -577,7 +580,7 @@ function QuickAction({
   switch (deviceId) {
     case 'pv':
       return (
-        <span className="flex items-center gap-1 text-xs text-(--color-muted)">
+        <span className="flex items-center gap-1 text-(--color-muted) text-xs">
           <Leaf size={12} className="text-emerald-400" />
           {t('devicesAuto.pvAutoOptimized')}
         </span>
@@ -613,7 +616,7 @@ function BatteryQuickAction({
         sendCommand('SET_BATTERY_POWER', isCharging ? 0 : 3000);
         hapticSuccess();
       }}
-      className="focus-ring flex items-center gap-1.5 rounded-lg bg-(--color-primary)/10 px-3 py-1.5 text-xs font-medium text-(--color-primary) transition-colors hover:bg-(--color-primary)/20"
+      className="focus-ring flex items-center gap-1.5 rounded-lg bg-(--color-primary)/10 px-3 py-1.5 font-medium text-(--color-primary) text-xs transition-colors hover:bg-(--color-primary)/20"
     >
       <ArrowUpDown size={12} aria-hidden="true" />
       {isCharging ? t('control.auto') : t('control.forceCharge')}
@@ -649,7 +652,7 @@ function EVQuickAction({
         }
         hapticSuccess();
       }}
-      className="focus-ring flex items-center gap-1.5 rounded-lg bg-(--color-primary)/10 px-3 py-1.5 text-xs font-medium text-(--color-primary) transition-colors hover:bg-(--color-primary)/20"
+      className="focus-ring flex items-center gap-1.5 rounded-lg bg-(--color-primary)/10 px-3 py-1.5 font-medium text-(--color-primary) text-xs transition-colors hover:bg-(--color-primary)/20"
     >
       <PlugZap size={12} aria-hidden="true" />
       {isCharging ? t('control.evOff') : t('devicesAuto.startCharging')}
@@ -672,7 +675,7 @@ function HeatPumpQuickAction({
         sendCommand('SET_HEAT_PUMP_POWER', 1500);
         hapticSuccess();
       }}
-      className="focus-ring flex items-center gap-1.5 rounded-lg bg-(--color-primary)/10 px-3 py-1.5 text-xs font-medium text-(--color-primary) transition-colors hover:bg-(--color-primary)/20"
+      className="focus-ring flex items-center gap-1.5 rounded-lg bg-(--color-primary)/10 px-3 py-1.5 font-medium text-(--color-primary) text-xs transition-colors hover:bg-(--color-primary)/20"
     >
       <Power size={12} aria-hidden="true" />
       {t('devicesAuto.sgReadyBoost')}
@@ -695,7 +698,7 @@ function BuildingQuickAction({
         sendCommand('TOGGLE_KNX_LIGHTS', 0);
         hapticSuccess();
       }}
-      className="focus-ring flex items-center gap-1.5 rounded-lg bg-(--color-primary)/10 px-3 py-1.5 text-xs font-medium text-(--color-primary) transition-colors hover:bg-(--color-primary)/20"
+      className="focus-ring flex items-center gap-1.5 rounded-lg bg-(--color-primary)/10 px-3 py-1.5 font-medium text-(--color-primary) text-xs transition-colors hover:bg-(--color-primary)/20"
     >
       <Power size={12} aria-hidden="true" />
       {t('devicesAuto.allLightsOff')}
@@ -958,7 +961,7 @@ function EVDetail({
           {(['off', 'pv', 'fast'] as const).map((mode) => (
             <label
               key={mode}
-              className={`cursor-pointer rounded-lg border px-2 py-2 text-center text-xs font-medium transition-all focus-within:ring-2 focus-within:ring-(--color-primary)/40 sm:text-sm ${
+              className={`cursor-pointer rounded-lg border px-2 py-2 text-center font-medium text-xs transition-all focus-within:ring-(--color-primary)/40 focus-within:ring-2 sm:text-sm ${
                 evState.mode === mode
                   ? 'border-(--color-primary) bg-(--color-primary)/20 text-(--color-primary)'
                   : 'border-(--color-border) bg-(--color-surface) text-(--color-muted) hover:border-(--color-primary)/40'
@@ -977,7 +980,7 @@ function EVDetail({
           ))}
         </div>
         {evState.message && (
-          <p className="text-sm text-(--color-primary)" role="status" aria-live="polite">
+          <p className="text-(--color-primary) text-sm" role="status" aria-live="polite">
             ✓ {evState.message}
           </p>
         )}
@@ -1033,7 +1036,7 @@ function HeatPumpDetail({
           defaultValue={hpState.mode}
           onChange={hapticClick}
           aria-label={t('control.hpTitle')}
-          className="focus-ring w-full rounded-lg border border-(--color-border) bg-(--color-surface) px-3 py-2 text-sm text-(--color-text)"
+          className="focus-ring w-full rounded-lg border border-(--color-border) bg-(--color-surface) px-3 py-2 text-(--color-text) text-sm"
         >
           <option value="1">{t('control.hpMode1')}</option>
           <option value="2">{t('control.hpMode2')}</option>
@@ -1041,7 +1044,7 @@ function HeatPumpDetail({
           <option value="4">{t('control.hpMode4')}</option>
         </select>
         {hpState.message && (
-          <p className="text-sm text-(--color-primary)" role="status" aria-live="polite">
+          <p className="text-(--color-primary) text-sm" role="status" aria-live="polite">
             ✓ {hpState.message}
           </p>
         )}
@@ -1073,7 +1076,7 @@ function BuildingDetail({
   return (
     <div className="space-y-3">
       {rooms.length === 0 && (
-        <p className="text-sm text-(--color-muted)">{t('devicesAuto.noKnxRooms')}</p>
+        <p className="text-(--color-muted) text-sm">{t('devicesAuto.noKnxRooms')}</p>
       )}
       {rooms.map((room) => (
         <div
@@ -1081,8 +1084,8 @@ function BuildingDetail({
           className="flex items-center justify-between rounded-lg border border-(--color-border) bg-(--color-surface) px-3 py-2"
         >
           <div>
-            <span className="text-sm font-medium text-(--color-text)">{room.name}</span>
-            <span className="ml-2 text-xs text-(--color-muted)">
+            <span className="font-medium text-(--color-text) text-sm">{room.name}</span>
+            <span className="ml-2 text-(--color-muted) text-xs">
               {room.temperature.toFixed(1)} °C
             </span>
           </div>
@@ -1093,7 +1096,7 @@ function BuildingDetail({
                 hapticClick();
                 sendCommand('TOGGLE_KNX_LIGHTS', room.lightsOn ? 0 : 1);
               }}
-              className={`focus-ring rounded-md px-2 py-1 text-xs font-medium transition-colors ${
+              className={`focus-ring rounded-md px-2 py-1 font-medium text-xs transition-colors ${
                 room.lightsOn
                   ? 'bg-amber-500/20 text-amber-400'
                   : 'bg-(--color-surface) text-(--color-muted) hover:text-(--color-text)'
@@ -1115,7 +1118,7 @@ function MetricRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center justify-between text-sm">
       <span className="text-(--color-muted)">{label}</span>
-      <span className="font-mono font-medium text-(--color-text)">{value}</span>
+      <span className="font-medium font-mono text-(--color-text)">{value}</span>
     </div>
   );
 }

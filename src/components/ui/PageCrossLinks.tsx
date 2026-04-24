@@ -34,6 +34,9 @@ function SetupProgress({ completed, total }: { completed: number; total: number 
 
   return (
     <svg width="44" height="44" viewBox="0 0 44 44" className="shrink-0">
+      <title>
+        Setup progress: {completed}/{total}
+      </title>
       <circle
         cx="22"
         cy="22"
@@ -62,7 +65,7 @@ function SetupProgress({ completed, total }: { completed: number; total: number 
         y="22"
         textAnchor="middle"
         dominantBaseline="central"
-        className="fill-(--color-text) text-[11px] font-semibold"
+        className="fill-(--color-text) font-semibold text-[11px]"
       >
         {completed}/{total}
       </text>
@@ -107,7 +110,7 @@ export function PageCrossLinks() {
         <section className="glass-panel-strong rounded-2xl p-5">
           <div className="mb-4 flex items-center gap-2">
             <Lightbulb size={16} className="text-(--color-primary)" aria-hidden="true" />
-            <h3 className="text-sm font-semibold text-(--color-text)">
+            <h3 className="font-semibold text-(--color-text) text-sm">
               {t('crossLinks.relatedTitle')}
             </h3>
           </div>
@@ -128,10 +131,10 @@ export function PageCrossLinks() {
                     />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-(--color-text)">
+                    <p className="truncate font-medium text-(--color-text) text-sm">
                       {t(page.i18nKey)}
                     </p>
-                    <p className="truncate text-[10px] text-(--color-muted)">
+                    <p className="truncate text-(--color-muted) text-[10px]">
                       {t(`crossLinks.desc.${page.id}`)}
                     </p>
                   </div>
@@ -154,7 +157,7 @@ export function PageCrossLinks() {
           <section className="rounded-2xl border border-(--color-border) bg-(--color-surface)/50 p-5">
             <div className="mb-3 flex items-center gap-2">
               <ExternalLink size={14} className="text-(--color-muted)" aria-hidden="true" />
-              <h3 className="text-sm font-semibold text-(--color-text)">
+              <h3 className="font-semibold text-(--color-text) text-sm">
                 {t('crossLinks.quickSettings')}
               </h3>
             </div>
@@ -200,7 +203,7 @@ export function PageCrossLinks() {
         <section className="rounded-2xl border border-(--color-border) bg-(--color-surface)/50 p-5">
           <div className="mb-3 flex items-center gap-2">
             <CheckCircle2 size={14} className="text-emerald-400" aria-hidden="true" />
-            <h3 className="text-sm font-semibold text-(--color-text)">
+            <h3 className="font-semibold text-(--color-text) text-sm">
               {t('crossLinks.setupProgress')}
             </h3>
           </div>
@@ -209,13 +212,13 @@ export function PageCrossLinks() {
           <div className="mb-4 flex items-center gap-4">
             <SetupProgress completed={completedSteps} total={totalSteps} />
             <div>
-              <p className="text-sm font-medium text-(--color-text)">
+              <p className="font-medium text-(--color-text) text-sm">
                 {t('crossLinks.stepsCompleted', {
                   count: completedSteps,
                   total: totalSteps,
                 })}
               </p>
-              <p className="text-[11px] text-(--color-muted)">
+              <p className="text-(--color-muted) text-[11px]">
                 {completedSteps >= totalSteps
                   ? t('crossLinks.setupComplete')
                   : t('crossLinks.setupIncomplete')}

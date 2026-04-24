@@ -24,7 +24,7 @@ export function HelpTooltip({ content, side = 'top', size = 14 }: HelpTooltipPro
           <Tooltip.Content
             side={side}
             sideOffset={6}
-            className="z-tooltip animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 max-w-xs rounded-xl border border-(--color-border) bg-(--color-surface-strong) px-3 py-2 text-xs leading-relaxed text-(--color-text) shadow-lg backdrop-blur-xl"
+            className="fade-in-0 zoom-in-95 data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 z-tooltip max-w-xs animate-in rounded-xl border border-(--color-border) bg-(--color-surface-strong) px-3 py-2 text-(--color-text) text-xs leading-relaxed shadow-lg backdrop-blur-xl data-[state=closed]:animate-out"
           >
             {content}
             <Tooltip.Arrow className="fill-(--color-surface-strong)" />

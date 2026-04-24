@@ -73,7 +73,7 @@ export function ControlPanel({
 
 /** Horizontal separator between sections inside a ControlPanel body */
 export function ControlPanelDivider() {
-  return <div className="section-divider my-4" role="separator" />;
+  return <hr className="section-divider my-4" />;
 }
 
 /** Section group with an optional heading inside a ControlPanel */

@@ -109,7 +109,7 @@ export function OptimizedSankey({
             <>
               {/* Mobile backdrop */}
               <motion.div
-                className="z-modal-backdrop fixed inset-0 bg-black/40 backdrop-blur-sm lg:hidden"
+                className="fixed inset-0 z-modal-backdrop bg-black/40 backdrop-blur-sm lg:hidden"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
@@ -119,7 +119,7 @@ export function OptimizedSankey({
 
               {/* Panel */}
               <motion.aside
-                className="glass-panel-strong z-modal fixed top-0 right-0 flex h-full w-full max-w-md flex-col lg:absolute"
+                className="glass-panel-strong fixed top-0 right-0 z-modal flex h-full w-full max-w-md flex-col lg:absolute"
                 initial={{ x: '100%' }}
                 animate={{ x: 0 }}
                 exit={{ x: '100%' }}
@@ -128,7 +128,7 @@ export function OptimizedSankey({
                 aria-label={t('sankey.detailPanel', 'Detail-Panel')}
               >
                 {/* Panel header with close */}
-                <div className="flex items-center justify-between border-b border-(--color-border) px-4 py-3">
+                <div className="flex items-center justify-between border-(--color-border) border-b px-4 py-3">
                   <span className="eyebrow text-(--color-muted)">
                     {t('sankey.details', 'Details')}
                   </span>

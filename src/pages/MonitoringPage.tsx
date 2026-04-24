@@ -99,7 +99,7 @@ function VirtualEventLog({ events }: { events: EventLogEntry[] }) {
               }}
             >
               <div className="flex items-center gap-3 rounded-xl bg-white/5 px-3 py-2 text-xs">
-                <span className="shrink-0 font-mono text-[10px] text-(--color-muted)">
+                <span className="shrink-0 font-mono text-(--color-muted) text-[10px]">
                   {evt.time}
                 </span>
                 <span
@@ -119,7 +119,7 @@ function VirtualEventLog({ events }: { events: EventLogEntry[] }) {
                     <CheckCircle2 size={10} />
                   )}
                 </span>
-                <span className="shrink-0 rounded bg-white/10 px-1.5 py-0.5 font-mono text-[9px] text-(--color-muted)">
+                <span className="shrink-0 rounded bg-white/10 px-1.5 py-0.5 font-mono text-(--color-muted) text-[9px]">
                   {evt.source}
                 </span>
                 <span className="min-w-0 flex-1 truncate text-(--color-text)">{evt.msg}</span>
@@ -134,6 +134,7 @@ function VirtualEventLog({ events }: { events: EventLogEntry[] }) {
 
 // ─── Component ────────────────────────────────────────────────────────
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: monitoring page component with multiple adapter states
 function MonitoringPageComponent() {
   const { t } = useTranslation();
   const energyData = useAppStoreShallow((s) => ({
@@ -464,7 +465,7 @@ function MonitoringPageComponent() {
         actions={
           <div className="flex flex-wrap items-center gap-2">
             <span
-              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] font-semibold tracking-wider uppercase ${
+              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 font-semibold text-[10px] uppercase tracking-wider ${
                 error ? 'bg-red-500/15 text-red-400' : 'bg-emerald-500/15 text-emerald-400'
               }`}
             >
@@ -474,7 +475,7 @@ function MonitoringPageComponent() {
               {error ? t('monitoring.error') : t('monitoring.live')}
             </span>
             {activeAlerts > 0 && (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-orange-500/15 px-3 py-1.5 text-[10px] font-semibold tracking-wider text-orange-400 uppercase">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-orange-500/15 px-3 py-1.5 font-semibold text-[10px] text-orange-400 uppercase tracking-wider">
                 <AlertTriangle size={10} aria-hidden="true" />
                 {activeAlerts} {t('monitoring.activeAlerts')}
               </span>
@@ -502,10 +503,10 @@ function MonitoringPageComponent() {
               </div>
             )}
             <div>
-              <h2 className="text-lg font-medium text-(--color-text)">
+              <h2 className="font-medium text-(--color-text) text-lg">
                 {error ? t('monitoring.systemDegraded') : t('monitoring.systemHealthy')}
               </h2>
-              <p className="text-xs text-(--color-muted)">
+              <p className="text-(--color-muted) text-xs">
                 {t('monitoring.uptime')}: {formatUptime(uptime)} · {t('monitoring.interval')}: 5s
                 {lastUpdated > 0 && (
                   <>
@@ -526,18 +527,18 @@ function MonitoringPageComponent() {
         {/* Scrape Endpoints */}
         <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
           <div className="rounded-xl bg-white/5 px-3 py-2">
-            <p className="text-[10px] text-(--color-muted)">Prometheus Scrape</p>
-            <code className="truncate font-mono text-xs text-(--color-primary)">GET /metrics</code>
+            <p className="text-(--color-muted) text-[10px]">Prometheus Scrape</p>
+            <code className="truncate font-mono text-(--color-primary) text-xs">GET /metrics</code>
           </div>
           <div className="rounded-xl bg-white/5 px-3 py-2">
-            <p className="text-[10px] text-(--color-muted)">JSON API</p>
-            <code className="truncate font-mono text-xs text-(--color-primary)">
+            <p className="text-(--color-muted) text-[10px]">JSON API</p>
+            <code className="truncate font-mono text-(--color-primary) text-xs">
               GET /api/metrics/json
             </code>
           </div>
           <div className="rounded-xl bg-white/5 px-3 py-2">
-            <p className="text-[10px] text-(--color-muted)">Health Check</p>
-            <code className="truncate font-mono text-xs text-(--color-primary)">GET /health</code>
+            <p className="text-(--color-muted) text-[10px]">Health Check</p>
+            <code className="truncate font-mono text-(--color-primary) text-xs">GET /health</code>
           </div>
         </div>
       </motion.section>
@@ -568,11 +569,11 @@ function MonitoringPageComponent() {
                 }`}
               />
             </div>
-            <p className={`truncate text-xl font-light ${card.color}`}>
+            <p className={`truncate font-light text-xl ${card.color}`}>
               {card.value}
-              <span className="ml-1 text-xs text-(--color-muted)">{card.unit}</span>
+              <span className="ml-1 text-(--color-muted) text-xs">{card.unit}</span>
             </p>
-            <p className="mt-0.5 truncate text-[10px] leading-tight text-(--color-muted)">
+            <p className="mt-0.5 truncate text-(--color-muted) text-[10px] leading-tight">
               {card.label}
             </p>
           </motion.div>
@@ -732,7 +733,7 @@ function MonitoringPageComponent() {
             </div>
           </div>
           {/* System info */}
-          <div className="mt-4 space-y-1.5 text-[10px] text-(--color-muted)">
+          <div className="mt-4 space-y-1.5 text-(--color-muted) text-[10px]">
             <div className="flex justify-between">
               <span>Node.js</span>
               <span className="font-mono">v22.14.0</span>
@@ -787,18 +788,18 @@ function MonitoringPageComponent() {
                   </span>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="truncate text-sm font-medium text-(--color-text)">
+                      <span className="truncate font-medium text-(--color-text) text-sm">
                         {adapter.name}
                       </span>
-                      <span className="shrink-0 rounded bg-white/10 px-1.5 py-0.5 font-mono text-[9px] text-(--color-muted)">
+                      <span className="shrink-0 rounded bg-white/10 px-1.5 py-0.5 font-mono text-(--color-muted) text-[9px]">
                         {adapter.protocol}
                       </span>
                     </div>
-                    <p className="truncate text-[10px] text-(--color-muted)">{adapter.desc}</p>
+                    <p className="truncate text-(--color-muted) text-[10px]">{adapter.desc}</p>
                   </div>
                   <div className="flex shrink-0 items-center gap-2">
                     {latencyMs > 0 && (
-                      <span className="font-mono text-[10px] text-(--color-muted)">
+                      <span className="font-mono text-(--color-muted) text-[10px]">
                         {latencyMs.toFixed(0)}ms
                       </span>
                     )}
@@ -839,21 +840,21 @@ function MonitoringPageComponent() {
                   </span>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="truncate text-sm font-medium text-(--color-text)">
+                      <span className="truncate font-medium text-(--color-text) text-sm">
                         {adapter.name}
                       </span>
-                      <span className="shrink-0 rounded bg-white/10 px-1.5 py-0.5 font-mono text-[9px] text-(--color-muted)">
+                      <span className="shrink-0 rounded bg-white/10 px-1.5 py-0.5 font-mono text-(--color-muted) text-[9px]">
                         {adapter.protocol}
                       </span>
-                      <span className="shrink-0 rounded bg-(--color-primary)/10 px-1.5 py-0.5 text-[9px] text-(--color-primary)">
+                      <span className="shrink-0 rounded bg-(--color-primary)/10 px-1.5 py-0.5 text-(--color-primary) text-[9px]">
                         contrib
                       </span>
                     </div>
-                    <p className="truncate text-[10px] text-(--color-muted)">{adapter.desc}</p>
+                    <p className="truncate text-(--color-muted) text-[10px]">{adapter.desc}</p>
                   </div>
                   <div className="flex shrink-0 items-center gap-2">
                     {latencyMs > 0 && (
-                      <span className="font-mono text-[10px] text-(--color-muted)">
+                      <span className="font-mono text-(--color-muted) text-[10px]">
                         {latencyMs.toFixed(0)}ms
                       </span>
                     )}
@@ -890,11 +891,11 @@ function MonitoringPageComponent() {
                   ) : (
                     <CheckCircle2 size={14} className="shrink-0 text-emerald-400" />
                   )}
-                  <span className="truncate text-sm font-medium text-(--color-text)">
+                  <span className="truncate font-medium text-(--color-text) text-sm">
                     {rule.name}
                   </span>
                   <span
-                    className={`ml-auto shrink-0 rounded px-1.5 py-0.5 text-[9px] font-semibold uppercase ${
+                    className={`ml-auto shrink-0 rounded px-1.5 py-0.5 font-semibold text-[9px] uppercase ${
                       rule.severity === 'critical'
                         ? 'bg-red-500/15 text-red-400'
                         : rule.severity === 'warning'
@@ -905,8 +906,8 @@ function MonitoringPageComponent() {
                     {rule.severity}
                   </span>
                 </div>
-                <p className="mt-1 text-[10px] text-(--color-muted)">{rule.desc}</p>
-                <div className="mt-1 flex items-center gap-2 font-mono text-[9px] text-(--color-muted)">
+                <p className="mt-1 text-(--color-muted) text-[10px]">{rule.desc}</p>
+                <div className="mt-1 flex items-center gap-2 font-mono text-(--color-muted) text-[9px]">
                   <code className="truncate">{rule.expr}</code>
                   <span className="shrink-0">for: {rule.for}</span>
                 </div>
@@ -945,23 +946,23 @@ function MonitoringPageComponent() {
         </h2>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <div className="rounded-xl bg-white/5 p-3">
-            <p className="text-[10px] text-(--color-muted)">Dashboard UID</p>
-            <code className="font-mono text-xs text-(--color-primary)">nexus-hems-overview</code>
+            <p className="text-(--color-muted) text-[10px]">Dashboard UID</p>
+            <code className="font-mono text-(--color-primary) text-xs">nexus-hems-overview</code>
           </div>
           <div className="rounded-xl bg-white/5 p-3">
-            <p className="text-[10px] text-(--color-muted)">Data Source</p>
-            <code className="font-mono text-xs text-(--color-primary)">Prometheus</code>
+            <p className="text-(--color-muted) text-[10px]">Data Source</p>
+            <code className="font-mono text-(--color-primary) text-xs">Prometheus</code>
           </div>
           <div className="rounded-xl bg-white/5 p-3">
-            <p className="text-[10px] text-(--color-muted)">{t('monitoring.interval')}</p>
-            <code className="font-mono text-xs text-(--color-primary)">5s</code>
+            <p className="text-(--color-muted) text-[10px]">{t('monitoring.interval')}</p>
+            <code className="font-mono text-(--color-primary) text-xs">5s</code>
           </div>
           <div className="rounded-xl bg-white/5 p-3">
-            <p className="text-[10px] text-(--color-muted)">{t('monitoring.retention')}</p>
-            <code className="font-mono text-xs text-(--color-primary)">30d</code>
+            <p className="text-(--color-muted) text-[10px]">{t('monitoring.retention')}</p>
+            <code className="font-mono text-(--color-primary) text-xs">30d</code>
           </div>
         </div>
-        <div className="mt-3 rounded-xl border border-(--color-primary)/20 bg-(--color-primary)/5 p-3 text-xs text-(--color-muted)">
+        <div className="mt-3 rounded-xl border border-(--color-primary)/20 bg-(--color-primary)/5 p-3 text-(--color-muted) text-xs">
           <span className="font-medium text-(--color-primary)">💡 </span>
           {t('monitoring.grafanaHint')}
         </div>
@@ -978,7 +979,7 @@ function MonitoringPageComponent() {
 function StatusPill({ label, ok }: { label: string; ok: boolean }) {
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-medium ${
+      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-medium text-[10px] ${
         ok ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'
       }`}
     >

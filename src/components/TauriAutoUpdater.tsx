@@ -116,16 +116,16 @@ export function TauriAutoUpdater() {
           initial={{ opacity: 0, y: -50 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -50 }}
-          className="z-notification fixed top-4 right-4 left-4 md:right-4 md:left-auto md:max-w-sm"
+          className="fixed top-4 right-4 left-4 z-notification md:right-4 md:left-auto md:max-w-sm"
           role="alert"
         >
           <div className="flex items-center gap-3 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 shadow-2xl backdrop-blur-xl">
             <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-400" aria-hidden="true" />
             <div className="flex-1">
-              <p className="text-sm font-semibold text-emerald-400">
+              <p className="font-semibold text-emerald-400 text-sm">
                 {t('updater.ready', 'Update installed')}
               </p>
-              <p className="text-xs text-(--color-muted)">
+              <p className="text-(--color-muted) text-xs">
                 {t('updater.restartHint', 'Restart to apply the new version.')}
               </p>
             </div>
@@ -143,28 +143,30 @@ export function TauriAutoUpdater() {
           initial={{ opacity: 0, y: -50 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -50 }}
-          className="z-notification fixed top-4 right-4 left-4 md:right-4 md:left-auto md:max-w-sm"
+          className="fixed top-4 right-4 left-4 z-notification md:right-4 md:left-auto md:max-w-sm"
           role="alert"
         >
           <div className="relative flex items-center gap-3 rounded-2xl border border-(--color-primary)/30 bg-(--color-primary)/10 p-4 shadow-2xl backdrop-blur-xl">
             <Download className="h-5 w-5 shrink-0 text-(--color-primary)" aria-hidden="true" />
             <div className="flex-1">
-              <p className="text-sm font-semibold text-(--color-primary)">
+              <p className="font-semibold text-(--color-primary) text-sm">
                 {t('updater.available', 'Update available')} — v{updateAvailable.version}
               </p>
               {updateAvailable.body && (
-                <p className="mt-0.5 text-xs text-(--color-muted)">
+                <p className="mt-0.5 text-(--color-muted) text-xs">
                   {updateAvailable.body.slice(0, 100)}
                 </p>
               )}
             </div>
             <button
+              type="button"
               onClick={handleDownloadAndInstall}
-              className="focus-ring shrink-0 rounded-lg bg-(--color-primary) px-3 py-1.5 text-xs font-medium text-white transition-opacity hover:opacity-90"
+              className="focus-ring shrink-0 rounded-lg bg-(--color-primary) px-3 py-1.5 font-medium text-white text-xs transition-opacity hover:opacity-90"
             >
               {t('updater.install', 'Install')}
             </button>
             <button
+              type="button"
               onClick={() => setUpdateAvailable(null)}
               className="absolute -top-2 -right-2 rounded-full border border-(--color-border) bg-(--color-surface) p-1 text-(--color-muted) shadow-md transition-colors hover:text-(--color-text)"
               aria-label={t('common.close', 'Close')}
@@ -185,7 +187,7 @@ export function TauriAutoUpdater() {
           initial={{ opacity: 0, y: -50 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -50 }}
-          className="z-notification fixed top-4 right-4 left-4 md:right-4 md:left-auto md:max-w-sm"
+          className="fixed top-4 right-4 left-4 z-notification md:right-4 md:left-auto md:max-w-sm"
           role="status"
         >
           <div className="rounded-2xl border border-(--color-primary)/30 bg-(--color-primary)/10 p-4 shadow-2xl backdrop-blur-xl">
@@ -194,7 +196,7 @@ export function TauriAutoUpdater() {
                 className="h-5 w-5 animate-spin text-(--color-primary)"
                 aria-hidden="true"
               />
-              <p className="text-sm font-semibold text-(--color-primary)">
+              <p className="font-semibold text-(--color-primary) text-sm">
                 {t('updater.downloading', 'Downloading update…')} {downloadProgress}%
               </p>
             </div>
@@ -218,14 +220,15 @@ export function TauriAutoUpdater() {
           initial={{ opacity: 0, y: -50 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -50 }}
-          className="z-notification fixed top-4 right-4 left-4 md:right-4 md:left-auto md:max-w-sm"
+          className="fixed top-4 right-4 left-4 z-notification md:right-4 md:left-auto md:max-w-sm"
           role="alert"
         >
           <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-4 backdrop-blur-xl">
-            <p className="text-sm text-red-400">{error}</p>
+            <p className="text-red-400 text-sm">{error}</p>
             <button
+              type="button"
               onClick={() => setError(null)}
-              className="mt-1 text-xs text-red-300 underline hover:text-red-200"
+              className="mt-1 text-red-300 text-xs underline hover:text-red-200"
             >
               {t('common.dismiss', 'Dismiss')}
             </button>

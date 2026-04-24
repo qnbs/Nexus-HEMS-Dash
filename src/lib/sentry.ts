@@ -46,8 +46,8 @@ export function initSentry(): void {
     // Scrub sensitive data before sending
     beforeSend(event) {
       if (event.request?.headers) {
-        delete event.request.headers['Authorization'];
-        delete event.request.headers['Cookie'];
+        delete event.request.headers.Authorization;
+        delete event.request.headers.Cookie;
       }
       return event;
     },

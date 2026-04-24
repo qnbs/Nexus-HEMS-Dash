@@ -102,6 +102,7 @@ function generateMonthlyComparison(pvYieldToday: number) {
   });
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: page component with multiple data transforms
 function AnalyticsPageComponent() {
   const { t } = useTranslation();
   const energyData = useAppStoreShallow((s) => s.energyData);
@@ -308,18 +309,18 @@ function AnalyticsPageComponent() {
         actions={
           <div className="flex flex-wrap items-center gap-2">
             {isPeakHour && (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-orange-500/15 px-3 py-1.5 text-[10px] font-semibold tracking-wider text-orange-400 uppercase">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-orange-500/15 px-3 py-1.5 font-semibold text-[10px] text-orange-400 uppercase tracking-wider">
                 <Zap size={10} className="energy-pulse" aria-hidden="true" />
                 {t('analytics.peakHours')}
               </span>
             )}
             {isSolarPeak && (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-yellow-500/15 px-3 py-1.5 text-[10px] font-semibold tracking-wider text-yellow-400 uppercase">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-yellow-500/15 px-3 py-1.5 font-semibold text-[10px] text-yellow-400 uppercase tracking-wider">
                 <Sun size={10} aria-hidden="true" />
                 {t('analytics.solarPeak')}
               </span>
             )}
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-3 py-1.5 text-[10px] font-semibold tracking-wider text-emerald-400 uppercase">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-3 py-1.5 font-semibold text-[10px] text-emerald-400 uppercase tracking-wider">
               <Activity size={10} className="energy-pulse" aria-hidden="true" />
               {t('common.live')}
             </span>
@@ -349,8 +350,8 @@ function AnalyticsPageComponent() {
                 aria-hidden="true"
               />
             </div>
-            <p className={`truncate text-xl font-light ${card.color}`}>{card.value}</p>
-            <p className="mt-0.5 truncate text-[10px] leading-tight text-(--color-muted)">
+            <p className={`truncate font-light text-xl ${card.color}`}>{card.value}</p>
+            <p className="mt-0.5 truncate text-(--color-muted) text-[10px] leading-tight">
               {card.label}
             </p>
             <div className="mt-1.5 flex items-center gap-1 text-[9px]">
@@ -476,24 +477,24 @@ function AnalyticsPageComponent() {
           {/* Balance summary strip */}
           <div className="mt-4 grid grid-cols-3 gap-3">
             <div className="rounded-xl bg-white/5 p-2.5 text-center">
-              <p className="text-[10px] text-(--color-muted)">{t('analytics.totalProduction')}</p>
-              <p className="text-sm font-medium text-yellow-400">
+              <p className="text-(--color-muted) text-[10px]">{t('analytics.totalProduction')}</p>
+              <p className="font-medium text-sm text-yellow-400">
                 {(balanceData.reduce((a, d) => a + d.pv, 0) / 1000).toFixed(1)} kWh
               </p>
             </div>
             <div className="rounded-xl bg-white/5 p-2.5 text-center">
-              <p className="text-[10px] text-(--color-muted)">{t('analytics.totalConsumption')}</p>
-              <p className="text-sm font-medium text-blue-400">
+              <p className="text-(--color-muted) text-[10px]">{t('analytics.totalConsumption')}</p>
+              <p className="font-medium text-blue-400 text-sm">
                 {(balanceData.reduce((a, d) => a + d.consumption, 0) / 1000).toFixed(1)} kWh
               </p>
             </div>
             <div className="rounded-xl bg-white/5 p-2.5 text-center">
-              <p className="text-[10px] text-(--color-muted)">{t('analytics.netBalance')}</p>
+              <p className="text-(--color-muted) text-[10px]">{t('analytics.netBalance')}</p>
               {(() => {
                 const net = balanceData.reduce((a, d) => a + d.pv - d.consumption, 0) / 1000;
                 return (
                   <p
-                    className={`text-sm font-medium ${net >= 0 ? 'text-emerald-400' : 'text-red-400'}`}
+                    className={`font-medium text-sm ${net >= 0 ? 'text-emerald-400' : 'text-red-400'}`}
                   >
                     {net >= 0 ? '+' : ''}
                     {net.toFixed(1)} kWh
@@ -565,7 +566,7 @@ function AnalyticsPageComponent() {
                 {netCost <= 0 ? '–' : ''}€{Math.abs(netCost).toFixed(2)}
               </span>
             </div>
-            <div className="mt-1 flex flex-wrap items-center justify-between gap-1 text-[10px] text-(--color-muted)">
+            <div className="mt-1 flex flex-wrap items-center justify-between gap-1 text-(--color-muted) text-[10px]">
               <span className="truncate">
                 {t('analytics.gridCostLabel')}: €{gridCost.toFixed(2)}
               </span>
@@ -688,8 +689,8 @@ function AnalyticsPageComponent() {
               },
             ].map((s) => (
               <div key={s.label} className="rounded-xl bg-white/5 p-2.5 text-center">
-                <p className="text-[10px] text-(--color-muted)">{s.label}</p>
-                <p className={`text-sm font-medium ${s.color}`}>{s.value}</p>
+                <p className="text-(--color-muted) text-[10px]">{s.label}</p>
+                <p className={`font-medium text-sm ${s.color}`}>{s.value}</p>
               </div>
             ));
           })()}
@@ -774,7 +775,7 @@ function AnalyticsPageComponent() {
             ))}
           </div>
           {/* Tip */}
-          <div className="mt-4 rounded-xl border border-(--color-primary)/20 bg-(--color-primary)/5 p-3 text-xs text-(--color-muted)">
+          <div className="mt-4 rounded-xl border border-(--color-primary)/20 bg-(--color-primary)/5 p-3 text-(--color-muted) text-xs">
             <span className="font-medium text-(--color-primary)">💡 </span>
             {t('analytics.efficiencyTip')}
           </div>
@@ -827,7 +828,7 @@ function AnalyticsPageComponent() {
                 className="flex items-center gap-3 rounded-xl bg-white/5 px-3 py-2.5"
               >
                 <span
-                  className={`flex h-8 w-8 items-center justify-center rounded-lg text-xs font-bold ${
+                  className={`flex h-8 w-8 items-center justify-center rounded-lg font-bold text-xs ${
                     item.status === 'ok'
                       ? 'bg-emerald-500/20 text-emerald-400'
                       : 'bg-yellow-500/20 text-yellow-400'
@@ -836,8 +837,8 @@ function AnalyticsPageComponent() {
                   {item.value.toFixed(0)}%
                 </span>
                 <div className="flex-1">
-                  <p className="text-xs font-medium text-(--color-text)">{item.label}</p>
-                  <p className="text-[10px] text-(--color-muted)">{item.desc}</p>
+                  <p className="font-medium text-(--color-text) text-xs">{item.label}</p>
+                  <p className="text-(--color-muted) text-[10px]">{item.desc}</p>
                 </div>
                 <span
                   className={`h-2 w-2 rounded-full ${
@@ -874,14 +875,14 @@ function AnalyticsPageComponent() {
               <h3 className="fluid-text-base font-semibold text-(--color-text)">
                 {t('analytics.mlForecastTitle')}
               </h3>
-              <p className="text-xs text-(--color-muted)">{t('analytics.mlForecastSubtitle')}</p>
+              <p className="text-(--color-muted) text-xs">{t('analytics.mlForecastSubtitle')}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <select
               value={selectedMetric}
               onChange={(e) => setSelectedMetric(e.target.value)}
-              className="focus-ring rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-(--color-text)"
+              className="focus-ring rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-(--color-text) text-xs"
               aria-label={t('analytics.mlForecastSelectMetric')}
             >
               {getForecastableMetrics().map((m) => (
@@ -891,9 +892,10 @@ function AnalyticsPageComponent() {
               ))}
             </select>
             <button
+              type="button"
               onClick={handleRunForecast}
               disabled={forecastLoading}
-              className="focus-ring flex items-center gap-1.5 rounded-lg bg-purple-500/20 px-3 py-1.5 text-xs font-medium text-purple-300 transition hover:bg-purple-500/30 disabled:opacity-50"
+              className="focus-ring flex items-center gap-1.5 rounded-lg bg-purple-500/20 px-3 py-1.5 font-medium text-purple-300 text-xs transition hover:bg-purple-500/30 disabled:opacity-50"
             >
               <BrainCircuit size={14} aria-hidden="true" />
               {forecastLoading ? '…' : t('analytics.mlForecastRun')}
@@ -905,16 +907,16 @@ function AnalyticsPageComponent() {
           <div className="space-y-3">
             {/* Accuracy badges */}
             <div className="flex flex-wrap gap-2">
-              <span className="rounded-full bg-purple-500/15 px-2.5 py-1 text-[10px] font-medium text-purple-300">
+              <span className="rounded-full bg-purple-500/15 px-2.5 py-1 font-medium text-[10px] text-purple-300">
                 {t('analytics.mlForecastModel')}: {forecastResult.model}
               </span>
-              <span className="rounded-full bg-emerald-500/15 px-2.5 py-1 text-[10px] font-medium text-emerald-300">
+              <span className="rounded-full bg-emerald-500/15 px-2.5 py-1 font-medium text-[10px] text-emerald-300">
                 R² {(forecastResult.accuracy.r2 * 100).toFixed(1)}%
               </span>
-              <span className="rounded-full bg-blue-400/15 px-2.5 py-1 text-[10px] font-medium text-blue-300">
+              <span className="rounded-full bg-blue-400/15 px-2.5 py-1 font-medium text-[10px] text-blue-300">
                 MAPE {forecastResult.accuracy.mape.toFixed(1)}%
               </span>
-              <span className="rounded-full bg-yellow-400/15 px-2.5 py-1 text-[10px] font-medium text-yellow-300">
+              <span className="rounded-full bg-yellow-400/15 px-2.5 py-1 font-medium text-[10px] text-yellow-300">
                 RMSE {forecastResult.accuracy.rmse.toFixed(0)} {forecastResult.unit}
               </span>
             </div>
@@ -924,7 +926,7 @@ function AnalyticsPageComponent() {
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart
                   data={forecastResult.points.map((p) => ({
-                    time: new Date(p.timestamp).getHours() + ':00',
+                    time: `${new Date(p.timestamp).getHours()}:00`,
                     value: Math.round(p.value),
                     lower: Math.round(p.lower),
                     upper: Math.round(p.upper),
@@ -969,7 +971,7 @@ function AnalyticsPageComponent() {
                 </LineChart>
               </ResponsiveContainer>
             </div>
-            <p className="text-center text-[10px] text-(--color-muted)">
+            <p className="text-center text-(--color-muted) text-[10px]">
               {t('analytics.mlForecastConfidence')} · {forecastResult.training.samplesUsed}{' '}
               {t('analytics.mlForecastDataPoints')}
             </p>
@@ -998,10 +1000,10 @@ function AnalyticsPageComponent() {
               <h3 className="fluid-text-base font-semibold text-(--color-text)">
                 {t('analytics.co2ReportTitle')}
               </h3>
-              <p className="text-xs text-(--color-muted)">{t('analytics.co2ReportSubtitle')}</p>
+              <p className="text-(--color-muted) text-xs">{t('analytics.co2ReportSubtitle')}</p>
             </div>
           </div>
-          <span className="rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-medium text-emerald-300">
+          <span className="rounded-full bg-emerald-500/15 px-3 py-1 font-medium text-emerald-300 text-xs">
             UBA {currentYear}: {ubaFactor} g CO₂/kWh
           </span>
         </div>
@@ -1039,7 +1041,7 @@ function AnalyticsPageComponent() {
               <p className={`fluid-text-lg font-bold ${item.color}`}>
                 {Math.abs(item.value).toFixed(1)} kg
               </p>
-              <p className="text-[10px] text-(--color-muted)">{item.label}</p>
+              <p className="text-(--color-muted) text-[10px]">{item.label}</p>
             </div>
           ))}
         </div>
@@ -1049,26 +1051,26 @@ function AnalyticsPageComponent() {
           <div className="flex flex-wrap items-center justify-center gap-4 rounded-xl bg-emerald-500/5 px-4 py-3">
             <div className="flex items-center gap-1.5">
               <TreePine size={16} className="text-emerald-400" aria-hidden="true" />
-              <span className="text-xs text-(--color-text)">
+              <span className="text-(--color-text) text-xs">
                 <strong>{monthlyCo2.treesEquiv.toFixed(1)}</strong> {t('analytics.co2Trees')}
               </span>
             </div>
             <div className="flex items-center gap-1.5">
               <Car size={16} className="text-blue-400" aria-hidden="true" />
-              <span className="text-xs text-(--color-text)">
+              <span className="text-(--color-text) text-xs">
                 <strong>{monthlyCo2.carKmEquiv.toFixed(0)}</strong> {t('analytics.co2CarKm')}
               </span>
             </div>
             <div className="flex items-center gap-1.5">
               <Plane size={16} className="text-yellow-400" aria-hidden="true" />
-              <span className="text-xs text-(--color-text)">
+              <span className="text-(--color-text) text-xs">
                 <strong>{monthlyCo2.flightsEquiv.toFixed(2)}</strong> {t('analytics.co2Flights')}
               </span>
             </div>
           </div>
         )}
 
-        <p className="text-center text-[10px] text-(--color-muted)">
+        <p className="text-center text-(--color-muted) text-[10px]">
           {monthlyCo2.netBalance <= 0 ? t('analytics.co2NetSaver') : t('analytics.co2NetEmitter')} ·{' '}
           {t('analytics.co2ReportMonthly')}
         </p>

@@ -132,7 +132,7 @@ function ToggleSwitch({
         className="peer sr-only"
       />
       <span className="sr-only">{label}</span>
-      <div className="h-6 w-11 rounded-full border border-(--color-border) bg-(--color-surface) transition-colors duration-300 peer-checked:bg-(--color-primary) peer-focus:ring-2 peer-focus:ring-(--color-primary)/30 after:absolute after:top-[2px] after:left-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow-sm after:transition-transform after:duration-300 peer-checked:after:translate-x-5" />
+      <div className="h-6 w-11 rounded-full border border-(--color-border) bg-(--color-surface) transition-colors duration-300 after:absolute after:top-[2px] after:left-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow-sm after:transition-transform after:duration-300 peer-checked:bg-(--color-primary) peer-checked:after:translate-x-5 peer-focus:ring-(--color-primary)/30 peer-focus:ring-2" />
     </label>
   );
 }
@@ -301,7 +301,7 @@ function ContribAdapterSection() {
 
   return (
     <section className="glass-panel-strong space-y-6 rounded-2xl p-6">
-      <div className="flex items-center justify-between border-b border-(--color-border) pb-4">
+      <div className="flex items-center justify-between border-(--color-border) border-b pb-4">
         <h2 className="fluid-text-lg flex items-center gap-2 font-medium">
           <Package size={20} className="text-(--color-primary)" />
           {t('monitoring.contribAdapters')}
@@ -318,10 +318,10 @@ function ContribAdapterSection() {
           {t('monitoring.loadAllContrib')}
         </motion.button>
       </div>
-      <p className="text-sm text-(--color-muted)">{t('monitoring.contribAdaptersDesc')}</p>
+      <p className="text-(--color-muted) text-sm">{t('monitoring.contribAdaptersDesc')}</p>
 
       {loadedIds.length > 0 && (
-        <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-3 py-2 text-xs text-emerald-400">
+        <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-3 py-2 text-emerald-400 text-xs">
           {t('monitoring.contribLoaded', { ids: loadedIds.join(', ') })}
         </div>
       )}
@@ -343,17 +343,17 @@ function ContribAdapterSection() {
               </span>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="truncate text-sm font-medium text-(--color-text)">
+                  <span className="truncate font-medium text-(--color-text) text-sm">
                     {t(adapter.nameKey)}
                   </span>
                   {isRegistered && <Check size={14} className="shrink-0 text-emerald-400" />}
                 </div>
-                <p className="truncate text-[10px] text-(--color-muted)">{t(adapter.descKey)}</p>
+                <p className="truncate text-(--color-muted) text-[10px]">{t(adapter.descKey)}</p>
                 <div className="mt-1 flex flex-wrap gap-1">
                   {adapter.capabilities.map((cap) => (
                     <span
                       key={cap}
-                      className="rounded bg-(--color-primary)/10 px-1.5 py-0.5 text-[9px] text-(--color-primary)"
+                      className="rounded bg-(--color-primary)/10 px-1.5 py-0.5 text-(--color-primary) text-[9px]"
                     >
                       {t(`adapterConfig.cap_${cap}`)}
                     </span>
@@ -365,7 +365,7 @@ function ContribAdapterSection() {
         })}
       </div>
 
-      <div className="rounded-lg border border-(--color-primary)/20 bg-(--color-primary)/5 p-3 text-xs text-(--color-muted)">
+      <div className="rounded-lg border border-(--color-primary)/20 bg-(--color-primary)/5 p-3 text-(--color-muted) text-xs">
         <span className="font-medium text-(--color-primary)">💡 </span>
         {t('monitoring.pluginDynamicLoad')} · {t('monitoring.pluginNpmFormat')}
       </div>
@@ -384,16 +384,16 @@ function ComplianceChecklist({ activeAdapters }: { activeAdapters: AdapterType[]
 
   return (
     <section className="glass-panel-strong space-y-5 rounded-2xl p-6">
-      <h2 className="fluid-text-lg flex items-center gap-2 border-b border-(--color-border) pb-4 text-lg font-medium">
+      <h2 className="fluid-text-lg flex items-center gap-2 border-(--color-border) border-b pb-4 font-medium text-lg">
         <ShieldCheck size={20} className="text-emerald-400" />
         {t('adapterConfig.complianceTitle')}
       </h2>
-      <p className="text-sm text-(--color-muted)">{t('adapterConfig.complianceDescription')}</p>
+      <p className="text-(--color-muted) text-sm">{t('adapterConfig.complianceDescription')}</p>
 
       <div className="-mx-2 overflow-x-auto px-2">
         <table className="w-full text-xs">
           <thead>
-            <tr className="border-b border-(--color-border)">
+            <tr className="border-(--color-border) border-b">
               <th className="py-2 pr-4 text-left font-medium text-(--color-muted)">
                 {t('adapterConfig.complianceTitle')}
               </th>
@@ -415,13 +415,13 @@ function ComplianceChecklist({ activeAdapters }: { activeAdapters: AdapterType[]
             {COMPLIANCE_MATRIX.map((item) => (
               <tr
                 key={item.key}
-                className="border-b border-(--color-border)/50 transition-colors hover:bg-(--color-surface)/50"
+                className="border-(--color-border)/50 border-b transition-colors hover:bg-(--color-surface)/50"
               >
                 <td className="py-2.5 pr-4">
                   <p className="font-medium text-(--color-text)">
                     {t(`adapterConfig.${item.key}`)}
                   </p>
-                  <p className="mt-0.5 text-[10px] text-(--color-muted)">
+                  <p className="mt-0.5 text-(--color-muted) text-[10px]">
                     {t(`adapterConfig.${item.descKey}`)}
                   </p>
                 </td>
@@ -462,7 +462,7 @@ function ComplianceChecklist({ activeAdapters }: { activeAdapters: AdapterType[]
               className="flex items-center gap-2 rounded-lg border border-(--color-border) bg-(--color-surface)/50 px-3 py-2"
             >
               <Icon size={14} className={meta.color} />
-              <span className="text-xs font-medium">{t(`adapterConfig.type_${type}`)}</span>
+              <span className="font-medium text-xs">{t(`adapterConfig.type_${type}`)}</span>
               <div className="ml-1 flex items-center gap-1.5">
                 <span className="flex items-center gap-0.5 text-emerald-400">
                   <Circle size={6} fill="currentColor" />
@@ -527,11 +527,11 @@ function GAMappingPanel({
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <p className="text-sm font-medium">{t('adapterConfig.gaMapping')}</p>
+        <p className="font-medium text-sm">{t('adapterConfig.gaMapping')}</p>
         <motion.button
           type="button"
           onClick={addRoom}
-          className="focus-ring flex items-center gap-1 rounded-lg border border-(--color-border) bg-(--color-surface-strong) px-2.5 py-1.5 text-xs text-(--color-muted) transition-colors hover:border-(--color-primary)/30 hover:text-(--color-primary)"
+          className="focus-ring flex items-center gap-1 rounded-lg border border-(--color-border) bg-(--color-surface-strong) px-2.5 py-1.5 text-(--color-muted) text-xs transition-colors hover:border-(--color-primary)/30 hover:text-(--color-primary)"
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
         >
@@ -539,10 +539,10 @@ function GAMappingPanel({
           {t('adapterConfig.addRoom')}
         </motion.button>
       </div>
-      <p className="text-xs text-(--color-muted)">{t('adapterConfig.gaMappingHint')}</p>
+      <p className="text-(--color-muted) text-xs">{t('adapterConfig.gaMappingHint')}</p>
 
       {mapping.length === 0 && (
-        <div className="rounded-lg border border-dashed border-(--color-border) p-4 text-center text-xs text-(--color-muted)">
+        <div className="rounded-lg border border-(--color-border) border-dashed p-4 text-center text-(--color-muted) text-xs">
           {t('adapterConfig.noRooms')}
         </div>
       )}
@@ -558,7 +558,7 @@ function GAMappingPanel({
           >
             <div className="mb-3 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-(--color-primary)/15 text-xs font-medium text-(--color-primary)">
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-(--color-primary)/15 font-medium text-(--color-primary) text-xs">
                   {idx + 1}
                 </span>
                 <input
@@ -566,7 +566,7 @@ function GAMappingPanel({
                   value={room.roomName}
                   onChange={(e) => updateRoom(idx, 'roomName', e.target.value)}
                   placeholder={t('adapterConfig.roomName')}
-                  className="border-b border-transparent bg-transparent px-1 py-0.5 text-sm font-medium text-(--color-text) transition-colors focus:border-(--color-primary) focus:outline-none"
+                  className="border-transparent border-b bg-transparent px-1 py-0.5 font-medium text-(--color-text) text-sm transition-colors focus:border-(--color-primary) focus:outline-none"
                 />
               </div>
               <button
@@ -590,10 +590,14 @@ function GAMappingPanel({
                 ] as [keyof GAMappingEntry, string][]
               ).map(([field, labelKey]) => (
                 <div key={field} className="space-y-1">
-                  <label className="text-[10px] font-medium tracking-wider text-(--color-muted) uppercase">
+                  <label
+                    htmlFor={`room-${room.roomId}-${field}`}
+                    className="font-medium text-(--color-muted) text-[10px] uppercase tracking-wider"
+                  >
                     {t(labelKey)}
                   </label>
                   <input
+                    id={`room-${room.roomId}-${field}`}
                     type="text"
                     value={room[field]}
                     onChange={(e) => updateRoom(idx, field, e.target.value)}
@@ -673,7 +677,7 @@ export function AdapterConfigPanel() {
           <Server size={20} className="text-(--color-primary)" />
           {t('adapterConfig.title')}
         </h2>
-        <p className="text-sm text-(--color-muted)">{t('adapterConfig.description')}</p>
+        <p className="text-(--color-muted) text-sm">{t('adapterConfig.description')}</p>
 
         {/* Add Adapter Buttons */}
         <div className="flex flex-wrap gap-2">
@@ -698,7 +702,7 @@ export function AdapterConfigPanel() {
         </div>
 
         {/* Capability Legend */}
-        <div className="flex flex-wrap gap-3 rounded-lg border border-(--color-border) bg-(--color-surface)/50 px-3 py-2 text-xs text-(--color-muted)">
+        <div className="flex flex-wrap gap-3 rounded-lg border border-(--color-border) bg-(--color-surface)/50 px-3 py-2 text-(--color-muted) text-xs">
           {['pv', 'battery', 'grid', 'load', 'evCharger', 'knx'].map((cap) => (
             <span key={cap} className="inline-flex items-center gap-1">
               <span className="h-2 w-2 rounded-full bg-(--color-primary)/60" />
@@ -710,16 +714,17 @@ export function AdapterConfigPanel() {
 
       {/* Adapter List */}
       {adapters.length === 0 && (
-        <div className="rounded-2xl border border-dashed border-(--color-border) p-8 text-center">
+        <div className="rounded-2xl border border-(--color-border) border-dashed p-8 text-center">
           <Server size={32} className="mx-auto mb-3 text-(--color-muted)" />
-          <p className="text-sm font-medium text-(--color-muted)">
+          <p className="font-medium text-(--color-muted) text-sm">
             {t('adapterConfig.noAdapters')}
           </p>
-          <p className="mt-1 text-xs text-(--color-muted)">{t('adapterConfig.noAdaptersHint')}</p>
+          <p className="mt-1 text-(--color-muted) text-xs">{t('adapterConfig.noAdaptersHint')}</p>
         </div>
       )}
 
       <AnimatePresence>
+        {/* biome-ignore lint/complexity/noExcessiveCognitiveComplexity: adapter form renders different fields per adapter type */}
         {adapters.map((adapter) => {
           const meta = ADAPTER_META[adapter.type];
           const Icon = meta.icon;
@@ -748,8 +753,8 @@ export function AdapterConfigPanel() {
                     <Icon size={18} />
                   </div>
                   <div className="text-left">
-                    <p className="text-sm font-medium">{adapter.name}</p>
-                    <p className="text-xs text-(--color-muted)">
+                    <p className="font-medium text-sm">{adapter.name}</p>
+                    <p className="text-(--color-muted) text-xs">
                       {t(`adapterConfig.type_${adapter.type}`)}
                       {adapter.host && ` · ${adapter.host}:${adapter.port}`}
                     </p>
@@ -761,7 +766,7 @@ export function AdapterConfigPanel() {
                     {meta.capabilities.map((cap) => (
                       <span
                         key={cap}
-                        className="rounded-full border border-(--color-border) bg-(--color-surface) px-2 py-0.5 text-[10px] text-(--color-muted)"
+                        className="rounded-full border border-(--color-border) bg-(--color-surface) px-2 py-0.5 text-(--color-muted) text-[10px]"
                       >
                         {t(`adapterConfig.cap_${cap}`)}
                       </span>
@@ -791,20 +796,24 @@ export function AdapterConfigPanel() {
                     transition={{ duration: 0.3 }}
                     className="space-y-5 overflow-hidden"
                   >
-                    <div className="border-t border-(--color-border) pt-5" />
+                    <div className="border-(--color-border) border-t pt-5" />
 
                     {/* Connection */}
                     <div>
-                      <h3 className="mb-3 flex items-center gap-2 text-sm font-medium">
+                      <h3 className="mb-3 flex items-center gap-2 font-medium text-sm">
                         <Wifi size={14} className="text-emerald-400" />
                         {t('adapterConfig.connection')}
                       </h3>
                       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <div className="space-y-2">
-                          <label className="text-xs font-medium text-(--color-muted)">
+                          <label
+                            htmlFor={`adapter-name-${adapter.id}`}
+                            className="font-medium text-(--color-muted) text-xs"
+                          >
                             {t('adapterConfig.adapterName')}
                           </label>
                           <input
+                            id={`adapter-name-${adapter.id}`}
                             type="text"
                             value={adapter.name}
                             onChange={(e) => updateAdapter(adapter.id, { name: e.target.value })}
@@ -812,10 +821,14 @@ export function AdapterConfigPanel() {
                           />
                         </div>
                         <div className="space-y-2">
-                          <label className="text-xs font-medium text-(--color-muted)">
+                          <label
+                            htmlFor={`adapter-host-${adapter.id}`}
+                            className="font-medium text-(--color-muted) text-xs"
+                          >
                             {t('adapterConfig.host')}
                           </label>
                           <input
+                            id={`adapter-host-${adapter.id}`}
                             type="text"
                             value={adapter.host}
                             onChange={(e) => updateAdapter(adapter.id, { host: e.target.value })}
@@ -824,10 +837,14 @@ export function AdapterConfigPanel() {
                           />
                         </div>
                         <div className="space-y-2">
-                          <label className="text-xs font-medium text-(--color-muted)">
+                          <label
+                            htmlFor={`adapter-port-${adapter.id}`}
+                            className="font-medium text-(--color-muted) text-xs"
+                          >
                             {t('adapterConfig.port')}
                           </label>
                           <input
+                            id={`adapter-port-${adapter.id}`}
                             type="number"
                             value={adapter.port}
                             onChange={(e) =>
@@ -839,11 +856,15 @@ export function AdapterConfigPanel() {
                           />
                         </div>
                         <div className="space-y-2">
-                          <label className="text-xs font-medium text-(--color-muted)">
+                          <label
+                            htmlFor={`adapter-poll-${adapter.id}`}
+                            className="font-medium text-(--color-muted) text-xs"
+                          >
                             {t('adapterConfig.pollInterval')}
                           </label>
                           <div className="flex items-center gap-2">
                             <input
+                              id={`adapter-poll-${adapter.id}`}
                               type="number"
                               value={adapter.pollIntervalMs}
                               onChange={(e) =>
@@ -856,7 +877,7 @@ export function AdapterConfigPanel() {
                               max={60000}
                               step={500}
                             />
-                            <span className="text-xs whitespace-nowrap text-(--color-muted)">
+                            <span className="whitespace-nowrap text-(--color-muted) text-xs">
                               ms
                             </span>
                           </div>
@@ -866,15 +887,15 @@ export function AdapterConfigPanel() {
 
                     {/* Security */}
                     <div>
-                      <h3 className="mb-3 flex items-center gap-2 text-sm font-medium">
+                      <h3 className="mb-3 flex items-center gap-2 font-medium text-sm">
                         <Shield size={14} className="text-orange-400" />
                         {t('adapterConfig.security')}
                       </h3>
                       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <div className="flex items-center justify-between rounded-xl border border-(--color-border) bg-(--color-surface) p-3">
                           <div>
-                            <p className="text-xs font-medium">TLS / SSL</p>
-                            <p className="text-[10px] text-(--color-muted)">
+                            <p className="font-medium text-xs">TLS / SSL</p>
+                            <p className="text-(--color-muted) text-[10px]">
                               {t('adapterConfig.tlsHint')}
                             </p>
                           </div>
@@ -886,17 +907,21 @@ export function AdapterConfigPanel() {
                           />
                         </div>
                         <div className="space-y-2">
-                          <label className="text-xs font-medium text-(--color-muted)">
+                          <label
+                            htmlFor={`adapter-token-${adapter.id}`}
+                            className="font-medium text-(--color-muted) text-xs"
+                          >
                             {t('adapterConfig.authToken')}
                           </label>
                           <div className="relative">
                             <input
+                              id={`adapter-token-${adapter.id}`}
                               type={showTokens[adapter.id] ? 'text' : 'password'}
                               value={adapter.authToken}
                               onChange={(e) =>
                                 updateAdapter(adapter.id, { authToken: e.target.value })
                               }
-                              className={inputClass + ' pr-10'}
+                              className={`${inputClass} pr-10`}
                               placeholder="••••••••"
                             />
                             <button
@@ -917,14 +942,14 @@ export function AdapterConfigPanel() {
                     {/* Victron-specific */}
                     {adapter.type === 'victron' && (
                       <div>
-                        <h3 className="mb-3 flex items-center gap-2 text-sm font-medium">
+                        <h3 className="mb-3 flex items-center gap-2 font-medium text-sm">
                           <Activity size={14} className="text-blue-400" />
                           {t('adapterConfig.victronSpecific')}
                         </h3>
                         <div className="space-y-2">
-                          <label className="text-xs font-medium text-(--color-muted)">
+                          <p className="font-medium text-(--color-muted) text-xs">
                             {t('adapterConfig.gatewayType')}
-                          </label>
+                          </p>
                           <div className="grid grid-cols-3 gap-2">
                             {(['cerbo-gx', 'venus-gx', 'rpi-victron'] as const).map((gw) => (
                               <button
@@ -949,16 +974,20 @@ export function AdapterConfigPanel() {
                     {/* OCPP-specific */}
                     {adapter.type === 'ocpp' && (
                       <div>
-                        <h3 className="mb-3 flex items-center gap-2 text-sm font-medium">
+                        <h3 className="mb-3 flex items-center gap-2 font-medium text-sm">
                           <Plug size={14} className="text-cyan-400" />
                           {t('adapterConfig.ocppSpecific')}
                         </h3>
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                           <div className="space-y-2">
-                            <label className="text-xs font-medium text-(--color-muted)">
+                            <label
+                              htmlFor={`adapter-station-${adapter.id}`}
+                              className="font-medium text-(--color-muted) text-xs"
+                            >
                               {t('adapterConfig.stationId')}
                             </label>
                             <input
+                              id={`adapter-station-${adapter.id}`}
                               type="text"
                               value={adapter.stationId ?? ''}
                               onChange={(e) =>
@@ -969,10 +998,14 @@ export function AdapterConfigPanel() {
                             />
                           </div>
                           <div className="space-y-2">
-                            <label className="text-xs font-medium text-(--color-muted)">
+                            <label
+                              htmlFor={`adapter-secprofile-${adapter.id}`}
+                              className="font-medium text-(--color-muted) text-xs"
+                            >
                               {t('adapterConfig.securityProfile')}
                             </label>
                             <select
+                              id={`adapter-secprofile-${adapter.id}`}
                               className={inputClass}
                               value={adapter.securityProfile ?? 2}
                               onChange={(e) =>
@@ -989,8 +1022,8 @@ export function AdapterConfigPanel() {
                           </div>
                           <div className="flex items-center justify-between rounded-xl border border-(--color-border) bg-(--color-surface) p-3 md:col-span-2">
                             <div>
-                              <p className="text-xs font-medium">ISO 15118 Plug & Charge</p>
-                              <p className="text-[10px] text-(--color-muted)">
+                              <p className="font-medium text-xs">ISO 15118 Plug & Charge</p>
+                              <p className="text-(--color-muted) text-[10px]">
                                 {t('adapterConfig.iso15118Hint')}
                               </p>
                             </div>
@@ -1003,34 +1036,42 @@ export function AdapterConfigPanel() {
                           </div>
                           {adapter.securityProfile === 3 && (
                             <div className="space-y-3 md:col-span-2">
-                              <div className="flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/5 px-3 py-2 text-xs text-amber-400">
+                              <div className="flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/5 px-3 py-2 text-amber-400 text-xs">
                                 <AlertTriangle size={14} />
                                 {t('adapterConfig.mtlsRequired')}
                               </div>
                               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                 <div className="space-y-2">
-                                  <label className="text-xs font-medium text-(--color-muted)">
+                                  <label
+                                    htmlFor={`adapter-cert-ocpp-${adapter.id}`}
+                                    className="font-medium text-(--color-muted) text-xs"
+                                  >
                                     {t('adapterConfig.clientCert')}
                                   </label>
                                   <textarea
+                                    id={`adapter-cert-ocpp-${adapter.id}`}
                                     value={adapter.clientCert ?? ''}
                                     onChange={(e) =>
                                       updateAdapter(adapter.id, { clientCert: e.target.value })
                                     }
-                                    className={inputClass + ' h-20 resize-none font-mono text-xs'}
+                                    className={`${inputClass} h-20 resize-none font-mono text-xs`}
                                     placeholder="-----BEGIN CERTIFICATE-----"
                                   />
                                 </div>
                                 <div className="space-y-2">
-                                  <label className="text-xs font-medium text-(--color-muted)">
+                                  <label
+                                    htmlFor={`adapter-key-ocpp-${adapter.id}`}
+                                    className="font-medium text-(--color-muted) text-xs"
+                                  >
                                     {t('adapterConfig.clientKey')}
                                   </label>
                                   <textarea
+                                    id={`adapter-key-ocpp-${adapter.id}`}
                                     value={adapter.clientKey ?? ''}
                                     onChange={(e) =>
                                       updateAdapter(adapter.id, { clientKey: e.target.value })
                                     }
-                                    className={inputClass + ' h-20 resize-none font-mono text-xs'}
+                                    className={`${inputClass} h-20 resize-none font-mono text-xs`}
                                     placeholder="-----BEGIN PRIVATE KEY-----"
                                   />
                                 </div>
@@ -1044,57 +1085,69 @@ export function AdapterConfigPanel() {
                     {/* EEBUS-specific */}
                     {adapter.type === 'eebus' && (
                       <div>
-                        <h3 className="mb-3 flex items-center gap-2 text-sm font-medium">
+                        <h3 className="mb-3 flex items-center gap-2 font-medium text-sm">
                           <Cable size={14} className="text-purple-400" />
                           {t('adapterConfig.eebusSpecific')}
                         </h3>
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                           <div className="space-y-2">
-                            <label className="text-xs font-medium text-(--color-muted)">
+                            <label
+                              htmlFor={`adapter-ski-${adapter.id}`}
+                              className="font-medium text-(--color-muted) text-xs"
+                            >
                               {t('adapterConfig.skiFingerprint')}
                             </label>
                             <input
+                              id={`adapter-ski-${adapter.id}`}
                               type="text"
                               value={adapter.skiFingerprint ?? ''}
                               onChange={(e) =>
                                 updateAdapter(adapter.id, { skiFingerprint: e.target.value })
                               }
-                              className={inputClass + ' font-mono'}
+                              className={`${inputClass} font-mono`}
                               placeholder="0123456789abcdef..."
                               maxLength={40}
                             />
-                            <p className="text-[10px] text-(--color-muted)">
+                            <p className="text-(--color-muted) text-[10px]">
                               {t('adapterConfig.skiFingerprintHint')}
                             </p>
                           </div>
                           <div className="space-y-3">
-                            <div className="flex items-center gap-2 rounded-lg border border-purple-500/20 bg-purple-500/5 px-3 py-2 text-xs text-purple-300">
+                            <div className="flex items-center gap-2 rounded-lg border border-purple-500/20 bg-purple-500/5 px-3 py-2 text-purple-300 text-xs">
                               <Shield size={14} />
                               {t('adapterConfig.eebusRequiresTls')}
                             </div>
                             <div className="space-y-2">
-                              <label className="text-xs font-medium text-(--color-muted)">
+                              <label
+                                htmlFor={`adapter-cert-eebus-${adapter.id}`}
+                                className="font-medium text-(--color-muted) text-xs"
+                              >
                                 {t('adapterConfig.clientCert')}
                               </label>
                               <textarea
+                                id={`adapter-cert-eebus-${adapter.id}`}
                                 value={adapter.clientCert ?? ''}
                                 onChange={(e) =>
                                   updateAdapter(adapter.id, { clientCert: e.target.value })
                                 }
-                                className={inputClass + ' h-20 resize-none font-mono text-xs'}
+                                className={`${inputClass} h-20 resize-none font-mono text-xs`}
                                 placeholder="-----BEGIN CERTIFICATE-----"
                               />
                             </div>
                             <div className="space-y-2">
-                              <label className="text-xs font-medium text-(--color-muted)">
+                              <label
+                                htmlFor={`adapter-key-eebus-${adapter.id}`}
+                                className="font-medium text-(--color-muted) text-xs"
+                              >
                                 {t('adapterConfig.clientKey')}
                               </label>
                               <textarea
+                                id={`adapter-key-eebus-${adapter.id}`}
                                 value={adapter.clientKey ?? ''}
                                 onChange={(e) =>
                                   updateAdapter(adapter.id, { clientKey: e.target.value })
                                 }
-                                className={inputClass + ' h-20 resize-none font-mono text-xs'}
+                                className={`${inputClass} h-20 resize-none font-mono text-xs`}
                                 placeholder="-----BEGIN PRIVATE KEY-----"
                               />
                             </div>
@@ -1106,21 +1159,21 @@ export function AdapterConfigPanel() {
                     {/* KNX-specific: GA Mapping */}
                     {adapter.type === 'knx' && (
                       <div>
-                        <h3 className="mb-3 flex items-center gap-2 text-sm font-medium">
+                        <h3 className="mb-3 flex items-center gap-2 font-medium text-sm">
                           <Radio size={14} className="text-green-400" />
                           {t('adapterConfig.knxSpecific')}
                         </h3>
                         <div className="mb-4 space-y-2">
-                          <label className="text-xs font-medium text-(--color-muted)">
+                          <p className="font-medium text-(--color-muted) text-xs">
                             {t('adapterConfig.knxTransport')}
-                          </label>
+                          </p>
                           <div className="grid grid-cols-2 gap-2">
                             {(['websocket', 'mqtt'] as const).map((tr) => (
                               <button
                                 key={tr}
                                 type="button"
                                 onClick={() => updateAdapter(adapter.id, { knxTransport: tr })}
-                                className={`rounded-lg border-2 p-2 text-center text-xs font-medium transition-all ${
+                                className={`rounded-lg border-2 p-2 text-center font-medium text-xs transition-all ${
                                   adapter.knxTransport === tr
                                     ? 'border-(--color-primary) bg-(--color-primary)/10 text-(--color-primary)'
                                     : 'border-(--color-border) bg-(--color-surface) text-(--color-muted) hover:border-(--color-primary)/40'
@@ -1140,11 +1193,11 @@ export function AdapterConfigPanel() {
                     )}
 
                     {/* Action Buttons */}
-                    <div className="flex items-center justify-between border-t border-(--color-border) pt-4">
+                    <div className="flex items-center justify-between border-(--color-border) border-t pt-4">
                       <motion.button
                         type="button"
                         onClick={() => removeAdapter(adapter.id)}
-                        className="flex items-center gap-2 rounded-xl border border-rose-500/30 bg-rose-500/5 px-3 py-2 text-xs text-rose-400 transition-colors hover:bg-rose-500/10"
+                        className="flex items-center gap-2 rounded-xl border border-rose-500/30 bg-rose-500/5 px-3 py-2 text-rose-400 text-xs transition-colors hover:bg-rose-500/10"
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                       >
@@ -1154,7 +1207,7 @@ export function AdapterConfigPanel() {
                       <motion.button
                         type="button"
                         onClick={() => handleSave(adapter.id)}
-                        className="flex items-center gap-2 rounded-xl bg-(--color-primary) px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
+                        className="flex items-center gap-2 rounded-xl bg-(--color-primary) px-4 py-2 font-medium text-sm text-white transition-opacity hover:opacity-90"
                         whileHover={{ scale: 1.02, y: -1 }}
                         whileTap={{ scale: 0.98 }}
                       >

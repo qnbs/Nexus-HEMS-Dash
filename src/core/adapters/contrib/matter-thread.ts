@@ -261,9 +261,9 @@ export class MatterThreadAdapter extends BaseAdapter {
   private parseNodeState(node: MatterNodeState): void {
     for (const ep of node.endpoints) {
       const elec = ep.clusters[CLUSTER.ELECTRICAL_MEASUREMENT];
-      if (elec && typeof elec['activePower'] === 'number') {
+      if (elec && typeof elec.activePower === 'number') {
         const existing = this.deviceReadings.get(node.nodeId) ?? { powerW: 0, energyKWh: 0 };
-        existing.powerW = elec['activePower'] as number;
+        existing.powerW = elec.activePower as number;
         this.deviceReadings.set(node.nodeId, existing);
       }
     }

@@ -104,7 +104,7 @@ export function ExportAndSharing() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="mb-4 flex items-center gap-2 rounded-2xl border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-400"
+            className="mb-4 flex items-center gap-2 rounded-2xl border border-red-500/30 bg-red-500/10 p-3 text-red-400 text-sm"
             role="alert"
             aria-live="assertive"
             aria-atomic="true"
@@ -118,7 +118,7 @@ export function ExportAndSharing() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="mb-4 flex items-center gap-2 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-400"
+            className="mb-4 flex items-center gap-2 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-emerald-400 text-sm"
             role="status"
             aria-live="polite"
             aria-atomic="true"
@@ -133,6 +133,7 @@ export function ExportAndSharing() {
         {/* PDF Export */}
         <div>
           <button
+            type="button"
             onClick={handleDownloadPdf}
             disabled={isGenerating}
             data-export-report
@@ -141,22 +142,23 @@ export function ExportAndSharing() {
             <FileDown className="h-5 w-5" aria-hidden="true" />
             {isGenerating ? t('export.generating') : t('export.downloadPdf')}
           </button>
-          <p className="mt-2 text-xs text-(--color-muted)">{t('export.pdfDescription')}</p>
+          <p className="mt-2 text-(--color-muted) text-xs">{t('export.pdfDescription')}</p>
         </div>
 
         {/* Divider */}
-        <div className="border-t border-(--color-border)" />
+        <div className="border-(--color-border) border-t" />
 
         {/* Share Link */}
         <div>
           <button
+            type="button"
             onClick={handleGenerateShareLink}
             className="btn-secondary focus-ring flex w-full items-center justify-center gap-2"
           >
             <Share2 className="h-5 w-5" aria-hidden="true" />
             {t('export.generateShareLink')}
           </button>
-          <p className="mt-2 text-xs text-(--color-muted)">{t('export.shareLinkDescription')}</p>
+          <p className="mt-2 text-(--color-muted) text-xs">{t('export.shareLinkDescription')}</p>
 
           {shareLink && (
             <motion.div
@@ -172,9 +174,10 @@ export function ExportAndSharing() {
                     readOnly
                     value={shareLink}
                     aria-label={t('export.shareInputLabel', 'Shareable link URL')}
-                    className="flex-1 rounded-lg bg-(--color-surface) px-3 py-2 text-sm text-(--color-text) outline-none"
+                    className="flex-1 rounded-lg bg-(--color-surface) px-3 py-2 text-(--color-text) text-sm outline-none"
                   />
                   <button
+                    type="button"
                     onClick={handleCopyLink}
                     className="focus-ring flex h-10 w-10 items-center justify-center rounded-lg bg-(--color-surface-strong) text-(--color-primary) hover:bg-(--color-surface-strong)"
                     aria-label={t('export.copyLink')}
@@ -186,14 +189,14 @@ export function ExportAndSharing() {
                 {/* QR Code */}
                 {qrCodeUrl && (
                   <div className="flex flex-col items-center">
-                    <div className="flex items-center gap-2 text-sm text-(--color-muted)">
+                    <div className="flex items-center gap-2 text-(--color-muted) text-sm">
                       <QrCode className="h-4 w-4" />
                       {t('export.qrCode')}
                     </div>
                     <img
                       src={qrCodeUrl}
                       alt={t('export.qrCodeAlt', 'QR code for shareable dashboard link')}
-                      className="mt-3 rounded-lg border-2 border-(--color-primary)"
+                      className="mt-3 rounded-lg border-(--color-primary) border-2"
                     />
                     <a
                       href={qrCodeUrl}

@@ -49,7 +49,7 @@ function LanguageOption({
       <span className="text-2xl" aria-hidden="true">
         {flag}
       </span>
-      <span className="text-sm font-medium text-white sm:text-base">{label}</span>
+      <span className="font-medium text-sm text-white sm:text-base">{label}</span>
       {active && (
         <motion.div
           layoutId="lang-check"
@@ -91,8 +91,8 @@ function FeatureCard({
         <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
       </div>
       <div className="min-w-0">
-        <p className="truncate text-sm font-semibold text-white">{title}</p>
-        <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-(--color-muted)">{desc}</p>
+        <p className="truncate font-semibold text-sm text-white">{title}</p>
+        <p className="mt-0.5 line-clamp-2 text-(--color-muted) text-xs leading-relaxed">{desc}</p>
       </div>
     </motion.div>
   );
@@ -109,13 +109,13 @@ function StepIndicator({ current, total }: { current: number; total: number }) {
       aria-valuemax={total}
       aria-label={t('accessibility.progressStep', { current: current + 1, total })}
     >
-      {Array.from({ length: total }, (_, i) => (
+      {Array.from({ length: total }, (_, i) => i).map((dotIdx) => (
         <motion.div
-          key={i}
+          key={`step-dot-${dotIdx}`}
           className={`h-1.5 rounded-full transition-all duration-300 sm:h-2 ${
-            i === current
+            dotIdx === current
               ? 'w-6 bg-(--color-primary) sm:w-8'
-              : i < current
+              : dotIdx < current
                 ? 'w-1.5 bg-(--color-primary)/50 sm:w-2'
                 : 'w-1.5 bg-white/20 sm:w-2'
           }`}
@@ -179,7 +179,7 @@ export function Onboarding() {
 
   return (
     <div
-      className="z-priority fixed inset-0 overflow-y-auto bg-(--color-bg)"
+      className="fixed inset-0 z-priority overflow-y-auto bg-(--color-bg)"
       role="dialog"
       aria-modal="true"
       aria-label={t('onboarding.welcome')}
@@ -209,8 +209,8 @@ export function Onboarding() {
               <Zap className="h-5 w-5 text-(--color-primary) sm:h-6 sm:w-6" />
             </div>
             <div>
-              <h1 className="fluid-text-lg font-bold tracking-tight text-white">Nexus HEMS</h1>
-              <p className="text-xs text-(--color-muted)">Dashboard</p>
+              <h1 className="fluid-text-lg font-bold text-white tracking-tight">Nexus HEMS</h1>
+              <p className="text-(--color-muted) text-xs">Dashboard</p>
             </div>
           </motion.div>
 
@@ -219,7 +219,7 @@ export function Onboarding() {
             {/* Step indicator */}
             <div className="mb-5 flex items-center justify-between sm:mb-6">
               <StepIndicator current={step} total={TOTAL_STEPS} />
-              <span className="text-xs text-(--color-muted)">
+              <span className="text-(--color-muted) text-xs">
                 {t('onboarding.step', { current: step + 1, total: TOTAL_STEPS })}
               </span>
             </div>
@@ -248,13 +248,13 @@ export function Onboarding() {
                     <h2 className="fluid-text-xl font-bold text-white">
                       {t('onboarding.welcome')}
                     </h2>
-                    <p className="mt-2 text-sm leading-relaxed text-(--color-muted)">
+                    <p className="mt-2 text-(--color-muted) text-sm leading-relaxed">
                       {t('onboarding.welcomeDesc')}
                     </p>
                   </div>
 
                   <div>
-                    <p className="mb-3 text-sm font-medium text-(--color-muted)">
+                    <p className="mb-3 font-medium text-(--color-muted) text-sm">
                       {t('onboarding.chooseLanguage')}
                     </p>
                     <div className="grid gap-3">
@@ -273,7 +273,7 @@ export function Onboarding() {
                         onSelect={handleLanguageChange}
                       />
                     </div>
-                    <p className="mt-2 text-xs text-(--color-muted)">{t('onboarding.langHint')}</p>
+                    <p className="mt-2 text-(--color-muted) text-xs">{t('onboarding.langHint')}</p>
                   </div>
                 </motion.div>
               )}
@@ -301,7 +301,7 @@ export function Onboarding() {
                     <h2 className="fluid-text-lg font-bold text-white">
                       {t('onboarding.energyFlow')}
                     </h2>
-                    <p className="mt-2 text-sm leading-relaxed text-(--color-muted)">
+                    <p className="mt-2 text-(--color-muted) text-sm leading-relaxed">
                       {t('onboarding.energyFlowDesc')}
                     </p>
                   </div>
@@ -311,7 +311,7 @@ export function Onboarding() {
                     <div className="flex items-center justify-between">
                       <div className="flex flex-col items-center gap-1">
                         <Sun className="h-5 w-5 text-amber-400 sm:h-6 sm:w-6" />
-                        <span className="text-[10px] text-(--color-muted)">PV</span>
+                        <span className="text-(--color-muted) text-[10px]">PV</span>
                       </div>
                       <motion.div
                         className="mx-2 h-0.5 flex-1 rounded-full bg-gradient-to-r from-amber-400 via-(--color-primary) to-(--color-secondary) sm:mx-3"
@@ -322,7 +322,7 @@ export function Onboarding() {
                       />
                       <div className="flex flex-col items-center gap-1">
                         <Home className="h-5 w-5 text-(--color-primary) sm:h-6 sm:w-6" />
-                        <span className="text-[10px] text-(--color-muted)">Home</span>
+                        <span className="text-(--color-muted) text-[10px]">Home</span>
                       </div>
                       <motion.div
                         className="mx-2 h-0.5 flex-1 rounded-full bg-gradient-to-r from-(--color-primary) to-(--color-secondary) sm:mx-3"
@@ -333,7 +333,7 @@ export function Onboarding() {
                       />
                       <div className="flex flex-col items-center gap-1">
                         <Battery className="h-5 w-5 text-(--color-secondary) sm:h-6 sm:w-6" />
-                        <span className="text-[10px] text-(--color-muted)">Battery</span>
+                        <span className="text-(--color-muted) text-[10px]">Battery</span>
                       </div>
                     </div>
                   </div>
@@ -379,7 +379,7 @@ export function Onboarding() {
                     <h2 className="fluid-text-lg font-bold text-white">
                       {t('onboarding.smartControl')}
                     </h2>
-                    <p className="mt-2 text-sm leading-relaxed text-(--color-muted)">
+                    <p className="mt-2 text-(--color-muted) text-sm leading-relaxed">
                       {t('onboarding.smartControlDesc')}
                     </p>
                   </div>
@@ -403,24 +403,26 @@ export function Onboarding() {
 
                   {/* Mini price chart illustration */}
                   <div className="rounded-2xl border border-white/10 bg-(--color-surface)/60 p-3 sm:p-4">
-                    <p className="mb-2 text-xs font-medium text-(--color-muted)">
+                    <p className="mb-2 font-medium text-(--color-muted) text-xs">
                       {t('onboarding.dynamicTariff')}
                     </p>
                     <div className="flex h-10 items-end gap-0.5 sm:h-12 sm:gap-1">
                       {[
                         0.18, 0.22, 0.15, 0.12, 0.08, 0.06, 0.05, 0.09, 0.14, 0.19, 0.25, 0.28,
                         0.24, 0.2, 0.16, 0.12, 0.1, 0.14, 0.22, 0.3, 0.35, 0.28, 0.22, 0.18,
-                      ].map((v, i) => (
-                        <motion.div
-                          key={i}
-                          className={`flex-1 rounded-t ${v < 0.12 ? 'bg-(--color-primary)' : v < 0.22 ? 'bg-(--color-secondary)' : 'bg-(--color-accent)'}`}
-                          initial={{ height: 0 }}
-                          animate={{ height: `${(v / 0.35) * 100}%` }}
-                          transition={{ delay: 0.05 * i, duration: 0.4 }}
-                        />
-                      ))}
+                      ]
+                        .map((v, barIdx) => ({ v, barIdx }))
+                        .map(({ v, barIdx }) => (
+                          <motion.div
+                            key={`price-bar-${barIdx}`}
+                            className={`flex-1 rounded-t ${v < 0.12 ? 'bg-(--color-primary)' : v < 0.22 ? 'bg-(--color-secondary)' : 'bg-(--color-accent)'}`}
+                            initial={{ height: 0 }}
+                            animate={{ height: `${(v / 0.35) * 100}%` }}
+                            transition={{ delay: 0.05 * barIdx, duration: 0.4 }}
+                          />
+                        ))}
                     </div>
-                    <div className="mt-1 flex justify-between text-[9px] text-(--color-muted)">
+                    <div className="mt-1 flex justify-between text-(--color-muted) text-[9px]">
                       <span>0h</span>
                       <span>6h</span>
                       <span>12h</span>
@@ -453,7 +455,7 @@ export function Onboarding() {
                     <h2 className="fluid-text-lg font-bold text-white">
                       {t('onboarding.aiOptimizer')}
                     </h2>
-                    <p className="mt-2 text-sm leading-relaxed text-(--color-muted)">
+                    <p className="mt-2 text-(--color-muted) text-sm leading-relaxed">
                       {t('onboarding.aiOptimizerDesc')}
                     </p>
                   </div>
@@ -462,7 +464,7 @@ export function Onboarding() {
                   <div className="rounded-2xl border border-white/10 bg-(--color-surface)/60 p-4 sm:p-5">
                     <div className="mb-3 flex items-center gap-3">
                       <Brain className="h-4 w-4 text-(--color-secondary)" />
-                      <span className="text-xs font-medium text-white">
+                      <span className="font-medium text-white text-xs">
                         {t('onboarding.aiRecommendations')}
                       </span>
                     </div>
@@ -482,9 +484,9 @@ export function Onboarding() {
                         icon: '🧠',
                         delay: 0.5,
                       },
-                    ].map((tip, i) => (
+                    ].map((tip, _i) => (
                       <motion.div
-                        key={i}
+                        key={tip.text}
                         className="mb-2 flex items-center gap-3 rounded-xl border border-white/5 bg-white/5 px-3 py-2.5 last:mb-0"
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
@@ -493,7 +495,7 @@ export function Onboarding() {
                         <span className="shrink-0 text-base" aria-hidden="true">
                           {tip.icon}
                         </span>
-                        <span className="min-w-0 text-xs text-(--color-muted)">{tip.text}</span>
+                        <span className="min-w-0 text-(--color-muted) text-xs">{tip.text}</span>
                       </motion.div>
                     ))}
                   </div>
@@ -521,7 +523,7 @@ export function Onboarding() {
                       <Rocket className="h-8 w-8 text-(--color-bg) sm:h-10 sm:w-10" />
                     </motion.div>
                     <h2 className="fluid-text-xl font-bold text-white">{t('onboarding.allSet')}</h2>
-                    <p className="mt-2 text-sm leading-relaxed text-(--color-muted)">
+                    <p className="mt-2 text-(--color-muted) text-sm leading-relaxed">
                       {t('onboarding.allSetDesc')}
                     </p>
                   </div>
@@ -547,7 +549,7 @@ export function Onboarding() {
                       },
                     ].map((item, i) => (
                       <motion.div
-                        key={i}
+                        key={item.text}
                         className="flex items-center gap-3 rounded-xl border border-(--color-primary)/20 bg-(--color-primary)/5 px-3 py-2.5 sm:px-4 sm:py-3"
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
@@ -570,7 +572,7 @@ export function Onboarding() {
                 {step > 0 ? (
                   <motion.button
                     onClick={goBack}
-                    className="focus-ring flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-(--color-muted) transition-colors hover:border-white/20 hover:text-white sm:px-4 sm:py-2.5"
+                    className="focus-ring flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-(--color-muted) text-sm transition-colors hover:border-white/20 hover:text-white sm:px-4 sm:py-2.5"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
@@ -580,7 +582,7 @@ export function Onboarding() {
                 ) : (
                   <motion.button
                     onClick={skip}
-                    className="focus-ring rounded-lg px-3 py-2 text-sm text-(--color-muted) transition-colors hover:text-white"
+                    className="focus-ring rounded-lg px-3 py-2 text-(--color-muted) text-sm transition-colors hover:text-white"
                     whileHover={{ scale: 1.02 }}
                     aria-label={t('accessibility.skipOnboarding')}
                   >
@@ -593,7 +595,7 @@ export function Onboarding() {
                 {step < TOTAL_STEPS - 1 ? (
                   <motion.button
                     onClick={goNext}
-                    className="focus-ring flex items-center gap-2 rounded-xl bg-gradient-to-r from-(--color-primary) to-(--color-secondary) px-5 py-2 text-sm font-semibold text-(--color-bg) shadow-[0_0_20px_#38bdf830] transition-shadow hover:shadow-[0_0_30px_#38bdf850] sm:px-6 sm:py-2.5"
+                    className="focus-ring flex items-center gap-2 rounded-xl bg-gradient-to-r from-(--color-primary) to-(--color-secondary) px-5 py-2 font-semibold text-(--color-bg) text-sm shadow-[0_0_20px_#38bdf830] transition-shadow hover:shadow-[0_0_30px_#38bdf850] sm:px-6 sm:py-2.5"
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.97 }}
                   >
@@ -603,7 +605,7 @@ export function Onboarding() {
                 ) : (
                   <motion.button
                     onClick={finish}
-                    className="focus-ring flex items-center gap-2 rounded-xl bg-gradient-to-r from-(--color-primary) to-(--color-secondary) px-6 py-2.5 text-sm font-bold text-(--color-bg) shadow-[0_0_30px_#38bdf840] transition-shadow hover:shadow-[0_0_40px_#38bdf860] sm:px-8 sm:py-3"
+                    className="focus-ring flex items-center gap-2 rounded-xl bg-gradient-to-r from-(--color-primary) to-(--color-secondary) px-6 py-2.5 font-bold text-(--color-bg) text-sm shadow-[0_0_30px_#38bdf840] transition-shadow hover:shadow-[0_0_40px_#38bdf860] sm:px-8 sm:py-3"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     initial={{ opacity: 0 }}
@@ -622,7 +624,7 @@ export function Onboarding() {
           {step > 0 && step < TOTAL_STEPS - 1 && (
             <motion.button
               onClick={skip}
-              className="mt-4 text-xs text-(--color-muted) transition-colors hover:text-white"
+              className="mt-4 text-(--color-muted) text-xs transition-colors hover:text-white"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5 }}

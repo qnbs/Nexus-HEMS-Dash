@@ -30,9 +30,9 @@ export function EmptyState({ icon: Icon, title, description, action, pulse }: Em
         </div>
       </div>
       <div className="space-y-1">
-        <p className="text-sm font-medium text-(--color-text)">{title}</p>
+        <p className="font-medium text-(--color-text) text-sm">{title}</p>
         {description && (
-          <p className="max-w-xs text-xs leading-relaxed text-(--color-muted)">{description}</p>
+          <p className="max-w-xs text-(--color-muted) text-xs leading-relaxed">{description}</p>
         )}
       </div>
       {action && <div className="mt-2">{action}</div>}

@@ -712,7 +712,7 @@ export class MetricsCollector {
   private formatLabels(labels: Record<string, string>): string {
     const entries = Object.entries(labels);
     if (entries.length === 0) return '';
-    return '{' + entries.map(([k, v]) => `${k}="${v}"`).join(',') + '}';
+    return `{${entries.map(([k, v]) => `${k}="${v}"`).join(',')}}`;
   }
 
   private getProtocol(adapterId: string): string {

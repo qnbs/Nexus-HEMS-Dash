@@ -129,10 +129,10 @@ export default function AISettingsPage() {
           <Key className="text-(--color-primary)" size={28} />
         </motion.div>
         <div>
-          <h1 className="fluid-text-4xl text-3xl font-light tracking-tight">
+          <h1 className="fluid-text-4xl font-light text-3xl tracking-tight">
             {t('aiSettings.title', 'AI Provider Keys')}
           </h1>
-          <p className="mt-1 text-sm text-(--color-muted)">
+          <p className="mt-1 text-(--color-muted) text-sm">
             {t('aiSettings.subtitle', 'Bring Your Own Key — encrypted with AES-GCM 256-bit')}
           </p>
         </div>
@@ -146,7 +146,7 @@ export default function AISettingsPage() {
         transition={{ delay: 0.2 }}
       >
         <Shield className="mt-0.5 h-5 w-5 shrink-0 text-(--color-primary)" />
-        <div className="text-sm text-(--color-muted)">
+        <div className="text-(--color-muted) text-sm">
           <p className="font-medium text-(--color-text)">
             {t('aiSettings.securityTitle', 'End-to-End Encrypted')}
           </p>
@@ -166,7 +166,7 @@ export default function AISettingsPage() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="mb-4 flex items-center gap-2 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-400"
+            className="mb-4 flex items-center gap-2 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-emerald-400 text-sm"
           >
             <Check className="h-4 w-4" />
             {success}
@@ -177,7 +177,7 @@ export default function AISettingsPage() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="mb-4 flex items-center gap-2 rounded-2xl border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-400"
+            className="mb-4 flex items-center gap-2 rounded-2xl border border-red-500/30 bg-red-500/10 p-3 text-red-400 text-sm"
           >
             <AlertTriangle className="h-4 w-4" />
             {error}
@@ -226,7 +226,7 @@ export default function AISettingsPage() {
                     <p className="truncate font-medium text-(--color-text)">
                       {AI_PROVIDERS[key.provider]?.label ?? key.provider}
                     </p>
-                    <p className="truncate text-xs text-(--color-muted)">
+                    <p className="truncate text-(--color-muted) text-xs">
                       {key.model} · {t('aiSettings.lastUsed', 'Last used')}{' '}
                       {new Date(key.lastUsed).toLocaleDateString()}
                     </p>
@@ -236,6 +236,7 @@ export default function AISettingsPage() {
                 <div className="flex shrink-0 items-center gap-2 self-end sm:self-auto">
                   {activeProvider !== key.provider && (
                     <button
+                      type="button"
                       onClick={() => handleSetActive(key.provider)}
                       className="btn-secondary focus-ring rounded-full px-3 py-1.5 text-xs active:scale-[0.95]"
                     >
@@ -243,11 +244,12 @@ export default function AISettingsPage() {
                     </button>
                   )}
                   {activeProvider === key.provider && (
-                    <span className="rounded-full bg-(--color-primary)/20 px-3 py-1 text-xs font-medium text-(--color-primary)">
+                    <span className="rounded-full bg-(--color-primary)/20 px-3 py-1 font-medium text-(--color-primary) text-xs">
                       {t('common.active')}
                     </span>
                   )}
                   <button
+                    type="button"
                     onClick={() => handleRemove(key.provider)}
                     className="focus-ring rounded-full p-2 text-red-400 transition-colors hover:bg-red-500/10 active:scale-[0.9]"
                     aria-label={t('aiSettings.remove', 'Remove key')}
@@ -295,7 +297,7 @@ export default function AISettingsPage() {
                   whileTap={isConfigured ? {} : { scale: 0.97 }}
                 >
                   <Key className="h-5 w-5 text-(--color-secondary)" />
-                  <span className="text-sm font-medium">{p.label}</span>
+                  <span className="font-medium text-sm">{p.label}</span>
                   {isConfigured && <Check className="h-4 w-4 text-(--color-primary)" />}
                 </motion.button>
               );
@@ -313,12 +315,13 @@ export default function AISettingsPage() {
                 {AI_PROVIDERS[addingProvider].label}
               </h3>
               <button
+                type="button"
                 onClick={() => {
                   setAddingProvider(null);
                   setApiKeyInput('');
                   setError(null);
                 }}
-                className="text-sm text-(--color-muted) hover:text-(--color-text)"
+                className="text-(--color-muted) text-sm hover:text-(--color-text)"
               >
                 {t('aiSettings.cancel', 'Cancel')}
               </button>
@@ -326,7 +329,7 @@ export default function AISettingsPage() {
 
             {/* API Key Input */}
             <div className="space-y-2">
-              <label htmlFor="ai-api-key" className="text-sm font-medium text-(--color-muted)">
+              <label htmlFor="ai-api-key" className="font-medium text-(--color-muted) text-sm">
                 API Key
               </label>
               <div className="relative">
@@ -337,7 +340,7 @@ export default function AISettingsPage() {
                   onChange={(e) => setApiKeyInput(e.target.value)}
                   placeholder="sk-..."
                   autoComplete="off"
-                  className="w-full rounded-xl border border-(--color-border) bg-(--color-surface) px-4 py-2.5 pr-10 text-(--color-text) transition-colors outline-none focus:border-(--color-primary)/50 focus:ring-2 focus:ring-(--color-primary)/20"
+                  className="w-full rounded-xl border border-(--color-border) bg-(--color-surface) px-4 py-2.5 pr-10 text-(--color-text) outline-none transition-colors focus:border-(--color-primary)/50 focus:ring-(--color-primary)/20 focus:ring-2"
                 />
                 <button
                   type="button"
@@ -352,7 +355,7 @@ export default function AISettingsPage() {
 
             {/* Model Selection */}
             <div className="space-y-2">
-              <label htmlFor="ai-model" className="text-sm font-medium text-(--color-muted)">
+              <label htmlFor="ai-model" className="font-medium text-(--color-muted) text-sm">
                 {t('aiSettings.model', 'Model')}
               </label>
               {AI_PROVIDERS[addingProvider].models.length > 0 ? (
@@ -360,7 +363,7 @@ export default function AISettingsPage() {
                   id="ai-model"
                   value={modelInput}
                   onChange={(e) => setModelInput(e.target.value)}
-                  className="w-full rounded-xl border border-(--color-border) bg-(--color-surface) px-4 py-2.5 text-(--color-text) transition-colors outline-none focus:border-(--color-primary)/50 focus:ring-2 focus:ring-(--color-primary)/20"
+                  className="w-full rounded-xl border border-(--color-border) bg-(--color-surface) px-4 py-2.5 text-(--color-text) outline-none transition-colors focus:border-(--color-primary)/50 focus:ring-(--color-primary)/20 focus:ring-2"
                 >
                   {AI_PROVIDERS[addingProvider].models.map((m) => (
                     <option key={m} value={m}>
@@ -375,7 +378,7 @@ export default function AISettingsPage() {
                   value={modelInput}
                   onChange={(e) => setModelInput(e.target.value)}
                   placeholder="model-name"
-                  className="w-full rounded-xl border border-(--color-border) bg-(--color-surface) px-4 py-2.5 text-(--color-text) transition-colors outline-none focus:border-(--color-primary)/50 focus:ring-2 focus:ring-(--color-primary)/20"
+                  className="w-full rounded-xl border border-(--color-border) bg-(--color-surface) px-4 py-2.5 text-(--color-text) outline-none transition-colors focus:border-(--color-primary)/50 focus:ring-(--color-primary)/20 focus:ring-2"
                 />
               )}
             </div>
@@ -383,7 +386,7 @@ export default function AISettingsPage() {
             {/* Custom Base URL (for 'custom' and 'ollama') */}
             {(addingProvider === 'custom' || addingProvider === 'ollama') && (
               <div className="space-y-2">
-                <label htmlFor="ai-base-url" className="text-sm font-medium text-(--color-muted)">
+                <label htmlFor="ai-base-url" className="font-medium text-(--color-muted) text-sm">
                   Base URL
                 </label>
                 <input
@@ -392,12 +395,13 @@ export default function AISettingsPage() {
                   value={customUrlInput}
                   onChange={(e) => setCustomUrlInput(e.target.value)}
                   placeholder="https://..."
-                  className="w-full rounded-xl border border-(--color-border) bg-(--color-surface) px-4 py-2.5 text-(--color-text) transition-colors outline-none focus:border-(--color-primary)/50 focus:ring-2 focus:ring-(--color-primary)/20"
+                  className="w-full rounded-xl border border-(--color-border) bg-(--color-surface) px-4 py-2.5 text-(--color-text) outline-none transition-colors focus:border-(--color-primary)/50 focus:ring-(--color-primary)/20 focus:ring-2"
                 />
               </div>
             )}
 
             <button
+              type="button"
               onClick={handleSave}
               disabled={saving || !apiKeyInput.trim()}
               className="btn-primary focus-ring flex items-center gap-2"

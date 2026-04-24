@@ -61,7 +61,7 @@ function SettingsFeatureBar({ tabId }: { tabId: SettingsTabId }) {
 
   return (
     <div className="mb-4 rounded-xl border border-(--color-primary)/15 bg-(--color-primary)/5 p-3">
-      <p className="mb-2 text-[10px] font-semibold tracking-wider text-(--color-primary) uppercase">
+      <p className="mb-2 font-semibold text-(--color-primary) text-[10px] uppercase tracking-wider">
         {t('crossLinks.affectedFeatures')}
       </p>
       <div className="flex flex-wrap gap-2">
@@ -73,7 +73,7 @@ function SettingsFeatureBar({ tabId }: { tabId: SettingsTabId }) {
             <Link
               key={pageId}
               to={page.path}
-              className="focus-ring inline-flex items-center gap-1.5 rounded-lg border border-(--color-border)/30 bg-white/5 px-2.5 py-1.5 text-xs text-(--color-text) transition-colors hover:bg-white/10 hover:text-(--color-primary)"
+              className="focus-ring inline-flex items-center gap-1.5 rounded-lg border border-(--color-border)/30 bg-white/5 px-2.5 py-1.5 text-(--color-text) text-xs transition-colors hover:bg-white/10 hover:text-(--color-primary)"
             >
               <Icon size={12} aria-hidden="true" />
               {t(page.i18nKey)}
@@ -126,7 +126,7 @@ function ThemePreviewCard({
         <span className="h-6 w-6 rounded-full border border-white/20" style={{ background: c2 }} />
         <span className="h-6 w-6 rounded-full border border-white/20" style={{ background: c3 }} />
       </div>
-      <span className="text-xs font-medium">{def.label}</span>
+      <span className="font-medium text-xs">{def.label}</span>
       {isActive && (
         <motion.div
           layoutId="theme-check"
@@ -161,11 +161,12 @@ function ToggleSwitch({
         className="peer sr-only"
       />
       <span className="sr-only">{label}</span>
-      <div className="h-6 w-11 rounded-full border border-(--color-border) bg-(--color-surface) transition-colors duration-300 peer-checked:bg-(--color-primary) peer-focus:ring-2 peer-focus:ring-(--color-primary)/30 after:absolute after:top-[2px] after:left-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow-sm after:transition-transform after:duration-300 peer-checked:after:translate-x-5" />
+      <div className="h-6 w-11 rounded-full border border-(--color-border) bg-(--color-surface) transition-colors duration-300 after:absolute after:top-[2px] after:left-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow-sm after:transition-transform after:duration-300 peer-checked:bg-(--color-primary) peer-checked:after:translate-x-5 peer-focus:ring-(--color-primary)/30 peer-focus:ring-2" />
     </label>
   );
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: PWA install and service worker state management
 function PWASettingsSection() {
   const { t } = useTranslation();
   const { canInstall, isIOSDevice, isInstalled, install } = usePWAInstall();
@@ -279,10 +280,10 @@ function PWASettingsSection() {
           {/* Install status */}
           <div className={rowClass}>
             <div>
-              <p className="text-sm font-medium">
+              <p className="font-medium text-sm">
                 {t('settings_pwa.installStatus', 'Installation')}
               </p>
-              <p className="text-xs text-(--color-muted)">
+              <p className="text-(--color-muted) text-xs">
                 {isInstalled
                   ? t('settings_pwa.installed', 'App is installed on this device')
                   : isIOSDevice
@@ -300,7 +301,7 @@ function PWASettingsSection() {
             </div>
             <div className="flex items-center gap-2">
               {isInstalled ? (
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-xs font-medium text-emerald-400">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 font-medium text-emerald-400 text-xs">
                   <CheckCircle2 size={14} />
                   {t('settings_pwa.installedBadge', 'Installed')}
                 </span>
@@ -308,7 +309,7 @@ function PWASettingsSection() {
                 <motion.button
                   onClick={handleInstall}
                   disabled={installing}
-                  className="focus-ring flex items-center gap-2 rounded-xl bg-(--color-primary) px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+                  className="focus-ring flex items-center gap-2 rounded-xl bg-(--color-primary) px-4 py-2 font-medium text-sm text-white transition-opacity hover:opacity-90 disabled:opacity-50"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
@@ -324,10 +325,10 @@ function PWASettingsSection() {
           {/* Service Worker status */}
           <div className={rowClass}>
             <div>
-              <p className="text-sm font-medium">
+              <p className="font-medium text-sm">
                 {t('settings_pwa.serviceWorker', 'Service Worker')}
               </p>
-              <p className="text-xs text-(--color-muted)">
+              <p className="text-(--color-muted) text-xs">
                 {swStatus === 'active'
                   ? t('settings_pwa.swActive', 'Active — offline mode enabled')
                   : swStatus === 'waiting'
@@ -337,7 +338,7 @@ function PWASettingsSection() {
             </div>
             <div className="flex items-center gap-2">
               <span
-                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium ${
+                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 font-medium text-xs ${
                   swStatus === 'active'
                     ? 'border border-emerald-500/30 bg-emerald-500/10 text-emerald-400'
                     : swStatus === 'waiting'
@@ -367,23 +368,23 @@ function PWASettingsSection() {
           {/* Force update check */}
           <div className={rowClass}>
             <div>
-              <p className="text-sm font-medium">
+              <p className="font-medium text-sm">
                 {t('settings_pwa.forceUpdate', 'Check for Update')}
               </p>
-              <p className="text-xs text-(--color-muted)">
+              <p className="text-(--color-muted) text-xs">
                 {updateStatus === 'checking'
                   ? t('settings_pwa.forceUpdateChecking', 'Checking…')
                   : updateStatus === 'found'
                     ? t('settings_pwa.forceUpdateFound', 'Update found — restarting…')
                     : updateStatus === 'none'
                       ? t('settings_pwa.forceUpdateNone', 'Already up to date')
-                      : t('settings_pwa.appVersion', 'App Version') + ' 4.6.0'}
+                      : `${t('settings_pwa.appVersion', 'App Version')} 4.6.0`}
               </p>
             </div>
             <motion.button
               onClick={handleForceUpdate}
               disabled={updateStatus === 'checking' || updateStatus === 'found'}
-              className="focus-ring flex items-center gap-2 rounded-xl border border-(--color-border) bg-(--color-surface-strong) px-3 py-2 text-xs text-(--color-muted) transition-colors hover:border-(--color-primary)/30 hover:text-(--color-primary) disabled:opacity-50"
+              className="focus-ring flex items-center gap-2 rounded-xl border border-(--color-border) bg-(--color-surface-strong) px-3 py-2 text-(--color-muted) text-xs transition-colors hover:border-(--color-primary)/30 hover:text-(--color-primary) disabled:opacity-50"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
@@ -397,8 +398,8 @@ function PWASettingsSection() {
           {/* Cache info */}
           <div className={rowClass}>
             <div>
-              <p className="text-sm font-medium">{t('settings_pwa.cache', 'Cache Storage')}</p>
-              <p className="text-xs text-(--color-muted)">
+              <p className="font-medium text-sm">{t('settings_pwa.cache', 'Cache Storage')}</p>
+              <p className="text-(--color-muted) text-xs">
                 {cacheSize
                   ? t('settings_pwa.cacheSize', 'Using {{size}} of device storage', {
                       size: cacheSize,
@@ -408,7 +409,7 @@ function PWASettingsSection() {
             </div>
             <motion.button
               onClick={handleClearCache}
-              className="focus-ring flex items-center gap-2 rounded-xl border border-(--color-border) bg-(--color-surface-strong) px-3 py-2 text-xs text-(--color-muted) transition-colors hover:border-rose-500/30 hover:text-rose-400"
+              className="focus-ring flex items-center gap-2 rounded-xl border border-(--color-border) bg-(--color-surface-strong) px-3 py-2 text-(--color-muted) text-xs transition-colors hover:border-rose-500/30 hover:text-rose-400"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
@@ -420,10 +421,10 @@ function PWASettingsSection() {
           {/* Persistent storage */}
           <div className={rowClass}>
             <div>
-              <p className="text-sm font-medium">
+              <p className="font-medium text-sm">
                 {t('settings_pwa.persistentStorage', 'Persistent Storage')}
               </p>
-              <p className="text-xs text-(--color-muted)">
+              <p className="text-(--color-muted) text-xs">
                 {persistedStorage === true
                   ? t(
                       'settings_pwa.persistentStorageGranted',
@@ -436,14 +437,14 @@ function PWASettingsSection() {
               </p>
             </div>
             {persistedStorage === true ? (
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-xs font-medium text-emerald-400">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 font-medium text-emerald-400 text-xs">
                 <Lock size={12} />
                 {t('common.active', 'Active')}
               </span>
             ) : (
               <motion.button
                 onClick={handleRequestPersistence}
-                className="focus-ring flex items-center gap-2 rounded-xl border border-(--color-border) bg-(--color-surface-strong) px-3 py-2 text-xs text-(--color-muted) transition-colors hover:border-(--color-primary)/30 hover:text-(--color-primary)"
+                className="focus-ring flex items-center gap-2 rounded-xl border border-(--color-border) bg-(--color-surface-strong) px-3 py-2 text-(--color-muted) text-xs transition-colors hover:border-(--color-primary)/30 hover:text-(--color-primary)"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
@@ -459,6 +460,7 @@ function PWASettingsSection() {
   );
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: settings page with multiple hardware config sections
 export function Settings() {
   const { t, i18n } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -663,7 +665,7 @@ export function Settings() {
           </motion.div>
           <div>
             <h1 className="fluid-text-2xl font-semibold tracking-tight">{t('settings.title')}</h1>
-            <p className="text-sm text-(--color-muted)">
+            <p className="text-(--color-muted) text-sm">
               {t('settings.subtitle', 'Configure your HEMS dashboard')}
             </p>
           </div>
@@ -699,7 +701,7 @@ export function Settings() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="mb-4 flex items-center gap-2 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-400"
+            className="mb-4 flex items-center gap-2 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-emerald-400 text-sm"
             role="status"
           >
             <Check size={16} className="shrink-0" aria-hidden="true" />
@@ -711,7 +713,7 @@ export function Settings() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="mb-4 flex items-center gap-2 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-400"
+            className="mb-4 flex items-center gap-2 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-emerald-400 text-sm"
             role="status"
           >
             <Check size={16} className="shrink-0" aria-hidden="true" />
@@ -731,12 +733,13 @@ export function Settings() {
             {tabs.map((tab) => (
               <button
                 key={tab.key}
+                type="button"
                 onClick={() => handleTabChange(tab.key)}
                 role="tab"
                 aria-selected={activeTab === tab.key}
                 aria-controls={`tabpanel-${tab.key}`}
                 id={`tab-${tab.key}`}
-                className={`flex items-center gap-2.5 rounded-xl px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-all duration-200 active:scale-[0.97] ${
+                className={`flex items-center gap-2.5 whitespace-nowrap rounded-xl px-4 py-2.5 font-medium text-sm transition-all duration-200 active:scale-[0.97] ${
                   activeTab === tab.key
                     ? 'bg-(--color-primary)/15 text-(--color-primary) shadow-[inset_0_0_0_1px_var(--color-primary)/20]'
                     : 'text-(--color-muted) hover:bg-white/5 hover:text-(--color-text)'
@@ -779,10 +782,10 @@ export function Settings() {
                       <div className="flex items-center gap-3">
                         <Monitor size={20} className="text-(--color-muted)" />
                         <div>
-                          <p className="text-sm font-medium">
+                          <p className="font-medium text-sm">
                             {t('settings.systemTheme', 'Follow system preference')}
                           </p>
-                          <p className="text-xs text-(--color-muted)">
+                          <p className="text-(--color-muted) text-xs">
                             {t(
                               'settings.systemThemeHint',
                               'Automatically switch between light and dark themes',
@@ -832,10 +835,10 @@ export function Settings() {
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm font-medium">
+                          <p className="font-medium text-sm">
                             {t('settings.animations', 'Animations')}
                           </p>
-                          <p className="text-xs text-(--color-muted)">
+                          <p className="text-(--color-muted) text-xs">
                             {t(
                               'settings.animationsHint',
                               'Enable smooth transitions and motion effects',
@@ -851,10 +854,10 @@ export function Settings() {
                       </div>
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm font-medium">
+                          <p className="font-medium text-sm">
                             {t('settings.compactMode', 'Compact mode')}
                           </p>
-                          <p className="text-xs text-(--color-muted)">
+                          <p className="text-(--color-muted) text-xs">
                             {t(
                               'settings.compactModeHint',
                               'Reduce spacing for more content on screen',
@@ -870,10 +873,10 @@ export function Settings() {
                       </div>
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm font-medium">
+                          <p className="font-medium text-sm">
                             {t('settings.glowEffects', 'Glow effects')}
                           </p>
-                          <p className="text-xs text-(--color-muted)">
+                          <p className="text-(--color-muted) text-xs">
                             {t('settings.glowEffectsHint', 'Neon glow and glassmorphism effects')}
                           </p>
                         </div>
@@ -894,14 +897,14 @@ export function Settings() {
                       {t('settings.languageTitle', 'Language & Region')}
                     </h2>
                     <div className="mb-4 flex items-center gap-3">
-                      <span className="text-sm text-(--color-muted)">
+                      <span className="text-(--color-muted) text-sm">
                         {t('settings.quickSwitch', 'Quick switch')}:
                       </span>
                       <LanguageSwitcher />
                     </div>
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <div className="space-y-2">
-                        <label htmlFor="settings-language" className="text-sm font-medium">
+                        <label htmlFor="settings-language" className="font-medium text-sm">
                           {t('common.language')}
                         </label>
                         <select
@@ -919,7 +922,7 @@ export function Settings() {
                         </select>
                       </div>
                       <div className="space-y-2">
-                        <label htmlFor="settings-units" className="text-sm font-medium">
+                        <label htmlFor="settings-units" className="font-medium text-sm">
                           {t('settings.units', 'Units')}
                         </label>
                         <select
@@ -939,7 +942,7 @@ export function Settings() {
                         </select>
                       </div>
                       <div className="space-y-2">
-                        <label htmlFor="settings-dateformat" className="text-sm font-medium">
+                        <label htmlFor="settings-dateformat" className="font-medium text-sm">
                           {t('settings.dateFormat', 'Date format')}
                         </label>
                         <select
@@ -961,7 +964,7 @@ export function Settings() {
                         </select>
                       </div>
                       <div className="space-y-2">
-                        <label htmlFor="settings-currency" className="text-sm font-medium">
+                        <label htmlFor="settings-currency" className="font-medium text-sm">
                           {t('settings.currency', 'Currency')}
                         </label>
                         <select
@@ -991,19 +994,19 @@ export function Settings() {
                       <div className="space-y-3">
                         <div className="flex items-center justify-between">
                           <div>
-                            <p className="text-sm font-medium">
+                            <p className="font-medium text-sm">
                               {t('settings.fontScale', 'Font size')}
                             </p>
-                            <p className="text-xs text-(--color-muted)">
+                            <p className="text-(--color-muted) text-xs">
                               {t('settings.fontScaleHint', 'Adjust the global font size scaling')}
                             </p>
                           </div>
-                          <span className="font-mono text-sm text-(--color-primary) tabular-nums">
+                          <span className="font-mono text-(--color-primary) text-sm tabular-nums">
                             {Math.round((settings.fontScale ?? 1.0) * 100)}%
                           </span>
                         </div>
                         <div className="flex items-center gap-3">
-                          <span className="text-xs text-(--color-muted)">A</span>
+                          <span className="text-(--color-muted) text-xs">A</span>
                           <input
                             type="range"
                             min={0.85}
@@ -1015,16 +1018,16 @@ export function Settings() {
                             aria-label={t('settings.fontScale', 'Font size')}
                             aria-valuetext={`${Math.round((settings.fontScale ?? 1.0) * 100)}%`}
                           />
-                          <span className="text-base font-medium text-(--color-muted)">A</span>
+                          <span className="font-medium text-(--color-muted) text-base">A</span>
                         </div>
                       </div>
                       {/* Reduced Motion */}
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm font-medium">
+                          <p className="font-medium text-sm">
                             {t('settings.reducedMotion', 'Reduced motion')}
                           </p>
-                          <p className="text-xs text-(--color-muted)">
+                          <p className="text-(--color-muted) text-xs">
                             {t(
                               'settings.reducedMotionHint',
                               'Minimize animations for motion-sensitive users',
@@ -1041,10 +1044,10 @@ export function Settings() {
                       {/* High Contrast */}
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm font-medium">
+                          <p className="font-medium text-sm">
                             {t('settings.highContrast', 'High contrast')}
                           </p>
-                          <p className="text-xs text-(--color-muted)">
+                          <p className="text-(--color-muted) text-xs">
                             {t(
                               'settings.highContrastHint',
                               'Increase contrast ratios for better readability',
@@ -1085,7 +1088,7 @@ export function Settings() {
                     <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                       {/* Gateway Type Selector */}
                       <div className="space-y-2 md:col-span-2">
-                        <label className="text-sm font-medium">{t('settings.gatewayType')}</label>
+                        <p className="font-medium text-sm">{t('settings.gatewayType')}</p>
                         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                           {[
                             {
@@ -1115,42 +1118,51 @@ export function Settings() {
                               }`}
                               aria-pressed={settings.gatewayType === gw.value}
                             >
-                              <span className="text-sm font-medium">{gw.label}</span>
-                              <p className="mt-1 text-xs text-(--color-muted)">{gw.desc}</p>
+                              <span className="font-medium text-sm">{gw.label}</span>
+                              <p className="mt-1 text-(--color-muted) text-xs">{gw.desc}</p>
                             </button>
                           ))}
                         </div>
                       </div>
 
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">{t('settings.victronIp')}</label>
+                        <label htmlFor="settings-victron-ip" className="font-medium text-sm">
+                          {t('settings.victronIp')}
+                        </label>
                         <input
+                          id="settings-victron-ip"
                           type="text"
                           value={settings.victronIp}
                           onChange={(e) => updateSettings({ victronIp: e.target.value })}
                           className={inputClass}
                           placeholder="192.168.1.100"
                         />
-                        <p className="text-xs text-(--color-muted)">
+                        <p className="text-(--color-muted) text-xs">
                           {t('settings.victronIpHint', 'IP address of your Victron Cerbo GX')}
                         </p>
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">{t('settings.knxIp')}</label>
+                        <label htmlFor="settings-knx-ip" className="font-medium text-sm">
+                          {t('settings.knxIp')}
+                        </label>
                         <input
+                          id="settings-knx-ip"
                           type="text"
                           value={settings.knxIp}
                           onChange={(e) => updateSettings({ knxIp: e.target.value })}
                           className={inputClass}
                           placeholder="192.168.1.101"
                         />
-                        <p className="text-xs text-(--color-muted)">
+                        <p className="text-(--color-muted) text-xs">
                           {t('settings.knxIpHint', 'IP address of your KNX IP router')}
                         </p>
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">{t('settings.wsPort')}</label>
+                        <label htmlFor="settings-ws-port" className="font-medium text-sm">
+                          {t('settings.wsPort')}
+                        </label>
                         <input
+                          id="settings-ws-port"
                           type="number"
                           value={settings.wsPort}
                           onChange={(e) => updateSettings({ wsPort: Number(e.target.value) })}
@@ -1158,13 +1170,16 @@ export function Settings() {
                           min={1}
                           max={65535}
                         />
-                        <p className="text-xs text-(--color-muted)">
+                        <p className="text-(--color-muted) text-xs">
                           {t('settings.wsPortHint', 'Node-RED WebSocket port (default: 1880)')}
                         </p>
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">{t('settings.refreshRate')}</label>
+                        <label htmlFor="settings-refresh-rate" className="font-medium text-sm">
+                          {t('settings.refreshRate')}
+                        </label>
                         <input
+                          id="settings-refresh-rate"
                           type="number"
                           value={settings.refreshRateMs}
                           onChange={(e) =>
@@ -1175,7 +1190,7 @@ export function Settings() {
                           max={30000}
                           step={100}
                         />
-                        <p className="text-xs text-(--color-muted)">
+                        <p className="text-(--color-muted) text-xs">
                           {t('settings.refreshRateHint', 'Data polling interval in milliseconds')}
                         </p>
                       </div>
@@ -1202,8 +1217,8 @@ export function Settings() {
                             className={`h-2.5 w-2.5 rounded-full ${device.status ? 'bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.6)]' : 'bg-rose-400'}`}
                           />
                           <div>
-                            <p className="text-sm font-medium">{device.name}</p>
-                            <p className="text-xs text-(--color-muted)">
+                            <p className="font-medium text-sm">{device.name}</p>
+                            <p className="text-(--color-muted) text-xs">
                               {device.status ? t('common.connected') : t('common.disconnected')}
                             </p>
                           </div>
@@ -1220,30 +1235,54 @@ export function Settings() {
                     </h2>
                     <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">{t('mqtt.brokerUrl')}</label>
+                        <label htmlFor="settings-mqtt-broker-url" className="font-medium text-sm">
+                          {t('mqtt.brokerUrl')}
+                        </label>
                         <input
+                          id="settings-mqtt-broker-url"
                           type="text"
                           className={inputClass}
                           placeholder="mqtt://192.168.1.50"
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">{t('mqtt.port')}</label>
-                        <input type="number" defaultValue={1883} className={inputClass} />
+                        <label htmlFor="settings-mqtt-port" className="font-medium text-sm">
+                          {t('mqtt.port')}
+                        </label>
+                        <input
+                          id="settings-mqtt-port"
+                          type="number"
+                          defaultValue={1883}
+                          className={inputClass}
+                        />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">{t('mqtt.username')}</label>
-                        <input type="text" className={inputClass} placeholder="mqtt_user" />
+                        <label htmlFor="settings-mqtt-username" className="font-medium text-sm">
+                          {t('mqtt.username')}
+                        </label>
+                        <input
+                          id="settings-mqtt-username"
+                          type="text"
+                          className={inputClass}
+                          placeholder="mqtt_user"
+                        />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">{t('mqtt.password')}</label>
-                        <input type="password" className={inputClass} placeholder="••••••••" />
+                        <label htmlFor="settings-mqtt-password" className="font-medium text-sm">
+                          {t('mqtt.password')}
+                        </label>
+                        <input
+                          id="settings-mqtt-password"
+                          type="password"
+                          className={inputClass}
+                          placeholder="••••••••"
+                        />
                       </div>
                     </div>
                     <div className="flex items-center justify-between pt-2">
                       <div>
-                        <p className="text-sm font-medium">{t('mqtt.autoDiscovery')}</p>
-                        <p className="text-xs text-(--color-muted)">
+                        <p className="font-medium text-sm">{t('mqtt.autoDiscovery')}</p>
+                        <p className="text-(--color-muted) text-xs">
                           {t(
                             'settings.mqttAutoHint',
                             'Automatically discover Home Assistant devices',
@@ -1282,7 +1321,7 @@ export function Settings() {
                     </h2>
                     <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                       <div className="space-y-2">
-                        <label htmlFor="settings-tariff" className="text-sm font-medium">
+                        <label htmlFor="settings-tariff" className="font-medium text-sm">
                           {t('settings.tariffProvider')}
                         </label>
                         <select
@@ -1305,37 +1344,36 @@ export function Settings() {
                         </select>
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">{t('settings.apiTokenLabel')}</label>
+                        <label htmlFor="settings-api-token" className="font-medium text-sm">
+                          {t('settings.apiTokenLabel')}
+                        </label>
                         <div className="relative">
                           <input
-                            type={showTokens['tariff'] ? 'text' : 'password'}
-                            className={inputClass + ' pr-10'}
+                            id="settings-api-token"
+                            type={showTokens.tariff ? 'text' : 'password'}
+                            className={`${inputClass} pr-10`}
                             placeholder="••••••••••••••••"
-                            aria-label={t('settings.apiTokenLabel')}
                           />
                           <button
                             type="button"
                             onClick={() => toggleTokenVisibility('tariff')}
                             className="absolute top-1/2 right-3 -translate-y-1/2 p-1 text-(--color-muted) hover:text-(--color-text)"
                             aria-label={
-                              showTokens['tariff']
-                                ? t('settings.hideToken')
-                                : t('settings.showToken')
+                              showTokens.tariff ? t('settings.hideToken') : t('settings.showToken')
                             }
                           >
-                            {showTokens['tariff'] ? <EyeOff size={16} /> : <Eye size={16} />}
+                            {showTokens.tariff ? <EyeOff size={16} /> : <Eye size={16} />}
                           </button>
                         </div>
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">
+                        <label htmlFor="settings-charge-threshold" className="font-medium text-sm">
                           {t('settings.chargeThreshold')}
                         </label>
                         <div className="flex items-center gap-3">
                           <input
+                            id="settings-charge-threshold"
                             type="range"
-                            min={0.05}
-                            max={0.5}
                             step={0.01}
                             value={settings.chargeThreshold}
                             onChange={(e) =>
@@ -1350,12 +1388,13 @@ export function Settings() {
                         </div>
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">{t('settings.maxGrid')}</label>
+                        <label htmlFor="settings-max-grid" className="font-medium text-sm">
+                          {t('settings.maxGrid')}
+                        </label>
                         <div className="flex items-center gap-3">
                           <input
+                            id="settings-max-grid"
                             type="range"
-                            min={1.0}
-                            max={11.0}
                             step={0.1}
                             value={settings.maxGridImportKw}
                             onChange={(e) =>
@@ -1368,7 +1407,7 @@ export function Settings() {
                             {settings.maxGridImportKw.toFixed(1)} kW
                           </span>
                         </div>
-                        <p className="text-xs text-(--color-muted)">
+                        <p className="text-(--color-muted) text-xs">
                           {t(
                             'settings.maxGridHint',
                             '§14a EnWG limit: 4.2 kW for controllable consumers',
@@ -1376,9 +1415,7 @@ export function Settings() {
                         </p>
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">
-                          {t('settings.dynamicGridFees')}
-                        </label>
+                        <p className="font-medium text-sm">{t('settings.dynamicGridFees')}</p>
                         <div className="flex items-center gap-3">
                           <button
                             type="button"
@@ -1399,12 +1436,12 @@ export function Settings() {
                               : t('settings.dynamicGridFeesInactive')}
                           </span>
                         </div>
-                        <p className="text-xs text-(--color-muted)">
+                        <p className="text-(--color-muted) text-xs">
                           {t('settings.dynamicGridFeesHint')}
                         </p>
                       </div>
                       <div className="space-y-2">
-                        <label htmlFor="settings-grid-operator" className="text-sm font-medium">
+                        <label htmlFor="settings-grid-operator" className="font-medium text-sm">
                           {t('settings.gridOperatorLabel')}
                         </label>
                         <input
@@ -1425,7 +1462,7 @@ export function Settings() {
                       <Server size={20} className="text-cyan-400" />
                       {t('settings.systemPreset')}
                     </h2>
-                    <p className="mb-4 text-xs text-(--color-muted)">
+                    <p className="mb-4 text-(--color-muted) text-xs">
                       {t('settings.systemPresetHint')}
                     </p>
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -1441,9 +1478,9 @@ export function Settings() {
                           }`}
                           aria-pressed={settings.systemConfig.presetId === preset.presetId}
                         >
-                          <span className="text-sm font-medium">{preset.presetName}</span>
+                          <span className="font-medium text-sm">{preset.presetName}</span>
                           {preset.presetId !== 'custom' && (
-                            <p className="mt-1 text-xs text-(--color-muted)">
+                            <p className="mt-1 text-(--color-muted) text-xs">
                               {preset.inverter.count}× {preset.inverter.ratedPowerW / 1000} kW ·{' '}
                               {preset.pv.peakPowerKWp} kWp · {preset.battery.capacityKWh} kWh
                             </p>
@@ -1461,8 +1498,11 @@ export function Settings() {
                     </h2>
                     <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">{t('settings.inverterModel')}</label>
+                        <label htmlFor="settings-inverter-model" className="font-medium text-sm">
+                          {t('settings.inverterModel')}
+                        </label>
                         <input
+                          id="settings-inverter-model"
                           type="text"
                           value={settings.systemConfig.inverter.model}
                           onChange={(e) =>
@@ -1483,8 +1523,11 @@ export function Settings() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">{t('settings.inverterCount')}</label>
+                        <label htmlFor="settings-inverter-count" className="font-medium text-sm">
+                          {t('settings.inverterCount')}
+                        </label>
                         <input
+                          id="settings-inverter-count"
                           type="number"
                           min={1}
                           max={12}
@@ -1504,13 +1547,16 @@ export function Settings() {
                           }
                           className={inputClass}
                         />
-                        <p className="text-xs text-(--color-muted)">
+                        <p className="text-(--color-muted) text-xs">
                           {t('settings.inverterCountHint')}
                         </p>
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">{t('settings.inverterPower')}</label>
+                        <label htmlFor="settings-inverter-power" className="font-medium text-sm">
+                          {t('settings.inverterPower')}
+                        </label>
                         <input
+                          id="settings-inverter-power"
                           type="number"
                           step={100}
                           min={500}
@@ -1531,7 +1577,7 @@ export function Settings() {
                           }
                           className={inputClass}
                         />
-                        <p className="text-xs text-(--color-muted)">
+                        <p className="text-(--color-muted) text-xs">
                           {t('settings.totalPower')}:{' '}
                           {(
                             (settings.systemConfig.inverter.count *
@@ -1542,7 +1588,7 @@ export function Settings() {
                         </p>
                       </div>
                       <div className="space-y-2">
-                        <label htmlFor="settings-inv-mode" className="text-sm font-medium">
+                        <label htmlFor="settings-inv-mode" className="font-medium text-sm">
                           {t('settings.inverterMode')}
                         </label>
                         <select
@@ -1579,10 +1625,11 @@ export function Settings() {
                     </h2>
                     <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">
+                        <label htmlFor="settings-pv-peak-power" className="font-medium text-sm">
                           {t('settings.pvPeakPower', 'Peak power (kWp)')}
                         </label>
                         <input
+                          id="settings-pv-peak-power"
                           type="number"
                           step={0.1}
                           value={settings.systemConfig.pv.peakPowerKWp}
@@ -1603,7 +1650,7 @@ export function Settings() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <label htmlFor="settings-orientation" className="text-sm font-medium">
+                        <label htmlFor="settings-orientation" className="font-medium text-sm">
                           {t('settings.pvOrientation', 'Orientation')}
                         </label>
                         <select
@@ -1631,10 +1678,11 @@ export function Settings() {
                         </select>
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">
+                        <label htmlFor="settings-pv-tilt" className="font-medium text-sm">
                           {t('settings.pvTilt', 'Tilt angle (°)')}
                         </label>
                         <input
+                          id="settings-pv-tilt"
                           type="number"
                           min={0}
                           max={90}
@@ -1656,8 +1704,11 @@ export function Settings() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">{t('settings.pvStrings')}</label>
+                        <label htmlFor="settings-pv-strings" className="font-medium text-sm">
+                          {t('settings.pvStrings')}
+                        </label>
                         <input
+                          id="settings-pv-strings"
                           type="number"
                           min={1}
                           max={20}
@@ -1679,8 +1730,11 @@ export function Settings() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">{t('settings.mpptCount')}</label>
+                        <label htmlFor="pv-mppt-count" className="font-medium text-sm">
+                          {t('settings.mpptCount')}
+                        </label>
                         <input
+                          id="pv-mppt-count"
                           type="number"
                           min={1}
                           max={8}
@@ -1712,8 +1766,11 @@ export function Settings() {
                     </h2>
                     <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">{t('settings.batteryModel')}</label>
+                        <label htmlFor="settings-battery-model" className="font-medium text-sm">
+                          {t('settings.batteryModel')}
+                        </label>
                         <input
+                          id="settings-battery-model"
                           type="text"
                           value={settings.systemConfig.battery.model}
                           onChange={(e) =>
@@ -1734,10 +1791,11 @@ export function Settings() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">
+                        <label htmlFor="settings-battery-capacity" className="font-medium text-sm">
                           {t('settings.batteryCapacity', 'Capacity (kWh)')}
                         </label>
                         <input
+                          id="settings-battery-capacity"
                           type="number"
                           step={0.1}
                           value={settings.systemConfig.battery.capacityKWh}
@@ -1758,14 +1816,13 @@ export function Settings() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">
+                        <label htmlFor="settings-battery-modules" className="font-medium text-sm">
                           {t('settings.batteryModules')}
                         </label>
                         <input
+                          id="settings-battery-modules"
                           type="number"
                           min={1}
-                          max={16}
-                          value={settings.systemConfig.battery.modules}
                           onChange={(e) =>
                             updateSettings({
                               systemConfig: {
@@ -1783,10 +1840,11 @@ export function Settings() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">
+                        <label htmlFor="settings-battery-voltage" className="font-medium text-sm">
                           {t('settings.batteryVoltage')}
                         </label>
                         <input
+                          id="settings-battery-voltage"
                           type="number"
                           step={0.1}
                           value={settings.systemConfig.battery.nominalVoltageV}
@@ -1807,10 +1865,14 @@ export function Settings() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">
+                        <label
+                          htmlFor="settings-battery-max-charge"
+                          className="font-medium text-sm"
+                        >
                           {t('settings.batteryMaxCharge', 'Max charge rate (kW)')}
                         </label>
                         <input
+                          id="settings-battery-max-charge"
                           type="number"
                           step={0.1}
                           value={settings.systemConfig.battery.maxChargeRateKW}
@@ -1831,10 +1893,14 @@ export function Settings() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">
+                        <label
+                          htmlFor="settings-battery-max-discharge"
+                          className="font-medium text-sm"
+                        >
                           {t('settings.batteryMaxDischarge')}
                         </label>
                         <input
+                          id="settings-battery-max-discharge"
                           type="number"
                           step={0.1}
                           value={settings.systemConfig.battery.maxDischargeRateKW}
@@ -1855,10 +1921,11 @@ export function Settings() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">
+                        <label htmlFor="settings-battery-min-soc" className="font-medium text-sm">
                           {t('settings.batteryMinSoC', 'Minimum SoC (%)')}
                         </label>
                         <input
+                          id="settings-battery-min-soc"
                           type="number"
                           min={5}
                           max={50}
@@ -1880,7 +1947,7 @@ export function Settings() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <label htmlFor="settings-strategy" className="text-sm font-medium">
+                        <label htmlFor="settings-strategy" className="font-medium text-sm">
                           {t('settings.batteryStrategy', 'Default strategy')}
                         </label>
                         <select
@@ -1922,10 +1989,11 @@ export function Settings() {
                     </h2>
                     <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">
+                        <label htmlFor="settings-ev-charger-model" className="font-medium text-sm">
                           {t('settings.evChargerModel')}
                         </label>
                         <input
+                          id="settings-ev-charger-model"
                           type="text"
                           value={settings.systemConfig.evCharger.model}
                           onChange={(e) =>
@@ -1945,8 +2013,11 @@ export function Settings() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">{t('settings.evMaxPower')}</label>
+                        <label htmlFor="settings-ev-max-power" className="font-medium text-sm">
+                          {t('settings.evMaxPower')}
+                        </label>
                         <input
+                          id="settings-ev-max-power"
                           type="number"
                           step={0.1}
                           min={1}
@@ -1969,8 +2040,11 @@ export function Settings() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">{t('settings.heatPumpModel')}</label>
+                        <label htmlFor="settings-heat-pump-model" className="font-medium text-sm">
+                          {t('settings.heatPumpModel')}
+                        </label>
                         <input
+                          id="settings-heat-pump-model"
                           type="text"
                           value={settings.systemConfig.heatPump.model}
                           onChange={(e) =>
@@ -1990,8 +2064,11 @@ export function Settings() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">{t('settings.heatPumpPower')}</label>
+                        <label htmlFor="settings-heat-pump-power" className="font-medium text-sm">
+                          {t('settings.heatPumpPower')}
+                        </label>
                         <input
+                          id="settings-heat-pump-power"
                           type="number"
                           step={0.1}
                           min={1}
@@ -2022,7 +2099,7 @@ export function Settings() {
                       <MapPin size={20} className="text-rose-400" />
                       {t('settings.locationTitle', 'Location & Weather')}
                     </h2>
-                    <p className="-mt-2 text-xs text-(--color-muted)">
+                    <p className="-mt-2 text-(--color-muted) text-xs">
                       {t(
                         'settings.locationHint',
                         'Used for solar forecast, weather data, and sunrise/sunset calculations',
@@ -2030,7 +2107,7 @@ export function Settings() {
                     </p>
                     <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                       <div className="space-y-2">
-                        <label htmlFor="settings-lat" className="text-sm font-medium">
+                        <label htmlFor="settings-lat" className="font-medium text-sm">
                           {t('settings.latitude', 'Latitude')}
                         </label>
                         <input
@@ -2050,7 +2127,7 @@ export function Settings() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <label htmlFor="settings-lon" className="text-sm font-medium">
+                        <label htmlFor="settings-lon" className="font-medium text-sm">
                           {t('settings.longitude', 'Longitude')}
                         </label>
                         <input
@@ -2080,7 +2157,7 @@ export function Settings() {
                     </h2>
                     <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                       <div className="space-y-2">
-                        <label htmlFor="settings-grid-price" className="text-sm font-medium">
+                        <label htmlFor="settings-grid-price" className="font-medium text-sm">
                           {t('settings.gridPriceAvg', 'Avg. grid price (€/kWh)')}
                         </label>
                         <div className="flex items-center gap-3">
@@ -2103,7 +2180,7 @@ export function Settings() {
                         </div>
                       </div>
                       <div className="space-y-2">
-                        <label htmlFor="settings-feedin" className="text-sm font-medium">
+                        <label htmlFor="settings-feedin" className="font-medium text-sm">
                           {t('settings.feedInTariff', 'Feed-in tariff (€/kWh)')}
                         </label>
                         <div className="flex items-center gap-3">
@@ -2124,12 +2201,12 @@ export function Settings() {
                             {(settings.feedInTariff ?? 0.082).toFixed(3)} €
                           </span>
                         </div>
-                        <p className="text-xs text-(--color-muted)">
+                        <p className="text-(--color-muted) text-xs">
                           {t('settings.feedInTariffHint', 'EEG feed-in compensation per kWh')}
                         </p>
                       </div>
                       <div className="space-y-2">
-                        <label htmlFor="settings-grid-operator" className="text-sm font-medium">
+                        <label htmlFor="settings-grid-operator" className="font-medium text-sm">
                           {t('settings.gridOperator', 'Grid operator')}
                         </label>
                         <input
@@ -2145,7 +2222,7 @@ export function Settings() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <label htmlFor="settings-budget" className="text-sm font-medium">
+                        <label htmlFor="settings-budget" className="font-medium text-sm">
                           {t('settings.monthlyBudget', 'Monthly energy budget (€)')}
                         </label>
                         <div className="flex items-center gap-3">
@@ -2166,7 +2243,7 @@ export function Settings() {
                             {settings.monthlyBudget ?? 80} €
                           </span>
                         </div>
-                        <p className="text-xs text-(--color-muted)">
+                        <p className="text-(--color-muted) text-xs">
                           {t(
                             'settings.monthlyBudgetHint',
                             'Target monthly electricity cost for budget tracking',
@@ -2199,7 +2276,7 @@ export function Settings() {
                       <Cpu size={20} className="text-cyan-400" />
                       {t('settings.controllerPipeline', 'Controller Pipeline')}
                     </h2>
-                    <p className="text-xs text-(--color-muted)">
+                    <p className="text-(--color-muted) text-xs">
                       {t(
                         'settings.controllerPipelineHint',
                         'Seven real-time energy control loops inspired by EMHASS, OpenEMS & evcc. Controllers run in priority order (critical → low) and merge their outputs.',
@@ -2288,9 +2365,9 @@ export function Settings() {
                           </span>
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-2">
-                              <p className="text-sm font-medium">{ctrl.name}</p>
+                              <p className="font-medium text-sm">{ctrl.name}</p>
                               <span
-                                className={`rounded-full px-2 py-0.5 text-[10px] font-semibold tracking-wider uppercase ${
+                                className={`rounded-full px-2 py-0.5 font-semibold text-[10px] uppercase tracking-wider ${
                                   ctrl.priority === 'critical'
                                     ? 'bg-rose-500/15 text-rose-400'
                                     : ctrl.priority === 'high'
@@ -2301,7 +2378,7 @@ export function Settings() {
                                 {ctrl.priority}
                               </span>
                             </div>
-                            <p className="mt-0.5 text-xs text-(--color-muted)">{ctrl.desc}</p>
+                            <p className="mt-0.5 text-(--color-muted) text-xs">{ctrl.desc}</p>
                           </div>
                         </div>
                       ))}
@@ -2331,7 +2408,7 @@ export function Settings() {
                       <Gauge size={20} className="text-emerald-400" />
                       {t('settings.mpcOptimizer', 'MPC Day-Ahead Optimizer')}
                     </h2>
-                    <p className="text-xs text-(--color-muted)">
+                    <p className="text-(--color-muted) text-xs">
                       {t(
                         'settings.mpcOptimizerHint',
                         'Greedy LP day-ahead optimization over a 24-hour horizon with 15-minute resolution. Multi-objective: minimize cost, maximize self-consumption, minimize CO₂.',
@@ -2339,10 +2416,11 @@ export function Settings() {
                     </p>
                     <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">
+                        <label htmlFor="settings-pv-peak-kw-mpc" className="font-medium text-sm">
                           {t('settings.pvPeakKw', 'PV peak power (kW)')}
                         </label>
                         <input
+                          id="settings-pv-peak-kw-mpc"
                           type="number"
                           step={0.1}
                           min={0}
@@ -2351,7 +2429,7 @@ export function Settings() {
                           onChange={(e) => updateSettings({ pvPeakKw: Number(e.target.value) })}
                           className={inputClass}
                         />
-                        <p className="text-xs text-(--color-muted)">
+                        <p className="text-(--color-muted) text-xs">
                           {t(
                             'settings.pvPeakKwHint',
                             'Used by MPC for PV generation forecast scaling',
@@ -2359,10 +2437,14 @@ export function Settings() {
                         </p>
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">
+                        <label
+                          htmlFor="settings-battery-capacity-kwh-mpc"
+                          className="font-medium text-sm"
+                        >
                           {t('settings.batteryCapacityKWhMpc', 'Battery capacity (kWh)')}
                         </label>
                         <input
+                          id="settings-battery-capacity-kwh-mpc"
                           type="number"
                           step={0.1}
                           min={0}
@@ -2375,10 +2457,14 @@ export function Settings() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">
+                        <label
+                          htmlFor="settings-battery-max-charge-kw-mpc"
+                          className="font-medium text-sm"
+                        >
                           {t('settings.batteryMaxChargeKW', 'Max charge rate (kW)')}
                         </label>
                         <input
+                          id="settings-battery-max-charge-kw-mpc"
                           type="number"
                           step={0.1}
                           min={0}
@@ -2391,10 +2477,14 @@ export function Settings() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">
+                        <label
+                          htmlFor="settings-battery-min-soc-mpc"
+                          className="font-medium text-sm"
+                        >
                           {t('settings.batteryMinSoCMpc', 'Min SoC (%)')}
                         </label>
                         <input
+                          id="settings-battery-min-soc-mpc"
                           type="number"
                           min={5}
                           max={50}
@@ -2404,7 +2494,7 @@ export function Settings() {
                           }
                           className={inputClass}
                         />
-                        <p className="text-xs text-(--color-muted)">
+                        <p className="text-(--color-muted) text-xs">
                           {t(
                             'settings.batteryMinSoCHint',
                             'MPC will not discharge below this SoC level',
@@ -2412,10 +2502,14 @@ export function Settings() {
                         </p>
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">
+                        <label
+                          htmlFor="settings-ev-max-power-kw-mpc"
+                          className="font-medium text-sm"
+                        >
                           {t('settings.evMaxPowerKW', 'EV max charge (kW)')}
                         </label>
                         <input
+                          id="settings-ev-max-power-kw-mpc"
                           type="number"
                           step={0.1}
                           min={1}
@@ -2426,10 +2520,14 @@ export function Settings() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">
+                        <label
+                          htmlFor="settings-heat-pump-power-kw-mpc"
+                          className="font-medium text-sm"
+                        >
                           {t('settings.heatPumpPowerKW', 'Heat pump power (kW)')}
                         </label>
                         <input
+                          id="settings-heat-pump-power-kw-mpc"
                           type="number"
                           step={0.1}
                           min={0}
@@ -2442,11 +2540,12 @@ export function Settings() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">
+                        <label htmlFor="settings-feed-in-tariff" className="font-medium text-sm">
                           {t('settings.feedInTariffEurKWh', 'Feed-in tariff (€/kWh)')}
                         </label>
                         <div className="flex items-center gap-3">
                           <input
+                            id="settings-feed-in-tariff"
                             type="range"
                             min={0.0}
                             max={0.15}
@@ -2463,7 +2562,7 @@ export function Settings() {
                             {settings.feedInTariffEurKWh.toFixed(3)} €
                           </span>
                         </div>
-                        <p className="text-xs text-(--color-muted)">
+                        <p className="text-(--color-muted) text-xs">
                           {t(
                             'settings.feedInTariffEurKWhHint',
                             'EEG compensation used by MPC cost function',
@@ -2471,11 +2570,15 @@ export function Settings() {
                         </p>
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">
+                        <label
+                          htmlFor="settings-max-grid-import-mpc"
+                          className="font-medium text-sm"
+                        >
                           {t('settings.maxGridImportKwMpc', 'Max grid import (kW)')}
                         </label>
                         <div className="flex items-center gap-3">
                           <input
+                            id="settings-max-grid-import-mpc"
                             type="range"
                             min={1.0}
                             max={15.0}
@@ -2492,7 +2595,7 @@ export function Settings() {
                             {settings.maxGridImportKw.toFixed(1)} kW
                           </span>
                         </div>
-                        <p className="text-xs text-(--color-muted)">
+                        <p className="text-(--color-muted) text-xs">
                           {t(
                             'settings.maxGridMpcHint',
                             '§14a EnWG constraint for MPC & peak shaving controller',
@@ -2508,7 +2611,7 @@ export function Settings() {
                       <Shield size={20} className="text-amber-400" />
                       {t('settings.commandSafety', 'Command Safety Layer')}
                     </h2>
-                    <p className="text-xs text-(--color-muted)">
+                    <p className="text-(--color-muted) text-xs">
                       {t(
                         'settings.commandSafetyHint',
                         'All 18 adapter command types are validated with Zod schemas and IEC/EN safety limits. Dangerous commands require user confirmation via dialog.',
@@ -2534,7 +2637,7 @@ export function Settings() {
                           className="flex items-center justify-between rounded-xl border border-(--color-border) bg-(--color-surface) px-4 py-3"
                         >
                           <span className="text-sm">{item.label}</span>
-                          <span className="font-mono text-xs text-(--color-primary)">
+                          <span className="font-mono text-(--color-primary) text-xs">
                             {item.range}
                           </span>
                         </div>
@@ -2555,10 +2658,10 @@ export function Settings() {
                       >
                         <Cpu size={20} className="text-cyan-400" />
                         <div>
-                          <p className="text-sm font-medium">
+                          <p className="font-medium text-sm">
                             {t('nav.controllers', 'Controllers')}
                           </p>
-                          <p className="text-xs text-(--color-muted)">
+                          <p className="text-(--color-muted) text-xs">
                             {t('settings.controllersLinkDesc', 'Live controller states & outputs')}
                           </p>
                         </div>
@@ -2569,8 +2672,8 @@ export function Settings() {
                       >
                         <Sparkles size={20} className="text-purple-400" />
                         <div>
-                          <p className="text-sm font-medium">{t('nav.plugins', 'Plugins')}</p>
-                          <p className="text-xs text-(--color-muted)">
+                          <p className="font-medium text-sm">{t('nav.plugins', 'Plugins')}</p>
+                          <p className="text-(--color-muted) text-xs">
                             {t('settings.pluginsLinkDesc', 'Plugin lifecycle & services')}
                           </p>
                         </div>
@@ -2581,8 +2684,8 @@ export function Settings() {
                       >
                         <HardDrive size={20} className="text-orange-400" />
                         <div>
-                          <p className="text-sm font-medium">{t('nav.hardware', 'Hardware')}</p>
-                          <p className="text-xs text-(--color-muted)">
+                          <p className="font-medium text-sm">{t('nav.hardware', 'Hardware')}</p>
+                          <p className="text-(--color-muted) text-xs">
                             {t('settings.hardwareLinkDesc', '120+ supported devices')}
                           </p>
                         </div>
@@ -2630,8 +2733,8 @@ export function Settings() {
                     <div className="space-y-5">
                       <div className="flex items-center justify-between rounded-xl border border-(--color-border) bg-(--color-surface) p-4">
                         <div>
-                          <p className="text-sm font-medium">{t('settings.mtls')}</p>
-                          <p className="text-xs text-(--color-muted)">{t('settings.mtlsHint')}</p>
+                          <p className="font-medium text-sm">{t('settings.mtls')}</p>
+                          <p className="text-(--color-muted) text-xs">{t('settings.mtlsHint')}</p>
                         </div>
                         <ToggleSwitch
                           id="mtls"
@@ -2642,8 +2745,8 @@ export function Settings() {
                       </div>
                       <div className="flex items-center justify-between rounded-xl border border-(--color-border) bg-(--color-surface) p-4">
                         <div>
-                          <p className="text-sm font-medium">{t('settings.telemetry')}</p>
-                          <p className="text-xs text-(--color-muted)">
+                          <p className="font-medium text-sm">{t('settings.telemetry')}</p>
+                          <p className="text-(--color-muted) text-xs">
                             {t('settings.telemetryHint')}
                           </p>
                         </div>
@@ -2656,8 +2759,8 @@ export function Settings() {
                       </div>
                       <div className="flex items-center justify-between rounded-xl border border-(--color-border) bg-(--color-surface) p-4">
                         <div>
-                          <p className="text-sm font-medium">{t('settings.twoFactor')}</p>
-                          <p className="text-xs text-(--color-muted)">
+                          <p className="font-medium text-sm">{t('settings.twoFactor')}</p>
+                          <p className="text-(--color-muted) text-xs">
                             {t('settings.twoFactorHint')}
                           </p>
                         </div>
@@ -2695,18 +2798,18 @@ export function Settings() {
                     </div>
                     <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <div className="rounded-xl border border-(--color-border) bg-(--color-surface) p-3">
-                        <p className="text-xs text-(--color-muted)">
+                        <p className="text-(--color-muted) text-xs">
                           {t('settings.certStatus', 'Certificate Status')}
                         </p>
-                        <p className="text-sm font-medium text-emerald-400">
+                        <p className="font-medium text-emerald-400 text-sm">
                           {t('settings.certValid', 'Valid')}
                         </p>
                       </div>
                       <div className="rounded-xl border border-(--color-border) bg-(--color-surface) p-3">
-                        <p className="text-xs text-(--color-muted)">
+                        <p className="text-(--color-muted) text-xs">
                           {t('settings.encType', 'Encryption')}
                         </p>
-                        <p className="text-sm font-medium">PBKDF2 + AES-GCM 256</p>
+                        <p className="font-medium text-sm">PBKDF2 + AES-GCM 256</p>
                       </div>
                     </div>
                   </section>
@@ -2734,8 +2837,11 @@ export function Settings() {
                     </h2>
                     <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">{t('settings.influxUrl')}</label>
+                        <label htmlFor="settings-influx-url" className="font-medium text-sm">
+                          {t('settings.influxUrl')}
+                        </label>
                         <input
+                          id="settings-influx-url"
                           type="text"
                           value={settings.influxUrl}
                           onChange={(e) => updateSettings({ influxUrl: e.target.value })}
@@ -2743,31 +2849,35 @@ export function Settings() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">{t('settings.influxToken')}</label>
+                        <label htmlFor="settings-influx-token" className="font-medium text-sm">
+                          {t('settings.influxToken')}
+                        </label>
                         <div className="relative">
                           <input
-                            type={showTokens['influx'] ? 'text' : 'password'}
+                            id="settings-influx-token"
+                            type={showTokens.influx ? 'text' : 'password'}
                             value={settings.influxToken}
                             onChange={(e) => updateSettings({ influxToken: e.target.value })}
-                            className={inputClass + ' pr-10'}
+                            className={`${inputClass} pr-10`}
                           />
                           <button
                             type="button"
                             onClick={() => toggleTokenVisibility('influx')}
                             className="absolute top-1/2 right-3 -translate-y-1/2 p-1 text-(--color-muted) hover:text-(--color-text)"
                             aria-label={
-                              showTokens['influx']
-                                ? t('settings.hideToken')
-                                : t('settings.showToken')
+                              showTokens.influx ? t('settings.hideToken') : t('settings.showToken')
                             }
                           >
-                            {showTokens['influx'] ? <EyeOff size={16} /> : <Eye size={16} />}
+                            {showTokens.influx ? <EyeOff size={16} /> : <Eye size={16} />}
                           </button>
                         </div>
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">{t('settings.historyDays')}</label>
+                        <label htmlFor="settings-history-days" className="font-medium text-sm">
+                          {t('settings.historyDays')}
+                        </label>
                         <input
+                          id="settings-history-days"
                           type="number"
                           value={settings.historyDays}
                           onChange={(e) => updateSettings({ historyDays: Number(e.target.value) })}
@@ -2775,7 +2885,7 @@ export function Settings() {
                           min={1}
                           max={365}
                         />
-                        <p className="text-xs text-(--color-muted)">{t('settings.historyHint')}</p>
+                        <p className="text-(--color-muted) text-xs">{t('settings.historyHint')}</p>
                       </div>
                     </div>
                   </section>
@@ -2788,25 +2898,25 @@ export function Settings() {
                     </h2>
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                       <div className="rounded-xl border border-(--color-border) bg-(--color-surface) p-4 text-center">
-                        <p className="text-2xl font-bold text-(--color-primary)">~2.4</p>
-                        <p className="text-xs text-(--color-muted)">MB IndexedDB</p>
+                        <p className="font-bold text-(--color-primary) text-2xl">~2.4</p>
+                        <p className="text-(--color-muted) text-xs">MB IndexedDB</p>
                       </div>
                       <div className="rounded-xl border border-(--color-border) bg-(--color-surface) p-4 text-center">
-                        <p className="text-2xl font-bold text-(--color-secondary)">847</p>
-                        <p className="text-xs text-(--color-muted)">
+                        <p className="font-bold text-(--color-secondary) text-2xl">847</p>
+                        <p className="text-(--color-muted) text-xs">
                           {t('settings.snapshots', 'Snapshots')}
                         </p>
                       </div>
                       <div className="rounded-xl border border-(--color-border) bg-(--color-surface) p-4 text-center">
-                        <p className="text-2xl font-bold text-amber-400">30</p>
-                        <p className="text-xs text-(--color-muted)">
+                        <p className="font-bold text-2xl text-amber-400">30</p>
+                        <p className="text-(--color-muted) text-xs">
                           {t('settings.daysRetention', 'Days retention')}
                         </p>
                       </div>
                     </div>
                     <motion.button
                       type="button"
-                      className="flex items-center gap-2 text-sm text-rose-400 transition-colors hover:text-rose-300"
+                      className="flex items-center gap-2 text-rose-400 text-sm transition-colors hover:text-rose-300"
                       whileHover={{ x: 4 }}
                     >
                       <Trash2 size={16} />
@@ -2838,10 +2948,10 @@ export function Settings() {
                     <div className="space-y-5">
                       <div className="flex items-center justify-between rounded-xl border border-(--color-border) bg-(--color-surface) p-4">
                         <div>
-                          <p className="text-sm font-medium">
+                          <p className="font-medium text-sm">
                             {t('settings.pushNotifications', 'Push notifications')}
                           </p>
-                          <p className="text-xs text-(--color-muted)">
+                          <p className="text-(--color-muted) text-xs">
                             {t('settings.pushHint', 'Receive alerts for important system events')}
                           </p>
                         </div>
@@ -2854,10 +2964,10 @@ export function Settings() {
                       </div>
                       <div className="flex items-center justify-between rounded-xl border border-(--color-border) bg-(--color-surface) p-4">
                         <div>
-                          <p className="text-sm font-medium">
+                          <p className="font-medium text-sm">
                             {t('settings.priceAlerts', 'Price alerts')}
                           </p>
-                          <p className="text-xs text-(--color-muted)">
+                          <p className="text-(--color-muted) text-xs">
                             {t(
                               'settings.priceAlertsHint',
                               'Notify when electricity price drops below threshold',
@@ -2873,10 +2983,10 @@ export function Settings() {
                       </div>
                       <div className="flex items-center justify-between rounded-xl border border-(--color-border) bg-(--color-surface) p-4">
                         <div>
-                          <p className="text-sm font-medium">
+                          <p className="font-medium text-sm">
                             {t('settings.batteryAlerts', 'Battery alerts')}
                           </p>
-                          <p className="text-xs text-(--color-muted)">
+                          <p className="text-(--color-muted) text-xs">
                             {t(
                               'settings.batteryAlertsHint',
                               'Alert when battery SoC falls below minimum',
@@ -2892,10 +3002,10 @@ export function Settings() {
                       </div>
                       <div className="flex items-center justify-between rounded-xl border border-(--color-border) bg-(--color-surface) p-4">
                         <div>
-                          <p className="text-sm font-medium">
+                          <p className="font-medium text-sm">
                             {t('settings.gridAlerts', 'Grid anomaly alerts')}
                           </p>
-                          <p className="text-xs text-(--color-muted)">
+                          <p className="text-(--color-muted) text-xs">
                             {t(
                               'settings.gridAlertsHint',
                               'Alert on voltage fluctuations or power outages',
@@ -2911,10 +3021,10 @@ export function Settings() {
                       </div>
                       <div className="flex items-center justify-between rounded-xl border border-(--color-border) bg-(--color-surface) p-4">
                         <div>
-                          <p className="text-sm font-medium">
+                          <p className="font-medium text-sm">
                             {t('settings.updateNotifications', 'Update notifications')}
                           </p>
-                          <p className="text-xs text-(--color-muted)">
+                          <p className="text-(--color-muted) text-xs">
                             {t('settings.updateHint', 'Notify when a new app version is available')}
                           </p>
                         </div>
@@ -2937,10 +3047,10 @@ export function Settings() {
                     <div className="space-y-5">
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
-                          <p className="text-sm font-medium">
+                          <p className="font-medium text-sm">
                             {t('settings.batteryAlertThreshold', 'Battery SoC alert level')}
                           </p>
-                          <span className="font-mono text-sm text-(--color-primary) tabular-nums">
+                          <span className="font-mono text-(--color-primary) text-sm tabular-nums">
                             {settings.batteryAlertThreshold ?? 15}%
                           </span>
                         </div>
@@ -2960,7 +3070,7 @@ export function Settings() {
                           )}
                           aria-valuetext={`${settings.batteryAlertThreshold ?? 15}%`}
                         />
-                        <p className="text-xs text-(--color-muted)">
+                        <p className="text-(--color-muted) text-xs">
                           {t(
                             'settings.batteryAlertThresholdHint',
                             'Alert when battery falls below this charge level',
@@ -2969,10 +3079,10 @@ export function Settings() {
                       </div>
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
-                          <p className="text-sm font-medium">
+                          <p className="font-medium text-sm">
                             {t('settings.priceAlertThreshold', 'Price alert threshold')}
                           </p>
-                          <span className="font-mono text-sm text-(--color-primary) tabular-nums">
+                          <span className="font-mono text-(--color-primary) text-sm tabular-nums">
                             {(settings.priceAlertThreshold ?? 0.1).toFixed(2)} €/kWh
                           </span>
                         </div>
@@ -2989,7 +3099,7 @@ export function Settings() {
                           aria-label={t('settings.priceAlertThreshold', 'Price alert threshold')}
                           aria-valuetext={`${(settings.priceAlertThreshold ?? 0.1).toFixed(2)} €/kWh`}
                         />
-                        <p className="text-xs text-(--color-muted)">
+                        <p className="text-(--color-muted) text-xs">
                           {t(
                             'settings.priceAlertThresholdHint',
                             'Notify when grid price drops below this value',
@@ -3008,10 +3118,10 @@ export function Settings() {
                     <div className="space-y-5">
                       <div className="flex items-center justify-between rounded-xl border border-(--color-border) bg-(--color-surface) p-4">
                         <div>
-                          <p className="text-sm font-medium">
+                          <p className="font-medium text-sm">
                             {t('settings.quietHoursEnabled', 'Enable quiet hours')}
                           </p>
-                          <p className="text-xs text-(--color-muted)">
+                          <p className="text-(--color-muted) text-xs">
                             {t(
                               'settings.quietHoursHint',
                               'Suppress non-critical notifications during specified hours',
@@ -3030,7 +3140,7 @@ export function Settings() {
                           <div className="space-y-2">
                             <label
                               htmlFor="quiet-start"
-                              className="flex items-center gap-2 text-sm font-medium"
+                              className="flex items-center gap-2 font-medium text-sm"
                             >
                               <Clock size={14} className="text-(--color-muted)" />
                               {t('settings.quietHoursStart', 'Start')}
@@ -3046,7 +3156,7 @@ export function Settings() {
                           <div className="space-y-2">
                             <label
                               htmlFor="quiet-end"
-                              className="flex items-center gap-2 text-sm font-medium"
+                              className="flex items-center gap-2 font-medium text-sm"
                             >
                               <Clock size={14} className="text-(--color-muted)" />
                               {t('settings.quietHoursEnd', 'End')}
@@ -3088,10 +3198,10 @@ export function Settings() {
                     <div className="space-y-5">
                       <div className="flex items-center justify-between rounded-xl border border-(--color-border) bg-(--color-surface) p-4">
                         <div>
-                          <p className="text-sm font-medium">
+                          <p className="font-medium text-sm">
                             {t('settings.debugMode', 'Debug mode')}
                           </p>
-                          <p className="text-xs text-(--color-muted)">
+                          <p className="text-(--color-muted) text-xs">
                             {t('settings.debugHint', 'Show detailed logs and developer tools')}
                           </p>
                         </div>
@@ -3104,10 +3214,10 @@ export function Settings() {
                       </div>
                       <div className="flex items-center justify-between rounded-xl border border-(--color-border) bg-(--color-surface) p-4">
                         <div>
-                          <p className="text-sm font-medium">
+                          <p className="font-medium text-sm">
                             {t('settings.i18nInspector', 'i18n Inspector')}
                           </p>
-                          <p className="text-xs text-(--color-muted)">
+                          <p className="text-(--color-muted) text-xs">
                             {t(
                               'settings.i18nInspectorHint',
                               'Show translation keys instead of values',
@@ -3116,7 +3226,7 @@ export function Settings() {
                         </div>
                         <button
                           type="button"
-                          className="rounded-lg border border-(--color-border) bg-(--color-surface) px-3 py-1.5 text-xs font-medium transition-colors hover:bg-(--color-surface-hover)"
+                          className="rounded-lg border border-(--color-border) bg-(--color-surface) px-3 py-1.5 font-medium text-xs transition-colors hover:bg-(--color-surface-hover)"
                           onClick={() => {
                             const current = localStorage.getItem('i18n-inspector');
                             if (current === 'true') {
@@ -3134,10 +3244,10 @@ export function Settings() {
                       </div>
                       <div className="flex items-center justify-between rounded-xl border border-(--color-border) bg-(--color-surface) p-4">
                         <div>
-                          <p className="text-sm font-medium">
+                          <p className="font-medium text-sm">
                             {t('settings.experimentalFeatures', 'Experimental features')}
                           </p>
-                          <p className="text-xs text-(--color-muted)">
+                          <p className="text-(--color-muted) text-xs">
                             {t(
                               'settings.experimentalHint',
                               'Enable beta features that may be unstable',
@@ -3153,10 +3263,10 @@ export function Settings() {
                       </div>
                       <div className="flex items-center justify-between rounded-xl border border-(--color-border) bg-(--color-surface) p-4">
                         <div>
-                          <p className="text-sm font-medium">
+                          <p className="font-medium text-sm">
                             {t('settings.performanceMode', 'Performance mode')}
                           </p>
-                          <p className="text-xs text-(--color-muted)">
+                          <p className="text-(--color-muted) text-xs">
                             {t(
                               'settings.performanceHint',
                               'Reduce animations and effects for better performance',
@@ -3179,10 +3289,10 @@ export function Settings() {
                               <RotateCcw size={20} className="text-(--color-primary)" />
                             </div>
                             <div className="min-w-0">
-                              <p className="text-sm font-medium">
+                              <p className="font-medium text-sm">
                                 {t('settings.resetOnboarding', 'Show onboarding again')}
                               </p>
-                              <p className="mt-1 text-xs text-(--color-muted)">
+                              <p className="mt-1 text-(--color-muted) text-xs">
                                 {t(
                                   'settings.resetOnboardingHint',
                                   'Restart the welcome tour on next reload',
@@ -3197,7 +3307,7 @@ export function Settings() {
                               setSaved(true);
                               setTimeout(() => setSaved(false), 3000);
                             }}
-                            className="focus-ring flex w-full shrink-0 items-center justify-center gap-2 rounded-xl border border-(--color-primary)/30 bg-(--color-primary)/10 px-4 py-2 text-sm text-(--color-primary) transition-colors hover:bg-(--color-primary)/20 sm:w-auto"
+                            className="focus-ring flex w-full shrink-0 items-center justify-center gap-2 rounded-xl border border-(--color-primary)/30 bg-(--color-primary)/10 px-4 py-2 text-(--color-primary) text-sm transition-colors hover:bg-(--color-primary)/20 sm:w-auto"
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
                           >
@@ -3222,17 +3332,17 @@ export function Settings() {
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
                           <div>
-                            <p className="text-sm font-medium">
+                            <p className="font-medium text-sm">
                               {t('settings.dashboardRefreshSec', 'Auto-refresh interval')}
                             </p>
-                            <p className="text-xs text-(--color-muted)">
+                            <p className="text-(--color-muted) text-xs">
                               {t(
                                 'settings.dashboardRefreshHint',
                                 'How often the dashboard data refreshes automatically',
                               )}
                             </p>
                           </div>
-                          <span className="font-mono text-sm text-(--color-primary) tabular-nums">
+                          <span className="font-mono text-(--color-primary) text-sm tabular-nums">
                             {settings.dashboardRefreshSec ?? 5}s
                           </span>
                         </div>
@@ -3252,10 +3362,10 @@ export function Settings() {
                       </div>
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm font-medium">
+                          <p className="font-medium text-sm">
                             {t('settings.sidebarPosition', 'Sidebar position')}
                           </p>
-                          <p className="text-xs text-(--color-muted)">
+                          <p className="text-(--color-muted) text-xs">
                             {t(
                               'settings.sidebarPositionHint',
                               'Place the navigation sidebar on the left or right side',
@@ -3268,7 +3378,7 @@ export function Settings() {
                               key={pos}
                               type="button"
                               onClick={() => updateSettings({ sidebarPosition: pos })}
-                              className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
+                              className={`rounded-lg px-3 py-1.5 font-medium text-xs transition-all ${
                                 (settings.sidebarPosition ?? 'left') === pos
                                   ? 'bg-(--color-primary)/15 text-(--color-primary)'
                                   : 'text-(--color-muted) hover:text-(--color-text)'
@@ -3284,10 +3394,10 @@ export function Settings() {
                       </div>
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm font-medium">
+                          <p className="font-medium text-sm">
                             {t('settings.autoBackup', 'Automatic backup')}
                           </p>
-                          <p className="text-xs text-(--color-muted)">
+                          <p className="text-(--color-muted) text-xs">
                             {t(
                               'settings.autoBackupHint',
                               'Periodically save settings to local storage',
@@ -3303,11 +3413,11 @@ export function Settings() {
                       </div>
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="flex items-center gap-2 text-sm font-medium">
+                          <p className="flex items-center gap-2 font-medium text-sm">
                             <Keyboard size={14} className="text-(--color-muted)" />
                             {t('settings.keyboardShortcuts', 'Keyboard shortcuts')}
                           </p>
-                          <p className="text-xs text-(--color-muted)">
+                          <p className="text-(--color-muted) text-xs">
                             {t(
                               'settings.keyboardShortcutsHint',
                               'Enable Cmd+K command palette and other keyboard shortcuts',
@@ -3325,13 +3435,13 @@ export function Settings() {
                       {/* Keyboard Shortcuts Reference */}
                       {(settings.keyboardShortcuts ?? true) && (
                         <div className="mt-4 rounded-xl border border-(--color-border) bg-(--color-surface)/40 p-4">
-                          <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-(--color-text)">
+                          <h3 className="mb-3 flex items-center gap-2 font-semibold text-(--color-text) text-sm">
                             <Keyboard size={16} className="text-(--color-primary)" />
                             {t('settings.shortcutsReference', 'Tastaturkürzel-Referenz')}
                           </h3>
                           <div className="space-y-3">
                             <div>
-                              <p className="mb-1.5 text-xs font-medium tracking-wider text-(--color-muted) uppercase">
+                              <p className="mb-1.5 font-medium text-(--color-muted) text-xs uppercase tracking-wider">
                                 {t('help.shortcutNav', 'Navigation')}
                               </p>
                               <div className="space-y-1">
@@ -3354,7 +3464,7 @@ export function Settings() {
                                     className="flex items-center justify-between text-xs"
                                   >
                                     <span className="text-(--color-muted)">{s.label}</span>
-                                    <kbd className="rounded-md border border-(--color-border) bg-(--color-surface) px-2 py-0.5 font-mono text-xs text-(--color-text)">
+                                    <kbd className="rounded-md border border-(--color-border) bg-(--color-surface) px-2 py-0.5 font-mono text-(--color-text) text-xs">
                                       {s.key}
                                     </kbd>
                                   </div>
@@ -3363,7 +3473,7 @@ export function Settings() {
                             </div>
                             <div className="section-divider" />
                             <div>
-                              <p className="mb-1.5 text-xs font-medium tracking-wider text-(--color-muted) uppercase">
+                              <p className="mb-1.5 font-medium text-(--color-muted) text-xs uppercase tracking-wider">
                                 {t('help.shortcutActions', 'Aktionen')}
                               </p>
                               <div className="space-y-1">
@@ -3386,7 +3496,7 @@ export function Settings() {
                                     className="flex items-center justify-between text-xs"
                                   >
                                     <span className="text-(--color-muted)">{s.label}</span>
-                                    <kbd className="rounded-md border border-(--color-border) bg-(--color-surface) px-2 py-0.5 font-mono text-xs text-(--color-text)">
+                                    <kbd className="rounded-md border border-(--color-border) bg-(--color-surface) px-2 py-0.5 font-mono text-(--color-text) text-xs">
                                       {s.key}
                                     </kbd>
                                   </div>
@@ -3394,7 +3504,7 @@ export function Settings() {
                               </div>
                             </div>
                           </div>
-                          <p className="mt-3 text-[10px] leading-relaxed text-(--color-muted)">
+                          <p className="mt-3 text-(--color-muted) text-[10px] leading-relaxed">
                             {t(
                               'help.shortcutNote',
                               'Auf macOS wird ⌘ verwendet, auf Windows/Linux Strg.',
@@ -3420,10 +3530,10 @@ export function Settings() {
                             <OctagonX size={20} className="text-red-400" />
                           </div>
                           <div className="min-w-0">
-                            <p className="text-sm font-medium text-red-400">
+                            <p className="font-medium text-red-400 text-sm">
                               {t('safety.emergencyStop', 'Notaus – Alle Geräte sofort abschalten')}
                             </p>
-                            <p className="mt-1 text-xs text-(--color-muted)">
+                            <p className="mt-1 text-(--color-muted) text-xs">
                               {t(
                                 'safety.emergencyStopSettingsHint',
                                 'Instantly disconnects all adapters and opens all circuit breakers. §14a EnWG compliant.',
@@ -3438,10 +3548,10 @@ export function Settings() {
                     <div className="rounded-xl border border-rose-500/30 bg-rose-500/5 p-4">
                       <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
                         <div className="min-w-0 flex-1">
-                          <p className="text-sm font-medium text-rose-400">
+                          <p className="font-medium text-rose-400 text-sm">
                             {t('settings.resetAll', 'Reset all settings')}
                           </p>
-                          <p className="text-xs text-(--color-muted)">
+                          <p className="text-(--color-muted) text-xs">
                             {t(
                               'settings.resetHint',
                               'This will reset all settings to their default values',
@@ -3464,7 +3574,7 @@ export function Settings() {
                               },
                             })
                           }
-                          className="flex w-full shrink-0 items-center justify-center gap-2 rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-2 text-sm text-rose-400 transition-colors hover:bg-rose-500/20 sm:w-auto"
+                          className="flex w-full shrink-0 items-center justify-center gap-2 rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-2 text-rose-400 text-sm transition-colors hover:bg-rose-500/20 sm:w-auto"
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
                         >

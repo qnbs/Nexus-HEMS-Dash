@@ -23,13 +23,13 @@ export const Default: Story = {
     children: (
       <>
         <ControlPanelSection title="Verbindung">
-          <div className="glass-panel p-4 text-sm text-(--color-text)">
+          <div className="glass-panel p-4 text-(--color-text) text-sm">
             Host: 192.168.1.100 · Port: 502
           </div>
         </ControlPanelSection>
         <ControlPanelDivider />
         <ControlPanelSection title="Polling">
-          <div className="glass-panel p-4 text-sm text-(--color-text)">
+          <div className="glass-panel p-4 text-(--color-text) text-sm">
             Intervall: 5 s · Timeout: 3 s
           </div>
         </ControlPanelSection>
@@ -43,7 +43,7 @@ export const WithClose: Story = {
     title: 'Victron Cerbo GX',
     onClose: () => alert('Geschlossen'),
     closeLabel: 'Panel schließen',
-    children: <p className="text-sm text-(--color-muted)">Detailansicht des Adapters</p>,
+    children: <p className="text-(--color-muted) text-sm">Detailansicht des Adapters</p>,
   },
 };
 
@@ -56,6 +56,6 @@ export const WithHeaderActions: Story = {
       </button>
     ),
     onClose: () => alert('Geschlossen'),
-    children: <p className="text-sm text-(--color-muted)">Formularfelder, Schalter, etc.</p>,
+    children: <p className="text-(--color-muted) text-sm">Formularfelder, Schalter, etc.</p>,
   },
 };

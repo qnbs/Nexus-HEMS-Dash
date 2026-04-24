@@ -243,7 +243,7 @@ async function fetchOctopusPrices(apiToken: string, region: string): Promise<Tar
       `https://api.octopus.energy/v1/products/${productCode}/electricity-tariffs/${tariffCode}/standard-unit-rates/?period_from=${periodFrom}&period_to=${periodTo}`,
       {
         headers: {
-          Authorization: `Basic ${btoa(apiToken + ':')}`,
+          Authorization: `Basic ${btoa(`${apiToken}:`)}`,
         },
       },
     );

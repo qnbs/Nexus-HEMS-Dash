@@ -38,10 +38,10 @@ function TabFallback() {
     <div className="flex min-h-[30vh] items-center justify-center" role="status">
       <div className="flex flex-col items-center gap-3">
         <div
-          className="cyber-shimmer h-6 w-6 animate-spin rounded-full border-2 border-(--color-primary) border-t-transparent"
+          className="cyber-shimmer h-6 w-6 animate-spin rounded-full border-(--color-primary) border-2 border-t-transparent"
           aria-hidden="true"
         />
-        <span className="text-xs text-(--color-muted)">Laden…</span>
+        <span className="text-(--color-muted) text-xs">Laden…</span>
       </div>
     </div>
   );
@@ -208,7 +208,7 @@ function SettingsUnifiedComponent() {
         {/* Left: Section Accordion */}
         <nav className="w-full shrink-0 lg:w-64" aria-label={t('settingsUnified.title')}>
           <div className="mb-2 flex items-center gap-2 px-1">
-            <span className="text-[10px] font-semibold tracking-widest text-(--color-muted) uppercase">
+            <span className="font-semibold text-(--color-muted) text-[10px] uppercase tracking-widest">
               {t('settingsUnified.sections', 'Bereiche')}
             </span>
             <HelpTooltip
@@ -243,7 +243,7 @@ function SettingsUnifiedComponent() {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <span
-                      className={`text-sm font-medium ${
+                      className={`font-medium text-sm ${
                         activeSection === section.key
                           ? 'text-(--color-primary)'
                           : 'text-(--color-text)'
@@ -252,12 +252,12 @@ function SettingsUnifiedComponent() {
                       {section.label}
                     </span>
                     {section.badge && (
-                      <span className="rounded-full bg-(--color-primary)/10 px-2 py-0.5 text-[9px] font-semibold tracking-wider text-(--color-primary) uppercase">
+                      <span className="rounded-full bg-(--color-primary)/10 px-2 py-0.5 font-semibold text-(--color-primary) text-[9px] uppercase tracking-wider">
                         {section.badge}
                       </span>
                     )}
                   </div>
-                  <p className="mt-0.5 truncate text-xs text-(--color-muted)">{section.desc}</p>
+                  <p className="mt-0.5 truncate text-(--color-muted) text-xs">{section.desc}</p>
                 </div>
                 <ChevronRight
                   size={14}
@@ -282,13 +282,14 @@ function SettingsUnifiedComponent() {
                 transition={{ duration: 0.25 }}
                 className="mt-4 hidden overflow-hidden lg:block"
               >
-                <h3 className="mb-2 px-1 text-[10px] font-semibold tracking-widest text-(--color-muted) uppercase">
+                <h3 className="mb-2 px-1 font-semibold text-(--color-muted) text-[10px] uppercase tracking-widest">
                   {t('settingsUnified.quickAccess')}
                 </h3>
                 <div className="grid grid-cols-2 gap-1.5">
                   {quickTiles.map((tile) => (
                     <button
                       key={tile.tab}
+                      type="button"
                       onClick={() => {
                         handleSectionChange('settings');
                         // Navigate to the specific settings tab via URL params
