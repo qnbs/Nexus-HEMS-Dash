@@ -126,7 +126,7 @@ export interface SunSpecDeviceInfo {
   manufacturer: string;
   model: string;
   serial: string;
-  version?: string;
+  version?: string | undefined;
   availableModels: number[];
 }
 

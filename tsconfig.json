@@ -18,8 +18,7 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "forceConsistentCasingInFileNames": true,
-    // exactOptionalPropertyTypes: planned for future PR (42 fixes needed across adapters/auth)
-    "exactOptionalPropertyTypes": false,
+    "exactOptionalPropertyTypes": true,
 
     "paths": {
       "@/*": ["./*"]

@@ -16,7 +16,7 @@ import {
   WifiOff,
   Zap,
 } from 'lucide-react';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, type MotionStyle, motion } from 'motion/react';
 import { type PointerEvent as RPointerEvent, useActionState, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { DemoBadge } from '../components/DemoBadge';
@@ -391,14 +391,14 @@ function FloatingDevicePanel({
   const { t } = useTranslation();
   const { pos, handlers } = useDraggable(initial);
 
-  const posStyle: React.CSSProperties = anchorRight
+  const posStyle: MotionStyle = anchorRight
     ? { right: Math.abs(pos.x), top: pos.y }
     : { left: pos.x, top: pos.y };
 
   return (
     <motion.div
       className="absolute z-10 w-80 touch-none select-none"
-      style={posStyle as React.CSSProperties}
+      style={posStyle}
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.9 }}

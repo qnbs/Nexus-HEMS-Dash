@@ -184,7 +184,7 @@ export class EEBUSAdapter extends BaseAdapter {
   private loadLimits: Map<number, EEBUSLoadControlLimit> = new Map();
   private incentives: EEBUSIncentive[] = [];
   private heartbeatInterval: ReturnType<typeof setInterval> | null = null;
-  private _serverBaseUrl?: string;
+  private _serverBaseUrl: string | undefined;
 
   constructor(config?: EEBUSAdapterConfig) {
     super({

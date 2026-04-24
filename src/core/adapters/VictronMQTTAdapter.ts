@@ -559,10 +559,9 @@ export class VictronMQTTAdapter extends BaseAdapter {
           (data.houseLoad ?? 0) - (data.heatPumpPower ?? 0) - (data.evPower ?? 0),
         ),
       },
-      tariff:
-        data.priceCurrent != null
-          ? { currentPriceEurKWh: data.priceCurrent, provider: 'tibber' }
-          : undefined,
+      ...(data.priceCurrent != null && {
+        tariff: { currentPriceEurKWh: data.priceCurrent, provider: 'tibber' as const },
+      }),
     };
   }
 

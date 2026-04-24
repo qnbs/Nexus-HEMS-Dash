@@ -179,8 +179,9 @@ export class ErrorBoundary extends Component<Props, State> {
                 {sentryEnabled && (
                   <button
                     onClick={() => {
+                      const sentryEventId = Sentry.lastEventId();
                       Sentry.showReportDialog({
-                        eventId: Sentry.lastEventId(),
+                        ...(sentryEventId !== undefined && { eventId: sentryEventId }),
                         title: i18next.t('error.reportTitle'),
                         subtitle: i18next.t('error.reportSubtitle'),
                         labelSubmit: i18next.t('error.reportSubmit'),

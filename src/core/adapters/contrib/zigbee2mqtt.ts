@@ -46,14 +46,14 @@ export interface Zigbee2MQTTConfig extends Partial<AdapterConnectionConfig> {
 // ─── Zigbee device state payload ────────────────────────────────────
 
 interface ZigbeeDeviceState {
-  power?: number; // Watts
-  energy?: number; // kWh
-  voltage?: number; // V
-  current?: number; // A
-  state?: 'ON' | 'OFF';
-  temperature?: number;
-  humidity?: number;
-  linkquality?: number;
+  power?: number | undefined; // Watts
+  energy?: number | undefined; // kWh
+  voltage?: number | undefined; // V
+  current?: number | undefined; // A
+  state?: 'ON' | 'OFF' | undefined;
+  temperature?: number | undefined;
+  humidity?: number | undefined;
+  linkquality?: number | undefined;
 }
 
 interface ZigbeeBridgeDevice {
@@ -90,7 +90,6 @@ export class Zigbee2MQTTAdapter extends BaseAdapter {
       host: config?.host ?? 'localhost',
       port: config?.port ?? 9001, // Mosquitto default WS port
       tls: config?.tls ?? false,
-      reconnect: config?.reconnect,
       ...config,
     });
 

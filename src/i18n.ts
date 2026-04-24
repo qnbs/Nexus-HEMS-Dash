@@ -45,11 +45,11 @@ void i18n
     // Debug: log missing keys + init info in development or inspector mode
     debug: inspectorMode || import.meta.env.DEV,
     saveMissing: inspectorMode,
-    missingKeyHandler: inspectorMode
-      ? (_lngs: readonly string[], _ns: string, key: string) => {
-          console.warn(`[i18n-inspector] Missing key: ${key}`);
-        }
-      : undefined,
+    ...(inspectorMode && {
+      missingKeyHandler: (_lngs: readonly string[], _ns: string, key: string) => {
+        console.warn(`[i18n-inspector] Missing key: ${key}`);
+      },
+    }),
   })
   .then(async () => {
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'de';

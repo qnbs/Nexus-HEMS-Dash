@@ -32,17 +32,17 @@ export interface PluginDescriptor {
   /** Semantic version (e.g. "1.2.3") */
   version: string;
   /** Short description */
-  description?: string;
+  description?: string | undefined;
   /** Author/maintainer */
-  author?: string;
+  author?: string | undefined;
   /** Required dependencies (plugin id → semver range) */
-  dependencies?: Record<string, string>;
+  dependencies?: Record<string, string> | undefined;
   /** Services this plugin provides */
-  provides?: string[];
+  provides?: string[] | undefined;
   /** Services this plugin requires */
-  requires?: string[];
+  requires?: string[] | undefined;
   /** Category for grouping */
-  category?: 'adapter' | 'controller' | 'analytics' | 'ui' | 'integration';
+  category?: 'adapter' | 'controller' | 'analytics' | 'ui' | 'integration' | undefined;
 }
 
 export interface PluginContext {

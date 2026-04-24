@@ -140,14 +140,14 @@ export function requiresConfirmation(command: AdapterCommand): boolean {
 // ─── Audit Trail ─────────────────────────────────────────────────────
 
 export interface CommandAuditEntry {
-  id?: number;
+  id?: number | undefined;
   timestamp: number;
   commandType: AdapterCommandType;
   value: number | string | boolean;
-  targetDeviceId?: string;
+  targetDeviceId?: string | undefined;
   status: 'confirmed' | 'rejected' | 'executed' | 'failed' | 'emergency_stop';
-  error?: string;
-  adapterId?: string;
+  error?: string | undefined;
+  adapterId?: string | undefined;
 }
 
 /**

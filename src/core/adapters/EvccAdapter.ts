@@ -424,7 +424,6 @@ export class EvccAdapter extends BaseAdapter {
       tariff: {
         currentPriceEurKWh: r.tariffGrid ?? 0,
         provider: 'tibber',
-        sgReadyState: undefined,
       },
     };
 

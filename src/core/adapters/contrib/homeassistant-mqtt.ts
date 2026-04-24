@@ -91,7 +91,6 @@ export class HomeAssistantMQTTAdapter extends BaseAdapter {
       host: config?.host ?? 'homeassistant.local',
       port: config?.port ?? 1884, // Default HA WebSocket MQTT port
       tls: config?.tls ?? false,
-      reconnect: config?.reconnect,
       ...config,
     });
 

@@ -61,21 +61,21 @@ export interface AuthUser {
   /** Email address */
   email: string;
   /** Display name */
-  displayName?: string;
+  displayName?: string | undefined;
   /** Avatar URL */
-  avatarUrl?: string;
+  avatarUrl?: string | undefined;
   /** Assigned role */
   role: UserRole;
   /** Household / installation ID this user belongs to */
-  householdId?: string;
+  householdId?: string | undefined;
   /** Auth provider that authenticated this user */
   provider: AuthProviderType;
   /** ISO timestamp of last sign-in */
-  lastSignIn?: string;
+  lastSignIn?: string | undefined;
   /** Whether email is verified */
   emailVerified: boolean;
   /** Raw metadata from the auth provider */
-  metadata?: Record<string, unknown>;
+  metadata?: Record<string, unknown> | undefined;
 }
 
 /** Auth session with tokens */
@@ -83,7 +83,7 @@ export interface AuthSession {
   /** Access token (JWT) */
   accessToken: string;
   /** Refresh token for silent renewal */
-  refreshToken?: string;
+  refreshToken?: string | undefined;
   /** Token expiry (Unix ms) */
   expiresAt: number;
   /** User profile */
@@ -137,7 +137,7 @@ export interface ShareLink {
   /** Creation timestamp */
   createdAt: number;
   /** Optional label/name */
-  label?: string;
+  label?: string | undefined;
   /** Number of times this link has been used */
   useCount: number;
   /** Maximum allowed uses (0 = unlimited) */

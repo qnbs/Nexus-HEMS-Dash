@@ -506,7 +506,7 @@ export class SupabaseAuthProvider implements AuthProvider {
               expiresInLabel: '',
               createdBy: row['created_by'] as string,
               createdAt: new Date(row['created_at'] as string).getTime(),
-              label: (row['label'] as string) ?? undefined,
+              label: row['label'] != null ? (row['label'] as string) : undefined,
               useCount: row['use_count'] as number,
               maxUses: row['max_uses'] as number,
               active: row['active'] as boolean,

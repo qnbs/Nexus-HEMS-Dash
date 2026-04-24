@@ -34,9 +34,9 @@ interface PollMessage {
 export interface PollTarget {
   protocol: 'http' | 'https';
   host: string;
-  port?: number;
+  port?: number | undefined;
   path: string;
-  query?: Record<string, string | number | boolean>;
+  query?: Record<string, string | number | boolean> | undefined;
 }
 
 interface TransformMessage {

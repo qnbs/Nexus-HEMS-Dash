@@ -11,7 +11,7 @@
 export interface PVData {
   totalPowerW: number;
   yieldTodayKWh: number;
-  strings?: { id: number; powerW: number; voltageV: number; currentA: number }[];
+  strings?: { id: number; powerW: number; voltageV: number; currentA: number }[] | undefined;
 }
 
 /** Battery Energy Storage System (SunSpec Model 124 / Victron) */
@@ -20,20 +20,20 @@ export interface BatteryData {
   socPercent: number;
   voltageV: number;
   currentA: number;
-  capacityWh?: number;
-  temperatureC?: number;
-  cycleCount?: number;
-  stateOfHealthPercent?: number;
+  capacityWh?: number | undefined;
+  temperatureC?: number | undefined;
+  cycleCount?: number | undefined;
+  stateOfHealthPercent?: number | undefined;
 }
 
 /** Grid meter reading (SunSpec Model 201–204) */
 export interface GridData {
   powerW: number; // positive = import, negative = export
   voltageV: number;
-  frequencyHz?: number;
-  energyImportKWh?: number;
-  energyExportKWh?: number;
-  phases?: { voltageV: number; currentA: number; powerW: number }[];
+  frequencyHz?: number | undefined;
+  energyImportKWh?: number | undefined;
+  energyExportKWh?: number | undefined;
+  phases?: { voltageV: number; currentA: number; powerW: number }[] | undefined;
 }
 
 /** Household load breakdown */
@@ -49,9 +49,9 @@ export interface EVChargerData {
   status: 'available' | 'preparing' | 'charging' | 'suspended' | 'finishing' | 'faulted';
   powerW: number;
   energySessionKWh: number;
-  socPercent?: number;
-  currentA?: number;
-  voltageV?: number;
+  socPercent?: number | undefined;
+  currentA?: number | undefined;
+  voltageV?: number | undefined;
   maxCurrentA: number;
   vehicleConnected: boolean;
   v2xCapable: boolean;
@@ -79,7 +79,7 @@ export interface KNXRoom {
 export interface TariffData {
   currentPriceEurKWh: number;
   provider: 'tibber' | 'awattar' | 'entsoe' | 'none';
-  sgReadyState?: 1 | 2 | 3 | 4;
+  sgReadyState?: 1 | 2 | 3 | 4 | undefined;
 }
 
 /** Unified energy model — aggregated from all adapters */
@@ -89,9 +89,9 @@ export interface UnifiedEnergyModel {
   battery: BatteryData;
   grid: GridData;
   load: LoadData;
-  evCharger?: EVChargerData;
-  knx?: KNXData;
-  tariff?: TariffData;
+  evCharger?: EVChargerData | undefined;
+  knx?: KNXData | undefined;
+  tariff?: TariffData | undefined;
 }
 
 // ─── Adapter Connection ──────────────────────────────────────────────

@@ -100,7 +100,6 @@ export class MatterThreadAdapter extends BaseAdapter {
       host: config?.host ?? 'localhost',
       port: config?.port ?? 5580, // HA Matter Server default WS port
       tls: config?.tls ?? false,
-      reconnect: config?.reconnect,
       ...config,
     });
 

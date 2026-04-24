@@ -32,9 +32,9 @@ export interface AdapterRegistration {
   /** Unique adapter identifier (e.g. 'victron-mqtt', 'my-custom') */
   id: string;
   /** Human-readable display name */
-  displayName?: string;
+  displayName?: string | undefined;
   /** Short description */
-  description?: string;
+  description?: string | undefined;
   /** Factory to create instances */
   factory: AdapterFactory;
   /** Whether this is a built-in or contrib/third-party adapter */

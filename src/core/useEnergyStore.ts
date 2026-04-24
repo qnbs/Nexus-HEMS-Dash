@@ -46,7 +46,7 @@ export interface AdapterEntry {
   adapter: EnergyAdapter;
   enabled: boolean;
   status: AdapterStatus;
-  error?: string;
+  error?: string | undefined;
   circuitState: CircuitState;
 }
 
@@ -529,7 +529,7 @@ export const selectHistory = (state: EnergyStoreState) => state.history;
 let _prevAdapters: Record<AdapterId, AdapterEntry> | null = null;
 let _cachedStatuses: Record<
   string,
-  { status: AdapterStatus; enabled: boolean; name: string; error?: string }
+  { status: AdapterStatus; enabled: boolean; name: string; error?: string | undefined }
 > | null = null;
 
 export const selectAdapterStatuses = (state: EnergyStoreState) => {

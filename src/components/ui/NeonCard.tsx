@@ -68,14 +68,12 @@ export function NeonCard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      whileHover={
-        hover
-          ? {
-              scale: 1.015,
-              transition: { duration: 0.25, type: 'spring', stiffness: 400, damping: 25 },
-            }
-          : undefined
-      }
+      {...(hover && {
+        whileHover: {
+          scale: 1.015,
+          transition: { duration: 0.25, type: 'spring', stiffness: 400, damping: 25 },
+        },
+      })}
       onMouseMove={spotlight ? handleSpotlightMove : undefined}
       {...props}
     >

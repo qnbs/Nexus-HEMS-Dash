@@ -1,6 +1,7 @@
 import * as Comlink from 'comlink';
 import { sankeyLinkHorizontal } from 'd3-sankey';
 import { select } from 'd3-selection';
+import type { TFunction } from 'i18next';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { persistSankeySnapshot } from '../lib/db';
@@ -15,10 +16,7 @@ import type {
  * Builds a concise screen-reader announcement string for the current energy state.
  * Debounced externally — only called when the live region should update.
  */
-function buildAnnouncement(
-  data: EnergyData,
-  t: (key: string, opts?: Record<string, unknown>) => string,
-): string {
+function buildAnnouncement(data: EnergyData, t: TFunction<'translation'>): string {
   const parts: string[] = [];
   if (data.pvPower > 0)
     parts.push(t('accessibility.sankeyAnnouncePV', { power: Math.round(data.pvPower) }));

@@ -19,13 +19,13 @@ export interface SankeySnapshot {
 }
 
 export interface OfflineAction {
-  id?: number;
+  id?: number | undefined;
   type: 'ev-control' | 'hp-control' | 'battery-control' | 'settings' | 'ai-optimize';
   payload: Record<string, unknown>;
   timestamp: number;
   retries: number;
   status: 'pending' | 'syncing' | 'failed' | 'completed';
-  error?: string;
+  error?: string | undefined;
 }
 
 export interface CacheMetadata {
@@ -38,11 +38,11 @@ export interface CacheMetadata {
 }
 
 export interface ErrorLog {
-  id?: number;
+  id?: number | undefined;
   timestamp: number;
   message: string;
-  stack?: string;
-  componentStack?: string;
+  stack?: string | undefined;
+  componentStack?: string | undefined;
   userAgent: string;
   url: string;
   severity: 'low' | 'medium' | 'high' | 'critical';

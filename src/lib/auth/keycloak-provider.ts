@@ -163,9 +163,9 @@ export class KeycloakAuthProvider implements AuthProvider {
 
   destroy(): void {
     if (this.kc) {
-      this.kc.onTokenExpired = undefined;
-      this.kc.onAuthSuccess = undefined;
-      this.kc.onAuthLogout = undefined;
+      delete this.kc.onTokenExpired;
+      delete this.kc.onAuthSuccess;
+      delete this.kc.onAuthLogout;
     }
     this.listeners.clear();
     this.kc = null;

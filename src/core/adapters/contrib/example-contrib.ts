@@ -53,7 +53,6 @@ export class ExampleContribAdapter extends BaseAdapter {
       host: config?.host ?? 'localhost',
       port: config?.port ?? 8080,
       tls: config?.tls ?? false,
-      reconnect: config?.reconnect,
       ...config,
     });
     this.pollIntervalMs = config?.pollIntervalMs ?? 5000;

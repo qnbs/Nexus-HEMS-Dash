@@ -6,7 +6,7 @@ const config: Config = {
   darkMode: [
     'class',
     '[data-theme="energy-dark"],[data-theme="ocean-dark"],[data-theme="nature-green"]',
-  ] as Config['darkMode'],
+  ] as ['class', string],
   theme: {
     extend: {
       screens: {

@@ -84,7 +84,7 @@ interface ChargerState {
   vehicleConnected: boolean;
   v2xCapable: boolean;
   v2xActive: boolean;
-  transactionId?: string;
+  transactionId: string | undefined;
   /** ISO 15118 status */
   iso15118Certified: boolean;
 }
@@ -135,6 +135,7 @@ export class OCPP21Adapter extends BaseAdapter {
     vehicleConnected: false,
     v2xCapable: false,
     v2xActive: false,
+    transactionId: undefined,
     iso15118Certified: false,
   };
 

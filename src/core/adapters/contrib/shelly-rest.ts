@@ -116,7 +116,7 @@ export class ShellyRESTAdapter extends BaseAdapter {
   private pollIntervalMs: number;
   private deviceConfigs: { host: string; name: string; type: 'em' | 'plug' | 'relay' }[];
   private deviceReadings: Map<string, ShellyDeviceReading> = new Map();
-  private devicePassword?: string;
+  private devicePassword: string | undefined;
 
   constructor(config?: ShellyRESTConfig) {
     super({
@@ -124,7 +124,6 @@ export class ShellyRESTAdapter extends BaseAdapter {
       host: config?.host ?? 'localhost',
       port: config?.port ?? 80,
       tls: config?.tls ?? false,
-      reconnect: config?.reconnect,
       ...config,
     });
 
