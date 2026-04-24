@@ -8,63 +8,74 @@
 'area: components':
   - changed-files:
       - any-glob-to-any-file:
-          - src/components/**
+          - apps/web/src/components/**
 
 'area: pages':
   - changed-files:
       - any-glob-to-any-file:
-          - src/pages/**
+          - apps/web/src/pages/**
 
 'area: adapters':
   - changed-files:
       - any-glob-to-any-file:
-          - src/core/adapters/**
-          - src/core/useEnergyStore.ts
-          - src/core/adapter-*.ts
+          - apps/web/src/core/adapters/**
+          - apps/web/src/core/useEnergyStore.ts
+          - apps/web/src/core/adapter-*.ts
+
+'area: api':
+  - changed-files:
+      - any-glob-to-any-file:
+          - apps/api/**
+
+'area: shared-types':
+  - changed-files:
+      - any-glob-to-any-file:
+          - packages/shared-types/**
 
 'area: design-system':
   - changed-files:
       - any-glob-to-any-file:
-          - src/index.css
-          - src/design-tokens.ts
+          - apps/web/src/index.css
+          - apps/web/src/design-tokens.ts
           - DESIGN-SYSTEM.md
 
 'area: i18n':
   - changed-files:
       - any-glob-to-any-file:
-          - src/locales/**
-          - src/i18n.ts
+          - apps/web/src/locales/**
+          - apps/web/src/i18n.ts
 
 'area: ai':
   - changed-files:
       - any-glob-to-any-file:
-          - src/core/aiClient.ts
-          - src/lib/predictive-ai.ts
-          - src/lib/optimizer.ts
-          - src/lib/ml-forecast.ts
-          - src/lib/ai-keys.ts
-          - src/pages/AISettingsPage.tsx
-          - src/pages/OptimizationAI.tsx
-          - src/components/AIOptimizerPanel.tsx
-          - src/components/EnhancedAIOptimizer.tsx
+          - apps/web/src/core/aiClient.ts
+          - apps/web/src/lib/predictive-ai.ts
+          - apps/web/src/lib/optimizer.ts
+          - apps/web/src/lib/ml-forecast.ts
+          - apps/web/src/lib/ai-keys.ts
+          - apps/web/src/pages/AISettingsPage.tsx
+          - apps/web/src/pages/OptimizationAI.tsx
+          - apps/web/src/components/AIOptimizerPanel.tsx
+          - apps/web/src/components/EnhancedAIOptimizer.tsx
 
 'area: pwa':
   - changed-files:
       - any-glob-to-any-file:
-          - src/lib/offline-cache.ts
-          - src/lib/background-sync.ts
-          - src/lib/pwa-install.ts
-          - src/components/OfflineBanner.tsx
-          - src/components/PWA*.tsx
-          - public/manifest.json
+          - apps/web/src/lib/offline-cache.ts
+          - apps/web/src/lib/background-sync.ts
+          - apps/web/src/lib/pwa-install.ts
+          - apps/web/src/components/OfflineBanner.tsx
+          - apps/web/src/components/PWA*.tsx
+          - apps/web/public/manifest.json
 
 'area: security':
   - changed-files:
       - any-glob-to-any-file:
-          - src/lib/auth/**
-          - src/lib/crypto.ts
-          - src/lib/secure-store.ts
-          - src/core/command-safety.ts
+          - apps/api/src/middleware/auth.ts
+          - apps/api/src/jwt-utils.ts
+          - apps/web/src/lib/crypto.ts
+          - apps/web/src/lib/secure-store.ts
+          - apps/web/src/core/command-safety.ts
           - SECURITY.md
           - .gitleaks.toml
 
@@ -87,19 +98,24 @@
 'type: tests':
   - changed-files:
       - any-glob-to-any-file:
-          - src/tests/**
-          - tests/**
-          - vitest.config.ts
-          - playwright.config.ts
+          - apps/web/src/tests/**
+          - apps/web/tests/**
+          - apps/web/vitest.config.ts
+          - apps/web/playwright.config.ts
 
 'type: config':
   - changed-files:
       - any-glob-to-any-file:
-          - vite.config.ts
-          - tsconfig.json
+          - apps/web/vite.config.ts
+          - apps/web/tailwind.config.ts
+          - tsconfig.base.json
+          - turbo.json
+          - pnpm-workspace.yaml
           - eslint.config.js
-          - tailwind.config.ts
+          - biome.json
           - package.json
+          - apps/*/package.json
+          - packages/*/package.json
 
 'type: docker':
   - changed-files:
@@ -107,9 +123,9 @@
           - Dockerfile
           - Dockerfile.server
           - docker-compose.yml
-          - nginx.conf
+          - apps/web/nginx.conf
 
 'type: tauri':
   - changed-files:
       - any-glob-to-any-file:
-          - src-tauri/**
+          - apps/web/src-tauri/**

@@ -7,7 +7,7 @@ export default {
   '*.{ts,tsx}': (files) => [
     `biome check --write ${files.join(' ')}`,
   ],
-  'src/**/*.tsx': (files) => [`eslint --fix --max-warnings 0 ${files.join(' ')}`],
+  'apps/web/src/**/*.tsx': (files) => [`eslint --fix --max-warnings 0 ${files.join(' ')}`],
   '*.{json,css,html,yml,yaml}': (files) => {
     // Biome's VCS integration excludes .github/ even though **/*.yml is in includes.
     // Filter those paths out to avoid "No files processed" exit-1 from biome format.

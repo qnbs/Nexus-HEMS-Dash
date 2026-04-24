@@ -1,7 +1,7 @@
 # API Reference
 
 Nexus HEMS server exposes REST endpoints and a real-time WebSocket interface.
-All schemas are defined with Zod in `src/types/protocol.ts`.
+All schemas are defined with Zod in `packages/shared-types/src/protocol.ts` (importable as `@nexus-hems/shared-types`).
 
 ---
 

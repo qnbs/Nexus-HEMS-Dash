@@ -1,4 +1,4 @@
-import type { EnergyData } from '../../types/protocol.js';
+import type { EnergyData } from '@nexus-hems/shared-types';
 
 /**
  * Mock data for the HEMS dashboard demo.

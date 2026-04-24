@@ -95,8 +95,8 @@ pre-commit framework
 ```
 lint-typecheck job (parallel with build + tests):
   → pnpm audit
-  → pnpm lint          (biome check + slim eslint)
-  → pnpm type-check    (tsc --noEmit)
+  → turbo lint         (biome check + slim eslint across all workspaces)
+  → turbo type-check   (tsc --noEmit in apps/api + apps/web + packages/shared-types)
   [format:check is subsumed into pnpm lint via biome]
 ```
 
@@ -221,7 +221,7 @@ git checkout HEAD~1 -- eslint.config.js .prettierrc .prettierignore \
 pnpm install
 
 # 5. Verify
-pnpm lint && pnpm type-check && pnpm build
+pnpm lint && pnpm type-check && turbo build
 ```
 
 Git tag `toolchain-pre-biome` marks the last commit before migration to ease rollback.
@@ -239,11 +239,11 @@ chmod +x scripts/bench-tooling.sh
 
 The script measures:
 
-- Wall-clock time for `biome check src/`
-- Wall-clock time for `eslint src/` (React-only config)
-- Wall-clock time for `tsc --noEmit`
+- Wall-clock time for `biome check apps/ packages/`
+- Wall-clock time for `eslint apps/web/src/ --max-warnings 0` (React-only config)
+- Wall-clock time for `turbo type-check`
 - RSS peak memory for each tool (Linux: `/usr/bin/time -v`)
-- Combined lint time (biome + slim eslint) vs. old (eslint + prettier check)
+- Combined lint time (biome + slim eslint across all workspaces) vs. old (eslint + prettier check)
 
 Output is saved to `.perf/toolchain-bench-YYYYMMDD.json`.
 

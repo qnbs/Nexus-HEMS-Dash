@@ -13,8 +13,8 @@
 [![pnpm](https://img.shields.io/badge/pnpm-10-F69220?style=flat-square&logo=pnpm&logoColor=white)](https://pnpm.io/)
 [![Node.js](https://img.shields.io/badge/Node.js-24_LTS-339933?style=flat-square&logo=nodedotjs&logoColor=white)](.nvmrc)
 [![Storybook](https://img.shields.io/badge/Storybook-10.3-FF4785?style=flat-square&logo=storybook&logoColor=white)](.storybook/main.ts)
-[![Tests](https://img.shields.io/badge/Tests-428-22ff88?style=flat-square&logo=vitest&logoColor=white)](src/tests/)
-[![E2E](https://img.shields.io/badge/E2E-Playwright-00A0E9?style=flat-square&logo=playwright&logoColor=white)](tests/e2e/)
+[![Tests](https://img.shields.io/badge/Tests-428-22ff88?style=flat-square&logo=vitest&logoColor=white)](apps/web/src/tests/)
+[![E2E](https://img.shields.io/badge/E2E-Playwright-00A0E9?style=flat-square&logo=playwright&logoColor=white)](apps/web/tests/e2e/)
 [![Adapters](<https://img.shields.io/badge/Adapters-10_(5+5)-22ff88?style=flat-square>)](#protocol-adapters)
 
 **[Live Demo](https://qnbs.github.io/Nexus-HEMS-Dash/)** · **[Open in Codespaces](https://codespaces.new/qnbs/Nexus-HEMS-Dash)** · **[Adapter Dev Guide](docs/Adapter-Dev-Guide.md)** · **[Storybook](.storybook/main.ts)**
@@ -40,6 +40,18 @@ Nexus-HEMS is a **unified Command Center** that consolidates **10 protocol adapt
 | **Desktop & Mobile**    | Tauri v2.2 (Windows/macOS/Linux) · Capacitor 7 (iOS/Android)                                                                                                                                                                                                                                             |
 
 ## Architecture
+
+### Monorepo Structure (pnpm + Turborepo)
+
+```
+apps/api/               @nexus-hems/api    — Express 5 + WebSocket backend (port 3000)
+apps/web/               @nexus-hems/web    — React 19 Vite SPA (port 5173 in dev)
+packages/shared-types/  @nexus-hems/shared-types — Zod schemas + types (protocol.ts)
+```
+
+In development, `apps/web` (Vite) proxies `/api/*`, `/metrics`, and `/ws` requests to `apps/api` (Express).
+
+### Data Flow
 
 ```
 ┌─────────────────── Core Adapters ─────────────────────┐
@@ -67,7 +79,7 @@ Nexus-HEMS is a **unified Command Center** that consolidates **10 protocol adapt
                      └──→ Dexie.js IndexedDB (Offline Cache)
 ```
 
-All adapters implement the `EnergyAdapter` interface (`src/core/adapters/EnergyAdapter.ts`). Contrib adapters extend `BaseAdapter` (`src/core/adapters/BaseAdapter.ts`) for simplified development. The `AdapterRegistry` (`src/core/adapters/adapter-registry.ts`) manages registration, lifecycle, and dynamic loading.
+All adapters implement the `EnergyAdapter` interface (`apps/web/src/core/adapters/EnergyAdapter.ts`). Contrib adapters extend `BaseAdapter` (`apps/web/src/core/adapters/BaseAdapter.ts`) for simplified development. The `AdapterRegistry` (`apps/web/src/core/adapters/adapter-registry.ts`) manages registration, lifecycle, and dynamic loading.
 
 ## Quick Start
 
@@ -93,18 +105,19 @@ The Codespace includes Node.js 24, pnpm, Playwright, Docker, and all VS Code ext
 
 ### Scripts
 
-| Command              | Description                                |
-| :------------------- | :----------------------------------------- |
-| `pnpm dev`           | Dev server (Express + Vite HMR)            |
-| `pnpm build`         | Production build with PWA                  |
-| `pnpm test`          | Vitest watch mode                          |
-| `pnpm test:run`      | All unit tests once                        |
-| `pnpm test:e2e`      | Playwright E2E + a11y                      |
-| `pnpm test:coverage` | V8 coverage report                         |
-| `pnpm lint`          | Biome + React ESLint (zero-warning policy) |
-| `pnpm type-check`    | TypeScript strict check                    |
-| `pnpm docker:build`  | Build Docker image                         |
-| `pnpm docker:up`     | Start container (port 8080)                |
+| Command              | Description                                                          |
+| :------------------- | :------------------------------------------------------------------- |
+| `pnpm dev`           | Turborepo dev — apps/api (port 3000) + apps/web (port 5173) with HMR |
+| `pnpm build`         | Turborepo build — all packages in dependency order                   |
+| `pnpm test`          | Vitest watch mode (apps/web)                                         |
+| `pnpm test:run`      | All unit tests once                                                  |
+| `pnpm test:e2e`      | Playwright E2E + a11y                                                |
+| `pnpm test:coverage` | V8 coverage report                                                   |
+| `pnpm lint`          | Biome + React ESLint across all workspaces (zero-warning policy)     |
+| `pnpm type-check`    | TypeScript strict check across all workspaces                        |
+| `pnpm verify:basis`  | Full local gate: type-check + lint + test:run                        |
+| `pnpm docker:build`  | Build Docker image                                                   |
+| `pnpm docker:up`     | Start container (port 8080)                                          |
 
 ### Environment Variables
 
@@ -161,7 +174,7 @@ PORT=3000                    # Default: 3000
 
 ### Plugin System & Adapter Registry
 
-The adapter registry (`src/core/adapters/adapter-registry.ts`) supports three ways to add adapters:
+The adapter registry (`apps/web/src/core/adapters/adapter-registry.ts`) supports three ways to add adapters:
 
 ```typescript
 // 1. Static registration
@@ -188,7 +201,7 @@ export class MyAdapter extends BaseAdapter implements EnergyAdapter {
 }
 ```
 
-See [Adapter Dev Guide](docs/Adapter-Dev-Guide.md) and [Contrib README](src/core/adapters/contrib/README.md) for full documentation.
+See [Adapter Dev Guide](docs/Adapter-Dev-Guide.md) and [Contrib README](apps/web/src/core/adapters/contrib/README.md) for full documentation.
 
 ## Security
 
@@ -228,7 +241,8 @@ pnpm docker:build && pnpm docker:up
 **Tauri Desktop** — native builds for Windows, macOS, Linux:
 
 ```bash
-cd src-tauri && cargo tauri build
+pnpm tauri build
+# Config: apps/web/src-tauri/tauri.conf.json
 ```
 
 ## Design System
@@ -254,6 +268,7 @@ Brand colors: `neon-green` (#22ff88) · `electric-blue` (#00f0ff) · `power-oran
 | Q3–Q4   | Energy controllers (7 loops), MPC optimizer, hardware registry (120+ devices), plugin lifecycle, command safety, 265 tests                         | ✅ Shipped |
 | Q1 2026 | Opt#1 + Opt#2 Zustand/React 19 compiler cleanup, 6 new test suites (circuit-breaker, tariff-providers, notifications, energy-context, +extensions) | ✅ Shipped |
 | Q4      | **Unified Command Center** — 7 focused sections, guided tours, contextual help, zero-config onboarding, full a11y audit                            | ✅ Shipped |
+| Q2 2026 | **pnpm/Turborepo Monorepo** — `apps/api` + `apps/web` + `packages/shared-types`; two-process dev; Turbo caching across all workspaces               | ✅ Shipped |
 | Q4+     | Historical analytics, multi-tenant SaaS, contrib marketplace                                                                                       | 🔜 Planned |
 
 ## Changelog
@@ -403,6 +418,6 @@ git clone https://github.com/qnbs/Nexus-HEMS-Dash.git && cd Nexus-HEMS-Dash
 corepack enable && pnpm install && pnpm dev
 ```
 
-**Docs:** [DESIGN-SYSTEM.md](DESIGN-SYSTEM.md) · [CONTRIBUTING.md](CONTRIBUTING.md) · [SECURITY.md](SECURITY.md) · [Adapter-Dev-Guide](docs/Adapter-Dev-Guide.md) · [Contrib-Adapter-README](src/core/adapters/contrib/README.md)
+**Docs:** [DESIGN-SYSTEM.md](DESIGN-SYSTEM.md) · [CONTRIBUTING.md](CONTRIBUTING.md) · [SECURITY.md](SECURITY.md) · [Adapter-Dev-Guide](docs/Adapter-Dev-Guide.md) · [Contrib-Adapter-README](apps/web/src/core/adapters/contrib/README.md)
 
 **Lizenz:** MIT — siehe [LICENSE](LICENSE).

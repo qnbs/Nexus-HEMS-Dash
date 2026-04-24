@@ -14,7 +14,7 @@ repos:
       - id: check-json
         exclude: ^(\.vscode/|tsconfig\.json)
       - id: detect-private-key
-        exclude: (src/components/AdapterConfigPanel\.tsx|\.gitleaks\.toml)
+        exclude: (apps/web/src/components/AdapterConfigPanel\.tsx|\.gitleaks\.toml)
       - id: check-merge-conflict
       - id: check-added-large-files
         args: [--maxkb=500]
@@ -30,7 +30,7 @@ repos:
     hooks:
       - id: anti-trojan-source
         name: Anti-Trojan-Source (Unicode Bidi)
-        entry: bash -c 'pnpm exec anti-trojan-source --files="src/**/*.{ts,tsx,js,jsx}" || true'
+        entry: bash -c 'pnpm exec anti-trojan-source --files="apps/**/*.{ts,tsx,js,jsx}" || true'
         language: system
         files: \.(ts|tsx|js|jsx)$
         pass_filenames: false

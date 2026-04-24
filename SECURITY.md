@@ -34,7 +34,7 @@ This project employs multiple layers of security:
 - **Anti-Trojan-Source**: Unicode Bidi character detection
 - **Pre-commit Hooks**: Gitleaks, detect-private-key, anti-trojan-source
 - **Conventional Commits**: Enforced via commitlint
-- **JWT Entropy Validation**: `jwt-utils.ts` warns on low-entropy secrets, dictionary words, and short keys at startup (production only)
+- **JWT Entropy Validation**: `apps/api/src/jwt-utils.ts` warns on low-entropy secrets, dictionary words, and short keys at startup (production only)
 - **JWT Scope Tiers**: Three authorization levels — `read` (monitoring only), `readwrite` (control commands), `admin` (system configuration, pairing)
 - **JTI Revocation**: `POST /api/auth/revoke` immediately invalidates a token by its JTI claim across all guarded endpoints
 - **Single-Use WS Tickets**: `POST /api/auth/ws-ticket` issues 60-second single-use WebSocket tickets; prefer `?ticket=` over `?token=` for WebSocket connections to avoid long-lived tokens in URLs

@@ -1,6 +1,6 @@
 import type { IncomingMessage } from 'http';
 import type { WebSocket, WebSocketServer } from 'ws';
-import { WSCommandSchema } from '../../types/protocol.js';
+import { WSCommandSchema } from '@nexus-hems/shared-types';
 import { mockData, updateMockData } from '../data/mock-data.js';
 import { type AuthenticatedClient, authenticateWS, type JWTScope } from '../middleware/auth.js';
 import { setMetric, updateServerMetrics, wsMessageCount } from '../middleware/metrics.js';

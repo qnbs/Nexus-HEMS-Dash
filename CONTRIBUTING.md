@@ -20,21 +20,46 @@ pnpm dev
 - Node.js 24+
 - pnpm 10+
 
-## Project Structure
+## Monorepo Structure
+
+This repository is a **pnpm workspace monorepo** managed by Turborepo.
 
 ```text
-src/
-├── components/       # React components (UI, panels, widgets)
-│   └── ui/           # Shared UI primitives (Gauge, NeonCard, etc.)
-├── core/             # Adapter pattern (EnergyAdapter, UnifiedEnergyModel)
-│   └── adapters/     # Protocol adapters (Victron, Modbus, KNX, OCPP, EEBUS)
-├── lib/              # Utilities (db, crypto, format, optimizer, etc.)
-├── locales/          # i18n translations (en.ts, de.ts)
-├── pages/            # Route-level page components
-├── tests/            # Vitest unit tests
-├── store.ts          # Zustand global store
-├── types.ts          # Shared TypeScript types
-└── i18n.ts           # react-i18next configuration
+apps/api/                   # @nexus-hems/api — Express 5 backend
+├── index.ts                #   Entry point → src/index.ts
+└── src/
+    ├── index.ts            #   startServer() + middleware setup
+    ├── jwt-utils.ts        #   JWT signing / verification / rotation
+    ├── middleware/         #   auth.ts, security.ts, metrics.ts
+    ├── routes/             #   auth, grafana, metrics, eebus
+    ├── ws/                 #   energy.ws.ts (WebSocket handler)
+    └── data/               #   mock-data.ts
+
+apps/web/                   # @nexus-hems/web — React 19 Vite SPA
+├── index.html
+├── src/
+│   ├── components/         #   React components (UI, panels, widgets)
+│   │   └── ui/             #   Shared UI primitives (Gauge, NeonCard, etc.)
+│   ├── core/               #   Adapter pattern (EnergyAdapter, UnifiedEnergyModel)
+│   │   └── adapters/       #   Protocol adapters (Victron, Modbus, KNX, OCPP, EEBUS)
+│   ├── lib/                #   Utilities (db, crypto, format, optimizer, etc.)
+│   ├── locales/            #   i18n translations (en.ts, de.ts)
+│   ├── pages/              #   Route-level page components
+│   ├── tests/              #   Vitest unit tests
+│   ├── store.ts            #   Zustand global store
+│   ├── types.ts            #   Frontend TypeScript types
+│   └── i18n.ts             #   react-i18next configuration
+├── tests/e2e/              #   Playwright E2E tests
+└── src-tauri/              #   Tauri desktop app config + Rust
+
+packages/shared-types/      # @nexus-hems/shared-types — Zod schemas + types
+└── src/
+    ├── protocol.ts         #   EnergyData, WSCommand, AuthToken, UnifiedEnergyModel
+    └── index.ts            #   Re-exports
+
+pnpm-workspace.yaml         # Workspace roots: apps/* and packages/*
+turbo.json                  # Turborepo task pipeline
+tsconfig.base.json          # Ultra-strict root TypeScript config (inherited by all)
 ```
 
 ## Development Guidelines
@@ -78,8 +103,8 @@ See [docs/Toolchain-Architecture.md](docs/Toolchain-Architecture.md) for the ful
 
 All user-facing text must be translated in both locales:
 
-- [src/locales/de.ts](src/locales/de.ts) — German (**fallback locale** — always complete; missing keys fall back to German)
-- [src/locales/en.ts](src/locales/en.ts) — English
+- [apps/web/src/locales/de.ts](apps/web/src/locales/de.ts) — German (**fallback locale** — always complete; missing keys fall back to German)
+- [apps/web/src/locales/en.ts](apps/web/src/locales/en.ts) — English
 
 Use `useTranslation()` hook, never hardcode strings. Both files must be updated simultaneously.
 
@@ -236,25 +261,25 @@ Create an ADR using this template:
 - Bug fix → regression test proving the fix
 - Security change → fuzz test + hardening test
 
-**Test file map** (`src/tests/`):
+**Test file map** (`apps/web/src/tests/`):
 
-| File                         | Source module                 | Focus                                            |
-| ---------------------------- | ----------------------------- | ------------------------------------------------ |
-| `circuit-breaker.test.ts`    | `src/core/circuit-breaker.ts` | FSM states, execute(), callbacks                 |
-| `tariff-providers.test.ts`   | `src/lib/tariff-providers.ts` | §14a grid fees, peak hours, applyDynamicGridFees |
-| `notifications.test.ts`      | `src/lib/notifications.ts`    | Quiet hours, cooldown windows                    |
-| `energy-context.test.tsx`    | `src/core/EnergyContext.tsx`  | Provider state, derived values                   |
-| `energy-store.test.ts`       | `src/core/useEnergyStore.ts`  | Adapter bridge, getState() contract              |
-| `store.test.ts`              | `src/store.ts`                | Zustand selectors, equality-skip guards          |
-| `adapters.test.ts`           | `src/core/adapters/`          | Protocol adapter contracts                       |
-| `send-command.test.ts`       | `src/core/command-safety.ts`  | OCPP/Victron pipeline, rate limiting             |
-| `security-fuzz.test.ts`      | multiple                      | Input validation, injection resistance           |
-| `security-hardening.test.ts` | multiple                      | Rate limits, CSP, auth                           |
-| `optimizer.test.ts`          | `src/lib/optimizer.ts`        | LP schedule optimizer                            |
-| `mpc-optimizer.test.ts`      | `src/lib/mpc-optimizer.ts`    | EMHASS-inspired MPC                              |
-| `predictive-ai.test.ts`      | `src/lib/predictive-ai.ts`    | AI forecast pipeline                             |
-| `pdf-report.test.ts`         | `src/lib/pdf-report.ts`       | PDF generation                                   |
-| `sharing.test.ts`            | `src/lib/sharing.ts`          | Export/share flows                               |
+| File                         | Source module                             | Focus                                            |
+| ---------------------------- | ----------------------------------------- | ------------------------------------------------ |
+| `circuit-breaker.test.ts`    | `apps/web/src/core/circuit-breaker.ts`    | FSM states, execute(), callbacks                 |
+| `tariff-providers.test.ts`   | `apps/web/src/lib/tariff-providers.ts`    | §14a grid fees, peak hours, applyDynamicGridFees |
+| `notifications.test.ts`      | `apps/web/src/lib/notifications.ts`       | Quiet hours, cooldown windows                    |
+| `energy-context.test.tsx`    | `apps/web/src/core/EnergyContext.tsx`     | Provider state, derived values                   |
+| `energy-store.test.ts`       | `apps/web/src/core/useEnergyStore.ts`     | Adapter bridge, getState() contract              |
+| `store.test.ts`              | `apps/web/src/store.ts`                   | Zustand selectors, equality-skip guards          |
+| `adapters.test.ts`           | `apps/web/src/core/adapters/`             | Protocol adapter contracts                       |
+| `send-command.test.ts`       | `apps/web/src/core/command-safety.ts`     | OCPP/Victron pipeline, rate limiting             |
+| `security-fuzz.test.ts`      | multiple                                  | Input validation, injection resistance           |
+| `security-hardening.test.ts` | multiple                                  | Rate limits, CSP, auth                           |
+| `optimizer.test.ts`          | `apps/web/src/lib/optimizer.ts`           | LP schedule optimizer                            |
+| `mpc-optimizer.test.ts`      | `apps/web/src/lib/mpc-optimizer.ts`       | EMHASS-inspired MPC                              |
+| `predictive-ai.test.ts`      | `apps/web/src/lib/predictive-ai.ts`       | AI forecast pipeline                             |
+| `pdf-report.test.ts`         | `apps/web/src/lib/pdf-report.ts`          | PDF generation                                   |
+| `sharing.test.ts`            | `apps/web/src/lib/sharing.ts`             | Export/share flows                               |
 
 ## Performance Budgets
 

@@ -135,7 +135,7 @@
 ### Theme Switching
 
 ```tsx
-import { useAppStore } from './store';
+import { useAppStore } from '@/store';
 
 function ThemeSwitcher() {
   const setTheme = useAppStore((state) => state.setTheme);
@@ -573,7 +573,7 @@ This section is a practical checklist for adding a new feature — from idea to 
 
 ```bash
 # New page file
-touch src/pages/MyFeature.tsx
+touch apps/web/src/pages/MyFeature.tsx
 ```
 
 ```tsx
@@ -605,7 +605,7 @@ export default function MyFeature() {
 
 #### 2. Add Route and Lazy Loading
 
-In `src/App.tsx`:
+In `apps/web/src/App.tsx`:
 
 ```tsx
 const MyFeature = lazy(() => import('./pages/MyFeature'));
@@ -616,7 +616,7 @@ const MyFeature = lazy(() => import('./pages/MyFeature'));
 
 #### 3. Add i18n Keys
 
-Add keys to **both** `src/locales/de.ts` and `src/locales/en.ts`:
+Add keys to **both** `apps/web/src/locales/de.ts` and `apps/web/src/locales/en.ts`:
 
 ```typescript
 myFeature: {
@@ -627,7 +627,7 @@ myFeature: {
 
 #### 4. Add Sidebar Navigation
 
-In `src/components/layout/Sidebar.tsx`, add to the appropriate section group:
+In `apps/web/src/components/layout/Sidebar.tsx`, add to the appropriate section group:
 
 ```tsx
 { path: '/my-feature', labelKey: 'nav.myFeature', icon: <MyIcon size={20} /> }
@@ -717,7 +717,7 @@ const TOUR_STEPS: TourStep[] = [
 
 ```bash
 # Unit test
-touch src/tests/MyFeature.test.tsx
+touch apps/web/src/tests/MyFeature.test.tsx
 ```
 
 ```tsx
@@ -735,7 +735,7 @@ describe('MyFeature', () => {
 #### 11. Create Storybook Story
 
 ```bash
-touch src/components/MyFeature.stories.tsx
+touch apps/web/src/components/MyFeature.stories.tsx
 ```
 
 #### 12. Verify & Deploy

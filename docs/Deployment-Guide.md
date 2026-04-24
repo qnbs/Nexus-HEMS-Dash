@@ -19,7 +19,7 @@ Trigger the `deploy.yml` workflow manually:
 gh workflow run deploy.yml -f approveDeploy=DEPLOY
 ```
 
-The workflow builds with `pnpm build` (`NODE_ENV=production`) and deploys the `dist/` folder. Assets are served at `https://<user>.github.io/Nexus-HEMS-Dash/`.
+The workflow builds with `pnpm build` (`NODE_ENV=production`) and deploys the `apps/web/dist/` folder. Assets are served at `https://<user>.github.io/Nexus-HEMS-Dash/`.
 
 The Vite config sets `base: '/Nexus-HEMS-Dash/'` for correct sub-path routing.
 
@@ -141,7 +141,7 @@ nginx.ingress.kubernetes.io/limit-rps: '100'
 
 Desktop builds are produced by the `release.yml` workflow via `tauri-apps/tauri-action`. Binaries for Linux (AppImage/deb), macOS (dmg), and Windows (msi/nsis) are attached to GitHub Releases.
 
-Configuration: `src-tauri/tauri.conf.json`
+Configuration: `apps/web/src-tauri/tauri.conf.json`
 
 | Property             | Value |
 | -------------------- | ----- |
@@ -154,6 +154,8 @@ Configuration: `src-tauri/tauri.conf.json`
 
 ```bash
 pnpm tauri build
+# Equivalent to: pnpm --filter @nexus-hems/web tauri build
+# Config: apps/web/src-tauri/tauri.conf.json
 ```
 
 Requires Rust toolchain ≥ 1.85 and platform-specific dependencies (see [Tauri prerequisites](https://v2.tauri.app/start/prerequisites/)).

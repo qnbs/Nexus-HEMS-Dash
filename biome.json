@@ -2,16 +2,9 @@
   "$schema": "https://biomejs.dev/schemas/2.4.7/schema.json",
   "files": {
     "includes": [
-      "src/**/*.ts",
-      "src/**/*.tsx",
-      "server.ts",
-      "jwt-utils.ts",
-      "src/server/**/*.ts",
-      "vite.config.ts",
-      "vitest.config.ts",
-      "playwright.config.ts",
-      "tailwind.config.ts",
-      "capacitor.config.ts",
+      "apps/**/*.ts",
+      "apps/**/*.tsx",
+      "packages/**/*.ts",
       "commitlint.config.js",
       "**/*.json",
       "**/*.css",
@@ -28,7 +21,7 @@
       "!**/playwright-report",
       "!**/test-results",
       "!pnpm-lock.yaml",
-      "!src/vite-env.d.ts",
+      "!apps/web/src/vite-env.d.ts",
       "!grafana"
     ]
   },

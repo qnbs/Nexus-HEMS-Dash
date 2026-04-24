@@ -1,7 +1,7 @@
 # Toolchain Architecture — Nexus-HEMS-Dash
 
-**Last updated:** 2026-04-20
-**Status:** Active (post-Biome-migration)
+**Last updated:** 2026-04-24
+**Status:** Active (post-Biome-migration, post-monorepo-migration)
 
 ---
 
@@ -71,15 +71,17 @@ Source Files (*.ts, *.tsx, *.json, *.css, *.html, *.md, *.yml)
 
 ### Scripts Reference
 
-| Script              | Command                                                     | Runs                             |
-| ------------------- | ----------------------------------------------------------- | -------------------------------- |
-| `pnpm lint`         | `biome check --write=false && eslint src/ --max-warnings 0` | Biome check + React ESLint       |
-| `pnpm lint:fix`     | `biome check --write && eslint src/ --fix --max-warnings 0` | Biome fix + ESLint fix           |
-| `pnpm format`       | `biome format --write src/`                                 | Biome format all src files       |
-| `pnpm format:check` | `biome format --write=false src/`                           | Biome format check (no write)    |
-| `pnpm type-check`   | `tsc --noEmit`                                              | TypeScript type checking         |
-| `pnpm verify:basis` | `pnpm type-check && pnpm lint && pnpm test:run`             | Full local verification          |
-| `pnpm bench`        | `./scripts/bench-tooling.sh`                                | Toolchain wall-clock + RSS bench |
+All root scripts delegate to Turborepo; Turbo fan-outs across `apps/*` and `packages/*`:
+
+| Script              | Command (root)                                                       | Runs                             |
+| ------------------- | -------------------------------------------------------------------- | -------------------------------- |
+| `pnpm lint`         | `turbo lint` → `biome check --write=false && eslint --max-warnings 0` | Biome check + React ESLint in each workspace |
+| `pnpm lint:fix`     | `turbo lint:fix` → `biome check --write && eslint --fix`             | Biome fix + ESLint fix in each workspace |
+| `pnpm format`       | `turbo format` → `biome format --write apps/ packages/`              | Biome format all workspaces      |
+| `pnpm format:check` | `biome format --write=false apps/ packages/`                         | Biome format check (no write)    |
+| `pnpm type-check`   | `turbo type-check` → `tsc --noEmit` in each workspace                | TypeScript type checking across all 3 packages |
+| `pnpm verify:basis` | `pnpm type-check && pnpm lint && pnpm test:run`                       | Full local verification          |
+| `pnpm bench`        | `./scripts/bench-tooling.sh`                                         | Toolchain wall-clock + RSS bench |
 
 ---
 
@@ -136,17 +138,18 @@ Settings (`settings.json` in workspace):
 ```
 lint-typecheck (parallel with unit-tests + build)
   ├─ pnpm audit
-  ├─ pnpm lint       (biome check + slim eslint)
-  └─ pnpm type-check (tsc --noEmit)
+  ├─ turbo lint       (biome check + slim eslint across all workspaces)
+  └─ turbo type-check (tsc --noEmit across apps/api + apps/web + packages/shared-types)
 
 unit-tests (needs: lint-typecheck)
-  └─ vitest run --coverage
+  └─ turbo test:run → vitest run --coverage (apps/web)
 
 build (needs: lint-typecheck)
-  └─ vite build → size-limit → sentry source maps
+  └─ turbo build → packages/shared-types → apps/api + apps/web
+     → size-limit → sentry source maps
 
 e2e-tests (needs: build)
-  └─ playwright test (chromium)
+  └─ playwright test (chromium) in apps/web
 
 docker-build (needs: build)
   └─ docker build

@@ -71,7 +71,7 @@ updates:
 
   # Cargo (Tauri)
   - package-ecosystem: 'cargo'
-    directory: '/src-tauri'
+    directory: '/apps/web/src-tauri'
     schedule:
       interval: 'weekly'
       day: 'monday'

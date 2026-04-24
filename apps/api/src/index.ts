@@ -1,8 +1,7 @@
 import express from 'express';
 import http from 'http';
-import { createServer as createViteServer } from 'vite';
 import { WebSocketServer } from 'ws';
-import { initKeys } from '../../jwt-utils.js';
+import { initKeys } from './jwt-utils.js';
 import {
   configureCors,
   configureHelmet,
@@ -47,15 +46,12 @@ export async function startServer(): Promise<void> {
   // ─── WebSocket Handler ────────────────────────────────────────────
   setupWebSocket(wss);
 
-  // ─── Vite middleware for development / Static serving for prod ────
-  if (isDev) {
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: 'spa',
-    });
-    app.use(vite.middlewares);
-  } else {
-    app.use(express.static('dist'));
+  // ─── Static serving for production ───────────────────────────────
+  // In dev: `turbo dev` runs apps/web (Vite, port 5173) and apps/api (Express, port 3000)
+  // concurrently. Vite proxies /api/* → http://localhost:3000.
+  // In prod: Express serves the pre-built web bundle.
+  if (!isDev) {
+    app.use(express.static(process.env.WEB_DIST_PATH ?? '../web/dist'));
   }
 
   server.listen(PORT, '0.0.0.0', () => {

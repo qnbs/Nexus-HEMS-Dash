@@ -42,7 +42,7 @@
 
 ### i18n
 
-- [ ] All new UI strings present in both `src/locales/de.ts` **and** `src/locales/en.ts`
+- [ ] All new UI strings present in both `apps/web/src/locales/de.ts` **and** `apps/web/src/locales/en.ts`
 - [ ] `t()` used for every visible string — no hardcoded display text
 
 ---
@@ -260,7 +260,7 @@ services:
 
 ### GitHub Pages Checklist
 
-- [ ] `base: '/Nexus-HEMS-Dash/'` in `vite.config.ts`
+- [ ] `base: '/Nexus-HEMS-Dash/'` in `apps/web/vite.config.ts`
 - [ ] `public/404.html` with SPA redirect present
 - [ ] `public/manifest.json` correct `start_url` + `scope`
 - [ ] `public/robots.txt` up to date
@@ -274,7 +274,7 @@ services:
 
 ### Build Checklist
 
-- [ ] `tauri.conf.json` — CSP correct (Trusted Types)
+- [ ] `apps/web/src-tauri/tauri.conf.json` — CSP correct (Trusted Types)
 - [ ] Code signing certificate configured (`TAURI_SIGNING_PRIVATE_KEY`)
 - [ ] Auto-updater endpoint configured
 - [ ] All 3 platforms tested (Linux, macOS, Windows)

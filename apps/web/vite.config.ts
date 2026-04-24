@@ -296,6 +296,8 @@ export default defineConfig(({ mode }) => {
 
             // ── Micro-utilities ──
             if (/\/clsx\/|\/tailwind-merge\//.test(id)) return 'vendor-utils';
+
+            return undefined;
           },
         },
       },
@@ -309,6 +311,12 @@ export default defineConfig(({ mode }) => {
     server: {
       // HMR is disabled in AI Studio via DISABLE_HMR env var.
       hmr: process.env.DISABLE_HMR !== 'true',
+      // In monorepo dev mode: proxy API + WebSocket requests to apps/api (port 3000)
+      proxy: {
+        '/api': { target: 'http://localhost:3000', changeOrigin: true },
+        '/metrics': { target: 'http://localhost:3000', changeOrigin: true },
+        '/ws': { target: 'ws://localhost:3000', ws: true, changeOrigin: true },
+      },
     },
   };
 });

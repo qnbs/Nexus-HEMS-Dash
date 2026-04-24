@@ -1,5 +1,12 @@
 You are an expert full-stack React 19 + TypeScript architect specialized in real-time HEMS dashboards (Victron Cerbo GX, KNX, EEBUS SPINE/SHIP, OCPP 2.1, dynamic tariffs Tibber/aWATTar, SG Ready).
 
+**Repository layout:** pnpm workspace monorepo (Turborepo). Three packages:
+- `apps/api` (`@nexus-hems/api`) — Express 5 backend, entry `apps/api/index.ts`
+- `apps/web` (`@nexus-hems/web`) — React 19 Vite SPA, entry `apps/web/src/main.tsx`
+- `packages/shared-types` (`@nexus-hems/shared-types`) — Zod protocol schemas, import as `@nexus-hems/shared-types`
+
+Root files: `pnpm-workspace.yaml` · `turbo.json` · `tsconfig.base.json` (ultra-strict, inherited by all workspaces).
+
 ---
 
 ## PROJECT RULES — THIS IS LAW (always follow strictly)
@@ -22,15 +29,15 @@ You are an expert full-stack React 19 + TypeScript architect specialized in real
 
 ### State Architecture (dual Zustand stores)
 
-- **`useAppStore`** (`src/store.ts`) — UI/settings store with `persist` middleware (localStorage). Holds `EnergyData`, `FloorplanState`, `StoredSettings`, locale, theme, onboarding state.
-- **`useEnergyStore`** (`src/core/useEnergyStore.ts`) — Adapter aggregation store. Merges all active adapters into a `UnifiedEnergyModel`. No persistence. Bridge hook `useAdapterBridge()` syncs data back to `useAppStore`.
+- **`useAppStore`** (`apps/web/src/store.ts`) — UI/settings store with `persist` middleware (localStorage). Holds `EnergyData`, `FloorplanState`, `StoredSettings`, locale, theme, onboarding state.
+- **`useEnergyStore`** (`apps/web/src/core/useEnergyStore.ts`) — Adapter aggregation store. Merges all active adapters into a `UnifiedEnergyModel`. No persistence. Bridge hook `useAdapterBridge()` syncs data back to `useAppStore`.
 - When adding new state: settings/UI → `useAppStore`; real-time energy data → `useEnergyStore`.
 - Use `useAppStoreShallow` for multiple selectors to merge subscriptions — never two separate `useAppStore` calls for data from the same render path.
 - For selectors that access only one or two scalar values, use `useAppStore((s) => s.settings.x)` direct scalar selectors — never subscribe to the whole `settings` object.
 
 ### Adapter System (10 adapters: 5 core + 5 contrib)
 
-All adapters in `src/core/adapters/` implement the `EnergyAdapter` interface (`EnergyAdapter.ts`).
+All adapters in `apps/web/src/core/adapters/` implement the `EnergyAdapter` interface (`EnergyAdapter.ts`).
 Contrib adapters extend `BaseAdapter` (`BaseAdapter.ts`) for simplified development.
 The `AdapterRegistry` (`adapter-registry.ts`) manages registration, lifecycle, and dynamic loading.
 
@@ -65,7 +72,7 @@ const ids = await loadAllContribAdapters();                          // load all
 
 ### Energy Controllers & Optimization
 
-Seven real-time control loops in `src/core/energy-controllers.ts` orchestrated by `ControllerPipeline`:
+Seven real-time control loops in `apps/web/src/core/energy-controllers.ts` orchestrated by `ControllerPipeline`:
 
 1. **ESS Symmetric** — bidirectional battery charge/discharge
 2. **Peak Shaving** — grid peak demand limiting
@@ -75,15 +82,15 @@ Seven real-time control loops in `src/core/energy-controllers.ts` orchestrated b
 6. **HeatPump SG Ready** — SG Ready signals for heat pump control
 7. **EV Smart Charge** — §14a EnWG, PV surplus, V2X
 
-MPC optimizer (`src/lib/optimizer.ts`): EMHASS-inspired LP day-ahead scheduler with PV/load forecasting, battery constraints, and tariff-aware cost minimization.
+MPC optimizer (`apps/web/src/lib/optimizer.ts`): EMHASS-inspired LP day-ahead scheduler with PV/load forecasting, battery constraints, and tariff-aware cost minimization.
 
-Command Safety Layer (`src/core/command-safety.ts`): Zod schema validation, rate limiting (30 cmd/min), IndexedDB audit trail, danger command confirmation dialog.
+Command Safety Layer (`apps/web/src/core/command-safety.ts`): Zod schema validation, rate limiting (30 cmd/min), IndexedDB audit trail, danger command confirmation dialog.
 
-Circuit Breaker (`src/core/circuit-breaker.ts`): FSM with CLOSED → OPEN → HALF_OPEN states; configurable failure threshold, cooldown, and `onStateChange` callbacks.
+Circuit Breaker (`apps/web/src/core/circuit-breaker.ts`): FSM with CLOSED → OPEN → HALF_OPEN states; configurable failure threshold, cooldown, and `onStateChange` callbacks.
 
 ### Hardware Registry
 
-`src/core/hardware-registry.ts` — 120+ certified devices across 5 categories:
+`apps/web/src/core/hardware-registry.ts` — 120+ certified devices across 5 categories:
 
 | Category    | Examples                                    |
 | ----------- | ------------------------------------------- |
@@ -95,7 +102,7 @@ Circuit Breaker (`src/core/circuit-breaker.ts`): FSM with CLOSED → OPEN → HA
 
 ### Tariff Integration
 
-5 providers via `src/lib/tariff-providers.ts`: Tibber, aWATTar DE, aWATTar AT, Octopus Energy, Nordpool.
+5 providers via `apps/web/src/lib/tariff-providers.ts`: Tibber, aWATTar DE, aWATTar AT, Octopus Energy, Nordpool.
 
 - `getDynamicGridFee()` — §14a EnWG time-of-use pricing
 - `isPeakHour()` — morning/midday/evening peak detection
@@ -105,14 +112,14 @@ Circuit Breaker (`src/core/circuit-breaker.ts`): FSM with CLOSED → OPEN → HA
 ### i18n
 
 - **react-i18next** with 2 locales: `de` (fallback) and `en`
-- Locale files are TypeScript objects in `src/locales/{de,en}.ts`
+- Locale files are TypeScript objects in `apps/web/src/locales/{de,en}.ts`
 - Persistent language switcher in Settings page + Cmd+K command palette
 - Every user-facing string must use `t()` — never hardcode display text
 
 ### Design System — Neo-Energy Cyber-Glassmorphism
 
-- 5 themes defined in `src/design-tokens.ts`: `energy-dark`, `solar-light`, `ocean-dark` (default), `nature-green`, `minimal-white`
-- CSS custom properties via Tailwind v4 `@theme` block in `src/index.css`
+- 5 themes defined in `apps/web/src/design-tokens.ts`: `energy-dark`, `solar-light`, `ocean-dark` (default), `nature-green`, `minimal-white`
+- CSS custom properties via Tailwind v4 `@theme` block in `apps/web/src/index.css`
 - Brand colors: `neon-green` (#22ff88), `electric-blue` (#00f0ff), `power-orange` (#ff8800)
 - Utility classes: `glass-panel`, `glass-panel-strong`, `neon-glow-green/blue/orange`, `energy-pulse`, `focus-ring`
 - Fluid typography: `fluid-text-xs` through `fluid-text-5xl` (clamp-based)
@@ -129,17 +136,17 @@ Circuit Breaker (`src/core/circuit-breaker.ts`): FSM with CLOSED → OPEN → HA
 ### PWA & Offline
 
 - `vite-plugin-pwa` with Workbox, autoUpdate registration
-- Offline cache via Dexie.js (`src/lib/offline-cache.ts`)
-- Background sync with exponential backoff (`src/lib/background-sync.ts`)
+- Offline cache via Dexie.js (`apps/web/src/lib/offline-cache.ts`)
+- Background sync with exponential backoff (`apps/web/src/lib/background-sync.ts`)
 - Runtime caching for Open-Meteo, Tibber, aWATTar, Gemini APIs
 - Components: `OfflineBanner`, `PWAUpdateNotification`, `PWAInstallPrompt`
 
 ### AI Features
 
-- Multi-provider AI client (`src/core/aiClient.ts`): OpenAI, Anthropic, Google Gemini, xAI, Groq, Ollama, Custom
-- API keys encrypted in Dexie.js via `src/lib/ai-keys.ts` — never store in env vars or plain text
-- Deterministic optimizer (`src/lib/optimizer.ts`) + predictive AI (`src/lib/predictive-ai.ts`)
-- AI worker isolated in `src/core/useAIWorker.ts` to avoid blocking the main thread
+- Multi-provider AI client (`apps/web/src/core/aiClient.ts`): OpenAI, Anthropic, Google Gemini, xAI, Groq, Ollama, Custom
+- API keys encrypted in Dexie.js via `apps/web/src/lib/ai-keys.ts` — never store in env vars or plain text
+- Deterministic optimizer (`apps/web/src/lib/optimizer.ts`) + predictive AI (`apps/web/src/lib/predictive-ai.ts`)
+- AI worker isolated in `apps/web/src/core/useAIWorker.ts` to avoid blocking the main thread
 
 ### Quality & Tooling — Biome-First
 
@@ -165,23 +172,23 @@ Circuit Breaker (`src/core/circuit-breaker.ts`): FSM with CLOSED → OPEN → HA
 
 **Scripts reference:**
 
-| Script              | Command                                                       | What runs                          |
-| ------------------- | ------------------------------------------------------------- | ---------------------------------- |
-| `pnpm lint`         | `biome check --write=false && eslint src/ --max-warnings 0`   | Biome lint+format check + React ES |
-| `pnpm lint:fix`     | `biome check --write && eslint src/ --fix --max-warnings 0`   | Biome auto-fix + ESLint fix        |
-| `pnpm format`       | `biome format --write src/`                                   | Biome format all src               |
-| `pnpm format:check` | `biome format --write=false src/`                             | Biome format check (CI-safe)       |
-| `pnpm type-check`   | `tsc --noEmit`                                                | TypeScript strict type check       |
-| `pnpm verify:basis` | `pnpm type-check && pnpm lint && pnpm test:run`               | Full local verification loop       |
-| `pnpm bench`        | `./scripts/bench-tooling.sh`                                  | Toolchain perf benchmark           |
+| Script              | Command (root, delegates via Turbo)                                 | What runs                                    |
+| ------------------- | ------------------------------------------------------------------- | -------------------------------------------- |
+| `pnpm lint`         | `turbo lint` → `biome check --write=false && eslint --max-warnings 0` | Biome lint+format check + React ES in each workspace |
+| `pnpm lint:fix`     | `turbo lint:fix` → `biome check --write && eslint --fix`            | Biome auto-fix + ESLint fix across workspaces |
+| `pnpm format`       | `turbo format` → `biome format --write apps/ packages/`             | Biome format all workspaces                  |
+| `pnpm format:check` | `biome format --write=false apps/ packages/`                        | Biome format check (CI-safe)                 |
+| `pnpm type-check`   | `turbo type-check` → `tsc --noEmit` in each workspace               | TypeScript strict type check across all 3 packages |
+| `pnpm verify:basis` | `pnpm type-check && pnpm lint && pnpm test:run`                      | Full local verification loop                 |
+| `pnpm bench`        | `./scripts/bench-tooling.sh`                                         | Toolchain perf benchmark                     |
 
 **Pre-commit pipeline:** pre-commit framework (trailing-ws, gitleaks, anti-trojan-source) → lint-staged (`biome check --write` + `eslint --fix` on `*.{ts,tsx}`; `biome format --write` on `*.{json,css,html,yml,yaml,md}`).
 
 **Toolchain docs:** `docs/Toolchain-Architecture.md`, `docs/Biome-Migration-Roadmap.md`.
 
 - **Husky** + **lint-staged** for pre-commit hooks
-- **Vitest v4** (jsdom, V8 coverage — thresholds: statements 48%, branches 40%, functions 49%, lines 49%) — unit tests in `src/tests/` (~428 tests across 37 files)
-- **Playwright** (Chromium/Firefox/WebKit + mobile viewports) — e2e in `tests/e2e/`
+- **Vitest v4** (jsdom, V8 coverage — thresholds: statements 48%, branches 40%, functions 49%, lines 49%) — unit tests in `apps/web/src/tests/` (~428 tests across 37 files)
+- **Playwright** (Chromium/Firefox/WebKit + mobile viewports) — e2e in `apps/web/tests/e2e/`
 - **Lighthouse CI** (Perf ≥ 85%, A11y ≥ 90%, Best Practices ≥ 90%; `errors-in-console` disabled for demo mode)
 - **Storybook 10** — component stories in `*.stories.tsx` co-located with components
 - `.devcontainer` for reproducible dev environments (Node 24 image, Rust stable, pnpm 10.33.0 via corepack)
@@ -212,7 +219,7 @@ Circuit Breaker (`src/core/circuit-breaker.ts`): FSM with CLOSED → OPEN → HA
 
 1. **AUDIT** — before modifying any feature, read the relevant files: `README.md`, `package.json`, both Zustand stores, affected components, and adapter interfaces
 2. **IMPLEMENT** — make changes following all rules above
-3. **LOCALIZE** — add/update i18n keys in both `src/locales/en.ts` and `src/locales/de.ts`
+3. **LOCALIZE** — add/update i18n keys in both `apps/web/src/locales/en.ts` and `apps/web/src/locales/de.ts`
 4. **DEPS** — update `package.json` automatically when new packages are needed
 5. **VERIFY** — run `pnpm type-check && pnpm lint` — zero TypeScript errors, zero lint warnings; existing tests pass
 
@@ -263,72 +270,87 @@ Legacy routes (`/production`, `/storage`, `/consumption`, `/ev`, `/floorplan`, `
 
 ## FILE STRUCTURE REFERENCE
 
+This is a **pnpm workspace monorepo** managed by Turborepo. Root config files: `pnpm-workspace.yaml`, `turbo.json`, `tsconfig.base.json`.
+
 ```
-src/
-├── App.tsx                    # Router, layout shell, header, command palette
-├── main.tsx                   # Entry: StrictMode → QueryProvider → App
-├── store.ts                   # useAppStore (Zustand + persist)
-├── types.ts                   # Core types, presets, config
-├── design-tokens.ts           # Theme definitions (5 themes)
-├── i18n.ts                    # i18next config
-├── index.css                  # Tailwind v4 + design system utilities
-├── components/
-│   ├── layout/                # Sidebar, Breadcrumbs, PageHeader
-│   ├── ui/                    # Shared UI primitives (Gauge, NeonCard, etc.)
-│   ├── SankeyDiagram.tsx      # D3 Sankey (never break)
-│   ├── Floorplan.tsx          # KNX floorplan (never break)
-│   ├── *.stories.tsx          # Storybook stories co-located with components
-│   └── ...                    # Feature components
-├── core/
-│   ├── useEnergyStore.ts      # Adapter aggregation store
-│   ├── aiClient.ts            # Multi-provider AI client (7 providers)
-│   ├── adapter-worker.ts      # Web Worker for REST polling (SSRF-hardened)
-│   ├── circuit-breaker.ts     # FSM circuit breaker (CLOSED/OPEN/HALF_OPEN)
-│   ├── command-safety.ts      # Zod validation, rate limiting, audit trail
-│   ├── energy-controllers.ts  # 7 real-time control loops + ControllerPipeline
-│   ├── hardware-registry.ts   # 120+ certified device registry
-│   ├── plugin-system.ts       # OSGi-inspired plugin lifecycle manager
-│   ├── useAIWorker.ts         # AI worker hook (off-thread)
-│   ├── useAdapterWorker.ts    # Adapter polling worker hook
-│   └── adapters/
-│       ├── EnergyAdapter.ts   # Core interface (all adapters implement this)
-│       ├── BaseAdapter.ts     # Contrib base class
-│       ├── adapter-registry.ts # Dynamic registration + loading
-│       ├── VictronMQTTAdapter.ts
-│       ├── ModbusSunSpecAdapter.ts
-│       ├── KNXAdapter.ts
-│       ├── OCPP21Adapter.ts
-│       ├── EEBUSAdapter.ts
-│       └── contrib/           # 5 contrib adapters + README
-├── lib/
-│   ├── db.ts                  # Dexie.js schema + migrations
-│   ├── ai-keys.ts             # AES-GCM 256-bit key vault
-│   ├── optimizer.ts           # MPC LP day-ahead optimizer
-│   ├── predictive-ai.ts       # AI-based predictive forecast
-│   ├── tariff-providers.ts    # 5 dynamic tariff providers
-│   ├── offline-cache.ts       # Dexie offline cache
-│   ├── background-sync.ts     # Exponential-backoff sync
-│   └── ...                    # Other utilities
-├── locales/                   # en.ts, de.ts (TypeScript objects)
-├── pages/                     # 7 unified section pages (lazy-loaded) + legacy redirects
-├── server/                    # Decomposed Express server modules
-│   ├── index.ts               # Server entry: wires middleware, routes, WS
-│   ├── middleware/
-│   │   ├── auth.ts            # JWT middleware, API key validation, WS auth
-│   │   ├── security.ts        # Helmet CSP, CORS, rate limiting
-│   │   └── metrics.ts         # Prometheus metrics engine
-│   ├── routes/
-│   │   ├── auth.routes.ts     # /api/auth/token (API key gated), /api/auth/refresh, /api/health
-│   │   ├── eebus.routes.ts    # /api/eebus/* (JWT-protected)
-│   │   ├── metrics.routes.ts  # /metrics, /api/metrics/json (JWT-protected)
-│   │   └── grafana.routes.ts  # /api/grafana/dashboard (JWT-protected)
-│   ├── ws/
-│   │   └── energy.ws.ts       # WebSocket handler with auth + rate limiting
-│   └── data/
-│       └── mock-data.ts       # Mock data generator (ADAPTER_MODE env var)
-├── tests/                     # Vitest unit tests (~428 tests, 37 files)
-├── types/                     # Shared TypeScript type declarations
-└── workers/                   # Web Worker entry points
+apps/api/                      # @nexus-hems/api — Express 5 backend
+├── index.ts                   #   Entry: thin wrapper → src/index.ts
+└── src/
+    ├── index.ts               #   startServer(): middleware + routes + WS
+    ├── jwt-utils.ts           #   JWT signing / verification / rotation / revocation
+    ├── middleware/
+    │   ├── auth.ts            #   requireJWT, requireScope, WS ticket auth
+    │   ├── security.ts        #   Helmet CSP, CORS, rate limiting
+    │   └── metrics.ts         #   Prometheus metrics engine
+    ├── routes/
+    │   ├── auth.routes.ts     #   /api/auth/* (token, refresh, revoke, ws-ticket)
+    │   ├── eebus.routes.ts    #   /api/eebus/* (JWT + admin scope)
+    │   ├── metrics.routes.ts  #   /metrics, /api/metrics/json
+    │   └── grafana.routes.ts  #   /api/grafana/dashboard
+    ├── ws/
+    │   └── energy.ws.ts       #   WebSocket handler: auth, rate limiting, scope-gated commands
+    └── data/
+        └── mock-data.ts       #   Mock data generator (ADAPTER_MODE=mock)
+
+apps/web/                      # @nexus-hems/web — React 19 Vite SPA
+├── index.html
+├── src/
+│   ├── App.tsx                #   Router, layout shell, header, command palette
+│   ├── main.tsx               #   Entry: StrictMode → QueryProvider → App
+│   ├── store.ts               #   useAppStore (Zustand + persist → localStorage)
+│   ├── types.ts               #   Frontend TypeScript types, presets, config
+│   ├── design-tokens.ts       #   5 theme definitions
+│   ├── i18n.ts                #   i18next config
+│   ├── index.css              #   Tailwind v4 @theme + design system utilities
+│   ├── components/
+│   │   ├── layout/            #   Sidebar, Breadcrumbs, PageHeader
+│   │   ├── ui/                #   Shared UI primitives (Gauge, NeonCard, etc.)
+│   │   ├── SankeyDiagram.tsx  #   D3 Sankey (never break)
+│   │   ├── Floorplan.tsx      #   KNX floorplan (never break)
+│   │   ├── *.stories.tsx      #   Storybook stories co-located with components
+│   │   └── ...                #   Feature components
+│   ├── core/
+│   │   ├── useEnergyStore.ts  #   Adapter aggregation store (in-memory Zustand)
+│   │   ├── aiClient.ts        #   Multi-provider AI client (7 providers)
+│   │   ├── adapter-worker.ts  #   Web Worker for REST polling (SSRF-hardened)
+│   │   ├── circuit-breaker.ts #   FSM circuit breaker (CLOSED/OPEN/HALF_OPEN)
+│   │   ├── command-safety.ts  #   Zod validation, rate limiting, audit trail
+│   │   ├── energy-controllers.ts # 7 real-time control loops + ControllerPipeline
+│   │   ├── hardware-registry.ts  # 120+ certified device registry
+│   │   ├── plugin-system.ts   #   OSGi-inspired plugin lifecycle manager
+│   │   ├── useAIWorker.ts     #   AI worker hook (off-thread)
+│   │   ├── useAdapterWorker.ts #  Adapter polling worker hook
+│   │   └── adapters/
+│   │       ├── EnergyAdapter.ts   # Core interface (all adapters implement this)
+│   │       ├── BaseAdapter.ts     # Contrib base class
+│   │       ├── adapter-registry.ts # Dynamic registration + loading
+│   │       ├── VictronMQTTAdapter.ts
+│   │       ├── ModbusSunSpecAdapter.ts
+│   │       ├── KNXAdapter.ts
+│   │       ├── OCPP21Adapter.ts
+│   │       ├── EEBUSAdapter.ts
+│   │       └── contrib/           # 5 contrib adapters + README
+│   ├── lib/
+│   │   ├── db.ts              #   Dexie.js schema + migrations
+│   │   ├── ai-keys.ts         #   AES-GCM 256-bit key vault
+│   │   ├── optimizer.ts       #   MPC LP day-ahead optimizer
+│   │   ├── predictive-ai.ts   #   AI-based predictive forecast
+│   │   ├── tariff-providers.ts #  5 dynamic tariff providers
+│   │   ├── offline-cache.ts   #   Dexie offline cache
+│   │   ├── background-sync.ts #   Exponential-backoff sync
+│   │   └── ...                #   Other utilities
+│   ├── locales/               #   en.ts, de.ts (TypeScript objects)
+│   ├── pages/                 #   7 unified section pages (lazy-loaded) + legacy redirects
+│   ├── tests/                 #   Vitest unit tests (~428 tests, 37 files)
+│   └── workers/               #   Web Worker entry points
+├── tests/e2e/                 #   Playwright E2E + a11y tests
+└── src-tauri/                 #   Tauri v2.2 desktop config + Rust source
+
+packages/shared-types/         # @nexus-hems/shared-types — shared Zod schemas
+└── src/
+    ├── protocol.ts            #   EnergyData, WSCommand, AuthToken, UnifiedEnergyModel
+    └── index.ts               #   Re-exports all schemas and types
+
 scripts/
 └── bench-tooling.sh           # Toolchain performance benchmark
 docs/
@@ -340,13 +362,13 @@ docs/
 ├── Security-Architecture.md   # Threat model, STRIDE analysis, GDPR
 ├── Security-Remediation-2026-04.md # Security remediation log
 └── Toolchain-Architecture.md  # Living toolchain reference (Biome-first)
-tests/e2e/                     # Playwright E2E + a11y tests
 ```
 
-### Server Architecture
+### Server Architecture (apps/api)
 
-- `server.ts` (root) is a thin wrapper that calls `startServer()` from `src/server/index.ts`
+- `apps/api/index.ts` is a thin wrapper that calls `startServer()` from `apps/api/src/index.ts`
 - All HTTP routes are Express Router factories (`createXxxRoutes()`) mounted via `app.use()`
+- JWT utilities: `apps/api/src/jwt-utils.ts` — `signToken()`, `verifyToken()`, `revokeToken()`, `clampScope()`
 - JWT middleware (`requireJWT`) protects all endpoints except `/api/health`
 - Production mode requires `API_KEYS` env var for `/api/auth/token`
 - Production CSP uses `WS_ORIGINS` env var instead of `ws://localhost:*`
@@ -355,6 +377,14 @@ tests/e2e/                     # Playwright E2E + a11y tests
 - JWT entropy validated at startup: warns on weak secrets, dictionary words, short keys < 64 chars
 - WebSocket: JWT token auth, command whitelist, 64 KB max payload, 30 cmd/min per client
 - nginx: `limit_conn 50` per-IP, `Cross-Origin-Embedder-Policy: credentialless`
+
+### Dev Workflow (Two-Process)
+
+In development, `pnpm dev` (via Turbo) starts two independent processes:
+- `apps/api` — Express server on `http://localhost:3000`
+- `apps/web` — Vite dev server on `http://localhost:5173`
+
+Vite proxies `/api/*`, `/metrics`, and `/ws` to `http://localhost:3000` — browser code always uses relative paths. The `@nexus-hems/shared-types` package is imported by name (workspace symlink); its `src/protocol.ts` is consumed directly via `allowImportingTsExtensions`.
 
 ### CHANGELOG Convention
 

@@ -53,7 +53,7 @@ assignees: 'qnbs'
 
 - [ ] Criterion 1
 - [ ] Criterion 2
-- [ ] i18n: strings present in `de.ts` and `en.ts`
+- [ ] i18n: strings present in `apps/web/src/locales/de.ts` and `apps/web/src/locales/en.ts`
 - [ ] a11y: WCAG 2.2 AA compliant
 - [ ] Tests: unit tests written
 

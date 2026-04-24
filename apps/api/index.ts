@@ -25,6 +25,6 @@
  *   - Production CSP no longer allows ws://localhost:* (use WS_ORIGINS env var)
  *   - /api/health remains unauthenticated (load balancer requirement)
  */
-import { startServer } from './src/server/index.js';
+import { startServer } from './src/index.js';
 
 startServer();

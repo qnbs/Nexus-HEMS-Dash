@@ -1,6 +1,6 @@
 # Security Architecture — Nexus-HEMS-Dash
 
-> Version 1.3 · April 2026
+> Version 1.4 · April 2026 (updated for monorepo structure)
 
 ---
 
@@ -62,7 +62,7 @@
   - Window randomized ±15 s to mitigate timing attacks
 - **Zod** — runtime schema validation on all API endpoints and WebSocket commands
 - **JWT** (`jose`) — stateless auth tokens, HS256, 24 h expiry; secret entropy validated at startup
-  - `jwt-utils.ts`: warns on low-entropy secrets (< 128 bits), short keys (< 64 chars), dictionary words
+  - `apps/api/src/jwt-utils.ts`: warns on low-entropy secrets (< 128 bits), short keys (< 64 chars), dictionary words
   - Secret sources: `JWT_SECRET` env var → Docker secrets file → auto-generated (dev only)
   - `jti`, `iss`, `aud` claims added to all tokens; JTI revocation via `POST /api/auth/revoke`
   - Zero-downtime key rotation via `JWT_SECRET_NEW` env var
@@ -104,7 +104,7 @@ User enters API key → derive AES-256 key via PBKDF2 (600 000 iterations)
    → key material never leaves browser
 ```
 
-**Implementation**: `src/lib/ai-keys.ts` + `src/lib/crypto.ts`
+**Implementation**: `apps/web/src/lib/ai-keys.ts` + `apps/web/src/lib/crypto.ts`
 
 | Property       | Value                              |
 | -------------- | ---------------------------------- |
@@ -116,7 +116,7 @@ User enters API key → derive AES-256 key via PBKDF2 (600 000 iterations)
 
 ### Credential Vault Pattern
 
-All adapter credentials (Victron IP, MQTT user/pass, KNX gateway, EEBUS certs) are stored encrypted in IndexedDB using the same AES-GCM vault. See `src/lib/secure-store.ts`.
+All adapter credentials (Victron IP, MQTT user/pass, KNX gateway, EEBUS certs) are stored encrypted in IndexedDB using the same AES-GCM vault. See `apps/web/src/lib/secure-store.ts`.
 
 **Never stored:**
 
@@ -183,7 +183,7 @@ Prevents connection-exhaustion DoS without impacting legitimate users.
 
 ### Circuit Breaker
 
-Each adapter uses `src/core/circuit-breaker.ts`:
+Each adapter uses `apps/web/src/core/circuit-breaker.ts`:
 
 - **Closed** → normal operation
 - **Open** → after 5 consecutive failures, blocks calls for 30 s
@@ -192,7 +192,7 @@ Each adapter uses `src/core/circuit-breaker.ts`:
 
 ### Command Safety
 
-`src/core/command-safety.ts` enforces:
+`apps/web/src/core/command-safety.ts` enforces:
 
 - **Rate limiting** — max commands per minute per adapter
 - **Confirmation** — dangerous commands require user confirmation via `ConfirmDialog`
@@ -201,7 +201,7 @@ Each adapter uses `src/core/circuit-breaker.ts`:
 
 ### Reconnect Strategy
 
-`src/core/useReconnect.ts`:
+`apps/web/src/core/useReconnect.ts`:
 
 - Exponential backoff: 1 s → 2 s → 4 s → 8 s → max 30 s
 - Jitter: ±25% to prevent thundering herd
@@ -210,7 +210,7 @@ Each adapter uses `src/core/circuit-breaker.ts`:
 
 ### SSRF Prevention (ModbusSunSpec)
 
-`src/core/adapters/ModbusSunSpecAdapter.ts`:
+`apps/web/src/core/adapters/ModbusSunSpecAdapter.ts`:
 
 - Host validation restricts connections to RFC 1918 / link-local / localhost addresses
 - Rejects public IPs to prevent server-side request forgery via adapter configuration
@@ -218,7 +218,7 @@ Each adapter uses `src/core/circuit-breaker.ts`:
 
 ### EEBUS Connection Timeout
 
-`src/core/adapters/EEBUSAdapter.ts`:
+`apps/web/src/core/adapters/EEBUSAdapter.ts`:
 
 - 30-second connection timeout on WebSocket open
 - Prevents indefinite hang if SPINE/SHIP peer is unreachable
@@ -313,7 +313,7 @@ Every adapter command is logged:
 
 ### Metrics Collection
 
-`src/core/useMetrics.ts` + `src/lib/metrics.ts`:
+`apps/web/src/core/useMetrics.ts` + `apps/web/src/lib/metrics.ts`:
 
 - Adapter connection duration, error rates, message throughput
 - Prometheus-compatible `/metrics` endpoint on Express server
@@ -321,7 +321,7 @@ Every adapter command is logged:
 
 ### Monitoring Panel
 
-`src/components/MonitoringPanel.tsx`:
+`apps/web/src/components/MonitoringPanel.tsx`:
 
 - Real-time adapter health status
 - Circuit breaker state visualization
@@ -333,7 +333,7 @@ Every adapter command is logged:
 
 ### Emergency Stop
 
-`src/components/EmergencyStop.tsx`:
+`apps/web/src/components/EmergencyStop.tsx`:
 
 1. Immediate disconnect of all active adapters
 2. All pending commands cancelled

@@ -78,7 +78,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Run Semgrep
-        run: semgrep scan --config auto --sarif -o semgrep-results.sarif src/
+        run: semgrep scan --config auto --sarif -o semgrep-results.sarif apps/ packages/
         continue-on-error: true
         env:
           SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
@@ -119,10 +119,10 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Scan for Unicode Bidi characters
-        run: npx anti-trojan-source --files='src/**/*.{ts,tsx,js,jsx}' --verbose
+        run: npx anti-trojan-source --files='apps/**/*.{ts,tsx,js,jsx}' --verbose
 
       - name: Biome check (Unicode bidi + lint)
-        run: pnpm biome check
+        run: pnpm lint
 
   # ════════════════════════════════════════════════════════════════
   #  6. Dependabot / Dependency Audit — Dependency Check

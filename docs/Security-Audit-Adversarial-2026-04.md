@@ -26,7 +26,7 @@
 
 A comprehensive adversarial red-team security audit of the Nexus-HEMS-Dash full-stack codebase (frontend, backend, infrastructure, supply chain) was performed on 2026-04-21.
 
-**Scope:** React 19 SPA (Vite/PWA), Express 5 + WebSocket server, JWT auth pipeline, 10 protocol adapters, Docker/Helm deployment, nginx reverse proxy, Prometheus/Grafana monitoring stack.
+**Scope:** React 19 SPA (`apps/web`, Vite/PWA), Express 5 + WebSocket server (`apps/api`), JWT auth pipeline (`apps/api/src/jwt-utils.ts`), shared Zod schemas (`packages/shared-types`), 10 protocol adapters, Docker/Helm deployment, nginx reverse proxy, Prometheus/Grafana monitoring stack.
 
 **Total findings: 27 vulnerabilities**
 
@@ -98,7 +98,7 @@ Internet ──► nginx (8080) ──► React SPA (browser)
 | Field | Detail |
 |-------|--------|
 | **Severity** | Critical |
-| **Files** | `src/server/routes/auth.routes.ts`, `src/types/protocol.ts` |
+| **Files** | `apps/api/src/routes/auth.routes.ts`, `packages/shared-types/src/protocol.ts` |
 | **CVSS-like** | AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H |
 
 **Root Cause:** `/api/auth/token` validates API key existence only. `scope` is accepted from the request body without verifying the key has permission for that scope level.
@@ -133,7 +133,7 @@ const grantedScope = SCOPE_ORDER[requestedScope] <= SCOPE_ORDER[allowedScope]
 const token = await signToken({ sub: clientId, scope: grantedScope }, JWT_EXPIRY);
 ```
 
-**Implementation file:** `src/server/routes/auth.routes.ts`
+**Implementation file:** `apps/api/src/routes/auth.routes.ts`
 
 ---
 
@@ -142,7 +142,7 @@ const token = await signToken({ sub: clientId, scope: grantedScope }, JWT_EXPIRY
 | Field | Detail |
 |-------|--------|
 | **Severity** | Critical |
-| **Files** | `src/server/middleware/auth.ts`, `src/server/ws/energy.ws.ts` |
+| **Files** | `apps/api/src/middleware/auth.ts`, `apps/api/src/ws/energy.ws.ts` |
 | **Physical Risk** | YES — battery/EV/grid hardware directly affected |
 
 **Root Cause:** `authenticateWS()` decodes the JWT but discards the `scope` claim. The `AuthenticatedClient` interface has no `scope` field. All hardware commands are processed regardless of scope.
@@ -176,7 +176,7 @@ if (ADMIN_COMMANDS.has(parsed.type) && client.scope !== 'admin') {
 }
 ```
 
-**Implementation files:** `src/server/middleware/auth.ts`, `src/server/ws/energy.ws.ts`
+**Implementation files:** `apps/api/src/middleware/auth.ts`, `apps/api/src/ws/energy.ws.ts`
 
 ---
 
@@ -185,7 +185,7 @@ if (ADMIN_COMMANDS.has(parsed.type) && client.scope !== 'admin') {
 | Field | Detail |
 |-------|--------|
 | **Severity** | Critical |
-| **File** | `jwt-utils.ts` |
+| **File** | `apps/api/src/jwt-utils.ts` |
 | **Impact** | Rotation provides zero security benefit |
 
 **Root Cause:** `rotateIfNeeded()` calls `loadSecret()` which always returns `JWT_SECRET` env var. Both `currentKey` and `previousKey` slots hold keys derived from identical bytes. A stolen token can be refreshed indefinitely.
@@ -219,7 +219,7 @@ export function rotateIfNeeded(): void {
 
 **Operational procedure:** Set `JWT_SECRET_NEW` to a new random secret → wait 24h (old tokens expire) → rename `JWT_SECRET_NEW` → `JWT_SECRET` → restart.
 
-**Implementation file:** `jwt-utils.ts`
+**Implementation file:** `apps/api/src/jwt-utils.ts`
 
 ---
 
@@ -256,7 +256,7 @@ The `:?` syntax fails the `docker compose up` with a clear error if the variable
 | Field | Detail |
 |-------|--------|
 | **Severity** | High |
-| **File** | `src/store.ts`, `src/lib/influxdb-client.ts` |
+| **File** | `apps/web/src/store.ts`, `apps/web/src/lib/influxdb-client.ts` |
 
 **Root Cause:** The Zustand `persist` middleware serializes the entire `settings` object to `localStorage['nexus-hems-store']`. `settings.influxToken` is written as plaintext. Unlike AI keys (which use AES-GCM in Dexie), the InfluxDB token bypasses the encrypted vault.
 
@@ -267,7 +267,7 @@ The `:?` syntax fails the `docker compose up` with a clear error if the variable
 4. Create a dedicated `InfluxDB` credential ID in `secure-store.ts`
 5. Update `influxdb-client.ts` to fetch credentials from vault
 
-**Files:** `src/store.ts`, `src/lib/secure-store.ts`, `src/lib/influxdb-client.ts`
+**Files:** `apps/web/src/store.ts`, `apps/web/src/lib/secure-store.ts`, `apps/web/src/lib/influxdb-client.ts`
 
 ---
 
@@ -276,7 +276,7 @@ The `:?` syntax fails the `docker compose up` with a clear error if the variable
 | Field | Detail |
 |-------|--------|
 | **Severity** | High |
-| **File** | `src/lib/sharing.ts` |
+| **File** | `apps/web/src/lib/sharing.ts` |
 
 **Root Cause:** `dashboard.shareToken !== token` short-circuits on first mismatched character, enabling remote timing attacks.
 
@@ -302,7 +302,7 @@ function timingSafeEqual(a: string, b: string): boolean {
 }
 ```
 
-**File:** `src/lib/sharing.ts`
+**File:** `apps/web/src/lib/sharing.ts`
 
 ---
 
@@ -311,7 +311,7 @@ function timingSafeEqual(a: string, b: string): boolean {
 | Field | Detail |
 |-------|--------|
 | **Severity** | High |
-| **File** | `src/lib/influxdb-client.ts` |
+| **File** | `apps/web/src/lib/influxdb-client.ts` |
 
 **Root Cause:** `field`, `metric`, `bucket` values are interpolated directly into Flux query strings without validation. Malicious input can execute arbitrary Flux against the InfluxDB instance.
 
@@ -333,7 +333,7 @@ function validateFluxIdentifier(value: string, allowed: Set<string>, name: strin
 
 Apply validation before every Flux query construction. Also validate `range.start` and `range.stop` against an ISO 8601 / relative time allowlist.
 
-**File:** `src/lib/influxdb-client.ts`
+**File:** `apps/web/src/lib/influxdb-client.ts`
 
 ---
 
@@ -342,7 +342,7 @@ Apply validation before every Flux query construction. Also validate `range.star
 | Field | Detail |
 |-------|--------|
 | **Severity** | High |
-| **File** | `src/server/middleware/auth.ts`, `src/server/routes/auth.routes.ts` |
+| **File** | `apps/api/src/middleware/auth.ts`, `apps/api/src/routes/auth.routes.ts` |
 
 **Root Cause:** `authenticateWS()` reads the JWT from `url.searchParams.get('token')`. URL query parameters appear in nginx/proxy access logs, browser history, and Referrer headers.
 
@@ -376,7 +376,7 @@ if (ticket) {
 }
 ```
 
-**Files:** `src/server/middleware/auth.ts`, `src/server/routes/auth.routes.ts`
+**Files:** `apps/api/src/middleware/auth.ts`, `apps/api/src/routes/auth.routes.ts`
 
 ---
 
@@ -385,7 +385,7 @@ if (ticket) {
 | Field | Detail |
 |-------|--------|
 | **Severity** | High |
-| **File** | `src/lib/background-sync.ts` |
+| **File** | `apps/web/src/lib/background-sync.ts` |
 
 **Root Cause:** `executeAction()` constructs `fetch()` calls without `Authorization` headers. An attacker with XSS access can inject malicious `OfflineAction` records into Dexie, which are dispatched as unauthenticated hardware commands when the device comes back online.
 
@@ -417,7 +417,7 @@ private async executeAction(action: OfflineAction): Promise<void> {
 }
 ```
 
-**File:** `src/lib/background-sync.ts`
+**File:** `apps/web/src/lib/background-sync.ts`
 
 ---
 
@@ -426,7 +426,7 @@ private async executeAction(action: OfflineAction): Promise<void> {
 | Field | Detail |
 |-------|--------|
 | **Severity** | High |
-| **File** | `src/server/routes/eebus.routes.ts` |
+| **File** | `apps/api/src/routes/eebus.routes.ts` |
 
 **Root Cause:** `eebusTrustedSKIs` is a module-scope `Set<string>` that is cleared on server restart. The pairing endpoint lacks scope authorization and does not verify TLS certificate SKI during SHIP handshake.
 
@@ -435,7 +435,7 @@ private async executeAction(action: OfflineAction): Promise<void> {
 2. Add `requireScope('admin')` middleware
 3. Document that full SHIP TLS cert SKI verification must be implemented before production EEBUS use
 
-**File:** `src/server/routes/eebus.routes.ts`
+**File:** `apps/api/src/routes/eebus.routes.ts`
 
 Note: The `TODO` for full SHIP handshake (TLS cert SKI verification + PIN exchange + persistent storage) remains a production blocker for EEBUS deployment. This roadmap implements the scope-auth fix; the full SHIP implementation is a separate feature milestone.
 
@@ -446,7 +446,7 @@ Note: The `TODO` for full SHIP handshake (TLS cert SKI verification + PIN exchan
 | Field | Detail |
 |-------|--------|
 | **Severity** | High |
-| **Files** | `src/server/ws/energy.ws.ts`, `src/server/index.ts` |
+| **Files** | `apps/api/src/ws/energy.ws.ts`, `apps/api/src/index.ts` |
 
 **Root Cause:** `wss.on('connection')` has no per-IP connection limit. An attacker can exhaust Node.js file descriptors by opening thousands of connections.
 
@@ -479,7 +479,7 @@ wss.on('connection', async (ws: WebSocket, req: IncomingMessage) => {
 });
 ```
 
-**Files:** `src/server/ws/energy.ws.ts`
+**Files:** `apps/api/src/ws/energy.ws.ts`
 
 ---
 
@@ -488,7 +488,7 @@ wss.on('connection', async (ws: WebSocket, req: IncomingMessage) => {
 | Field | Detail |
 |-------|--------|
 | **Severity** | High |
-| **File** | `src/server/middleware/security.ts` |
+| **File** | `apps/api/src/middleware/security.ts` |
 
 **Root Cause:** `DEFAULT_ORIGINS` unconditionally includes `http://localhost:*` and `http://127.0.0.1:*` entries. In production, this enables CSRF-style attacks from any website against users whose browsers route localhost to the HEMS server.
 
@@ -510,7 +510,7 @@ const defaultOrigins = isProduction
 const allowedOriginSet = new Set([...defaultOrigins, ...ALLOWED_ORIGINS]);
 ```
 
-**File:** `src/server/middleware/security.ts`
+**File:** `apps/api/src/middleware/security.ts`
 
 ---
 
@@ -519,7 +519,7 @@ const allowedOriginSet = new Set([...defaultOrigins, ...ALLOWED_ORIGINS]);
 | Field | Detail |
 |-------|--------|
 | **Severity** | High |
-| **File** | `src/lib/ai-keys.ts`, `src/lib/secure-store.ts` |
+| **File** | `apps/web/src/lib/ai-keys.ts`, `apps/web/src/lib/secure-store.ts` |
 
 **Root Cause:** Both `ai-keys.ts` and `secure-store.ts` use module-scope in-memory passphrases (`_sessionPassphrase`, `_vaultPassphrase`) that are discarded on page unload. All encrypted keys become inaccessible after reload, silently degrading to "no provider" state.
 
@@ -546,7 +546,7 @@ async function getOrCreateVaultPassphrase(): Promise<string> {
 
 **Security note:** This provides the same origin isolation as the encrypted keys. An XSS attacker in the same origin can access both — but that's an accepted trade-off between usability and defense-in-depth. The key is never in localStorage (plain text) and is never exfiltrable outside the browser origin.
 
-**Files:** `src/lib/ai-keys.ts`, `src/lib/secure-store.ts`
+**Files:** `apps/web/src/lib/ai-keys.ts`, `apps/web/src/lib/secure-store.ts`
 
 ---
 
@@ -559,7 +559,7 @@ async function getOrCreateVaultPassphrase(): Promise<string> {
 | Field | Detail |
 |-------|--------|
 | **Severity** | Medium |
-| **File** | `jwt-utils.ts` |
+| **File** | `apps/api/src/jwt-utils.ts` |
 
 **Fix:** Add `.setIssuer('nexus-hems-server').setAudience('nexus-hems-api')` to `signToken()` and validate both in `verifyToken()`.
 
@@ -570,7 +570,7 @@ async function getOrCreateVaultPassphrase(): Promise<string> {
 | Field | Detail |
 |-------|--------|
 | **Severity** | Medium |
-| **Files** | `jwt-utils.ts`, `src/server/routes/auth.routes.ts` |
+| **Files** | `apps/api/src/jwt-utils.ts`, `apps/api/src/routes/auth.routes.ts` |
 
 **Fix Design:**
 1. Add `jti: crypto.randomUUID()` to every issued JWT
@@ -625,7 +625,7 @@ CMD ["/bin/sh", "-c", "envsubst '$WS_ORIGINS' < /etc/nginx/nginx.conf.template >
 | Field | Detail |
 |-------|--------|
 | **Severity** | Medium |
-| **File** | `src/server/middleware/security.ts` |
+| **File** | `apps/api/src/middleware/security.ts` |
 
 **Fix:** Replace manual `x-forwarded-for` parsing with `req.ip` (which Express resolves correctly given `app.set('trust proxy', 1)`):
 ```typescript
@@ -639,7 +639,7 @@ const getClientIP = (req: Request): string => req.ip ?? req.socket.remoteAddress
 | Field | Detail |
 |-------|--------|
 | **Severity** | Medium |
-| **File** | `src/server/routes/auth.routes.ts` |
+| **File** | `apps/api/src/routes/auth.routes.ts` |
 
 **Fix:** Remove the `jwt` block from the health response entirely. Keep response minimal.
 
@@ -650,7 +650,7 @@ const getClientIP = (req: Request): string => req.ip ?? req.socket.remoteAddress
 | Field | Detail |
 |-------|--------|
 | **Severity** | Medium |
-| **File** | `src/lib/sharing.ts` |
+| **File** | `apps/web/src/lib/sharing.ts` |
 
 **Fix Design:** Store only a minimal `{ id, name, permissions }` reference in localStorage. Remove `ownerEmail`, `households`, and `shareToken` from the localStorage payload. These sensitive fields should be fetched from the server (or from an encrypted Dexie record) when needed.
 
@@ -688,7 +688,7 @@ handler: 'NetworkOnly',  // was: 'NetworkFirst'
 | Field | Detail |
 |-------|--------|
 | **Severity** | Medium |
-| **Files** | `src/types/protocol.ts`, `src/core/command-safety.ts` |
+| **Files** | `packages/shared-types/src/protocol.ts`, `apps/web/src/core/command-safety.ts` |
 
 **Fix:** Change the server-side WSCommand safety cap from 50,000 W to 25,000 W to match the client-side `batteryPowerWatts` constraint. The authoritative limit should be in `protocol.ts`:
 ```typescript
@@ -705,7 +705,7 @@ if (typeof v === 'number' && Math.abs(v) > 25_000) {
 | Field | Detail |
 |-------|--------|
 | **Severity** | Medium |
-| **File** | `src/core/aiClient.ts` |
+| **File** | `apps/web/src/core/aiClient.ts` |
 
 **Fix Design:**
 ```typescript
@@ -731,7 +731,7 @@ Apply to all device names, room names, OCPP station IDs, KNX group names, and an
 | Field | Detail |
 |-------|--------|
 | **Severity** | Low |
-| **File** | `src/lib/influxdb-client.ts` |
+| **File** | `apps/web/src/lib/influxdb-client.ts` |
 
 **Fix:** Validate `config.url` before making requests (reuse the `isAllowedUrl()` pattern from `adapter-worker.ts`). After HIGH-01 fix moves the URL to the encrypted vault, also validate at retrieval time.
 
@@ -742,9 +742,9 @@ Apply to all device names, room names, OCPP station IDs, KNX group names, and an
 | Field | Detail |
 |-------|--------|
 | **Severity** | Low |
-| **File** | `src/server/routes/auth.routes.ts` |
+| **File** | `apps/api/src/routes/auth.routes.ts` |
 
-**Fix:** Remove `initKeys()` from `createAuthRoutes()`. The call in `src/server/index.ts` is sufficient.
+**Fix:** Remove `initKeys()` from `createAuthRoutes()`. The call in `apps/api/src/index.ts` is sufficient.
 
 ---
 
@@ -753,7 +753,7 @@ Apply to all device names, room names, OCPP station IDs, KNX group names, and an
 | Field | Detail |
 |-------|--------|
 | **Severity** | Low |
-| **File** | `src/lib/db.ts` |
+| **File** | `apps/web/src/lib/db.ts` |
 
 **Fix:** Implement a pruning function that caps error logs at 100 entries and 7-day TTL. Call it periodically and on every new log write.
 
@@ -777,9 +777,9 @@ Apply to all device names, room names, OCPP station IDs, KNX group names, and an
 | **Severity** | Low |
 | **File** | `Dockerfile.server` |
 
-**Fix:** Pre-compile `server.ts` and `jwt-utils.ts` to JavaScript in the build stage using `tsc`, then run the compiled output in the production container. Removes `tsx` from the production attack surface.
+**Fix:** Pre-compile `server.ts` and `apps/api/src/jwt-utils.ts` to JavaScript in the build stage using `tsc`, then run the compiled output in the production container. Removes `tsx` from the production attack surface.
 
-**Complication:** The current `server.ts` imports from `src/server/` using `.js` extensions — this is compatible with compiled output if `tsconfig.json` has `outDir` configured. A dedicated `tsconfig.server.json` with appropriate settings ensures clean compilation.
+**Complication:** The current `apps/api/index.ts` imports from `apps/api/src/` using `.js` extensions — this is compatible with compiled output if `tsconfig.json` has `outDir` configured. A dedicated `apps/api/tsconfig.json` with appropriate settings ensures clean compilation.
 
 ---
 
@@ -943,7 +943,7 @@ Priority: Block deployment to production until resolved.
 |----|-----|-------|--------|
 | CRIT-01 | Scope-to-key binding via `API_KEY_SCOPES` env var | `auth.routes.ts` | 30 min |
 | CRIT-02 | Add scope to `AuthenticatedClient`; gate WS write commands | `auth.ts`, `energy.ws.ts` | 45 min |
-| CRIT-03 | True rotation via `JWT_SECRET_NEW`; `requireScope` middleware | `jwt-utils.ts`, `auth.routes.ts` | 45 min |
+| CRIT-03 | True rotation via `JWT_SECRET_NEW`; `requireScope` middleware | `apps/api/src/jwt-utils.ts`, `auth.routes.ts` | 45 min |
 | CRIT-04 | Remove Grafana password default value | `docker-compose.yml` | 5 min |
 
 ### Phase 2 — High (This sprint, parallel with Phase 1)
@@ -964,8 +964,8 @@ Priority: Block deployment to production until resolved.
 
 | ID | Fix | Files | Effort |
 |----|-----|-------|--------|
-| MED-01 | Add `iss`/`aud` to JWT sign + verify | `jwt-utils.ts` | 15 min |
-| MED-02 | JTI revocation list + `/api/auth/revoke` endpoint | `jwt-utils.ts`, `auth.routes.ts` | 45 min |
+| MED-01 | Add `iss`/`aud` to JWT sign + verify | `apps/api/src/jwt-utils.ts` | 15 min |
+| MED-02 | JTI revocation list + `/api/auth/revoke` endpoint | `apps/api/src/jwt-utils.ts`, `auth.routes.ts` | 45 min |
 | MED-03 | nginx CSP via `envsubst` in Dockerfile | `nginx.conf`, `Dockerfile` | 30 min |
 | MED-04 | Use `req.ip` in rate limiter key generator | `security.ts` | 5 min |
 | MED-05 | Remove JWT metadata from health response | `auth.routes.ts` | 5 min |
@@ -982,7 +982,7 @@ Priority: Block deployment to production until resolved.
 | LOW-02 | Remove duplicate `initKeys()` | `auth.routes.ts` | 2 min |
 | LOW-03 | Error log retention policy (100 entries / 7-day TTL) | `db.ts` | 15 min |
 | LOW-04 | Prometheus scrape auth token placeholder | `prometheus.yml` | 10 min |
-| LOW-05 | Pre-compile server.ts; remove tsx from production | `Dockerfile.server`, `tsconfig.server.json` | 60 min |
+| LOW-05 | Pre-compile server.ts; remove tsx from production | `Dockerfile.server`, `apps/api/tsconfig.json` | 60 min |
 
 ### Implementation Order (Optimized for Dependencies)
 
@@ -1049,7 +1049,7 @@ The following decisions require explicit acknowledgment before implementation:
 
 ### Decision 5 — LOW-05: Precompile Server TypeScript
 
-**Option A (Recommended):** Create `tsconfig.server.json` + precompile in Dockerfile.server build stage. Removes tsx from production.
+**Option A (Recommended):** Create `apps/api/tsconfig.json` + precompile in Dockerfile.server build stage. Removes tsx from production.
 
 **Option B:** Keep tsx runtime (current state). Faster development iteration but wider attack surface.
 
@@ -1070,10 +1070,10 @@ pnpm test:run            # all 428 unit tests pass
 ### Targeted Security Tests
 
 New/updated tests to add:
-- `src/tests/security-auth-scopes.test.ts` — scope enforcement for CRIT-01/02
-- `src/tests/security-jwt-claims.test.ts` — iss/aud/jti for MED-01/02
-- `src/tests/security-flux-injection.test.ts` — Flux field allowlist for HIGH-03
-- `src/tests/security-ws-rate-limit.test.ts` — WS connection limits for HIGH-07
+- `apps/web/src/tests/security-auth-scopes.test.ts` — scope enforcement for CRIT-01/02
+- `apps/web/src/tests/security-jwt-claims.test.ts` — iss/aud/jti for MED-01/02
+- `apps/web/src/tests/security-flux-injection.test.ts` — Flux field allowlist for HIGH-03
+- `apps/web/src/tests/security-ws-rate-limit.test.ts` — WS connection limits for HIGH-07
 
 ### Build Verification
 
@@ -1100,37 +1100,37 @@ After full implementation, the vulnerability count reduces from 27 to 0 known is
 
 | ID | Title | File(s) | Status |
 |----|-------|---------|--------|
-| CRIT-01 | Scope clamping at token issuance | `src/server/middleware/auth.ts`, `src/server/routes/auth.routes.ts` | ✅ Done |
-| CRIT-02 | WS command scope gate | `src/server/ws/energy.ws.ts`, `src/server/middleware/auth.ts` | ✅ Done |
-| CRIT-03 | JWT key rotation + iss/aud/jti | `jwt-utils.ts` | ✅ Done |
+| CRIT-01 | Scope clamping at token issuance | `apps/api/src/middleware/auth.ts`, `apps/api/src/routes/auth.routes.ts` | ✅ Done |
+| CRIT-02 | WS command scope gate | `apps/api/src/ws/energy.ws.ts`, `apps/api/src/middleware/auth.ts` | ✅ Done |
+| CRIT-03 | JWT key rotation + iss/aud/jti | `apps/api/src/jwt-utils.ts` | ✅ Done |
 | CRIT-04 | Grafana default password removed | `docker-compose.yml` | ✅ Done |
-| HIGH-01 | InfluxDB creds out of localStorage | `src/lib/secure-store.ts`, `src/store.ts` | ✅ Done |
-| HIGH-02 | timingSafeEqual in sharing.ts | `src/lib/sharing.ts` | ✅ Done |
-| HIGH-03 | Flux injection allowlists | `src/lib/influxdb-client.ts` | ✅ Done |
-| HIGH-04 | WS single-use ticket endpoint | `src/server/routes/auth.routes.ts`, `src/server/ws/energy.ws.ts` | ✅ Done |
-| HIGH-05 | Background-sync auth headers | `src/lib/background-sync.ts` | ✅ Done |
-| HIGH-06 | EEBUS pair requires admin scope | `src/server/routes/eebus.routes.ts` | ✅ Done |
-| HIGH-07 | Per-IP WS connection limit | `src/server/ws/energy.ws.ts` | ✅ Done |
-| HIGH-08 | CORS excludes localhost in prod | `src/server/middleware/security.ts` | ✅ Done |
-| HIGH-09 | Vault passphrase Dexie-persistent | `src/lib/secure-store.ts`, `src/lib/ai-keys.ts` | ✅ Done |
-| MED-01 | iss/aud in JWT | `jwt-utils.ts` | ✅ Done |
-| MED-02 | jti + revocation + /api/auth/revoke | `jwt-utils.ts`, `src/server/routes/auth.routes.ts` | ✅ Done |
+| HIGH-01 | InfluxDB creds out of localStorage | `apps/web/src/lib/secure-store.ts`, `apps/web/src/store.ts` | ✅ Done |
+| HIGH-02 | timingSafeEqual in sharing.ts | `apps/web/src/lib/sharing.ts` | ✅ Done |
+| HIGH-03 | Flux injection allowlists | `apps/web/src/lib/influxdb-client.ts` | ✅ Done |
+| HIGH-04 | WS single-use ticket endpoint | `apps/api/src/routes/auth.routes.ts`, `apps/api/src/ws/energy.ws.ts` | ✅ Done |
+| HIGH-05 | Background-sync auth headers | `apps/web/src/lib/background-sync.ts` | ✅ Done |
+| HIGH-06 | EEBUS pair requires admin scope | `apps/api/src/routes/eebus.routes.ts` | ✅ Done |
+| HIGH-07 | Per-IP WS connection limit | `apps/api/src/ws/energy.ws.ts` | ✅ Done |
+| HIGH-08 | CORS excludes localhost in prod | `apps/api/src/middleware/security.ts` | ✅ Done |
+| HIGH-09 | Vault passphrase Dexie-persistent | `apps/web/src/lib/secure-store.ts`, `apps/web/src/lib/ai-keys.ts` | ✅ Done |
+| MED-01 | iss/aud in JWT | `apps/api/src/jwt-utils.ts` | ✅ Done |
+| MED-02 | jti + revocation + /api/auth/revoke | `apps/api/src/jwt-utils.ts`, `apps/api/src/routes/auth.routes.ts` | ✅ Done |
 | MED-03 | nginx.conf ${WS_ORIGINS} envsubst | `nginx.conf`, `Dockerfile` | ✅ Done |
-| MED-04 | req.ip in getClientIP | `src/server/middleware/security.ts` | ✅ Done |
-| MED-05 | Health endpoint strips JWT metadata | `src/server/routes/auth.routes.ts` | ✅ Done |
-| MED-06 | Sharing: no credentials in localStorage | `src/lib/sharing.ts` | ✅ Done |
+| MED-04 | req.ip in getClientIP | `apps/api/src/middleware/security.ts` | ✅ Done |
+| MED-05 | Health endpoint strips JWT metadata | `apps/api/src/routes/auth.routes.ts` | ✅ Done |
+| MED-06 | Sharing: no credentials in localStorage | `apps/web/src/lib/sharing.ts` | ✅ Done |
 | MED-07 | AI API routes → NetworkOnly | `vite.config.ts` | ✅ Done |
-| MED-08 | 25 kW safety cap | `src/types/protocol.ts`, `src/core/command-safety.ts` | ✅ Done |
-| MED-09 | sanitizeForPrompt in aiClient | `src/core/aiClient.ts` | ✅ Done |
-| LOW-01 | SSRF guard isAllowedInfluxUrl | `src/lib/influxdb-client.ts` | ✅ Done |
-| LOW-02 | Remove duplicate initKeys() | `src/server/routes/auth.routes.ts` | ✅ Done |
-| LOW-03 | Error log 7-day TTL | `src/lib/db.ts` | ✅ Done |
+| MED-08 | 25 kW safety cap | `packages/shared-types/src/protocol.ts`, `apps/web/src/core/command-safety.ts` | ✅ Done |
+| MED-09 | sanitizeForPrompt in aiClient | `apps/web/src/core/aiClient.ts` | ✅ Done |
+| LOW-01 | SSRF guard isAllowedInfluxUrl | `apps/web/src/lib/influxdb-client.ts` | ✅ Done |
+| LOW-02 | Remove duplicate initKeys() | `apps/api/src/routes/auth.routes.ts` | ✅ Done |
+| LOW-03 | Error log 7-day TTL | `apps/web/src/lib/db.ts` | ✅ Done |
 | LOW-04 | Prometheus bearer token placeholder | `prometheus.yml` | ✅ Done |
-| LOW-05 | Dockerfile.server TS precompile | `Dockerfile.server`, `tsconfig.server.json` | ✅ Done |
+| LOW-05 | Dockerfile.server TS precompile | `Dockerfile.server`, `apps/api/tsconfig.json` | ✅ Done |
 
 **Residual risks (accepted, documented):**
 - HIGH-09 Option A: vault passphrase in IndexedDB (same-origin XSS can access both key and data — but no worse than current AI key storage model)
-- LOW-05: tsx removal creates a need for a server build step in the development workflow — documented in tsconfig.server.json comments
+- LOW-05: tsx removal creates a need for a server build step in the development workflow — documented in apps/api/tsconfig.json comments
 - EEBUS full SHIP TLS cert verification remains a TODO (separate feature milestone, not a regression)
 
 **Recommended follow-up after this wave:**

@@ -55,7 +55,7 @@ The bridge hook `useAdapterBridge()` syncs adapter data from `useEnergyStore` �
 
 ## Core Interface: `EnergyAdapter`
 
-Every adapter **must** implement this interface (`src/core/adapters/EnergyAdapter.ts`):
+Every adapter **must** implement this interface (`apps/web/src/core/adapters/EnergyAdapter.ts`):
 
 ```typescript
 interface EnergyAdapter {
@@ -110,7 +110,7 @@ type AdapterCapability = 'pv' | 'battery' | 'grid' | 'load' | 'evCharger' | 'knx
 
 ## Base Class: `BaseAdapter`
 
-All built-in adapters extend `BaseAdapter` (`src/core/adapters/BaseAdapter.ts`) which provides:
+All built-in adapters extend `BaseAdapter` (`apps/web/src/core/adapters/BaseAdapter.ts`) which provides:
 
 ### Circuit Breaker
 
@@ -326,7 +326,7 @@ this.emitData(model);
 ### Step 1: Create the adapter file
 
 ```typescript
-// src/core/adapters/contrib/MyProtocolAdapter.ts
+// apps/web/src/core/adapters/contrib/MyProtocolAdapter.ts
 import { BaseAdapter } from '../BaseAdapter';
 import type {
   AdapterConnectionConfig,
@@ -402,7 +402,7 @@ export class MyProtocolAdapter extends BaseAdapter {
 ### Step 2: Add a Zod config schema
 
 ```typescript
-// src/core/adapter-config-schemas.ts
+// apps/web/src/core/adapter-config-schemas.ts
 export const myProtocolConfigSchema = adapterConnectionSchema.extend({
   port: port.default(8080),
   customField: z.string().min(1).max(100),
@@ -412,7 +412,7 @@ export const myProtocolConfigSchema = adapterConnectionSchema.extend({
 ### Step 3: Register the adapter
 
 ```typescript
-// src/core/adapters/adapter-registry.ts
+// apps/web/src/core/adapters/adapter-registry.ts
 import { MyProtocolAdapter } from './contrib/MyProtocolAdapter';
 
 registerAdapter(
@@ -440,10 +440,10 @@ registerAdapter('my-adapter', (config) => new MyAdapter(config), {
 
 ### Option B: Contrib Auto-Loader
 
-Place your adapter in `src/core/adapters/contrib/`:
+Place your adapter in `apps/web/src/core/adapters/contrib/`:
 
 ```typescript
-// src/core/adapters/contrib/my-adapter.ts
+// apps/web/src/core/adapters/contrib/my-adapter.ts
 // Must export either:
 //   { id, factory } — a ContribAdapterModule
 //   { id, factory } — default export
@@ -511,7 +511,7 @@ User Input → Zod Validation → AES-GCM Encrypt → Dexie.js (IndexedDB)
                                           Adapter connect() ← Decrypt
 ```
 
-See `src/lib/ai-keys.ts` for the encryption implementation.
+See `apps/web/src/lib/ai-keys.ts` for the encryption implementation.
 
 ---
 
@@ -595,7 +595,7 @@ if (currentFeedInKW > maxFeedIn) {
 ### Unit Test Template
 
 ```typescript
-// src/tests/my-adapter.test.ts
+// apps/web/src/tests/my-adapter.test.ts
 import { describe, it, expect, vi } from 'vitest';
 import { MyProtocolAdapter } from '../core/adapters/contrib/MyProtocolAdapter';
 
@@ -669,16 +669,16 @@ Yes. If both Victron and Modbus provide `'pv'`, values are deep-merged. The last
 
 ### Q: How do I test without real hardware?
 
-Use the demo data generator in `src/lib/demo-data.ts` or create a mock adapter that emits synthetic data.
+Use the demo data generator in `apps/web/src/lib/demo-data.ts` or create a mock adapter that emits synthetic data.
 
 ### Q: Where are adapter credentials stored?
 
-In IndexedDB (Dexie.js), encrypted with AES-GCM 256-bit. See `src/lib/ai-keys.ts` and `src/lib/secure-store.ts`.
+In IndexedDB (Dexie.js), encrypted with AES-GCM 256-bit. See `apps/web/src/lib/ai-keys.ts` and `apps/web/src/lib/secure-store.ts`.
 
 ### Q: How do I add a new command type?
 
-1. Add to `AdapterCommandType` in `src/core/adapters/EnergyAdapter.ts`
-2. Add validation in `src/core/command-safety.ts`
+1. Add to `AdapterCommandType` in `apps/web/src/core/adapters/EnergyAdapter.ts`
+2. Add validation in `apps/web/src/core/command-safety.ts`
 3. Handle in your adapter's `doSendCommand()`
 4. Optionally add danger-confirm classification
 

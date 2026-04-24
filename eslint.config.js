@@ -7,9 +7,9 @@ import reactCompiler from 'eslint-plugin-react-compiler';
 import reactRefresh from 'eslint-plugin-react-refresh';
 
 export default [
-  { ignores: ['dist', 'node_modules', 'coverage', 'storybook-static', '**/*.ts'] },
+  { ignores: ['**/dist', '**/node_modules', '**/coverage', '**/storybook-static', '**/*.ts'] },
   {
-    files: ['src/**/*.tsx'],
+    files: ['apps/web/src/**/*.tsx'],
     languageOptions: {
       parser: babelParser,
       parserOptions: {

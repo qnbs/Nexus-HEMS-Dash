@@ -36,7 +36,7 @@ Fixes #<!-- issue number -->
 
 ### i18n / a11y (mandatory)
 
-- [ ] All new user-facing strings are localized in both `src/locales/de.ts` and `src/locales/en.ts` using `t()`
+- [ ] All new user-facing strings are localized in both `apps/web/src/locales/de.ts` and `apps/web/src/locales/en.ts` using `t()`
 - [ ] WCAG 2.2 AA: correct ARIA attributes, keyboard navigation, color contrast
 - [ ] No hardcoded display strings in components
 

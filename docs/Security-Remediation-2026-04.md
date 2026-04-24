@@ -14,7 +14,7 @@ The live GitHub code-scanning REST endpoint could not be queried from this envir
 
 ### CodeQL: Remote Property Injection (`OpenEMSAdapter.ts`)
 
-Addressed in [src/core/adapters/OpenEMSAdapter.ts](src/core/adapters/OpenEMSAdapter.ts).
+Addressed in [apps/web/src/core/adapters/OpenEMSAdapter.ts](apps/web/src/core/adapters/OpenEMSAdapter.ts).
 
 Changes:
 
@@ -30,12 +30,12 @@ Risk reduction:
 
 Validation:
 
-- [src/tests/security-hardening.test.ts](src/tests/security-hardening.test.ts)
-- [src/tests/security-fuzz.test.ts](src/tests/security-fuzz.test.ts)
+- [apps/web/src/tests/security-hardening.test.ts](apps/web/src/tests/security-hardening.test.ts)
+- [apps/web/src/tests/security-fuzz.test.ts](apps/web/src/tests/security-fuzz.test.ts)
 
 ### CodeQL: Client-Side Request Forgery (`adapter-worker.ts`)
 
-Addressed in [src/core/adapter-worker.ts](src/core/adapter-worker.ts) and [src/core/useAdapterWorker.ts](src/core/useAdapterWorker.ts).
+Addressed in [apps/web/src/core/adapter-worker.ts](apps/web/src/core/adapter-worker.ts) and [apps/web/src/core/useAdapterWorker.ts](apps/web/src/core/useAdapterWorker.ts).
 
 Changes:
 
@@ -52,12 +52,12 @@ Risk reduction:
 
 Validation:
 
-- [src/tests/security-hardening.test.ts](src/tests/security-hardening.test.ts)
-- [src/tests/security-fuzz.test.ts](src/tests/security-fuzz.test.ts)
+- [apps/web/src/tests/security-hardening.test.ts](apps/web/src/tests/security-hardening.test.ts)
+- [apps/web/src/tests/security-fuzz.test.ts](apps/web/src/tests/security-fuzz.test.ts)
 
 ### CodeQL: Useless Conditional (`PageTour.tsx`)
 
-Addressed in [src/components/ui/PageTour.tsx](src/components/ui/PageTour.tsx).
+Addressed in [apps/web/src/components/ui/PageTour.tsx](apps/web/src/components/ui/PageTour.tsx).
 
 Changes:
 
@@ -111,7 +111,7 @@ Result:
 
 Added:
 
-- [src/tests/security-fuzz.test.ts](src/tests/security-fuzz.test.ts)
+- [apps/web/src/tests/security-fuzz.test.ts](apps/web/src/tests/security-fuzz.test.ts)
 - [package.json](package.json) script `test:fuzz`
 - [.github/workflows/fuzz.yml](.github/workflows/fuzz.yml)
 
@@ -127,10 +127,10 @@ This improves practical fuzzing posture even though the next OpenSSF Scorecard r
 
 Addressed separately but part of the same branch:
 
-- [server.ts](server.ts): dev-only CSP/HSTS boot fix to stop unwanted HTTPS upgrades on the local HTTP server
-- [tests/e2e/command-hub-energy-flow.spec.ts](tests/e2e/command-hub-energy-flow.spec.ts): resilient page-heading and Sankey assertions
-- [tests/e2e/settings-navigation.spec.ts](tests/e2e/settings-navigation.spec.ts): resilient page-heading assertions
-- [src/pages/CommandHub.tsx](src/pages/CommandHub.tsx): stable mini-Sankey container height for mobile Safari
+- [apps/api/index.ts](apps/api/index.ts): dev-only CSP/HSTS boot fix to stop unwanted HTTPS upgrades on the local HTTP server
+- [apps/web/tests/e2e/command-hub-energy-flow.spec.ts](apps/web/tests/e2e/command-hub-energy-flow.spec.ts): resilient page-heading and Sankey assertions
+- [apps/web/tests/e2e/settings-navigation.spec.ts](apps/web/tests/e2e/settings-navigation.spec.ts): resilient page-heading assertions
+- [apps/web/src/pages/CommandHub.tsx](apps/web/src/pages/CommandHub.tsx): stable mini-Sankey container height for mobile Safari
 
 ## Residual Risk After This Wave
 
@@ -207,7 +207,7 @@ Executed locally:
 
 - `npx tsc --noEmit`
 - `pnpm lint` (biome check + slim eslint) on changed source and test files
-- `npx vitest run src/tests/security-hardening.test.ts`
+- `npx vitest run apps/web/src/tests/security-hardening.test.ts`
 - `pnpm test:fuzz`
 - `pnpm build`
 

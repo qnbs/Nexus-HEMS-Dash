@@ -91,21 +91,21 @@ jobs:
       # ── source-map-explorer ──
       - name: Source Map Analysis
         run: |
-          npx source-map-explorer dist/assets/*.js \
-            --html dist/source-map-report.html \
-            --json dist/source-map-report.json \
+          npx source-map-explorer apps/web/dist/assets/*.js \
+            --html apps/web/dist/source-map-report.html \
+            --json apps/web/dist/source-map-report.json \
             2>&1 || echo "source-map-explorer: some files skipped (no sourcemaps)"
 
       # ── Collect raw sizes ──
       - name: Collect bundle sizes
         id: sizes
         run: |
-          JS_SIZE=$(find dist/assets -name '*.js' -exec cat {} + | wc -c)
-          CSS_SIZE=$(find dist/assets -name '*.css' -exec cat {} + | wc -c)
+          JS_SIZE=$(find apps/web/dist/assets -name '*.js' -exec cat {} + | wc -c)
+          CSS_SIZE=$(find apps/web/dist/assets -name '*.css' -exec cat {} + | wc -c)
           JS_KB=$(( JS_SIZE / 1024 ))
           CSS_KB=$(( CSS_SIZE / 1024 ))
-          JS_GZIP=$(find dist/assets -name '*.js' -exec cat {} + | gzip -9 | wc -c)
-          CSS_GZIP=$(find dist/assets -name '*.css' -exec cat {} + | gzip -9 | wc -c)
+          JS_GZIP=$(find apps/web/dist/assets -name '*.js' -exec cat {} + | gzip -9 | wc -c)
+          CSS_GZIP=$(find apps/web/dist/assets -name '*.css' -exec cat {} + | gzip -9 | wc -c)
           JS_GZIP_KB=$(( JS_GZIP / 1024 ))
           CSS_GZIP_KB=$(( CSS_GZIP / 1024 ))
 
@@ -122,7 +122,7 @@ jobs:
 
           echo "### Per-chunk breakdown:" >> "$GITHUB_STEP_SUMMARY"
           echo '```' >> "$GITHUB_STEP_SUMMARY"
-          ls -lhS dist/assets/*.js | awk '{print $5, $NF}' >> "$GITHUB_STEP_SUMMARY"
+          ls -lhS apps/web/dist/assets/*.js | awk '{print $5, $NF}' >> "$GITHUB_STEP_SUMMARY"
           echo '```' >> "$GITHUB_STEP_SUMMARY"
 
       # ── Upload reports ──
@@ -132,9 +132,9 @@ jobs:
         with:
           name: bundle-reports
           path: |
-            dist/bundle-stats.html
-            dist/source-map-report.html
-            dist/source-map-report.json
+            apps/web/dist/bundle-stats.html
+            apps/web/dist/source-map-report.html
+            apps/web/dist/source-map-report.json
           retention-days: 14
           compression-level: 6
 

@@ -1,0 +1,62 @@
+{
+  "$schema": "https://turborepo.com/schema.json",
+  "ui": "tui",
+  "globalDependencies": ["tsconfig.base.json", "biome.json"],
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "inputs": ["src/**", "tsconfig.json", "package.json"],
+      "outputs": ["dist/**", "!dist/**/*.d.ts.map"]
+    },
+    "shared-types#build": {
+      "inputs": ["src/**", "tsconfig.json", "package.json"],
+      "outputs": []
+    },
+    "web#build": {
+      "dependsOn": ["shared-types#build"],
+      "inputs": [
+        "src/**",
+        "public/**",
+        "index.html",
+        "vite.config.ts",
+        "tailwind.config.ts",
+        "tsconfig.json",
+        "package.json"
+      ],
+      "outputs": ["dist/**", ".lighthouseci/**"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "lint": {
+      "inputs": ["src/**", "tsconfig.json", "../../biome.json", "../../eslint.config.js"],
+      "outputs": []
+    },
+    "lint:fix": {
+      "cache": false
+    },
+    "format": {
+      "cache": false
+    },
+    "type-check": {
+      "dependsOn": ["^build"],
+      "inputs": ["src/**", "tsconfig.json"],
+      "outputs": []
+    },
+    "test:run": {
+      "dependsOn": ["^build"],
+      "inputs": ["src/**", "tsconfig.json", "vitest.config.ts"],
+      "outputs": ["coverage/**"]
+    },
+    "test": {
+      "cache": false,
+      "persistent": true
+    },
+    "test:e2e": {
+      "dependsOn": ["build"],
+      "inputs": ["tests/**", "playwright.config.ts"],
+      "outputs": ["playwright-report/**", "test-results/**"]
+    }
+  }
+}

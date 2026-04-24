@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { EEBUSPairRequestSchema } from '../../types/protocol.js';
+import { EEBUSPairRequestSchema } from '@nexus-hems/shared-types';
 import { requireJWT, requireScope } from '../middleware/auth.js';
 
 export function createEebusRoutes(): Router {

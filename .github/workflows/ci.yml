@@ -82,14 +82,14 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Unit Tests with Coverage
-        run: pnpm exec vitest run --reporter=verbose --coverage
+        run: pnpm test:coverage
 
       - name: Upload coverage
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
           name: coverage-report
-          path: coverage/
+          path: apps/web/coverage/
           retention-days: 14
 
   build:
@@ -130,7 +130,7 @@ jobs:
         run: |
           if [ -n "$SENTRY_AUTH_TOKEN" ]; then
             npx @sentry/cli releases new "nexus-hems@$(node -p 'require("./package.json").version')"
-            npx @sentry/cli releases files "nexus-hems@$(node -p 'require("./package.json").version')" upload-sourcemaps dist/assets --url-prefix '~/Nexus-HEMS-Dash/assets'
+            npx @sentry/cli releases files "nexus-hems@$(node -p 'require("./package.json").version')" upload-sourcemaps apps/web/dist/assets --url-prefix '~/Nexus-HEMS-Dash/assets'
             npx @sentry/cli releases finalize "nexus-hems@$(node -p 'require("./package.json").version')"
             echo "✅ Sentry source maps uploaded"
           else
@@ -140,7 +140,7 @@ jobs:
       - name: Bundle Size Check
         run: |
           MAX_KB=600
-          INDEX_SIZE=$(stat -c%s dist/assets/index-*.js 2>/dev/null || echo 0)
+          INDEX_SIZE=$(stat -c%s apps/web/dist/assets/index-*.js 2>/dev/null || echo 0)
           INDEX_KB=$((INDEX_SIZE / 1024))
           echo "Index bundle: ${INDEX_KB} KB (limit: ${MAX_KB} KB)"
           if [ "$INDEX_KB" -gt "$MAX_KB" ]; then
@@ -149,13 +149,13 @@ jobs:
           fi
 
       - name: Size Limit Check
-        run: pnpm size:check || echo "::warning::Size limit exceeded — review bundle budgets"
+        run: pnpm size || echo "::warning::Size limit exceeded — review bundle budgets"
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: build
-          path: dist/
+          path: apps/web/dist/
           retention-days: 7
 
   e2e-tests:
@@ -196,7 +196,7 @@ jobs:
         if: always()
         with:
           name: playwright-report
-          path: playwright-report/
+          path: apps/web/playwright-report/
           retention-days: 14
 
   docker-build:

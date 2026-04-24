@@ -52,7 +52,7 @@ jobs:
       - name: Rust cache
         uses: swatinem/rust-cache@42dc69e1aa15d09112580998cf2ef0119e2e91ae # v2
         with:
-          workspaces: src-tauri
+          workspaces: apps/web/src-tauri
 
       - name: Install Linux dependencies
         if: matrix.target == 'linux'

@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from 'express';
 import type { IncomingMessage } from 'http';
-import { verifyToken } from '../../../jwt-utils.js';
+import { verifyToken } from '../jwt-utils.js';
 
 // ─── Scope Ordering ──────────────────────────────────────────────────
 
