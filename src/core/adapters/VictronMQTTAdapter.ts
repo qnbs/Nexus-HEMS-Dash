@@ -384,9 +384,7 @@ export class VictronMQTTAdapter extends BaseAdapter {
     // Auto-detect portal ID from first message
     if (!this.portalId) {
       this.portalId = parts[1];
-      if (import.meta.env.DEV) {
-        console.log(`[Victron] Auto-detected portal ID: ${this.portalId}`);
-      }
+      this.log.debug('Auto-detected Venus OS portal ID', { portalId: this.portalId });
     }
 
     try {

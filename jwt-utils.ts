@@ -19,6 +19,8 @@ export interface JWTPayload {
   iat?: number;
   exp?: number;
   kid?: string;
+  // Index signature required by jose's JWTPayload constraint
+  [key: string]: unknown;
 }
 
 interface KeySlot {
@@ -317,10 +319,7 @@ export async function verifyToken(token: string): Promise<JWTPayload> {
 
   // MED-02: Reject revoked tokens
   if (payload.jti && isJTIRevoked(payload.jti)) {
-    throw new joseErrors.JWTExpired(
-      'Token has been revoked',
-      payload as unknown as Parameters<typeof joseErrors.JWTExpired>[1],
-    );
+    throw new joseErrors.JWTExpired('Token has been revoked', payload);
   }
 
   return payload;

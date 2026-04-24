@@ -3,10 +3,14 @@
  *
  * Production-grade logging for Nexus HEMS Dashboard:
  * - Structured log entries with level, context, timestamp
- * - Console output in development
+ * - Pino-compatible JSON output (activated via ?log=json or LOG_FORMAT=json)
  * - Sentry error/warning capture in production
  * - Ring buffer for recent log history (last 200 entries)
  * - Context tagging (adapter, component, subsystem)
+ *
+ * JSON output follows Pino wire format:
+ *   { level: number, time: ms, pid: 0, hostname, msg, context?, ...data }
+ * Level codes: debug=20, info=30, warn=40, error=50, fatal=60
  */
 
 // ─── Types ──────────────────────────────────────────────────────────
@@ -40,6 +44,27 @@ const LEVEL_ORDER: Record<LogLevel, number> = {
   error: 3,
   fatal: 4,
 };
+
+// Pino-compatible wire-format level numbers
+const PINO_LEVELS: Record<LogLevel, number> = {
+  debug: 20,
+  info: 30,
+  warn: 40,
+  error: 50,
+  fatal: 60,
+};
+
+function detectJsonMode(): boolean {
+  if (typeof window !== 'undefined') {
+    try {
+      if (new URLSearchParams(window.location.search).get('log') === 'json') return true;
+      return window.localStorage?.getItem('LOG_FORMAT') === 'json';
+    } catch {
+      return false;
+    }
+  }
+  return typeof process !== 'undefined' && process.env != null && process.env.LOG_FORMAT === 'json';
+}
 
 // ─── Sentry Integration ─────────────────────────────────────────────
 
@@ -81,9 +106,11 @@ declare const __APP_VERSION__: string;
 class Logger {
   private config: LoggerConfig;
   private buffer: LogEntry[] = [];
+  private readonly jsonMode: boolean;
 
   constructor() {
     const isProd = import.meta.env.PROD;
+    this.jsonMode = detectJsonMode();
 
     this.config = {
       minLevel: isProd ? 'info' : 'debug',
@@ -123,21 +150,39 @@ class Logger {
 
     this.addToBuffer(entry);
 
-    // Console output
-    const prefix = context ? `[${context}]` : '';
-    const consoleMethod = level === 'fatal' ? 'error' : level;
-    const consoleFn = console[consoleMethod] ?? console.log;
-
-    if (error) {
-      consoleFn(`${prefix} ${message}`, data ?? '', error);
-    } else if (data) {
-      consoleFn(`${prefix} ${message}`, data);
+    if (this.jsonMode) {
+      // Pino-compatible JSON output (parseable by Vector, Datadog, Loki, etc.)
+      const pinoEntry: Record<string, unknown> = {
+        level: PINO_LEVELS[level],
+        time: entry.timestamp,
+        pid: 0,
+        hostname: typeof window !== 'undefined' ? window.location.hostname : 'server',
+        msg: message,
+        ...(context != null && { context }),
+        ...(data != null && data),
+        ...(error != null && {
+          err: { type: error.name, message: error.message, stack: error.stack },
+        }),
+      };
+      console.log(JSON.stringify(pinoEntry));
     } else {
-      consoleFn(`${prefix} ${message}`);
+      // Human-readable output for development
+      const prefix = context ? `[${context}]` : '';
+      const consoleMethod = level === 'fatal' ? 'error' : level;
+      const consoleFn =
+        (console[consoleMethod as keyof typeof console] as typeof console.log) ?? console.log;
+
+      if (error) {
+        consoleFn(`${prefix} ${message}`, data ?? '', error);
+      } else if (data) {
+        consoleFn(`${prefix} ${message}`, data);
+      } else {
+        consoleFn(`${prefix} ${message}`);
+      }
     }
 
     // Sentry capture for error/warn/fatal
-    if (this.config.sentryEnabled && LEVEL_ORDER[level] >= LEVEL_ORDER['warn']) {
+    if (this.config.sentryEnabled && LEVEL_ORDER[level] >= LEVEL_ORDER.warn) {
       void captureToSentry(entry);
     }
   }
@@ -174,7 +219,7 @@ class Logger {
 }
 
 /** Logger scoped to a specific context (adapter, component, subsystem) */
-class ContextLogger {
+export class ContextLogger {
   constructor(
     private parent: Logger,
     private context: string,

@@ -210,5 +210,5 @@ export async function mergeCredentialsIntoConfig(
  */
 export async function clearVault(): Promise<void> {
   await nexusDb.adapterCredentials.clear();
-  _vaultPassphrase = null;
+  _cachedVaultPassphrase = null;
 }

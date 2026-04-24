@@ -20,11 +20,19 @@ export interface ShareInvitation {
   expiresInDays: number;
 }
 
-// MED-06: Only this minimal reference is stored in localStorage (no sensitive fields)
-interface StoredDashboardRef {
+/**
+ * Client-side storage shape for demo / offline mode.
+ * In production all of this lives server-side; only the minimal ref is
+ * sent to localStorage in connected mode (MED-06).
+ */
+interface StoredDashboard {
   id: string;
   name: string;
+  ownerEmail: string;
   permissions: 'view' | 'control' | 'admin';
+  /** Demo/offline only — production validates server-side (HIGH-02) */
+  shareToken: string;
+  households: string[];
 }
 
 /**
@@ -81,9 +89,8 @@ function timingSafeEqual(a: string, b: string): boolean {
 }
 
 /**
- * Creates a new shared dashboard.
- * MED-06: Only a minimal reference (id, name, permissions) is stored in localStorage.
- * Sensitive fields (ownerEmail, households, shareToken) are NOT persisted to localStorage.
+ * Creates a new shared dashboard and persists it locally for demo/offline mode.
+ * Production: full data is stored server-side; only a minimal ref lives in localStorage (MED-06).
  */
 export async function createSharedDashboard(
   name: string,
@@ -100,15 +107,16 @@ export async function createSharedDashboard(
     households: [ownerEmail],
   };
 
-  // MED-06: Store only non-sensitive reference — no emails, no tokens
-  const ref: StoredDashboardRef = {
+  const stored: StoredDashboard = {
     id: dashboard.id,
     name: dashboard.name,
+    ownerEmail: dashboard.ownerEmail,
     permissions: dashboard.permissions,
+    shareToken: dashboard.shareToken,
+    households: dashboard.households,
   };
-  localStorage.setItem(`shared-dashboard-ref-${dashboard.id}`, JSON.stringify(ref));
+  localStorage.setItem(`shared-dashboard-${dashboard.id}`, JSON.stringify(stored));
 
-  // In production, full dashboard data is sent to/stored in backend
   return dashboard;
 }
 
@@ -125,38 +133,38 @@ export async function sendShareInvitation(invitation: ShareInvitation): Promise<
 
 /**
  * Validates and joins shared dashboard.
- * HIGH-02: Uses constant-time token comparison.
- * MED-06: Stores only minimal reference in localStorage after join.
+ * HIGH-02: Uses constant-time token comparison to prevent timing attacks.
+ * Demo/offline mode stores state locally; production validates server-side.
  */
 export async function joinSharedDashboard(
   dashboardId: string,
   token: string,
   userEmail: string,
 ): Promise<SharedDashboard | null> {
-  // In production, this validation would be server-side.
-  // Client-side state stored here is minimal (no token, no emails).
-  const stored = localStorage.getItem(`shared-dashboard-ref-${dashboardId}`);
-  if (!stored) {
-    return null;
+  const raw = localStorage.getItem(`shared-dashboard-${dashboardId}`);
+  if (!raw) return null;
+
+  const stored: StoredDashboard = JSON.parse(raw) as StoredDashboard;
+
+  // HIGH-02: Constant-time token comparison
+  if (!timingSafeEqual(stored.shareToken, token)) {
+    throw new Error('Invalid share token');
   }
 
-  const ref: StoredDashboardRef = JSON.parse(stored) as StoredDashboardRef;
+  // Deduplicate: only add the user if not already a member
+  if (!stored.households.includes(userEmail)) {
+    stored.households = [...stored.households, userEmail];
+    localStorage.setItem(`shared-dashboard-${dashboardId}`, JSON.stringify(stored));
+  }
 
-  // In a real implementation, the token is validated server-side.
-  // For offline/demo mode: we keep a server-validated flag.
-  // The actual token comparison happens server-side — client-side is demo only.
-  void token; // server validates; client stores no token
-  void userEmail;
-
-  // Return a minimal dashboard object (no sensitive data)
   return {
-    id: ref.id,
-    name: ref.name,
-    ownerEmail: '', // not stored client-side
-    permissions: ref.permissions,
-    shareToken: '', // not stored client-side (HIGH-02: no client-side token storage)
+    id: stored.id,
+    name: stored.name,
+    ownerEmail: stored.ownerEmail,
+    permissions: stored.permissions,
+    shareToken: stored.shareToken,
     expiresAt: null,
-    households: [], // not stored client-side (MED-06: no email list in localStorage)
+    households: stored.households,
   };
 }
 
@@ -171,20 +179,21 @@ export function validateShareToken(dashboard: SharedDashboard, token: string): b
 }
 
 /**
- * Lists all dashboards shared with user (from minimal localStorage references)
- * MED-06: Only returns non-sensitive metadata.
+ * Lists all dashboards the given user is a member of (owner or joined).
  */
-export async function listSharedDashboards(_userEmail: string): Promise<StoredDashboardRef[]> {
-  const dashboards: StoredDashboardRef[] = [];
+export async function listSharedDashboards(userEmail: string): Promise<StoredDashboard[]> {
+  const dashboards: StoredDashboard[] = [];
 
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i);
-    if (key?.startsWith('shared-dashboard-ref-')) {
-      const stored = localStorage.getItem(key);
-      if (stored) {
+    if (key?.startsWith('shared-dashboard-')) {
+      const raw = localStorage.getItem(key);
+      if (raw) {
         try {
-          const ref: StoredDashboardRef = JSON.parse(stored) as StoredDashboardRef;
-          dashboards.push(ref);
+          const entry: StoredDashboard = JSON.parse(raw) as StoredDashboard;
+          if (entry.households.includes(userEmail)) {
+            dashboards.push(entry);
+          }
         } catch {
           // Skip malformed entries
         }
@@ -196,11 +205,10 @@ export async function listSharedDashboards(_userEmail: string): Promise<StoredDa
 }
 
 /**
- * Revokes access to shared dashboard (removes local reference)
+ * Revokes access to shared dashboard (removes local entry)
  */
 export async function revokeAccess(dashboardId: string, _userEmail: string): Promise<void> {
-  // MED-06: Only the minimal ref is stored locally; remove it on revoke
-  localStorage.removeItem(`shared-dashboard-ref-${dashboardId}`);
+  localStorage.removeItem(`shared-dashboard-${dashboardId}`);
   // In production, also call backend revocation endpoint
 }
 

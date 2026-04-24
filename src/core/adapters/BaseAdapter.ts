@@ -18,6 +18,7 @@
  *   _sendCommand() — send a command to the hardware
  */
 
+import { logger } from '../../lib/logger';
 import { metricsCollector } from '../../lib/metrics';
 import { CircuitBreaker, type CircuitBreakerConfig } from '../circuit-breaker';
 import { logCommandAudit, requiresConfirmation, validateCommand } from '../command-safety';
@@ -114,6 +115,13 @@ export abstract class BaseAdapter implements EnergyAdapter {
   private _onlineHandler: (() => void) | null = null;
   private _offlineHandler: (() => void) | null = null;
 
+  // Lazy child logger — resolved after derived class sets this.id
+  private _log?: ReturnType<typeof logger.child>;
+  protected get log(): ReturnType<typeof logger.child> {
+    if (!this._log) this._log = logger.child(this.id);
+    return this._log;
+  }
+
   constructor(
     config: AdapterConnectionConfig,
     circuitBreakerConfig?: Partial<CircuitBreakerConfig>,
@@ -127,9 +135,19 @@ export abstract class BaseAdapter implements EnergyAdapter {
     });
     this.retryDelay = config.reconnect?.initialDelayMs ?? BASE_RECONNECT.initialDelayMs;
 
-    // Track circuit breaker state changes in Prometheus
+    // Track circuit breaker state changes in Prometheus + structured log
     this.circuitBreaker.onStateChange((state) => {
       metricsCollector.recordCircuitBreakerState(this.id, state);
+      if (state === 'open') {
+        this.log.error('Circuit breaker opened — all calls fail-fast until cooldown', undefined, {
+          adapterId: this.id,
+          cooldownMs: 30_000,
+        });
+      } else if (state === 'half-open') {
+        this.log.warn('Circuit breaker half-open — probing single call', { adapterId: this.id });
+      } else {
+        this.log.info('Circuit breaker closed — service recovered', { adapterId: this.id });
+      }
     });
 
     // navigator.onLine listeners — auto-reconnect on network recovery
@@ -179,7 +197,15 @@ export abstract class BaseAdapter implements EnergyAdapter {
 
   async connect(): Promise<void> {
     if (this._status === 'connected' || this._status === 'connecting') return;
-    if (!this.circuitBreaker.canExecute()) return;
+    if (!this.circuitBreaker.canExecute()) {
+      this.log.warn('Connection attempt blocked by circuit breaker', {
+        adapterId: this.id,
+        circuitState: this.circuitBreaker.currentState,
+        host: this.config.host,
+        port: this.config.port,
+      });
+      return;
+    }
     // Don't attempt connection when offline
     if (typeof navigator !== 'undefined' && !navigator.onLine) return;
     this.destroyed = false;
@@ -350,6 +376,9 @@ export abstract class BaseAdapter implements EnergyAdapter {
     this._reconnectAttempts++;
     this._totalErrors++;
 
+    // Feed failure into circuit breaker (opens after failureThreshold drops)
+    this.circuitBreaker.recordFailure();
+
     // Exponential backoff with random jitter (±25%) to prevent thundering herd
     const maxDelay = reconnectCfg.maxDelayMs ?? BASE_RECONNECT.maxDelayMs;
     const multiplier = reconnectCfg.backoffMultiplier ?? BASE_RECONNECT.backoffMultiplier;
@@ -357,14 +386,39 @@ export abstract class BaseAdapter implements EnergyAdapter {
     const delay = Math.min(this.retryDelay * jitter, maxDelay);
     this.retryDelay = Math.min(this.retryDelay * multiplier, maxDelay);
 
+    this.log.warn('Connection dropped — scheduling reconnect', {
+      adapterId: this.id,
+      attempt: this._reconnectAttempts,
+      delayMs: Math.round(delay),
+      host: this.config.host,
+      port: this.config.port,
+      circuitState: this.circuitBreaker.currentState,
+    });
+
     this.reconnectTimer = setTimeout(() => {
+      this.log.info('Attempting reconnect', {
+        adapterId: this.id,
+        attempt: this._reconnectAttempts,
+        host: this.config.host,
+        port: this.config.port,
+      });
       void this.connect();
     }, delay);
   }
 
   protected resetRetryDelay(): void {
+    const wasReconnecting = this._reconnectAttempts > 0;
     this.retryDelay = this.config.reconnect?.initialDelayMs ?? BASE_RECONNECT.initialDelayMs;
     this._reconnectAttempts = 0;
+    // Feed successful connection into the circuit breaker
+    this.circuitBreaker.recordSuccess();
+    if (wasReconnecting) {
+      this.log.info('Connection restored after reconnect', {
+        adapterId: this.id,
+        host: this.config.host,
+        circuitState: this.circuitBreaker.currentState,
+      });
+    }
   }
 
   protected clearReconnect(): void {

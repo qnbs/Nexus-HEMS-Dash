@@ -242,7 +242,11 @@ export class EEBUSAdapter extends BaseAdapter {
       // Connection timeout: abort if WebSocket doesn't open within 30s
       const connectionTimeout = setTimeout(() => {
         if (this.ws && this.ws.readyState !== WebSocket.OPEN) {
-          if (import.meta.env.DEV) console.warn('[EEBUS] Connection timeout after 30s');
+          this.log.warn('Connection timeout after 30s', {
+            adapterId: this.id,
+            host: this.config.host,
+            port: this.config.port,
+          });
           this.ws.close();
           this.setStatus('error', 'Connection timeout (30s)');
           this.emitEvent({ type: 'error', message: 'Connection timeout (30s)' });
@@ -251,8 +255,10 @@ export class EEBUSAdapter extends BaseAdapter {
 
       this.ws.onopen = () => {
         clearTimeout(connectionTimeout);
-        if (import.meta.env.DEV)
-          console.log('[EEBUS] WebSocket connected, initiating SHIP handshake');
+        this.log.debug('WebSocket connected — initiating SHIP handshake', {
+          adapterId: this.id,
+          host: this.config.host,
+        });
         this.shipState = 'cmi';
         this.emitEvent({ type: 'ship_state', shipState: 'cmi' });
         this.sendSHIPInit();
@@ -270,8 +276,11 @@ export class EEBUSAdapter extends BaseAdapter {
 
       this.ws.onclose = (event) => {
         clearTimeout(connectionTimeout);
-        if (import.meta.env.DEV)
-          console.log(`[EEBUS] WebSocket closed: ${event.code} ${event.reason}`);
+        this.log.info('WebSocket closed', {
+          adapterId: this.id,
+          code: event.code,
+          reason: event.reason || '(no reason)',
+        });
         this.stopHeartbeat();
         this.setStatus('disconnected');
         this.shipState = 'closed';
@@ -371,11 +380,17 @@ export class EEBUSAdapter extends BaseAdapter {
             isChangeable: false,
           });
         default:
-          if (import.meta.env.DEV) console.warn(`[EEBUS] Unsupported command: ${command.type}`);
+          this.log.warn('Unsupported command type', {
+            adapterId: this.id,
+            commandType: command.type,
+          });
           return false;
       }
     } catch (error) {
-      console.error('[EEBUS] Command failed:', error);
+      this.log.error('Command failed', error instanceof Error ? error : new Error(String(error)), {
+        adapterId: this.id,
+        commandType: command.type,
+      });
       return false;
     }
   }
@@ -390,7 +405,7 @@ export class EEBUSAdapter extends BaseAdapter {
    * Falls back to direct WS-based discovery if server endpoint is unavailable.
    */
   async discoverDevices(): Promise<EEBUSDiscoveredDevice[]> {
-    if (import.meta.env.DEV) console.log('[EEBUS] Starting device discovery via server...');
+    this.log.debug('Starting device discovery via server', { adapterId: this.id });
 
     try {
       const baseUrl = this.serverBaseUrl;
@@ -407,7 +422,10 @@ export class EEBUSAdapter extends BaseAdapter {
       }
       return discovered;
     } catch (err) {
-      if (import.meta.env.DEV) console.warn('[EEBUS] Server discovery failed, using cache:', err);
+      this.log.warn('Server discovery failed, using cached devices', {
+        adapterId: this.id,
+        error: err instanceof Error ? err.message : String(err),
+      });
       return Array.from(this.discoveredDevices.values());
     }
   }
@@ -508,7 +526,11 @@ export class EEBUSAdapter extends BaseAdapter {
         this.handleSimpleDataUpdate(message.data ?? message);
       }
     } catch (error) {
-      console.error('[EEBUS] Message parse error:', error);
+      this.log.error(
+        'SPINE/SHIP message parse error',
+        error instanceof Error ? error : new Error(String(error)),
+        { adapterId: this.id },
+      );
     }
   }
 
@@ -526,6 +548,7 @@ export class EEBUSAdapter extends BaseAdapter {
 
       setTimeout(() => {
         this.shipState = 'connected';
+        this.resetRetryDelay(); // feed success into circuit breaker + log restoration
         this.setStatus('connected');
         this.emitEvent({ type: 'ship_state', shipState: 'connected' });
         this.startHeartbeat();
