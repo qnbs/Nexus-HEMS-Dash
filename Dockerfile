@@ -4,7 +4,11 @@ FROM node:24-alpine@sha256:01743339035a5c3c11a373cd7c83aeab6ed1457b55da6a69e014a
 WORKDIR /app
 
 # Install deps first (layer cache)
-COPY package.json pnpm-lock.yaml ./
+# Copy all workspace manifests so pnpm resolves sub-packages correctly
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/api/package.json ./apps/api/
+COPY apps/web/package.json ./apps/web/
+COPY packages/shared-types/package.json ./packages/shared-types/
 RUN corepack enable && pnpm install --frozen-lockfile --ignore-scripts
 
 # Copy source & build
