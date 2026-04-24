@@ -146,6 +146,7 @@ export class ModbusSunSpecAdapter extends BaseAdapter {
 
   private pollTimer: ReturnType<typeof setInterval> | null = null;
   private consecutiveErrors = 0;
+  private isPollInFlight = false;
   private readonly baseUrl: string;
 
   /** Discovered device info (populated after first successful connection) */
@@ -375,16 +376,28 @@ export class ModbusSunSpecAdapter extends BaseAdapter {
     const interval = this.config.pollIntervalMs ?? DEFAULT_POLL_INTERVAL_MS;
 
     const doPoll = async () => {
+      // Guard against overlapping polls when a slow device exceeds the interval
+      if (this.isPollInFlight) return;
+      // Circuit breaker gate: skip poll while the circuit is open.
+      // Prevents repeated HTTP requests from blocking the event loop during
+      // sustained Modbus device timeouts (e.g. unreachable REST bridge).
+      if (!this.circuitBreaker.canExecute()) return;
+
+      this.isPollInFlight = true;
       try {
         const model = await this.poll();
         this.consecutiveErrors = 0;
+        this.circuitBreaker.recordSuccess();
         if (this._status !== 'connected') this.setStatus('connected');
         this.emitData(model);
       } catch {
         this.consecutiveErrors++;
+        this.circuitBreaker.recordFailure();
         if (this.consecutiveErrors >= 5) {
           this.setStatus('error', `${this.consecutiveErrors} consecutive poll failures`);
         }
+      } finally {
+        this.isPollInFlight = false;
       }
     };
 
@@ -406,7 +419,7 @@ export class ModbusSunSpecAdapter extends BaseAdapter {
       Accept: 'application/json',
     };
     if (this.config.authToken) {
-      headers['Authorization'] = `Bearer ${this.config.authToken}`;
+      headers.Authorization = `Bearer ${this.config.authToken}`;
     }
 
     const res = await fetch(url, {

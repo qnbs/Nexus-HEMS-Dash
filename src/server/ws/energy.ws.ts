@@ -6,6 +6,9 @@ import { type AuthenticatedClient, authenticateWS, type JWTScope } from '../midd
 import { setMetric, updateServerMetrics, wsMessageCount } from '../middleware/metrics.js';
 import { wsTickets } from '../routes/auth.routes.js';
 
+// Zombie connection detection: ping every 30 s, terminate if no pong received
+const HEARTBEAT_INTERVAL_MS = 30_000;
+
 // CRIT-02: Command authorization levels
 // Commands that require at minimum 'readwrite' scope
 const WRITE_COMMANDS = new Set(['SET_EV_POWER', 'SET_HEAT_PUMP_POWER', 'SET_BATTERY_POWER']);
@@ -36,6 +39,33 @@ export function setupWebSocket(wss: WebSocketServer): void {
   const requireWSAuth = process.env.NODE_ENV === 'production';
   const wsAuthMap = new WeakMap<WebSocket, AuthenticatedClient>();
   const wsRateLimits = new WeakMap<WebSocket, { count: number; resetAt: number }>();
+
+  // ─── Heartbeat: detect and terminate zombie connections ───────────────
+  // Each client is marked alive=false before every ping.
+  // If a pong arrives the flag is set back to true.
+  // If the next ping cycle finds alive=false the connection is terminated.
+  const wsAlive = new WeakMap<WebSocket, boolean>();
+
+  const heartbeat = setInterval(() => {
+    wss.clients.forEach((client) => {
+      if (wsAlive.get(client) === false) {
+        // No pong received since the last ping → zombie, hard-close
+        console.warn('[WS] Terminating zombie connection (no pong)');
+        client.terminate();
+        return;
+      }
+      wsAlive.set(client, false);
+      try {
+        client.ping();
+      } catch {
+        // Client already gone from the OS layer — terminate cleanly
+        client.terminate();
+      }
+    });
+  }, HEARTBEAT_INTERVAL_MS);
+
+  // Release the interval so Node can exit cleanly
+  wss.on('close', () => clearInterval(heartbeat));
 
   // Update mock data and broadcast every 2 seconds
   setInterval(() => {
@@ -101,6 +131,11 @@ export function setupWebSocket(wss: WebSocketServer): void {
         connectedAt: Date.now(),
       },
     );
+
+    // Mark connection alive; update on every pong
+    wsAlive.set(ws, true);
+    ws.on('pong', () => wsAlive.set(ws, true));
+
     const clientInfo = authResult
       ? `authenticated:${authResult.clientId}(scope:${authResult.scope})`
       : 'anonymous(read)';

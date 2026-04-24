@@ -15,7 +15,7 @@
  *   const evCharger = useEnergyStore((s) => s.unified.evCharger);
  */
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { create } from 'zustand';
 import { useShallow } from 'zustand/react/shallow';
 import { persistSnapshot } from '../lib/db';
@@ -504,4 +504,105 @@ export const selectAdapterStatuses = (state: EnergyStoreState) => {
  */
 export function useEnergyStore<T>(selector: (state: EnergyStoreState) => T): T {
   return useEnergyStoreBase(useShallow(selector));
+}
+
+// ─── useServerWebSocket ───────────────────────────────────────────────
+
+const WS_BACKOFF_INITIAL_MS = 1_000;
+const WS_BACKOFF_MAX_MS = 30_000;
+const WS_BACKOFF_MULTIPLIER = 2;
+
+/**
+ * useServerWebSocket — connects the browser to the HEMS Express WebSocket
+ * server with exponential backoff + jitter.
+ *
+ * Receives ENERGY_UPDATE broadcasts and merges them into useEnergyStore.
+ * Useful in mock/dev mode and as a fallback when hardware adapters are
+ * not configured. Call with `enabled={true}` to activate.
+ *
+ * Reconnect schedule: 1 s → 2 s → 4 s → 8 s → 16 s → 30 s (max).
+ * ±25 % jitter prevents thundering herd after a server restart.
+ *
+ * Mount once — e.g. in App.tsx alongside useAdapterBridge().
+ */
+export function useServerWebSocket(enabled: boolean): void {
+  const wsRef = useRef<WebSocket | null>(null);
+  const retryDelayRef = useRef(WS_BACKOFF_INITIAL_MS);
+  const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const destroyedRef = useRef(false);
+
+  useEffect(() => {
+    if (!enabled) return;
+
+    destroyedRef.current = false;
+
+    function connect(): void {
+      if (destroyedRef.current) return;
+      if (wsRef.current?.readyState === WebSocket.CONNECTING) return;
+
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const url = `${protocol}//${window.location.host}`;
+
+      let ws: WebSocket;
+      try {
+        ws = new WebSocket(url);
+      } catch {
+        scheduleReconnect();
+        return;
+      }
+      wsRef.current = ws;
+
+      ws.onopen = () => {
+        retryDelayRef.current = WS_BACKOFF_INITIAL_MS;
+      };
+
+      ws.onmessage = (event: MessageEvent) => {
+        try {
+          const msg = JSON.parse(String(event.data)) as { type: string; data: unknown };
+          if (msg.type === 'ENERGY_UPDATE') {
+            // Route server-pushed data into the adapter store under the
+            // 'server' virtual adapter ID so UI components react normally.
+            useEnergyStoreBase
+              .getState()
+              .mergeData('server' as AdapterId, msg.data as Partial<UnifiedEnergyModel>);
+          }
+        } catch {
+          // Ignore unparseable frames
+        }
+      };
+
+      ws.onclose = () => {
+        wsRef.current = null;
+        scheduleReconnect();
+      };
+
+      ws.onerror = () => {
+        ws.close();
+      };
+    }
+
+    function scheduleReconnect(): void {
+      if (destroyedRef.current) return;
+      const jitter = 0.75 + Math.random() * 0.5; // ±25 %
+      const delay = Math.min(retryDelayRef.current * jitter, WS_BACKOFF_MAX_MS);
+      retryDelayRef.current = Math.min(
+        retryDelayRef.current * WS_BACKOFF_MULTIPLIER,
+        WS_BACKOFF_MAX_MS,
+      );
+      retryTimerRef.current = setTimeout(connect, delay);
+    }
+
+    connect();
+
+    return () => {
+      destroyedRef.current = true;
+      if (retryTimerRef.current !== null) {
+        clearTimeout(retryTimerRef.current);
+        retryTimerRef.current = null;
+      }
+      wsRef.current?.close();
+      wsRef.current = null;
+      retryDelayRef.current = WS_BACKOFF_INITIAL_MS;
+    };
+  }, [enabled]);
 }
