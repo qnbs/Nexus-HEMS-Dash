@@ -9,7 +9,7 @@ export default defineConfig({
   reporter: process.env.CI ? 'github' : 'html',
   timeout: 30_000,
   use: {
-    baseURL: 'http://127.0.0.1:4173',
+    baseURL: 'http://127.0.0.1:4173/Nexus-HEMS-Dash/',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
   },
@@ -46,7 +46,7 @@ export default defineConfig({
 
   webServer: {
     command: 'pnpm preview',
-    url: 'http://127.0.0.1:4173',
+    url: 'http://127.0.0.1:4173/Nexus-HEMS-Dash/',
     reuseExistingServer: !process.env.CI,
     timeout: 120000,
   },
