@@ -1,5 +1,6 @@
 import cors from 'cors';
-import type { Express, Request } from 'express';
+import crypto from 'crypto';
+import type { Express, NextFunction, Request, Response } from 'express';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 
@@ -48,7 +49,20 @@ export function configureCors(app: Express): void {
   );
 }
 
-// ─── Security Headers (Helmet) ───────────────────────────────────────
+// ─── Request ID Tracking ─────────────────────────────────────────────
+// Adds X-Request-ID to every request/response for audit trail correlation.
+// If the client already sends one (reverse-proxy scenario), it is preserved.
+
+export function configureRequestTracking(app: Express): void {
+  app.use((_req: Request, res: Response, next: NextFunction): void => {
+    const incoming = _req.headers['x-request-id'];
+    const requestId = typeof incoming === 'string' ? incoming : crypto.randomUUID();
+    res.setHeader('X-Request-ID', requestId);
+    next();
+  });
+}
+
+// ─── Security Headers (Helmet + Permissions-Policy) ──────────────────
 
 export function configureHelmet(app: Express, isDev: boolean): void {
   // Production CSP: configurable WebSocket origins via WS_ORIGINS env var.
@@ -104,6 +118,27 @@ export function configureHelmet(app: Express, isDev: boolean): void {
       xFrameOptions: { action: 'deny' },
     }),
   );
+
+  // Permissions-Policy: lock down browser feature APIs that a HEMS dashboard
+  // has no business using. Serial/USB/Bluetooth access goes through the
+  // server-side adapters — never through the browser's raw device APIs.
+  app.use((_req: Request, res: Response, next: NextFunction): void => {
+    res.setHeader(
+      'Permissions-Policy',
+      [
+        'camera=()',
+        'microphone=()',
+        'geolocation=()',
+        'payment=()',
+        'usb=()',
+        'bluetooth=()',
+        'serial=()',
+        'hid=()',
+        'midi=()',
+      ].join(', '),
+    );
+    next();
+  });
 }
 
 // ─── Rate Limiting ───────────────────────────────────────────────────
@@ -154,10 +189,11 @@ export function configureRateLimiting(app: Express, isDev: boolean): void {
 
   if (!isDev) app.use('/api/', apiLimiter);
 
-  // Auth endpoint rate limiter: 10 req/min (stricter to prevent brute force)
+  // Auth endpoint rate limiter: 5 req/min — covers token issuance, refresh,
+  // and revocation to prevent brute-force and credential-stuffing attacks.
   const authLimiter = rateLimit({
     windowMs: 60_000 + Math.floor((Math.random() - 0.5) * 30_000),
-    max: isDev ? 0 : 10,
+    max: isDev ? 0 : 5,
     standardHeaders: true,
     legacyHeaders: false,
     message: { error: 'Too many authentication attempts, please try again later.' },
@@ -165,8 +201,26 @@ export function configureRateLimiting(app: Express, isDev: boolean): void {
     skip: skipIfTrusted,
   });
 
+  // Hardware-control endpoint rate limiter: 5 req/min — applied to any route
+  // that triggers physical hardware actions (EEBUS pairing, future relay/battery
+  // control REST endpoints). Even a valid admin token cannot bypass this cap.
+  const controlLimiter = rateLimit({
+    windowMs: 60_000 + Math.floor((Math.random() - 0.5) * 30_000),
+    max: isDev ? 0 : 5,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Too many control requests, please try again later.' },
+    keyGenerator: getClientIP,
+    skip: skipIfTrusted,
+  });
+
   if (!isDev) {
+    // Auth routes — all three mutate session state
     app.use('/api/auth/token', authLimiter);
     app.use('/api/auth/refresh', authLimiter);
+    app.use('/api/auth/revoke', authLimiter);
+
+    // Hardware-control routes
+    app.use('/api/eebus/pair', controlLimiter);
   }
 }

@@ -3,7 +3,12 @@ import http from 'http';
 import { createServer as createViteServer } from 'vite';
 import { WebSocketServer } from 'ws';
 import { initKeys } from '../../jwt-utils.js';
-import { configureCors, configureHelmet, configureRateLimiting } from './middleware/security.js';
+import {
+  configureCors,
+  configureHelmet,
+  configureRateLimiting,
+  configureRequestTracking,
+} from './middleware/security.js';
 import { createAuthRoutes } from './routes/auth.routes.js';
 import { createEebusRoutes } from './routes/eebus.routes.js';
 import { createGrafanaRoutes } from './routes/grafana.routes.js';
@@ -22,6 +27,7 @@ export async function startServer(): Promise<void> {
   configureCors(app);
   app.set('trust proxy', 1);
   app.disable('x-powered-by');
+  configureRequestTracking(app);
   configureHelmet(app, isDev);
   configureRateLimiting(app, isDev);
 
