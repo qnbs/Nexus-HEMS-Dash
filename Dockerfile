@@ -32,10 +32,10 @@ RUN apk update && apk upgrade --no-cache && rm -rf /var/cache/apk/*
 RUN addgroup -S app && adduser -S app -G app
 
 # Copy custom nginx config template
-COPY nginx.conf /etc/nginx/templates/nexus-hems.conf.template
+COPY apps/web/nginx.conf /etc/nginx/templates/nexus-hems.conf.template
 
 # Copy built assets from build stage
-COPY --from=build /app/dist /usr/share/nginx/html
+COPY --from=build /app/apps/web/dist /usr/share/nginx/html
 
 # Fix ownership for non-root user
 RUN chown -R app:app /usr/share/nginx/html && \
