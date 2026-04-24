@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Create a mock adapter class factory
 function createMockAdapterClass(id: string, name: string) {
@@ -127,12 +127,22 @@ describe('useEnergyStore', () => {
   });
 
   describe('mergeData', () => {
+    // mergeData is throttled to 250 ms — use fake timers to flush synchronously
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
+    afterEach(() => {
+      vi.runAllTimers();
+      vi.useRealTimers();
+    });
+
     it('should merge PV data into unified model', () => {
       const { mergeData } = useEnergyStoreBase.getState();
       mergeData('victron-mqtt', {
         timestamp: 1000,
         pv: { totalPowerW: 5200, yieldTodayKWh: 24.3 },
       });
+      vi.runAllTimers(); // flush 250 ms throttle
 
       const { unified, lastUpdated } = useEnergyStoreBase.getState();
       expect(unified.pv.totalPowerW).toBe(5200);
@@ -149,6 +159,7 @@ describe('useEnergyStore', () => {
       mergeData('victron-mqtt', {
         battery: { powerW: -1500, socPercent: 68, voltageV: 52.4, currentA: 28.8 },
       });
+      vi.runAllTimers(); // flush 250 ms throttle (accumulates both calls)
 
       const { unified } = useEnergyStoreBase.getState();
       expect(unified.pv.totalPowerW).toBe(5200); // Not overwritten
@@ -161,6 +172,7 @@ describe('useEnergyStore', () => {
       mergeData('victron-mqtt', {
         grid: { powerW: -800, voltageV: 231.5 },
       });
+      vi.runAllTimers(); // flush 250 ms throttle
 
       const { unified } = useEnergyStoreBase.getState();
       expect(unified.grid.powerW).toBe(-800);
