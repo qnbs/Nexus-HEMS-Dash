@@ -503,7 +503,7 @@ adapterConnectionSchema = z.object({
 
 **Never store credentials in plain text or environment variables.**
 
-All adapter credentials are encrypted via AES-GCM 256-bit and stored in IndexedDB (Dexie.js):
+All adapter credentials are encrypted via AES-GCM 256-bit with a PBKDF2-derived key (SHA-256, **600 000 iterations**) and stored in IndexedDB (Dexie.js):
 
 ```
 User Input → Zod Validation → AES-GCM Encrypt → Dexie.js (IndexedDB)

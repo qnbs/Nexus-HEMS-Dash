@@ -71,14 +71,39 @@ Source Files (*.ts, *.tsx, *.json, *.css, *.html, *.md, *.yml)
 
 ### Scripts Reference
 
-| Script              | Command                                                     | Runs                          |
-| ------------------- | ----------------------------------------------------------- | ----------------------------- |
-| `pnpm lint`         | `biome check --write=false && eslint src/ --max-warnings 0` | Biome check + React ESLint    |
-| `pnpm lint:fix`     | `biome check --write && eslint src/ --fix --max-warnings 0` | Biome fix + ESLint fix        |
-| `pnpm format`       | `biome format --write src/`                                 | Biome format all src files    |
-| `pnpm format:check` | `biome format --write=false src/`                           | Biome format check (no write) |
-| `pnpm type-check`   | `tsc --noEmit`                                              | TypeScript type checking      |
-| `pnpm verify:basis` | `pnpm type-check && pnpm lint && pnpm test:run`             | Full local verification       |
+| Script              | Command                                                     | Runs                             |
+| ------------------- | ----------------------------------------------------------- | -------------------------------- |
+| `pnpm lint`         | `biome check --write=false && eslint src/ --max-warnings 0` | Biome check + React ESLint       |
+| `pnpm lint:fix`     | `biome check --write && eslint src/ --fix --max-warnings 0` | Biome fix + ESLint fix           |
+| `pnpm format`       | `biome format --write src/`                                 | Biome format all src files       |
+| `pnpm format:check` | `biome format --write=false src/`                           | Biome format check (no write)    |
+| `pnpm type-check`   | `tsc --noEmit`                                              | TypeScript type checking         |
+| `pnpm verify:basis` | `pnpm type-check && pnpm lint && pnpm test:run`             | Full local verification          |
+| `pnpm bench`        | `./scripts/bench-tooling.sh`                                | Toolchain wall-clock + RSS bench |
+
+---
+
+## VS Code Integration
+
+Recommended extensions (`.vscode/extensions.json`):
+
+- **`biomejs.biome`** — Biome language server (formatter + linter); set as `editor.defaultFormatter` for TS/TSX/JSON/CSS
+- **`dbaeumer.vscode-eslint`** — ESLint extension for React-specific rule highlighting
+
+Settings (`settings.json` in workspace):
+
+```json
+{
+  "editor.defaultFormatter": "biomejs.biome",
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports.biome": "explicit"
+  },
+  "[typescript]": { "editor.defaultFormatter": "biomejs.biome" },
+  "[typescriptreact]": { "editor.defaultFormatter": "biomejs.biome" },
+  "[json]": { "editor.defaultFormatter": "biomejs.biome" }
+}
+```
 
 ---
 

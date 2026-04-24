@@ -1,6 +1,6 @@
 # Security Architecture — Nexus-HEMS-Dash
 
-> Version 1.2 · April 2026
+> Version 1.3 · April 2026
 
 ---
 
@@ -64,6 +64,18 @@
 - **JWT** (`jose`) — stateless auth tokens, HS256, 24 h expiry; secret entropy validated at startup
   - `jwt-utils.ts`: warns on low-entropy secrets (< 128 bits), short keys (< 64 chars), dictionary words
   - Secret sources: `JWT_SECRET` env var → Docker secrets file → auto-generated (dev only)
+  - `jti`, `iss`, `aud` claims added to all tokens; JTI revocation via `POST /api/auth/revoke`
+  - Zero-downtime key rotation via `JWT_SECRET_NEW` env var
+- **JWT Scopes** — three-tier authorization model:
+
+| Scope       | Token Issuance                     | Permitted Operations                                  |
+| ----------- | ---------------------------------- | ----------------------------------------------------- |
+| `read`      | Default for anonymous/public flows | Receive WebSocket `ENERGY_UPDATE` messages only        |
+| `readwrite` | `POST /api/auth/token` default     | Send control commands (`SET_EV_POWER`, etc.)           |
+| `admin`     | Requires elevated API key          | EEBUS pairing, token revocation, system configuration |
+
+- **Single-use WS Tickets** — `POST /api/auth/ws-ticket` issues 60-second single-use tickets; WebSocket connections prefer `?ticket=` over `?token=` to avoid long-lived tokens in URLs
+- **Per-IP WebSocket Limit** — maximum 10 concurrent WebSocket connections per IP address; excess connections rejected with HTTP 429
 - No session storage; tokens validated per request
 - Production baseline runs on Node.js 24 LTS
 
@@ -86,7 +98,7 @@
 ### AI API Keys — AES-GCM in IndexedDB
 
 ```
-User enters API key → derive AES-256 key via PBKDF2 (100k iterations)
+User enters API key → derive AES-256 key via PBKDF2 (600 000 iterations)
    → encrypt with AES-GCM (random 96-bit IV)
    → store { ciphertext, iv, salt } in Dexie.js
    → key material never leaves browser
@@ -94,13 +106,13 @@ User enters API key → derive AES-256 key via PBKDF2 (100k iterations)
 
 **Implementation**: `src/lib/ai-keys.ts` + `src/lib/crypto.ts`
 
-| Property       | Value                            |
-| -------------- | -------------------------------- |
-| Algorithm      | AES-256-GCM                      |
-| Key Derivation | PBKDF2 (SHA-256, 100k iter)      |
-| IV             | 96-bit, cryptographically random |
-| Storage        | IndexedDB via Dexie.js           |
-| Key Rotation   | Manual (user re-enters key)      |
+| Property       | Value                              |
+| -------------- | ---------------------------------- |
+| Algorithm      | AES-256-GCM                        |
+| Key Derivation | PBKDF2 (SHA-256, 600 000 iter)     |
+| IV             | 96-bit, cryptographically random   |
+| Storage        | IndexedDB via Dexie.js             |
+| Key Rotation   | Manual (user re-enters key)        |
 
 ### Credential Vault Pattern
 
@@ -146,11 +158,7 @@ frame-ancestors 'none';
 cross-origin-embedder-policy: credentialless;
 ```
 
-> **Production**: `ws://localhost:*` is replaced by `WS_ORIGINS` env var. Never expose dev WebSocket origins in production.
-
-```
-
-```
+> **Production**: `ws://localhost:*` is replaced by the `WS_ORIGINS` env var. Never expose development WebSocket origins in production.
 
 ### CORS
 
@@ -222,16 +230,16 @@ Each adapter uses `src/core/circuit-breaker.ts`:
 
 ### CI/CD Pipeline (14 workflows)
 
-| Tool                   | Purpose                                                         |
-| ---------------------- | --------------------------------------------------------------- |
-| **CodeQL**             | Static analysis (JavaScript/TypeScript)                         |
-| **Grype/Snyk**         | Container + filesystem vulnerability scan (Trivy-Ersatz, folgt) |
-| **Gitleaks**           | Secret detection (pre-commit + CI)                              |
-| **anti-trojan-source** | Unicode Bidi character detection                                |
-| **pnpm audit**         | Dependency vulnerability check                                  |
-| **OpenSSF Scorecard**  | Supply chain security rating                                    |
-| **Renovate**           | Automated dependency updates                                    |
-| **Chromatic**          | Visual regression + Storybook CI                                |
+| Tool                   | Purpose                                                               |
+| ---------------------- | --------------------------------------------------------------------- |
+| **CodeQL**             | Static analysis (JavaScript/TypeScript)                               |
+| **Grype/Snyk**         | Container + filesystem vulnerability scanning                         |
+| **Gitleaks**           | Secret detection (pre-commit + CI)                                    |
+| **anti-trojan-source** | Unicode Bidi character detection                                      |
+| **pnpm audit**         | Dependency vulnerability check                                        |
+| **OpenSSF Scorecard**  | Supply chain security rating                                          |
+| **Renovate**           | Automated dependency updates                                          |
+| **Chromatic**          | Visual regression + Storybook CI                                      |
 
 ### Runtime Governance
 

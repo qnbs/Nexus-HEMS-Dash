@@ -1,65 +1,62 @@
 ---
-name: "\U0001F680 Feature Request"
-about: Eine neue Funktion oder Verbesserung vorschlagen
+name: "🚀 Feature Request"
+about: Suggest a new feature or improvement
 title: '[Feature]: '
 labels: ['enhancement']
 assignees: 'qnbs'
 ---
 
-## Zusammenfassung
+## Summary
 
-<!-- Eine klare und präzise Beschreibung der gewünschten Funktion. -->
+<!-- A clear and concise description of the requested feature. -->
 
 ## Motivation
 
-<!-- Welches Problem löst dieses Feature? Warum ist es wichtig? -->
+<!-- What problem does this feature solve? Why is it important? -->
 
-## Gewünschtes Verhalten
+## Desired Behavior
 
-<!-- Beschreibe, wie die Funktion funktionieren soll. -->
+<!-- Describe how the feature should work. -->
 
-## Vorgeschlagene Lösung
+## Proposed Solution
 
-<!-- Falls du eine Idee zur Umsetzung hast, beschreibe sie hier. -->
+<!-- If you have an idea for the implementation, describe it here. -->
 
-## Alternativen
+## Alternatives Considered
 
-<!-- Welche alternativen Lösungen oder Workarounds hast du in Betracht gezogen? -->
+<!-- What alternative solutions or workarounds have you considered? -->
 
-## Betroffener Bereich
+## Affected Area
 
-<!-- Wähle den primär betroffenen Bereich: -->
+<!-- Select the primarily affected area: -->
 
-- [ ] Dashboard / Startseite
-- [ ] Sankey-Energieflussdiagramm
-- [ ] KNX-Grundriss
-- [ ] Tarife / Preisanzeige
-- [ ] EV-Laden / OCPP
+- [ ] Dashboard / Command Hub
+- [ ] Sankey Energy Flow Diagram
+- [ ] KNX Floorplan
+- [ ] Tariffs / Price Display
+- [ ] EV Charging / OCPP
 - [ ] Adapter (Victron / Modbus / KNX / EEBUS / OCPP)
-- [ ] AI-Optimierer / Vorhersagen
-- [ ] Einstellungen / Konfiguration
-- [ ] PWA / Offline-Funktionalität
-- [ ] Barrierefreiheit (a11y)
-- [ ] Lokalisierung (i18n)
-- [ ] Datenexport / Berichte
+- [ ] Contrib Adapter (Home Assistant / Matter / Zigbee2MQTT / Shelly)
+- [ ] AI Optimizer / Predictions / MPC
+- [ ] Settings / Configuration
+- [ ] PWA / Offline Functionality
+- [ ] Accessibility (a11y)
+- [ ] Localization (i18n)
+- [ ] Data Export / Reports
 - [ ] API / Integration
-- [ ] Neuer Adapter / Protokoll
-- [ ] Sonstiges: \_\_\_
+- [ ] New Adapter / Protocol
+- [ ] Other: ___
 
-## Akzeptanzkriterien
+## Acceptance Criteria
 
-<!-- Wann gilt dieses Feature als fertig? -->
+<!-- When is this feature considered done? -->
 
-- [ ] Kriterium 1
-- [ ] Kriterium 2
-- [ ] i18n: Strings in `de.ts` und `en.ts` vorhanden
-- [ ] a11y: WCAG 2.2 AA konform
-- [ ] Tests: Unit-Tests geschrieben
+- [ ] Criterion 1
+- [ ] Criterion 2
+- [ ] i18n: strings present in `de.ts` and `en.ts`
+- [ ] a11y: WCAG 2.2 AA compliant
+- [ ] Tests: unit tests written
 
-## Mockups / Referenzen
+## Mockups / References
 
-<!-- Falls vorhanden, füge Wireframes, Screenshots oder Links zu ähnlichen Implementierungen hinzu. -->
-
-## Zusätzlicher Kontext
-
-<!-- Weitere Informationen, die bei der Umsetzung helfen könnten. -->
+<!-- If applicable, add wireframes, mockups, or links to reference implementations. -->

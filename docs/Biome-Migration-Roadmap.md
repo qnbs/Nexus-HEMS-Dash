@@ -1,9 +1,11 @@
 # Biome-First Toolchain Migration — Roadmap & Architecture Decision Record
 
-**Status:** Implemented
+**Status:** ✅ Migration Complete
 **Date:** 2026-04-20
 **ADR:** Build toolchain — Biome as primary linter + formatter
 **Scope:** Dev toolchain, CI/CD, pre-commit hooks, editor integration
+
+> **Note**: This document serves as the Architecture Decision Record (ADR) for the Biome migration. Section 2 describes the state *before* the migration (retained for historical context). Section 3 describes the current target state, which is now fully implemented.
 
 ---
 
@@ -22,7 +24,9 @@ Nexus-HEMS-Dash migrates from a dual-tool stack (ESLint + Prettier) to a **Biome
 
 ---
 
-## 2. Current State (Before Migration)
+## 2. Pre-Migration State (Historical Reference)
+
+> This section documents the toolchain *before* migration. Kept for historical context only. The current state is described in Section 3.
 
 ### Tools in Use
 

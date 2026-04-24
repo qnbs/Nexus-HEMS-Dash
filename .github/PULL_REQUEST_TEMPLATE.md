@@ -1,62 +1,61 @@
-## Beschreibung
+## Description
 
-<!-- Eine klare Beschreibung der Änderungen in diesem PR. -->
+<!-- A clear and concise description of the changes in this PR. -->
 
-Fixes #<!-- Issue-Nummer -->
+Fixes #<!-- issue number -->
 
-## Art der Änderung
+## Type of Change
 
-- [ ] 🐛 Bugfix (nicht-breaking, behebt ein Issue)
-- [ ] ✨ Neues Feature (nicht-breaking, fügt Funktionalität hinzu)
-- [ ] 💥 Breaking Change (Fix oder Feature, das bestehende Funktionalität ändert)
-- [ ] 📝 Dokumentation
-- [ ] ♻️ Refactoring (kein funktionaler Unterschied)
-- [ ] 🎨 Style / UI (CSS, Layout, Design)
-- [ ] ⚡ Performance
-- [ ] 🔒 Sicherheit
-- [ ] ♿ Barrierefreiheit (a11y)
-- [ ] 🌐 Lokalisierung (i18n)
+- [ ] 🐛 Bug fix (non-breaking, fixes an issue)
+- [ ] ✨ New feature (non-breaking, adds functionality)
+- [ ] 💥 Breaking change (fix or feature that changes existing behavior)
+- [ ] 📝 Documentation update
+- [ ] ♻️ Refactor (no functional change)
+- [ ] 🎨 Style / UI (CSS, layout, design)
+- [ ] ⚡ Performance improvement
+- [ ] 🔒 Security fix
+- [ ] ♿ Accessibility (a11y)
+- [ ] 🌐 Localization (i18n)
 - [ ] 🧪 Tests
 - [ ] 🔧 CI / Build / Tooling
 
-## Checkliste
+## Checklist
 
-### Allgemein
+### General
 
-- [ ] Mein Code folgt dem Code-Stil dieses Projekts
-- [ ] Ich habe ein Self-Review meines Codes durchgeführt
-- [ ] Mein Commit folgt [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `docs:`, etc.)
+- [ ] My code follows the style guidelines of this project
+- [ ] I have performed a self-review of my code
+- [ ] My commit follows [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `docs:`, etc.)
 
-### Qualität
+### Quality
 
-- [ ] `pnpm type-check` — keine TypeScript-Fehler
-- [ ] `pnpm lint` — keine ESLint-Warnungen
-- [ ] `pnpm format:check` — Formatting korrekt
-- [ ] Bestehende Tests bestehen
-- [ ] Ich habe neue Tests für meine Änderungen geschrieben (falls zutreffend)
+- [ ] `pnpm type-check` — no TypeScript errors
+- [ ] `pnpm lint` — zero Biome + ESLint warnings (`--max-warnings 0`)
+- [ ] Existing tests pass
+- [ ] I have written new tests for my changes (if applicable)
 
-### i18n / a11y (Pflicht)
+### i18n / a11y (mandatory)
 
-- [ ] Alle neuen Strings sind in `src/locales/de.ts` und `src/locales/en.ts` mit `t()` lokalisiert
-- [ ] WCAG 2.2 AA: korrekte ARIA-Attribute, Tastaturnavigation, Farbkontraste
-- [ ] Keine hardcodierten Strings in Komponenten
+- [ ] All new user-facing strings are localized in both `src/locales/de.ts` and `src/locales/en.ts` using `t()`
+- [ ] WCAG 2.2 AA: correct ARIA attributes, keyboard navigation, color contrast
+- [ ] No hardcoded display strings in components
 
-### Spezifisch (falls zutreffend)
+### Specific (if applicable)
 
-- [ ] Sankey-Diagramm / D3.js: nicht gebrochen
-- [ ] KNX-Grundriss: nicht gebrochen
-- [ ] Zustand-Store: Neuer State in `useAppStore` (UI/Settings) oder `useEnergyStore` (Energie-Daten)
-- [ ] Adapter: Implementiert `EnergyAdapter`-Interface
-- [ ] PWA: Offline-Funktionalität getestet
+- [ ] Sankey diagram / D3.js: not broken
+- [ ] KNX floorplan: not broken
+- [ ] Zustand store: new state added to `useAppStore` (UI/settings) or `useEnergyStore` (energy data)
+- [ ] Adapter: implements `EnergyAdapter` interface
+- [ ] PWA: offline functionality tested
 
 ## Screenshots / Demo
 
-<!-- Falls zutreffend, füge vorher/nachher Screenshots oder eine kurze Demo hinzu. -->
+<!-- If applicable, add before/after screenshots or a short demo. -->
 
-| Vorher | Nachher |
-| ------ | ------- |
-|        |         |
+| Before | After |
+| ------ | ----- |
+|        |       |
 
-## Zusätzliche Hinweise
+## Additional Notes
 
-<!-- Informationen für den Reviewer: Risiken, offene Fragen, Abhängigkeiten. -->
+<!-- Information for the reviewer: risks, open questions, dependencies. -->

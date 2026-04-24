@@ -16,13 +16,19 @@
 - `polar-mist`: `#eaf7ff` (Light mode backgrounds)
 - `solar-sand`: `#fff3dc` (Light mode surfaces)
 
-## 🧩 Utility Classes
+## Utility Classes
 
 ### Glassmorphism
 
 ```tsx
 <div className="glass-panel">
   <!-- Rounded 3xl, backdrop-blur-3xl, theme-aware border -->
+</div>
+<div className="glass-panel-strong">
+  <!-- Higher opacity, blur-3xl + bg-opacity for modals/dropdowns -->
+</div>
+<div className="glass-panel-hover">
+  <!-- glass-panel + hover:bg-white/10 + transition for interactive cards -->
 </div>
 ```
 
@@ -107,15 +113,17 @@
 <button className="focus-ring">Accessible Button</button>
 ```
 
-## 🌈 Themes
+## Themes
 
 ### Available Themes (5)
 
-1. **cyber-energy-dark** (default) — High-contrast dark mode with neon green
-2. **cyber-energy** — Vibrant light mode with cyan and emerald accents
-3. **solar-light** — Warm light mode with solar orange tones
-4. **minimal-white** — Clean modern light theme with slate grays
-5. **night-mode** — Deep dark mode with blue accents
+| Label         | ID              | Mode  | Aesthetic                                      |
+| :------------ | :-------------- | :---- | :--------------------------------------------- |
+| Ocean Deep    | `ocean-dark`    | Dark  | Deep ocean blues + neon accents **(default)**  |
+| Energy Dark   | `energy-dark`   | Dark  | Vibrant greens + electric highlights           |
+| Solar Light   | `solar-light`   | Light | Warm solar tones                               |
+| Minimal       | `minimal-white` | Light | Ultra-clean minimalism with slate grays        |
+| Forest        | `nature-green`  | Dark  | Forest greens + earth tones                    |
 
 ### Theme Features
 
@@ -157,7 +165,21 @@ Each theme provides CSS variables:
 <div className="bg-(--color-background) text-(--color-text)">Dynamic theme-aware content</div>
 ```
 
-## 📐 Spacing & Sizing
+## Spacing
+
+### 8pt Grid System
+
+All spacing values are multiples of 8 pt for visual rhythm:
+
+| Token        | Value   | CSS Custom Property |
+| :----------- | :------ | :------------------ |
+| `space-xs`   | 4px     | `--space-xs`        |
+| `space-sm`   | 8px     | `--space-sm`        |
+| `space-md`   | 16px    | `--space-md`        |
+| `space-lg`   | 24px    | `--space-lg`        |
+| `space-xl`   | 32px    | `--space-xl`        |
+| `space-2xl`  | 48px    | `--space-2xl`       |
+| `space-3xl`  | 64px    | `--space-3xl`       |
 
 ### Extended Spacing
 
@@ -196,7 +218,23 @@ Each theme provides CSS variables:
 </motion.div>
 ```
 
-## 🔤 Typography
+## Typography
+
+### Fluid Type Scale
+
+All headings and body text use `clamp()`-based fluid type — scales smoothly between viewport widths:
+
+| Class             | Formula (clamp)                     | Approximate range |
+| :---------------- | :---------------------------------- | :---------------- |
+| `fluid-text-xs`   | `clamp(0.65rem, 1.5vw, 0.75rem)`   | 10.4 – 12px       |
+| `fluid-text-sm`   | `clamp(0.75rem, 1.8vw, 0.875rem)`  | 12 – 14px         |
+| `fluid-text-base` | `clamp(0.875rem, 2vw, 1rem)`       | 14 – 16px         |
+| `fluid-text-lg`   | `clamp(1rem, 2.5vw, 1.125rem)`     | 16 – 18px         |
+| `fluid-text-xl`   | `clamp(1.125rem, 3vw, 1.25rem)`    | 18 – 20px         |
+| `fluid-text-2xl`  | `clamp(1.25rem, 4vw, 1.5rem)`      | 20 – 24px         |
+| `fluid-text-3xl`  | `clamp(1.5rem, 5vw, 1.875rem)`     | 24 – 30px         |
+| `fluid-text-4xl`  | `clamp(1.875rem, 6vw, 2.25rem)`    | 30 – 36px         |
+| `fluid-text-5xl`  | `clamp(2.25rem, 8vw, 3rem)`        | 36 – 48px         |
 
 ### Font Families
 

@@ -1,68 +1,68 @@
 ---
-name: "\U0001F41B Bug Report"
-about: Einen Fehler melden, um das Projekt zu verbessern
+name: "🐛 Bug Report"
+about: Report a bug to help us improve the project
 title: '[Bug]: '
 labels: ['bug', 'triage']
 assignees: 'qnbs'
 ---
 
-## Fehlerbeschreibung
+## Bug Description
 
-<!-- Eine klare und präzise Beschreibung des Fehlers. -->
+<!-- A clear and concise description of the bug. -->
 
-## Schritte zur Reproduktion
+## Steps to Reproduce
 
-1. Gehe zu '...'
-2. Klicke auf '...'
-3. Scrolle zu '...'
-4. Fehler tritt auf
+1. Go to '...'
+2. Click on '...'
+3. Scroll to '...'
+4. Bug occurs
 
-## Erwartetes Verhalten
+## Expected Behavior
 
-<!-- Was hättest du erwartet? -->
+<!-- What did you expect to happen? -->
 
-## Tatsächliches Verhalten
+## Actual Behavior
 
-<!-- Was passiert stattdessen? -->
+<!-- What happens instead? -->
 
-## Screenshots / Aufnahmen
+## Screenshots / Recordings
 
-<!-- Falls zutreffend, füge Screenshots oder Bildschirmaufnahmen hinzu. -->
+<!-- If applicable, add screenshots or screen recordings. -->
 
-## Umgebung
+## Environment
 
-- **Browser**: [z.B. Chrome 120, Firefox 121, Safari 17]
-- **Betriebssystem**: [z.B. Windows 11, macOS 14, Ubuntu 24.04]
-- **Gerätetyp**: [z.B. Desktop, Tablet, Smartphone]
-- **Bildschirmauflösung**: [z.B. 1920×1080, 375×812]
-- **App-Version / Commit**: [z.B. v4.3.0 oder Commit-Hash]
-- **Installationsart**: [PWA / Browser / Docker / Tauri Desktop]
+- **Browser**: [e.g. Chrome 124, Firefox 125, Safari 17]
+- **Operating System**: [e.g. Windows 11, macOS 14, Ubuntu 24.04]
+- **Device Type**: [e.g. Desktop, Tablet, Smartphone]
+- **Screen Resolution**: [e.g. 1920×1080, 375×812]
+- **App Version / Commit**: [e.g. v5.0.0 or commit hash]
+- **Installation Type**: [PWA / Browser / Docker / Tauri Desktop / Capacitor Mobile]
 
-## Betroffener Bereich
+## Affected Area
 
-<!-- Wähle den primär betroffenen Bereich (Mehrfachauswahl möglich): -->
+<!-- Select the primarily affected area (multiple selections allowed): -->
 
-- [ ] Dashboard / Startseite
-- [ ] Sankey-Energieflussdiagramm
-- [ ] KNX-Grundriss
-- [ ] Tarife / Preisanzeige
-- [ ] EV-Laden / OCPP
+- [ ] Dashboard / Command Hub
+- [ ] Sankey Energy Flow Diagram
+- [ ] KNX Floorplan
+- [ ] Tariffs / Price Display
+- [ ] EV Charging / OCPP
 - [ ] Adapter (Victron / Modbus / KNX / EEBUS / OCPP)
-- [ ] AI-Optimierer
-- [ ] Einstellungen
-- [ ] PWA / Offline-Funktionalität
-- [ ] Barrierefreiheit (a11y)
-- [ ] Lokalisierung (i18n)
-- [ ] Sonstiges: \_\_\_
+- [ ] Contrib Adapter (Home Assistant / Matter / Zigbee2MQTT / Shelly)
+- [ ] AI Optimizer / MPC
+- [ ] Settings
+- [ ] PWA / Offline Functionality
+- [ ] Accessibility (a11y)
+- [ ] Localization (i18n)
+- [ ] Other: ___
 
-## Konsolen-Logs
+## Console Logs
 
-<!-- Öffne die Browser-Konsole (F12 → Console) und füge relevante Fehler ein: -->
+<!-- Open the browser console (F12 → Console) and paste any relevant errors: -->
 
 ```
-(Konsolen-Ausgabe hier einfügen)
 ```
 
-## Zusätzlicher Kontext
+## Additional Context
 
-<!-- Weitere Informationen, die bei der Diagnose helfen könnten. -->
+<!-- Any further information that could help diagnose the issue. -->

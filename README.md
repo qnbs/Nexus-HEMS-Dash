@@ -111,11 +111,13 @@ The Codespace includes Node.js 24, pnpm, Playwright, Docker, and all VS Code ext
 All AI API keys are managed via the BYOK Settings page (`/settings/ai`) with AES-GCM 256-bit encryption — no `.env` file needed for AI features.
 
 ```bash
-JWT_SECRET=...               # HMAC-SHA256 secret (min 32 chars, 64+ recommended)
+JWT_SECRET=...               # HMAC-SHA256 secret (min 64 chars, cryptographically random)
 API_KEYS=...                 # Comma-separated API keys for /api/auth/token (production)
 CORS_ORIGINS=https://...     # Optional: additional CORS origins
-WS_ORIGINS=wss://...         # Optional: WebSocket origins for CSP connect-src (production)
+WS_ORIGINS=wss://...         # Required in production: WebSocket origins for CSP connect-src
+ADAPTER_MODE=mock            # Optional: 'mock' for demo mode, 'live' for real hardware (default: live)
 RATE_LIMIT_TRUSTED_IPS=...   # Optional: IPs exempt from rate limiting (load balancers)
+PROMETHEUS_BEARER_TOKEN=...  # Optional: Bearer token for /metrics endpoint authentication
 PORT=3000                    # Default: 3000
 ```
 
@@ -233,13 +235,13 @@ cd src-tauri && cargo tauri build
 
 **Neo-Energy Cyber-Glassmorphism** with 5 themes:
 
-| Theme         | Mode  | Aesthetic                                 |
-| :------------ | :---- | :---------------------------------------- |
-| OceanDeep     | Dark  | Deep ocean blues + neon accents (default) |
-| Cyber Energy  | Dark  | Vibrant greens + electric highlights      |
-| Solar Light   | Light | Warm solar tones                          |
-| Minimal White | Light | Ultra-clean minimalism                    |
-| Nature Green  | Dark  | Forest greens + earth tones               |
+| Theme         | ID              | Mode  | Aesthetic                                  |
+| :------------ | :-------------- | :---- | :----------------------------------------- |
+| Ocean Deep    | `ocean-dark`    | Dark  | Deep ocean blues + neon accents (default)  |
+| Energy Dark   | `energy-dark`   | Dark  | Vibrant greens + electric highlights       |
+| Solar Light   | `solar-light`   | Light | Warm solar tones                           |
+| Minimal       | `minimal-white` | Light | Ultra-clean minimalism                     |
+| Forest        | `nature-green`  | Dark  | Forest greens + earth tones                |
 
 Brand colors: `neon-green` (#22ff88) · `electric-blue` (#00f0ff) · `power-orange` (#ff8800). See [DESIGN-SYSTEM.md](DESIGN-SYSTEM.md) for the full pattern catalog.
 

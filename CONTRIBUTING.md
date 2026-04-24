@@ -56,11 +56,13 @@ The project uses **Biome** as the primary linter and formatter, with a minimal E
 pnpm lint             # Biome check + React ESLint (zero-warning policy)
 pnpm lint:fix         # Biome auto-fix + ESLint fix
 pnpm format           # Biome format --write (all src files)
-pnpm format:check     # Biome format check (no write)
 pnpm type-check       # TypeScript strict mode
 pnpm test:run         # Unit tests (all must pass)
 pnpm build            # Production build
+pnpm verify:basis     # Full local loop: type-check + lint + test:run
 ```
+
+> `pnpm lint` subsumes format checking — `format:check` does not need to be run separately.
 
 **Toolchain architecture:**
 
@@ -76,10 +78,10 @@ See [docs/Toolchain-Architecture.md](docs/Toolchain-Architecture.md) for the ful
 
 All user-facing text must be translated in both locales:
 
+- [src/locales/de.ts](src/locales/de.ts) — German (**fallback locale** — always complete; missing keys fall back to German)
 - [src/locales/en.ts](src/locales/en.ts) — English
-- [src/locales/de.ts](src/locales/de.ts) — German
 
-Use `useTranslation()` hook, never hardcode strings.
+Use `useTranslation()` hook, never hardcode strings. Both files must be updated simultaneously.
 
 ### Accessibility (WCAG 2.2 AA)
 
@@ -89,9 +91,17 @@ Use `useTranslation()` hook, never hardcode strings.
 - Keyboard navigation (Tab, Enter, Escape)
 - Screen reader support (`aria-live` for real-time data)
 
+### React Compiler Compliance
+
+This project uses the **React Compiler** (`babel-plugin-react-compiler`) for automatic memoization.
+
+- **Never add** `useMemo`, `useCallback`, or `memo()` unless you have confirmed the React Compiler cannot handle the specific case
+- Run `pnpm lint` — `react-compiler/react-compiler` rule will flag any Compiler-incompatible patterns
+- See [React Compiler docs](https://react.dev/learn/react-compiler) for the Rules of React
+
 ### Themes
 
-5 themes are available. Always use CSS variables (`var(--color-*)`) instead of hardcoded colors. See [DESIGN-SYSTEM.md](DESIGN-SYSTEM.md).
+5 themes are available (IDs: `ocean-dark`, `energy-dark`, `solar-light`, `minimal-white`, `nature-green`). Always use CSS variables (`var(--color-*)`) instead of hardcoded colors. See [DESIGN-SYSTEM.md](DESIGN-SYSTEM.md).
 
 ### Security
 
@@ -106,7 +116,14 @@ Use `useTranslation()` hook, never hardcode strings.
 2. Create a focused branch such as `feat/my-feature`, `fix/my-bug`, or `docs/my-update`
 3. Make your changes following the guidelines above
 4. Ensure all required checks pass: `pnpm lint && pnpm type-check && pnpm test:run && pnpm build`
-5. Commit with Conventional Commits: `feat:`, `fix:`, `test:`, `docs:`, `refactor:`
+5. Commit with Conventional Commits: `feat:`, `fix:`, `test:`, `docs:`, `refactor:`, `chore:`, `perf:`, `ci:`
+
+   Common scopes: `adapter`, `store`, `sankey`, `floorplan`, `ui`, `i18n`, `a11y`, `security`, `server`, `pwa`, `tauri`, `deps`
+
+   Examples:
+   - `feat(adapter): add Zigbee2MQTT retry logic`
+   - `fix(sankey): correct node label overlap at narrow viewport`
+   - `docs(security): update PBKDF2 iterations to 600k`
 6. Open a PR against `main`
 7. Resolve all review threads and keep the branch up to date with `main`
 

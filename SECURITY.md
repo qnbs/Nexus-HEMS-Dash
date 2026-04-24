@@ -30,12 +30,15 @@ This project employs multiple layers of security:
 - **Supply Chain**: OpenSSF Scorecard, Renovate automated updates, Dependabot
 - **CI Hardening**: GitHub Actions pinned to commit SHA, mandatory security workflow gate
 - **Deploy Governance**: GitHub Pages deploy requires manual `workflow_dispatch` confirmation (`approveDeploy=DEPLOY`)
-- **Container Security**: Grype/Snyk image scanning (Trivy removed), read-only containers, non-root user, per-IP connection limits (`limit_conn`)
+- **Container Security**: Grype/Snyk image scanning, read-only containers, non-root user, per-IP nginx connection limits (`limit_conn 50`), per-IP WebSocket connection limit (max 10 per IP)
 - **Anti-Trojan-Source**: Unicode Bidi character detection
 - **Pre-commit Hooks**: Gitleaks, detect-private-key, anti-trojan-source
 - **Conventional Commits**: Enforced via commitlint
 - **JWT Entropy Validation**: `jwt-utils.ts` warns on low-entropy secrets, dictionary words, and short keys at startup (production only)
-- **Auth Rate Limiting**: `/api/auth/token` and `/api/auth/refresh` limited to 10 req/min per IP (brute-force protection)
+- **JWT Scope Tiers**: Three authorization levels — `read` (monitoring only), `readwrite` (control commands), `admin` (system configuration, pairing)
+- **JTI Revocation**: `POST /api/auth/revoke` immediately invalidates a token by its JTI claim across all guarded endpoints
+- **Single-Use WS Tickets**: `POST /api/auth/ws-ticket` issues 60-second single-use WebSocket tickets; prefer `?ticket=` over `?token=` for WebSocket connections to avoid long-lived tokens in URLs
+- **Auth Rate Limiting**: All `/api/auth/*` endpoints limited to 10 req/min per IP (brute-force protection)
 - **Trusted-IP Bypass**: `RATE_LIMIT_TRUSTED_IPS` env var allows internal load balancers to bypass rate limits safely
 
 ## Runtime Baselines
@@ -43,6 +46,19 @@ This project employs multiple layers of security:
 - **Production runtime**: Node.js 24 LTS (Docker + CI release path)
 - **Runtime framework**: Express 5.x + `@types/express` 5.x
 - **Package manager**: pnpm 10.33.0 (pinned via `packageManager` field and corepack)
+
+## Environment Variables (Security-Relevant)
+
+| Variable                  | Required in Production | Description                                                           |
+| ------------------------- | ---------------------- | --------------------------------------------------------------------- |
+| `JWT_SECRET`              | **Yes**                | HS256 signing key, minimum 64 chars, cryptographically random         |
+| `API_KEYS`                | **Yes**                | Comma-separated API keys for `/api/auth/token` (generated via `openssl rand -hex 32`) |
+| `WS_ORIGINS`              | **Yes**                | Allowed WebSocket origins (replaces `ws://localhost:*` in production) |
+| `GRAFANA_PASSWORD`        | Yes (if Grafana used)  | Grafana admin password — no default, docker-compose fails without it  |
+| `ADAPTER_MODE`            | No (default: `live`)   | `mock` for demo/testing, `live` for real hardware adapters            |
+| `PROMETHEUS_BEARER_TOKEN` | No                     | Bearer token for Prometheus scrape endpoint (`/metrics`) authentication |
+| `CORS_ORIGINS`            | No                     | Additional CORS-allowed origins beyond deployment domain              |
+| `RATE_LIMIT_TRUSTED_IPS`  | No                     | Comma-separated IPs that bypass rate limiting (internal proxies)      |
 
 ## Encryption & Data Handling
 

@@ -1,6 +1,6 @@
 # Deployment Checklist — Nexus-HEMS-Dash
 
-> Vollständige Checkliste für Produktions-Deployments mit TLS, Reverse-Proxy und Failover.
+> Complete checklist for production deployments with TLS, reverse proxy, and failover.
 
 ---
 
@@ -8,7 +8,7 @@
 
 1. [Pre-Deployment](#pre-deployment)
 2. [TLS / HTTPS](#tls--https)
-3. [Reverse-Proxy (nginx)](#reverse-proxy-nginx)
+3. [Reverse Proxy (nginx)](#reverse-proxy-nginx)
 4. [Docker Production](#docker-production)
 5. [GitHub Pages](#github-pages)
 6. [Tauri Desktop](#tauri-desktop)
@@ -22,50 +22,48 @@
 
 ### Build & Quality Gates
 
-- [ ] `node -v` zeigt Node.js 24.x für Produktions-Builds
-- [ ] `pnpm install --frozen-lockfile` — saubere Installation
-- [ ] `npx tsc --noEmit` — keine TypeScript-Fehler
+- [ ] `node -v` shows Node.js 24.x for production builds
+- [ ] `pnpm install --frozen-lockfile` — clean install
+- [ ] `pnpm type-check` — no TypeScript errors
 - [ ] `pnpm lint` — Biome check + React ESLint (zero warnings, `--max-warnings 0`)
-- [ ] `pnpm format:check` — Biome-konform (kein Prettier mehr)
-- [ ] `pnpm test:run` — alle Unit-Tests grün
-- [ ] `pnpm test:e2e` — alle E2E-Tests grün (Playwright)
-- [ ] `pnpm test:a11y` — Accessibility-Tests bestanden (WCAG 2.2 AA)
-- [ ] `pnpm build` — Build erfolgreich
-- [ ] `pnpm size` — Bundle-Size innerhalb der Limits
+- [ ] `pnpm test:run` — all unit tests green
+- [ ] `pnpm test:e2e` — all E2E tests green (Playwright)
+- [ ] `pnpm test:a11y` — accessibility tests passed (WCAG 2.2 AA)
+- [ ] `pnpm build` — build successful
+- [ ] `pnpm size` — bundle size within limits
 
 ### Security Checks
 
-- [ ] `pnpm audit --audit-level=high` — keine High/Critical-Schwachstellen
-- [ ] `pnpm security:trojan` — keine Trojan-Source-Zeichen
-- [ ] `pnpm security:secrets` — keine Secrets im Code (Gitleaks)
-- [ ] `pnpm security:secrets` — Gitleaks Scan bestanden
-- [ ] Alle API-Schlüssel nur über verschlüsseltes IndexedDB (`ai-keys.ts`)
-- [ ] Keine Secrets in `.env`, `docker-compose.yml` oder CI-Logs
+- [ ] `pnpm audit --audit-level=high` — no high/critical vulnerabilities
+- [ ] `pnpm security:trojan` — no Trojan-Source characters detected
+- [ ] `pnpm security:secrets` — no secrets in code (Gitleaks scan passed)
+- [ ] All API keys managed exclusively via encrypted IndexedDB (`ai-keys.ts`)
+- [ ] No secrets in `.env`, `docker-compose.yml`, or CI logs
 
 ### i18n
 
-- [ ] Alle neuen UI-Strings in `src/locales/de.ts` **und** `src/locales/en.ts`
-- [ ] `t()` für jeden sichtbaren Text — keine hardcodierten Strings
+- [ ] All new UI strings present in both `src/locales/de.ts` **and** `src/locales/en.ts`
+- [ ] `t()` used for every visible string — no hardcoded display text
 
 ---
 
 ## TLS / HTTPS
 
-### Zertifikat-Ersteinrichtung (Let's Encrypt)
+### Initial Certificate Setup (Let's Encrypt)
 
 ```bash
-# Certbot installieren
+# Install Certbot
 sudo apt install certbot python3-certbot-nginx
 
-# Zertifikat erstellen
+# Obtain certificate
 sudo certbot --nginx -d hems.example.com \
   --redirect --agree-tos --email admin@example.com
 
-# Auto-Renewal verifizieren
+# Verify auto-renewal
 sudo certbot renew --dry-run
 ```
 
-### TLS-Konfiguration (nginx)
+### TLS Configuration (nginx)
 
 ```nginx
 ssl_protocols TLSv1.2 TLSv1.3;
@@ -76,7 +74,7 @@ ssl_session_timeout 1d;
 ssl_session_cache shared:SSL:10m;
 ssl_session_tickets off;
 
-# HSTS — 2 Jahre
+# HSTS — 2 years
 add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;
 
 # OCSP Stapling
@@ -85,20 +83,20 @@ ssl_stapling_verify on;
 resolver 1.1.1.1 8.8.8.8 valid=300s;
 ```
 
-### Zertifikat-Checkliste
+### TLS Checklist
 
-- [ ] TLS 1.2+ erzwungen (kein TLS 1.0/1.1)
-- [ ] HSTS-Header gesetzt (min. 1 Jahr)
-- [ ] OCSP Stapling aktiviert
-- [ ] HTTP → HTTPS Redirect konfiguriert
-- [ ] Zertifikat-Renewal-Cronjob aktiv
-- [ ] SSL Labs Test: **A+** Rating → https://ssllabs.com/ssltest/
+- [ ] TLS 1.2+ enforced (no TLS 1.0/1.1)
+- [ ] HSTS header set (minimum 1 year)
+- [ ] OCSP Stapling enabled
+- [ ] HTTP → HTTPS redirect configured
+- [ ] Certificate renewal cron job active
+- [ ] SSL Labs test: **A+** rating → https://ssllabs.com/ssltest/
 
 ---
 
-## Reverse-Proxy (nginx)
+## Reverse Proxy (nginx)
 
-### Produktions-Konfiguration
+### Production Configuration
 
 ```nginx
 upstream hems_backend {
@@ -122,6 +120,7 @@ server {
     add_header X-XSS-Protection "0" always;
     add_header Referrer-Policy "strict-origin-when-cross-origin" always;
     add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
+    add_header Cross-Origin-Embedder-Policy "credentialless" always;
     add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' wss: https://api.tibber.com https://api.awattar.de https://api.open-meteo.com; img-src 'self' data: blob:; font-src 'self'; object-src 'none'; frame-ancestors 'none';" always;
 
     # SPA Fallback
@@ -178,27 +177,27 @@ server {
 }
 ```
 
-### Reverse-Proxy-Checkliste
+### Reverse Proxy Checklist
 
-- [ ] WebSocket-Upgrade für `/ws/` konfiguriert
-- [ ] Proxy-Timeout ≥ 24 h für langlebige WS-Verbindungen
-- [ ] Security-Header gesetzt (CSP, HSTS, X-Frame-Options, COEP `credentialless`)
-- [ ] SPA-Fallback `try_files $uri /index.html`
-- [ ] Service Worker `sw.js` ohne Cache
-- [ ] Statische Assets mit `Cache-Control: immutable`
-- [ ] Gzip/Brotli aktiviert
-- [ ] `limit_conn conn_limit 50` gesetzt (nginx Connection-Limit pro IP)
+- [ ] WebSocket upgrade configured for `/ws/`
+- [ ] Proxy timeout ≥ 24 h for long-lived WebSocket connections
+- [ ] Security headers set (CSP, HSTS, X-Frame-Options, COEP `credentialless`)
+- [ ] SPA fallback `try_files $uri /index.html`
+- [ ] Service Worker `sw.js` served without cache
+- [ ] Static assets with `Cache-Control: immutable`
+- [ ] Gzip/Brotli enabled
+- [ ] `limit_conn conn_limit 50` set (nginx per-IP connection limit)
 
 ---
 
 ## Docker Production
 
-### docker-compose.yml (Produktion)
+### docker-compose.yml (Production)
 
 ```yaml
 services:
   nexus-hems:
-    image: ghcr.io/qnbs/nexus-hems-dash:4.4.0
+    image: ghcr.io/qnbs/nexus-hems-dash:5.0.0
     # Optional immutable pin:
     # image: ghcr.io/qnbs/nexus-hems-dash@sha256:<digest>
     build:
@@ -227,23 +226,25 @@ services:
           memory: 256M
 ```
 
-### Docker-Checkliste
+### Docker Checklist
 
-- [ ] Multi-Stage-Build (Node → nginx)
-- [ ] `read_only: true` — Read-Only-Dateisystem
+- [ ] Multi-stage build (Node → nginx)
+- [ ] `read_only: true` — read-only filesystem
 - [ ] `no-new-privileges: true`
-- [ ] Non-Root User (`nginx`)
-- [ ] Healthcheck konfiguriert
-- [ ] Resource-Limits gesetzt (CPU, RAM)
-- [ ] Keine Secrets im Image oder `docker-compose.yml`
-- [ ] OCI-Image-Metadaten gesetzt (`org.opencontainers.image.*`)
-- [ ] Produktiv-Deploy bevorzugt via immutable Digest statt mutablem Tag
-- [ ] `docker scan` / Container Image-Scan bestanden (Alternative zu Trivy — z.B. Grype, Snyk)
-- [ ] `restart: unless-stopped` für Auto-Recovery
-- [ ] `JWT_SECRET` als Docker Secret (min. 64 Zeichen, kryptographisch zufällig)
-- [ ] `API_KEYS` gesetzt (min. 1 Key, generiert via `openssl rand -hex 32`)
-- [ ] `WS_ORIGINS` gesetzt (nur eigene WebSocket-Origins, kein `ws://localhost:*`)
-- [ ] `RATE_LIMIT_TRUSTED_IPS` für interne Load-Balancer/Proxies konfiguriert (optional)
+- [ ] Non-root user (`nginx`)
+- [ ] Healthcheck configured
+- [ ] Resource limits set (CPU, RAM)
+- [ ] No secrets in image or `docker-compose.yml`
+- [ ] OCI image metadata set (`org.opencontainers.image.*`)
+- [ ] Production deploy prefers immutable digest over mutable tag
+- [ ] Container image scan passed (Grype or Snyk)
+- [ ] `restart: unless-stopped` for auto-recovery
+- [ ] `JWT_SECRET` set as Docker secret (minimum 64 chars, cryptographically random)
+- [ ] `API_KEYS` set (minimum 1 key, generated via `openssl rand -hex 32`)
+- [ ] `GRAFANA_PASSWORD` set — required (no default, compose fails without it)
+- [ ] `WS_ORIGINS` set (own WebSocket origins only, no `ws://localhost:*` in production)
+- [ ] `RATE_LIMIT_TRUSTED_IPS` configured for internal load balancers/proxies (optional)
+- [ ] `PROMETHEUS_BEARER_TOKEN` set for Prometheus scrape endpoint authentication (optional)
 
 ---
 
@@ -252,84 +253,84 @@ services:
 ### Deployment
 
 ```bash
-# Manuell via .github/workflows/deploy.yml
+# Manual trigger via .github/workflows/deploy.yml
 # GitHub Actions → Deploy → Run workflow
 # Input: approveDeploy=DEPLOY
 ```
 
-### GitHub-Pages-Checkliste
+### GitHub Pages Checklist
 
 - [ ] `base: '/Nexus-HEMS-Dash/'` in `vite.config.ts`
-- [ ] `public/404.html` mit SPA-Redirect vorhanden
-- [ ] `public/manifest.json` korrekte `start_url` + `scope`
-- [ ] `public/robots.txt` aktuell
-- [ ] Deploy nur nach expliziter manueller Freigabe (`approveDeploy=DEPLOY`)
-- [ ] CNAME-Datei bei Custom Domain
-- [ ] HTTPS erzwungen in GitHub Pages Settings
+- [ ] `public/404.html` with SPA redirect present
+- [ ] `public/manifest.json` correct `start_url` + `scope`
+- [ ] `public/robots.txt` up to date
+- [ ] Deploy only after explicit manual approval (`approveDeploy=DEPLOY`)
+- [ ] CNAME file for custom domain (if applicable)
+- [ ] HTTPS enforced in GitHub Pages settings
 
 ---
 
 ## Tauri Desktop
 
-### Build-Checkliste
+### Build Checklist
 
-- [ ] `tauri.conf.json` — CSP korrekt (Trusted Types)
-- [ ] Code-Signing-Zertifikat konfiguriert (`TAURI_SIGNING_PRIVATE_KEY`)
-- [ ] Auto-Updater-Endpoint konfiguriert
-- [ ] Alle 3 Plattformen getestet (Linux, macOS, Windows)
-- [ ] `.github/workflows/tauri-build.yml` erfolgreich
+- [ ] `tauri.conf.json` — CSP correct (Trusted Types)
+- [ ] Code signing certificate configured (`TAURI_SIGNING_PRIVATE_KEY`)
+- [ ] Auto-updater endpoint configured
+- [ ] All 3 platforms tested (Linux, macOS, Windows)
+- [ ] `.github/workflows/tauri-build.yml` passes successfully
 
 ---
 
 ## Failover & High Availability
 
-### Adapter-Failover
+### Adapter Failover
 
 ```
-Adapter-Verbindung fehlgeschlagen
+Adapter connection failed
     ↓
 Exponential Backoff (1s → 2s → 4s → ... → 30s max)
     ↓ ±25% Jitter
 Max 10 Retries
     ↓
-Circuit Breaker OPEN (30s Cooldown)
+Circuit Breaker OPEN (30s cooldown)
     ↓
 Half-Open Probe
-    ↓ Erfolg → CLOSED
-    ↓ Fehler → OPEN (erneut)
+    ↓ Success → CLOSED
+    ↓ Failure → OPEN (again)
 ```
 
-### Offline-Fallback (PWA)
+### Offline Fallback (PWA)
 
-1. **Service Worker** (Workbox) cached alle statischen Assets
-2. **IndexedDB** (Dexie.js) cached letzte Energiedaten + Einstellungen
-3. **Background Sync** synchronisiert ausstehende Befehle bei Reconnect
-4. **OfflineBanner** zeigt Offline-Status an
+1. **Service Worker** (Workbox) caches all static assets
+2. **IndexedDB** (Dexie.js) caches the latest energy data + settings
+3. **Background Sync** synchronizes pending commands on reconnect
+4. **OfflineBanner** displays offline status to the user
 
-### DNS-Failover (optional)
+### DNS Failover (optional)
 
 ```
 hems.example.com → Primary (192.168.1.100)
                   → Fallback (192.168.1.101)
 
-# CloudFlare Load Balancer oder DNS Round-Robin
+# Cloudflare Load Balancer or DNS Round-Robin
 ```
 
-### Multi-Adapter-Redundanz
+### Multi-Adapter Redundancy
 
-- Victron MQTT + Modbus SunSpec parallel konfigurierbar
-- Bei Ausfall eines Adapters: automatischer Fallback auf verbleibende
-- `useEnergyStore` mergt alle aktiven Adapter-Daten per `deepMergeModel()`
+- Victron MQTT + Modbus SunSpec can be configured in parallel
+- On adapter failure: automatic fallback to remaining active adapters
+- `useEnergyStore` merges all active adapter data via `deepMergeModel()`
 
-### Failover-Checkliste
+### Failover Checklist
 
-- [ ] Circuit Breaker pro Adapter konfiguriert
-- [ ] Exponential Backoff mit Jitter
-- [ ] Offline-Cache (Dexie.js) funktional
-- [ ] Background Sync getestet
-- [ ] Service Worker Pre-Cache aktuell
-- [ ] DNS-Failover bei Multi-Server-Setup
-- [ ] Monitoring/Alerting für Adapter-Status
+- [ ] Circuit breaker configured per adapter
+- [ ] Exponential backoff with jitter
+- [ ] Offline cache (Dexie.js) functional
+- [ ] Background sync tested
+- [ ] Service worker pre-cache up to date
+- [ ] DNS failover configured for multi-server setups
+- [ ] Monitoring/alerting for adapter status
 
 ---
 
@@ -337,14 +338,14 @@ hems.example.com → Primary (192.168.1.100)
 
 ### Smoke Tests
 
-- [ ] Dashboard lädt korrekt (`/`)
-- [ ] Alle Navigationsrouten erreichbar
-- [ ] Sankey-Diagramm rendert (D3.js)
-- [ ] KNX-Floorplan rendert
-- [ ] PWA installierbar
-- [ ] Service Worker registriert
-- [ ] Offline-Modus funktioniert (Flugmodus-Test)
-- [ ] Sprachumschaltung DE ↔ EN funktioniert
+- [ ] Dashboard loads correctly (`/`)
+- [ ] All navigation routes reachable
+- [ ] Sankey diagram renders (D3.js)
+- [ ] KNX floorplan renders
+- [ ] PWA installable
+- [ ] Service worker registered
+- [ ] Offline mode works (airplane mode test)
+- [ ] Language switching DE ↔ EN works
 
 ### Performance
 
@@ -355,9 +356,10 @@ hems.example.com → Primary (192.168.1.100)
 
 ### Monitoring
 
-- [ ] Prometheus-Metriken erreichbar (`/metrics`)
-- [ ] Adapter-Healthchecks grün
-- [ ] Error-Tracking aktiv (Sentry / Custom)
+- [ ] Prometheus metrics reachable (`/metrics`)
+- [ ] Adapter health checks green
+- [ ] Error tracking active (Sentry / Custom)
+- [ ] Grafana dashboards loading correctly (if monitoring profile enabled)
 
 ---
 
@@ -366,43 +368,35 @@ hems.example.com → Primary (192.168.1.100)
 ### GitHub Pages
 
 ```bash
-# Letztes funktionierendes Deployment wiederherstellen
+# Restore last working deployment
 git revert HEAD
 git push origin main
-# → deploy.yml baut und deployt automatisch
+# → deploy.yml builds and deploys automatically
 ```
 
 ### Docker
 
 ```bash
-# Zum vorherigen Image wechseln
+# Switch to previous image
 docker compose down
 docker tag nexus-hems-dash:latest nexus-hems-dash:rollback
 docker pull nexus-hems-dash:previous
 docker compose up -d
 
-# Oder: docker rollback
+# Or: docker service rollback
 docker service update --rollback nexus-hems
 ```
 
 ### Helm / Kubernetes
 
 ```bash
-# Letzte erfolgreiche Revision ermitteln
+# Find last successful revision
 helm history nexus-hems -n nexus
 
-# Rollback auf Revision 12
+# Roll back to revision 12
 helm rollback nexus-hems 12 -n nexus
 
-# Alternativ Deployment-Ebene
+# Alternatively at deployment level
 kubectl rollout undo deploy/nexus-hems-server -n nexus
 kubectl rollout undo deploy/nexus-hems-frontend -n nexus
 ```
-
-### Rollback-Checkliste
-
-- [ ] Vorheriges Docker-Image verfügbar (tagged)
-- [ ] Vorherige Helm-Revision vorhanden und getestet
-- [ ] Git-Revert getestet
-- [ ] Datenbank-Migration rückwärtskompatibel (falls zutreffend)
-- [ ] DNS-TTL niedrig genug für schnellen Switch (≤ 300 s)

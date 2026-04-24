@@ -57,14 +57,15 @@ docker compose --profile monitoring up -d
 | ------------------------ | --------------- | ---------------------------------------------------------------------------- |
 | `PORT`                   | `3000`          | Server listen port                                                           |
 | `NODE_ENV`               | `production`    | Environment mode                                                             |
-| `JWT_SECRET`             | —               | HMAC-SHA256 secret (min 32 chars, 64+ recommended); auto-generated in dev    |
+| `JWT_SECRET`             | —               | HMAC-SHA256 secret (min 64 chars, cryptographically random); auto-generated in dev |
 | `API_KEYS`               | —               | Comma-separated API keys for `/api/auth/token`; required in production       |
 | `CORS_ORIGINS`           | —               | Comma-separated allowed CORS origins                                         |
 | `WS_ORIGINS`             | —               | Comma-separated allowed WebSocket origins for CSP `connect-src` (production) |
 | `RATE_LIMIT_TRUSTED_IPS` | —               | Comma-separated IPs that bypass rate limiting (load balancers, proxies)      |
 | `TZ`                     | `Europe/Berlin` | Timezone                                                                     |
-| `GRAFANA_PASSWORD`       | —               | Grafana admin password                                                       |
+| `GRAFANA_PASSWORD`       | **required**    | Grafana admin password — no default; docker-compose fails without it (CRIT-04) |
 | `ADAPTER_MODE`           | `live`          | `mock` for demo data; `live` for real protocol adapters                      |
+| `PROMETHEUS_BEARER_TOKEN`| —               | Bearer token for Prometheus `/metrics` scrape endpoint authentication (optional) |
 
 ### Security
 

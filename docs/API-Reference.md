@@ -17,11 +17,11 @@ Health check (no auth required).
 {
   "status": "ok",
   "uptime": 3600,
-  "adapters": [{ "id": "victron-mqtt", "status": "connected" }],
-  "metrics": { "totalSamples": 12 },
-  "jwt": { "kid": "k-1", "rotationDueIn": "29d" }
+  "adapters": [{ "id": "victron-mqtt", "status": "connected" }]
 }
 ```
+
+> JWT metadata fields (`kid`, `rotationDueIn`) were removed from the health response to prevent information disclosure (security remediation MED-05).
 
 ### `POST /api/auth/token`
 
@@ -50,6 +50,45 @@ Refresh an existing JWT via `Authorization: Bearer <token>`.
 
 ```json
 { "token": "eyJ…", "expiresIn": "24h" }
+```
+
+### `POST /api/auth/ws-ticket`
+
+Issue a single-use, short-lived WebSocket authentication ticket. Prefer this over passing a long-lived JWT as a URL query parameter.
+
+> **Auth required**: `Authorization: Bearer <JWT>`
+> **Rate limit**: 10 req/min per IP (same limiter as other auth endpoints).
+
+**Body**
+
+```json
+{ "clientId": "dashboard-1" }
+```
+
+**Response** `200 OK`
+
+```json
+{ "ticket": "t_abc123…", "expiresIn": "60s" }
+```
+
+The ticket is consumed on first WebSocket connection (`?ticket=<ticket>`) and expires automatically after 60 seconds. Unused tickets are garbage-collected server-side.
+
+### `POST /api/auth/revoke`
+
+Revoke a JWT by its JTI claim. Revoked tokens are immediately rejected by all guarded endpoints.
+
+> **Auth required**: `Authorization: Bearer <JWT>` (the token to revoke, or an admin-scoped token)
+
+**Body**
+
+```json
+{ "jti": "550e8400-e29b-41d4-a716-446655440000" }
+```
+
+**Response** `200 OK`
+
+```json
+{ "revoked": true }
 ```
 
 ### `GET /metrics`
@@ -100,12 +139,23 @@ Returns a Grafana dashboard JSON model pre-configured for all `hems_*` metrics.
 
 ## WebSocket Protocol
 
-Connect to `ws://host:port` with optional authentication:
+Connect to `ws://host:port` with authentication:
 
-- Query parameter: `?token=<JWT>`
-- Header: `Authorization: Bearer <JWT>`
+- **Recommended**: Query parameter `?ticket=<single-use-ticket>` (obtain from `POST /api/auth/ws-ticket`)
+- **Fallback**: Query parameter `?token=<JWT>` (long-lived token in URL — less secure)
+- Header: `Authorization: Bearer <JWT>` (not available for initial WS handshake in all browsers)
 
 In production (`NODE_ENV=production`) authentication is **required**; in development anonymous connections are accepted.
+
+> **Per-IP connection limit**: Maximum 10 concurrent WebSocket connections per IP address. Excess connections are rejected with HTTP 429.
+
+### JWT Scopes
+
+| Scope       | Allowed Operations                                                          |
+| ----------- | --------------------------------------------------------------------------- |
+| `read`      | Receive `ENERGY_UPDATE` messages only; all write commands rejected           |
+| `readwrite` | Receive updates + send `SET_EV_POWER`, `SET_HEAT_PUMP_POWER`, `SET_BATTERY_POWER` |
+| `admin`     | All `readwrite` permissions + admin operations (EEBUS pairing, token revocation) |
 
 ### Server → Client Messages
 
@@ -134,11 +184,13 @@ In production (`NODE_ENV=production`) authentication is **required**; in develop
 
 Validated by `WSCommandSchema`. Rate-limited to **30 commands/min** per client.
 
-| `type`                | `value` | Range            |
-| --------------------- | ------- | ---------------- |
-| `SET_EV_POWER`        | watts   | 0 – 50 000       |
-| `SET_HEAT_PUMP_POWER` | watts   | 0 – 50 000       |
-| `SET_BATTERY_POWER`   | watts   | −50 000 – 50 000 |
+Required scope: `SET_EV_POWER`, `SET_HEAT_PUMP_POWER`, `SET_BATTERY_POWER` require `readwrite` or `admin` scope. Commands from `read`-only tokens are rejected.
+
+| `type`                | `value` | Range                                          |
+| --------------------- | ------- | ---------------------------------------------- |
+| `SET_EV_POWER`        | watts   | 0 – 25 000 (§14a EnWG residential power cap)   |
+| `SET_HEAT_PUMP_POWER` | watts   | 0 – 25 000 (§14a EnWG residential power cap)   |
+| `SET_BATTERY_POWER`   | watts   | −25 000 – 25 000 (§14a EnWG residential limit) |
 
 ---
 
