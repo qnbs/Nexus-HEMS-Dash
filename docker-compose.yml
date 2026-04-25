@@ -46,7 +46,7 @@ services:
       start_period: 5s
     labels:
       - 'com.nexus-hems.component=dashboard'
-      - 'com.nexus-hems.version=4.2.0'
+      - 'com.nexus-hems.version=1.1.0'
 
   # ── Backend: App Server (WebSocket + REST + Prometheus /metrics) ─
   nexus-server:

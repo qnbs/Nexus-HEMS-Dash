@@ -1,19 +1,35 @@
 # ── Nexus HEMS Server — Node.js backend ─────────────────────────
-# Runs the Express + WebSocket server with Prometheus /metrics endpoint
-# LOW-05: TypeScript is now precompiled in the build stage — tsx is not
-# needed at runtime. This reduces attack surface and cold-start latency.
+# Monorepo-correct server image.
+#
+# packages/shared-types uses noEmit:true and exports only TypeScript
+# source. A compiled node dist/index.js approach fails at runtime when
+# Node.js resolves @nexus-hems/shared-types to a .ts extension file.
+# Fix: tsx production runtime — handles TypeScript natively, including
+# workspace packages that export TS source.
+#
+# Build strategy: pnpm deploy --filter @nexus-hems/api --prod creates a
+# self-contained bundle with only production deps and resolved workspace
+# packages. tsx is in dependencies (not devDependencies) so it is
+# included in the production deployment.
 # ─────────────────────────────────────────────────────────────────
 
 FROM node:24-alpine@sha256:01743339035a5c3c11a373cd7c83aeab6ed1457b55da6a69e014a95ac4e4700b AS build
 
 WORKDIR /app
 
-COPY package.json pnpm-lock.yaml ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+COPY apps/api/package.json ./apps/api/
+COPY packages/shared-types/package.json ./packages/shared-types/
 RUN corepack enable && pnpm install --frozen-lockfile --ignore-scripts
 
-COPY . .
-# LOW-05: Compile TypeScript server to dist-server/ using tsconfig.server.json
-RUN pnpm exec tsc --project tsconfig.server.json
+# Copy source (only packages needed for the API)
+COPY apps/api/ ./apps/api/
+COPY packages/shared-types/ ./packages/shared-types/
+
+# Create a production-only deployment bundle.
+# pnpm deploy: installs prod deps only, resolves workspace:* by copying
+# packages/shared-types into node_modules/@nexus-hems/shared-types.
+RUN pnpm deploy --filter @nexus-hems/api --prod /tmp/api-deploy
 
 # ── Production stage ────────────────────────────────────────────
 FROM node:24-alpine@sha256:01743339035a5c3c11a373cd7c83aeab6ed1457b55da6a69e014a95ac4e4700b AS production
@@ -36,12 +52,9 @@ RUN addgroup -S app && adduser -S app -G app
 
 WORKDIR /app
 
-# Copy only production dependencies — no tsx/ts-node needed at runtime
-COPY package.json pnpm-lock.yaml ./
-RUN corepack enable && pnpm install --frozen-lockfile --prod --ignore-scripts
-
-# LOW-05: Copy precompiled JS output (no TypeScript source in production image)
-COPY --from=build /app/dist-server ./dist-server
+# Copy the production deployment bundle (source + resolved node_modules).
+# pnpm deploy has already resolved workspace:* packages (shared-types included).
+COPY --chown=app:app --from=build /tmp/api-deploy ./
 
 ENV NODE_ENV=production
 
@@ -53,5 +66,6 @@ HEALTHCHECK --interval=15s --timeout=3s --start-period=10s --retries=3 \
 
 EXPOSE 3000
 
-# LOW-05: Run precompiled JS — no tsx, no source-map overhead, reduced attack surface
-CMD ["node", "--max-old-space-size=256", "dist-server/server.js"]
+# tsx handles TypeScript source natively at runtime, including workspace
+# packages that export TypeScript source (packages/shared-types).
+CMD ["node_modules/.bin/tsx", "index.ts"]

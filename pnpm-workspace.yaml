@@ -1,3 +1,19 @@
 packages:
   - 'apps/*'
   - 'packages/*'
+
+# ── pnpm 10 Monorepo Best Practices ──────────────────────────────
+# Catalog: single source of truth for shared dependency versions.
+# Update here → all packages pick up the change after `pnpm install`.
+catalog:
+  react: ^19.0.0
+  react-dom: ^19.0.0
+  zod: ^4.3.6
+  typescript: ~5.8.2
+  jose: ^6.2.1
+  mqtt: ^5.12.2
+  tsx: ^4.21.0
+  "@types/node": ^24.0.0
+
+sharedWorkspaceLockfile: true
+preferWorkspacePackages: true

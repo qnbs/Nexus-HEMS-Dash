@@ -4,6 +4,33 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+catalogs:
+  default:
+    '@types/node':
+      specifier: ^24.0.0
+      version: 24.12.2
+    jose:
+      specifier: ^6.2.1
+      version: 6.2.1
+    mqtt:
+      specifier: ^5.12.2
+      version: 5.15.0
+    react:
+      specifier: ^19.0.0
+      version: 19.2.4
+    react-dom:
+      specifier: ^19.0.0
+      version: 19.2.4
+    tsx:
+      specifier: ^4.21.0
+      version: 4.21.0
+    typescript:
+      specifier: ~5.8.2
+      version: 5.8.3
+    zod:
+      specifier: ^4.3.6
+      version: 4.3.6
+
 overrides:
   serialize-javascript: '>=7.0.5'
   '@rollup/plugin-terser': '>=0.4.5'
@@ -111,16 +138,19 @@ importers:
         specifier: ^8.1.0
         version: 8.1.0
       jose:
-        specifier: ^6.2.1
+        specifier: 'catalog:'
         version: 6.2.1
       mqtt:
-        specifier: ^5.12.2
+        specifier: 'catalog:'
         version: 5.15.0
+      tsx:
+        specifier: 'catalog:'
+        version: 4.21.0
       ws:
         specifier: ^8.19.0
         version: 8.19.0
       zod:
-        specifier: ^4.3.6
+        specifier: 'catalog:'
         version: 4.3.6
     devDependencies:
       '@types/cors':
@@ -130,16 +160,13 @@ importers:
         specifier: ^5.0.6
         version: 5.0.6
       '@types/node':
-        specifier: ^24.0.0
+        specifier: 'catalog:'
         version: 24.12.2
       '@types/ws':
         specifier: ^8.18.1
         version: 8.18.1
-      tsx:
-        specifier: ^4.21.0
-        version: 4.21.0
       typescript:
-        specifier: ~5.8.2
+        specifier: 'catalog:'
         version: 5.8.3
 
   apps/web:
@@ -220,7 +247,7 @@ importers:
         specifier: ^8.2.1
         version: 8.2.1
       jose:
-        specifier: ^6.2.1
+        specifier: 'catalog:'
         version: 6.2.1
       jspdf:
         specifier: ^4.2.1
@@ -232,16 +259,16 @@ importers:
         specifier: ^12.23.24
         version: 12.35.2(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       mqtt:
-        specifier: ^5.12.2
+        specifier: 'catalog:'
         version: 5.15.0
       qrcode:
         specifier: ^1.5.4
         version: 1.5.4
       react:
-        specifier: ^19.0.0
+        specifier: 'catalog:'
         version: 19.2.4
       react-dom:
-        specifier: ^19.0.0
+        specifier: 'catalog:'
         version: 19.2.4(react@19.2.4)
       react-i18next:
         specifier: ^16.5.6
@@ -259,7 +286,7 @@ importers:
         specifier: ^3.5.0
         version: 3.5.0
       zod:
-        specifier: ^4.3.6
+        specifier: 'catalog:'
         version: 4.3.6
       zustand:
         specifier: ^5.0.11
@@ -329,7 +356,7 @@ importers:
         specifier: ^3.0.11
         version: 3.0.11
       '@types/node':
-        specifier: ^24.0.0
+        specifier: 'catalog:'
         version: 24.12.2
       '@types/qrcode':
         specifier: ^1.5.6
@@ -404,10 +431,10 @@ importers:
         specifier: ^4.1.14
         version: 4.2.2
       tsx:
-        specifier: ^4.21.0
+        specifier: 'catalog:'
         version: 4.21.0
       typescript:
-        specifier: ~5.8.2
+        specifier: 'catalog:'
         version: 5.8.3
       vite:
         specifier: ^8.0.8
@@ -425,11 +452,11 @@ importers:
   packages/shared-types:
     dependencies:
       zod:
-        specifier: ^4.3.6
+        specifier: 'catalog:'
         version: 4.3.6
     devDependencies:
       typescript:
-        specifier: ~5.8.2
+        specifier: 'catalog:'
         version: 5.8.3
 
 packages:

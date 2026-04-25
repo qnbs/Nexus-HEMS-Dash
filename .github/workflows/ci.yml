@@ -47,13 +47,15 @@ jobs:
 
       - name: Lint
         run: pnpm lint
+        env:
+          TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+          TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
 
-      - name: Type Check (tsgo — primary gate)
-        run: pnpm typecheck
-
-      - name: Type Check (tsc — legacy verification, non-blocking)
+      - name: Type Check
         run: pnpm type-check
-        continue-on-error: true
+        env:
+          TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+          TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
 
   unit-tests:
     name: Unit Tests
@@ -83,6 +85,9 @@ jobs:
 
       - name: Unit Tests with Coverage
         run: pnpm test:coverage
+        env:
+          TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+          TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
 
       - name: Upload coverage
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -120,6 +125,9 @@ jobs:
 
       - name: Build
         run: pnpm build
+        env:
+          TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+          TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
 
       - name: Sentry Source Maps Upload
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'

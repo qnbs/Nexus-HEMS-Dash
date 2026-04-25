@@ -14,6 +14,7 @@
     },
     "web#build": {
       "dependsOn": ["shared-types#build"],
+      "env": ["VITE_E2E_TESTING"],
       "inputs": [
         "src/**",
         "public/**",
