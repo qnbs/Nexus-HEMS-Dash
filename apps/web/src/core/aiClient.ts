@@ -31,16 +31,16 @@ Always respond with valid JSON arrays when structured output is requested.`;
  * Prevents accidental exfiltration of personal identifiers.
  */
 const PII_PATTERNS: ReadonlyArray<{ pattern: RegExp; placeholder: string }> = [
-  // Email addresses
-  { pattern: /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.]+\.[A-Za-z]{2,}\b/g, placeholder: '[EMAIL]' },
-  // Phone numbers (E.164 + common formats)
-  { pattern: /\b(\+?[\d\s\-().]{7,20})\b(?=\s|$)/g, placeholder: '[PHONE]' },
-  // IBAN (EU bank accounts)
-  { pattern: /\b[A-Z]{2}\d{2}[A-Z0-9]{4,30}\b/g, placeholder: '[IBAN]' },
-  // IPv4 addresses
+  // Email addresses — domain part allows hyphens (e.g. nexus-hems.local)
+  { pattern: /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/g, placeholder: '[EMAIL]' },
+  // IPv4 addresses — must run before phone pattern to avoid mis-classification
   { pattern: /\b(?:\d{1,3}\.){3}\d{1,3}\b/g, placeholder: '[IP]' },
   // IPv6 addresses (simplified)
   { pattern: /\b(?:[0-9a-fA-F]{1,4}:){2,7}[0-9a-fA-F]{1,4}\b/g, placeholder: '[IP]' },
+  // Phone numbers (E.164 + common formats) — run after IP to avoid matching IPs
+  { pattern: /\b(\+?[\d\s\-().]{7,20})\b(?=\s|$)/g, placeholder: '[PHONE]' },
+  // IBAN (EU bank accounts)
+  { pattern: /\b[A-Z]{2}\d{2}[A-Z0-9]{4,30}\b/g, placeholder: '[IBAN]' },
 ];
 
 /**

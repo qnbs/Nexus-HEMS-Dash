@@ -167,7 +167,8 @@ export class OCPP21Adapter extends BaseAdapter {
       this.setStatus('connected');
 
       // Send BootNotification (required by OCPP spec on connect)
-      void this.call('BootNotification', {
+      // .catch() ensures no unhandled rejection if connection drops before CALLRESULT
+      this.call('BootNotification', {
         chargingStation: {
           model: 'NexusHEMS',
           vendorName: 'NexusDash',
@@ -175,7 +176,7 @@ export class OCPP21Adapter extends BaseAdapter {
           serialNumber: this.stationId,
         },
         reason: 'PowerUp',
-      });
+      }).catch(() => {});
     };
 
     ws.onmessage = (event: MessageEvent) => {
@@ -473,7 +474,7 @@ export class OCPP21Adapter extends BaseAdapter {
   // ─── OCPP 2.1 outbound commands ──────────────────────────────────
 
   private sendSetChargingProfile(maxCurrentA: number): boolean {
-    void this.call('SetChargingProfile', {
+    this.call('SetChargingProfile', {
       evseId: 1,
       chargingProfile: {
         id: 1,
@@ -488,28 +489,28 @@ export class OCPP21Adapter extends BaseAdapter {
           },
         ],
       },
-    });
+    }).catch(() => {});
     this.charger.maxCurrentA = maxCurrentA;
     return true;
   }
 
   private sendRemoteStart(): boolean {
-    void this.call('RequestStartTransaction', {
+    this.call('RequestStartTransaction', {
       evseId: 1,
       remoteStartId: Date.now(),
       idToken: {
         idToken: this.iso15118Enabled ? 'auto-plug-and-charge' : 'nexus-hems',
         type: this.iso15118Enabled ? 'eMAID' : 'Central',
       },
-    });
+    }).catch(() => {});
     return true;
   }
 
   private sendRemoteStop(): boolean {
     if (!this.charger.transactionId) return false;
-    void this.call('RequestStopTransaction', {
+    this.call('RequestStopTransaction', {
       transactionId: this.charger.transactionId,
-    });
+    }).catch(() => {});
     return true;
   }
 
@@ -517,7 +518,7 @@ export class OCPP21Adapter extends BaseAdapter {
   private sendV2XDischarge(dischargePowerW: number): boolean {
     if (!this.charger.v2xCapable) return false;
     const dischargeCurrentA = Math.round(dischargePowerW / this.charger.voltageV);
-    void this.call('SetChargingProfile', {
+    this.call('SetChargingProfile', {
       evseId: 1,
       chargingProfile: {
         id: 2,
@@ -532,7 +533,7 @@ export class OCPP21Adapter extends BaseAdapter {
           },
         ],
       },
-    });
+    }).catch(() => {});
     this.charger.v2xActive = dischargePowerW > 0;
     return true;
   }
@@ -540,7 +541,7 @@ export class OCPP21Adapter extends BaseAdapter {
   /** §14a EnWG grid operator curtailment via ChargingStationMaxProfile */
   private sendGridCurtailment(maxPowerW: number): boolean {
     const maxCurrentA = Math.round(maxPowerW / this.charger.voltageV);
-    void this.call('SetChargingProfile', {
+    this.call('SetChargingProfile', {
       evseId: 0, // Station-wide
       chargingProfile: {
         id: 100,
@@ -555,7 +556,7 @@ export class OCPP21Adapter extends BaseAdapter {
           },
         ],
       },
-    });
+    }).catch(() => {});
     return true;
   }
 }

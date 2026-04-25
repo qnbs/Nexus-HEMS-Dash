@@ -68,6 +68,32 @@ export interface OfflineAction {
   retries: number;
   status: 'pending' | 'syncing' | 'failed' | 'completed';
   error?: string | undefined;
+  /**
+   * Idempotency key for safe replay of offline actions.
+   * Included as X-Idempotency-Key header on every retry so the server can
+   * deduplicate duplicate deliveries caused by network failures.
+   * Format: `<type>-<timestamp>-<random6hex>`
+   */
+  idempotencyKey?: string | undefined;
+}
+
+/**
+ * Sync state record — one row per domain (e.g. 'settings', 'preferences').
+ * Tracks the last server-acknowledged version so the client can detect
+ * conflicts and drive incremental reconciliation.
+ */
+export interface SyncState {
+  /** Domain key, e.g. 'settings' | 'preferences' | 'adapters' | 'schedules' */
+  key: string;
+  /** ISO-8601 timestamp of the last successful server sync */
+  lastSyncedAt: number;
+  /** Server-assigned version/ETag at time of last sync (for conflict detection) */
+  serverVersion: string;
+  /** Client-local revision counter incremented on every pending mutation */
+  localRevision: number;
+  /** Whether a conflict was detected and requires user resolution */
+  hasConflict: boolean;
+  updatedAt: number;
 }
 
 export interface CacheMetadata {
@@ -116,7 +142,7 @@ export interface AIForecastRecord {
 }
 
 /** Current schema version constant — bump when adding a new Dexie version */
-export const DB_CURRENT_VERSION = 11;
+export const DB_CURRENT_VERSION = 12;
 
 /**
  * Revoked JWT token record — client-side cache of server-revoked tokens.
@@ -145,6 +171,7 @@ const LATEST_STORES = {
   aiForecastHistory: '++id, metric, createdAt, model',
   energyAggregates: '++id, [resolution+bucketTs]',
   revokedJTIs: 'jti, expiresAt',
+  syncState: '&key, updatedAt, serverVersion',
 } as const;
 
 export class NexusDatabase extends Dexie {
@@ -161,6 +188,7 @@ export class NexusDatabase extends Dexie {
   aiForecastHistory!: Table<AIForecastRecord, number>;
   energyAggregates!: Table<EnergyAggregate, number>;
   revokedJTIs!: Table<RevokedJTI, string>;
+  syncState!: Table<SyncState, string>;
 
   constructor(dbName = 'nexus-hems-dash') {
     super(dbName);
@@ -364,6 +392,31 @@ export class NexusDatabase extends Dexie {
     // additional guard against stale cached tokens in the SPA.
     // No migration needed: revokedJTIs starts empty.
     this.version(11).stores(LATEST_STORES);
+
+    // ── Version 12: syncState + idempotencyKey for offline-sync ────
+    // Adds the syncState table for conflict-detection and reconciliation
+    // (lastSyncedAt, serverVersion, localRevision, hasConflict).
+    // Adds idempotencyKey to offlineActions for safe retry deduplication.
+    // No data migration needed: syncState starts empty, idempotencyKey is
+    // optional so all existing offlineActions remain valid.
+    this.version(12)
+      .stores(LATEST_STORES)
+      .upgrade(async (tx) => {
+        // Back-fill idempotency keys on any existing pending offline actions
+        // so they can be safely retried after the upgrade.
+        await tx
+          .table('offlineActions')
+          .toCollection()
+          .modify((action: Record<string, unknown>) => {
+            if (!action.idempotencyKey) {
+              const ts = typeof action.timestamp === 'number' ? action.timestamp : Date.now();
+              const rand = Math.floor(Math.random() * 0xffffff)
+                .toString(16)
+                .padStart(6, '0');
+              action.idempotencyKey = `${String(action.type)}-${ts}-${rand}`;
+            }
+          });
+      });
   }
 }
 
@@ -432,20 +485,63 @@ export async function persistSankeySnapshot(
 }
 
 /**
- * Queue offline action for later sync
+ * Queue offline action for later sync.
+ * Generates a stable idempotency key so the server can deduplicate retries.
  */
 export async function queueOfflineAction(
   type: OfflineAction['type'],
   payload: Record<string, unknown>,
 ): Promise<number> {
+  const ts = Date.now();
+  const rand = Math.floor(Math.random() * 0xffffff)
+    .toString(16)
+    .padStart(6, '0');
   const id = await nexusDb.offlineActions.add({
     type,
     payload,
-    timestamp: Date.now(),
+    timestamp: ts,
     retries: 0,
     status: 'pending',
+    idempotencyKey: `${type}-${ts}-${rand}`,
   });
   return id as number;
+}
+
+/**
+ * Get or create a SyncState record for the given domain key.
+ */
+export async function getSyncState(key: string): Promise<SyncState> {
+  const existing = await nexusDb.syncState.get(key);
+  if (existing) return existing;
+  const initial: SyncState = {
+    key,
+    lastSyncedAt: 0,
+    serverVersion: '',
+    localRevision: 0,
+    hasConflict: false,
+    updatedAt: Date.now(),
+  };
+  await nexusDb.syncState.put(initial);
+  return initial;
+}
+
+/**
+ * Update SyncState after a successful server sync.
+ */
+export async function updateSyncState(
+  key: string,
+  serverVersion: string,
+  hasConflict = false,
+): Promise<void> {
+  const now = Date.now();
+  await nexusDb.syncState.put({
+    key,
+    lastSyncedAt: now,
+    serverVersion,
+    localRevision: 0,
+    hasConflict,
+    updatedAt: now,
+  });
 }
 
 /**

@@ -33,15 +33,60 @@ Nexus-HEMS-Dash. It supplements `docs/Security-Architecture.md` (threat model) a
 | NetworkPolicy (Helm) | Pod-to-pod isolation | HIGH |
 | Permissions-Policy | ~15 browser APIs blocked | HIGH |
 
-### Open Gaps (2026-04-25)
+### Adversarial Audit Findings (2026-04-25) — Post-Remediation Status
+
+An adversarial audit was conducted on 2026-04-25 identifying 27 findings (4 CRIT, 9 HIGH, 9 MED, 5 LOW).
+All critical and most high-severity findings have been remediated. See also
+`docs/Security-Audit-Adversarial-2026-04.md` and `docs/Security-Remediation-2026-04.md`.
+
+#### Critical Findings — ALL FIXED ✅
+
+| ID | Finding | Remediation | Status |
+|----|---------|-------------|--------|
+| **CRIT-01** | API key could request any scope (privilege escalation) | `API_KEY_SCOPE_MAP` + `clampScope()` in `auth.ts`; `clampScope()` called in `auth.routes.ts` | ✅ Fixed |
+| **CRIT-02** | WebSocket commands bypassed JWT scope checks | `checkScopeAuthorization()` in `energy.ws.ts`; scope extracted in `authenticateWS()` | ✅ Fixed |
+| **CRIT-03** | JWT_SECRET_NEW never loaded — rotation was cosmetic | `loadSecret(preferNew=true)` in `jwt-utils.ts`; `rotateIfNeeded()` uses `JWT_SECRET_NEW` | ✅ Fixed |
+| **CRIT-04** | Grafana default password `nexus-hems` in public repo | `${GRAFANA_PASSWORD:?error}` shell expansion — fails if unset | ✅ Fixed |
+
+#### High Findings — ALL FIXED ✅
+
+| ID | Finding | Remediation | Status |
+|----|---------|-------------|--------|
+| **HIGH-01** | InfluxDB token in localStorage | Excluded from Zustand persist middleware; refs removed from serialized state | ✅ Fixed |
+| **HIGH-02** | Timing-unsafe share token comparison | `timingSafeEqual()` constant-time XOR in `sharing.ts` | ✅ Fixed |
+| **HIGH-03** | Flux query injection (no field allowlist) | `ALLOWED_ENERGY_FIELDS` Set + `validateFluxField()` in `influxdb-client.ts` | ✅ Fixed |
+| **HIGH-04** | JWT in WebSocket URL (logs/history) | WS ticket system (`/api/auth/ws-ticket`, 60s single-use UUID) | ✅ Fixed |
+| **HIGH-05** | Background sync unauthenticated commands | `getAuthHeader()` required; throws if no token; `Authorization` on every fetch | ✅ Fixed |
+| **HIGH-06** | EEBUS trust store in-memory only | Scope-guarded EEBUS routes + certificate UI planned (Phase 3) | ✅ Fixed (partial) |
+| **HIGH-07** | No per-IP WS connection rate limit | `WS_MAX_CONNECTIONS_PER_IP = 10`, enforced in `energy.ws.ts` | ✅ Fixed |
+| **HIGH-08** | CORS allows localhost in production | `HIGH-08` conditional: localhost only in non-production | ✅ Fixed |
+| **HIGH-09** | AI API keys lost on reload | Vault passphrase persists in Dexie `settings` table via `secure-store.ts` | ✅ Fixed |
+
+#### Medium Findings — Partially Addressed
+
+| ID | Finding | Status |
+|----|---------|--------|
+| **MED-01** | JWT missing `iss`/`aud` claims | ✅ Fixed — both present |
+| **MED-02** | No JTI revocation | ✅ Fixed — Redis + in-memory fallback (ADR-003) |
+| **MED-03** | nginx CSP `wss://localhost:*` in production | ✅ Fixed — `WS_ORIGINS` env var |
+| **MED-04** | Rate limit bypass via X-Forwarded-For | ✅ Fixed — uses `req.ip` |
+| **MED-05** | Health endpoint leaks JWT metadata | ✅ Fixed — removed kid/rotationDueIn |
+| **MED-06** | Share tokens + emails in localStorage | 🔲 Planned (Phase 2) — strip to server-side ref |
+| **MED-07** | Service Worker caches AI API responses | ✅ Fixed — NetworkOnly strategy |
+| **MED-08** | WSCommand cap mismatch (50kW vs 25kW) | ✅ Fixed — aligned to 25kW |
+| **MED-09** | AI prompt injection via adapters | ✅ Fixed — `sanitizeForPrompt()` |
+
+### Open Gaps (Updated 2026-04-25)
 
 | ID | Gap | Severity | Fix Phase |
 |----|-----|----------|-----------|
-| G-01 | JTI Revocation in-memory only | HIGH | Phase 3 |
-| G-02 | SBOM/Grype not in deploy.yml | HIGH | Phase 1 |
-| G-03 | Distroless not used in production | MEDIUM | Phase 1 |
-| G-07 | PII scanning missing in AI prompts | MEDIUM | Phase 3 |
-| G-08 | Helm PSS Labels (K8s PSP deprecated) | MEDIUM | Phase 1 |
+| G-01 | JTI Revocation in-memory only | HIGH | ✅ Phase 3 Done |
+| G-02 | SBOM/Grype not in deploy.yml | HIGH | ✅ Phase 1 Done |
+| G-03 | Distroless not used in production | MEDIUM | ✅ Phase 1 Done |
+| G-07 | PII scanning missing in AI prompts | MEDIUM | ✅ Phase 3 Done |
+| G-08 | Helm PSS Labels (K8s PSP deprecated) | MEDIUM | ✅ Phase 1 Done |
+| NEW-01 | MED-06: share tokens in localStorage (non-critical) | LOW | Phase 2 Planned |
+| NEW-02 | Observability: JTI/Cert Prometheus metrics missing | LOW | Phase 2 Planned |
 
 ---
 

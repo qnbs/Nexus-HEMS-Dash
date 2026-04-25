@@ -82,8 +82,8 @@ describe('EnergyDataSchema — property-based', () => {
     fc.assert(
       fc.property(
         fc.oneof(
-          fc.float({ min: -1000, max: -0.001, noNaN: true, noDefaultInfinity: true }),
-          fc.float({ min: 100.001, max: 1000, noNaN: true, noDefaultInfinity: true }),
+          fc.float({ min: -1000, max: Math.fround(-0.001), noNaN: true, noDefaultInfinity: true }),
+          fc.float({ min: Math.fround(100.001), max: 1000, noNaN: true, noDefaultInfinity: true }),
         ),
         (badSoC) => {
           const result = EnergyDataSchema.safeParse({
@@ -149,20 +149,23 @@ describe('EnergyDataSchema — property-based', () => {
 });
 
 describe('WSCommandSchema — property-based', () => {
+  // Valid SCREAM_CASE command types from WSCommandTypeSchema
   const knownTypes = [
-    'battery-control',
-    'ev-control',
-    'hp-sg-ready',
-    'set-grid-limit',
-    'override-price',
+    'KNX_TOGGLE_LIGHTS',
+    'KNX_SET_TEMPERATURE',
+    'KNX_TOGGLE_WINDOW',
+    'SET_BATTERY_MODE',
+    'START_CHARGING',
+    'STOP_CHARGING',
   ] as const;
 
+  // Non-power commands that accept any boolean/string value
   it('accepts valid ws commands', () => {
     fc.assert(
       fc.property(
         fc.record({
           type: fc.constantFrom(...knownTypes),
-          payload: fc.dictionary(fc.string({ minLength: 1, maxLength: 20 }), fc.integer()),
+          value: fc.oneof(fc.boolean(), fc.constant('auto'), fc.constant('self-consumption')),
         }),
         (cmd) => {
           const result = WSCommandSchema.safeParse(cmd);

@@ -175,6 +175,8 @@ class BackgroundSyncService {
    * Execute a specific action.
    * HIGH-05: All requests include Authorization header. Actions are rejected if
    * no auth token is available — never dispatch control commands unauthenticated.
+   * X-Idempotency-Key is sent on every retry so the server can deduplicate
+   * duplicate deliveries caused by network failures or background-sync retries.
    */
   private async executeAction(action: OfflineAction): Promise<void> {
     const baseUrl = import.meta.env.VITE_API_URL || window.location.origin;
@@ -184,11 +186,22 @@ class BackgroundSyncService {
       throw new Error('No auth token available — cannot sync action. User must be authenticated.');
     }
 
+    const idempotencyKey = (action as unknown as { idempotencyKey?: string }).idempotencyKey;
+    const idempotencyHeader: Record<string, string> = idempotencyKey
+      ? { 'X-Idempotency-Key': idempotencyKey }
+      : {};
+
+    const commonHeaders: Record<string, string> = {
+      'Content-Type': 'application/json',
+      ...authHeaders,
+      ...idempotencyHeader,
+    };
+
     switch (action.type) {
       case 'ev-control':
         await fetch(`${baseUrl}/api/ev/control`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', ...authHeaders },
+          headers: commonHeaders,
           body: JSON.stringify(action.payload),
         });
         break;
@@ -196,7 +209,7 @@ class BackgroundSyncService {
       case 'hp-control':
         await fetch(`${baseUrl}/api/heatpump/control`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', ...authHeaders },
+          headers: commonHeaders,
           body: JSON.stringify(action.payload),
         });
         break;
@@ -204,7 +217,7 @@ class BackgroundSyncService {
       case 'battery-control':
         await fetch(`${baseUrl}/api/battery/control`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', ...authHeaders },
+          headers: commonHeaders,
           body: JSON.stringify(action.payload),
         });
         break;
@@ -212,7 +225,7 @@ class BackgroundSyncService {
       case 'settings':
         await fetch(`${baseUrl}/api/settings`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json', ...authHeaders },
+          headers: commonHeaders,
           body: JSON.stringify(action.payload),
         });
         break;
@@ -220,7 +233,7 @@ class BackgroundSyncService {
       case 'ai-optimize':
         await fetch(`${baseUrl}/api/ai/optimize`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', ...authHeaders },
+          headers: commonHeaders,
           body: JSON.stringify(action.payload),
         });
         break;

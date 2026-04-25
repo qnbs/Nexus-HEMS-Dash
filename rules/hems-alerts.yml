@@ -109,3 +109,90 @@ groups:
         annotations:
           summary: 'Circuit breaker OPEN for adapter {{ $labels.adapter }}'
           description: 'Adapter is isolated — manual intervention may be needed'
+
+  - name: hems_security
+    rules:
+      - alert: JTIRevocationFailure
+        expr: increase(hems_jti_revocation_errors_total[5m]) > 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: 'JTI revocation backend failure — revoked tokens may be accepted'
+          description: 'Redis write errors or in-memory overflow detected. Restart server to clear in-memory store.'
+
+      - alert: JTIStoreNearCapacity
+        expr: hems_jti_store_size / 10000 > 0.8
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'JTI revocation store at {{ $value | humanizePercentage }} capacity'
+          description: 'In-memory fallback JTI store approaching 10k limit. Configure REDIS_URL for durable revocation.'
+
+      - alert: EEBUSCertExpiryWarning
+        expr: (hems_eebus_cert_expiry_timestamp_seconds - time()) / 86400 < 30
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: 'EEBUS mTLS certificate expires in {{ $value | humanizeDuration }} days'
+          description: 'Renew the EEBUS SPINE/SHIP certificate before expiry to avoid trust failures.'
+
+      - alert: EEBUSCertExpiryImmediate
+        expr: (hems_eebus_cert_expiry_timestamp_seconds - time()) / 86400 < 7
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          summary: 'EEBUS mTLS certificate expires in < 7 days — URGENT renewal required'
+          description: 'EEBUS communication will fail after certificate expiry.'
+
+  - name: hems_performance
+    rules:
+      - alert: MPCSolveTimeSlow
+        expr: hems_mpc_solve_duration_seconds > 5
+        for: 3m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'MPC optimizer solve time {{ $value | humanizeDuration }}s exceeds 5s threshold'
+          description: 'Day-ahead schedule computation is slower than expected. Check constraint complexity or reduce forecast horizon.'
+
+      - alert: DownsamplingLagHigh
+        expr: hems_downsampling_lag_seconds > 30
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'Dexie downsampling pipeline lag {{ $value | humanizeDuration }}s'
+          description: 'Background aggregation service is falling behind. May indicate IndexedDB write contention.'
+
+      - alert: PVForecastAccuracyDrift
+        expr: abs(hems_pv_forecast_accuracy_ratio - 1) > 0.3
+        for: 60m
+        labels:
+          severity: info
+        annotations:
+          summary: 'PV forecast accuracy drifted {{ $value | humanizePercentage }} from baseline'
+          description: 'Forecast MAE >30% deviation. Retrain model or recalibrate weather API source.'
+
+  - name: hems_business
+    rules:
+      - alert: SelfConsumptionRateLow
+        expr: hems_self_consumption_ratio < 0.5
+        for: 30m
+        labels:
+          severity: info
+        annotations:
+          summary: 'Self-consumption rate {{ $value | humanizePercentage }} below 50%'
+          description: 'More than half of PV generation is being fed back to the grid. Consider activating battery charge controller.'
+
+      - alert: GridImportCostHigh
+        expr: increase(hems_grid_cost_eur_total[1h]) > 2.0
+        for: 5m
+        labels:
+          severity: info
+        annotations:
+          summary: 'Grid import cost exceeds €2.00 in the last hour'
+          description: 'Consider activating peak-shaving controller or reviewing tariff schedule.'
