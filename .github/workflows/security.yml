@@ -74,51 +74,6 @@ jobs:
           }
           NODE
 
-  snyk:
-    name: Snyk Security Scan
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      security-events: write
-    # Only run if SNYK_TOKEN is configured
-    if: ${{ vars.SNYK_ENABLED == 'true' }}
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@a15d269cd4658e1107c09f1fabf4cbd7bd1f308a # v4.4.0
-        with:
-          version: 10.33.0
-          run_install: false
-
-      - name: Setup Node.js
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
-        with:
-          node-version: '24'
-          cache: 'pnpm'
-          cache-dependency-path: pnpm-lock.yaml
-
-      - name: Enable Corepack
-        run: corepack enable
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Run Snyk test
-        uses: snyk/actions/node@9adf32b1121593767fc3c057af55b55db032dc04 # master
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          args: --severity-threshold=high
-        continue-on-error: true
-
-      - name: Upload Snyk results to GitHub Code Scanning
-        uses: github/codeql-action/upload-sarif@b1bff81932f5cdfc8695c7752dcee935dcd061c8 # v4.33.0
-        if: always()
-        with:
-          sarif_file: snyk.sarif
-        continue-on-error: true
-
   codeql:
     name: CodeQL Analysis
     runs-on: ubuntu-latest
