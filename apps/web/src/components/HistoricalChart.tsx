@@ -15,7 +15,7 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Area,
@@ -29,7 +29,6 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { nexusDb as db } from '../lib/db';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -119,23 +118,21 @@ function mergeDatasets(datasets: MetricDataset): ChartDataPoint[] {
 
 const CACHE_KEY_PREFIX = 'historical-chart';
 
-async function loadFromCache(cacheKey: string): Promise<ChartDataPoint[]> {
+function loadFromCache(cacheKey: string): ChartDataPoint[] {
   try {
-    const cached = await db.settings.get(cacheKey);
-    if (cached?.value && typeof cached.value === 'string') {
-      return JSON.parse(cached.value) as ChartDataPoint[];
-    }
+    const raw = localStorage.getItem(cacheKey);
+    if (raw) return JSON.parse(raw) as ChartDataPoint[];
   } catch {
     // ignore
   }
   return [];
 }
 
-async function saveToCache(cacheKey: string, data: ChartDataPoint[]): Promise<void> {
+function saveToCache(cacheKey: string, data: ChartDataPoint[]): void {
   try {
-    await db.settings.put({ key: cacheKey, value: JSON.stringify(data) });
+    localStorage.setItem(cacheKey, JSON.stringify(data));
   } catch {
-    // ignore
+    // ignore — storage quota
   }
 }
 
@@ -179,7 +176,6 @@ export function HistoricalChart({ className = '' }: HistoricalChartProps) {
   const [zoomRight, setZoomRight] = useState<number | null>(null);
   const [isSelecting, setIsSelecting] = useState(false);
   const [zoomDomain, setZoomDomain] = useState<[number, number] | null>(null);
-  const [offlineData, setOfflineData] = useState<ChartDataPoint[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const to = new Date();
@@ -196,7 +192,7 @@ export function HistoricalChart({ className = '' }: HistoricalChartProps) {
       const datasets = await fetchAllMetrics(from, to, granularity);
       const merged = mergeDatasets(datasets);
       if (merged.length > 0) {
-        await saveToCache(cacheKey, merged);
+        saveToCache(cacheKey, merged);
       }
       return merged;
     },
@@ -204,16 +200,9 @@ export function HistoricalChart({ className = '' }: HistoricalChartProps) {
     retry: 1,
   });
 
-  // Load offline cache as fallback
-  useEffect(() => {
-    if (!isLoading && (isError || chartData.length === 0)) {
-      loadFromCache(cacheKey)
-        .then(setOfflineData)
-        .catch(() => {
-          /* ignore */
-        });
-    }
-  }, [isLoading, isError, chartData.length, cacheKey]);
+  // Load offline cache as fallback (localStorage is synchronous — no effect needed)
+  const offlineData =
+    !isLoading && (isError || chartData.length === 0) ? loadFromCache(cacheKey) : [];
 
   const displayData = chartData.length > 0 ? chartData : offlineData;
 
@@ -232,7 +221,7 @@ export function HistoricalChart({ className = '' }: HistoricalChartProps) {
     { value: '1d', label: t('historicalChart.granularity1d') },
   ];
 
-  const handleMouseDown = (e: { activeLabel?: string | number }): void => {
+  const handleMouseDown = (e: { activeLabel?: string | number | undefined }): void => {
     const label = typeof e.activeLabel === 'number' ? e.activeLabel : undefined;
     if (label !== undefined) {
       setZoomLeft(label);
@@ -240,7 +229,7 @@ export function HistoricalChart({ className = '' }: HistoricalChartProps) {
     }
   };
 
-  const handleMouseMove = (e: { activeLabel?: string | number }): void => {
+  const handleMouseMove = (e: { activeLabel?: string | number | undefined }): void => {
     const label = typeof e.activeLabel === 'number' ? e.activeLabel : undefined;
     if (isSelecting && label !== undefined) {
       setZoomRight(label);
