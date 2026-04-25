@@ -10,12 +10,12 @@
 #    → Saves ~25-40s per job (×4 jobs = ~2 min total)
 #
 # 2. PARALLEL JOBS (fan-out / fan-in)
-#    - Original: lint → test → build → e2e → docker (sequential, ~12-15 min)
-#    - Optimized: install → [lint | test | build] → [e2e | docker] (parallel)
+#    - Original: lint → test → build → e2e (sequential, ~12-15 min)
+#    - Optimized: install → [lint | test | build] → e2e (parallel)
 #    → Saves ~50-60% wall-clock time
 #
 # 3. BUILD ARTIFACT REUSE
-#    - Build once in 'build' job, download in e2e/docker via actions/cache
+#    - Build once in 'build' job, download in e2e via actions/cache
 #    - E2E uses `npx vite preview` on pre-built dist/ instead of dev server
 #    → Saves ~45s build + eliminates redundant compilation
 #
@@ -30,10 +30,6 @@
 # 6. COMPRESSED ARTIFACTS
 #    - compression-level: 6 on uploads, reduces transfer time
 #    → Saves ~5-10s on artifact upload/download
-#
-# 7. DOCKER LAYER CACHING
-#    - docker/build-push-action with GitHub Actions cache backend
-#    → Saves ~30-60s on Docker builds
 #
 # Expected improvement: 50-80% faster (12-15 min → 3-5 min)
 # ─────────────────────────────────────────────────────────────────────────────
@@ -334,43 +330,6 @@ jobs:
           retention-days: 7
           compression-level: 6
 
-  docker:
-    name: 🐳 Docker Build
-    runs-on: ubuntu-latest
-    needs: [build, lint]
-    # Infrastructure transients (apk mirror timeouts, rate limits) should not
-    # block the core CI baseline. Full image verification runs in sbom-scan.yml.
-    continue-on-error: true
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
-
-      - name: Cache Docker layers
-        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
-        with:
-          path: /tmp/.buildx-cache
-          key: docker-${{ runner.os }}-${{ hashFiles('Dockerfile', 'pnpm-lock.yaml') }}
-          restore-keys: |
-            docker-${{ runner.os }}-
-
-      - name: Build Docker image
-        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
-        with:
-          context: .
-          target: production
-          push: false
-          tags: nexus-hems-dash:ci
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
-
-      # Rotate cache to prevent unbounded growth
-      - name: Rotate Docker cache
-        run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
-
   # ─────────────────────────────────────────────────────────────────────────
   # Phase 4: Security gate (parallel with Phase 2)
   # ─────────────────────────────────────────────────────────────────────────
@@ -397,7 +356,7 @@ jobs:
   ci-passed:
     name: ✅ CI Passed
     if: always()
-    needs: [lint, test, build, e2e, docker, security]
+    needs: [lint, test, build, e2e, security]
     runs-on: ubuntu-latest
     steps:
       - name: Check job results
@@ -406,7 +365,6 @@ jobs:
           echo "Test:     ${{ needs.test.result }}"
           echo "Build:    ${{ needs.build.result }}"
           echo "E2E:      ${{ needs.e2e.result }}"
-          echo "Docker:   ${{ needs.docker.result }}"
           echo "Security: ${{ needs.security.result }}"
 
           # Core gates (must pass): lint, test, build
@@ -422,11 +380,7 @@ jobs:
             echo "::warning::E2E tests failed — review before merging"
           fi
 
-          # Docker / Security: non-blocking (infra transients, dev-tool CVEs)
-          # These are verified thoroughly in sbom-scan.yml and security-full.yml.
-          if [[ "${{ needs.docker.result }}" == "failure" ]]; then
-            echo "::warning::Docker build failed (transient infra issue — see sbom-scan.yml)"
-          fi
+          # Security: non-blocking (dev-tool CVEs verified in security-full.yml)
           if [[ "${{ needs.security.result }}" == "failure" ]]; then
             echo "::warning::Security check failed — review security-full.yml"
           fi
