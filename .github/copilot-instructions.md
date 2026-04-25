@@ -177,7 +177,7 @@ Circuit Breaker (`apps/web/src/core/circuit-breaker.ts`): FSM with CLOSED → OP
 | `pnpm lint`         | `turbo lint` → `biome check --write=false && eslint --max-warnings 0` | Biome lint+format check + React ES in each workspace |
 | `pnpm lint:fix`     | `turbo lint:fix` → `biome check --write && eslint --fix`            | Biome auto-fix + ESLint fix across workspaces |
 | `pnpm format`       | `turbo format` → `biome format --write apps/ packages/`             | Biome format all workspaces                  |
-| `pnpm format:check` | `biome format --write=false apps/ packages/`                        | Biome format check (CI-safe)                 |
+| `pnpm format:check` | `biome format apps/ packages/`                                      | Biome format check (Biome 2.4 read-only)     |
 | `pnpm type-check`   | `turbo type-check` → `tsc --noEmit` in each workspace               | TypeScript strict type check across all 3 packages |
 | `pnpm verify:basis` | `pnpm type-check && pnpm lint && pnpm test:run`                      | Full local verification loop                 |
 | `pnpm bench`        | `./scripts/bench-tooling.sh`                                         | Toolchain perf benchmark                     |
@@ -188,7 +188,7 @@ Circuit Breaker (`apps/web/src/core/circuit-breaker.ts`): FSM with CLOSED → OP
 
 - **Husky** + **lint-staged** for pre-commit hooks
 - **Vitest v4** (jsdom, V8 coverage — thresholds: statements 48%, branches 40%, functions 49%, lines 49%) — unit tests in `apps/web/src/tests/` (~428 tests across 37 files)
-- **Playwright** (Chromium/Firefox/WebKit + mobile viewports) — e2e in `apps/web/tests/e2e/`
+- **Playwright** — local E2E is Chromium-only; CI installs and runs Chromium + Firefox; WebKit/mobile projects are disabled for now
 - **Lighthouse CI** (Perf ≥ 85%, A11y ≥ 90%, Best Practices ≥ 90%; `errors-in-console` disabled for demo mode)
 - **Storybook 10** — component stories in `*.stories.tsx` co-located with components
 - `.devcontainer` for reproducible dev environments (Node 24 image, Rust stable, pnpm 10.33.0 via corepack)
@@ -198,6 +198,8 @@ Circuit Breaker (`apps/web/src/core/circuit-breaker.ts`): FSM with CLOSED → OP
 ### Execution Strategy (Local vs Cloud CI)
 
 - **Default local loop:** keep local verification fast and deterministic (`type-check`, `lint`, targeted unit tests, changed-file tests, focused smoke checks)
+- **Never run heavyweight local suites in parallel** on developer hardware. Run `type-check`, lint, tests, builds, and browser checks sequentially unless the user explicitly asks for parallel execution.
+- **Playwright browser policy:** local `pnpm test:e2e` runs Chromium only. Cloud CI runs Chromium + Firefox. WebKit and mobile browser projects stay disabled until explicitly requested.
 - **Long-running suites belong primarily to CI:** full **Playwright E2E** matrix, **Lighthouse**, broad **security scans** (CodeQL/Scorecard), and other heavy end-to-end validations should run mainly in cloud CI pipelines
 - Only run full local E2E/perf/security suites when explicitly requested by the user or when CI is unavailable
 - If a local long-running test is already running and is needed for diagnosis, monitor it; otherwise prefer CI execution and continue with productive implementation work
@@ -221,13 +223,14 @@ Circuit Breaker (`apps/web/src/core/circuit-breaker.ts`): FSM with CLOSED → OP
 2. **IMPLEMENT** — make changes following all rules above
 3. **LOCALIZE** — add/update i18n keys in both `apps/web/src/locales/en.ts` and `apps/web/src/locales/de.ts`
 4. **DEPS** — update `package.json` automatically when new packages are needed
-5. **VERIFY** — run `pnpm type-check && pnpm lint` — zero TypeScript errors, zero lint warnings; existing tests pass
+5. **VERIFY** — run checks sequentially: `time pnpm type-check` → `pnpm lint` → targeted tests. For docs/config-only changes, use targeted Biome/format validation and let cloud CI cover heavy gates.
 
 ### Verification Policy
 
 - Use a staged verification order: `type-check` → `lint` (Biome + slim ESLint) → targeted unit tests → build
-- Always run type-check as `time pnpm type-check` so that elapsed time is visible — `time` has no side-effects and helps diagnose slow hardware
+- Always run type-check as `time pnpm type-check` when local type checking is warranted so elapsed time is visible — `time` has no side effects and helps diagnose slow hardware
 - `pnpm lint` subsumes format checking — no separate `format:check` step needed
+- `pnpm format:check` is `biome format apps/ packages/`; do not add `--write=false` to `biome format` on Biome 2.4
 - Treat full E2E/performance/security suites as CI-first gates; link outcomes to the corresponding workflow runs
 - For runtime-major changes (e.g., Express major), require at least:
   - local TypeScript + lint + relevant unit tests + production build

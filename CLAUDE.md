@@ -28,13 +28,14 @@ pnpm type-check        # tsc --noEmit across all workspaces (strict mode)
 pnpm lint              # biome check + eslint --max-warnings 0 (read-only)
 pnpm lint:fix          # biome check --write + eslint --fix
 pnpm format            # biome format --write apps/ packages/
+pnpm format:check      # biome format apps/ packages/ (Biome 2.4 read-only)
 
 # Testing
 pnpm test              # Vitest watch mode (apps/web)
 pnpm test:run          # All unit tests, one-shot
 pnpm test:coverage     # With V8 coverage report
 pnpm test:fuzz         # Security fuzz tests only
-pnpm test:e2e          # Playwright (CI-first — prefer targeted specs locally)
+pnpm test:e2e          # Playwright (local Chromium-only; CI runs Chromium + Firefox)
 pnpm test:a11y         # Accessibility spec only
 
 # Workspace-targeted (when you need to act on a single package)
@@ -45,7 +46,9 @@ pnpm --filter @nexus-hems/api <script>
 pnpm docker:build && pnpm docker:up   # Build and run on port 8080
 ```
 
-**Local verification order:** `type-check` → `lint` → targeted unit tests. Full E2E/Lighthouse/security scans are CI-first; only run locally when CI is unavailable or explicitly requested.
+**Local verification order:** `type-check` → `lint` → targeted unit tests. Do not run heavy checks in parallel on local hardware. Full E2E/Lighthouse/security scans are CI-first; only run locally when CI is unavailable or explicitly requested.
+
+**Playwright policy:** local `pnpm test:e2e` is intentionally Chromium-only. CI installs and runs Chromium + Firefox. WebKit and mobile browser projects are disabled until explicitly re-enabled.
 
 ## Architecture
 
@@ -115,6 +118,8 @@ Auto-memoization via `babel-plugin-react-compiler`. Never add manual `useCallbac
 
 Biome settings: line width 100, 2-space indent, LF, single quotes, trailing commas, semicolons always. `noExplicitAny`: error — use `unknown`, precise interfaces, or discriminated unions instead.
 
+Biome 2.4 note: use `biome format apps/ packages/` for the read-only `format:check` script. Do not use `biome format --write=false`; this version rejects that flag/value combination.
+
 Use `pnpm.overrides` (never top-level `"overrides"`) for dependency overrides.
 
 ## Critical Constraints
@@ -155,7 +160,7 @@ Conventional Commits enforced by commitlint. Types: `feat, fix, docs, style, ref
 1. Read relevant files before modifying: affected components, adapter interfaces, both Zustand stores.
 2. Implement changes following all rules above.
 3. Add/update i18n keys in both `apps/web/src/locales/en.ts` and `apps/web/src/locales/de.ts`.
-4. Run `pnpm type-check && pnpm lint` — zero TypeScript errors, zero lint warnings.
+4. Verify with staged, non-parallel checks: `time pnpm type-check` → `pnpm lint` → targeted tests. For docs/config-only changes, prefer targeted Biome/format checks plus CI instead of exhausting local hardware.
 
 ## Key Docs
 
