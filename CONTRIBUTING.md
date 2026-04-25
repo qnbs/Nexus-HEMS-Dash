@@ -296,6 +296,104 @@ Create an ADR using this template:
 | Perf score          | ≥85%     | Lighthouse CI         |
 | A11y score          | ≥90%     | Lighthouse CI         |
 
+## Adding a Backend Protocol Adapter
+
+The backend (`apps/api/src/protocols/`) hosts server-side adapters that run on Edge hardware with
+direct network access. These differ from frontend adapters:
+
+```
+Frontend Adapter (apps/web/src/core/adapters/)
+  → Runs in browser
+  → Connects via browser-accessible WebSocket / HTTP
+  → Implements EnergyAdapter interface
+  → Updates useEnergyStore
+
+Backend Adapter (apps/api/src/protocols/)
+  → Runs on Edge hardware (Raspberry Pi / Intel NUC)
+  → Direct Modbus TCP, MQTT mTLS, serial port access
+  → Implements IProtocolAdapter interface
+  → Feeds EventBus → InfluxDB
+```
+
+### Architecture Flow
+
+```mermaid
+flowchart LR
+  HW["Hardware\n(Inverter/Sensor)"]
+  A["IProtocolAdapter\nimplements"]
+  EB["EventBus\n500ms buffer"]
+  TS["TimeseriesService\nInfluxDB write"]
+  WS["WebSocket Gateway\nfiltered broadcast"]
+  UI["React Dashboard"]
+
+  HW -->|raw data| A
+  A -->|UnifiedEnergyDatapoint| EB
+  EB -->|batch flush| TS
+  EB -->|live metrics| WS
+  WS -->|JSON| UI
+```
+
+### Step-by-Step
+
+1. **Create the adapter file** in `apps/api/src/protocols/<protocol>/MyAdapter.ts`
+
+2. **Implement `IProtocolAdapter`** from `@nexus-hems/shared-types`:
+
+   ```typescript
+   import type { IProtocolAdapter, UnifiedEnergyDatapoint } from '@nexus-hems/shared-types';
+
+   export class MyAdapter implements IProtocolAdapter {
+     readonly id = 'my-adapter-01';
+     readonly protocol = 'modbus-sunspec' as const;
+
+     async connect(): Promise<void> { /* ... */ }
+     async disconnect(): Promise<void> { /* ... */ }
+     async healthCheck(): Promise<AdapterHealth> { /* ... */ }
+     async *getDataStream(): AsyncGenerator<UnifiedEnergyDatapoint> { /* ... */ }
+   }
+   ```
+
+3. **Validate all datapoints** before emitting to the EventBus:
+
+   ```typescript
+   import { energyDatapointSchema } from '@nexus-hems/shared-types';
+   const result = energyDatapointSchema.safeParse(rawData);
+   if (!result.success) { /* route to DLQ */ return; }
+   eventBus.emit(result.data);
+   ```
+
+4. **Register the adapter** in `apps/api/src/protocols/index.ts`
+
+5. **Write unit tests** in `apps/api/src/protocols/<protocol>/MyAdapter.test.ts` mocking the
+   hardware client
+
+6. **Update `device-map.json`** if the adapter is Modbus-based
+
+7. **Run the verification suite:**
+
+   ```bash
+   pnpm type-check && pnpm lint && pnpm test:run
+   ```
+
+See [docs/Protocol-Adapter-Guide-Backend.md](docs/Protocol-Adapter-Guide-Backend.md) for the full
+implementation reference including reconnect patterns, Dead-Letter Queue, and testing checklist.
+
+---
+
+## Security Advisory Process
+
+If you discover a security vulnerability:
+
+1. **Do NOT open a public issue** — this exposes active vulnerabilities
+2. Use [GitHub Security Advisories](https://github.com/qnbs/Nexus-HEMS-Dash/security/advisories/new)
+3. Include: affected component, CVSS estimate, reproduction steps, impact assessment
+4. Maintainer response within SLA defined in [SECURITY.md](SECURITY.md)
+5. A coordinated disclosure will follow after the patch is ready
+
+Protocol-specific vulnerability severity guidelines are in `SECURITY.md` (SLA Matrix section).
+
+---
+
 ## License
 
 By contributing, you agree that your contributions will be licensed under the MIT License.

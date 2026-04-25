@@ -9,9 +9,13 @@
     "build": "tsc -p tsconfig.json",
     "start": "node dist/index.js",
     "type-check": "tsc --noEmit -p tsconfig.json",
-    "lint": "biome check src/ index.ts"
+    "lint": "biome check src/ index.ts",
+    "lint:fix": "biome check --write src/ index.ts",
+    "test": "vitest",
+    "test:run": "vitest run"
   },
   "dependencies": {
+    "@influxdata/influxdb-client": "^1.35.0",
     "@nexus-hems/shared-types": "workspace:*",
     "cors": "^2.8.6",
     "dotenv": "^17.2.3",
@@ -19,6 +23,7 @@
     "express-rate-limit": "^8.3.1",
     "helmet": "^8.1.0",
     "jose": "catalog:",
+    "modbus-serial": "^8.0.25",
     "mqtt": "catalog:",
     "tsx": "catalog:",
     "ws": "^8.19.0",
@@ -29,6 +34,7 @@
     "@types/express": "^5.0.6",
     "@types/node": "catalog:",
     "@types/ws": "^8.18.1",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "^4.0.0"
   }
 }

@@ -70,3 +70,71 @@ This project employs multiple layers of security:
 ## OpenSSF Scorecard
 
 This project is tracked by the [OpenSSF Scorecard](https://scorecard.dev/viewer/?uri=github.com/qnbs/Nexus-HEMS-Dash) for supply chain security best practices.
+
+---
+
+## PGP Key Verification
+
+Maintainer commits and release tags are signed with the following GPG key. Verify before applying
+patches or installing artifacts from unofficial mirrors.
+
+```
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+Comment: Nexus-HEMS-Dash Maintainer Signing Key
+Comment: Key type: Ed25519 / Curve25519
+Comment: Key ID: Placeholder — replace with actual maintainer key fingerprint
+
+[Replace this block with the actual exported GPG public key after running:
+ gpg --armor --export <KEY_ID>
+ Upload to keys.openpgp.org and add fingerprint to README.md]
+-----END PGP PUBLIC KEY BLOCK-----
+```
+
+### Tag Signature Verification
+
+```bash
+# Verify a signed release tag
+git fetch --tags
+git tag -v v1.2.0
+
+# Import maintainer key
+curl -sSf "https://keys.openpgp.org/vks/v1/by-fingerprint/<FINGERPRINT>" | gpg --import
+
+# Verify Docker image digest (from GHCR)
+docker trust inspect --pretty ghcr.io/qnbs/nexus-hems-dash:latest
+```
+
+---
+
+## SLA Matrix — Industrial Protocol Vulnerabilities
+
+HEMS systems interact with physical energy infrastructure. The following response-time commitments
+apply to security vulnerabilities in the five industrial protocol implementations:
+
+| Severity | CVSS Score | Protocol Examples | Acknowledgement | Assessment | Patch | Disclosure |
+|----------|-----------|------------------|-----------------|------------|-------|------------|
+| **Critical** | 9.0–10.0 | Remote code execution via Modbus/MQTT, auth bypass in OCPP, TLS downgrade in EEBUS | **4 hours** | **24 hours** | **72 hours** | **Immediate CVE + coordinated** |
+| **High** | 7.0–8.9 | Unauth command injection, JWT forgery, WebSocket DoS, KNX unauthorized control | **24 hours** | **72 hours** | **14 days** | **Coordinated after patch** |
+| **Medium** | 4.0–6.9 | Information disclosure, rate limit bypass, improper input validation | **48 hours** | **7 days** | **30 days** | **After patch + 30 days** |
+| **Low** | 0.1–3.9 | Minor info leak, non-exploitable misconfiguration, cosmetic issue | **7 days** | **21 days** | **90 days** | **Next minor release** |
+
+### Protocol-Specific Concerns
+
+| Protocol | Key Risks | Mitigations in Place |
+|----------|-----------|---------------------|
+| **Modbus RTU/TCP** | No auth by default; register injection; replay attacks | Read-only mode (Phase 3); network isolation via `adapters` Docker network; device-map validation |
+| **MQTT** | Topic spoofing; broker compromise; payload injection | TLS 1.3 / mTLS; Zod validation on every payload; Dead-Letter Queue for malformed messages |
+| **KNX/IP** | Unauthenticated bus access; actuator control | KNX Secure (IP Security) recommended; frontend-only access; no write commands without confirmation |
+| **OCPP 2.1** | Unauthorized charging start/stop; firmware injection via `UpdateFirmware` | Client certificate auth; command whitelist; scope-based authorization |
+| **EEBUS SPINE/SHIP** | mDNS spoofing; TLS certificate pinning bypass | TLS 1.3 mTLS enforced; trusted SKI set; hardware fingerprinting |
+
+### Security Advisory Process
+
+1. Reporter submits via [GitHub Security Advisories](https://github.com/qnbs/Nexus-HEMS-Dash/security/advisories/new)
+2. Maintainer acknowledges within SLA (see table above)
+3. CVSS score assessed; severity classified
+4. Fix developed in a private fork
+5. Coordinated disclosure: reporter notified before public release
+6. CVE requested if CVSS ≥ 7.0
+7. Release notes include `Security:` section with CVE reference and remediation guidance
+8. OpenSSF Scorecard re-run after patch

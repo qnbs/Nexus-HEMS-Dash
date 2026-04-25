@@ -39,10 +39,8 @@ export function setupWebSocket(wss: WebSocketServer): void {
   const requireWSAuth = process.env.NODE_ENV === 'production';
   const wsAuthMap = new WeakMap<WebSocket, AuthenticatedClient>();
   const wsRateLimits = new WeakMap<WebSocket, { count: number; resetAt: number }>();
-
-  // ─── Heartbeat: detect and terminate zombie connections ───────────────
-  // Each client is marked alive=false before every ping.
-  // If a pong arrives the flag is set back to true.
+  /** Per-client subscribed metric keys. Empty set = send all metrics (backward-compatible). */
+  const wsSubscriptions = new WeakMap<WebSocket, Set<string>>();
   // If the next ping cycle finds alive=false the connection is terminated.
   const wsAlive = new WeakMap<WebSocket, boolean>();
 
@@ -87,12 +85,18 @@ export function setupWebSocket(wss: WebSocketServer): void {
       { direction: 'outbound' },
     );
 
-    const message = JSON.stringify({ type: 'ENERGY_UPDATE', data: mockData });
     wss.clients.forEach((client) => {
-      if (client.readyState === 1) {
-        client.send(message);
-        wsMessageCount.outbound++;
-      }
+      if (client.readyState !== 1) return;
+
+      const subscribed = wsSubscriptions.get(client);
+      // If subscribed is empty (no SUBSCRIBE sent), send full payload (backward-compatible)
+      const payload =
+        subscribed && subscribed.size > 0
+          ? filterMockData(mockData as unknown as Record<string, unknown>, subscribed)
+          : mockData;
+
+      client.send(JSON.stringify({ type: 'ENERGY_UPDATE', data: payload }));
+      wsMessageCount.outbound++;
     });
   }, 2000);
 
@@ -136,6 +140,9 @@ export function setupWebSocket(wss: WebSocketServer): void {
     wsAlive.set(ws, true);
     ws.on('pong', () => wsAlive.set(ws, true));
 
+    // Initialize empty subscription set (= receive all metrics)
+    wsSubscriptions.set(ws, new Set<string>());
+
     const clientInfo = authResult
       ? `authenticated:${authResult.clientId}(scope:${authResult.scope})`
       : 'anonymous(read)';
@@ -165,6 +172,28 @@ export function setupWebSocket(wss: WebSocketServer): void {
 
         const validation = validateWSCommand(parsed);
         if (!validation.valid) {
+          // Handle SUBSCRIBE separately — it's not in WSCommandSchema
+          if (
+            parsed !== null &&
+            typeof parsed === 'object' &&
+            'type' in parsed &&
+            parsed.type === 'SUBSCRIBE'
+          ) {
+            const metrics = (parsed as Record<string, unknown>)['metrics'];
+            if (Array.isArray(metrics) && metrics.every((m) => typeof m === 'string')) {
+              const sub = wsSubscriptions.get(ws) ?? new Set<string>();
+              sub.clear();
+              for (const m of metrics as string[]) sub.add(m);
+              wsSubscriptions.set(ws, sub);
+              ws.send(
+                JSON.stringify({
+                  type: 'SUBSCRIBE_ACK',
+                  metrics: [...sub],
+                }),
+              );
+              return;
+            }
+          }
           ws.send(JSON.stringify({ type: 'ERROR', error: validation.error }));
           return;
         }
@@ -225,4 +254,26 @@ export function setupWebSocket(wss: WebSocketServer): void {
       else wsConnectionsPerIP.set(clientIP, remaining);
     });
   });
+}
+
+// ---------------------------------------------------------------------------
+// Subscription filter helper
+// ---------------------------------------------------------------------------
+
+/**
+ * Return only the fields of mockData that the client subscribed to.
+ * If the client subscribed to e.g. ['pvPower', 'batteryPower'], only those
+ * keys are included in the broadcast payload.
+ */
+function filterMockData(
+  data: Record<string, unknown>,
+  subscribed: Set<string>,
+): Record<string, unknown> {
+  const filtered: Record<string, unknown> = {};
+  for (const key of subscribed) {
+    if (Object.hasOwn(data, key)) {
+      filtered[key] = data[key];
+    }
+  }
+  return filtered;
 }

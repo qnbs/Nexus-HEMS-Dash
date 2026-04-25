@@ -53,6 +53,8 @@ In development, `apps/web` (Vite) proxies `/api/*`, `/metrics`, and `/ws` reques
 
 ### Data Flow
 
+#### Frontend Adapters → UI
+
 ```
 ┌─────────────────── Core Adapters ─────────────────────┐
 │  Victron Cerbo GX ──┐                                 │
@@ -77,6 +79,51 @@ In development, `apps/web` (Vite) proxies `/api/*`, `/metrics`, and `/ws` reques
                      ├──→ AI Optimizer (Gemini / OpenAI / Anthropic / xAI / Groq / Ollama)
                      ├──→ Hardware Registry (120+ certified devices)
                      └──→ Dexie.js IndexedDB (Offline Cache)
+```
+
+#### Backend Adapters → Time-Series → Dashboard
+
+```mermaid
+flowchart LR
+  subgraph EDGE["Edge Hardware"]
+    INV["PV Inverter\n(SunSpec Modbus)"]
+    BAT["Battery BMS\n(Victron MQTT)"]
+    EM["Energy Meter\n(Modbus TCP)"]
+  end
+
+  subgraph API["apps/api (Express 5)"]
+    MA["ModbusAdapter\nIProtocolAdapter"]
+    MQTT["MqttAdapter\nIProtocolAdapter"]
+    EB["EventBus\n500ms buffer"]
+    TS["TimeseriesService"]
+    ER["EnergyRouterService\naWATTar LP optimizer"]
+    WS["WebSocket Gateway\nfiltered subscriptions"]
+  end
+
+  subgraph STORE["Persistence"]
+    INFLUX[("InfluxDB v2\nnexus-hems bucket")]
+    WAL["WAL\nwal.ndjson"]
+    AUDIT["Audit Log\nSQLite fallback"]
+  end
+
+  subgraph FRONTEND["apps/web (React 19)"]
+    HC["HistoricalChart\nRecharts ComposedChart"]
+    DASH["Live Dashboard\nD3 Sankey + KPIs"]
+  end
+
+  INV -->|Modbus TCP| MA
+  EM  -->|Modbus TCP| MA
+  BAT -->|MQTT| MQTT
+  MA  -->|UnifiedEnergyDatapoint| EB
+  MQTT -->|UnifiedEnergyDatapoint| EB
+  EB  -->|batch 500ms| TS
+  EB  -->|live metrics| WS
+  EB  -->|SoC + price signal| ER
+  TS  -->|InfluxDB write| INFLUX
+  TS  -.->|InfluxDB unavailable| WAL
+  ER  -->|FORCE_CHARGE log| AUDIT
+  WS  -->|JSON WebSocket| DASH
+  INFLUX -->|Flux query /api/v1/history| HC
 ```
 
 All adapters implement the `EnergyAdapter` interface (`apps/web/src/core/adapters/EnergyAdapter.ts`). Contrib adapters extend `BaseAdapter` (`apps/web/src/core/adapters/BaseAdapter.ts`) for simplified development. The `AdapterRegistry` (`apps/web/src/core/adapters/adapter-registry.ts`) manages registration, lifecycle, and dynamic loading.
@@ -124,6 +171,7 @@ The Codespace includes Node.js 24, pnpm, Playwright, Docker, and all VS Code ext
 All AI API keys are managed via the BYOK Settings page (`/settings/ai`) with AES-GCM 256-bit encryption — no `.env` file needed for AI features.
 
 ```bash
+# --- Server (required in production) ---
 JWT_SECRET=...               # HMAC-SHA256 secret (min 64 chars, cryptographically random)
 API_KEYS=...                 # Comma-separated API keys for /api/auth/token (production)
 CORS_ORIGINS=https://...     # Optional: additional CORS origins
@@ -132,6 +180,15 @@ ADAPTER_MODE=mock            # Optional: 'mock' for demo mode, 'live' for real h
 RATE_LIMIT_TRUSTED_IPS=...   # Optional: IPs exempt from rate limiting (load balancers)
 PROMETHEUS_BEARER_TOKEN=...  # Optional: Bearer token for /metrics endpoint authentication
 PORT=3000                    # Default: 3000
+
+# --- InfluxDB Time-Series DB (optional — defaults work with docker-compose.yml) ---
+INFLUXDB_URL=http://influxdb:8086     # InfluxDB v2 base URL
+INFLUXDB_TOKEN=nexus-hems-influx-token # Write/read auth token
+INFLUXDB_ORG=nexus-hems              # Organisation name
+INFLUXDB_BUCKET=nexus-hems           # Target bucket
+
+# --- Energy Router (optional) ---
+AWATTAR_BASE_URL=https://api.awattar.de/v1  # aWATTar DE Day-Ahead prices (no API key needed)
 ```
 
 ## Pages — 7 Unified Sections

@@ -1,6 +1,7 @@
 import express from 'express';
 import http from 'http';
 import { WebSocketServer } from 'ws';
+import { eventBus } from './core/EventBus.js';
 import { initKeys } from './jwt-utils.js';
 import {
   configureCors,
@@ -8,10 +9,14 @@ import {
   configureRateLimiting,
   configureRequestTracking,
 } from './middleware/security.js';
+import { startProtocolAdapters, stopProtocolAdapters } from './protocols/index.js';
 import { createAuthRoutes } from './routes/auth.routes.js';
 import { createEebusRoutes } from './routes/eebus.routes.js';
 import { createGrafanaRoutes } from './routes/grafana.routes.js';
+import { createHistoryRoutes } from './routes/history.routes.js';
 import { createMetricsRoutes } from './routes/metrics.routes.js';
+import { EnergyRouterService } from './services/EnergyRouterService.js';
+import { TimeseriesService } from './services/TimeseriesService.js';
 import { setupWebSocket } from './ws/energy.ws.js';
 
 export async function startServer(): Promise<void> {
@@ -42,14 +47,30 @@ export async function startServer(): Promise<void> {
   app.use(createEebusRoutes());
   app.use(createMetricsRoutes(wss));
   app.use(createGrafanaRoutes());
+  app.use('/api/v1', createHistoryRoutes());
 
   // ─── WebSocket Handler ────────────────────────────────────────────
   setupWebSocket(wss);
 
+  // ─── Time-Series Service (InfluxDB + WAL) ─────────────────────────
+  const timeseriesService = new TimeseriesService();
+  eventBus.subscribe('timeseries', timeseriesService);
+  await timeseriesService.recoverWAL().catch((err: unknown) => {
+    console.warn('[Server] WAL recovery failed:', err);
+  });
+
+  // ─── Energy Router (Day-Ahead LP optimizer) ───────────────────────
+  const energyRouter = new EnergyRouterService(eventBus);
+  await energyRouter.start().catch((err: unknown) => {
+    console.warn('[Server] EnergyRouterService start failed:', err);
+  });
+
+  // ─── Protocol Adapters ────────────────────────────────────────────
+  await startProtocolAdapters(eventBus).catch((err: unknown) => {
+    console.warn('[Server] Protocol adapter startup error:', err);
+  });
+
   // ─── Static serving for production ───────────────────────────────
-  // In dev: `turbo dev` runs apps/web (Vite, port 5173) and apps/api (Express, port 3000)
-  // concurrently. Vite proxies /api/* → http://localhost:3000.
-  // In prod: Express serves the pre-built web bundle.
   if (!isDev) {
     app.use(express.static(process.env.WEB_DIST_PATH ?? '../web/dist'));
   }
@@ -57,4 +78,17 @@ export async function startServer(): Promise<void> {
   server.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on http://localhost:${PORT}`);
   });
+
+  // ─── Graceful Shutdown ────────────────────────────────────────────
+  const shutdown = async (): Promise<void> => {
+    console.log('[Server] Shutting down…');
+    energyRouter.stop();
+    await stopProtocolAdapters();
+    await timeseriesService.destroy();
+    eventBus.destroy();
+    server.close();
+  };
+
+  process.once('SIGTERM', () => void shutdown());
+  process.once('SIGINT', () => void shutdown());
 }
