@@ -741,12 +741,12 @@ touch apps/web/src/components/MyFeature.stories.tsx
 #### 12. Verify & Deploy
 
 ```bash
-npx tsc --noEmit          # TypeScript check
-pnpm lint                 # ESLint zero-warning policy
+time pnpm type-check      # TypeScript check with elapsed time
+pnpm lint                 # Biome + React ESLint zero-warning policy
 pnpm test:run             # Unit tests
 pnpm build                # Bundle size < 600 KB
 git add -A && git commit -m "feat: add MyFeature page"
-git push                  # CI runs: lint → type-check → unit → e2e → deploy
+git push                  # Cloud CI runs browser E2E, Lighthouse, security, Docker
 ```
 
 ### Design System Rules Summary

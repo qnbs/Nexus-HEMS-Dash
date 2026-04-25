@@ -80,7 +80,7 @@ All root scripts delegate to Turborepo; Turbo fan-outs across `apps/*` and `pack
 | `pnpm format`       | `turbo format` → `biome format --write apps/ packages/`              | Biome format all workspaces      |
 | `pnpm format:check` | `biome format apps/ packages/`                                       | Biome format check (read-only)   |
 | `pnpm type-check`   | `turbo type-check` → `tsc --noEmit` in each workspace                | TypeScript type checking across all 3 packages |
-| `pnpm verify:basis` | `pnpm type-check && pnpm lint && pnpm test:run`                       | Full local verification          |
+| `pnpm verify:basis` | `turbo type-check lint test:run`                                      | Full local verification          |
 | `pnpm bench`        | `./scripts/bench-tooling.sh`                                         | Toolchain wall-clock + RSS bench |
 
 ---

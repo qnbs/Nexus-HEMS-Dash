@@ -36,7 +36,7 @@
     {
       "label": "Type Check + Lint",
       "type": "shell",
-      "command": "pnpm type-check && pnpm lint",
+      "command": "time pnpm type-check && pnpm lint",
       "group": "build",
       "problemMatcher": ["$tsc", "$eslint-stylish"]
     },

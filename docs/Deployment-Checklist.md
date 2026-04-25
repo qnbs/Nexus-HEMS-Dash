@@ -27,8 +27,8 @@
 - [ ] `pnpm type-check` — no TypeScript errors
 - [ ] `pnpm lint` — Biome check + React ESLint (zero warnings, `--max-warnings 0`)
 - [ ] `pnpm test:run` — all unit tests green
-- [ ] `pnpm test:e2e` — all E2E tests green (Playwright)
-- [ ] `pnpm test:a11y` — accessibility tests passed (WCAG 2.2 AA)
+- [ ] Cloud CI Playwright — all E2E tests green (local runs are Chromium-only and optional)
+- [ ] `pnpm test:a11y` or cloud a11y job — accessibility tests passed (WCAG 2.2 AA)
 - [ ] `pnpm build` — build successful
 - [ ] `pnpm size` — bundle size within limits
 

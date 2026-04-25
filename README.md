@@ -276,12 +276,12 @@ For the full threat model, trust boundaries, STRIDE analysis, and GDPR/DSGVO com
 
 ## Testing
 
-| Type       | Tool                                 | Scope                   |
-| :--------- | :----------------------------------- | :---------------------- |
-| Unit       | Vitest + jsdom + V8 coverage         | 428 tests, 37 files     |
+| Type       | Tool                                               | Scope                   |
+| :--------- | :------------------------------------------------- | :---------------------- |
+| Unit       | Vitest + jsdom + V8 coverage                       | Workspace unit suites   |
 | E2E        | Playwright (local Chromium; CI Chromium + Firefox) | Multi-route, a11y audit |
-| a11y       | @axe-core/playwright                 | WCAG 2.2 AA (15 tests)  |
-| Lighthouse | Lighthouse CI                        | Perf ≥ 85%, A11y ≥ 90%  |
+| a11y       | @axe-core/playwright                               | WCAG 2.2 AA             |
+| Lighthouse | Lighthouse CI                                      | Perf ≥ 85%, A11y ≥ 90%  |
 
 ## Deployment
 
@@ -393,7 +393,7 @@ We are deeply grateful to these AI platforms for enabling a solo developer to bu
 Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ```bash
-pnpm lint && pnpm test:run && pnpm build
+pnpm verify:basis
 ```
 
 ## License

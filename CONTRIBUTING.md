@@ -84,7 +84,7 @@ pnpm format           # Biome format --write (all src files)
 pnpm type-check       # TypeScript strict mode
 pnpm test:run         # Unit tests (all must pass)
 pnpm build            # Production build
-pnpm verify:basis     # Full local loop: type-check + lint + test:run
+pnpm verify:basis     # Full local loop via Turbo: type-check + lint + test:run
 ```
 
 > `pnpm lint` subsumes format checking — `format:check` does not need to be run separately.
@@ -140,10 +140,10 @@ This project uses the **React Compiler** (`babel-plugin-react-compiler`) for aut
 1. Branch from the latest `main`
 2. Create a focused branch such as `feat/my-feature`, `fix/my-bug`, or `docs/my-update`
 3. Make your changes following the guidelines above
-4. Ensure all required checks pass: `pnpm lint && pnpm type-check && pnpm test:run && pnpm build`
+4. Ensure the staged local gate passes: `pnpm verify:basis`; run `pnpm build` when build/runtime paths changed
 5. Commit with Conventional Commits: `feat:`, `fix:`, `test:`, `docs:`, `refactor:`, `chore:`, `perf:`, `ci:`
 
-   Common scopes: `adapter`, `store`, `sankey`, `floorplan`, `ui`, `i18n`, `a11y`, `security`, `server`, `pwa`, `tauri`, `deps`
+   Common scopes: `adapter`, `store`, `sankey`, `floorplan`, `ui`, `settings`, `auth`, `db`, `e2e`, `deps`, `docker`, `ci`, `theme`
 
    Examples:
    - `feat(adapter): add Zigbee2MQTT retry logic`
@@ -372,7 +372,7 @@ flowchart LR
 7. **Run the verification suite:**
 
    ```bash
-   pnpm type-check && pnpm lint && pnpm test:run
+   pnpm verify:basis
    ```
 
 See [docs/Protocol-Adapter-Guide-Backend.md](docs/Protocol-Adapter-Guide-Backend.md) for the full

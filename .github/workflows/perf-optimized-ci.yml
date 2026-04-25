@@ -6,7 +6,7 @@
 #
 # 1. DEPENDENCY CACHING
 #    - actions/cache for node_modules (hash-locked to pnpm-lock.yaml)
-#    - pnpm install --prefer-offline (use local cache, skip registry when possible)
+#    - pnpm install --frozen-lockfile after cache restore for deterministic installs
 #    → Saves ~25-40s per job (×4 jobs = ~2 min total)
 #
 # 2. PARALLEL JOBS (fan-out / fan-in)
@@ -20,8 +20,8 @@
 #    → Saves ~45s build + eliminates redundant compilation
 #
 # 4. PLAYWRIGHT BROWSER CACHING
-#    - Cache ~/.cache/ms-playwright keyed on @playwright/test version
-#    → Saves ~30-60s Chromium download per E2E run
+#    - Cache ~/.cache/ms-playwright keyed on pnpm-lock.yaml
+#    → Saves browser downloads for CI's Chromium + Firefox E2E coverage
 #
 # 5. VITE BUILD CACHE
 #    - Cache node_modules/.vite keyed on source hash
