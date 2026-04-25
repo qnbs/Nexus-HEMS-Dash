@@ -226,7 +226,9 @@ jobs:
         run: docker build --target production -t nexus-hems-dash:ci .
 
   # ──────────────────────────────────────────────
-  # Security Gate — requires Security Full workflow to pass
+  # Security Gate — pnpm audit + dependency allowlist check
+  # This job BLOCKS CI on HIGH/CRITICAL vulnerabilities.
+  # Advisory-level findings do not block but do emit warnings.
   # ──────────────────────────────────────────────
   security:
     name: Security Gate
@@ -235,13 +237,37 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Verify security workflow exists
+      - name: Setup pnpm
+        uses: pnpm/action-setup@a15d269cd4658e1107c09f1fabf4cbd7bd1f308a # v4.4.0
+        with:
+          version: 10.33.0
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+          cache: 'pnpm'
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Audit — block on HIGH/CRITICAL CVEs
+        run: pnpm audit --audit-level=high
+        # Fails the job if any HIGH or CRITICAL vulnerability is found.
+        # Moderate/low findings are logged but do not block.
+
+      - name: Verify security-full workflow exists
         run: |
           if [ ! -f .github/workflows/security-full.yml ]; then
-            echo "::error::security-full.yml not found"
+            echo "::error::security-full.yml not found — required for SBOM/Grype scanning"
             exit 1
           fi
-          echo "✅ security-full.yml is configured and runs on push/PR to main"
+          echo "✅ security-full.yml present"
 
   ci-passed:
     name: ✅ CI Passed

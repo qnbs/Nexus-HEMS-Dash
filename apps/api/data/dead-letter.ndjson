@@ -100,3 +100,11 @@
 {"ts":1777082105799,"source":"unknown/topic/here","rawPayload":"123","error":"No matching topic pattern","protocol":"victron-mqtt"}
 {"ts":1777113103534,"source":"unknown/topic/here","rawPayload":"123","error":"No matching topic pattern","protocol":"victron-mqtt"}
 {"ts":1777113103969,"source":"192.168.1.100:840","rawPayload":"","error":"Cannot read properties of undefined (reading 'buffer')","protocol":"modbus-sunspec"}
+{"ts":1777115044073,"source":"unknown/topic/here","rawPayload":"123","error":"No matching topic pattern","protocol":"victron-mqtt"}
+{"ts":1777115045163,"source":"192.168.1.100:840","rawPayload":"","error":"Cannot read properties of undefined (reading 'buffer')","protocol":"modbus-sunspec"}
+{"ts":1777115758738,"source":"192.168.1.100:840","rawPayload":"","error":"Cannot read properties of undefined (reading 'buffer')","protocol":"modbus-sunspec"}
+{"ts":1777115759104,"source":"unknown/topic/here","rawPayload":"123","error":"No matching topic pattern","protocol":"victron-mqtt"}
+{"ts":1777115802685,"source":"192.168.1.100:840","rawPayload":"","error":"Cannot read properties of undefined (reading 'buffer')","protocol":"modbus-sunspec"}
+{"ts":1777115803057,"source":"unknown/topic/here","rawPayload":"123","error":"No matching topic pattern","protocol":"victron-mqtt"}
+{"ts":1777115821713,"source":"192.168.1.100:840","rawPayload":"","error":"Cannot read properties of undefined (reading 'buffer')","protocol":"modbus-sunspec"}
+{"ts":1777115822115,"source":"unknown/topic/here","rawPayload":"123","error":"No matching topic pattern","protocol":"victron-mqtt"}
