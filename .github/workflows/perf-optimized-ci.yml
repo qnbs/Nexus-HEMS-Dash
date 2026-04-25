@@ -87,16 +87,19 @@ jobs:
       - name: Enable Corepack
         run: corepack enable
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-      - name: Save node_modules cache
-        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+      - name: Restore node_modules cache
+        id: deps-cache
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: |
             node_modules
             apps/*/node_modules
             packages/*/node_modules
           key: deps-${{ runner.os }}-node${{ env.NODE_VERSION }}-${{ hashFiles('pnpm-lock.yaml') }}
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
   # ─────────────────────────────────────────────────────────────────────────
   # Phase 2: Parallel quality gates (lint, test, build run simultaneously)
   # ─────────────────────────────────────────────────────────────────────────
@@ -310,11 +313,11 @@ jobs:
 
       - name: Install Playwright browsers
         if: steps.pw-cache.outputs.cache-hit != 'true'
-        run: pnpm --filter @nexus-hems/web exec playwright install --with-deps chromium
+        run: pnpm --filter @nexus-hems/web exec playwright install --with-deps chromium firefox
 
       - name: Install Playwright deps (cached browsers)
         if: steps.pw-cache.outputs.cache-hit == 'true'
-        run: pnpm --filter @nexus-hems/web exec playwright install-deps chromium
+        run: pnpm --filter @nexus-hems/web exec playwright install-deps chromium firefox
 
       - name: Run E2E tests
         run: pnpm test:e2e

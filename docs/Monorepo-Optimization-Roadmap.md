@@ -159,13 +159,12 @@ cross-workspace hoisting works correctly with native addons and binaries).
 | **File** | `package.json` (root) |
 | **Status** | ✅ Fixed |
 
-**Root cause:** `"format:check": "biome format apps/ packages/"` — no `--write=false`
-flag. Biome's `format` command without `--write=false` *modifies files in-place*.
-In a CI context this means the check always "passes" (files are rewritten to match
-format), masking actual formatting violations. The `format:check` script should be
-safe for read-only CI verification.
+**Root cause:** The previous root `format:check` script used `biome format --write=false`,
+but Biome 2.4 rejects that flag/value combination with ``false` is not expected in
+this context`. In this repo version, `biome format apps/ packages/` is the compatible
+read-only formatter invocation.
 
-**Fix:** Changed to `"biome format --write=false apps/ packages/"`.
+**Fix:** Changed to `"biome format apps/ packages/"`.
 
 ---
 

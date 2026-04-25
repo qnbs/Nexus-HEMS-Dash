@@ -200,7 +200,7 @@ jobs:
           path: apps/web/dist
 
       - name: Install Playwright Browsers
-        run: pnpm --filter @nexus-hems/web exec playwright install --with-deps chromium
+        run: pnpm --filter @nexus-hems/web exec playwright install --with-deps chromium firefox
 
       - name: Run Playwright tests
         run: pnpm test:e2e

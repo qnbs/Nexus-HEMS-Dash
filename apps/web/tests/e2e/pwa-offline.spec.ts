@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 import { setupLocalStorage } from './e2e-setup';
 
 test.describe('PWA & Offline Behavior', () => {
@@ -61,14 +61,14 @@ test.describe('Error Recovery', () => {
   });
 
   test('should show 404 page for unknown routes', async ({ page }) => {
-    await page.goto('/this-page-does-not-exist-xyz');
+    await page.goto('./this-page-does-not-exist-xyz');
     await expect(page.locator('text=/404|not found|nicht gefunden/i')).toBeVisible({
       timeout: 15_000,
     });
   });
 
   test('should have a home link on 404 page', async ({ page }) => {
-    await page.goto('/unknown-route');
+    await page.goto('./unknown-route');
     await page.waitForSelector('text=/404|not found|nicht gefunden/i', { timeout: 15_000 });
     const homeLink = page.locator('a[href="/"]').or(page.locator('a[href*="Nexus-HEMS-Dash"]'));
     await expect(homeLink.first()).toBeVisible();

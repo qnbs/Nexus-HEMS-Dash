@@ -158,7 +158,7 @@ The Codespace includes Node.js 24, pnpm, Playwright, Docker, and all VS Code ext
 | `pnpm build`         | Turborepo build — all packages in dependency order                   |
 | `pnpm test`          | Vitest watch mode (apps/web)                                         |
 | `pnpm test:run`      | All unit tests once                                                  |
-| `pnpm test:e2e`      | Playwright E2E + a11y                                                |
+| `pnpm test:e2e`      | Playwright E2E (local Chromium-only; CI runs Chromium + Firefox)      |
 | `pnpm test:coverage` | V8 coverage report                                                   |
 | `pnpm lint`          | Biome + React ESLint across all workspaces (zero-warning policy)     |
 | `pnpm type-check`    | TypeScript strict check across all workspaces                        |
@@ -279,7 +279,7 @@ For the full threat model, trust boundaries, STRIDE analysis, and GDPR/DSGVO com
 | Type       | Tool                                 | Scope                   |
 | :--------- | :----------------------------------- | :---------------------- |
 | Unit       | Vitest + jsdom + V8 coverage         | 428 tests, 37 files     |
-| E2E        | Playwright (Chromium/Firefox/WebKit) | Multi-route, a11y audit |
+| E2E        | Playwright (local Chromium; CI Chromium + Firefox) | Multi-route, a11y audit |
 | a11y       | @axe-core/playwright                 | WCAG 2.2 AA (15 tests)  |
 | Lighthouse | Lighthouse CI                        | Perf ≥ 85%, A11y ≥ 90%  |
 
@@ -331,70 +331,26 @@ Brand colors: `neon-green` (#22ff88) · `electric-blue` (#00f0ff) · `power-oran
 ## Changelog
 
 <details open>
-<summary><b>v5.0.0</b> — Unified Command Center</summary>
+<summary><b>v1.1.0</b> — Mobile, Tariffs, Toolchain, and CI Hardening</summary>
 
-- **One Command Center:** Consolidated 18+ pages into 7 focused sections with unified navigation
-- **Command Hub** (`/`): KPI dashboard with mini Sankey, metric cards, and quick-nav to all sections
-- **Live Energy Flow** (`/energy-flow`): Full D3.js Sankey with draggable panels, fullscreen mode, live price widget
-- **Devices & Automation** (`/devices`): Device cards, KNX floorplan, controllers, hardware — all unified with filter/search
-- **AI Optimization** (`/optimization-ai`): 3-step AI wizard with multi-provider BYOK, MPC day-ahead, predictive forecast
-- **Guided Tours:** First-visit modal tours for every section (PageTour component, localStorage tracking)
-- **Contextual Help:** HelpTooltip on every page, WizardStepper for multi-step flows
-- **Empty States:** Animated empty-state components with energy-pulse, action buttons
-- **A11y Audit:** 26 fixes — `type="button"` on all buttons, `aria-hidden` on decorative icons, i18n for hardcoded strings
-- **React Compiler:** Full compliance — all manual `useCallback`/`useMemo` removed
-- **Storybook:** 20+ stories covering all new components (PageTour, HelpTooltip, WizardStepper, EmptyState)
-- **E2E Tests:** Updated Playwright tests for unified navigation, legacy route redirects, Command Hub + Live Energy Flow
-- **Design System:** Extended with EnergyCard, ControlPanel, FloatingActionBar, WizardStep, LiveMetric utility classes
+- **Capacitor Mobile:** Capacitor 7 configuration for iOS/Android native shells and push-ready app metadata
+- **Tariff Providers:** Tibber, aWATTar DE/AT, Octopus Energy, Nordpool, and dynamic grid fees
+- **Unified Command Center:** 7 focused sections with legacy route redirects, guided tours, empty states, and contextual help
+- **Adapter Platform:** 10 adapters total, contrib plugin loading, lifecycle management, and monitoring health views
+- **Controller Stack:** ESS, peak shaving, tariff-aware charging, self-consumption, emergency reserve, heat pump SG Ready, and EV smart charging loops
+- **Security & CI:** JWT/WebSocket hardening, Node 24 CI baseline, dependency overrides, pnpm audit workflow, and Biome-first checks
+- **A11y & i18n:** WCAG 2.2 AA fixes, forced-colors/reduced-motion support, and complete DE/EN localization coverage for new UI
 </details>
 
 <details>
-<summary><b>v4.6.0</b> — Energy Controllers + MPC Optimizer + Hardware Registry</summary>
+<summary><b>v1.0.0</b> — Production HEMS Dashboard Baseline</summary>
 
-- **Energy Controllers:** 7 real-time control loops (ESS Symmetric, Peak Shaving, Grid-Optimized Charge, Self-Consumption, Emergency Capacity, HeatPump SG Ready, EV Smart Charge) with ControllerPipeline orchestration
-- **MPC Optimizer:** EMHASS-inspired LP day-ahead scheduler with PV/load forecasting, battery constraints, and tariff-aware cost minimization
-- **Hardware Registry:** 120+ certified devices across 5 categories (inverters, wallboxes, meters, batteries, heat pumps) with manufacturer specs and protocol support
-- **Plugin System Lifecycle:** OSGi-inspired plugin manager with install → resolve → start → stop → uninstall lifecycle, dependency injection, service registry, event bus, semver matching
-- **3 New Pages:** Controllers (`/controllers`), Plugins (`/plugins`), Hardware (`/hardware`) with full i18n, a11y, and cross-page navigation
-- **Command Safety Layer:** Zod schema validation, rate limiting (30 cmd/min), audit trail in IndexedDB, danger command confirmation dialog
-- **Hardening:** Null guards on all controller data fields, div-by-zero protection in MPC, plugin activation timeout (10s), WebSocket leak fix, settings hash cache invalidation
-- **Testing:** 265 unit tests across 26 suites (was 106/16), edge case coverage for MPC and controllers
-</details>
-
-<details>
-<summary><b>v4.5.0</b> — Plugin System + 5 Contrib Adapters + Full Integration</summary>
-
-- **Plugin System:** Adapter Registry with dynamic `import()` loading, npm-package format, `BaseAdapter` class
-- **5 Contrib Adapters:** Home Assistant MQTT, Matter/Thread, Zigbee2MQTT, Shelly REST, Example template
-- **MonitoringPage:** Contrib adapter health monitoring with connectivity status, latency tracking, contrib badge
-- **AdapterConfigPanel:** Contrib adapter section with load-all button, capability display, registration status
-- **i18n:** Complete DE/EN localization for all contrib adapter keys, plugin system labels
-- **README:** Comprehensive update with 10-adapter architecture, plugin docs, updated roadmap
-</details>
-
-<details>
-<summary><b>v4.4.0</b> — Capacitor Mobile + Tariff Providers + a11y Audit</summary>
-
-- Capacitor 7 config for iOS/Android native builds + push notifications
-- 5 tariff providers (Tibber, aWATTar DE/AT, Octopus Energy, Nordpool) + dynamic grid fees
-- ARIA-live region for Sankey screen reader announcements (debounced 5s)
-- High-contrast mode: forced-colors support, stronger contrast ratios, solid backgrounds
-- Reduced-motion: graceful transform disabling, explicit animation kills
-- Playwright a11y tests expanded (7 → 15 tests)
-</details>
-
-<details>
-<summary><b>v4.3.0</b> — Backend Security Hardening</summary>
-
-- CORS whitelist, JWT WebSocket auth, Zod schema validation, rate limiting
-- Helmet CSP + HSTS, 64 KB max payload, Dependabot, CodeQL SAST
-</details>
-
-<details>
-<summary><b>v4.0–4.2</b> — Performance & Audit</summary>
-
-- React Compiler, lazy-loaded locales (index chunk −60%), D3 tree-shaking
-- IndexedDB consolidation, WCAG 2.2 AA audit, Radix UI, 106 unit tests
+- **React 19 SPA:** Vite 8, Tailwind CSS v4, React Compiler, Zustand, TanStack Query, and React Router DOM v7
+- **Energy Visualization:** Real-time D3 Sankey flow, Recharts analytics, KPI dashboard, and KNX floorplan
+- **Backend:** Express 5 API, WebSocket energy stream, mock/live adapter mode, JWT auth, metrics, and Grafana export
+- **Offline & PWA:** Dexie cache, background sync, install/update prompts, and Workbox runtime caching
+- **AI Optimization:** Multi-provider BYOK client, encrypted IndexedDB key vault, MPC optimizer, predictive forecast, and AI worker isolation
+- **Deployment:** GitHub Pages, Docker/nginx, Helm/Kubernetes, Tauri desktop, and Capacitor mobile targets
 </details>
 
 Full changelog: [git history](https://github.com/qnbs/Nexus-HEMS-Dash/commits/main)
@@ -427,7 +383,7 @@ We are deeply grateful to these AI platforms for enabling a solo developer to bu
 | Problem                                           | Fix                                                                            |
 | :------------------------------------------------ | :----------------------------------------------------------------------------- |
 | Deploy workflow fails with `HttpError: Not Found` | Enable GitHub Pages Source → **GitHub Actions** in repo Settings → Pages       |
-| Node.js 20 deprecation warnings in CI             | `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true` env is already set in all workflows |
+| Node.js action runtime warnings in CI             | CI uses Node.js 24 and JavaScript actions are forced to Node 24 via workflow env |
 | Lighthouse `errors-in-console` assertion failures | Expected in demo mode without real backend — assertion is set to `off`         |
 | `pnpm install` fails with Corepack error          | Run `corepack enable && corepack prepare pnpm@latest --activate`               |
 | TypeScript errors after pull                      | Run `pnpm install` then `pnpm type-check`                                      |

@@ -48,15 +48,15 @@ Publish your adapter as an npm package:
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "peerDependencies": {
-    "@nexus-hems/adapter-registry": "^1.0.0"
+    "@nexus-hems/shared-types": "^1.1.0"
   }
 }
 ```
 
-Your package entry point:
+Your adapter entry point:
 
 ```typescript
-import { registerAdapter } from '@nexus-hems/adapter-registry';
+import { registerAdapter } from '../adapter-registry';
 import { MyDeviceAdapter } from './my-device-adapter';
 
 registerAdapter('my-device', (config) => new MyDeviceAdapter(config), {

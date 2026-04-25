@@ -187,6 +187,12 @@ eslint-plugin-anti-trojan-source   (pre-commit standalone CLI already covers thi
 | `style.useImportType`                       | warn     | (no ESLint equivalent, cleaner imports)           |
 | `suspicious.noArrayIndexKey`                | warn     | `react/no-array-index-key`                        |
 
+### Script Semantics
+
+- `pnpm lint` is the canonical CI-safe style gate. It delegates to each workspace and runs `biome check` plus the slim React-only ESLint pass where applicable.
+- `pnpm format:check` is intentionally read-only: `biome format apps/ packages/`. Biome 2.4 rejects `--write=false`, so the script relies on the default read-only formatter behavior.
+- `pnpm format` remains the write path via Turbo and should be used for local formatting fixes.
+
 ---
 
 ## 6. Risk Assessment

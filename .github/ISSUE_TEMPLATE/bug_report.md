@@ -35,7 +35,7 @@ assignees: 'qnbs'
 - **Operating System**: [e.g. Windows 11, macOS 14, Ubuntu 24.04]
 - **Device Type**: [e.g. Desktop, Tablet, Smartphone]
 - **Screen Resolution**: [e.g. 1920×1080, 375×812]
-- **App Version / Commit**: [e.g. v5.0.0 or commit hash]
+- **App Version / Commit**: [e.g. v1.1.0 or commit hash]
 - **Installation Type**: [PWA / Browser / Docker / Tauri Desktop / Capacitor Mobile]
 
 ## Affected Area

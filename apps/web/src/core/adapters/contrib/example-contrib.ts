@@ -13,9 +13,11 @@
  *
  * ## npm Package Format
  *
- *   If publishing as an npm package, your package entry point should:
+ *   If publishing as an external package, export `{ id, factory }` from
+ *   your package entry point. For in-repository contrib adapters, register
+ *   directly with the local registry:
  *
- *     import { registerAdapter } from '@nexus-hems/adapter-registry';
+ *     import { registerAdapter } from '../adapter-registry';
  *     registerAdapter('my-package', (config) => new MyAdapter(config));
  *
  *   Or export `{ id, factory }` as default export.

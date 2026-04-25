@@ -6,7 +6,7 @@
  *
  *   1. Static registration via `registerAdapter(id, factory)`
  *   2. Dynamic loading via `loadContribAdapter(id)` (Vite import())
- *   3. npm-package format: packages export `{ id, factory }` and self-register
+ *   3. package format: external packages export `{ id, factory }`
  *
  * Usage:
  *   // Static registration (built-in or contrib)
@@ -15,9 +15,8 @@
  *   // Dynamic loading from contrib/
  *   await loadContribAdapter('my-custom');
  *
- *   // npm package auto-registration in its entry point:
- *   import { registerAdapter } from '@nexus-hems/adapter-registry';
- *   registerAdapter('my-package', (config) => new MyPackageAdapter(config));
+ *   // external package entry point:
+ *   export default { id: 'my-package', factory: (config) => new MyPackageAdapter(config) };
  */
 
 import type { AdapterConnectionConfig, EnergyAdapter } from './EnergyAdapter';
