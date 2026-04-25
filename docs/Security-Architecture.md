@@ -142,12 +142,15 @@ All adapter credentials (Victron IP, MQTT user/pass, KNX gateway, EEBUS certs) a
 
 ### Content Security Policy (CSP)
 
-Enforced via Helmet.js and Tauri CSP:
+Enforced via Helmet.js, the static SPA `index.html`, and Tauri CSP. The static web build
+uses a Vite-injected nonce for its small bootstrap scripts and fallback style block;
+Google Fonts are self-hosted under `apps/web/public/fonts/` with SRI preload tags, so no
+remote font origins are needed.
 
 ```
 default-src 'self';
-script-src 'self';
-style-src 'self' 'unsafe-inline';
+script-src 'self' 'nonce-{vite-build-nonce}';
+style-src 'self' 'nonce-{vite-build-nonce}';
 connect-src 'self' wss://localhost:* wss://127.0.0.1:* https://api.tibber.com https://api.awattar.de
   https://api.open-meteo.com https://generativelanguage.googleapis.com;
 img-src 'self' data: blob:;

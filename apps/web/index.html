@@ -13,7 +13,7 @@
     <!-- Content Security Policy for static hosting (GitHub Pages) -->
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' wss://localhost:* ws://localhost:* wss://127.0.0.1:* ws://127.0.0.1:* https://api.tibber.com https://api.awattar.de https://api.awattar.at https://api.octopus.energy https://api.open-meteo.com https://generativelanguage.googleapis.com https://api.openai.com https://api.anthropic.com https://api.x.ai https://api.groq.com; frame-ancestors 'none'; object-src 'none'; base-uri 'self'"
+      content="default-src 'self'; script-src 'self' 'nonce-__CSP_NONCE__'; style-src 'self' 'nonce-__CSP_NONCE__'; font-src 'self'; img-src 'self' data: blob: https:; connect-src 'self' wss://localhost:* ws://localhost:* wss://127.0.0.1:* ws://127.0.0.1:* https://api.tibber.com https://api.awattar.de https://api.awattar.at https://api.octopus.energy https://api.open-meteo.com https://generativelanguage.googleapis.com https://api.openai.com https://api.anthropic.com https://api.x.ai https://api.groq.com; frame-ancestors 'none'; object-src 'none'; base-uri 'self'"
     />
     <!-- SEO: Open Graph -->
     <meta property="og:title" content="Nexus HEMS Dashboard" />
@@ -30,37 +30,174 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Nexus-HEMS" />
-    <!-- Font preloading: eliminates FOUT/FOIT CLS -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Self-hosted font preloads with SRI: eliminates remote Google Fonts dependency -->
+    <link
+      rel="preload"
+      href="%BASE_URL%fonts/inter-latin.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+      integrity="sha384-l0ql7Q1zqvX5klAVRwYjcMVCkCxg5dMTdghsIlC3pYkX6wwEHerh2bP/4yAao3Im"
+    />
+    <link
+      rel="preload"
+      href="%BASE_URL%fonts/inter-latin-ext.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+      integrity="sha384-r0EoKgCx3XyQjhJdTJ6FDE+8mEZrV95dM7cWvqLDUVdqzM44cq76qdOaYiA3sebS"
+    />
+    <link
+      rel="preload"
+      href="%BASE_URL%fonts/jetbrains-mono-latin.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+      integrity="sha384-9wWypBPwJyfsOnJFplExHD+Wz+6/I6+rtL7ITgA/6wSPgpj+tnQovOLWM9j2rhOF"
+    />
+    <link
+      rel="preload"
+      href="%BASE_URL%fonts/jetbrains-mono-latin-ext.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+      integrity="sha384-md7lI+WpzcaSgfuu+hCajR6cBH9KQiGR2BEnokGhah1MOLT+PY8Tb5r5PUYGeiuQ"
+    />
     <link rel="icon" href="/Nexus-HEMS-Dash/favicon.ico" sizes="48x48" />
     <link rel="icon" type="image/svg+xml" href="/Nexus-HEMS-Dash/icon.svg" />
     <link rel="icon" type="image/png" sizes="192x192" href="/Nexus-HEMS-Dash/icon-192x192.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/Nexus-HEMS-Dash/apple-touch-icon.png" />
     <link rel="manifest" href="/Nexus-HEMS-Dash/manifest.json" />
+    <style nonce="__CSP_NONCE__">
+      @font-face {
+        font-family: 'Inter';
+        font-style: normal;
+        font-weight: 400 800;
+        font-display: swap;
+        src: url('%BASE_URL%fonts/inter-latin.woff2') format('woff2');
+        unicode-range:
+          U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+          U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122,
+          U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+      }
+
+      @font-face {
+        font-family: 'Inter';
+        font-style: normal;
+        font-weight: 400 800;
+        font-display: swap;
+        src: url('%BASE_URL%fonts/inter-latin-ext.woff2') format('woff2');
+        unicode-range:
+          U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF,
+          U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF,
+          U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+      }
+
+      @font-face {
+        font-family: 'JetBrains Mono';
+        font-style: normal;
+        font-weight: 400 700;
+        font-display: swap;
+        src: url('%BASE_URL%fonts/jetbrains-mono-latin.woff2') format('woff2');
+        unicode-range:
+          U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+          U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122,
+          U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+      }
+
+      @font-face {
+        font-family: 'JetBrains Mono';
+        font-style: normal;
+        font-weight: 400 700;
+        font-display: swap;
+        src: url('%BASE_URL%fonts/jetbrains-mono-latin-ext.woff2') format('woff2');
+        unicode-range:
+          U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF,
+          U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF,
+          U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+      }
+
+      body.app-body {
+        background-color: #0f172a;
+      }
+
+      .app-loading,
+      .nexus-recovery {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        background: #0f172a;
+        color: #94a3b8;
+        font-family: system-ui, sans-serif;
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .nexus-recovery {
+        padding: 2rem;
+        text-align: center;
+      }
+
+      .app-loading-text {
+        font-size: 0.875rem;
+      }
+
+      .nexus-recovery-title {
+        font-size: 1rem;
+        color: #e2eaf4;
+        font-weight: 600;
+      }
+
+      .nexus-recovery-message {
+        font-size: 0.875rem;
+      }
+
+      .nexus-recovery-detail {
+        font-size: 0.75rem;
+        max-width: 300px;
+      }
+
+      .nexus-recovery-button {
+        margin-top: 0.5rem;
+        padding: 0.75rem 2rem;
+        border-radius: 0.75rem;
+        border: 1px solid #22ff88;
+        background: transparent;
+        color: #22ff88;
+        cursor: pointer;
+        font-size: 0.875rem;
+        font-weight: 600;
+        transition: all 0.2s;
+      }
+
+      .nexus-recovery-button:hover {
+        background: rgba(34, 255, 136, 0.15);
+      }
+    </style>
     <!-- Set theme from localStorage BEFORE any CSS/React loads to prevent blank screen -->
-    <script>
+    <script nonce="__CSP_NONCE__">
       (() => {
         try {
-          var stored = localStorage.getItem('nexus-hems-store');
+          const stored = localStorage.getItem('nexus-hems-store');
           if (stored) {
-            var parsed = JSON.parse(stored);
-            var theme = parsed.state?.theme || 'ocean-dark';
+            const parsed = JSON.parse(stored);
+            const theme = parsed.state?.theme || 'ocean-dark';
             document.documentElement.setAttribute('data-theme', theme);
           } else {
             document.documentElement.setAttribute('data-theme', 'ocean-dark');
           }
-        } catch (e) {
+        } catch {
           document.documentElement.setAttribute('data-theme', 'ocean-dark');
         }
       })();
     </script>
     <!-- GitHub Pages SPA redirect handler -->
-    <script>
+    <script nonce="__CSP_NONCE__">
       (() => {
-        var l = window.location;
+        const l = window.location;
         if (l.search[1] === '/') {
-          var decoded = l.search
+          const decoded = l.search
             .slice(1)
             .split('&')
             .map((s) => s.replace(/~and~/g, '&'))
@@ -70,23 +207,10 @@
       })();
     </script>
   </head>
-  <body style="background-color: #0f172a">
+  <body class="app-body">
     <div id="root">
       <!-- Inline fallback prevents blank white screen while JS loads or during SW update -->
-      <div
-        id="app-loading"
-        style="
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          min-height: 100vh;
-          background: #0f172a;
-          color: #94a3b8;
-          font-family: system-ui, sans-serif;
-          flex-direction: column;
-          gap: 1rem;
-        "
-      >
+      <div id="app-loading" class="app-loading">
         <svg
           width="40"
           height="40"
@@ -100,11 +224,11 @@
         >
           <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
         </svg>
-        <div style="font-size: 0.875rem">Loading Nexus HEMS…</div>
+        <div class="app-loading-text">Loading Nexus HEMS…</div>
       </div>
     </div>
     <script type="module" src="/src/main.tsx"></script>
-    <script>
+    <script nonce="__CSP_NONCE__">
       // Fallback: if app hasn't rendered after 5s, show retry option
       // This also works as recovery when React crashes or SW serves stale cache
       setTimeout(() => {
@@ -120,24 +244,16 @@
         if (!appRendered) {
           // Clear root and show recovery UI
           root.innerHTML = '';
-          var recovery = document.createElement('div');
-          recovery.style.cssText =
-            'display:flex;align-items:center;justify-content:center;min-height:100vh;background:#0f172a;color:#94a3b8;font-family:system-ui,sans-serif;flex-direction:column;gap:1rem;padding:2rem;text-align:center';
+          const recovery = document.createElement('div');
+          recovery.className = 'nexus-recovery';
           recovery.innerHTML =
             '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#22ff88" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>' +
-            '<div style="font-size:1rem;color:#e2eaf4;font-weight:600">Nexus HEMS</div>' +
-            '<div style="font-size:0.875rem">The app could not be loaded.</div>' +
-            '<div style="font-size:0.75rem;max-width:300px">This can happen when the app updates. Clearing the cache usually fixes it.</div>';
-          var btn = document.createElement('button');
+            '<div class="nexus-recovery-title">Nexus HEMS</div>' +
+            '<div class="nexus-recovery-message">The app could not be loaded.</div>' +
+            '<div class="nexus-recovery-detail">This can happen when the app updates. Clearing the cache usually fixes it.</div>';
+          const btn = document.createElement('button');
           btn.textContent = 'Clear Cache & Reload';
-          btn.style.cssText =
-            'margin-top:0.5rem;padding:0.75rem 2rem;border-radius:0.75rem;border:1px solid #22ff88;background:transparent;color:#22ff88;cursor:pointer;font-size:0.875rem;font-weight:600;transition:all 0.2s';
-          btn.onmouseenter = () => {
-            btn.style.background = 'rgba(34,255,136,0.15)';
-          };
-          btn.onmouseleave = () => {
-            btn.style.background = 'transparent';
-          };
+          btn.className = 'nexus-recovery-button';
           btn.onclick = () => {
             btn.disabled = true;
             btn.textContent = 'Clearing…';

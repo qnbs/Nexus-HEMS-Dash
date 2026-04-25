@@ -1,3 +1,4 @@
+import { randomBytes } from 'node:crypto';
 import babel from '@rolldown/plugin-babel';
 import tailwindcss from '@tailwindcss/vite';
 import react, { reactCompilerPreset } from '@vitejs/plugin-react';
@@ -6,11 +7,26 @@ import { visualizer } from 'rollup-plugin-visualizer';
 import { defineConfig, loadEnv, type PluginOption } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
+function cspNoncePlugin(nonce: string): PluginOption {
+  return {
+    name: 'nexus-csp-nonce',
+    enforce: 'post',
+    transformIndexHtml(html) {
+      return html
+        .replaceAll('__CSP_NONCE__', nonce)
+        .replace(/<script(?![^>]*\bnonce=)/g, `<script nonce="${nonce}"`);
+    },
+  };
+}
+
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, '.', '');
   const isProd = mode === 'production';
+  const cspNonce = randomBytes(16).toString('base64');
 
   const plugins: PluginOption[] = [
+    cspNoncePlugin(cspNonce),
+
     // React Compiler auto-memoizes — requires @rolldown/plugin-babel in Vite 8.
     // OXC handles TS/JSX compilation; Babel runs only for React Compiler.
     react(),
@@ -111,16 +127,6 @@ export default defineConfig(({ mode }) => {
           {
             urlPattern: /^https:\/\/api\.groq\.com\//,
             handler: 'NetworkOnly',
-          },
-          // ── Fonts: Google Fonts (immutable) ──
-          {
-            urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\//,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'google-fonts',
-              expiration: { maxEntries: 30, maxAgeSeconds: 31_536_000 },
-              cacheableResponse: { statuses: [0, 200] },
-            },
           },
           // ── Static assets: images ──
           {

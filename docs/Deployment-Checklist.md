@@ -121,7 +121,8 @@ server {
     add_header Referrer-Policy "strict-origin-when-cross-origin" always;
     add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
     add_header Cross-Origin-Embedder-Policy "credentialless" always;
-    add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' wss: https://api.tibber.com https://api.awattar.de https://api.open-meteo.com; img-src 'self' data: blob:; font-src 'self'; object-src 'none'; frame-ancestors 'none';" always;
+    # CSP is embedded in apps/web/index.html with a Vite-injected nonce.
+    # Do not add a conflicting nginx CSP header unless nginx also injects matching nonces.
 
     # SPA Fallback
     location / {

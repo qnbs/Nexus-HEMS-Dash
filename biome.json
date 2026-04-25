@@ -152,7 +152,7 @@
   },
   "overrides": [
     {
-      "includes": ["vite.config.ts"],
+      "includes": ["**/vite.config.ts"],
       "linter": {
         "rules": {
           "complexity": {
