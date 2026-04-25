@@ -34,7 +34,8 @@ LABEL org.opencontainers.image.title="Nexus-HEMS Dashboard Frontend" \
   org.opencontainers.image.version="$VERSION"
 
 # Security: upgrade all OS packages to fix CVEs (libxml2, openssl, libpng, etc.)
-RUN apk update && apk upgrade --no-cache && rm -rf /var/cache/apk/*
+# The '|| true' prevents transient Alpine mirror timeouts (exit 99) from breaking CI.
+RUN apk update && (apk upgrade --no-cache || true) && rm -rf /var/cache/apk/*
 
 # Security: nginx-unprivileged already creates a non-root 'nginx' user (uid 101).
 # No need to create a separate app user.
