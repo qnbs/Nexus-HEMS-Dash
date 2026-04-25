@@ -9,7 +9,7 @@
  * Uses the VictronSimulator and OCPPMockServer HiL mocks.
  */
 
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import type {
   AdapterDataCallback,
   AdapterStatusCallback,
@@ -21,6 +21,16 @@ import { VictronSimulator } from './mocks/victron-simulator';
 // ─── Victron normalizeToUnified (Legacy Mode) ────────────────────────
 
 describe('VictronMQTTAdapter — normalizeToUnified (Legacy)', () => {
+  // Hoist module import into beforeAll so the first dynamic load happens outside
+  // the per-test 5000ms timeout window. All tests share the cached module.
+  let VictronMQTTAdapter: Awaited<
+    typeof import('../core/adapters/VictronMQTTAdapter')
+  >['VictronMQTTAdapter'];
+
+  beforeAll(async () => {
+    ({ VictronMQTTAdapter } = await import('../core/adapters/VictronMQTTAdapter'));
+  });
+
   let sim: VictronSimulator;
 
   beforeEach(() => {
@@ -33,7 +43,7 @@ describe('VictronMQTTAdapter — normalizeToUnified (Legacy)', () => {
   });
 
   it('should normalize full ENERGY_UPDATE to UnifiedEnergyModel', async () => {
-    const { VictronMQTTAdapter } = await import('../core/adapters/VictronMQTTAdapter');
+    // VictronMQTTAdapter pre-loaded in beforeAll
     const adapter = new VictronMQTTAdapter({
       host: 'localhost',
       port: 8080,
@@ -84,7 +94,7 @@ describe('VictronMQTTAdapter — normalizeToUnified (Legacy)', () => {
   });
 
   it('should handle all-zero values gracefully', async () => {
-    const { VictronMQTTAdapter } = await import('../core/adapters/VictronMQTTAdapter');
+    // VictronMQTTAdapter pre-loaded in beforeAll
     const adapter = new VictronMQTTAdapter({
       host: 'localhost',
       port: 8080,
@@ -115,7 +125,7 @@ describe('VictronMQTTAdapter — normalizeToUnified (Legacy)', () => {
   });
 
   it('should handle missing optional fields (null/undefined)', async () => {
-    const { VictronMQTTAdapter } = await import('../core/adapters/VictronMQTTAdapter');
+    // VictronMQTTAdapter pre-loaded in beforeAll
     const adapter = new VictronMQTTAdapter({
       host: 'localhost',
       port: 8080,
@@ -151,7 +161,7 @@ describe('VictronMQTTAdapter — normalizeToUnified (Legacy)', () => {
   });
 
   it('should calculate otherPowerW = houseLoad - heatPump - ev', async () => {
-    const { VictronMQTTAdapter } = await import('../core/adapters/VictronMQTTAdapter');
+    // VictronMQTTAdapter pre-loaded in beforeAll
     const adapter = new VictronMQTTAdapter({
       host: 'localhost',
       port: 8080,
@@ -187,7 +197,7 @@ describe('VictronMQTTAdapter — normalizeToUnified (Legacy)', () => {
   });
 
   it('should clamp otherPowerW to 0 when negative', async () => {
-    const { VictronMQTTAdapter } = await import('../core/adapters/VictronMQTTAdapter');
+    // VictronMQTTAdapter pre-loaded in beforeAll
     const adapter = new VictronMQTTAdapter({
       host: 'localhost',
       port: 8080,
@@ -221,7 +231,7 @@ describe('VictronMQTTAdapter — normalizeToUnified (Legacy)', () => {
   });
 
   it('should calculate currentA from power/voltage with fallback', async () => {
-    const { VictronMQTTAdapter } = await import('../core/adapters/VictronMQTTAdapter');
+    // VictronMQTTAdapter pre-loaded in beforeAll
     const adapter = new VictronMQTTAdapter({
       host: 'localhost',
       port: 8080,
@@ -255,7 +265,7 @@ describe('VictronMQTTAdapter — normalizeToUnified (Legacy)', () => {
   });
 
   it('should include priceCurrent tariff when provided', async () => {
-    const { VictronMQTTAdapter } = await import('../core/adapters/VictronMQTTAdapter');
+    // VictronMQTTAdapter pre-loaded in beforeAll
     const adapter = new VictronMQTTAdapter({
       host: 'localhost',
       port: 8080,
@@ -285,7 +295,7 @@ describe('VictronMQTTAdapter — normalizeToUnified (Legacy)', () => {
   });
 
   it('should ignore non-ENERGY_UPDATE messages', async () => {
-    const { VictronMQTTAdapter } = await import('../core/adapters/VictronMQTTAdapter');
+    // VictronMQTTAdapter pre-loaded in beforeAll
     const adapter = new VictronMQTTAdapter({
       host: 'localhost',
       port: 8080,
@@ -308,7 +318,7 @@ describe('VictronMQTTAdapter — normalizeToUnified (Legacy)', () => {
   });
 
   it('should handle malformed JSON gracefully', async () => {
-    const { VictronMQTTAdapter } = await import('../core/adapters/VictronMQTTAdapter');
+    // VictronMQTTAdapter pre-loaded in beforeAll
     const adapter = new VictronMQTTAdapter({
       host: 'localhost',
       port: 8080,
@@ -330,7 +340,7 @@ describe('VictronMQTTAdapter — normalizeToUnified (Legacy)', () => {
   });
 
   it('should update snapshot on data emission', async () => {
-    const { VictronMQTTAdapter } = await import('../core/adapters/VictronMQTTAdapter');
+    // VictronMQTTAdapter pre-loaded in beforeAll
     const adapter = new VictronMQTTAdapter({
       host: 'localhost',
       port: 8080,
@@ -356,7 +366,7 @@ describe('VictronMQTTAdapter — normalizeToUnified (Legacy)', () => {
   });
 
   it('should transition status: connecting → connected → disconnected', async () => {
-    const { VictronMQTTAdapter } = await import('../core/adapters/VictronMQTTAdapter');
+    // VictronMQTTAdapter pre-loaded in beforeAll
     const adapter = new VictronMQTTAdapter({
       host: 'localhost',
       port: 8080,
@@ -379,6 +389,12 @@ describe('VictronMQTTAdapter — normalizeToUnified (Legacy)', () => {
 // ─── OCPP normalizeToUnified ─────────────────────────────────────────
 
 describe('OCPP21Adapter — normalizeToUnified', () => {
+  let OCPP21Adapter: Awaited<typeof import('../core/adapters/OCPP21Adapter')>['OCPP21Adapter'];
+
+  beforeAll(async () => {
+    ({ OCPP21Adapter } = await import('../core/adapters/OCPP21Adapter'));
+  });
+
   let server: OCPPMockServer;
 
   beforeEach(() => {
@@ -391,7 +407,7 @@ describe('OCPP21Adapter — normalizeToUnified', () => {
   });
 
   it('should normalize StatusNotification → EVChargerData', async () => {
-    const { OCPP21Adapter } = await import('../core/adapters/OCPP21Adapter');
+    // OCPP21Adapter pre-loaded in beforeAll
     const adapter = new OCPP21Adapter({ host: 'localhost', port: 9000 });
 
     const dataCb = vi.fn() as unknown as AdapterDataCallback;
@@ -414,7 +430,7 @@ describe('OCPP21Adapter — normalizeToUnified', () => {
   });
 
   it('should normalize TransactionEvent Started with meter values', async () => {
-    const { OCPP21Adapter } = await import('../core/adapters/OCPP21Adapter');
+    // OCPP21Adapter pre-loaded in beforeAll
     const adapter = new OCPP21Adapter({ host: 'localhost', port: 9000 });
 
     const dataCb = vi.fn() as unknown as AdapterDataCallback;
@@ -445,7 +461,7 @@ describe('OCPP21Adapter — normalizeToUnified', () => {
   });
 
   it('should normalize TransactionEvent Updated with incremental energy', async () => {
-    const { OCPP21Adapter } = await import('../core/adapters/OCPP21Adapter');
+    // OCPP21Adapter pre-loaded in beforeAll
     const adapter = new OCPP21Adapter({ host: 'localhost', port: 9000 });
 
     const dataCb = vi.fn() as unknown as AdapterDataCallback;
@@ -472,7 +488,7 @@ describe('OCPP21Adapter — normalizeToUnified', () => {
   });
 
   it('should normalize TransactionEvent Ended → zero power', async () => {
-    const { OCPP21Adapter } = await import('../core/adapters/OCPP21Adapter');
+    // OCPP21Adapter pre-loaded in beforeAll
     const adapter = new OCPP21Adapter({ host: 'localhost', port: 9000 });
 
     const dataCb = vi.fn() as unknown as AdapterDataCallback;
@@ -494,7 +510,7 @@ describe('OCPP21Adapter — normalizeToUnified', () => {
   });
 
   it('should normalize MeterValues independently', async () => {
-    const { OCPP21Adapter } = await import('../core/adapters/OCPP21Adapter');
+    // OCPP21Adapter pre-loaded in beforeAll
     const adapter = new OCPP21Adapter({ host: 'localhost', port: 9000 });
 
     const dataCb = vi.fn() as unknown as AdapterDataCallback;
@@ -514,7 +530,7 @@ describe('OCPP21Adapter — normalizeToUnified', () => {
   });
 
   it('should map all OCPP connector statuses correctly', async () => {
-    const { OCPP21Adapter } = await import('../core/adapters/OCPP21Adapter');
+    // OCPP21Adapter pre-loaded in beforeAll
     const adapter = new OCPP21Adapter({ host: 'localhost', port: 9000 });
 
     const dataCb = vi.fn() as unknown as AdapterDataCallback;
@@ -548,7 +564,7 @@ describe('OCPP21Adapter — normalizeToUnified', () => {
   });
 
   it('should handle Heartbeat response', async () => {
-    const { OCPP21Adapter } = await import('../core/adapters/OCPP21Adapter');
+    // OCPP21Adapter pre-loaded in beforeAll
     const adapter = new OCPP21Adapter({ host: 'localhost', port: 9000 });
 
     await adapter.connect();
@@ -569,7 +585,7 @@ describe('OCPP21Adapter — normalizeToUnified', () => {
   });
 
   it('should handle Authorize with auto-accept', async () => {
-    const { OCPP21Adapter } = await import('../core/adapters/OCPP21Adapter');
+    // OCPP21Adapter pre-loaded in beforeAll
     const adapter = new OCPP21Adapter({ host: 'localhost', port: 9000 });
 
     await adapter.connect();
@@ -595,7 +611,7 @@ describe('OCPP21Adapter — normalizeToUnified', () => {
   });
 
   it('should respond NotImplemented for unknown actions', async () => {
-    const { OCPP21Adapter } = await import('../core/adapters/OCPP21Adapter');
+    // OCPP21Adapter pre-loaded in beforeAll
     const adapter = new OCPP21Adapter({ host: 'localhost', port: 9000 });
 
     await adapter.connect();
@@ -614,7 +630,7 @@ describe('OCPP21Adapter — normalizeToUnified', () => {
   });
 
   it('should return correct snapshot', async () => {
-    const { OCPP21Adapter } = await import('../core/adapters/OCPP21Adapter');
+    // OCPP21Adapter pre-loaded in beforeAll
     const adapter = new OCPP21Adapter({ host: 'localhost', port: 9000 });
 
     adapter.onData(() => {});
@@ -634,7 +650,7 @@ describe('OCPP21Adapter — normalizeToUnified', () => {
   });
 
   it('should handle full charging session lifecycle', async () => {
-    const { OCPP21Adapter } = await import('../core/adapters/OCPP21Adapter');
+    // OCPP21Adapter pre-loaded in beforeAll
     const adapter = new OCPP21Adapter({ host: 'localhost', port: 9000 });
 
     const dataCb = vi.fn() as unknown as AdapterDataCallback;
