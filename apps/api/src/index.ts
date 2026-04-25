@@ -15,6 +15,7 @@ import { createEebusRoutes } from './routes/eebus.routes.js';
 import { createGrafanaRoutes } from './routes/grafana.routes.js';
 import { createHistoryRoutes } from './routes/history.routes.js';
 import { createMetricsRoutes } from './routes/metrics.routes.js';
+import { createOpenADRRoutes } from './routes/openadr.routes.js';
 import { EnergyRouterService } from './services/EnergyRouterService.js';
 import { TimeseriesService } from './services/TimeseriesService.js';
 import { setupWebSocket } from './ws/energy.ws.js';
@@ -45,6 +46,7 @@ export async function startServer(): Promise<void> {
   // ─── Routes ───────────────────────────────────────────────────────
   app.use(createAuthRoutes());
   app.use(createEebusRoutes());
+  app.use(createOpenADRRoutes());
   app.use(createMetricsRoutes(wss));
   app.use(createGrafanaRoutes());
   app.use('/api/v1', createHistoryRoutes());

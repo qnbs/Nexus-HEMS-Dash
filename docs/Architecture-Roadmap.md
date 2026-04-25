@@ -85,6 +85,9 @@ graph TD
 | ADR-17 | Visual regression | **Chromatic gated in CI** | Documented in [`docs/adr/ADR-007-chromatic-visual-regression-gate.md`](adr/ADR-007-chromatic-visual-regression-gate.md) |
 | ADR-18 | PII sanitization | **PII masking + AI output filter** | Documented in [`docs/adr/ADR-008-pii-sanitization-ai-output-filter.md`](adr/ADR-008-pii-sanitization-ai-output-filter.md) |
 | ADR-19 | Multi-user RBAC | **ADR only; code deferred v1.2.0** | Documented in [`docs/adr/ADR-009-multi-user-rbac-future.md`](adr/ADR-009-multi-user-rbac-future.md) |
+| ADR-20 | OpenADR 3.1.0 placement | **Frontend Contrib Adapter + API OAuth2 proxy** | Documented in [`docs/adr/ADR-012-openadr-ven-client.md`](adr/ADR-012-openadr-ven-client.md) |
+| ADR-21 | V2G BPT parameter completeness | **Full ISO 15118-20 Annex D BPT params** | Documented in [`docs/adr/ADR-013-v2g-bpt-parameters.md`](adr/ADR-013-v2g-bpt-parameters.md) |
+| ADR-22 | VPP scope | **Single-home VPP-Node for v1.2.0** | Documented in [`docs/adr/ADR-014-vpp-single-home-node.md`](adr/ADR-014-vpp-single-home-node.md) |
 
 ---
 

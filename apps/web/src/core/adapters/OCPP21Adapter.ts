@@ -22,9 +22,17 @@ import type {
   AdapterCapability,
   AdapterCommand,
   AdapterConnectionConfig,
+  BPTNegotiationParams,
   EVChargerData,
+  EVPlugType,
   UnifiedEnergyModel,
 } from './EnergyAdapter';
+
+// ── V2G / SOC guardrails ─────────────────────────────────────────────
+/** Minimum EV SOC% before V2G discharge is permitted (ISO 15118-20 §9.8 / CharIN Guide 2.0) */
+const V2G_MIN_SOC_PERCENT = 15;
+/** Maximum EV SOC% at which the V2G discharge session initiates (safety ceiling) */
+const V2G_MAX_CHARGE_SOC_PERCENT = 95;
 
 // ─── OCPP 2.1 message types (JSON-RPC) ──────────────────────────────
 
@@ -85,8 +93,18 @@ interface ChargerState {
   v2xCapable: boolean;
   v2xActive: boolean;
   transactionId: string | undefined;
-  /** ISO 15118 status */
+  /** ISO 15118 session active (vs. basic IEC 61851) */
+  iso15118Active: boolean;
+  /** ISO 15118 Plug & Charge certificate present */
   iso15118Certified: boolean;
+  /** BPT negotiation parameters received via ISO 15118-20 (null until negotiated) */
+  bptParams: BPTNegotiationParams | undefined;
+  /** EV-reported SOC% via ISO 15118-20 PowerDelivery (0–100) */
+  evSocPercent: number;
+  /** Unix ms — EV-reported departure time */
+  evDepartureTime: number | undefined;
+  /** AFIR Article 5 connector/plug type */
+  plugType: EVPlugType;
 }
 
 /** OCPP security profile (for config validation) */
@@ -109,6 +127,10 @@ export interface OCPPAdapterConfig extends Partial<AdapterConnectionConfig> {
   stationId?: string;
   /** ISO 15118 Plug & Charge support */
   iso15118?: boolean;
+  /** Whether the wallbox supports V2G / BPT (CCS2 combo required) */
+  v2xCapable?: boolean;
+  /** AFIR-compliant plug/connector type */
+  plugType?: EVPlugType;
 }
 
 export class OCPP21Adapter extends BaseAdapter {
@@ -136,7 +158,12 @@ export class OCPP21Adapter extends BaseAdapter {
     v2xCapable: false,
     v2xActive: false,
     transactionId: undefined,
+    iso15118Active: false,
     iso15118Certified: false,
+    bptParams: undefined,
+    evSocPercent: 0,
+    evDepartureTime: undefined,
+    plugType: 'IEC_62196_T2_COMBO',
   };
 
   constructor(config?: OCPPAdapterConfig) {
@@ -151,6 +178,8 @@ export class OCPP21Adapter extends BaseAdapter {
     this.stationId = config?.stationId ?? 'nexus-station-1';
     this.securityProfile = config?.securityProfile ?? 2;
     this.iso15118Enabled = config?.iso15118 ?? false;
+    this.charger.v2xCapable = config?.v2xCapable ?? false;
+    this.charger.plugType = config?.plugType ?? 'IEC_62196_T2_COMBO';
   }
 
   // ─── BaseAdapter abstract implementations ─────────────────────────
@@ -219,6 +248,8 @@ export class OCPP21Adapter extends BaseAdapter {
         return this.sendRemoteStop();
       case 'SET_V2X_DISCHARGE':
         return this.sendV2XDischarge(Number(command.value));
+      case 'SET_V2G_BPT_PARAMS':
+        return this.sendV2GBPTParams(command.payload as unknown as BPTNegotiationParams);
       case 'SET_EV_POWER':
         return this.sendSetChargingProfile(
           Math.round(Number(command.value) / this.charger.voltageV),
@@ -402,6 +433,10 @@ export class OCPP21Adapter extends BaseAdapter {
               break;
             case 'SoC':
               this.charger.socPercent = sv.value;
+              // ISO 15118-20: EV-reported SOC is authoritative for BPT guardrails
+              if (this.charger.iso15118Active) {
+                this.charger.evSocPercent = sv.value;
+              }
               break;
             case 'Current.Import':
               this.charger.currentA = sv.value;
@@ -468,6 +503,11 @@ export class OCPP21Adapter extends BaseAdapter {
       vehicleConnected: this.charger.vehicleConnected,
       v2xCapable: this.charger.v2xCapable,
       v2xActive: this.charger.v2xActive,
+      bptParams: this.charger.bptParams,
+      evSocPercent: this.charger.evSocPercent || undefined,
+      evDepartureTime: this.charger.evDepartureTime,
+      iso15118Active: this.charger.iso15118Active,
+      plugType: this.charger.plugType,
     };
   }
 
@@ -514,10 +554,71 @@ export class OCPP21Adapter extends BaseAdapter {
     return true;
   }
 
-  /** V2X discharge: negative limit = vehicle-to-grid */
+  /**
+   * V2G BPT: store negotiated parameters and apply them as a SetChargingProfile
+   * with discharge limits derived from ISO 15118-20 Annex D values.
+   * Guards: v2xCapable must be true; SOC must be above V2G_MIN_SOC_PERCENT.
+   */
+  private sendV2GBPTParams(params: BPTNegotiationParams): boolean {
+    if (!this.charger.v2xCapable) return false;
+    if (this.charger.evSocPercent > 0 && this.charger.evSocPercent < V2G_MIN_SOC_PERCENT) {
+      return false; // SOC too low — cannot initiate V2G
+    }
+    if (
+      this.charger.evSocPercent >= V2G_MAX_CHARGE_SOC_PERCENT &&
+      params.evMaximumDischargePowerW <= 0
+    ) {
+      return false; // Nothing to discharge at max SOC if discharge power is zero
+    }
+
+    this.charger.bptParams = params;
+    this.charger.iso15118Active = true;
+
+    // Apply BPT profile: negative limit = discharge (vehicle-to-grid).
+    // OCPP 2.1 B07.FR.04 permits negative Schedule limits for BPT.
+    this.call('SetChargingProfile', {
+      evseId: 1,
+      chargingProfile: {
+        id: 3,
+        stackLevel: 2,
+        chargingProfilePurpose: 'TxProfile',
+        chargingProfileKind: 'Absolute',
+        chargingSchedule: [
+          {
+            id: 3,
+            chargingRateUnit: 'W',
+            chargingSchedulePeriod: [{ startPeriod: 0, limit: -params.evMaximumDischargePowerW }],
+            // minChargingRate maps to the discharge minimum floor
+            minChargingRate: params.evMinimumDischargePowerW,
+          },
+        ],
+      },
+    }).catch(() => {});
+
+    this.charger.v2xActive = params.evMaximumDischargePowerW > 0;
+    this.emitChargerData();
+    return true;
+  }
+
+  /**
+   * V2X discharge: negative limit = vehicle-to-grid.
+   * When BPT params are negotiated, clamps to evMaximumDischargePowerW.
+   * SOC guardrail: blocks discharge below V2G_MIN_SOC_PERCENT.
+   */
   private sendV2XDischarge(dischargePowerW: number): boolean {
     if (!this.charger.v2xCapable) return false;
-    const dischargeCurrentA = Math.round(dischargePowerW / this.charger.voltageV);
+
+    // SOC guardrail
+    if (this.charger.evSocPercent > 0 && this.charger.evSocPercent < V2G_MIN_SOC_PERCENT) {
+      return false;
+    }
+
+    // Clamp to negotiated BPT limits if available
+    const effectivePowerW = this.charger.bptParams
+      ? Math.min(dischargePowerW, this.charger.bptParams.evMaximumDischargePowerW)
+      : dischargePowerW;
+
+    const dischargeCurrentA = Math.round(effectivePowerW / this.charger.voltageV);
     this.call('SetChargingProfile', {
       evseId: 1,
       chargingProfile: {
@@ -534,7 +635,7 @@ export class OCPP21Adapter extends BaseAdapter {
         ],
       },
     }).catch(() => {});
-    this.charger.v2xActive = dischargePowerW > 0;
+    this.charger.v2xActive = effectivePowerW > 0;
     return true;
   }
 

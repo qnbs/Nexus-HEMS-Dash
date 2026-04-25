@@ -12,6 +12,12 @@ export interface EnergyData {
   batteryVoltage: number;
   pvYieldToday: number;
   priceCurrent: number;
+  /** EV battery state-of-charge from ISO 15118-20 PowerDelivery (0–100 %) */
+  evSocPercent?: number;
+  /** BPT maximum discharge power available from EV (W); from ISO 15118-20 negotiation */
+  evMaxDischargePowerW?: number;
+  /** True when §14a LOAD_CONTROL OpenADR event has blocked EV charging */
+  evDisabledBy14a?: boolean;
 }
 
 export type TariffProvider =

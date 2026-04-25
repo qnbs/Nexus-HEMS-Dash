@@ -44,6 +44,53 @@ export interface LoadData {
   otherPowerW: number;
 }
 
+/**
+ * ISO 15118-20 Annex D — Bidirectional Power Transfer (BPT) negotiation parameters.
+ * All power values in W; all current values in A; energy values in Wh.
+ * Exchanged during OCPP 2.1 RequestStartTransaction / ISO 15118-20 PowerDelivery.
+ */
+export interface BPTNegotiationParams {
+  // ── Charge limits (mandatory) ─────────────────────────────────────
+  /** Maximum charging power the EV will accept (W, positive) */
+  evMaximumChargePowerW: number;
+  /** Minimum charging power below which EV cannot operate (W, ≥ 0) */
+  evMinimumChargePowerW: number;
+  /** Maximum AC charge current the EV will accept (A, positive) */
+  evMaximumChargeCurrentA: number;
+  /** Minimum AC charge current the EV requires (A, ≥ 0) */
+  evMinimumChargeCurrentA: number;
+  // ── Discharge limits (mandatory for BPT / V2G) ───────────────────
+  /** Maximum discharge power the EV can supply back to EVSE (W, positive) */
+  evMaximumDischargePowerW: number;
+  /** Minimum discharge power below which EV cannot operate in V2G mode (W, ≥ 0) */
+  evMinimumDischargePowerW: number;
+  /** Maximum discharge current the EV can supply (A, positive) */
+  evMaximumDischargeCurrentA: number;
+  /** Minimum discharge current the EV requires in V2G mode (A, ≥ 0) */
+  evMinimumDischargeCurrentA: number;
+  // ── V2X energy guardrails (optional, ISO 15118-20 §9.8) ──────────
+  /** Maximum total energy the EV will export during this session (Wh) */
+  evMaximumV2XEnergyRequestWh?: number | undefined;
+  /** Minimum total energy the EV requires to export (Wh) */
+  evMinimumV2XEnergyRequestWh?: number | undefined;
+  // ── DER / §14a / VPP fields ───────────────────────────────────────
+  /**
+   * DER capability bitmap (ISO 15118-20 §8.3.5.3.3 / CharIN Guide 2.0)
+   * Bit 0: Charge, Bit 1: Discharge, Bit 2: Reactive-Q, Bit 3: Islanding
+   */
+  derBitmap?: number | undefined;
+  /** Target energy for the session (Wh); used by MPC optimizer as EV demand */
+  targetEnergyRequestWh?: number | undefined;
+}
+
+/** AFIR Article 5 — compliant plug / connector type for V2G wallboxes */
+export type EVPlugType =
+  | 'IEC_62196_T2'
+  | 'IEC_62196_T2_COMBO'
+  | 'CHADEMO'
+  | 'IEC_62196_T1'
+  | 'IEC_62196_T1_COMBO';
+
 /** EV charger state (OCPP 2.1 / IEC 61851) */
 export interface EVChargerData {
   status: 'available' | 'preparing' | 'charging' | 'suspended' | 'finishing' | 'faulted';
@@ -56,6 +103,16 @@ export interface EVChargerData {
   vehicleConnected: boolean;
   v2xCapable: boolean;
   v2xActive: boolean;
+  /** Full ISO 15118-20 Annex D BPT negotiation parameters — populated when ISO 15118-20 is active */
+  bptParams?: BPTNegotiationParams | undefined;
+  /** EV state-of-charge reported via ISO 15118-20 PowerDelivery (0–100) */
+  evSocPercent?: number | undefined;
+  /** Unix ms — when the EV driver expects the vehicle to be ready (departure time) */
+  evDepartureTime?: number | undefined;
+  /** Whether ISO 15118-20 protocol is active on this session (vs. basic IEC 61851) */
+  iso15118Active?: boolean | undefined;
+  /** AFIR-compliant plug/connector type */
+  plugType?: EVPlugType | undefined;
 }
 
 /** KNX building automation state */
@@ -137,6 +194,17 @@ export type AdapterCommandType =
   | 'START_CHARGING'
   | 'STOP_CHARGING'
   | 'SET_V2X_DISCHARGE'
+  // ── V2G / BPT (ISO 15118-20) ──────────────────────────────────────
+  /** Send full ISO 15118-20 BPT negotiation parameters to the EVSE */
+  | 'SET_V2G_BPT_PARAMS'
+  // ── OpenADR 3.1.0 ─────────────────────────────────────────────────
+  /** Acknowledge an OpenADR demand-response event (opt-in or opt-out) */
+  | 'OPENADR_ACKNOWLEDGE_EVENT'
+  /** Submit a telemetry report to the OpenADR VTN */
+  | 'OPENADR_SUBMIT_REPORT'
+  // ── VPP / Flex Market ─────────────────────────────────────────────
+  /** Offer flexibility (power + duration + price) to the VPP market */
+  | 'VPP_OFFER_FLEX'
   | 'SET_HEAT_PUMP_MODE'
   | 'SET_HEAT_PUMP_POWER'
   | 'SET_BATTERY_POWER'
@@ -150,6 +218,12 @@ export interface AdapterCommand {
   type: AdapterCommandType;
   value: number | string | boolean;
   targetDeviceId?: string;
+  /**
+   * Structured payload for commands that require complex objects beyond a scalar value.
+   * Used by: SET_V2G_BPT_PARAMS (BPTNegotiationParams), VPP_OFFER_FLEX (FlexOffer),
+   * OPENADR_ACKNOWLEDGE_EVENT (event ID + opt decision).
+   */
+  payload?: Record<string, unknown> | undefined;
 }
 
 // ─── Adapter Event / Callback ────────────────────────────────────────

@@ -26,8 +26,10 @@ export interface OptimizationSlot {
   durationMin: number;
   /** Planned battery power (W, positive=charge, negative=discharge) */
   batteryPowerW: number;
-  /** Planned EV charge current (A) */
+  /** Planned EV charge current (A, ≥ 0 = charging) */
   evCurrentA: number;
+  /** Planned EV V2G discharge power (W, > 0 = active V2G discharge to home/grid) */
+  evDischargePowerW: number;
   /** Planned heat pump mode (SG Ready 1-4) */
   sgReadyMode: 1 | 2 | 3 | 4;
   /** Expected grid import (W) */
@@ -103,6 +105,17 @@ export interface OptimizationConstraints {
     maxChargeW: number;
     minChargeW: number;
     departuretime?: number;
+    // V2G / BPT fields (ISO 15118-20)
+    /** Whether the EV supports V2G discharge */
+    v2xCapable?: boolean;
+    /** Maximum V2G discharge power from BPT negotiation (W) */
+    maxDischargeW?: number;
+    /** Minimum V2G discharge power from BPT negotiation (W) */
+    minDischargeW?: number;
+    /** EV SOC% below which V2G discharge is blocked */
+    minSoCForV2G?: number;
+    /** §14a OpenADR LOAD_CONTROL: when true, ALL EV energy is blocked */
+    disabledBy14a?: boolean;
   };
   /** Heat pump parameters */
   heatPump: {
@@ -116,6 +129,12 @@ export interface OptimizationConstraints {
   feedInTariffEurKWh: number;
   /** Battery round-trip efficiency (0-1) */
   batteryEfficiency: number;
+  /**
+   * OpenADR ELECTRICITY_PRICE events as tariff overrides.
+   * When present, these slots replace the corresponding tariff array entries.
+   * Keyed by slot index (0 = earliest slot).
+   */
+  openADRPriceOverrides?: Record<number, number>;
 }
 
 // ─── LP Solver (Simplex-like for browser) ────────────────────────────
@@ -202,30 +221,96 @@ class LPSolver {
       );
     }
 
-    // Pass 3: EV scheduling — charge in cheapest slots until target SoC
-    if (constraints.ev.connected && constraints.ev.currentSoC < constraints.ev.targetSoC) {
-      const energyNeededWh =
-        (constraints.ev.targetSoC - constraints.ev.currentSoC) * constraints.ev.capacityKWh * 1000;
-      let remaining = energyNeededWh;
+    // Pass 3: EV scheduling — charge in cheapest slots AND discharge in expensive slots (V2X)
+    const evDischarge = new Float64Array(n); // W, positive = discharge from EV to home/grid
 
-      // Sort cheap slots that have grid headroom
-      for (const { index } of priceRanked) {
-        if (remaining <= 0) break;
-        const deadline = constraints.ev.departuretime ?? Infinity;
-        if ((tariff[index]?.timestamp ?? 0) > deadline) continue;
+    if (constraints.ev.connected && !constraints.ev.disabledBy14a) {
+      // 3a: Charge scheduling (as before)
+      if (constraints.ev.currentSoC < constraints.ev.targetSoC) {
+        const energyNeededWh =
+          (constraints.ev.targetSoC - constraints.ev.currentSoC) *
+          constraints.ev.capacityKWh *
+          1000;
+        let remaining = energyNeededWh;
 
-        const gridUsed = Math.max(
-          0,
-          (loadForecast[index]?.powerW ?? 0) -
-            (pvForecast[index]?.powerW ?? 0) +
-            batterySchedule[index],
-        );
-        const headroom = constraints.maxGridImportW - gridUsed;
-        const evPower = Math.min(constraints.ev.maxChargeW, Math.max(0, headroom));
-        const evEnergy = evPower * dt;
+        for (const { index } of priceRanked) {
+          if (remaining <= 0) break;
+          const deadline = constraints.ev.departuretime ?? Infinity;
+          if ((tariff[index]?.timestamp ?? 0) > deadline) continue;
 
-        evSchedule[index] = evPower / 230 / 3; // Convert to amps (3-phase)
-        remaining -= evEnergy;
+          const gridUsed = Math.max(
+            0,
+            (loadForecast[index]?.powerW ?? 0) -
+              (pvForecast[index]?.powerW ?? 0) +
+              batterySchedule[index],
+          );
+          const headroom = constraints.maxGridImportW - gridUsed;
+          const evPower = Math.min(constraints.ev.maxChargeW, Math.max(0, headroom));
+          const evEnergy = evPower * dt;
+
+          evSchedule[index] = evPower / 230 / 3; // Convert to amps (3-phase)
+          remaining -= evEnergy;
+        }
+      }
+
+      // 3b: V2X discharge scheduling — when price ≥ 2× median AND V2G capable
+      const v2xCapable = constraints.ev.v2xCapable ?? false;
+      const maxDischargeW = constraints.ev.maxDischargeW ?? 0;
+      const minDischargeW = constraints.ev.minDischargeW ?? 0;
+      const minV2GSoC = constraints.ev.minSoCForV2G ?? 0.15;
+
+      if (v2xCapable && maxDischargeW > 0 && constraints.ev.currentSoC >= minV2GSoC) {
+        const dischargeThreshold = medianPrice * 2; // Only discharge when very expensive
+
+        for (let i = 0; i < n; i++) {
+          const slotPrice = tariff[i]?.priceEurKWh ?? 0;
+          if (slotPrice < dischargeThreshold) continue;
+          // Don't discharge in slots where we also scheduled EV charging
+          if (evSchedule[i] > 0) continue;
+
+          const pvSupply = pvForecast[i]?.powerW ?? 0;
+          const loadDemand = loadForecast[i]?.powerW ?? 0;
+          // How much load is uncovered by PV + battery discharge?
+          const batteryDischarge = Math.max(0, -batterySchedule[i]);
+          const pvCoverage = pvSupply + batteryDischarge;
+          const deficit = Math.max(0, loadDemand - pvCoverage);
+
+          // Discharge to cover home deficit first, then grid export for revenue
+          const dischargeTarget = Math.min(
+            maxDischargeW,
+            Math.max(minDischargeW, deficit > 0 ? deficit : maxDischargeW * 0.5),
+          );
+
+          evDischarge[i] = dischargeTarget;
+        }
+      }
+    } else if (!constraints.ev.connected) {
+      // EV not connected: original simple charge scheduling
+      if (constraints.ev.currentSoC < constraints.ev.targetSoC) {
+        const energyNeededWh =
+          (constraints.ev.targetSoC - constraints.ev.currentSoC) *
+          constraints.ev.capacityKWh *
+          1000;
+        let remaining = energyNeededWh;
+
+        for (const { index } of priceRanked) {
+          if (remaining <= 0) break;
+          const deadline = constraints.ev.departuretime ?? Infinity;
+          if ((tariff[index]?.timestamp ?? 0) > deadline) continue;
+
+          const gridUsed = Math.max(
+            0,
+            (loadForecast[index]?.powerW ?? 0) -
+              (pvForecast[index]?.powerW ?? 0) +
+              batterySchedule[index],
+          );
+          const headroom = constraints.maxGridImportW - gridUsed;
+          const evPower = Math.min(constraints.ev.maxChargeW, Math.max(0, headroom));
+          const evEnergy = evPower * dt;
+
+          evSchedule[index] = evPower / 230 / 3;
+          remaining -= evEnergy;
+        }
       }
     }
 
@@ -240,14 +325,18 @@ class LPSolver {
     for (let i = 0; i < n; i++) {
       const pv = pvForecast[i]?.powerW ?? 0;
       const load = loadForecast[i]?.powerW ?? 0;
-      const price = tariff[i]?.priceEurKWh ?? 0.2;
+      // Apply OpenADR price override if available for this slot
+      const basePrice = tariff[i]?.priceEurKWh ?? 0.2;
+      const price = constraints.openADRPriceOverrides?.[i] ?? basePrice;
       const co2 = tariff[i]?.co2GPerKWh ?? 400;
       const batteryW = batterySchedule[i];
       const evA = evSchedule[i];
       const evW = evA * 230 * 3;
+      const evDischargeW = evDischarge[i];
 
+      // Total demand includes EV charging; total supply includes EV discharge
       const totalDemand = load + Math.max(0, batteryW) + evW;
-      const totalSupply = pv + Math.abs(Math.min(0, batteryW));
+      const totalSupply = pv + Math.abs(Math.min(0, batteryW)) + evDischargeW;
 
       const gridImport = Math.max(0, totalDemand - totalSupply);
       const gridExport = Math.max(0, totalSupply - totalDemand);
@@ -284,6 +373,7 @@ class LPSolver {
         durationMin: 15,
         batteryPowerW: Math.round(batteryW),
         evCurrentA: Math.round(evA),
+        evDischargePowerW: Math.round(evDischargeW),
         sgReadyMode: sgMode,
         expectedGridW: Math.round(gridImport - gridExport),
         expectedCostEur: Number(slotCost.toFixed(4)),
@@ -398,6 +488,8 @@ export function buildConstraints(
   _data: EnergyData,
   settings: StoredSettings,
 ): OptimizationConstraints {
+  const evV2xCapable = (_data.evMaxDischargePowerW ?? 0) > 0;
+
   return {
     maxGridImportW: (settings.maxGridImportKw ?? 4.2) * 1000,
     maxGridExportW: 70_000, // 70kW default
@@ -409,11 +501,17 @@ export function buildConstraints(
     currentBatterySoC: Math.max(0, Math.min(1, _data.batterySoC / 100)),
     ev: {
       connected: (_data.evPower ?? 0) > 0,
-      currentSoC: 0.5,
+      currentSoC: (_data.evSocPercent ?? 50) / 100,
       targetSoC: 0.8,
       capacityKWh: 60,
       maxChargeW: (settings.evMaxPowerKW ?? 11) * 1000,
       minChargeW: 1380,
+      // V2G fields from BPT negotiation
+      v2xCapable: evV2xCapable,
+      maxDischargeW: _data.evMaxDischargePowerW ?? 0,
+      minDischargeW: 0,
+      minSoCForV2G: 0.15,
+      disabledBy14a: _data.evDisabledBy14a ?? false,
     },
     heatPump: {
       ratedPowerW: (settings.heatPumpPowerKW ?? 6) * 1000,

@@ -23,7 +23,7 @@ Nexus-HEMS integrates 5 dynamic electricity tariff providers. This guide walks t
 ### Prerequisites
 
 - Tibber account: [tibber.com/signup](https://tibber.com)
-- Smart meter or Tibber Pulse attached to your meter  
+- Smart meter or Tibber Pulse attached to your meter
 - Access Token from the [Tibber Developer Portal](https://developer.tibber.com)
 
 ### Configuration
@@ -58,8 +58,8 @@ The MPC optimizer uses Tibber tomorrow prices to pre-charge batteries when price
 
 ### Prerequisites
 
-- No account required for basic pricing  
-- Optional: aWATTar tariff contract for full cost breakdown  
+- No account required for basic pricing
+- Optional: aWATTar tariff contract for full cost breakdown
 
 ### Configuration
 
@@ -79,9 +79,9 @@ Response: 1-hour resolution EPEX SPOT prices in €/MWh. Nexus-HEMS automaticall
 ### §14a EnWG Grid Fee Reduction
 
 When **§14a EnWG** mode is enabled (Settings → Grid Operator Integration):
-- Grid operator can send price signals to reduce grid fees by up to 60%  
-- `getDynamicGridFee()` detects the active signal and reduces fees accordingly  
-- Savings are logged to IndexedDB for monthly reporting  
+- Grid operator can send price signals to reduce grid fees by up to 60%
+- `getDynamicGridFee()` detects the active signal and reduces fees accordingly
+- Savings are logged to IndexedDB for monthly reporting
 
 ---
 
@@ -101,8 +101,8 @@ Austrian market uses EPEX SPOT AT prices in €/MWh.
 
 ### Prerequisites
 
-- Active Octopus Energy account  
-- Agile Octopus tariff enrollment  
+- Active Octopus Energy account
+- Agile Octopus tariff enrollment
 - API key from account dashboard: **Account → Developers**
 
 ### Configuration
@@ -132,7 +132,7 @@ Authorization: Basic <base64(api_key:)>
 
 ### Prerequisites
 
-- No authentication required for public pricing data  
+- No authentication required for public pricing data
 - Configure your **bidding zone** (e.g., DE-LU, AT, NO1, SE1-4)
 
 ### Configuration

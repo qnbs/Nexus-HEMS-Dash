@@ -1,9 +1,9 @@
 # ADR-011: OpenAPI Auto-Generation for Backend API
 
-**Status:** Proposed  
-**Date:** 2026-04-25  
-**Deciders:** Nexus-HEMS Core Team  
-**Target release:** v1.3.0  
+**Status:** Proposed
+**Date:** 2026-04-25
+**Deciders:** Nexus-HEMS Core Team
+**Target release:** v1.3.0
 
 ---
 

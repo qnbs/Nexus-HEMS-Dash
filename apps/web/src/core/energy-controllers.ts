@@ -27,8 +27,10 @@ export type ControllerPriority = 'critical' | 'high' | 'normal' | 'low';
 export interface ControllerOutput {
   /** Target ESS power in watts (positive = charge, negative = discharge) */
   essPowerW?: number;
-  /** Target EV charge current in amps */
+  /** Target EV charge current in amps (≥ 0 = charging) */
   evCurrentA?: number;
+  /** Target EV V2G discharge power in watts (> 0 means active discharge) */
+  evDischargePowerW?: number;
   /** Target heat pump SG Ready mode (1-4) */
   sgReadyMode?: 1 | 2 | 3 | 4;
   /** Maximum allowed grid import in watts */
@@ -636,6 +638,141 @@ export class EVSmartChargeController implements EnergyController {
   }
 }
 
+// ─── 8. EV V2G Discharge Controller ─────────────────────────────────
+
+/**
+ * EVV2GDischargeController — ISO 15118-20 BPT bidirectional discharge loop
+ *
+ * Decides when and how much to discharge the EV battery back to the grid/home
+ * based on:
+ *   1. SOC guardrails (never discharge below V2G_MIN_SOC, ISO 15118-20 §9.8)
+ *   2. BPT negotiated power limits (evMaximumDischargePowerW from adapter)
+ *   3. Grid price threshold (discharge when price ≥ 2× normal price)
+ *   4. OpenADR LOAD_CONTROL override (discharge when §14a event active)
+ *   5. PV deficit cover (discharge to avoid grid import during low PV)
+ *
+ * Output: `evDischargePowerW` (> 0 = active V2G discharge)
+ */
+export class EVV2GDischargeController implements EnergyController {
+  readonly id = 'ev-v2g-discharge';
+  readonly name = 'EV V2G Discharge';
+  readonly priority: ControllerPriority = 'high';
+  enabled = false; // Off by default — user must enable after confirming BPT support
+
+  private lastOutput: ControllerOutput | null = null;
+  private lastRun = 0;
+  private errorCount = 0;
+  private cycleTimeMs = 0;
+
+  /** SOC% below which V2G discharge is unconditionally blocked */
+  private readonly V2G_MIN_SOC = 15;
+  /** SOC% at which V2G stops (safety ceiling — don't deplete too much) */
+  private readonly V2G_STOP_SOC = 20;
+
+  run(data: EnergyData, settings: StoredSettings): ControllerOutput {
+    const start = performance.now();
+    try {
+      const evSoc = data.evSocPercent ?? 0;
+      const evMaxDischarge = data.evMaxDischargePowerW ?? 0;
+      const price = data.priceCurrent ?? 0;
+      const chargeThreshold = settings.chargeThreshold;
+
+      // ── Hard-block conditions ──────────────────────────────────────
+      if (evMaxDischarge <= 0) {
+        // No BPT data or EV has no V2G capability
+        this.lastOutput = {
+          evDischargePowerW: 0,
+          reason: 'V2G inactive: no BPT discharge capability reported',
+          confidence: 1,
+        };
+        return this.lastOutput;
+      }
+
+      if (evSoc > 0 && evSoc < this.V2G_MIN_SOC) {
+        this.lastOutput = {
+          evDischargePowerW: 0,
+          reason: `V2G blocked: EV SOC ${evSoc}% < minimum ${this.V2G_MIN_SOC}%`,
+          confidence: 0.99,
+        };
+        return this.lastOutput;
+      }
+
+      if (evSoc > 0 && evSoc <= this.V2G_STOP_SOC) {
+        this.lastOutput = {
+          evDischargePowerW: 0,
+          reason: `V2G stopped: EV SOC ${evSoc}% at safety floor (${this.V2G_STOP_SOC}%)`,
+          confidence: 0.99,
+        };
+        return this.lastOutput;
+      }
+
+      // §14a OpenADR LOAD_CONTROL: EV charging blocked → skip discharge too
+      // (the LOAD_CONTROL event may require full isolation from grid)
+      if (data.evDisabledBy14a) {
+        this.lastOutput = {
+          evDischargePowerW: 0,
+          reason: 'V2G blocked: §14a OpenADR LOAD_CONTROL event active',
+          confidence: 0.99,
+        };
+        return this.lastOutput;
+      }
+
+      // ── Discharge decision ─────────────────────────────────────────
+      const dischargeThreshold = chargeThreshold * 2; // Discharge when price is ≥ 2×
+      const pvDeficit = Math.max(0, (data.houseLoad ?? 0) - (data.pvPower ?? 0));
+      let dischargePowerW = 0;
+      let reason = 'V2G standby';
+      let confidence = 0.5;
+
+      if (price >= dischargeThreshold) {
+        // High tariff window → export to grid for revenue
+        dischargePowerW = Math.min(evMaxDischarge, 7400); // Max 7.4 kW (typical V2G single-phase)
+        reason = `V2G: high tariff ${price.toFixed(3)}€/kWh ≥ threshold ${dischargeThreshold.toFixed(3)}€ → ${(dischargePowerW / 1000).toFixed(1)}kW discharge`;
+        confidence = 0.9;
+      } else if (pvDeficit > 1000 && (data.batterySoC ?? 100) < 30) {
+        // PV deficit AND low stationary battery → use EV to cover home load
+        dischargePowerW = Math.min(evMaxDischarge, pvDeficit);
+        reason = `V2G: PV deficit ${(pvDeficit / 1000).toFixed(1)}kW, low ESS → EV covers ${(dischargePowerW / 1000).toFixed(1)}kW`;
+        confidence = 0.85;
+      }
+
+      // Clamp to BPT negotiated limit
+      dischargePowerW = Math.min(dischargePowerW, evMaxDischarge);
+
+      this.lastOutput = {
+        evDischargePowerW: Math.round(dischargePowerW),
+        reason,
+        confidence,
+      };
+      return this.lastOutput;
+    } catch {
+      this.errorCount++;
+      this.lastOutput = { evDischargePowerW: 0, reason: 'Controller error', confidence: 0 };
+      return this.lastOutput;
+    } finally {
+      this.cycleTimeMs = performance.now() - start;
+      this.lastRun = Date.now();
+    }
+  }
+
+  reset(): void {
+    this.lastOutput = null;
+  }
+
+  getState(): ControllerState {
+    return {
+      id: this.id,
+      name: this.name,
+      enabled: this.enabled,
+      priority: this.priority,
+      lastRun: this.lastRun,
+      lastOutput: this.lastOutput,
+      errorCount: this.errorCount,
+      cycleTimeMs: this.cycleTimeMs,
+    };
+  }
+}
+
 // ─── Controller Pipeline (Scheduler) ────────────────────────────────
 
 const PRIORITY_ORDER: Record<ControllerPriority, number> = {
@@ -660,6 +797,7 @@ export class ControllerPipeline {
       new SelfConsumptionController(),
       new HeatPumpSGReadyController(),
       new EVSmartChargeController(),
+      new EVV2GDischargeController(), // Disabled by default; enabled when BPT negotiated
     ];
   }
 
@@ -688,6 +826,9 @@ export class ControllerPipeline {
         }
         if (output.evCurrentA !== undefined && merged.evCurrentA === undefined) {
           merged.evCurrentA = output.evCurrentA;
+        }
+        if (output.evDischargePowerW !== undefined && merged.evDischargePowerW === undefined) {
+          merged.evDischargePowerW = output.evDischargePowerW;
         }
         if (output.sgReadyMode !== undefined && merged.sgReadyMode === undefined) {
           merged.sgReadyMode = output.sgReadyMode;

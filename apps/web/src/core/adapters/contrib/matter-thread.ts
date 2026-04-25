@@ -36,7 +36,45 @@ const CLUSTER = {
   ELECTRICAL_MEASUREMENT: 0x0b04,
   SIMPLE_METERING: 0x0702,
   POWER_SOURCE: 0x002f,
+  // Matter 1.3 Energy Management clusters (DEM, EPM, EEM)
+  /** Electrical Power Measurement — real-time active/reactive/apparent power */
+  EPM: 0x0090,
+  /** Electrical Energy Measurement — cumulative import/export counters */
+  EEM: 0x0091,
+  /** Device Energy Management — load control, power adjustment, V2G dispatch */
+  DEM: 0x0098,
 } as const;
+
+// ─── DEM cluster attribute structures (Matter 1.3 §4.2) ─────────────
+
+/** DEM ESA State: Device operating state within the Energy Management system */
+type DEMESAState = 'offline' | 'online' | 'running' | 'paused' | 'error';
+
+/** DEM Opt-out State: Whether a device is opted out of grid control */
+type DEMOptOutState = 'none' | 'local' | 'grid' | 'both';
+
+/** Per-device DEM cluster state */
+interface DEMDeviceState {
+  nodeId: number;
+  /** DEM feature bitmap (PA=0x01, PFR=0x02, STA=0x04, PAU=0x08, FA=0x10, CON=0x20) */
+  featureMap: number;
+  esaState: DEMESAState;
+  optOutState: DEMOptOutState;
+  /** Whether this device can generate energy (V2G, inverter) */
+  canGenerate: boolean;
+  /** Current power adjustment active (W) */
+  currentPowerAdjustmentW: number | null;
+  /** EPM: real-time active power (W) */
+  activePowerW: number;
+  /** EPM: reactive power (VAR) */
+  reactivePowerVAR: number;
+  /** EEM: cumulative import energy (Wh) */
+  cumulativeImportWh: number;
+  /** EEM: cumulative export energy (Wh) */
+  cumulativeExportWh: number;
+  /** Last updated timestamp */
+  updatedAt: number;
+}
 
 // ─── Config ─────────────────────────────────────────────────────────
 
@@ -80,7 +118,7 @@ interface MatterWSMessage {
 export class MatterThreadAdapter extends BaseAdapter {
   readonly id = 'matter-thread';
   readonly name = 'Matter/Thread';
-  readonly capabilities: AdapterCapability[] = ['pv', 'grid', 'load'];
+  readonly capabilities: AdapterCapability[] = ['pv', 'grid', 'load', 'evCharger'];
 
   private ws: WebSocket | null = null;
   private pollTimer: ReturnType<typeof setInterval> | null = null;
@@ -93,6 +131,8 @@ export class MatterThreadAdapter extends BaseAdapter {
   private gridPowerW = 0;
   private pvPowerW = 0;
   private deviceReadings: Map<number, { powerW: number; energyKWh: number }> = new Map();
+  /** DEM cluster states per node (Matter 1.3 DEM 0x98) */
+  private demStates: Map<number, DEMDeviceState> = new Map();
 
   constructor(config?: MatterThreadConfig) {
     super({
@@ -167,6 +207,7 @@ export class MatterThreadAdapter extends BaseAdapter {
     }
   }
 
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: large command dispatch switch — all cases are necessary
   protected async _sendCommand(command: AdapterCommand): Promise<boolean> {
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return false;
 
@@ -202,6 +243,61 @@ export class MatterThreadAdapter extends BaseAdapter {
         });
         return true;
       }
+      case 'VPP_OFFER_FLEX': {
+        // DEM PA: Write power adjustment to the target device
+        const nodeId = command.targetDeviceId ? parseInt(command.targetDeviceId, 10) : undefined;
+        if (!nodeId) return false;
+        const powerW = Number(command.value);
+        this.sendWS({
+          type: 'invoke_command',
+          data: {
+            nodeId,
+            endpoint: 1,
+            cluster: CLUSTER.DEM,
+            command: 'PowerAdjustRequest',
+            fields: {
+              power: Math.round(powerW * 1000), // Matter: milliwatts
+              duration: command.payload?.durationS ?? 900, // seconds
+              cause: 'LocalOptimization',
+            },
+          },
+        });
+        const demState = this.demStates.get(nodeId);
+        if (demState) demState.currentPowerAdjustmentW = powerW;
+        return true;
+      }
+      case 'SET_V2G_BPT_PARAMS': {
+        // DEM CON: Write BPT constraints to the DEM controller (e.g. EVSEs)
+        const nodeId = command.targetDeviceId ? parseInt(command.targetDeviceId, 10) : undefined;
+        if (!nodeId) return false;
+        const params = command.payload;
+        if (!params) return false;
+        this.sendWS({
+          type: 'write_attribute',
+          data: {
+            nodeId,
+            endpoint: 1,
+            cluster: CLUSTER.DEM,
+            attribute: 'forecast',
+            value: [
+              {
+                slotIsPausable: false,
+                minDuration: 0,
+                maxDuration: 3600,
+                defaultDuration: 900,
+                elapsedSlotTime: 0,
+                slotTime: 900,
+                manufactOpt: false,
+                nominalPower: Math.round(((params.evMaximumChargePowerW as number) ?? 7400) * 1000),
+                minPower: Math.round(((params.evMinimumChargePowerW as number) ?? 0) * 1000),
+                maxPower: Math.round(((params.evMaximumChargePowerW as number) ?? 7400) * 1000),
+                nominalEnergy: 0,
+              },
+            ],
+          },
+        });
+        return true;
+      }
       default:
         return false;
     }
@@ -214,7 +310,7 @@ export class MatterThreadAdapter extends BaseAdapter {
   }
 
   private pollAttributes(): void {
-    // Request power readings from all known nodes
+    // Request power readings from all known nodes — both legacy and DEM clusters
     for (const nodeId of this.nodeIds) {
       this.sendWS({
         type: 'read_attribute',
@@ -225,9 +321,30 @@ export class MatterThreadAdapter extends BaseAdapter {
           attribute: 'activePower',
         },
       });
+      // Poll DEM cluster state (Matter 1.3)
+      this.sendWS({
+        type: 'read_attribute',
+        data: {
+          nodeId,
+          endpoint: 1,
+          cluster: CLUSTER.DEM,
+          attribute: 'esaState',
+        },
+      });
+      // Poll EPM: real-time active power
+      this.sendWS({
+        type: 'read_attribute',
+        data: {
+          nodeId,
+          endpoint: 1,
+          cluster: CLUSTER.EPM,
+          attribute: 'activePower',
+        },
+      });
     }
   }
 
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: multi-cluster attribute dispatch — branches required for EPM/EEM/DEM/legacy
   private handleMessage(msg: MatterWSMessage): void {
     // Handle node list response
     if (msg.type === 'result' && msg.result) {
@@ -244,20 +361,24 @@ export class MatterThreadAdapter extends BaseAdapter {
     // Handle attribute update events
     if (msg.event === 'attribute_updated' && msg.data) {
       const { nodeId, cluster, attribute, value } = msg.data;
-      if (
-        nodeId != null &&
-        cluster === CLUSTER.ELECTRICAL_MEASUREMENT &&
-        attribute === 'activePower' &&
-        value != null
-      ) {
-        const existing = this.deviceReadings.get(nodeId) ?? { powerW: 0, energyKWh: 0 };
-        existing.powerW = value;
-        this.deviceReadings.set(nodeId, existing);
-        this.emitModel();
+      if (nodeId != null && value != null) {
+        if (cluster === CLUSTER.ELECTRICAL_MEASUREMENT && attribute === 'activePower') {
+          const existing = this.deviceReadings.get(nodeId) ?? { powerW: 0, energyKWh: 0 };
+          existing.powerW = value;
+          this.deviceReadings.set(nodeId, existing);
+          this.emitModel();
+        } else if (cluster === CLUSTER.DEM) {
+          this.parseDEMAttribute(nodeId, attribute ?? '', value);
+        } else if (cluster === CLUSTER.EPM) {
+          this.parseEPMAttribute(nodeId, attribute ?? '', value);
+        } else if (cluster === CLUSTER.EEM) {
+          this.parseEEMAttribute(nodeId, attribute ?? '', value);
+        }
       }
     }
   }
 
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: per-cluster state parsing — all cluster branches necessary
   private parseNodeState(node: MatterNodeState): void {
     for (const ep of node.endpoints) {
       const elec = ep.clusters[CLUSTER.ELECTRICAL_MEASUREMENT];
@@ -266,7 +387,115 @@ export class MatterThreadAdapter extends BaseAdapter {
         existing.powerW = elec.activePower as number;
         this.deviceReadings.set(node.nodeId, existing);
       }
+      // Parse DEM cluster
+      const dem = ep.clusters[CLUSTER.DEM];
+      if (dem) {
+        const state = this.getOrCreateDEMState(node.nodeId);
+        if (typeof dem.featureMap === 'number') state.featureMap = dem.featureMap as number;
+        if (typeof dem.esaState === 'string') state.esaState = dem.esaState as DEMESAState;
+        if (typeof dem.optOutState === 'string')
+          state.optOutState = dem.optOutState as DEMOptOutState;
+        if (typeof dem.esaCanGenerate === 'boolean')
+          state.canGenerate = dem.esaCanGenerate as boolean;
+        state.updatedAt = Date.now();
+        this.demStates.set(node.nodeId, state);
+      }
+      // Parse EPM (Electrical Power Measurement 0x90)
+      const epm = ep.clusters[CLUSTER.EPM];
+      if (epm) {
+        const state = this.getOrCreateDEMState(node.nodeId);
+        if (typeof epm.activePower === 'number')
+          state.activePowerW = (epm.activePower as number) / 1000; // mW → W
+        if (typeof epm.reactivePower === 'number')
+          state.reactivePowerVAR = (epm.reactivePower as number) / 1000;
+        state.updatedAt = Date.now();
+      }
+      // Parse EEM (Electrical Energy Measurement 0x91)
+      const eem = ep.clusters[CLUSTER.EEM];
+      if (eem) {
+        const state = this.getOrCreateDEMState(node.nodeId);
+        if (typeof eem.cumulativeEnergyImported === 'number') {
+          state.cumulativeImportWh = (eem.cumulativeEnergyImported as number) / 1000; // mWh → Wh
+        }
+        if (typeof eem.cumulativeEnergyExported === 'number') {
+          state.cumulativeExportWh = (eem.cumulativeEnergyExported as number) / 1000;
+        }
+        state.updatedAt = Date.now();
+      }
     }
+  }
+
+  private getOrCreateDEMState(nodeId: number): DEMDeviceState {
+    if (!this.demStates.has(nodeId)) {
+      this.demStates.set(nodeId, {
+        nodeId,
+        featureMap: 0,
+        esaState: 'offline',
+        optOutState: 'none',
+        canGenerate: false,
+        currentPowerAdjustmentW: null,
+        activePowerW: 0,
+        reactivePowerVAR: 0,
+        cumulativeImportWh: 0,
+        cumulativeExportWh: 0,
+        updatedAt: 0,
+      });
+    }
+    return this.demStates.get(nodeId)!;
+  }
+
+  private parseDEMAttribute(nodeId: number, attribute: string, value: number): void {
+    const state = this.getOrCreateDEMState(nodeId);
+    switch (attribute) {
+      case 'featureMap':
+        state.featureMap = value;
+        break;
+      case 'esaState':
+        state.esaState =
+          (['offline', 'online', 'running', 'paused', 'error'] as DEMESAState[])[value] ??
+          'offline';
+        break;
+      case 'optOutState':
+        state.optOutState =
+          (['none', 'local', 'grid', 'both'] as DEMOptOutState[])[value] ?? 'none';
+        break;
+      case 'esaCanGenerate':
+        state.canGenerate = Boolean(value);
+        break;
+    }
+    state.updatedAt = Date.now();
+    this.demStates.set(nodeId, state);
+    this.emitModel();
+  }
+
+  private parseEPMAttribute(nodeId: number, attribute: string, value: number): void {
+    const state = this.getOrCreateDEMState(nodeId);
+    if (attribute === 'activePower') {
+      state.activePowerW = value / 1000; // Matter: milliwatts
+      // Update aggregated load too
+      const existing = this.deviceReadings.get(nodeId) ?? { powerW: 0, energyKWh: 0 };
+      existing.powerW = state.activePowerW;
+      this.deviceReadings.set(nodeId, existing);
+    } else if (attribute === 'reactivePower') {
+      state.reactivePowerVAR = value / 1000;
+    }
+    state.updatedAt = Date.now();
+    this.emitModel();
+  }
+
+  private parseEEMAttribute(nodeId: number, attribute: string, value: number): void {
+    const state = this.getOrCreateDEMState(nodeId);
+    if (attribute === 'cumulativeEnergyImported') {
+      state.cumulativeImportWh = value / 1000;
+    } else if (attribute === 'cumulativeEnergyExported') {
+      state.cumulativeExportWh = value / 1000;
+    }
+    state.updatedAt = Date.now();
+  }
+
+  /** Get all DEM device states (used by UC26Translator and VPP service) */
+  getDEMStates(): ReadonlyMap<number, DEMDeviceState> {
+    return this.demStates;
   }
 
   private emitModel(): void {

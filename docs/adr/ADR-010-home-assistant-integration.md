@@ -1,9 +1,9 @@
 # ADR-010: Home Assistant Integration Architecture
 
-**Status:** Accepted  
-**Date:** 2026-04-25  
-**Deciders:** Nexus-HEMS Core Team  
-**Supersedes:** None  
+**Status:** Accepted
+**Date:** 2026-04-25
+**Deciders:** Nexus-HEMS Core Team
+**Supersedes:** None
 
 ---
 

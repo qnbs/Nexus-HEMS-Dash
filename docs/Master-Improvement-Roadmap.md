@@ -27,7 +27,65 @@ strength.
 | 4 | Testing — Coverage 48→60→75→85%, Chromatic, Fuzz | 3 | ~2 PT | MEDIUM |
 | 5 | Features — UPnP, §14a, WCAG AAA | 3 | ~5 PT | MEDIUM |
 | 6 | Docs & Community — Log4brains, CLI | 2 | ~1 PT | LOW |
-| **Total** | | **31** | **~15 PT** | |
+| **P-V2G** | **Protocol Expansion — V2G BPT, OpenADR 3.1.0, VPP, UC 2.6** | **13** | **~8 PT** | **HIGH (v1.2.0)** |
+| **Total** | | **44** | **~23 PT** | |
+
+---
+
+## Phase P-V2G — Protocol Expansion (v1.2.0) — NEW
+
+> **Status:** In progress (Documentation phase complete, code implementation in progress)
+> **Scope:** ISO 15118-20 BPT parameters, OpenADR 3.1.0 VEN-client, VPP single-home node, UC 2.6 translator, Matter DEM clusters
+
+### Identified Gaps
+
+| ID | Gap | Severity | File |
+|----|-----|----------|------|
+| PV-01 | `EnergyAdapter.ts` has no BPT negotiation parameter fields (ISO 15118-20 Annex D) | HIGH | `apps/web/src/core/adapters/EnergyAdapter.ts` |
+| PV-02 | `OCPP21Adapter.ts` `sendV2XDischarge()` is a stub — no BPT negotiation, no SOC guardrails | HIGH | `apps/web/src/core/adapters/OCPP21Adapter.ts` |
+| PV-03 | No OpenADR 3.1.0 adapter exists anywhere in the codebase | HIGH | — |
+| PV-04 | No API proxy for OpenADR VTN OAuth2 communication | HIGH | — |
+| PV-05 | `EVSmartChargeController` is charging-only, no V2G discharge slot | MEDIUM | `apps/web/src/core/energy-controllers.ts` |
+| PV-06 | MPC `optimizer.ts` Pass 3 is EV load-only, no V2X bidirectional | MEDIUM | `apps/web/src/lib/optimizer.ts` |
+| PV-07 | No UC 2.6 translator (OpenADR events → DEM requests → VPP bids) | MEDIUM | — |
+| PV-08 | `MatterThreadAdapter.ts` missing DEM (0x98), EPM (0x90), EEM (0x91) clusters | MEDIUM | `apps/web/src/core/adapters/contrib/MatterThreadAdapter.ts` |
+| PV-09 | No VPP service — no resource registry, no flex-offer creation | LOW (future) | — |
+| PV-10 | i18n: 0 VPP keys, 0 OpenADR keys, 1 V2G help-text key | LOW | `apps/web/src/locales/{en,de}.ts` |
+
+### Phase P-V2G Implementation Steps
+
+| Step | ID | Action | Files | Status |
+|------|----|--------|-------|--------|
+| PV-0.1 | Docs | Create `docs/HEMS-Protocol-Comparison.md` | — | ✅ Done |
+| PV-0.2 | Docs | Create `docs/V2G-Integration-Guide.md` | — | ✅ Done |
+| PV-0.3 | Docs | Create `docs/OpenADR-Integration-Guide.md` | — | ✅ Done |
+| PV-0.4 | Docs | Create `docs/VPP-FlexMarket-Guide.md` | — | ✅ Done |
+| PV-0.5 | Docs | Create `docs/Matter-OpenADR-Interworking-Guide.md` | — | ✅ Done |
+| PV-0.6 | Docs | Create `docs/AFIR-Compliance-Checklist.md` | — | ✅ Done |
+| PV-0.7 | ADR | Create `docs/adr/ADR-012-openadr-ven-client.md` | — | ✅ Done |
+| PV-0.8 | ADR | Create `docs/adr/ADR-013-v2g-bpt-parameters.md` | — | ✅ Done |
+| PV-0.9 | ADR | Create `docs/adr/ADR-014-vpp-single-home-node.md` | — | ✅ Done |
+| PV-1A | Code | Extend `EnergyAdapter.ts`: `BPTNegotiationParams` + new commands | `EnergyAdapter.ts` | 🔄 |
+| PV-1B | Code | Upgrade `OCPP21Adapter.ts`: full BPT negotiation, SOC guardrails | `OCPP21Adapter.ts` | 🔄 |
+| PV-1C | Code | Create `OpenADR31Adapter.ts` contrib adapter | contrib/ | 🔄 |
+| PV-1D | Code | Create `apps/api/src/routes/openadr.routes.ts` OAuth2 proxy | API routes | 🔄 |
+| PV-2A | Code | Add `EVV2GDischargeController` to `energy-controllers.ts` | controllers | 🔄 |
+| PV-2B | Code | Upgrade MPC `optimizer.ts` V2X bidirectional + OpenADR | optimizer | 🔄 |
+| PV-2C | Code | Create `uc26-translator.ts` UC 2.6.1/2.6.2/2.6.3 | core/ | 🔄 |
+| PV-3 | Code | Add DEM/EPM/EEM clusters to `MatterThreadAdapter.ts` | contrib/ | 🔄 |
+| PV-4 | Code | Create `vpp-service.ts` single-home VPP node | core/ | 🔄 |
+| PV-5E | Code | Add V2G/OpenADR/VPP i18n keys to `en.ts` + `de.ts` | locales/ | 🔄 |
+
+### Verification Criteria (P-V2G)
+
+- `time pnpm type-check` — 0 errors
+- `pnpm lint` — 0 errors, 0 warnings
+- `pnpm test:run` — coverage thresholds maintained (≥48% statements)
+- OpenADR31Adapter connects to test VTN mock and receives `LOAD_CONTROL` event
+- OCPP21Adapter `sendV2GBPTParams()` passes Zod validation with valid BPT schema
+- `EVV2GDischargeController` produces discharge W ≤ `bptParams.evMaximumDischargePower`
+- SOC guardrail: discharge blocked when `evSocPercent < 15`
+- MPC optimizer produces negative EV slots when `gridPrice ≥ dischargeThreshold`
 
 ---
 

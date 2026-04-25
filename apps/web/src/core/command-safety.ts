@@ -57,6 +57,13 @@ export const commandSchemas: Record<AdapterCommandType, z.ZodType<CommandValue>>
   SET_EV_PHASES: z.union([z.literal(1), z.literal(3), z.number().min(1).max(3)]),
   SET_EV_MIN_CURRENT: currentAmps,
   SET_SMART_COST_LIMIT: z.number().min(0).max(1), // €/kWh
+  // V2G / ISO 15118-20 BPT — payload validated separately via Zod on the adapter
+  SET_V2G_BPT_PARAMS: z.number().min(0), // nominal value; full params in command.payload
+  // OpenADR 3.1 acknowledgment / reporting signals
+  OPENADR_ACKNOWLEDGE_EVENT: z.string().max(128),
+  OPENADR_SUBMIT_REPORT: z.string().max(128),
+  // VPP flex-offer dispatch signal
+  VPP_OFFER_FLEX: z.number().min(0).max(25_000),
 };
 
 /** Commands that modify high-power hardware and need user confirmation */
