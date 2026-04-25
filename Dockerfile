@@ -15,8 +15,12 @@ RUN corepack enable && pnpm install --frozen-lockfile --ignore-scripts
 COPY . .
 RUN pnpm --filter @nexus-hems/web build
 
-# ── Stage 2: Serve with nginx ───────────────────────────────────
-FROM nginx:1.29-alpine@sha256:582c496ccf79d8aa6f8203a79d32aaf7ffd8b13362c60a701a2f9ac64886c93d AS production
+# ── Stage 2: Serve with nginx (unprivileged) ──────────────────
+# nginxinc/nginx-unprivileged runs as non-root user (uid 101 / nginx) by
+# default — reduced attack surface vs the official nginx image.
+# NOTE: Pin to an immutable SHA256 digest in production via build-arg or
+# image policy (e.g. Kyverno imagePolicyWebhook).
+FROM nginxinc/nginx-unprivileged:1.29-alpine-slim AS production
 
 ARG VCS_REF=unknown
 ARG BUILD_DATE=unknown
@@ -32,8 +36,8 @@ LABEL org.opencontainers.image.title="Nexus-HEMS Dashboard Frontend" \
 # Security: upgrade all OS packages to fix CVEs (libxml2, openssl, libpng, etc.)
 RUN apk update && apk upgrade --no-cache && rm -rf /var/cache/apk/*
 
-# Security: run as non-root
-RUN addgroup -S app && adduser -S app -G app
+# Security: nginx-unprivileged already creates a non-root 'nginx' user (uid 101).
+# No need to create a separate app user.
 
 # Copy custom nginx config template
 COPY apps/web/nginx.conf /etc/nginx/templates/nexus-hems.conf.template
@@ -41,12 +45,11 @@ COPY apps/web/nginx.conf /etc/nginx/templates/nexus-hems.conf.template
 # Copy built assets from build stage
 COPY --from=build /app/apps/web/dist /usr/share/nginx/html
 
-# Fix ownership for non-root user
-RUN chown -R app:app /usr/share/nginx/html && \
-    chown -R app:app /var/cache/nginx && \
-    chown -R app:app /var/log/nginx && \
-    chown -R app:app /etc/nginx/templates && \
-    touch /var/run/nginx.pid && chown app:app /var/run/nginx.pid
+# Fix ownership for nginx user (uid 101)
+RUN chown -R nginx:nginx /usr/share/nginx/html && \
+    chown -R nginx:nginx /var/cache/nginx && \
+    chown -R nginx:nginx /var/log/nginx && \
+    chown -R nginx:nginx /etc/nginx/templates
 
 # MED-03: nginx official image processes /etc/nginx/templates/*.template via envsubst
 # at startup — WS_ORIGINS env var is injected into the CSP connect-src header.
@@ -60,7 +63,7 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
 
 EXPOSE 8080
 
-# Security: run as non-root user
-USER app
+# Security: nginx-unprivileged defaults to nginx user (uid 101)
+USER nginx
 
 CMD ["nginx", "-g", "daemon off;"]

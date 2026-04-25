@@ -2606,4 +2606,28 @@ export const de = {
     noEnergyDataDesc: 'Verbinden Sie einen Adapter, um Echtzeit-Energiedaten zu empfangen.',
     goToSettings: 'Einstellungen öffnen',
   },
+  certManagement: {
+    title: 'EEBUS-Zertifikatverwaltung',
+    description: 'Gerätezertifikate für das EEBUS SPINE/SHIP-Pairing verwalten (TLS 1.3 mTLS).',
+    noCerts: 'Keine Gerätezertifikate konfiguriert',
+    noCertsDesc:
+      'Importieren Sie ein Zertifikat oder koppeln Sie ein neues EEBUS-Gerät, um loszulegen.',
+    importCert: 'Zertifikat importieren',
+    exportCert: 'Zertifikat exportieren',
+    deleteCert: 'Zertifikat löschen',
+    fingerprint: 'Fingerabdruck',
+    validUntil: 'Gültig bis',
+    deviceName: 'Gerätename',
+    status: 'Status',
+    statusTrusted: 'Vertrauenswürdig',
+    statusRevoked: 'Widerrufen',
+    statusExpired: 'Abgelaufen',
+    confirmDelete: 'Zertifikat für {{device}} löschen?',
+    confirmDeleteDesc: 'Das Gerät muss nach der Löschung erneut gekoppelt werden.',
+    importDialogTitle: 'EEBUS-Zertifikat importieren',
+    importHint:
+      'Fügen Sie das PEM-kodierte Zertifikat unten ein oder ziehen Sie eine .pem-Datei herein.',
+    importSuccess: 'Zertifikat erfolgreich importiert',
+    importError: 'Ungültiges Zertifikatsformat — bitte überprüfen Sie die PEM-Kodierung',
+  },
 } as const;

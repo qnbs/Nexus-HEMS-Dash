@@ -2,6 +2,8 @@
 
 > **Status:** Active | **Last Updated:** 2026-04-25 | **Horizon:** Q2–Q4 2026
 
+> ADR documents: [`docs/adr/`](adr/) — all architectural decisions with full context, alternatives, and consequences.
+
 This document is the living architecture reference for the Nexus-HEMS-Dash platform. It covers the
 full data path from industrial protocol ingestion through TSDB persistence to the React dashboard,
 with architecture decision records (ADRs) and a phased implementation roadmap.
@@ -74,6 +76,15 @@ graph TD
 | ADR-08 | TSDB | **InfluxDB 2.7** | Already in docker-compose; native Flux downsampling; Prometheus integration |
 | ADR-09 | Audit Trail | **InfluxDB `decisions` measurement + SQLite fallback** | InfluxDB for time-series decisions; SQLite (`better-sqlite3`) when InfluxDB unavailable |
 | ADR-10 | Container | **Multi-stage Alpine + Edge limits** | Existing Dockerfile extended; CPU/RAM limits critical for Raspberry Pi 4 deployment |
+| ADR-11 | Biome-first toolchain | **Biome 2.4.7** | Documented in [`docs/adr/ADR-001-biome-first-toolchain.md`](adr/ADR-001-biome-first-toolchain.md) |
+| ADR-12 | Zustand dual-store | **useAppStore + useEnergyStore** | Documented in [`docs/adr/ADR-002-zustand-dual-store-pattern.md`](adr/ADR-002-zustand-dual-store-pattern.md) |
+| ADR-13 | JTI revocation | **Optional Redis + in-memory fallback** | Documented in [`docs/adr/ADR-003-jti-revocation-redis-fallback.md`](adr/ADR-003-jti-revocation-redis-fallback.md) |
+| ADR-14 | Distroless containers | **gcr.io/distroless (production stage only)** | Documented in [`docs/adr/ADR-004-distroless-docker-production.md`](adr/ADR-004-distroless-docker-production.md) |
+| ADR-15 | Dexie downsampling | **Tiered 15m / 1h aggregates** | Documented in [`docs/adr/ADR-005-dexie-tiered-downsampling.md`](adr/ADR-005-dexie-tiered-downsampling.md) |
+| ADR-16 | Ring buffer sizing | **Per-adapter adaptive sizes** | Documented in [`docs/adr/ADR-006-ring-buffer-per-adapter-sizing.md`](adr/ADR-006-ring-buffer-per-adapter-sizing.md) |
+| ADR-17 | Visual regression | **Chromatic gated in CI** | Documented in [`docs/adr/ADR-007-chromatic-visual-regression-gate.md`](adr/ADR-007-chromatic-visual-regression-gate.md) |
+| ADR-18 | PII sanitization | **PII masking + AI output filter** | Documented in [`docs/adr/ADR-008-pii-sanitization-ai-output-filter.md`](adr/ADR-008-pii-sanitization-ai-output-filter.md) |
+| ADR-19 | Multi-user RBAC | **ADR only; code deferred v1.2.0** | Documented in [`docs/adr/ADR-009-multi-user-rbac-future.md`](adr/ADR-009-multi-user-rbac-future.md) |
 
 ---
 
@@ -164,6 +175,12 @@ classDiagram
 | **7** | Edge Docker Compose | ✅ Complete | `docker-compose.prod.yml`, `.env.prod.example` |
 | **8** | CI/Release | ✅ Complete | `.releaserc.json` (already existed), `CHANGELOG.md` |
 | **3b** | Modbus Write + Force-Charge | Planned | `apps/api/src/protocols/modbus/ModbusAdapter.ts` write extension |
+| **P1** | SBOM/Grype + Distroless | Planned | `.github/workflows/sbom-scan.yml`, `Dockerfile`, `Dockerfile.server`, `.renovaterc.json`, `helm/.../namespace.yaml` |
+| **P2** | Performance (Dexie + LTTB + Ring) | Planned | `lib/downsampling-service.ts`, `lib/chart-sampling.ts`, `core/useEnergyStore.ts` |
+| **P3** | Security (JTI Redis + PII + mTLS) | Planned | `apps/api/src/jwt-utils.ts`, `apps/web/src/lib/db.ts`, `core/aiClient.ts`, `CertificateManagement.tsx` |
+| **P4** | Testing (60%→85% coverage) | Planned | `vitest.config.ts`, new unit/fuzz/visual test files |
+| **P5** | Features (UPnP + §14a + WCAG AAA) | Planned | `lib/upnp-discovery.ts`, grid operator API, accessibility enhancements |
+| **P6** | Community (Log4brains + CLI) | Planned | `log4brains`, `create-nexus-adapter` CLI |
 | **9** | OCPP 2.1 Backend Adapter | Planned | `apps/api/src/protocols/ocpp/OcppAdapter.ts` |
 | **10** | EEBUS SPINE/SHIP Backend | Planned | `apps/api/src/protocols/eebus/EebusAdapter.ts` |
 | **11** | KNX Backend Adapter | Planned | `apps/api/src/protocols/knx/KnxAdapter.ts` |

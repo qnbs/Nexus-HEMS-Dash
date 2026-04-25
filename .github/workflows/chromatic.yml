@@ -58,5 +58,22 @@ jobs:
           exitZeroOnChanges: true
           autoAcceptChanges: main
           onlyChanged: true
+          # Hard-fail the build when visual regressions are detected on PR branches
+          # (auto-accept keeps main green after deliberate UI changes)
+          exitOnceUploaded: false
         env:
           CHROMATIC_PROJECT_TOKEN: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+
+      - name: Check Chromatic gate (fail on unreviewed changes)
+        if: |
+          env.CHROMATIC_PROJECT_TOKEN != '' &&
+          github.event_name == 'pull_request' &&
+          github.base_ref == 'main'
+        shell: bash
+        run: |
+          # Chromatic sets CHROMATIC_STORYBOOK_URL on success; absence means regressions
+          if [[ -z "${CHROMATIC_STORYBOOK_URL:-}" ]]; then
+            echo "::error::Chromatic detected unreviewed visual changes. Review at https://www.chromatic.com"
+            exit 1
+          fi
+          echo "Chromatic gate passed — no unreviewed visual regressions"

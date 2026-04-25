@@ -24,30 +24,77 @@ Analyze real-time energy data and provide actionable optimization recommendation
 Focus on: cost minimization, self-consumption maximization, CO₂ reduction, battery optimization, smart EV charging.
 Always respond with valid JSON arrays when structured output is requested.`;
 
-// ─── MED-09: Prompt Injection Sanitization ───────────────────────────
+// ─── MED-09: Prompt Injection Sanitization + PII Masking (ADR-008) ──
+
+/**
+ * PII patterns — mask sensitive data before sending to AI providers.
+ * Prevents accidental exfiltration of personal identifiers.
+ */
+const PII_PATTERNS: ReadonlyArray<{ pattern: RegExp; placeholder: string }> = [
+  // Email addresses
+  { pattern: /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.]+\.[A-Za-z]{2,}\b/g, placeholder: '[EMAIL]' },
+  // Phone numbers (E.164 + common formats)
+  { pattern: /\b(\+?[\d\s\-().]{7,20})\b(?=\s|$)/g, placeholder: '[PHONE]' },
+  // IBAN (EU bank accounts)
+  { pattern: /\b[A-Z]{2}\d{2}[A-Z0-9]{4,30}\b/g, placeholder: '[IBAN]' },
+  // IPv4 addresses
+  { pattern: /\b(?:\d{1,3}\.){3}\d{1,3}\b/g, placeholder: '[IP]' },
+  // IPv6 addresses (simplified)
+  { pattern: /\b(?:[0-9a-fA-F]{1,4}:){2,7}[0-9a-fA-F]{1,4}\b/g, placeholder: '[IP]' },
+];
 
 /**
  * Sanitizes a user-controlled or sensor-derived string before interpolating
  * it into an AI prompt. Strips control characters, prompt injection sequences,
- * and truncates to maxLength.
+ * masks PII, and truncates to maxLength.
  *
- * @param value   The raw input string (device name, user label, API value, etc.)
- * @param maxLength   Maximum allowed length after sanitization (default: 64)
+ * @param value     The raw input string (device name, user label, API value, etc.)
+ * @param maxLength Maximum allowed length after sanitization (default: 64)
  */
 export function sanitizeForPrompt(value: string, maxLength = 64): string {
   if (typeof value !== 'string') return '';
 
-  return (
-    value
-      // Remove all Unicode control characters (NUL, SOH, … DEL, etc.)
-      .replace(/\p{Cc}/gu, '')
-      // Strip common prompt-injection prefixes
-      .replace(/\b(ignore|disregard|forget|override)\b.*?(instruction|prompt|above|system)/gi, '')
-      // Collapse repeated whitespace
-      .replace(/\s{3,}/g, '  ')
-      .trim()
-      .slice(0, maxLength)
-  );
+  let sanitized = value
+    // Remove all Unicode control characters (NUL, SOH, … DEL, etc.)
+    .replace(/\p{Cc}/gu, '')
+    // Strip common prompt-injection prefixes
+    .replace(/\b(ignore|disregard|forget|override)\b.*?(instruction|prompt|above|system)/gi, '')
+    // Collapse repeated whitespace
+    .replace(/\s{3,}/g, '  ')
+    .trim();
+
+  // Mask PII
+  for (const { pattern, placeholder } of PII_PATTERNS) {
+    sanitized = sanitized.replace(pattern, placeholder);
+  }
+
+  return sanitized.slice(0, maxLength);
+}
+
+/**
+ * Filter AI output before rendering to the user.
+ * Validates that the AI response does not contain unexpected injection artifacts
+ * and strips any leaked PII patterns from the AI's reply.
+ *
+ * @param output   Raw AI response text
+ * @returns        Filtered, safe-to-render string
+ */
+export function filterAIOutput(output: string): string {
+  if (typeof output !== 'string') return '';
+
+  let filtered = output
+    // Remove control characters from output
+    .replace(/\p{Cc}/gu, ' ')
+    // Collapse repeated whitespace
+    .replace(/\s{4,}/g, '   ')
+    .trim();
+
+  // Mask any PII that leaked through the AI response
+  for (const { pattern, placeholder } of PII_PATTERNS) {
+    filtered = filtered.replace(pattern, placeholder);
+  }
+
+  return filtered;
 }
 
 /**

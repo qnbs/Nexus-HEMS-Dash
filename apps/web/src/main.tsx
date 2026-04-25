@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
+import { startDownsamplingService } from './lib/downsampling-service';
 import { QueryProvider } from './lib/query-client.tsx';
 import { initSentry } from './lib/sentry';
 import './i18n';
@@ -26,3 +27,7 @@ createRoot(document.getElementById('root')!).render(
     </QueryProvider>
   </StrictMode>,
 );
+
+// Start the background Dexie downsampling service after React mounts.
+// 90 s startup delay avoids contending with initial data loading.
+startDownsamplingService();

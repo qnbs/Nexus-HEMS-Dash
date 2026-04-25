@@ -41,17 +41,70 @@ const JWT_RECOMMENDED_SECRET_LENGTH = 64; // recommended for HS256
 export const JWT_ISSUER = 'nexus-hems-server';
 export const JWT_AUDIENCE = 'nexus-hems-api';
 
-// MED-02: In-memory JTI revocation list (bounded LRU, max 10_000 entries)
-// Maps jti → expiry timestamp (ms). Tokens with revoked JTIs are rejected.
+// MED-02: JTI revocation — optional Redis backend (ADR-003)
+// When REDIS_URL is set: revocations are stored in Redis with TTL (persists across restarts).
+// When REDIS_URL is absent: graceful fallback to bounded in-memory Map (10 000 entries max).
+
+// In-memory fallback store
 const revokedJTIs = new Map<string, number>();
 const MAX_REVOKED_JTIS = 10_000;
 
+// Redis client instance — initialized lazily on first revocation attempt
+let _redisClient: import('ioredis').Redis | null = null;
+let _redisInitialized = false;
+
+async function getRedisClient(): Promise<import('ioredis').Redis | null> {
+  if (_redisInitialized) return _redisClient;
+  _redisInitialized = true;
+
+  const redisUrl = process.env.REDIS_URL;
+  if (!redisUrl) return null;
+
+  try {
+    const { Redis } = await import('ioredis');
+    const client = new Redis(redisUrl, {
+      enableReadyCheck: true,
+      maxRetriesPerRequest: 2,
+      connectTimeout: 3_000,
+      lazyConnect: false,
+    });
+
+    client.on('error', (err: Error) => {
+      // Log the error class/message but never the connection URL
+      console.error('[JWT-Redis] Connection error:', err.message);
+    });
+
+    await client.ping();
+    _redisClient = client;
+    console.log('[JWT] JTI revocation backend: Redis (persistent, survives restarts)');
+  } catch (err) {
+    console.warn(
+      '[JWT] Redis connection failed — falling back to in-memory JTI revocation:',
+      (err as Error).message,
+    );
+    _redisClient = null;
+  }
+
+  return _redisClient;
+}
+
+const REDIS_JTI_PREFIX = 'nexus:jti:revoked:';
+
 /**
  * Revoke a JWT by its jti claim. Token will be rejected until it expires.
- * Expired JTI entries are automatically cleaned up.
+ * Stores in Redis (when available) for persistence across restarts,
+ * or in-memory Map as fallback.
  */
-export function revokeToken(jti: string, expiresAtMs: number): void {
-  // Evict expired entries if at capacity
+export async function revokeToken(jti: string, expiresAtMs: number): Promise<void> {
+  const redis = await getRedisClient();
+
+  if (redis !== null) {
+    const ttlSeconds = Math.max(1, Math.ceil((expiresAtMs - Date.now()) / 1_000));
+    await redis.set(`${REDIS_JTI_PREFIX}${jti}`, '1', 'EX', ttlSeconds);
+    return;
+  }
+
+  // In-memory fallback
   if (revokedJTIs.size >= MAX_REVOKED_JTIS) {
     const now = Date.now();
     for (const [k, exp] of revokedJTIs) {
@@ -65,7 +118,15 @@ export function revokeToken(jti: string, expiresAtMs: number): void {
 /**
  * Check if a JTI is currently revoked.
  */
-function isJTIRevoked(jti: string): boolean {
+async function isJTIRevoked(jti: string): Promise<boolean> {
+  const redis = await getRedisClient();
+
+  if (redis !== null) {
+    const result = await redis.exists(`${REDIS_JTI_PREFIX}${jti}`);
+    return result === 1;
+  }
+
+  // In-memory fallback
   const exp = revokedJTIs.get(jti);
   if (exp === undefined) return false;
   if (exp < Date.now()) {
@@ -317,8 +378,8 @@ export async function verifyToken(token: string): Promise<JWTPayload> {
     if (!payload) throw err;
   }
 
-  // MED-02: Reject revoked tokens
-  if (payload.jti && isJTIRevoked(payload.jti)) {
+  // MED-02: Reject revoked tokens (async: Redis or in-memory fallback)
+  if (payload.jti && (await isJTIRevoked(payload.jti))) {
     throw new joseErrors.JWTExpired('Token has been revoked', payload);
   }
 

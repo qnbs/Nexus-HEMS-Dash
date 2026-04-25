@@ -120,6 +120,9 @@
     "size": "turbo --filter=@nexus-hems/web size",
     "storybook": "turbo --filter=@nexus-hems/web storybook",
     "storybook:build": "turbo --filter=@nexus-hems/web storybook:build",
+    "adr": "log4brains adr",
+    "adr:new": "log4brains adr new",
+    "adr:preview": "log4brains preview",
     "release": "semantic-release",
     "release:dry": "semantic-release --dry-run"
   },
@@ -131,6 +134,7 @@
     "@biomejs/biome": "2.4.7",
     "@commitlint/cli": "^20.5.0",
     "@commitlint/config-conventional": "^20.5.0",
+    "@log4brains/cli": "^1.0.1",
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/git": "^10.0.1",
     "anti-trojan-source": "^1.8.1",

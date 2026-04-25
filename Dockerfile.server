@@ -31,8 +31,13 @@ COPY packages/shared-types/ ./packages/shared-types/
 # packages/shared-types into node_modules/@nexus-hems/shared-types.
 RUN pnpm deploy --filter @nexus-hems/api --prod /tmp/api-deploy
 
-# ── Production stage ────────────────────────────────────────────
-FROM node:24-alpine@sha256:01743339035a5c3c11a373cd7c83aeab6ed1457b55da6a69e014a95ac4e4700b AS production
+# ── Production stage (distroless) ────────────────────────────
+# gcr.io/distroless/nodejs24-debian12:nonroot — no shell, no package manager,
+# no OS utilities. Runs as nonroot user (uid 65532) by default.
+# Attack surface is minimal: only the Node.js runtime and the app.
+# NOTE: Pin to an immutable SHA256 digest in production via build-arg or
+# image policy (e.g. Kyverno imagePolicyWebhook).
+FROM gcr.io/distroless/nodejs24-debian12:nonroot AS production
 
 ARG VCS_REF=unknown
 ARG BUILD_DATE=unknown
@@ -46,26 +51,27 @@ LABEL org.opencontainers.image.title="Nexus-HEMS Dashboard Server" \
   org.opencontainers.image.version="$VERSION"
 
 # Security: upgrade all OS packages to fix CVEs
-RUN apk update && apk upgrade --no-cache && rm -rf /var/cache/apk/*
-
-RUN addgroup -S app && adduser -S app -G app
+# NOTE: distroless has no apk — OS-level patching is handled by base image updates.
+# Rebuild images regularly to pick up new distroless releases with patched packages.
 
 WORKDIR /app
 
 # Copy the production deployment bundle (source + resolved node_modules).
 # pnpm deploy has already resolved workspace:* packages (shared-types included).
-COPY --chown=app:app --from=build /tmp/api-deploy ./
+# Use uid 65532 (distroless nonroot uid).
+COPY --chown=65532:65532 --from=build /tmp/api-deploy ./
 
 ENV NODE_ENV=production
 
-# Security: non-root
-USER app
+# Security: distroless:nonroot already runs as uid 65532 (nonroot) — no USER command needed.
 
-HEALTHCHECK --interval=15s --timeout=3s --start-period=10s --retries=3 \
-  CMD wget -qO- http://localhost:3000/api/health || exit 1
+# HEALTHCHECK is omitted in distroless: there is no wget or curl.
+# Use Kubernetes liveness/readiness probes (configured in helm/nexus-hems/) or
+# Docker Compose healthcheck with a sidecar probe container.
 
 EXPOSE 3000
 
-# tsx handles TypeScript source natively at runtime, including workspace
-# packages that export TypeScript source (packages/shared-types).
-CMD ["node_modules/.bin/tsx", "index.ts"]
+# tsx handles TypeScript source natively at runtime via Node.js --import flag.
+# node_modules/.bin/tsx is a shell shebang script — NOT usable in distroless (no shell).
+# Use `node --import tsx` instead: tsx is loaded as a Node.js loader from node_modules.
+CMD ["node", "--import", "tsx", "index.ts"]

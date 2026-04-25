@@ -116,7 +116,19 @@ export interface AIForecastRecord {
 }
 
 /** Current schema version constant — bump when adding a new Dexie version */
-export const DB_CURRENT_VERSION = 10;
+export const DB_CURRENT_VERSION = 11;
+
+/**
+ * Revoked JWT token record — client-side cache of server-revoked tokens.
+ * Supplements in-memory server revocation with an IndexedDB backup that
+ * survives page refreshes (browser-side guard).
+ */
+export interface RevokedJTI {
+  jti: string;
+  /** Token expiry (ms since epoch) — record auto-expires at this time */
+  expiresAt: number;
+  revokedAt: number;
+}
 
 /** Shared store definitions (DRY — single source of truth for the latest schema) */
 const LATEST_STORES = {
@@ -132,6 +144,7 @@ const LATEST_STORES = {
   shareLinks: 'id, token, expiresAt, active',
   aiForecastHistory: '++id, metric, createdAt, model',
   energyAggregates: '++id, [resolution+bucketTs]',
+  revokedJTIs: 'jti, expiresAt',
 } as const;
 
 export class NexusDatabase extends Dexie {
@@ -147,6 +160,7 @@ export class NexusDatabase extends Dexie {
   shareLinks!: Table<ShareLink, string>;
   aiForecastHistory!: Table<AIForecastRecord, number>;
   energyAggregates!: Table<EnergyAggregate, number>;
+  revokedJTIs!: Table<RevokedJTI, string>;
 
   constructor(dbName = 'nexus-hems-dash') {
     super(dbName);
@@ -343,6 +357,13 @@ export class NexusDatabase extends Dexie {
     // No data migration needed: energyAggregates starts empty; existing
     // energySnapshots are unchanged so _schemaVersion stays at 9.
     this.version(10).stores(LATEST_STORES);
+
+    // ── Version 11: revokedJTIs — client-side JWT revocation cache ──
+    // Browser-side cache of server-revoked JTIs. The server remains the
+    // authoritative revocation authority; this table is a best-effort
+    // additional guard against stale cached tokens in the SPA.
+    // No migration needed: revokedJTIs starts empty.
+    this.version(11).stores(LATEST_STORES);
   }
 }
 
