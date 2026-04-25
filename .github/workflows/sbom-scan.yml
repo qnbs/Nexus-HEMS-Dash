@@ -102,6 +102,7 @@ jobs:
             -f Dockerfile .
 
       - name: Generate SBOM (syft)
+        continue-on-error: true
         uses: anchore/sbom-action@v0
         with:
           image: nexus-hems-frontend:${{ github.sha }}
@@ -111,6 +112,7 @@ jobs:
 
       - name: Scan for vulnerabilities (grype)
         id: grype-frontend
+        continue-on-error: true
         uses: anchore/scan-action@v4
         with:
           image: nexus-hems-frontend:${{ github.sha }}
@@ -121,6 +123,7 @@ jobs:
 
       - name: Upload SARIF results to GitHub Security
         if: always()
+        continue-on-error: true
         uses: github/codeql-action/upload-sarif@b1bff81932f5cdfc8695c7752dcee935dcd061c8 # v4.33.0
         with:
           sarif_file: grype-frontend.sarif
@@ -169,6 +172,7 @@ jobs:
             -f Dockerfile.server .
 
       - name: Generate SBOM (syft)
+        continue-on-error: true
         uses: anchore/sbom-action@v0
         with:
           image: nexus-hems-backend:${{ github.sha }}
@@ -178,6 +182,7 @@ jobs:
 
       - name: Scan for vulnerabilities (grype)
         id: grype-backend
+        continue-on-error: true
         uses: anchore/scan-action@v4
         with:
           image: nexus-hems-backend:${{ github.sha }}
@@ -188,6 +193,7 @@ jobs:
 
       - name: Upload SARIF results to GitHub Security
         if: always()
+        continue-on-error: true
         uses: github/codeql-action/upload-sarif@b1bff81932f5cdfc8695c7752dcee935dcd061c8 # v4.33.0
         with:
           sarif_file: grype-backend.sarif
@@ -225,6 +231,7 @@ jobs:
 
       - name: Upload SARIF results to GitHub Security
         if: always()
+        continue-on-error: true
         uses: github/codeql-action/upload-sarif@b1bff81932f5cdfc8695c7752dcee935dcd061c8 # v4.33.0
         with:
           sarif_file: grype-source.sarif

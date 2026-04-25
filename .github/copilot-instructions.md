@@ -175,7 +175,7 @@ Circuit Breaker (`apps/web/src/core/circuit-breaker.ts`): FSM with CLOSED → OP
 
 | Script              | Command (root, delegates via Turbo)                                 | What runs                                    |
 | ------------------- | ------------------------------------------------------------------- | -------------------------------------------- |
-| `pnpm lint`         | `turbo lint` → `biome check --write=false && eslint --max-warnings 0` | Biome lint+format check + React ES in each workspace |
+| `pnpm lint`         | `turbo lint` → `biome check && eslint --max-warnings 0` | Biome lint+format check + React ES in each workspace |
 | `pnpm lint:fix`     | `turbo lint:fix` → `biome check --write && eslint --fix`            | Biome auto-fix + ESLint fix across workspaces |
 | `pnpm format`       | `turbo format` → `biome format --write apps/ packages/`             | Biome format all workspaces                  |
 | `pnpm format:check` | `biome format apps/ packages/`                                      | Biome format check (Biome 2.4 read-only)     |
@@ -268,7 +268,9 @@ The app uses a **unified Command Center** with 7 top-level sections, each a `Sec
 | `/analytics`       | `Analytics`         | Charts, historical data, export/sharing                         |
 | `/monitoring`      | `Monitoring`        | Adapter status, circuit breakers, system health                 |
 | `/settings`        | `SettingsUnified`   | Config, adapters, language, theme, danger zone                  |
-| `/help`            | `Help`              | Docs, FAQ, about, AI acknowledgments                            |
+| `/plugins`         | `PluginsPage`       | Adapter plugin browser & hot-loading (under SettingsLayout)     |
+| `/settings/ai`     | `AISettingsPage`    | AI provider keys & model config (under SettingsLayout)          |
+| `/help`            | `Help`              | Docs, FAQ, about, AI acknowledgments (under SettingsLayout)     |
 
 Legacy routes (`/production`, `/storage`, `/consumption`, `/ev`, `/floorplan`, `/controllers`, `/hardware`, `/historical-analytics`, `/ai-optimizer`, `/plugins`) redirect to unified equivalents.
 

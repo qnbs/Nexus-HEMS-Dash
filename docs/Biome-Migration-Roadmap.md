@@ -154,7 +154,7 @@ eslint-plugin-anti-trojan-source   (pre-commit standalone CLI already covers thi
 
 ### D4 — CI Lint Step Simplification (ACCEPTED)
 
-**Rationale:** With Biome's format check integrated into `pnpm lint`, the separate `pnpm format:check` step in CI is redundant. `pnpm lint` now runs `biome check --write=false` (includes format check) + slim ESLint. One step instead of two.
+**Rationale:** With Biome's format check integrated into `pnpm lint`, the separate `pnpm format:check` step in CI is redundant. `pnpm lint` now runs `biome check` (read-only by default, includes format check) + slim ESLint. One step instead of two.
 
 ---
 
@@ -202,7 +202,7 @@ eslint-plugin-anti-trojan-source   (pre-commit standalone CLI already covers thi
 | Biome formatter produces different output from Prettier       | High       | Low    | One-time format run at migration; all files reformatted consistently      |
 | `nursery.useSortedClasses` causes unexpected class reordering | Medium     | Low    | Applied as warn + --write; visual regression via Chromatic before merge   |
 | ESLint React rules catch something Biome missed               | Low        | High   | Slim ESLint config explicitly retained for all React rules                |
-| CI breaks on existing code with Biome errors                  | Medium     | Medium | Biome run as `--write=false` in CI; fix-pass run locally during migration |
+| CI breaks on existing code with Biome errors                  | Medium     | Medium | Biome run in read-only mode in CI; fix-pass run locally during migration  |
 | Storybook build incompatibility                               | Low        | Low    | Storybook uses Vite config, not ESLint directly; isolated test            |
 
 ---

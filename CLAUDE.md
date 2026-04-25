@@ -134,7 +134,7 @@ Use `pnpm.overrides` (never top-level `"overrides"`) for dependency overrides. K
 
 ## Unified App Sections
 
-7 top-level routes (legacy routes redirect to unified equivalents):
+8 primary routes across 7 navigation sections (legacy routes redirect to unified equivalents):
 
 | Route | Page | Description |
 |---|---|---|
@@ -146,6 +146,9 @@ Use `pnpm.overrides` (never top-level `"overrides"`) for dependency overrides. K
 | `/analytics` | `Analytics` | Historical charts, export/sharing |
 | `/monitoring` | `Monitoring` | Adapter status, circuit breakers, system health |
 | `/settings` | `SettingsUnified` | Config, adapters, language, theme |
+| `/plugins` | `PluginsPage` | Adapter plugin browser & hot-loading (SettingsLayout) |
+| `/settings/ai` | `AISettingsPage` | AI provider keys & model config (SettingsLayout) |
+| `/help` | `Help` | Docs, FAQ, about, AI acknowledgments (SettingsLayout) |
 
 ## Design System
 

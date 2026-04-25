@@ -1,7 +1,10 @@
 # CODEOWNERS
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
 
+# Catch-all: every file defaults to @qnbs
 * @qnbs
 
+# GitHub configuration & workflows
 /.github/ @qnbs
 /.github/workflows/ @qnbs
 /.github/CODEOWNERS @qnbs
@@ -9,32 +12,54 @@
 /SECURITY.md @qnbs
 /.gitleaks.toml @qnbs
 
-/src/App.tsx @qnbs
-/src/main.tsx @qnbs
-/src/store.ts @qnbs
-/src/types.ts @qnbs
-/server.ts @qnbs
+# Web app — critical entry points & state
+/apps/web/src/App.tsx @qnbs
+/apps/web/src/main.tsx @qnbs
+/apps/web/src/store.ts @qnbs
+/apps/web/src/types.ts @qnbs
+/apps/web/src/index.css @qnbs
+/apps/web/src/design-tokens.ts @qnbs
 
-/src/core/ @qnbs
-/src/core/adapters/ @qnbs
+# Web app — adapter & core infrastructure
+/apps/web/src/core/ @qnbs
+/apps/web/src/core/adapters/ @qnbs
 
-/src/components/SankeyDiagram.tsx @qnbs
-/src/components/Floorplan.tsx @qnbs
-/src/design-tokens.ts @qnbs
-/src/index.css @qnbs
-/src/locales/ @qnbs
+# Web app — protected components (never break)
+/apps/web/src/components/SankeyDiagram.tsx @qnbs
+/apps/web/src/components/Floorplan.tsx @qnbs
 
+# Web app — i18n strings
+/apps/web/src/locales/ @qnbs
+
+# Web app — build & test config
+/apps/web/vite.config.ts @qnbs
+/apps/web/tailwind.config.ts @qnbs
+/apps/web/playwright.config.ts @qnbs
+/apps/web/vitest.config.ts @qnbs
+/apps/web/nginx.conf @qnbs
+/apps/web/src-tauri/ @qnbs
+/apps/web/src/tests/ @qnbs
+/apps/web/tests/ @qnbs
+
+# API backend
+/apps/api/ @qnbs
+
+# Shared types package
+/packages/ @qnbs
+
+# Root workspace configuration
 /package.json @qnbs
 /pnpm-lock.yaml @qnbs
-/vite.config.ts @qnbs
-/tsconfig.json @qnbs
+/pnpm-workspace.yaml @qnbs
+/turbo.json @qnbs
+/tsconfig.base.json @qnbs
+/biome.json @qnbs
+/eslint.config.js @qnbs
 
+# Container & infrastructure
 /Dockerfile @qnbs
 /Dockerfile.server @qnbs
 /docker-compose.yml @qnbs
-/nginx.conf @qnbs
+/docker-compose.prod.yml @qnbs
 /helm/ @qnbs
-/src-tauri/ @qnbs
-
-/src/tests/ @qnbs
-/tests/ @qnbs
+/prometheus.yml @qnbs

@@ -1,6 +1,6 @@
 # Toolchain Architecture — Nexus-HEMS-Dash
 
-**Last updated:** 2026-04-24
+**Last updated:** 2026-04-25
 **Status:** Active (post-Biome-migration, post-monorepo-migration)
 
 ---
@@ -75,7 +75,7 @@ All root scripts delegate to Turborepo; Turbo fan-outs across `apps/*` and `pack
 
 | Script              | Command (root)                                                       | Runs                             |
 | ------------------- | -------------------------------------------------------------------- | -------------------------------- |
-| `pnpm lint`         | `turbo lint` → `biome check --write=false && eslint --max-warnings 0` | Biome check + React ESLint in each workspace |
+| `pnpm lint`         | `turbo lint` → `biome check && eslint --max-warnings 0` | Biome check (read-only by default) + React ESLint in each workspace |
 | `pnpm lint:fix`     | `turbo lint:fix` → `biome check --write && eslint --fix`             | Biome fix + ESLint fix in each workspace |
 | `pnpm format`       | `turbo format` → `biome format --write apps/ packages/`              | Biome format all workspaces      |
 | `pnpm format:check` | `biome format apps/ packages/`                                       | Biome format check (read-only)   |
@@ -133,26 +133,47 @@ Settings (`settings.json` in workspace):
 
 ---
 
-## CI Pipeline (ci.yml)
+## CI Pipelines
+
+Two complementary CI pipelines in `.github/workflows/`:
+
+### ci.yml (primary gate — runs on push/PR to main)
 
 ```
-lint-typecheck (parallel with unit-tests + build)
-  ├─ pnpm audit
+lint-typecheck
+  ├─ pnpm audit --audit-level=high
   ├─ turbo lint       (biome check + slim eslint across all workspaces)
   └─ turbo type-check (tsc --noEmit across apps/api + apps/web + packages/shared-types)
 
 unit-tests (needs: lint-typecheck)
-  └─ turbo test:run → vitest run --coverage (apps/web)
+  └─ turbo test:coverage → vitest run --coverage (apps/web)
 
 build (needs: lint-typecheck)
   └─ turbo build → packages/shared-types → apps/api + apps/web
-     → size-limit → sentry source maps
+     → bundle size check (600 KB index budget) → size-limit → sentry source maps (main only)
 
 e2e-tests (needs: build)
   └─ playwright test (Chromium + Firefox in CI; local runs Chromium only)
 
 docker-build (needs: build)
-  └─ docker build
+  └─ docker build --target production
+
+security  (needs: lint-typecheck)
+  └─ verify security-full.yml exists
+
+ci-passed (always, needs: lint-typecheck + unit-tests + build)
+  └─ gate: all three must succeed
+```
+
+### perf-optimized-ci.yml (50–80% faster — fan-out/fan-in with shared dep cache)
+
+```
+install          → cache node_modules (keyed on pnpm-lock.yaml)
+  ├─ lint        → restore cache → biome check + eslint + tsc
+  ├─ test        → restore cache → vitest coverage
+  └─ build       → restore cache → vite build → cache dist/
+        ├─ e2e   → restore dist + Playwright browsers (cached) → playwright test
+        └─ docker → restore dist → docker/build-push-action (layer cache)
 ```
 
 ---
@@ -172,7 +193,7 @@ docker-build (needs: build)
 
 1. Find the rule in [Biome rule reference](https://biomejs.dev/linter/rules/)
 2. Add to appropriate `linter.rules.<group>.<ruleName>` section in `biome.json`
-3. Test: `pnpm lint` must pass with `--write=false`
+3. Test: `pnpm lint` must pass cleanly (read-only by default — no `--write` flag needed)
 
 ### ESLint React Rule
 
