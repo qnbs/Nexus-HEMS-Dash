@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Nexus-HEMS Dashboard is a production-grade, real-time Home Energy Management System dashboard. It consolidates 10 protocol adapters (Victron MQTT, Modbus/SunSpec, KNX, OCPP 2.1, EEBUS/SPINE, and 5 contrib adapters) into a unified React 19 SPA served by an Express 5 backend. Deployable as PWA, Docker container, Tauri desktop app, or Capacitor mobile app.
+Nexus-HEMS Dashboard is a production-grade, real-time Home Energy Management System dashboard. It consolidates 10 protocol adapters (Victron MQTT, Modbus/SunSpec, KNX, OCPP 2.1, EEBUS/SPINE, and 5 contrib adapters) into a unified React 19 SPA served by an Express 5 backend. Deployable as PWA, Docker container, Tauri desktop app, Helm/Kubernetes release, or Capacitor mobile app. Current package version: `1.1.0`.
 
 **Repository structure:** pnpm workspace monorepo managed by Turborepo.
 
@@ -22,8 +22,8 @@ pnpm dev               # turbo dev → starts apps/api (port 3000) + apps/web (p
 pnpm build             # turbo build → production builds for all packages
 pnpm preview           # Preview apps/web production build
 
-# Verification (run before every commit)
-pnpm verify:basis      # type-check + lint + test:run (the local gate)
+# Verification (staged; do not run heavyweight checks in parallel locally)
+pnpm verify:basis      # turbo type-check lint test:run (full local gate)
 pnpm type-check        # tsc --noEmit across all workspaces (strict mode)
 pnpm lint              # biome check + eslint --max-warnings 0 (read-only)
 pnpm lint:fix          # biome check --write + eslint --fix
@@ -48,7 +48,7 @@ pnpm docker:build && pnpm docker:up   # Build and run on port 8080
 
 **Local verification order:** `type-check` → `lint` → targeted unit tests. Do not run heavy checks in parallel on local hardware. Full E2E/Lighthouse/security scans are CI-first; only run locally when CI is unavailable or explicitly requested.
 
-**Playwright policy:** local `pnpm test:e2e` is intentionally Chromium-only. CI installs and runs Chromium + Firefox. WebKit and mobile browser projects are disabled until explicitly re-enabled.
+**Playwright policy:** local `pnpm test:e2e` is intentionally Chromium-only. CI installs and runs Chromium + Firefox. WebKit and mobile browser projects are disabled until explicitly re-enabled. For GitHub Pages route tests, use base-relative navigation (`./unknown-route`) so `/Nexus-HEMS-Dash/` stays in the URL.
 
 ## Architecture
 
@@ -86,7 +86,7 @@ await loadContribAdapter('homeassistant-mqtt');                      // dynamic
 const ids = await loadAllContribAdapters();                         // load all contrib
 ```
 
-Plugin lifecycle (OSGi-inspired): install → resolve → start → stop → uninstall. Hot-loading from Settings UI supported. Activation timeout: 10 s.
+Plugin lifecycle (OSGi-inspired): install → resolve → start → stop → uninstall. Hot-loading from Settings UI supported. Activation timeout: 10 s. External adapters should export `{ id, factory }` or register through the local adapter registry; do not document a non-existent `@nexus-hems/adapter-registry` package.
 
 ### Key Infrastructure
 
@@ -112,15 +112,15 @@ Auto-memoization via `babel-plugin-react-compiler`. Never add manual `useCallbac
 
 ## Toolchain Rules
 
-**Biome 2.4.7 is the primary linter and formatter.** ESLint is retained only for three React plugins Biome cannot replace: `react-compiler/react-compiler`, `react-hooks/rules-of-hooks`, `react-hooks/exhaustive-deps`, `react-refresh/only-export-components`.
+**Biome 2.4.7 is the primary linter and formatter.** ESLint is retained only for React plugins Biome cannot replace: `react-compiler/react-compiler`, `react-hooks/rules-of-hooks`, `react-hooks/exhaustive-deps`, `react-refresh/only-export-components`.
 
 **Do NOT re-add:** `prettier`, `prettier-plugin-tailwindcss`, `eslint-plugin-prettier`, `eslint-config-prettier`, `@eslint/js`, `typescript-eslint`, `@typescript-eslint/*`, `globals`, `eslint-plugin-react`.
 
-Biome settings: line width 100, 2-space indent, LF, single quotes, trailing commas, semicolons always. `noExplicitAny`: error — use `unknown`, precise interfaces, or discriminated unions instead.
+Biome settings: line width 100, 2-space indent, LF, single quotes, trailing commas, semicolons always. `noExplicitAny`: error — use `unknown`, precise interfaces, or discriminated unions instead. Keep exact test counts out of instructions; they drift quickly.
 
 Biome 2.4 note: use `biome format apps/ packages/` for the read-only `format:check` script. Do not use `biome format --write=false`; this version rejects that flag/value combination.
 
-Use `pnpm.overrides` (never top-level `"overrides"`) for dependency overrides.
+Use `pnpm.overrides` (never top-level `"overrides"`) for dependency overrides. Keep `pnpm.onlyBuiltDependencies` in sync with approved native/postinstall packages (`esbuild`, `better-sqlite3`, serialport bindings, `core-js`, `protobufjs`, and all `@rolldown/binding-*` platform packages).
 
 ## Critical Constraints
 
@@ -160,7 +160,9 @@ Conventional Commits enforced by commitlint. Types: `feat, fix, docs, style, ref
 1. Read relevant files before modifying: affected components, adapter interfaces, both Zustand stores.
 2. Implement changes following all rules above.
 3. Add/update i18n keys in both `apps/web/src/locales/en.ts` and `apps/web/src/locales/de.ts`.
-4. Verify with staged, non-parallel checks: `time pnpm type-check` → `pnpm lint` → targeted tests. For docs/config-only changes, prefer targeted Biome/format checks plus CI instead of exhausting local hardware.
+4. Verify with staged, non-parallel checks: `time pnpm type-check` → `pnpm lint` → targeted tests. For docs/config-only changes, prefer targeted Markdown/diff checks plus CI instead of exhausting local hardware.
+
+When CI is the source of truth, push focused commits and monitor GitHub Actions with non-interactive `gh` commands (`GH_PAGER=cat PAGER=cat gh run view ...`). Avoid terminal UI commands such as `gh run watch` in this workspace because they can leave control sequences in the shell.
 
 ## Key Docs
 

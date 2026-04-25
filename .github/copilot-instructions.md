@@ -69,6 +69,7 @@ const ids = await loadAllContribAdapters();                          // load all
 - Plugin lifecycle: install → resolve → start → stop → uninstall (OSGi-inspired)
 - `plugin-system.ts`: dependency injection, service registry, event bus, semver matching
 - Plugin activation timeout: 10 s; hot-loading from Settings UI supported
+- External adapter documentation must not reference a non-existent `@nexus-hems/adapter-registry` package. Use the local registry import for in-repo contrib adapters, or document external adapters as exporting `{ id, factory }`.
 
 ### Energy Controllers & Optimization
 
@@ -179,7 +180,7 @@ Circuit Breaker (`apps/web/src/core/circuit-breaker.ts`): FSM with CLOSED → OP
 | `pnpm format`       | `turbo format` → `biome format --write apps/ packages/`             | Biome format all workspaces                  |
 | `pnpm format:check` | `biome format apps/ packages/`                                      | Biome format check (Biome 2.4 read-only)     |
 | `pnpm type-check`   | `turbo type-check` → `tsc --noEmit` in each workspace               | TypeScript strict type check across all 3 packages |
-| `pnpm verify:basis` | `pnpm type-check && pnpm lint && pnpm test:run`                      | Full local verification loop                 |
+| `pnpm verify:basis` | `turbo type-check lint test:run`                                     | Full local verification loop                 |
 | `pnpm bench`        | `./scripts/bench-tooling.sh`                                         | Toolchain perf benchmark                     |
 
 **Pre-commit pipeline:** pre-commit framework (trailing-ws, gitleaks, anti-trojan-source) → lint-staged (`biome check --write` + `eslint --fix` on `*.{ts,tsx}`; `biome format --write` on `*.{json,css,html,yml,yaml,md}`).
@@ -187,7 +188,7 @@ Circuit Breaker (`apps/web/src/core/circuit-breaker.ts`): FSM with CLOSED → OP
 **Toolchain docs:** `docs/Toolchain-Architecture.md`, `docs/Biome-Migration-Roadmap.md`.
 
 - **Husky** + **lint-staged** for pre-commit hooks
-- **Vitest v4** (jsdom, V8 coverage — thresholds: statements 48%, branches 40%, functions 49%, lines 49%) — unit tests in `apps/web/src/tests/` (~428 tests across 37 files)
+- **Vitest v4** (jsdom, V8 coverage — thresholds: statements 48%, branches 40%, functions 49%, lines 49%) — unit tests in `apps/web/src/tests/`
 - **Playwright** — local E2E is Chromium-only; CI installs and runs Chromium + Firefox; WebKit/mobile projects are disabled for now
 - **Lighthouse CI** (Perf ≥ 85%, A11y ≥ 90%, Best Practices ≥ 90%; `errors-in-console` disabled for demo mode)
 - **Storybook 10** — component stories in `*.stories.tsx` co-located with components
@@ -200,10 +201,11 @@ Circuit Breaker (`apps/web/src/core/circuit-breaker.ts`): FSM with CLOSED → OP
 - **Default local loop:** keep local verification fast and deterministic (`type-check`, `lint`, targeted unit tests, changed-file tests, focused smoke checks)
 - **Never run heavyweight local suites in parallel** on developer hardware. Run `type-check`, lint, tests, builds, and browser checks sequentially unless the user explicitly asks for parallel execution.
 - **Playwright browser policy:** local `pnpm test:e2e` runs Chromium only. Cloud CI runs Chromium + Firefox. WebKit and mobile browser projects stay disabled until explicitly requested.
-- **Long-running suites belong primarily to CI:** full **Playwright E2E** matrix, **Lighthouse**, broad **security scans** (CodeQL/Scorecard), and other heavy end-to-end validations should run mainly in cloud CI pipelines
+- **Long-running suites belong primarily to CI:** cloud **Playwright E2E** browser coverage, **Lighthouse**, broad **security scans** (CodeQL/Scorecard), and other heavy end-to-end validations should run mainly in cloud CI pipelines
 - Only run full local E2E/perf/security suites when explicitly requested by the user or when CI is unavailable
 - If a local long-running test is already running and is needed for diagnosis, monitor it; otherwise prefer CI execution and continue with productive implementation work
-- For local E2E confidence, prefer **targeted spec files** or **single-browser smoke subsets** before triggering full suites
+- For local E2E confidence, prefer **targeted Chromium spec files** before triggering broader cloud suites
+- For GitHub Pages route tests, navigate with base-relative paths (`./unknown-route`) instead of absolute root paths (`/unknown-route`) so React Router keeps the `/Nexus-HEMS-Dash/` basename
 - Always report clearly which checks were run locally vs deferred to CI, and why
 - Never block implementation progress solely on non-critical local long-suite runtime when equivalent CI gates exist
 
@@ -223,7 +225,7 @@ Circuit Breaker (`apps/web/src/core/circuit-breaker.ts`): FSM with CLOSED → OP
 2. **IMPLEMENT** — make changes following all rules above
 3. **LOCALIZE** — add/update i18n keys in both `apps/web/src/locales/en.ts` and `apps/web/src/locales/de.ts`
 4. **DEPS** — update `package.json` automatically when new packages are needed
-5. **VERIFY** — run checks sequentially: `time pnpm type-check` → `pnpm lint` → targeted tests. For docs/config-only changes, use targeted Biome/format validation and let cloud CI cover heavy gates.
+5. **VERIFY** — run checks sequentially: `time pnpm type-check` → `pnpm lint` → targeted tests. For docs/config-only changes, use targeted Markdown/diff validation and let cloud CI cover heavy gates.
 
 ### Verification Policy
 
@@ -232,6 +234,7 @@ Circuit Breaker (`apps/web/src/core/circuit-breaker.ts`): FSM with CLOSED → OP
 - `pnpm lint` subsumes format checking — no separate `format:check` step needed
 - `pnpm format:check` is `biome format apps/ packages/`; do not add `--write=false` to `biome format` on Biome 2.4
 - Treat full E2E/performance/security suites as CI-first gates; link outcomes to the corresponding workflow runs
+- Use non-interactive GitHub CLI status checks (`GH_PAGER=cat PAGER=cat gh run view ...`). Avoid `gh run watch` in this workspace because its terminal UI can leave control sequences in the shell.
 - For runtime-major changes (e.g., Express major), require at least:
   - local TypeScript + lint + relevant unit tests + production build
   - CI E2E/security completion before final merge/deploy
@@ -344,7 +347,7 @@ apps/web/                      # @nexus-hems/web — React 19 Vite SPA
 │   │   └── ...                #   Other utilities
 │   ├── locales/               #   en.ts, de.ts (TypeScript objects)
 │   ├── pages/                 #   7 unified section pages (lazy-loaded) + legacy redirects
-│   ├── tests/                 #   Vitest unit tests (~428 tests, 37 files)
+│   ├── tests/                 #   Vitest unit tests
 │   └── workers/               #   Web Worker entry points
 ├── tests/e2e/                 #   Playwright E2E + a11y tests
 └── src-tauri/                 #   Tauri v2.2 desktop config + Rust source
@@ -403,7 +406,7 @@ Vite proxies `/api/*`, `/metrics`, and `/ws` to `http://localhost:3000` — brow
 - Nested overrides use `parent>child` syntax, e.g. `"@lhci/cli>tmp": "0.2.5"`
 - Run `pnpm audit` after any override change to verify resolution
 - Current active security overrides: `protobufjs>=7.5.5`, `undici>=7.0.0`, `cross-spawn>=7.0.6`, `@xmldom/xmldom>=0.9.0`, `basic-ftp>=5.3.0`, `serialize-javascript>=7.0.5`
-- `pnpm.onlyBuiltDependencies`: include all `@rolldown/binding-*` platform entries to suppress install warnings
+- `pnpm.onlyBuiltDependencies`: include approved native/postinstall packages (`esbuild`, `better-sqlite3`, `@serialport/bindings-cpp`, `core-js`, `protobufjs`) plus all `@rolldown/binding-*` platform entries to suppress install warnings
 - `pnpm.peerDependencyRules.allowedVersions`: add `@storybook/react>react: ^19.0.0` etc. when Storybook lags behind React version
 
 ---
