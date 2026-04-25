@@ -94,7 +94,7 @@
     "lint": "turbo lint",
     "lint:fix": "turbo lint:fix",
     "format": "turbo format",
-    "format:check": "biome format --write=false apps/ packages/",
+    "format:check": "biome format apps/ packages/",
     "type-check": "turbo type-check",
     "typecheck": "turbo type-check",
     "verify:basis": "turbo type-check lint test:run",

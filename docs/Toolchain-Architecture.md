@@ -78,7 +78,7 @@ All root scripts delegate to Turborepo; Turbo fan-outs across `apps/*` and `pack
 | `pnpm lint`         | `turbo lint` → `biome check --write=false && eslint --max-warnings 0` | Biome check + React ESLint in each workspace |
 | `pnpm lint:fix`     | `turbo lint:fix` → `biome check --write && eslint --fix`             | Biome fix + ESLint fix in each workspace |
 | `pnpm format`       | `turbo format` → `biome format --write apps/ packages/`              | Biome format all workspaces      |
-| `pnpm format:check` | `biome format --write=false apps/ packages/`                         | Biome format check (no write)    |
+| `pnpm format:check` | `biome format apps/ packages/`                                       | Biome format check (no write)    |
 | `pnpm type-check`   | `turbo type-check` → `tsc --noEmit` in each workspace                | TypeScript type checking across all 3 packages |
 | `pnpm verify:basis` | `pnpm type-check && pnpm lint && pnpm test:run`                       | Full local verification          |
 | `pnpm bench`        | `./scripts/bench-tooling.sh`                                         | Toolchain wall-clock + RSS bench |

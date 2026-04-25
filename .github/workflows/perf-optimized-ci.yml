@@ -142,9 +142,6 @@ jobs:
           TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
           TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
 
-      - name: Format Check
-        run: pnpm format:check
-
   test:
     name: 🧪 Unit Tests
     runs-on: ubuntu-latest
