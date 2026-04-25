@@ -104,11 +104,11 @@ export class EventBus {
         const result = subscriber.onBatch(batch);
         if (result instanceof Promise) {
           result.catch((err: unknown) => {
-            console.error(`[EventBus] Subscriber "${id}" async error:`, err);
+            console.error('[EventBus] Subscriber async error:', id, err);
           });
         }
       } catch (err) {
-        console.error(`[EventBus] Subscriber "${id}" sync error:`, err);
+        console.error('[EventBus] Subscriber sync error:', id, err);
       }
     }
   }

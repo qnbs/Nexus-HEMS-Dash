@@ -60,7 +60,7 @@ export async function startProtocolAdapters(eventBus: EventBus): Promise<void> {
         pipeAdapterToEventBus(adapter, eventBus);
       })
       .catch((err: unknown) => {
-        console.error(`[Adapters] Failed to start ModbusAdapter ${device.deviceId}:`, err);
+        console.error('[Adapters] Failed to start ModbusAdapter:', device.deviceId, err);
       });
   }
 
@@ -125,6 +125,6 @@ function pipeAdapterToEventBus(adapter: IProtocolAdapter, eventBus: EventBus): v
       eventBus.emit(datapoint);
     }
   })().catch((err: unknown) => {
-    console.error(`[Adapters] Data stream error for adapter ${adapter.id}:`, err);
+    console.error('[Adapters] Data stream error for adapter:', adapter.id, err);
   });
 }

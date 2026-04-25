@@ -98,7 +98,7 @@ export class MqttAdapter implements IProtocolAdapter {
         for (const tp of this.config.topicPatterns) {
           this.client?.subscribe(tp.pattern, { qos: 1 }, (err) => {
             if (err) {
-              console.error(`[MqttAdapter:${this.id}] Subscribe error for ${tp.pattern}:`, err);
+              console.error('[MqttAdapter] Subscribe error:', this.id, tp.pattern, err);
             }
           });
         }

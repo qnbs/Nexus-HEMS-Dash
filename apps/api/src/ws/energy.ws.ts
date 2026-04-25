@@ -153,93 +153,10 @@ export function setupWebSocket(wss: WebSocketServer): void {
 
     ws.on('message', (message) => {
       wsMessageCount.inbound++;
-
-      // Rate limit per WebSocket client (30 cmd/min)
-      const now = Date.now();
-      let rl = wsRateLimits.get(ws);
-      if (!rl || now > rl.resetAt) {
-        rl = { count: 0, resetAt: now + 60_000 };
-        wsRateLimits.set(ws, rl);
-      }
-      rl.count++;
-      if (rl.count > 30) {
-        ws.send(JSON.stringify({ type: 'ERROR', error: 'Rate limit exceeded (30 cmd/min)' }));
-        return;
-      }
-
+      if (!checkWsRateLimit(ws, wsRateLimits)) return;
       try {
         const parsed = JSON.parse(message.toString());
-
-        const validation = validateWSCommand(parsed);
-        if (!validation.valid) {
-          // Handle SUBSCRIBE separately — it's not in WSCommandSchema
-          if (
-            parsed !== null &&
-            typeof parsed === 'object' &&
-            'type' in parsed &&
-            parsed.type === 'SUBSCRIBE'
-          ) {
-            const metrics = (parsed as Record<string, unknown>)['metrics'];
-            if (Array.isArray(metrics) && metrics.every((m) => typeof m === 'string')) {
-              const sub = wsSubscriptions.get(ws) ?? new Set<string>();
-              sub.clear();
-              for (const m of metrics as string[]) sub.add(m);
-              wsSubscriptions.set(ws, sub);
-              ws.send(
-                JSON.stringify({
-                  type: 'SUBSCRIBE_ACK',
-                  metrics: [...sub],
-                }),
-              );
-              return;
-            }
-          }
-          ws.send(JSON.stringify({ type: 'ERROR', error: validation.error }));
-          return;
-        }
-
-        // CRIT-02: Enforce scope-based command authorization
-        const client = wsAuthMap.get(ws);
-        const clientScope: JWTScope = client?.scope ?? 'read';
-
-        if (WRITE_COMMANDS.has(parsed.type) && SCOPE_ORDER[clientScope] < SCOPE_ORDER.readwrite) {
-          ws.send(
-            JSON.stringify({
-              type: 'ERROR',
-              error: 'Insufficient scope: readwrite required for hardware commands',
-            }),
-          );
-          return;
-        }
-        if (ADMIN_COMMANDS.has(parsed.type) && SCOPE_ORDER[clientScope] < SCOPE_ORDER.admin) {
-          ws.send(
-            JSON.stringify({
-              type: 'ERROR',
-              error: 'Insufficient scope: admin required for grid limit commands',
-            }),
-          );
-          return;
-        }
-
-        if (parsed.type === 'SET_EV_POWER') {
-          mockData.evPower = parsed.value;
-        } else if (parsed.type === 'SET_HEAT_PUMP_POWER') {
-          mockData.heatPumpPower = parsed.value;
-        } else if (parsed.type === 'SET_BATTERY_POWER') {
-          mockData.batteryPower = parsed.value;
-        }
-
-        // Broadcast update immediately
-        mockData.gridPower =
-          mockData.houseLoad +
-          mockData.batteryPower +
-          mockData.evPower +
-          mockData.heatPumpPower -
-          mockData.pvPower;
-        const updateMsg = JSON.stringify({ type: 'ENERGY_UPDATE', data: mockData });
-        wss.clients.forEach((c) => {
-          if (c.readyState === 1) c.send(updateMsg);
-        });
+        handleWsCommand(ws, parsed, wsSubscriptions, wsAuthMap, wss);
       } catch (e) {
         console.error('Failed to parse message', e);
       }
@@ -253,6 +170,114 @@ export function setupWebSocket(wss: WebSocketServer): void {
       if (remaining <= 0) wsConnectionsPerIP.delete(clientIP);
       else wsConnectionsPerIP.set(clientIP, remaining);
     });
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Message handler helpers (extracted to keep cognitive complexity ≤ 25)
+// ---------------------------------------------------------------------------
+
+function checkWsRateLimit(
+  ws: WebSocket,
+  wsRateLimits: WeakMap<WebSocket, { count: number; resetAt: number }>,
+): boolean {
+  const now = Date.now();
+  let rl = wsRateLimits.get(ws);
+  if (!rl || now > rl.resetAt) {
+    rl = { count: 0, resetAt: now + 60_000 };
+    wsRateLimits.set(ws, rl);
+  }
+  rl.count++;
+  if (rl.count > 30) {
+    ws.send(JSON.stringify({ type: 'ERROR', error: 'Rate limit exceeded (30 cmd/min)' }));
+    return false;
+  }
+  return true;
+}
+
+function handleSubscribeCommand(
+  ws: WebSocket,
+  parsed: Record<string, unknown>,
+  wsSubscriptions: WeakMap<WebSocket, Set<string>>,
+): boolean {
+  if (parsed.type !== 'SUBSCRIBE') return false;
+  const metrics = parsed.metrics;
+  if (!Array.isArray(metrics) || !metrics.every((m) => typeof m === 'string')) return false;
+  const sub = wsSubscriptions.get(ws) ?? new Set<string>();
+  sub.clear();
+  for (const m of metrics as string[]) sub.add(m);
+  wsSubscriptions.set(ws, sub);
+  ws.send(JSON.stringify({ type: 'SUBSCRIBE_ACK', metrics: [...sub] }));
+  return true;
+}
+
+function checkScopeAuthorization(
+  ws: WebSocket,
+  parsedType: string,
+  wsAuthMap: WeakMap<WebSocket, AuthenticatedClient>,
+): boolean {
+  const client = wsAuthMap.get(ws);
+  const clientScope: JWTScope = client?.scope ?? 'read';
+  if (WRITE_COMMANDS.has(parsedType) && SCOPE_ORDER[clientScope] < SCOPE_ORDER.readwrite) {
+    ws.send(
+      JSON.stringify({
+        type: 'ERROR',
+        error: 'Insufficient scope: readwrite required for hardware commands',
+      }),
+    );
+    return false;
+  }
+  if (ADMIN_COMMANDS.has(parsedType) && SCOPE_ORDER[clientScope] < SCOPE_ORDER.admin) {
+    ws.send(
+      JSON.stringify({
+        type: 'ERROR',
+        error: 'Insufficient scope: admin required for grid limit commands',
+      }),
+    );
+    return false;
+  }
+  return true;
+}
+
+function handleWsCommand(
+  ws: WebSocket,
+  parsed: unknown,
+  wsSubscriptions: WeakMap<WebSocket, Set<string>>,
+  wsAuthMap: WeakMap<WebSocket, AuthenticatedClient>,
+  wss: WebSocketServer,
+): void {
+  const validation = validateWSCommand(parsed);
+  if (!validation.valid) {
+    // Handle SUBSCRIBE separately — it's not in WSCommandSchema
+    if (parsed !== null && typeof parsed === 'object' && 'type' in parsed) {
+      if (handleSubscribeCommand(ws, parsed as Record<string, unknown>, wsSubscriptions)) return;
+    }
+    ws.send(JSON.stringify({ type: 'ERROR', error: validation.error }));
+    return;
+  }
+
+  // CRIT-02: Enforce scope-based command authorization
+  const cmd = parsed as { type: string; value?: number };
+  if (!checkScopeAuthorization(ws, cmd.type, wsAuthMap)) return;
+
+  if (cmd.type === 'SET_EV_POWER') {
+    mockData.evPower = cmd.value ?? mockData.evPower;
+  } else if (cmd.type === 'SET_HEAT_PUMP_POWER') {
+    mockData.heatPumpPower = cmd.value ?? mockData.heatPumpPower;
+  } else if (cmd.type === 'SET_BATTERY_POWER') {
+    mockData.batteryPower = cmd.value ?? mockData.batteryPower;
+  }
+
+  // Broadcast update immediately
+  mockData.gridPower =
+    mockData.houseLoad +
+    mockData.batteryPower +
+    mockData.evPower +
+    mockData.heatPumpPower -
+    mockData.pvPower;
+  const updateMsg = JSON.stringify({ type: 'ENERGY_UPDATE', data: mockData });
+  wss.clients.forEach((c) => {
+    if (c.readyState === 1) c.send(updateMsg);
   });
 }
 

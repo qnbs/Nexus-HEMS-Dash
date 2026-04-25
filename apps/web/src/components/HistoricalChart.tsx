@@ -265,10 +265,9 @@ export function HistoricalChart({ className = '' }: HistoricalChartProps) {
         {/* Controls row */}
         <div className="flex flex-wrap items-center gap-2">
           {/* Time range selector */}
-          <div
-            role="group"
+          <fieldset
             aria-label={t('historicalChart.selectGranularity')}
-            className="flex rounded-lg bg-white/5 p-0.5"
+            className="m-0 flex rounded-lg border-0 bg-white/5 p-0.5"
           >
             {RANGES.map((r) => (
               <button
@@ -276,7 +275,7 @@ export function HistoricalChart({ className = '' }: HistoricalChartProps) {
                 type="button"
                 onClick={() => setRange(r)}
                 aria-pressed={range === r}
-                className={`rounded-md px-3 py-1 text-xs font-medium transition-colors focus-ring ${
+                className={`focus-ring rounded-md px-3 py-1 font-medium text-xs transition-colors ${
                   range === r
                     ? 'bg-neon-green/20 text-neon-green'
                     : 'text-white/60 hover:text-white'
@@ -285,14 +284,14 @@ export function HistoricalChart({ className = '' }: HistoricalChartProps) {
                 {t(`historicalChart.range${r}` as `historicalChart.range${typeof r}`)}
               </button>
             ))}
-          </div>
+          </fieldset>
 
           {/* Granularity selector */}
           <select
             value={granularity}
             onChange={(e) => setGranularity(e.target.value as Granularity)}
             aria-label={t('historicalChart.selectGranularity')}
-            className="rounded-lg bg-white/5 px-3 py-1 text-xs text-white/80 focus-ring"
+            className="focus-ring rounded-lg bg-white/5 px-3 py-1 text-white/80 text-xs"
           >
             {GRANULARITIES.map((g) => (
               <option key={g.value} value={g.value}>
@@ -306,7 +305,7 @@ export function HistoricalChart({ className = '' }: HistoricalChartProps) {
             <button
               type="button"
               onClick={resetZoom}
-              className="rounded-lg bg-white/10 px-3 py-1 text-xs text-white/80 hover:bg-white/20 focus-ring"
+              className="focus-ring rounded-lg bg-white/10 px-3 py-1 text-white/80 text-xs hover:bg-white/20"
             >
               ↺ Reset zoom
             </button>
@@ -325,7 +324,7 @@ export function HistoricalChart({ className = '' }: HistoricalChartProps) {
         </div>
       ) : (
         <>
-          <p className="mb-2 text-xs text-white/40" aria-hidden="true">
+          <p className="mb-2 text-white/40 text-xs" aria-hidden="true">
             {t('historicalChart.zoomHint')}
           </p>
           <ResponsiveContainer width="100%" height={320}>

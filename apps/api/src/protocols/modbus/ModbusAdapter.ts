@@ -176,10 +176,7 @@ export class ModbusAdapter implements IProtocolAdapter {
       } catch (err) {
         attempt++;
         const delayMs = Math.min(1000 * 2 ** (attempt - 1), MAX_RECONNECT_DELAY_MS);
-        console.warn(
-          `[ModbusAdapter:${this.id}] Connect attempt ${attempt} failed — retrying in ${delayMs}ms`,
-          err,
-        );
+        console.warn('[ModbusAdapter] Connect attempt failed:', this.id, attempt, delayMs, err);
         await new Promise((r) => setTimeout(r, delayMs));
       }
     }
@@ -189,7 +186,7 @@ export class ModbusAdapter implements IProtocolAdapter {
     this.pollTimer = setInterval(() => {
       if (!this.destroyed) {
         this.pollAllRegisters().catch((err: unknown) => {
-          console.error(`[ModbusAdapter:${this.id}] Poll error:`, err);
+          console.error('[ModbusAdapter] Poll error:', this.id, err);
         });
       }
     }, this.device.pollIntervalMs);
