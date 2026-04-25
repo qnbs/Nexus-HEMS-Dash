@@ -220,7 +220,9 @@ export function useAppStoreShallow<T>(selector: (state: AppState) => T): T {
   return useAppStore(useShallow(selector));
 }
 
-// Expose store for E2E / Playwright tests in dev mode
-if (import.meta.env.DEV) {
+// Expose store for E2E / Playwright tests.
+// Available in dev mode AND in production builds flagged with VITE_E2E_TESTING=true
+// (set via env in CI E2E jobs so Playwright can inject energy data via the store).
+if (import.meta.env.DEV || import.meta.env.VITE_E2E_TESTING === 'true') {
   (window as unknown as Record<string, unknown>).__NEXUS_STORE__ = useAppStore;
 }

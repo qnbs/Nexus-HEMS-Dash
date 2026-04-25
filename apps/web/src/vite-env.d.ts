@@ -2,6 +2,15 @@
 
 declare const __APP_VERSION__: string;
 
+interface ImportMetaEnv {
+  /** Set to 'true' in CI E2E jobs to expose the Zustand store on window.__NEXUS_STORE__ */
+  readonly VITE_E2E_TESTING?: string;
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv;
+}
+
 // Virtual modules from vite-plugin-pwa
 declare module 'virtual:pwa-register/react' {
   import type { Dispatch, SetStateAction } from 'react';
