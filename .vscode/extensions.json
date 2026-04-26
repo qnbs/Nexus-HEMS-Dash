@@ -1,24 +1,30 @@
 {
   "recommendations": [
+    // ── Core toolchain ────────────────────────────────────────────
     "biomejs.biome",
     "dbaeumer.vscode-eslint",
     "bradlc.vscode-tailwindcss",
-    "ms-playwright.playwright",
+    "yoavbls.pretty-ts-errors",
+
+    // ── Testing ───────────────────────────────────────────────────
     "vitest.explorer",
-    "christian-kohler.path-intellisense",
-    "mikestead.dotenv",
-    "streetsidesoftware.code-spell-checker",
-    "streetsidesoftware.code-spell-checker-german",
+    "ms-playwright.playwright",
+
+    // ── i18n ─────────────────────────────────────────────────────
+    "lokalise.i18n-ally",
+
+    // ── Editor quality ────────────────────────────────────────────
     "usernamehw.errorlens",
     "editorconfig.editorconfig",
-    "lokalise.i18n-ally",
+    "mikestead.dotenv",
+
+    // ── Git & GitHub ─────────────────────────────────────────────
     "eamodio.gitlens",
-    "mhutchie.git-graph",
     "GitHub.vscode-pull-request-github",
     "GitHub.copilot",
-    "GitHub.copilot-chat",
+
+    // ── Infrastructure ────────────────────────────────────────────
     "ms-azuretools.vscode-docker",
-    "redhat.vscode-yaml",
-    "medo64.render-crlf"
+    "redhat.vscode-yaml"
   ]
 }
