@@ -36,12 +36,14 @@ export interface EEBUSCertRecord {
   deviceName: string;
   /** SHA-256 fingerprint (hex colon-separated) */
   fingerprint: string;
-  /** PEM-encoded certificate (stored encrypted in production usage) */
-  pemData: string;
+  /** PEM stays in memory for the active session and is never persisted in localStorage. */
+  pemData?: string;
   validUntil: number;
   createdAt: number;
   status: CertStatus;
 }
+
+type PersistedEEBUSCertRecord = Omit<EEBUSCertRecord, 'pemData'>;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -751,7 +753,8 @@ function ShipTrustStore() {
   );
 }
 // migration. For now the component uses a local React state list with
-// localStorage serialisation so it integrates without a schema bump.
+// localStorage serialisation for non-sensitive metadata only so it integrates
+// without a schema bump.
 const LS_KEY = 'nexus:eebus-certs';
 
 function loadFromStorage(): EEBUSCertRecord[] {
@@ -760,7 +763,7 @@ function loadFromStorage(): EEBUSCertRecord[] {
     if (!raw) return [];
     const parsed: unknown = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
-    return parsed as EEBUSCertRecord[];
+    return parsed as PersistedEEBUSCertRecord[];
   } catch {
     return [];
   }
@@ -768,7 +771,10 @@ function loadFromStorage(): EEBUSCertRecord[] {
 
 function saveToStorage(certs: EEBUSCertRecord[]): void {
   try {
-    localStorage.setItem(LS_KEY, JSON.stringify(certs));
+    const persistedCerts: PersistedEEBUSCertRecord[] = certs.map(
+      ({ pemData: _pemData, ...cert }) => cert,
+    );
+    localStorage.setItem(LS_KEY, JSON.stringify(persistedCerts));
   } catch {
     // Storage quota exceeded — silently ignore
   }
@@ -806,6 +812,7 @@ export function CertificateManagement() {
   };
 
   const handleExport = (cert: EEBUSCertRecord) => {
+    if (!cert.pemData) return;
     const blob = new Blob([cert.pemData], { type: 'application/x-pem-file' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -908,7 +915,8 @@ export function CertificateManagement() {
                   <button
                     type="button"
                     onClick={() => handleExport(cert)}
-                    className="focus-ring rounded-lg p-1.5 text-(--color-text-secondary) transition-colors hover:bg-white/10 hover:text-(--color-text-primary)"
+                    disabled={!cert.pemData}
+                    className="focus-ring rounded-lg p-1.5 text-(--color-text-secondary) transition-colors hover:bg-white/10 hover:text-(--color-text-primary) disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-(--color-text-secondary)"
                     aria-label={`${t('certManagement.exportCert')} — ${cert.deviceName}`}
                   >
                     <Download aria-hidden className="size-4" />

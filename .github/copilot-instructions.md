@@ -81,10 +81,10 @@ Eight real-time control loops in `apps/web/src/core/energy-controllers.ts` orche
 2. **Peak Shaving** — grid peak demand limiting
 3. **Grid-Optimized Charge** — charge when grid price is low
 4. **Self-Consumption** — maximize PV self-consumption
-5. **Balancing** — symmetric/asymmetric grid power balancing
-6. **Emergency Capacity** — reserve battery for blackout
-7. **HeatPump SG Ready** — SG Ready signals for heat pump control
-8. **EV Smart Charge** — §14a EnWG, PV surplus, V2X
+5. **Emergency Capacity** — reserve battery for blackout
+6. **HeatPump SG Ready** — SG Ready signals for heat pump control
+7. **EV Smart Charge** — §14a EnWG-aware surplus charging and charge current control
+8. **EV V2G Discharge** — ISO 15118-20 BPT discharge loop with SOC guardrails; disabled until BPT is negotiated
 
 MPC optimizer (`apps/web/src/lib/optimizer.ts`): EMHASS-inspired LP day-ahead scheduler with PV/load forecasting, battery constraints, and tariff-aware cost minimization.
 
@@ -135,7 +135,7 @@ Circuit Breaker (`apps/web/src/core/circuit-breaker.ts`): FSM with CLOSED → OP
 - Skip-to-content link, visible focus rings (`.focus-ring:focus-visible`), aria attributes everywhere
 - Semantic HTML, keyboard navigation, color contrast ratios
 - `type="button"` on every `<button>` that is not a submit; `aria-hidden` on all decorative icons
-- Automated a11y testing via `@axe-core/playwright` (15 tests)
+- Automated a11y testing via `@axe-core/playwright` across core routes and key interaction flows
 
 ### PWA & Offline
 

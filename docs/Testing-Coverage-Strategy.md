@@ -1,7 +1,7 @@
 # Testing Coverage Strategy — Nexus-HEMS-Dash
 
 > **Status:** Active
-> **Last Updated:** 2026-04-25
+> **Last Updated:** 2026-04-26
 > **Target:** 85% coverage (statements, branches, functions, lines)
 
 This document defines the strategy for reaching and maintaining the 85% test coverage target,
@@ -18,7 +18,7 @@ covering test types, priorities, tooling, and step-by-step implementation plan.
 | Functions | Web 53% / API 55% | **62%** | 76% | 85% |
 | Lines | Web 53% / API 55% | **62%** | 76% | 85% |
 
-**37 existing test files** — infrastructure is solid, coverage gap is primarily in:
+**60+ existing test/spec files across web, api, and E2E** — infrastructure is solid, coverage gap is primarily in:
 - Page-level components (no tests)
 - Library utilities (partial coverage)
 - New Phase 2/3 modules (no tests yet)

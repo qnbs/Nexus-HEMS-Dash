@@ -7,7 +7,8 @@ on:
     # Weekly full scan every Monday at 06:00 UTC
     - cron: '0 6 * * 1'
 
-permissions: read-all
+permissions:
+  contents: read
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true

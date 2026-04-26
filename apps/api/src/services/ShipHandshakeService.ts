@@ -51,6 +51,9 @@ const CERT_FILE = resolve(
   process.env.EEBUS_CERT_FILE ?? 'data/eebus-server.cert.pem',
 );
 const KEY_FILE = resolve(process.cwd(), process.env.EEBUS_KEY_FILE ?? 'data/eebus-server.key.pem');
+const CA_FILE = process.env.EEBUS_CA_FILE
+  ? resolve(process.cwd(), process.env.EEBUS_CA_FILE)
+  : null;
 
 /** Total handshake timeout (ms). Connection enters 'timeout' state if exceeded. */
 const HANDSHAKE_TIMEOUT_MS = 60_000;
@@ -115,6 +118,11 @@ async function loadOrGenerateCert(): Promise<{ cert: string; key: string }> {
   }
 }
 
+async function loadTrustedCaBundle(): Promise<string | undefined> {
+  if (!CA_FILE) return undefined;
+  return readFile(CA_FILE, 'utf-8');
+}
+
 // ─── SKI Extraction ────────────────────────────────────────────────
 
 /**
@@ -134,6 +142,24 @@ function extractSKI(rawDerCert: Buffer): string {
   } catch {
     return '';
   }
+}
+
+type SHIPPeerCertificate = {
+  raw?: Buffer;
+  fingerprint256?: string;
+};
+
+function getPeerCertificateSKI(peerCertificate: SHIPPeerCertificate): string {
+  if (peerCertificate.raw) {
+    return extractSKI(peerCertificate.raw);
+  }
+  if (
+    typeof peerCertificate.fingerprint256 === 'string' &&
+    peerCertificate.fingerprint256.length > 0
+  ) {
+    return peerCertificate.fingerprint256.replace(/:/g, '').toLowerCase();
+  }
+  return '';
 }
 
 // ─── Active Sessions ───────────────────────────────────────────────
@@ -189,13 +215,15 @@ async function runHandshake(entry: SHIPHandshakeEntry): Promise<void> {
 
   let serverCert: string;
   let serverKey: string;
+  let trustedCaBundle: string | undefined;
   try {
     const certs = await loadOrGenerateCert();
     serverCert = certs.cert;
     serverKey = certs.key;
+    trustedCaBundle = await loadTrustedCaBundle();
   } catch (err) {
     entry.state = 'failed';
-    entry.message = `Failed to load server certificate: ${String(err)}`;
+    entry.message = `Failed to load SHIP TLS material: ${String(err)}`;
     return;
   }
 
@@ -203,7 +231,18 @@ async function runHandshake(entry: SHIPHandshakeEntry): Promise<void> {
     ? new https.Agent({
         cert: serverCert,
         key: serverKey,
-        rejectUnauthorized: false, // SKI-pinned trust; no CA chain
+        ...(trustedCaBundle ? { ca: trustedCaBundle } : {}),
+        rejectUnauthorized: true,
+        checkServerIdentity: (_servername: string, peerCertificate: SHIPPeerCertificate) => {
+          const peerSKI = getPeerCertificateSKI(peerCertificate);
+          if (!peerSKI) {
+            return new Error('Peer certificate did not expose an SKI or fingerprint');
+          }
+          if (peerSKI !== ski) {
+            return new Error(`SKI mismatch: expected ${ski}, got ${peerSKI}`);
+          }
+          return undefined;
+        },
         minVersion: 'TLSv1.3',
         maxVersion: 'TLSv1.3',
       } as unknown as https.AgentOptions)

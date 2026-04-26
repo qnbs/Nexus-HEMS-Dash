@@ -42,16 +42,16 @@ export const API_KEY_SCOPE_MAP = new Map<string, JWTScope>(
   .split(',')
   .map((entry) => entry.trim())
   .filter(Boolean)
-  .forEach((entry) => {
+  .forEach((entry, index) => {
     const colonIdx = entry.lastIndexOf(':');
     if (colonIdx <= 0) {
-      console.warn(`[Auth] API_KEY_SCOPES entry "${entry}" has no colon separator — skipped`);
+      console.warn(`[Auth] API_KEY_SCOPES entry #${index + 1} has no colon separator — skipped`);
       return;
     }
     const scope = entry.slice(colonIdx + 1).trim();
     if (!['read', 'readwrite', 'admin'].includes(scope)) {
       console.warn(
-        `[Auth] API_KEY_SCOPES entry has invalid scope "${scope}" — skipped (valid: read|readwrite|admin)`,
+        `[Auth] API_KEY_SCOPES entry #${index + 1} has an invalid scope suffix — skipped (valid: read|readwrite|admin)`,
       );
     }
   });

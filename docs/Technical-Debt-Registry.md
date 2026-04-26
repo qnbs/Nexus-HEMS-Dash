@@ -55,11 +55,11 @@ Playwright already used an explicit `--host 0.0.0.0` preview-server workaround f
 
 ### CI-R4 — Central Documentation Drifted from Verified Repo Truth
 **Files:** `README.md`, `CLAUDE.md`, `.github/copilot-instructions.md`, `docs/Toolchain-Architecture.md`, `docs/Testing-Coverage-Strategy.md`
-**Status:** 🔄 In progress
+**Status:** ✅ Core docs synchronized on 2026-04-26
 
 Central docs and agent-instruction files diverged from code on shipped-vs-in-flight version language, controller count, coverage thresholds, and CI semantics.
 
-**Fix in progress:** Synchronize the canonical docs to the verified repository state before continuing the broader documentation sweep.
+**Fix applied:** Synchronized the canonical docs and agent instructions to the verified repository state, including current controller inventory, active coverage thresholds, root script semantics, and current CI behavior.
 
 ---
 

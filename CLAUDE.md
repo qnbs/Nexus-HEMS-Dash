@@ -33,7 +33,7 @@ pnpm format            # biome format --write apps/ packages/
 pnpm format:check      # biome format apps/ packages/ (Biome 2.4 read-only)
 
 # Testing
-pnpm test              # Vitest watch mode (apps/web)
+pnpm test              # Turbo test watch mode across workspace packages
 pnpm test:run          # All unit tests, one-shot
 pnpm test:coverage     # With V8 coverage report
 pnpm test:fuzz         # Security fuzz tests only

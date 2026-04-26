@@ -29,13 +29,16 @@ The Vite config sets `base: '/Nexus-HEMS-Dash/'` for correct sub-path routing.
 
 ### Architecture
 
-| Service          | Image                              | Port | Purpose                                      |
-| ---------------- | ---------------------------------- | ---- | -------------------------------------------- |
-| `nexus-hems`     | Dockerfile (nginx:1.29-alpine)     | 8080 | SPA + static assets                          |
-| `nexus-server`   | Dockerfile.server (node:24-alpine) | 3000 | Express + WebSocket + Prometheus /metrics    |
-| `adapter-bridge` | Dockerfile.server                  | —    | Protocol bridge (MQTT/Modbus/KNX/OCPP/EEBUS) |
-| `prometheus`     | prom/prometheus:v2.53.0            | 9090 | Metrics collection (profile: monitoring)     |
-| `grafana`        | grafana/grafana:11.1.0             | 3001 | Dashboards (profile: monitoring)             |
+| Service          | Image                              | Port | Profile      | Purpose                                      |
+| ---------------- | ---------------------------------- | ---- | ------------ | -------------------------------------------- |
+| `nexus-hems`     | Dockerfile (nginx:1.29-alpine)     | 8080 | default      | SPA + static assets                          |
+| `nexus-server`   | Dockerfile.server (node:24-alpine) | 3000 | default      | Express + WebSocket + Prometheus /metrics    |
+| `adapter-bridge` | Dockerfile.server                  | —    | default      | Protocol bridge / isolated device-side runtime |
+| `prometheus`     | prom/prometheus:v2.53.0            | 9090 | monitoring   | Metrics collection                           |
+| `grafana`        | grafana/grafana:11.1.0             | 3001 | monitoring   | Dashboards                                   |
+| `alertmanager`   | prom/alertmanager:v0.28.1          | 9093 | monitoring   | Alert routing                                |
+| `node-exporter`  | prom/node-exporter:v1.9.0          | 9100 | monitoring   | Host metrics                                 |
+| `influxdb`       | influxdb:2.7                       | 8086 | monitoring   | Time-series storage for historical analytics |
 
 ### Quick Start
 
@@ -148,7 +151,7 @@ Configuration: `apps/web/src-tauri/tauri.conf.json`
 | Tauri version        | 2.2   |
 | Rust edition         | 2024  |
 | Minimum rust-version | 1.85  |
-| Crate version        | 4.5.0 |
+| Crate version        | 1.1.0 |
 
 ### Build Locally
 

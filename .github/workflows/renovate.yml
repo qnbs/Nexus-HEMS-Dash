@@ -16,7 +16,8 @@ on:
           - 'true'
           - 'false'
 
-permissions: read-all
+permissions:
+  contents: read
 
 jobs:
   renovate:

@@ -269,7 +269,9 @@ jobs:
     name: 🎭 E2E Tests
     runs-on: ubuntu-latest
     needs: [build, lint]
-    timeout-minutes: 30
+    # CI runs Chromium + Firefox with retries enabled; 30 minutes is too low for
+    # the current suite and causes GitHub to cancel Playwright mid-run.
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 

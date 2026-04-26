@@ -29,6 +29,7 @@ spec:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
         - name: server
+          # trivy:ignore:KSV034 Render-time validation in nexus-hems.imageRef rejects repositories outside .Values.image.trustedRegistries.
           # Image registry is validated at render-time by nexus-hems.assertTrustedImageRepository helper (see _helpers.tpl)
           image: {{ include "nexus-hems.imageRef" (dict "image" .Values.image.server "trustedRegistries" .Values.image.trustedRegistries "chartAppVersion" .Chart.AppVersion) | quote }}
           imagePullPolicy: {{ .Values.image.server.pullPolicy }}

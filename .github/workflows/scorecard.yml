@@ -11,15 +11,14 @@ on:
   workflow_dispatch:
 
 # Declare default permissions as read only
-permissions: read-all
+permissions:
+  contents: read
 
 jobs:
   scorecard:
     name: OpenSSF Scorecard
     runs-on: ubuntu-latest
     permissions:
-      # Needed to upload the results to code-scanning dashboard
-      security-events: write
       # Needed to publish results and get a badge (see publish_results below)
       id-token: write
 
@@ -36,9 +35,3 @@ jobs:
           results_format: sarif
           # Publish results to OpenSSF REST API for badge
           publish_results: ${{ github.event_name != 'pull_request' }}
-
-      - name: Upload SARIF to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@b1bff81932f5cdfc8695c7752dcee935dcd061c8 # v4.33.0
-        if: always()
-        with:
-          sarif_file: results.sarif

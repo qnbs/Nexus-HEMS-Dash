@@ -10,7 +10,8 @@ on:
     - cron: '0 5 * * 1'
   workflow_dispatch:
 
-permissions: read-all
+permissions:
+  contents: read
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -216,7 +217,6 @@ jobs:
     # Scorecard only works on default branch push or schedule
     if: github.event_name != 'pull_request'
     permissions:
-      security-events: write
       id-token: write
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -230,12 +230,6 @@ jobs:
           results_file: scorecard-results.sarif
           results_format: sarif
           publish_results: true
-
-      - name: Upload Scorecard SARIF
-        uses: github/codeql-action/upload-sarif@b1bff81932f5cdfc8695c7752dcee935dcd061c8 # v4.33.0
-        if: always()
-        with:
-          sarif_file: scorecard-results.sarif
 
   # ════════════════════════════════════════════════════════════════
   #  8. Branch Protection Reminder — Verify repo hardening

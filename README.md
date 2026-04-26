@@ -12,14 +12,14 @@
 [![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=white)](package.json)
 [![pnpm](https://img.shields.io/badge/pnpm-10-F69220?style=flat-square&logo=pnpm&logoColor=white)](https://pnpm.io/)
 [![Node.js](https://img.shields.io/badge/Node.js-24_LTS-339933?style=flat-square&logo=nodedotjs&logoColor=white)](.nvmrc)
-[![Storybook](https://img.shields.io/badge/Storybook-10.3-FF4785?style=flat-square&logo=storybook&logoColor=white)](.storybook/main.ts)
+[![Storybook](https://img.shields.io/badge/Storybook-10.3-FF4785?style=flat-square&logo=storybook&logoColor=white)](apps/web/.storybook/main.ts)
 [![Tests](https://img.shields.io/badge/Tests-Coverage%20gated-22ff88?style=flat-square&logo=vitest&logoColor=white)](apps/web/src/tests/)
 [![E2E](https://img.shields.io/badge/E2E-Playwright-00A0E9?style=flat-square&logo=playwright&logoColor=white)](apps/web/tests/e2e/)
 [![Adapters](<https://img.shields.io/badge/Adapters-10_(5+5)-22ff88?style=flat-square>)](#protocol-adapters)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/qnbs/Nexus-HEMS-Dash/badge?style=flat-square)](https://securityscorecards.dev/viewer/?uri=github.com/qnbs/Nexus-HEMS-Dash)
 [![Coverage](https://codecov.io/gh/qnbs/Nexus-HEMS-Dash/branch/main/graph/badge.svg?style=flat-square)](https://codecov.io/gh/qnbs/Nexus-HEMS-Dash)
 
-**[Live Demo](https://qnbs.github.io/Nexus-HEMS-Dash/)** · **[Open in Codespaces](https://codespaces.new/qnbs/Nexus-HEMS-Dash)** · **[Adapter Dev Guide](docs/Adapter-Dev-Guide.md)** · **[Storybook](.storybook/main.ts)**
+**[Live Demo](https://qnbs.github.io/Nexus-HEMS-Dash/)** · **[Open in Codespaces](https://codespaces.new/qnbs/Nexus-HEMS-Dash)** · **[Adapter Dev Guide](docs/Adapter-Dev-Guide.md)** · **[Storybook](apps/web/.storybook/main.ts)**
 
 </div>
 
@@ -27,7 +27,7 @@
 
 Nexus-HEMS is a **unified Command Center** that consolidates **10 protocol adapters** (5 core + 5 contrib) into **8 primary routes across 7 navigation sections** — orchestrating photovoltaic generation, battery storage, heat pumps, EV charging, and building automation with dynamic electricity tariffs. Instead of 18+ separate pages, every feature is accessible from a **single streamlined interface** with guided tours, contextual help, and zero-config onboarding.
 
-The current shipped release line is **1.1.0**. Active **v1.2.0** work is tracked in [CHANGELOG.md](/home/pc/Nexus-HEMS-Dash/CHANGELOG.md) and [docs/Technical-Debt-Registry.md](/home/pc/Nexus-HEMS-Dash/docs/Technical-Debt-Registry.md); treat those files as in-flight roadmap context rather than shipped baseline.
+The current shipped release line is **1.1.0**. Active **v1.2.0** work is tracked in [CHANGELOG.md](CHANGELOG.md) and [docs/Technical-Debt-Registry.md](docs/Technical-Debt-Registry.md); treat those files as in-flight roadmap context rather than shipped baseline.
 
 **Stack:** React 19 · TypeScript 5.8 · Vite 8 (Rolldown) · Tailwind CSS v4 · Zustand 5 · D3.js Sankey · Recharts · Motion · Dexie.js · Radix UI · React Compiler
 
@@ -78,7 +78,7 @@ In development, `apps/web` (Vite) proxies `/api/*`, `/metrics`, and `/ws` reques
           useEnergyStore (Zustand) ──→ UnifiedEnergyModel
                      │
                      ├──→ D3.js Sankey + Recharts (UI)
-                     ├──→ ControllerPipeline (7 real-time controllers)
+                     ├──→ ControllerPipeline (8 real-time controllers)
                      ├──→ MPC Optimizer (LP day-ahead scheduling)
                      ├──→ AI Optimizer (Gemini / OpenAI / Anthropic / xAI / Groq / Ollama)
                      ├──→ Hardware Registry (120+ certified devices)
@@ -160,7 +160,7 @@ The Codespace includes Node.js 24, pnpm, Playwright, Docker, and all VS Code ext
 | :------------------- | :------------------------------------------------------------------- |
 | `pnpm dev`           | Turborepo dev — apps/api (port 3000) + apps/web (port 5173) with HMR |
 | `pnpm build`         | Turborepo build — all packages in dependency order                   |
-| `pnpm test`          | Vitest watch mode (apps/web)                                         |
+| `pnpm test`          | Turbo test watch mode across workspace packages                      |
 | `pnpm test:run`      | All unit tests once                                                  |
 | `pnpm test:e2e`      | Playwright E2E (local Chromium-only; CI runs Chromium + Firefox)      |
 | `pnpm test:coverage` | V8 coverage report                                                   |
@@ -326,7 +326,7 @@ Brand colors: `neon-green` (#22ff88) · `electric-blue` (#00f0ff) · `power-oran
 | :------ | :------------------------------------------------------------------------------------------------------------------------------------------------- | :--------- |
 | Q1–Q3   | 5 core adapters, 5 themes, AI optimizer, EEBUS, PWA, Monitoring, Docker, Tauri, WCAG 2.2 AA, React Compiler, Backend hardening                     | ✅ Shipped |
 | Q3      | Plugin system, adapter registry, 5 contrib adapters (Home Assistant, Matter/Thread, Zigbee2MQTT, Shelly), Capacitor Mobile                         | ✅ Shipped |
-| Q3–Q4   | Energy controllers (7 loops), MPC optimizer, hardware registry (120+ devices), plugin lifecycle, command safety, 265 tests                         | ✅ Shipped |
+| Q3–Q4   | Energy controllers (8 loops), MPC optimizer, hardware registry (120+ devices), plugin lifecycle, command safety, expanded unit coverage            | ✅ Shipped |
 | Q1 2026 | Opt#1 + Opt#2 Zustand/React 19 compiler cleanup, 6 new test suites (circuit-breaker, tariff-providers, notifications, energy-context, +extensions) | ✅ Shipped |
 | Q4      | **Unified Command Center** — 7 focused sections, guided tours, contextual help, zero-config onboarding, full a11y audit                            | ✅ Shipped |
 | Q2 2026 | **pnpm/Turborepo Monorepo** — `apps/api` + `apps/web` + `packages/shared-types`; two-process dev; Turbo caching across all workspaces               | ✅ Shipped |
@@ -341,7 +341,7 @@ Brand colors: `neon-green` (#22ff88) · `electric-blue` (#00f0ff) · `power-oran
 - **Tariff Providers:** Tibber, aWATTar DE/AT, Octopus Energy, Nordpool, and dynamic grid fees
 - **Unified Command Center:** 7 focused sections with legacy route redirects, guided tours, empty states, and contextual help
 - **Adapter Platform:** 10 adapters total, contrib plugin loading, lifecycle management, and monitoring health views
-- **Controller Stack:** ESS, peak shaving, tariff-aware charging, self-consumption, emergency reserve, heat pump SG Ready, and EV smart charging loops
+- **Controller Stack:** ESS, peak shaving, tariff-aware charging, self-consumption, emergency reserve, heat pump SG Ready, EV smart charging, and EV V2G discharge loops
 - **Security & CI:** JWT/WebSocket hardening, Node 24 CI baseline, dependency overrides, pnpm audit workflow, and Biome-first checks
 - **A11y & i18n:** WCAG 2.2 AA fixes, forced-colors/reduced-motion support, and complete DE/EN localization coverage for new UI
 </details>
@@ -418,7 +418,7 @@ MIT — see [LICENSE](LICENSE).
 - 🎯 Unified Command Center: 7 Sektionen statt 18+ Einzelseiten
 - 🔌 10 Adapter: Victron, Modbus, KNX, OCPP, EEBUS + Home Assistant, Matter/Thread, Zigbee2MQTT, Shelly
 - 🧩 Plugin-System: Adapter-Registry mit dynamischem Laden, npm-Paket-Format, BaseAdapter-Klasse
-- 🎛️ 7 Echtzeit-Energieregler: ESS, Peak Shaving, Netz-optimiert, Eigenverbrauch, Notstrom, SG Ready, EV Smart
+- 🎛️ 8 Echtzeit-Energieregler: ESS, Peak Shaving, Netz-optimiert, Eigenverbrauch, Notstrom, SG Ready, EV Smart, EV V2G Entladung
 - 📐 MPC-Optimierer: EMHASS-inspirierter LP Day-Ahead-Scheduler mit Tariferkennung
 - 🗃️ Hardware-Registry: 120+ zertifizierte Geräte (Wechselrichter, Wallboxen, Zähler, Batterien, Wärmepumpen)
 - 🚗 Intelligentes EV-Laden (PV-Überschuss, §14a EnWG, SG Ready, V2X)
@@ -427,7 +427,7 @@ MIT — see [LICENSE](LICENSE).
 - 🔐 BYOK KI-Tresor (7 Anbieter, AES-GCM 256-bit)
 - 📱 PWA Offline-First + Tauri Desktop + Capacitor Mobile
 - ♿ WCAG 2.2 AA · 🌐 i18n DE/EN · 🎨 5 Themes
-- 🧪 265 Unit-Tests · 📄 PDF-Berichte · 🔒 JWT + Helmet + CORS
+- 🧪 Coverage-gatete Unit-Tests · 📄 PDF-Berichte · 🔒 JWT + Helmet + CORS
 - 🤖 KI-unterstützt: Gemini 2.5 Pro, Claude Opus 4.6, Grok (xAI)
 
 ```bash
