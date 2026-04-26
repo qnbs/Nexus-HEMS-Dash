@@ -4,6 +4,7 @@
  * API keys are always fetched from encrypted Dexie storage — never from env vars or localStorage.
  */
 
+import { z } from 'zod';
 import { type AIProvider, getActiveProvider, getAIKey } from '../lib/ai-keys';
 
 export interface AICompletionRequest {
@@ -23,6 +24,55 @@ const HEMS_SYSTEM_PROMPT = `You are an AI energy optimization expert for a Home 
 Analyze real-time energy data and provide actionable optimization recommendations.
 Focus on: cost minimization, self-consumption maximization, CO₂ reduction, battery optimization, smart EV charging.
 Always respond with valid JSON arrays when structured output is requested.`;
+
+// ─── MED-06: Zod schemas for structured AI response validation ───────
+
+/**
+ * Schema for optimization suggestion output.
+ * AI providers are expected to emit this structure when asked for schedule suggestions.
+ */
+export const OptimizationSuggestionSchema = z.object({
+  hour: z.number().int().min(0).max(23),
+  batteryKw: z.number().optional(),
+  gridKw: z.number().optional(),
+  pvKw: z.number().optional(),
+  reason: z.string().optional(),
+});
+
+export const OptimizationResponseSchema = z.object({
+  suggestions: z.array(OptimizationSuggestionSchema),
+  estimatedSavings: z.number().optional(),
+  currency: z.string().length(3).optional(),
+});
+
+export const ForecastResponseSchema = z.object({
+  pvForecast: z.array(z.number()).length(24),
+  loadForecast: z.array(z.number()).length(24),
+  priceSignal: z.array(z.number()).length(24).optional(),
+});
+
+export type OptimizationResponse = z.infer<typeof OptimizationResponseSchema>;
+export type ForecastResponse = z.infer<typeof ForecastResponseSchema>;
+
+/**
+ * Attempt to parse a filtered AI output string as a structured response.
+ * Returns the parsed object on success, or null on failure (graceful degradation).
+ */
+export function parseAIStructuredOutput<T>(text: string, schema: z.ZodType<T>): T | null {
+  // Try to extract JSON from the response (model may wrap it in markdown code fences)
+  const jsonMatch =
+    text.match(/```(?:json)?\s*([\s\S]*?)```/) ?? text.match(/(\{[\s\S]*\}|\[[\s\S]*\])/);
+  const jsonText = jsonMatch ? (jsonMatch[1] ?? jsonMatch[0]) : text;
+  try {
+    const parsed = JSON.parse(jsonText);
+    const result = schema.safeParse(parsed);
+    if (result.success) return result.data;
+    console.warn('[AI] Structured output validation failed:', result.error.issues.slice(0, 3));
+    return null;
+  } catch {
+    return null;
+  }
+}
 
 // ─── MED-09: Prompt Injection Sanitization + PII Masking (ADR-008) ──
 

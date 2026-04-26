@@ -183,7 +183,14 @@ export async function loadContribAdapter(id: string): Promise<boolean> {
     const loader = contribModules[modulePath];
 
     if (!loader) {
-      console.error('[AdapterRegistry] Contrib adapter not found:', id, 'at', modulePath);
+      const availableIds = Object.keys(contribModules)
+        .map((p) => p.replace('./contrib/', '').replace('.ts', ''))
+        .sort()
+        .join(', ');
+      console.error(
+        `[AdapterRegistry] Contrib adapter not found: "${id}" at ${modulePath}. ` +
+          `Available contrib adapters: ${availableIds || '(none)'}`,
+      );
       return false;
     }
 

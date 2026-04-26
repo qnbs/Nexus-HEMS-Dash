@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm biome check *)",
+      "Bash(pnpm lint *)",
+      "Bash(pnpm tsgo --noEmit *)",
+      "Bash(pnpm test:run *)",
+      "Bash(biome check *)",
+      "Bash(pnpm vitest run *)",
+      "Bash(pnpm type-check *)"
+    ]
+  }
+}

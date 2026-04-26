@@ -3,14 +3,20 @@
  *
  * Displays trusted EEBUS device certificates stored in Dexie and allows
  * import / export / revocation. Uses Radix UI Dialog for accessible modals.
+ *
+ * Also shows the SHIP Trust Store (paired devices via SHIP handshake) fetched
+ * from the API, with PIN dialog support for devices in pin_required state.
  */
 
+import type { EEBUSDeviceInfo } from '@nexus-hems/shared-types';
 import * as Dialog from '@radix-ui/react-dialog';
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Download,
   FileKey,
   FilePlus,
+  Link2Off,
   ShieldCheck,
   ShieldOff,
   ShieldX,
@@ -344,10 +350,407 @@ function DeleteConfirm({ cert, onClose, onConfirm }: DeleteConfirmProps) {
   );
 }
 
-// ── Main component ─────────────────────────────────────────────────────────
+// ── SHIP Trust Store section ───────────────────────────────────────────────
 
-// Dexie doesn't have an 'eebuscerts' table in the current schema; we use a
-// "virtual" object store that we'd register as a real table in a future DB
+/**
+ * PIN dialog: shown when a device pairing enters `pin_required` state.
+ * The caller polls /api/eebus/pair/status/:ski to detect this transition.
+ */
+interface PinDialogProps {
+  open: boolean;
+  ski: string;
+  pinHint?: string;
+  onClose: () => void;
+  onSubmit: (pin: string) => Promise<void>;
+}
+
+function PinDialog({ open, ski, pinHint, onClose, onSubmit }: PinDialogProps) {
+  const { t } = useTranslation();
+  const [pin, setPin] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!/^\d{5,6}$/.test(pin)) {
+      setError(t('shipPairing.invalidPin'));
+      return;
+    }
+    setError(null);
+    setLoading(true);
+    try {
+      await onSubmit(pin);
+      setPin('');
+      onClose();
+    } catch {
+      setError(t('shipPairing.statusFailed'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Dialog.Root
+      open={open}
+      onOpenChange={(o) => {
+        if (!o) onClose();
+      }}
+    >
+      <Dialog.Portal>
+        <Dialog.Overlay className="data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-modal-backdrop bg-black/80 backdrop-blur-sm data-[state=closed]:animate-out data-[state=open]:animate-in" />
+        <Dialog.Content className="glass-panel-strong fixed top-1/2 left-1/2 z-modal w-full max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-2xl p-6 shadow-2xl focus:outline-none">
+          <div className="mb-5 flex items-start justify-between">
+            <div>
+              <Dialog.Title className="font-semibold text-(--color-text-primary) text-lg">
+                {t('shipPairing.pinDialogTitle')}
+              </Dialog.Title>
+              <Dialog.Description className="mt-1 text-(--color-text-secondary) text-sm">
+                {pinHint ?? t('shipPairing.pinDialogDesc')}
+              </Dialog.Description>
+              <p className="mt-1 font-mono text-(--color-text-secondary)/60 text-xs">
+                SKI: {ski.slice(0, 16)}…
+              </p>
+            </div>
+            <Dialog.Close asChild>
+              <button
+                type="button"
+                className="focus-ring ml-4 rounded-lg p-1.5 text-(--color-text-secondary) transition-colors hover:bg-white/10 hover:text-(--color-text-primary)"
+                aria-label={t('common.close')}
+              >
+                <X aria-hidden className="size-4" />
+              </button>
+            </Dialog.Close>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <input
+              type="text"
+              inputMode="numeric"
+              pattern="\d{5,6}"
+              maxLength={6}
+              autoFocus
+              value={pin}
+              onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
+              placeholder={t('shipPairing.pinPlaceholder')}
+              className="focus-ring w-full rounded-lg border border-white/10 bg-white/5 px-3 py-3 text-center font-mono text-(--color-text-primary) text-2xl tracking-[0.4em] placeholder:text-(--color-text-secondary)/40"
+              aria-label={t('shipPairing.pinDialogTitle')}
+            />
+            {error && (
+              <p role="alert" className="rounded-lg bg-red-500/15 px-3 py-2 text-red-400 text-sm">
+                {error}
+              </p>
+            )}
+            <div className="flex justify-end gap-3">
+              <Dialog.Close asChild>
+                <button
+                  type="button"
+                  className="focus-ring rounded-lg border border-white/10 px-4 py-2 font-medium text-(--color-text-secondary) text-sm transition-colors hover:bg-white/10"
+                >
+                  {t('shipPairing.pinCancel')}
+                </button>
+              </Dialog.Close>
+              <button
+                type="submit"
+                disabled={loading || pin.length < 5}
+                className="focus-ring flex items-center gap-2 rounded-lg bg-(--color-neon-green)/20 px-4 py-2 font-medium text-(--color-neon-green) text-sm transition-colors hover:bg-(--color-neon-green)/30 disabled:pointer-events-none disabled:opacity-50"
+              >
+                <ShieldCheck aria-hidden className="size-4" />
+                {t('shipPairing.pinSubmit')}
+              </button>
+            </div>
+          </form>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
+  );
+}
+
+/** Remove-trust confirmation dialog */
+interface RemoveTrustDialogProps {
+  device: EEBUSDeviceInfo | null;
+  onClose: () => void;
+  onConfirm: (ski: string) => Promise<void>;
+}
+
+function RemoveTrustDialog({ device, onClose, onConfirm }: RemoveTrustDialogProps) {
+  const { t } = useTranslation();
+  const [loading, setLoading] = useState(false);
+  const label =
+    device?.brand && device.model
+      ? `${device.brand} ${device.model}`
+      : (device?.hostname ?? device?.ski?.slice(0, 12) ?? '');
+
+  const handleConfirm = async () => {
+    if (!device) return;
+    setLoading(true);
+    try {
+      await onConfirm(device.ski);
+      onClose();
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Dialog.Root
+      open={device !== null}
+      onOpenChange={(o) => {
+        if (!o) onClose();
+      }}
+    >
+      <Dialog.Portal>
+        <Dialog.Overlay className="data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-modal-backdrop bg-black/80 backdrop-blur-sm data-[state=closed]:animate-out data-[state=open]:animate-in" />
+        <Dialog.Content className="glass-panel-strong fixed top-1/2 left-1/2 z-modal w-full max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-2xl p-6 shadow-2xl focus:outline-none">
+          <VisuallyHidden.Root>
+            <Dialog.Title>{t('shipPairing.confirmRemove', { device: label })}</Dialog.Title>
+          </VisuallyHidden.Root>
+          <div className="flex items-start gap-4">
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-red-500/20">
+              <Link2Off aria-hidden className="size-5 text-red-400" />
+            </span>
+            <div>
+              <p className="font-semibold text-(--color-text-primary)">
+                {t('shipPairing.confirmRemove', { device: label })}
+              </p>
+              <p className="mt-1 text-(--color-text-secondary) text-sm">
+                {t('shipPairing.confirmRemoveDesc')}
+              </p>
+            </div>
+          </div>
+          <div className="mt-5 flex justify-end gap-3">
+            <Dialog.Close asChild>
+              <button
+                type="button"
+                className="focus-ring rounded-lg border border-white/10 px-4 py-2 font-medium text-(--color-text-secondary) text-sm transition-colors hover:bg-white/10"
+              >
+                {t('common.cancel')}
+              </button>
+            </Dialog.Close>
+            <button
+              type="button"
+              onClick={handleConfirm}
+              disabled={loading}
+              className="focus-ring flex items-center gap-2 rounded-lg bg-red-500/20 px-4 py-2 font-medium text-red-400 text-sm transition-colors hover:bg-red-500/30 disabled:pointer-events-none disabled:opacity-50"
+            >
+              <Trash2 aria-hidden className="size-4" />
+              {t('shipPairing.removeTrust')}
+            </button>
+          </div>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
+  );
+}
+
+function formatDateShort(ms: number): string {
+  return new Date(ms).toLocaleDateString(undefined, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
+}
+
+/**
+ * SHIP Trust Store section — reads from the API (/api/eebus/trust).
+ * Shows all devices that have been paired via the SHIP handshake.
+ */
+function ShipTrustStore() {
+  const { t } = useTranslation();
+  const queryClient = useQueryClient();
+  const [removingDevice, setRemovingDevice] = useState<EEBUSDeviceInfo | null>(null);
+  const [pinSki, setPinSki] = useState<string | null>(null);
+  const [pinHint, setPinHint] = useState<string | undefined>(undefined);
+
+  const {
+    data: devices,
+    isLoading,
+    error,
+  } = useQuery<EEBUSDeviceInfo[]>({
+    queryKey: ['eebus-trust'],
+    queryFn: async () => {
+      const resp = await fetch('/api/eebus/trust');
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      return resp.json() as Promise<EEBUSDeviceInfo[]>;
+    },
+    refetchInterval: 10_000,
+    retry: 1,
+  });
+
+  const removeMutation = useMutation({
+    mutationFn: async (ski: string) => {
+      const resp = await fetch(`/api/eebus/trust/${encodeURIComponent(ski)}`, {
+        method: 'DELETE',
+      });
+      if (!resp.ok && resp.status !== 204) throw new Error(`HTTP ${resp.status}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['eebus-trust'] });
+    },
+  });
+
+  const submitPinMutation = useMutation({
+    mutationFn: async ({ ski, pin }: { ski: string; pin: string }) => {
+      const resp = await fetch('/api/eebus/pair/pin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ski, pin }),
+      });
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['eebus-trust'] });
+    },
+  });
+
+  const handlePinSubmit = async (pin: string) => {
+    if (!pinSki) return;
+    await submitPinMutation.mutateAsync({ ski: pinSki, pin });
+    setPinSki(null);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-8 text-(--color-text-secondary) text-sm">
+        <span className="mr-2 animate-spin">⟳</span>
+        {t('common.loading')}
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <p role="alert" className="rounded-lg bg-red-500/15 px-3 py-2 text-red-400 text-sm">
+        {t('shipPairing.loadError')}
+      </p>
+    );
+  }
+
+  return (
+    <section aria-labelledby="ship-trust-heading" className="mt-8 space-y-4">
+      <div>
+        <h2
+          id="ship-trust-heading"
+          className="flex items-center gap-2 font-semibold text-(--color-text-primary) text-base"
+        >
+          <ShieldCheck aria-hidden className="size-5 text-(--color-neon-green)" />
+          {t('shipPairing.trustStoreTitle')}
+        </h2>
+        <p className="mt-0.5 text-(--color-text-secondary) text-sm">
+          {t('shipPairing.trustStoreDesc')}
+        </p>
+      </div>
+
+      {!devices?.length ? (
+        <div className="glass-panel flex flex-col items-center gap-3 rounded-2xl py-10 text-center">
+          <ShieldOff aria-hidden className="size-10 text-(--color-text-secondary)/40" />
+          <p className="font-medium text-(--color-text-secondary)">
+            {t('shipPairing.noTrustedDevices')}
+          </p>
+          <p className="max-w-xs text-(--color-text-secondary)/70 text-sm">
+            {t('shipPairing.noTrustedDevicesDesc')}
+          </p>
+        </div>
+      ) : (
+        <ul className="space-y-2" aria-label={t('shipPairing.trustStoreTitle')}>
+          {devices.map((device) => {
+            const deviceLabel =
+              device.brand && device.model ? `${device.brand} ${device.model}` : device.hostname;
+            const isPinRequired = device.status === 'pending';
+            return (
+              <li
+                key={device.ski}
+                className="glass-panel flex flex-wrap items-center gap-4 rounded-xl px-4 py-3"
+              >
+                <div className="flex min-w-0 flex-1 items-center gap-3">
+                  <span
+                    className={`flex size-8 shrink-0 items-center justify-center rounded-full ${
+                      device.status === 'trusted'
+                        ? 'bg-(--color-neon-green)/15'
+                        : device.status === 'failed'
+                          ? 'bg-red-500/15'
+                          : 'bg-yellow-500/15'
+                    }`}
+                  >
+                    {device.status === 'trusted' ? (
+                      <ShieldCheck aria-hidden className="size-4 text-(--color-neon-green)" />
+                    ) : device.status === 'failed' ? (
+                      <ShieldX aria-hidden className="size-4 text-red-400" />
+                    ) : (
+                      <ShieldOff aria-hidden className="size-4 text-yellow-400" />
+                    )}
+                  </span>
+                  <div className="min-w-0">
+                    <p className="truncate font-medium text-(--color-text-primary)">
+                      {deviceLabel}
+                    </p>
+                    <p className="mt-0.5 truncate font-mono text-(--color-text-secondary) text-xs">
+                      SKI: {device.ski.slice(0, 20)}…
+                    </p>
+                    <p className="text-(--color-text-secondary)/70 text-xs">
+                      {device.hostname}:{device.port}
+                      {device.deviceType ? ` · ${device.deviceType}` : ''}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex flex-col items-end gap-1 text-right text-xs text-(--color-text-secondary)">
+                  {device.trustedAt > 0 && (
+                    <span>
+                      {t('shipPairing.pairedAt')} {formatDateShort(device.trustedAt)}
+                    </span>
+                  )}
+                  {device.lastConnectedAt && (
+                    <span>
+                      {t('shipPairing.lastConnected')} {formatDateShort(device.lastConnectedAt)}
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-1">
+                  {isPinRequired && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPinSki(device.ski);
+                        setPinHint(t('shipPairing.pinDialogDesc'));
+                      }}
+                      className="focus-ring rounded-lg bg-yellow-500/15 px-2 py-1.5 font-medium text-yellow-400 text-xs transition-colors hover:bg-yellow-500/25"
+                    >
+                      {t('shipPairing.statusPinRequired')}
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setRemovingDevice(device)}
+                    className="focus-ring rounded-lg p-1.5 text-(--color-text-secondary) transition-colors hover:bg-red-500/15 hover:text-red-400"
+                    aria-label={`${t('shipPairing.removeTrust')} — ${deviceLabel}`}
+                  >
+                    <Trash2 aria-hidden className="size-4" />
+                  </button>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+
+      <PinDialog
+        open={pinSki !== null}
+        ski={pinSki ?? ''}
+        {...(pinHint !== undefined ? { pinHint } : {})}
+        onClose={() => setPinSki(null)}
+        onSubmit={handlePinSubmit}
+      />
+      <RemoveTrustDialog
+        device={removingDevice}
+        onClose={() => setRemovingDevice(null)}
+        onConfirm={async (ski) => {
+          await removeMutation.mutateAsync(ski);
+        }}
+      />
+    </section>
+  );
+}
 // migration. For now the component uses a local React state list with
 // localStorage serialisation so it integrates without a schema bump.
 const LS_KEY = 'nexus:eebus-certs';
@@ -537,6 +940,9 @@ export function CertificateManagement() {
         onClose={() => setDeletingCert(null)}
         onConfirm={handleDelete}
       />
+
+      {/* ── SHIP Trust Store (API-backed) ── */}
+      <ShipTrustStore />
     </section>
   );
 }

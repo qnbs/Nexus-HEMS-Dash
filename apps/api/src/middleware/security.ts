@@ -32,6 +32,18 @@ export function configureCors(app: Express): void {
 
   const allowedOriginSet = new Set([...defaultOrigins, ...ALLOWED_ORIGINS]);
 
+  // HIGH-04: In production, remove any loopback / LAN origins that may have been
+  // injected via CORS_ORIGINS env var (defence-in-depth against misconfiguration)
+  if (isProduction) {
+    const loopbackTokens = ['localhost', '127.', '[::1]', '0.0.0.0'];
+    for (const origin of allowedOriginSet) {
+      if (loopbackTokens.some((t) => origin.includes(t))) {
+        allowedOriginSet.delete(origin);
+        console.warn(`[CORS] Removed loopback origin from production allowlist: ${origin}`);
+      }
+    }
+  }
+
   app.use(
     cors({
       origin: (origin, callback) => {

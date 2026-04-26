@@ -9,6 +9,10 @@ import { wsTickets } from '../routes/auth.routes.js';
 // Zombie connection detection: ping every 30 s, terminate if no pong received
 const HEARTBEAT_INTERVAL_MS = 30_000;
 
+// HIGH-06: Configurable WS command rate limit (default 30 cmd/min)
+const WS_CMD_RATE_LIMIT =
+  Number(process.env.WS_RATE_LIMIT) > 0 ? Number(process.env.WS_RATE_LIMIT) : 30;
+
 // CRIT-02: Command authorization levels
 // Commands that require at minimum 'readwrite' scope
 const WRITE_COMMANDS = new Set(['SET_EV_POWER', 'SET_HEAT_PUMP_POWER', 'SET_BATTERY_POWER']);
@@ -188,8 +192,14 @@ function checkWsRateLimit(
     wsRateLimits.set(ws, rl);
   }
   rl.count++;
-  if (rl.count > 30) {
-    ws.send(JSON.stringify({ type: 'ERROR', error: 'Rate limit exceeded (30 cmd/min)' }));
+  if (rl.count > WS_CMD_RATE_LIMIT) {
+    ws.send(
+      JSON.stringify({
+        type: 'ERROR',
+        error: `Rate limit exceeded (${WS_CMD_RATE_LIMIT} cmd/min)`,
+      }),
+    );
+    ws.close(4429, 'Rate limit exceeded');
     return false;
   }
   return true;

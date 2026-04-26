@@ -37,6 +37,25 @@ export const API_KEY_SCOPE_MAP = new Map<string, JWTScope>(
     .filter((entry): entry is [string, JWTScope] => entry !== null),
 );
 
+// LOW-04: Warn on any entries dropped due to invalid scope values
+(process.env.API_KEY_SCOPES || '')
+  .split(',')
+  .map((entry) => entry.trim())
+  .filter(Boolean)
+  .forEach((entry) => {
+    const colonIdx = entry.lastIndexOf(':');
+    if (colonIdx <= 0) {
+      console.warn(`[Auth] API_KEY_SCOPES entry "${entry}" has no colon separator — skipped`);
+      return;
+    }
+    const scope = entry.slice(colonIdx + 1).trim();
+    if (!['read', 'readwrite', 'admin'].includes(scope)) {
+      console.warn(
+        `[Auth] API_KEY_SCOPES entry has invalid scope "${scope}" — skipped (valid: read|readwrite|admin)`,
+      );
+    }
+  });
+
 /**
  * Returns the maximum scope allowed for the given API key.
  * Falls back to 'readwrite' if no scope mapping is configured for the key.

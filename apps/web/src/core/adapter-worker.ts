@@ -165,7 +165,13 @@ function transformSunSpecMeter(raw: Record<string, unknown>): Record<string, unk
 
 // ─── URL allowlist for SSRF prevention ───────────────────────────────
 
-const ALLOWED_HOSTNAME_PATTERNS = [/^localhost$/, /^127\.0\.0\.1$/, /^::1$/, /^\[::1\]$/];
+const ALLOWED_HOSTNAME_PATTERNS = [
+  /^localhost$/,
+  /^127\.0\.0\.1$/,
+  /^::1$/,
+  /^\[::1\]$/,
+  /\.local$/, // mDNS hostnames (EEBUS, Shelly, etc.)
+];
 
 export function isPrivateIPv4(hostname: string): boolean {
   const parts = hostname.split('.');

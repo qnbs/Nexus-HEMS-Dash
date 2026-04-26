@@ -32,7 +32,7 @@ interface KeySlot {
 // ─── Configuration ──────────────────────────────────────────────────
 
 const ALGORITHM = 'HS256' as const;
-const DOCKER_SECRET_PATH = '/run/secrets/jwt_secret';
+const DOCKER_SECRET_PATH = process.env.JWT_SECRET_FILE ?? '/run/secrets/jwt_secret';
 const KEY_ROTATION_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 const JWT_MIN_SECRET_LENGTH = 32; // bytes
 const JWT_RECOMMENDED_SECRET_LENGTH = 64; // recommended for HS256
@@ -49,11 +49,19 @@ export const JWT_AUDIENCE = 'nexus-hems-api';
 const revokedJTIs = new Map<string, number>();
 const MAX_REVOKED_JTIS = 10_000;
 
+/** Minimal Redis interface — avoids hard ioredis type dependency */
+interface IRedisClient {
+  ping(): Promise<string>;
+  set(key: string, value: string, mode: string, ttl: number): Promise<string | null>;
+  exists(key: string): Promise<number>;
+  on(event: string, cb: (err: Error) => void): this;
+}
+
 // Redis client instance — initialized lazily on first revocation attempt
-let _redisClient: import('ioredis').Redis | null = null;
+let _redisClient: IRedisClient | null = null;
 let _redisInitialized = false;
 
-async function getRedisClient(): Promise<import('ioredis').Redis | null> {
+async function getRedisClient(): Promise<IRedisClient | null> {
   if (_redisInitialized) return _redisClient;
   _redisInitialized = true;
 
@@ -61,7 +69,11 @@ async function getRedisClient(): Promise<import('ioredis').Redis | null> {
   if (!redisUrl) return null;
 
   try {
-    const { Redis } = await import('ioredis');
+    // Dynamic import — ioredis is an optional peer dep; fall back gracefully if absent
+    // @ts-expect-error — ioredis is optional; module may not be installed
+    const { Redis } = (await import('ioredis')) as {
+      Redis: new (url: string, opts: Record<string, unknown>) => IRedisClient;
+    };
     const client = new Redis(redisUrl, {
       enableReadyCheck: true,
       maxRetriesPerRequest: 2,

@@ -142,7 +142,29 @@ export interface AIForecastRecord {
 }
 
 /** Current schema version constant — bump when adding a new Dexie version */
-export const DB_CURRENT_VERSION = 12;
+export const DB_CURRENT_VERSION = 13;
+
+/**
+ * EEBUS SHIP trusted device record — stored in IndexedDB after successful PIN pairing.
+ * Keyed by SKI (Subject Key Identifier) hex string.
+ */
+export interface EEBUSDeviceRecord {
+  /** Subject Key Identifier (hex, no colons) — primary key */
+  ski: string;
+  hostname: string;
+  port: number;
+  /** Peer TLS certificate PEM (for display / manual verification) */
+  certPem?: string;
+  /** Unix ms — when trust was first established via PIN */
+  trustedAt: number;
+  /** Unix ms — last successful SPINE message exchange */
+  lastConnectedAt?: number;
+  /** Pairing status */
+  status: 'trusted' | 'pending' | 'failed';
+  brand?: string;
+  model?: string;
+  deviceType?: string;
+}
 
 /**
  * Revoked JWT token record — client-side cache of server-revoked tokens.
@@ -172,6 +194,7 @@ const LATEST_STORES = {
   energyAggregates: '++id, [resolution+bucketTs]',
   revokedJTIs: 'jti, expiresAt',
   syncState: '&key, updatedAt, serverVersion',
+  eebusDevices: '&ski, status, trustedAt',
 } as const;
 
 export class NexusDatabase extends Dexie {
@@ -189,6 +212,7 @@ export class NexusDatabase extends Dexie {
   energyAggregates!: Table<EnergyAggregate, number>;
   revokedJTIs!: Table<RevokedJTI, string>;
   syncState!: Table<SyncState, string>;
+  eebusDevices!: Table<EEBUSDeviceRecord, string>;
 
   constructor(dbName = 'nexus-hems-dash') {
     super(dbName);
@@ -417,6 +441,13 @@ export class NexusDatabase extends Dexie {
             }
           });
       });
+
+    // ── Version 13: eebusDevices — EEBUS SHIP trusted device store ─
+    // Adds the eebusDevices table keyed by SKI (Subject Key Identifier).
+    // Replaces the localStorage fallback in CertificateManagement.tsx.
+    // No migration of existing data: eebusDevices starts empty; the
+    // localStorage entries are not auto-migrated (users re-pair devices).
+    this.version(13).stores(LATEST_STORES);
   }
 }
 

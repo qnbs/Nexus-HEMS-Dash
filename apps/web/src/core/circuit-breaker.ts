@@ -31,6 +31,8 @@ export class CircuitBreaker {
   private failureCount = 0;
   private successCount = 0;
   private lastFailureTime = 0;
+  /** MED-09: number of times the circuit has transitioned to OPEN */
+  private openCount = 0;
   private readonly config: CircuitBreakerConfig;
   private stateChangeCallbacks: Array<(state: CircuitState) => void> = [];
 
@@ -39,11 +41,19 @@ export class CircuitBreaker {
   }
 
   get currentState(): CircuitState {
-    // Auto-transition from open → half-open after cooldown
-    if (this.state === 'open' && Date.now() - this.lastFailureTime >= this.config.cooldownMs) {
-      this.state = 'half-open';
-      this.successCount = 0;
-      this.notifyStateChange();
+    // Auto-transition from open → half-open after effective cooldown
+    // MED-09: Exponential backoff with ±20% jitter prevents thundering herd
+    if (this.state === 'open') {
+      const exponent = Math.max(0, this.openCount - 1);
+      const baseCooldown = this.config.cooldownMs * 2 ** exponent;
+      const cappedCooldown = Math.min(baseCooldown, 300_000);
+      const jitter = 0.8 + Math.random() * 0.4; // [0.8, 1.2)
+      const effectiveCooldown = cappedCooldown * jitter;
+      if (Date.now() - this.lastFailureTime >= effectiveCooldown) {
+        this.state = 'half-open';
+        this.successCount = 0;
+        this.notifyStateChange();
+      }
     }
     return this.state;
   }
@@ -78,9 +88,11 @@ export class CircuitBreaker {
     if (this.state === 'half-open') {
       // Any failure in half-open goes back to open
       this.state = 'open';
+      this.openCount++;
       this.notifyStateChange();
     } else if (this.state === 'closed' && this.failureCount >= this.config.failureThreshold) {
       this.state = 'open';
+      this.openCount++;
       this.notifyStateChange();
     }
   }
@@ -115,6 +127,7 @@ export class CircuitBreaker {
     this.state = 'closed';
     this.failureCount = 0;
     this.successCount = 0;
+    this.openCount = 0;
     this.notifyStateChange();
   }
 

@@ -153,6 +153,10 @@ export class ModbusSunSpecAdapter extends BaseAdapter {
   deviceInfo: SunSpecDeviceInfo | null = null;
 
   constructor(config?: Partial<AdapterConnectionConfig>) {
+    // HIGH-01: host is required
+    if (!config?.host) {
+      throw new Error('[ModbusSunSpec] config.host is required');
+    }
     super({
       name: 'Modbus SunSpec',
       host: config?.host ?? '192.168.1.100',

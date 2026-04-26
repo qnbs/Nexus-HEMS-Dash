@@ -304,6 +304,71 @@ export const EEBUSPairRequestSchema = z.object({
 
 export type EEBUSPairRequest = z.infer<typeof EEBUSPairRequestSchema>;
 
+// ─── EEBUS SHIP v1.0.1 / VDE-AR-E 2829-6 schemas ──────────────────
+
+/** Full device info record stored in the SHIP trust store */
+export const EEBUSDeviceInfoSchema = z.object({
+  /** Subject Key Identifier (hex, no colons) — primary identity */
+  ski: z.string().trim().min(4).max(128),
+  hostname: z.string().min(1).max(253),
+  port: z.number().int().min(1).max(65535),
+  brand: z.string().max(64).optional(),
+  model: z.string().max(64).optional(),
+  deviceType: z.string().max(64).optional(),
+  /** Trust store status */
+  status: z.enum(['trusted', 'pending', 'failed']),
+  /** Unix ms — when trust was first established */
+  trustedAt: z.number().nonnegative(),
+  /** Unix ms — last successful SPINE message exchange */
+  lastConnectedAt: z.number().nonnegative().optional(),
+});
+
+export type EEBUSDeviceInfo = z.infer<typeof EEBUSDeviceInfoSchema>;
+
+/** Response body for POST /api/eebus/pair */
+export const EEBUSPairResponseSchema = z.object({
+  status: z.enum(['connecting', 'pin_required', 'paired', 'failed']),
+  ski: z.string().trim().min(4).max(128),
+  message: z.string().optional(),
+  /** Present when status === 'pin_required' */
+  pinHint: z.string().optional(),
+});
+
+export type EEBUSPairResponse = z.infer<typeof EEBUSPairResponseSchema>;
+
+/** Response body for GET /api/eebus/pair/status/:ski */
+export const EEBUSPairStatusSchema = z.object({
+  status: z.enum([
+    'init',
+    'tls_connecting',
+    'tls_connected',
+    'cmi_hello',
+    'protocol',
+    'pin_required',
+    'pin_submitted',
+    'connected',
+    'failed',
+    'timeout',
+  ]),
+  ski: z.string().trim().min(4).max(128),
+  message: z.string().optional(),
+  pinHint: z.string().optional(),
+});
+
+export type EEBUSPairStatus = z.infer<typeof EEBUSPairStatusSchema>;
+
+/** Request body for POST /api/eebus/pair/pin */
+export const EEBUSPinSubmitSchema = z.object({
+  ski: z.string().trim().min(4).max(128),
+  /** 5 or 6 decimal digits as displayed on the EEBUS device */
+  pin: z.string().regex(/^\d{5,6}$/, 'PIN must be 5 or 6 decimal digits'),
+});
+
+export type EEBUSPinSubmit = z.infer<typeof EEBUSPinSubmitSchema>;
+
+/** Response body for GET /api/eebus/trust — array of trusted devices */
+export const EEBUSTrustListSchema = z.array(EEBUSDeviceInfoSchema);
+
 /** GET /api/health */
 export const HealthResponseSchema = z.object({
   status: z.literal('ok'),

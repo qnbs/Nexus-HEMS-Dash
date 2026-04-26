@@ -121,6 +121,8 @@ export interface KNXAdapterConfig extends Partial<AdapterConnectionConfig> {
   transport?: KNXTransport;
   mqttConfig?: Partial<KNXMQTTConfig>;
   roomConfigs?: KNXRoomConfig[];
+  /** Enable mock mode (no real connection required) */
+  mock?: boolean;
 }
 
 export class KNXAdapter extends BaseAdapter {
@@ -147,6 +149,10 @@ export class KNXAdapter extends BaseAdapter {
   private roomConfigs: KNXRoomConfig[];
 
   constructor(config?: KNXAdapterConfig) {
+    // HIGH-01: host is required in non-mock mode
+    if (!config?.host && config?.mock !== true) {
+      throw new Error('KNXAdapter: config.host is required');
+    }
     super({
       name: 'KNX/IP',
       host: config?.host ?? '192.168.1.101',

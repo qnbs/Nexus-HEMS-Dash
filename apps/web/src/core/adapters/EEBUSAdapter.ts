@@ -165,6 +165,8 @@ interface SPINEMessage {
 export interface EEBUSAdapterConfig extends Partial<AdapterConnectionConfig> {
   /** Server base URL for mDNS discovery + pairing (defaults to window.location.origin) */
   serverBaseUrl?: string;
+  /** Enable mock mode (no real connection required) */
+  mock?: boolean;
 }
 
 // ─── Adapter Implementation ─────────────────────────────────────────
@@ -187,6 +189,10 @@ export class EEBUSAdapter extends BaseAdapter {
   private _serverBaseUrl: string | undefined;
 
   constructor(config?: EEBUSAdapterConfig) {
+    // HIGH-01: host is required in non-mock mode
+    if (!config?.host && config?.mock !== true) {
+      throw new Error('EEBUSAdapter: config.host is required');
+    }
     super({
       name: 'EEBUS SPINE/SHIP',
       host: config?.host ?? 'localhost',

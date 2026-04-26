@@ -67,7 +67,21 @@ export const AI_PROVIDERS: Record<AIProvider, AIProviderConfig> = {
 };
 
 /**
+ * HIGH-05: Check whether IndexedDB / Dexie is available in this environment.
+ * Returns false in Safari private mode, some CI environments, or when storage is blocked.
+ */
+export async function isKeyStorageAvailable(): Promise<boolean> {
+  try {
+    await nexusDb.aiKeys.count();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Stores an encrypted AI API key in Dexie.
+ * HIGH-05: Throws with a clear message if IndexedDB is unavailable.
  * HIGH-09: Uses persistent vault passphrase from getVaultPassphrase().
  */
 export async function saveAIKey(
@@ -76,6 +90,13 @@ export async function saveAIKey(
   model: string,
   customBaseUrl?: string,
 ): Promise<void> {
+  const available = await isKeyStorageAvailable();
+  if (!available) {
+    throw new Error(
+      'IndexedDB is not available in this environment. ' +
+        'AI keys cannot be stored. Please use a non-private browsing context.',
+    );
+  }
   const passphrase = await getVaultPassphrase();
   const encryptedKey = await encrypt(apiKey, passphrase);
 
