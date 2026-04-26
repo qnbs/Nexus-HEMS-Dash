@@ -34,6 +34,7 @@ import {
 import { PageHeader } from '../components/layout/PageHeader';
 import { PageCrossLinks } from '../components/ui/PageCrossLinks';
 import { getForecastHistory, syncPendingForecasts } from '../lib/ai-forecast-persistence';
+import { sampleIfNeeded } from '../lib/chart-sampling';
 import type { AIForecastRecord } from '../lib/db';
 import { checkInfluxHealth, type InfluxConfig, queryTimeSeries } from '../lib/influxdb-client';
 import { useAppStoreShallow } from '../store';
@@ -147,6 +148,20 @@ export default function HistoricalAnalyticsPage() {
   const [syncing, setSyncing] = useState(false);
   const [syncResult, setSyncResult] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  const sampledTimeSeriesData = sampleIfNeeded(timeSeriesData, 120, 96);
+  const forecastAccuracyData = sampleIfNeeded(
+    forecastHistory.map((forecast) => ({
+      timestamp: forecast.createdAt,
+      label: `${forecast.metric} (${new Date(forecast.createdAt).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit' })})`,
+      r2: Math.round(forecast.accuracy.r2 * 100),
+      mape: Math.round(forecast.accuracy.mape * 10) / 10,
+      model: forecast.model,
+      synced: forecast.persistedToInflux,
+    })),
+    24,
+    18,
+  );
 
   const influxConfig: InfluxConfig | null =
     influxUrl && influxToken && influxToken !== '••••••••••••••••'
@@ -410,7 +425,7 @@ export default function HistoricalAnalyticsPage() {
         >
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart
-              data={timeSeriesData}
+              data={sampledTimeSeriesData}
               margin={{ top: 5, right: 10, left: -10, bottom: 5 }}
             >
               <defs>
@@ -473,7 +488,7 @@ export default function HistoricalAnalyticsPage() {
                 strokeWidth={1.5}
                 dot={false}
               />
-              {timeSeriesData.length > 50 && (
+              {sampledTimeSeriesData.length > 50 && (
                 <Brush dataKey="time" height={20} stroke="var(--color-primary)" />
               )}
             </ComposedChart>
@@ -498,7 +513,10 @@ export default function HistoricalAnalyticsPage() {
           aria-label={t('historicalAnalytics.batterySoCAria')}
         >
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={timeSeriesData} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
+            <AreaChart
+              data={sampledTimeSeriesData}
+              margin={{ top: 5, right: 10, left: -10, bottom: 5 }}
+            >
               <defs>
                 <linearGradient id="socGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="#a855f7" stopOpacity={0.4} />
@@ -582,13 +600,7 @@ export default function HistoricalAnalyticsPage() {
             >
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
-                  data={forecastHistory.map((f) => ({
-                    label: `${f.metric} (${new Date(f.createdAt).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit' })})`,
-                    r2: Math.round(f.accuracy.r2 * 100),
-                    mape: Math.round(f.accuracy.mape * 10) / 10,
-                    model: f.model,
-                    synced: f.persistedToInflux,
-                  }))}
+                  data={forecastAccuracyData}
                   margin={{ top: 5, right: 10, left: -10, bottom: 5 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" opacity={0.3} />

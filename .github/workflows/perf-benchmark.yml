@@ -112,6 +112,7 @@ jobs:
       - name: Collect bundle sizes
         id: sizes
         run: |
+          mkdir -p .perf/reports
           JS_SIZE=$(find apps/web/dist/assets -name '*.js' -exec cat {} + | wc -c)
           CSS_SIZE=$(find apps/web/dist/assets -name '*.css' -exec cat {} + | wc -c)
           JS_KB=$(( JS_SIZE / 1024 ))
@@ -137,6 +138,17 @@ jobs:
           ls -lhS apps/web/dist/assets/*.js | awk '{print $5, $NF}' >> "$GITHUB_STEP_SUMMARY"
           echo '```' >> "$GITHUB_STEP_SUMMARY"
 
+          {
+            echo "# Bundle Summary"
+            echo
+            echo "- Build time: ${{ steps.build-time.outputs.duration }}"
+            echo "- JS (gzip): ${JS_GZIP_KB} kB"
+            echo "- CSS (gzip): ${CSS_GZIP_KB} kB"
+            echo
+            echo "## Per-chunk breakdown"
+            ls -lhS apps/web/dist/assets/*.js | awk '{print "- " $5 " " $NF}'
+          } > .perf/reports/bundle-summary.md
+
       # ── Upload reports ──
       - name: Upload bundle reports
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -144,6 +156,7 @@ jobs:
         with:
           name: bundle-reports
           path: |
+            .perf/reports/bundle-summary.md
             apps/web/dist/bundle-stats.html
             apps/web/dist/source-map-report.html
             apps/web/dist/source-map-report.json

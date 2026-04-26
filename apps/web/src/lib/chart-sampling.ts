@@ -22,8 +22,8 @@
  */
 
 export interface TimeSeriesPoint {
-  ts: number;
-  [key: string]: number;
+  ts?: number;
+  timestamp?: number;
 }
 
 /**
@@ -34,7 +34,7 @@ export interface TimeSeriesPoint {
  * @param yKey       The primary metric key used for triangle area calculation (default: first numeric key found)
  * @returns          Downsampled series with exactly `threshold` points (or less if data is shorter).
  */
-export function lttbSample<T extends TimeSeriesPoint>(
+export function lttbSample<T extends { ts?: number; timestamp?: number }>(
   data: T[],
   threshold = 300,
   yKey?: string,
@@ -61,23 +61,25 @@ export function lttbSample<T extends TimeSeriesPoint>(
     let avgY = 0;
     const nextCount = nextBucketEnd - nextBucketStart || 1;
     for (let j = nextBucketStart; j < nextBucketEnd; j++) {
-      avgTs += data[j].ts;
-      avgY += (data[j][resolvedYKey] as number) ?? 0;
+      avgTs += getXValue(data[j]);
+      avgY += (data[j] as Record<string, number | string | undefined>)[resolvedYKey] as number;
     }
     avgTs /= nextCount;
     avgY /= nextCount;
 
     // Find the point in the current bucket that forms the largest triangle
     const prevPoint = data[prevSelected];
+    const prevX = getXValue(prevPoint);
+    const prevY =
+      ((prevPoint as Record<string, number | string | undefined>)[resolvedYKey] as number) ?? 0;
     let maxArea = -1;
     let maxIdx = bucketStart;
 
     for (let j = bucketStart; j < bucketEnd; j++) {
-      const area = Math.abs(
-        (prevPoint.ts - avgTs) *
-          (((data[j][resolvedYKey] as number) ?? 0) - ((prevPoint[resolvedYKey] as number) ?? 0)) -
-          (prevPoint.ts - data[j].ts) * (avgY - ((prevPoint[resolvedYKey] as number) ?? 0)),
-      );
+      const pointX = getXValue(data[j]);
+      const pointY =
+        ((data[j] as Record<string, number | string | undefined>)[resolvedYKey] as number) ?? 0;
+      const area = Math.abs((prevX - avgTs) * (pointY - prevY) - (prevX - pointX) * (avgY - prevY));
       if (area > maxArea) {
         maxArea = area;
         maxIdx = j;
@@ -96,13 +98,23 @@ export function lttbSample<T extends TimeSeriesPoint>(
  * Find the first numeric key (excluding `ts`) to use as the primary metric for
  * triangle area calculation when no explicit `yKey` is provided.
  */
-function findPrimaryYKey(point: TimeSeriesPoint): string {
+function findPrimaryYKey(point: { ts?: number; timestamp?: number }): string {
   for (const key of Object.keys(point)) {
-    if (key !== 'ts' && typeof point[key] === 'number') {
+    if (
+      key !== 'ts' &&
+      key !== 'timestamp' &&
+      typeof (point as Record<string, number | string | undefined>)[key] === 'number'
+    ) {
       return key;
     }
   }
-  return 'ts'; // fallback — degenerate case
+  return 'timestamp' in point ? 'timestamp' : 'ts';
+}
+
+function getXValue(point: { ts?: number; timestamp?: number }): number {
+  if (typeof point.ts === 'number') return point.ts;
+  if (typeof point.timestamp === 'number') return point.timestamp;
+  return 0;
 }
 
 /**
@@ -113,7 +125,7 @@ function findPrimaryYKey(point: TimeSeriesPoint): string {
  * @param threshold  Sample if data.length > threshold (default: 500)
  * @param outputSize Target output length after sampling (default: 300)
  */
-export function sampleIfNeeded<T extends TimeSeriesPoint>(
+export function sampleIfNeeded<T extends { ts?: number; timestamp?: number }>(
   data: T[],
   threshold = 500,
   outputSize = 300,

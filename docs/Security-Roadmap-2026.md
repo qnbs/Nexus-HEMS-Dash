@@ -1,12 +1,28 @@
 # Security Roadmap 2026 — Nexus-HEMS-Dash
 
 > **Status:** Active
-> **Last Updated:** 2026-04-25
+> **Last Updated:** 2026-04-26
 > **Horizon:** Q2–Q4 2026
 
 This document consolidates all security-related planning, findings, and remediation actions for
 Nexus-HEMS-Dash. It supplements `docs/Security-Architecture.md` (threat model) and
 `docs/Security-Remediation-2026-04.md` (past fixes).
+
+## Scope Classification (Verified 2026-04-26)
+
+This roadmap now distinguishes between work that is already implemented, work that is only
+partially complete, and work that is intentionally deferred beyond the current v1.2.0 completion
+slice.
+
+| Topic | Classification | Notes |
+|------|----------------|-------|
+| Redis-backed JTI revocation | Implemented | `jwt-utils.ts` supports Redis with in-memory fallback; production hardening is now operational/documentation work, not a missing feature |
+| Weekly dependency audit automation | Implemented | GitHub Actions already runs `pnpm audit` plus SBOM/scan workflows |
+| Renovate dependency management | Implemented | `.renovaterc.json` is active; remaining work is policy tuning and report hygiene |
+| PII masking in AI pipeline | ✅ Implemented | Canonical `sanitizeUntrustedText`/`sanitizeObjectStrings` in `@nexus-hems/shared-types`; wired at AI client, WS egress (`safeSend`), and energy-store adapter ingress (v1.2.0) |
+| CSP hardening | ✅ Implemented (v1.2.0) | Express and meta-CSP harmonized: `worker-src 'self'`, all AI provider connect-src, `img-src https:`, build-nonce bridge for Express-served HTML inline scripts |
+| EEBUS mTLS certificate UX | Partially complete | SHIP trust store and certificate-management surface exist; lifecycle automation remains later work |
+| OCPP Security Profile 3 | Partial scaffolding | Schemas and config surface exist; full certificate lifecycle and revocation remain out of scope for the initial completion slice |
 
 ---
 
@@ -164,12 +180,13 @@ All critical and most high-severity findings have been remediated. See also
 
 ### Prompt Injection Prevention
 
-**Current:** `sanitizeForPrompt()` removes control chars + injection prefixes
+**Current:** `sanitizeForPrompt()` and `filterAIOutput()` already mask core PII classes
+(email, phone, IBAN, IPv4) and filter model output before rendering.
 
-**Target (ADR-008):**
-1. PII masking: email `[EMAIL]`, phone `[PHONE]`, IBAN `[IBAN]`, IP `[IP]`
-2. Output filtering: `filterAIOutput()` validates AI responses before rendering
-3. Context scoping: only numeric energy data passed in optimization prompts (no user labels by default)
+**Remaining v1.2 completion work (ADR-008):**
+1. Apply the same sanitization policy consistently to adapter-originated labels and free-text fields
+2. Sanitize WebSocket-visible outbound payload fields that may surface human-entered device names or labels
+3. Verify that optimization prompts stay numeric/context-scoped by default and document the boundary clearly
 
 ### API Key Security
 
@@ -183,22 +200,23 @@ All critical and most high-severity findings have been remediated. See also
 
 ### Current State
 
-- TLS 1.3 mTLS declared in `EEBUSAdapter.ts`
-- No automated certificate rotation
-- No pairing UI for device certificates
+- TLS 1.3 mTLS is declared in `EEBUSAdapter.ts`
+- SHIP trust-store routes and persistent trust storage are implemented
+- `CertificateManagement.tsx` already exposes the current trust-store and pairing UI surface
+- Automated certificate rotation and broader lifecycle automation are still not implemented
 
-### Target Implementation
+### Remaining Work
 
-1. **UI:** `CertificateManagement.tsx` — view/import/export device certificates for EEBUS pairing
-2. **Helm:** optional `cert-manager-issuer.yaml` template (disabled by default)
-3. **ACME:** Let's Encrypt integration for public-facing deployments
-4. **Smallstep CA:** self-signed CA for edge/LAN deployments
+1. Finish operator-facing documentation for public PKI vs LAN/self-signed deployments
+2. Tighten certificate import/export and rotation workflows around the existing UI
+3. Keep `cert-manager-issuer.yaml` optional and documented, not assumed as default runtime infrastructure
+4. Defer full automated certificate lifecycle management to a later release if it would expand beyond the current v1.2.0 slice
 
 ---
 
 ## OCPP 2.1 Security Profile 3
 
-### Status: Planned
+### Status: Partial Scaffold, Not Full v1.2.0 Completion
 
 OCPP 2.1 defines three security profiles:
 - **Profile 0:** No security (dev/testing only)
@@ -206,12 +224,15 @@ OCPP 2.1 defines three security profiles:
 - **Profile 2:** TLS 1.2+ with server certificates
 - **Profile 3:** TLS 1.3 + client certificates (mTLS)
 
-Current implementation supports Profile 1/2. Profile 3 (mTLS) requires:
+Current implementation exposes security-profile configuration and mTLS-related schema surface, but
+full Profile 3 operational completeness is not finished. Remaining requirements include:
 - Client certificate management (see EEBUS mTLS above)
 - Certificate rotation automation
 - Revocation via CRL or OCSP
 
-Target: OCPP 2.1 Security Profile 3 in v1.2.0.
+Recommended v1.2.0 boundary: configuration validation and certificate-management UX only. Full
+revocation and lifecycle automation should be tracked as follow-up work unless they become an
+explicit release gate.
 
 ---
 
@@ -234,9 +255,9 @@ All `pnpm.overrides` in `package.json` are actively maintained for CVE mitigatio
 
 `.renovaterc.json` configured with:
 - `rangeStrategy: "bump"` — always update to newest non-breaking version
-- Daily schedule — stay on top of security patches
+- Weekly Monday schedule with immediate vulnerability-alert handling
 - Group: production deps and dev deps separately
-- Auto-merge: dev deps with `patch` semver only
+- Auto-merge: patch and minor updates after CI; major updates remain manual review
 
 ### Additional Scanners
 
@@ -284,6 +305,6 @@ See `docs/adr/ADR-003` and `apps/web/src/lib/tariff-providers.ts` for implementa
 | Date | Scope | Trigger |
 |------|-------|---------|
 | 2026-05-01 | Phase 1 validation (SBOM, Grype, Distroless) | Post-Phase-1 implementation |
-| 2026-06-01 | Phase 3 validation (JTI Redis, PII scanning) | Post-Phase-3 implementation |
-| 2026-Q3 | EEBUS mTLS + OCPP Profile 3 planning | v1.2.0 sprint |
+| 2026-06-01 | Sanitization and CSP completion review | After adapter/WebSocket boundary hardening |
+| 2026-Q3 | EEBUS mTLS + OCPP Profile 3 follow-up planning | After v1.2.0 completion scope is closed |
 | 2026-Q4 | Multi-user RBAC threat model | v1.2.0 pre-implementation |

@@ -1,11 +1,25 @@
 # Performance Optimization Plan — Nexus-HEMS-Dash
 
 > **Status:** Active
-> **Last Updated:** 2026-04-25
+> **Last Updated:** 2026-04-26
 > **Horizon:** Q2–Q3 2026
 
 This document covers all planned and implemented performance optimizations, their rationale,
 implementation strategy, and metrics targets.
+
+## Scope Classification (Verified 2026-04-26)
+
+| Topic | Classification | Notes |
+|------|----------------|-------|
+| Dexie tiered downsampling | Implemented | Background service and aggregate tables are already wired |
+| Adaptive ring-buffer sizing | Implemented | Per-adapter sizing is already active in `useEnergyStore.ts` |
+| Sankey Web Worker | Implemented | Layout computation already runs off the main thread |
+| REST polling worker isolation | Implemented | Worker exists; remaining work is monitoring and fine-tuning |
+| AI worker isolation | Implemented | Optimization work is already offloaded; remaining work is verification/reporting |
+| Lighthouse CI | Implemented | Existing workflow enforces thresholds and stores reports |
+| LTTB chart sampling | Implemented but not fully integrated | Utility and tests exist; chart call sites still need adoption |
+| `.perf` convention and runtime perf probes | Not implemented | Keep CI-first and lightweight for v1.2.0 |
+| Canvas/WebGL or virtualization fallback | Deferred | Only revisit if profiling still shows regressions after LTTB integration |
 
 ---
 
@@ -139,7 +153,7 @@ Memory reduction: **~5 MB → ~1 MB** (80% reduction for 10-adapter setup)
 ## P3: LTTB Chart Downsampling (chart-sampling.ts)
 
 **File:** `apps/web/src/lib/chart-sampling.ts`
-**Status:** Implemented (Phase 2)
+**Status:** ✅ Fully Implemented and Integrated (v1.2.0)
 **Gap closed:** G-10
 
 ### Problem
@@ -154,70 +168,35 @@ Largest-Triangle-Three-Buckets (LTTB) — visually lossless downsampling:
 - O(n) time, constant memory
 - Target: ≤300 points for charts (imperceptible quality loss)
 
+The shipped implementation in `chart-sampling.ts` accepts both `ts` and `timestamp` as the
+x-axis key (supporting both Dexie aggregate snapshots and live energy snapshots).  The public
+API uses the `sampleIfNeeded` convenience wrapper:
+
 ```typescript
-export interface DataPoint {
-  ts: number;
-  [key: string]: number;
-}
-
-/**
- * Downsample a time series using the LTTB algorithm.
- * @param data   Input series sorted by ts (ascending)
- * @param threshold   Maximum output points (default: 300)
- */
-export function lttbSample<T extends DataPoint>(data: T[], threshold = 300): T[] {
-  if (data.length <= threshold) return data;
-
-  const sampled: T[] = [data[0]];
-  const bucketSize = (data.length - 2) / (threshold - 2);
-
-  let a = 0;
-  for (let i = 0; i < threshold - 2; i++) {
-    const bucketStart = Math.floor((i + 1) * bucketSize) + 1;
-    const bucketEnd = Math.min(Math.floor((i + 2) * bucketSize) + 1, data.length);
-    const nextBucketStart = bucketEnd;
-    const nextBucketEnd = Math.min(Math.floor((i + 3) * bucketSize) + 1, data.length);
-
-    // Average point of next bucket
-    let avgX = 0;
-    let avgY = 0;
-    for (let j = nextBucketStart; j < nextBucketEnd; j++) {
-      avgX += data[j].ts;
-      avgY += data[j].pvPower ?? 0; // primary metric for triangle area
-    }
-    const count = nextBucketEnd - nextBucketStart;
-    avgX /= count;
-    avgY /= count;
-
-    // Find point in current bucket with largest triangle area
-    let maxArea = -1;
-    let maxIdx = bucketStart;
-    for (let j = bucketStart; j < bucketEnd; j++) {
-      const area = Math.abs(
-        (data[a].ts - avgX) * (data[j].pvPower ?? 0 - data[a].pvPower ?? 0) -
-          (data[a].ts - data[j].ts) * (avgY - data[a].pvPower ?? 0),
-      ) * 0.5;
-      if (area > maxArea) { maxArea = area; maxIdx = j; }
-    }
-
-    sampled.push(data[maxIdx]);
-    a = maxIdx;
-  }
-
-  sampled.push(data[data.length - 1]);
-  return sampled;
+// Only downsample when data exceeds the threshold — returns input unchanged otherwise.
+export function sampleIfNeeded<T extends { ts?: number; timestamp?: number }>(
+  data: T[],
+  threshold = 500,
+  outputSize = 300,
+): T[] {
+  return data.length > threshold ? lttbSample(data, outputSize) : data;
 }
 ```
 
-### Integration points
+### Integration points (v1.2.0)
 
-- `apps/web/src/pages/Analytics.tsx` — history charts
-- `apps/web/src/pages/OptimizationAI.tsx` — forecast charts
+| Surface | Status | Threshold → Output |
+|---------|--------|--------------------|
+| `apps/web/src/components/HistoricalChart.tsx` | ✅ Integrated | 500 → 300 |
+| `apps/web/src/pages/HistoricalAnalyticsPage.tsx` | ✅ Integrated | 120 → 96 (timeseries), proportional (forecast accuracy) |
+| `apps/web/src/pages/Analytics.tsx` (realtime tab) | Not needed — series ≤ 24 pts (hourly) | — |
+| `apps/web/src/pages/OptimizationAI.tsx` | Not needed — forecast capped at 24 pts | — |
+| `apps/web/src/pages/TariffsPage.tsx` | Not needed — PRICE_TIMELINE = 48 pts | — |
+| `apps/web/src/pages/MonitoringPage.tsx` | Not needed — loadHistory = 24 pts | — |
+| `apps/web/src/components/PredictiveForecast.tsx` | Not needed — max 168 pts (7d × 24h) | — |
 
-Apply LTTB when `data.length > 500`:
-```typescript
-const chartData = data.length > 500 ? lttbSample(data, 300) : data;
-```
+Only pages driven by Dexie historical queries (potentially thousands of rows) require LTTB.
+Static demo and bounded-window charts are already fast without it.
 
 ---
 
@@ -237,9 +216,9 @@ provide smoother animation. Not needed for current typical use case (≤15 flows
 
 ## P5: REST Polling Adapter Worker
 
-**File:** `apps/web/src/workers/adapter-worker.ts`
-**Status:** To verify / create (Phase 2)
-**Gap:** G-17 (mentioned in instructions as planned but not confirmed in discovery)
+**File:** `apps/web/src/core/adapter-worker.ts`
+**Status:** Implemented
+**Gap:** Closed for worker isolation; remaining work is instrumentation and tuning
 
 ### Problem
 
@@ -247,6 +226,10 @@ REST-polling adapters (e.g., `ShellyRESTAdapter`, `ModbusSunSpecAdapter`) perfor
 on the main thread. At 1–2 Hz polling of multiple adapters, this blocks React renders.
 
 ### Solution
+
+This worker now exists and isolates polling with SSRF protections, header sanitization, and
+timeout handling. The remaining v1.2.0 work is to document the boundary correctly and add
+measurement around throughput and render impact rather than re-creating the worker.
 
 Isolated Web Worker per polling adapter:
 
@@ -281,21 +264,25 @@ const ALLOWED_ORIGINS = new Set([
 
 ### Prometheus Metrics
 
-Performance metrics exposed at `/metrics`:
+Target metrics for the next completion slice:
 
 ```
-nexus_hems_store_merge_duration_ms   — useEnergyStore.mergeData() latency histogram
-nexus_hems_ring_buffer_size          — current ring buffer size per adapter
-nexus_hems_dexie_query_duration_ms   — Dexie query latency histogram
-nexus_hems_chart_render_duration_ms  — Recharts render duration (client-side via PerformanceObserver)
+nexus_hems_store_merge_duration_ms   — desired `useEnergyStore.mergeData()` latency histogram
+nexus_hems_ring_buffer_size          — desired current ring buffer size per adapter metric
+nexus_hems_dexie_query_duration_ms   — desired Dexie query latency histogram
+nexus_hems_chart_render_duration_ms  — desired Recharts render duration via client-side observation
 ```
 
 ### CI Performance Gate
 
-`perf-benchmark.yml` measures:
+`perf-benchmark.yml` currently measures:
 - Bundle size (warn if +5%)
 - Build time (warn if >120 s)
-- Merge latency (must be <50 ms at 1000 updates/min)
+
+Planned follow-up additions:
+- Merge latency evidence (target: <50 ms at 1000 updates/min)
+- Chart render evidence after LTTB integration
+- `.perf/` artifact convention for CI-generated summaries
 
 ---
 
@@ -307,3 +294,4 @@ nexus_hems_chart_render_duration_ms  — Recharts render duration (client-side v
 | react-window for chart virtualization | LTTB sampling sufficient; react-window adds complexity |
 | Web Workers for Dexie (Comlink) | IndexedDB runs in background thread already |
 | Server-side rendering | SPA pattern fits HEMS dashboard; SSR adds complexity without benefit |
+| Canvas fallback for all charts | Defer unless profiling still shows regressions after LTTB adoption |

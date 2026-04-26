@@ -29,6 +29,14 @@ Nexus-HEMS is a **unified Command Center** that consolidates **10 protocol adapt
 
 The current shipped release line is **1.1.0**. Active **v1.2.0** work is tracked in [CHANGELOG.md](CHANGELOG.md) and [docs/Technical-Debt-Registry.md](docs/Technical-Debt-Registry.md); treat those files as in-flight roadmap context rather than shipped baseline.
 
+For verified roadmap status and completion boundaries, use these documents as the primary references:
+- [docs/Security-Roadmap-2026.md](docs/Security-Roadmap-2026.md) for implemented vs partial vs deferred security work
+- [docs/Performance-Optimization-Plan.md](docs/Performance-Optimization-Plan.md) for implemented vs pending performance work
+- [docs/Accessibility-Testing-Guide.md](docs/Accessibility-Testing-Guide.md) for automated vs manual accessibility coverage
+- [docs/Tariff-Providers-Setup.md](docs/Tariff-Providers-Setup.md) for provider support and setup status
+- [docs/Home-Assistant-Integration-Guide.md](docs/Home-Assistant-Integration-Guide.md) for the Home Assistant MQTT contrib adapter
+- [docs/Deployment-Guide.md](docs/Deployment-Guide.md) and [docs/Toolchain-Architecture.md](docs/Toolchain-Architecture.md) for deploy/tooling truth
+
 **Stack:** React 19 · TypeScript 5.8 · Vite 8 (Rolldown) · Tailwind CSS v4 · Zustand 5 · D3.js Sankey · Recharts · Motion · Dexie.js · Radix UI · React Compiler
 
 ## Key Features

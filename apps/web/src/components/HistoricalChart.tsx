@@ -29,6 +29,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
+import { sampleIfNeeded } from '../lib/chart-sampling';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -211,6 +212,7 @@ export function HistoricalChart({ className = '' }: HistoricalChartProps) {
     zoomDomain !== null
       ? displayData.filter((d) => d.timestamp >= zoomDomain[0] && d.timestamp <= zoomDomain[1])
       : displayData;
+  const sampledData = sampleIfNeeded(filteredData, 500, 300);
 
   const RANGES: TimeRange[] = ['1h', '6h', '24h', '7d', '30d'];
   const GRANULARITIES: { value: Granularity; label: string }[] = [
@@ -329,7 +331,7 @@ export function HistoricalChart({ className = '' }: HistoricalChartProps) {
           </p>
           <ResponsiveContainer width="100%" height={320}>
             <ComposedChart
-              data={filteredData}
+              data={sampledData}
               margin={{ top: 8, right: 16, bottom: 8, left: 0 }}
               onMouseDown={handleMouseDown}
               onMouseMove={handleMouseMove}

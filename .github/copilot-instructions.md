@@ -417,3 +417,9 @@ Vite proxies `/api/*`, `/metrics`, and `/ws` to `http://localhost:3000` — brow
 ---
 
 Goal: Build the most beautiful, accessible, fully localized and production-ready HEMS dashboard — 2026.
+
+## graphify
+
+Before answering architecture or codebase questions, read `graphify-out/GRAPH_REPORT.md` if it exists.
+If `graphify-out/wiki/index.md` exists, navigate it for deep questions.
+Type `/graphify` in Copilot Chat to build or update the knowledge graph.

@@ -1,4 +1,4 @@
-import { WSCommandSchema } from '@nexus-hems/shared-types';
+import { sanitizeObjectStrings, WSCommandSchema } from '@nexus-hems/shared-types';
 import type { IncomingMessage } from 'http';
 import type { WebSocket, WebSocketServer } from 'ws';
 import { mockData, updateMockData } from '../data/mock-data.js';
@@ -99,7 +99,7 @@ export function setupWebSocket(wss: WebSocketServer): void {
           ? filterMockData(mockData as unknown as Record<string, unknown>, subscribed)
           : mockData;
 
-      client.send(JSON.stringify({ type: 'ENERGY_UPDATE', data: payload }));
+      safeSend(client, { type: 'ENERGY_UPDATE', data: payload });
       wsMessageCount.outbound++;
     });
   }, 2000);
@@ -153,7 +153,7 @@ export function setupWebSocket(wss: WebSocketServer): void {
     console.log(`[WS] Client connected (${clientInfo}) from ${clientIP}`);
 
     // Send initial data
-    ws.send(JSON.stringify({ type: 'ENERGY_UPDATE', data: mockData }));
+    safeSend(ws, { type: 'ENERGY_UPDATE', data: mockData });
 
     ws.on('message', (message) => {
       wsMessageCount.inbound++;
@@ -194,10 +194,12 @@ function checkWsRateLimit(
   rl.count++;
   if (rl.count > WS_CMD_RATE_LIMIT) {
     ws.send(
-      JSON.stringify({
-        type: 'ERROR',
-        error: `Rate limit exceeded (${WS_CMD_RATE_LIMIT} cmd/min)`,
-      }),
+      JSON.stringify(
+        sanitizeOutgoingWsPayload({
+          type: 'ERROR',
+          error: `Rate limit exceeded (${WS_CMD_RATE_LIMIT} cmd/min)`,
+        }),
+      ),
     );
     ws.close(4429, 'Rate limit exceeded');
     return false;
@@ -217,7 +219,7 @@ function handleSubscribeCommand(
   sub.clear();
   for (const m of metrics as string[]) sub.add(m);
   wsSubscriptions.set(ws, sub);
-  ws.send(JSON.stringify({ type: 'SUBSCRIBE_ACK', metrics: [...sub] }));
+  safeSend(ws, { type: 'SUBSCRIBE_ACK', metrics: [...sub] });
   return true;
 }
 
@@ -230,19 +232,23 @@ function checkScopeAuthorization(
   const clientScope: JWTScope = client?.scope ?? 'read';
   if (WRITE_COMMANDS.has(parsedType) && SCOPE_ORDER[clientScope] < SCOPE_ORDER.readwrite) {
     ws.send(
-      JSON.stringify({
-        type: 'ERROR',
-        error: 'Insufficient scope: readwrite required for hardware commands',
-      }),
+      JSON.stringify(
+        sanitizeOutgoingWsPayload({
+          type: 'ERROR',
+          error: 'Insufficient scope: readwrite required for hardware commands',
+        }),
+      ),
     );
     return false;
   }
   if (ADMIN_COMMANDS.has(parsedType) && SCOPE_ORDER[clientScope] < SCOPE_ORDER.admin) {
     ws.send(
-      JSON.stringify({
-        type: 'ERROR',
-        error: 'Insufficient scope: admin required for grid limit commands',
-      }),
+      JSON.stringify(
+        sanitizeOutgoingWsPayload({
+          type: 'ERROR',
+          error: 'Insufficient scope: admin required for grid limit commands',
+        }),
+      ),
     );
     return false;
   }
@@ -262,7 +268,7 @@ function handleWsCommand(
     if (parsed !== null && typeof parsed === 'object' && 'type' in parsed) {
       if (handleSubscribeCommand(ws, parsed as Record<string, unknown>, wsSubscriptions)) return;
     }
-    ws.send(JSON.stringify({ type: 'ERROR', error: validation.error }));
+    safeSend(ws, { type: 'ERROR', error: validation.error });
     return;
   }
 
@@ -285,10 +291,17 @@ function handleWsCommand(
     mockData.evPower +
     mockData.heatPumpPower -
     mockData.pvPower;
-  const updateMsg = JSON.stringify({ type: 'ENERGY_UPDATE', data: mockData });
   wss.clients.forEach((c) => {
-    if (c.readyState === 1) c.send(updateMsg);
+    if (c.readyState === 1) safeSend(c, { type: 'ENERGY_UPDATE', data: mockData });
   });
+}
+
+export function sanitizeOutgoingWsPayload(payload: unknown): unknown {
+  return sanitizeObjectStrings(payload, 160);
+}
+
+function safeSend(ws: WebSocket, payload: unknown): void {
+  ws.send(JSON.stringify(sanitizeOutgoingWsPayload(payload)));
 }
 
 // ---------------------------------------------------------------------------

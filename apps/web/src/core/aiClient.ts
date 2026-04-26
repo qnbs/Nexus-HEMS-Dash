@@ -4,6 +4,7 @@
  * API keys are always fetched from encrypted Dexie storage — never from env vars or localStorage.
  */
 
+import { sanitizeRenderedText, sanitizeUntrustedText } from '@nexus-hems/shared-types';
 import { z } from 'zod';
 import { type AIProvider, getActiveProvider, getAIKey } from '../lib/ai-keys';
 
@@ -24,6 +25,9 @@ const HEMS_SYSTEM_PROMPT = `You are an AI energy optimization expert for a Home 
 Analyze real-time energy data and provide actionable optimization recommendations.
 Focus on: cost minimization, self-consumption maximization, CO₂ reduction, battery optimization, smart EV charging.
 Always respond with valid JSON arrays when structured output is requested.`;
+
+const AI_SYSTEM_PROMPT_MAX_LENGTH = 2_000;
+const AI_USER_PROMPT_MAX_LENGTH = 8_000;
 
 // ─── MED-06: Zod schemas for structured AI response validation ───────
 
@@ -77,23 +81,6 @@ export function parseAIStructuredOutput<T>(text: string, schema: z.ZodType<T>): 
 // ─── MED-09: Prompt Injection Sanitization + PII Masking (ADR-008) ──
 
 /**
- * PII patterns — mask sensitive data before sending to AI providers.
- * Prevents accidental exfiltration of personal identifiers.
- */
-const PII_PATTERNS: ReadonlyArray<{ pattern: RegExp; placeholder: string }> = [
-  // Email addresses — domain part allows hyphens (e.g. nexus-hems.local)
-  { pattern: /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/g, placeholder: '[EMAIL]' },
-  // IPv4 addresses — must run before phone pattern to avoid mis-classification
-  { pattern: /\b(?:\d{1,3}\.){3}\d{1,3}\b/g, placeholder: '[IP]' },
-  // IPv6 addresses (simplified)
-  { pattern: /\b(?:[0-9a-fA-F]{1,4}:){2,7}[0-9a-fA-F]{1,4}\b/g, placeholder: '[IP]' },
-  // Phone numbers (E.164 + common formats) — run after IP to avoid matching IPs
-  { pattern: /\b(\+?[\d\s\-().]{7,20})\b(?=\s|$)/g, placeholder: '[PHONE]' },
-  // IBAN (EU bank accounts)
-  { pattern: /\b[A-Z]{2}\d{2}[A-Z0-9]{4,30}\b/g, placeholder: '[IBAN]' },
-];
-
-/**
  * Sanitizes a user-controlled or sensor-derived string before interpolating
  * it into an AI prompt. Strips control characters, prompt injection sequences,
  * masks PII, and truncates to maxLength.
@@ -102,23 +89,7 @@ const PII_PATTERNS: ReadonlyArray<{ pattern: RegExp; placeholder: string }> = [
  * @param maxLength Maximum allowed length after sanitization (default: 64)
  */
 export function sanitizeForPrompt(value: string, maxLength = 64): string {
-  if (typeof value !== 'string') return '';
-
-  let sanitized = value
-    // Remove all Unicode control characters (NUL, SOH, … DEL, etc.)
-    .replace(/\p{Cc}/gu, '')
-    // Strip common prompt-injection prefixes
-    .replace(/\b(ignore|disregard|forget|override)\b.*?(instruction|prompt|above|system)/gi, '')
-    // Collapse repeated whitespace
-    .replace(/\s{3,}/g, '  ')
-    .trim();
-
-  // Mask PII
-  for (const { pattern, placeholder } of PII_PATTERNS) {
-    sanitized = sanitized.replace(pattern, placeholder);
-  }
-
-  return sanitized.slice(0, maxLength);
+  return sanitizeUntrustedText(value, maxLength);
 }
 
 /**
@@ -130,21 +101,7 @@ export function sanitizeForPrompt(value: string, maxLength = 64): string {
  * @returns        Filtered, safe-to-render string
  */
 export function filterAIOutput(output: string): string {
-  if (typeof output !== 'string') return '';
-
-  let filtered = output
-    // Remove control characters from output
-    .replace(/\p{Cc}/gu, ' ')
-    // Collapse repeated whitespace
-    .replace(/\s{4,}/g, '   ')
-    .trim();
-
-  // Mask any PII that leaked through the AI response
-  for (const { pattern, placeholder } of PII_PATTERNS) {
-    filtered = filtered.replace(pattern, placeholder);
-  }
-
-  return filtered;
+  return sanitizeRenderedText(output, AI_USER_PROMPT_MAX_LENGTH);
 }
 
 /**
@@ -162,50 +119,65 @@ export async function callAI(request: AICompletionRequest): Promise<AICompletion
   }
 
   const { apiKey, model, baseUrl } = keyData;
-  const systemPrompt = request.systemPrompt ?? HEMS_SYSTEM_PROMPT;
+  const systemPrompt = sanitizeForPrompt(
+    request.systemPrompt ?? HEMS_SYSTEM_PROMPT,
+    AI_SYSTEM_PROMPT_MAX_LENGTH,
+  );
+  const userPrompt = sanitizeForPrompt(request.prompt, AI_USER_PROMPT_MAX_LENGTH);
   const temperature = request.temperature ?? 0.7;
   const maxTokens = request.maxTokens ?? 1024;
+
+  let result: AICompletionResult;
 
   switch (provider) {
     case 'openai':
     case 'xai':
     case 'groq':
     case 'custom':
-      return callOpenAICompatible(
+      result = await callOpenAICompatible(
         baseUrl,
         apiKey,
         model,
         systemPrompt,
-        request.prompt,
+        userPrompt,
         temperature,
         maxTokens,
         provider,
       );
+      break;
     case 'anthropic':
-      return callAnthropic(
+      result = await callAnthropic(
         baseUrl,
         apiKey,
         model,
         systemPrompt,
-        request.prompt,
+        userPrompt,
         temperature,
         maxTokens,
       );
+      break;
     case 'google':
-      return callGemini(
+      result = await callGemini(
         baseUrl,
         apiKey,
         model,
-        request.prompt,
+        userPrompt,
         systemPrompt,
         temperature,
         maxTokens,
       );
+      break;
     case 'ollama':
-      return callOllama(baseUrl, model, request.prompt, systemPrompt, temperature);
+      result = await callOllama(baseUrl, model, userPrompt, systemPrompt, temperature);
+      break;
     default:
       throw new Error(`Unsupported provider: ${provider}`);
   }
+
+  return {
+    ...result,
+    text: filterAIOutput(result.text),
+  };
 }
 
 async function callOpenAICompatible(

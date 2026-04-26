@@ -2,11 +2,18 @@
 
 **Last audited:** 2026-04-26
 **Version at audit:** 1.1.0
-**Last updated:** 2026-05-03
-**Updated version:** 1.2.0
+**Last updated:** 2026-04-26
+**Updated version:** 1.1.x baseline with in-flight v1.2.0 work
 **Auditor:** Claude Sonnet 4.6 (automated deep-scan)
 
 This file is the canonical issue tracker for known technical debt, security gaps, incomplete implementations, and quality issues. It is **not** a substitute for GitHub Issues — use it for context, rationale, and multi-sprint planning.
+
+## Truth-Sync Note (2026-04-26)
+
+The registry is aligned to the verified repository state. Items marked `✅` are implemented in the
+codebase already. Items marked `⏳` remain genuine follow-up work. Where documentation previously
+mixed roadmap intent with shipped status, this file now treats `1.1.0` as the shipped baseline and
+`v1.2.0` as in-flight scope only.
 
 ---
 
@@ -163,6 +170,12 @@ WS command rate limit is now configurable via `WS_RATE_LIMIT` env var (default 3
 
 **Fix:** Read both env vars at request time (not startup time). Verify against both keys without restart. Add a `/api/auth/rotate-key` admin endpoint for zero-downtime rotation.
 
+### HIGH-09 — Security/Performance Roadmaps Need Truth-Sync Boundaries
+**Files:** `docs/Security-Roadmap-2026.md`, `docs/Performance-Optimization-Plan.md`, `CHANGELOG.md`, `README.md`
+**Status:** ✅ Fixed in v1.2.0
+
+Roadmap and release-facing docs reclassified. JTI revocation, audit automation, Renovate, AI-side PII masking, CSP partial state, EEBUS certificate UX, and LTTB integration status all now reflect verified shipped state vs. active v1.2 targets.
+
 ---
 
 ### HIGH-08 — Docker Secret Path Hardcoded
@@ -206,6 +219,12 @@ Several routes use `console.error` / `console.warn` directly. Request context (r
 If `WS_ORIGINS` is empty or contains special chars, the CSP header becomes malformed. No startup validation.
 
 **Fix:** Add a Docker `ENTRYPOINT` wrapper script that validates `WS_ORIGINS` matches `^wss?://[a-zA-Z0-9._:-]+$` before starting nginx.
+
+### MED-10 — LTTB Sampling Exists But Is Not Fully Wired Into Chart Surfaces
+**Files:** `apps/web/src/lib/chart-sampling.ts`, `apps/web/src/components/HistoricalChart.tsx`, `apps/web/src/pages/HistoricalAnalyticsPage.tsx`
+**Status:** ✅ Fixed in v1.2.0
+
+`sampleIfNeeded(filteredData, 500, 300)` wired into `HistoricalChart.tsx` (the shared historical rendering path) and `HistoricalAnalyticsPage.tsx` (time series + forecast accuracy charts). All other chart pages (Analytics, TariffsPage, OptimizationAI, MonitoringPage, PredictiveForecast) use static bounded series ≤ 168 points and are well below the sampling threshold — no additional wiring needed there.
 
 ---
 
@@ -355,6 +374,10 @@ Storybook config references component paths that may not have stories written ye
 | ✅ TEST-01 | normalize-unified.test.ts timeout fixed with beforeAll | v1.1.1 |
 | ✅ TEST-02 | supertest installed, API test files added | v1.1.0 |
 | ✅ MED-03 | nginx CSP `apk` fix (exit-99 in BuildKit) | v1.1.1 |
+| ✅ MED-10 | LTTB sampling wired into HistoricalChart + HistoricalAnalyticsPage | v1.2.0 |
+| ✅ HIGH-09 | Security/Performance roadmap truth-sync completed | v1.2.0 |
+| ✅ SEC-01 | CSP harmonized: worker-src, AI providers, img-src, Express nonce bridge | v1.2.0 |
+| ✅ SEC-02 | PII sanitization extracted to shared-types; wired at WS egress, store ingress, AI client | v1.2.0 |
 
 ---
 

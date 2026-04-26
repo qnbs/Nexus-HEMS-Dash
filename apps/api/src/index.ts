@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
 import express from 'express';
 import http from 'http';
 import { WebSocketServer } from 'ws';
@@ -33,7 +35,23 @@ export async function startServer(): Promise<void> {
   app.set('trust proxy', 1);
   app.disable('x-powered-by');
   configureRequestTracking(app);
-  configureHelmet(app, isDev);
+
+  // Extract build-time nonce baked into the production index.html so the
+  // HTTP CSP header can include it and allow Vite's inline theme-loader /
+  // SPA-redirect / recovery-UI scripts (HTTP header overrides meta CSP).
+  let buildNonce: string | undefined;
+  if (!isDev) {
+    try {
+      const webDist = path.resolve(process.env.WEB_DIST_PATH ?? '../web/dist');
+      const html = readFileSync(path.join(webDist, 'index.html'), 'utf8');
+      buildNonce = html.match(/'nonce-([^']+)'/)?.[1];
+    } catch {
+      // Built HTML not available yet — inline scripts will be blocked until
+      // the web package is built and WEB_DIST_PATH is set correctly.
+    }
+  }
+
+  configureHelmet(app, isDev, buildNonce);
   configureRateLimiting(app, isDev);
 
   // Parse JSON for POST routes

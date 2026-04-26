@@ -10,6 +10,10 @@ function makeLinear(n: number): Array<{ ts: number; value: number }> {
   return Array.from({ length: n }, (_, i) => ({ ts: i * 1000, value: i }));
 }
 
+function makeTimestampLinear(n: number): Array<{ timestamp: number; value: number }> {
+  return Array.from({ length: n }, (_, i) => ({ timestamp: i * 1000, value: i }));
+}
+
 // Sinusoidal series for shape-preservation testing
 function makeSine(n: number): Array<{ ts: number; pvPower: number }> {
   return Array.from({ length: n }, (_, i) => ({
@@ -95,6 +99,14 @@ describe('lttbSample', () => {
     // Should not throw even without explicit yKey
     const result = lttbSample(data, 50);
     expect(result).toHaveLength(50);
+  });
+
+  it('supports timestamp-based series used by historical charts', () => {
+    const data = makeTimestampLinear(800);
+    const result = lttbSample(data, 120);
+    expect(result).toHaveLength(120);
+    expect(result[0]).toBe(data[0]);
+    expect(result[result.length - 1]).toBe(data[data.length - 1]);
   });
 });
 

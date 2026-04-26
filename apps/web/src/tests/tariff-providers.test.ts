@@ -9,7 +9,7 @@
  *  - TARIFF_PROVIDERS metadata — structural integrity
  *  - fetchTariffPrices() with provider='none' — generateFixedPrices (no network)
  */
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { GridFeeSchedule, TariffPricePoint } from '../lib/tariff-providers';
 import {
   applyDynamicGridFees,
@@ -19,6 +19,10 @@ import {
   isPeakHour,
   TARIFF_PROVIDERS,
 } from '../lib/tariff-providers';
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 // ─── getDynamicGridFee ───────────────────────────────────────────────
 
@@ -205,6 +209,7 @@ describe('TARIFF_PROVIDERS metadata', () => {
     'tibber-pulse',
     'awattar-de',
     'awattar-at',
+    'nordpool',
     'octopus',
     'awattar',
     'none',
@@ -232,6 +237,11 @@ describe('TARIFF_PROVIDERS metadata', () => {
 
   it('awattar-de has zero monthly base fee (spot market)', () => {
     expect(TARIFF_PROVIDERS['awattar-de'].monthlyBaseFee).toBe(0);
+  });
+
+  it('nordpool metadata is available with EUR pricing', () => {
+    expect(TARIFF_PROVIDERS.nordpool.currency).toBe('EUR');
+    expect(TARIFF_PROVIDERS.nordpool.apiEndpoint).toContain('nordpoolgroup.com');
   });
 });
 
@@ -263,5 +273,17 @@ describe('fetchTariffPrices() — provider=none (offline, no network)', () => {
     prices.forEach((p) => {
       expect(p.total).toBeGreaterThan(0);
     });
+  });
+});
+
+describe('fetchTariffPrices() — provider=nordpool', () => {
+  it('falls back to simulated prices when the remote endpoint fails', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue({ ok: false } as Response);
+
+    const prices = await fetchTariffPrices('nordpool', '', 'DE-LU');
+
+    expect(prices.length).toBeGreaterThan(0);
+    expect(prices[0]?.currency).toBe('EUR');
+    expect(prices[0]?.startsAt).toBeInstanceOf(Date);
   });
 });

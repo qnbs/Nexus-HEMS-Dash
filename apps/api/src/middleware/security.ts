@@ -76,7 +76,12 @@ export function configureRequestTracking(app: Express): void {
 
 // ─── Security Headers (Helmet + Permissions-Policy) ──────────────────
 
-export function configureHelmet(app: Express, isDev: boolean): void {
+// buildNonce: the nonce baked into the production index.html at build time by
+// cspNoncePlugin (vite.config.ts). Passed here so the HTTP CSP header allows
+// the inline theme-loader, SPA-redirect, and recovery-UI scripts that Vite
+// embeds with nonce="<value>" — without it those scripts are blocked when
+// Express serves the static HTML (HTTP header overrides the meta CSP tag).
+export function configureHelmet(app: Express, isDev: boolean, buildNonce?: string): void {
   // Production CSP: configurable WebSocket origins via WS_ORIGINS env var.
   // No more blanket ws://localhost:* in production.
   const wsOrigins = (process.env.WS_ORIGINS || '')
@@ -92,9 +97,10 @@ export function configureHelmet(app: Express, isDev: boolean): void {
               defaultSrc: ["'self'"],
               scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
               styleSrc: ["'self'", "'unsafe-inline'"],
-              imgSrc: ["'self'", 'data:', 'blob:'],
+              imgSrc: ["'self'", 'data:', 'blob:', 'https:'],
               connectSrc: ["'self'", 'ws:', 'wss:', 'http:', 'https:'],
               fontSrc: ["'self'"],
+              workerSrc: ["'self'"],
               objectSrc: ["'none'"],
               baseUri: ["'self'"],
               formAction: ["'self'"],
@@ -104,19 +110,29 @@ export function configureHelmet(app: Express, isDev: boolean): void {
         : {
             directives: {
               defaultSrc: ["'self'"],
-              scriptSrc: ["'self'"],
-              styleSrc: ["'self'", "'unsafe-inline'"],
-              imgSrc: ["'self'", 'data:', 'blob:'],
+              scriptSrc: ["'self'", ...(buildNonce ? [`'nonce-${buildNonce}'`] : [])],
+              styleSrc: [
+                "'self'",
+                "'unsafe-inline'",
+                ...(buildNonce ? [`'nonce-${buildNonce}'`] : []),
+              ],
+              imgSrc: ["'self'", 'data:', 'blob:', 'https:'],
               connectSrc: [
                 "'self'",
                 ...wsOrigins,
                 'https://api.tibber.com',
                 'https://api.awattar.at',
                 'https://api.awattar.de',
+                'https://api.octopus.energy',
                 'https://api.open-meteo.com',
                 'https://generativelanguage.googleapis.com',
+                'https://api.openai.com',
+                'https://api.anthropic.com',
+                'https://api.x.ai',
+                'https://api.groq.com',
               ],
               fontSrc: ["'self'"],
+              workerSrc: ["'self'"],
               objectSrc: ["'none'"],
               frameAncestors: ["'none'"],
               baseUri: ["'self'"],

@@ -138,12 +138,27 @@ jobs:
         env:
           LHCI_GITHUB_APP_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Stage Lighthouse Report Artifacts
+        run: |
+          mkdir -p .perf/reports/lighthouse-ci
+          if [ -d .lighthouseci ]; then
+            cp -R .lighthouseci/. .perf/reports/lighthouse-ci/
+          fi
+          {
+            echo "# Lighthouse CI Artifacts"
+            echo
+            echo "This directory mirrors the CI-generated Lighthouse artifacts from \
+            \\`.lighthouseci/\\` for the checked-in performance artifact convention."
+          } > .perf/reports/lighthouse-ci/README.md
+
       - name: Upload Lighthouse Report
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
           name: lighthouse-report
-          path: .lighthouseci/
+          path: |
+            .lighthouseci/
+            .perf/reports/lighthouse-ci/
           retention-days: 14
 
       - name: Comment PR with Lighthouse scores

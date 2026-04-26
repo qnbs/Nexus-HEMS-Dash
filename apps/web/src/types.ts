@@ -26,6 +26,7 @@ export type TariffProvider =
   | 'awattar'
   | 'awattar-de'
   | 'awattar-at'
+  | 'nordpool'
   | 'octopus'
   | 'none';
 

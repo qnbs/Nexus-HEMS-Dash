@@ -15,6 +15,7 @@
  *   const evCharger = useEnergyStore((s) => s.unified.evCharger);
  */
 
+import { sanitizeObjectStrings, sanitizeUntrustedText } from '@nexus-hems/shared-types';
 import { useEffect, useRef } from 'react';
 import { create } from 'zustand';
 import { useShallow } from 'zustand/react/shallow';
@@ -189,11 +190,12 @@ export const useEnergyStoreBase = create<EnergyStoreState>()((set) => ({
   history: [],
 
   mergeData: (_adapterId, data) => {
+    const sanitizedData = sanitizeObjectStrings(data, 128);
     // Accumulate into pending buffer; single flush dispatched per 250 ms window
     if (_pendingMerge) {
-      accumulatePending(_pendingMerge, data);
+      accumulatePending(_pendingMerge, sanitizedData);
     } else {
-      _pendingMerge = { ...data };
+      _pendingMerge = { ...sanitizedData };
     }
     if (_flushTimer === null) {
       _flushTimer = setTimeout(flushMerge, UI_THROTTLE_MS);
@@ -201,15 +203,16 @@ export const useEnergyStoreBase = create<EnergyStoreState>()((set) => ({
   },
 
   setAdapterStatus: (adapterId, status, error) => {
+    const sanitizedError = error ? sanitizeUntrustedText(error, 160) : undefined;
     set((state) => {
       const entry = state.adapters[adapterId];
       if (!entry) return state;
       // Skip update if status hasn't changed
-      if (entry.status === status && entry.error === error) return state;
+      if (entry.status === status && entry.error === sanitizedError) return state;
 
       const newAdapters = {
         ...state.adapters,
-        [adapterId]: { ...entry, status, error },
+        [adapterId]: { ...entry, status, error: sanitizedError },
       };
 
       const anyConnected = Object.values(newAdapters).some(
@@ -572,7 +575,7 @@ export const selectAdapterStatuses = (state: EnergyStoreState) => {
       {
         status: entry.status,
         enabled: entry.enabled,
-        name: entry.adapter.name,
+        name: sanitizeUntrustedText(entry.adapter.name, 80),
         error: entry.error,
       },
     ]),

@@ -6,6 +6,7 @@
  *  - Tibber Pulse  (real-time via Tibber WebSocket)
  *  - aWATTar DE    (Germany — REST API)
  *  - aWATTar AT    (Austria — REST API)
+ *  - Nordpool      (EU day-ahead public market data)
  *  - Octopus Energy (UK/DE — REST API, Agile tariff)
  *
  * Dynamic Grid Fees (Netzentgelte):
@@ -94,6 +95,8 @@ export async function fetchTariffPrices(
       return fetchAwattarPrices('de');
     case 'awattar-at':
       return fetchAwattarPrices('at');
+    case 'nordpool':
+      return fetchNordpoolPrices(region ?? 'DE-LU');
     case 'octopus':
       return fetchOctopusPrices(apiToken, region ?? 'DE');
     case 'awattar':
@@ -280,6 +283,65 @@ async function fetchOctopusPrices(apiToken: string, region: string): Promise<Tar
 }
 
 // ---------------------------------------------------------------------------
+// Nordpool (public day-ahead data)
+// ---------------------------------------------------------------------------
+
+async function fetchNordpoolPrices(region: string): Promise<TariffPricePoint[]> {
+  const now = new Date();
+  const endDate = now.toISOString().slice(0, 10);
+
+  try {
+    const response = await fetch(
+      `https://www.nordpoolgroup.com/api/marketdata/page/10?currency=EUR&endDate=${endDate}&entityName=${encodeURIComponent(region)}`,
+    );
+
+    if (!response.ok) return simulateNordpoolPrices();
+
+    const data = (await response.json()) as {
+      data?: {
+        Rows?: Array<{ StartTime?: string; EndTime?: string; Columns?: Array<{ Value?: string }> }>;
+      };
+    };
+
+    const rows = data?.data?.Rows ?? [];
+    const parsed = rows
+      .map((row): TariffPricePoint | null => {
+        const start = row.StartTime ? new Date(row.StartTime) : null;
+        const end = row.EndTime ? new Date(row.EndTime) : null;
+        const rawValue = row.Columns?.[0]?.Value?.replace(',', '.');
+        const marketPrice = rawValue ? Number.parseFloat(rawValue) : Number.NaN;
+        if (!start || !end || Number.isNaN(marketPrice)) return null;
+
+        const energy = Math.max(0, marketPrice / 1000);
+        const tax = 0.04;
+        const gridFee = 0.07;
+        const renewableSurcharge = 0.005;
+
+        const pricePoint: TariffPricePoint = {
+          startsAt: start,
+          endsAt: end,
+          total: energy + tax + gridFee + renewableSurcharge,
+          energy,
+          tax,
+          gridFee,
+          renewableSurcharge,
+          currency: 'EUR',
+          renewablePercent: 45 + Math.sin(start.getHours() / 4) * 20,
+          co2gPerKwh: 150 + Math.cos(start.getHours() / 5) * 60,
+        };
+
+        return pricePoint;
+      })
+      .filter((entry): entry is TariffPricePoint => entry !== null)
+      .sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime());
+
+    return parsed.length > 0 ? parsed : simulateNordpoolPrices();
+  } catch {
+    return simulateNordpoolPrices();
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Dynamic Grid Fees (§14a EnWG)
 // ---------------------------------------------------------------------------
 
@@ -425,6 +487,14 @@ export const TARIFF_PROVIDERS: Record<TariffProvider, TariffSubscription> = {
     realtimeAvailable: false,
     apiEndpoint: 'https://api.awattar.at/v1/marketdata',
   },
+  nordpool: {
+    provider: 'nordpool',
+    planName: 'Nordpool Day-Ahead',
+    currency: 'EUR',
+    monthlyBaseFee: 0,
+    realtimeAvailable: false,
+    apiEndpoint: 'https://www.nordpoolgroup.com/api/marketdata/page/10',
+  },
   octopus: {
     provider: 'octopus',
     planName: 'Octopus Agile',
@@ -469,6 +539,10 @@ function simulateAwattarPrices(region: 'de' | 'at'): TariffPricePoint[] {
 
 function simulateOctopusPrices(): TariffPricePoint[] {
   return generateSimulatedPrices('GBP', { gridFee: 0.06, tax: 0.025, surcharge: 0.01 });
+}
+
+function simulateNordpoolPrices(): TariffPricePoint[] {
+  return generateSimulatedPrices('EUR', { gridFee: 0.07, tax: 0.04, surcharge: 0.005 });
 }
 
 function generateFixedPrices(): TariffPricePoint[] {
