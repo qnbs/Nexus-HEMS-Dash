@@ -14,8 +14,6 @@
 
 import EventEmitter from 'node:events';
 import { appendFileSync, mkdirSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import ModbusRTUDefault from 'modbus-serial';
 import type { ModbusRTU as ModbusRTUType } from 'modbus-serial/ModbusRTU.js';
 
@@ -30,10 +28,7 @@ import {
   type ProtocolType,
   type UnifiedEnergyDatapoint,
 } from '@nexus-hems/shared-types';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const DATA_DIR = join(__dirname, '../../../data');
-const DLQ_PATH = join(DATA_DIR, 'dead-letter.ndjson');
+import { API_RUNTIME_DIR, DEAD_LETTER_QUEUE_PATH } from '../../runtime-paths.js';
 
 const MAX_RECONNECT_DELAY_MS = 60_000;
 const MAX_DLQ_LINES = 10_000;
@@ -285,8 +280,8 @@ function writeToDLQ(entry: DLQEntry): void {
     // In production: rotate to dead-letter.ndjson.old-<timestamp>
   }
   try {
-    mkdirSync(DATA_DIR, { recursive: true });
-    appendFileSync(DLQ_PATH, `${JSON.stringify(entry)}\n`, 'utf8');
+    mkdirSync(API_RUNTIME_DIR, { recursive: true });
+    appendFileSync(DEAD_LETTER_QUEUE_PATH, `${JSON.stringify(entry)}\n`, 'utf8');
     dlqLineCount++;
   } catch {
     // Never let DLQ errors bubble up to the adapter

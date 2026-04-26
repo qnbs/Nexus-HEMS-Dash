@@ -16,7 +16,7 @@ describe('EnergyAdapter Interface (EEBUSAdapter stub)', () => {
   let adapter: EnergyAdapter;
 
   beforeEach(() => {
-    adapter = new EEBUSAdapter();
+    adapter = new EEBUSAdapter({ host: 'eebus.local', port: 4712 });
   });
 
   it('should have correct id and name', () => {
@@ -33,10 +33,10 @@ describe('EnergyAdapter Interface (EEBUSAdapter stub)', () => {
     expect(adapter.status).toBe('disconnected');
   });
 
-  it('should transition to connecting when connect is called (default config)', async () => {
+  it('should transition to connecting when connect is called', async () => {
     await adapter.connect();
-    // With BaseAdapter, a default config is provided so WebSocket creation is
-    // attempted — catches error in JSDOM (no WS server) and goes to error/disconnected.
+    // With an explicit host, WebSocket creation is attempted and then falls back
+    // to error/disconnected in the test environment without a real backend.
     expect(['connecting', 'error', 'disconnected']).toContain(adapter.status);
   });
 
@@ -205,13 +205,13 @@ describe('Adapter capabilities', () => {
 
   it('ModbusSunSpecAdapter should cover pv, battery, grid', async () => {
     const { ModbusSunSpecAdapter } = await import('../core/adapters/ModbusSunSpecAdapter');
-    const adapter = new ModbusSunSpecAdapter();
+    const adapter = new ModbusSunSpecAdapter({ host: 'modbus.local', port: 502 });
     expect(adapter.capabilities).toEqual(['pv', 'battery', 'grid']);
   });
 
   it('KNXAdapter should cover knx', async () => {
     const { KNXAdapter } = await import('../core/adapters/KNXAdapter');
-    const adapter = new KNXAdapter();
+    const adapter = new KNXAdapter({ host: 'knxd.local', port: 3671 });
     expect(adapter.capabilities).toEqual(['knx']);
   });
 
@@ -223,7 +223,7 @@ describe('Adapter capabilities', () => {
 
   it('EEBUSAdapter should cover evCharger, load', async () => {
     const { EEBUSAdapter } = await import('../core/adapters/EEBUSAdapter');
-    const adapter = new EEBUSAdapter();
+    const adapter = new EEBUSAdapter({ host: 'eebus.local', port: 4712 });
     expect(adapter.capabilities).toEqual(['evCharger', 'load', 'grid']);
   });
 });

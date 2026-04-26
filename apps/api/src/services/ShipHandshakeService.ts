@@ -125,7 +125,7 @@ function extractSKI(rawDerCert: Buffer): string {
   try {
     const cert = new X509Certificate(rawDerCert);
     // subjectKeyIdentifier is available in Node.js ≥ 17.7.0 but not in all @types/node versions
-    const ski = (cert as unknown as Record<string, unknown>)['subjectKeyIdentifier'];
+    const ski = (cert as unknown as Record<string, unknown>).subjectKeyIdentifier;
     if (typeof ski === 'string' && ski.length > 0) {
       return ski.replace(/:/g, '').toLowerCase();
     }
@@ -441,12 +441,10 @@ export function submitPin(ski: string, pin: string): boolean {
   if (entry.pinResolve) {
     entry.pinResolve(pin);
     delete entry.pinResolve;
-  } else {
+  } else if (entry.ws?.readyState === WebSocket.OPEN) {
     // Direct send if ws is available
-    if (entry.ws?.readyState === WebSocket.OPEN) {
-      entry.ws.send(JSON.stringify({ pinInput: { pin } }));
-      entry.state = 'pin_submitted';
-    }
+    entry.ws.send(JSON.stringify({ pinInput: { pin } }));
+    entry.state = 'pin_submitted';
   }
   entry.state = 'pin_submitted';
   return true;

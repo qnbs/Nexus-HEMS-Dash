@@ -261,7 +261,7 @@ export function createOpenADRRoutes(): Router {
     async (req: Request, res: Response) => {
       const vtnUrl = getVTNBaseUrl();
       // req.params values are always strings for named route parameters
-      const eventId = String(req.params['eventId'] ?? '');
+      const eventId = String(req.params.eventId ?? '');
 
       // Validate: eventId must be alphanumeric/dash (prevent path traversal)
       if (!/^[\w-]{1,128}$/.test(eventId)) {

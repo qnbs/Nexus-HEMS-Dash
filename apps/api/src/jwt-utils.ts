@@ -57,6 +57,15 @@ interface IRedisClient {
   on(event: string, cb: (err: Error) => void): this;
 }
 
+type OptionalRedisModule = {
+  Redis: new (url: string, opts: Record<string, unknown>) => IRedisClient;
+};
+
+// Load optional runtime dependencies without making TypeScript require them locally.
+const importOptionalModule = new Function('specifier', 'return import(specifier);') as (
+  specifier: string,
+) => Promise<unknown>;
+
 // Redis client instance — initialized lazily on first revocation attempt
 let _redisClient: IRedisClient | null = null;
 let _redisInitialized = false;
@@ -70,10 +79,7 @@ async function getRedisClient(): Promise<IRedisClient | null> {
 
   try {
     // Dynamic import — ioredis is an optional peer dep; fall back gracefully if absent
-    // @ts-expect-error — ioredis is optional; module may not be installed
-    const { Redis } = (await import('ioredis')) as {
-      Redis: new (url: string, opts: Record<string, unknown>) => IRedisClient;
-    };
+    const { Redis } = (await importOptionalModule('ioredis')) as OptionalRedisModule;
     const client = new Redis(redisUrl, {
       enableReadyCheck: true,
       maxRetriesPerRequest: 2,

@@ -175,7 +175,7 @@ export function createEebusRoutes(): Router {
   // ── GET /api/eebus/pair/status/:ski ────────────────────────────
 
   router.get('/api/eebus/pair/status/:ski', requireJWT, (req, res) => {
-    const ski = String(req.params['ski'] ?? '');
+    const ski = String(req.params.ski ?? '');
     if (!ski || !/^[0-9a-f]{4,128}$/i.test(ski)) {
       res.status(400).json({ error: 'Invalid SKI format' });
       return;
@@ -231,7 +231,7 @@ export function createEebusRoutes(): Router {
   // ── DELETE /api/eebus/trust/:ski ───────────────────────────────
 
   router.delete('/api/eebus/trust/:ski', requireJWT, requireScope('admin'), async (req, res) => {
-    const ski = String(req.params['ski'] ?? '');
+    const ski = String(req.params.ski ?? '');
     if (!ski || !/^[0-9a-f]{4,128}$/i.test(ski)) {
       res.status(400).json({ error: 'Invalid SKI format' });
       return;

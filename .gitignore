@@ -17,6 +17,7 @@ storybook-static/
 # Local Chrome for testing
 chrome/
 .lighthouseci/
+.runtime/
 
 # Toolchain benchmark reports
 .perf/

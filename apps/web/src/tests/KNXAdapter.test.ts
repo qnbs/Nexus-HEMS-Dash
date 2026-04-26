@@ -31,7 +31,7 @@ describe('KNXAdapter — Interface Contract', () => {
 
   beforeEach(() => {
     vi.stubGlobal('WebSocket', MockWebSocket);
-    adapter = new KNXAdapter();
+    adapter = new KNXAdapter({ host: 'knxd.local', port: 3671 });
   });
 
   afterEach(() => {
@@ -268,7 +268,7 @@ describe('KNXAdapter — Room Configuration', () => {
 
   it('uses default room configuration when none provided', () => {
     vi.stubGlobal('WebSocket', MockWebSocket);
-    const adapter = new KNXAdapter();
+    const adapter = new KNXAdapter({ host: 'knxd.local', port: 3671 });
     expect(adapter.getSnapshot()).toBeDefined();
     adapter.destroy();
   });
@@ -276,6 +276,8 @@ describe('KNXAdapter — Room Configuration', () => {
   it('accepts custom room configuration via roomConfigs', () => {
     vi.stubGlobal('WebSocket', MockWebSocket);
     const adapter = new KNXAdapter({
+      host: 'knxd.local',
+      port: 3671,
       roomConfigs: [{ id: 'office', name: 'Office', lightGA: '2/1/0', tempGA: '4/1/0' }],
     });
     expect(adapter).toBeDefined();

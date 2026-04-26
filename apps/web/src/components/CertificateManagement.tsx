@@ -218,7 +218,7 @@ function ImportDialog({ open, onClose, onImport }: ImportDialogProps) {
                 value={deviceName}
                 onChange={(e) => setDeviceName(e.target.value)}
                 placeholder="EEBUS Heat Pump 01"
-                className="focus-ring w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-(--color-text-primary) text-sm placeholder:text-(--color-text-secondary)/50 focus:border-(--color-electric-blue)/50"
+                className="focus-ring w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-(--color-text-primary) text-sm placeholder:text-(--color-text-secondary)/50 focus:border-electric-blue/50"
               />
             </div>
 
@@ -236,7 +236,7 @@ function ImportDialog({ open, onClose, onImport }: ImportDialogProps) {
                 onChange={(e) => setPem(e.target.value)}
                 rows={8}
                 spellCheck={false}
-                className="focus-ring w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 font-mono text-(--color-text-primary) text-xs placeholder:text-(--color-text-secondary)/50 focus:border-(--color-electric-blue)/50"
+                className="focus-ring w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 font-mono text-(--color-text-primary) text-xs placeholder:text-(--color-text-secondary)/50 focus:border-electric-blue/50"
                 placeholder="-----BEGIN CERTIFICATE-----&#10;...&#10;-----END CERTIFICATE-----"
               />
             </div>
@@ -259,7 +259,7 @@ function ImportDialog({ open, onClose, onImport }: ImportDialogProps) {
               <button
                 type="submit"
                 disabled={loading || !pem.trim()}
-                className="focus-ring flex items-center gap-2 rounded-lg bg-(--color-electric-blue)/20 px-4 py-2 font-medium text-(--color-electric-blue) text-sm transition-colors hover:bg-(--color-electric-blue)/30 disabled:pointer-events-none disabled:opacity-50"
+                className="focus-ring flex items-center gap-2 rounded-lg bg-electric-blue/20 px-4 py-2 font-medium text-electric-blue text-sm transition-colors hover:bg-electric-blue/30 disabled:pointer-events-none disabled:opacity-50"
               >
                 <FilePlus aria-hidden className="size-4" />
                 {t('certManagement.importCert')}
@@ -451,7 +451,7 @@ function PinDialog({ open, ski, pinHint, onClose, onSubmit }: PinDialogProps) {
               <button
                 type="submit"
                 disabled={loading || pin.length < 5}
-                className="focus-ring flex items-center gap-2 rounded-lg bg-(--color-neon-green)/20 px-4 py-2 font-medium text-(--color-neon-green) text-sm transition-colors hover:bg-(--color-neon-green)/30 disabled:pointer-events-none disabled:opacity-50"
+                className="focus-ring flex items-center gap-2 rounded-lg bg-neon-green/20 px-4 py-2 font-medium text-neon-green text-sm transition-colors hover:bg-neon-green/30 disabled:pointer-events-none disabled:opacity-50"
               >
                 <ShieldCheck aria-hidden className="size-4" />
                 {t('shipPairing.pinSubmit')}
@@ -631,7 +631,7 @@ function ShipTrustStore() {
           id="ship-trust-heading"
           className="flex items-center gap-2 font-semibold text-(--color-text-primary) text-base"
         >
-          <ShieldCheck aria-hidden className="size-5 text-(--color-neon-green)" />
+          <ShieldCheck aria-hidden className="size-5 text-neon-green" />
           {t('shipPairing.trustStoreTitle')}
         </h2>
         <p className="mt-0.5 text-(--color-text-secondary) text-sm">
@@ -664,14 +664,14 @@ function ShipTrustStore() {
                   <span
                     className={`flex size-8 shrink-0 items-center justify-center rounded-full ${
                       device.status === 'trusted'
-                        ? 'bg-(--color-neon-green)/15'
+                        ? 'bg-neon-green/15'
                         : device.status === 'failed'
                           ? 'bg-red-500/15'
                           : 'bg-yellow-500/15'
                     }`}
                   >
                     {device.status === 'trusted' ? (
-                      <ShieldCheck aria-hidden className="size-4 text-(--color-neon-green)" />
+                      <ShieldCheck aria-hidden className="size-4 text-neon-green" />
                     ) : device.status === 'failed' ? (
                       <ShieldX aria-hidden className="size-4 text-red-400" />
                     ) : (
@@ -828,7 +828,7 @@ export function CertificateManagement() {
             id="cert-mgmt-heading"
             className="flex items-center gap-2 font-semibold text-(--color-text-primary) text-base"
           >
-            <FileKey aria-hidden className="size-5 text-(--color-electric-blue)" />
+            <FileKey aria-hidden className="size-5 text-electric-blue" />
             {t('certManagement.title')}
           </h2>
           <p className="mt-0.5 text-(--color-text-secondary) text-sm">
@@ -839,7 +839,7 @@ export function CertificateManagement() {
         <button
           type="button"
           onClick={() => setImportOpen(true)}
-          className="focus-ring flex items-center gap-2 rounded-lg bg-(--color-electric-blue)/15 px-3 py-1.5 font-medium text-(--color-electric-blue) text-sm transition-colors hover:bg-(--color-electric-blue)/25"
+          className="focus-ring flex items-center gap-2 rounded-lg bg-electric-blue/15 px-3 py-1.5 font-medium text-electric-blue text-sm transition-colors hover:bg-electric-blue/25"
         >
           <FilePlus aria-hidden className="size-4" />
           {t('certManagement.importCert')}
@@ -881,8 +881,8 @@ export function CertificateManagement() {
               >
                 {/* Device icon + name */}
                 <div className="flex min-w-0 flex-1 items-center gap-3">
-                  <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-(--color-electric-blue)/15">
-                    <ShieldCheck aria-hidden className="size-4 text-(--color-electric-blue)" />
+                  <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-electric-blue/15">
+                    <ShieldCheck aria-hidden className="size-4 text-electric-blue" />
                   </span>
                   <div className="min-w-0">
                     <p className="truncate font-medium text-(--color-text-primary)">

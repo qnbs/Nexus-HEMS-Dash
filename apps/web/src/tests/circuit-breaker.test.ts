@@ -5,12 +5,17 @@
  * All transitions, canExecute(), execute(), forceOpen(), reset(),
  * onStateChange callbacks, and the cooldown auto-transition tested.
  */
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { CircuitState } from '../core/circuit-breaker';
 import { CircuitBreaker } from '../core/circuit-breaker';
 
 describe('CircuitBreaker', () => {
+  beforeEach(() => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.5);
+  });
+
   afterEach(() => {
+    vi.restoreAllMocks();
     vi.useRealTimers();
   });
 
