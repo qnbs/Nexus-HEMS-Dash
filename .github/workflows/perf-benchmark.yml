@@ -90,21 +90,21 @@ jobs:
               2>&1 || echo "source-map-explorer: some files skipped"
           else
             echo "source-map-explorer skipped: build emitted no sourcemaps"
-            cat <<'EOF' > apps/web/dist/source-map-report.json
-            {"status":"skipped","reason":"No sourcemaps were emitted by the production build."}
-            EOF
-            cat <<'EOF' > apps/web/dist/source-map-report.html
-            <!doctype html>
-            <html lang="en">
-              <head>
-                <meta charset="utf-8" />
-                <title>Source Map Analysis Skipped</title>
-              </head>
-              <body>
-                <p>Source map analysis was skipped because the production build did not emit sourcemaps.</p>
-              </body>
-            </html>
-            EOF
+            printf '%s\n' \
+              '{"status":"skipped","reason":"No sourcemaps were emitted by the production build."}' \
+              > apps/web/dist/source-map-report.json
+            {
+              printf '%s\n' '<!doctype html>'
+              printf '%s\n' '<html lang="en">'
+              printf '%s\n' '  <head>'
+              printf '%s\n' '    <meta charset="utf-8" />'
+              printf '%s\n' '    <title>Source Map Analysis Skipped</title>'
+              printf '%s\n' '  </head>'
+              printf '%s\n' '  <body>'
+              printf '%s\n' '    <p>Source map analysis was skipped because the production build did not emit sourcemaps.</p>'
+              printf '%s\n' '  </body>'
+              printf '%s\n' '</html>'
+            } > apps/web/dist/source-map-report.html
           fi
 
       # ── Collect raw sizes ──
