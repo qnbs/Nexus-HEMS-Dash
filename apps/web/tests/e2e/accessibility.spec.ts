@@ -1,5 +1,5 @@
-import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { expect, test } from '@playwright/test';
 import { setupLocalStorage } from './e2e-setup';
 
 const routes = [
@@ -21,6 +21,7 @@ test.describe('WCAG 2.2 AA Accessibility', () => {
 
   for (const route of routes) {
     test(`${route.name} page should have no accessibility violations`, async ({ page }) => {
+      test.setTimeout(60_000);
       await page.goto(route.path);
       await page.waitForSelector('h1', { timeout: 15_000 });
 

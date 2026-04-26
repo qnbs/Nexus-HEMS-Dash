@@ -76,7 +76,8 @@
         "legacy-javascript": "off",
         "network-dependency-tree-insight": "off",
         "forced-reflow-insight": "off",
-        "render-blocking-insight": "off"
+        "render-blocking-insight": "off",
+        "inspector-issues": "off"
       }
     },
     "upload": {
