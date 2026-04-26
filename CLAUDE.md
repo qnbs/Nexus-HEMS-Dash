@@ -33,14 +33,21 @@ pnpm format            # biome format --write apps/ packages/
 pnpm format:check      # biome format apps/ packages/ (Biome 2.4 read-only)
 
 # Testing
-pnpm test              # Turbo test watch mode across workspace packages
 pnpm test:run          # All unit tests, one-shot
 pnpm test:coverage     # With V8 coverage report
 pnpm test:fuzz         # Security fuzz tests only
 pnpm test:e2e          # Playwright (local Chromium-only; CI runs Chromium + Firefox)
+pnpm test:e2e:ui       # Playwright interactive UI mode (for debugging E2E locally)
 pnpm test:a11y         # Accessibility spec only
 
-# Workspace-targeted (when you need to act on a single package)
+# Run a single test file (unit)
+pnpm --filter @nexus-hems/web exec vitest run src/path/to/file.test.ts
+pnpm --filter @nexus-hems/api exec vitest run src/path/to/file.test.ts
+
+# Run a single E2E spec file
+pnpm --filter @nexus-hems/web exec playwright test tests/e2e/accessibility.spec.ts
+
+# Workspace-targeted scripts
 pnpm --filter @nexus-hems/web <script>
 pnpm --filter @nexus-hems/api <script>
 
@@ -50,7 +57,11 @@ pnpm docker:build && pnpm docker:up   # Build and run on port 8080
 
 **Local verification order:** `type-check` → `lint` → targeted unit tests. Do not run heavy checks in parallel on local hardware. Full E2E/Lighthouse/security scans are CI-first; only run locally when CI is unavailable or explicitly requested.
 
-**Playwright policy:** local `pnpm test:e2e` is intentionally Chromium-only. CI installs and runs Chromium + Firefox. WebKit and mobile browser projects are disabled until explicitly re-enabled. For GitHub Pages route tests, use base-relative navigation (`./unknown-route`) so `/Nexus-HEMS-Dash/` stays in the URL.
+**Playwright policy:** local `pnpm test:e2e` is intentionally Chromium-only. CI installs and runs Chromium + Firefox. For GitHub Pages route tests, always use base-relative navigation (`page.goto('./')`, `page.goto('./settings')`) — never `page.goto('/')` or `page.goto('/settings')`. The `baseURL` is `http://127.0.0.1:4173/Nexus-HEMS-Dash/`; an absolute path like `/settings` strips the base and lands on the wrong origin path.
+
+**Writing new E2E tests:** Every `test.describe` block must call `await page.addInitScript(setupLocalStorage)` in `beforeEach` (imported from `./e2e-setup`). This sets `onboardingCompleted: true` and dismisses all page-tour overlays via `nexus-tour-{id}` localStorage keys. Without it, the onboarding screen or tour modals block all interactions.
+
+**`VITE_E2E_TESTING`:** When `VITE_E2E_TESTING=true` is set at build time (both CI workflows do this), the service-worker `controllerchange` auto-reload in `main.tsx` is disabled. This prevents mid-test page reloads caused by the SW installing fresh in each browser context. Do not remove this guard.
 
 ## Architecture
 
@@ -99,6 +110,12 @@ Plugin lifecycle (OSGi-inspired): install → resolve → start → stop → uni
 - **AI Client** (`apps/web/src/core/aiClient.ts`): Multi-provider (OpenAI, Anthropic, Gemini, xAI, Groq, Ollama). API keys encrypted AES-GCM 256-bit in IndexedDB via `apps/web/src/lib/ai-keys.ts` — never in env vars or plain text.
 - **Shared Types** (`packages/shared-types/src/protocol.ts`): Zod schemas for `EnergyData`, `WSCommand`, `AuthToken`, `UnifiedEnergyModel`, etc. Import as `@nexus-hems/shared-types`.
 
+### App Shell Structure
+
+`AppShell` (`apps/web/src/components/layout/AppShell.tsx`) renders a `<main id="main-content">` that wraps all route content. All page components render their `<h1>` inside this element via `PageHeader`. E2E tests should use `page.locator('#main-content h1')` to target page-specific headings rather than a bare `h1` selector.
+
+When `onboardingCompleted` is false, AppShell receives `inert` and the `<Onboarding>` overlay renders instead. `e2e-setup.ts` prevents this by writing the store state to localStorage before page load.
+
 ### Server
 
 - `apps/api/index.ts` thin wrapper → `startServer()` in `apps/api/src/index.ts`
@@ -118,7 +135,7 @@ Auto-memoization via `babel-plugin-react-compiler`. Never add manual `useCallbac
 
 **Do NOT re-add:** `prettier`, `prettier-plugin-tailwindcss`, `eslint-plugin-prettier`, `eslint-config-prettier`, `@eslint/js`, `typescript-eslint`, `@typescript-eslint/*`, `globals`, `eslint-plugin-react`.
 
-Biome settings: line width 100, 2-space indent, LF, single quotes, trailing commas, semicolons always. `noExplicitAny`: error — use `unknown`, precise interfaces, or discriminated unions instead. Keep exact test counts out of instructions; they drift quickly.
+Biome settings: line width 100, 2-space indent, LF, single quotes, trailing commas, semicolons always. `noExplicitAny`: error — use `unknown`, precise interfaces, or discriminated unions instead.
 
 Current enforced coverage thresholds are package-specific:
 - `apps/web/vitest.config.ts`: 52 statements / 42 branches / 53 functions / 53 lines
