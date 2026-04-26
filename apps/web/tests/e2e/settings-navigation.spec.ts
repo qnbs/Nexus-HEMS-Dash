@@ -1,4 +1,4 @@
-import { test, expect, type Page } from '@playwright/test';
+import { expect, type Page, test } from '@playwright/test';
 import { setupLocalStorage } from './e2e-setup';
 
 async function waitForMainHeading(page: Page) {
@@ -13,7 +13,7 @@ test.describe('Settings & Command Palette', () => {
   });
 
   test('should render settings page with tab sections', async ({ page }) => {
-    await page.goto('/settings');
+    await page.goto('./settings');
     const heading = await waitForMainHeading(page);
 
     // Settings page should show configuration sections
@@ -25,7 +25,7 @@ test.describe('Settings & Command Palette', () => {
   });
 
   test('should open command palette with Cmd+K / Ctrl+K', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('./');
     await waitForMainHeading(page);
 
     // Open command palette with keyboard shortcut
@@ -50,13 +50,13 @@ test.describe('Settings & Command Palette', () => {
   });
 
   test('should navigate settings tabs via query params', async ({ page }) => {
-    await page.goto('/settings?tab=appearance');
+    await page.goto('./settings?tab=appearance');
     const heading = await waitForMainHeading(page);
     await expect(heading).toBeVisible();
   });
 
   test('should show skip-to-content link on Tab', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('./');
     await waitForMainHeading(page);
 
     // First Tab should reveal skip-to-content
@@ -83,7 +83,7 @@ test.describe('Mobile Navigation', () => {
 
   test('should toggle mobile bottom sheet via More button', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 });
-    await page.goto('/');
+    await page.goto('./');
 
     // Bottom navigation bar should be visible on mobile
     const bottomNav = page.locator('nav[aria-label*="Mobile" i], nav[aria-label*="Mobil" i]');
@@ -101,7 +101,7 @@ test.describe('Mobile Navigation', () => {
 
   test('should show responsive layout on mobile', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 });
-    await page.goto('/');
+    await page.goto('./');
 
     // Main content should still be visible
     await expect(page.locator('#main-content').first()).toBeVisible({ timeout: 10_000 });
@@ -121,17 +121,17 @@ test.describe('Error Boundary', () => {
 
   test('should recover gracefully from broken routes', async ({ page }) => {
     // Visit a valid route first
-    await page.goto('/');
+    await page.goto('./');
     await waitForMainHeading(page);
 
     // Navigate to 404
-    await page.goto('/totally-broken-route');
+    await page.goto('./totally-broken-route');
     await expect(page.locator('text=/404|not found|nicht gefunden/i')).toBeVisible({
       timeout: 15_000,
     });
 
     // Navigate back should work
-    await page.goto('/');
+    await page.goto('./');
     await expect(page.locator('#main-content h1').first()).toBeVisible({ timeout: 15_000 });
   });
 });

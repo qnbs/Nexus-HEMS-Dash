@@ -7,12 +7,12 @@ test.describe('PWA & Offline Behavior', () => {
   });
 
   test('should load the app and show main heading', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('./');
     await expect(page.locator('h1').first()).toBeVisible({ timeout: 15_000 });
   });
 
   test('should have service worker API available', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('./');
     await page.waitForSelector('h1', { timeout: 15_000 });
 
     const swAvailable = await page.evaluate(() => 'serviceWorker' in navigator);
@@ -20,7 +20,7 @@ test.describe('PWA & Offline Behavior', () => {
   });
 
   test('should show offline banner when network goes offline', async ({ page, context }) => {
-    await page.goto('/');
+    await page.goto('./');
     await page.waitForSelector('h1', { timeout: 15_000 });
 
     // Go offline
@@ -37,19 +37,19 @@ test.describe('PWA & Offline Behavior', () => {
   });
 
   test('should have a manifest.json link', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('./');
     const manifest = page.locator('link[rel="manifest"]');
     await expect(manifest).toHaveAttribute('href', /manifest\.json/);
   });
 
   test('should have theme-color meta tag', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('./');
     const themeColor = page.locator('meta[name="theme-color"]');
     await expect(themeColor).toHaveAttribute('content', /#[0-9a-fA-F]+/);
   });
 
   test('should have apple-touch-icon', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('./');
     const icon = page.locator('link[rel="apple-touch-icon"]');
     await expect(icon).toHaveAttribute('href', /apple-touch-icon\.png/);
   });
@@ -82,7 +82,7 @@ test.describe('Performance', () => {
 
   test('should load the first contentful paint within reasonable time', async ({ page }) => {
     const start = Date.now();
-    await page.goto('/');
+    await page.goto('./');
     await page.waitForSelector('h1');
     const fcp = Date.now() - start;
     // Should render within 10 seconds (generous for CI)
@@ -98,12 +98,12 @@ test.describe('Performance', () => {
       }
     });
 
-    await page.goto('/');
+    await page.goto('./');
     await page.waitForSelector('h1', { timeout: 15_000 });
     const homeRequestCount = requests.length;
 
     // Navigate to Settings — should trigger additional chunk loads
-    await page.goto('/settings');
+    await page.goto('./settings');
     await page.waitForSelector('h1', { timeout: 15_000 });
 
     // At least one new chunk loaded for settings

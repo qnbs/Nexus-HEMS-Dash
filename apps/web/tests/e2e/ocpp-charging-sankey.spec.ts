@@ -12,7 +12,7 @@
  *   4. Inject "charging ended" (0 W) → EV row disappears
  */
 
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 import { setupLocalStorage } from './e2e-setup';
 
 type DevStoreHandle = {
@@ -46,7 +46,7 @@ test.describe('OCPP Charging Session → Sankey Update', () => {
 
   test('Sankey updates on EV charging start / update / stop', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
-    await page.goto('/energy-flow');
+    await page.goto('./energy-flow');
     await page.waitForSelector('svg[role="img"]', { timeout: 15_000 });
 
     // SR-only data table rendered by SankeyDiagram

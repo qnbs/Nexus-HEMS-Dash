@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 import { setupLocalStorage } from './e2e-setup';
 
 test.describe('User Flow', () => {
@@ -7,14 +7,14 @@ test.describe('User Flow', () => {
   });
 
   test('should load home page', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('./');
     await expect(page.locator('h1')).toBeVisible({ timeout: 15_000 });
   });
 
   test('should navigate to all main pages via sidebar', async ({ page }) => {
     // Use a large viewport to ensure sidebar is visible
     await page.setViewportSize({ width: 1280, height: 800 });
-    await page.goto('/');
+    await page.goto('./');
     await page.waitForSelector('h1', { timeout: 15_000 });
 
     const navRoutes = [
@@ -39,14 +39,14 @@ test.describe('User Flow', () => {
   });
 
   test('should show 404 page for unknown routes', async ({ page }) => {
-    await page.goto('/unknown-page-xyz');
+    await page.goto('./unknown-page-xyz');
     await expect(page.locator('text=/404|not found|nicht gefunden/i')).toBeVisible({
       timeout: 15_000,
     });
   });
 
   test('should switch themes', async ({ page }) => {
-    await page.goto('/settings');
+    await page.goto('./settings');
     await page.waitForSelector('h1', { timeout: 15_000 });
 
     // Click a theme card button in Settings
@@ -58,7 +58,7 @@ test.describe('User Flow', () => {
   });
 
   test('should switch language', async ({ page }) => {
-    await page.goto('/settings');
+    await page.goto('./settings');
     await page.waitForSelector('h1', { timeout: 15_000 });
 
     // Get current lang

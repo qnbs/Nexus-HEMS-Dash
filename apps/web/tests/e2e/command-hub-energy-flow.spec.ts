@@ -1,4 +1,4 @@
-import { test, expect, type Page } from '@playwright/test';
+import { expect, type Page, test } from '@playwright/test';
 import { setupLocalStorage } from './e2e-setup';
 
 async function waitForMainHeading(page: Page) {
@@ -23,7 +23,7 @@ test.describe('Command Hub', () => {
   });
 
   test('should render Command Hub with KPI metric cards', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('./');
     await waitForMainHeading(page);
 
     // KPI cards should be present (metric cards with values)
@@ -32,7 +32,7 @@ test.describe('Command Hub', () => {
   });
 
   test('should render the mini Sankey energy flow', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('./');
     await waitForMainHeading(page);
 
     // The accessible Sankey graphic should render
@@ -41,7 +41,7 @@ test.describe('Command Hub', () => {
 
   test('should have quick-nav links to all sections', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
-    await page.goto('/');
+    await page.goto('./');
     await waitForMainHeading(page);
 
     // There should be links to primary sections
@@ -54,7 +54,7 @@ test.describe('Command Hub', () => {
   });
 
   test('should display connection status indicator', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('./');
     const heading = await waitForMainHeading(page);
 
     // Status indicator (online/offline badge or icon) should be visible
@@ -64,7 +64,7 @@ test.describe('Command Hub', () => {
 
   test('should navigate to Energy Flow from Command Hub', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
-    await page.goto('/');
+    await page.goto('./');
     await waitForMainHeading(page);
 
     // Click on energy flow link
@@ -83,7 +83,7 @@ test.describe('Live Energy Flow', () => {
   });
 
   test('should render the full Sankey diagram', async ({ page }) => {
-    await page.goto('/energy-flow');
+    await page.goto('./energy-flow');
     await waitForMainHeading(page);
 
     // Full Sankey graphic should render
@@ -91,7 +91,7 @@ test.describe('Live Energy Flow', () => {
   });
 
   test('should have ARIA-live region for screen readers', async ({ page }) => {
-    await page.goto('/energy-flow');
+    await page.goto('./energy-flow');
     await waitForMainHeading(page);
 
     const liveRegion = page.locator(
@@ -101,7 +101,7 @@ test.describe('Live Energy Flow', () => {
   });
 
   test('should have sr-only data table with proper headers', async ({ page }) => {
-    await page.goto('/energy-flow');
+    await page.goto('./energy-flow');
     await waitForMainHeading(page);
 
     const dataTable = page.locator('table.sr-only');
@@ -112,7 +112,7 @@ test.describe('Live Energy Flow', () => {
   });
 
   test('should display live price widget area', async ({ page }) => {
-    await page.goto('/energy-flow');
+    await page.goto('./energy-flow');
     const heading = await waitForMainHeading(page);
 
     // Page should fully load without JS errors
@@ -120,7 +120,7 @@ test.describe('Live Energy Flow', () => {
   });
 
   test('should support fullscreen toggle', async ({ page }) => {
-    await page.goto('/energy-flow');
+    await page.goto('./energy-flow');
     await waitForMainHeading(page);
 
     // Look for fullscreen button

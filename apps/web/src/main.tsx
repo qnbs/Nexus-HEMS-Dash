@@ -11,7 +11,8 @@ import './index.css';
 initSentry();
 
 // Handle service worker controller change (auto-reload on SW update)
-if ('serviceWorker' in navigator) {
+// Disabled during E2E testing to prevent mid-test reloads caused by SW installation.
+if ('serviceWorker' in navigator && !import.meta.env.VITE_E2E_TESTING) {
   let refreshing = false;
   navigator.serviceWorker.addEventListener('controllerchange', () => {
     if (refreshing) return;

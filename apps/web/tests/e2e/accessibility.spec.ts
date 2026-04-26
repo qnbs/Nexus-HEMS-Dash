@@ -3,15 +3,15 @@ import { expect, test } from '@playwright/test';
 import { setupLocalStorage } from './e2e-setup';
 
 const routes = [
-  { path: '/', name: 'Command Hub' },
-  { path: '/energy-flow', name: 'Live Energy Flow' },
-  { path: '/devices', name: 'Devices & Automation' },
-  { path: '/optimization-ai', name: 'AI Optimization' },
-  { path: '/tariffs', name: 'Tariffs' },
-  { path: '/analytics', name: 'Analytics' },
-  { path: '/monitoring', name: 'Monitoring' },
-  { path: '/settings', name: 'Settings' },
-  { path: '/help', name: 'Help' },
+  { path: './', name: 'Command Hub' },
+  { path: './energy-flow', name: 'Live Energy Flow' },
+  { path: './devices', name: 'Devices & Automation' },
+  { path: './optimization-ai', name: 'AI Optimization' },
+  { path: './tariffs', name: 'Tariffs' },
+  { path: './analytics', name: 'Analytics' },
+  { path: './monitoring', name: 'Monitoring' },
+  { path: './settings', name: 'Settings' },
+  { path: './help', name: 'Help' },
 ];
 
 test.describe('WCAG 2.2 AA Accessibility', () => {
@@ -35,7 +35,7 @@ test.describe('WCAG 2.2 AA Accessibility', () => {
   }
 
   test('Keyboard navigation should work', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('./');
     await page.waitForSelector('h1', { timeout: 15_000 });
 
     // Tab through interactive elements
@@ -49,7 +49,7 @@ test.describe('WCAG 2.2 AA Accessibility', () => {
   });
 
   test('Theme switcher should be keyboard accessible', async ({ page }) => {
-    await page.goto('/settings');
+    await page.goto('./settings');
     await page.waitForSelector('h1', { timeout: 15_000 });
 
     // Find a theme button and activate with keyboard
@@ -62,7 +62,7 @@ test.describe('WCAG 2.2 AA Accessibility', () => {
   });
 
   test('Language switcher should be keyboard accessible', async ({ page }) => {
-    await page.goto('/settings');
+    await page.goto('./settings');
     await page.waitForSelector('h1', { timeout: 15_000 });
 
     // Language switcher has DE and EN buttons with aria-pressed
@@ -75,7 +75,7 @@ test.describe('WCAG 2.2 AA Accessibility', () => {
   });
 
   test('Skip-to-content link should be present and functional', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('./');
     await page.waitForSelector('h1', { timeout: 15_000 });
 
     // The skip link should exist
@@ -111,7 +111,7 @@ test.describe('WCAG 2.2 AA Accessibility', () => {
       ].forEach((id) => localStorage.setItem(`nexus-tour-${id}`, '1'));
     });
 
-    await page.goto('/settings');
+    await page.goto('./settings');
     await page.waitForSelector('h1', { timeout: 15_000 });
 
     await expect(page.locator('html')).toHaveClass(/high-contrast/, { timeout: 10_000 });
@@ -140,14 +140,14 @@ test.describe('WCAG 2.2 AA Accessibility', () => {
       ].forEach((id) => localStorage.setItem(`nexus-tour-${id}`, '1'));
     });
 
-    await page.goto('/settings');
+    await page.goto('./settings');
     await page.waitForSelector('h1', { timeout: 15_000 });
 
     await expect(page.locator('html')).toHaveClass(/reduced-motion/, { timeout: 10_000 });
   });
 
   test('Heading hierarchy should be correct (no skipped levels)', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('./');
     await page.waitForSelector('h1', { timeout: 15_000 });
 
     const headings = await page.evaluate(() => {
@@ -166,7 +166,7 @@ test.describe('WCAG 2.2 AA Accessibility', () => {
   });
 
   test('Sankey energy flow should have ARIA-live region for screen readers', async ({ page }) => {
-    await page.goto('/energy-flow');
+    await page.goto('./energy-flow');
     await page.waitForSelector('h1', { timeout: 15_000 });
 
     // Check for the Sankey-specific ARIA-live region (sr-only, inside the Sankey container)
@@ -177,7 +177,7 @@ test.describe('WCAG 2.2 AA Accessibility', () => {
   });
 
   test('Sankey energy flow should have accessible sr-only data table', async ({ page }) => {
-    await page.goto('/energy-flow');
+    await page.goto('./energy-flow');
     await page.waitForSelector('h1', { timeout: 15_000 });
 
     // Check for sr-only data table
@@ -190,7 +190,7 @@ test.describe('WCAG 2.2 AA Accessibility', () => {
   });
 
   test('Focus order should follow visual layout', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('./');
     await page.waitForSelector('h1', { timeout: 15_000 });
 
     // Tab through first 5 interactive elements and capture their bounding boxes
@@ -210,7 +210,7 @@ test.describe('WCAG 2.2 AA Accessibility', () => {
   });
 
   test('All images should have alt text', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('./');
     await page.waitForSelector('h1', { timeout: 15_000 });
 
     const imagesWithoutAlt = await page.evaluate(() => {
@@ -223,7 +223,7 @@ test.describe('WCAG 2.2 AA Accessibility', () => {
   });
 
   test('All interactive elements should have accessible names', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('./');
     await page.waitForSelector('h1', { timeout: 15_000 });
 
     const accessibilityScanResults = await new AxeBuilder({ page })
