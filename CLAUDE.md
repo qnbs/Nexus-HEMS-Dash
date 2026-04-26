@@ -6,6 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Nexus-HEMS Dashboard is a production-grade, real-time Home Energy Management System dashboard. It consolidates 10 protocol adapters (Victron MQTT, Modbus/SunSpec, KNX, OCPP 2.1, EEBUS/SPINE, and 5 contrib adapters) into a unified React 19 SPA served by an Express 5 backend. Deployable as PWA, Docker container, Tauri desktop app, Helm/Kubernetes release, or Capacitor mobile app. Current package version: `1.1.0`.
 
+The shipped baseline is still `1.1.0`. Active `1.2.0` work tracked in `CHANGELOG.md` and `docs/Technical-Debt-Registry.md` should be treated as in-flight design and remediation context, not as guaranteed shipped behavior.
+
 **Repository structure:** pnpm workspace monorepo managed by Turborepo.
 
 ```
@@ -117,6 +119,11 @@ Auto-memoization via `babel-plugin-react-compiler`. Never add manual `useCallbac
 **Do NOT re-add:** `prettier`, `prettier-plugin-tailwindcss`, `eslint-plugin-prettier`, `eslint-config-prettier`, `@eslint/js`, `typescript-eslint`, `@typescript-eslint/*`, `globals`, `eslint-plugin-react`.
 
 Biome settings: line width 100, 2-space indent, LF, single quotes, trailing commas, semicolons always. `noExplicitAny`: error — use `unknown`, precise interfaces, or discriminated unions instead. Keep exact test counts out of instructions; they drift quickly.
+
+Current enforced coverage thresholds are package-specific:
+- `apps/web/vitest.config.ts`: 52 statements / 42 branches / 53 functions / 53 lines
+- `apps/api/vitest.config.ts`: 55 statements / 45 branches / 55 functions / 55 lines
+- `docs/Testing-Coverage-Strategy.md` contains the higher staged roadmap targets; do not assume those targets are already enforced in config.
 
 Biome 2.4 note: use `biome format apps/ packages/` for the read-only `format:check` script. Do not use `biome format --write=false`; this version rejects that flag/value combination.
 

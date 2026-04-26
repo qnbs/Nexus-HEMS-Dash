@@ -6,8 +6,9 @@
 > **Owner:** @qnbs
 
 This document is the authoritative, fully enumerated improvement roadmap derived from a comprehensive
-discovery audit performed on 2026-04-25. It covers 17 identified gaps, 30 implementation steps across
-6 phases, all strategic decisions, metrics targets, and verification criteria.
+discovery audit performed on 2026-04-25 and extended by the CI/documentation remediation pass on
+2026-04-26. It covers the original gap inventory plus the active all-green CI recovery program,
+including strategic decisions, metrics targets, and verification criteria.
 
 ---
 
@@ -29,6 +30,45 @@ strength.
 | 6 | Docs & Community — Log4brains, CLI | 2 | ~1 PT | LOW |
 | **P-V2G** | **Protocol Expansion — V2G BPT, OpenADR 3.1.0, VPP, UC 2.6** | **13** | **~8 PT** | **HIGH (v1.2.0)** |
 | **Total** | | **44** | **~23 PT** | |
+
+---
+
+## Phase 0R — CI Recovery & Documentation Truth Alignment (2026-04-26)
+
+> **Status:** Active — implementation started
+> **Goal:** Restore strict all-green push status across every currently triggered GitHub check and
+> align central documentation with the verified repository state.
+
+### Acceptance Criteria
+
+- All current `push` checks pass, not only baseline aggregates.
+- Aggregate `✅ CI Passed` jobs fail on any non-successful prerequisite in their workflow.
+- Build artifacts used by browser-based checks are produced with consistent env semantics.
+- Core docs and agent-instruction files stop contradicting the repository source of truth.
+
+### Current Failing Push Checks (Audit Baseline)
+
+| Check | Cluster | Primary control surface |
+|------|---------|-------------------------|
+| `CI / Lint & Type Check` | Core pipeline | `.github/workflows/ci.yml` |
+| `CI (Optimized) / 🔍 Lint & Type Check` | Core pipeline | `.github/workflows/perf-optimized-ci.yml` |
+| `CI (Optimized) / 🧪 Unit Tests` | Core pipeline | `.github/workflows/perf-optimized-ci.yml` |
+| `CI (Optimized) / 🏗️ Build` | Build/env parity | `.github/workflows/perf-optimized-ci.yml`, `turbo.json` |
+| `Lighthouse CI / lighthouse` | Preview/PWA parity | `apps/web/lighthouserc.json`, `.github/workflows/lighthouse.yml` |
+| `Performance Benchmark / 📦 Bundle Size & Analysis` | Build budgets | `.github/workflows/perf-benchmark.yml`, `apps/web/package.json` |
+| `Release / release` | Release path | `.github/workflows/release.yml`, `.releaserc.json` |
+| `CI / ✅ CI Passed` | Status semantics | `.github/workflows/ci.yml` |
+| `CI (Optimized) / ✅ CI Passed` | Status semantics | `.github/workflows/perf-optimized-ci.yml` |
+
+### Phase 0R Implementation Steps
+
+| Step | Action | Files | Status |
+|------|--------|-------|--------|
+| 0R.1 | Make aggregate CI success jobs strict for the full workflow scope | `.github/workflows/ci.yml`, `.github/workflows/perf-optimized-ci.yml` | 🔄 |
+| 0R.2 | Build browser-test artifacts with consistent `VITE_E2E_TESTING` semantics | `.github/workflows/ci.yml`, `.github/workflows/perf-optimized-ci.yml` | 🔄 |
+| 0R.3 | Align Lighthouse preview server with Node 24 IPv4/IPv6 behavior | `apps/web/lighthouserc.json` | 🔄 |
+| 0R.4 | Synchronize roadmap, debt register, README, and agent instructions to verified repo truth | `docs/`, `README.md`, `CLAUDE.md`, `.github/copilot-instructions.md` | ⏳ |
+| 0R.5 | Verify locally with narrow checks, then rely on GitHub Actions for heavy suites | root scripts + workflow runs | ⏳ |
 
 ---
 

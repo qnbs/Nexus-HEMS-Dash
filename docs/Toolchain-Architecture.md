@@ -149,7 +149,7 @@ unit-tests (needs: lint-typecheck)
   └─ turbo test:coverage → vitest run --coverage (apps/web)
 
 build (needs: lint-typecheck)
-  └─ turbo build → packages/shared-types → apps/api + apps/web
+  └─ VITE_E2E_TESTING=true turbo build → packages/shared-types → apps/api + apps/web
      → bundle size check (600 KB index budget) → size-limit → sentry source maps (main only)
 
 e2e-tests (needs: build)
@@ -159,10 +159,10 @@ docker-build (needs: build)
   └─ docker build --target production
 
 security  (needs: lint-typecheck)
-  └─ verify security-full.yml exists
+  └─ pnpm audit --audit-level=high --prod
 
-ci-passed (always, needs: lint-typecheck + unit-tests + build)
-  └─ gate: all three must succeed
+ci-passed (always, needs: lint-typecheck + unit-tests + build + e2e-tests + security)
+  └─ gate: every job in the workflow must succeed
 ```
 
 ### perf-optimized-ci.yml (50–80% faster — fan-out/fan-in with shared dep cache)
@@ -171,9 +171,12 @@ ci-passed (always, needs: lint-typecheck + unit-tests + build)
 install          → cache node_modules (keyed on pnpm-lock.yaml)
   ├─ lint        → restore cache → biome check + eslint + tsc
   ├─ test        → restore cache → vitest coverage
-  └─ build       → restore cache → vite build → cache dist/
+  └─ build       → restore cache → VITE_E2E_TESTING=true vite build → cache dist/
         ├─ e2e   → restore dist + Playwright browsers (cached) → playwright test
-        └─ docker → restore dist → docker/build-push-action (layer cache)
+        └─ security → verify security workflow / audit gate
+
+ci-passed (always, needs: lint + test + build + e2e + security)
+  └─ gate: every optimized CI job must succeed
 ```
 
 ---

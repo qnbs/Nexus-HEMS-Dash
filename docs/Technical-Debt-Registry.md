@@ -1,9 +1,9 @@
 # Technical Debt Registry — Nexus-HEMS-Dash
 
-**Last audited:** 2026-04-26  
-**Version at audit:** 1.1.0  
-**Last updated:** 2026-05-03  
-**Updated version:** 1.2.0  
+**Last audited:** 2026-04-26
+**Version at audit:** 1.1.0
+**Last updated:** 2026-05-03
+**Updated version:** 1.2.0
 **Auditor:** Claude Sonnet 4.6 (automated deep-scan)
 
 This file is the canonical issue tracker for known technical debt, security gaps, incomplete implementations, and quality issues. It is **not** a substitute for GitHub Issues — use it for context, rationale, and multi-sprint planning.
@@ -25,10 +25,48 @@ This file is the canonical issue tracker for known technical debt, security gaps
 
 ---
 
+## Active Remediation — 2026-04-26 CI Recovery
+
+These items are part of the active all-green remediation pass. Here, **"all green" means every currently triggered `push` check passes**, not only the aggregate status jobs.
+
+### CI-R1 — Aggregate CI Status Jobs Were Too Weak
+**Files:** `.github/workflows/ci.yml`, `.github/workflows/perf-optimized-ci.yml`
+**Status:** 🔄 In progress
+
+Both `✅ CI Passed` jobs could still report success while relevant downstream jobs were red or only emitted warnings. This made the branch-protection signal weaker than the actual repository quality requirement.
+
+**Fix in progress:** Make aggregate status jobs fail on every non-successful prerequisite in their workflow.
+
+### CI-R2 — Browser-Test Build Artifacts Were Not Built with Consistent E2E Env
+**Files:** `.github/workflows/ci.yml`, `.github/workflows/perf-optimized-ci.yml`, `turbo.json`
+**Status:** 🔄 In progress
+
+`web#build` declares `VITE_E2E_TESTING` as a relevant build env in `turbo.json`, but the CI build jobs were not consistently building with that env while E2E depended on the resulting artifacts.
+
+**Fix in progress:** Build workflow artifacts with `VITE_E2E_TESTING='true'` wherever those artifacts are later consumed by E2E/browser checks.
+
+### CI-R3 — Lighthouse Preview Server Parity Drift on Node 24
+**Files:** `apps/web/lighthouserc.json`, `apps/web/playwright.config.ts`
+**Status:** 🔄 In progress
+
+Playwright already used an explicit `--host 0.0.0.0` preview-server workaround for Node 24 / Ubuntu IPv4-vs-IPv6 binding behavior, while Lighthouse still used the older preview command.
+
+**Fix in progress:** Align Lighthouse preview startup with the same host-binding strategy used by Playwright.
+
+### CI-R4 — Central Documentation Drifted from Verified Repo Truth
+**Files:** `README.md`, `CLAUDE.md`, `.github/copilot-instructions.md`, `docs/Toolchain-Architecture.md`, `docs/Testing-Coverage-Strategy.md`
+**Status:** 🔄 In progress
+
+Central docs and agent-instruction files diverged from code on shipped-vs-in-flight version language, controller count, coverage thresholds, and CI semantics.
+
+**Fix in progress:** Synchronize the canonical docs to the verified repository state before continuing the broader documentation sweep.
+
+---
+
 ## CRITICAL
 
 ### CRIT-01 — EEBUS SHIP Handshake Not Implemented
-**File:** `apps/api/src/routes/eebus.routes.ts:61`  
+**File:** `apps/api/src/routes/eebus.routes.ts:61`
 **Status:** ✅ Fixed in v1.2.0 (see `docs/EEBUS-SHIP-Handshake-Implementation.md`)
 
 Full SHIP v1.0.1 handshake implemented:
@@ -44,7 +82,7 @@ Full SHIP v1.0.1 handshake implemented:
 ---
 
 ### CRIT-02 — Tauri Updater Signing Key Missing
-**File:** `apps/web/src-tauri/tauri.conf.json:66-68`  
+**File:** `apps/web/src-tauri/tauri.conf.json:66-68`
 **Status:** ❌ Won't fix until auto-update is activated (`active: false`)
 
 `pubkey: ""` is set alongside `active: false`. Safe for now but must be populated before enabling auto-updates.
@@ -54,7 +92,7 @@ Full SHIP v1.0.1 handshake implemented:
 ---
 
 ### CRIT-03 — JWT Weak-Entropy Secrets Warn But Don't Block in Production
-**File:** `apps/api/src/jwt-utils.ts:167-194`  
+**File:** `apps/api/src/jwt-utils.ts:167-194`
 **Status:** ✅ Fixed in v1.1.1 (see commit history)
 
 `checkSecretEntropy()` called with weak-pattern secrets logs `console.error` but the server still starts. In production, a known-weak pattern (e.g. `JWT_SECRET=password123`) should throw.
@@ -66,7 +104,7 @@ Full SHIP v1.0.1 handshake implemented:
 ## HIGH
 
 ### HIGH-01 — Hardcoded Localhost Fallbacks in Adapters
-**File:** Multiple — `apps/web/src/core/adapters/EEBUSAdapter.ts`, `ModbusSunSpecAdapter.ts`, `KNXAdapter.ts`  
+**File:** Multiple — `apps/web/src/core/adapters/EEBUSAdapter.ts`, `ModbusSunSpecAdapter.ts`, `KNXAdapter.ts`
 **Status:** ✅ Fixed in v1.2.0
 
 Added constructor guard in all three adapters: throws `Error` if `config.host` is absent/empty and `config.mock !== true`. Fast-fail with clear message instead of silent fallback to localhost.
@@ -74,7 +112,7 @@ Added constructor guard in all three adapters: throws `Error` if `config.host` i
 ---
 
 ### HIGH-02 — Modbus SunSpec Unsupported Register Types Crash at Runtime
-**File:** `apps/api/src/protocols/modbus/ModbusAdapter.ts:265`  
+**File:** `apps/api/src/protocols/modbus/ModbusAdapter.ts:265`
 **Status:** ⏳ Scheduled for v1.2
 
 UINT64 and STRING register types throw at runtime instead of being pre-validated at config parse time.
@@ -84,7 +122,7 @@ UINT64 and STRING register types throw at runtime instead of being pre-validated
 ---
 
 ### HIGH-03 — InfluxDB Flux Query Built via String Concatenation
-**File:** `apps/web/src/lib/influxdb-client.ts:239-300`  
+**File:** `apps/web/src/lib/influxdb-client.ts:239-300`
 **Status:** ⏳ Scheduled for v1.2
 
 Flux queries use string interpolation with an allowlist guard. The guard relies on `^[a-z_][a-z0-9_]*$` regex (solid), but any future addition to the allowlist without re-auditing the interpolation site introduces Flux injection risk.
@@ -94,7 +132,7 @@ Flux queries use string interpolation with an allowlist guard. The guard relies 
 ---
 
 ### HIGH-04 — CORS Localhost Exclusion Relies Solely on NODE_ENV
-**File:** `apps/api/src/middleware/security.ts:16-31`  
+**File:** `apps/api/src/middleware/security.ts:16-31`
 **Status:** ✅ Fixed in v1.2.0
 
 Added post-construction filter in `configureCors()`: when `isProduction`, iterate `allowedOriginSet` and delete any origin containing `localhost`, `127.`, `[::1]`, or `0.0.0.0`, with `console.warn` for each removal. Defence-in-depth against `CORS_ORIGINS` misconfiguration.
@@ -102,7 +140,7 @@ Added post-construction filter in `configureCors()`: when `isProduction`, iterat
 ---
 
 ### HIGH-05 — AI Key Storage: No Guard Against IndexedDB Unavailability
-**File:** `apps/web/src/lib/ai-keys.ts`  
+**File:** `apps/web/src/lib/ai-keys.ts`
 **Status:** ✅ Fixed in v1.2.0
 
 Added `isKeyStorageAvailable(): Promise<boolean>` helper that probes Dexie with `.count()`. `saveAIKey()` now calls it first and throws a user-visible error if storage is unavailable (private browsing, quota exceeded, etc.).
@@ -110,7 +148,7 @@ Added `isKeyStorageAvailable(): Promise<boolean>` helper that probes Dexie with 
 ---
 
 ### HIGH-06 — WebSocket Broadcast Lacks Per-Connection Rate Limiting
-**File:** `apps/api/src/ws/energy.ws.ts`  
+**File:** `apps/api/src/ws/energy.ws.ts`
 **Status:** ✅ Fixed in v1.2.0
 
 WS command rate limit is now configurable via `WS_RATE_LIMIT` env var (default 30 cmd/min). When the limit is exceeded, the connection is closed with code `4429 Rate limit exceeded` in addition to the error frame.
@@ -118,7 +156,7 @@ WS command rate limit is now configurable via `WS_RATE_LIMIT` env var (default 3
 ---
 
 ### HIGH-07 — JWT Key Rotation Requires Server Restart
-**File:** `apps/api/src/jwt-utils.ts:200-310`  
+**File:** `apps/api/src/jwt-utils.ts:200-310`
 **Status:** ⏳ Scheduled for v1.3
 
 `JWT_SECRET_NEW` → `JWT_SECRET` rotation procedure requires a restart, causing token invalidation for in-flight sessions.
@@ -128,7 +166,7 @@ WS command rate limit is now configurable via `WS_RATE_LIMIT` env var (default 3
 ---
 
 ### HIGH-08 — Docker Secret Path Hardcoded
-**File:** `apps/api/src/jwt-utils.ts:35`  
+**File:** `apps/api/src/jwt-utils.ts:35`
 **Status:** ✅ Fixed in v1.2.0
 
 Changed to `process.env.JWT_SECRET_FILE ?? '/run/secrets/jwt_secret'`.
@@ -138,7 +176,7 @@ Changed to `process.env.JWT_SECRET_FILE ?? '/run/secrets/jwt_secret'`.
 ## MEDIUM
 
 ### MED-01 — Test Coverage Below Industry Standard
-**File:** `apps/web/vitest.config.ts:18-22`, `apps/api/vitest.config.ts:13-17`  
+**File:** `apps/web/vitest.config.ts:18-22`, `apps/api/vitest.config.ts:13-17`
 **Status:** ⏳ Scheduled for v1.2
 
 Current thresholds:
@@ -152,7 +190,7 @@ Target: 70%+ for all metrics.
 ---
 
 ### MED-02 — Structured Logging Missing in API Routes
-**File:** `apps/api/src/routes/*.ts`  
+**File:** `apps/api/src/routes/*.ts`
 **Status:** ⏳ Scheduled for v1.2
 
 Several routes use `console.error` / `console.warn` directly. Request context (request ID, user, duration) is not attached to logs.
@@ -162,7 +200,7 @@ Several routes use `console.error` / `console.warn` directly. Request context (r
 ---
 
 ### MED-03 — nginx WS_ORIGINS Env Var Not Validated at Startup
-**File:** `apps/web/nginx.conf:37`, `Dockerfile:60`  
+**File:** `apps/web/nginx.conf:37`, `Dockerfile:60`
 **Status:** ⏳ Scheduled for v1.2
 
 If `WS_ORIGINS` is empty or contains special chars, the CSP header becomes malformed. No startup validation.
@@ -172,7 +210,7 @@ If `WS_ORIGINS` is empty or contains special chars, the CSP header becomes malfo
 ---
 
 ### MED-04 — React Compiler ESLint Plugin Still RC
-**File:** `package.json`  
+**File:** `package.json`
 **Status:** ⏳ Monitor — upgrade when stable
 
 `eslint-plugin-react-compiler: ^19.1.0-rc.2` is a release candidate. Pin to stable when available.
@@ -180,7 +218,7 @@ If `WS_ORIGINS` is empty or contains special chars, the CSP header becomes malfo
 ---
 
 ### MED-05 — Contrib Adapter Glob Discovery Fails Silently on Empty Directory
-**File:** `apps/web/src/core/adapters/adapter-registry.ts:175`  
+**File:** `apps/web/src/core/adapters/adapter-registry.ts:175`
 **Status:** ✅ Fixed in v1.2.0
 
 `if (!loader)` block now enumerates available adapter IDs from `Object.keys(contribModules)` and includes them in the error message for easy diagnosis.
@@ -188,7 +226,7 @@ If `WS_ORIGINS` is empty or contains special chars, the CSP header becomes malfo
 ---
 
 ### MED-06 — AI Response Output Not Schema-Validated
-**File:** `apps/web/src/core/aiClient.ts:82-98`  
+**File:** `apps/web/src/core/aiClient.ts:82-98`
 **Status:** ✅ Fixed in v1.2.0
 
 Added `OptimizationSuggestionSchema`, `OptimizationResponseSchema`, and `ForecastResponseSchema` Zod schemas. New `parseAIStructuredOutput<T>(text, schema)` helper extracts JSON from markdown code fences and validates via `safeParse`, returning `null` on failure (graceful degradation).
@@ -196,7 +234,7 @@ Added `OptimizationSuggestionSchema`, `OptimizationResponseSchema`, and `Forecas
 ---
 
 ### MED-07 — Tauri Mobile Build Config Incomplete
-**File:** `apps/web/src-tauri/tauri.conf.json:54-59`  
+**File:** `apps/web/src-tauri/tauri.conf.json:54-59`
 **Status:** ❌ Won't fix in v1.2 — mobile support is planned for v1.3
 
 iOS and Android sections are defined but empty. No CI mobile build jobs.
@@ -206,7 +244,7 @@ iOS and Android sections are defined but empty. No CI mobile build jobs.
 ---
 
 ### MED-08 — i18n Sync Not Automatically Validated
-**File:** `apps/web/src/locales/en.ts` vs `apps/web/src/locales/de.ts`  
+**File:** `apps/web/src/locales/en.ts` vs `apps/web/src/locales/de.ts`
 **Status:** ✅ Fixed in v1.2.0
 
 Created `apps/web/src/tests/i18n-sync.test.ts` — recursive key walker comparing EN↔DE for bidirectional parity. Runs as part of `pnpm test:run`.
@@ -214,7 +252,7 @@ Created `apps/web/src/tests/i18n-sync.test.ts` — recursive key walker comparin
 ---
 
 ### MED-09 — Circuit Breaker Has No Jitter on Cooldown
-**File:** `apps/web/src/core/circuit-breaker.ts:25`  
+**File:** `apps/web/src/core/circuit-breaker.ts:25`
 **Status:** ✅ Fixed in v1.2.0
 
 Added `openCount` field; each OPEN transition increments it. `currentState` getter computes `effectiveCooldown = min(cooldown × 2^(openCount-1), 300_000) × jitter(0.8–1.2)`. `reset()` also clears `openCount`.
@@ -222,7 +260,7 @@ Added `openCount` field; each OPEN transition increments it. `currentState` gett
 ---
 
 ### MED-10 — req.ip Rate Limiting on `trust proxy: 1` (Single Level Only)
-**File:** `apps/api/src/middleware/security.ts:164`, `apps/api/src/index.ts:33`  
+**File:** `apps/api/src/middleware/security.ts:164`, `apps/api/src/index.ts:33`
 **Status:** ⏳ Acceptable for single-proxy deployments
 
 `app.set('trust proxy', 1)` handles single reverse proxy. Multi-hop deployments (CDN + reverse proxy) will see CDN IP as client IP, breaking per-user rate limiting.
@@ -234,7 +272,7 @@ Added `openCount` field; each OPEN transition increments it. `currentState` gett
 ## LOW
 
 ### LOW-01 — SSRF Allowlist Missing mDNS `.local` Hostnames
-**File:** `apps/web/src/core/adapter-worker.ts:168`  
+**File:** `apps/web/src/core/adapter-worker.ts:168`
 **Status:** ✅ Fixed in v1.2.0
 
 Added `/\.local$/` to `ALLOWED_HOSTNAME_PATTERNS`. Security note in comment: mDNS is unauthenticated, so `.local` hostnames should only be used on trusted LAN.
@@ -242,7 +280,7 @@ Added `/\.local$/` to `ALLOWED_HOSTNAME_PATTERNS`. Security note in comment: mDN
 ---
 
 ### LOW-02 — OpenEMS Writable Property Allowlist Hardcoded
-**File:** `apps/web/src/core/adapters/OpenEMSAdapter.ts:491`  
+**File:** `apps/web/src/core/adapters/OpenEMSAdapter.ts:491`
 **Status:** ⏳ Backlog
 
 Custom OpenEMS installations cannot add new writable properties without forking the adapter.
@@ -252,7 +290,7 @@ Custom OpenEMS installations cannot add new writable properties without forking 
 ---
 
 ### LOW-03 — Bundle Size CI Check Is Non-Blocking
-**File:** `.github/workflows/ci.yml`  
+**File:** `.github/workflows/ci.yml`
 **Status:** ⏳ Backlog
 
 `pnpm size || echo "::warning::..."` emits a warning but does not fail CI.
@@ -262,7 +300,7 @@ Custom OpenEMS installations cannot add new writable properties without forking 
 ---
 
 ### LOW-04 — API Scope Map Not Validated at Startup
-**File:** `apps/api/src/middleware/auth.ts:26`  
+**File:** `apps/api/src/middleware/auth.ts:26`
 **Status:** ✅ Fixed in v1.2.0
 
 Added post-construction validation loop that calls `console.warn` for each `API_KEY_SCOPES` entry dropped due to missing colon separator or invalid scope value.
@@ -270,7 +308,7 @@ Added post-construction validation loop that calls `console.warn` for each `API_
 ---
 
 ### LOW-05 — Offline Cache Has No Quota Warning
-**File:** `apps/web/src/lib/offline-cache.ts`  
+**File:** `apps/web/src/lib/offline-cache.ts`
 **Status:** ⏳ Backlog
 
 No monitoring of `navigator.storage.estimate()`. IndexedDB operations may silently fail when storage quota is exceeded.
@@ -280,7 +318,7 @@ No monitoring of `navigator.storage.estimate()`. IndexedDB operations may silent
 ---
 
 ### LOW-06 — Commitlint Has Unused Scopes
-**File:** `commitlint.config.js`  
+**File:** `commitlint.config.js`
 **Status:** ⏳ Backlog
 
 ~20 allowed scopes defined but only ~5 used in practice. Developers are confused about correct scope.
@@ -290,7 +328,7 @@ No monitoring of `navigator.storage.estimate()`. IndexedDB operations may silent
 ---
 
 ### LOW-07 — No Font Preload Directives in index.html
-**File:** `apps/web/index.html`  
+**File:** `apps/web/index.html`
 **Status:** ✅ Already done (pre-existing in v1.1.0)
 
 All 4 font preloads with SRI hashes are already present in `apps/web/index.html`. No action needed.
@@ -298,7 +336,7 @@ All 4 font preloads with SRI hashes are already present in `apps/web/index.html`
 ---
 
 ### LOW-08 — Storybook References Placeholder Components
-**File:** `.storybook/main.ts`  
+**File:** `.storybook/main.ts`
 **Status:** ⏳ Backlog — depends on Storybook 10.3 support
 
 Storybook config references component paths that may not have stories written yet.

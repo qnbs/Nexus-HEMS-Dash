@@ -428,7 +428,6 @@ function PinDialog({ open, ski, pinHint, onClose, onSubmit }: PinDialogProps) {
               inputMode="numeric"
               pattern="\d{5,6}"
               maxLength={6}
-              autoFocus
               value={pin}
               onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
               placeholder={t('shipPairing.pinPlaceholder')}
@@ -693,7 +692,7 @@ function ShipTrustStore() {
                   </div>
                 </div>
 
-                <div className="flex flex-col items-end gap-1 text-right text-xs text-(--color-text-secondary)">
+                <div className="flex flex-col items-end gap-1 text-right text-(--color-text-secondary) text-xs">
                   {device.trustedAt > 0 && (
                     <span>
                       {t('shipPairing.pairedAt')} {formatDateShort(device.trustedAt)}
@@ -714,7 +713,7 @@ function ShipTrustStore() {
                         setPinSki(device.ski);
                         setPinHint(t('shipPairing.pinDialogDesc'));
                       }}
-                      className="focus-ring rounded-lg bg-yellow-500/15 px-2 py-1.5 font-medium text-yellow-400 text-xs transition-colors hover:bg-yellow-500/25"
+                      className="focus-ring rounded-lg bg-yellow-500/15 px-2 py-1.5 font-medium text-xs text-yellow-400 transition-colors hover:bg-yellow-500/25"
                     >
                       {t('shipPairing.statusPinRequired')}
                     </button>

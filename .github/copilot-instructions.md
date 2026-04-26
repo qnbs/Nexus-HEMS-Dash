@@ -7,6 +7,8 @@ You are an expert full-stack React 19 + TypeScript architect specialized in real
 
 Root files: `pnpm-workspace.yaml` · `turbo.json` · `tsconfig.base.json` (ultra-strict, inherited by all workspaces).
 
+The shipped baseline is `1.1.0`. Active `v1.2.0` work tracked in `CHANGELOG.md` and `docs/Technical-Debt-Registry.md` is authoritative roadmap context for in-flight work, but must not be described as guaranteed shipped functionality unless it is verified in code.
+
 ---
 
 ## PROJECT RULES — THIS IS LAW (always follow strictly)
@@ -73,15 +75,16 @@ const ids = await loadAllContribAdapters();                          // load all
 
 ### Energy Controllers & Optimization
 
-Seven real-time control loops in `apps/web/src/core/energy-controllers.ts` orchestrated by `ControllerPipeline`:
+Eight real-time control loops in `apps/web/src/core/energy-controllers.ts` orchestrated by `ControllerPipeline`:
 
 1. **ESS Symmetric** — bidirectional battery charge/discharge
 2. **Peak Shaving** — grid peak demand limiting
 3. **Grid-Optimized Charge** — charge when grid price is low
 4. **Self-Consumption** — maximize PV self-consumption
-5. **Emergency Capacity** — reserve battery for blackout
-6. **HeatPump SG Ready** — SG Ready signals for heat pump control
-7. **EV Smart Charge** — §14a EnWG, PV surplus, V2X
+5. **Balancing** — symmetric/asymmetric grid power balancing
+6. **Emergency Capacity** — reserve battery for blackout
+7. **HeatPump SG Ready** — SG Ready signals for heat pump control
+8. **EV Smart Charge** — §14a EnWG, PV surplus, V2X
 
 MPC optimizer (`apps/web/src/lib/optimizer.ts`): EMHASS-inspired LP day-ahead scheduler with PV/load forecasting, battery constraints, and tariff-aware cost minimization.
 
@@ -188,7 +191,7 @@ Circuit Breaker (`apps/web/src/core/circuit-breaker.ts`): FSM with CLOSED → OP
 **Toolchain docs:** `docs/Toolchain-Architecture.md`, `docs/Biome-Migration-Roadmap.md`.
 
 - **Husky** + **lint-staged** for pre-commit hooks
-- **Vitest v4** (jsdom, V8 coverage — thresholds: statements 48%, branches 40%, functions 49%, lines 49%) — unit tests in `apps/web/src/tests/`
+- **Vitest v4** (jsdom, V8 coverage — currently enforced thresholds: web 52/42/53/53, api 55/45/55/55; roadmap target is higher) — unit tests in `apps/web/src/tests/`
 - **Playwright** — local E2E is Chromium-only; CI installs and runs Chromium + Firefox; WebKit/mobile projects are disabled for now
 - **Lighthouse CI** (Perf ≥ 85%, A11y ≥ 90%, Best Practices ≥ 90%; `errors-in-console` disabled for demo mode)
 - **Storybook 10** — component stories in `*.stories.tsx` co-located with components
@@ -254,7 +257,7 @@ Circuit Breaker (`apps/web/src/core/circuit-breaker.ts`): FSM with CLOSED → OP
 - Never re-add Prettier or typescript-eslint — the Biome-first toolchain replaces them
 - Never add manual `useCallback`/`useMemo` without confirming React Compiler cannot handle it
 
-### Unified Architecture (7 Sections)
+### Unified Architecture (8 Primary Routes, 7 Navigation Sections)
 
 The app uses a **unified Command Center** with 7 top-level sections, each a `SectionLayout` with tabs:
 

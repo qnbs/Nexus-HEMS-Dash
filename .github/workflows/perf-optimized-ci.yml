@@ -226,6 +226,7 @@ jobs:
         run: pnpm build
         env:
           NODE_ENV: production
+          VITE_E2E_TESTING: 'true'
           TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
           TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
 
@@ -367,22 +368,12 @@ jobs:
           echo "E2E:      ${{ needs.e2e.result }}"
           echo "Security: ${{ needs.security.result }}"
 
-          # Core gates (must pass): lint, test, build
-          if [[ "${{ needs.lint.result }}" == "failure" ]] || \
-             [[ "${{ needs.test.result }}" == "failure" ]] || \
-             [[ "${{ needs.build.result }}" == "failure" ]]; then
-            echo "::error::Core CI jobs (lint/test/build) failed"
+          if [[ "${{ needs.lint.result }}" != "success" ]] || \
+             [[ "${{ needs.test.result }}" != "success" ]] || \
+             [[ "${{ needs.build.result }}" != "success" ]] || \
+             [[ "${{ needs.e2e.result }}" != "success" ]] || \
+             [[ "${{ needs.security.result }}" != "success" ]]; then
+            echo "::error::At least one required optimized CI job did not pass"
             exit 1
           fi
-
-          # E2E: warn on failure but do not block (flaky browser infra)
-          if [[ "${{ needs.e2e.result }}" == "failure" ]]; then
-            echo "::warning::E2E tests failed — review before merging"
-          fi
-
-          # Security: non-blocking (dev-tool CVEs verified in security-full.yml)
-          if [[ "${{ needs.security.result }}" == "failure" ]]; then
-            echo "::warning::Security check failed — review security-full.yml"
-          fi
-
-          echo "✅ All core CI jobs passed!"
+          echo "✅ All optimized CI jobs passed!"

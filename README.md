@@ -13,7 +13,7 @@
 [![pnpm](https://img.shields.io/badge/pnpm-10-F69220?style=flat-square&logo=pnpm&logoColor=white)](https://pnpm.io/)
 [![Node.js](https://img.shields.io/badge/Node.js-24_LTS-339933?style=flat-square&logo=nodedotjs&logoColor=white)](.nvmrc)
 [![Storybook](https://img.shields.io/badge/Storybook-10.3-FF4785?style=flat-square&logo=storybook&logoColor=white)](.storybook/main.ts)
-[![Tests](https://img.shields.io/badge/Tests-428-22ff88?style=flat-square&logo=vitest&logoColor=white)](apps/web/src/tests/)
+[![Tests](https://img.shields.io/badge/Tests-Coverage%20gated-22ff88?style=flat-square&logo=vitest&logoColor=white)](apps/web/src/tests/)
 [![E2E](https://img.shields.io/badge/E2E-Playwright-00A0E9?style=flat-square&logo=playwright&logoColor=white)](apps/web/tests/e2e/)
 [![Adapters](<https://img.shields.io/badge/Adapters-10_(5+5)-22ff88?style=flat-square>)](#protocol-adapters)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/qnbs/Nexus-HEMS-Dash/badge?style=flat-square)](https://securityscorecards.dev/viewer/?uri=github.com/qnbs/Nexus-HEMS-Dash)
@@ -25,7 +25,9 @@
 
 ---
 
-Nexus-HEMS is a **unified Command Center** that consolidates **10 protocol adapters** (5 core + 5 contrib) into **7 focused sections** — orchestrating photovoltaic generation, battery storage, heat pumps, EV charging, and building automation with dynamic electricity tariffs. Instead of 18+ separate pages, every feature is accessible from a **single streamlined interface** with guided tours, contextual help, and zero-config onboarding.
+Nexus-HEMS is a **unified Command Center** that consolidates **10 protocol adapters** (5 core + 5 contrib) into **8 primary routes across 7 navigation sections** — orchestrating photovoltaic generation, battery storage, heat pumps, EV charging, and building automation with dynamic electricity tariffs. Instead of 18+ separate pages, every feature is accessible from a **single streamlined interface** with guided tours, contextual help, and zero-config onboarding.
+
+The current shipped release line is **1.1.0**. Active **v1.2.0** work is tracked in [CHANGELOG.md](/home/pc/Nexus-HEMS-Dash/CHANGELOG.md) and [docs/Technical-Debt-Registry.md](/home/pc/Nexus-HEMS-Dash/docs/Technical-Debt-Registry.md); treat those files as in-flight roadmap context rather than shipped baseline.
 
 **Stack:** React 19 · TypeScript 5.8 · Vite 8 (Rolldown) · Tailwind CSS v4 · Zustand 5 · D3.js Sankey · Recharts · Motion · Dexie.js · Radix UI · React Compiler
 
@@ -33,7 +35,7 @@ Nexus-HEMS is a **unified Command Center** that consolidates **10 protocol adapt
 
 | Category                | Features                                                                                                                                                                                                                                                                                                 |
 | :---------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Energy**              | Real-time D3.js Sankey flow · AI optimizer (multi-provider BYOK) · MPC day-ahead optimizer · 7 real-time controllers · 24h/7d predictive forecast · Live tariff widget (Tibber/aWATTar/Octopus/Nordpool) · Smart EV charging (§14a EnWG) · SG Ready heat pump control · Hardware registry (120+ devices) |
+| **Energy**              | Real-time D3.js Sankey flow · AI optimizer (multi-provider BYOK) · MPC day-ahead optimizer · 8 real-time controllers · 24h/7d predictive forecast · Live tariff widget (Tibber/aWATTar/Octopus/Nordpool) · Smart EV charging (§14a EnWG) · SG Ready heat pump control · Hardware registry (120+ devices) |
 | **Protocols (Core)**    | Victron MQTT (Cerbo GX / Venus OS) · Modbus/SunSpec (103/124/201) · KNX/IP floorplan · OCPP 2.1 V2X (ISO 15118) · EEBUS SPINE/SHIP (TLS 1.3 mTLS)                                                                                                                                                        |
 | **Protocols (Contrib)** | Home Assistant MQTT · Matter/Thread · Zigbee2MQTT · Shelly REST (Gen2+) · Example template                                                                                                                                                                                                               |
 | **Plugin System**       | Adapter Registry with dynamic `import()` loading · npm-package format · `BaseAdapter` class for rapid development · Hot-loading from Settings UI                                                                                                                                                         |
@@ -193,7 +195,7 @@ INFLUXDB_BUCKET=nexus-hems           # Target bucket
 AWATTAR_BASE_URL=https://api.awattar.de/v1  # aWATTar DE Day-Ahead prices (no API key needed)
 ```
 
-## Pages — 7 Unified Sections
+## Unified Routes & Sections
 
 | Section                  | Route              | Description                                                      |
 | :----------------------- | :----------------- | :--------------------------------------------------------------- |

@@ -83,10 +83,29 @@ jobs:
       # ── source-map-explorer ──
       - name: Source Map Analysis
         run: |
-          npx source-map-explorer apps/web/dist/assets/*.js \
-            --html apps/web/dist/source-map-report.html \
-            --json apps/web/dist/source-map-report.json \
-            2>&1 || echo "source-map-explorer: some files skipped (no sourcemaps)"
+          if find apps/web/dist/assets -name '*.map' -print -quit | grep -q .; then
+            npx source-map-explorer apps/web/dist/assets/*.js \
+              --html apps/web/dist/source-map-report.html \
+              --json apps/web/dist/source-map-report.json \
+              2>&1 || echo "source-map-explorer: some files skipped"
+          else
+            echo "source-map-explorer skipped: build emitted no sourcemaps"
+            cat <<'EOF' > apps/web/dist/source-map-report.json
+            {"status":"skipped","reason":"No sourcemaps were emitted by the production build."}
+            EOF
+            cat <<'EOF' > apps/web/dist/source-map-report.html
+            <!doctype html>
+            <html lang="en">
+              <head>
+                <meta charset="utf-8" />
+                <title>Source Map Analysis Skipped</title>
+              </head>
+              <body>
+                <p>Source map analysis was skipped because the production build did not emit sourcemaps.</p>
+              </body>
+            </html>
+            EOF
+          fi
 
       # ── Collect raw sizes ──
       - name: Collect bundle sizes
@@ -127,6 +146,7 @@ jobs:
             apps/web/dist/bundle-stats.html
             apps/web/dist/source-map-report.html
             apps/web/dist/source-map-report.json
+          if-no-files-found: warn
           retention-days: 14
           compression-level: 6
 
@@ -214,7 +234,7 @@ jobs:
           echo "## ⚡ Biome Lint Results" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           START=$(date +%s%N)
-          npx biome check --write=false --reporter=summary 2>&1 | tee /tmp/biome-results.txt || true
+          npx biome check apps/ packages/ --reporter=summary 2>&1 | tee /tmp/biome-results.txt || true
           END=$(date +%s%N)
           DURATION=$(( (END - START) / 1000000 ))
           echo "⏱️ Biome lint time: ${DURATION}ms"
