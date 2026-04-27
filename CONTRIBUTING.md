@@ -245,10 +245,10 @@ Create an ADR using this template:
 
 ## Testing Strategy
 
-| Layer        | Tool                             | Threshold                      | Focus                                                                                       |
-| ------------ | -------------------------------- | ------------------------------ | ------------------------------------------------------------------------------------------- |
-| **Unit**     | Vitest + jsdom                   | Statements ≥48%, Branches ≥40% | Store logic, adapters, crypto, formatters, circuit-breaker, tariff-providers, notifications |
-| **E2E**      | Playwright (3 browsers + mobile) | All specs pass                 | User flows, navigation, settings                                                            |
+| Layer        | Tool                                          | Threshold                              | Focus                                                                                       |
+| ------------ | --------------------------------------------- | -------------------------------------- | ------------------------------------------------------------------------------------------- |
+| **Unit**     | Vitest + jsdom                                | Stmts ≥52%, Branches ≥42%, Fns ≥53%   | Store logic, adapters, crypto, formatters, circuit-breaker, tariff-providers, notifications |
+| **E2E**      | Playwright (Chromium local; + Firefox in CI)  | All specs pass                         | User flows, navigation, settings                                                            |
 | **A11y**     | @axe-core/playwright             | WCAG 2.2 AA on all routes      | Keyboard nav, contrast, ARIA                                                                |
 | **Visual**   | Chromatic + Storybook            | No unreviewed changes          | Component regression                                                                        |
 | **Security** | security-fuzz.test.ts + CodeQL   | Zero critical/high in runtime  | Input validation, injection                                                                 |
@@ -261,25 +261,36 @@ Create an ADR using this template:
 - Bug fix → regression test proving the fix
 - Security change → fuzz test + hardening test
 
-**Test file map** (`apps/web/src/tests/`):
+**Test file map** (`apps/web/src/tests/`) — selected key files (50+ total):
 
-| File                         | Source module                             | Focus                                            |
-| ---------------------------- | ----------------------------------------- | ------------------------------------------------ |
-| `circuit-breaker.test.ts`    | `apps/web/src/core/circuit-breaker.ts`    | FSM states, execute(), callbacks                 |
-| `tariff-providers.test.ts`   | `apps/web/src/lib/tariff-providers.ts`    | §14a grid fees, peak hours, applyDynamicGridFees |
-| `notifications.test.ts`      | `apps/web/src/lib/notifications.ts`       | Quiet hours, cooldown windows                    |
-| `energy-context.test.tsx`    | `apps/web/src/core/EnergyContext.tsx`     | Provider state, derived values                   |
-| `energy-store.test.ts`       | `apps/web/src/core/useEnergyStore.ts`     | Adapter bridge, getState() contract              |
-| `store.test.ts`              | `apps/web/src/store.ts`                   | Zustand selectors, equality-skip guards          |
-| `adapters.test.ts`           | `apps/web/src/core/adapters/`             | Protocol adapter contracts                       |
-| `send-command.test.ts`       | `apps/web/src/core/command-safety.ts`     | OCPP/Victron pipeline, rate limiting             |
-| `security-fuzz.test.ts`      | multiple                                  | Input validation, injection resistance           |
-| `security-hardening.test.ts` | multiple                                  | Rate limits, CSP, auth                           |
-| `optimizer.test.ts`          | `apps/web/src/lib/optimizer.ts`           | LP schedule optimizer                            |
-| `mpc-optimizer.test.ts`      | `apps/web/src/lib/mpc-optimizer.ts`       | EMHASS-inspired MPC                              |
-| `predictive-ai.test.ts`      | `apps/web/src/lib/predictive-ai.ts`       | AI forecast pipeline                             |
-| `pdf-report.test.ts`         | `apps/web/src/lib/pdf-report.ts`          | PDF generation                                   |
-| `sharing.test.ts`            | `apps/web/src/lib/sharing.ts`             | Export/share flows                               |
+| File                               | Source module                                        | Focus                                            |
+| ---------------------------------- | ---------------------------------------------------- | ------------------------------------------------ |
+| `circuit-breaker.test.ts`          | `apps/web/src/core/circuit-breaker.ts`               | FSM states, execute(), callbacks                 |
+| `tariff-providers.test.ts`         | `apps/web/src/lib/tariff-providers.ts`               | §14a grid fees, peak hours, applyDynamicGridFees |
+| `notifications.test.ts`            | `apps/web/src/lib/notifications.ts`                  | Quiet hours, cooldown windows                    |
+| `energy-context.test.tsx`          | `apps/web/src/core/EnergyContext.tsx`                 | Provider state, derived values                   |
+| `energy-store.test.ts`             | `apps/web/src/core/useEnergyStore.ts`                 | Adapter bridge, getState() contract              |
+| `energy-controllers.test.ts`       | `apps/web/src/core/energy-controllers.ts`             | 8 control loop FSMs + ControllerPipeline         |
+| `ev-v2g-controller.test.ts`        | `apps/web/src/core/energy-controllers.ts`             | V2G discharge loop, SOC guardrails               |
+| `store.test.ts`                    | `apps/web/src/store.ts`                               | Zustand selectors, equality-skip guards          |
+| `adapters.test.ts`                 | `apps/web/src/core/adapters/`                         | Protocol adapter contracts                       |
+| `adapter-registry.test.ts`         | `apps/web/src/core/adapters/adapter-registry.ts`      | Registration, dynamic loading, lifecycle         |
+| `plugin-system.test.ts`            | `apps/web/src/core/plugin-system.ts`                  | OSGi-inspired plugin lifecycle                   |
+| `homeassistant-mqtt-adapter.test.ts` | `apps/web/src/core/adapters/contrib/`               | HA MQTT adapter                                  |
+| `matter-thread-adapter.test.ts`    | `apps/web/src/core/adapters/contrib/`                 | Matter/Thread adapter                            |
+| `zigbee2mqtt-adapter.test.ts`      | `apps/web/src/core/adapters/contrib/`                 | Zigbee2MQTT adapter                              |
+| `shelly-rest-adapter.test.ts`      | `apps/web/src/core/adapters/contrib/`                 | Shelly REST adapter                              |
+| `openadr-adapter.test.ts`          | `apps/web/src/core/adapters/contrib/openadr-3-1.ts`   | OpenADR 3.1 VEN client, DR event handling        |
+| `uc26-translator.test.ts`          | `apps/web/src/core/uc26-translator.ts`                | Matter↔OpenADR UC 2.6.1–2.6.3 translation       |
+| `send-command.test.ts`             | `apps/web/src/core/command-safety.ts`                 | OCPP/Victron pipeline, rate limiting             |
+| `security-fuzz.test.ts`            | multiple                                              | Input validation, injection resistance           |
+| `security-hardening.test.ts`       | multiple                                              | Rate limits, CSP, auth                           |
+| `ai-keys.test.ts`                  | `apps/web/src/lib/ai-keys.ts`                         | AES-GCM 256-bit key vault                        |
+| `optimizer.test.ts`                | `apps/web/src/lib/optimizer.ts`                       | LP schedule optimizer                            |
+| `mpc-optimizer.test.ts`            | `apps/web/src/lib/mpc-optimizer.ts`                   | EMHASS-inspired MPC                              |
+| `predictive-ai.test.ts`            | `apps/web/src/lib/predictive-ai.ts`                   | AI forecast pipeline                             |
+| `pdf-report.test.ts`               | `apps/web/src/lib/pdf-report.ts`                      | PDF generation                                   |
+| `sharing.test.ts`                  | `apps/web/src/lib/sharing.ts`                         | Export/share flows                               |
 
 ## Performance Budgets
 

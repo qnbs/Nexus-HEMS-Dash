@@ -2,7 +2,7 @@
   "name": "nexus-hems-dash",
   "private": true,
   "version": "1.1.0",
-  "description": "Real-time Home Energy Management System dashboard — 10 protocol adapters (Victron, Modbus, KNX, OCPP 2.1, EEBUS + Home Assistant, Matter/Thread, Zigbee2MQTT, Shelly), plugin system with adapter registry, dynamic tariffs (Tibber/aWATTar/Octopus/Nordpool), SG Ready, AI optimizer, WCAG 2.2 AA",
+  "description": "Real-time Home Energy Management System dashboard — 13 protocol adapters (Victron, Modbus, KNX, OCPP 2.1, EEBUS, evcc, OpenEMS + Home Assistant, Matter/Thread, Zigbee2MQTT, Shelly, OpenADR 3.1), plugin system with adapter registry, dynamic tariffs (Tibber/aWATTar/Octopus/Nordpool), SG Ready, AI optimizer, WCAG 2.2 AA",
   "keywords": [
     "hems",
     "energy-management",

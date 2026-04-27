@@ -878,7 +878,7 @@ export const en = {
       'mTLS, AES-GCM 256-bit encryption for API keys, 2FA, and local-first data storage. No cloud dependency.',
     featureControllers: 'Energy Controllers',
     featureControllersDesc:
-      '7 real-time control loops: ESS Symmetric, Peak Shaving, Grid-Optimized Charge, Self-Consumption, Emergency Capacity, SG Ready Heat Pump, EV Smart Charge.',
+      '8 real-time control loops: ESS Symmetric, Peak Shaving, Grid-Optimized Charge, Self-Consumption, Emergency Capacity, SG Ready Heat Pump, EV Smart Charge, EV V2G Discharge.',
     featurePlugins: 'Plugin System',
     featurePluginsDesc:
       'OSGi-inspired plugin lifecycle with install, resolve, start, stop, uninstall. Dependency injection, service registry, and event bus.',

@@ -26,7 +26,7 @@
 
 A comprehensive adversarial red-team security audit of the Nexus-HEMS-Dash full-stack codebase (frontend, backend, infrastructure, supply chain) was performed on 2026-04-21.
 
-**Scope:** React 19 SPA (`apps/web`, Vite/PWA), Express 5 + WebSocket server (`apps/api`), JWT auth pipeline (`apps/api/src/jwt-utils.ts`), shared Zod schemas (`packages/shared-types`), 10 protocol adapters, Docker/Helm deployment, nginx reverse proxy, Prometheus/Grafana monitoring stack.
+**Scope:** React 19 SPA (`apps/web`, Vite/PWA), Express 5 + WebSocket server (`apps/api`), JWT auth pipeline (`apps/api/src/jwt-utils.ts`), shared Zod schemas (`packages/shared-types`), 13 protocol adapters, Docker/Helm deployment, nginx reverse proxy, Prometheus/Grafana monitoring stack.
 
 **Total findings: 27 vulnerabilities**
 

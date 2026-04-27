@@ -352,7 +352,7 @@ and regular builds (without) are cached separately.
 
 ### Near-term (next sprint)
 
-- **`packages/adapters/*`:** Extract the 10 protocol adapters from `apps/web/src/core/adapters/`
+- **`packages/adapters/*`:** Extract the 13 protocol adapters from `apps/web/src/core/adapters/`
   into a dedicated workspace package. This enables:
   - Independent versioning and testing of each adapter
   - Potential open-source publishing of contrib adapters

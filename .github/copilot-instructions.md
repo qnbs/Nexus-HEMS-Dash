@@ -37,26 +37,29 @@ The shipped baseline is `1.1.0`. Active `v1.2.0` work tracked in `CHANGELOG.md` 
 - Use `useAppStoreShallow` for multiple selectors to merge subscriptions — never two separate `useAppStore` calls for data from the same render path.
 - For selectors that access only one or two scalar values, use `useAppStore((s) => s.settings.x)` direct scalar selectors — never subscribe to the whole `settings` object.
 
-### Adapter System (10 adapters: 5 core + 5 contrib)
+### Adapter System (13 adapters: 7 core + 6 contrib)
 
 All adapters in `apps/web/src/core/adapters/` implement the `EnergyAdapter` interface (`EnergyAdapter.ts`).
 Contrib adapters extend `BaseAdapter` (`BaseAdapter.ts`) for simplified development.
 The `AdapterRegistry` (`adapter-registry.ts`) manages registration, lifecycle, and dynamic loading.
 
-**Core Adapters (5):**
+**Core Adapters (7):**
 
 - **VictronMQTTAdapter** — Victron Cerbo GX / Venus OS via MQTT-over-WebSocket
 - **ModbusSunSpecAdapter** — SunSpec Models 103/124/201 via REST bridge (polling)
 - **KNXAdapter** — KNX/IP via knxd WebSocket bridge
 - **OCPP21Adapter** — EV charging, V2X, ISO 15118, §14a EnWG
 - **EEBUSAdapter** — EEBUS SPINE/SHIP, VDE-AR-E 2829-6, mDNS, TLS 1.3 mTLS
+- **EvccAdapter** — evcc backend (95%+ hardware support) via REST + WebSocket
+- **OpenEMSAdapter** — OpenEMS Edge via JSON-RPC 2.0 over WebSocket
 
-**Contrib Adapters (5) — Plugin System:**
+**Contrib Adapters (6) — Plugin System:**
 
 - **HomeAssistantMQTTAdapter** — Home Assistant MQTT discovery / Mosquitto
 - **MatterThreadAdapter** — Matter 1.3 / Thread 1.3 smart home devices
 - **Zigbee2MQTTAdapter** — Zigbee devices via Zigbee2MQTT bridge
 - **ShellyRESTAdapter** — Shelly Pro 3EM / Plus Plug S / Pro 4PM via HTTP/REST Gen2+
+- **OpenADR31Adapter** — OpenADR 3.1.0 VEN client for demand-response events from a VTN
 - **ExampleContribAdapter** — Template for custom adapter development
 
 **Plugin System:**
@@ -89,6 +92,10 @@ Eight real-time control loops in `apps/web/src/core/energy-controllers.ts` orche
 MPC optimizer (`apps/web/src/lib/optimizer.ts`): EMHASS-inspired LP day-ahead scheduler with PV/load forecasting, battery constraints, and tariff-aware cost minimization.
 
 Command Safety Layer (`apps/web/src/core/command-safety.ts`): Zod schema validation, rate limiting (30 cmd/min), IndexedDB audit trail, danger command confirmation dialog.
+
+VPP Service (`apps/web/src/core/vpp-service.ts`): Aggregates battery/EV/heat-pump into flex-market bids per UC 2.6.2 / VDE-AR-E 2829-6; submits via OpenADR 3.1 API proxy. DEV mode: bids are local-only.
+
+UC26 Translator (`apps/web/src/core/uc26-translator.ts`): Translates OpenADR 3.1.0 DR events to Matter DEM cluster commands (UC 2.6.1–2.6.3 / Matter↔OpenADR interworking spec).
 
 Circuit Breaker (`apps/web/src/core/circuit-breaker.ts`): FSM with CLOSED → OPEN → HALF_OPEN states; configurable failure threshold, cooldown, and `onStateChange` callbacks.
 
@@ -326,9 +333,11 @@ apps/web/                      # @nexus-hems/web — React 19 Vite SPA
 │   │   ├── adapter-worker.ts  #   Web Worker for REST polling (SSRF-hardened)
 │   │   ├── circuit-breaker.ts #   FSM circuit breaker (CLOSED/OPEN/HALF_OPEN)
 │   │   ├── command-safety.ts  #   Zod validation, rate limiting, audit trail
-│   │   ├── energy-controllers.ts # 7 real-time control loops + ControllerPipeline
+│   │   ├── energy-controllers.ts # 8 real-time control loops + ControllerPipeline
 │   │   ├── hardware-registry.ts  # 120+ certified device registry
 │   │   ├── plugin-system.ts   #   OSGi-inspired plugin lifecycle manager
+│   │   ├── vpp-service.ts     #   VPP UC 2.6.2 / VDE-AR-E 2829-6 flex bidding
+│   │   ├── uc26-translator.ts #   Matter↔OpenADR 3.1 interworking (UC 2.6.1–2.6.3)
 │   │   ├── useAIWorker.ts     #   AI worker hook (off-thread)
 │   │   ├── useAdapterWorker.ts #  Adapter polling worker hook
 │   │   └── adapters/
@@ -340,7 +349,9 @@ apps/web/                      # @nexus-hems/web — React 19 Vite SPA
 │   │       ├── KNXAdapter.ts
 │   │       ├── OCPP21Adapter.ts
 │   │       ├── EEBUSAdapter.ts
-│   │       └── contrib/           # 5 contrib adapters + README
+│   │       ├── EvccAdapter.ts     # evcc backend via REST + WebSocket
+│   │       ├── OpenEMSAdapter.ts  # OpenEMS Edge via JSON-RPC 2.0 / WebSocket
+│   │       └── contrib/           # 6 contrib adapters + README
 │   ├── lib/
 │   │   ├── db.ts              #   Dexie.js schema + migrations
 │   │   ├── ai-keys.ts         #   AES-GCM 256-bit key vault

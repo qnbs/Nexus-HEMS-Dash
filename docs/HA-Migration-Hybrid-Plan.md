@@ -28,7 +28,7 @@ management, and non-energy automations.
 | Capability | HA Energy Dashboard | Nexus-HEMS |
 |-----------|:---:|:---:|
 | Update frequency | 10–60 s | 500 ms |
-| Multi-protocol adapters | HA integrations only | 10 adapters (Victron, KNX, OCPP, EEBUS, Modbus…) |
+| Multi-protocol adapters | HA integrations only | 13 adapters (Victron, KNX, OCPP, EEBUS, Modbus, evcc, OpenEMS, OpenADR…) |
 | MPC day-ahead optimizer | ❌ | ✅ (LP optimizer, aWATTar, Tibber) |
 | §14a EnWG compliance | ❌ | ✅ |
 | Real D3 Sankey (sub-second) | ❌ | ✅ (Web Worker) |

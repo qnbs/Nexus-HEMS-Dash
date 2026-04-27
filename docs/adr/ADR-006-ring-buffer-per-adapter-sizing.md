@@ -25,8 +25,8 @@ Problem: different adapters have very different update rates and visualization n
 | `eebus` | 1 Hz | 200 items | Wastes 800 slots |
 | `modbus-sunspec` | 0.5 Hz | 150 items | Wastes 850 slots |
 
-At 1 000 items × ~500 bytes/point × up to 10 adapters = ~5 MB in-memory ring buffer.
-With adaptive sizing: ~1 MB total.
+At 1 000 items × ~500 bytes/point × up to 13 adapters = ~6.5 MB in-memory ring buffer.
+With adaptive sizing: ~1.3 MB total.
 
 ## Decision
 

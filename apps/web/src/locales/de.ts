@@ -883,7 +883,7 @@ export const de = {
       'mTLS, AES-GCM 256-Bit-Verschlüsselung für API-Schlüssel, 2FA und lokale Datenhaltung. Keine Cloud-Abhängigkeit.',
     featureControllers: 'Energieregler',
     featureControllersDesc:
-      '7 Echtzeit-Regelkreise: ESS Symmetrisch, Peak Shaving, Netz-optimiertes Laden, Eigenverbrauch, Notstromreserve, SG Ready Wärmepumpe, EV Smart Charge.',
+      '8 Echtzeit-Regelkreise: ESS Symmetrisch, Peak Shaving, Netz-optimiertes Laden, Eigenverbrauch, Notstromreserve, SG Ready Wärmepumpe, EV Smart Charge, EV V2G Entladen.',
     featurePlugins: 'Plugin-System',
     featurePluginsDesc:
       'OSGi-inspirierter Plugin-Lebenszyklus mit Installieren, Auflösen, Starten, Stoppen, Deinstallieren. Dependency Injection, Service-Registry und Event-Bus.',

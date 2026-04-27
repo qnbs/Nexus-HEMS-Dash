@@ -15,7 +15,7 @@
 [![Storybook](https://img.shields.io/badge/Storybook-10.3-FF4785?style=flat-square&logo=storybook&logoColor=white)](apps/web/.storybook/main.ts)
 [![Tests](https://img.shields.io/badge/Tests-Coverage%20gated-22ff88?style=flat-square&logo=vitest&logoColor=white)](apps/web/src/tests/)
 [![E2E](https://img.shields.io/badge/E2E-Playwright-00A0E9?style=flat-square&logo=playwright&logoColor=white)](apps/web/tests/e2e/)
-[![Adapters](<https://img.shields.io/badge/Adapters-10_(5+5)-22ff88?style=flat-square>)](#protocol-adapters)
+[![Adapters](<https://img.shields.io/badge/Adapters-13_(7%2B6)-22ff88?style=flat-square>)](#protocol-adapters)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/qnbs/Nexus-HEMS-Dash/badge?style=flat-square)](https://securityscorecards.dev/viewer/?uri=github.com/qnbs/Nexus-HEMS-Dash)
 [![Coverage](https://codecov.io/gh/qnbs/Nexus-HEMS-Dash/branch/main/graph/badge.svg?style=flat-square)](https://codecov.io/gh/qnbs/Nexus-HEMS-Dash)
 
@@ -25,7 +25,7 @@
 
 ---
 
-Nexus-HEMS is a **unified Command Center** that consolidates **10 protocol adapters** (5 core + 5 contrib) into **8 primary routes across 7 navigation sections** — orchestrating photovoltaic generation, battery storage, heat pumps, EV charging, and building automation with dynamic electricity tariffs. Instead of 18+ separate pages, every feature is accessible from a **single streamlined interface** with guided tours, contextual help, and zero-config onboarding.
+Nexus-HEMS is a **unified Command Center** that consolidates **13 protocol adapters** (7 core + 6 contrib) into **8 primary routes across 7 navigation sections** — orchestrating photovoltaic generation, battery storage, heat pumps, EV charging, and building automation with dynamic electricity tariffs. Instead of 18+ separate pages, every feature is accessible from a **single streamlined interface** with guided tours, contextual help, and zero-config onboarding.
 
 The current shipped release line is **1.1.0**. Active **v1.2.0** work is tracked in [CHANGELOG.md](CHANGELOG.md) and [docs/Technical-Debt-Registry.md](docs/Technical-Debt-Registry.md); treat those files as in-flight roadmap context rather than shipped baseline.
 
@@ -44,8 +44,8 @@ For verified roadmap status and completion boundaries, use these documents as th
 | Category                | Features                                                                                                                                                                                                                                                                                                 |
 | :---------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Energy**              | Real-time D3.js Sankey flow · AI optimizer (multi-provider BYOK) · MPC day-ahead optimizer · 8 real-time controllers · 24h/7d predictive forecast · Live tariff widget (Tibber/aWATTar/Octopus/Nordpool) · Smart EV charging (§14a EnWG) · SG Ready heat pump control · Hardware registry (120+ devices) |
-| **Protocols (Core)**    | Victron MQTT (Cerbo GX / Venus OS) · Modbus/SunSpec (103/124/201) · KNX/IP floorplan · OCPP 2.1 V2X (ISO 15118) · EEBUS SPINE/SHIP (TLS 1.3 mTLS)                                                                                                                                                        |
-| **Protocols (Contrib)** | Home Assistant MQTT · Matter/Thread · Zigbee2MQTT · Shelly REST (Gen2+) · Example template                                                                                                                                                                                                               |
+| **Protocols (Core)**    | Victron MQTT (Cerbo GX / Venus OS) · Modbus/SunSpec (103/124/201) · KNX/IP floorplan · OCPP 2.1 V2X (ISO 15118) · EEBUS SPINE/SHIP (TLS 1.3 mTLS) · evcc backend · OpenEMS Edge (JSON-RPC)                                                                                                               |
+| **Protocols (Contrib)** | Home Assistant MQTT · Matter/Thread · Zigbee2MQTT · Shelly REST (Gen2+) · OpenADR 3.1 VEN · Example template                                                                                                                                                                                             |
 | **Plugin System**       | Adapter Registry with dynamic `import()` loading · npm-package format · `BaseAdapter` class for rapid development · Hot-loading from Settings UI                                                                                                                                                         |
 | **Platform**            | Unified Command Center (7 sections) · PWA offline-first (Workbox + IndexedDB) · 5 themes · Full i18n (DE/EN) · WCAG 2.2 AA · PDF reports + QR sharing · Prometheus monitoring                                                                                                                            |
 | **Security**            | BYOK AI vault (AES-GCM 256) · JWT WebSocket auth · Helmet CSP · Rate limiting · CORS · Zod schema validation                                                                                                                                                                                             |
@@ -68,18 +68,21 @@ In development, `apps/web` (Vite) proxies `/api/*`, `/metrics`, and `/ws` reques
 #### Frontend Adapters → UI
 
 ```
-┌─────────────────── Core Adapters ─────────────────────┐
+┌─────────────────── Core Adapters (7) ─────────────────┐
 │  Victron Cerbo GX ──┐                                 │
 │  Modbus/SunSpec ─────┤                                │
-│  KNX/IP Gateway ─────┼── EnergyAdapter ──┐            │
-│  OCPP 2.1 CSMS ──────┤     interface     │            │
-│  EEBUS CEM ──────────┘                   │            │
+│  KNX/IP Gateway ─────┤                                │
+│  OCPP 2.1 CSMS ──────┼── EnergyAdapter ──┐            │
+│  EEBUS CEM ──────────┤     interface     │            │
+│  evcc backend ───────┤                   │            │
+│  OpenEMS Edge ───────┘                   │            │
 └──────────────────────────────────────────┘            │
-┌──────────── Contrib Adapters (Plugin) ───────────────┐│
+┌──────────── Contrib Adapters (Plugin, 6) ────────────┐│
 │  Home Assistant MQTT ──┐                             ││
 │  Matter/Thread ────────┤                             ││
 │  Zigbee2MQTT ──────────┼── BaseAdapter ──────────────┼┤
 │  Shelly REST ──────────┤   (extends EnergyAdapter)   ││
+│  OpenADR 3.1 VEN ──────┤                             ││
 │  Custom (npm pkg) ─────┘                             ││
 └──────────────────────────────────────────────────────┘│
                                                         ▼
@@ -221,25 +224,28 @@ AWATTAR_BASE_URL=https://api.awattar.de/v1  # aWATTar DE Day-Ahead prices (no AP
 
 ## Protocol Adapters
 
-### Core Adapters (5)
+### Core Adapters (7)
 
-| Adapter              | Protocol            | Transport        | Security     | Capabilities               |
-| :------------------- | :------------------ | :--------------- | :----------- | :------------------------- |
-| VictronMQTTAdapter   | Node-RED MQTT→WS    | WebSocket        | Token auth   | PV, Battery, Grid, Load    |
-| ModbusSunSpecAdapter | SunSpec 103/124/201 | HTTP/REST        | TLS          | PV, Battery, Grid          |
-| KNXAdapter           | KNX/IP Tunneling    | WebSocket bridge | —            | KNX building automation    |
-| OCPP21Adapter        | OCPP 2.1 JSON-RPC   | WebSocket        | Client certs | EV Charger, V2X, ISO 15118 |
-| EEBUSAdapter         | SPINE/SHIP 1.0      | WebSocket        | TLS 1.3 mTLS | EV Charger, Load, Grid     |
+| Adapter              | Protocol              | Transport        | Security     | Capabilities               |
+| :------------------- | :-------------------- | :--------------- | :----------- | :------------------------- |
+| VictronMQTTAdapter   | Node-RED MQTT→WS      | WebSocket        | Token auth   | PV, Battery, Grid, Load    |
+| ModbusSunSpecAdapter | SunSpec 103/124/201   | HTTP/REST        | TLS          | PV, Battery, Grid          |
+| KNXAdapter           | KNX/IP Tunneling      | WebSocket bridge | —            | KNX building automation    |
+| OCPP21Adapter        | OCPP 2.1 JSON-RPC     | WebSocket        | Client certs | EV Charger, V2X, ISO 15118 |
+| EEBUSAdapter         | SPINE/SHIP 1.0        | WebSocket        | TLS 1.3 mTLS | EV Charger, Load, Grid     |
+| EvccAdapter          | evcc REST + WebSocket | HTTP + WS        | —            | 95%+ inverters/wallboxes   |
+| OpenEMSAdapter       | JSON-RPC 2.0          | WebSocket        | —            | OpenEMS Edge controllers   |
 
-### Contrib Adapters (5) — Plugin System
+### Contrib Adapters (6) — Plugin System
 
-| Adapter                  | Protocol                | Transport    | Use Case                                |
-| :----------------------- | :---------------------- | :----------- | :-------------------------------------- |
-| HomeAssistantMQTTAdapter | MQTT Discovery          | WebSocket    | Home Assistant integration (Mosquitto)  |
-| MatterThreadAdapter      | Matter 1.3 / Thread 1.3 | WebSocket    | Matter-certified smart home devices     |
-| Zigbee2MQTTAdapter       | MQTT (Z2M bridge)       | WebSocket    | Zigbee devices via Zigbee2MQTT bridge   |
-| ShellyRESTAdapter        | HTTP/REST Gen2+         | HTTP polling | Shelly Pro 3EM, Plus Plug S, Pro 4PM    |
-| ExampleContribAdapter    | —                       | —            | Template for custom adapter development |
+| Adapter                  | Protocol                | Transport    | Use Case                                          |
+| :----------------------- | :---------------------- | :----------- | :------------------------------------------------ |
+| HomeAssistantMQTTAdapter | MQTT Discovery          | WebSocket    | Home Assistant integration (Mosquitto)            |
+| MatterThreadAdapter      | Matter 1.3 / Thread 1.3 | WebSocket    | Matter-certified smart home devices               |
+| Zigbee2MQTTAdapter       | MQTT (Z2M bridge)       | WebSocket    | Zigbee devices via Zigbee2MQTT bridge             |
+| ShellyRESTAdapter        | HTTP/REST Gen2+         | HTTP polling | Shelly Pro 3EM, Plus Plug S, Pro 4PM              |
+| OpenADR31Adapter         | OpenADR 3.1.0           | HTTPS        | VEN client for demand-response events from a VTN  |
+| ExampleContribAdapter    | —                       | —            | Template for custom adapter development           |
 
 ### Plugin System & Adapter Registry
 
@@ -348,7 +354,7 @@ Brand colors: `neon-green` (#22ff88) · `electric-blue` (#00f0ff) · `power-oran
 - **Capacitor Mobile:** Capacitor 7 configuration for iOS/Android native shells and push-ready app metadata
 - **Tariff Providers:** Tibber, aWATTar DE/AT, Octopus Energy, Nordpool, and dynamic grid fees
 - **Unified Command Center:** 7 focused sections with legacy route redirects, guided tours, empty states, and contextual help
-- **Adapter Platform:** 10 adapters total, contrib plugin loading, lifecycle management, and monitoring health views
+- **Adapter Platform:** 13 adapters total (7 core + 6 contrib), contrib plugin loading, lifecycle management, and monitoring health views
 - **Controller Stack:** ESS, peak shaving, tariff-aware charging, self-consumption, emergency reserve, heat pump SG Ready, EV smart charging, and EV V2G discharge loops
 - **Security & CI:** JWT/WebSocket hardening, Node 24 CI baseline, dependency overrides, pnpm audit workflow, and Biome-first checks
 - **A11y & i18n:** WCAG 2.2 AA fixes, forced-colors/reduced-motion support, and complete DE/EN localization coverage for new UI
@@ -420,7 +426,7 @@ MIT — see [LICENSE](LICENSE).
 
 </div>
 
-**Nexus-HEMS Dashboard** ist ein produktionsreifes Echtzeit-Home-Energy-Management-System — **ein einziges Command Center** für die dezentrale Energiewende. Es vereint **10 Protokolladapter** (5 Core + 5 Contrib) in **7 fokussierten Sektionen** zur Orchestrierung von PV, Batteriespeicher, Wärmepumpen und E-Mobilität — optimiert für dynamische Stromtarife (Tibber/aWATTar/Octopus/Nordpool).
+**Nexus-HEMS Dashboard** ist ein produktionsreifes Echtzeit-Home-Energy-Management-System — **ein einziges Command Center** für die dezentrale Energiewende. Es vereint **13 Protokolladapter** (7 Core + 6 Contrib) in **7 fokussierten Sektionen** zur Orchestrierung von PV, Batteriespeicher, Wärmepumpen und E-Mobilität — optimiert für dynamische Stromtarife (Tibber/aWATTar/Octopus/Nordpool).
 
 - ⚡ Echtzeit D3.js Sankey-Energiefluss mit KI-Optimierung (Gemini 2.5 Pro)
 - 🎯 Unified Command Center: 7 Sektionen statt 18+ Einzelseiten

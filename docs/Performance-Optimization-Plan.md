@@ -28,7 +28,7 @@ implementation strategy, and metrics targets.
 | Metric | Current | Target |
 |--------|---------|--------|
 | `useEnergyStore.mergeData()` latency | unmeasured | <50 ms at 1000 updates/min |
-| Ring buffer memory (all adapters) | ~5 MB (1k × 10 adapters) | ~1 MB (adaptive sizing) |
+| Ring buffer memory (all adapters) | ~6.5 MB (1k × 13 adapters) | ~1.3 MB (adaptive sizing) |
 | Dexie 7-day history query | seconds (raw scan) | <200 ms (aggregate) |
 | Chart render (1000 data points) | >16 ms (dropped frames) | <16 ms (LTTB sampled) |
 | Sankey layout computation | ~80 ms (main thread, old) | ~20 ms (Web Worker) |
@@ -146,7 +146,7 @@ export const RING_BUFFER_SIZES: Record<string, number> = {
 };
 ```
 
-Memory reduction: **~5 MB → ~1 MB** (80% reduction for 10-adapter setup)
+Memory reduction: **~6.5 MB → ~1.3 MB** (80% reduction for 13-adapter setup)
 
 ---
 
