@@ -8,12 +8,12 @@ test.describe('PWA & Offline Behavior', () => {
 
   test('should load the app and show main heading', async ({ page }) => {
     await page.goto('./');
-    await expect(page.locator('h1').first()).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator('#main-content h1').first()).toBeVisible({ timeout: 15_000 });
   });
 
   test('should have service worker API available', async ({ page }) => {
     await page.goto('./');
-    await page.waitForSelector('h1', { timeout: 15_000 });
+    await page.waitForSelector('#main-content h1', { timeout: 15_000 });
 
     const swAvailable = await page.evaluate(() => 'serviceWorker' in navigator);
     expect(swAvailable).toBe(true);
@@ -21,7 +21,7 @@ test.describe('PWA & Offline Behavior', () => {
 
   test('should show offline banner when network goes offline', async ({ page, context }) => {
     await page.goto('./');
-    await page.waitForSelector('h1', { timeout: 15_000 });
+    await page.waitForSelector('#main-content h1', { timeout: 15_000 });
 
     // Go offline
     await context.setOffline(true);
@@ -83,7 +83,7 @@ test.describe('Performance', () => {
   test('should load the first contentful paint within reasonable time', async ({ page }) => {
     const start = Date.now();
     await page.goto('./');
-    await page.waitForSelector('h1');
+    await page.waitForSelector('#main-content h1');
     const fcp = Date.now() - start;
     // Should render within 10 seconds (generous for CI)
     expect(fcp).toBeLessThan(10_000);
@@ -99,12 +99,12 @@ test.describe('Performance', () => {
     });
 
     await page.goto('./');
-    await page.waitForSelector('h1', { timeout: 15_000 });
+    await page.waitForSelector('#main-content h1', { timeout: 15_000 });
     const homeRequestCount = requests.length;
 
     // Navigate to Settings — should trigger additional chunk loads
     await page.goto('./settings');
-    await page.waitForSelector('h1', { timeout: 15_000 });
+    await page.waitForSelector('#main-content h1', { timeout: 15_000 });
 
     // At least one new chunk loaded for settings
     expect(requests.length).toBeGreaterThan(homeRequestCount);

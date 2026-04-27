@@ -8,14 +8,14 @@ test.describe('User Flow', () => {
 
   test('should load home page', async ({ page }) => {
     await page.goto('./');
-    await expect(page.locator('h1')).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator('#main-content h1').first()).toBeVisible({ timeout: 15_000 });
   });
 
   test('should navigate to all main pages via sidebar', async ({ page }) => {
     // Use a large viewport to ensure sidebar is visible
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto('./');
-    await page.waitForSelector('h1', { timeout: 15_000 });
+    await page.waitForSelector('#main-content h1', { timeout: 15_000 });
 
     const navRoutes = [
       { linkText: /energy flow|energiefluss/i, url: '/energy-flow' },
@@ -33,7 +33,7 @@ test.describe('User Flow', () => {
       if ((await link.count()) > 0 && (await link.isVisible())) {
         await link.click();
         await expect(page).toHaveURL(new RegExp(route.url));
-        await page.waitForSelector('h1', { timeout: 15_000 });
+        await page.waitForSelector('#main-content h1', { timeout: 15_000 });
       }
     }
   });
@@ -47,7 +47,7 @@ test.describe('User Flow', () => {
 
   test('should switch themes', async ({ page }) => {
     await page.goto('./settings');
-    await page.waitForSelector('h1', { timeout: 15_000 });
+    await page.waitForSelector('#main-content h1', { timeout: 15_000 });
 
     // Click a theme card button in Settings
     const themeButton = page.locator('button[aria-pressed]').nth(1);
@@ -59,7 +59,7 @@ test.describe('User Flow', () => {
 
   test('should switch language', async ({ page }) => {
     await page.goto('./settings');
-    await page.waitForSelector('h1', { timeout: 15_000 });
+    await page.waitForSelector('#main-content h1', { timeout: 15_000 });
 
     // Get current lang
     const initialLang = await page.getAttribute('html', 'lang');

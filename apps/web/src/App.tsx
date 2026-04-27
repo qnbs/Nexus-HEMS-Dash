@@ -207,8 +207,10 @@ export default function App() {
         <PWAUpdateNotification />
         <TauriAutoUpdater />
 
-        {/* Onboarding: render fullscreen, hide entire app shell behind it */}
-        {!onboardingCompleted ? (
+        {/* Onboarding: render fullscreen, hide entire app shell behind it.
+            In E2E builds (VITE_E2E_TESTING=true) onboarding is always skipped so
+            Playwright can access AppShell content regardless of localStorage state. */}
+        {!import.meta.env.VITE_E2E_TESTING && !onboardingCompleted ? (
           <Suspense fallback={null}>
             <Onboarding />
           </Suspense>
@@ -221,8 +223,8 @@ export default function App() {
 
         <EnergyProvider>
           <AppShell
-            aria-hidden={!onboardingCompleted || undefined}
-            inert={!onboardingCompleted || undefined}
+            aria-hidden={(!import.meta.env.VITE_E2E_TESTING && !onboardingCompleted) || undefined}
+            inert={(!import.meta.env.VITE_E2E_TESTING && !onboardingCompleted) || undefined}
           >
             <ErrorBoundary>
               <Suspense fallback={<PageLoadingFallback />}>
