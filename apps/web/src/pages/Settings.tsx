@@ -48,7 +48,7 @@ import { type ThemeName, themeDefinitions, themeOrder } from '../design-tokens';
 import { PAGE_REGISTRY, SETTINGS_TABS, type SettingsTabId } from '../lib/page-relations';
 import { usePWAInstall } from '../lib/pwa-install';
 import { resolveTheme, type ThemePreference } from '../lib/theme';
-import { defaultSettings, useAppStore, useAppStoreShallow } from '../store';
+import { defaultSettings, useAppStoreShallow } from '../store';
 import { type PVConfig, SYSTEM_PRESETS } from '../types';
 
 const AISettingsPage = lazy(() => import('./AISettingsPage'));
@@ -3279,42 +3279,6 @@ export function Settings() {
                           onChange={(v) => updateSettings({ performanceMode: v })}
                           label={t('settings.performanceMode', 'Performance mode')}
                         />
-                      </div>
-
-                      {/* Reset Onboarding */}
-                      <div className="rounded-xl border border-(--color-primary)/20 bg-(--color-primary)/5 p-5">
-                        <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                          <div className="flex min-w-0 flex-1 items-start gap-3">
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-(--color-primary)/15">
-                              <RotateCcw size={20} className="text-(--color-primary)" />
-                            </div>
-                            <div className="min-w-0">
-                              <p className="font-medium text-sm">
-                                {t('settings.resetOnboarding', 'Show onboarding again')}
-                              </p>
-                              <p className="mt-1 text-(--color-muted) text-xs">
-                                {t(
-                                  'settings.resetOnboardingHint',
-                                  'Restart the welcome tour on next reload',
-                                )}
-                              </p>
-                            </div>
-                          </div>
-                          <motion.button
-                            type="button"
-                            onClick={() => {
-                              useAppStore.getState().setOnboardingCompleted(false);
-                              setSaved(true);
-                              setTimeout(() => setSaved(false), 3000);
-                            }}
-                            className="focus-ring flex w-full shrink-0 items-center justify-center gap-2 rounded-xl border border-(--color-primary)/30 bg-(--color-primary)/10 px-4 py-2 text-(--color-primary) text-sm transition-colors hover:bg-(--color-primary)/20 sm:w-auto"
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                          >
-                            <RotateCcw size={16} />
-                            {t('settings.resetOnboardingAction', 'Restart Tour')}
-                          </motion.button>
-                        </div>
                       </div>
                     </div>
                   </section>

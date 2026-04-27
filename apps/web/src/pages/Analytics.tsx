@@ -5,7 +5,6 @@ import { useTranslation } from 'react-i18next';
 import { PageHeader } from '../components/layout/PageHeader';
 import { HelpTooltip } from '../components/ui/HelpTooltip';
 import { PageCrossLinks } from '../components/ui/PageCrossLinks';
-import { PageTour, type TourStep } from '../components/ui/PageTour';
 
 // ─── Lazy-load heavy sub-pages into tab panels ───────────────────────
 const AnalyticsPage = lazy(() => import('./AnalyticsPage'));
@@ -34,27 +33,6 @@ function TabFallback() {
 function AnalyticsUnifiedComponent() {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<AnalyticsTab>('realtime');
-
-  const tourSteps: TourStep[] = [
-    {
-      icon: BarChart3,
-      titleKey: 'tour.analytics.overviewTitle',
-      descKey: 'tour.analytics.overviewDesc',
-      color: '#38bdf8',
-    },
-    {
-      icon: Clock,
-      titleKey: 'tour.analytics.historicalTitle',
-      descKey: 'tour.analytics.historicalDesc',
-      color: '#a855f6',
-    },
-    {
-      icon: FileText,
-      titleKey: 'tour.analytics.exportTitle',
-      descKey: 'tour.analytics.exportDesc',
-      color: '#22ff88',
-    },
-  ];
 
   const tabs: { key: AnalyticsTab; icon: React.ReactNode; label: string; desc: string }[] = [
     {
@@ -109,8 +87,6 @@ function AnalyticsUnifiedComponent() {
 
   return (
     <div className="space-y-6">
-      <PageTour tourId="analytics" steps={tourSteps} />
-
       <PageHeader
         title={t('analyticsUnified.title')}
         subtitle={t('analyticsUnified.subtitle')}

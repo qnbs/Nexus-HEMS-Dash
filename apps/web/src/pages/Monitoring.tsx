@@ -16,7 +16,6 @@ import { PageHeader } from '../components/layout/PageHeader';
 import { EmptyState } from '../components/ui/EmptyState';
 import { HelpTooltip } from '../components/ui/HelpTooltip';
 import { PageCrossLinks } from '../components/ui/PageCrossLinks';
-import { PageTour, type TourStep } from '../components/ui/PageTour';
 import { useAppStoreShallow } from '../store';
 
 // ─── Lazy-load the full monitoring panel ─────────────────────────────
@@ -48,31 +47,8 @@ function MonitoringUnifiedComponent() {
   const [powerUserMode, setPowerUserMode] = useState(debugMode ?? false);
   const [showAdvancedHint, setShowAdvancedHint] = useState(false);
 
-  const tourSteps: TourStep[] = [
-    {
-      icon: Eye,
-      titleKey: 'tour.monitoring.overviewTitle',
-      descKey: 'tour.monitoring.overviewDesc',
-      color: '#38bdf8',
-    },
-    {
-      icon: Server,
-      titleKey: 'tour.monitoring.powerUserTitle',
-      descKey: 'tour.monitoring.powerUserDesc',
-      color: '#a855f6',
-    },
-    {
-      icon: Lock,
-      titleKey: 'tour.monitoring.securityTitle',
-      descKey: 'tour.monitoring.securityDesc',
-      color: '#22ff88',
-    },
-  ];
-
   return (
     <div className="space-y-6">
-      <PageTour tourId="monitoring" steps={tourSteps} />
-
       <PageHeader
         title={t('monitoringUnified.title')}
         subtitle={t('monitoringUnified.subtitle')}

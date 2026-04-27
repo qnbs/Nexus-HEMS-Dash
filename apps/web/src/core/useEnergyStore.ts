@@ -113,13 +113,13 @@ function createDefaultAdapters(): Record<AdapterId, AdapterEntry> {
       circuitState: 'closed',
     },
     'modbus-sunspec': {
-      adapter: createAdapterInstance('modbus-sunspec'),
+      adapter: createAdapterInstance('modbus-sunspec', { host: 'localhost' }),
       enabled: false,
       status: 'disconnected',
       circuitState: 'closed',
     },
     knx: {
-      adapter: createAdapterInstance('knx'),
+      adapter: createAdapterInstance('knx', { host: 'localhost' }),
       enabled: false,
       status: 'disconnected',
       circuitState: 'closed',
@@ -131,7 +131,7 @@ function createDefaultAdapters(): Record<AdapterId, AdapterEntry> {
       circuitState: 'closed',
     },
     eebus: {
-      adapter: createAdapterInstance('eebus'),
+      adapter: createAdapterInstance('eebus', { host: 'localhost' }),
       enabled: false,
       status: 'disconnected',
       circuitState: 'closed',

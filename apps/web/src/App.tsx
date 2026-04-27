@@ -1,25 +1,20 @@
 import { lazy, Suspense, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Navigate, Route, BrowserRouter as Router, Routes, useLocation } from 'react-router-dom';
-import { EnergyProvider } from './core/EnergyContext';
-import { useAdapterBridge } from './core/useEnergyStore';
-import { themeDefinitions } from './design-tokens';
-import { useAppStoreShallow } from './store';
-
-const Onboarding = lazy(() =>
-  import('./components/Onboarding').then((m) => ({ default: m.Onboarding })),
-);
-
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { AppShell } from './components/layout/AppShell';
 import { OfflineBanner } from './components/OfflineBanner';
 import { PWAInstallPrompt } from './components/PWAInstallPrompt';
 import { PWAUpdateNotification } from './components/PWAUpdateNotification';
 import { TauriAutoUpdater } from './components/TauriAutoUpdater';
+import { EnergyProvider } from './core/EnergyContext';
+import { useAdapterBridge } from './core/useEnergyStore';
+import { themeDefinitions } from './design-tokens';
 import { backgroundSyncService } from './lib/background-sync';
 import { logError } from './lib/db';
 import { resolveTheme, watchSystemTheme } from './lib/theme';
 import { useNotifications } from './lib/useNotifications';
+import { useAppStoreShallow } from './store';
 
 // ─── Lazy-loaded section layouts (7 groups) ──────────────────────────
 const CommandHubLayout = lazy(() =>
@@ -101,7 +96,6 @@ export default function App() {
     compactMode,
     glowEffects,
     animations,
-    onboardingCompleted,
   } = useAppStoreShallow((s) => ({
     theme: s.theme,
     locale: s.locale,
@@ -113,7 +107,6 @@ export default function App() {
     compactMode: s.settings.compactMode,
     glowEffects: s.settings.glowEffects,
     animations: s.settings.animations,
-    onboardingCompleted: s.onboardingCompleted,
   }));
 
   // Adapter bridge replaces the old useWebSocket hook
@@ -207,25 +200,11 @@ export default function App() {
         <PWAUpdateNotification />
         <TauriAutoUpdater />
 
-        {/* Onboarding: render fullscreen, hide entire app shell behind it.
-            In E2E builds (VITE_E2E_TESTING=true) onboarding is always skipped so
-            Playwright can access AppShell content regardless of localStorage state. */}
-        {!import.meta.env.VITE_E2E_TESTING && !onboardingCompleted ? (
-          <Suspense fallback={null}>
-            <Onboarding />
-          </Suspense>
-        ) : (
-          <>
-            <OfflineBanner />
-            <PWAInstallPrompt />
-          </>
-        )}
+        <OfflineBanner />
+        <PWAInstallPrompt />
 
         <EnergyProvider>
-          <AppShell
-            aria-hidden={(!import.meta.env.VITE_E2E_TESTING && !onboardingCompleted) || undefined}
-            inert={(!import.meta.env.VITE_E2E_TESTING && !onboardingCompleted) || undefined}
-          >
+          <AppShell>
             <ErrorBoundary>
               <Suspense fallback={<PageLoadingFallback />}>
                 <Routes>

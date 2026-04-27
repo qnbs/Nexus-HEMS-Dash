@@ -28,7 +28,6 @@ import {
 } from '../components/ui/ControlPanel';
 import { EmptyState } from '../components/ui/EmptyState';
 import { HelpTooltip } from '../components/ui/HelpTooltip';
-import { PageTour, type TourStep } from '../components/ui/PageTour';
 import { useEnergyContext } from '../core/EnergyContext';
 import { useLegacySendCommand } from '../core/useLegacySendCommand';
 import { formatPercent, formatPower } from '../lib/format';
@@ -78,28 +77,6 @@ const PANEL_DEFAULTS: Record<PanelId, Position> = {
   knx: { x: -380, y: 80 }, // right-aligned via CSS
   stats: { x: -380, y: 400 }, // right-aligned via CSS
 };
-
-// ─── Tour steps ───────────────────────────────────────────────────────
-const TOUR_STEPS: TourStep[] = [
-  {
-    icon: Activity,
-    titleKey: 'tour.liveEnergy.overviewTitle',
-    descKey: 'tour.liveEnergy.overviewDesc',
-    color: '#00f0ff',
-  },
-  {
-    icon: GripHorizontal,
-    titleKey: 'tour.liveEnergy.panelsTitle',
-    descKey: 'tour.liveEnergy.panelsDesc',
-    color: '#22ff88',
-  },
-  {
-    icon: Maximize2,
-    titleKey: 'tour.liveEnergy.fullscreenTitle',
-    descKey: 'tour.liveEnergy.fullscreenDesc',
-    color: '#ff8800',
-  },
-];
 
 // ─── Main Component ────────────────────────────────────────────────────
 function LiveEnergyFlowComponent() {
@@ -201,8 +178,6 @@ function LiveEnergyFlowComponent() {
       ref={containerRef}
       className={`relative flex h-[calc(100dvh-8rem)] flex-col overflow-hidden ${isFullscreen ? 'h-screen bg-(--color-background)' : ''}`}
     >
-      <PageTour tourId="live-energy-flow" steps={TOUR_STEPS} />
-
       {/* ─── Top Bar ───────────────────────────────────────────── */}
       <div className="flex items-center justify-between gap-2 px-4 py-2">
         <div className="flex items-center gap-3">

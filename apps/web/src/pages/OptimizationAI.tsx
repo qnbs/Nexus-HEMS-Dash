@@ -35,7 +35,6 @@ import { EmptyState } from '../components/ui/EmptyState';
 import { FloatingActionBar } from '../components/ui/FloatingActionBar';
 import { HelpTooltip } from '../components/ui/HelpTooltip';
 import { PageCrossLinks } from '../components/ui/PageCrossLinks';
-import { PageTour, type TourStep } from '../components/ui/PageTour';
 import {
   useWizard,
   WizardContent,
@@ -71,28 +70,6 @@ const ACTION_ICONS: Record<string, typeof Zap> = {
   preheat: Flame,
   wait: Clock,
 };
-
-// ─── Tour steps ──────────────────────────────────────────────────────
-const TOUR_STEPS: TourStep[] = [
-  {
-    icon: BarChart3,
-    titleKey: 'tour.optimization.analyseTitle',
-    descKey: 'tour.optimization.analyseDesc',
-    color: '#00f0ff',
-  },
-  {
-    icon: BrainCircuit,
-    titleKey: 'tour.optimization.aiTitle',
-    descKey: 'tour.optimization.aiDesc',
-    color: '#a855f6',
-  },
-  {
-    icon: CheckCircle2,
-    titleKey: 'tour.optimization.confirmTitle',
-    descKey: 'tour.optimization.confirmDesc',
-    color: '#22ff88',
-  },
-];
 
 // ─── Component ───────────────────────────────────────────────────────
 
@@ -195,8 +172,6 @@ export default function OptimizationAI() {
 
   return (
     <div className="flex flex-col gap-6">
-      <PageTour tourId="optimization-ai" steps={TOUR_STEPS} />
-
       <div className="flex items-center gap-3">
         <PageHeader
           title={t('optimizationWizard.pageTitle')}

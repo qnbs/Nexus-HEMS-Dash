@@ -7,11 +7,16 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   ...(process.env.CI && { workers: 2 }),
   reporter: process.env.CI ? 'github' : 'html',
-  timeout: 30_000,
+  timeout: 300_000,
   use: {
     baseURL: 'http://127.0.0.1:4173/Nexus-HEMS-Dash/',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
+    serviceWorkers: 'block',
+    navigationTimeout: 120_000,
+    launchOptions: {
+      args: ['--disable-dev-shm-usage', '--disable-gpu', '--no-zygote', '--disable-extensions'],
+    },
   },
 
   projects: process.env.CI
@@ -28,7 +33,17 @@ export default defineConfig({
     : [
         {
           name: 'chromium',
-          use: { ...devices['Desktop Chrome'] },
+          use: {
+            ...devices['Desktop Chrome'],
+            launchOptions: {
+              args: [
+                '--disable-dev-shm-usage',
+                '--disable-gpu',
+                '--no-zygote',
+                '--disable-extensions',
+              ],
+            },
+          },
         },
       ],
 

@@ -28,7 +28,6 @@ import { EmptyState } from '../components/ui/EmptyState';
 import { EnergyCard, type EnergyCardVariant } from '../components/ui/EnergyCard';
 import { HelpTooltip } from '../components/ui/HelpTooltip';
 import { LiveMetric } from '../components/ui/LiveMetric';
-import { PageTour, type TourStep } from '../components/ui/PageTour';
 import { useEnergyContext } from '../core/EnergyContext';
 import { useLegacySendCommand } from '../core/useLegacySendCommand';
 import { hapticClick, hapticModeChange, hapticSuccess } from '../lib/haptics';
@@ -101,28 +100,6 @@ const CATEGORY_FILTERS: { key: DeviceCategory; labelKey: string; icon: React.Rea
   { key: 'building', labelKey: 'devicesAuto.filterBuilding', icon: <Building2 size={14} /> },
 ];
 
-// ─── Tour steps ──────────────────────────────────────────────────────
-const TOUR_STEPS: TourStep[] = [
-  {
-    icon: Zap,
-    titleKey: 'tour.devices.overviewTitle',
-    descKey: 'tour.devices.overviewDesc',
-    color: '#00f0ff',
-  },
-  {
-    icon: Filter,
-    titleKey: 'tour.devices.filterTitle',
-    descKey: 'tour.devices.filterDesc',
-    color: '#22ff88',
-  },
-  {
-    icon: ChevronRight,
-    titleKey: 'tour.devices.detailTitle',
-    descKey: 'tour.devices.detailDesc',
-    color: '#ff8800',
-  },
-];
-
 // ─── Main Page Component ─────────────────────────────────────────────
 
 export default function DevicesAutomation() {
@@ -148,7 +125,6 @@ export default function DevicesAutomation() {
 
   return (
     <div className="space-y-6">
-      <PageTour tourId="devices-automation" steps={TOUR_STEPS} />
       <DemoBadge />
       <PageHeader
         title={t('devicesAuto.title')}

@@ -17,7 +17,6 @@ interface AppState {
   themeTransitionKey: number;
   floorplan: FloorplanState;
   settings: StoredSettings;
-  onboardingCompleted: boolean;
   setEnergyData: (data: Partial<EnergyData>) => void;
   setConnected: (status: boolean) => void;
   setLocale: (locale: LocaleCode) => void;
@@ -25,7 +24,6 @@ interface AppState {
   setThemePreference: (preference: ThemePreference) => void;
   updateFloorplan: (data: Partial<FloorplanState>) => void;
   updateSettings: (data: Partial<StoredSettings>) => void;
-  setOnboardingCompleted: (completed: boolean) => void;
 }
 
 const defaultEnergyData: EnergyData = {
@@ -108,8 +106,7 @@ type PersistedKey =
   | 'themePreference'
   | 'themeTransitionKey'
   | 'floorplan'
-  | 'settings'
-  | 'onboardingCompleted';
+  | 'settings';
 
 export const useAppStore = create<AppState>()(
   persist(
@@ -127,8 +124,6 @@ export const useAppStore = create<AppState>()(
         roomTemperature: 21.5,
       },
       settings: defaultSettings,
-      onboardingCompleted: false,
-      setOnboardingCompleted: (completed) => set({ onboardingCompleted: completed }),
       setEnergyData: (data) =>
         set((state) => {
           // Skip update if all incoming values match current state
@@ -186,7 +181,6 @@ export const useAppStore = create<AppState>()(
           themeTransitionKey: state.themeTransitionKey,
           floorplan: state.floorplan,
           settings: safeSettings as StoredSettings,
-          onboardingCompleted: state.onboardingCompleted,
         };
       },
       // Deep-merge persisted settings with defaults so newly added keys

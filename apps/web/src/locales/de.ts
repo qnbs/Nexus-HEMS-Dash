@@ -614,9 +614,6 @@ export const de = {
     experimentalHint: 'Beta-Funktionen aktivieren, die instabil sein können',
     performanceMode: 'Leistungsmodus',
     performanceHint: 'Animationen und Effekte reduzieren für bessere Performance',
-    resetOnboarding: 'Onboarding erneut anzeigen',
-    resetOnboardingHint: 'Willkommensführung beim nächsten Laden erneut starten',
-    resetOnboardingAction: 'Tour neu starten',
     dangerZone: 'Gefahrenzone',
     resetAll: 'Alle Einstellungen zurücksetzen',
     resetHint: 'Alle Einstellungen werden auf die Standardwerte zurückgesetzt',
@@ -1446,7 +1443,6 @@ export const de = {
     screenReaderOnly: 'Nur für Screenreader',
     keyboardNavigation: 'Tastaturnavigation verfügbar',
     decorativeImage: 'Dekoratives Bild',
-    progressStep: 'Fortschritt: Schritt {{current}} von {{total}}',
     commandPaletteTitle: 'Befehlspalette',
     searchCommands: 'Befehle suchen',
     tempDecreaseRoom: '{{room}} Temperatur verringern auf {{temp}}°C',
@@ -1457,7 +1453,6 @@ export const de = {
     sankeyPower: 'Leistung (W)',
     floorplanRoomStatus: '{{room}}: {{temp}}°C, {{humidity}}% Luftfeuchtigkeit, Licht {{light}}',
     moreNavPages: 'Weitere Navigationsseiten',
-    skipOnboarding: 'Onboarding überspringen und zum Dashboard gehen',
     sankeyAnnouncePV: 'PV-Erzeugung {{power}} Watt',
     sankeyAnnounceGridImport: 'Netzbezug {{power}} Watt',
     sankeyAnnounceGridExport: 'Netzeinspeisung {{power}} Watt',
@@ -2162,47 +2157,6 @@ export const de = {
     pluginDynamicLoad: 'Dynamisches Laden via import()',
     pluginNpmFormat: 'npm-Paket-Format unterstützt',
   },
-  onboarding: {
-    welcome: 'Willkommen bei Nexus HEMS',
-    welcomeDesc:
-      'Ihr intelligentes Home Energy Management System für Echtzeit-Monitoring, Optimierung und Steuerung Ihres gesamten Energie-Ökosystems.',
-    chooseLanguage: 'Sprache wählen',
-    langHint: 'Sie können dies später in den Einstellungen ändern.',
-    energyFlow: 'Echtzeit-Energiefluss',
-    energyFlowDesc:
-      'Überwachen Sie Ihre PV-Erzeugung, Batteriespeicher, Netzaustausch und Hausverbrauch live mit einem interaktiven Sankey-Diagramm.',
-    smartControl: 'Intelligente Steuerung',
-    smartControlDesc:
-      'Optimieren Sie das EV-Laden mit dynamischen Tarifen, steuern Sie Wärmepumpen via SG Ready und verwalten Sie Ihr KNX Smart Home — alles in einem Dashboard.',
-    aiOptimizer: 'KI-Optimierer',
-    aiOptimizerDesc:
-      'Lassen Sie die KI Ihre Energiemuster analysieren und Eigenverbrauch, Batteriestrategie und Kostenersparnis automatisch optimieren.',
-    allSet: 'Alles bereit!',
-    allSetDesc:
-      'Ihr Dashboard ist einsatzbereit. Verbinden Sie Ihren Victron Cerbo GX oder starten Sie mit Demo-Daten.',
-    next: 'Weiter',
-    back: 'Zurück',
-    skip: 'Überspringen',
-    getStarted: 'Loslegen',
-    step: 'Schritt {{current}} von {{total}}',
-    featurePv: 'PV-Erzeugung',
-    featurePvDesc: 'Solarproduktion in Echtzeit verfolgen',
-    featureBattery: 'Batteriespeicher',
-    featureBatteryDesc: 'Ladezustand & Strategie überwachen',
-    featureEv: 'EV-Laden',
-    featureEvDesc: 'Intelligentes Laden mit dynamischen Tarifen',
-    featureKnx: 'KNX Smart Home',
-    featureKnxDesc: 'Grundriss-Steuerung & Automatisierung',
-    tipConnect: 'Verbinden Sie Ihr Gateway unter Einstellungen → System',
-    tipTariff: 'Richten Sie Tibber oder aWATTar für dynamische Preise ein',
-    tipAi: 'Konfigurieren Sie KI-Schlüssel unter Einstellungen → KI für smarte Optimierung',
-    dynamicTariff: 'Dynamischer Stromtarif',
-    aiRecommendations: 'KI-Empfehlungen',
-    checkLanguage: 'Sprache konfiguriert',
-    checkEnergyFlow: 'Echtzeit-Energiefluss bereit',
-    checkControl: 'Steuerungsfunktionen verfügbar',
-    checkAi: 'KI-Optimierung vorbereitet',
-  },
   adapterConfig: {
     title: 'Adapter-Konfiguration',
     description: 'Verbinden und konfigurieren Sie Ihre Energiegeräte über verschiedene Protokolle.',
@@ -2565,97 +2519,34 @@ export const de = {
     apply: 'Anwenden',
   },
 
-  // ─── Tour & Empty States ──────────────────────────────────────────
+  // ─── Empty States & Help Tooltips ────────────────────────────────
   tour: {
-    title: 'Geführte Tour',
-    prev: 'Zurück',
-    next: 'Weiter',
-    finish: 'Verstanden',
     hub: {
-      overviewTitle: 'Willkommen im Command Hub',
-      overviewDesc:
-        'Alle Kennzahlen Ihres Energiesystems auf einen Blick — PV, Batterie, Netz, Verbrauch und mehr.',
-      sankeyTitle: 'Sankey-Energiefluss',
-      sankeyDesc:
-        'Das Sankey-Diagramm zeigt in Echtzeit, wohin Ihre Energie fließt — von der Erzeugung bis zum Verbrauch.',
-      aiTitle: 'KI-Optimierung',
-      aiDesc:
-        'Der KI-Optimierer analysiert Wetter, Tarife und Ihren Verbrauch, um Empfehlungen auszusprechen.',
       metricsHelp:
         'Live-Kennzahlen zeigen PV-Erzeugung, Batteriestatus, Netzleistung und Eigenverbrauch.',
     },
     analytics: {
-      overviewTitle: 'Analytik & Berichte',
-      overviewDesc:
-        'Echtzeit-KPIs, Energiebilanz und CO₂-Report — alles gebündelt auf einer Seite.',
-      historicalTitle: 'Historische Analyse',
-      historicalDesc:
-        'Vergleichen Sie Tages-, Wochen- und Monatsdaten, um Trends zu erkennen und Effizienz zu steigern.',
-      exportTitle: 'Export & Teilen',
-      exportDesc:
-        'Erstellen Sie PDF-Berichte oder teilen Sie Dashboards per QR-Code mit Installateuren und Beratern.',
       quickHelp: 'Klicke auf eine Kachel, um direkt zum entsprechenden Analysebereich zu springen.',
     },
     monitoring: {
-      overviewTitle: 'Monitoring & Gesundheit',
-      overviewDesc:
-        'Überwachen Sie Adapter-Status, Systemgesundheit und Echtzeitmetriken an einem zentralen Ort.',
-      powerUserTitle: 'Power-User-Modus',
-      powerUserDesc:
-        'Aktivieren Sie detaillierte Prometheus-Metriken, Adapter-Logs und Ereignisprotokolle.',
-      securityTitle: 'Sicherheit',
-      securityDesc: 'TLS-Status, Zertifikate und Sicherheitsereignisse — immer im Blick.',
       powerUserHelp: 'Zeigt erweiterte Metriken, Adapter-Logs und Prometheus-Endpunkte.',
       emptyDesc:
         'Aktiviere den Power-User-Modus, um Prometheus-Metriken, Adapter-Status und Ereignislogs einzusehen.',
     },
     settings: {
-      overviewTitle: 'Einstellungen',
-      overviewDesc: 'Passen Sie System, Adapter, Design und Sicherheit an — alles an einem Ort.',
-      pluginsTitle: 'Plugins & Erweiterungen',
-      pluginsDesc:
-        'Verwalten Sie installierte Plugins und entdecken Sie neue Erweiterungen für Ihr HEMS.',
-      advancedTitle: 'Erweitert & Hilfe',
-      advancedDesc: 'Debug-Modus, Tastaturkürzel, Onboarding-Touren und Systemreset.',
       navHelp: 'Wählen Sie einen Bereich, um die entsprechenden Einstellungen zu öffnen.',
     },
     liveEnergy: {
-      overviewTitle: 'Live-Energiefluss',
-      overviewDesc:
-        'Beobachten Sie in Echtzeit, wie Energie durch Ihr System fließt — vom PV-Modul bis zum Verbraucher.',
-      panelsTitle: 'Geräte-Panels',
-      panelsDesc:
-        'Öffnen Sie verschiebbare Panels für EV, Wärmepumpe, Batterie und KNX-Steuerung direkt auf dem Diagramm.',
-      fullscreenTitle: 'Vollbildmodus',
-      fullscreenDesc:
-        'Nutzen Sie den Vollbildmodus für eine ungestörte Ansicht des Energieflusses.',
       help: 'Echtzeit-Energiefluss mit Sankey-Diagramm und Gerätesteuerung',
       emptyTitle: 'Keine Verbindung',
       emptyDesc:
         'Verbinden Sie Ihren Wechselrichter oder Cerbo GX, um den Live-Energiefluss zu sehen.',
     },
     devices: {
-      overviewTitle: 'Geräte & Automation',
-      overviewDesc:
-        'Alle Ihre Energiegeräte auf einen Blick — PV, Speicher, EV-Ladung, Wärmepumpe und Gebäudesteuerung.',
-      filterTitle: 'Filter & Suche',
-      filterDesc: 'Filtern Sie nach Kategorie oder suchen Sie gezielt nach Gerätenamen.',
-      detailTitle: 'Gerätedetails',
-      detailDesc:
-        'Öffnen Sie die Detailansicht, um Echtzeitdaten, Historie und Steueroptionen einzusehen.',
       filterHelp: 'Filtern Sie Geräte nach Kategorie oder nutzen Sie die Suche',
       emptyDesc: 'Versuchen Sie einen anderen Suchbegriff oder setzen Sie den Filter zurück.',
     },
     optimization: {
-      analyseTitle: 'Tarife & Vorhersage',
-      analyseDesc:
-        'Im ersten Schritt werden aktuelle Stromtarife und Wettervorhersagen analysiert, um optimale Zeitfenster zu finden.',
-      aiTitle: 'KI-Empfehlungen',
-      aiDesc:
-        'Die KI und der MPC-Optimierer generieren maßgeschneiderte Vorschläge für Laden, Heizen und Speichermanagement.',
-      confirmTitle: 'Bestätigen & Anwenden',
-      confirmDesc:
-        'Prüfen Sie die Empfehlungen und wenden Sie sie mit einem Klick auf alle verbundenen Adapter an.',
       help: 'KI-gestützter 3-Schritt-Assistent: Tarife analysieren, Empfehlungen prüfen, mit einem Klick anwenden.',
       emptyDesc: 'Verbinden Sie einen Adapter, um den Optimierungsassistenten nutzen zu können.',
     },

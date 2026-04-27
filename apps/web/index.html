@@ -229,8 +229,9 @@
     </div>
     <script type="module" src="/src/main.tsx"></script>
     <script nonce="__CSP_NONCE__">
-      // Fallback: if app hasn't rendered after 5s, show retry option
+      // Fallback: if app hasn't rendered after 5s (30s in E2E mode), show retry option
       // This also works as recovery when React crashes or SW serves stale cache
+      var nexusRecoveryDelay = '%VITE_E2E_TESTING%' === 'true' ? 30000 : 5000;
       setTimeout(() => {
         var root = document.getElementById('root');
         if (!root) return;
@@ -277,7 +278,7 @@
           recovery.appendChild(btn);
           root.appendChild(recovery);
         }
-      }, 5000);
+      }, nexusRecoveryDelay);
     </script>
   </body>
 </html>

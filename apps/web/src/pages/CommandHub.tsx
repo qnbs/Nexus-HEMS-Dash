@@ -25,7 +25,6 @@ import { EnergyCard } from '../components/ui/EnergyCard';
 import { FloatingActionBar } from '../components/ui/FloatingActionBar';
 import { HelpTooltip } from '../components/ui/HelpTooltip';
 import { LiveMetric } from '../components/ui/LiveMetric';
-import { PageTour, type TourStep } from '../components/ui/PageTour';
 import { useEnergyContext } from '../core/EnergyContext';
 import { useAppStoreShallow } from '../store';
 
@@ -197,26 +196,8 @@ function CommandHubComponent() {
   // Quick-actions bar — always visible on this page
   const [actionsOpen] = useState(true);
 
-  const tourSteps: TourStep[] = [
-    {
-      icon: Home,
-      titleKey: 'tour.hub.overviewTitle',
-      descKey: 'tour.hub.overviewDesc',
-      color: '#38bdf8',
-    },
-    {
-      icon: Activity,
-      titleKey: 'tour.hub.sankeyTitle',
-      descKey: 'tour.hub.sankeyDesc',
-      color: '#22ff88',
-    },
-    { icon: Sparkles, titleKey: 'tour.hub.aiTitle', descKey: 'tour.hub.aiDesc', color: '#a855f6' },
-  ];
-
   return (
     <div className="space-y-6">
-      <PageTour tourId="command-hub" steps={tourSteps} />
-
       {/* ─── Page Header ─────────────────────────────────────── */}
       <PageHeader
         title={t('commandHub.title', 'Command Hub')}

@@ -12,7 +12,6 @@ import {
   Settings as SettingsIcon,
   Shield,
   Sparkles,
-  Wrench,
   Zap,
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
@@ -22,7 +21,6 @@ import { useSearchParams } from 'react-router-dom';
 import { PageHeader } from '../components/layout/PageHeader';
 import { HelpTooltip } from '../components/ui/HelpTooltip';
 import { PageCrossLinks } from '../components/ui/PageCrossLinks';
-import { PageTour, type TourStep } from '../components/ui/PageTour';
 
 // ─── Lazy-load existing pages ────────────────────────────────────────
 const SettingsPage = lazy(() => import('./Settings').then((m) => ({ default: m.Settings })));
@@ -52,27 +50,6 @@ function TabFallback() {
 function SettingsUnifiedComponent() {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
-
-  const tourSteps: TourStep[] = [
-    {
-      icon: SettingsIcon,
-      titleKey: 'tour.settings.overviewTitle',
-      descKey: 'tour.settings.overviewDesc',
-      color: '#38bdf8',
-    },
-    {
-      icon: Puzzle,
-      titleKey: 'tour.settings.pluginsTitle',
-      descKey: 'tour.settings.pluginsDesc',
-      color: '#a855f6',
-    },
-    {
-      icon: Wrench,
-      titleKey: 'tour.settings.advancedTitle',
-      descKey: 'tour.settings.advancedDesc',
-      color: '#ff8800',
-    },
-  ];
 
   // Derive initial section from URL
   const sectionParam = searchParams.get('section') as SettingsSection | null;
@@ -195,8 +172,6 @@ function SettingsUnifiedComponent() {
 
   return (
     <div className="space-y-6">
-      <PageTour tourId="settings" steps={tourSteps} />
-
       <PageHeader
         title={t('settingsUnified.title')}
         subtitle={t('settingsUnified.subtitle')}

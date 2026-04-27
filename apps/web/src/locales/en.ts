@@ -611,9 +611,6 @@ export const en = {
     experimentalHint: 'Enable beta features that may be unstable',
     performanceMode: 'Performance mode',
     performanceHint: 'Reduce animations and effects for better performance',
-    resetOnboarding: 'Show onboarding again',
-    resetOnboardingHint: 'Restart the welcome tour on next reload',
-    resetOnboardingAction: 'Restart Tour',
     dangerZone: 'Danger Zone',
     resetAll: 'Reset all settings',
     resetHint: 'This will reset all settings to their default values',
@@ -1431,7 +1428,6 @@ export const en = {
     screenReaderOnly: 'Screen reader only',
     keyboardNavigation: 'Keyboard navigation available',
     decorativeImage: 'Decorative image',
-    progressStep: 'Progress: step {{current}} of {{total}}',
     commandPaletteTitle: 'Command palette',
     searchCommands: 'Search commands',
     tempDecreaseRoom: 'Decrease {{room}} temperature to {{temp}}°C',
@@ -1442,7 +1438,6 @@ export const en = {
     sankeyPower: 'Power (W)',
     floorplanRoomStatus: '{{room}}: {{temp}}°C, {{humidity}}% humidity, lights {{light}}',
     moreNavPages: 'More navigation pages',
-    skipOnboarding: 'Skip onboarding and go to dashboard',
     sankeyAnnouncePV: 'PV generation {{power}} watts',
     sankeyAnnounceGridImport: 'Grid import {{power}} watts',
     sankeyAnnounceGridExport: 'Grid export {{power}} watts',
@@ -2144,47 +2139,6 @@ export const en = {
     pluginDynamicLoad: 'Dynamic loading via import()',
     pluginNpmFormat: 'npm package format supported',
   },
-  onboarding: {
-    welcome: 'Welcome to Nexus HEMS',
-    welcomeDesc:
-      'Your intelligent Home Energy Management System for real-time monitoring, optimization and control of your entire energy ecosystem.',
-    chooseLanguage: 'Choose your language',
-    langHint: 'You can change this later in settings.',
-    energyFlow: 'Real-Time Energy Flow',
-    energyFlowDesc:
-      'Monitor your PV generation, battery storage, grid exchange and household consumption live with an interactive Sankey diagram.',
-    smartControl: 'Smart Control',
-    smartControlDesc:
-      'Optimize EV charging with dynamic tariffs, control heat pumps via SG Ready, and manage your KNX smart home — all from one dashboard.',
-    aiOptimizer: 'AI Optimizer',
-    aiOptimizerDesc:
-      'Let AI analyze your energy patterns and automatically optimize self-consumption, battery strategy and cost savings.',
-    allSet: "You're all set!",
-    allSetDesc:
-      'Your dashboard is ready. Connect your Victron Cerbo GX or start exploring with demo data.',
-    next: 'Next',
-    back: 'Back',
-    skip: 'Skip',
-    getStarted: 'Get Started',
-    step: 'Step {{current}} of {{total}}',
-    featurePv: 'PV Generation',
-    featurePvDesc: 'Track solar production in real-time',
-    featureBattery: 'Battery Storage',
-    featureBatteryDesc: 'Monitor charge levels & strategy',
-    featureEv: 'EV Charging',
-    featureEvDesc: 'Smart charging with dynamic tariffs',
-    featureKnx: 'KNX Smart Home',
-    featureKnxDesc: 'Floorplan control & automation',
-    tipConnect: 'Connect your gateway in Settings → System',
-    tipTariff: 'Set up Tibber or aWATTar for dynamic pricing',
-    tipAi: 'Configure AI keys in Settings → AI for smart optimization',
-    dynamicTariff: 'Dynamic Electricity Tariff',
-    aiRecommendations: 'AI Recommendations',
-    checkLanguage: 'Language configured',
-    checkEnergyFlow: 'Real-time energy flow ready',
-    checkControl: 'Control features available',
-    checkAi: 'AI optimization prepared',
-  },
   adapterConfig: {
     title: 'Adapter Configuration',
     description: 'Connect and configure your energy devices via various protocols.',
@@ -2545,91 +2499,33 @@ export const en = {
     apply: 'Apply',
   },
 
-  // ─── Tour & Empty States ──────────────────────────────────────────
+  // ─── Empty States & Help Tooltips ────────────────────────────────
   tour: {
-    title: 'Guided Tour',
-    prev: 'Back',
-    next: 'Next',
-    finish: 'Got it',
     hub: {
-      overviewTitle: 'Welcome to Command Hub',
-      overviewDesc:
-        'All your energy system metrics at a glance — PV, battery, grid, consumption and more.',
-      sankeyTitle: 'Sankey Energy Flow',
-      sankeyDesc:
-        'The Sankey diagram shows in real-time where your energy flows — from generation to consumption.',
-      aiTitle: 'AI Optimization',
-      aiDesc:
-        'The AI optimizer analyzes weather, tariffs and your consumption to provide recommendations.',
       metricsHelp:
         'Live metrics show PV generation, battery status, grid power and self-consumption.',
     },
     analytics: {
-      overviewTitle: 'Analytics & Reports',
-      overviewDesc: 'Real-time KPIs, energy balance and CO₂ report — all bundled on one page.',
-      historicalTitle: 'Historical Analysis',
-      historicalDesc:
-        'Compare daily, weekly and monthly data to identify trends and improve efficiency.',
-      exportTitle: 'Export & Share',
-      exportDesc:
-        'Create PDF reports or share dashboards via QR code with installers and consultants.',
       quickHelp: 'Click a tile to jump directly to the corresponding analytics section.',
     },
     monitoring: {
-      overviewTitle: 'Monitoring & Health',
-      overviewDesc:
-        'Monitor adapter status, system health and real-time metrics in one central place.',
-      powerUserTitle: 'Power User Mode',
-      powerUserDesc: 'Enable detailed Prometheus metrics, adapter logs and event protocols.',
-      securityTitle: 'Security',
-      securityDesc: 'TLS status, certificates and security events — always in view.',
       powerUserHelp: 'Shows advanced metrics, adapter logs and Prometheus endpoints.',
       emptyDesc:
         'Enable power user mode to view Prometheus metrics, adapter status and event logs.',
     },
     settings: {
-      overviewTitle: 'Settings',
-      overviewDesc: 'Customize system, adapters, design and security — all in one place.',
-      pluginsTitle: 'Plugins & Extensions',
-      pluginsDesc: 'Manage installed plugins and discover new extensions for your HEMS.',
-      advancedTitle: 'Advanced & Help',
-      advancedDesc: 'Debug mode, keyboard shortcuts, onboarding tours and system reset.',
       navHelp: 'Select a section to open the corresponding settings.',
     },
     liveEnergy: {
-      overviewTitle: 'Live Energy Flow',
-      overviewDesc:
-        'Watch in real-time how energy flows through your system — from PV modules to consumers.',
-      panelsTitle: 'Device Panels',
-      panelsDesc:
-        'Open draggable panels for EV, heat pump, battery and KNX control directly on the diagram.',
-      fullscreenTitle: 'Fullscreen Mode',
-      fullscreenDesc: 'Use fullscreen mode for an undisturbed view of the energy flow.',
       help: 'Real-time energy flow with Sankey diagram and device control',
       emptyTitle: 'No Connection',
       emptyDesc: 'Connect your inverter or Cerbo GX to see the live energy flow.',
     },
     devices: {
-      overviewTitle: 'Devices & Automation',
-      overviewDesc:
-        'All your energy devices at a glance — PV, storage, EV charging, heat pump and building control.',
-      filterTitle: 'Filter & Search',
-      filterDesc: 'Filter by category or search for specific device names.',
-      detailTitle: 'Device Details',
-      detailDesc: 'Open the detail view to see real-time data, history and control options.',
       filterHelp: 'Filter devices by category or use the search',
       emptyDesc: 'Try a different search term or reset the filter.',
     },
     optimization: {
-      analyseTitle: 'Tariffs & Forecast',
-      analyseDesc:
-        'The first step analyzes current electricity tariffs and weather forecasts to find optimal time windows.',
-      aiTitle: 'AI Recommendations',
-      aiDesc:
-        'The AI and MPC optimizer generate tailored suggestions for charging, heating and storage management.',
-      confirmTitle: 'Confirm & Apply',
-      confirmDesc:
-        'Review the recommendations and apply them to all connected adapters with a single click.',
       help: 'AI-powered 3-step wizard: analyze tariffs, review recommendations, apply with one click.',
       emptyDesc: 'Connect an adapter to use the optimization wizard.',
     },
