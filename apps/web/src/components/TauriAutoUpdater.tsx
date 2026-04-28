@@ -161,7 +161,7 @@ export function TauriAutoUpdater() {
             <button
               type="button"
               onClick={handleDownloadAndInstall}
-              className="focus-ring shrink-0 rounded-lg bg-(--color-primary) px-3 py-1.5 font-medium text-white text-xs transition-opacity hover:opacity-90"
+              className="focus-ring shrink-0 rounded-lg bg-(--color-primary) px-3 py-1.5 font-medium text-(--color-on-primary) text-xs transition-opacity hover:opacity-90"
             >
               {t('updater.install', 'Install')}
             </button>

@@ -1207,7 +1207,7 @@ export function AdapterConfigPanel() {
                       <motion.button
                         type="button"
                         onClick={() => handleSave(adapter.id)}
-                        className="flex items-center gap-2 rounded-xl bg-(--color-primary) px-4 py-2 font-medium text-sm text-white transition-opacity hover:opacity-90"
+                        className="flex items-center gap-2 rounded-xl bg-(--color-primary) px-4 py-2 font-medium text-sm text-(--color-on-primary) transition-opacity hover:opacity-90"
                         whileHover={{ scale: 1.02, y: -1 }}
                         whileTap={{ scale: 0.98 }}
                       >

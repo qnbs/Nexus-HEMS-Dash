@@ -100,7 +100,7 @@ export function PredictiveForecast() {
             onClick={() => setTimeRange('24h')}
             className={`focus-ring rounded-lg px-4 py-2 font-medium text-sm transition-colors ${
               timeRange === '24h'
-                ? 'bg-(--color-primary) font-bold text-(--color-background)'
+                ? 'bg-(--color-primary) font-bold text-(--color-on-primary)'
                 : 'bg-(--color-surface) text-(--color-muted) hover:bg-white/10'
             }`}
             aria-pressed={timeRange === '24h'}
@@ -113,7 +113,7 @@ export function PredictiveForecast() {
             onClick={() => setTimeRange('7d')}
             className={`focus-ring rounded-lg px-4 py-2 font-medium text-sm transition-colors ${
               timeRange === '7d'
-                ? 'bg-(--color-primary) font-bold text-(--color-background)'
+                ? 'bg-(--color-primary) font-bold text-(--color-on-primary)'
                 : 'bg-(--color-surface) text-(--color-muted) hover:bg-white/10'
             }`}
             aria-pressed={timeRange === '7d'}

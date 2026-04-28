@@ -1761,6 +1761,7 @@ export const de = {
     heatmapTitle: '7-Tage Preis-Heatmap',
     heatmapDesc: 'Stündliche Preisverteilung der letzten 7 Tage (24h × 7d)',
     heatmapAria: 'Heatmap der stündlichen Strompreise der letzten 7 Tage',
+    day: 'Tag',
     cheap: 'Günstig',
     expensive: 'Teuer',
     windowsTitle: 'Optimale Ladefenster',

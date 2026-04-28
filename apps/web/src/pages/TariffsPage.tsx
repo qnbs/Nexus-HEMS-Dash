@@ -485,7 +485,7 @@ function TariffsPageComponent() {
                 onClick={() => setView48h(v)}
                 className={`focus-ring rounded-lg px-3 py-1.5 font-medium text-xs transition-colors ${
                   view48h === v
-                    ? 'bg-(--color-primary) text-(--color-background)'
+                    ? 'bg-(--color-primary) text-(--color-on-primary)'
                     : 'bg-(--color-surface) text-(--color-muted) hover:bg-white/10'
                 }`}
                 aria-pressed={view48h === v}
@@ -636,39 +636,53 @@ function TariffsPageComponent() {
         </h2>
         <p className="mb-4 text-(--color-muted) text-sm">{t('tariffs.heatmapDesc')}</p>
 
-        {/* biome-ignore lint/a11y/useSemanticElements: heatmap uses flexbox layout incompatible with HTML table element */}
-        <div className="overflow-x-auto" role="table" aria-label={t('tariffs.heatmapAria')}>
-          <div className="min-w-[700px]">
-            {/* Hour labels */}
-            <div className="mb-1 flex">
-              <div className="w-16 shrink-0" />
-              {Array.from({ length: 24 }, (_, h) => h).map((h) => (
+        <div className="overflow-x-auto">
+          {/* biome-ignore lint/a11y/useSemanticElements: heatmap uses flexbox layout incompatible with HTML table element */}
+          <div className="min-w-[700px]" role="table" aria-label={t('tariffs.heatmapAria')}>
+            {/* Column headers (rowgroup → row → columnheader required by ARIA table pattern) */}
+            <div role="rowgroup">
+              <div role="row" className="mb-1 flex">
                 <div
-                  key={`hour-label-${h}`}
-                  className="flex-1 text-center text-(--color-muted) text-[9px]"
-                >
-                  {h % 3 === 0 ? `${String(h).padStart(2, '0')}` : ''}
+                  role="columnheader"
+                  className="w-16 shrink-0"
+                  aria-label={t('tariffs.day', 'Day')}
+                />
+                {Array.from({ length: 24 }, (_, h) => h).map((h) => (
+                  <div
+                    key={`hour-label-${h}`}
+                    role="columnheader"
+                    className="flex-1 text-center text-(--color-muted) text-[9px]"
+                    aria-label={`${String(h).padStart(2, '0')}:00`}
+                  >
+                    {h % 3 === 0 ? `${String(h).padStart(2, '0')}` : ''}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Data rows */}
+            <div role="rowgroup">
+              {HEATMAP_DATA.map((row) => (
+                <div key={row.date} role="row" className="mb-0.5 flex items-center">
+                  <div
+                    role="rowheader"
+                    className="w-16 shrink-0 pr-2 text-right text-(--color-muted) text-[10px]"
+                  >
+                    {row.day} {row.date}
+                  </div>
+                  {row.hours
+                    .map((price, h) => ({ price, h }))
+                    .map(({ price, h }) => (
+                      <div
+                        key={`${row.date}-${h}`}
+                        role="cell"
+                        className={`mx-px h-5 flex-1 rounded-sm transition-all hover:scale-110 hover:ring-1 hover:ring-white/30 ${getHeatmapBg(price)}`}
+                        title={`${row.day} ${String(h).padStart(2, '0')}:00 — ${(price * 100).toFixed(1)} ct/kWh`}
+                      />
+                    ))}
                 </div>
               ))}
             </div>
-
-            {/* Rows */}
-            {HEATMAP_DATA.map((row) => (
-              <div key={row.date} className="mb-0.5 flex items-center">
-                <div className="w-16 shrink-0 pr-2 text-right text-(--color-muted) text-[10px]">
-                  {row.day} {row.date}
-                </div>
-                {row.hours
-                  .map((price, h) => ({ price, h }))
-                  .map(({ price, h }) => (
-                    <div
-                      key={`${row.date}-${h}`}
-                      className={`mx-px h-5 flex-1 rounded-sm transition-all hover:scale-110 hover:ring-1 hover:ring-white/30 ${getHeatmapBg(price)}`}
-                      title={`${row.day} ${String(h).padStart(2, '0')}:00 — ${(price * 100).toFixed(1)} ct/kWh`}
-                    />
-                  ))}
-              </div>
-            ))}
 
             {/* Heatmap legend */}
             <div className="mt-3 flex items-center gap-2 text-(--color-muted) text-[10px]">

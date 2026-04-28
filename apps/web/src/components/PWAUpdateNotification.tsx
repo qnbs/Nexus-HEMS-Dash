@@ -119,7 +119,7 @@ export function PWAUpdateNotification() {
               type="button"
               onClick={handleUpdate}
               disabled={isRestarting}
-              className="focus-ring shrink-0 rounded-lg bg-(--color-primary) px-3 py-1.5 font-medium text-white text-xs transition-opacity hover:opacity-90 disabled:opacity-50"
+              className="focus-ring shrink-0 rounded-lg bg-(--color-primary) px-3 py-1.5 font-medium text-(--color-on-primary) text-xs transition-opacity hover:opacity-90 disabled:opacity-50"
             >
               {isRestarting ? (
                 <RefreshCw className="h-3 w-3 animate-spin" aria-hidden="true" />

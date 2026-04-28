@@ -70,15 +70,19 @@ function PageLoadingFallback() {
   );
 }
 
-/** Scrolls to the top and moves focus to main content on every route change */
+/** Scrolls to top and moves focus to main content on SPA route changes.
+ * Skips focus management on initial render so the skip-to-content link
+ * remains the first Tab stop on fresh page load (WCAG 2.4.1). */
 function ScrollToTop(): null {
   const { pathname } = useLocation();
+  const initialRender = useRef(true);
   useEffect(() => {
     window.scrollTo(0, 0);
-    const main = document.getElementById('main-content');
-    if (main) {
-      main.focus({ preventScroll: true });
+    if (initialRender.current) {
+      initialRender.current = false;
+      return;
     }
+    document.getElementById('main-content')?.focus({ preventScroll: true });
   }, [pathname]);
   return null;
 }

@@ -351,7 +351,7 @@ export default function HistoricalAnalyticsPage() {
               aria-checked={timeRange === r.value}
               className={`rounded-md px-3 py-1.5 font-medium text-xs transition-colors ${
                 timeRange === r.value
-                  ? 'bg-(--color-primary) text-white shadow-sm'
+                  ? 'bg-(--color-primary) text-(--color-on-primary) shadow-sm'
                   : 'text-(--color-muted) hover:text-(--color-text)'
               }`}
             >

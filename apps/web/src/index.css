@@ -1036,6 +1036,7 @@ body {
 /* Default CSS variables (ocean-dark) so content is always visible */
 :root {
   --color-primary: #38bdf8;
+  --color-on-primary: #030712;
   --color-secondary: #818cf8;
   --color-accent: #fb923c;
   --color-background: #0c1222;
@@ -1050,6 +1051,7 @@ body {
 /* CSS Variables per Theme (injected via JS) */
 [data-theme='energy-dark'] {
   --color-primary: #22ff88;
+  --color-on-primary: #030712;
   --color-secondary: #00d4e0;
   --color-accent: #ff8800;
   --color-background: #0a1520;
@@ -1063,6 +1065,7 @@ body {
 
 [data-theme='solar-light'] {
   --color-primary: #0bbf73;
+  --color-on-primary: #0a2918;
   --color-secondary: #0084ff;
   --color-accent: #ff8800;
   --color-background: #fef9ef;
@@ -1076,6 +1079,7 @@ body {
 
 [data-theme='ocean-dark'] {
   --color-primary: #38bdf8;
+  --color-on-primary: #030712;
   --color-secondary: #818cf8;
   --color-accent: #fb923c;
   --color-background: #0c1222;
@@ -1089,6 +1093,7 @@ body {
 
 [data-theme='nature-green'] {
   --color-primary: #4ade80;
+  --color-on-primary: #030f08;
   --color-secondary: #a3e635;
   --color-accent: #fbbf24;
   --color-background: #0f1a12;
@@ -1102,6 +1107,7 @@ body {
 
 [data-theme='minimal-white'] {
   --color-primary: #111827;
+  --color-on-primary: #ffffff;
   --color-secondary: #6366f1;
   --color-accent: #f59e0b;
   --color-background: #ffffff;

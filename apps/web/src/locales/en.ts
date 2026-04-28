@@ -1745,6 +1745,7 @@ export const en = {
     heatmapTitle: '7-Day Price Heatmap',
     heatmapDesc: 'Hourly price distribution over the last 7 days (24h × 7d)',
     heatmapAria: 'Heatmap of hourly electricity prices over the last 7 days',
+    day: 'Day',
     cheap: 'Cheap',
     expensive: 'Expensive',
     windowsTitle: 'Optimal Charging Windows',

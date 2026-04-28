@@ -130,7 +130,7 @@ function ThemePreviewCard({
       {isActive && (
         <motion.div
           layoutId="theme-check"
-          className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-(--color-primary) text-white"
+          className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-(--color-primary) text-(--color-on-primary)"
           transition={{ type: 'spring', stiffness: 500, damping: 30 }}
         >
           <Check className="h-3 w-3" />
@@ -309,7 +309,7 @@ function PWASettingsSection() {
                 <motion.button
                   onClick={handleInstall}
                   disabled={installing}
-                  className="focus-ring flex items-center gap-2 rounded-xl bg-(--color-primary) px-4 py-2 font-medium text-sm text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+                  className="focus-ring flex items-center gap-2 rounded-xl bg-(--color-primary) px-4 py-2 font-medium text-sm text-(--color-on-primary) transition-opacity hover:opacity-90 disabled:opacity-50"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >

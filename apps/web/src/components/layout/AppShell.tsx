@@ -125,7 +125,7 @@ export function AppShell({ children, ...rest }: AppShellProps) {
       {/* Skip to content link (WCAG 2.2 AA) */}
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-100 focus:rounded-xl focus:bg-(--color-primary) focus:px-4 focus:py-2 focus:text-white focus:shadow-lg"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-100 focus:rounded-xl focus:bg-(--color-primary) focus:px-4 focus:py-2 focus:text-(--color-on-primary) focus:shadow-lg"
       >
         {t('accessibility.skipToContent', 'Skip to main content')}
       </a>
@@ -189,10 +189,10 @@ export function AppShell({ children, ...rest }: AppShellProps) {
                 type="button"
                 onClick={() => setCommandPaletteOpen(true)}
                 className="focus-ring inline-flex items-center gap-2 rounded-full border border-(--color-border) bg-(--color-surface-strong) p-2 text-sm transition-colors duration-200 hover:bg-(--color-primary)/10 sm:px-3"
-                aria-label={t('command.open', 'Open command palette')}
                 title={t('command.open', 'Open command palette')}
               >
                 <Command className="h-4 w-4" aria-hidden="true" />
+                <span className="sr-only sm:hidden">{t('command.search', 'Search')}</span>
                 <span className="hidden sm:inline">{t('command.search', 'Search')}</span>
                 <kbd className="hidden rounded bg-(--color-surface-strong) px-1.5 py-0.5 text-xs lg:inline">
                   ⌘K
