@@ -157,7 +157,7 @@ export function createOpenADRRoutes(): Router {
    * The frontend receives this token for subsequent /events and /reports calls.
    * The real client credentials are never exposed to the browser.
    */
-  router.post('/api/openadr/token', requireJWT, async (_req: Request, res: Response) => {
+  router.post('/api/openadr/token', requireJWT, async (req: Request, res: Response) => {
     const vtnUrl = getVTNBaseUrl();
 
     if (!vtnUrl || !VTN_CLIENT_ID || !VTN_CLIENT_SECRET) {
