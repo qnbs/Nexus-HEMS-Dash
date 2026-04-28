@@ -201,8 +201,11 @@ export default function App() {
     >
       <Router basename={import.meta.env.BASE_URL}>
         <ScrollToTop />
-        <PWAUpdateNotification />
-        <TauriAutoUpdater />
+        {/* SW-dependent notifications are suppressed in E2E — serviceWorkers:'block'
+            causes onRegisterError, which renders a Dismiss button before AppShell's
+            skip link, breaking the skip-to-content Tab order test. */}
+        {!import.meta.env.VITE_E2E_TESTING && <PWAUpdateNotification />}
+        {!import.meta.env.VITE_E2E_TESTING && <TauriAutoUpdater />}
 
         <OfflineBanner />
         <PWAInstallPrompt />
