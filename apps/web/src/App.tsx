@@ -1,3 +1,4 @@
+import { MotionConfig } from 'motion/react';
 import { lazy, Suspense, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Navigate, Route, BrowserRouter as Router, Routes, useLocation } from 'react-router-dom';
@@ -195,98 +196,100 @@ export default function App() {
   }, []);
 
   return (
-    <ErrorBoundary
-      onError={(error, errorInfo) => {
-        logError(error, errorInfo.componentStack ?? undefined, 'high').catch(console.error);
-      }}
-    >
-      <Router basename={import.meta.env.BASE_URL}>
-        <ScrollToTop />
-        {/* SW-dependent notifications are suppressed in E2E — serviceWorkers:'block'
+    <MotionConfig reducedMotion="user">
+      <ErrorBoundary
+        onError={(error, errorInfo) => {
+          logError(error, errorInfo.componentStack ?? undefined, 'high').catch(console.error);
+        }}
+      >
+        <Router basename={import.meta.env.BASE_URL}>
+          <ScrollToTop />
+          {/* SW-dependent notifications are suppressed in E2E — serviceWorkers:'block'
             causes onRegisterError, which renders a Dismiss button before AppShell's
             skip link, breaking the skip-to-content Tab order test. */}
-        {!import.meta.env.VITE_E2E_TESTING && <PWAUpdateNotification />}
-        {!import.meta.env.VITE_E2E_TESTING && <TauriAutoUpdater />}
+          {!import.meta.env.VITE_E2E_TESTING && <PWAUpdateNotification />}
+          {!import.meta.env.VITE_E2E_TESTING && <TauriAutoUpdater />}
 
-        <OfflineBanner />
-        <PWAInstallPrompt />
-        <Toaster
-          position="bottom-right"
-          theme={themeDefinitions[theme].isDark ? 'dark' : 'light'}
-          richColors
-          closeButton
-          duration={5000}
-        />
+          <OfflineBanner />
+          <PWAInstallPrompt />
+          <Toaster
+            position="bottom-right"
+            theme={themeDefinitions[theme].isDark ? 'dark' : 'light'}
+            richColors
+            closeButton
+            duration={5000}
+          />
 
-        <EnergyProvider>
-          <AppShell>
-            <ErrorBoundary>
-              <Suspense fallback={<PageLoadingFallback />}>
-                <Routes>
-                  {/* ── Section 1: Command Hub ── */}
-                  <Route element={<CommandHubLayout />}>
-                    <Route path="/" element={<CommandHub />} />
-                  </Route>
+          <EnergyProvider>
+            <AppShell>
+              <ErrorBoundary>
+                <Suspense fallback={<PageLoadingFallback />}>
+                  <Routes>
+                    {/* ── Section 1: Command Hub ── */}
+                    <Route element={<CommandHubLayout />}>
+                      <Route path="/" element={<CommandHub />} />
+                    </Route>
 
-                  {/* ── Section 2: Live Energy ── */}
-                  <Route element={<LiveEnergyLayout />}>
-                    <Route path="/energy-flow" element={<LiveEnergyFlow />} />
-                  </Route>
+                    {/* ── Section 2: Live Energy ── */}
+                    <Route element={<LiveEnergyLayout />}>
+                      <Route path="/energy-flow" element={<LiveEnergyFlow />} />
+                    </Route>
 
-                  {/* ── Section 3: Devices & Automation ── */}
-                  <Route element={<DevicesLayout />}>
-                    <Route path="/devices" element={<DevicesAutomation />} />
-                  </Route>
+                    {/* ── Section 3: Devices & Automation ── */}
+                    <Route element={<DevicesLayout />}>
+                      <Route path="/devices" element={<DevicesAutomation />} />
+                    </Route>
 
-                  {/* ── Section 4: Optimization & AI ── */}
-                  <Route element={<OptimizationLayout />}>
-                    <Route path="/optimization-ai" element={<OptimizationAI />} />
-                    <Route path="/tariffs" element={<TariffsPage />} />
-                  </Route>
+                    {/* ── Section 4: Optimization & AI ── */}
+                    <Route element={<OptimizationLayout />}>
+                      <Route path="/optimization-ai" element={<OptimizationAI />} />
+                      <Route path="/tariffs" element={<TariffsPage />} />
+                    </Route>
 
-                  {/* ── Section 5: Analytics & Reports ── */}
-                  <Route element={<AnalyticsLayout />}>
-                    <Route path="/analytics" element={<AnalyticsUnified />} />
-                  </Route>
+                    {/* ── Section 5: Analytics & Reports ── */}
+                    <Route element={<AnalyticsLayout />}>
+                      <Route path="/analytics" element={<AnalyticsUnified />} />
+                    </Route>
 
-                  {/* ── Section 6: Monitoring & Health ── */}
-                  <Route element={<MonitoringLayout />}>
-                    <Route path="/monitoring" element={<MonitoringUnified />} />
-                  </Route>
+                    {/* ── Section 6: Monitoring & Health ── */}
+                    <Route element={<MonitoringLayout />}>
+                      <Route path="/monitoring" element={<MonitoringUnified />} />
+                    </Route>
 
-                  {/* ── Section 7: Settings & Plugins ── */}
-                  <Route element={<SettingsLayout />}>
-                    <Route path="/settings" element={<SettingsUnified />} />
-                    <Route path="/settings/ai" element={<AISettingsPage />} />
-                    <Route path="/plugins" element={<PluginsPage />} />
-                    <Route path="/help" element={<Help />} />
-                  </Route>
+                    {/* ── Section 7: Settings & Plugins ── */}
+                    <Route element={<SettingsLayout />}>
+                      <Route path="/settings" element={<SettingsUnified />} />
+                      <Route path="/settings/ai" element={<AISettingsPage />} />
+                      <Route path="/plugins" element={<PluginsPage />} />
+                      <Route path="/help" element={<Help />} />
+                    </Route>
 
-                  {/* ── Legacy Redirects ── */}
-                  <Route path="/production" element={<Navigate to="/energy-flow" replace />} />
-                  <Route path="/storage" element={<Navigate to="/energy-flow" replace />} />
-                  <Route path="/consumption" element={<Navigate to="/energy-flow" replace />} />
-                  <Route path="/ev" element={<Navigate to="/devices" replace />} />
-                  <Route path="/floorplan" element={<Navigate to="/devices" replace />} />
-                  <Route path="/controllers" element={<Navigate to="/settings" replace />} />
-                  <Route path="/hardware" element={<Navigate to="/devices" replace />} />
-                  <Route
-                    path="/historical-analytics"
-                    element={<Navigate to="/analytics" replace />}
-                  />
-                  <Route
-                    path="/ai-optimizer"
-                    element={<Navigate to="/optimization-ai" replace />}
-                  />
+                    {/* ── Legacy Redirects ── */}
+                    <Route path="/production" element={<Navigate to="/energy-flow" replace />} />
+                    <Route path="/storage" element={<Navigate to="/energy-flow" replace />} />
+                    <Route path="/consumption" element={<Navigate to="/energy-flow" replace />} />
+                    <Route path="/ev" element={<Navigate to="/devices" replace />} />
+                    <Route path="/floorplan" element={<Navigate to="/devices" replace />} />
+                    <Route path="/controllers" element={<Navigate to="/settings" replace />} />
+                    <Route path="/hardware" element={<Navigate to="/devices" replace />} />
+                    <Route
+                      path="/historical-analytics"
+                      element={<Navigate to="/analytics" replace />}
+                    />
+                    <Route
+                      path="/ai-optimizer"
+                      element={<Navigate to="/optimization-ai" replace />}
+                    />
 
-                  {/* Catch-all */}
-                  <Route path="*" element={<NotFoundPage />} />
-                </Routes>
-              </Suspense>
-            </ErrorBoundary>
-          </AppShell>
-        </EnergyProvider>
-      </Router>
-    </ErrorBoundary>
+                    {/* Catch-all */}
+                    <Route path="*" element={<NotFoundPage />} />
+                  </Routes>
+                </Suspense>
+              </ErrorBoundary>
+            </AppShell>
+          </EnergyProvider>
+        </Router>
+      </ErrorBoundary>
+    </MotionConfig>
   );
 }

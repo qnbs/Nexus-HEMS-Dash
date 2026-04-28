@@ -206,6 +206,8 @@ export const en = {
     heatPumpDetail: 'Heat pump SG Ready',
     evDetail: 'Wallbox power',
     priceDetail: 'Dynamic electricity price',
+    showMoreMetrics: '4 more metrics',
+    showFewerMetrics: 'Show less',
   },
   metrics: {
     pvGeneration: 'PV generation',
@@ -2002,6 +2004,8 @@ export const en = {
     gridImport: 'Grid import',
     gridExport: 'Grid export',
     selfSufficiency: 'Self-sufficiency',
+    degradedAdapters: 'System degraded',
+    degradedAdaptersTitle: 'One or more adapters are degraded — click to view Monitoring',
   },
   safety: {
     emergencyStop: 'Emergency Stop — Shut down all devices immediately',

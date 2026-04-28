@@ -66,14 +66,7 @@ export function Gauge({
       aria-valuenow={value}
       aria-label={label}
     >
-      <svg
-        width={gaugeSize}
-        height={gaugeSize}
-        className="-rotate-90"
-        role="img"
-        aria-label={label}
-      >
-        <title>{label}</title>
+      <svg width={gaugeSize} height={gaugeSize} className="-rotate-90" aria-hidden="true">
         <defs>
           {/* Unique gradient ID prevents cross-instance color pollution */}
           <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">

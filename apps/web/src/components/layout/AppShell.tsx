@@ -1,4 +1,5 @@
 import {
+  AlertTriangle,
   BatteryMedium,
   Command,
   HelpCircle,
@@ -10,6 +11,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, NavLink, useLocation } from 'react-router-dom';
+import { useEnergyStoreBase } from '../../core/useEnergyStore';
 import { themeDefinitions } from '../../design-tokens';
 import { useAppStoreShallow } from '../../store';
 import { CommandPalette, useCommandPalette } from '../ui/CommandPalette';
@@ -105,6 +107,12 @@ export function AppShell({ children }: AppShellProps) {
       theme: s.theme,
     }));
 
+  const hasDegradedAdapter = useEnergyStoreBase((s) =>
+    Object.values(s.adapters).some(
+      (a) => a.enabled && (a.status === 'error' || a.circuitState === 'open'),
+    ),
+  );
+
   const themeDefinition = themeDefinitions[theme];
 
   return (
@@ -169,6 +177,24 @@ export function AppShell({ children }: AppShellProps) {
 
             {/* Right: action icons */}
             <div className="ml-auto flex items-center gap-1 sm:gap-2">
+              {/* Degraded adapter warning badge */}
+              {hasDegradedAdapter && (
+                <NavLink
+                  to="/monitoring"
+                  className="focus-ring inline-flex items-center gap-1.5 rounded-full border border-amber-500/40 bg-amber-500/15 px-2.5 py-1 font-semibold text-[10px] text-amber-400 uppercase tracking-wider transition-colors hover:bg-amber-500/25"
+                  title={t(
+                    'header.degradedAdaptersTitle',
+                    'One or more adapters are degraded — click to view Monitoring',
+                  )}
+                  aria-label={t('header.degradedAdapters', 'System degraded')}
+                >
+                  <AlertTriangle size={12} aria-hidden="true" />
+                  <span className="hidden sm:inline">
+                    {t('header.degradedAdapters', 'System degraded')}
+                  </span>
+                </NavLink>
+              )}
+
               {/* Electricity Price (tablet+) */}
               <motion.div
                 className="price-pill hidden md:inline-flex"

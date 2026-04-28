@@ -638,14 +638,6 @@
     transform: translateY(-4px) scale(1.01);
     border: 1px solid color-mix(in srgb, var(--color-border) 100%, transparent);
     box-shadow:
-      0 8px 24px rgba(0, 0, 0, 0.12),
-      0 2px 6px rgba(0, 0, 0, 0.08),
-      inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  }
-
-  .metric-card:hover {
-    transform: translateY(-4px) scale(1.01);
-    box-shadow:
       0 16px 48px rgba(0, 0, 0, 0.18),
       0 8px 12px rgba(0, 0, 0, 0.12),
       0 0 0 1px color-mix(in srgb, var(--color-primary) 20%, transparent),
@@ -884,6 +876,19 @@ html.reduced-motion .energy-pulse {
   animation: none;
 }
 
+/* Reduced motion: suppress neon glow text-shadows */
+html.reduced-motion .neon-glow-green,
+html.reduced-motion .neon-glow-blue,
+html.reduced-motion .neon-glow-orange {
+  text-shadow: none;
+}
+
+/* SVG floorplan room buttons: visible focus ring */
+rect[role='button']:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
 /* ========== APP-CONTROLLED HIGH CONTRAST ========== */
 html.high-contrast {
   --color-border: rgba(255, 255, 255, 0.5);
@@ -903,7 +908,8 @@ html.high-contrast [data-theme='minimal-white'] {
 html.high-contrast .glass-panel,
 html.high-contrast .glass-panel-strong {
   border-width: 2px;
-  backdrop-filter: blur(6px);
+  backdrop-filter: none;
+  background: var(--color-surface-strong);
 }
 
 html.high-contrast button,
@@ -1043,7 +1049,7 @@ body {
   --color-surface: rgba(14, 22, 42, 0.76);
   --color-surface-strong: rgba(18, 28, 52, 0.9);
   --color-text: #e2eaf4;
-  --color-muted: #8896b0;
+  --color-muted: #94a3b8;
   --color-border: rgba(56, 189, 248, 0.14);
   --color-glow: rgba(56, 189, 248, 0.2);
 }
@@ -1058,7 +1064,7 @@ body {
   --color-surface: rgba(12, 28, 44, 0.72);
   --color-surface-strong: rgba(14, 34, 54, 0.88);
   --color-text: #e8f4f0;
-  --color-muted: #8daab8;
+  --color-muted: #94a3b8;
   --color-border: rgba(34, 255, 136, 0.14);
   --color-glow: rgba(34, 255, 136, 0.25);
 }
@@ -1072,7 +1078,7 @@ body {
   --color-surface: rgba(255, 255, 255, 0.75);
   --color-surface-strong: rgba(255, 250, 235, 0.94);
   --color-text: #1a2a3a;
-  --color-muted: #5f7284;
+  --color-muted: #4b5563;
   --color-border: rgba(0, 132, 255, 0.14);
   --color-glow: rgba(255, 136, 0, 0.18);
 }
@@ -1086,7 +1092,7 @@ body {
   --color-surface: rgba(14, 22, 42, 0.76);
   --color-surface-strong: rgba(18, 28, 52, 0.9);
   --color-text: #e2eaf4;
-  --color-muted: #8896b0;
+  --color-muted: #94a3b8;
   --color-border: rgba(56, 189, 248, 0.14);
   --color-glow: rgba(56, 189, 248, 0.2);
 }

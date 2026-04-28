@@ -208,6 +208,8 @@ export const de = {
     heatPumpDetail: 'Wärmepumpe SG Ready',
     evDetail: 'Wallbox-Leistung',
     priceDetail: 'Dynamischer Strompreis',
+    showMoreMetrics: '4 weitere Kennzahlen',
+    showFewerMetrics: 'Weniger anzeigen',
   },
   metrics: {
     pvGeneration: 'PV-Erzeugung',
@@ -2018,6 +2020,8 @@ export const de = {
     gridImport: 'Netzbezug',
     gridExport: 'Netzeinspeisung',
     selfSufficiency: 'Autarkiegrad',
+    degradedAdapters: 'System beeinträchtigt',
+    degradedAdaptersTitle: 'Ein oder mehrere Adapter sind ausgefallen — zum Monitoring',
   },
   safety: {
     emergencyStop: 'Notaus — Alle Geräte sofort abschalten',
