@@ -371,7 +371,7 @@ function TariffsPageComponent() {
         <div className="mt-4">
           <div className="relative h-2.5 overflow-hidden rounded-full bg-(--color-surface)">
             <div
-              className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-emerald-500 via-yellow-500 to-red-500"
+              className="absolute inset-y-0 left-0 rounded-full bg-linear-to-r from-emerald-500 via-yellow-500 to-red-500"
               style={{ width: '100%' }}
             />
             <motion.div
@@ -637,65 +637,58 @@ function TariffsPageComponent() {
         <p className="mb-4 text-(--color-muted) text-sm">{t('tariffs.heatmapDesc')}</p>
 
         <div className="overflow-x-auto">
-          {/* biome-ignore lint/a11y/useSemanticElements: heatmap uses flexbox layout incompatible with HTML table element */}
-          <div className="min-w-[700px]" role="table" aria-label={t('tariffs.heatmapAria')}>
-            {/* Column headers (rowgroup → row → columnheader required by ARIA table pattern) */}
-            <div role="rowgroup">
-              <div role="row" className="mb-1 flex">
-                <div
-                  role="columnheader"
-                  className="w-16 shrink-0"
+          <table className="block min-w-175" aria-label={t('tariffs.heatmapAria')}>
+            <thead className="block">
+              <tr className="mb-1 flex">
+                <th
+                  scope="col"
+                  className="w-16 shrink-0 font-normal"
                   aria-label={t('tariffs.day', 'Day')}
                 />
                 {Array.from({ length: 24 }, (_, h) => h).map((h) => (
-                  <div
+                  <th
                     key={`hour-label-${h}`}
-                    role="columnheader"
-                    className="flex-1 text-center text-(--color-muted) text-[9px]"
+                    scope="col"
+                    className="flex-1 text-center font-normal text-(--color-muted) text-[9px]"
                     aria-label={`${String(h).padStart(2, '0')}:00`}
                   >
                     {h % 3 === 0 ? `${String(h).padStart(2, '0')}` : ''}
-                  </div>
+                  </th>
                 ))}
-              </div>
-            </div>
-
-            {/* Data rows */}
-            <div role="rowgroup">
+              </tr>
+            </thead>
+            <tbody className="block">
               {HEATMAP_DATA.map((row) => (
-                <div key={row.date} role="row" className="mb-0.5 flex items-center">
-                  <div
-                    role="rowheader"
-                    className="w-16 shrink-0 pr-2 text-right text-(--color-muted) text-[10px]"
+                <tr key={row.date} className="mb-0.5 flex items-center">
+                  <th
+                    scope="row"
+                    className="w-16 shrink-0 pr-2 text-right font-normal text-(--color-muted) text-[10px]"
                   >
                     {row.day} {row.date}
-                  </div>
+                  </th>
                   {row.hours
                     .map((price, h) => ({ price, h }))
                     .map(({ price, h }) => (
-                      <div
+                      <td
                         key={`${row.date}-${h}`}
-                        role="cell"
                         className={`mx-px h-5 flex-1 rounded-sm transition-all hover:scale-110 hover:ring-1 hover:ring-white/30 ${getHeatmapBg(price)}`}
                         title={`${row.day} ${String(h).padStart(2, '0')}:00 — ${(price * 100).toFixed(1)} ct/kWh`}
                       />
                     ))}
-                </div>
+                </tr>
               ))}
+            </tbody>
+          </table>
+          <div className="mt-3 flex items-center gap-2 text-(--color-muted) text-[10px]">
+            <span>{t('tariffs.cheap')}</span>
+            <div className="flex gap-0.5">
+              <span className="inline-block h-3 w-5 rounded-sm bg-emerald-500/60" />
+              <span className="inline-block h-3 w-5 rounded-sm bg-emerald-500/30" />
+              <span className="inline-block h-3 w-5 rounded-sm bg-yellow-500/30" />
+              <span className="inline-block h-3 w-5 rounded-sm bg-orange-500/40" />
+              <span className="inline-block h-3 w-5 rounded-sm bg-red-500/50" />
             </div>
-
-            {/* Heatmap legend */}
-            <div className="mt-3 flex items-center gap-2 text-(--color-muted) text-[10px]">
-              <span>{t('tariffs.cheap')}</span>
-              <div className="flex gap-0.5">
-                <span className="inline-block h-3 w-5 rounded-sm bg-emerald-500/60" />
-                <span className="inline-block h-3 w-5 rounded-sm bg-emerald-500/30" />
-                <span className="inline-block h-3 w-5 rounded-sm bg-yellow-500/30" />
-                <span className="inline-block h-3 w-5 rounded-sm bg-orange-500/40" />
-                <span className="inline-block h-3 w-5 rounded-sm bg-red-500/50" />
-              </div>
-              <span>{t('tariffs.expensive')}</span>
-            </div>
+            <span>{t('tariffs.expensive')}</span>
           </div>
         </div>
       </motion.section>

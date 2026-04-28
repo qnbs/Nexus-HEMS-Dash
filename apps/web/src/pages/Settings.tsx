@@ -309,7 +309,7 @@ function PWASettingsSection() {
                 <motion.button
                   onClick={handleInstall}
                   disabled={installing}
-                  className="focus-ring flex items-center gap-2 rounded-xl bg-(--color-primary) px-4 py-2 font-medium text-sm text-(--color-on-primary) transition-opacity hover:opacity-90 disabled:opacity-50"
+                  className="focus-ring flex items-center gap-2 rounded-xl bg-(--color-primary) px-4 py-2 font-medium text-(--color-on-primary) text-sm transition-opacity hover:opacity-90 disabled:opacity-50"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
