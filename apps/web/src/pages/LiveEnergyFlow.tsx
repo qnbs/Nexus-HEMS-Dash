@@ -64,7 +64,17 @@ function useDraggable(initial: Position) {
     dragging.current = false;
   };
 
-  return { pos, handlers: { onPointerDown, onPointerMove, onPointerUp } };
+  const onKeyDown = (e: React.KeyboardEvent) => {
+    const step = e.shiftKey ? 50 : 10;
+    if (e.key === 'ArrowLeft') setPos((p) => ({ ...p, x: p.x - step }));
+    else if (e.key === 'ArrowRight') setPos((p) => ({ ...p, x: p.x + step }));
+    else if (e.key === 'ArrowUp') setPos((p) => ({ ...p, y: p.y - step }));
+    else if (e.key === 'ArrowDown') setPos((p) => ({ ...p, y: p.y + step }));
+    else return;
+    e.preventDefault();
+  };
+
+  return { pos, onKeyDown, handlers: { onPointerDown, onPointerMove, onPointerUp } };
 }
 
 // ─── Panel IDs ────────────────────────────────────────────────────────
@@ -364,7 +374,7 @@ function FloatingDevicePanel({
   children: React.ReactNode;
 }) {
   const { t } = useTranslation();
-  const { pos, handlers } = useDraggable(initial);
+  const { pos, onKeyDown, handlers } = useDraggable(initial);
 
   const posStyle: MotionStyle = anchorRight
     ? { right: Math.abs(pos.x), top: pos.y }
@@ -383,13 +393,19 @@ function FloatingDevicePanel({
       <ControlPanelUI
         title={
           <span className="flex items-center gap-2">
-            <span
+            <button
+              type="button"
               data-drag-handle
-              className="cursor-grab text-(--color-muted) active:cursor-grabbing"
-              aria-hidden="true"
+              className="focus-ring cursor-grab rounded text-(--color-muted) active:cursor-grabbing"
+              aria-roledescription={t('liveEnergy.draggableHandle', 'draggable handle')}
+              aria-label={t(
+                'liveEnergy.movePanel',
+                'Move panel — arrow keys to reposition, Shift for large steps',
+              )}
+              onKeyDown={onKeyDown}
             >
-              <GripHorizontal size={16} />
-            </span>
+              <GripHorizontal size={16} aria-hidden="true" />
+            </button>
             <PanelTitle id={id} />
           </span>
         }

@@ -305,6 +305,8 @@ export const de = {
     lightsOff: 'Licht aus',
     blindsUp: 'Rollos hoch',
     blindsDown: 'Rollos runter',
+    draggableHandle: 'ziehbarer Griff',
+    movePanel: 'Panel verschieben — Pfeiltasten zum Positionieren, Shift für große Schritte',
   },
   analyticsUnified: {
     title: 'Analytik & Berichte',

@@ -17,6 +17,7 @@
 
 import { sanitizeObjectStrings, sanitizeUntrustedText } from '@nexus-hems/shared-types';
 import { useEffect, useRef } from 'react';
+import { toast } from 'sonner';
 import { create } from 'zustand';
 import { useShallow } from 'zustand/react/shallow';
 import { persistSnapshot } from '../lib/db';
@@ -420,7 +421,7 @@ export function useAdapterBridge() {
 
       const baseAdapter = entry.adapter as BaseAdapter;
 
-      // Wire circuit breaker state changes into the store
+      // Wire circuit breaker state changes into the store and surface toasts
       baseAdapter.circuitBreaker.onStateChange((circuitState) => {
         useEnergyStoreBase.setState((state) => {
           const existing = state.adapters[id];
@@ -432,6 +433,16 @@ export function useAdapterBridge() {
             },
           };
         });
+
+        if (circuitState === 'OPEN') {
+          toast.error(`Adapter "${id}" circuit breaker OPEN — too many errors`, {
+            id: `cb-open-${id}`,
+            duration: 10000,
+          });
+        } else if (circuitState === 'CLOSED') {
+          toast.dismiss(`cb-open-${id}`);
+          toast.success(`Adapter "${id}" reconnected`, { duration: 4000 });
+        }
       });
 
       // Subscribe to data

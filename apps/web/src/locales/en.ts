@@ -303,6 +303,8 @@ export const en = {
     lightsOff: 'Lights off',
     blindsUp: 'Blinds up',
     blindsDown: 'Blinds down',
+    draggableHandle: 'draggable handle',
+    movePanel: 'Move panel — arrow keys to reposition, Shift for large steps',
   },
   analyticsUnified: {
     title: 'Analytics & Reports',

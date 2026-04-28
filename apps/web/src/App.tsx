@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Navigate, Route, BrowserRouter as Router, Routes, useLocation } from 'react-router-dom';
+import { Toaster } from 'sonner';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { AppShell } from './components/layout/AppShell';
 import { OfflineBanner } from './components/OfflineBanner';
@@ -209,6 +210,13 @@ export default function App() {
 
         <OfflineBanner />
         <PWAInstallPrompt />
+        <Toaster
+          position="bottom-right"
+          theme={themeDefinitions[theme].isDark ? 'dark' : 'light'}
+          richColors
+          closeButton
+          duration={5000}
+        />
 
         <EnergyProvider>
           <AppShell>

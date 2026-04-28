@@ -66,7 +66,7 @@ pnpm size              # size-limit against gzipped bundles
 
 **Playwright policy:** local `pnpm test:e2e` is intentionally Chromium-only. CI installs and runs Chromium + Firefox. For GitHub Pages route tests, always use base-relative navigation (`page.goto('./')`, `page.goto('./settings')`) — never `page.goto('/')` or `page.goto('/settings')`. The `baseURL` is `http://127.0.0.1:4173/Nexus-HEMS-Dash/`; an absolute path like `/settings` strips the base and lands on the wrong origin path.
 
-**Writing new E2E tests:** Every `test.describe` block must call `await page.addInitScript(setupLocalStorage)` in `beforeEach` (imported from `./e2e-setup`). This sets `onboardingCompleted: true` and dismisses all page-tour overlays via `nexus-tour-{id}` localStorage keys. Without it, the onboarding screen or tour modals block all interactions.
+**Writing new E2E tests:** Every `test.describe` block must call `await page.addInitScript(setupLocalStorage)` in `beforeEach` (imported from `./e2e-setup`). This seeds the persisted Zustand store with an empty state so tests start from a clean, known baseline.
 
 **`VITE_E2E_TESTING`:** When `VITE_E2E_TESTING=true` is set at build time (both CI workflows do this), the service-worker `controllerchange` auto-reload in `main.tsx` is disabled. This prevents mid-test page reloads caused by the SW installing fresh in each browser context. Do not remove this guard.
 
@@ -137,7 +137,7 @@ Plugin lifecycle (OSGi-inspired): install → resolve → start → stop → uni
 
 `AppShell` (`apps/web/src/components/layout/AppShell.tsx`) renders a `<main id="main-content">` that wraps all route content. All page components render their `<h1>` inside this element via `PageHeader`. E2E tests should use `page.locator('#main-content h1')` to target page-specific headings rather than a bare `h1` selector.
 
-When `onboardingCompleted` is false, AppShell receives `inert` and the `<Onboarding>` overlay renders instead. `e2e-setup.ts` prevents this by writing the store state to localStorage before page load.
+The app has no onboarding gate — `AppShell` renders directly without any `inert`/overlay mechanism. New users land directly on `CommandHub`.
 
 ### Server
 

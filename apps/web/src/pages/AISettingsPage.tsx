@@ -2,20 +2,11 @@
  * BYOK AI Settings Page — Manage encrypted API keys for multiple AI providers.
  */
 
-import {
-  AlertTriangle,
-  Check,
-  Eye,
-  EyeOff,
-  Key,
-  KeyRound,
-  Shield,
-  Sparkles,
-  Trash2,
-} from 'lucide-react';
-import { AnimatePresence, motion } from 'motion/react';
+import { Check, Eye, EyeOff, Key, KeyRound, Shield, Sparkles, Trash2 } from 'lucide-react';
+import { motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
 
 import { EmptyState } from '../components/ui/EmptyState';
 import {
@@ -46,8 +37,6 @@ export default function AISettingsPage() {
   const [customUrlInput, setCustomUrlInput] = useState('');
   const [showKey, setShowKey] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
 
   const refreshKeys = async () => {
     const keys = await listAIKeys();
@@ -63,7 +52,6 @@ export default function AISettingsPage() {
   const handleSave = async () => {
     if (!addingProvider || !apiKeyInput.trim()) return;
     setSaving(true);
-    setError(null);
 
     try {
       await saveAIKey(
@@ -82,11 +70,10 @@ export default function AISettingsPage() {
       setModelInput('');
       setCustomUrlInput('');
       setAddingProvider(null);
-      setSuccess(t('aiSettings.saved', 'Key encrypted & saved'));
-      setTimeout(() => setSuccess(null), 3000);
+      toast.success(t('aiSettings.saved', 'Key encrypted & saved'));
       await refreshKeys();
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('common.error'));
+      toast.error(err instanceof Error ? err.message : t('common.error'));
     } finally {
       setSaving(false);
     }
@@ -158,32 +145,6 @@ export default function AISettingsPage() {
           </p>
         </div>
       </motion.div>
-
-      {/* Status Messages */}
-      <AnimatePresence>
-        {success && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="mb-4 flex items-center gap-2 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-emerald-400 text-sm"
-          >
-            <Check className="h-4 w-4" />
-            {success}
-          </motion.div>
-        )}
-        {error && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="mb-4 flex items-center gap-2 rounded-2xl border border-red-500/30 bg-red-500/10 p-3 text-red-400 text-sm"
-          >
-            <AlertTriangle className="h-4 w-4" />
-            {error}
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* Stored Keys */}
       <motion.section
@@ -319,7 +280,6 @@ export default function AISettingsPage() {
                 onClick={() => {
                   setAddingProvider(null);
                   setApiKeyInput('');
-                  setError(null);
                 }}
                 className="text-(--color-muted) text-sm hover:text-(--color-text)"
               >

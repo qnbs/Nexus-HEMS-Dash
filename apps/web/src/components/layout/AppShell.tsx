@@ -88,11 +88,9 @@ function SelfSufficiencyRing({ percentage }: { percentage: number }) {
 
 interface AppShellProps {
   children: ReactNode;
-  'aria-hidden'?: boolean | undefined;
-  inert?: boolean | undefined;
 }
 
-export function AppShell({ children, ...rest }: AppShellProps) {
+export function AppShell({ children }: AppShellProps) {
   const { t } = useTranslation();
   const { isOpen: isCommandPaletteOpen, setIsOpen: setCommandPaletteOpen } = useCommandPalette();
 
@@ -110,10 +108,7 @@ export function AppShell({ children, ...rest }: AppShellProps) {
   const themeDefinition = themeDefinitions[theme];
 
   return (
-    <div
-      className="theme-shell min-h-screen font-sans text-(--color-text) selection:bg-(--color-primary)/30"
-      {...rest}
-    >
+    <div className="theme-shell min-h-screen font-sans text-(--color-text) selection:bg-(--color-primary)/30">
       <div
         className="pointer-events-none fixed inset-0 z-0"
         aria-hidden="true"
