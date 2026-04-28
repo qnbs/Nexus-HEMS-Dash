@@ -119,22 +119,20 @@ Added constructor guard in all three adapters: throws `Error` if `config.host` i
 ---
 
 ### HIGH-02 — Modbus SunSpec Unsupported Register Types Crash at Runtime
-**File:** `apps/api/src/protocols/modbus/ModbusAdapter.ts:265`
-**Status:** ⏳ Scheduled for v1.2
+**File:** `apps/api/src/protocols/modbus/ModbusAdapter.ts`
+**Status:** ✅ Fixed in v1.2.0
 
-UINT64 and STRING register types throw at runtime instead of being pre-validated at config parse time.
-
-**Fix:** Add a `validateRegisterConfig(registers)` call before the polling loop starts. Log unsupported types as warnings and skip them, rather than crashing.
+`validateRegisterConfig()` called in the `ModbusAdapter` constructor filters registers to the five supported data types (`INT16`, `UINT16`, `INT32`, `UINT32`, `FLOAT32`). Unsupported types (e.g. `UINT64`, `STRING` from JSON device-map) log a structured warning and are skipped instead of crashing the polling loop at runtime.
 
 ---
 
 ### HIGH-03 — InfluxDB Flux Query Built via String Concatenation
-**File:** `apps/web/src/lib/influxdb-client.ts:239-300`
-**Status:** ⏳ Scheduled for v1.2
+**File:** `apps/web/src/lib/influxdb-client.ts`, `apps/api/src/routes/history.routes.ts`
+**Status:** ✅ Fixed in v1.2.0
 
-Flux queries use string interpolation with an allowlist guard. The guard relies on `^[a-z_][a-z0-9_]*$` regex (solid), but any future addition to the allowlist without re-auditing the interpolation site introduces Flux injection risk.
-
-**Fix:** Migrate to InfluxDB v3 parameterized queries or a Flux AST builder. Eliminate all string concatenation from query construction.
+Both Flux query paths now enforce strict allowlists before any interpolation:
+- `influxdb-client.ts`: `validateFluxField`, `validateFluxMetric`, `validateFluxRange`, `validateFluxAggregateWindow` functions with Set-based and regex allowlists.
+- `history.routes.ts`: Zod schema tightened — `metric` requires `^[a-zA-Z][a-zA-Z0-9_]{0,63}$`, `deviceId` requires `^[a-zA-Z0-9_:.-]{1,128}$`, `granularity` uses `z.enum` (closed set).
 
 ---
 
@@ -203,22 +201,18 @@ Target: 70%+ for all metrics.
 ---
 
 ### MED-02 — Structured Logging Missing in API Routes
-**File:** `apps/api/src/routes/*.ts`
-**Status:** ⏳ Scheduled for v1.2
+**File:** `apps/api/src/routes/*.ts`, `apps/api/src/index.ts`
+**Status:** ✅ Fixed in v1.2.0
 
-Several routes use `console.error` / `console.warn` directly. Request context (request ID, user, duration) is not attached to logs.
-
-**Fix:** Wire a Pino logger instance through `req.log` (via `express-pino-logger`). Replace all `console.*` calls in routes.
+Created `apps/api/src/core/logger.ts` — a zero-dependency NDJSON structured logger that outputs `{ time, level, msg, ...ctx }` lines to stdout (compatible with Loki, Datadog, etc.). Express namespace augmented in `apps/api/src/types/express.d.ts` to add `req.requestId`. `configureRequestTracking()` now attaches the UUID to `req.requestId` so route handlers can include it in log context. All `console.error`/`console.warn` calls in `eebus.routes.ts`, `openadr.routes.ts`, `history.routes.ts`, and `index.ts` replaced with `logger.error`/`logger.warn` carrying `{ requestId, error }` context.
 
 ---
 
 ### MED-03 — nginx WS_ORIGINS Env Var Not Validated at Startup
-**File:** `apps/web/nginx.conf:37`, `Dockerfile:60`
-**Status:** ⏳ Scheduled for v1.2
+**File:** `apps/web/nginx.conf`, `Dockerfile`, `apps/web/docker-entrypoint.sh`
+**Status:** ✅ Fixed in v1.2.0
 
-If `WS_ORIGINS` is empty or contains special chars, the CSP header becomes malformed. No startup validation.
-
-**Fix:** Add a Docker `ENTRYPOINT` wrapper script that validates `WS_ORIGINS` matches `^wss?://[a-zA-Z0-9._:-]+$` before starting nginx.
+Added `apps/web/docker-entrypoint.sh` — a POSIX shell script that validates every space-separated token in `WS_ORIGINS` against a strict character allowlist (`ws://`/`wss://` scheme + alphanumeric/dot/hyphen/underscore/colon/brackets only) and exits 1 with a clear error message on violation. The Dockerfile uses this as the `ENTRYPOINT`; it delegates to the nginx-unprivileged base image's `/docker-entrypoint.sh` (which runs `envsubst`) before starting nginx.
 
 ### MED-10 — LTTB Sampling Exists But Is Not Fully Wired Into Chart Surfaces
 **Files:** `apps/web/src/lib/chart-sampling.ts`, `apps/web/src/components/HistoricalChart.tsx`, `apps/web/src/pages/HistoricalAnalyticsPage.tsx`
@@ -310,11 +304,9 @@ Custom OpenEMS installations cannot add new writable properties without forking 
 
 ### LOW-03 — Bundle Size CI Check Is Non-Blocking
 **File:** `.github/workflows/ci.yml`
-**Status:** ⏳ Backlog
+**Status:** ✅ Fixed in v1.2.0
 
-`pnpm size || echo "::warning::..."` emits a warning but does not fail CI.
-
-**Fix:** Remove the `|| echo` fallback to make the check blocking. Update limits in `.size-limit` when intentionally adding features.
+Removed `|| echo "::warning::..."` fallback from the Size Limit Check step. `pnpm size` now exits non-zero when any bundle exceeds its limit, failing the CI job immediately.
 
 ---
 

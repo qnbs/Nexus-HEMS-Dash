@@ -19,6 +19,7 @@ import {
   EEBUSPinSubmitSchema,
 } from '@nexus-hems/shared-types';
 import { Router } from 'express';
+import { logger } from '../core/logger.js';
 import { requireJWT, requireScope } from '../middleware/auth.js';
 import { getDevice, listDevices, removeDevice, upsertDevice } from '../services/EEBusTrustStore.js';
 import {
@@ -70,7 +71,7 @@ export function createEebusRoutes(): Router {
 
   // ── GET /api/eebus/discover ─────────────────────────────────────
 
-  router.get('/api/eebus/discover', requireJWT, async (_req, res) => {
+  router.get('/api/eebus/discover', requireJWT, async (req, res) => {
     try {
       const trustedSkis = new Set((await listDevices()).map((d) => d.ski));
       const devices = Array.from(eebusDeviceCache.values()).map((d) => ({
@@ -79,7 +80,10 @@ export function createEebusRoutes(): Router {
       }));
       res.json(devices);
     } catch (err) {
-      console.error('[EEBUS] Discovery error:', err);
+      logger.error('EEBUS discovery error', {
+        requestId: req.requestId,
+        error: err instanceof Error ? err.message : String(err),
+      });
       res.status(500).json({ error: 'Discovery failed' });
     }
   });
@@ -207,7 +211,7 @@ export function createEebusRoutes(): Router {
 
   // ── GET /api/eebus/trust ───────────────────────────────────────
 
-  router.get('/api/eebus/trust', requireJWT, async (_req, res) => {
+  router.get('/api/eebus/trust', requireJWT, async (req, res) => {
     try {
       const devices = await listDevices();
       const response: EEBUSDeviceInfo[] = devices.map((d) => ({
@@ -223,7 +227,10 @@ export function createEebusRoutes(): Router {
       }));
       res.json(response);
     } catch (err) {
-      console.error('[EEBUS] Trust store read error:', err);
+      logger.error('EEBUS trust store read error', {
+        requestId: req.requestId,
+        error: err instanceof Error ? err.message : String(err),
+      });
       res.status(500).json({ error: 'Failed to read trust store' });
     }
   });

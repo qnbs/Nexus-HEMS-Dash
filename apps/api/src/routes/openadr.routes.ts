@@ -27,6 +27,7 @@ import { type Request, type Response, Router } from 'express';
 import http from 'http';
 import https from 'https';
 import { URL } from 'url';
+import { logger } from '../core/logger.js';
 import { requireJWT } from '../middleware/auth.js';
 
 // ─── VTN Configuration ────────────────────────────────────────────────
@@ -179,7 +180,10 @@ export function createOpenADRRoutes(): Router {
         scope: 'read:events write:reports',
       });
     } catch (err) {
-      console.error('[OpenADR] Token fetch error:', err);
+      logger.error('OpenADR token fetch error', {
+        requestId: req.requestId,
+        error: err instanceof Error ? err.message : String(err),
+      });
       res.status(502).json({ error: 'VTN token fetch failed' });
     }
   });
@@ -246,7 +250,10 @@ export function createOpenADRRoutes(): Router {
       const events: unknown = JSON.parse(result.body);
       res.json(events);
     } catch (err) {
-      console.error('[OpenADR] Events fetch error:', err);
+      logger.error('OpenADR events fetch error', {
+        requestId: req.requestId,
+        error: err instanceof Error ? err.message : String(err),
+      });
       res.status(502).json({ error: 'VTN events fetch failed' });
     }
   });
@@ -300,7 +307,11 @@ export function createOpenADRRoutes(): Router {
               : { error: `VTN ack failed: ${result.status}` },
           );
       } catch (err) {
-        console.error('[OpenADR] Ack error:', err);
+        logger.error('OpenADR ack error', {
+          requestId: req.requestId,
+          eventId,
+          error: err instanceof Error ? err.message : String(err),
+        });
         res.status(502).json({ error: 'VTN acknowledge failed' });
       }
     },
@@ -339,7 +350,10 @@ export function createOpenADRRoutes(): Router {
         res.status(result.status).json({ error: `VTN report submission failed: ${result.status}` });
       }
     } catch (err) {
-      console.error('[OpenADR] Report error:', err);
+      logger.error('OpenADR report error', {
+        requestId: req.requestId,
+        error: err instanceof Error ? err.message : String(err),
+      });
       res.status(502).json({ error: 'VTN report submission failed' });
     }
   });

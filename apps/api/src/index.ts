@@ -4,6 +4,7 @@ import express from 'express';
 import http from 'http';
 import { WebSocketServer } from 'ws';
 import { eventBus } from './core/EventBus.js';
+import { logger } from './core/logger.js';
 import { initKeys } from './jwt-utils.js';
 import {
   configureCors,
@@ -76,18 +77,22 @@ export async function startServer(): Promise<void> {
   const timeseriesService = new TimeseriesService();
   eventBus.subscribe('timeseries', timeseriesService);
   await timeseriesService.recoverWAL().catch((err: unknown) => {
-    console.warn('[Server] WAL recovery failed:', err);
+    logger.warn('WAL recovery failed', { error: err instanceof Error ? err.message : String(err) });
   });
 
   // ─── Energy Router (Day-Ahead LP optimizer) ───────────────────────
   const energyRouter = new EnergyRouterService(eventBus);
   await energyRouter.start().catch((err: unknown) => {
-    console.warn('[Server] EnergyRouterService start failed:', err);
+    logger.warn('EnergyRouterService start failed', {
+      error: err instanceof Error ? err.message : String(err),
+    });
   });
 
   // ─── Protocol Adapters ────────────────────────────────────────────
   await startProtocolAdapters(eventBus).catch((err: unknown) => {
-    console.warn('[Server] Protocol adapter startup error:', err);
+    logger.warn('Protocol adapter startup error', {
+      error: err instanceof Error ? err.message : String(err),
+    });
   });
 
   // ─── Static serving for production ───────────────────────────────
@@ -96,12 +101,12 @@ export async function startServer(): Promise<void> {
   }
 
   server.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+    logger.info('Server running', { port: PORT });
   });
 
   // ─── Graceful Shutdown ────────────────────────────────────────────
   const shutdown = async (): Promise<void> => {
-    console.log('[Server] Shutting down…');
+    logger.info('Server shutting down');
     energyRouter.stop();
     await stopProtocolAdapters();
     await timeseriesService.destroy();

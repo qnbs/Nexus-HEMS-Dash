@@ -12,6 +12,7 @@ import { InfluxDB } from '@influxdata/influxdb-client';
 import type { Request, Response, Router } from 'express';
 import { Router as createRouter } from 'express';
 import { z } from 'zod';
+import { logger } from '../core/logger.js';
 
 const MAX_POINTS = 1000;
 
@@ -19,9 +20,14 @@ const MAX_POINTS = 1000;
 // Request validation schema
 // ---------------------------------------------------------------------------
 
+// Strict allowlists prevent Flux query injection. Both fields are interpolated
+// directly into Flux string filters — only alphanumeric + underscore permitted.
+const FLUX_IDENTIFIER_RE = /^[a-zA-Z][a-zA-Z0-9_]{0,63}$/;
+const FLUX_DEVICE_ID_RE = /^[a-zA-Z0-9_:.-]{1,128}$/;
+
 const HistoryQuerySchema = z.object({
-  metric: z.string().min(1).max(64),
-  deviceId: z.string().min(1).max(128).optional(),
+  metric: z.string().regex(FLUX_IDENTIFIER_RE, 'metric must be an alphanumeric identifier'),
+  deviceId: z.string().regex(FLUX_DEVICE_ID_RE, 'deviceId contains invalid characters').optional(),
   from: z.string().datetime({ offset: true }),
   to: z.string().datetime({ offset: true }),
   granularity: z.enum(['1m', '5m', '15m', '1h', '1d']).default('5m'),
@@ -97,7 +103,11 @@ export function createHistoryRoutes(): Router {
         source: 'influxdb',
       });
     } catch (err) {
-      console.error('[History] InfluxDB query error:', err);
+      logger.error('InfluxDB query error', {
+        requestId: req.requestId,
+        metric,
+        error: err instanceof Error ? err.message : String(err),
+      });
       res.status(200).json({
         metric,
         granularity,

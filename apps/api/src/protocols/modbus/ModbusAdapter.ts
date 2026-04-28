@@ -34,6 +34,32 @@ const MAX_RECONNECT_DELAY_MS = 60_000;
 const MAX_DLQ_LINES = 10_000;
 let dlqLineCount = 0;
 
+// Register types supported by readRegister(). Any type outside this set is
+// logged as a warning and skipped rather than crashing the polling loop.
+const SUPPORTED_DATA_TYPES = new Set<RegisterConfig['dataType']>([
+  'INT16',
+  'UINT16',
+  'INT32',
+  'UINT32',
+  'FLOAT32',
+]);
+
+function validateRegisterConfig(registers: RegisterConfig[]): RegisterConfig[] {
+  const valid: RegisterConfig[] = [];
+  for (const reg of registers) {
+    if (SUPPORTED_DATA_TYPES.has(reg.dataType)) {
+      valid.push(reg);
+    } else {
+      console.warn(
+        `[ModbusAdapter] Unsupported dataType "${reg.dataType as string}" on register ` +
+          `address=${reg.address} label="${reg.label}" — skipping. ` +
+          `Supported types: ${[...SUPPORTED_DATA_TYPES].join(', ')}`,
+      );
+    }
+  }
+  return valid;
+}
+
 // ---------------------------------------------------------------------------
 // Device Map Schema (local to this file — full JSON schema in device-map.json)
 // ---------------------------------------------------------------------------
@@ -77,7 +103,8 @@ export class ModbusAdapter implements IProtocolAdapter {
   private destroyed = false;
 
   constructor(device: DeviceConfig) {
-    this.device = device;
+    const validRegisters = validateRegisterConfig(device.registers);
+    this.device = { ...device, registers: validRegisters };
     this.id = device.deviceId;
     this.protocol = device.protocol;
     this.client = new ModbusRTU();

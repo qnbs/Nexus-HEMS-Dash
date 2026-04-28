@@ -66,9 +66,10 @@ export function configureCors(app: Express): void {
 // If the client already sends one (reverse-proxy scenario), it is preserved.
 
 export function configureRequestTracking(app: Express): void {
-  app.use((_req: Request, res: Response, next: NextFunction): void => {
-    const incoming = _req.headers['x-request-id'];
+  app.use((req: Request, res: Response, next: NextFunction): void => {
+    const incoming = req.headers['x-request-id'];
     const requestId = typeof incoming === 'string' ? incoming : crypto.randomUUID();
+    req.requestId = requestId;
     res.setHeader('X-Request-ID', requestId);
     next();
   });
