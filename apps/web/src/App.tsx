@@ -9,6 +9,7 @@ import { OfflineBanner } from './components/OfflineBanner';
 import { PWAInstallPrompt } from './components/PWAInstallPrompt';
 import { PWAUpdateNotification } from './components/PWAUpdateNotification';
 import { TauriAutoUpdater } from './components/TauriAutoUpdater';
+import { PageSkeleton } from './components/ui/Skeleton';
 import { EnergyProvider } from './core/EnergyContext';
 import { useAdapterBridge } from './core/useEnergyStore';
 import { themeDefinitions } from './design-tokens';
@@ -56,21 +57,6 @@ const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 const AISettingsPage = lazy(() => import('./pages/AISettingsPage'));
 const MonitoringUnified = lazy(() => import('./pages/Monitoring'));
 const PluginsPage = lazy(() => import('./pages/PluginsPage'));
-
-function PageLoadingFallback() {
-  const { t } = useTranslation();
-  return (
-    <div className="flex min-h-[40vh] items-center justify-center" role="status">
-      <div className="flex flex-col items-center gap-3">
-        <div
-          className="cyber-shimmer h-8 w-8 animate-spin rounded-full border-(--color-primary) border-2 border-t-transparent"
-          aria-hidden="true"
-        />
-        <span className="text-(--color-muted) text-sm">{t('loading.page')}</span>
-      </div>
-    </div>
-  );
-}
 
 /** Scrolls to top and moves focus to main content on SPA route changes.
  * Skips focus management on initial render so the skip-to-content link
@@ -223,7 +209,7 @@ export default function App() {
           <EnergyProvider>
             <AppShell>
               <ErrorBoundary>
-                <Suspense fallback={<PageLoadingFallback />}>
+                <Suspense fallback={<PageSkeleton />}>
                   <Routes>
                     {/* ── Section 1: Command Hub ── */}
                     <Route element={<CommandHubLayout />}>

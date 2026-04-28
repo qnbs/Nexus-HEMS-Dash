@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { PageHeader } from '../components/layout/PageHeader';
 import { HelpTooltip } from '../components/ui/HelpTooltip';
 import { PageCrossLinks } from '../components/ui/PageCrossLinks';
+import { TabSkeleton } from '../components/ui/Skeleton';
 
 // ─── Lazy-load heavy sub-pages into tab panels ───────────────────────
 const AnalyticsPage = lazy(() => import('./AnalyticsPage'));
@@ -13,20 +14,6 @@ const HistoricalAnalyticsPage = lazy(() => import('./HistoricalAnalyticsPage'));
 // ─── Tab definitions ─────────────────────────────────────────────────
 
 type AnalyticsTab = 'realtime' | 'historical';
-
-function TabFallback() {
-  return (
-    <div className="flex min-h-[30vh] items-center justify-center" role="status">
-      <div className="flex flex-col items-center gap-3">
-        <div
-          className="cyber-shimmer h-6 w-6 animate-spin rounded-full border-(--color-primary) border-2 border-t-transparent"
-          aria-hidden="true"
-        />
-        <span className="text-(--color-muted) text-xs">Laden…</span>
-      </div>
-    </div>
-  );
-}
 
 // ─── Unified Analytics & Reports Page ────────────────────────────────
 
@@ -173,7 +160,7 @@ function AnalyticsUnifiedComponent() {
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.25 }}
           >
-            <Suspense fallback={<TabFallback />}>
+            <Suspense fallback={<TabSkeleton />}>
               <AnalyticsPage />
             </Suspense>
           </motion.div>
@@ -190,7 +177,7 @@ function AnalyticsUnifiedComponent() {
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.25 }}
           >
-            <Suspense fallback={<TabFallback />}>
+            <Suspense fallback={<TabSkeleton />}>
               <HistoricalAnalyticsPage />
             </Suspense>
           </motion.div>

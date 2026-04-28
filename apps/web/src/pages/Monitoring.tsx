@@ -16,25 +16,11 @@ import { PageHeader } from '../components/layout/PageHeader';
 import { EmptyState } from '../components/ui/EmptyState';
 import { HelpTooltip } from '../components/ui/HelpTooltip';
 import { PageCrossLinks } from '../components/ui/PageCrossLinks';
+import { TabSkeleton } from '../components/ui/Skeleton';
 import { useAppStoreShallow } from '../store';
 
 // ─── Lazy-load the full monitoring panel ─────────────────────────────
 const MonitoringPage = lazy(() => import('./MonitoringPage'));
-
-function TabFallback() {
-  const { t } = useTranslation();
-  return (
-    <div className="flex min-h-[30vh] items-center justify-center" role="status">
-      <div className="flex flex-col items-center gap-3">
-        <div
-          className="cyber-shimmer h-6 w-6 animate-spin rounded-full border-(--color-primary) border-2 border-t-transparent"
-          aria-hidden="true"
-        />
-        <span className="text-(--color-muted) text-xs">{t('common.loading', 'Laden…')}</span>
-      </div>
-    </div>
-  );
-}
 
 // ─── Unified Monitoring & Health Page ────────────────────────────────
 
@@ -230,7 +216,7 @@ function MonitoringUnifiedComponent() {
             transition={{ duration: 0.3 }}
             className="overflow-hidden"
           >
-            <Suspense fallback={<TabFallback />}>
+            <Suspense fallback={<TabSkeleton />}>
               <MonitoringPage />
             </Suspense>
           </motion.div>

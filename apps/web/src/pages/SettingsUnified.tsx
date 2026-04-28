@@ -21,6 +21,7 @@ import { useSearchParams } from 'react-router-dom';
 import { PageHeader } from '../components/layout/PageHeader';
 import { HelpTooltip } from '../components/ui/HelpTooltip';
 import { PageCrossLinks } from '../components/ui/PageCrossLinks';
+import { TabSkeleton } from '../components/ui/Skeleton';
 
 // ─── Lazy-load existing pages ────────────────────────────────────────
 const SettingsPage = lazy(() => import('./Settings').then((m) => ({ default: m.Settings })));
@@ -30,20 +31,6 @@ const HelpPage = lazy(() => import('./Help').then((m) => ({ default: m.Help })))
 // ─── Tab definitions ─────────────────────────────────────────────────
 
 type SettingsSection = 'settings' | 'plugins' | 'help';
-
-function TabFallback() {
-  return (
-    <div className="flex min-h-[30vh] items-center justify-center" role="status">
-      <div className="flex flex-col items-center gap-3">
-        <div
-          className="cyber-shimmer h-6 w-6 animate-spin rounded-full border-(--color-primary) border-2 border-t-transparent"
-          aria-hidden="true"
-        />
-        <span className="text-(--color-muted) text-xs">Laden…</span>
-      </div>
-    </div>
-  );
-}
 
 // ─── Unified Settings & Plugins Page ─────────────────────────────────
 
@@ -293,7 +280,7 @@ function SettingsUnifiedComponent() {
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.25 }}
               >
-                <Suspense fallback={<TabFallback />}>
+                <Suspense fallback={<TabSkeleton />}>
                   <SettingsPage />
                 </Suspense>
               </motion.div>
@@ -307,7 +294,7 @@ function SettingsUnifiedComponent() {
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.25 }}
               >
-                <Suspense fallback={<TabFallback />}>
+                <Suspense fallback={<TabSkeleton />}>
                   <PluginsPage />
                 </Suspense>
               </motion.div>
@@ -321,7 +308,7 @@ function SettingsUnifiedComponent() {
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.25 }}
               >
-                <Suspense fallback={<TabFallback />}>
+                <Suspense fallback={<TabSkeleton />}>
                   <HelpPage />
                 </Suspense>
               </motion.div>
