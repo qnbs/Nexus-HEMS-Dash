@@ -71,6 +71,11 @@
     "storybook:build": {
       "inputs": ["src/**", ".storybook/**"],
       "outputs": ["storybook-static/**"]
+    },
+    "size": {
+      "dependsOn": ["build"],
+      "inputs": ["dist/**", "package.json"],
+      "outputs": []
     }
   }
 }

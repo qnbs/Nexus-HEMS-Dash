@@ -434,12 +434,12 @@ export function useAdapterBridge() {
           };
         });
 
-        if (circuitState === 'OPEN') {
+        if (circuitState === 'open') {
           toast.error(`Adapter "${id}" circuit breaker OPEN — too many errors`, {
             id: `cb-open-${id}`,
             duration: 10000,
           });
-        } else if (circuitState === 'CLOSED') {
+        } else if (circuitState === 'closed') {
           toast.dismiss(`cb-open-${id}`);
           toast.success(`Adapter "${id}" reconnected`, { duration: 4000 });
         }
