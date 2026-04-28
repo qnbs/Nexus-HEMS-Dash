@@ -13,7 +13,7 @@ export default defineConfig({
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     serviceWorkers: 'block',
-    reducedMotion: 'reduce',
+    contextOptions: { reducedMotion: 'reduce' },
     navigationTimeout: 120_000,
     launchOptions: {
       args: ['--disable-dev-shm-usage', '--disable-gpu', '--no-zygote', '--disable-extensions'],
