@@ -11,6 +11,7 @@ import {
   Play,
   Puzzle,
   Square,
+  Store,
   Trash2,
   XCircle,
 } from 'lucide-react';
@@ -18,9 +19,54 @@ import { AnimatePresence, motion } from 'motion/react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '../components/layout/PageHeader';
+import { BrowseAdaptersPanel } from '../components/plugins/BrowseAdaptersPanel';
 import { NeonCard, NeonCardBody } from '../components/ui/NeonCard';
 import { PageCrossLinks } from '../components/ui/PageCrossLinks';
 import { type PluginEntry, type PluginState, pluginManager } from '../core/plugin-system';
+
+// ─── Tab bar ────────────────────────────────────────────────────────
+
+type PluginTab = 'installed' | 'browse';
+
+function TabBar({ active, onChange }: { active: PluginTab; onChange: (t: PluginTab) => void }) {
+  const { t } = useTranslation();
+  return (
+    <div
+      className="flex gap-1 rounded-2xl border border-(--color-border) bg-white/[0.02] p-1"
+      role="tablist"
+      aria-label={t('plugins.tabsLabel', 'Plugin views')}
+    >
+      <button
+        type="button"
+        role="tab"
+        aria-selected={active === 'installed'}
+        onClick={() => onChange('installed')}
+        className={`focus-ring flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-2 font-medium text-sm transition-colors ${
+          active === 'installed'
+            ? 'bg-(--color-primary)/15 text-(--color-primary)'
+            : 'text-(--color-muted) hover:text-(--color-text)'
+        }`}
+      >
+        <Puzzle className="h-4 w-4" aria-hidden="true" />
+        {t('plugins.tabInstalled')}
+      </button>
+      <button
+        type="button"
+        role="tab"
+        aria-selected={active === 'browse'}
+        onClick={() => onChange('browse')}
+        className={`focus-ring flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-2 font-medium text-sm transition-colors ${
+          active === 'browse'
+            ? 'bg-(--color-primary)/15 text-(--color-primary)'
+            : 'text-(--color-muted) hover:text-(--color-text)'
+        }`}
+      >
+        <Store className="h-4 w-4" aria-hidden="true" />
+        {t('plugins.tabBrowse')}
+      </button>
+    </div>
+  );
+}
 
 // ─── State badge colors ─────────────────────────────────────────────
 
@@ -342,8 +388,43 @@ function ServicesList() {
 
 // ─── Page Component ─────────────────────────────────────────────────
 
+function InstalledTab({
+  entries,
+  onStart,
+  onStop,
+  onUninstall,
+}: {
+  entries: PluginEntry[];
+  onStart: (id: string) => void;
+  onStop: (id: string) => void;
+  onUninstall: (id: string) => void;
+}) {
+  return (
+    <>
+      <PluginOverviewCard entries={entries} />
+      <ServicesList />
+      {entries.length > 0 ? (
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {entries.map((entry) => (
+            <PluginCard
+              key={entry.plugin.descriptor.id}
+              entry={entry}
+              onStart={onStart}
+              onStop={onStop}
+              onUninstall={onUninstall}
+            />
+          ))}
+        </div>
+      ) : (
+        <EmptyPluginState />
+      )}
+    </>
+  );
+}
+
 function PluginsPageComponent() {
   const { t } = useTranslation();
+  const [tab, setTab] = useState<PluginTab>('installed');
   const [entries, setEntries] = useState<PluginEntry[]>(() => pluginManager.list());
 
   const refresh = () => setEntries(pluginManager.list());
@@ -367,31 +448,21 @@ function PluginsPageComponent() {
     <div className="space-y-6">
       <PageHeader
         title={t('plugins.title')}
-        subtitle={t('plugins.subtitle', 'OSGi-inspiriertes Plugin-Lifecycle-Management')}
+        subtitle={t('plugins.subtitle')}
         icon={<Puzzle className="h-5 w-5" />}
       />
 
-      {/* Overview */}
-      <PluginOverviewCard entries={entries} />
+      <TabBar active={tab} onChange={setTab} />
 
-      {/* Services */}
-      <ServicesList />
-
-      {/* Plugin Grid */}
-      {entries.length > 0 ? (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {entries.map((entry) => (
-            <PluginCard
-              key={entry.plugin.descriptor.id}
-              entry={entry}
-              onStart={handleStart}
-              onStop={handleStop}
-              onUninstall={handleUninstall}
-            />
-          ))}
-        </div>
+      {tab === 'installed' ? (
+        <InstalledTab
+          entries={entries}
+          onStart={handleStart}
+          onStop={handleStop}
+          onUninstall={handleUninstall}
+        />
       ) : (
-        <EmptyPluginState />
+        <BrowseAdaptersPanel />
       )}
 
       <PageCrossLinks />

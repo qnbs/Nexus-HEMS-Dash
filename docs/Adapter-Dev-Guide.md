@@ -18,7 +18,8 @@
 10. [Command Handling](#command-handling)
 11. [§14a EnWG + VDE-AR-N 4105 Compliance](#compliance)
 12. [Testing](#testing)
-13. [FAQ](#faq)
+13. [Plugin Marketplace — Publishing & Security](#plugin-marketplace)
+14. [FAQ](#faq)
 
 ---
 
@@ -681,6 +682,116 @@ In IndexedDB (Dexie.js), encrypted with AES-GCM 256-bit. See `apps/web/src/lib/a
 2. Add validation in `apps/web/src/core/command-safety.ts`
 3. Handle in your adapter's `doSendCommand()`
 4. Optionally add danger-confirm classification
+
+---
+
+## Plugin Marketplace — Publishing & Security
+
+The **Adapter Marketplace** (`apps/web/src/core/adapters/adapter-marketplace.ts`) lets users discover and one-click-install community adapters directly from `Settings → Plugins → Browse Adapters`.
+
+### Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│              BrowseAdaptersPanel (React UI)                  │
+│  Search · Category filter · Card grid · One-click install   │
+├─────────────────────────────────────────────────────────────┤
+│              AdapterMarketplace (service)                   │
+│  fetchCatalog() · search() · install() · listInstalled()    │
+├─────────────┬───────────────────┬───────────────────────────┤
+│ Catalog     │ Signature verify  │ CDN loader                │
+│ /adapter-   │ Ed25519 (SubtleCrypto)│ esm.sh / skypack /   │
+│ marketplace │ SHA-256 integrity │ unpkg / jsdelivr          │
+│ -catalog.json│                  │ (SSRF allowlist)          │
+└─────────────┴───────────────────┴───────────────────────────┘
+```
+
+### Permission Model
+
+| Permission   | `getData` / `connect` | `sendCommand` | Registry access |
+|:-------------|:---------------------:|:-------------:|:---------------:|
+| `read-only`  | ✅                    | ❌ blocked     | ❌              |
+| `write`      | ✅                    | ✅             | ❌              |
+| `admin`      | ✅                    | ✅             | ✅              |
+
+- **`read-only`**: The sandbox wrapper replaces `sendCommand` with a no-op that logs a warning and returns `false`. Suitable for monitoring-only adapters (Tibber, P1 meter, Fronius read-only mode).
+- **`write`**: Adapter can actuate hardware. The HEMS `CommandSafety` layer still applies — all commands pass through Zod validation and rate limiting.
+- **`admin`**: Full access, including the ability to register sub-adapters. Reserved for tightly integrated packages (e.g. Powerwall gateway that manages its own sub-devices).
+
+The dashboard never grants a higher permission than what the adapter declares in the catalog. Users can choose to *reduce* the permission during install; they cannot elevate it.
+
+### Security Controls
+
+1. **CDN Allowlist** — Only `esm.sh`, `cdn.skypack.dev`, `unpkg.com`, `cdn.jsdelivr.net/npm/` are permitted CDN origins. Any other URL is rejected before fetch.
+2. **Ed25519 Signature** — Each verified catalog entry carries a base64url-encoded Ed25519 signature over `${id}@${version}`. The catalog embeds the SPKI-encoded verifier public key. Verification uses `SubtleCrypto.verify('Ed25519', …)`.
+3. **SHA-256 Integrity** — After fetch, the raw module text is hashed with `SubtleCrypto.digest('SHA-256', …)` and stored in the install ledger for audit.
+4. **500 KB Size Cap** — Modules larger than 500 KB are rejected outright.
+5. **Blob URL Isolation** — Modules are loaded via `URL.createObjectURL(blob)` so they execute on a `blob:` origin, isolated from the main app origin. The blob URL is revoked immediately after import.
+6. **Unverified adapters** — Entries with `verified: false` or no `signature` skip cryptographic verification and are loaded with their declared permission. Users see a "not verified" indicator in the UI.
+
+### Writing a Publishable Adapter
+
+A marketplace adapter is a standard npm package that exports one of the supported module shapes (same as contrib adapters):
+
+```typescript
+// my-adapter/src/index.ts
+
+import type { AdapterFactory } from 'nexus-hems-adapter-sdk';
+import { MyAdapter } from './MyAdapter';
+
+export const id = 'nexus-my-adapter';
+export const factory: AdapterFactory = (config) => new MyAdapter(config);
+
+// Or: export default { id, factory };
+// Or: export function register() { registerAdapter(id, factory, { ... }); }
+```
+
+**`package.json` requirements:**
+
+```json
+{
+  "name": "nexus-hems-adapter-my-adapter",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "exports": { ".": "./dist/index.js" },
+  "keywords": ["nexus-hems", "adapter"],
+  "peerDependencies": {}
+}
+```
+
+Key rules:
+- **No Node.js built-ins** (`fs`, `net`, `crypto` — use `SubtleCrypto` instead). The module runs in the browser.
+- **No top-level side effects** — the module must not call `registerAdapter` at import time; wait for the `register()` function call or default export consumption.
+- **Bundle size** — keep the gzipped bundle under 100 KB. Declare `peerDependencies` for shared dependencies (e.g. `zod`); do not bundle them.
+- **ESM only** — no CJS. `"type": "module"` is required.
+
+### Submitting to the Catalog
+
+1. Publish your package to npm (or create a GitHub release).
+2. Open a PR against this repository adding your entry to `apps/web/public/adapter-marketplace-catalog.json`.
+3. A maintainer will review the code, run security checks, and sign the entry with the Nexus-HEMS Ed25519 key.
+4. Once merged, your adapter appears in the marketplace with the ✅ verified badge.
+
+Unsigned community entries (those you add yourself with an empty `signature`) will appear but without the verified badge. Users can still install them, with a clear visual warning.
+
+### Updating the Catalog Locally
+
+During development you can point the app at a local catalog override:
+
+```typescript
+// vite.config.ts — proxy /adapter-marketplace-catalog.json to your local file
+server: {
+  proxy: {
+    '/adapter-marketplace-catalog.json': {
+      target: 'http://localhost:3001',
+      changeOrigin: true,
+    },
+  },
+},
+```
+
+Or simply replace `apps/web/public/adapter-marketplace-catalog.json` in your fork.
 
 ---
 
