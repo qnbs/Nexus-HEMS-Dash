@@ -2649,4 +2649,8 @@ export const de = {
     loadError: 'Vertrauensspeicher konnte nicht geladen werden',
     removeError: 'Gerät konnte nicht aus dem Vertrauensspeicher entfernt werden',
   },
+  wizard: {
+    stepsNavLabel: 'Assistent-Schritte',
+    stepLabel: '{{label}} – Schritt {{current}} von {{total}}',
+  },
 } as const;

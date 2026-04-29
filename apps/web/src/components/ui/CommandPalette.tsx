@@ -14,7 +14,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { EmptyState } from './EmptyState';
@@ -62,6 +62,21 @@ export function CommandPalette({
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
+
+  const inputRef = useRef<HTMLInputElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const savedFocusRef = useRef<HTMLElement | null>(null);
+
+  // WCAG 2.1.2 / 2.4.3: save trigger focus, auto-focus input, restore on close
+  useEffect(() => {
+    if (isOpen) {
+      savedFocusRef.current = document.activeElement as HTMLElement;
+      requestAnimationFrame(() => inputRef.current?.focus());
+    } else {
+      savedFocusRef.current?.focus();
+      savedFocusRef.current = null;
+    }
+  }, [isOpen]);
 
   const commands: Command[] = [
     // Actions
@@ -222,6 +237,27 @@ export function CommandPalette({
     );
   });
 
+  // WCAG 2.1.2: trap Tab focus within the open dialog
+  const trapFocus = (e: KeyboardEvent) => {
+    if (!dialogRef.current) return;
+    const focusable = Array.from(
+      dialogRef.current.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), input, [tabindex]:not([tabindex="-1"])',
+      ),
+    );
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (e.shiftKey) {
+      if (document.activeElement === first) {
+        e.preventDefault();
+        last?.focus();
+      }
+    } else if (document.activeElement === last) {
+      e.preventDefault();
+      first?.focus();
+    }
+  };
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!isOpen) return;
@@ -237,6 +273,8 @@ export function CommandPalette({
       } else if (e.key === 'Enter') {
         e.preventDefault();
         filteredCommands[selectedIndex]?.action();
+      } else if (e.key === 'Tab') {
+        trapFocus(e);
       }
     };
 
@@ -269,6 +307,7 @@ export function CommandPalette({
 
           {/* Command Palette */}
           <motion.div
+            ref={dialogRef}
             initial={{ opacity: 0, scale: 0.95, y: -20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: -20 }}
@@ -281,6 +320,7 @@ export function CommandPalette({
             <div className="flex items-center gap-3 border-(--color-border) border-b p-4">
               <Search className="h-5 w-5 text-(--color-muted)" aria-hidden="true" />
               <input
+                ref={inputRef}
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}

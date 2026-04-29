@@ -1,6 +1,7 @@
 import { Check } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import type { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { wizardStep } from '../../design-tokens';
 
 // ─── Types ───────────────────────────────────────────────────────────
@@ -38,9 +39,10 @@ export function useWizard(totalSteps: number) {
 // ─── Step Indicator Bar ──────────────────────────────────────────────
 
 export function WizardStepper({ steps, currentStep, onStepClick }: WizardStepperProps) {
+  const { t } = useTranslation();
   return (
     <nav
-      aria-label="Wizard steps"
+      aria-label={t('wizard.stepsNavLabel')}
       className="flex items-center justify-center"
       style={{ gap: wizardStep.gap }}
     >
@@ -66,7 +68,11 @@ export function WizardStepper({ steps, currentStep, onStepClick }: WizardStepper
               onClick={isClickable ? () => onStepClick(i) : undefined}
               disabled={!isClickable}
               aria-current={isCurrent ? 'step' : undefined}
-              aria-label={`${step.label} – Step ${i + 1} of ${steps.length}`}
+              aria-label={t('wizard.stepLabel', {
+                label: step.label,
+                current: i + 1,
+                total: steps.length,
+              })}
               className={`focus-ring flex items-center gap-2 rounded-full px-3 py-1.5 font-medium text-sm transition-colors ${
                 isCurrent
                   ? 'border border-(--color-primary)/40 bg-(--color-primary)/15 text-(--color-primary)'

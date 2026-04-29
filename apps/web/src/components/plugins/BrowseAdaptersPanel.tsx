@@ -24,15 +24,15 @@ import { NeonCard, NeonCardBody } from '../ui/NeonCard';
 
 const PERMISSION_STYLES: Record<AdapterPermission, { color: string; label: string }> = {
   'read-only': {
-    color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30',
+    color: 'text-(--badge-ok-fg) bg-emerald-500/10 border-emerald-500/30',
     label: 'marketplace.permReadOnly',
   },
   write: {
-    color: 'text-yellow-400 bg-yellow-500/10 border-yellow-500/30',
+    color: 'text-(--badge-warn-fg) bg-yellow-500/10 border-yellow-500/30',
     label: 'marketplace.permWrite',
   },
   admin: {
-    color: 'text-red-400 bg-red-500/10 border-red-500/30',
+    color: 'text-(--badge-danger-fg) bg-red-500/10 border-red-500/30',
     label: 'marketplace.permAdmin',
   },
 };
@@ -80,7 +80,7 @@ function InstallButton({ entry }: { entry: MarketplaceEntry }) {
 
   if (installed || progress.status === 'done') {
     return (
-      <span className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-500/10 px-3 py-1.5 font-medium text-emerald-400 text-sm">
+      <span className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-500/10 px-3 py-1.5 font-medium text-(--badge-ok-fg) text-sm">
         <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
         {t('marketplace.installed')}
       </span>

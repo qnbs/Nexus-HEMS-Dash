@@ -1424,6 +1424,10 @@ export const en = {
     linkError: 'Share link generation failed. Please try again.',
     clipboardError: 'Could not copy to clipboard.',
   },
+  wizard: {
+    stepsNavLabel: 'Wizard steps',
+    stepLabel: '{{label}} – Step {{current}} of {{total}}',
+  },
   accessibility: {
     skipToContent: 'Skip to main content',
     closeDialog: 'Close dialog',

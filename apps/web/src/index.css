@@ -116,6 +116,12 @@
     border-radius: inherit;
   }
 
+  /* WCAG 2.4.11 Focus Not Obscured — keep focused element clear of sticky header/footer */
+  :is(button, a, input, select, textarea, [tabindex]):focus-visible {
+    scroll-margin-top: 5rem;
+    scroll-margin-bottom: 5rem;
+  }
+
   /* SVG interactive elements — visible focus indication */
   svg [role='button']:focus-visible {
     outline: 2px solid var(--color-primary, #38bdf8);
@@ -1052,6 +1058,11 @@ body {
   --color-muted: #94a3b8;
   --color-border: rgba(56, 189, 248, 0.14);
   --color-glow: rgba(56, 189, 248, 0.2);
+  /* WCAG 1.4.3: semantic badge text — bright hues for dark backgrounds (~7:1) */
+  --badge-ok-fg: #6ee7b7;
+  --badge-warn-fg: #fcd34d;
+  --badge-danger-fg: #fca5a5;
+  --badge-info-fg: #7dd3fc;
 }
 
 /* CSS Variables per Theme (injected via JS) */
@@ -1067,6 +1078,10 @@ body {
   --color-muted: #94a3b8;
   --color-border: rgba(34, 255, 136, 0.14);
   --color-glow: rgba(34, 255, 136, 0.25);
+  --badge-ok-fg: #6ee7b7;
+  --badge-warn-fg: #fcd34d;
+  --badge-danger-fg: #fca5a5;
+  --badge-info-fg: #7dd3fc;
 }
 
 [data-theme='solar-light'] {
@@ -1081,6 +1096,11 @@ body {
   --color-muted: #4b5563;
   --color-border: rgba(0, 132, 255, 0.14);
   --color-glow: rgba(255, 136, 0, 0.18);
+  /* WCAG 1.4.3: dark hues for light backgrounds (~6:1) */
+  --badge-ok-fg: #047857;
+  --badge-warn-fg: #b45309;
+  --badge-danger-fg: #b91c1c;
+  --badge-info-fg: #0369a1;
 }
 
 [data-theme='ocean-dark'] {
@@ -1095,6 +1115,10 @@ body {
   --color-muted: #94a3b8;
   --color-border: rgba(56, 189, 248, 0.14);
   --color-glow: rgba(56, 189, 248, 0.2);
+  --badge-ok-fg: #6ee7b7;
+  --badge-warn-fg: #fcd34d;
+  --badge-danger-fg: #fca5a5;
+  --badge-info-fg: #7dd3fc;
 }
 
 [data-theme='nature-green'] {
@@ -1109,6 +1133,10 @@ body {
   --color-muted: #8aaa8e;
   --color-border: rgba(74, 222, 128, 0.14);
   --color-glow: rgba(74, 222, 128, 0.2);
+  --badge-ok-fg: #6ee7b7;
+  --badge-warn-fg: #fcd34d;
+  --badge-danger-fg: #fca5a5;
+  --badge-info-fg: #7dd3fc;
 }
 
 [data-theme='minimal-white'] {
@@ -1123,6 +1151,11 @@ body {
   --color-muted: #6b7280;
   --color-border: rgba(209, 213, 219, 0.5);
   --color-glow: rgba(99, 102, 241, 0.12);
+  /* WCAG 1.4.3: dark hues for white backgrounds (~6:1) */
+  --badge-ok-fg: #047857;
+  --badge-warn-fg: #b45309;
+  --badge-danger-fg: #b91c1c;
+  --badge-info-fg: #0369a1;
 }
 
 /* Animations */

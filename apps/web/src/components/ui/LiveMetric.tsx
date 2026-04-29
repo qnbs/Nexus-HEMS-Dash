@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 /** Formatting presets for common energy units */
 export type LiveMetricFormat = 'power' | 'energy' | 'percent' | 'currency' | 'custom';
@@ -42,6 +42,9 @@ const defaultPrecision: Record<LiveMetricFormat, number> = {
  * Automatically pulses when the value changes (opt-in via `pulse` prop).
  * Font is `font-mono` + `tabular-nums` for stable digit width — no layout shifts.
  *
+ * Screen-reader announcements are debounced (3 s) and gated on a 5 % relative
+ * change threshold to avoid aria-live "announcement storms" on live dashboards.
+ *
  * @example
  * ```tsx
  * <LiveMetric value={3.247} unit="kW" format="power" />
@@ -69,20 +72,45 @@ export function LiveMetric({
     setAnimKey((k) => k + 1);
   }
 
+  // Debounced sr-only announcement — WCAG 4.1.3 / prevents aria-live spam
+  const [announcement, setAnnouncement] = useState('');
+  const announceTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const lastAnnouncedValue = useRef(value);
+
+  useEffect(() => {
+    const previous = lastAnnouncedValue.current;
+    const pctChange = Math.abs(value - previous) / (Math.abs(previous) || 1);
+    // Only announce if the value shifted by more than 5 % relative
+    if (pctChange > 0.05) {
+      clearTimeout(announceTimer.current);
+      announceTimer.current = setTimeout(() => {
+        lastAnnouncedValue.current = value;
+        setAnnouncement(`${value.toFixed(decimals)}${unit ? ` ${unit}` : ''}`);
+      }, 3000);
+    }
+    return () => clearTimeout(announceTimer.current);
+  }, [value, decimals, unit]);
+
   return (
-    <span
-      key={pulse ? animKey : undefined}
-      className={`live-metric ${sizeClass[size]} ${className}`}
-      data-changing={pulse ? 'true' : undefined}
-      aria-live="polite"
-      aria-atomic="true"
-    >
-      {formatted}
-      {unit && (
-        <span className="ml-1 font-normal text-(--color-muted) text-[0.6em] tracking-wide">
-          {unit}
-        </span>
-      )}
+    <span className="contents">
+      {/* Visual readout — no aria-live to prevent announcement storms */}
+      <span
+        key={pulse ? animKey : undefined}
+        className={`live-metric ${sizeClass[size]} ${className}`}
+        data-changing={pulse ? 'true' : undefined}
+        aria-hidden="true"
+      >
+        {formatted}
+        {unit && (
+          <span className="ml-1 font-normal text-(--color-muted) text-[0.6em] tracking-wide">
+            {unit}
+          </span>
+        )}
+      </span>
+      {/* Debounced sr-only announcement for screen readers */}
+      <span className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+        {announcement}
+      </span>
     </span>
   );
 }
