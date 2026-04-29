@@ -1,9 +1,9 @@
 # Technical Debt Registry — Nexus-HEMS-Dash
 
-**Last audited:** 2026-04-26
-**Version at audit:** 1.1.0
-**Last updated:** 2026-04-26
-**Updated version:** 1.1.x baseline with in-flight v1.2.0 work
+**Last audited:** 2026-04-29
+**Version at audit:** 1.2.0
+**Last updated:** 2026-04-29
+**Updated version:** 1.2.0 released
 **Auditor:** Claude Sonnet 4.6 (automated deep-scan)
 
 This file is the canonical issue tracker for known technical debt, security gaps, incomplete implementations, and quality issues. It is **not** a substitute for GitHub Issues — use it for context, rationale, and multi-sprint planning.
@@ -38,27 +38,21 @@ These items are part of the active all-green remediation pass. Here, **"all gree
 
 ### CI-R1 — Aggregate CI Status Jobs Were Too Weak
 **Files:** `.github/workflows/ci.yml`, `.github/workflows/perf-optimized-ci.yml`
-**Status:** 🔄 In progress
+**Status:** ✅ Fixed in v1.2.0
 
-Both `✅ CI Passed` jobs could still report success while relevant downstream jobs were red or only emitted warnings. This made the branch-protection signal weaker than the actual repository quality requirement.
-
-**Fix in progress:** Make aggregate status jobs fail on every non-successful prerequisite in their workflow.
+Both `ci-passed` aggregate jobs now fail with `exit 1` when any prerequisite job result is not `success`. Additionally, the `size-limit check` step in `perf-optimized-ci.yml` had its `|| true` fallback removed — `pnpm size` now fails the build job directly on budget overrun, consistent with `ci.yml`.
 
 ### CI-R2 — Browser-Test Build Artifacts Were Not Built with Consistent E2E Env
 **Files:** `.github/workflows/ci.yml`, `.github/workflows/perf-optimized-ci.yml`, `turbo.json`
-**Status:** 🔄 In progress
+**Status:** ✅ Fixed in v1.2.0
 
-`web#build` declares `VITE_E2E_TESTING` as a relevant build env in `turbo.json`, but the CI build jobs were not consistently building with that env while E2E depended on the resulting artifacts.
-
-**Fix in progress:** Build workflow artifacts with `VITE_E2E_TESTING='true'` wherever those artifacts are later consumed by E2E/browser checks.
+Both `ci.yml` and `perf-optimized-ci.yml` build with `VITE_E2E_TESTING=true`. `turbo.json` `web#build` lists `VITE_E2E_TESTING` in `env` so the Turbo cache keys differ between E2E-enabled and standard builds. E2E jobs consume the `build-${{ github.sha }}` artifact produced by the `VITE_E2E_TESTING=true` build.
 
 ### CI-R3 — Lighthouse Preview Server Parity Drift on Node 24
 **Files:** `apps/web/lighthouserc.json`, `apps/web/playwright.config.ts`
-**Status:** 🔄 In progress
+**Status:** ✅ Fixed in v1.2.0
 
-Playwright already used an explicit `--host 0.0.0.0` preview-server workaround for Node 24 / Ubuntu IPv4-vs-IPv6 binding behavior, while Lighthouse still used the older preview command.
-
-**Fix in progress:** Align Lighthouse preview startup with the same host-binding strategy used by Playwright.
+`lighthouserc.json` `startServerCommand` uses `--host 0.0.0.0 --port 9876 --strictPort`, matching the `--host 0.0.0.0` flag already present in `playwright.config.ts`. Both preview servers now bind to all interfaces, resolving the Node 24 / Ubuntu IPv6-only localhost binding issue.
 
 ### CI-R4 — Central Documentation Drifted from Verified Repo Truth
 **Files:** `README.md`, `CLAUDE.md`, `.github/copilot-instructions.md`, `docs/Toolchain-Architecture.md`, `docs/Testing-Coverage-Strategy.md`
@@ -90,11 +84,20 @@ Full SHIP v1.0.1 handshake implemented:
 
 ### CRIT-02 — Tauri Updater Signing Key Missing
 **File:** `apps/web/src-tauri/tauri.conf.json:66-68`
-**Status:** ❌ Won't fix until auto-update is activated (`active: false`)
+**Status:** ⏳ Documented — must complete before `active: true`
 
-`pubkey: ""` is set alongside `active: false`. Safe for now but must be populated before enabling auto-updates.
+`pubkey: ""` with `active: false` is safe but the auto-updater cannot be enabled without a valid Ed25519 signing keypair. The `endpoints` URL is already set to the GitHub releases JSON.
 
-**Fix:** Run `tauri signer generate`, add public key to `pubkey`, set `endpoints` to a real release server URL, then set `active: true`.
+**Full activation procedure documented in:** `docs/Safety-Certification-Notice.md` §6
+
+**Remaining steps before enabling:**
+1. `cargo tauri signer generate -w ~/.tauri/nexus-hems.key` — generates Ed25519 keypair
+2. Add `TAURI_PRIVATE_KEY` + `TAURI_KEY_PASSWORD` to GitHub repository secrets
+3. Set `"pubkey": "<generated-public-key>"` in `tauri.conf.json`
+4. Set `"active": true` in `tauri.conf.json`
+5. Update `tauri-build.yml` to pass the signing env vars to the Tauri build action
+
+**Risk if skipped:** Desktop app will not receive updates automatically. Users must re-download manually on each release.
 
 ---
 
@@ -370,6 +373,10 @@ Storybook config references component paths that may not have stories written ye
 | ✅ HIGH-09 | Security/Performance roadmap truth-sync completed | v1.2.0 |
 | ✅ SEC-01 | CSP harmonized: worker-src, AI providers, img-src, Express nonce bridge | v1.2.0 |
 | ✅ SEC-02 | PII sanitization extracted to shared-types; wired at WS egress, store ingress, AI client | v1.2.0 |
+| ✅ CI-R1 | Aggregate CI status jobs + size-limit check now fail on any non-success prerequisite | v1.2.0 |
+| ✅ CI-R2 | E2E build artifacts consistently built with VITE_E2E_TESTING=true; turbo.json keyed | v1.2.0 |
+| ✅ CI-R3 | Lighthouse preview server uses --host 0.0.0.0 matching Playwright; IPv6 binding fixed | v1.2.0 |
+| ✅ SAFETY | Safety-Certification-Notice.md created; mock-vs-live hazards, checklist, updater guide | v1.2.0 |
 
 ---
 

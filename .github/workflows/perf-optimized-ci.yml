@@ -242,7 +242,7 @@ jobs:
           fi
 
       - name: size-limit check
-        run: npx size-limit 2>&1 || true
+        run: pnpm size
 
       - name: depcheck
         run: npx depcheck 2>&1 || true

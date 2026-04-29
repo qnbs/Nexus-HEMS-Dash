@@ -2427,7 +2427,7 @@ export const en = {
     selfConsumption: 'Self-consumption optimization',
     emergencyCapacity: 'Emergency reserve',
     heatPumpSgReady: 'Heat pump SG Ready',
-    evSmartCharge: 'EV smart charging',
+    evSmartCharge: 'EV Smart Charge',
     enabled: 'Active',
     disabled: 'Inactive',
     priority: 'Priority',
@@ -2545,36 +2545,6 @@ export const en = {
   },
 
   // ─── Empty States & Help Tooltips ────────────────────────────────
-  tour: {
-    hub: {
-      metricsHelp:
-        'Live metrics show PV generation, battery status, grid power and self-consumption.',
-    },
-    analytics: {
-      quickHelp: 'Click a tile to jump directly to the corresponding analytics section.',
-    },
-    monitoring: {
-      powerUserHelp: 'Shows advanced metrics, adapter logs and Prometheus endpoints.',
-      emptyDesc:
-        'Enable power user mode to view Prometheus metrics, adapter status and event logs.',
-    },
-    settings: {
-      navHelp: 'Select a section to open the corresponding settings.',
-    },
-    liveEnergy: {
-      help: 'Real-time energy flow with Sankey diagram and device control',
-      emptyTitle: 'No Connection',
-      emptyDesc: 'Connect your inverter or Cerbo GX to see the live energy flow.',
-    },
-    devices: {
-      filterHelp: 'Filter devices by category or use the search',
-      emptyDesc: 'Try a different search term or reset the filter.',
-    },
-    optimization: {
-      help: 'AI-powered 3-step wizard: analyze tariffs, review recommendations, apply with one click.',
-      emptyDesc: 'Connect an adapter to use the optimization wizard.',
-    },
-  },
   empty: {
     noEnergyData: 'No energy data available',
     noEnergyDataDesc: 'Connect an adapter to receive real-time energy data.',

@@ -27,9 +27,12 @@
 
 Nexus-HEMS is a **unified Command Center** that consolidates **13 protocol adapters** (7 core + 6 contrib) into **8 primary routes across 7 navigation sections** — orchestrating photovoltaic generation, battery storage, heat pumps, EV charging, and building automation with dynamic electricity tariffs. Instead of 18+ separate pages, every feature is accessible from a **single streamlined interface** with guided tours, contextual help, and zero-config onboarding.
 
-The current shipped release line is **1.1.0**. Active **v1.2.0** work is tracked in [CHANGELOG.md](CHANGELOG.md) and [docs/Technical-Debt-Registry.md](docs/Technical-Debt-Registry.md); treat those files as in-flight roadmap context rather than shipped baseline.
+The current shipped release line is **1.2.0**. See [CHANGELOG.md](CHANGELOG.md) for the full release history and [docs/Technical-Debt-Registry.md](docs/Technical-Debt-Registry.md) for known debt and in-flight v1.3.0 work.
+
+> **Safety notice:** Nexus-HEMS controls safety-critical electrical infrastructure. No regulatory certification (VDE, IEC, CE) has been obtained. Read [docs/Safety-Certification-Notice.md](docs/Safety-Certification-Notice.md) before connecting to live hardware.
 
 For verified roadmap status and completion boundaries, use these documents as the primary references:
+- [docs/Safety-Certification-Notice.md](docs/Safety-Certification-Notice.md) for safety, certification status, and live-hardware pre-deployment checklist
 - [docs/Security-Roadmap-2026.md](docs/Security-Roadmap-2026.md) for implemented vs partial vs deferred security work
 - [docs/Performance-Optimization-Plan.md](docs/Performance-Optimization-Plan.md) for implemented vs pending performance work
 - [docs/Accessibility-Testing-Guide.md](docs/Accessibility-Testing-Guide.md) for automated vs manual accessibility coverage

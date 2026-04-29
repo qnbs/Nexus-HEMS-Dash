@@ -4,9 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Nexus-HEMS Dashboard is a production-grade, real-time Home Energy Management System dashboard. It consolidates 13 protocol adapters (7 core: Victron MQTT, Modbus/SunSpec, KNX, OCPP 2.1, EEBUS/SPINE, evcc, OpenEMS; 6 contrib: Home Assistant, Matter/Thread, Zigbee2MQTT, Shelly, OpenADR 3.1, Example) into a unified React 19 SPA served by an Express 5 backend. Deployable as PWA, Docker container, Tauri desktop app, Helm/Kubernetes release, or Capacitor mobile app. Current package version: `1.1.0`.
+Nexus-HEMS Dashboard is a production-grade, real-time Home Energy Management System dashboard. It consolidates 13 protocol adapters (7 core: Victron MQTT, Modbus/SunSpec, KNX, OCPP 2.1, EEBUS/SPINE, evcc, OpenEMS; 6 contrib: Home Assistant, Matter/Thread, Zigbee2MQTT, Shelly, OpenADR 3.1, Example) into a unified React 19 SPA served by an Express 5 backend. Deployable as PWA, Docker container, Tauri desktop app, Helm/Kubernetes release, or Capacitor mobile app. Current package version: `1.2.0`.
 
-The shipped baseline is still `1.1.0`. Active `1.2.0` work tracked in `CHANGELOG.md` and `docs/Technical-Debt-Registry.md` should be treated as in-flight design and remediation context, not as guaranteed shipped behavior.
+**Safety note:** This system controls safety-critical electrical hardware. No regulatory certification (VDE, IEC, CE) has been obtained. See `docs/Safety-Certification-Notice.md` before connecting to live hardware. Always use `ADAPTER_MODE=mock` for development; switch to `live` only after reviewing the pre-deployment checklist in that document.
+
+The current shipped baseline is `1.2.0`. Active `1.3.0` work is tracked in `CHANGELOG.md` and `docs/Technical-Debt-Registry.md`.
 
 **Repository structure:** pnpm workspace monorepo managed by Turborepo.
 
@@ -247,6 +249,7 @@ When CI is the source of truth, push focused commits and monitor GitHub Actions 
 
 ## Key Docs
 
+- `docs/Safety-Certification-Notice.md` — **read before live hardware** — safety hazards, certification status, mock-vs-live delta, Tauri updater guide
 - `docs/Adapter-Dev-Guide.md` — how to write new frontend adapters
 - `docs/Protocol-Adapter-Guide-Backend.md` — backend `IProtocolAdapter` implementation guide
 - `docs/Toolchain-Architecture.md` — living toolchain reference

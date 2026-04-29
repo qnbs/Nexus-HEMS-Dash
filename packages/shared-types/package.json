@@ -1,6 +1,6 @@
 {
   "name": "@nexus-hems/shared-types",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "private": true,
   "type": "module",
   "description": "Domain-driven Zod schemas and TypeScript types shared between api and web",
