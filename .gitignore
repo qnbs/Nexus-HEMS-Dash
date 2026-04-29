@@ -26,3 +26,6 @@ chrome/
 
 # Toolchain benchmark reports
 .perf/
+
+# Graphify knowledge graph (auto-generated, AST-only, no API cost to rebuild)
+graphify-out/
