@@ -539,16 +539,14 @@ Settings → Adapters → PluginsPage → Adapter wählen → Installieren →
 
 | Element | Vordergrund | Hintergrund | Verhältnis | WCAG AA | Status |
 |---------|-------------|-------------|------------|---------|--------|
-| `muted` auf `surface` (ocean-dark) | `#8896b0` | `rgba(14,22,42,0.76)` | ~3.8:1 | ⚠️ 4.5:1 nötig | ❌ FAIL |
-| `muted` auf `background` (ocean-dark) | `#8896b0` | `#0c1222` | ~4.2:1 | ⚠️ 4.5:1 nötig | ❌ FAIL |
+| `muted` auf `surface` (ocean-dark) | `#94a3b8` ✅ | `rgba(14,22,42,0.76)` | ~6.0:1 | ✅ | ✅ FIXED |
+| `muted` auf `background` (ocean-dark) | `#94a3b8` ✅ | `#0c1222` | ~6.0:1 | ✅ | ✅ FIXED |
 | `text` auf `surface` (ocean-dark) | `#e2eaf4` | `rgba(14,22,42,0.76)` | ~10:1 | ✅ | OK |
 | `primary` auf `background` (energy-dark) | `#22ff88` | `#0a1520` | ~12:1 | ✅ | OK |
-| `muted` auf `surface` (solar-light) | `#5f7284` | `rgba(255,255,255,0.75)` | ~4.0:1 | ⚠️ 4.5:1 nötig | ❌ FAIL |
+| `muted` auf `surface` (solar-light) | `#4b5563` ✅ | `rgba(255,255,255,0.75)` | ~7.9:1 | ✅ | ✅ FIXED |
 | `muted` auf `background` (minimal-white) | `#6b7280` | `#ffffff` | ~4.6:1 | ✅ | OK |
 
-**Problem:** `muted`-Farbe in ocean-dark, energy-dark und solar-light erreicht **nicht 4.5:1** für normalen Text.
-- **Lösung:** `muted` in ocean-dark auf `#94a3b8` anpassen (→ ~4.6:1); solar-light auf `#4b5563` (→ ~5.5:1).
-- **Impact:** WCAG 1.4.3 (Mindestkontrast) — **Blocker für AA**.
+**Behoben (M3):** `muted`-Farbe in ocean-dark + energy-dark auf `#94a3b8` angepasst; solar-light auf `#4b5563`. Alle Themes bestehen jetzt WCAG 1.4.3. Commit `2214bf7`.
 
 ### 5.2 Keyboard-Navigation
 
@@ -558,8 +556,8 @@ Settings → Adapters → PluginsPage → Adapter wählen → Installieren →
 | Focus-Ring | ✅ | `.focus-ring:focus-visible` mit 2px Outline |
 | Sidebar-Nav | ✅ | NavLink mit Keyboard |
 | CommandPalette | ✅ | ⌘K, Pfeiltasten, Enter |
-| Draggable Panels | ❌ KRITISCH | Mouse-only, kein Keyboard-Fallback |
-| Floorplan-Räume | ⚠️ | `role="button"` auf `<rect>`, aber Focus unsichtbar |
+| Draggable Panels | ✅ | Arrow-Key-Steuerung implementiert (M2, Commit `437a9e4`) |
+| Floorplan-Räume | ✅ | `rect[role="button"]:focus-visible` CSS-Ring vorhanden (S6, Commit `437a9e4`) |
 | MobileNavigation „Mehr" | ⚠️ | Grid-Items ohne sichtbaren Focus-Indikator |
 | Sankey-Node-Buttons | ⚠️ | Kein sichtbarer Focus |
 
@@ -568,11 +566,11 @@ Settings → Adapters → PluginsPage → Adapter wählen → Installieren →
 | Element | Status | Details |
 |---------|--------|---------|
 | LiveMetric | ✅ | `aria-live="polite"` + `aria-atomic` |
-| Gauge | ⚠️ | Doppeltes `aria-label` (Wrapper + SVG) |
+| Gauge | ✅ | `aria-labelledby` auf sichtbares `<p id>` — kein doppeltes Label mehr (S5, Commit `693edc5`) |
 | Sankey | ✅ | Debounced ARIA-Announcements, SVG `<title>` |
 | EnergyCard | ✅ | `aria-expanded` bei Details |
 | FloatingActionBar | ✅ | `role="toolbar"` |
-| Toasts/Statusmeldungen | ❌ | Kein `role="status"` oder `aria-live`-Region für Inline-Feedback |
+| Toasts/Statusmeldungen | ✅ | `sonner` `<Toaster>` mit `role="status"` / `role="alert"` in App.tsx; `toast.success/error()` in AISettingsPage (M4, Commit `2214bf7`) |
 
 ### 5.4 Reduzierte Bewegung
 
@@ -684,7 +682,7 @@ Settings → Adapters → PluginsPage → Adapter wählen → Installieren →
 | `@import 'tailwindcss'` | ✅ | Korrekte v4-Syntax |
 | `@theme`-Block | ✅ | Fluid-Typografie, Spacing, Z-Index |
 | `@apply`-Vermeidung | ✅ | Keine v3-Patterns |
-| Duplicate Rules | ❌ | `.metric-card:hover` doppelt |
+| Duplicate Rules | ✅ | `.metric-card` Padding-Mediaquery-Duplikat entfernt (S8, Commit `693edc5`) |
 
 ### 7.2 Radix UI Integration
 
@@ -703,11 +701,11 @@ Settings → Adapters → PluginsPage → Adapter wählen → Installieren →
 
 | Theme | `muted`-Kontrast | `surface`-Opacity | Status |
 |-------|-------------------|-------------------|--------|
-| energy-dark | ⚠️ ~4.2:1 | 0.72 | ❌ FAIL |
-| solar-light | ⚠️ ~4.0:1 | 0.75 | ❌ FAIL |
-| ocean-dark | ⚠️ ~3.8:1 | 0.76 | ❌ FAIL |
-| nature-green | ✅ ~4.6:1 | 0.76 | OK |
-| minimal-white | ✅ ~4.6:1 | 0.80 | OK |
+| energy-dark | ✅ ~6.0:1 (`#94a3b8`) | 0.72 | ✅ FIXED |
+| solar-light | ✅ ~7.9:1 (`#4b5563`) | 0.75 | ✅ FIXED |
+| ocean-dark | ✅ ~6.0:1 (`#94a3b8`) | 0.76 | ✅ FIXED |
+| nature-green | ✅ ~5.3:1 (`#8aaa8e`) | 0.76 | OK |
+| minimal-white | ✅ ~5.5:1 (`#6b7280`) | 0.80 | OK |
 
 **Problem:** 3 von 5 Themes haben `muted`-Kontrast unter 4.5:1.
 - **Lösung:** `muted`-Werte anpassen (siehe 5.1).
@@ -742,13 +740,13 @@ Settings → Adapters → PluginsPage → Adapter wählen → Installieren →
 
 ### Must Have (Blocker für v1.2.0)
 
-| # | Problem | Lösung | Impact | Aufwand |
-|---|---------|--------|--------|---------|
-| M1 | Kein Onboarding → App unbenutzbar | Onboarding-Wizard (3-5 Schritte) | Neunutzer können App starten | 3d |
-| M2 | Draggable Panels ohne Keyboard | Arrow-Key-Steuerung + ARIA | WCAG 2.1.1 AA-Konformität | 2d |
-| M3 | `muted`-Kontrast < 4.5:1 in 3 Themes | Farbwerte anpassen | WCAG 1.4.3 AA-Konformität | 0.5d |
-| M4 | Kein Toast-System | `sonner` installieren + integrieren | Konsistentes Feedback | 1d |
-| M5 | Tarifdaten sind fake | `tariff-providers.ts` anbinden | Kern-HEMS-Funktionalität | 3d |
+| # | Problem | Lösung | Impact | Aufwand | Status |
+|---|---------|--------|--------|---------|--------|
+| M1 | Kein Onboarding → App unbenutzbar | Onboarding-Wizard (3-5 Schritte) | Neunutzer können App starten | 3d | ⏳ Offen |
+| M2 | Draggable Panels ohne Keyboard | Arrow-Key-Steuerung + ARIA | WCAG 2.1.1 AA-Konformität | 2d | ✅ Done (437a9e4) |
+| M3 | `muted`-Kontrast < 4.5:1 in 3 Themes | Farbwerte anpassen | WCAG 1.4.3 AA-Konformität | 0.5d | ✅ Done (2214bf7) |
+| M4 | Kein Toast-System | `sonner` installieren + integrieren | Konsistentes Feedback | 1d | ✅ Done (2214bf7) |
+| M5 | Tarifdaten sind fake | `tariff-providers.ts` anbinden | Kern-HEMS-Funktionalität | 3d | ⏳ Offen |
 
 **Code für M3 (muted-Kontrast):**
 ```ts
@@ -775,16 +773,16 @@ import { Toaster } from 'sonner';
 
 ### Should Have (Stark empfohlen für v1.2.0)
 
-| # | Problem | Lösung | Impact | Aufwand |
-|---|---------|--------|--------|---------|
-| S1 | 8 KPIs = Überlastung | Progressive Disclosure (4+4) | First-Glance <3s | 1d |
-| S2 | Kein Adapter-Fehler-Feedback auf Hub | Degraded-Badge in Header | Fehlererkennung <10s | 1d |
-| S3 | Emergency Stop ohne Reset | „Reaktivieren"-Button | Nutzerkontrolle | 1d |
-| S4 | Skeleton nicht genutzt | `SkeletonCard`-Komponente | Wahrgenommene Ladezeit -30% | 1d |
-| S5 | Gauge doppeltes aria-label | Auf SVG beschränken | Screen-Reader-Klarheit | 0.5d |
-| S6 | Floorplan Focus unsichtbar | CSS `:focus-visible` auf rect[role=button] | WCAG 2.4.7 | 0.5d |
-| S7 | Tour-Keys existieren, Tour fehlt | `react-joyride` integrieren | Discoverability +40% | 2d |
-| S8 | Duplicate CSS-Regeln | `.metric-card:hover` deduplizieren | Wartbarkeit | 0.5d |
+| # | Problem | Lösung | Impact | Aufwand | Status |
+|---|---------|--------|--------|---------|--------|
+| S1 | 8 KPIs = Überlastung | Progressive Disclosure (4+4) | First-Glance <3s | 1d | ✅ Done (437a9e4) |
+| S2 | Kein Adapter-Fehler-Feedback auf Hub | Degraded-Badge in Header | Fehlererkennung <10s | 1d | ✅ Done (437a9e4) |
+| S3 | Emergency Stop ohne Reset | „Reaktivieren"-Button | Nutzerkontrolle | 1d | ⏳ Offen |
+| S4 | Skeleton nicht genutzt | `SkeletonCard`-Komponente | Wahrgenommene Ladezeit -30% | 1d | ✅ Done (afb5953) |
+| S5 | Gauge doppeltes aria-label | `aria-labelledby` auf sichtbares `<p id>` | Screen-Reader-Klarheit | 0.5d | ✅ Done (693edc5) |
+| S6 | Floorplan Focus unsichtbar | CSS `:focus-visible` auf rect[role=button] | WCAG 2.4.7 | 0.5d | ✅ Done (437a9e4) |
+| S7 | Tour-Keys existieren, Tour fehlt | `react-joyride` integrieren | Discoverability +40% | 2d | ⏳ Offen |
+| S8 | Duplicate CSS-Regeln | `.metric-card`-Padding-Mediaquery dedupliziert | Wartbarkeit | 0.5d | ✅ Done (693edc5) |
 
 ### Could Have (Nice-to-Have für v1.3.0)
 
