@@ -1988,6 +1988,8 @@ export const en = {
   chart: {
     priceAriaLabel: 'Price forecast chart for the next 12 hours',
     forecastAriaLabel: 'Energy production and price forecast chart',
+    tariffForecastAriaLabel: 'Tariff price forecast chart',
+    renewableShareAriaLabel: 'Renewable energy share chart',
   },
   sankey: {
     ariaLabel:

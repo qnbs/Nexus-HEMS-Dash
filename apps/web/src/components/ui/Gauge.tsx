@@ -56,6 +56,8 @@ export function Gauge({
   const strokeDashoffset = circumference * (1 - percentage);
   const [fromColor, toColor] = gradientStops[color];
 
+  const labelId = `${uid}-label`;
+
   return (
     // biome-ignore lint/a11y/useSemanticElements: custom SVG gauge requires div wrapper for flexbox layout
     <div
@@ -64,7 +66,7 @@ export function Gauge({
       aria-valuemin={0}
       aria-valuemax={max}
       aria-valuenow={value}
-      aria-label={label}
+      aria-labelledby={labelId}
     >
       <svg width={gaugeSize} height={gaugeSize} className="-rotate-90" aria-hidden="true">
         <defs>
@@ -120,7 +122,12 @@ export function Gauge({
       </svg>
 
       <div className="text-center">
-        <p className="font-medium text-(--color-muted) text-xs uppercase tracking-wide">{label}</p>
+        <p
+          id={labelId}
+          className="font-medium text-(--color-muted) text-xs uppercase tracking-wide"
+        >
+          {label}
+        </p>
         {showValue && (
           <p className="mt-1 text-(--color-text) text-sm">
             {value.toFixed(1)} {unit}

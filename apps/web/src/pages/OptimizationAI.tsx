@@ -283,41 +283,53 @@ export default function OptimizationAI() {
                       <h3 className="mb-3 font-medium text-(--color-muted) text-sm">
                         {t('forecast.tariffForecast')}
                       </h3>
-                      <ResponsiveContainer width="100%" height={180}>
-                        <AreaChart data={chartData}>
-                          <defs>
-                            <linearGradient id="priceGrad" x1="0" y1="0" x2="0" y2="1">
-                              <stop
-                                offset="5%"
-                                stopColor="var(--color-primary)"
-                                stopOpacity={0.3}
-                              />
-                              <stop offset="95%" stopColor="var(--color-primary)" stopOpacity={0} />
-                            </linearGradient>
-                          </defs>
-                          <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-                          <XAxis
-                            dataKey="time"
-                            tick={{ fontSize: 10, fill: 'var(--color-muted)' }}
-                          />
-                          <YAxis tick={{ fontSize: 10, fill: 'var(--color-muted)' }} />
-                          <Tooltip
-                            contentStyle={{
-                              background: 'var(--color-surface-strong)',
-                              border: '1px solid var(--color-border)',
-                              borderRadius: '0.75rem',
-                              fontSize: '0.75rem',
-                            }}
-                          />
-                          <Area
-                            type="monotone"
-                            dataKey="price"
-                            stroke="var(--color-primary)"
-                            fill="url(#priceGrad)"
-                            name={t('forecast.tariffPrice')}
-                          />
-                        </AreaChart>
-                      </ResponsiveContainer>
+                      <div
+                        role="img"
+                        aria-label={t(
+                          'chart.tariffForecastAriaLabel',
+                          'Tariff price forecast chart',
+                        )}
+                      >
+                        <ResponsiveContainer width="100%" height={180}>
+                          <AreaChart data={chartData}>
+                            <defs>
+                              <linearGradient id="priceGrad" x1="0" y1="0" x2="0" y2="1">
+                                <stop
+                                  offset="5%"
+                                  stopColor="var(--color-primary)"
+                                  stopOpacity={0.3}
+                                />
+                                <stop
+                                  offset="95%"
+                                  stopColor="var(--color-primary)"
+                                  stopOpacity={0}
+                                />
+                              </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+                            <XAxis
+                              dataKey="time"
+                              tick={{ fontSize: 10, fill: 'var(--color-muted)' }}
+                            />
+                            <YAxis tick={{ fontSize: 10, fill: 'var(--color-muted)' }} />
+                            <Tooltip
+                              contentStyle={{
+                                background: 'var(--color-surface-strong)',
+                                border: '1px solid var(--color-border)',
+                                borderRadius: '0.75rem',
+                                fontSize: '0.75rem',
+                              }}
+                            />
+                            <Area
+                              type="monotone"
+                              dataKey="price"
+                              stroke="var(--color-primary)"
+                              fill="url(#priceGrad)"
+                              name={t('forecast.tariffPrice')}
+                            />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                      </div>
                     </div>
                   )}
 
@@ -327,33 +339,41 @@ export default function OptimizationAI() {
                       <h3 className="mb-3 font-medium text-(--color-muted) text-sm">
                         {t('optimizationWizard.renewableShare')}
                       </h3>
-                      <ResponsiveContainer width="100%" height={120}>
-                        <BarChart data={chartData}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-                          <XAxis
-                            dataKey="time"
-                            tick={{ fontSize: 10, fill: 'var(--color-muted)' }}
-                          />
-                          <YAxis
-                            tick={{ fontSize: 10, fill: 'var(--color-muted)' }}
-                            domain={[0, 100]}
-                          />
-                          <Tooltip
-                            contentStyle={{
-                              background: 'var(--color-surface-strong)',
-                              border: '1px solid var(--color-border)',
-                              borderRadius: '0.75rem',
-                              fontSize: '0.75rem',
-                            }}
-                          />
-                          <Bar
-                            dataKey="renewable"
-                            fill="var(--color-accent)"
-                            radius={[4, 4, 0, 0]}
-                            name="%"
-                          />
-                        </BarChart>
-                      </ResponsiveContainer>
+                      <div
+                        role="img"
+                        aria-label={t(
+                          'chart.renewableShareAriaLabel',
+                          'Renewable energy share chart',
+                        )}
+                      >
+                        <ResponsiveContainer width="100%" height={120}>
+                          <BarChart data={chartData}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+                            <XAxis
+                              dataKey="time"
+                              tick={{ fontSize: 10, fill: 'var(--color-muted)' }}
+                            />
+                            <YAxis
+                              tick={{ fontSize: 10, fill: 'var(--color-muted)' }}
+                              domain={[0, 100]}
+                            />
+                            <Tooltip
+                              contentStyle={{
+                                background: 'var(--color-surface-strong)',
+                                border: '1px solid var(--color-border)',
+                                borderRadius: '0.75rem',
+                                fontSize: '0.75rem',
+                              }}
+                            />
+                            <Bar
+                              dataKey="renewable"
+                              fill="var(--color-accent)"
+                              radius={[4, 4, 0, 0]}
+                              name="%"
+                            />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
                     </div>
                   )}
                 </>

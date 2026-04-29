@@ -2000,6 +2000,8 @@ export const de = {
   chart: {
     priceAriaLabel: 'Preisprognose-Diagramm für die nächsten 12 Stunden',
     forecastAriaLabel: 'Energieerzeugungs- und Preisprognose-Diagramm',
+    tariffForecastAriaLabel: 'Tarifpreis-Prognose-Diagramm',
+    renewableShareAriaLabel: 'Diagramm des erneuerbaren Energieanteils',
   },
   sankey: {
     ariaLabel:

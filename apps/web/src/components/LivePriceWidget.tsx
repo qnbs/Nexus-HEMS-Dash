@@ -64,6 +64,9 @@ export function LivePriceWidget() {
             isGoodPrice ? 'bg-emerald-500/20 text-emerald-400' : 'bg-orange-500/20 text-orange-400'
           }`}
         >
+          <span className="sr-only">
+            {isGoodPrice ? t('tariffs.priceGood') : t('tariffs.priceHigh')}
+          </span>
           {trend === 'down' ? (
             <TrendingDown className="h-8 w-8" aria-hidden="true" />
           ) : (
