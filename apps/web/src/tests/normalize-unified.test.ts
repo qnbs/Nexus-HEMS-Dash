@@ -20,6 +20,9 @@ import { VictronSimulator } from './mocks/victron-simulator';
 
 // ─── Victron normalizeToUnified (Legacy Mode) ────────────────────────
 
+// Cold Victron module transform/import can exceed default hook timeout on CI.
+const LEGACY_NORMALIZE_HOOK_MS = 30_000;
+
 describe('VictronMQTTAdapter — normalizeToUnified (Legacy)', () => {
   // Hoist module import into beforeAll so the first dynamic load happens outside
   // the per-test 5000ms timeout window. All tests share the cached module.
@@ -29,7 +32,7 @@ describe('VictronMQTTAdapter — normalizeToUnified (Legacy)', () => {
 
   beforeAll(async () => {
     ({ VictronMQTTAdapter } = await import('../core/adapters/VictronMQTTAdapter'));
-  });
+  }, LEGACY_NORMALIZE_HOOK_MS);
 
   let sim: VictronSimulator;
 

@@ -43,7 +43,10 @@ vi.mock('../lib/metrics', () => ({
 
 // ─── BaseAdapter sendCommand pipeline ────────────────────────────────
 
-describe('BaseAdapter.sendCommand — full pipeline', () => {
+// Dynamic OCPP import + WebSocket mock can exceed the default 5s on slow CI / cold cache.
+const OCPP_PIPELINE_TIMEOUT = 20_000;
+
+describe('BaseAdapter.sendCommand — full pipeline', { timeout: OCPP_PIPELINE_TIMEOUT }, () => {
   let server: OCPPMockServer;
 
   beforeEach(() => {
@@ -213,7 +216,7 @@ describe('BaseAdapter.sendCommand — full pipeline', () => {
 
 // ─── OCPP21Adapter._sendCommand — command dispatch ──────────────────
 
-describe('OCPP21Adapter — sendCommand dispatch', () => {
+describe('OCPP21Adapter — sendCommand dispatch', { timeout: OCPP_PIPELINE_TIMEOUT }, () => {
   let server: OCPPMockServer;
 
   beforeEach(() => {

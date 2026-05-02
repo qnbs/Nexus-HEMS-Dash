@@ -6,7 +6,9 @@ coverage/
 *.log
 .env*
 !.env.example
-.secrets/
+# Secret material — never commit keys; README is the only tracked file.
+.secrets/**
+!.secrets/README.md
 playwright-report/
 test-results/
 storybook-static/

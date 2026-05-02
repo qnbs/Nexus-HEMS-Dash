@@ -1,6 +1,6 @@
 # Safety & Certification Notice — Nexus-HEMS-Dash
 
-**Last updated:** 2026-04-29
+**Last updated:** 2026-05-02
 **Applies to:** All versions ≤ 1.2.0
 
 ---
@@ -126,33 +126,30 @@ These layers are software-only. They do not replace hardware-level protection de
 
 ## 6. Tauri Desktop App — Auto-Updater Status (CRIT-02)
 
-The Tauri auto-updater is **currently disabled** (`active: false` in `tauri.conf.json`).
+The Tauri auto-updater is **enabled** in `tauri.conf.json` (`active: true`) with a **non-empty** Minisign public key and `bundle.createUpdaterArtifacts: true`. Release builds are signed when `TAURI_SIGNING_PRIVATE_KEY` is set (see `.github/workflows/tauri-build.yml`).
 
-**Risk if enabled without a signing key:** An unsigned or improperly signed update could allow arbitrary code execution on the user's desktop.
+**Risk if misconfigured:** An empty `pubkey` or a missing/mismatched private key in CI breaks verified updates or prevents signing. Always keep the private key out of the repository (use GitHub Secrets).
 
-**Steps to safely activate the auto-updater:**
+**Canonical procedure (Tauri v2 env names):**
 
 ```bash
-# 1. Generate the signing keypair (run once, store the private key securely — e.g. in a password manager or HSM)
-cargo tauri signer generate -w ~/.tauri/nexus-hems.key
+# 1. Generate the signing keypair (once; store the private key securely)
+CI=1 pnpm dlx @tauri-apps/cli@2 signer generate -w ~/.tauri/nexus-hems-tauri.key -f --ci
+# (or interactive: pnpm dlx @tauri-apps/cli@2 signer generate -w ~/.tauri/nexus-hems-tauri.key)
 
-# 2. The command outputs the public key. Copy it.
-# 3. Add to GitHub repository secrets:
-#    TAURI_PRIVATE_KEY  = (contents of ~/.tauri/nexus-hems.key)
-#    TAURI_KEY_PASSWORD = (password you set during generation)
+# 2. Copy the printed public key into apps/web/src-tauri/tauri.conf.json → plugins.updater.pubkey
 
-# 4. Update tauri.conf.json:
-#    "pubkey": "<public key from step 2>",
-#    "active": true
-#    (endpoints is already set to the GitHub releases URL)
+# 3. GitHub repository secrets (Tauri 2 — not v1 names):
+#    TAURI_SIGNING_PRIVATE_KEY        = contents of the private key file
+#    TAURI_SIGNING_PRIVATE_KEY_PASSWORD = optional; use '' if unencrypted key
 
-# 5. Update tauri-build.yml to sign artifacts:
-#    env:
-#      TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
-#      TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+gh secret set TAURI_SIGNING_PRIVATE_KEY < ~/.tauri/nexus-hems-tauri.key
+gh secret set TAURI_SIGNING_PRIVATE_KEY_PASSWORD --body ''
 ```
 
-**Do not set `active: true` with an empty `pubkey`** — the updater will attempt to download but cannot verify signatures, creating a supply-chain attack surface.
+Full detail: `docs/Tauri-Desktop-Updater-Setup.md`.
+
+**Never set `active: true` with an empty `pubkey`** — that would break signature verification and weaken the update chain.
 
 ---
 

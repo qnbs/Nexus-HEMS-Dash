@@ -1,8 +1,8 @@
 # Technical Debt Registry — Nexus-HEMS-Dash
 
-**Last audited:** 2026-04-29
+**Last audited:** 2026-05-02
 **Version at audit:** 1.2.0
-**Last updated:** 2026-04-29
+**Last updated:** 2026-05-02
 **Updated version:** 1.2.0 released
 **Auditor:** Claude Sonnet 4.6 (automated deep-scan)
 
@@ -83,21 +83,14 @@ Full SHIP v1.0.1 handshake implemented:
 ---
 
 ### CRIT-02 — Tauri Updater Signing Key Missing
-**File:** `apps/web/src-tauri/tauri.conf.json:66-68`
-**Status:** ⏳ Documented — must complete before `active: true`
+**File:** `apps/web/src-tauri/tauri.conf.json` (`plugins.updater`), `bundle.createUpdaterArtifacts`
+**Status:** ✅ Fixed in repo code as of 2026-05-02
 
-`pubkey: ""` with `active: false` is safe but the auto-updater cannot be enabled without a valid Ed25519 signing keypair. The `endpoints` URL is already set to the GitHub releases JSON.
+Minisign public key committed; `active: true`, `bundle.createUpdaterArtifacts: true`. CI already passes `TAURI_SIGNING_PRIVATE_KEY` / `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` to `tauri-apps/tauri-action` (Tauri v2 names).
 
-**Full activation procedure documented in:** `docs/Safety-Certification-Notice.md` §6
+**Maintainer action (GitHub org, not in git):** Create repository secrets `TAURI_SIGNING_PRIVATE_KEY` and optional `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` using the **private** key that matches the committed `pubkey`. Without these secrets, release builds will not sign updater artifacts. Procedure: `docs/Tauri-Desktop-Updater-Setup.md` and `docs/Safety-Certification-Notice.md` §6.
 
-**Remaining steps before enabling:**
-1. `cargo tauri signer generate -w ~/.tauri/nexus-hems.key` — generates Ed25519 keypair
-2. Add `TAURI_PRIVATE_KEY` + `TAURI_KEY_PASSWORD` to GitHub repository secrets
-3. Set `"pubkey": "<generated-public-key>"` in `tauri.conf.json`
-4. Set `"active": true` in `tauri.conf.json`
-5. Update `tauri-build.yml` to pass the signing env vars to the Tauri build action
-
-**Risk if skipped:** Desktop app will not receive updates automatically. Users must re-download manually on each release.
+**Risk if secrets omitted:** Desktop releases may be unsigned or fail in `tauri-build`; end users would need manual reinstall until secrets match the published public key.
 
 ---
 

@@ -2545,6 +2545,37 @@ export const en = {
   },
 
   // ─── Empty States & Help Tooltips ────────────────────────────────
+  tour: {
+    hub: {
+      metricsHelp:
+        'Live KPIs show PV generation, battery status, grid power, and self-consumption.',
+    },
+    analytics: {
+      quickHelp: 'Click a tile to jump straight to the matching analytics section.',
+    },
+    monitoring: {
+      powerUserHelp: 'Shows advanced metrics, adapter logs, and Prometheus endpoints.',
+      emptyDesc:
+        'Enable power-user mode to view Prometheus metrics, adapter status, and event logs.',
+    },
+    settings: {
+      navHelp: 'Choose a section to open the corresponding settings.',
+    },
+    liveEnergy: {
+      help: 'Real-time energy flow with Sankey diagram and device control',
+      emptyTitle: 'No connection',
+      emptyDesc: 'Connect your inverter or Cerbo GX to see live energy flow.',
+    },
+    devices: {
+      filterHelp: 'Filter devices by category or use search',
+      emptyDesc: 'Try a different search term or reset the filter.',
+    },
+    optimization: {
+      help: 'AI-guided 3-step assistant: analyse tariffs, review recommendations, apply with one click.',
+      emptyDesc: 'Connect an adapter to use the optimization wizard.',
+    },
+  },
+
   empty: {
     noEnergyData: 'No energy data available',
     noEnergyDataDesc: 'Connect an adapter to receive real-time energy data.',

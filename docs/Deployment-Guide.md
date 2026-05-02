@@ -142,23 +142,21 @@ nginx.ingress.kubernetes.io/limit-rps: '100'
 
 ## 4 Tauri (Desktop)
 
-Desktop builds are produced by the `release.yml` workflow via `tauri-apps/tauri-action`. Binaries for Linux (AppImage/deb), macOS (dmg), and Windows (msi/nsis) are attached to GitHub Releases.
+Desktop builds are produced by `.github/workflows/tauri-build.yml` (and release automation) via `tauri-apps/tauri-action`. Binaries for Linux (AppImage/deb), macOS (dmg), and Windows (msi/nsis) attach to GitHub Releases when secrets are configured.
 
-Configuration: `apps/web/src-tauri/tauri.conf.json`
+Configuration: `apps/web/src-tauri/tauri.conf.json` · Signed updates & secrets: [Tauri-Desktop-Updater-Setup.md](./Tauri-Desktop-Updater-Setup.md)
 
 | Property             | Value |
 | -------------------- | ----- |
 | Tauri version        | 2.2   |
 | Rust edition         | 2024  |
 | Minimum rust-version | 1.85  |
-| Crate version        | 1.1.0 |
+| Crate version        | 1.2.0 |
 
 ### Build Locally
 
 ```bash
-pnpm tauri build
-# Equivalent to: pnpm --filter @nexus-hems/web tauri build
-# Config: apps/web/src-tauri/tauri.conf.json
+cd apps/web && pnpm build && pnpm dlx @tauri-apps/cli@2 build
 ```
 
 Requires Rust toolchain ≥ 1.85 and platform-specific dependencies (see [Tauri prerequisites](https://v2.tauri.app/start/prerequisites/)).
