@@ -1,0 +1,22 @@
+---
+description: Project Manifest and Global Architecture
+alwaysApply: true
+---
+
+# Nexus-HEMS-Dash
+
+**Zweck:** Echtzeit-Dashboard für Home-Energy-Management (HEMS): viele Protokoll-Adapter (u.a. Victron, Modbus, MQTT, OpenADR), dynamische Tarife, Optimierung, WCAG-orientierte UI, PWA/Capacitor.
+
+**Struktur:** pnpm-Workspace + Turborepo. Pakete: `apps/web`, `apps/api`, `packages/shared-types`.
+
+**Frontend (`apps/web`):** React 19, TypeScript (ESM), Vite 8, Tailwind CSS v4 (`@tailwindcss/vite`), React Router 7, Zustand, TanStack Query v5, Radix UI, Recharts/D3, i18next, Dexie (IndexedDB), Vitest + Testing Library, Playwright (E2E/a11y), Storybook, Biome + ESLint (React Compiler/Hooks).
+
+**Backend (`apps/api`):** Express 5, TypeScript, JWT (`jose`), Helmet/CORS/Rate-Limit, WebSocket (`ws`), EventBus, Zeitreihen → InfluxDB v2 (`@influxdata/influxdb-client`) mit WAL-Fallback, optional Redis (`ioredis`) für JTI-Revocation, MQTT (`mqtt`), Modbus (`modbus-serial`), Vitest + Supertest.
+
+**Konventionen:** Strikte Typisierung, Zod wo üblich, `import type`-Trennung, gemeinsame Typen aus `@nexus-hems/shared-types`. Qualität: `pnpm verify:basis` (type-check, lint, test:run), Security-Skripte (gitleaks, anti-trojan-source).
+
+**Architektur:** Adapter-Registry/Plugin-Denken im Web; API startet Protokoll-Adapter und Timeseries/Energy-Router-Services; statisches Web-`dist` in Produktion über API oder getrennt deploybar.
+
+**Tests:** Vitest (`apps/web/src/tests/**`, `apps/api/src/tests/**`, Protokoll-Unit-Tests neben Quellen), Playwright unter `apps/web/tests/`.
+
+Siehe modulare Regeln unter `.cursor/rules/` (Security, Integrationen, Architektur-Limits, UI, Testing, MCP/PRD).

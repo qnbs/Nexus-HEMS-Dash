@@ -1,0 +1,26 @@
+---
+description: Enforce env secrets,safe errors,structured logs on edit of app or config files matching globs
+globs: *.*
+alwaysApply: false
+---
+
+# Core Security & Betrieb
+
+- **Secrets:** Keine API-Keys, Tokens, Passwörter oder privaten URLs im Quelltext. Nur `process.env` / Vite `import.meta.env` mit Prefix `VITE_` für explizit exponierte Client-Variablen. `.env*` niemals committen; Beispielwerte nur in `.env.example` o.ä.
+
+- **JWT / Krypto:** Schlüssel und Algorithmen wie im bestehenden Auth-Code (`@apps/api/src/jwt-utils.ts`); keine neuen „Debug“-Bypasses in Produktionspfaden.
+
+- **Fehlerbehandlung:** NutzerFacing: generische Meldungen; Details nur serverseitig/log. Keine Stacktraces oder internen Pfade an Clients leaken.
+
+- **Logging:** Strukturierte, kontextreiche Logs (bestehendes Logger-Muster in der API beibehalten). Kein Log von Passwörtern, vollständigen Tokens oder personenbezogenen Rohdaten.
+
+- **HTTP/WebSocket:** Bestehende Middleware (Helmet, CORS, Rate-Limit, Payload-Limits) respektieren und nicht ohne ADR/Review abschwächen.
+
+<example>
+const url = process.env.INFLUXDB_URL;
+if (!url) throw new Error('INFLUXDB_URL missing');
+</example>
+
+<example type="invalid">
+const token = 'sk-live-hardcoded';
+</example>

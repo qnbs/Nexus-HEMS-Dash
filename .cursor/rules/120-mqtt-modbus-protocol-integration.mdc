@@ -1,0 +1,24 @@
+---
+description: Configure MQTT Modbus via env and device-map,safe reconnect when editing protocol adapters
+globs: apps/api/src/protocols/**/*.ts
+alwaysApply: false
+---
+
+# MQTT & Modbus (Protokoll-Adapter)
+
+- **MQTT:** Broker-URL und Credentials nur aus Env (z.B. `MQTT_BROKER_URL`); Topics und QoS an bestehende Adapter (`MqttAdapter` etc.) angleichen.
+
+- **Modbus:** Geräte aus `device-map.json` / Konfiguration — keine fest eingetragenen Produktions-IPs im Code.
+
+- Verbindungsabbrüche: reconnect/backoff wie etabliert; keine endlosen tight-loops; Fehler auf EventBus/Logs abbilden, Server nicht blockieren.
+
+- `ADAPTER_MODE=mock` respektieren — Tests und CI dürfen keine echte Hardware voraussetzen.
+
+<example>
+const broker = process.env.MQTT_BROKER_URL;
+if (!broker) return;
+</example>
+
+<example type="invalid">
+mqtt.connect('mqtt://admin:secret@192.168.1.50');
+</example>

@@ -1,0 +1,25 @@
+---
+description: Run deterministic Vitest Playwright,mock IO,no commenting tests to green when editing tests
+globs: apps/**/*.test.ts,apps/**/*.test.tsx,apps/**/*.spec.ts
+alwaysApply: false
+---
+
+# Testing: Determinismus & Integrität
+
+- **Verboten:** Fehlgeschlagene Tests auskommentieren, `it.skip`/`describe.skip` oder `.only` dauerhaft einchecken, um Builds zu „grünen“. Problem beheben oder Issue + `@FIXME` mit Ticket — keine stillen Deaktivierungen.
+
+- **Determinismus:** Keine Abhängigkeit von Wall-Clock ohne Fake-Timers; keine Random ohne Seed (`fast-check` konfiguriert nutzen); Zeit/Zonen explizit mocken wo nötig.
+
+- **Externe Systeme:** Netzwerk, MQTT, Redis, InfluxDB, echtes FS — in Unit-Tests mocken oder Stub (wie bestehende JWT-/Adapter-Tests). E2E nur in definierten Playwright-Umgebungen.
+
+- **Isolation:** Tests dürfen nicht an Reihenfolge gebunden sein; Shared-State zwischen Files vermeiden; `fake-indexeddb`/`vi.mock` konsistent wie in `@apps/web/src/tests`.
+
+- API: Supertest gegen laufende oder gemockte App — keine festen Produktionsports.
+
+<example>
+vi.mock('@external/sdk', () => ({ fetch: vi.fn().mockResolvedValue({ ok: true }) }));
+</example>
+
+<example type="invalid">
+// test('broken', () => { ... }); entire block commented out
+</example>

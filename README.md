@@ -31,6 +31,8 @@ The current shipped release line is **1.2.0**. See [CHANGELOG.md](CHANGELOG.md) 
 
 > **Safety notice:** Nexus-HEMS controls safety-critical electrical infrastructure. No regulatory certification (VDE, IEC, CE) has been obtained. Read [docs/Safety-Certification-Notice.md](docs/Safety-Certification-Notice.md) before connecting to live hardware.
 
+**Product & engineering compass:** [PRD.md](PRD.md) is the authoritative product requirements document (scope, functional/non-functional requirements, traceability). [instructions.md](instructions.md) is the working guide for contributors and AI agents—reading order vs code, env/testing discipline, and pointers into `docs/`. Informal decisions and meeting context belong in [.notes/meeting_notes.md](.notes/meeting_notes.md).
+
 For verified roadmap status and completion boundaries, use these documents as the primary references:
 - [docs/Safety-Certification-Notice.md](docs/Safety-Certification-Notice.md) for safety, certification status, and live-hardware pre-deployment checklist
 - [docs/Security-Roadmap-2026.md](docs/Security-Roadmap-2026.md) for implemented vs partial vs deferred security work
@@ -452,5 +454,7 @@ corepack enable && pnpm install && pnpm dev
 ```
 
 **Docs:** [DESIGN-SYSTEM.md](DESIGN-SYSTEM.md) · [CONTRIBUTING.md](CONTRIBUTING.md) · [SECURITY.md](SECURITY.md) · [Adapter-Dev-Guide](docs/Adapter-Dev-Guide.md) · [Contrib-Adapter-README](apps/web/src/core/adapters/contrib/README.md)
+
+**Produkt & Zusammenarbeit:** In [PRD.md](PRD.md) stehen Produktumfang und Anforderungen; [instructions.md](instructions.md) ist die Arbeitsanleitung (Lesereihenfolge, Tests, Verweise auf `docs/`). Kurznotizen und Besprechungskontext: [.notes/meeting_notes.md](.notes/meeting_notes.md).
 
 **Lizenz:** MIT — siehe [LICENSE](LICENSE).

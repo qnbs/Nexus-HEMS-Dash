@@ -1,0 +1,26 @@
+---
+alwaysApply: false
+---
+
+# PRD, Bewusstseins-Strom & MCP
+
+## Product Requirements
+
+- Vor **architektonisch wirksamen** Änderungen (neue Adapter-Typen, Auth-Flow, Datenmodell, Breaking API) das verbindliche Produkt-/Anforderungsdokument lesen: **`instructions.md`** oder **`PRD.md`** im Repo-Root (anlegen/pflegen, sobald das Team eines bereitstellt). Keine großen Fach- oder UX-Entscheidungen nur aus Issue-Titeln ableiten.
+
+## Consciousness Stream
+
+- Kontextuelle Erinnerungen, Meeting-Beschlüsse und kurze „Agent-Gedächtnis“-Notizen in **`.notes/meeting_notes.md`** ablegen (Ordner `.notes/` bei Bedarf anlegen). Format: Datumszeile + Stichpunkte; keine Secrets.
+
+## Model Context Protocol (MCP) — empfohlene Aktivierung
+
+Platzhalter: Projekt kann MCP-Server in Cursor koppeln, sobald verfügbar:
+
+| Bereich | Beispiel-MCP-Zweck |
+|--------|---------------------|
+| Datenbank / Zeitreihen | Read-only Schema/Flux-Hilfen zu InfluxDB (niemals Produktions-Schreibzugriff ohne Gate) |
+| Git / PR | GitHub/GitLab MCP für Issues, Diffs, CI-Status |
+| Docs | Interne Wiki/Docs-Suche |
+| Infra | Kubernetes/Docker-Compose-Inspektion (nur mit expliziten Rechten) |
+
+Konkrete Server-Namen folgen der Cursor-Konfiguration des Teams; dieser Abschnitt ist eine Checkliste, keine Pflichtinstallation.

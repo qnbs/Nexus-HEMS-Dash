@@ -1,0 +1,25 @@
+---
+description: Build accessible React Tailwind components,consistent props,router patterns under components tree
+globs: apps/web/src/components/**/*.tsx,apps/web/src/**/*.stories.tsx
+alwaysApply: false
+---
+
+# UI (React 19 + Tailwind v4)
+
+- **Komponenten:** Funktionale Komponenten; Props-Interfaces benannt (`FooProps`), destructuring mit klaren Defaults wo sinnvoll.
+
+- **Accessibility:** Fokus-Management bei Dialogen (Radix), `aria-*`, sichtbare Labels; Projekt strebt WCAG 2.2 AA an — neue interaktive UI ohne Tastaturpfad vermeiden.
+
+- **Styling:** Tailwind-Utility-Klassen; `clsx`/`tailwind-merge` wie im Rest der Codebasis. Keine Inline-Styles außer berechnete Werte (Charts).
+
+- **Daten:** Servernahe Abrufe über TanStack Query; lokaler Zustand über Zustand stores wie etabliert. Keine Secrets in Client-Bundles.
+
+- **Router:** React Router v7-Muster beibehalten; Lazy-Routes nur mit klaren Error-Boundaries.
+
+<example>
+<button type="button" aria-expanded={open} aria-controls="panel-id">
+</example>
+
+<example type="invalid">
+<div onClick={handler}> // ohne role/tabIndex wenn es wie Button wirkt
+</example>

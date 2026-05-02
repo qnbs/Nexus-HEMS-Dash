@@ -1,0 +1,21 @@
+---
+description: Use lazy Redis,JTI TTL,in-memory fallback when changing JWT revocation or Redis paths
+globs: apps/api/src/jwt-utils.ts
+alwaysApply: false
+---
+
+# Redis (optional) & JWT-JTI
+
+- Redis nur über `REDIS_URL`; dynamischer Import wie im bestehenden Code — bei Verbindungsfehler **in-memory**-Fallback, kein Crash der API.
+
+- JTI-Revocation: TTL und Schlüsselschema nicht breaking ändern; bestehende Tests (`jwt-utils.test.ts`) müssen weiter deterministisch ohne echte Redis-Instanz laufen.
+
+- Keine synchronen Redis-Calls im Hot-Path ohne Not; Fehler abfangen und loggen.
+
+<example>
+if (!process.env.REDIS_URL) return inMemoryRevoke(jti);
+</example>
+
+<example type="invalid">
+const redis = new Redis('redis://localhost:6379'); // hardcoded URL
+</example>

@@ -1,0 +1,23 @@
+---
+description: Apply KISS DRY,split files 200-700 lines,extract utils when editing large modules
+globs: *.*
+alwaysApply: false
+---
+
+# Architektur: KISS, DRY, Dateigröße
+
+- **KISS / DRY:** Vor Duplikation Helper im passenden Package (`packages/shared-types`, `apps/web/src/...`, `apps/api/src/...`) ziehen; keine kopierten Parser/Mapper über Adapter hinweg.
+
+- **Dateigröße:** Ziel **200–700 Zeilen** pro Datei. Unter ~200 ist unkritisch; **über ~700** aktiv aufteilen (Hook/Service/Types/Mapping).
+
+- **Komplexe Logik:** In benannte Funktionen oder dedizierte Module extrahieren statt „God components“ oder kilometerlanger Route-Handler.
+
+- Monorepo-Grenzen wahren: Web-UI-Typik nicht in die API schieben — gemeinsam nur über `shared-types`.
+
+<example>
+// Extrahieren: formatDatapoint.ts + TimeseriesService.ts schlank halten
+</example>
+
+<example type="invalid">
+// Eine Datei mit 1200 Zeilen Routes + Businesslogik + SQL/Flux-Strings
+</example>

@@ -1,0 +1,23 @@
+---
+description: Write Influx points,WAL batching,env-driven config when touching Timeseries or history API
+globs: apps/api/src/services/TimeseriesService.ts,apps/api/src/routes/history.routes.ts
+alwaysApply: false
+---
+
+# InfluxDB v2 (Timeseries)
+
+- Konfiguration ausschließlich über Umgebungsvariablen (`INFLUXDB_URL`, `INFLUXDB_TOKEN`, `INFLUXDB_ORG`, `INFLUXDB_BUCKET`) wie in `@apps/api/src/services/TimeseriesService.ts`. Keine Fallback-Tokens für Produktion dokumentieren oder fest einbauen.
+
+- Schreibpfad: `WriteApi` korrekt schließen/flushen; bei Ausfall Influx → WAL (`wal.ndjson`) nutzen, Recovery nicht regressionsanfällig ändern.
+
+- Lesepfad (`history.routes`): Query-API nur mit validierten Parametern; keine beliebige Flux-Injektion aus Client-Strings.
+
+- Messpunkte: konsistente Tags/Fields zu bestehenden `UnifiedEnergyDatapoint`-Konventionen (`@nexus-hems/shared-types`).
+
+<example>
+const bucket = process.env.INFLUXDB_BUCKET ?? 'nexus-hems';
+</example>
+
+<example type="invalid">
+client.queryRaw(`from(bucket:"${userBucket}") ... ${userFlux}`);
+</example>
