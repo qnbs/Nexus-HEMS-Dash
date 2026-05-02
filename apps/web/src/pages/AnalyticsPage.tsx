@@ -22,7 +22,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { motion } from 'motion/react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Area,
@@ -45,6 +45,7 @@ import { ExportAndSharing } from '../components/ExportAndSharing';
 import { PageHeader } from '../components/layout/PageHeader';
 import { PredictiveForecast } from '../components/PredictiveForecast';
 import { PageCrossLinks } from '../components/ui/PageCrossLinks';
+import { sampleIndexedSeriesIfNeeded } from '../lib/chart-series-guard';
 import { getUbaFactor } from '../lib/co2-report';
 import type { EnergySnapshot } from '../lib/db';
 import { calculateCo2Savings } from '../lib/format';
@@ -111,6 +112,20 @@ function AnalyticsPageComponent() {
   const [selectedMetric, setSelectedMetric] = useState<string>('pvPower');
   const [forecastResult, setForecastResult] = useState<ForecastResult | null>(null);
   const [forecastLoading, setForecastLoading] = useState(false);
+
+  const mlForecastChartData = useMemo(() => {
+    if (!forecastResult) return [];
+    return sampleIndexedSeriesIfNeeded(
+      forecastResult.points.map((p, i) => ({
+        time: `${new Date(p.timestamp).getHours()}:00`,
+        idx: i,
+        value: Math.round(p.value),
+        lower: Math.round(p.lower),
+        upper: Math.round(p.upper),
+      })),
+      { indexKey: 'idx', yKey: 'value', threshold: 300, outputSize: 120 },
+    ).map(({ idx: _idx, ...rest }) => rest);
+  }, [forecastResult]);
 
   // ─── CO₂ Report state ──────────────────────────────────────────────
   const currentYear = new Date().getFullYear();
@@ -924,14 +939,7 @@ function AnalyticsPageComponent() {
             {/* Forecast chart */}
             <div className="h-48">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart
-                  data={forecastResult.points.map((p) => ({
-                    time: `${new Date(p.timestamp).getHours()}:00`,
-                    value: Math.round(p.value),
-                    lower: Math.round(p.lower),
-                    upper: Math.round(p.upper),
-                  }))}
-                >
+                <LineChart data={mlForecastChartData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
                   <XAxis dataKey="time" tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 10 }} />
                   <YAxis tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 10 }} />

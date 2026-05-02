@@ -18,6 +18,7 @@ import {
 import { AnimatePresence, motion } from 'motion/react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { CertificateManagement } from '../components/CertificateManagement';
 import { PageHeader } from '../components/layout/PageHeader';
 import { BrowseAdaptersPanel } from '../components/plugins/BrowseAdaptersPanel';
 import { NeonCard, NeonCardBody } from '../components/ui/NeonCard';
@@ -464,6 +465,8 @@ function PluginsPageComponent() {
       ) : (
         <BrowseAdaptersPanel />
       )}
+
+      <CertificateManagement />
 
       <PageCrossLinks />
     </div>

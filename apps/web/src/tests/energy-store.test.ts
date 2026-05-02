@@ -201,6 +201,26 @@ describe('useEnergyStore', () => {
       expect(room?.name).toContain('[IP]');
       expect(room?.name).not.toContain('Ignore previous instructions');
     });
+
+    it('CI perf budget — single throttled flush stays within 50ms', () => {
+      const { mergeData } = useEnergyStoreBase.getState();
+      mergeData('victron-mqtt', {
+        timestamp: 1,
+        pv: { totalPowerW: 4200, yieldTodayKWh: 12 },
+        battery: { powerW: -300, socPercent: 55, voltageV: 52, currentA: 6 },
+        grid: { powerW: 100, voltageV: 230 },
+        load: {
+          totalPowerW: 2800,
+          heatPumpPowerW: 800,
+          evPowerW: 0,
+          otherPowerW: 2000,
+        },
+      });
+      const t0 = performance.now();
+      vi.runAllTimers();
+      const ms = performance.now() - t0;
+      expect(ms).toBeLessThan(50);
+    });
   });
 
   describe('setAdapterStatus', () => {

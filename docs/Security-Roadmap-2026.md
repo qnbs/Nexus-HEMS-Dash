@@ -102,7 +102,11 @@ All critical and most high-severity findings have been remediated. See also
 | G-07 | PII scanning missing in AI prompts | MEDIUM | ✅ Phase 3 Done |
 | G-08 | Helm PSS Labels (K8s PSP deprecated) | MEDIUM | ✅ Phase 1 Done |
 | NEW-01 | MED-06: share tokens in localStorage (non-critical) | LOW | Phase 2 Planned |
-| NEW-02 | Observability: JTI/Cert Prometheus metrics missing | LOW | Phase 2 Planned |
+| NEW-02 | Observability: JTI/Cert Prometheus metrics missing | LOW | Partial — `nexus_hems_history_query_duration_ms`, `nexus_hems_ws_broadcast_duration_ms` histograms added (`metrics.ts`); JTI Redis wiring documented in Helm |
+
+### Supply-chain scan policy (reference)
+
+Blocking gates: `ci.yml` **Security Gate** job (`pnpm audit --audit-level=high --prod`), `sbom-scan.yml` audit step (`continue-on-error: false`), and `security-full.yml` Grype/Trivy thresholds. Image SBOM steps may `continue-on-error: true` when Docker build is unavailable in a given runner — full scans still run on scheduled `security-full`.
 
 ---
 

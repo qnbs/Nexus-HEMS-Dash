@@ -13,14 +13,11 @@ import { beforeEach, describe, expect, it } from 'vitest';
 process.env.NODE_ENV = 'test';
 process.env.JWT_SECRET = 'test-secret-for-unit-tests-that-is-long-enough-for-hs256-algo';
 
-const { setMetric, getServerMetrics, renderPrometheusText } = await import(
-  '../middleware/metrics.js'
-);
+const { observeHistogram, resetPrometheusMetrics, setMetric, getServerMetrics, renderPrometheusText } =
+  await import('../middleware/metrics.js');
 
 beforeEach(() => {
-  // Clear metrics between tests by accessing internal map
-  const metrics = getServerMetrics();
-  metrics.clear();
+  resetPrometheusMetrics();
 });
 
 describe('setMetric', () => {
@@ -79,6 +76,21 @@ describe('renderPrometheusText', () => {
   it('returns empty string when no metrics registered', () => {
     const output = renderPrometheusText();
     expect(output.trim()).toBe('');
+  });
+});
+
+describe('observeHistogram', () => {
+  it('renders cumulative Prometheus histogram lines', () => {
+    observeHistogram('test_hist_ms', 'latency', 12, [10, 50, 100]);
+    observeHistogram('test_hist_ms', 'latency', 80, [10, 50, 100]);
+    const text = renderPrometheusText();
+    expect(text).toContain('# HELP test_hist_ms');
+    expect(text).toContain('# TYPE test_hist_ms histogram');
+    expect(text).toContain('test_hist_ms_bucket');
+    expect(text).toContain('test_hist_ms_sum');
+    expect(text).toContain('test_hist_ms_count');
+    expect(text).toMatch(/test_hist_ms_bucket\{le="50"\} 2/);
+    expect(text).toMatch(/test_hist_ms_bucket\{le="100"\} 2/);
   });
 });
 

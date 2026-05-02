@@ -25,6 +25,7 @@ import { getDevice, listDevices, removeDevice, upsertDevice } from '../services/
 import {
   getHandshakeState,
   initiateHandshake,
+  reloadShipTlsCredentialMaterialFromDisk,
   submitPin,
   terminateSession,
 } from '../services/ShipHandshakeService.js';
@@ -86,6 +87,14 @@ export function createEebusRoutes(): Router {
       });
       res.status(500).json({ error: 'Discovery failed' });
     }
+  });
+
+  // ── POST /api/eebus/tls/reload ──────────────────────────────────
+  // Reload server certificate/key from disk after rotation (admin).
+
+  router.post('/api/eebus/tls/reload', requireJWT, requireScope('admin'), async (_req, res) => {
+    const result = await reloadShipTlsCredentialMaterialFromDisk();
+    res.status(result.ok ? 200 : 500).json(result);
   });
 
   // ── POST /api/eebus/pair ────────────────────────────────────────

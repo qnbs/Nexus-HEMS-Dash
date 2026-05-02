@@ -1,6 +1,6 @@
 # Technical Debt Registry — Nexus-HEMS-Dash
 
-**Last audited:** 2026-05-02
+**Last audited:** 2026-05-02 (sprint hardening pass)
 **Version at audit:** 1.2.0
 **Last updated:** 2026-05-02
 **Updated version:** 1.2.0 released
@@ -265,6 +265,14 @@ Created `apps/web/src/tests/i18n-sync.test.ts` — recursive key walker comparin
 **Status:** ✅ Fixed in v1.2.0
 
 Added `openCount` field; each OPEN transition increments it. `currentState` getter computes `effectiveCooldown = min(cooldown × 2^(openCount-1), 300_000) × jitter(0.8–1.2)`. `reset()` also clears `openCount`.
+
+---
+
+### MED-11 — Helm chart lacked optional Redis URL for JTI revocation
+**Files:** `helm/nexus-hems/values.yaml`, `helm/nexus-hems/templates/deployment-server.yaml`
+**Status:** ✅ Fixed 2026-05-02
+
+`redis.url` / `redis.existingSecret` inject `REDIS_URL` into the API Deployment when set.
 
 ---
 

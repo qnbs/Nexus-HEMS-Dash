@@ -43,6 +43,7 @@ import {
 } from '../components/ui/WizardStepper';
 import { useEnergyContext } from '../core/EnergyContext';
 import { buildOptimizerRecommendations, runMpcOptimization } from '../lib/optimizer';
+import { sampleIndexedSeriesIfNeeded } from '../lib/chart-series-guard';
 import {
   fetchTariffForecast,
   generatePredictiveRecommendation,
@@ -162,11 +163,15 @@ export default function OptimizationAI() {
   }
 
   // ── Chart data from forecast ───────────────────────────────────────
-  const chartData = forecast.slice(0, 24).map((f) => ({
-    time: f.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    price: Number((f.pricePerKwh * 100).toFixed(1)),
-    renewable: Math.round(f.renewable),
-  }));
+  const chartData = sampleIndexedSeriesIfNeeded(
+    forecast.slice(0, 24).map((f, i) => ({
+      time: f.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      slot: i,
+      price: Number((f.pricePerKwh * 100).toFixed(1)),
+      renewable: Math.round(f.renewable),
+    })),
+    { indexKey: 'slot', yKey: 'price', threshold: 300, outputSize: 120 },
+  ).map(({ slot: _slot, ...rest }) => rest);
 
   const hasData = energyData.pvPower > 0 || energyData.houseLoad > 0 || energyData.gridPower !== 0;
 

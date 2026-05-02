@@ -189,6 +189,17 @@ export class OCPP21Adapter extends BaseAdapter {
 
     const protocol = this.config.tls ? 'wss:' : 'ws:';
     const wsUrl = `${protocol}//${this.config.host}:${this.config.port}/ocpp/${encodeURIComponent(this.stationId)}`;
+
+    if (
+      this.securityProfile >= 3 &&
+      this.config.tls &&
+      (!this.config.clientCert?.trim() || !this.config.clientKey?.trim())
+    ) {
+      console.warn(
+        '[OCPP21] Security Profile 3 requires mutual TLS client credentials (`clientCert`/`clientKey` on AdapterConnectionConfig). Browser WebSockets cannot attach client certs — use Tauri, a local proxy, or an edge bridge; enforce CRL/OCSP at that TLS termination.',
+      );
+    }
+
     const ws = new WebSocket(wsUrl, ['ocpp2.1']);
 
     ws.onopen = () => {
