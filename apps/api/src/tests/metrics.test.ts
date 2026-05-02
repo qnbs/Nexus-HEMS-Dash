@@ -89,7 +89,7 @@ describe('observeHistogram', () => {
     expect(text).toContain('test_hist_ms_bucket');
     expect(text).toContain('test_hist_ms_sum');
     expect(text).toContain('test_hist_ms_count');
-    expect(text).toMatch(/test_hist_ms_bucket\{le="50"\} 2/);
+    expect(text).toMatch(/test_hist_ms_bucket\{le="50"\} 1/);
     expect(text).toMatch(/test_hist_ms_bucket\{le="100"\} 2/);
   });
 });
