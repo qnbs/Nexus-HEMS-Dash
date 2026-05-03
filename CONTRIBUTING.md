@@ -20,6 +20,19 @@ pnpm dev
 - Node.js 24+
 - pnpm 10+
 
+### Cursor Cloud Agents
+
+For Cursor Cloud agents or a fresh Linux VM, use the repo setup script to install the
+same baseline used by CI and local browser tests:
+
+```bash
+bash scripts/setup-cursor-cloud.sh
+```
+
+It installs Node.js 24 when missing, activates pnpm 10.33.0 through Corepack, installs
+workspace dependencies, installs Playwright Chromium/Firefox with OS dependencies, and
+installs `graphifyy` so the `graphify` CLI is available from `~/.local/bin`.
+
 ## Monorepo Structure
 
 This repository is a **pnpm workspace monorepo** managed by Turborepo.

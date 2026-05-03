@@ -158,6 +158,18 @@ pnpm dev
 
 **Requirements:** Node.js 24 LTS (production baseline), pnpm 10+ via Corepack
 
+### Cursor Cloud Agent Setup
+
+For Cursor Cloud or other fresh Linux agents, run the idempotent bootstrap script once:
+
+```bash
+bash scripts/setup-cursor-cloud.sh
+```
+
+It installs Node.js 24 if needed, activates `pnpm` 10.33.0, installs workspace
+dependencies, prepares Chromium/Firefox for Playwright, installs `graphifyy`, and
+adds `~/.local/bin` to the shell `PATH` for the `graphify` CLI.
+
 ### GitHub Codespaces (Zero-Config)
 
 Click the button below to open a fully configured development environment in your browser:
