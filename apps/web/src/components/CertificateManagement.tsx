@@ -53,6 +53,16 @@ function deriveCertStatus(record: EEBUSCertRecord): CertStatus {
   return 'trusted';
 }
 
+function getBrowserAuthHeaders(): Record<string, string> {
+  try {
+    const token = localStorage.getItem('nexus-hems-auth-token');
+    if (!token) return {};
+    return { Authorization: `Bearer ${token}` };
+  } catch {
+    return {};
+  }
+}
+
 function formatFingerprint(hex: string): string {
   // Format as XX:XX:XX... (groups of 2, first 6 shown then '...')
   const pairs = hex.replace(/:/g, '').match(/.{1,2}/g) ?? [];
@@ -569,7 +579,7 @@ function ShipTrustStore() {
   } = useQuery<EEBUSDeviceInfo[]>({
     queryKey: ['eebus-trust'],
     queryFn: async () => {
-      const resp = await fetch('/api/eebus/trust');
+      const resp = await fetch('/api/eebus/trust', { headers: getBrowserAuthHeaders() });
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
       return resp.json() as Promise<EEBUSDeviceInfo[]>;
     },
@@ -581,6 +591,7 @@ function ShipTrustStore() {
     mutationFn: async (ski: string) => {
       const resp = await fetch(`/api/eebus/trust/${encodeURIComponent(ski)}`, {
         method: 'DELETE',
+        headers: getBrowserAuthHeaders(),
       });
       if (!resp.ok && resp.status !== 204) throw new Error(`HTTP ${resp.status}`);
     },
@@ -593,7 +604,7 @@ function ShipTrustStore() {
     mutationFn: async ({ ski, pin }: { ski: string; pin: string }) => {
       const resp = await fetch('/api/eebus/pair/pin', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...getBrowserAuthHeaders() },
         body: JSON.stringify({ ski, pin }),
       });
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
@@ -749,6 +760,67 @@ function ShipTrustStore() {
           await removeMutation.mutateAsync(ski);
         }}
       />
+    </section>
+  );
+}
+
+function EebusTlsReloadPanel() {
+  const { t } = useTranslation();
+  const queryClient = useQueryClient();
+  const [feedback, setFeedback] = useState<'idle' | 'ok' | 'err'>('idle');
+
+  const reloadMutation = useMutation({
+    mutationFn: async () => {
+      const resp = await fetch('/api/eebus/tls/reload', {
+        method: 'POST',
+        headers: { ...getBrowserAuthHeaders(), 'Content-Type': 'application/json' },
+      });
+      const body = (await resp.json()) as { ok?: boolean; message?: string };
+      if (!resp.ok || body.ok !== true) {
+        throw new Error(body.message ?? `HTTP ${resp.status}`);
+      }
+      return body.message ?? '';
+    },
+    onSuccess: () => {
+      setFeedback('ok');
+      queryClient.invalidateQueries({ queryKey: ['eebus-trust'] });
+    },
+    onError: () => setFeedback('err'),
+  });
+
+  return (
+    <section
+      aria-labelledby="eebus-tls-reload-heading"
+      className="mt-8 rounded-2xl border border-white/10 bg-white/[0.03] p-4"
+    >
+      <h2
+        id="eebus-tls-reload-heading"
+        className="font-semibold text-(--color-text-primary) text-sm"
+      >
+        {t('certManagement.reloadShipTls')}
+      </h2>
+      <p className="mt-1 text-(--color-text-secondary) text-xs">{t('certManagement.reloadShipTlsDesc')}</p>
+      <button
+        type="button"
+        disabled={reloadMutation.isPending}
+        onClick={() => {
+          setFeedback('idle');
+          reloadMutation.mutate();
+        }}
+        className="focus-ring mt-3 rounded-lg bg-electric-blue/15 px-3 py-2 font-medium text-electric-blue text-xs transition-colors hover:bg-electric-blue/25 disabled:opacity-50"
+      >
+        {reloadMutation.isPending ? t('common.loading') : t('certManagement.reloadShipTlsAction')}
+      </button>
+      {feedback === 'ok' && (
+        <p role="status" className="mt-2 text-neon-green text-xs">
+          {t('certManagement.reloadShipTlsSuccess')}
+        </p>
+      )}
+      {feedback === 'err' && (
+        <p role="alert" className="mt-2 text-red-400 text-xs">
+          {t('certManagement.reloadShipTlsError')}
+        </p>
+      )}
     </section>
   );
 }
@@ -947,6 +1019,8 @@ export function CertificateManagement() {
         onClose={() => setDeletingCert(null)}
         onConfirm={handleDelete}
       />
+
+      <EebusTlsReloadPanel />
 
       {/* ── SHIP Trust Store (API-backed) ── */}
       <ShipTrustStore />

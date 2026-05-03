@@ -114,6 +114,10 @@ export interface CommandValidationResult {
   error?: string;
 }
 
+function getHpPilotGuardMaxW(): number | undefined {
+  return import.meta.env.VITE_SAFETY_HP_GUARD === 'true' ? 4200 : undefined;
+}
+
 export function validateCommand(command: AdapterCommand): CommandValidationResult {
   const schema = commandSchemas[command.type];
   if (!schema) {
@@ -126,6 +130,19 @@ export function validateCommand(command: AdapterCommand): CommandValidationResul
     return {
       valid: false,
       error: `Invalid value for ${command.type}: ${issues}`,
+    };
+  }
+
+  const pilotCap = getHpPilotGuardMaxW();
+  if (
+    pilotCap !== undefined &&
+    typeof command.value === 'number' &&
+    (command.type === 'SET_GRID_LIMIT' || command.type === 'SET_HEAT_PUMP_POWER') &&
+    command.value > pilotCap
+  ) {
+    return {
+      valid: false,
+      error: `${command.type} exceeds ${pilotCap} W pilot safety cap (VITE_SAFETY_HP_GUARD)`,
     };
   }
 

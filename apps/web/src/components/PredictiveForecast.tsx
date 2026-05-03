@@ -13,6 +13,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
+import { sampleIfNeeded } from '../lib/chart-sampling';
 import { useWeatherForecast } from '../lib/queries';
 import { useAppStoreShallow } from '../store';
 
@@ -75,6 +76,12 @@ export function PredictiveForecast() {
 
     return { forecastData: data, totalSavings: savings, co2Saved: co2 };
   })();
+
+  const sampledForecastData = sampleIfNeeded(
+    forecastData.map((row, i) => ({ ...row, ts: i })),
+    300,
+    120,
+  ).map(({ ts: _ts, ...rest }) => rest);
 
   return (
     <motion.div
@@ -164,7 +171,7 @@ export function PredictiveForecast() {
         aria-label={t('chart.forecastAriaLabel', 'Energy production and price forecast chart')}
       >
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={forecastData}>
+          <AreaChart data={sampledForecastData}>
             <defs>
               <linearGradient id="colorPv" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#fbbf24" stopOpacity={0.8} />

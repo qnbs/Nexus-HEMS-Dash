@@ -10,6 +10,7 @@ const routes = [
   { path: './tariffs', name: 'Tariffs' },
   { path: './analytics', name: 'Analytics' },
   { path: './monitoring', name: 'Monitoring' },
+  { path: './plugins', name: 'Plugins' },
   { path: './settings', name: 'Settings' },
   { path: './help', name: 'Help' },
 ];

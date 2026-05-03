@@ -3,7 +3,12 @@ import type { IncomingMessage } from 'http';
 import type { WebSocket, WebSocketServer } from 'ws';
 import { mockData, updateMockData } from '../data/mock-data.js';
 import { type AuthenticatedClient, authenticateWS, type JWTScope } from '../middleware/auth.js';
-import { setMetric, updateServerMetrics, wsMessageCount } from '../middleware/metrics.js';
+import {
+  observeHistogram,
+  setMetric,
+  updateServerMetrics,
+  wsMessageCount,
+} from '../middleware/metrics.js';
 import { wsTickets } from '../routes/auth.routes.js';
 
 // Zombie connection detection: ping every 30 s, terminate if no pong received
@@ -99,7 +104,13 @@ export function setupWebSocket(wss: WebSocketServer): void {
           ? filterMockData(mockData as unknown as Record<string, unknown>, subscribed)
           : mockData;
 
+      const t0 = performance.now();
       safeSend(client, { type: 'ENERGY_UPDATE', data: payload });
+      observeHistogram(
+        'nexus_hems_ws_broadcast_duration_ms',
+        'WebSocket ENERGY_UPDATE encode+send latency per client in milliseconds',
+        performance.now() - t0,
+      );
       wsMessageCount.outbound++;
     });
   }, 2000);

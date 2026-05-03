@@ -55,6 +55,16 @@ spec:
                   key: SENTRY_DSN
                   optional: true
             {{- end }}
+            {{- if .Values.redis.existingSecret }}
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.redis.existingSecret }}
+                  key: {{ .Values.redis.existingSecretKey }}
+            {{- else if .Values.redis.url }}
+            - name: REDIS_URL
+              value: {{ .Values.redis.url | quote }}
+            {{- end }}
           livenessProbe:
             httpGet:
               path: /api/health

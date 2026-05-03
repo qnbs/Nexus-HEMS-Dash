@@ -21,6 +21,7 @@ import { toast } from 'sonner';
 import { create } from 'zustand';
 import { useShallow } from 'zustand/react/shallow';
 import { persistSnapshot } from '../lib/db';
+import { recordMergeFlushDurationMs } from '../lib/merge-data-perf';
 import { queryClient } from '../lib/query-client';
 import { useAppStore } from '../store';
 import { createRegisteredAdapter, registerBuiltinAdapters } from './adapters/adapter-registry';
@@ -309,6 +310,10 @@ function flushMerge(): void {
   const pending = _pendingMerge;
   _pendingMerge = null;
   if (!pending) return;
+  const t0 =
+    typeof performance !== 'undefined' && typeof performance.now === 'function'
+      ? performance.now()
+      : 0;
   useEnergyStoreBase.setState((state) => {
     const merged = deepMergeModel(state.unified, pending);
     if (merged === state.unified) return state;
@@ -322,6 +327,9 @@ function flushMerge(): void {
         : [...state.history, point];
     return { unified: merged, lastUpdated: ts, history };
   });
+  if (t0 > 0 && typeof performance !== 'undefined' && typeof performance.now === 'function') {
+    recordMergeFlushDurationMs(performance.now() - t0);
+  }
 }
 
 // ─── Deep merge helper (referentially stable) ───────────────────────

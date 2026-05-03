@@ -2620,6 +2620,14 @@ export const de = {
       'Fügen Sie das PEM-kodierte Zertifikat unten ein oder ziehen Sie eine .pem-Datei herein.',
     importSuccess: 'Zertifikat erfolgreich importiert',
     importError: 'Ungültiges Zertifikatsformat — bitte überprüfen Sie die PEM-Kodierung',
+    reloadShipTls: 'SHIP-Server-TLS neu laden',
+    reloadShipTlsDesc:
+      'Nach dem Ersetzen der Dateien aus EEBUS_CERT_FILE / EEBUS_KEY_FILE auf dem API-Host zwischengespeicherte PEM-Daten neu laden, ohne den gesamten API-Prozess neu zu starten.',
+    reloadShipTlsAction: 'TLS-Zugangsdaten neu laden',
+    reloadShipTlsSuccess:
+      'TLS-Zugangsdaten neu geladen. Pairings vor einem erneuten Verbinden der Geräte beenden.',
+    reloadShipTlsError:
+      'Neuladen fehlgeschlagen — API-Logs und Zertifikatspfade prüfen.',
   },
   shipPairing: {
     trustStoreTitle: 'SHIP-Vertrauensspeicher',

@@ -1,7 +1,7 @@
 # Performance Optimization Plan — Nexus-HEMS-Dash
 
 > **Status:** Active
-> **Last Updated:** 2026-04-26
+> **Last Updated:** 2026-05-02
 > **Horizon:** Q2–Q3 2026
 
 This document covers all planned and implemented performance optimizations, their rationale,
@@ -17,8 +17,8 @@ implementation strategy, and metrics targets.
 | REST polling worker isolation | Implemented | Worker exists; remaining work is monitoring and fine-tuning |
 | AI worker isolation | Implemented | Optimization work is already offloaded; remaining work is verification/reporting |
 | Lighthouse CI | Implemented | Existing workflow enforces thresholds and stores reports |
-| LTTB chart sampling | Implemented but not fully integrated | Utility and tests exist; chart call sites still need adoption |
-| `.perf` convention and runtime perf probes | Not implemented | Keep CI-first and lightweight for v1.2.0 |
+| LTTB chart sampling | Implemented | `HistoricalChart`, `HistoricalAnalyticsPage`, `PredictiveForecast` (`sampleIfNeeded`); dynamic ML forecast + tariff wizard via `chart-series-guard.ts`; bounded static charts (≤168 pts) unchanged |
+| `.perf` convention and runtime perf probes | Partial | `scripts/perf/assert-budgets.mjs` + CI step in `perf-optimized-ci.yml`; API histograms for history + WS broadcast |
 | Canvas/WebGL or virtualization fallback | Deferred | Only revisit if profiling still shows regressions after LTTB integration |
 
 ---

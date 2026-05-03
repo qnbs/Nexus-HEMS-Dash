@@ -120,6 +120,14 @@ containerSecurityContext:
     drop:
       - ALL
 
+# ─── Redis (optional JWT JTI revocation persistence) ─────────────────
+# When REDIS_URL is set, the API uses Redis for revoked JTIs (see apps/api/src/jwt-utils.ts).
+# Prefer existingSecret in production; plain url is for dev/minikube only.
+redis:
+  url: ''
+  existingSecret: ''
+  existingSecretKey: REDIS_URL
+
 # ─── Environment ─────────────────────────────────────────────────────
 env:
   NODE_ENV: production

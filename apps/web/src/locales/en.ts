@@ -2602,6 +2602,12 @@ export const en = {
     importHint: 'Paste the PEM-encoded certificate below or drag and drop a .pem file.',
     importSuccess: 'Certificate imported successfully',
     importError: 'Invalid certificate format — please check the PEM encoding',
+    reloadShipTls: 'SHIP server TLS credential reload',
+    reloadShipTlsDesc:
+      'After replacing files referenced by EEBUS_CERT_FILE / EEBUS_KEY_FILE on the API host, reload cached PEM material without restarting the whole API.',
+    reloadShipTlsAction: 'Reload TLS credentials',
+    reloadShipTlsSuccess: 'TLS credentials reloaded. Idle pairings before reconnecting devices.',
+    reloadShipTlsError: 'Reload failed — check API logs and certificate paths.',
   },
   shipPairing: {
     trustStoreTitle: 'SHIP Trust Store',

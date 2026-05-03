@@ -118,6 +118,27 @@ async function loadOrGenerateCert(): Promise<{ cert: string; key: string }> {
   }
 }
 
+/**
+ * Clear cached SHIP server PEM material and reload from `EEBUS_CERT_FILE` / `EEBUS_KEY_FILE`.
+ * Active WebSocket sessions keep old TLS context until reconnect — pairings should idle first.
+ */
+export async function reloadShipTlsCredentialMaterialFromDisk(): Promise<{
+  ok: boolean;
+  message: string;
+}> {
+  try {
+    _certPem = null;
+    _keyPem = null;
+    await loadOrGenerateCert();
+    return { ok: true, message: 'SHIP TLS credentials reloaded from disk' };
+  } catch (err) {
+    return {
+      ok: false,
+      message: err instanceof Error ? err.message : String(err),
+    };
+  }
+}
+
 async function loadTrustedCaBundle(): Promise<string | undefined> {
   if (!CA_FILE) return undefined;
   return readFile(CA_FILE, 'utf-8');

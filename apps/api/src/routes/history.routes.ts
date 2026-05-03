@@ -13,6 +13,7 @@ import type { Request, Response, Router } from 'express';
 import { Router as createRouter } from 'express';
 import { z } from 'zod';
 import { logger } from '../core/logger.js';
+import { observeHistogram } from '../middleware/metrics.js';
 
 const MAX_POINTS = 1000;
 
@@ -86,6 +87,7 @@ export function createHistoryRoutes(): Router {
     }
 
     try {
+      const started = performance.now();
       const points = await queryInfluxDB(api, {
         metric,
         ...(deviceId !== undefined ? { deviceId } : {}),
@@ -94,6 +96,13 @@ export function createHistoryRoutes(): Router {
         granularity,
         bucket: process.env.INFLUXDB_BUCKET ?? 'nexus-hems',
       });
+      observeHistogram(
+        'nexus_hems_history_query_duration_ms',
+        'InfluxDB history route handler latency in milliseconds',
+        performance.now() - started,
+        undefined,
+        { granularity },
+      );
 
       res.status(200).json({
         metric,

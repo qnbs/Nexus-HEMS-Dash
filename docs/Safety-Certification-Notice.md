@@ -124,6 +124,21 @@ These layers are software-only. They do not replace hardware-level protection de
 
 ---
 
+## 5a. Certification roadmap — gap analysis (kick-off)
+
+This section starts the **documentation-only** certification tracking requested for pilot deployments. It does **not** constitute VDE/IEC/CE approval.
+
+| Area | Requirement (high level) | Current implementation | Residual risk | Owner |
+|------|--------------------------|------------------------|---------------|-------|
+| VDE-AR-E 2829-6 (EEBUS/HEMS) | SKI trust, TLS 1.3, pairing audit trail | SHIP FSM + trust store API + UI (`ShipHandshakeService`, `CertificateManagement`) | Formal TÜV/DEKRA witness test not done | Maintainer |
+| ISO 15118-20 BPT / V2G | Negotiated limits, SOC guardrails | `BPTNegotiationParams`, `OCPP21Adapter`, optimizer hooks | CharIN / ISO conformance lab testing not done | Maintainer |
+| Grid / §14a | Export caps, DR signals | `SET_GRID_LIMIT`, OpenADR adapter, command safety | Grid-specific validation with operator | Integrator |
+| Heat pump / SG Ready | Power/mode bounds | `SET_HEAT_PUMP_*`, optional `VITE_SAFETY_HP_GUARD` pilot cap (4.2 kW) | Site-specific HP rating vs. cap | Integrator |
+
+Optional pilot guard: set `VITE_SAFETY_HP_GUARD=true` at **web build time** to reject `SET_GRID_LIMIT` and `SET_HEAT_PUMP_POWER` above **4200 W** after normal Zod validation (development default: guard off).
+
+---
+
 ## 6. Tauri Desktop App — Auto-Updater Status (CRIT-02)
 
 The Tauri auto-updater is **enabled** in `tauri.conf.json` (`active: true`) with a **non-empty** Minisign public key and `bundle.createUpdaterArtifacts: true`. Release builds are signed when `TAURI_SIGNING_PRIVATE_KEY` is set (see `.github/workflows/tauri-build.yml`).

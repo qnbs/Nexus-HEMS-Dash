@@ -118,6 +118,9 @@ helm install nexus-hems ./helm/nexus-hems \
 | `hpa.maxReplicas`                   | 8              | Max scale-out             |
 | `monitoring.serviceMonitor.enabled` | true           | Prometheus ServiceMonitor |
 | `networkPolicy.enabled`             | true           | Restrict pod traffic      |
+| `redis.url` / `redis.existingSecret` | (empty)       | Optional `REDIS_URL` for persistent JWT JTI revocation (`apps/api/src/jwt-utils.ts`) |
+
+Production recommendation: provide Redis (managed or in-cluster) and set `redis.existingSecret` to a Secret containing `REDIS_URL`, or set `redis.url` only for non-production smoke tests.
 
 ### Security Defaults
 

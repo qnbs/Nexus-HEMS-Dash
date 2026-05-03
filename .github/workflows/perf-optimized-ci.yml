@@ -244,6 +244,9 @@ jobs:
       - name: size-limit check
         run: pnpm size
 
+      - name: Perf budget assertions
+        run: node scripts/perf/assert-budgets.mjs
+
       - name: depcheck
         run: npx depcheck 2>&1 || true
 
