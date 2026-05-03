@@ -33,7 +33,7 @@ export function LanguageSwitcher() {
           onClick={() => handleLocaleChange(entry)}
           className={`focus-visible:focus-ring rounded-full px-3 py-1 font-semibold text-xs uppercase tracking-[0.22em] transition ${
             locale === entry
-              ? 'bg-(--color-text) text-(--color-background) shadow-[0_0_20px_var(--color-glow)]'
+              ? 'bg-white text-slate-950 shadow-[0_0_20px_var(--color-glow)] ring-1 ring-slate-950/20'
               : 'text-(--color-muted) hover:text-(--color-text)'
           }`}
           aria-pressed={locale === entry}
