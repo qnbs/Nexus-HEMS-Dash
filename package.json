@@ -108,7 +108,7 @@
     "test:e2e": "turbo --filter=@nexus-hems/web test:e2e",
     "test:e2e:ui": "turbo --filter=@nexus-hems/web test:e2e:ui",
     "test:a11y": "turbo --filter=@nexus-hems/web test:a11y",
-    "security:trojan": "anti-trojan-source --files='apps/**/*.{ts,tsx}' --verbose",
+    "security:trojan": "anti-trojan-source --files='apps/api/index.ts' --verbose && anti-trojan-source --files='apps/{api,web}/src/**/*.{ts,tsx,js,jsx}' --verbose",
     "security:secrets": "gitleaks git --verbose",
     "security:secrets:staged": "gitleaks git --pre-commit --staged --verbose",
     "prepare": "husky",

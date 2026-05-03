@@ -107,8 +107,8 @@ export function PredictiveForecast() {
             onClick={() => setTimeRange('24h')}
             className={`focus-ring rounded-lg px-4 py-2 font-medium text-sm transition-colors ${
               timeRange === '24h'
-                ? 'bg-(--color-primary) font-bold text-(--color-on-primary)'
-                : 'bg-(--color-surface) text-(--color-muted) hover:bg-white/10'
+                ? 'border border-(--color-primary)/40 bg-(--color-surface-strong) font-bold text-(--color-text) shadow-[0_0_20px_var(--color-glow)]'
+                : 'border border-transparent bg-(--color-surface) text-(--color-muted) hover:bg-white/10'
             }`}
             aria-pressed={timeRange === '24h'}
             aria-label={t('forecast.hours24')}
@@ -120,8 +120,8 @@ export function PredictiveForecast() {
             onClick={() => setTimeRange('7d')}
             className={`focus-ring rounded-lg px-4 py-2 font-medium text-sm transition-colors ${
               timeRange === '7d'
-                ? 'bg-(--color-primary) font-bold text-(--color-on-primary)'
-                : 'bg-(--color-surface) text-(--color-muted) hover:bg-white/10'
+                ? 'border border-(--color-primary)/40 bg-(--color-surface-strong) font-bold text-(--color-text) shadow-[0_0_20px_var(--color-glow)]'
+                : 'border border-transparent bg-(--color-surface) text-(--color-muted) hover:bg-white/10'
             }`}
             aria-pressed={timeRange === '7d'}
             aria-label={t('forecast.days7')}

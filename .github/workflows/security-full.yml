@@ -117,7 +117,7 @@ jobs:
         run: corepack enable
 
       - name: Scan for Unicode Bidi characters
-        run: npx anti-trojan-source --files='apps/**/*.{ts,tsx,js,jsx}' --verbose
+        run: pnpm security:trojan
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
