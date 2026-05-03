@@ -104,7 +104,9 @@ function renderHistogramText(now: number): string {
       for (let i = 0; i < family.buckets.length; i++) {
         const le = family.buckets[i]!;
         const c = seriesState.bucketCounts[i] ?? 0;
-        lines.push(`${name}_bucket${formatMetricLabels({ ...labels, le: String(le) })} ${c} ${now}`);
+        lines.push(
+          `${name}_bucket${formatMetricLabels({ ...labels, le: String(le) })} ${c} ${now}`,
+        );
       }
       lines.push(
         `${name}_bucket${formatMetricLabels({ ...labels, le: '+Inf' })} ${seriesState.count} ${now}`,

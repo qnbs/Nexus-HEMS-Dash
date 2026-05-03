@@ -2626,8 +2626,7 @@ export const de = {
     reloadShipTlsAction: 'TLS-Zugangsdaten neu laden',
     reloadShipTlsSuccess:
       'TLS-Zugangsdaten neu geladen. Pairings vor einem erneuten Verbinden der Geräte beenden.',
-    reloadShipTlsError:
-      'Neuladen fehlgeschlagen — API-Logs und Zertifikatspfade prüfen.',
+    reloadShipTlsError: 'Neuladen fehlgeschlagen — API-Logs und Zertifikatspfade prüfen.',
   },
   shipPairing: {
     trustStoreTitle: 'SHIP-Vertrauensspeicher',

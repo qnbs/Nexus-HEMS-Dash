@@ -591,6 +591,20 @@ describe('validateCommand — edge cases', () => {
     expect(result.valid).toBe(true);
   });
 
+  it('should not spend a second rate-limit slot after outer validation', async () => {
+    const { validateCommand } = await import('../core/command-safety');
+    const { sendAdapterCommand } = await import('../core/useEnergyStore');
+
+    for (let i = 0; i < 30; i++) {
+      const validation = validateCommand({
+        type: 'OPENADR_ACKNOWLEDGE_EVENT',
+        value: 'event-1',
+      });
+      expect(validation.valid, `command ${i + 1} should pass the documented limit`).toBe(true);
+      sendAdapterCommand({ type: 'OPENADR_ACKNOWLEDGE_EVENT', value: 'event-1' });
+    }
+  });
+
   it('should identify danger commands for confirmation', async () => {
     const { requiresConfirmation } = await import('../core/command-safety');
 
