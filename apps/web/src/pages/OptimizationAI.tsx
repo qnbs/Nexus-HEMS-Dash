@@ -42,8 +42,8 @@ import {
   WizardStepper,
 } from '../components/ui/WizardStepper';
 import { useEnergyContext } from '../core/EnergyContext';
-import { buildOptimizerRecommendations, runMpcOptimization } from '../lib/optimizer';
 import { sampleIndexedSeriesIfNeeded } from '../lib/chart-series-guard';
+import { buildOptimizerRecommendations, runMpcOptimization } from '../lib/optimizer';
 import {
   fetchTariffForecast,
   generatePredictiveRecommendation,

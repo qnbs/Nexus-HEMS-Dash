@@ -799,7 +799,9 @@ function EebusTlsReloadPanel() {
       >
         {t('certManagement.reloadShipTls')}
       </h2>
-      <p className="mt-1 text-(--color-text-secondary) text-xs">{t('certManagement.reloadShipTlsDesc')}</p>
+      <p className="mt-1 text-(--color-text-secondary) text-xs">
+        {t('certManagement.reloadShipTlsDesc')}
+      </p>
       <button
         type="button"
         disabled={reloadMutation.isPending}

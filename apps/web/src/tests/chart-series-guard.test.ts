@@ -25,7 +25,8 @@ describe('sampleIndexedSeriesIfNeeded', () => {
       outputSize: 120,
     });
     expect(out.length).toBe(120);
-    expect(out[0]).not.toHaveProperty('idx');
+    expect(out[0]).not.toHaveProperty('ts');
+    expect(out[0]).toHaveProperty('idx');
     expect(out.every((r) => typeof r.pv === 'number')).toBe(true);
   });
 });

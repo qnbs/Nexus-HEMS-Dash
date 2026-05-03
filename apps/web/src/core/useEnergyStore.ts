@@ -35,7 +35,6 @@ import type {
   UnifiedEnergyModel,
 } from './adapters/EnergyAdapter';
 import type { CircuitState } from './circuit-breaker';
-import { validateCommand } from './command-safety';
 
 // ─── Adapter registry ────────────────────────────────────────────────
 
@@ -383,15 +382,6 @@ function deepMergeModel(
  * BaseAdapter.sendCommand() handles validation, circuit breaker, audit trail.
  */
 export function sendAdapterCommand(command: AdapterCommand): void {
-  // Quick pre-check (adapter validates again independently — defense in depth)
-  const validation = validateCommand(command);
-  if (!validation.valid) {
-    if (import.meta.env.DEV) {
-      console.warn(`[sendAdapterCommand] Rejected: ${validation.error}`);
-    }
-    return;
-  }
-
   const entries = Object.entries(useEnergyStoreBase.getState().adapters) as [
     AdapterId,
     AdapterEntry,

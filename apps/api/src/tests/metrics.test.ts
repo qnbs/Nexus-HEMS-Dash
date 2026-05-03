@@ -13,8 +13,13 @@ import { beforeEach, describe, expect, it } from 'vitest';
 process.env.NODE_ENV = 'test';
 process.env.JWT_SECRET = 'test-secret-for-unit-tests-that-is-long-enough-for-hs256-algo';
 
-const { observeHistogram, resetPrometheusMetrics, setMetric, getServerMetrics, renderPrometheusText } =
-  await import('../middleware/metrics.js');
+const {
+  observeHistogram,
+  resetPrometheusMetrics,
+  setMetric,
+  getServerMetrics,
+  renderPrometheusText,
+} = await import('../middleware/metrics.js');
 
 beforeEach(() => {
   resetPrometheusMetrics();
