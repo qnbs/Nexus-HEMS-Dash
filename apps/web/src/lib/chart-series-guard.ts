@@ -36,5 +36,5 @@ export function sampleIndexedSeriesIfNeeded<T extends IndexedSeriesRow>(
   });
 
   const sampled = lttbSample(augmented, outputSize, yKey);
-  return sampled.map(({ ts: _ts, ...rest }) => rest as T);
+  return sampled.map(({ ts: _ts, ...rest }) => rest as unknown as T);
 }

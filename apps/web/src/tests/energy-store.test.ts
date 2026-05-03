@@ -216,9 +216,9 @@ describe('useEnergyStore', () => {
           otherPowerW: 2000,
         },
       });
-      const t0 = performance.now();
+      const t0 = vi.getRealSystemTime();
       vi.runAllTimers();
-      const ms = performance.now() - t0;
+      const ms = vi.getRealSystemTime() - t0;
       expect(ms).toBeLessThan(50);
     });
   });
