@@ -51,7 +51,7 @@
     "d3-selection": "^3.0.0",
     "date-fns": "^4.1.0",
     "dexie": "^4.3.0",
-    "i18next": "^25.8.14",
+    "i18next": "^26.0.8",
     "i18next-browser-languagedetector": "^8.2.1",
     "jose": "catalog:",
     "jspdf": "^4.2.1",
