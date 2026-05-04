@@ -76,7 +76,7 @@
     "@babel/eslint-parser": "^7.28.6",
     "@babel/preset-react": "^7.28.5",
     "@babel/preset-typescript": "^7.28.5",
-    "@capacitor/cli": "^7.0.0",
+    "@capacitor/cli": "^8.3.1",
     "@chromatic-com/storybook": "^5.1.2",
     "@lhci/cli": "^0.15.1",
     "@playwright/test": "^1.58.2",
