@@ -316,7 +316,7 @@ pnpm docker:build && pnpm docker:up
 
 **Helm/Kubernetes** — supports immutable image digests (`repository@sha256:...`), rolling update strategy controls, and revision history for rollback.
 
-**Tauri Desktop** — native builds for Windows, macOS, and Linux. Signed auto-updates (Minisign): [docs/Tauri-Desktop-Updater-Setup.md](docs/Tauri-Desktop-Updater-Setup.md) · CI: [`.github/workflows/tauri-build.yml`](.github/workflows/tauri-build.yml) · Config: `apps/web/src-tauri/tauri.conf.json`
+**Tauri Desktop** — native builds for Windows, macOS, and Linux. CI: [`.github/workflows/tauri-build.yml`](.github/workflows/tauri-build.yml) · Config: `apps/web/src-tauri/tauri.conf.json`. (Auto-updater is not enabled; users update by downloading a fresh release.)
 
 ```bash
 cd apps/web && pnpm build && pnpm dlx @tauri-apps/cli@2 build

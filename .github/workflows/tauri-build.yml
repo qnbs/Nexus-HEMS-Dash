@@ -68,12 +68,10 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build Tauri app (signed)
+      - name: Build Tauri app
         uses: tauri-apps/tauri-action@fce9c6108b31ea247710505d3aaaa893ee6768d4 # v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
           # macOS code signing + notarization
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
           APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
@@ -84,8 +82,6 @@ jobs:
         with:
           tagName: v__VERSION__
           releaseName: 'Nexus HEMS Dashboard v__VERSION__'
-          releaseBody: 'Signed desktop builds for Nexus HEMS Dashboard.'
+          releaseBody: 'Desktop builds for Nexus HEMS Dashboard.'
           releaseDraft: true
           prerelease: false
-          updaterJsonPreferNsis: true
-          includeUpdaterJson: true

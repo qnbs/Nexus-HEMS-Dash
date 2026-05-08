@@ -142,9 +142,9 @@ nginx.ingress.kubernetes.io/limit-rps: '100'
 
 ## 4 Tauri (Desktop)
 
-Desktop builds are produced by `.github/workflows/tauri-build.yml` (and release automation) via `tauri-apps/tauri-action`. Binaries for Linux (AppImage/deb), macOS (dmg), and Windows (msi/nsis) attach to GitHub Releases when secrets are configured.
+Desktop builds are produced by `.github/workflows/tauri-build.yml` (and release automation) via `tauri-apps/tauri-action`. Binaries for Linux (AppImage/deb), macOS (dmg), and Windows (msi/nsis) attach to GitHub Releases.
 
-Configuration: `apps/web/src-tauri/tauri.conf.json` · Signed updates & secrets: [Tauri-Desktop-Updater-Setup.md](./Tauri-Desktop-Updater-Setup.md)
+Configuration: `apps/web/src-tauri/tauri.conf.json`. The Tauri auto-updater is intentionally not enabled — users install new versions by downloading a fresh release.
 
 | Property             | Value |
 | -------------------- | ----- |

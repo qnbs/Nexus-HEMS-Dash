@@ -131,8 +131,6 @@ jobs:
         uses: tauri-apps/tauri-action@fce9c6108b31ea247710505d3aaaa893ee6768d4 # v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
           # macOS code signing
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
           APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
@@ -143,8 +141,6 @@ jobs:
         with:
           tagName: v${{ needs.release.outputs.new_release_version }}
           releaseName: 'Nexus HEMS Dashboard v${{ needs.release.outputs.new_release_version }}'
-          releaseBody: 'Desktop builds for Nexus HEMS Dashboard v${{ needs.release.outputs.new_release_version }}. Signed binaries for Windows, macOS, and Linux.'
+          releaseBody: 'Desktop builds for Nexus HEMS Dashboard v${{ needs.release.outputs.new_release_version }}. Binaries for Windows, macOS, and Linux.'
           releaseDraft: false
           prerelease: false
-          updaterJsonPreferNsis: true
-          includeUpdaterJson: true

@@ -8,7 +8,6 @@ import { AppShell } from './components/layout/AppShell';
 import { OfflineBanner } from './components/OfflineBanner';
 import { PWAInstallPrompt } from './components/PWAInstallPrompt';
 import { PWAUpdateNotification } from './components/PWAUpdateNotification';
-import { TauriAutoUpdater } from './components/TauriAutoUpdater';
 import { PageSkeleton } from './components/ui/Skeleton';
 import { EnergyProvider } from './core/EnergyContext';
 import { useAdapterBridge } from './core/useEnergyStore';
@@ -194,7 +193,6 @@ export default function App() {
             causes onRegisterError, which renders a Dismiss button before AppShell's
             skip link, breaking the skip-to-content Tab order test. */}
           {!import.meta.env.VITE_E2E_TESTING && <PWAUpdateNotification />}
-          {!import.meta.env.VITE_E2E_TESTING && <TauriAutoUpdater />}
 
           <OfflineBanner />
           <PWAInstallPrompt />

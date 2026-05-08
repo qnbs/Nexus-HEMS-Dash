@@ -2406,16 +2406,6 @@ export const de = {
       notAuthorized: 'Nicht autorisiert für diese Aktion',
     },
   },
-  updater: {
-    available: 'Update verfügbar',
-    install: 'Installieren',
-    downloading: 'Update wird heruntergeladen…',
-    ready: 'Update installiert',
-    restartHint: 'Neustart zum Anwenden der neuen Version.',
-    installFailed: 'Update-Installation fehlgeschlagen',
-    checkingForUpdates: 'Suche nach Updates…',
-    upToDate: 'App ist aktuell',
-  },
   optimizer: {
     mpcBatteryCharge: 'MPC: Batterie laden',
     mpcChargeDesc: 'Optimales Ladefenster basierend auf Preisprognose',

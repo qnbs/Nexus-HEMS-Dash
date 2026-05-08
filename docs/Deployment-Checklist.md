@@ -276,10 +276,10 @@ services:
 ### Build Checklist
 
 - [ ] `apps/web/src-tauri/tauri.conf.json` — CSP correct (Trusted Types)
-- [ ] Code signing certificate configured (`TAURI_SIGNING_PRIVATE_KEY`)
-- [ ] Auto-updater endpoint configured
 - [ ] All 3 platforms tested (Linux, macOS, Windows)
 - [ ] `.github/workflows/tauri-build.yml` passes successfully
+
+> Note: Tauri auto-updater is intentionally **not** wired up. Users update by downloading a new release. See `docs/Safety-Certification-Notice.md` §6.
 
 ---
 

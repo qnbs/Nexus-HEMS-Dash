@@ -16,7 +16,6 @@ tauri-build = { version = "2.2", features = [] }
 [dependencies]
 tauri = { version = "2.2", features = [] }
 tauri-plugin-shell = "2.2"
-tauri-plugin-updater = "2.2"
 tauri-plugin-notification = "2.2"
 tauri-plugin-haptics = "2.2"
 tauri-plugin-barcode-scanner = "2.2"

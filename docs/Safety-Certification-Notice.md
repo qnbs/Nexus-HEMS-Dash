@@ -124,32 +124,11 @@ These layers are software-only. They do not replace hardware-level protection de
 
 ---
 
-## 6. Tauri Desktop App — Auto-Updater Status (CRIT-02)
+## 6. Tauri Desktop App — Updates
 
-The Tauri auto-updater is **enabled** in `tauri.conf.json` (`active: true`) with a **non-empty** Minisign public key and `bundle.createUpdaterArtifacts: true`. Release builds are signed when `TAURI_SIGNING_PRIVATE_KEY` is set (see `.github/workflows/tauri-build.yml`).
+The Tauri auto-updater has been **removed** from this project. Desktop builds (`apps/web/src-tauri/`) ship without an in-app update mechanism; users update by downloading a new release from GitHub. This eliminates the Minisign signing-key burden and removes the failure mode of unsigned/mismatched updater artifacts.
 
-**Risk if misconfigured:** An empty `pubkey` or a missing/mismatched private key in CI breaks verified updates or prevents signing. Always keep the private key out of the repository (use GitHub Secrets).
-
-**Canonical procedure (Tauri v2 env names):**
-
-```bash
-# 1. Generate the signing keypair (once; store the private key securely)
-CI=1 pnpm dlx @tauri-apps/cli@2 signer generate -w ~/.tauri/nexus-hems-tauri.key -f --ci
-# (or interactive: pnpm dlx @tauri-apps/cli@2 signer generate -w ~/.tauri/nexus-hems-tauri.key)
-
-# 2. Copy the printed public key into apps/web/src-tauri/tauri.conf.json → plugins.updater.pubkey
-
-# 3. GitHub repository secrets (Tauri 2 — not v1 names):
-#    TAURI_SIGNING_PRIVATE_KEY        = contents of the private key file
-#    TAURI_SIGNING_PRIVATE_KEY_PASSWORD = optional; use '' if unencrypted key
-
-gh secret set TAURI_SIGNING_PRIVATE_KEY < ~/.tauri/nexus-hems-tauri.key
-gh secret set TAURI_SIGNING_PRIVATE_KEY_PASSWORD --body ''
-```
-
-Full detail: `docs/Tauri-Desktop-Updater-Setup.md`.
-
-**Never set `active: true` with an empty `pubkey`** — that would break signature verification and weaken the update chain.
+If signed auto-updates become a requirement again, re-introduce `tauri-plugin-updater`, `plugins.updater` in `tauri.conf.json`, and the `TAURI_SIGNING_*` CI secrets following the official Tauri v2 docs.
 
 ---
 

@@ -82,15 +82,12 @@ Full SHIP v1.0.1 handshake implemented:
 
 ---
 
-### CRIT-02 — Tauri Updater Signing Key Missing
-**File:** `apps/web/src-tauri/tauri.conf.json` (`plugins.updater`), `bundle.createUpdaterArtifacts`
-**Status:** ✅ Fixed in repo code as of 2026-05-02
+### CRIT-02 — Tauri Updater Signing Key (Removed)
+**Status:** 🗑️ Removed 2026-05-08 — auto-updater dropped from project
 
-Minisign public key committed; `active: true`, `bundle.createUpdaterArtifacts: true`. CI already passes `TAURI_SIGNING_PRIVATE_KEY` / `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` to `tauri-apps/tauri-action` (Tauri v2 names).
+The Tauri auto-updater plugin and Minisign signing infrastructure have been removed entirely (`tauri-plugin-updater`, `plugins.updater`, `bundle.createUpdaterArtifacts`, `TAURI_SIGNING_*` CI env vars, `.secrets/` directory, `docs/Tauri-Desktop-Updater-Setup.md`, `TauriAutoUpdater.tsx`). Desktop users update by downloading a new release from GitHub.
 
-**Maintainer action (GitHub org, not in git):** Create repository secrets `TAURI_SIGNING_PRIVATE_KEY` and optional `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` using the **private** key that matches the committed `pubkey`. Without these secrets, release builds will not sign updater artifacts. Procedure: `docs/Tauri-Desktop-Updater-Setup.md` and `docs/Safety-Certification-Notice.md` §6.
-
-**Risk if secrets omitted:** Desktop releases may be unsigned or fail in `tauri-build`; end users would need manual reinstall until secrets match the published public key.
+**Why removed:** Maintenance burden of key management (generation, rotation, GitHub secret setup) was disproportionate for a single-maintainer homelab project. Auto-updates can be re-introduced later by following the official Tauri v2 docs.
 
 ---
 

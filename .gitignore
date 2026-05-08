@@ -6,9 +6,8 @@ coverage/
 *.log
 .env*
 !.env.example
-# Secret material — never commit keys; README is the only tracked file.
-.secrets/**
-!.secrets/README.md
+# Local secret material (Docker secrets, etc.) — never commit.
+.secrets/
 playwright-report/
 test-results/
 storybook-static/
