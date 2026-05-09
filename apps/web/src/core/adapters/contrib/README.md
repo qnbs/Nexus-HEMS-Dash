@@ -48,7 +48,7 @@ Publish your adapter as an npm package:
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "peerDependencies": {
-    "@nexus-hems/shared-types": "^1.1.0"
+    "@nexus-hems/shared-types": "^1.2.0"
   }
 }
 ```

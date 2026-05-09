@@ -195,7 +195,7 @@ Based on the current `main` branch state:
 - PR #15 `@vitejs/plugin-react 6` — ✅ COMPLETED: migrated to v6.0.1 with `reactCompilerPreset`
 - PR #12 `eslint 10` — ✅ SUPERSEDED: Biome-first toolchain migration completed (2026-04-20); ESLint retained only as slim React-only config; typescript-eslint, @eslint/js, Prettier and all bridges removed
 - PR #13 `jsdom 29` — low urgency, but should be validated against Vitest DOM behavior
-- PR #3 `node:25-alpine` — defer; project baseline remains Node 22 with Node 25 only as canary
+- PR #3 `node:25-alpine` — defer; project baseline is now Node 24 LTS (v1.2.0+), with newer Node majors revisited only as opt-in canary
 
 ### Likely Safe Candidate After Image Scan
 

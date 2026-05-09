@@ -73,35 +73,35 @@ This project is tracked by the [OpenSSF Scorecard](https://scorecard.dev/viewer/
 
 ---
 
-## PGP Key Verification
+## PGP / Release Artifact Verification
 
-Maintainer commits and release tags are signed with the following GPG key. Verify before applying
-patches or installing artifacts from unofficial mirrors.
+> **Note:** A maintainer-published GPG signing key is **not yet available** for this single-maintainer
+> project. Until a key is published here and to <https://keys.openpgp.org>, verify release artifacts via:
+>
+> 1. The HTTPS-served GitHub Releases page under
+>    <https://github.com/qnbs/Nexus-HEMS-Dash/releases> (TLS-protected by GitHub).
+> 2. The SHA-256 checksums recorded in the release notes for each artifact.
+> 3. For Docker images, the GHCR digest pinned in deployment manifests
+>    (`ghcr.io/qnbs/nexus-hems-dash@sha256:<digest>`), and the `cosign verify` flow once image
+>    signing is enabled by `.github/workflows/deploy.yml` (SLSA L2).
+>
+> Once a maintainer signing key is published, this section will be replaced with the exported public
+> key block and a fingerprint reference.
 
-```
------BEGIN PGP PUBLIC KEY BLOCK-----
-Comment: Nexus-HEMS-Dash Maintainer Signing Key
-Comment: Key type: Ed25519 / Curve25519
-Comment: Key ID: Placeholder — replace with actual maintainer key fingerprint
-
-[Replace this block with the actual exported GPG public key after running:
- gpg --armor --export <KEY_ID>
- Upload to keys.openpgp.org and add fingerprint to README.md]
------END PGP PUBLIC KEY BLOCK-----
-```
-
-### Tag Signature Verification
+### Once a Signing Key Is Published
 
 ```bash
-# Verify a signed release tag
+# Verify a signed release tag (after key publication)
 git fetch --tags
 git tag -v v1.2.0
 
 # Import maintainer key
 curl -sSf "https://keys.openpgp.org/vks/v1/by-fingerprint/<FINGERPRINT>" | gpg --import
 
-# Verify Docker image digest (from GHCR)
-docker trust inspect --pretty ghcr.io/qnbs/nexus-hems-dash:latest
+# Verify Docker image digest (cosign-signed, from GHCR)
+cosign verify ghcr.io/qnbs/nexus-hems-dash:latest \
+  --certificate-identity-regexp 'https://github\.com/qnbs/Nexus-HEMS-Dash/.*' \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com
 ```
 
 ---

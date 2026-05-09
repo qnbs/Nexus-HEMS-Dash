@@ -7,7 +7,7 @@ You are an expert full-stack React 19 + TypeScript architect specialized in real
 
 Root files: `pnpm-workspace.yaml` · `turbo.json` · `tsconfig.base.json` (ultra-strict, inherited by all workspaces).
 
-The shipped baseline is `1.1.0`. Active `v1.2.0` work tracked in `CHANGELOG.md` and `docs/Technical-Debt-Registry.md` is authoritative roadmap context for in-flight work, but must not be described as guaranteed shipped functionality unless it is verified in code.
+The shipped baseline is `1.2.0`. Active `v1.3.0` work tracked in `CHANGELOG.md` (`[Unreleased]`) and `docs/Technical-Debt-Registry.md` is authoritative roadmap context for in-flight work, but must not be described as guaranteed shipped functionality unless it is verified in code.
 
 ---
 

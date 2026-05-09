@@ -346,11 +346,25 @@ Brand colors: `neon-green` (#22ff88) · `electric-blue` (#00f0ff) · `power-oran
 | Q1 2026 | Opt#1 + Opt#2 Zustand/React 19 compiler cleanup, 6 new test suites (circuit-breaker, tariff-providers, notifications, energy-context, +extensions) | ✅ Shipped |
 | Q4      | **Unified Command Center** — 7 focused sections, guided tours, contextual help, zero-config onboarding, full a11y audit                            | ✅ Shipped |
 | Q2 2026 | **pnpm/Turborepo Monorepo** — `apps/api` + `apps/web` + `packages/shared-types`; two-process dev; Turbo caching across all workspaces               | ✅ Shipped |
-| Q4+     | Historical analytics, multi-tenant SaaS, contrib marketplace                                                                                       | 🔜 Planned |
+| Q2 2026 | **v1.2.0 — Safety, Protocols, CI Hardening** — Safety-Certification-Notice, EEBUS SHIP handshake (CRIT-01), OpenADR 3.1 VEN, ISO 15118-20 BPT (V2G), VPP single-home node, PII sanitization pipeline, LTTB chart sampling, Biome 2.4.7 / Node 24 LTS toolchain, distroless backend image, SBOM + Grype CI gates | ✅ Shipped |
+| Q3 2026 | v1.3.0 — Historical analytics deep-dive, OpenAPI auto-generation, multi-user RBAC, Chromatic visual regression hard gate                            | 🔄 In&nbsp;flight |
+| Q4+     | Multi-tenant SaaS, contrib adapter marketplace, OCPP 2.1 Profile 3, GDPR formal DPIA                                                                | 🔜 Planned |
 
 ## Changelog
 
 <details open>
+<summary><b>v1.2.0</b> — Safety, Protocols, and CI Hardening</summary>
+
+- **Safety & Certification:** New [docs/Safety-Certification-Notice.md](docs/Safety-Certification-Notice.md) covering hazard table per domain, certification status matrix (VDE-AR-E 2829-6, VDE-AR-N 4105, ISO 15118-20, CE, GDPR), mock-vs-live delta, command-safety architecture, and pre-deployment checklist
+- **Protocol Expansion:** EEBUS SHIP v1.0.1 handshake (FSM, mTLS, SKI extraction, PIN flow, persistent trust store) (CRIT-01); OpenADR 3.1.0 VEN client + Express OAuth2 proxy; ISO 15118-20 BPT V2G with full SOC guardrails; Matter↔OpenADR UC 2.6.1–2.6.3 translator; single-home VPP node and flex-offer skeleton
+- **PII & Output Hardening:** Canonical `sanitizeUntrustedText` / `sanitizeRenderedText` / `sanitizeObjectStrings` extracted to `@nexus-hems/shared-types`; AI client + WebSocket gateway + adapter merges all delegate through the single source of truth (ADR-008)
+- **Performance:** LTTB chart sampling fully wired in `HistoricalChart` and `HistoricalAnalyticsPage`; Dexie tiered downsampling service active; per-adapter ring-buffer sizes; CSP harmonized for workers and AI providers
+- **Tariffs:** Nordpool day-ahead provider with tax + grid fee + renewables surcharge; `TariffProvider` union extended in shared types
+- **Toolchain & CI:** Node 24 LTS production baseline; Biome 2.4.7 single-source linter+formatter; distroless production server image; mandatory `pnpm audit --audit-level=high` Security Gate; SBOM + Grype scanning; Lighthouse parity (`--host 0.0.0.0`); `VITE_E2E_TESTING` cache key in `turbo.json`; `size-limit` is a real failing gate
+- **Removed:** Tauri auto-updater + Minisign signing infrastructure (CRIT-02). Desktop users update by downloading a fresh release; rationale captured in `docs/Safety-Certification-Notice.md` §6
+</details>
+
+<details>
 <summary><b>v1.1.0</b> — Mobile, Tariffs, Toolchain, and CI Hardening</summary>
 
 - **Capacitor Mobile:** Capacitor 7 configuration for iOS/Android native shells and push-ready app metadata
@@ -432,7 +446,7 @@ MIT — see [LICENSE](LICENSE).
 
 - ⚡ Echtzeit D3.js Sankey-Energiefluss mit KI-Optimierung (Gemini 2.5 Pro)
 - 🎯 Unified Command Center: 7 Sektionen statt 18+ Einzelseiten
-- 🔌 10 Adapter: Victron, Modbus, KNX, OCPP, EEBUS + Home Assistant, Matter/Thread, Zigbee2MQTT, Shelly
+- 🔌 13 Adapter (7 Core + 6 Contrib): Victron MQTT, Modbus/SunSpec, KNX/IP, OCPP 2.1, EEBUS SPINE/SHIP, evcc, OpenEMS · Home Assistant, Matter/Thread, Zigbee2MQTT, Shelly, OpenADR 3.1, Example-Template
 - 🧩 Plugin-System: Adapter-Registry mit dynamischem Laden, npm-Paket-Format, BaseAdapter-Klasse
 - 🎛️ 8 Echtzeit-Energieregler: ESS, Peak Shaving, Netz-optimiert, Eigenverbrauch, Notstrom, SG Ready, EV Smart, EV V2G Entladung
 - 📐 MPC-Optimierer: EMHASS-inspirierter LP Day-Ahead-Scheduler mit Tariferkennung
