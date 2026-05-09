@@ -46,7 +46,18 @@ export default function AISettingsPage() {
   };
 
   useEffect(() => {
-    void refreshKeys();
+    let mounted = true;
+    void (async () => {
+      const keys = await listAIKeys();
+      if (!mounted) return;
+      setStoredKeys(keys);
+      const active = await getActiveProvider();
+      if (!mounted) return;
+      setActive(active);
+    })();
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const handleSave = async () => {
