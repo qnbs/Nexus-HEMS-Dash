@@ -271,7 +271,7 @@ jobs:
       pull-requests: write
     steps:
       - name: Comment PR with performance report
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v7
         with:
           script: |
             const totalJs = '${{ needs.bundle-analysis.outputs.total-js-size }}';
