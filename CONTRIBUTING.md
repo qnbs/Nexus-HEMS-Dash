@@ -99,6 +99,14 @@ pnpm verify:basis     # Full local loop via Turbo: type-check + lint + test:run
 
 See [docs/Toolchain-Architecture.md](docs/Toolchain-Architecture.md) for the full architecture reference and [docs/Biome-Migration-Roadmap.md](docs/Biome-Migration-Roadmap.md) for migration context.
 
+### GitHub Actions CI
+
+- **Primary merge gate:** [.github/workflows/ci.yml](.github/workflows/ci.yml) runs on pull requests to `main` and on pushes to `main` / `develop` (lint, typecheck, unit tests with coverage, production build, Playwright E2E on Chromium + Firefox, blocking production dependency audit for HIGH/CRITICAL).
+- **Experimental pipeline:** [.github/workflows/perf-optimized-ci.yml](.github/workflows/perf-optimized-ci.yml) runs **only** via `workflow_dispatch` (manual run in the Actions tab). It mirrors an optimized layout for benchmarks without triggering a second full CI on every push.
+- **Local check:** `pnpm verify:basis` before opening or updating a PR; run `pnpm build` when anything affecting the production bundle or CI build steps changed.
+
+Shared Node/pnpm install steps for several workflows live in [.github/actions/setup-node-pnpm/action.yml](.github/actions/setup-node-pnpm/action.yml).
+
 ### i18n
 
 All user-facing text must be translated in both locales:
@@ -203,7 +211,7 @@ AI API keys (OpenAI, Anthropic, Gemini, etc.) are managed through the in-app BYO
 ## Pull Request Expectations
 
 - Target branch: always `main`
-- Required status checks: CI baseline, build, E2E, Lighthouse, security scanning, and supply-chain checks
+- Required status checks: primary workflow `ci.yml` (includes lint, typecheck, unit tests, build, E2E, security audit), plus additional workflows configured on the repo (e.g. Lighthouse, supply-chain scans). The optimized CI workflow is manual-only and is not part of the default push gate.
 - Required review hygiene: all review conversations resolved before merge
 - Copilot review may be auto-requested for draft PRs and subsequent pushes; treat it as an additional review signal
 

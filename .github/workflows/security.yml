@@ -22,58 +22,12 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
-        with:
-          version: 10.33.0
-          run_install: false
+      - name: Setup Node.js and pnpm
+        uses: ./.github/actions/setup-node-pnpm
 
-      - name: Setup Node.js
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
-        with:
-          node-version: '24'
-          cache: 'pnpm'
-          cache-dependency-path: pnpm-lock.yaml
-
-      - name: Enable Corepack
-        run: corepack enable
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Run dependency audit
+      # Same threshold as .github/workflows/ci.yml security gate (production deps).
+      - name: Dependency audit — block on HIGH/CRITICAL
         run: pnpm audit --audit-level=high --prod
-        continue-on-error: true
-
-      - name: Check for critical vulnerabilities
-        run: |
-          pnpm audit --json --audit-level=high --prod > audit.json || true
-          node <<'NODE'
-          const fs = require('fs');
-          const text = fs.readFileSync('audit.json', 'utf8').trim();
-          const docs = text
-            ? text
-                .split(/\n+/)
-                .map((line) => {
-                  try {
-                    return JSON.parse(line);
-                  } catch {
-                    return null;
-                  }
-                })
-                .filter(Boolean)
-            : [];
-          const flattened = docs.flatMap((doc) => (Array.isArray(doc) ? doc : [doc]));
-          const summary =
-            [...flattened].reverse().find((doc) => doc?.metadata?.vulnerabilities || doc?.vulnerabilities) ?? {};
-          const vulnerabilities = summary.metadata?.vulnerabilities ?? summary.vulnerabilities ?? {};
-          const critical = Number(vulnerabilities.critical ?? 0);
-          const high = Number(vulnerabilities.high ?? 0);
-          console.log(`Critical: ${critical}, High: ${high}`);
-          if (critical > 0) {
-            process.exit(1);
-          }
-          NODE
 
   codeql:
     name: CodeQL Analysis

@@ -1,6 +1,10 @@
 # ─────────────────────────────────────────────────────────────────────────────
-# Performance-Optimized CI Pipeline
+# Performance-Optimized CI Pipeline (manual / experimental)
 # ─────────────────────────────────────────────────────────────────────────────
+#
+# Primary merge/PR gate is .github/workflows/ci.yml — this workflow does NOT run on
+# push, to avoid duplicate full CI on every commit. Run via workflow_dispatch when
+# benchmarking the optimized layout (parallel jobs, extra caches).
 #
 # Optimization strategies vs. original ci.yml:
 #
@@ -37,8 +41,6 @@
 name: CI (Optimized)
 
 on:
-  push:
-    branches: [main, develop]
   workflow_dispatch:
 
 permissions:
