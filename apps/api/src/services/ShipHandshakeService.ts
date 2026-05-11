@@ -8,10 +8,11 @@
  * Port: 4712 (IANA registered EEBUS SHIP port)
  */
 
+import { spawnSync } from 'node:child_process';
 import { generateKeyPairSync, X509Certificate } from 'crypto';
 import { mkdir, readFile, writeFile } from 'fs/promises';
 import https from 'https';
-import { dirname, resolve } from 'path';
+import { dirname, relative, resolve } from 'path';
 import { WebSocket } from 'ws';
 import { recordEebusHandshake } from '../middleware/security-metrics.js';
 import { upsertDevice } from './EEBusTrustStore.js';
@@ -56,6 +57,20 @@ const CA_FILE = process.env.EEBUS_CA_FILE
   ? resolve(process.cwd(), process.env.EEBUS_CA_FILE)
   : null;
 
+/** Reject cert/key paths that escape the project root (mitigates EEBUS_*_FILE injection). */
+function assertResolvedPathUnderCwd(absPath: string, label: string): void {
+  const root = resolve(process.cwd());
+  const target = resolve(absPath);
+  const rel = relative(root, target);
+  if (rel.startsWith('..') || rel === '..') {
+    throw new Error(`[SHIP] ${label} must resolve under process.cwd() (got ${target})`);
+  }
+}
+
+assertResolvedPathUnderCwd(CERT_FILE, 'EEBUS_CERT_FILE');
+assertResolvedPathUnderCwd(KEY_FILE, 'EEBUS_KEY_FILE');
+if (CA_FILE) assertResolvedPathUnderCwd(CA_FILE, 'EEBUS_CA_FILE');
+
 /** Total handshake timeout (ms). Connection enters 'timeout' state if exceeded. */
 const HANDSHAKE_TIMEOUT_MS = 60_000;
 
@@ -91,14 +106,33 @@ async function loadOrGenerateCert(): Promise<{ cert: string; key: string }> {
     // For environments where openssl is not available, we log a warning and use
     // a pre-baked test certificate (NOT for production use).
     try {
-      const { execSync } = await import('child_process');
       const tmpDir = dirname(CERT_FILE);
       await mkdir(tmpDir, { recursive: true });
-      execSync(
-        `openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:prime256v1 ` +
-          `-keyout "${KEY_FILE}" -out "${CERT_FILE}" -days 3650 -nodes ` +
-          `-subj "/CN=nexus-hems-eebus/O=Nexus HEMS" 2>/dev/null`,
+      const openssl = spawnSync(
+        'openssl',
+        [
+          'req',
+          '-x509',
+          '-newkey',
+          'ec',
+          '-pkeyopt',
+          'ec_paramgen_curve:prime256v1',
+          '-keyout',
+          KEY_FILE,
+          '-out',
+          CERT_FILE,
+          '-days',
+          '3650',
+          '-nodes',
+          '-subj',
+          '/CN=nexus-hems-eebus/O=Nexus HEMS',
+        ],
+        { stdio: 'pipe', shell: false, encoding: 'utf-8' },
       );
+      if (openssl.error) throw openssl.error;
+      if (openssl.status !== 0) {
+        throw new Error(openssl.stderr?.trim() || `openssl exited ${String(openssl.status)}`);
+      }
       _certPem = await readFile(CERT_FILE, 'utf-8');
       _keyPem = await readFile(KEY_FILE, 'utf-8');
       console.info('[SHIP] Server certificate generated at', CERT_FILE);

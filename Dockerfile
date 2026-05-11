@@ -20,7 +20,8 @@ RUN pnpm --filter @nexus-hems/web build
 # default — reduced attack surface vs the official nginx image.
 # NOTE: Pin to an immutable SHA256 digest in production via build-arg or
 # image policy (e.g. Kyverno imagePolicyWebhook).
-FROM nginxinc/nginx-unprivileged:1.29-alpine-slim AS production
+# Pin OCI index digest (multi-arch) — satisfies OpenSSF Scorecard Pinned-Dependencies
+FROM nginxinc/nginx-unprivileged:1.29-alpine-slim@sha256:59678856b05324b7f6371f26eb1520be7fcd8bdc8ab380fc4913db8503e5a842 AS production
 
 ARG VCS_REF=unknown
 ARG BUILD_DATE=unknown

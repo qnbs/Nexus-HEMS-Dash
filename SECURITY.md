@@ -76,6 +76,14 @@ This project employs multiple layers of security:
 
 This project is tracked by the [OpenSSF Scorecard](https://scorecard.dev/viewer/?uri=github.com/qnbs/Nexus-HEMS-Dash) for supply chain security best practices.
 
+**Repository- or org-level checks** (not fixable in application code alone):
+
+- **Branch-Protection** / **Code-Review**: enable required status checks and at least one approving review on `main` where team size allows.
+- **CII-Best-Practices**: enrol in the [OpenSSF Best Practices](https://www.bestpractices.dev/) badge when there is maintainer bandwidth.
+- **Maintained** / **Vulnerabilities**: keep merging dependency updates (Dependabot/Renovate) and triage GitHub **Dependabot security** / **Code scanning** alerts promptly.
+
+**In-repo mitigations** (workflows and containers): workflows declare minimal `permissions:` (typically `contents: read` at workflow scope, with narrow write scopes only on jobs that cut releases or open PR comments). Docker base images use **immutable digests** where the Scorecard **Pinned-Dependencies** check applies.
+
 ---
 
 ## PGP / Release Artifact Verification

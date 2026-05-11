@@ -68,6 +68,8 @@ describe('Dexie Migration Safety', () => {
     expect(tableNames).toContain('commandAudit');
     expect(tableNames).toContain('adapterCredentials');
     expect(tableNames).toContain('shareLinks');
+    expect(tableNames).toContain('eebusDevices');
+    expect(tableNames).toContain('eebusLocalCertificates');
   });
 
   it('should migrate from v1 to current without data loss', async () => {

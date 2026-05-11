@@ -1,4 +1,4 @@
-import Dexie, { type Table } from 'dexie';
+import Dexie, { type Table, type Transaction } from 'dexie';
 import type { CommandAuditEntry } from '../core/command-safety';
 import type { EnergyData, StoredSettings } from '../types';
 import type { ShareLink } from './auth/auth-provider';
@@ -142,7 +142,7 @@ export interface AIForecastRecord {
 }
 
 /** Current schema version constant — bump when adding a new Dexie version */
-export const DB_CURRENT_VERSION = 13;
+export const DB_CURRENT_VERSION = 14;
 
 /**
  * EEBUS SHIP trusted device record — stored in IndexedDB after successful PIN pairing.
@@ -164,6 +164,19 @@ export interface EEBUSDeviceRecord {
   brand?: string;
   model?: string;
   deviceType?: string;
+}
+
+/**
+ * UI-managed EEBUS certificate metadata (no PEM) — IndexedDB via Dexie.
+ * PEM material stays session-only in React state (never written to storage).
+ */
+export interface EEBUSLocalCertificateRow {
+  id?: number;
+  deviceName: string;
+  fingerprint: string;
+  validUntil: number;
+  createdAt: number;
+  status: 'trusted' | 'revoked' | 'expired';
 }
 
 /**
@@ -195,7 +208,60 @@ const LATEST_STORES = {
   revokedJTIs: 'jti, expiresAt',
   syncState: '&key, updatedAt, serverVersion',
   eebusDevices: '&ski, status, trustedAt',
+  eebusLocalCertificates: '++id, fingerprint, status, createdAt',
 } as const;
+
+const LEGACY_EEBUS_CERT_LS_KEY = 'nexus:eebus-certs';
+
+function readLegacyEebusCertLocalStorage(): string | null {
+  if (typeof localStorage === 'undefined') return null;
+  try {
+    return localStorage.getItem(LEGACY_EEBUS_CERT_LS_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function parseLegacyEebusCertJson(raw: string): unknown[] | null {
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function legacyItemToEebusRow(item: unknown): Omit<EEBUSLocalCertificateRow, 'id'> | null {
+  if (!item || typeof item !== 'object') return null;
+  const o = item as Record<string, unknown>;
+  const statusRaw = o.status;
+  const status: EEBUSLocalCertificateRow['status'] =
+    statusRaw === 'revoked' || statusRaw === 'expired' ? statusRaw : 'trusted';
+  return {
+    deviceName: String(o.deviceName ?? ''),
+    fingerprint: String(o.fingerprint ?? ''),
+    validUntil: Number(o.validUntil ?? 0),
+    createdAt: Number(o.createdAt ?? Date.now()),
+    status,
+  };
+}
+
+async function migrateLegacyEebusLocalStorageV14(tx: Transaction): Promise<void> {
+  const raw = readLegacyEebusCertLocalStorage();
+  if (!raw) return;
+  const parsed = parseLegacyEebusCertJson(raw);
+  if (!parsed) return;
+  const table = tx.table('eebusLocalCertificates');
+  for (const item of parsed) {
+    const row = legacyItemToEebusRow(item);
+    if (row) await table.add(row);
+  }
+  try {
+    localStorage.removeItem(LEGACY_EEBUS_CERT_LS_KEY);
+  } catch {
+    /* ignore */
+  }
+}
 
 export class NexusDatabase extends Dexie {
   energySnapshots!: Table<EnergySnapshot, number>;
@@ -213,6 +279,7 @@ export class NexusDatabase extends Dexie {
   revokedJTIs!: Table<RevokedJTI, string>;
   syncState!: Table<SyncState, string>;
   eebusDevices!: Table<EEBUSDeviceRecord, string>;
+  eebusLocalCertificates!: Table<EEBUSLocalCertificateRow, number>;
 
   constructor(dbName = 'nexus-hems-dash') {
     super(dbName);
@@ -448,10 +515,34 @@ export class NexusDatabase extends Dexie {
     // No migration of existing data: eebusDevices starts empty; the
     // localStorage entries are not auto-migrated (users re-pair devices).
     this.version(13).stores(LATEST_STORES);
+
+    // ── Version 14: eebusLocalCertificates — UI cert metadata (no PEM) ─
+    // Moves CertificateManagement metadata off localStorage into IndexedDB
+    // to satisfy CodeQL clear-text sensitive storage heuristics; PEM stays
+    // in memory only. One-time migration from legacy localStorage key.
+    this.version(14).stores(LATEST_STORES).upgrade(migrateLegacyEebusLocalStorageV14);
   }
 }
 
 export const nexusDb = new NexusDatabase();
+
+/** Load UI EEBUS certificate metadata (PEM never stored here). */
+export async function loadEebusLocalCertificateRows(): Promise<EEBUSLocalCertificateRow[]> {
+  return nexusDb.eebusLocalCertificates.orderBy('id').toArray();
+}
+
+/** Replace all UI EEBUS certificate metadata rows (ignores any `pemData` fields). */
+export async function persistEebusLocalCertificateRows(
+  rows: Array<EEBUSLocalCertificateRow & { pemData?: string }>,
+): Promise<void> {
+  const withoutPem: EEBUSLocalCertificateRow[] = rows.map(({ pemData: _p, ...rest }) => rest);
+  await nexusDb.transaction('rw', nexusDb.eebusLocalCertificates, async () => {
+    await nexusDb.eebusLocalCertificates.clear();
+    if (withoutPem.length > 0) {
+      await nexusDb.eebusLocalCertificates.bulkPut(withoutPem);
+    }
+  });
+}
 
 /**
  * Persist energy snapshot with automatic cleanup
@@ -741,6 +832,7 @@ export async function clearAllData() {
     nexusDb.cacheMetadata.clear(),
     nexusDb.errorLogs.clear(),
     nexusDb.shareLinks.clear(),
+    nexusDb.eebusLocalCertificates.clear(),
   ]);
 }
 

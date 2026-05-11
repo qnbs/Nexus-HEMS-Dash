@@ -23,8 +23,13 @@ import {
   Trash2,
   X,
 } from 'lucide-react';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import {
+  type EEBUSLocalCertificateRow,
+  loadEebusLocalCertificateRows,
+  persistEebusLocalCertificateRows,
+} from '../lib/db';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -36,14 +41,12 @@ export interface EEBUSCertRecord {
   deviceName: string;
   /** SHA-256 fingerprint (hex colon-separated) */
   fingerprint: string;
-  /** PEM stays in memory for the active session and is never persisted in localStorage. */
+  /** PEM stays in memory for the active session and is never persisted to IndexedDB. */
   pemData?: string;
   validUntil: number;
   createdAt: number;
   status: CertStatus;
 }
-
-type PersistedEEBUSCertRecord = Omit<EEBUSCertRecord, 'pemData'>;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -752,45 +755,46 @@ function ShipTrustStore() {
     </section>
   );
 }
-// migration. For now the component uses a local React state list with
-// localStorage serialisation for non-sensitive metadata only so it integrates
-// without a schema bump.
-const LS_KEY = 'nexus:eebus-certs';
-
-function loadFromStorage(): EEBUSCertRecord[] {
-  try {
-    const raw = localStorage.getItem(LS_KEY);
-    if (!raw) return [];
-    const parsed: unknown = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return [];
-    return parsed as PersistedEEBUSCertRecord[];
-  } catch {
-    return [];
-  }
-}
-
-function saveToStorage(certs: EEBUSCertRecord[]): void {
-  try {
-    const persistedCerts: PersistedEEBUSCertRecord[] = certs.map(
-      ({ pemData: _pemData, ...cert }) => cert,
-    );
-    localStorage.setItem(LS_KEY, JSON.stringify(persistedCerts));
-  } catch {
-    // Storage quota exceeded — silently ignore
-  }
-}
-
 export function CertificateManagement() {
   const { t } = useTranslation();
-  // Lazy initializer: read localStorage once on mount (avoids useEffect + setState-in-effect)
-  const [certs, setCerts] = useState<EEBUSCertRecord[]>(loadFromStorage);
+  const [certs, setCerts] = useState<EEBUSCertRecord[]>([]);
   const [importOpen, setImportOpen] = useState(false);
   const [deletingCert, setDeletingCert] = useState<EEBUSCertRecord | null>(null);
 
-  const persistCerts = (next: EEBUSCertRecord[]) => {
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const rows = await loadEebusLocalCertificateRows();
+        if (!cancelled) {
+          setCerts(
+            rows
+              .filter((r): r is EEBUSLocalCertificateRow & { id: number } => r.id !== undefined)
+              .map((r) => ({
+                id: r.id,
+                deviceName: r.deviceName,
+                fingerprint: r.fingerprint,
+                validUntil: r.validUntil,
+                createdAt: r.createdAt,
+                status: r.status,
+              })),
+          );
+        }
+      } catch {
+        if (!cancelled) setCerts([]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const persistCerts = useCallback((next: EEBUSCertRecord[]) => {
     setCerts(next);
-    saveToStorage(next);
-  };
+    void persistEebusLocalCertificateRows(next).catch(() => {
+      /* IndexedDB quota / private mode — state still updated in-memory */
+    });
+  }, []);
 
   const handleImport = async (pem: string, deviceName: string) => {
     const parsed = parsePEM(pem);

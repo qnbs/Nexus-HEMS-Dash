@@ -37,7 +37,8 @@ RUN pnpm deploy --filter @nexus-hems/api --prod /tmp/api-deploy
 # Attack surface is minimal: only the Node.js runtime and the app.
 # NOTE: Pin to an immutable SHA256 digest in production via build-arg or
 # image policy (e.g. Kyverno imagePolicyWebhook).
-FROM gcr.io/distroless/nodejs24-debian12:nonroot AS production
+# Pin OCI index digest — satisfies OpenSSF Scorecard Pinned-Dependencies
+FROM gcr.io/distroless/nodejs24-debian12@sha256:14d42e2511532589a7c7e01a753667a74fcc96266e137e8125006b87b0c32d0a AS production
 
 ARG VCS_REF=unknown
 ARG BUILD_DATE=unknown

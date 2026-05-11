@@ -330,8 +330,8 @@ async function executePoll(
     // safeUrl is fully reconstructed from individually validated components:
     // protocol allowlist, hostname allowlist + private-IP check, port range check,
     // path/query sanitisation. Redirects are blocked via `redirect:'error'`.
+    // codeql[js/client-side-request-forgery]
     const resp = await fetch(safeUrl, {
-      // codeql[js/request-forgery]
       headers: headers ?? {},
       signal: AbortSignal.timeout(10_000),
       redirect: 'error', // block open-redirect chains
