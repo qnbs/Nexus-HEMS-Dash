@@ -485,7 +485,7 @@ function TariffsPageComponent() {
                 onClick={() => setView48h(v)}
                 className={`focus-ring rounded-lg px-3 py-1.5 font-medium text-xs transition-colors ${
                   view48h === v
-                    ? 'bg-(--color-primary) text-(--color-on-primary)'
+                    ? 'bg-(--color-text) text-(--color-background)'
                     : 'bg-(--color-surface) text-(--color-muted) hover:bg-white/10'
                 }`}
                 aria-pressed={view48h === v}

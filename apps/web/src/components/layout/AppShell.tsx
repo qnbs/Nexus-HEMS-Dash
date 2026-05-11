@@ -128,7 +128,7 @@ export function AppShell({ children }: AppShellProps) {
       {/* Skip to content link (WCAG 2.2 AA) */}
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-100 focus:rounded-xl focus:bg-(--color-primary) focus:px-4 focus:py-2 focus:text-(--color-on-primary) focus:shadow-lg"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-100 focus:rounded-xl focus:bg-(--color-text) focus:px-4 focus:py-2 focus:text-(--color-background) focus:shadow-lg"
       >
         {t('accessibility.skipToContent', 'Skip to main content')}
       </a>
