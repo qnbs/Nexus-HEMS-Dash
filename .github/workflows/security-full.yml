@@ -118,13 +118,7 @@ jobs:
       # node_modules contain legitimate emoji variation selectors (date-fns
       # comments, etc.) that this scanner reports as warnings/failures.
       - name: Scan for Unicode Bidi characters (first-party source)
-        run: |
-          npx anti-trojan-source \
-            --files='apps/api/src/**/*.{ts,tsx,js,jsx}' \
-            --files='apps/web/src/**/*.{ts,tsx,js,jsx}' \
-            --files='apps/web/tests/**/*.{ts,tsx,js,jsx}' \
-            --files='packages/*/src/**/*.{ts,tsx,js,jsx}' \
-            --verbose
+        run: npx anti-trojan-source --files='{apps/{api,web}/src,apps/web/tests,packages/*/src}/**/*.{ts,tsx,js,jsx}' --verbose
 
       - name: Biome check (Unicode bidi + lint)
         run: pnpm lint
