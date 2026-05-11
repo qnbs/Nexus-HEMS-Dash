@@ -69,22 +69,6 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
-        with:
-          version: 10.33.0
-          run_install: false
-
-      - name: Setup Node.js
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
-          cache-dependency-path: pnpm-lock.yaml
-
-      - name: Enable Corepack
-        run: corepack enable
-
       - name: Restore node_modules cache
         id: deps-cache
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
@@ -95,8 +79,8 @@ jobs:
             packages/*/node_modules
           key: deps-${{ runner.os }}-node${{ env.NODE_VERSION }}-${{ hashFiles('pnpm-lock.yaml') }}
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: Setup Node.js and pnpm (with install)
+        uses: ./.github/actions/setup-node-pnpm
 
   # ─────────────────────────────────────────────────────────────────────────
   # Phase 2: Parallel quality gates (lint, test, build run simultaneously)
@@ -109,19 +93,6 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
-        with:
-          version: 10.33.0
-          run_install: false
-
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: Enable Corepack
-        run: corepack enable
-
       - name: Restore node_modules
         uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
@@ -130,6 +101,11 @@ jobs:
             apps/*/node_modules
             packages/*/node_modules
           key: deps-${{ runner.os }}-node${{ env.NODE_VERSION }}-${{ hashFiles('pnpm-lock.yaml') }}
+
+      - name: Setup Node.js and pnpm (no install — restored from cache)
+        uses: ./.github/actions/setup-node-pnpm
+        with:
+          install: 'false'
 
       - name: Lint
         run: pnpm lint
@@ -150,19 +126,6 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
-        with:
-          version: 10.33.0
-          run_install: false
-
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: Enable Corepack
-        run: corepack enable
-
       - name: Restore node_modules
         uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
@@ -171,6 +134,11 @@ jobs:
             apps/*/node_modules
             packages/*/node_modules
           key: deps-${{ runner.os }}-node${{ env.NODE_VERSION }}-${{ hashFiles('pnpm-lock.yaml') }}
+
+      - name: Setup Node.js and pnpm (no install — restored from cache)
+        uses: ./.github/actions/setup-node-pnpm
+        with:
+          install: 'false'
 
       - name: Unit Tests with Coverage
         run: pnpm test:coverage
@@ -194,19 +162,6 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
-        with:
-          version: 10.33.0
-          run_install: false
-
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: Enable Corepack
-        run: corepack enable
-
       - name: Restore node_modules
         uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
@@ -215,6 +170,11 @@ jobs:
             apps/*/node_modules
             packages/*/node_modules
           key: deps-${{ runner.os }}-node${{ env.NODE_VERSION }}-${{ hashFiles('pnpm-lock.yaml') }}
+
+      - name: Setup Node.js and pnpm (no install — restored from cache)
+        uses: ./.github/actions/setup-node-pnpm
+        with:
+          install: 'false'
 
       - name: Cache Vite build
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
@@ -232,17 +192,9 @@ jobs:
           TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
           TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
 
-      - name: Bundle Size Check
-        run: |
-          MAX_KB=600
-          INDEX_SIZE=$(stat -c%s apps/web/dist/assets/index-*.js 2>/dev/null || echo 0)
-          INDEX_KB=$((INDEX_SIZE / 1024))
-          echo "Index bundle: ${INDEX_KB} KB (limit: ${MAX_KB} KB)"
-          if [ "$INDEX_KB" -gt "$MAX_KB" ]; then
-            echo "::error::Bundle size ${INDEX_KB} KB exceeds ${MAX_KB} KB budget"
-            exit 1
-          fi
-
+      # Bundle-size enforcement is delegated to size-limit (single source of
+      # truth: apps/web/package.json "size-limit"). The earlier inline check
+      # mixed uncompressed and gzipped sizes — removed in Phase-2 hardening.
       - name: size-limit check
         run: pnpm size
 
@@ -276,19 +228,6 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
-        with:
-          version: 10.33.0
-          run_install: false
-
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: Enable Corepack
-        run: corepack enable
-
       - name: Restore node_modules
         uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
@@ -297,6 +236,11 @@ jobs:
             apps/*/node_modules
             packages/*/node_modules
           key: deps-${{ runner.os }}-node${{ env.NODE_VERSION }}-${{ hashFiles('pnpm-lock.yaml') }}
+
+      - name: Setup Node.js and pnpm (no install — restored from cache)
+        uses: ./.github/actions/setup-node-pnpm
+        with:
+          install: 'false'
 
       - name: Restore build artifacts
         uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4

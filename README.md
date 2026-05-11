@@ -5,7 +5,9 @@
 **Production-grade Home Energy Management System — One Command Center for the decentralized energy era**
 
 [![CI](https://img.shields.io/github/actions/workflow/status/qnbs/Nexus-HEMS-Dash/ci.yml?branch=main&style=flat-square&logo=githubactions&logoColor=white&label=CI)](https://github.com/qnbs/Nexus-HEMS-Dash/actions/workflows/ci.yml)
+[![Security Full](https://img.shields.io/github/actions/workflow/status/qnbs/Nexus-HEMS-Dash/security-full.yml?branch=main&style=flat-square&logo=githubactions&logoColor=white&label=Security)](https://github.com/qnbs/Nexus-HEMS-Dash/actions/workflows/security-full.yml)
 [![Deploy](https://img.shields.io/github/actions/workflow/status/qnbs/Nexus-HEMS-Dash/deploy.yml?branch=main&style=flat-square&logo=githubactions&logoColor=white&label=Deploy)](https://github.com/qnbs/Nexus-HEMS-Dash/actions/workflows/deploy.yml)
+[![SLSA](https://img.shields.io/badge/SLSA-Level_3-22ff88?style=flat-square&logo=slsa&logoColor=white)](.github/CI-AUDIT.md#how-to-verify-the-slsa-build-provenance-attestation)
 [![License](https://img.shields.io/github/license/qnbs/Nexus-HEMS-Dash?style=flat-square)](LICENSE)
 [![GitHub release](https://img.shields.io/github/v/release/qnbs/Nexus-HEMS-Dash?style=flat-square&label=Release)](https://github.com/qnbs/Nexus-HEMS-Dash/releases)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178C6?style=flat-square&logo=typescript&logoColor=white)](tsconfig.json)
@@ -294,8 +296,9 @@ See [Adapter Dev Guide](docs/Adapter-Dev-Guide.md) and [Contrib README](apps/web
 - **Docker:** Non-root, read-only filesystem, `no-new-privileges`, isolated networks, per-IP connection limits (`limit_conn 50`)
 - **Runtime Hardening:** strict OpenEMS component/property validation, worker URL allowlist + private-IP checks, sanitized plugin/event logging
 - **CI:** CodeQL SAST, pnpm audit, Dependabot (npm ecosystem + Actions + Docker + Cargo), SHA-pinned GitHub Actions
+- **Supply Chain:** SLSA Level 3 build-provenance attestations on every `main` build (verify with `gh attestation verify`), `step-security/harden-runner` egress audit on release/deploy/tauri/security workflows, OpenSSF Scorecard scheduled scan, anchore/syft SBOM (SPDX) for frontend, backend, and source
 
-For the full threat model, trust boundaries, STRIDE analysis, and GDPR/DSGVO compliance details, see [SECURITY.md](SECURITY.md).
+For the full threat model, trust boundaries, STRIDE analysis, and GDPR/DSGVO compliance details, see [SECURITY.md](SECURITY.md). The full CI health dashboard, required-checks mapping, and pinned-action versions are in [`.github/CI-AUDIT.md`](.github/CI-AUDIT.md).
 
 ## Testing
 

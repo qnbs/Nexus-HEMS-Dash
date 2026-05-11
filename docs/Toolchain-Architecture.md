@@ -92,7 +92,7 @@ All root scripts delegate to Turborepo; Turbo fan-outs across `apps/*` and `pack
 | `.github/workflows/ci.yml` | Pull requests to `main`; pushes to `main` / `develop` | **Primary gate** — lint, typecheck, unit tests + coverage, build + size limits, E2E (Chromium + Firefox), blocking `pnpm audit --audit-level=high --prod` |
 | `.github/workflows/perf-optimized-ci.yml` | `workflow_dispatch` only | Optional parallel/cached layout for experiments; does not run on push (avoids duplicate CI) |
 
-Shared setup (pnpm pin, Node 24, `corepack enable`, `pnpm install --frozen-lockfile`) is implemented as a composite action at `.github/actions/setup-node-pnpm/action.yml` and reused by `ci.yml`, `deploy.yml`, `security.yml`, and others as adopted.
+Shared setup (pnpm pin, Node 24, `corepack enable`, `pnpm install --frozen-lockfile`) is implemented as a composite action at `.github/actions/setup-node-pnpm/action.yml` and is the canonical setup for all workflows that need Node + pnpm (`ci.yml`, `deploy.yml`, `security-full.yml`, `security-scan.yml`, `release.yml`, `tauri-build.yml`, `chromatic.yml`, `lighthouse.yml`, `fuzz.yml`, `perf-benchmark.yml`, `perf-optimized-ci.yml`, `sbom-scan.yml`). Pass `with: install: 'false'` to skip `pnpm install` in jobs that restore `node_modules` from a cache.
 
 ---
 

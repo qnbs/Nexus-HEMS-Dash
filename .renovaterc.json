@@ -66,7 +66,18 @@
         "@types/react",
         "@types/react-dom",
         "react-router-dom",
-        "react-i18next"
+        "react-i18next",
+        "i18next",
+        "i18next-browser-languagedetector"
+      ]
+    },
+    {
+      "description": "Group: React Compiler (Babel + ESLint plugin in lockstep)",
+      "groupName": "React Compiler",
+      "matchPackageNames": [
+        "babel-plugin-react-compiler",
+        "eslint-plugin-react-compiler",
+        "@rolldown/plugin-babel"
       ]
     },
     {
@@ -80,35 +91,37 @@
         "@axe-core/playwright",
         "@testing-library/react",
         "@testing-library/dom",
-        "@testing-library/jest-dom"
+        "@testing-library/jest-dom",
+        "fake-indexeddb",
+        "fast-check",
+        "jsdom"
       ]
     },
     {
-      "description": "Group: TypeScript & ESLint",
+      "description": "Group: TypeScript & React-only ESLint plugins",
       "groupName": "TypeScript & Linting",
       "matchPackageNames": [
         "typescript",
-        "typescript-eslint",
-        "@typescript-eslint/eslint-plugin",
-        "@typescript-eslint/parser",
+        "tsx",
         "eslint",
-        "eslint-config-prettier",
-        "eslint-plugin-prettier",
-        "eslint-plugin-react",
         "eslint-plugin-react-hooks",
-        "eslint-plugin-react-refresh",
-        "prettier",
-        "prettier-plugin-tailwindcss"
+        "eslint-plugin-react-refresh"
       ]
     },
     {
-      "description": "Group: Tailwind CSS",
+      "description": "Group: Biome (single PR for biome bumps)",
+      "groupName": "Biome",
+      "matchPackageNames": ["@biomejs/**"]
+    },
+    {
+      "description": "Group: Tailwind CSS v4",
       "groupName": "Tailwind CSS",
       "matchPackageNames": [
         "tailwindcss",
         "@tailwindcss/vite",
         "@tailwindcss/container-queries",
-        "tailwind-merge"
+        "tailwind-merge",
+        "autoprefixer"
       ]
     },
     {
@@ -119,26 +132,44 @@
         "@vitejs/plugin-react",
         "vite-plugin-pwa",
         "rollup-plugin-visualizer",
-        "workbox-window"
+        "workbox-window",
+        "size-limit",
+        "@size-limit/file",
+        "source-map-explorer"
       ]
+    },
+    {
+      "description": "Group: Storybook 10",
+      "groupName": "Storybook",
+      "matchPackageNames": ["@storybook/**", "storybook", "@chromatic-com/storybook", "chromatic"]
     },
     {
       "description": "Group: Radix UI primitives",
       "groupName": "Radix UI",
-      "matchPackagePatterns": ["^@radix-ui/"]
+      "matchPackageNames": ["@radix-ui/**"]
     },
     {
       "description": "Group: TanStack",
       "groupName": "TanStack",
-      "matchPackagePatterns": ["^@tanstack/"]
+      "matchPackageNames": ["@tanstack/**"]
+    },
+    {
+      "description": "Group: Sentry SDK + CLI in lockstep",
+      "groupName": "Sentry",
+      "matchPackageNames": ["@sentry/**", "@sentry-internal/**"]
     },
     {
       "description": "Group: D3 visualization",
       "groupName": "D3",
-      "matchPackageNames": ["d3-sankey", "d3-selection", "@types/d3-sankey", "@types/d3-selection"]
+      "matchPackageNames": [
+        "d3-sankey",
+        "d3-selection",
+        "@types/d3-sankey",
+        "@types/d3-selection"
+      ]
     },
     {
-      "description": "Group: Express server",
+      "description": "Group: Express server stack",
       "groupName": "Express",
       "matchPackageNames": [
         "express",
@@ -146,13 +177,58 @@
         "cors",
         "@types/cors",
         "helmet",
-        "express-rate-limit"
+        "express-rate-limit",
+        "supertest",
+        "@types/supertest",
+        "ws",
+        "@types/ws"
       ]
+    },
+    {
+      "description": "Group: Capacitor (mobile shell)",
+      "groupName": "Capacitor",
+      "matchPackageNames": ["@capacitor/**"]
+    },
+    {
+      "description": "Group: semantic-release toolchain",
+      "groupName": "semantic-release",
+      "matchPackageNames": [
+        "semantic-release",
+        "@semantic-release/**",
+        "conventional-changelog-conventionalcommits"
+      ]
+    },
+    {
+      "description": "Group: commitlint + husky",
+      "groupName": "commit-tooling",
+      "matchPackageNames": [
+        "@commitlint/**",
+        "husky",
+        "lint-staged",
+        "anti-trojan-source"
+      ]
+    },
+    {
+      "description": "Group: GitHub Actions (single PR for action bumps)",
+      "groupName": "github-actions",
+      "matchManagers": ["github-actions"],
+      "matchUpdateTypes": ["minor", "patch", "digest"]
     },
     {
       "description": "Pin TypeScript to ~5.8 (project constraint)",
       "matchPackageNames": ["typescript"],
       "allowedVersions": "~5.8"
+    },
+    {
+      "description": "Pin pnpm to 10.33.x (must match packageManager + workflows)",
+      "matchPackageNames": ["pnpm"],
+      "allowedVersions": "~10.33.0"
+    },
+    {
+      "description": "Node.js 24 LTS — no Node 26 yet (Mai 2026)",
+      "matchPackageNames": ["node", "@types/node"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
     }
   ],
   "ignoreDeps": []

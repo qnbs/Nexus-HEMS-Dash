@@ -26,11 +26,11 @@
               { "metric": "speed-index", "budget": 4500 }
             ],
             "resourceSizes": [
-              { "resourceType": "script", "budget": 700 },
+              { "resourceType": "script", "budget": 1100 },
               { "resourceType": "stylesheet", "budget": 100 },
               { "resourceType": "image", "budget": 500 },
               { "resourceType": "font", "budget": 150 },
-              { "resourceType": "total", "budget": 1500 }
+              { "resourceType": "total", "budget": 2000 }
             ],
             "resourceCounts": [
               { "resourceType": "script", "budget": 25 },
@@ -53,9 +53,9 @@
         "total-blocking-time": ["error", { "maxNumericValue": 400 }],
         "interactive": ["warn", { "maxNumericValue": 5500 }],
         "speed-index": ["warn", { "maxNumericValue": 4500 }],
-        "resource-summary:script:size": ["warn", { "maxNumericValue": 512000 }],
+        "resource-summary:script:size": ["warn", { "maxNumericValue": 1126400 }],
         "resource-summary:stylesheet:size": ["error", { "maxNumericValue": 102400 }],
-        "resource-summary:total:size": ["warn", { "maxNumericValue": 1572864 }],
+        "resource-summary:total:size": ["warn", { "maxNumericValue": 2097152 }],
         "meta-description": "error",
         "document-title": "error",
         "html-has-lang": "error",

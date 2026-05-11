@@ -262,7 +262,7 @@ All `pnpm.overrides` in `package.json` are actively maintained for CVE mitigatio
 ### Additional Scanners
 
 - **Socket.dev:** Supply chain risk scoring (npm package trust score)
-- **pnpm audit:** Run in `security.yml` on every push to main
+- **pnpm audit:** Production-only audit on every push/PR via the `security` job in `ci.yml` and the `dependency-check` job in `security-full.yml` (single push gate after Phase-2 consolidation, May 2026). Full audit incl. dev-deps runs weekly via `security-scan.yml`.
 - **Snyk:** Container + code scanning (token required: `SNYK_TOKEN` secret)
 
 ---

@@ -1,214 +1,82 @@
-name: Security Scan
+# ─────────────────────────────────────────────────────────────────────────────
+# Weekly deep-scan (schedule-only)
+# ─────────────────────────────────────────────────────────────────────────────
+# Push/PR-Gate runs in `security-full.yml`. This workflow exists to surface
+# slower / supplementary scans on a Monday cadence:
+#   - License compliance (informational)
+#   - Full pnpm audit including dev-deps (security-full.yml audits prod-only)
+# Triggering on push/PR was redundant with security-full.yml — removed in
+# Phase-2 hardening (May 2026).
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: Security Deep-Scan (weekly)
 
 on:
-  push:
-    branches: [main]
   schedule:
-    # Weekly full scan every Monday at 06:00 UTC
+    # Every Monday at 06:00 UTC
     - cron: '0 6 * * 1'
+  workflow_dispatch:
 
 permissions:
   contents: read
+
+concurrency:
+  group: security-scan-${{ github.ref }}
+  cancel-in-progress: false
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
-  # ──────────────────────────────────────────────
-  # 1. Anti-Trojan-Source (Unicode Bidi Detection)
-  # ──────────────────────────────────────────────
-  anti-trojan-source:
-    name: Anti-Trojan-Source Scan
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
-        with:
-          version: 10.33.0
-          run_install: false
-
-      - name: Setup Node.js
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
-        with:
-          node-version: '24'
-          cache: 'pnpm'
-          cache-dependency-path: pnpm-lock.yaml
-
-      - name: Enable Corepack
-        run: corepack enable
-
-      - name: Scan for Unicode Bidi characters
-        run: npx anti-trojan-source --files='apps/**/*.{ts,tsx,js,jsx}' --verbose
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Run Biome lint
-        run: pnpm lint
-
-  # ──────────────────────────────────────────────
-  # 2. Gitleaks (Secret Detection)
-  # ──────────────────────────────────────────────
-  gitleaks:
-    name: Gitleaks Secret Scan
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          fetch-depth: 0
-
-      - name: Run Gitleaks
-        uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITLEAKS_CONFIG: .gitleaks.toml
-
-  # ──────────────────────────────────────────────
-  # 3. Semgrep SAST
-  # ──────────────────────────────────────────────
-  semgrep:
-    name: Semgrep SAST
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      security-events: write
-    container:
-      image: semgrep/semgrep
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-
-      - name: Run Semgrep
-        run: semgrep scan --config auto --sarif -o semgrep-results.sarif apps/ packages/
-        continue-on-error: true
-        env:
-          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
-
-      - name: Upload Semgrep SARIF
-        uses: github/codeql-action/upload-sarif@68bde559dea0fdcac2102bfdf6230c5f70eb485e # v4.35.4
-        if: always()
-        with:
-          sarif_file: semgrep-results.sarif
-        continue-on-error: true
-
-  # ──────────────────────────────────────────────
-  # 4. Dependency Audit
-  # ──────────────────────────────────────────────
-  dependency-audit:
-    name: Dependency Audit
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
-        with:
-          version: 10.33.0
-          run_install: false
-
-      - name: Setup Node.js
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
-        with:
-          node-version: '24'
-          cache: 'pnpm'
-          cache-dependency-path: pnpm-lock.yaml
-
-      - name: Enable Corepack
-        run: corepack enable
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Run dependency audit
-        run: pnpm audit --audit-level=high --prod
-        continue-on-error: true
-
-      - name: Check for critical vulnerabilities
-        run: |
-          pnpm audit --json --audit-level=high --prod > audit.json || true
-          node <<'NODE'
-          const fs = require('fs');
-          const text = fs.readFileSync('audit.json', 'utf8').trim();
-          const docs = text
-            ? text
-                .split(/\n+/)
-                .map((line) => {
-                  try {
-                    return JSON.parse(line);
-                  } catch {
-                    return null;
-                  }
-                })
-                .filter(Boolean)
-            : [];
-          const flattened = docs.flatMap((doc) => (Array.isArray(doc) ? doc : [doc]));
-          const summary =
-            [...flattened].reverse().find((doc) => doc?.metadata?.vulnerabilities || doc?.vulnerabilities) ?? {};
-          const vulnerabilities = summary.metadata?.vulnerabilities ?? summary.vulnerabilities ?? {};
-          const critical = Number(vulnerabilities.critical ?? 0);
-          const high = Number(vulnerabilities.high ?? 0);
-          console.log(`Critical: ${critical}, High: ${high}`);
-          if (critical > 0) {
-            process.exit(1);
-          }
-          NODE
-
-  # ──────────────────────────────────────────────
-  # 5. CodeQL Analysis
-  # ──────────────────────────────────────────────
-  codeql:
-    name: CodeQL Analysis
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      security-events: write
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@68bde559dea0fdcac2102bfdf6230c5f70eb485e # v4.35.4
-        with:
-          languages: javascript-typescript
-
-      - name: Autobuild
-        uses: github/codeql-action/autobuild@68bde559dea0fdcac2102bfdf6230c5f70eb485e # v4.35.4
-
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@68bde559dea0fdcac2102bfdf6230c5f70eb485e # v4.35.4
-
-  # ──────────────────────────────────────────────
-  # 9. License Compliance Check
-  # ──────────────────────────────────────────────
+  # ──────────────────────────────────────────────────────────────────────────
+  # 1. License Compliance (informational)
+  # ──────────────────────────────────────────────────────────────────────────
   license-check:
     name: License Compliance
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
-        with:
-          version: 10.33.0
-          run_install: false
+      - name: Setup Node.js and pnpm
+        uses: ./.github/actions/setup-node-pnpm
 
-      - name: Setup Node.js
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
-        with:
-          node-version: '24'
-          cache: 'pnpm'
-          cache-dependency-path: pnpm-lock.yaml
-
-      - name: Enable Corepack
-        run: corepack enable
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Check licenses
+      - name: Check production licenses (block on GPL/AGPL)
         run: npx license-checker --production --failOn 'GPL-3.0;AGPL-3.0' --summary
+        continue-on-error: true
+
+      - name: License summary
+        run: |
+          echo "## License Compliance Summary" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          npx license-checker --production --summary 2>&1 | tail -50 >> "$GITHUB_STEP_SUMMARY" || true
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # 2. Full audit including dev-deps (push gate audits prod-only)
+  # ──────────────────────────────────────────────────────────────────────────
+  audit-full:
+    name: Full Dependency Audit (incl. dev-deps)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Setup Node.js and pnpm
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: Audit ALL deps (including dev-deps, informational)
+        run: |
+          echo "## Full pnpm Audit (incl. dev-deps)" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          pnpm audit --audit-level=high 2>&1 | tail -40 >> "$GITHUB_STEP_SUMMARY" || true
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "_Production-deps gate runs on every push in security-full.yml._" >> "$GITHUB_STEP_SUMMARY"
         continue-on-error: true
