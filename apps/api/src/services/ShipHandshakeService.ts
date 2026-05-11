@@ -13,6 +13,7 @@ import { mkdir, readFile, writeFile } from 'fs/promises';
 import https from 'https';
 import { dirname, resolve } from 'path';
 import { WebSocket } from 'ws';
+import { recordEebusHandshake } from '../middleware/security-metrics.js';
 import { upsertDevice } from './EEBusTrustStore.js';
 
 // ─── Types ─────────────────────────────────────────────────────────
@@ -442,12 +443,14 @@ async function markConnected(
     trustedAt: now,
     lastConnectedAt: now,
   });
+  recordEebusHandshake('success');
   // Keep session open for SPINE message exchange
   done();
 }
 
 function cleanupSession(entry: SHIPHandshakeEntry): void {
   if (entry.state === 'failed' || entry.state === 'timeout') {
+    recordEebusHandshake('failure');
     upsertDevice({
       ski: entry.ski,
       hostname: entry.hostname,

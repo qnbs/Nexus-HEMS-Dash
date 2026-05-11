@@ -35,6 +35,36 @@ export function setMetric(
   else arr.push(sample);
 }
 
+/** Monotonic counter — adds delta to the existing sample for the same name+labels. */
+export function incrementMetric(
+  name: string,
+  help: string,
+  type: string,
+  delta: number,
+  labels: Record<string, string> = {},
+): void {
+  if (!serverMetrics.has(name)) {
+    serverMetrics.set(name, []);
+  }
+  const arr = serverMetrics.get(name)!;
+  const existingIdx = arr.findIndex(
+    (s) =>
+      Object.keys(labels).length === Object.keys(s.labels).length &&
+      Object.entries(labels).every(([k, v]) => s.labels[k] === v),
+  );
+  const prev = existingIdx >= 0 ? arr[existingIdx].value : 0;
+  const sample: ServerMetricSample = {
+    name,
+    help,
+    type,
+    labels,
+    value: prev + delta,
+    timestamp: Date.now(),
+  };
+  if (existingIdx >= 0) arr[existingIdx] = sample;
+  else arr.push(sample);
+}
+
 function formatMetricLabels(labels: Record<string, string>): string {
   const entries = Object.entries(labels);
   if (entries.length === 0) return '';

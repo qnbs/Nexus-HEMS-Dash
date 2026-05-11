@@ -1,12 +1,17 @@
 // ── JWT Key Management & jose Utilities ──────────────────────────────
 // Replaces jsonwebtoken with the modern `jose` library (async, no native deps).
 // Supports secret loading from: env var → Docker secret file → auto-generated (dev only).
-// Key rotation: dual-key verification with configurable rotation period.
+// HIGH-07: Dual-key verification (JWT_SECRET + JWT_SECRET_NEW) without restart via reloadJwtKeysFromEnv().
 // ─────────────────────────────────────────────────────────────────────
 
 import crypto from 'crypto';
 import fs from 'fs';
-import { errors as joseErrors, jwtVerify, SignJWT } from 'jose';
+import { decodeProtectedHeader, errors as joseErrors, jwtVerify, SignJWT } from 'jose';
+import {
+  recordJtiRevocation,
+  recordJwtKeyReload,
+  recordJwtVerifyFailure,
+} from './middleware/security-metrics.js';
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -29,11 +34,19 @@ interface KeySlot {
   createdAt: number;
 }
 
+interface SigningMaterial {
+  /** Secret used to sign new tokens (JWT_SECRET_NEW when set, else JWT_SECRET). */
+  signing: string;
+  /** Legacy secret for verifying tokens not yet rotated (only when JWT_SECRET_NEW is set). */
+  verificationFallback: string | null;
+}
+
 // ─── Configuration ──────────────────────────────────────────────────
 
 const ALGORITHM = 'HS256' as const;
 const DOCKER_SECRET_PATH = process.env.JWT_SECRET_FILE ?? '/run/secrets/jwt_secret';
-const KEY_ROTATION_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
+const JWT_SECRET_NEW_FILE = process.env.JWT_SECRET_NEW_FILE ?? '';
+const KEY_ROTATION_MS = 30 * 24 * 60 * 60 * 1000; // 30 days (informational / logging only)
 const JWT_MIN_SECRET_LENGTH = 32; // bytes
 const JWT_RECOMMENDED_SECRET_LENGTH = 64; // recommended for HS256
 
@@ -119,6 +132,7 @@ export async function revokeToken(jti: string, expiresAtMs: number): Promise<voi
   if (redis !== null) {
     const ttlSeconds = Math.max(1, Math.ceil((expiresAtMs - Date.now()) / 1_000));
     await redis.set(`${REDIS_JTI_PREFIX}${jti}`, '1', 'EX', ttlSeconds);
+    recordJtiRevocation();
     return;
   }
 
@@ -131,6 +145,7 @@ export async function revokeToken(jti: string, expiresAtMs: number): Promise<voi
     }
   }
   revokedJTIs.set(jti, expiresAtMs);
+  recordJtiRevocation();
 }
 
 /**
@@ -159,12 +174,23 @@ async function isJTIRevoked(jti: string): Promise<boolean> {
 let currentKey: KeySlot | null = null;
 let previousKey: KeySlot | null = null;
 
-function generateKid(): string {
-  return crypto.randomBytes(8).toString('hex');
-}
+/** Dev-only: stable auto-generated secret for the process lifetime */
+let _devAutoSecret: string | null = null;
 
 function secretToUint8Array(secret: string): Uint8Array {
   return new TextEncoder().encode(secret);
+}
+
+function makeKeySlot(secret: string, kidOverride?: string): KeySlot {
+  const kid =
+    kidOverride && kidOverride.length > 0
+      ? kidOverride
+      : crypto.createHash('sha256').update(secret, 'utf8').digest('hex').slice(0, 16);
+  return {
+    secret: secretToUint8Array(secret),
+    kid,
+    createdAt: Date.now(),
+  };
 }
 
 /**
@@ -213,74 +239,99 @@ function checkSecretEntropy(secret: string, source: string): void {
   }
 }
 
-/**
- * Load the JWT secret from available sources (priority order):
- * 1. JWT_SECRET_NEW environment variable (CRIT-03: new primary for rotation)
- * 2. JWT_SECRET environment variable
- * 3. Docker secret file (/run/secrets/jwt_secret)
- * 4. Auto-generated (development only — logged as warning)
- *
- * Rotation procedure:
- *   1. Set JWT_SECRET_NEW to a new random 64-char secret
- *   2. Restart server — new tokens will use JWT_SECRET_NEW; old tokens still verified via JWT_SECRET
- *   3. Wait for old token TTL (24h) to elapse
- *   4. Rename JWT_SECRET_NEW → JWT_SECRET, unset JWT_SECRET_NEW
- *   5. Restart server
- */
-function loadSecret(preferNew = false): string {
-  const isProd = process.env.NODE_ENV === 'production';
-
-  // CRIT-03: When preferNew=true, use JWT_SECRET_NEW if configured (true rotation)
-  if (preferNew) {
-    const newSecret = process.env.JWT_SECRET_NEW;
-    if (newSecret && newSecret.length >= JWT_MIN_SECRET_LENGTH) {
-      console.log('[JWT] Using JWT_SECRET_NEW as new primary signing key (rotation in progress)');
-      if (isProd) checkSecretEntropy(newSecret, 'JWT_SECRET_NEW env var');
-      return newSecret;
+function readSecretFromFile(path: string): string | null {
+  try {
+    if (!path || !fs.existsSync(path)) return null;
+    const fileSecret = fs.readFileSync(path, 'utf-8').trim();
+    return fileSecret.length >= JWT_MIN_SECRET_LENGTH ? fileSecret : null;
+  } catch (err) {
+    if (process.env.NODE_ENV === 'production') {
+      console.warn('[JWT] Secret file not accessible:', path, (err as Error).message);
     }
+    return null;
   }
+}
 
-  // 1. Environment variable
-  const envSecret = process.env.JWT_SECRET;
+/**
+ * Primary (legacy) signing secret: JWT_SECRET env, then JWT_SECRET_FILE mount.
+ */
+function readMainJwtSecretString(): string | null {
+  const envSecret = process.env.JWT_SECRET?.trim();
   if (envSecret && envSecret.length >= JWT_MIN_SECRET_LENGTH) {
-    console.log('[JWT] Secret loaded from JWT_SECRET environment variable');
-    if (isProd) checkSecretEntropy(envSecret, 'JWT_SECRET env var');
     return envSecret;
   }
+  const fromFile = readSecretFromFile(DOCKER_SECRET_PATH);
+  if (fromFile) return fromFile;
+  return null;
+}
 
-  // 2. Docker secret file
-  try {
-    if (fs.existsSync(DOCKER_SECRET_PATH)) {
-      const fileSecret = fs.readFileSync(DOCKER_SECRET_PATH, 'utf-8').trim();
-      if (fileSecret.length >= JWT_MIN_SECRET_LENGTH) {
-        console.log('[JWT] Secret loaded from Docker secret file');
-        if (isProd) checkSecretEntropy(fileSecret, 'Docker secret file');
-        return fileSecret;
-      }
-      // Do NOT log fileSecret.length — derived from the secret value — CodeQL [js/clear-text-logging]
-      console.warn(
-        `[JWT] Docker secret file exists but is too short (minimum ${JWT_MIN_SECRET_LENGTH} chars required)`,
+/**
+ * In-rotation secret: JWT_SECRET_NEW env, then JWT_SECRET_NEW_FILE (when set).
+ */
+function readNewJwtSecretString(): string | null {
+  const envNew = process.env.JWT_SECRET_NEW?.trim();
+  if (envNew && envNew.length >= JWT_MIN_SECRET_LENGTH) {
+    return envNew;
+  }
+  if (JWT_SECRET_NEW_FILE) {
+    return readSecretFromFile(JWT_SECRET_NEW_FILE);
+  }
+  return null;
+}
+
+function resolveSigningMaterial(): SigningMaterial {
+  const isProd = process.env.NODE_ENV === 'production';
+  const main = readMainJwtSecretString();
+  const fresh = readNewJwtSecretString();
+
+  if (fresh && fresh.length >= JWT_MIN_SECRET_LENGTH) {
+    if (!main || main.length < JWT_MIN_SECRET_LENGTH) {
+      throw new Error(
+        '[JWT] JWT_SECRET (or JWT_SECRET_FILE) is required when JWT_SECRET_NEW is configured.',
       );
     }
-  } catch (err) {
-    // File not accessible — continue to fallback
     if (isProd) {
-      console.warn('[JWT] Docker secret file not accessible:', (err as Error).message);
+      checkSecretEntropy(main, 'JWT_SECRET (verification)');
+      checkSecretEntropy(fresh, 'JWT_SECRET_NEW (signing)');
     }
+    return { signing: fresh, verificationFallback: main };
   }
 
-  // 3. Auto-generated (dev only)
-  if (process.env.NODE_ENV === 'production') {
-    throw new Error(
-      '[JWT] FATAL: No JWT_SECRET configured in production! ' +
-        'Set JWT_SECRET env var (min 32 chars) or mount Docker secret at ' +
-        DOCKER_SECRET_PATH,
-    );
+  if (main && main.length >= JWT_MIN_SECRET_LENGTH) {
+    if (isProd) checkSecretEntropy(main, 'JWT_SECRET env var');
+    return { signing: main, verificationFallback: null };
   }
 
-  const generated = crypto.randomBytes(64).toString('hex');
-  console.warn('[JWT] Using auto-generated secret (NOT suitable for production or multi-instance)');
-  return generated;
+  if (!isProd) {
+    if (!_devAutoSecret) {
+      _devAutoSecret = crypto.randomBytes(64).toString('hex');
+      console.warn(
+        '[JWT] Using auto-generated secret (NOT suitable for production or multi-instance)',
+      );
+    }
+    return { signing: _devAutoSecret, verificationFallback: null };
+  }
+
+  throw new Error(
+    '[JWT] FATAL: No JWT_SECRET configured in production! ' +
+      'Set JWT_SECRET env var (min 32 chars) or mount Docker secret at ' +
+      DOCKER_SECRET_PATH,
+  );
+}
+
+function applyKeyMaterial(material: SigningMaterial): void {
+  const kidNew = process.env.JWT_KID_NEW?.trim();
+  const kidPrimary = process.env.JWT_KID_PRIMARY?.trim();
+  const signingKid =
+    material.verificationFallback !== null
+      ? kidNew || undefined
+      : kidPrimary || kidNew || undefined;
+  const fallbackKid = kidPrimary || undefined;
+
+  currentKey = makeKeySlot(material.signing, signingKid);
+  previousKey = material.verificationFallback
+    ? makeKeySlot(material.verificationFallback, fallbackKid)
+    : null;
 }
 
 // ─── Initialization ─────────────────────────────────────────────────
@@ -289,46 +340,56 @@ function loadSecret(preferNew = false): string {
  * Initialize the key store. Call once at server startup.
  */
 export function initKeys(): void {
-  const secret = loadSecret();
-  currentKey = {
-    secret: secretToUint8Array(secret),
-    kid: generateKid(),
-    createdAt: Date.now(),
-  };
-  previousKey = null;
+  const material = resolveSigningMaterial();
+  applyKeyMaterial(material);
+  console.log('[JWT] Signing keys initialized', {
+    dualKey: material.verificationFallback !== null,
+  });
+}
+
+export interface JwtKeyReloadResult {
+  primaryKid: string;
+  secondaryKid: string | null;
+  dualKey: boolean;
+  reloadedAt: number;
+}
+
+/**
+ * HIGH-07: Reload JWT signing keys from environment and secret files without process restart.
+ * Use after Kubernetes/Docker secret rotation or when JWT_SECRET_NEW is added.
+ */
+export function reloadJwtKeysFromEnv(): JwtKeyReloadResult {
+  try {
+    const material = resolveSigningMaterial();
+    applyKeyMaterial(material);
+    recordJwtKeyReload(true);
+    console.log('[JWT] Signing keys reloaded', { dualKey: material.verificationFallback !== null });
+    return {
+      primaryKid: currentKey!.kid,
+      secondaryKid: previousKey?.kid ?? null,
+      dualKey: previousKey !== null,
+      reloadedAt: Date.now(),
+    };
+  } catch (err) {
+    recordJwtKeyReload(false);
+    throw err;
+  }
 }
 
 /**
  * Check if key rotation is needed and rotate if so.
- * Call periodically (e.g., on each sign operation or via interval).
+ * HIGH-07: Operational rotation uses JWT_SECRET_NEW + reloadJwtKeysFromEnv (or restart).
+ * This hook only ensures keys exist.
  */
 export function rotateIfNeeded(): void {
   if (!currentKey) {
     initKeys();
-    return;
   }
-
-  const age = Date.now() - currentKey.createdAt;
+  const age = Date.now() - currentKey!.createdAt;
   if (age >= KEY_ROTATION_MS) {
-    console.log(`[JWT] Key rotation triggered (key age: ${Math.floor(age / 86400000)} days)`);
-    previousKey = currentKey;
-    // CRIT-03: Use JWT_SECRET_NEW if configured for true rotation; otherwise loadSecret() returns
-    // the same JWT_SECRET as before — rotation is cosmetic without JWT_SECRET_NEW being different.
-    const hasNewSecret = !!(
-      process.env.JWT_SECRET_NEW && process.env.JWT_SECRET_NEW.length >= JWT_MIN_SECRET_LENGTH
+    console.log(
+      `[JWT] Signing key age ${Math.floor(age / 86400000)} d — prefer JWT_SECRET_NEW + POST /api/auth/rotate-key for zero-downtime rotation.`,
     );
-    const secret = loadSecret(hasNewSecret);
-    currentKey = {
-      secret: secretToUint8Array(secret),
-      kid: generateKid(),
-      createdAt: Date.now(),
-    };
-    if (!hasNewSecret) {
-      console.warn(
-        '[JWT] Key rotation is cosmetic: JWT_SECRET_NEW is not set. ' +
-          'Set JWT_SECRET_NEW to a new random secret for true key rotation.',
-      );
-    }
   }
 }
 
@@ -359,45 +420,76 @@ export async function signToken(
     .sign(currentKey!.secret);
 }
 
+function classifyJwtVerifyError(err: unknown): 'signature' | 'expired' | 'invalid' {
+  if (err instanceof joseErrors.JWSSignatureVerificationFailed) return 'signature';
+  if (err instanceof joseErrors.JWTExpired) return 'expired';
+  return 'invalid';
+}
+
+function orderedVerifySlots(headerKid: unknown): KeySlot[] {
+  const slots: KeySlot[] = [];
+  if (!currentKey) return slots;
+  const kid = typeof headerKid === 'string' ? headerKid : undefined;
+  if (kid && currentKey.kid === kid) {
+    slots.push(currentKey);
+    if (previousKey && previousKey.kid !== kid) slots.push(previousKey);
+    return slots;
+  }
+  if (kid && previousKey && previousKey.kid === kid) {
+    slots.push(previousKey);
+    if (currentKey.kid !== kid) slots.push(currentKey);
+    return slots;
+  }
+  slots.push(currentKey);
+  if (previousKey) slots.push(previousKey);
+  return slots;
+}
+
 // ─── Verify ─────────────────────────────────────────────────────────
 
 /**
- * Verify a JWT token. Tries the current key first, then the previous key
- * (graceful rotation window — allows tokens signed with the old key to remain valid).
+ * Verify a JWT token. Tries the signing key first, then the verification fallback
+ * (JWT_SECRET when JWT_SECRET_NEW is active — HIGH-07 zero-downtime rotation).
  * MED-01: Validates iss and aud claims.
  * MED-02: Rejects tokens with revoked JTI.
  */
 export async function verifyToken(token: string): Promise<JWTPayload> {
   if (!currentKey) initKeys();
 
-  // MED-01: validate issuer and audience
   const verifyOptions = {
     algorithms: [ALGORITHM] as 'HS256'[],
     issuer: JWT_ISSUER,
     audience: JWT_AUDIENCE,
   };
 
-  let payload: JWTPayload | undefined;
-
-  // Try current key first
+  let headerKid: unknown;
   try {
-    const result = await jwtVerify(token, currentKey!.secret, verifyOptions);
-    payload = result.payload as unknown as JWTPayload;
-  } catch (err) {
-    // Graceful rotation: if signature fails and we have a previous key, try it
-    if (previousKey && err instanceof joseErrors.JWSSignatureVerificationFailed) {
-      try {
-        const result = await jwtVerify(token, previousKey.secret, verifyOptions);
-        payload = result.payload as unknown as JWTPayload;
-      } catch {
-        // Fall through to throw original error
-      }
+    headerKid = decodeProtectedHeader(token).kid;
+  } catch {
+    headerKid = undefined;
+  }
+
+  let payload: JWTPayload | undefined;
+  let lastErr: unknown;
+
+  for (const slot of orderedVerifySlots(headerKid)) {
+    try {
+      const result = await jwtVerify(token, slot.secret, verifyOptions);
+      payload = result.payload as unknown as JWTPayload;
+      break;
+    } catch (err) {
+      lastErr = err;
     }
-    if (!payload) throw err;
+  }
+
+  if (!payload) {
+    if (lastErr) recordJwtVerifyFailure(classifyJwtVerifyError(lastErr));
+    throw lastErr ?? new Error('JWT verification failed');
   }
 
   // MED-02: Reject revoked tokens (async: Redis or in-memory fallback)
   if (payload.jti && (await isJTIRevoked(payload.jti))) {
+    recordJwtVerifyFailure('revoked');
     throw new joseErrors.JWTExpired('Token has been revoked', payload);
   }
 

@@ -317,12 +317,54 @@ export class KeycloakAuthProvider implements AuthProvider {
     const session = this.buildSession();
     if (!session) throw new Error('Not authenticated');
 
-    const token = this.generateToken();
     const now = Date.now();
     const ttlMs = SHARE_TTL_MS[options.ttl];
     const expiresAt = now + ttlMs;
 
     const baseUrl = `${window.location.origin}${import.meta.env.BASE_URL}`;
+    const apiBase = import.meta.env.VITE_API_URL ?? '';
+
+    try {
+      const perm = options.permissions === 'control' ? 'control' : 'view';
+      const res = await fetch(`${apiBase}/api/shares`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.accessToken}`,
+        },
+        body: JSON.stringify({
+          name: options.label ?? 'Shared link',
+          permissions: perm,
+        }),
+      });
+      if (res.ok) {
+        const data = (await res.json()) as { shareId?: string; redeemToken?: string };
+        if (data.shareId && data.redeemToken) {
+          const composite = `${data.shareId}:${data.redeemToken}`;
+          const url = `${baseUrl}?share=${encodeURIComponent(composite)}`;
+          const link: ShareLink = {
+            id: data.shareId,
+            token: composite,
+            url,
+            permissions: options.permissions,
+            expiresAt,
+            expiresInLabel: options.ttl,
+            createdBy: session.user.id,
+            createdAt: now,
+            label: options.label,
+            useCount: 0,
+            maxUses: options.maxUses ?? 0,
+            active: true,
+          };
+          localShareLinks.set(link.id, link);
+          return link;
+        }
+      }
+    } catch {
+      /* fall through to offline share map */
+    }
+
+    const token = this.generateToken();
     const url = `${baseUrl}?share=${encodeURIComponent(token)}`;
 
     const link: ShareLink = {
@@ -347,6 +389,35 @@ export class KeycloakAuthProvider implements AuthProvider {
   async validateShareToken(
     token: string,
   ): Promise<{ valid: boolean; permissions?: 'view' | 'control'; expiresAt?: number }> {
+    const colonIdx = token.indexOf(':');
+    const apiBase = import.meta.env.VITE_API_URL ?? '';
+    if (colonIdx > 0 && token.length > colonIdx + 32) {
+      const shareId = token.slice(0, colonIdx);
+      const secret = token.slice(colonIdx + 1);
+      try {
+        const res = await fetch(`${apiBase}/api/shares/${encodeURIComponent(shareId)}/redeem`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: secret }),
+        });
+        if (res.ok) {
+          const data = (await res.json()) as {
+            permissions?: string;
+            expiresAt?: number;
+          };
+          const rawPerm = data.permissions ?? 'view';
+          const permissions: 'view' | 'control' = rawPerm === 'view' ? 'view' : 'control';
+          return {
+            valid: true,
+            permissions,
+            expiresAt: data.expiresAt ?? Date.now() + 86_400_000,
+          };
+        }
+      } catch {
+        /* offline/local fallback */
+      }
+    }
+
     for (const link of localShareLinks.values()) {
       if (link.token === token && link.active) {
         if (link.expiresAt < Date.now()) return { valid: false };

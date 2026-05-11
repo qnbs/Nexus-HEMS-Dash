@@ -1,6 +1,6 @@
 # Security Architecture — Nexus-HEMS-Dash
 
-> Version 1.4 · April 2026 (updated for monorepo structure)
+> Version 1.5 · May 2026 (JWT dual-key, trust proxy, shares API)
 
 ---
 
@@ -57,7 +57,8 @@
 ### API Server (Express 5)
 
 - **Helmet.js** — sets security headers (HSTS, X-Frame-Options, X-Content-Type-Options, COEP `credentialless`)
-- **express-rate-limit** — three tiers: global (100 req/min), API (60 req/min), auth endpoints (10 req/min)
+- **express-rate-limit** — three tiers: global (100 req/min), API (60 req/min), strict auth bucket (5 req/min) on `/api/auth/token`, `/refresh`, `/revoke`, `/rotate-key`
+  - **Trust proxy:** `TRUST_PROXY` configures Express `trust proxy` (default `1`) so `req.ip` reflects the real client behind CDN/reverse-proxy chains (see `Deployment-Guide.md`)
   - `RATE_LIMIT_TRUSTED_IPS` env var allows load-balancer IPs to bypass rate limits
   - Window randomized ±15 s to mitigate timing attacks
 - **Zod** — runtime schema validation on all API endpoints and WebSocket commands
@@ -65,7 +66,8 @@
   - `apps/api/src/jwt-utils.ts`: warns on low-entropy secrets (< 128 bits), short keys (< 64 chars), dictionary words
   - Secret sources: `JWT_SECRET` env var → Docker secrets file → auto-generated (dev only)
   - `jti`, `iss`, `aud` claims added to all tokens; JTI revocation via `POST /api/auth/revoke`
-  - Zero-downtime key rotation via `JWT_SECRET_NEW` env var
+  - Zero-downtime rotation: `JWT_SECRET` + optional `JWT_SECRET_NEW` / `JWT_SECRET_NEW_FILE`; signing prefers the new secret while legacy tokens verify; reload without restart via **`POST /api/auth/rotate-key`** (admin JWT) calling `reloadJwtKeysFromEnv()`; optional fixed header ids `JWT_KID_PRIMARY` / `JWT_KID_NEW`
+  - Prometheus counters for JWT verify failures, JTI revocations, key reload, EEBUS handshake outcomes (`apps/api/src/middleware/security-metrics.ts`)
 - **JWT Scopes** — three-tier authorization model:
 
 | Scope       | Token Issuance                     | Permitted Operations                                  |
@@ -75,6 +77,7 @@
 | `admin`     | Requires elevated API key          | EEBUS pairing, token revocation, system configuration |
 
 - **Single-use WS Tickets** — `POST /api/auth/ws-ticket` issues 60-second single-use tickets; WebSocket connections prefer `?ticket=` over `?token=` to avoid long-lived tokens in URLs
+- **Dashboard shares (MED-06)** — `POST /api/shares` (JWT) creates opaque `shareId` + single-use redeem secret; `POST /api/shares/:shareId/redeem` validates server-side; avoids persisting raw share secrets in browser storage when API + auth token are available
 - **Per-IP WebSocket Limit** — maximum 10 concurrent WebSocket connections per IP address; excess connections rejected with HTTP 429
 - No session storage; tokens validated per request
 - Production baseline runs on Node.js 24 LTS
@@ -82,6 +85,7 @@
 ### EEBUS SPINE/SHIP
 
 - **TLS 1.3** with mutual TLS (mTLS) — both client and server certificates
+- **Trust store:** default persistent JSON file (`EEBUS_TRUST_FILE`); optional **`EEBUS_TRUST_BACKEND=redis`** with `REDIS_URL` for multi-replica API deployments
 - mDNS-SD service discovery (local network only)
 - VDE-AR-E 2829-6 compliant pairing flow
 

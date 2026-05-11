@@ -1,14 +1,16 @@
 /**
- * EEBusTrustStore — Persistent JSON file-based trust store for EEBUS SHIP devices.
+ * EEBusTrustStore — Persistent trust store for EEBUS SHIP devices (file or Redis).
  *
- * Stores paired EEBUS devices identified by their Subject Key Identifier (SKI).
- * Writes are atomic: a temp file is written first, then renamed (POSIX atomic).
+ * Default: JSON file with atomic temp+rename writes.
+ * HA: set `EEBUS_TRUST_BACKEND=redis` and `REDIS_URL` so all API replicas share entries.
  *
  * File path: EEBUS_TRUST_FILE env var or 'data/eebus-trust.json' (relative to cwd).
  */
 
 import { mkdir, readFile, rename, writeFile } from 'fs/promises';
 import { dirname, resolve } from 'path';
+
+const TRUST_BACKEND = (process.env.EEBUS_TRUST_BACKEND ?? 'file').toLowerCase();
 
 // ─── Types ─────────────────────────────────────────────────────────
 
@@ -92,6 +94,12 @@ async function persist(): Promise<void> {
  * Partial updates are merged — only provided fields overwrite existing values.
  */
 export async function upsertDevice(entry: EEBUSDeviceEntry): Promise<void> {
+  if (TRUST_BACKEND === 'redis') {
+    const { redisUpsertDevice } = await import('./eebus-trust-redis.js');
+    await redisUpsertDevice(entry);
+    cache = null;
+    return;
+  }
   const store = await loadCache();
   const existing = store.get(entry.ski);
   store.set(entry.ski, { ...existing, ...entry });
@@ -103,6 +111,11 @@ export async function upsertDevice(entry: EEBUSDeviceEntry): Promise<void> {
  * @returns true if the device was found and removed, false if not found.
  */
 export async function removeDevice(ski: string): Promise<boolean> {
+  if (TRUST_BACKEND === 'redis') {
+    const { redisRemoveDevice } = await import('./eebus-trust-redis.js');
+    cache = null;
+    return redisRemoveDevice(ski);
+  }
   const store = await loadCache();
   if (!store.has(ski)) return false;
   store.delete(ski);
@@ -115,6 +128,10 @@ export async function removeDevice(ski: string): Promise<boolean> {
  * @returns The device entry, or null if not found.
  */
 export async function getDevice(ski: string): Promise<EEBUSDeviceEntry | null> {
+  if (TRUST_BACKEND === 'redis') {
+    const { redisGetDevice } = await import('./eebus-trust-redis.js');
+    return redisGetDevice(ski);
+  }
   const store = await loadCache();
   return store.get(ski) ?? null;
 }
@@ -123,6 +140,10 @@ export async function getDevice(ski: string): Promise<EEBUSDeviceEntry | null> {
  * List all devices in the trust store.
  */
 export async function listDevices(): Promise<EEBUSDeviceEntry[]> {
+  if (TRUST_BACKEND === 'redis') {
+    const { redisListDevices } = await import('./eebus-trust-redis.js');
+    return redisListDevices();
+  }
   const store = await loadCache();
   return Array.from(store.values());
 }
@@ -144,6 +165,12 @@ export async function updateDeviceStatus(
   status: EEBUSDeviceEntry['status'],
   lastConnectedAt?: number,
 ): Promise<void> {
+  if (TRUST_BACKEND === 'redis') {
+    const { redisUpdateDeviceStatus } = await import('./eebus-trust-redis.js');
+    await redisUpdateDeviceStatus(ski, status, lastConnectedAt);
+    cache = null;
+    return;
+  }
   const store = await loadCache();
   const existing = store.get(ski);
   if (!existing) return;

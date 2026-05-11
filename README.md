@@ -196,6 +196,8 @@ CORS_ORIGINS=https://...     # Optional: additional CORS origins
 WS_ORIGINS=wss://...         # Required in production: WebSocket origins for CSP connect-src
 ADAPTER_MODE=mock            # Optional: 'mock' for demo mode, 'live' for real hardware (default: live)
 RATE_LIMIT_TRUSTED_IPS=...   # Optional: IPs exempt from rate limiting (load balancers)
+TRUST_PROXY=2                # Optional: Express trust proxy (hops or subnet list) behind CDN+proxy
+JWT_SECRET_NEW=...           # Optional: in-rotation HS256 secret; use with POST /api/auth/rotate-key (admin)
 PROMETHEUS_BEARER_TOKEN=...  # Optional: Bearer token for /metrics endpoint authentication
 PORT=3000                    # Default: 3000
 

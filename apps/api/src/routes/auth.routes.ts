@@ -1,7 +1,7 @@
 import { AuthTokenRequestSchema } from '@nexus-hems/shared-types';
 import crypto from 'crypto';
 import { Router } from 'express';
-import { revokeToken, signToken, verifyToken } from '../jwt-utils.js';
+import { reloadJwtKeysFromEnv, revokeToken, signToken, verifyToken } from '../jwt-utils.js';
 import type { JWTScope } from '../middleware/auth.js';
 import { clampScope, requireJWT, requireScope, validateApiKey } from '../middleware/auth.js';
 import { serverStartTime } from '../middleware/metrics.js';
@@ -92,13 +92,24 @@ export function createAuthRoutes(): Router {
     try {
       const decoded = await verifyToken(authHeader.slice(7));
       if (decoded.jti && decoded.exp) {
-        revokeToken(decoded.jti, decoded.exp * 1000);
+        await revokeToken(decoded.jti, decoded.exp * 1000);
         res.json({ revoked: true });
       } else {
         res.status(400).json({ error: 'Token has no jti claim — cannot revoke' });
       }
     } catch {
       res.status(401).json({ error: 'Invalid token' });
+    }
+  });
+
+  // ─── JWT key reload (HIGH-07 zero-downtime rotation) ─────────────
+  router.post('/api/auth/rotate-key', requireJWT, requireScope('admin'), (_req, res) => {
+    try {
+      const result = reloadJwtKeysFromEnv();
+      res.json({ ok: true, ...result });
+    } catch (err) {
+      console.error('[Auth] rotate-key failed:', (err as Error).message);
+      res.status(500).json({ error: 'JWT key reload failed' });
     }
   });
 

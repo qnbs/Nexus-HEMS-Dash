@@ -22,17 +22,18 @@ export interface ShareInvitation {
 
 /**
  * Client-side storage shape for demo / offline mode.
- * In production all of this lives server-side; only the minimal ref is
- * sent to localStorage in connected mode (MED-06).
+ * MED-06: Server-backed shares store only metadata — never persist redeem secrets in localStorage.
  */
 interface StoredDashboard {
   id: string;
   name: string;
   ownerEmail: string;
   permissions: 'view' | 'control' | 'admin';
-  /** Demo/offline only — production validates server-side (HIGH-02) */
-  shareToken: string;
+  /** Demo/offline only — omit when serverBacked */
+  shareToken?: string;
   households: string[];
+  /** True when created via POST /api/shares */
+  serverBacked?: boolean;
 }
 
 /**
@@ -73,6 +74,62 @@ export async function shareViaWebShare(title: string, url: string): Promise<bool
  * HIGH-02: Timing-safe string comparison to prevent remote timing attacks on share tokens.
  * Always iterates over the full length of both strings.
  */
+function apiBase(): string {
+  return import.meta.env.VITE_API_URL ?? '';
+}
+
+async function createDashboardShareOnServer(
+  name: string,
+  permissions: 'view' | 'control' | 'admin',
+): Promise<{ shareId: string; redeemToken: string } | null> {
+  if (typeof window === 'undefined') return null;
+  try {
+    const bearer = localStorage.getItem('nexus-hems-auth-token');
+    if (!bearer) return null;
+    const res = await fetch(`${apiBase()}/api/shares`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${bearer}`,
+      },
+      body: JSON.stringify({ name, permissions }),
+    });
+    if (!res.ok) return null;
+    const data = (await res.json()) as { shareId?: string; redeemToken?: string };
+    if (!data.shareId || !data.redeemToken) return null;
+    return { shareId: data.shareId, redeemToken: data.redeemToken };
+  } catch {
+    return null;
+  }
+}
+
+async function redeemDashboardShareOnServer(
+  shareId: string,
+  redeemToken: string,
+): Promise<{
+  id: string;
+  name: string;
+  permissions: 'view' | 'control' | 'admin';
+  expiresAt?: number;
+} | null> {
+  try {
+    const res = await fetch(`${apiBase()}/api/shares/${encodeURIComponent(shareId)}/redeem`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: redeemToken }),
+    });
+    if (!res.ok) return null;
+    return (await res.json()) as {
+      id: string;
+      name: string;
+      permissions: 'view' | 'control' | 'admin';
+      expiresAt?: number;
+    };
+  } catch {
+    return null;
+  }
+}
+
 function timingSafeEqual(a: string, b: string): boolean {
   const aBytes = new TextEncoder().encode(a);
   const bBytes = new TextEncoder().encode(b);
@@ -96,6 +153,28 @@ export async function createSharedDashboard(
   name: string,
   ownerEmail: string,
 ): Promise<SharedDashboard> {
+  const server = await createDashboardShareOnServer(name, 'admin');
+  if (server) {
+    const stored: StoredDashboard = {
+      id: server.shareId,
+      name,
+      ownerEmail,
+      permissions: 'admin',
+      households: [ownerEmail],
+      serverBacked: true,
+    };
+    localStorage.setItem(`shared-dashboard-${server.shareId}`, JSON.stringify(stored));
+    return {
+      id: server.shareId,
+      name,
+      ownerEmail,
+      permissions: 'admin',
+      shareToken: server.redeemToken,
+      expiresAt: null,
+      households: [ownerEmail],
+    };
+  }
+
   const shareToken = generateToken();
   const dashboard: SharedDashboard = {
     id: generateId(),
@@ -141,10 +220,48 @@ export async function joinSharedDashboard(
   token: string,
   userEmail: string,
 ): Promise<SharedDashboard | null> {
+  const redeemed = await redeemDashboardShareOnServer(dashboardId, token);
+  if (redeemed) {
+    const stored: StoredDashboard = {
+      id: redeemed.id,
+      name: redeemed.name,
+      ownerEmail: '',
+      permissions: redeemed.permissions,
+      households: [userEmail],
+      serverBacked: true,
+    };
+    const merged = localStorage.getItem(`shared-dashboard-${dashboardId}`);
+    if (merged) {
+      try {
+        const prev = JSON.parse(merged) as StoredDashboard;
+        stored.households = [...new Set([...prev.households, userEmail])];
+        stored.ownerEmail = prev.ownerEmail ?? '';
+      } catch {
+        stored.households = [userEmail];
+      }
+    } else {
+      stored.households = [userEmail];
+    }
+    localStorage.setItem(`shared-dashboard-${dashboardId}`, JSON.stringify(stored));
+    return {
+      id: redeemed.id,
+      name: redeemed.name,
+      ownerEmail: stored.ownerEmail,
+      permissions: redeemed.permissions,
+      shareToken: '',
+      expiresAt: redeemed.expiresAt ? new Date(redeemed.expiresAt) : null,
+      households: stored.households,
+    };
+  }
+
   const raw = localStorage.getItem(`shared-dashboard-${dashboardId}`);
   if (!raw) return null;
 
   const stored: StoredDashboard = JSON.parse(raw) as StoredDashboard;
+
+  if (!stored.shareToken) {
+    return null;
+  }
 
   // HIGH-02: Constant-time token comparison
   if (!timingSafeEqual(stored.shareToken, token)) {

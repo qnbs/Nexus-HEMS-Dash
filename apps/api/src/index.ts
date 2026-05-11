@@ -3,6 +3,7 @@ import path from 'node:path';
 import express from 'express';
 import http from 'http';
 import { WebSocketServer } from 'ws';
+import { resolveTrustProxy } from './config/trust-proxy.js';
 import { eventBus } from './core/EventBus.js';
 import { logger } from './core/logger.js';
 import { initKeys } from './jwt-utils.js';
@@ -19,6 +20,7 @@ import { createGrafanaRoutes } from './routes/grafana.routes.js';
 import { createHistoryRoutes } from './routes/history.routes.js';
 import { createMetricsRoutes } from './routes/metrics.routes.js';
 import { createOpenADRRoutes } from './routes/openadr.routes.js';
+import { createSharesRoutes } from './routes/shares.routes.js';
 import { EnergyRouterService } from './services/EnergyRouterService.js';
 import { TimeseriesService } from './services/TimeseriesService.js';
 import { setupWebSocket } from './ws/energy.ws.js';
@@ -33,7 +35,7 @@ export async function startServer(): Promise<void> {
 
   // ─── Security Middleware ──────────────────────────────────────────
   configureCors(app);
-  app.set('trust proxy', 1);
+  app.set('trust proxy', resolveTrustProxy());
   app.disable('x-powered-by');
   configureRequestTracking(app);
 
@@ -64,6 +66,7 @@ export async function startServer(): Promise<void> {
 
   // ─── Routes ───────────────────────────────────────────────────────
   app.use(createAuthRoutes());
+  app.use(createSharesRoutes());
   app.use(createEebusRoutes());
   app.use(createOpenADRRoutes());
   app.use(createMetricsRoutes(wss));

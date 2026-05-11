@@ -154,12 +154,12 @@ WS command rate limit is now configurable via `WS_RATE_LIMIT` env var (default 3
 ---
 
 ### HIGH-07 — JWT Key Rotation Requires Server Restart
-**File:** `apps/api/src/jwt-utils.ts:200-310`
-**Status:** ⏳ Scheduled for v1.3
+**File:** [`apps/api/src/jwt-utils.ts`](apps/api/src/jwt-utils.ts), [`apps/api/src/routes/auth.routes.ts`](apps/api/src/routes/auth.routes.ts)
+**Status:** ✅ Fixed in v1.3.0
 
-`JWT_SECRET_NEW` → `JWT_SECRET` rotation procedure requires a restart, causing token invalidation for in-flight sessions.
+Dual-key mode loads `JWT_SECRET` + optional `JWT_SECRET_NEW` (and optional `JWT_SECRET_NEW_FILE`) without restart via `reloadJwtKeysFromEnv()`; `POST /api/auth/rotate-key` (admin JWT) triggers reload; verification tries signing key then legacy secret.
 
-**Fix:** Read both env vars at request time (not startup time). Verify against both keys without restart. Add a `/api/auth/rotate-key` admin endpoint for zero-downtime rotation.
+**Fix:** Shipped — see [`SECURITY.md`](SECURITY.md) env table.
 
 ### HIGH-09 — Security/Performance Roadmaps Need Truth-Sync Boundaries
 **Files:** `docs/Security-Roadmap-2026.md`, `docs/Performance-Optimization-Plan.md`, `CHANGELOG.md`, `README.md`
@@ -207,7 +207,7 @@ Created `apps/api/src/core/logger.ts` — a zero-dependency NDJSON structured lo
 
 Added `apps/web/docker-entrypoint.sh` — a POSIX shell script that validates every space-separated token in `WS_ORIGINS` against a strict character allowlist (`ws://`/`wss://` scheme + alphanumeric/dot/hyphen/underscore/colon/brackets only) and exits 1 with a clear error message on violation. The Dockerfile uses this as the `ENTRYPOINT`; it delegates to the nginx-unprivileged base image's `/docker-entrypoint.sh` (which runs `envsubst`) before starting nginx.
 
-### MED-10 — LTTB Sampling Exists But Is Not Fully Wired Into Chart Surfaces
+### MED-11 — LTTB Sampling Exists But Is Not Fully Wired Into Chart Surfaces
 **Files:** `apps/web/src/lib/chart-sampling.ts`, `apps/web/src/components/HistoricalChart.tsx`, `apps/web/src/pages/HistoricalAnalyticsPage.tsx`
 **Status:** ✅ Fixed in v1.2.0
 
@@ -266,12 +266,12 @@ Added `openCount` field; each OPEN transition increments it. `currentState` gett
 ---
 
 ### MED-10 — req.ip Rate Limiting on `trust proxy: 1` (Single Level Only)
-**File:** `apps/api/src/middleware/security.ts:164`, `apps/api/src/index.ts:33`
-**Status:** ⏳ Acceptable for single-proxy deployments
+**File:** [`apps/api/src/config/trust-proxy.ts`](apps/api/src/config/trust-proxy.ts), [`apps/api/src/index.ts`](apps/api/src/index.ts), [`docs/Deployment-Guide.md`](docs/Deployment-Guide.md) §2.1
+**Status:** ✅ Fixed in v1.3.0
 
-`app.set('trust proxy', 1)` handles single reverse proxy. Multi-hop deployments (CDN + reverse proxy) will see CDN IP as client IP, breaking per-user rate limiting.
+`TRUST_PROXY` configures Express `trust proxy` (default `1`). Multi-hop deployments set hop count or subnet list (e.g. `loopback,10.0.0.0/8`) so `req.ip` reflects the real client for rate limiting.
 
-**Fix:** For multi-hop setups, set `trust proxy` to the exact number of hops or use CIDR: `app.set('trust proxy', ['loopback', '10.0.0.0/8'])`.
+**Fix:** Documented in Deployment Guide; env-driven via `resolveTrustProxy()`.
 
 ---
 

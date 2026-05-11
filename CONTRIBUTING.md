@@ -29,9 +29,10 @@ apps/api/                   # @nexus-hems/api — Express 5 backend
 ├── index.ts                #   Entry point → src/index.ts
 └── src/
     ├── index.ts            #   startServer() + middleware setup
-    ├── jwt-utils.ts        #   JWT signing / verification / rotation
-    ├── middleware/         #   auth.ts, security.ts, metrics.ts
-    ├── routes/             #   auth, grafana, metrics, eebus
+    ├── config/trust-proxy.ts # TRUST_PROXY → Express trust proxy (CDN/multi-hop)
+    ├── jwt-utils.ts        #   JWT signing / verification / dual-key rotation
+    ├── middleware/         #   auth.ts, security.ts, metrics.ts, security-metrics.ts
+    ├── routes/             #   auth, shares, grafana, metrics, eebus
     ├── ws/                 #   energy.ws.ts (WebSocket handler)
     └── data/               #   mock-data.ts
 
@@ -55,6 +56,7 @@ apps/web/                   # @nexus-hems/web — React 19 Vite SPA
 packages/shared-types/      # @nexus-hems/shared-types — Zod schemas + types
 └── src/
     ├── protocol.ts         #   EnergyData, WSCommand, AuthToken, UnifiedEnergyModel
+    ├── share.ts            #   Dashboard share create/redeem (MED-06)
     └── index.ts            #   Re-exports
 
 pnpm-workspace.yaml         # Workspace roots: apps/* and packages/*

@@ -162,7 +162,8 @@ openssl req -new -key eebus-server.key.pem -x509 -nodes \
 |---|---|---|
 | `EEBUS_CERT_FILE` | `data/eebus-server.cert.pem` | Path to server TLS certificate (PEM) |
 | `EEBUS_KEY_FILE` | `data/eebus-server.key.pem` | Path to server TLS private key (PEM) |
-| `EEBUS_TRUST_FILE` | `data/eebus-trust.json` | Path to device trust store JSON file |
+| `EEBUS_TRUST_FILE` | `data/eebus-trust.json` | Path to device trust store JSON file (when `EEBUS_TRUST_BACKEND=file`) |
+| `EEBUS_TRUST_BACKEND` | `file` | `file` — JSON trust store; `redis` — shared entries via `REDIS_URL` for multi-replica API |
 
 ---
 

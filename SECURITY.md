@@ -38,7 +38,8 @@ This project employs multiple layers of security:
 - **JWT Scope Tiers**: Three authorization levels — `read` (monitoring only), `readwrite` (control commands), `admin` (system configuration, pairing)
 - **JTI Revocation**: `POST /api/auth/revoke` immediately invalidates a token by its JTI claim across all guarded endpoints
 - **Single-Use WS Tickets**: `POST /api/auth/ws-ticket` issues 60-second single-use WebSocket tickets; prefer `?ticket=` over `?token=` for WebSocket connections to avoid long-lived tokens in URLs
-- **Auth Rate Limiting**: All `/api/auth/*` endpoints limited to 10 req/min per IP (brute-force protection)
+- **Auth Rate Limiting**: `/api/auth/token`, `/api/auth/refresh`, `/api/auth/revoke`, and `/api/auth/rotate-key` are limited to **5 req/min** per client IP in production (brute-force protection); other `/api/auth/*` routes follow the global/API limiters
+- **JWT zero-downtime rotation**: Set `JWT_SECRET_NEW` (and optionally `JWT_SECRET_NEW_FILE`) alongside `JWT_SECRET`, then call `POST /api/auth/rotate-key` with an **admin** JWT — see [`apps/api/src/jwt-utils.ts`](apps/api/src/jwt-utils.ts)
 - **Trusted-IP Bypass**: `RATE_LIMIT_TRUSTED_IPS` env var allows internal load balancers to bypass rate limits safely
 
 ## Runtime Baselines
@@ -59,6 +60,10 @@ This project employs multiple layers of security:
 | `PROMETHEUS_BEARER_TOKEN` | No                     | Bearer token for Prometheus scrape endpoint (`/metrics`) authentication |
 | `CORS_ORIGINS`            | No                     | Additional CORS-allowed origins beyond deployment domain              |
 | `RATE_LIMIT_TRUSTED_IPS`  | No                     | Comma-separated IPs that bypass rate limiting (internal proxies)      |
+| `TRUST_PROXY`             | No (default: `1`)      | Express trust proxy: `true`, `false`, hop count (`2`), or comma-separated subnets/CIDRs (e.g. `loopback,10.0.0.0/8`) for CDN + reverse-proxy chains — required so `req.ip` matches the real client for rate limiting |
+| `JWT_SECRET_NEW`          | No                     | During rotation: new HS256 secret; signing uses this while `JWT_SECRET` still verifies existing tokens |
+| `JWT_SECRET_NEW_FILE`     | No                     | Optional path to mounted secret file for `JWT_SECRET_NEW` (e.g. Kubernetes rotation) |
+| `JWT_KID_PRIMARY` / `JWT_KID_NEW` | No             | Optional fixed `kid` header values for primary vs in-rotation signing keys |
 
 ## Encryption & Data Handling
 

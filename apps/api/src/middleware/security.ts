@@ -248,6 +248,7 @@ export function configureRateLimiting(app: Express, isDev: boolean): void {
     app.use('/api/auth/token', authLimiter);
     app.use('/api/auth/refresh', authLimiter);
     app.use('/api/auth/revoke', authLimiter);
+    app.use('/api/auth/rotate-key', authLimiter);
 
     // Hardware-control routes
     app.use('/api/eebus/pair', controlLimiter);

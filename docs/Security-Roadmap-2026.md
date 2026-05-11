@@ -1,7 +1,7 @@
 # Security Roadmap 2026 — Nexus-HEMS-Dash
 
 > **Status:** Active
-> **Last Updated:** 2026-04-26
+> **Last Updated:** 2026-05-11
 > **Horizon:** Q2–Q4 2026
 
 This document consolidates all security-related planning, findings, and remediation actions for
@@ -36,7 +36,7 @@ slice.
 | JWT entropy validation | Warns on weak/short secrets | HIGH |
 | AES-GCM 256-bit AI key vault | `apps/web/src/lib/ai-keys.ts` | HIGH |
 | Helmet CSP (strict prod) | `apps/api/src/middleware/security.ts` | HIGH |
-| Rate limiting (global + per-endpoint) | 100/min global, 10/min auth | HIGH |
+| Rate limiting (global + per-endpoint) | 100/min global, 5/min auth endpoints | HIGH |
 | CORS allowlist | Prod: GitHub Pages only | HIGH |
 | Command Safety Layer | Zod validation + rate limit + audit trail | HIGH |
 | Zod schema validation | All WebSocket commands + API boundaries | HIGH |
@@ -87,7 +87,7 @@ All critical and most high-severity findings have been remediated. See also
 | **MED-03** | nginx CSP `wss://localhost:*` in production | ✅ Fixed — `WS_ORIGINS` env var |
 | **MED-04** | Rate limit bypass via X-Forwarded-For | ✅ Fixed — uses `req.ip` |
 | **MED-05** | Health endpoint leaks JWT metadata | ✅ Fixed — removed kid/rotationDueIn |
-| **MED-06** | Share tokens + emails in localStorage | 🔲 Planned (Phase 2) — strip to server-side ref |
+| **MED-06** | Share tokens + emails in localStorage | ✅ Mitigated (v1.3.0) — `POST /api/shares` + single-use redeem; client stores minimal ref when JWT present; Keycloak links use `shareId:token` composite |
 | **MED-07** | Service Worker caches AI API responses | ✅ Fixed — NetworkOnly strategy |
 | **MED-08** | WSCommand cap mismatch (50kW vs 25kW) | ✅ Fixed — aligned to 25kW |
 | **MED-09** | AI prompt injection via adapters | ✅ Fixed — `sanitizeForPrompt()` |
@@ -101,8 +101,8 @@ All critical and most high-severity findings have been remediated. See also
 | G-03 | Distroless not used in production | MEDIUM | ✅ Phase 1 Done |
 | G-07 | PII scanning missing in AI prompts | MEDIUM | ✅ Phase 3 Done |
 | G-08 | Helm PSS Labels (K8s PSP deprecated) | MEDIUM | ✅ Phase 1 Done |
-| NEW-01 | MED-06: share tokens in localStorage (non-critical) | LOW | Phase 2 Planned |
-| NEW-02 | Observability: JTI/Cert Prometheus metrics missing | LOW | Phase 2 Planned |
+| NEW-01 | MED-06 residual (offline demo mode) | LOW | Demo/localStorage fallback only |
+| NEW-02 | Observability: JTI/JWT/EEBUS Prometheus counters | LOW | ✅ Added `security-metrics.ts` (v1.3.0) |
 
 ---
 
@@ -112,14 +112,14 @@ All critical and most high-severity findings have been remediated. See also
 
 - **Algorithm:** HMAC-SHA256 (`HS256`)
 - **Dual-key support:** `JWT_SECRET` (current) + `JWT_SECRET_NEW` (in-rotation)
-- **Key ID (`kid`):** 8-byte random hex per slot
-- **Verification priority:** tries `JWT_SECRET_NEW` first, falls back to `JWT_SECRET`
-- **Rotation trigger:** manual (no automated schedule yet)
+- **Key ID (`kid`):** SHA-256 prefix of secret or optional `JWT_KID_PRIMARY` / `JWT_KID_NEW`
+- **Verification priority:** header `kid` hint when present; else signing secret then legacy `JWT_SECRET`
+- **Rotation trigger:** env/file reload via `POST /api/auth/rotate-key` (admin) or process restart
 
 ### Target Implementation (Phase 3)
 
-- **Automated rotation:** `scripts/rotate-jwt-key.sh` runs every 30 days via cron
-- **Zero-downtime:** dual-key window ensures in-flight tokens remain valid during rotation
+- **Automated rotation:** optional cron/script calling admin reload endpoint
+- **Zero-downtime:** dual-key window (`JWT_SECRET` + `JWT_SECRET_NEW`) — shipped v1.3.0
 - **Redis-backed JTI revocation:** revoked tokens survive server restarts (see ADR-003)
 
 ```bash

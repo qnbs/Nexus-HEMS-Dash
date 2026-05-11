@@ -1,6 +1,6 @@
 # Toolchain Architecture — Nexus-HEMS-Dash
 
-**Last updated:** 2026-04-25
+**Last updated:** 2026-05-11
 **Status:** Active (post-Biome-migration, post-monorepo-migration)
 
 ---

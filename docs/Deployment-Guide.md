@@ -65,10 +65,28 @@ docker compose --profile monitoring up -d
 | `CORS_ORIGINS`           | —               | Comma-separated allowed CORS origins                                         |
 | `WS_ORIGINS`             | —               | Comma-separated allowed WebSocket origins for CSP `connect-src` (production) |
 | `RATE_LIMIT_TRUSTED_IPS` | —               | Comma-separated IPs that bypass rate limiting (load balancers, proxies)      |
+| `TRUST_PROXY`            | `1`             | Express trust proxy hops or subnet list — **required** behind CDN + reverse proxy so per-IP rate limits see the real client (`loopback,10.0.0.0/8` style); see §2.1 |
+| `JWT_SECRET_NEW`         | —               | Optional in-rotation HS256 secret; signing prefers this while old tokens still verify against `JWT_SECRET`; reload via `POST /api/auth/rotate-key` (admin) |
+| `JWT_SECRET_NEW_FILE`    | —               | Mounted file path for `JWT_SECRET_NEW` (e.g. Kubernetes rotation) |
+| `EEBUS_TRUST_BACKEND`    | `file`          | `file` (JSON via `EEBUS_TRUST_FILE`) or `redis` (requires `REDIS_URL`) for multi-replica API pods |
 | `TZ`                     | `Europe/Berlin` | Timezone                                                                     |
 | `GRAFANA_PASSWORD`       | **required**    | Grafana admin password — no default; docker-compose fails without it (CRIT-04) |
 | `ADAPTER_MODE`           | `live`          | `mock` for demo data; `live` for real protocol adapters                      |
 | `PROMETHEUS_BEARER_TOKEN`| —               | Bearer token for Prometheus `/metrics` scrape endpoint authentication (optional) |
+
+### Reverse proxy, CDN, and `TRUST_PROXY`
+
+When traffic reaches Node **Cloudflare → corporate Nginx → Express**, the default `trust proxy: 1` makes Express trust only one hop: `req.ip` becomes the **CDN edge IP**, so **all users share one rate-limit bucket**.
+
+Set `TRUST_PROXY` to match your deployment:
+
+| Topology | Example `TRUST_PROXY` value |
+| -------- | --------------------------- |
+| Single Nginx in front of Node | `1` (default) |
+| Nginx + Cloudflare (two trusted hops) | `2` |
+| Fixed proxy subnets | `loopback,10.0.0.0/8,172.16.0.0/12` |
+
+Express resolves `req.ip` from `X-Forwarded-For` only for trusted proxy addresses — **do not** parse `X-Forwarded-For` manually in application code. Tune `TRUST_PROXY` so the **rightmost untrusted** hop corresponds to the client IP Express exposes.
 
 ### Security
 
@@ -76,7 +94,7 @@ docker compose --profile monitoring up -d
 - `no-new-privileges` security opt enabled
 - JWT secret loaded via Docker secrets (`/run/secrets/jwt_secret`)
 - tmpfs mounts for nginx cache/run directories
-- Auth endpoints rate-limited to 10 req/min per IP (brute-force protection)
+- Auth endpoints (`/api/auth/token`, `refresh`, `revoke`, `rotate-key`) rate-limited to **5 req/min** per IP (brute-force protection)
 - Trusted IPs can bypass rate limiting via `RATE_LIMIT_TRUSTED_IPS` env var
 
 ### Networks
