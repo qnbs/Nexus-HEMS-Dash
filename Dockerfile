@@ -44,22 +44,15 @@ RUN (apk update && apk upgrade --no-cache) || true \
 # No need to create a separate app user.
 
 # Copy custom nginx config template
-COPY apps/web/nginx.conf /etc/nginx/templates/nexus-hems.conf.template
+COPY --chown=nginx:nginx apps/web/nginx.conf /etc/nginx/templates/nexus-hems.conf.template
 
 # MED-03: Custom entrypoint validates WS_ORIGINS before nginx starts.
 # Delegates to /docker-entrypoint.sh (the base image's envsubst processor)
 # only when WS_ORIGINS contains safe characters.
-COPY apps/web/docker-entrypoint.sh /docker-entrypoint-validate.sh
+COPY --chown=nginx:nginx --chmod=755 apps/web/docker-entrypoint.sh /docker-entrypoint-validate.sh
 
 # Copy built assets from build stage
-COPY --from=build /app/apps/web/dist /usr/share/nginx/html
-
-# Fix ownership for nginx user (uid 101)
-RUN chown -R nginx:nginx /usr/share/nginx/html && \
-    chown -R nginx:nginx /var/cache/nginx && \
-    chown -R nginx:nginx /var/log/nginx && \
-    chown -R nginx:nginx /etc/nginx/templates && \
-    chmod +x /docker-entrypoint-validate.sh
+COPY --chown=nginx:nginx --from=build /app/apps/web/dist /usr/share/nginx/html
 
 # MED-03: nginx official image processes /etc/nginx/templates/*.template via envsubst
 # at startup — WS_ORIGINS env var is injected into the CSP connect-src header.

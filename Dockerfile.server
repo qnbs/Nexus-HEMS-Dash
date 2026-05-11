@@ -29,7 +29,7 @@ COPY packages/shared-types/ ./packages/shared-types/
 # Create a production-only deployment bundle.
 # pnpm deploy: installs prod deps only, resolves workspace:* by copying
 # packages/shared-types into node_modules/@nexus-hems/shared-types.
-RUN pnpm deploy --filter @nexus-hems/api --prod /tmp/api-deploy
+RUN pnpm deploy --legacy --filter @nexus-hems/api --prod /tmp/api-deploy
 
 # ── Production stage (distroless) ────────────────────────────
 # gcr.io/distroless/nodejs24-debian12:nonroot — no shell, no package manager,
