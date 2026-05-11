@@ -14,11 +14,14 @@ export default defineConfig({
       reporter: ['text', 'lcov'],
       include: ['src/**/*.ts'],
       exclude: ['src/**/*.test.ts', 'src/data/**'],
+      // Thresholds are calibrated to the current test baseline so `vitest run --coverage`
+      // stays green. The Phase-2 target (60/50/60/60) is the goal and will be raised
+      // incrementally as more route/service tests land. Phase-1 ratchet: 56/46/56/56.
       thresholds: {
-        statements: 55,
-        branches: 45,
-        functions: 55,
-        lines: 55,
+        statements: 56,
+        branches: 46,
+        functions: 56,
+        lines: 56,
       },
     },
   },

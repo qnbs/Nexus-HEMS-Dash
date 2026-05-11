@@ -19,11 +19,13 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'json', 'html', 'lcov'],
       exclude: ['node_modules/', 'src/tests/', '*.config.ts', 'dist/'],
+      // Thresholds calibrated to the current test baseline. Phase-1 ratchet to
+      // 55/45/55/56; final target 58/48/58/58 will be reached incrementally.
       thresholds: {
-        statements: 52,
-        branches: 42,
-        functions: 53,
-        lines: 53,
+        statements: 55,
+        branches: 45,
+        functions: 55,
+        lines: 56,
       },
     },
   },
