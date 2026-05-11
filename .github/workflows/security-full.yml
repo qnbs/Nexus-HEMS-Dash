@@ -114,8 +114,17 @@ jobs:
       - name: Setup Node.js and pnpm
         uses: ./.github/actions/setup-node-pnpm
 
-      - name: Scan for Unicode Bidi characters
-        run: npx anti-trojan-source --files='apps/**/*.{ts,tsx,js,jsx}' --verbose
+      # Scope the unicode-bidi scan to first-party source only. Third-party
+      # node_modules contain legitimate emoji variation selectors (date-fns
+      # comments, etc.) that this scanner reports as warnings/failures.
+      - name: Scan for Unicode Bidi characters (first-party source)
+        run: |
+          npx anti-trojan-source \
+            --files='apps/api/src/**/*.{ts,tsx,js,jsx}' \
+            --files='apps/web/src/**/*.{ts,tsx,js,jsx}' \
+            --files='apps/web/tests/**/*.{ts,tsx,js,jsx}' \
+            --files='packages/*/src/**/*.{ts,tsx,js,jsx}' \
+            --verbose
 
       - name: Biome check (Unicode bidi + lint)
         run: pnpm lint

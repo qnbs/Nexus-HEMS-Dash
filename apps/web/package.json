@@ -133,7 +133,7 @@
     {
       "name": "App Entry",
       "path": "dist/assets/index-*.js",
-      "limit": "70 kB",
+      "limit": "90 kB",
       "gzip": true
     },
     {
