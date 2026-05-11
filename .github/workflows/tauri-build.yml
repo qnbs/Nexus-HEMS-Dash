@@ -2,6 +2,11 @@ name: Tauri Desktop Build
 
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: Release version without leading "v" (for example 1.2.0)
+        required: true
+        default: '1.2.0'
   release:
     types: [published]
 
@@ -64,6 +69,19 @@ jobs:
             librsvg2-dev \
             patchelf
 
+      - name: Resolve release version
+        id: release-version
+        shell: bash
+        run: |
+          RAW_VERSION="${{ github.event.release.tag_name || inputs.version }}"
+          VERSION="${RAW_VERSION#v}"
+          if [ -z "$VERSION" ]; then
+            echo "::error::Unable to resolve release version"
+            exit 1
+          fi
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Resolved Tauri release version: ${VERSION}"
+
       - name: Build Tauri app
         uses: tauri-apps/tauri-action@84b9d35b5fc46c1e45415bdb6144030364f7ebc5 # action-v0.6.2
         env:
@@ -76,8 +94,8 @@ jobs:
           APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         with:
-          tagName: v__VERSION__
-          releaseName: 'Nexus HEMS Dashboard v__VERSION__'
-          releaseBody: 'Desktop builds for Nexus HEMS Dashboard.'
+          tagName: v${{ steps.release-version.outputs.version }}
+          releaseName: 'Nexus HEMS Dashboard v${{ steps.release-version.outputs.version }}'
+          releaseBody: 'Desktop builds for Nexus HEMS Dashboard v${{ steps.release-version.outputs.version }}.'
           releaseDraft: true
           prerelease: false

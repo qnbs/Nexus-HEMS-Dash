@@ -8,6 +8,10 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'jsdom',
+    pool: 'threads',
+    maxWorkers: 2,
+    testTimeout: 20_000,
+    hookTimeout: 20_000,
     setupFiles: ['./src/tests/setup.ts'],
     css: true,
     exclude: ['node_modules', 'dist', 'e2e', 'tests/e2e', '**/*.spec.ts'],

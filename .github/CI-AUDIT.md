@@ -38,14 +38,56 @@ plan, both already merged.
 | 13 | Lighthouse `resource-summary:script:size` aligned with size-limit | Old budget (512 KB warn) was 2× stricter than `size-limit` `Total JS: 1100 kB` and would falsely fail PRs | `apps/web/lighthouserc.json` |
 | 14 | Sentry source-maps: read version from `apps/web/package.json` | Root and web app share `1.2.0` today, but the explicit web-version step prevents drift | `ci.yml` (build job) |
 
+## Stabilization update — 2026-05-11
+
+| # | Fix | Why | Files |
+|---|-----|-----|-------|
+| 15 | Repaired broken `pnpm-lock.yaml` duplicate package key | `pnpm install --frozen-lockfile` failed before any CI gate could run | `pnpm-lock.yaml` |
+| 16 | Raised Node engine floor and added `.nvmrc` | Local `engine-strict=true` must reflect the actual dependency floor; CI remains Node 24 | `package.json`, `.nvmrc` |
+| 17 | Removed vulnerable `@log4brains/cli` dev tool | Full dev audit had critical/high CVEs, including unpatched transitive `parse-git-config` | `package.json`, `pnpm-lock.yaml` |
+| 18 | Tightened `basic-ftp` override | Removes LHCI transitive high-severity advisory from full audit | `package.json`, `pnpm-lock.yaml` |
+| 19 | Stabilized Vitest workers and crypto/JWT timeouts | Local and CI runs no longer fail on fork-worker startup or WebCrypto/PBKDF2 5s timeouts | `apps/web/vitest.config.ts`, `apps/api/vitest.config.ts`, `apps/api/src/tests/jwt-dual-key.test.ts` |
+| 20 | Stabilized Playwright under load | E2E waits for `#main-content`, uses 30s expect timeout, fixed `NO_COLOR`/`FORCE_COLOR` warning | `apps/web/playwright.config.ts`, `apps/web/tests/e2e/command-hub-energy-flow.spec.ts` |
+| 21 | Restored missing PWA assets and removed missing font references | Lighthouse/PWA checks no longer depend on non-existent PNG/font files | `apps/web/public/*`, `apps/web/index.html`, `apps/web/vite.config.ts` |
+| 22 | Hardened security gates | Gitleaks, Semgrep, production audit, SBOM image builds, and SBOM generation now fail on real errors | `.github/workflows/security-full.yml`, `.github/workflows/sbom-scan.yml`, `.github/workflows/security-scan.yml` |
+| 23 | Fixed Tauri release version resolution | Removes non-production `v__VERSION__` placeholder and requires manual version input | `.github/workflows/tauri-build.yml` |
+| 24 | Added portable local secret scan wrapper | Local agents no longer need a globally installed `gitleaks`; native/Docker are preferred, limited fallback is documented | `scripts/run-gitleaks.mjs`, `package.json` |
+
+### Local verification snapshot
+
+All commands below passed on this checkout. Because the local machine runs Node `22.22.0` while the repository now requires `>=22.22.1`, local verification used `--config.engine-strict=false`; CI runs Node 24 and does not need that override.
+
+| Gate | Result |
+|------|--------|
+| `pnpm install --frozen-lockfile --config.engine-strict=false` | Passed |
+| `pnpm --config.engine-strict=false lint` | Passed, zero Biome/ESLint findings |
+| `pnpm --config.engine-strict=false type-check` | Passed |
+| `pnpm --config.engine-strict=false test:run` | Passed: API 70 tests, Web 627 tests |
+| `pnpm --config.engine-strict=false test:coverage` | Passed: Web V8 coverage above thresholds |
+| `VITE_E2E_TESTING=true pnpm --config.engine-strict=false build` | Passed |
+| `pnpm --config.engine-strict=false size` | Passed: Total JS 1.04 MB gzip, CSS 20.27 kB gzip |
+| `pnpm --config.engine-strict=false audit --audit-level=high` | Passed |
+| `pnpm --config.engine-strict=false security:trojan` | Passed |
+| `pnpm --config.engine-strict=false security:secrets` | Passed via limited fallback; native Gitleaks/Docker preferred |
+| `pnpm test:e2e` with `VITE_E2E_TESTING=true` | Passed: 54 Chromium tests |
+
+### External prerequisites
+
+- Snyk local scan requires authentication. `pnpm dlx snyk test --severity-threshold=high --all-projects` downloaded the CLI successfully but returned `SNYK-0005 / 401 Unauthorized`.
+- Native Gitleaks or a running Docker daemon gives full local Gitleaks coverage. The committed wrapper falls back to a limited first-party regex scan only when both are unavailable.
+- `graphify update .` could not run because the `graphify` CLI is not installed in this environment.
+- API coverage thresholds remain configured but are not yet part of the root CI coverage gate. API tests are a hard gate; API coverage ratcheting remains tracked in `docs/Testing-Coverage-Strategy.md`.
+
 ## CI Health Dashboard
 
 ### Required PR / push-to-main checks
 
 | Workflow | Trigger | Job(s) used as required | Notes |
 |----------|---------|-------------------------|-------|
-| `ci.yml` | push: `main`, `develop`; PR: `main` | `lint-typecheck`, `unit-tests`, `build`, `e2e-tests`, `security`, `ci-passed` | `ci-passed` is the single rollup gate. `build` job emits SLSA attestation on `push: main` only. |
-| `security-full.yml` | push/PR `main`, weekly Mon 05:00 UTC | `security-gate` | Aggregates CodeQL, Gitleaks, Semgrep, Anti-Trojan-Source, Dependency Audit, Branch Protection. |
+| `ci.yml` | push: `main`, `develop`; PR: `main` | `lint-typecheck`, `unit-tests`, `build`, `e2e-tests`, `security`, `ci-passed` | `ci-passed` is the single rollup gate. API unit tests and Web coverage both run in `unit-tests`; build emits SLSA attestation on `push: main` only. |
+| `security-full.yml` | push/PR `main`, weekly Mon 05:00 UTC | `security-gate` | Aggregates CodeQL, Gitleaks, Semgrep, Anti-Trojan-Source, Dependency Audit, Branch Protection. Gitleaks/Semgrep/audit are hard gates. |
+| `sbom-scan.yml` | push: `main`, PR, manual | `sbom-generation` | Builds frontend/backend images and source SBOMs; build/SBOM failures are hard failures. |
+| `lighthouse.yml` | PR, manual | `lighthouse` | Builds with `VITE_E2E_TESTING=true`, waits up to 30s for preview readiness, enforces LHCI budgets. |
 
 ### Weekly / schedule-only
 

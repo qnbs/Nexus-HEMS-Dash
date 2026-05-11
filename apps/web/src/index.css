@@ -816,6 +816,7 @@
     html {
       scroll-behavior: auto;
     }
+    /* biome-ignore lint/style/noDescendingSpecificity: global reduced-motion override must win. */
     *,
     *::before,
     *::after {
@@ -988,6 +989,7 @@ html.high-contrast .status-indicator::before {
     forced-color-adjust: none;
   }
 
+  /* biome-ignore lint/style/noDescendingSpecificity: forced-colors override must follow theme rules. */
   .energy-flow-path {
     stroke: LinkText;
   }
@@ -1078,6 +1080,7 @@ body {
   --badge-info-fg: #7dd3fc;
 }
 
+/* biome-ignore lint/style/noDescendingSpecificity: high-contrast light-theme overrides are applied later. */
 [data-theme='solar-light'] {
   --color-primary: #0bbf73;
   --color-on-primary: #0a2918;
@@ -1133,6 +1136,7 @@ body {
   --badge-info-fg: #7dd3fc;
 }
 
+/* biome-ignore lint/style/noDescendingSpecificity: high-contrast light-theme overrides are applied later. */
 [data-theme='minimal-white'] {
   --color-primary: #111827;
   --color-on-primary: #ffffff;
@@ -1181,10 +1185,12 @@ body {
   }
 }
 
+/* biome-ignore lint/style/noDescendingSpecificity: reduced-motion override intentionally wins later. */
 .battery-charging {
   animation: battery-pulse-charging 2s ease-in-out infinite;
 }
 
+/* biome-ignore lint/style/noDescendingSpecificity: reduced-motion override intentionally wins later. */
 .battery-discharging {
   animation: battery-pulse-discharging 1.5s ease-in-out infinite;
 }
@@ -1235,6 +1241,7 @@ body {
   }
 }
 
+/* biome-ignore lint/style/noDescendingSpecificity: reduced-motion override intentionally wins later. */
 .icon-float {
   animation: icon-float 3s ease-in-out infinite;
 }

@@ -4,6 +4,10 @@ export default defineConfig({
   test: {
     environment: 'node',
     globals: false,
+    pool: 'threads',
+    maxWorkers: 2,
+    testTimeout: 15_000,
+    hookTimeout: 15_000,
     include: ['src/**/*.test.ts'],
     coverage: {
       provider: 'v8',

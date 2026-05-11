@@ -69,7 +69,6 @@ jobs:
 
       - name: Run Gitleaks
         uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2
-        continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITLEAKS_CONFIG: .gitleaks.toml
@@ -90,7 +89,6 @@ jobs:
 
       - name: Run Semgrep
         run: semgrep scan --config auto --sarif -o semgrep-results.sarif apps/ packages/
-        continue-on-error: true
         env:
           SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
 
@@ -138,7 +136,6 @@ jobs:
 
       - name: Dependency audit (production)
         run: pnpm audit --audit-level=high --prod
-        continue-on-error: true
 
       - name: Check for critical vulnerabilities
         run: |
@@ -304,6 +301,7 @@ jobs:
           # Fail the gate if any critical job failed
           if [[ "${{ needs.codeql.result }}" == "failure" || \
                 "${{ needs.gitleaks.result }}" == "failure" || \
+                "${{ needs.semgrep.result }}" == "failure" || \
                 "${{ needs.anti-trojan-source.result }}" == "failure" || \
                 "${{ needs.dependency-check.result }}" == "failure" ]]; then
             echo ""

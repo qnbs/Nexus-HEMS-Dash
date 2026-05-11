@@ -1,12 +1,19 @@
 import { defineConfig, devices } from '@playwright/test';
 
+if (process.env.FORCE_COLOR) {
+  delete process.env.NO_COLOR;
+}
+
 export default defineConfig({
   testDir: './tests/e2e',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
-  ...(process.env.CI && { workers: 2 }),
+  workers: 2,
   reporter: process.env.CI ? 'github' : 'html',
+  expect: {
+    timeout: 30_000,
+  },
   timeout: 300_000,
   use: {
     baseURL: 'http://127.0.0.1:4173/Nexus-HEMS-Dash/',

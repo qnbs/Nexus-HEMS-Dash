@@ -864,7 +864,7 @@ export async function validateLocalShareToken(
   token: string,
 ): Promise<{ valid: boolean; permissions?: 'view' | 'control'; expiresAt?: number }> {
   const link = await nexusDb.shareLinks.where('token').equals(token).first();
-  if (!link || !link.active) return { valid: false };
+  if (!link?.active) return { valid: false };
   if (link.expiresAt < Date.now()) return { valid: false };
   if (link.maxUses > 0 && link.useCount >= link.maxUses) return { valid: false };
 

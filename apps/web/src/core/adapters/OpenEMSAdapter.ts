@@ -476,8 +476,7 @@ export class OpenEMSAdapter extends BaseAdapter {
     for (const rule of OPENEMS_WRITABLE_COMPONENT_RULES) {
       if (!rule.idPattern.test(componentId)) continue;
       if (rule.factoryId && (!component || component.factoryId !== rule.factoryId)) continue;
-      if (rule.factoryPrefix && (!component || !component.factoryId.startsWith(rule.factoryPrefix)))
-        continue;
+      if (rule.factoryPrefix && !component?.factoryId.startsWith(rule.factoryPrefix)) continue;
       return new Set(rule.allowedProperties);
     }
 

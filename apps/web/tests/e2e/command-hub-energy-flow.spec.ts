@@ -2,8 +2,9 @@ import { expect, type Page, test } from '@playwright/test';
 import { setupLocalStorage } from './e2e-setup';
 
 async function waitForMainHeading(page: Page) {
+  await page.locator('#main-content').waitFor({ state: 'attached', timeout: 30_000 });
   const heading = page.locator('#main-content h1').first();
-  await expect(heading).toBeVisible({ timeout: 15_000 });
+  await expect(heading).toBeVisible({ timeout: 30_000 });
   return heading;
 }
 

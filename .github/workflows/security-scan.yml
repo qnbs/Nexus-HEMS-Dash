@@ -70,13 +70,12 @@ jobs:
       - name: Setup Node.js and pnpm
         uses: ./.github/actions/setup-node-pnpm
 
-      - name: Audit ALL deps (including dev-deps, informational)
+      - name: Audit ALL deps (including dev-deps)
         run: |
           echo "## Full pnpm Audit (incl. dev-deps)" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo '```' >> "$GITHUB_STEP_SUMMARY"
-          pnpm audit --audit-level=high 2>&1 | tail -40 >> "$GITHUB_STEP_SUMMARY" || true
+          pnpm audit --audit-level=high 2>&1 | tail -40 >> "$GITHUB_STEP_SUMMARY"
           echo '```' >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "_Production-deps gate runs on every push in security-full.yml._" >> "$GITHUB_STEP_SUMMARY"
-        continue-on-error: true

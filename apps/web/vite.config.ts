@@ -7,13 +7,14 @@ import { visualizer } from 'rollup-plugin-visualizer';
 import { defineConfig, loadEnv, type PluginOption } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
-function cspNoncePlugin(nonce: string): PluginOption {
+function cspNoncePlugin(nonce: string, e2eTesting: boolean): PluginOption {
   return {
     name: 'nexus-csp-nonce',
     enforce: 'post',
     transformIndexHtml(html) {
       return html
         .replaceAll('__CSP_NONCE__', nonce)
+        .replaceAll('__NEXUS_E2E_TESTING__', String(e2eTesting))
         .replace(/<script(?![^>]*\bnonce=)/g, `<script nonce="${nonce}"`);
     },
   };
@@ -23,9 +24,10 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, '.', '');
   const isProd = mode === 'production';
   const cspNonce = randomBytes(16).toString('base64');
+  const e2eTesting = env.VITE_E2E_TESTING === 'true';
 
   const plugins: PluginOption[] = [
-    cspNoncePlugin(cspNonce),
+    cspNoncePlugin(cspNonce, e2eTesting),
 
     // React Compiler auto-memoizes — requires @rolldown/plugin-babel in Vite 8.
     // OXC handles TS/JSX compilation; Babel runs only for React Compiler.
@@ -38,7 +40,7 @@ export default defineConfig(({ mode }) => {
 
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'robots.txt', 'icon.svg', 'apple-touch-icon.png'],
+      includeAssets: ['robots.txt', 'icon.svg', 'apple-touch-icon.png'],
       manifest: false, // Use public/manifest.json
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
@@ -222,8 +224,8 @@ export default defineConfig(({ mode }) => {
       target: 'es2022',
       cssCodeSplit: true,
       reportCompressedSize: true,
-      // Warn when chunks exceed 150 KB (compressed)
-      chunkSizeWarningLimit: 150,
+      // Size-limit enforces gzipped budgets; keep this warning aligned with large lazy chunks.
+      chunkSizeWarningLimit: 800,
 
       rolldownOptions: {
         output: {

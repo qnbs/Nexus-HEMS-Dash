@@ -158,7 +158,7 @@ pnpm install
 pnpm dev
 ```
 
-**Requirements:** Node.js 24 LTS (production baseline), pnpm 10+ via Corepack
+**Requirements:** Node.js 24 LTS (production baseline; minimum `>=22.22.1`), pnpm 10+ via Corepack. Use `.nvmrc` for local parity with CI.
 
 ### GitHub Codespaces (Zero-Config)
 
@@ -179,12 +179,29 @@ The Codespace includes Node.js 24, pnpm, Playwright, Docker, and all VS Code ext
 | `pnpm test`          | Turbo test watch mode across workspace packages                      |
 | `pnpm test:run`      | All unit tests once                                                  |
 | `pnpm test:e2e`      | Playwright E2E (local Chromium-only; CI runs Chromium + Firefox)      |
-| `pnpm test:coverage` | V8 coverage report                                                   |
+| `pnpm test:coverage` | Web V8 coverage gate (API tests run via `pnpm test:run`)              |
 | `pnpm lint`          | Biome + React ESLint across all workspaces (zero-warning policy)     |
 | `pnpm type-check`    | TypeScript strict check across all workspaces                        |
 | `pnpm verify:basis`  | Full local gate: type-check + lint + test:run                        |
+| `pnpm size`          | Enforced gzipped bundle budgets via size-limit                       |
+| `pnpm security:trojan` | Trojan Source scan over first-party TS/JS sources                  |
+| `pnpm security:secrets` | Gitleaks wrapper with Docker/local fallback and limited regex fallback |
 | `pnpm docker:build`  | Build Docker image                                                   |
 | `pnpm docker:up`     | Start container (port 8080)                                          |
+
+### CI Health Dashboard
+
+The main branch is guarded by a rollup CI gate plus dedicated security, SBOM, Lighthouse, and deploy workflows.
+
+| Area | Gate | Local reproduction |
+| :--- | :--- | :--- |
+| Toolchain | Node 24, pnpm 10.33.0, frozen lockfile, shared setup action | `pnpm install --frozen-lockfile` |
+| Quality | Biome, React ESLint, TypeScript strict mode | `pnpm lint && pnpm type-check` |
+| Tests | API/Web unit tests, Web V8 coverage, Playwright Chromium locally | `pnpm test:run && pnpm test:coverage && pnpm test:e2e` |
+| Supply chain | Prod and full `pnpm audit`, Gitleaks, Semgrep, CodeQL, Trojan Source, SBOM | `pnpm audit --audit-level=high && pnpm security:trojan && pnpm security:secrets` |
+| Performance | Vite build, size-limit budgets, Lighthouse CI | `VITE_E2E_TESTING=true pnpm build && pnpm size` |
+
+See [`.github/CI-AUDIT.md`](.github/CI-AUDIT.md) for the detailed stabilization log, known external prerequisites, and current required checks.
 
 ### Environment Variables
 

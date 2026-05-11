@@ -8,12 +8,12 @@
       "inputs": ["src/**", "tsconfig.json", "package.json"],
       "outputs": ["dist/**", "!dist/**/*.d.ts.map"]
     },
-    "shared-types#build": {
+    "@nexus-hems/shared-types#build": {
       "inputs": ["src/**", "tsconfig.json", "package.json"],
       "outputs": []
     },
-    "web#build": {
-      "dependsOn": ["shared-types#build"],
+    "@nexus-hems/web#build": {
+      "dependsOn": ["@nexus-hems/shared-types#build"],
       "env": ["VITE_E2E_TESTING"],
       "inputs": [
         "src/**",
@@ -48,7 +48,7 @@
     "test:run": {
       "dependsOn": ["^build"],
       "inputs": ["src/**", "tsconfig.json", "vitest.config.ts"],
-      "outputs": ["coverage/**"]
+      "outputs": []
     },
     "test": {
       "cache": false,

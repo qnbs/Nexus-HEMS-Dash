@@ -2,20 +2,25 @@
  * HIGH-07 — Dual JWT secrets (JWT_SECRET + JWT_SECRET_NEW) without restart.
  */
 
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const SECRET_A = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'; // 40 chars
 const SECRET_B = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'; // 40 chars
 
+beforeEach(() => {
+  process.env.NODE_ENV = 'test';
+  delete process.env.REDIS_URL;
+});
+
 afterEach(() => {
   vi.resetModules();
+  delete process.env.JWT_SECRET;
   delete process.env.JWT_SECRET_NEW;
   delete process.env.JWT_SECRET_NEW_FILE;
 });
 
 describe('reloadJwtKeysFromEnv dual-key', () => {
   it('verifies tokens signed with JWT_SECRET after JWT_SECRET_NEW becomes primary', async () => {
-    process.env.NODE_ENV = 'test';
     process.env.JWT_SECRET = SECRET_A;
     delete process.env.JWT_SECRET_NEW;
 

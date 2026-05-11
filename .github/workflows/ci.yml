@@ -51,7 +51,13 @@ jobs:
       - name: Setup Node.js and pnpm
         uses: ./.github/actions/setup-node-pnpm
 
-      - name: Unit Tests with Coverage
+      - name: API Unit Tests
+        run: pnpm --filter @nexus-hems/api test:run
+        env:
+          TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+          TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+
+      - name: Web Unit Tests with Coverage
         run: pnpm test:coverage
         env:
           TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
@@ -117,6 +123,8 @@ jobs:
       # The previous inline check was uncompressed-vs-gzipped inconsistent.
       - name: Size Limit Check
         run: pnpm size
+        env:
+          VITE_E2E_TESTING: 'true'
 
       # SLSA Level 3 build-provenance: cryptographic attestation of every JS
       # asset produced from `main`. Verify with `gh attestation verify`.
@@ -188,13 +196,17 @@ jobs:
         # Dev-tool CVEs (@log4brains/cli, @lhci/cli, autoprefixer) are out of scope
         # for production security and are tracked separately in sbom-scan.yml.
 
-      - name: Verify security-full workflow exists
+      - name: Verify extended security workflows exist
         run: |
           if [ ! -f .github/workflows/security-full.yml ]; then
-            echo "::error::security-full.yml not found — required for SBOM/Grype scanning"
+            echo "::error::security-full.yml not found — required for extended SAST and secret scanning"
             exit 1
           fi
-          echo "✅ security-full.yml present"
+          if [ ! -f .github/workflows/sbom-scan.yml ]; then
+            echo "::error::sbom-scan.yml not found — required for SBOM generation"
+            exit 1
+          fi
+          echo "✅ extended security workflows present"
 
   ci-passed:
     name: ✅ CI Passed
