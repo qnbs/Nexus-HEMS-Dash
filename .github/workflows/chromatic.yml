@@ -36,7 +36,7 @@ jobs:
 
       - name: Publish to Chromatic
         if: env.CHROMATIC_PROJECT_TOKEN != ''
-        uses: chromaui/action@0794e6939fe40ce46a88963f818092afc427da5b # v15.3.0
+        uses: chromaui/action@8d925269a481085d451544f6bd9aa2ab3af55b5d # v16.9.1
         with:
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
           storybookBuildDir: apps/web/storybook-static
