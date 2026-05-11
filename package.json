@@ -137,7 +137,7 @@
     "@log4brains/cli": "^1.0.1",
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/git": "^10.0.1",
-    "anti-trojan-source": "^1.8.3",
+    "anti-trojan-source": "^1.11.0",
     "conventional-changelog-conventionalcommits": "^9.3.1",
     "eslint": "^9.39.3",
     "eslint-plugin-react-compiler": "^19.1.0-rc.2",
@@ -146,6 +146,6 @@
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",
     "semantic-release": "^24.2.3",
-    "turbo": "^2.9.8"
+    "turbo": "^2.9.12"
   }
 }
