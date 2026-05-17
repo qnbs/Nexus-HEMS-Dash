@@ -21,7 +21,7 @@ RUN pnpm --filter @nexus-hems/web build
 # NOTE: Pin to an immutable SHA256 digest in production via build-arg or
 # image policy (e.g. Kyverno imagePolicyWebhook).
 # Pin OCI index digest (multi-arch) — satisfies OpenSSF Scorecard Pinned-Dependencies
-FROM nginxinc/nginx-unprivileged:1.29-alpine-slim@sha256:59678856b05324b7f6371f26eb1520be7fcd8bdc8ab380fc4913db8503e5a842 AS production
+FROM nginxinc/nginx-unprivileged:1.31-alpine-slim@sha256:db8d9661513d14cebe9aee82fbae9a474477714d94ec6c511a7fdab445a4ad3b AS production
 
 ARG VCS_REF=unknown
 ARG BUILD_DATE=unknown
