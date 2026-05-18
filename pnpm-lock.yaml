@@ -208,8 +208,8 @@ importers:
         specifier: ^7.0.0
         version: 7.0.5(@capacitor/core@8.3.3)
       '@capacitor/status-bar':
-        specifier: ^7.0.0
-        version: 7.0.5(@capacitor/core@8.3.3)
+        specifier: ^8.0.2
+        version: 8.0.2(@capacitor/core@8.3.3)
       '@google/genai':
         specifier: ^2.0.1
         version: 2.0.1
@@ -1202,10 +1202,10 @@ packages:
     peerDependencies:
       '@capacitor/core': '>=7.0.0'
 
-  '@capacitor/status-bar@7.0.5':
-    resolution: {integrity: sha512-d0DI/Usy4RrNiV5xfnypXNRLmWYMixC2yAUAwe6sCQQ0HF7oskDf4RpCxcZqbxnpc4H4A0qqiOSltfJLFAYshg==}
+  '@capacitor/status-bar@8.0.2':
+    resolution: {integrity: sha512-WXs8YB8B9eEaPZz+bcdY6t2nForF1FLoj/JU0Dl9RRgQnddnS98FEEyDooQhaY7wivr000j4+SC1FyeJkrFO7A==}
     peerDependencies:
-      '@capacitor/core': '>=7.0.0'
+      '@capacitor/core': '>=8.0.0'
 
   '@chromatic-com/storybook@5.1.2':
     resolution: {integrity: sha512-H/hgvwC3E+OtseP2OT2QYUJH2VfnzT6wM3pWOkaNV6g7QI+VUdWJbeJ3o2jFqvEPQNqzhQKWDOlvM4lu+7is6g==}
@@ -6710,8 +6710,8 @@ packages:
     resolution: {integrity: sha512-94hK0Hh8rPqQl2xXc3HsaBoOXKV20MToPkcXvwbISWLEs+64sBq5kFgn2kJDHb1Pry9yrP0dxrCI9RRci7RXKg==}
     engines: {node: '>= 6.0.0', npm: '>= 3.0.0'}
 
-  smob@1.6.1:
-    resolution: {integrity: sha512-KAkBqZl3c2GvNgNhcoyJae1aKldDW0LO279wF9bk1PnluRTETKBq0WyzRXxEhoQLk56yHaOY4JCBEKDuJIET5g==}
+  smob@1.6.2:
+    resolution: {integrity: sha512-RQsvleCbF8cVHEv+xuDGaA4pOizFqJ0GgjtMSRo6oP8pnN7WsigHgVGey6aILRBKv4W2YOMHLqbKdnB6hpB9fw==}
     engines: {node: '>=20.0.0'}
 
   socks-proxy-agent@8.0.5:
@@ -8706,7 +8706,7 @@ snapshots:
     dependencies:
       '@capacitor/core': 8.3.3
 
-  '@capacitor/status-bar@7.0.5(@capacitor/core@8.3.3)':
+  '@capacitor/status-bar@8.0.2(@capacitor/core@8.3.3)':
     dependencies:
       '@capacitor/core': 8.3.3
 
@@ -9806,7 +9806,7 @@ snapshots:
   '@rollup/plugin-terser@1.0.0(rollup@2.80.0)':
     dependencies:
       serialize-javascript: 7.0.5
-      smob: 1.6.1
+      smob: 1.6.2
       terser: 5.47.1
     optionalDependencies:
       rollup: 2.80.0
@@ -14507,7 +14507,7 @@ snapshots:
 
   smart-buffer@4.2.0: {}
 
-  smob@1.6.1: {}
+  smob@1.6.2: {}
 
   socks-proxy-agent@8.0.5:
     dependencies:
