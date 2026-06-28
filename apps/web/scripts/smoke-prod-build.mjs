@@ -2,9 +2,9 @@
 /**
  * Smoke-test the production build by loading it in a headless browser.
  *
- * This script is intentionally lightweight: it starts `vite preview` against the
- * already-built `dist/` folder, navigates to the app with Playwright, and fails
- * if React does not mount or if an uncaught runtime error occurs.
+ * Starts `vite preview` against the already-built `dist/` folder, navigates to
+ * the app with Playwright, and fails if React does not mount or if an uncaught
+ * runtime error occurs.
  *
  * Environment:
  *   - VITE_E2E_TESTING=true is recommended so the build matches CI conditions.
@@ -12,8 +12,6 @@
  */
 
 import { spawn } from 'node:child_process';
-import fs from 'node:fs';
-import { createServer } from 'node:http';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from '@playwright/test';
@@ -41,66 +39,32 @@ async function waitForServer(url, timeoutMs = 60_000) {
   throw new Error(`Preview server did not become ready within ${timeoutMs}ms`);
 }
 
-/**
- * Minimal static fallback if `vite preview` is not available. This is NOT used
- * in CI; it exists only so local agents without a full `vite` CLI can still run
- * the smoke test in a pinch. The base path is stripped so the SPA routes work.
- */
-async function createFallbackServer() {
-  return createServer((req, res) => {
-    let filePath = req.url.startsWith(basePath) ? req.url.slice(basePath.length) : req.url;
-    filePath = path.join(distDir, filePath || 'index.html');
-    if (!fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
-      filePath = path.join(distDir, 'index.html');
-    }
-    const ext = path.extname(filePath);
-    const mime =
-      {
-        '.html': 'text/html',
-        '.js': 'text/javascript',
-        '.css': 'text/css',
-        '.json': 'application/json',
-        '.svg': 'image/svg+xml',
-        '.png': 'image/png',
-        '.ico': 'image/x-icon',
-      }[ext] || 'application/octet-stream';
-    res.writeHead(200, { 'Content-Type': mime });
-    fs.createReadStream(filePath).pipe(res);
-  }).listen(port);
-}
-
 async function main() {
   let server;
   let browser;
 
   try {
-    // Prefer vite preview because it respects the production base path.
-    const useVite = process.env.SMOKE_USE_VITE !== 'false';
-    if (useVite) {
-      server = spawn('pnpm', ['exec', 'vite', 'preview', '--port', String(port), '--strictPort'], {
-        cwd: path.resolve(__dirname, '..'),
-        stdio: 'pipe',
-        env: { ...process.env, NODE_ENV: 'production' },
-      });
-      server.on('error', (err) => {
-        throw new Error(`Failed to start preview server: ${err.message}`);
-      });
-      server.stdout.on('data', (d) => {
-        if (process.env.SMOKE_DEBUG) process.stdout.write(d);
-      });
-      server.stderr.on('data', (d) => {
-        if (process.env.SMOKE_DEBUG) process.stderr.write(d);
-      });
-    } else {
-      server = await createFallbackServer();
-    }
+    server = spawn('pnpm', ['exec', 'vite', 'preview', '--port', String(port), '--strictPort'], {
+      cwd: path.resolve(__dirname, '..'),
+      stdio: 'pipe',
+      env: { ...process.env, NODE_ENV: 'production' },
+    });
+    server.on('error', (err) => {
+      throw new Error(`Failed to start preview server: ${err.message}`);
+    });
+    server.stdout.on('data', (d) => {
+      if (process.env.SMOKE_DEBUG) process.stdout.write(d);
+    });
+    server.stderr.on('data', (d) => {
+      if (process.env.SMOKE_DEBUG) process.stderr.write(d);
+    });
 
     await waitForServer(url);
 
     const errors = [];
     browser = await chromium.launch({
       headless: true,
-      args: ['--disable-dev-shm-usage', '--disable-gpu', '--no-sandbox'],
+      args: ['--disable-dev-shm-usage', '--disable-gpu'],
     });
     const page = await browser.newPage();
     page.on('pageerror', (err) => errors.push(`pageerror: ${err.message}`));
@@ -129,13 +93,7 @@ async function main() {
     console.log('✅ Production build smoke test passed');
   } finally {
     if (browser) await browser.close();
-    if (server) {
-      if (typeof server.kill === 'function') {
-        server.kill();
-      } else if (typeof server.close === 'function') {
-        server.close();
-      }
-    }
+    if (server) server.kill();
   }
 }
 
