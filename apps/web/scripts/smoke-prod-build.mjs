@@ -39,6 +39,12 @@ async function waitForServer(url, timeoutMs = 60_000) {
   throw new Error(`Preview server did not become ready within ${timeoutMs}ms`);
 }
 
+/**
+ * Global hard timeout for the whole smoke test. If anything hangs (browser
+ * download, page load, or server startup), fail fast instead of blocking CI.
+ */
+const GLOBAL_TIMEOUT_MS = 180_000;
+
 async function main() {
   let server;
   let browser;
@@ -74,7 +80,10 @@ async function main() {
       }
     });
 
-    await page.goto(url, { waitUntil: 'networkidle', timeout: 30_000 });
+    // Use 'domcontentloaded' rather than 'networkidle' because the dashboard
+    // starts background polling and WebSocket connections that may never fully
+    // settle, causing 'networkidle' to hang indefinitely in CI.
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30_000 });
 
     // Wait for React to mount. The root div should contain more than just the
     // raw HTML fallback (i.e., actual rendered application markup).
@@ -83,7 +92,7 @@ async function main() {
       return root ? root.children.length > 0 : false;
     });
     if (!rootHasContent) {
-      throw new Error('React did not mount: #root is empty after networkidle');
+      throw new Error('React did not mount: #root is empty after domcontentloaded');
     }
 
     if (errors.length > 0) {
@@ -92,12 +101,22 @@ async function main() {
 
     console.log('✅ Production build smoke test passed');
   } finally {
-    if (browser) await browser.close();
-    if (server) server.kill();
+    if (browser) await browser.close().catch(() => {});
+    if (server) server.kill('SIGKILL');
   }
 }
 
-main().catch((err) => {
-  console.error(err);
+const globalTimer = setTimeout(() => {
+  console.error(`Smoke test exceeded global timeout of ${GLOBAL_TIMEOUT_MS}ms`);
   process.exit(1);
-});
+}, GLOBAL_TIMEOUT_MS);
+
+main()
+  .catch((err) => {
+    console.error(err);
+    process.exitCode = 1;
+  })
+  .finally(() => {
+    clearTimeout(globalTimer);
+    process.exit(process.exitCode ?? 0);
+  });
