@@ -10,6 +10,28 @@ Nexus-HEMS Dashboard is a production-grade, real-time Home Energy Management Sys
 
 The current shipped baseline is `1.2.0`. Active `1.3.0` work is tracked in `CHANGELOG.md` and `docs/Technical-Debt-Registry.md`.
 
+> ## ⚠️ Hardware Profile & Cloud-First CI Policy (read before running anything)
+>
+> **The maintainer's local machine is a low-end / RAM-constrained workstation.** Heavy or parallel work locally causes OOM kills, system lag, and stalled shells. This policy is non-negotiable; treat any deviation as a bug to fix.
+>
+> ### Hard rules (DO)
+> 1. **Run local checks one at a time, sequentially.** No parallel `Bash` tool calls when the commands are heavyweight (linters, vitest, type-check, build, install, Playwright). One foreground command finishes before the next starts.
+> 2. **Cloud-first for heavy gates.** Full `pnpm test:run`, `pnpm test:e2e` (any browser), `pnpm lighthouse`, full `pnpm test:coverage`, `pnpm build` of all packages, container image scans, and CodeQL/Scorecard runs are CI workflows. Trust those workflows; don't recreate them locally unless CI is unavailable or the user explicitly asks.
+> 3. **Local loop is `type-check → lint → targeted tests` only.** Targeted means a single test file or a focused workspace (`pnpm --filter @nexus-hems/web exec vitest run path/to/foo.test.ts`), not the whole suite.
+> 4. **Use generous timeouts** (180–300 s for vitest, ≥300 s for `pnpm install`, ≥600 s for `pnpm build`). Don't fight slow hardware with shorter timeouts.
+> 5. **Use `--concurrent false` (or the equivalent) on every tool that supports it** — `lint-staged --concurrent false`, `turbo run --concurrency=1`, etc.
+> 6. **For docs/config-only changes** (`*.md`, JSON/YAML configs not touching code paths), skip local heavy verification entirely and let cloud CI verify.
+>
+> ### Anti-patterns (DON'T)
+> - Spawning multiple `Bash` calls or `Monitor` tasks in the same turn for unrelated commands.
+> - Running `pnpm test:run` (full suite) locally to "make sure" — that's CI's job.
+> - Running `pnpm lint`, `pnpm type-check`, `pnpm test`, and `pnpm build` in the same turn.
+> - Using `run_in_background: true` for a long-running command and then starting another one before the first finishes.
+> - Re-running the same heavy check after a small fix when CI will catch it on the next push.
+>
+> ### When in doubt
+> Push the change, watch CI with `GH_PAGER=cat PAGER=cat gh run list --branch main --limit 5`, and iterate from CI logs. Cloud CPU/RAM is cheaper than the maintainer's machine, and CI runs everything on the project's actual baseline (Node 24 LTS, full deps).
+
 **Repository structure:** pnpm workspace monorepo managed by Turborepo.
 
 ```

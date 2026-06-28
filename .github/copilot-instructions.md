@@ -208,8 +208,26 @@ Circuit Breaker (`apps/web/src/core/circuit-breaker.ts`): FSM with CLOSED → OP
 
 ### Execution Strategy (Local vs Cloud CI)
 
-- **Default local loop:** keep local verification fast and deterministic (`type-check`, `lint`, targeted unit tests, changed-file tests, focused smoke checks)
-- **Never run heavyweight local suites in parallel** on developer hardware. Run `type-check`, lint, tests, builds, and browser checks sequentially unless the user explicitly asks for parallel execution.
+> **⚠️ Hardware profile:** The maintainer's local machine is **low-end / RAM-constrained**. Heavy or parallel work locally OOM-kills processes and stalls shells. The rules below are non-negotiable; deviation is a bug. The project is fundamentally **cloud-first CI** — local checks are a smoke layer, not a substitute.
+
+**Hard rules — DO:**
+
+- **Sequential, one command at a time.** Never spawn multiple `Bash` tool calls or `Monitor` tasks in the same turn for heavyweight commands (linters, vitest, type-check, build, install, Playwright). Wait for each foreground command to finish before starting the next.
+- **Local loop = `type-check` → `lint` → targeted unit tests** (one test file or a workspace-scoped run, e.g. `pnpm --filter @nexus-hems/web exec vitest run src/path/to/foo.test.ts`). Nothing more.
+- **Cloud-first heavy gates.** Full `pnpm test:run`, full coverage, `pnpm test:e2e` (any browser), `pnpm lighthouse`, multi-package `pnpm build`, container image scans, and CodeQL/Scorecard runs are CI workflows in `.github/workflows/`. Trust them; do not recreate them locally without explicit user request.
+- **Generous timeouts** (180–300 s for vitest, ≥ 300 s for `pnpm install`, ≥ 600 s for `pnpm build`). Don't fight slow hardware with shorter timeouts.
+- **`--concurrent false` everywhere it's supported** — `lint-staged --concurrent false`, `turbo run --concurrency=1`, etc.
+- **Docs/config-only changes** (Markdown, JSON/YAML that doesn't touch code paths) skip local heavy verification entirely; let cloud CI verify on push.
+
+**Anti-patterns — DON'T:**
+
+- Run `pnpm lint`, `pnpm type-check`, `pnpm test`, and `pnpm build` in the same turn.
+- Use `run_in_background: true` to chain another long-running command before the first finishes.
+- Re-run the same heavy check after a small fix when CI will catch it on the next push.
+- Call full E2E or Lighthouse locally except when CI is genuinely unavailable.
+
+**When in doubt:** push the change, watch CI with `GH_PAGER=cat PAGER=cat gh run list --branch main --limit 5`, and iterate from CI logs. Cloud CPU/RAM is cheaper than the maintainer's machine, and CI runs everything on the project's actual baseline (Node 24 LTS, full deps, real lockfile).
+
 - **Playwright browser policy:** local `pnpm test:e2e` runs Chromium only. Cloud CI runs Chromium + Firefox. WebKit and mobile browser projects stay disabled until explicitly requested.
 - **Long-running suites belong primarily to CI:** cloud **Playwright E2E** browser coverage, **Lighthouse**, broad **security scans** (CodeQL/Scorecard), and other heavy end-to-end validations should run mainly in cloud CI pipelines
 - Only run full local E2E/perf/security suites when explicitly requested by the user or when CI is unavailable
