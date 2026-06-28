@@ -197,6 +197,25 @@ The production nginx (`nginx.conf`) enforces:
 
 ---
 
+## Health Checks
+
+The server exposes a single health endpoint that includes protocol-adapter status:
+
+```
+GET /api/health
+```
+
+Response examples:
+
+- `ADAPTER_MODE=mock` → `200 { "status": "healthy", "adapters": [] }`
+- `ADAPTER_MODE=live` with no configured adapters → `503 { "status": "unhealthy" }`
+- `ADAPTER_MODE=live` with all adapters healthy → `200 { "status": "healthy", "adapters": [...] }`
+- `ADAPTER_MODE=live` with a failed adapter → `503 { "status": "unhealthy" }`
+
+Both the Helm chart (`helm/nexus-hems/templates/deployment-server.yaml`) and `docker-compose.yml` use `/api/health` for liveness and readiness probes. In Kubernetes, a failing readiness probe prevents traffic from reaching pods with dead adapters, avoiding silent degradation.
+
+---
+
 ## CI/CD Pipeline
 
 The `ci.yml` workflow runs on every push/PR to `main`:
