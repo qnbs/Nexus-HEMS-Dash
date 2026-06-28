@@ -159,6 +159,7 @@ This project uses the **React Compiler** (`babel-plugin-react-compiler`) for aut
    - `feat(adapter): add Zigbee2MQTT retry logic`
    - `fix(sankey): correct node label overlap at narrow viewport`
    - `docs(security): update PBKDF2 iterations to 600k`
+
 6. Open a PR against `main`
 7. Resolve all review threads and keep the branch up to date with `main`
 
@@ -217,6 +218,33 @@ AI API keys (OpenAI, Anthropic, Gemini, etc.) are managed through the in-app BYO
 - Required review hygiene: all review conversations resolved before merge
 - Copilot review may be auto-requested for draft PRs and subsequent pushes; treat it as an additional review signal
 
+## Pull Request Feedback & Quality Checks
+
+This repository uses a layered feedback system to make PR reviews fast, actionable, and educational.
+
+### Tooling overview
+
+| Tool               | Role                                                | Blocking?                                                                  |
+| ------------------ | --------------------------------------------------- | -------------------------------------------------------------------------- |
+| **Biome + ESLint** | Lint, format, React rules                           | Yes                                                                        |
+| **TypeScript**     | Strict type checking                                | Yes                                                                        |
+| **DeepSource**     | Static analysis, secrets detection, coverage diff   | Advisory initially; JavaScript + Secrets will become required after tuning |
+| **CodeAnt.ai**     | AI-powered architectural / maintainability feedback | Advisory                                                                   |
+| **Lighthouse CI**  | Performance, accessibility, PWA budgets             | Yes                                                                        |
+| **Chromatic**      | Visual regression                                   | Yes (when configured)                                                      |
+
+### When a check fails
+
+1. Click the failing check in the PR checks tab.
+2. Read the error message or inline annotation.
+3. Find the matching runbook in `docs/runbooks/` or the central guide in `docs/PR-FEEDBACK-PLAYBOOK.md`.
+4. Fix locally, push, and verify.
+5. Resolve review threads once the check is green.
+
+### Important safety rule
+
+Never auto-apply lint, formatter, or AI suggestions to files involved in device control, command validation, adapters, auth, rate limits, or safety guardrails without explicit human review. See `docs/PR-FEEDBACK-PLAYBOOK.md` for the full autofix policy.
+
 ## Commit Convention
 
 We use [Conventional Commits](https://www.conventionalcommits.org/):
@@ -255,13 +283,13 @@ Create an ADR using this template:
 
 ## Testing Strategy
 
-| Layer        | Tool                                          | Threshold                              | Focus                                                                                       |
-| ------------ | --------------------------------------------- | -------------------------------------- | ------------------------------------------------------------------------------------------- |
-| **Unit**     | Vitest + jsdom                                | Stmts ≥52%, Branches ≥42%, Fns ≥53%   | Store logic, adapters, crypto, formatters, circuit-breaker, tariff-providers, notifications |
-| **E2E**      | Playwright (Chromium local; + Firefox in CI)  | All specs pass                         | User flows, navigation, settings                                                            |
-| **A11y**     | @axe-core/playwright             | WCAG 2.2 AA on all routes      | Keyboard nav, contrast, ARIA                                                                |
-| **Visual**   | Chromatic + Storybook            | No unreviewed changes          | Component regression                                                                        |
-| **Security** | security-fuzz.test.ts + CodeQL   | Zero critical/high in runtime  | Input validation, injection                                                                 |
+| Layer        | Tool                                         | Threshold                           | Focus                                                                                       |
+| ------------ | -------------------------------------------- | ----------------------------------- | ------------------------------------------------------------------------------------------- |
+| **Unit**     | Vitest + jsdom                               | Stmts ≥52%, Branches ≥42%, Fns ≥53% | Store logic, adapters, crypto, formatters, circuit-breaker, tariff-providers, notifications |
+| **E2E**      | Playwright (Chromium local; + Firefox in CI) | All specs pass                      | User flows, navigation, settings                                                            |
+| **A11y**     | @axe-core/playwright                         | WCAG 2.2 AA on all routes           | Keyboard nav, contrast, ARIA                                                                |
+| **Visual**   | Chromatic + Storybook                        | No unreviewed changes               | Component regression                                                                        |
+| **Security** | security-fuzz.test.ts + CodeQL               | Zero critical/high in runtime       | Input validation, injection                                                                 |
 
 **When to write tests:**
 
@@ -273,34 +301,34 @@ Create an ADR using this template:
 
 **Test file map** (`apps/web/src/tests/`) — selected key files (50+ total):
 
-| File                               | Source module                                        | Focus                                            |
-| ---------------------------------- | ---------------------------------------------------- | ------------------------------------------------ |
-| `circuit-breaker.test.ts`          | `apps/web/src/core/circuit-breaker.ts`               | FSM states, execute(), callbacks                 |
-| `tariff-providers.test.ts`         | `apps/web/src/lib/tariff-providers.ts`               | §14a grid fees, peak hours, applyDynamicGridFees |
-| `notifications.test.ts`            | `apps/web/src/lib/notifications.ts`                  | Quiet hours, cooldown windows                    |
-| `energy-context.test.tsx`          | `apps/web/src/core/EnergyContext.tsx`                 | Provider state, derived values                   |
-| `energy-store.test.ts`             | `apps/web/src/core/useEnergyStore.ts`                 | Adapter bridge, getState() contract              |
-| `energy-controllers.test.ts`       | `apps/web/src/core/energy-controllers.ts`             | 8 control loop FSMs + ControllerPipeline         |
-| `ev-v2g-controller.test.ts`        | `apps/web/src/core/energy-controllers.ts`             | V2G discharge loop, SOC guardrails               |
-| `store.test.ts`                    | `apps/web/src/store.ts`                               | Zustand selectors, equality-skip guards          |
-| `adapters.test.ts`                 | `apps/web/src/core/adapters/`                         | Protocol adapter contracts                       |
-| `adapter-registry.test.ts`         | `apps/web/src/core/adapters/adapter-registry.ts`      | Registration, dynamic loading, lifecycle         |
-| `plugin-system.test.ts`            | `apps/web/src/core/plugin-system.ts`                  | OSGi-inspired plugin lifecycle                   |
+| File                                 | Source module                                       | Focus                                            |
+| ------------------------------------ | --------------------------------------------------- | ------------------------------------------------ |
+| `circuit-breaker.test.ts`            | `apps/web/src/core/circuit-breaker.ts`              | FSM states, execute(), callbacks                 |
+| `tariff-providers.test.ts`           | `apps/web/src/lib/tariff-providers.ts`              | §14a grid fees, peak hours, applyDynamicGridFees |
+| `notifications.test.ts`              | `apps/web/src/lib/notifications.ts`                 | Quiet hours, cooldown windows                    |
+| `energy-context.test.tsx`            | `apps/web/src/core/EnergyContext.tsx`               | Provider state, derived values                   |
+| `energy-store.test.ts`               | `apps/web/src/core/useEnergyStore.ts`               | Adapter bridge, getState() contract              |
+| `energy-controllers.test.ts`         | `apps/web/src/core/energy-controllers.ts`           | 8 control loop FSMs + ControllerPipeline         |
+| `ev-v2g-controller.test.ts`          | `apps/web/src/core/energy-controllers.ts`           | V2G discharge loop, SOC guardrails               |
+| `store.test.ts`                      | `apps/web/src/store.ts`                             | Zustand selectors, equality-skip guards          |
+| `adapters.test.ts`                   | `apps/web/src/core/adapters/`                       | Protocol adapter contracts                       |
+| `adapter-registry.test.ts`           | `apps/web/src/core/adapters/adapter-registry.ts`    | Registration, dynamic loading, lifecycle         |
+| `plugin-system.test.ts`              | `apps/web/src/core/plugin-system.ts`                | OSGi-inspired plugin lifecycle                   |
 | `homeassistant-mqtt-adapter.test.ts` | `apps/web/src/core/adapters/contrib/`               | HA MQTT adapter                                  |
-| `matter-thread-adapter.test.ts`    | `apps/web/src/core/adapters/contrib/`                 | Matter/Thread adapter                            |
-| `zigbee2mqtt-adapter.test.ts`      | `apps/web/src/core/adapters/contrib/`                 | Zigbee2MQTT adapter                              |
-| `shelly-rest-adapter.test.ts`      | `apps/web/src/core/adapters/contrib/`                 | Shelly REST adapter                              |
-| `openadr-adapter.test.ts`          | `apps/web/src/core/adapters/contrib/openadr-3-1.ts`   | OpenADR 3.1 VEN client, DR event handling        |
-| `uc26-translator.test.ts`          | `apps/web/src/core/uc26-translator.ts`                | Matter↔OpenADR UC 2.6.1–2.6.3 translation       |
-| `send-command.test.ts`             | `apps/web/src/core/command-safety.ts`                 | OCPP/Victron pipeline, rate limiting             |
-| `security-fuzz.test.ts`            | multiple                                              | Input validation, injection resistance           |
-| `security-hardening.test.ts`       | multiple                                              | Rate limits, CSP, auth                           |
-| `ai-keys.test.ts`                  | `apps/web/src/lib/ai-keys.ts`                         | AES-GCM 256-bit key vault                        |
-| `optimizer.test.ts`                | `apps/web/src/lib/optimizer.ts`                       | LP schedule optimizer                            |
-| `mpc-optimizer.test.ts`            | `apps/web/src/lib/mpc-optimizer.ts`                   | EMHASS-inspired MPC                              |
-| `predictive-ai.test.ts`            | `apps/web/src/lib/predictive-ai.ts`                   | AI forecast pipeline                             |
-| `pdf-report.test.ts`               | `apps/web/src/lib/pdf-report.ts`                      | PDF generation                                   |
-| `sharing.test.ts`                  | `apps/web/src/lib/sharing.ts`                         | Export/share flows                               |
+| `matter-thread-adapter.test.ts`      | `apps/web/src/core/adapters/contrib/`               | Matter/Thread adapter                            |
+| `zigbee2mqtt-adapter.test.ts`        | `apps/web/src/core/adapters/contrib/`               | Zigbee2MQTT adapter                              |
+| `shelly-rest-adapter.test.ts`        | `apps/web/src/core/adapters/contrib/`               | Shelly REST adapter                              |
+| `openadr-adapter.test.ts`            | `apps/web/src/core/adapters/contrib/openadr-3-1.ts` | OpenADR 3.1 VEN client, DR event handling        |
+| `uc26-translator.test.ts`            | `apps/web/src/core/uc26-translator.ts`              | Matter↔OpenADR UC 2.6.1–2.6.3 translation        |
+| `send-command.test.ts`               | `apps/web/src/core/command-safety.ts`               | OCPP/Victron pipeline, rate limiting             |
+| `security-fuzz.test.ts`              | multiple                                            | Input validation, injection resistance           |
+| `security-hardening.test.ts`         | multiple                                            | Rate limits, CSP, auth                           |
+| `ai-keys.test.ts`                    | `apps/web/src/lib/ai-keys.ts`                       | AES-GCM 256-bit key vault                        |
+| `optimizer.test.ts`                  | `apps/web/src/lib/optimizer.ts`                     | LP schedule optimizer                            |
+| `mpc-optimizer.test.ts`              | `apps/web/src/lib/mpc-optimizer.ts`                 | EMHASS-inspired MPC                              |
+| `predictive-ai.test.ts`              | `apps/web/src/lib/predictive-ai.ts`                 | AI forecast pipeline                             |
+| `pdf-report.test.ts`                 | `apps/web/src/lib/pdf-report.ts`                    | PDF generation                                   |
+| `sharing.test.ts`                    | `apps/web/src/lib/sharing.ts`                       | Export/share flows                               |
 
 ## Performance Budgets
 
@@ -361,25 +389,38 @@ flowchart LR
 2. **Implement `IProtocolAdapter`** from `@nexus-hems/shared-types`:
 
    ```typescript
-   import type { IProtocolAdapter, UnifiedEnergyDatapoint } from '@nexus-hems/shared-types';
+   import type {
+     IProtocolAdapter,
+     UnifiedEnergyDatapoint,
+   } from "@nexus-hems/shared-types";
 
    export class MyAdapter implements IProtocolAdapter {
-     readonly id = 'my-adapter-01';
-     readonly protocol = 'modbus-sunspec' as const;
+     readonly id = "my-adapter-01";
+     readonly protocol = "modbus-sunspec" as const;
 
-     async connect(): Promise<void> { /* ... */ }
-     async disconnect(): Promise<void> { /* ... */ }
-     async healthCheck(): Promise<AdapterHealth> { /* ... */ }
-     async *getDataStream(): AsyncGenerator<UnifiedEnergyDatapoint> { /* ... */ }
+     async connect(): Promise<void> {
+       /* ... */
+     }
+     async disconnect(): Promise<void> {
+       /* ... */
+     }
+     async healthCheck(): Promise<AdapterHealth> {
+       /* ... */
+     }
+     async *getDataStream(): AsyncGenerator<UnifiedEnergyDatapoint> {
+       /* ... */
+     }
    }
    ```
 
 3. **Validate all datapoints** before emitting to the EventBus:
 
    ```typescript
-   import { energyDatapointSchema } from '@nexus-hems/shared-types';
+   import { energyDatapointSchema } from "@nexus-hems/shared-types";
    const result = energyDatapointSchema.safeParse(rawData);
-   if (!result.success) { /* route to DLQ */ return; }
+   if (!result.success) {
+     /* route to DLQ */ return;
+   }
    eventBus.emit(result.data);
    ```
 

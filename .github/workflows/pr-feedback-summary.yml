@@ -1,0 +1,89 @@
+name: PR Feedback Summary
+
+# Posts a single, concise summary comment on PRs after the main CI,
+# security, Lighthouse, and perf workflows finish. This reduces context
+# switching by surfacing links to reports and the next-step checklist.
+#
+# Runs on workflow_run so it has write access to PR comments without
+# granting broad write permissions to the heavy workflows themselves.
+
+on:
+  workflow_run:
+    workflows:
+      - CI
+      - Security Full
+      - Lighthouse CI
+      - Performance Benchmark
+    types:
+      - completed
+
+permissions:
+  contents: read
+  pull-requests: write
+  actions: read
+
+jobs:
+  summarize:
+    name: Post PR Feedback Summary
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.event == 'pull_request'
+    steps:
+      - name: Post summary comment
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c379417c9 # v7
+        with:
+          script: |
+            const run = context.payload.workflow_run;
+            const prs = run.pull_requests;
+            if (!prs || prs.length === 0) {
+              core.info('No associated PRs; skipping summary comment.');
+              return;
+            }
+
+            const pr = prs[0];
+            const repo = context.repo;
+            const runUrl = run.html_url;
+            const runName = run.name;
+            const conclusion = run.conclusion;
+            const icon = conclusion === 'success' ? '✅' : conclusion === 'failure' ? '❌' : '⚠️';
+
+            const body = `## ${icon} ${runName} finished
+
+            | Detail | Link |
+            |--------|------|
+            | Workflow run | [View run](${runUrl}) |
+            | DeepSource report | [View report card](https://deepsource.io/gh/${repo.owner}/${repo.repo}/transformers/) |
+            | Coverage artifact | 
+            | Bundle analysis | Download “bundle-analysis” artifact from the CI run |
+            | Lighthouse report | Download “lighthouse-report” artifact (if Lighthouse run) |
+
+            **Next steps:**
+            - If any check failed, click the failing job and read the log.
+            - See [PR Feedback Playbook](https://github.com/${repo.owner}/${repo.repo}/blob/main/docs/PR-FEEDBACK-PLAYBOOK.md) for the correction loop.
+            - Resolve all review threads before merging.
+
+            <!-- pr-feedback-summary -->`;
+
+            // Upsert: delete previous summary comments for this run name.
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: repo.owner,
+              repo: repo.repo,
+              issue_number: pr.number,
+            });
+
+            const marker = '<!-- pr-feedback-summary -->';
+            for (const c of comments) {
+              if (c.body && c.body.includes(marker)) {
+                await github.rest.issues.deleteComment({
+                  owner: repo.owner,
+                  repo: repo.repo,
+                  comment_id: c.id,
+                });
+              }
+            }
+
+            await github.rest.issues.createComment({
+              owner: repo.owner,
+              repo: repo.repo,
+              issue_number: pr.number,
+              body,
+            });
