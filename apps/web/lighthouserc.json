@@ -63,6 +63,7 @@
         "font-display": "warn",
         "dom-size": ["warn", { "maxNumericValue": 2500 }],
         "uses-responsive-images": "warn",
+        "uses-rel-preconnect": "warn",
         "render-blocking-resources": "off",
         "errors-in-console": "off",
         "unsized-images": "warn",
