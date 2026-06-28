@@ -26,11 +26,6 @@ RUN corepack enable && pnpm install --frozen-lockfile --ignore-scripts
 COPY apps/api/ ./apps/api/
 COPY packages/shared-types/ ./packages/shared-types/
 
-# Build shared-types so the compiled dist/ is available for pnpm deploy.
-# The package exports point to dist/index.js, so a source-only copy would
-# break runtime resolution in the production image.
-RUN pnpm --filter @nexus-hems/shared-types build
-
 # Create a production-only deployment bundle.
 # pnpm deploy: installs prod deps only, resolves workspace:* by copying
 # packages/shared-types into node_modules/@nexus-hems/shared-types.
