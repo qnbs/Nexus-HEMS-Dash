@@ -27,7 +27,7 @@
     "modbus-serial": "^8.0.25",
     "mqtt": "catalog:",
     "tsx": "catalog:",
-    "ws": "^8.20.0",
+    "ws": "^8.21.0",
     "zod": "catalog:"
   },
   "devDependencies": {
