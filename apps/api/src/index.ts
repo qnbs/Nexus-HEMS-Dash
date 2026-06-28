@@ -3,7 +3,7 @@ import path from 'node:path';
 import express from 'express';
 import http from 'http';
 import { WebSocketServer } from 'ws';
-import { resolveTrustProxy } from './config/trust-proxy.js';
+import { logTrustProxyWarning, resolveTrustProxy } from './config/trust-proxy.js';
 import { eventBus } from './core/EventBus.js';
 import { logger } from './core/logger.js';
 import { initKeys } from './jwt-utils.js';
@@ -36,6 +36,7 @@ export async function startServer(): Promise<void> {
   // ─── Security Middleware ──────────────────────────────────────────
   configureCors(app);
   app.set('trust proxy', resolveTrustProxy());
+  logTrustProxyWarning();
   app.disable('x-powered-by');
   configureRequestTracking(app);
 

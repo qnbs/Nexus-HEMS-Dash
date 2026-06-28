@@ -3,6 +3,8 @@
  * @see https://expressjs.com/en/guide/behind-proxies.html
  */
 
+let warningLogged = false;
+
 /**
  * Parse TRUST_PROXY env into an Express-compatible `trust proxy` value.
  * - unset → 1 (single reverse proxy, backward compatible)
@@ -31,4 +33,27 @@ export function resolveTrustProxy(): boolean | number | string | string[] {
   if (parts.length === 0) return 1;
   if (parts.length === 1) return parts[0]!;
   return parts;
+}
+
+/**
+ * Logs a one-time warning when TRUST_PROXY is using the default of 1 in
+ * production. A single reverse-proxy hop is the safe default, but deployments
+ * behind a CDN or multiple load balancers must set TRUST_PROXY explicitly so
+ * that req.ip reflects the real client IP for rate limiting and audit logs.
+ */
+export function logTrustProxyWarning(): void {
+  if (warningLogged) return;
+  warningLogged = true;
+
+  const isProduction = process.env.NODE_ENV === 'production';
+  const raw = process.env.TRUST_PROXY?.trim();
+
+  if (isProduction && !raw) {
+    console.warn(
+      '[trust-proxy] TRUST_PROXY is not set; defaulting to 1 hop. ' +
+        'If the server is behind more than one reverse proxy or CDN, ' +
+        'set TRUST_PROXY to the correct hop count or subnet list to keep ' +
+        'rate limiting and audit logs accurate.',
+    );
+  }
 }
