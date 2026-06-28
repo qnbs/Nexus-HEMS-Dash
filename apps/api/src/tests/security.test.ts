@@ -75,6 +75,18 @@ describe('configureCors — production mode', () => {
     const res = await supertest(app).get('/test').set('Origin', 'https://qnbs.github.io');
     expect(res.headers['access-control-allow-origin']).toBe('https://qnbs.github.io');
   });
+
+  it('allows PATCH preflight requests from allowed origins', async () => {
+    const app = buildApp();
+    const res = await supertest(app)
+      .options('/test')
+      .set('Origin', 'https://qnbs.github.io')
+      .set('Access-Control-Request-Method', 'PATCH');
+    expect(res.status).toBe(204);
+    expect(res.headers['access-control-allow-methods']).toContain('PATCH');
+    expect(res.headers['access-control-allow-methods']).toContain('PUT');
+    expect(res.headers['access-control-allow-methods']).toContain('DELETE');
+  });
 });
 
 // ─── Request ID Tracking ─────────────────────────────────────────────
