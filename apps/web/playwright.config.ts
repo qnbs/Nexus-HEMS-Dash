@@ -31,7 +31,9 @@ export default defineConfig({
     ? [
         {
           name: 'chromium',
-          use: { ...devices['Desktop Chrome'] },
+          // Use the headless shell build in CI: much smaller download, no GUI
+          // dependencies, and avoids display-related hangs on ubuntu-latest.
+          use: { ...devices['Desktop Chrome'], channel: 'chromium-headless-shell' },
         },
         {
           name: 'firefox',
