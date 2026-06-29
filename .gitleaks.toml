@@ -46,6 +46,8 @@ regexes = [
   '''AWATTAR_API_KEY=your_''',
   '''API_TOKEN=\s*\n''',
   '''iso15118Enabled''',
+  '''Grype/cosign''',
+  '''Grype''',
 ]
 
 # Fingerprints of verified false positives (placeholder PEM in form inputs)

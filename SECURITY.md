@@ -56,7 +56,8 @@ This project employs multiple layers of security:
 | `API_KEYS`                | **Yes**                | Comma-separated API keys for `/api/auth/token` (generated via `openssl rand -hex 32`) |
 | `WS_ORIGINS`              | **Yes**                | Allowed WebSocket origins (replaces `ws://localhost:*` in production) |
 | `GRAFANA_PASSWORD`        | Yes (if Grafana used)  | Grafana admin password — no default, docker-compose fails without it  |
-| `ADAPTER_MODE`            | No (default: `mock`)   | `mock` for demo/testing, `live` for real hardware adapters            |
+| `ADAPTER_MODE`            | No (default: `mock`)   | `mock` for demo/testing; `live` requires `ALLOW_LIVE_HARDWARE=true` (see Safety-Certification-Notice) |
+| `ALLOW_LIVE_HARDWARE`     | No (default: unset)    | Must be `true` together with `ADAPTER_MODE=live` to start backend protocol adapters on real hardware |
 | `PROMETHEUS_BEARER_TOKEN` | No                     | Bearer token for Prometheus scrape endpoint (`/metrics`) authentication |
 | `CORS_ORIGINS`            | No                     | Additional CORS-allowed origins beyond deployment domain              |
 | `RATE_LIMIT_TRUSTED_IPS`  | No                     | Comma-separated IPs that bypass rate limiting (internal proxies)      |

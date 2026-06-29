@@ -1,15 +1,13 @@
 import type { EnergyData } from '@nexus-hems/shared-types';
+import { isMockAdapterMode } from '../config/adapter-mode.js';
 
 /**
  * Mock data for the HEMS dashboard demo.
  * In production, replace with AdapterBridge for real adapter data.
  *
- * Control via ADAPTER_MODE env var:
- *   - "mock" (default): randomized simulation data
- *   - "live": real adapter readings (requires adapter connections)
+ * Mock simulation runs whenever effective adapter mode is mock (the default).
+ * Live hardware requires ADAPTER_MODE=live and ALLOW_LIVE_HARDWARE=true.
  */
-
-const adapterMode = process.env.ADAPTER_MODE || 'mock';
 
 export const mockData: EnergyData = {
   gridPower: 0,
@@ -29,7 +27,7 @@ export const mockData: EnergyData = {
  * Update mock data with random noise (called on interval).
  */
 export function updateMockData(): void {
-  if (adapterMode !== 'mock') return;
+  if (!isMockAdapterMode()) return;
 
   mockData.pvPower = Math.max(0, mockData.pvPower + (Math.random() * 200 - 100));
   mockData.houseLoad = Math.max(300, mockData.houseLoad + (Math.random() * 100 - 50));
@@ -47,5 +45,5 @@ export function updateMockData(): void {
  * Returns whether the server is running in mock mode.
  */
 export function isMockMode(): boolean {
-  return adapterMode === 'mock';
+  return isMockAdapterMode();
 }

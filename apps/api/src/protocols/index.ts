@@ -4,14 +4,19 @@
  * Instantiates and starts all configured protocol adapters based on
  * the ADAPTER_MODE environment variable and device-map.json.
  *
- * ADAPTER_MODE=mock  → No real hardware adapters started (safe for CI/demo)
- * ADAPTER_MODE=live  → Modbus + MQTT adapters started from device-map.json
+ * ADAPTER_MODE=mock (default) → No real hardware adapters started (safe for CI/demo)
+ * ADAPTER_MODE=live + ALLOW_LIVE_HARDWARE=true → Modbus + MQTT adapters from device-map.json
  */
 
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { IProtocolAdapter } from '@nexus-hems/shared-types';
+import {
+  getEffectiveAdapterMode,
+  isLiveHardwareAllowed,
+  logAdapterModeStartup,
+} from '../config/adapter-mode.js';
 import type { EventBus } from '../core/EventBus.js';
 import { type DeviceConfig, ModbusAdapter } from './modbus/ModbusAdapter.js';
 import { MqttAdapter } from './mqtt/MqttAdapter.js';
@@ -58,10 +63,9 @@ function setState(
  * Called once on server startup.
  */
 export async function startProtocolAdapters(eventBus: EventBus): Promise<void> {
-  const mode = process.env.ADAPTER_MODE ?? 'mock';
+  logAdapterModeStartup();
 
-  if (mode === 'mock') {
-    console.log('[Adapters] ADAPTER_MODE=mock — skipping hardware adapter startup.');
+  if (!isLiveHardwareAllowed()) {
     return;
   }
 
@@ -218,7 +222,7 @@ export function computeAdapterHealth(
  * Compute overall health from configured adapter states and the current env.
  */
 export function getAdapterHealthSummary(): AdapterHealthSummary {
-  const mode = process.env.ADAPTER_MODE ?? 'mock';
+  const mode = getEffectiveAdapterMode();
   const adapters = getAdapterRunStates();
   return computeAdapterHealth(mode, adapters);
 }

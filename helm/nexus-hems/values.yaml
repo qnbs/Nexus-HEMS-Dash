@@ -124,6 +124,7 @@ containerSecurityContext:
 env:
   NODE_ENV: production
   PORT: '3000'
+  ADAPTER_MODE: mock
 
 # ─── Secrets (reference existing K8s secret) ─────────────────────────
 existingSecret: ''

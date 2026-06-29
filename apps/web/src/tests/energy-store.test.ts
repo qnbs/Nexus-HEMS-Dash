@@ -86,7 +86,7 @@ describe('useEnergyStore', () => {
             ...s.adapters[id],
             status: 'disconnected',
             error: undefined,
-            enabled: id === 'victron-mqtt',
+            enabled: false,
           },
         },
       }));
@@ -112,9 +112,9 @@ describe('useEnergyStore', () => {
     expect(ids).toContain('eebus');
   });
 
-  it('should have victron-mqtt enabled by default', () => {
+  it('should have all built-in adapters disabled by default (mock mode)', () => {
     const { adapters } = useEnergyStoreBase.getState();
-    expect(adapters['victron-mqtt'].enabled).toBe(true);
+    expect(adapters['victron-mqtt'].enabled).toBe(false);
     expect(adapters['modbus-sunspec'].enabled).toBe(false);
     expect(adapters.knx.enabled).toBe(false);
     expect(adapters['ocpp-21'].enabled).toBe(false);
@@ -213,7 +213,8 @@ describe('useEnergyStore', () => {
     });
 
     it('should set anyConnected when enabled adapter connects', () => {
-      const { setAdapterStatus } = useEnergyStoreBase.getState();
+      const { setAdapterStatus, enableAdapter } = useEnergyStoreBase.getState();
+      enableAdapter('victron-mqtt', true);
       setAdapterStatus('victron-mqtt', 'connected');
 
       const { anyConnected } = useEnergyStoreBase.getState();

@@ -63,6 +63,7 @@ WORKDIR /app
 COPY --chown=65532:65532 --from=build /tmp/api-deploy ./
 
 ENV NODE_ENV=production
+ENV ADAPTER_MODE=mock
 
 # Security: distroless:nonroot already runs as uid 65532 (nonroot) — no USER command needed.
 

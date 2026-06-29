@@ -5,6 +5,10 @@ declare const __APP_VERSION__: string;
 interface ImportMetaEnv {
   /** Set to 'true' in CI E2E jobs to expose the Zustand store on window.__NEXUS_STORE__ */
   readonly VITE_E2E_TESTING?: string;
+  /** Build-time adapter mode — defaults to mock when unset */
+  readonly VITE_ADAPTER_MODE?: string;
+  /** Must be "true" together with VITE_ADAPTER_MODE=live to allow hardware connections */
+  readonly VITE_ALLOW_LIVE_HARDWARE?: string;
 }
 
 interface ImportMeta {

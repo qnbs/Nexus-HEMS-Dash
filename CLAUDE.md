@@ -169,7 +169,7 @@ The app has no onboarding gate — `AppShell` renders directly without any `iner
 - All routes are Express Router factories (`createXxxRoutes()`) mounted via `app.use()`
 - `requireJWT` protects all endpoints except `/api/health`
 - JWT utilities: `apps/api/src/jwt-utils.ts`
-- `ADAPTER_MODE=mock|live` controls mock vs live adapter data
+- `ADAPTER_MODE=mock|live` controls mock vs live adapter data (default: `mock`; live requires `ALLOW_LIVE_HARDWARE=true`)
 - Production requires `JWT_SECRET`, `API_KEYS`, `WS_ORIGINS` env vars
 
 ### Backend Protocol Adapters
