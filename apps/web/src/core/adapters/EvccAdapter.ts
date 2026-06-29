@@ -155,6 +155,7 @@ export class EvccAdapter extends BaseAdapter {
   }
 
   protected async _connect(): Promise<void> {
+    this.setStatus('connecting');
     // Verify evcc is reachable
     const health = await this.fetchApi('/api/health');
     if (!health?.ok) {
@@ -170,6 +171,8 @@ export class EvccAdapter extends BaseAdapter {
     // Fallback polling every 3s
     const interval = this.config?.pollIntervalMs ?? 3000;
     this.pollTimer = setInterval(() => this.pollState(), interval);
+
+    this.setStatus('connected');
   }
 
   protected async _disconnect(): Promise<void> {

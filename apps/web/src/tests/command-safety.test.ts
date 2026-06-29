@@ -118,6 +118,30 @@ describe('command-safety', () => {
       expect(entries[0]?.adapterId).toBe('ocpp-21');
       expect(entries[0]?.targetDeviceId).toBe('evse-01');
     });
+
+    it('trims commandAudit to 5000 entries after overflow', async () => {
+      const base = Date.now();
+      const bulk = Array.from({ length: 5002 }, (_, i) => ({
+        timestamp: base + i,
+        commandType: 'SET_BATTERY_POWER' as const,
+        value: 100,
+        status: 'executed' as const,
+      }));
+      await nexusDb.commandAudit.bulkAdd(bulk);
+      expect(await nexusDb.commandAudit.count()).toBe(5002);
+
+      await logCommandAudit({
+        timestamp: base + 10_000,
+        commandType: 'SET_EV_CURRENT',
+        value: 16,
+        status: 'executed',
+      });
+
+      const count = await nexusDb.commandAudit.count();
+      expect(count).toBeLessThanOrEqual(5000);
+      const remaining = await nexusDb.commandAudit.orderBy('timestamp').toArray();
+      expect(remaining.at(-1)?.commandType).toBe('SET_EV_CURRENT');
+    });
   });
 
   describe('checkRateLimit', () => {
