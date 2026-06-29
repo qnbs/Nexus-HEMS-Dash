@@ -74,12 +74,15 @@ jobs:
           output-file: sbom-frontend.spdx.json
           artifact-name: sbom-frontend-${{ github.sha }}.spdx.json
 
+      - name: Validate Grype policy
+        run: bash scripts/verify-grype-policy.sh
+
       - name: Scan frontend image (Grype)
         uses: anchore/scan-action@e1165082ffb1fe366ebaf02d8526e7c4989ea9d2 # v7
         with:
           image: nexus-hems-frontend:${{ github.sha }}
+          config: .grype.yaml
           fail-build: true
-          only-fixed: true
           severity-cutoff: critical
           output-format: sarif
 
@@ -116,12 +119,15 @@ jobs:
           output-file: sbom-backend.spdx.json
           artifact-name: sbom-backend-${{ github.sha }}.spdx.json
 
+      - name: Validate Grype policy
+        run: bash scripts/verify-grype-policy.sh
+
       - name: Scan backend image (Grype)
         uses: anchore/scan-action@e1165082ffb1fe366ebaf02d8526e7c4989ea9d2 # v7
         with:
           image: nexus-hems-backend:${{ github.sha }}
+          config: .grype.yaml
           fail-build: true
-          only-fixed: true
           severity-cutoff: critical
           output-format: sarif
 
@@ -146,11 +152,14 @@ jobs:
           output-file: sbom-source.spdx.json
           artifact-name: sbom-source-${{ github.sha }}.spdx.json
 
+      - name: Validate Grype policy
+        run: bash scripts/verify-grype-policy.sh
+
       - name: Scan source SBOM (Grype)
         uses: anchore/scan-action@e1165082ffb1fe366ebaf02d8526e7c4989ea9d2 # v7
         with:
           sbom: sbom-source.spdx.json
+          config: .grype.yaml
           fail-build: true
-          only-fixed: true
           severity-cutoff: critical
           output-format: sarif

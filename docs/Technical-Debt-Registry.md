@@ -127,9 +127,22 @@ Required checks are documented but must be applied manually in GitHub Settings �
 **Files:** `.github/workflows/sbom-scan.yml`, `.github/workflows/container-publish.yml`, `docs/Master-Improvement-Roadmap.md`  
 **Status:** ✅ Fixed in v1.3.0 prep
 
-`sbom-scan.yml` generates syft SPDX SBOMs, runs `pnpm audit --audit-level=high`, and scans images/source via `anchore/scan-action@v7` (`only-fixed: true`, critical cutoff, blocking). `container-publish.yml` builds both GHCR images, Grype-gates before push, cosign keyless-signs, and attaches SLSA provenance.
+`sbom-scan.yml` generates syft SPDX SBOMs, runs `pnpm audit --audit-level=high`, and scans images/source via `anchore/scan-action@v7` (critical cutoff, blocking, `.grype.yaml` targeted ignores). `container-publish.yml` builds both GHCR images, Grype-gates before push, cosign keyless-signs, and attaches SLSA provenance.
 
-**Accepted upstream risk:** distroless `libc6` may report unfixable critical CVEs (e.g. CVE-2026-5450) until Debian/distroless publishes patches; `only-fixed` gates actionable findings only.
+---
+
+### SUPPLY-02 — Grype CVE exception registry (targeted ignores)
+
+**Files:** `.grype.yaml`, `docs/Supply-Chain-Grype-Policy.md`, `scripts/verify-grype-policy.sh`  
+**Status:** ⚠️ Active exception — quarterly review
+
+| CVE | Package | Scope | Next review |
+|-----|---------|-------|-------------|
+| CVE-2026-5450 | libc6 (deb) | distroless backend base | 2026-09-29 |
+
+**Policy:** No global `only-fixed: true`. New unfixable critical CVEs fail CI until explicitly documented in `.grype.yaml` + this registry. Compensating controls: PSS restricted, readOnlyRootFilesystem, cap_drop ALL, seccomp RuntimeDefault.
+
+**Future:** Evaluate Chainguard/Wolfi zero-CVE base (SUPPLY-03) when distroless libc remains unpatched across two review cycles.
 
 ---
 

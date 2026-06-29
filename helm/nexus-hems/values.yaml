@@ -106,10 +106,29 @@ podSecurity:
   warnVersion: latest
 
 podSecurityContext:
+  # Deprecated — use serverPodSecurityContext / frontendPodSecurityContext
   runAsNonRoot: true
   runAsUser: 65534
   runAsGroup: 65534
   fsGroup: 65534
+  seccompProfile:
+    type: RuntimeDefault
+
+# Distroless nonroot uid (65532) — must match Dockerfile.server COPY --chown
+serverPodSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 65532
+  runAsGroup: 65532
+  fsGroup: 65532
+  seccompProfile:
+    type: RuntimeDefault
+
+# nginx-unprivileged default uid
+frontendPodSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 101
+  runAsGroup: 101
+  fsGroup: 101
   seccompProfile:
     type: RuntimeDefault
 

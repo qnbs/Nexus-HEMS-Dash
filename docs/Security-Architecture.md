@@ -253,7 +253,8 @@ Each adapter uses `apps/web/src/core/circuit-breaker.ts`:
 | **CodeQL**             | Static analysis (JavaScript/TypeScript)                               |
 | **Syft SBOM**          | SPDX SBOM generation for frontend/backend images and source (`sbom-scan.yml`) |
 | **pnpm audit**         | Production dependency audit (`sbom-scan.yml`, `--audit-level=high`)           |
-| **Grype / Snyk**       | Container/filesystem CVE scanning — Grype in `sbom-scan.yml` + `container-publish.yml` (critical, blocking) |
+| **Grype / Snyk**       | Container/filesystem CVE scanning — Grype in `sbom-scan.yml` + `container-publish.yml` (critical, blocking, `.grype.yaml` targeted ignores) |
+| **Grype policy**       | `.grype.yaml` + `docs/Supply-Chain-Grype-Policy.md` — CVE-specific exceptions only (no global `only-fixed`) |
 | **Cosign**             | Keyless image signing + SLSA provenance on GHCR publish (`container-publish.yml`) |
 | **Gitleaks**           | Secret detection (pre-commit + CI)                                    |
 | **anti-trojan-source** | Unicode Bidi character detection                                      |
@@ -261,6 +262,10 @@ Each adapter uses `apps/web/src/core/circuit-breaker.ts`:
 | **OpenSSF Scorecard**  | Supply chain security rating                                          |
 | **Renovate**           | Automated dependency updates                                          |
 | **Chromatic**          | Visual regression + Storybook CI                                      |
+
+#### Grype exception policy
+
+Blocking scans use **full critical severity** (not `only-fixed: true`). Known upstream won't-fix CVEs are whitelisted individually in `.grype.yaml` with documented `reason` fields. See `docs/Supply-Chain-Grype-Policy.md` and registry entry **SUPPLY-02**. CI runs `scripts/verify-grype-policy.sh` to cap ignore-rule growth.
 
 ### Runtime Governance
 
