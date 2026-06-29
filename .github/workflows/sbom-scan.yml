@@ -79,6 +79,7 @@ jobs:
         with:
           image: nexus-hems-frontend:${{ github.sha }}
           fail-build: true
+          only-fixed: true
           severity-cutoff: critical
           output-format: sarif
 
@@ -120,6 +121,7 @@ jobs:
         with:
           image: nexus-hems-backend:${{ github.sha }}
           fail-build: true
+          only-fixed: true
           severity-cutoff: critical
           output-format: sarif
 
@@ -149,5 +151,6 @@ jobs:
         with:
           sbom: sbom-source.spdx.json
           fail-build: true
+          only-fixed: true
           severity-cutoff: critical
           output-format: sarif

@@ -352,7 +352,7 @@ This feature fundamentally changes the auth architecture and is deferred to v1.2
 | E2E (Chromium + Firefox) | `ci.yml` | Yes | Yes |
 | SBOM generation (syft) | `sbom-scan.yml` | Yes | Yes |
 | pnpm dependency audit | `sbom-scan.yml` | Yes | Yes (`--audit-level=high`) |
-| Grype vulnerability scan | `sbom-scan.yml`, `container-publish.yml` | Yes | Yes (critical cutoff, blocking) |
+| Grype vulnerability scan | `sbom-scan.yml`, `container-publish.yml` | Yes | Yes (critical, `only-fixed`, blocking) |
 | Cosign image signing | `container-publish.yml` | Yes (main/tags) | Yes (keyless + SLSA provenance) |
 | Lighthouse (Perf ≥85%) | `lighthouse.yml` | Yes | PR comment |
 | Chromatic visual regression | `chromatic.yml` | Yes (after token) | PR |
