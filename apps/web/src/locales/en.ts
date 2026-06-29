@@ -2597,6 +2597,10 @@ export const en = {
   certManagement: {
     title: 'EEBUS Certificate Management',
     description: 'Manage device certificates for EEBUS SPINE/SHIP pairing (TLS 1.3 mTLS).',
+    ocppTitle: 'OCPP 2.1 Security Profile 3 (mTLS)',
+    ocppDesc:
+      'Client certificates for OCPP wallbox connections are stored in the encrypted adapter vault under Settings → Adapters → OCPP.',
+    ocppLink: 'Open OCPP adapter settings →',
     noCerts: 'No device certificates configured',
     noCertsDesc: 'Import a certificate or pair with a new EEBUS device to get started.',
     importCert: 'Import Certificate',

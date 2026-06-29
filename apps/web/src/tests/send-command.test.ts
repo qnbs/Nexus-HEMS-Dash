@@ -41,6 +41,12 @@ vi.mock('../lib/metrics', () => ({
   },
 }));
 
+vi.mock('../lib/secure-store', () => ({
+  mergeCredentialsIntoConfig: vi.fn(async (_id: string, config: Record<string, unknown>) => config),
+}));
+
+const OCPP_TEST_CONFIG = { host: 'localhost', port: 9000, securityProfile: 0 as const, tls: false };
+
 // ─── BaseAdapter sendCommand pipeline ────────────────────────────────
 
 // Dynamic OCPP import + WebSocket mock can exceed the default 5s on slow CI / cold cache.
@@ -61,7 +67,7 @@ describe('BaseAdapter.sendCommand — full pipeline', { timeout: OCPP_PIPELINE_T
 
   it('should accept valid SET_EV_CURRENT command', async () => {
     const { OCPP21Adapter } = await import('../core/adapters/OCPP21Adapter');
-    const adapter = new OCPP21Adapter({ host: 'localhost', port: 9000 });
+    const adapter = new OCPP21Adapter(OCPP_TEST_CONFIG);
 
     await adapter.connect();
     await new Promise((r) => setTimeout(r, 10));
@@ -82,7 +88,7 @@ describe('BaseAdapter.sendCommand — full pipeline', { timeout: OCPP_PIPELINE_T
 
   it('should reject invalid command value (negative current)', async () => {
     const { OCPP21Adapter } = await import('../core/adapters/OCPP21Adapter');
-    const adapter = new OCPP21Adapter({ host: 'localhost', port: 9000 });
+    const adapter = new OCPP21Adapter(OCPP_TEST_CONFIG);
 
     await adapter.connect();
     await new Promise((r) => setTimeout(r, 10));
@@ -99,7 +105,7 @@ describe('BaseAdapter.sendCommand — full pipeline', { timeout: OCPP_PIPELINE_T
 
   it('should reject value exceeding max (>80A for SET_EV_CURRENT)', async () => {
     const { OCPP21Adapter } = await import('../core/adapters/OCPP21Adapter');
-    const adapter = new OCPP21Adapter({ host: 'localhost', port: 9000 });
+    const adapter = new OCPP21Adapter(OCPP_TEST_CONFIG);
 
     await adapter.connect();
     await new Promise((r) => setTimeout(r, 10));
@@ -116,7 +122,7 @@ describe('BaseAdapter.sendCommand — full pipeline', { timeout: OCPP_PIPELINE_T
 
   it('should reject command when circuit breaker is open', async () => {
     const { OCPP21Adapter } = await import('../core/adapters/OCPP21Adapter');
-    const adapter = new OCPP21Adapter({ host: 'localhost', port: 9000 });
+    const adapter = new OCPP21Adapter(OCPP_TEST_CONFIG);
 
     await adapter.connect();
     await new Promise((r) => setTimeout(r, 10));
@@ -138,7 +144,7 @@ describe('BaseAdapter.sendCommand — full pipeline', { timeout: OCPP_PIPELINE_T
 
   it('should handle double-confirm: user confirms', async () => {
     const { OCPP21Adapter } = await import('../core/adapters/OCPP21Adapter');
-    const adapter = new OCPP21Adapter({ host: 'localhost', port: 9000 });
+    const adapter = new OCPP21Adapter(OCPP_TEST_CONFIG);
 
     // Install confirm delegate that always confirms
     adapter.confirmCommand = vi.fn().mockResolvedValue(true);
@@ -159,7 +165,7 @@ describe('BaseAdapter.sendCommand — full pipeline', { timeout: OCPP_PIPELINE_T
 
   it('should handle double-confirm: user cancels', async () => {
     const { OCPP21Adapter } = await import('../core/adapters/OCPP21Adapter');
-    const adapter = new OCPP21Adapter({ host: 'localhost', port: 9000 });
+    const adapter = new OCPP21Adapter(OCPP_TEST_CONFIG);
 
     // Install confirm delegate that always cancels
     adapter.confirmCommand = vi.fn().mockResolvedValue(false);
@@ -179,7 +185,7 @@ describe('BaseAdapter.sendCommand — full pipeline', { timeout: OCPP_PIPELINE_T
 
   it('should reject command when offline', async () => {
     const { OCPP21Adapter } = await import('../core/adapters/OCPP21Adapter');
-    const adapter = new OCPP21Adapter({ host: 'localhost', port: 9000 });
+    const adapter = new OCPP21Adapter(OCPP_TEST_CONFIG);
 
     await adapter.connect();
     await new Promise((r) => setTimeout(r, 10));
@@ -200,7 +206,7 @@ describe('BaseAdapter.sendCommand — full pipeline', { timeout: OCPP_PIPELINE_T
 
   it('should reject command when WebSocket is not open', async () => {
     const { OCPP21Adapter } = await import('../core/adapters/OCPP21Adapter');
-    const adapter = new OCPP21Adapter({ host: 'localhost', port: 9000 });
+    const adapter = new OCPP21Adapter(OCPP_TEST_CONFIG);
 
     // Don't connect → WS is null
     const result = await adapter.sendCommand({
@@ -230,7 +236,7 @@ describe('OCPP21Adapter — sendCommand dispatch', { timeout: OCPP_PIPELINE_TIME
 
   it('SET_EV_CURRENT → SetChargingProfile with correct limit', async () => {
     const { OCPP21Adapter } = await import('../core/adapters/OCPP21Adapter');
-    const adapter = new OCPP21Adapter({ host: 'localhost', port: 9000 });
+    const adapter = new OCPP21Adapter(OCPP_TEST_CONFIG);
 
     await adapter.connect();
     await new Promise((r) => setTimeout(r, 10));
@@ -251,7 +257,7 @@ describe('OCPP21Adapter — sendCommand dispatch', { timeout: OCPP_PIPELINE_TIME
 
   it('SET_EV_POWER → SetChargingProfile with power/voltage conversion', async () => {
     const { OCPP21Adapter } = await import('../core/adapters/OCPP21Adapter');
-    const adapter = new OCPP21Adapter({ host: 'localhost', port: 9000 });
+    const adapter = new OCPP21Adapter(OCPP_TEST_CONFIG);
 
     await adapter.connect();
     await new Promise((r) => setTimeout(r, 10));
@@ -273,7 +279,7 @@ describe('OCPP21Adapter — sendCommand dispatch', { timeout: OCPP_PIPELINE_TIME
 
   it('START_CHARGING → RequestStartTransaction', async () => {
     const { OCPP21Adapter } = await import('../core/adapters/OCPP21Adapter');
-    const adapter = new OCPP21Adapter({ host: 'localhost', port: 9000 });
+    const adapter = new OCPP21Adapter(OCPP_TEST_CONFIG);
 
     await adapter.connect();
     await new Promise((r) => setTimeout(r, 10));
@@ -288,7 +294,7 @@ describe('OCPP21Adapter — sendCommand dispatch', { timeout: OCPP_PIPELINE_TIME
 
   it('STOP_CHARGING → RequestStopTransaction (needs transactionId)', async () => {
     const { OCPP21Adapter } = await import('../core/adapters/OCPP21Adapter');
-    const adapter = new OCPP21Adapter({ host: 'localhost', port: 9000 });
+    const adapter = new OCPP21Adapter(OCPP_TEST_CONFIG);
 
     await adapter.connect();
     await new Promise((r) => setTimeout(r, 10));
@@ -306,7 +312,7 @@ describe('OCPP21Adapter — sendCommand dispatch', { timeout: OCPP_PIPELINE_TIME
 
   it('STOP_CHARGING → false when no active transaction', async () => {
     const { OCPP21Adapter } = await import('../core/adapters/OCPP21Adapter');
-    const adapter = new OCPP21Adapter({ host: 'localhost', port: 9000 });
+    const adapter = new OCPP21Adapter(OCPP_TEST_CONFIG);
 
     await adapter.connect();
     await new Promise((r) => setTimeout(r, 10));
@@ -323,7 +329,7 @@ describe('OCPP21Adapter — sendCommand dispatch', { timeout: OCPP_PIPELINE_TIME
 
   it('SET_GRID_LIMIT → ChargingStationMaxProfile (§14a EnWG)', async () => {
     const { OCPP21Adapter } = await import('../core/adapters/OCPP21Adapter');
-    const adapter = new OCPP21Adapter({ host: 'localhost', port: 9000 });
+    const adapter = new OCPP21Adapter(OCPP_TEST_CONFIG);
 
     await adapter.connect();
     await new Promise((r) => setTimeout(r, 10));
@@ -342,7 +348,7 @@ describe('OCPP21Adapter — sendCommand dispatch', { timeout: OCPP_PIPELINE_TIME
 
   it('SET_V2X_DISCHARGE → negative TxProfile limit', async () => {
     const { OCPP21Adapter } = await import('../core/adapters/OCPP21Adapter');
-    const adapter = new OCPP21Adapter({ host: 'localhost', port: 9000 });
+    const adapter = new OCPP21Adapter(OCPP_TEST_CONFIG);
 
     await adapter.connect();
     await new Promise((r) => setTimeout(r, 10));
@@ -364,7 +370,7 @@ describe('OCPP21Adapter — sendCommand dispatch', { timeout: OCPP_PIPELINE_TIME
 
   it('unsupported command type → false', async () => {
     const { OCPP21Adapter } = await import('../core/adapters/OCPP21Adapter');
-    const adapter = new OCPP21Adapter({ host: 'localhost', port: 9000 });
+    const adapter = new OCPP21Adapter(OCPP_TEST_CONFIG);
 
     await adapter.connect();
     await new Promise((r) => setTimeout(r, 10));
@@ -384,8 +390,7 @@ describe('OCPP21Adapter — sendCommand dispatch', { timeout: OCPP_PIPELINE_TIME
   it('START_CHARGING with ISO 15118 uses eMAID token', async () => {
     const { OCPP21Adapter } = await import('../core/adapters/OCPP21Adapter');
     const adapter = new OCPP21Adapter({
-      host: 'localhost',
-      port: 9000,
+      ...OCPP_TEST_CONFIG,
       iso15118: true,
     });
 

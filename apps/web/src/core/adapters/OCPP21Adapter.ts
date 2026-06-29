@@ -27,6 +27,7 @@ import type {
   EVPlugType,
   UnifiedEnergyModel,
 } from './EnergyAdapter';
+import { type OcppRevocationCheck, prepareOcppConnection } from './ocpp-security';
 
 // ── V2G / SOC guardrails ─────────────────────────────────────────────
 /** Minimum EV SOC% before V2G discharge is permitted (ISO 15118-20 §9.8 / CharIN Guide 2.0) */
@@ -123,7 +124,7 @@ const CALL_TIMEOUT_MS = 30_000;
 export interface OCPPAdapterConfig extends Partial<AdapterConnectionConfig> {
   /** OCPP Security Profile (0-3) */
   securityProfile?: OCPPSecurityProfile;
-  /** Charging station identity (for URI path) */
+  /** Charging station identity (for URI path and Basic Auth username) */
   stationId?: string;
   /** ISO 15118 Plug & Charge support */
   iso15118?: boolean;
@@ -131,6 +132,8 @@ export interface OCPPAdapterConfig extends Partial<AdapterConnectionConfig> {
   v2xCapable?: boolean;
   /** AFIR-compliant plug/connector type */
   plugType?: EVPlugType;
+  /** CRL/OCSP revocation check mode (hook; full OCSP via API proxy later) */
+  revocationCheck?: OcppRevocationCheck;
 }
 
 export class OCPP21Adapter extends BaseAdapter {
@@ -142,8 +145,9 @@ export class OCPP21Adapter extends BaseAdapter {
   private msgCounter = 0;
   private pendingCalls: Map<string, PendingCall> = new Map();
   private stationId: string;
-  /** Security profile — used during TLS negotiation with charging station */
+  /** Security profile — drives TLS, Basic Auth, and mTLS validation in _connect() */
   readonly securityProfile: OCPPSecurityProfile;
+  private readonly revocationCheck: OcppRevocationCheck;
   private iso15118Enabled: boolean;
 
   private charger: ChargerState = {
@@ -177,6 +181,7 @@ export class OCPP21Adapter extends BaseAdapter {
     });
     this.stationId = config?.stationId ?? 'nexus-station-1';
     this.securityProfile = config?.securityProfile ?? 2;
+    this.revocationCheck = config?.revocationCheck ?? 'off';
     this.iso15118Enabled = config?.iso15118 ?? false;
     this.charger.v2xCapable = config?.v2xCapable ?? false;
     this.charger.plugType = config?.plugType ?? 'IEC_62196_T2_COMBO';
@@ -187,9 +192,32 @@ export class OCPP21Adapter extends BaseAdapter {
   protected async _connect(): Promise<void> {
     this.setStatus('connecting');
 
-    const protocol = this.config.tls ? 'wss:' : 'ws:';
-    const wsUrl = `${protocol}//${this.config.host}:${this.config.port}/ocpp/${encodeURIComponent(this.stationId)}`;
-    const ws = new WebSocket(wsUrl, ['ocpp2.1']);
+    const { mergeCredentialsIntoConfig } = await import('../../lib/secure-store');
+    const merged = await mergeCredentialsIntoConfig('ocpp-21', this.config);
+
+    const prep = prepareOcppConnection({
+      host: merged.host,
+      port: merged.port,
+      securityProfile: this.securityProfile,
+      stationId: this.stationId,
+      revocationCheck: this.revocationCheck,
+      ...(merged.tls !== undefined ? { tls: merged.tls } : {}),
+      ...(merged.authToken !== undefined ? { authToken: merged.authToken } : {}),
+      ...(merged.clientCert !== undefined ? { clientCert: merged.clientCert } : {}),
+      ...(merged.clientKey !== undefined ? { clientKey: merged.clientKey } : {}),
+      ...(merged.caCert !== undefined ? { caCert: merged.caCert } : {}),
+    });
+
+    if (!prep.ok) {
+      this.setStatus('error', prep.error);
+      return;
+    }
+
+    if (prep.warnings?.length) {
+      this.log.warn(prep.warnings.join(' '), { securityProfile: this.securityProfile });
+    }
+
+    const ws = new WebSocket(prep.url, prep.protocols);
 
     ws.onopen = () => {
       this.resetRetryDelay();

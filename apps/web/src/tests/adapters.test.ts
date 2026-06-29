@@ -217,7 +217,7 @@ describe('Adapter capabilities', () => {
 
   it('OCPP21Adapter should cover evCharger', async () => {
     const { OCPP21Adapter } = await import('../core/adapters/OCPP21Adapter');
-    const adapter = new OCPP21Adapter();
+    const adapter = new OCPP21Adapter({ securityProfile: 0, tls: false });
     expect(adapter.capabilities).toEqual(['evCharger']);
   });
 

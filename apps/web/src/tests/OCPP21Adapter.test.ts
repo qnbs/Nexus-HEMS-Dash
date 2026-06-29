@@ -2,6 +2,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { EnergyAdapter } from '../core/adapters/EnergyAdapter';
 import { OCPP21Adapter } from '../core/adapters/OCPP21Adapter';
 
+vi.mock('../lib/secure-store', () => ({
+  mergeCredentialsIntoConfig: vi.fn(async (_id: string, config: Record<string, unknown>) => config),
+}));
+
 // ────────────────────────────────────────────────────────────────────
 // OCPP21Adapter — Unit Tests
 // Tests the OCPP 2.1 JSON-RPC over WebSocket adapter (mini-CSMS mode).
@@ -15,6 +19,8 @@ class MockWebSocket {
   static OPEN = 1;
   static CLOSING = 2;
   static CLOSED = 3;
+  readonly url: string;
+  protocols?: string | string[];
   readyState: number = WebSocket.CONNECTING;
   onopen: (() => void) | null = null;
   onmessage: ((e: { data: string }) => void) | null = null;
@@ -22,7 +28,11 @@ class MockWebSocket {
   onclose: (() => void) | null = null;
   send = vi.fn();
   close = vi.fn();
-  constructor() {
+  constructor(url: string, protocols?: string | string[]) {
+    this.url = url;
+    if (protocols !== undefined) {
+      this.protocols = protocols;
+    }
     mockInstance = this;
   }
 }
@@ -36,7 +46,7 @@ describe('OCPP21Adapter — Interface Contract', () => {
 
   beforeEach(() => {
     vi.stubGlobal('WebSocket', MockWebSocket);
-    adapter = new OCPP21Adapter();
+    adapter = new OCPP21Adapter({ securityProfile: 0, tls: false });
   });
 
   afterEach(() => {
@@ -73,7 +83,7 @@ describe('OCPP21Adapter — WebSocket Lifecycle', () => {
 
   beforeEach(() => {
     vi.stubGlobal('WebSocket', MockWebSocket);
-    adapter = new OCPP21Adapter({ host: 'evse.local', port: 9000 });
+    adapter = new OCPP21Adapter({ host: 'evse.local', port: 9000, securityProfile: 0, tls: false });
   });
 
   afterEach(() => {
@@ -83,32 +93,28 @@ describe('OCPP21Adapter — WebSocket Lifecycle', () => {
   });
 
   it('opens WebSocket on connect()', async () => {
-    const p = adapter.connect();
+    await adapter.connect();
     expect(mockInstance).not.toBeNull();
     mockInstance!.onclose?.();
-    await p.catch(() => {});
   });
 
   it('transitions to connected on WebSocket open', async () => {
-    const p = adapter.connect();
+    await adapter.connect();
     mockInstance!.readyState = WebSocket.OPEN;
     mockInstance!.onopen?.();
-    await p.catch(() => {});
     expect(adapter.status).toBe('connected');
   });
 
   it('transitions to error on WebSocket error', async () => {
-    const p = adapter.connect();
+    await adapter.connect();
     mockInstance!.onerror?.({ message: 'ECONNREFUSED' });
     mockInstance!.onclose?.();
-    await p.catch(() => {});
     expect(['error', 'disconnected', 'connecting']).toContain(adapter.status);
   });
 
   it('transitions to disconnected on WebSocket close', async () => {
-    const p = adapter.connect();
+    await adapter.connect();
     mockInstance!.onopen?.();
-    await p.catch(() => {});
     mockInstance!.onclose?.();
     expect(adapter.status).toBe('disconnected');
   });
@@ -119,7 +125,7 @@ describe('OCPP21Adapter — OCPP 2.1 Message Protocol', () => {
 
   beforeEach(() => {
     vi.stubGlobal('WebSocket', MockWebSocket);
-    adapter = new OCPP21Adapter({ host: 'evse.local', port: 9000 });
+    adapter = new OCPP21Adapter({ host: 'evse.local', port: 9000, securityProfile: 0, tls: false });
   });
 
   afterEach(() => {
@@ -129,10 +135,9 @@ describe('OCPP21Adapter — OCPP 2.1 Message Protocol', () => {
   });
 
   it('handles BootNotification CALL and responds with CALLRESULT', async () => {
-    const p = adapter.connect();
+    await adapter.connect();
     mockInstance!.readyState = WebSocket.OPEN;
     mockInstance!.onopen?.();
-    await p.catch(() => {});
 
     const bootMsg = ocppCall('BootNotification', {
       chargingStation: { model: 'ABB Terra', vendorName: 'ABB' },
@@ -145,10 +150,9 @@ describe('OCPP21Adapter — OCPP 2.1 Message Protocol', () => {
   });
 
   it('handles StatusNotification and updates connector status', async () => {
-    const p = adapter.connect();
+    await adapter.connect();
     mockInstance!.readyState = WebSocket.OPEN;
     mockInstance!.onopen?.();
-    await p.catch(() => {});
 
     const statusMsg = ocppCall('StatusNotification', {
       timestamp: new Date().toISOString(),
@@ -165,10 +169,9 @@ describe('OCPP21Adapter — OCPP 2.1 Message Protocol', () => {
   });
 
   it('handles TransactionEvent with charging state and power reading', async () => {
-    const p = adapter.connect();
+    await adapter.connect();
     mockInstance!.readyState = WebSocket.OPEN;
     mockInstance!.onopen?.();
-    await p.catch(() => {});
 
     const txMsg = ocppCall('TransactionEvent', {
       eventType: 'Started',
@@ -198,10 +201,9 @@ describe('OCPP21Adapter — OCPP 2.1 Message Protocol', () => {
   });
 
   it('handles TransactionEvent Ended and clears session', async () => {
-    const p = adapter.connect();
+    await adapter.connect();
     mockInstance!.readyState = WebSocket.OPEN;
     mockInstance!.onopen?.();
-    await p.catch(() => {});
 
     const txEndMsg = ocppCall('TransactionEvent', {
       eventType: 'Ended',
@@ -222,20 +224,18 @@ describe('OCPP21Adapter — OCPP 2.1 Message Protocol', () => {
   });
 
   it('does not crash on CALLERROR message', async () => {
-    const p = adapter.connect();
+    await adapter.connect();
     mockInstance!.readyState = WebSocket.OPEN;
     mockInstance!.onopen?.();
-    await p.catch(() => {});
 
     const errMsg = JSON.stringify([4, 'some-unique-id', 'NotImplemented', 'Unknown action', {}]);
     expect(() => mockInstance!.onmessage?.({ data: errMsg })).not.toThrow();
   });
 
   it('ignores malformed JSON messages', async () => {
-    const p = adapter.connect();
+    await adapter.connect();
     mockInstance!.readyState = WebSocket.OPEN;
     mockInstance!.onopen?.();
-    await p.catch(() => {});
 
     expect(() => {
       mockInstance!.onmessage?.({ data: '{ bad json' });
@@ -248,7 +248,7 @@ describe('OCPP21Adapter — Smart Charging Commands', () => {
 
   beforeEach(() => {
     vi.stubGlobal('WebSocket', MockWebSocket);
-    adapter = new OCPP21Adapter({ host: 'evse.local', port: 9000 });
+    adapter = new OCPP21Adapter({ host: 'evse.local', port: 9000, securityProfile: 0, tls: false });
   });
 
   afterEach(() => {
@@ -263,10 +263,9 @@ describe('OCPP21Adapter — Smart Charging Commands', () => {
   });
 
   it('sends SetChargingProfile when connected', async () => {
-    const p = adapter.connect();
+    await adapter.connect();
     mockInstance!.readyState = WebSocket.OPEN;
     mockInstance!.onopen?.();
-    await p.catch(() => {});
 
     const result = await adapter.sendCommand({ type: 'SET_EV_POWER', value: 6900 });
     expect(typeof result).toBe('boolean');
@@ -282,10 +281,9 @@ describe('OCPP21Adapter — Smart Charging Commands', () => {
   });
 
   it('enforces §14a EnWG 3.7kW minimum when stop is sent during peak', async () => {
-    const p = adapter.connect();
+    await adapter.connect();
     mockInstance!.readyState = WebSocket.OPEN;
     mockInstance!.onopen?.();
-    await p.catch(() => {});
 
     // 0W would violate §14a limit — adapter should either reject or clamp
     const result = await adapter.sendCommand({ type: 'SET_EV_POWER', value: 0 });
@@ -294,10 +292,9 @@ describe('OCPP21Adapter — Smart Charging Commands', () => {
   });
 
   it('returns false for SET_BATTERY_POWER (unknown to OCPP adapter) when connected', async () => {
-    const p = adapter.connect();
+    await adapter.connect();
     mockInstance!.readyState = WebSocket.OPEN;
     mockInstance!.onopen?.();
-    await p.catch(() => {});
 
     const result = await adapter.sendCommand({ type: 'SET_BATTERY_POWER', value: 0 });
     expect(result).toBe(false);
@@ -313,6 +310,8 @@ describe('OCPP21Adapter — V2X Support', () => {
       host: 'evse.local',
       port: 9000,
       iso15118: true,
+      securityProfile: 0,
+      tls: false,
     });
   });
 
@@ -323,10 +322,9 @@ describe('OCPP21Adapter — V2X Support', () => {
   });
 
   it('tracks V2X-capable charger state', async () => {
-    const p = adapter.connect();
+    await adapter.connect();
     mockInstance!.readyState = WebSocket.OPEN;
     mockInstance!.onopen?.();
-    await p.catch(() => {});
 
     // Simulate V2X status notification
     const statusMsg = ocppCall('StatusNotification', {
@@ -344,17 +342,74 @@ describe('OCPP21Adapter — V2X Support', () => {
   });
 });
 
+describe('OCPP21Adapter — Security Profiles', () => {
+  beforeEach(() => {
+    vi.stubGlobal('WebSocket', MockWebSocket);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    mockInstance = null;
+  });
+
+  it('uses wss with Basic Auth URL for profile 2', async () => {
+    const adapter = new OCPP21Adapter({
+      host: 'csms.local',
+      port: 9000,
+      securityProfile: 2,
+      stationId: 'WB-01',
+      authToken: 'auth-secret',
+    });
+    await adapter.connect();
+    expect(mockInstance?.url).toBe('wss://WB-01:auth-secret@csms.local:9000/ocpp/WB-01');
+    mockInstance?.onclose?.();
+    adapter.destroy();
+  });
+
+  it('fails connect without client cert for profile 3', async () => {
+    const adapter = new OCPP21Adapter({
+      host: 'csms.local',
+      port: 9000,
+      securityProfile: 3,
+      stationId: 'WB-01',
+    });
+    await adapter.connect();
+    expect(adapter.status).toBe('error');
+    expect(mockInstance).toBeNull();
+    adapter.destroy();
+  });
+
+  it('connects with profile 3 when PEM credentials are configured', async () => {
+    const adapter = new OCPP21Adapter({
+      host: 'csms.local',
+      port: 9000,
+      securityProfile: 3,
+      stationId: 'WB-01',
+      clientCert: '-----BEGIN CERTIFICATE-----\nMIIB\n-----END CERTIFICATE-----',
+      clientKey: '-----BEGIN PRIVATE KEY-----\nMIIE\n-----END PRIVATE KEY-----',
+    });
+    await adapter.connect();
+    expect(mockInstance?.url).toBe('wss://csms.local:9000/ocpp/WB-01');
+    mockInstance!.onclose?.();
+    adapter.destroy();
+  });
+});
+
 describe('OCPP21Adapter — Data Callbacks', () => {
   it('invokes onData callback when energy data updates', async () => {
     vi.stubGlobal('WebSocket', MockWebSocket);
-    const adapter = new OCPP21Adapter({ host: 'evse.local', port: 9000 });
+    const adapter = new OCPP21Adapter({
+      host: 'evse.local',
+      port: 9000,
+      securityProfile: 0,
+      tls: false,
+    });
     const dataSpy = vi.fn();
     adapter.onData(dataSpy);
 
-    const p = adapter.connect();
+    await adapter.connect();
     mockInstance!.readyState = WebSocket.OPEN;
     mockInstance!.onopen?.();
-    await p.catch(() => {});
 
     // Send a TransactionEvent with meter values
     const txMsg = ocppCall('TransactionEvent', {

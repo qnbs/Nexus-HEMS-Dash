@@ -18,6 +18,12 @@ import type {
 import { OCPPMockServer } from './mocks/ocpp-mock-server';
 import { VictronSimulator } from './mocks/victron-simulator';
 
+vi.mock('../lib/secure-store', () => ({
+  mergeCredentialsIntoConfig: vi.fn(async (_id: string, config: Record<string, unknown>) => config),
+}));
+
+const OCPP_TEST_CONFIG = { host: 'localhost', port: 9000, securityProfile: 0 as const, tls: false };
+
 // ─── Victron normalizeToUnified (Legacy Mode) ────────────────────────
 
 // Cold Victron module transform/import can exceed default hook timeout on CI.
@@ -411,7 +417,7 @@ describe('OCPP21Adapter — normalizeToUnified', () => {
 
   it('should normalize StatusNotification → EVChargerData', async () => {
     // OCPP21Adapter pre-loaded in beforeAll
-    const adapter = new OCPP21Adapter({ host: 'localhost', port: 9000 });
+    const adapter = new OCPP21Adapter(OCPP_TEST_CONFIG);
 
     const dataCb = vi.fn() as unknown as AdapterDataCallback;
     adapter.onData(dataCb);
@@ -434,7 +440,7 @@ describe('OCPP21Adapter — normalizeToUnified', () => {
 
   it('should normalize TransactionEvent Started with meter values', async () => {
     // OCPP21Adapter pre-loaded in beforeAll
-    const adapter = new OCPP21Adapter({ host: 'localhost', port: 9000 });
+    const adapter = new OCPP21Adapter(OCPP_TEST_CONFIG);
 
     const dataCb = vi.fn() as unknown as AdapterDataCallback;
     adapter.onData(dataCb);
@@ -465,7 +471,7 @@ describe('OCPP21Adapter — normalizeToUnified', () => {
 
   it('should normalize TransactionEvent Updated with incremental energy', async () => {
     // OCPP21Adapter pre-loaded in beforeAll
-    const adapter = new OCPP21Adapter({ host: 'localhost', port: 9000 });
+    const adapter = new OCPP21Adapter(OCPP_TEST_CONFIG);
 
     const dataCb = vi.fn() as unknown as AdapterDataCallback;
     adapter.onData(dataCb);
@@ -492,7 +498,7 @@ describe('OCPP21Adapter — normalizeToUnified', () => {
 
   it('should normalize TransactionEvent Ended → zero power', async () => {
     // OCPP21Adapter pre-loaded in beforeAll
-    const adapter = new OCPP21Adapter({ host: 'localhost', port: 9000 });
+    const adapter = new OCPP21Adapter(OCPP_TEST_CONFIG);
 
     const dataCb = vi.fn() as unknown as AdapterDataCallback;
     adapter.onData(dataCb);
@@ -514,7 +520,7 @@ describe('OCPP21Adapter — normalizeToUnified', () => {
 
   it('should normalize MeterValues independently', async () => {
     // OCPP21Adapter pre-loaded in beforeAll
-    const adapter = new OCPP21Adapter({ host: 'localhost', port: 9000 });
+    const adapter = new OCPP21Adapter(OCPP_TEST_CONFIG);
 
     const dataCb = vi.fn() as unknown as AdapterDataCallback;
     adapter.onData(dataCb);
@@ -534,7 +540,7 @@ describe('OCPP21Adapter — normalizeToUnified', () => {
 
   it('should map all OCPP connector statuses correctly', async () => {
     // OCPP21Adapter pre-loaded in beforeAll
-    const adapter = new OCPP21Adapter({ host: 'localhost', port: 9000 });
+    const adapter = new OCPP21Adapter(OCPP_TEST_CONFIG);
 
     const dataCb = vi.fn() as unknown as AdapterDataCallback;
     adapter.onData(dataCb);
@@ -568,7 +574,7 @@ describe('OCPP21Adapter — normalizeToUnified', () => {
 
   it('should handle Heartbeat response', async () => {
     // OCPP21Adapter pre-loaded in beforeAll
-    const adapter = new OCPP21Adapter({ host: 'localhost', port: 9000 });
+    const adapter = new OCPP21Adapter(OCPP_TEST_CONFIG);
 
     await adapter.connect();
     await new Promise((r) => setTimeout(r, 10));
@@ -589,7 +595,7 @@ describe('OCPP21Adapter — normalizeToUnified', () => {
 
   it('should handle Authorize with auto-accept', async () => {
     // OCPP21Adapter pre-loaded in beforeAll
-    const adapter = new OCPP21Adapter({ host: 'localhost', port: 9000 });
+    const adapter = new OCPP21Adapter(OCPP_TEST_CONFIG);
 
     await adapter.connect();
     await new Promise((r) => setTimeout(r, 10));
@@ -615,7 +621,7 @@ describe('OCPP21Adapter — normalizeToUnified', () => {
 
   it('should respond NotImplemented for unknown actions', async () => {
     // OCPP21Adapter pre-loaded in beforeAll
-    const adapter = new OCPP21Adapter({ host: 'localhost', port: 9000 });
+    const adapter = new OCPP21Adapter(OCPP_TEST_CONFIG);
 
     await adapter.connect();
     await new Promise((r) => setTimeout(r, 10));
@@ -634,7 +640,7 @@ describe('OCPP21Adapter — normalizeToUnified', () => {
 
   it('should return correct snapshot', async () => {
     // OCPP21Adapter pre-loaded in beforeAll
-    const adapter = new OCPP21Adapter({ host: 'localhost', port: 9000 });
+    const adapter = new OCPP21Adapter(OCPP_TEST_CONFIG);
 
     adapter.onData(() => {});
 
@@ -654,7 +660,7 @@ describe('OCPP21Adapter — normalizeToUnified', () => {
 
   it('should handle full charging session lifecycle', async () => {
     // OCPP21Adapter pre-loaded in beforeAll
-    const adapter = new OCPP21Adapter({ host: 'localhost', port: 9000 });
+    const adapter = new OCPP21Adapter(OCPP_TEST_CONFIG);
 
     const dataCb = vi.fn() as unknown as AdapterDataCallback;
     adapter.onData(dataCb);

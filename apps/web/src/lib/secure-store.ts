@@ -235,6 +235,11 @@ export async function mergeCredentialsIntoConfig(
       : config.clientKey != null
         ? { clientKey: config.clientKey }
         : {}),
+    ...(creds.caCert != null
+      ? { caCert: creds.caCert }
+      : config.caCert != null
+        ? { caCert: config.caCert }
+        : {}),
     tls: !!(creds.clientCert || config.tls),
   };
 }

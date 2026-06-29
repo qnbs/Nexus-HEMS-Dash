@@ -2614,6 +2614,10 @@ export const de = {
   certManagement: {
     title: 'EEBUS-Zertifikatverwaltung',
     description: 'Gerätezertifikate für das EEBUS SPINE/SHIP-Pairing verwalten (TLS 1.3 mTLS).',
+    ocppTitle: 'OCPP 2.1 Sicherheitsprofil 3 (mTLS)',
+    ocppDesc:
+      'Client-Zertifikate für OCPP-Wallbox-Verbindungen werden im verschlüsselten Adapter-Tresor unter Einstellungen → Adapter → OCPP gespeichert.',
+    ocppLink: 'OCPP-Adapter-Einstellungen öffnen →',
     noCerts: 'Keine Gerätezertifikate konfiguriert',
     noCertsDesc:
       'Importieren Sie ein Zertifikat oder koppeln Sie ein neues EEBUS-Gerät, um loszulegen.',

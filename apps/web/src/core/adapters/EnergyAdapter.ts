@@ -168,6 +168,8 @@ export interface AdapterConnectionConfig {
   clientCert?: string;
   /** mTLS client key (PEM base64) */
   clientKey?: string;
+  /** CA certificate or CRL bundle for server/revocation verification (PEM) */
+  caCert?: string;
   /** Authentication token / password */
   authToken?: string;
   /** Reconnection config */
