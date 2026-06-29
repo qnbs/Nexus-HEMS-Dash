@@ -26,7 +26,7 @@ const activeAdapters: IProtocolAdapter[] = [];
  * Called once on server startup.
  */
 export async function startProtocolAdapters(eventBus: EventBus): Promise<void> {
-  const mode = process.env.ADAPTER_MODE ?? 'live';
+  const mode = process.env.ADAPTER_MODE ?? 'mock';
 
   if (mode === 'mock') {
     console.log('[Adapters] ADAPTER_MODE=mock — skipping hardware adapter startup.');

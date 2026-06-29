@@ -99,7 +99,7 @@ services:
     environment:
       - TZ=Europe/Berlin
       - NODE_ENV=production
-      - ADAPTER_MODE=bridge
+      - ADAPTER_MODE=mock
     networks:
       - adapters
     healthcheck:
