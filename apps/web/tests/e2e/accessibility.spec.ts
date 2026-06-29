@@ -32,7 +32,7 @@ test.describe('WCAG 2.2 AA Accessibility', () => {
 
   for (const route of routes) {
     test(`${route.name} page should have no accessibility violations`, async ({ page }) => {
-      test.setTimeout(90_000);
+      test.setTimeout(60_000);
       await gotoAndWait(page, route.path);
 
       const accessibilityScanResults = await new AxeBuilder({ page })
