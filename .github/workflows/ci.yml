@@ -161,9 +161,22 @@ jobs:
           name: build
           path: apps/web/dist
 
-      - name: Install Playwright Chromium
-        timeout-minutes: 20
-        run: pnpm --filter @nexus-hems/web exec playwright install --with-deps chromium
+      - name: Cache Playwright browsers
+        id: pw-cache
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: ~/.cache/ms-playwright
+          key: pw-${{ runner.os }}-chromium-${{ hashFiles('pnpm-lock.yaml') }}
+
+      - name: Install Playwright Chromium (browser only)
+        if: steps.pw-cache.outputs.cache-hit != 'true'
+        timeout-minutes: 10
+        run: pnpm --filter @nexus-hems/web exec playwright install chromium
+
+      - name: Install Playwright system dependencies
+        if: steps.pw-cache.outputs.cache-hit != 'true'
+        timeout-minutes: 10
+        run: pnpm --filter @nexus-hems/web exec playwright install-deps chromium
 
       - name: Run Playwright tests
         run: pnpm test:e2e -- --project=chromium
