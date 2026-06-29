@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import { getAuthHeader } from '../lib/auth-token';
 import {
   type EEBUSLocalCertificateRow,
@@ -992,6 +993,23 @@ export function CertificateManagement() {
         onClose={() => setDeletingCert(null)}
         onConfirm={handleDelete}
       />
+
+      {/* ── OCPP Profile 3 (adapter vault) ── */}
+      <section
+        aria-labelledby="ocpp-cert-heading"
+        className="mt-8 rounded-xl border border-cyan-500/20 bg-cyan-500/5 p-4"
+      >
+        <h2 id="ocpp-cert-heading" className="font-semibold text-(--color-text-primary) text-sm">
+          {t('certManagement.ocppTitle')}
+        </h2>
+        <p className="mt-1 text-(--color-text-secondary) text-xs">{t('certManagement.ocppDesc')}</p>
+        <Link
+          to="/settings?tab=adapters"
+          className="focus-ring mt-3 inline-flex text-cyan-400 text-xs underline-offset-2 hover:underline"
+        >
+          {t('certManagement.ocppLink')}
+        </Link>
+      </section>
 
       {/* ── SHIP Trust Store (API-backed) ── */}
       <ShipTrustStore />

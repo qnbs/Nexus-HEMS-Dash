@@ -493,10 +493,10 @@ Storybook config references component paths that may not have stories written ye
 ---
 
 ### HIGH-12 — OCPP Security Profile 3 Not Operational
-**File:** `apps/web/src/core/adapters/OCPP21Adapter.ts`
-**Status:** ⏳ Scheduled — Phase 2 (Perfection Roadmap 2.1)
+**File:** `apps/web/src/core/adapters/OCPP21Adapter.ts`, `ocpp-security.ts`
+**Status:** ⚠️ Partial — v1.3.0 prep
 
-`securityProfile` config stored but unused in `_connect()`. No client cert, Basic Auth, or CRL/OCSP per `docs/Security-Roadmap-2026.md` partial classification.
+`securityProfile` now drives `_connect()`: secure-store credential merge, Basic Auth URL for profiles 1/2, mTLS PEM validation for profile 3, configurable CRL hook. Browser WebSocket cannot present client certificates — full mTLS requires Tauri/desktop or API proxy (documented in `ocpp-security.ts` and Certificate Management UI).
 
 ---
 

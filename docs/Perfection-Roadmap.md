@@ -162,15 +162,17 @@ gantt
 
 ### Milestone 2.1 — OCPP Security Profile 3
 
-| Task | Reference |
-|------|-----------|
-| Load client cert/key from `secure-store` in `OCPP21Adapter._connect()` | `Security-Roadmap-2026.md` L217–235 |
-| Basic Auth for Profile 2 | OCPP 2.1 spec |
-| CRL/OCSP validation hook (configurable) | CharIN Guide 2.0 |
-| UI in `CertificateManagement.tsx` for OCPP certs | existing component |
-| Tests with mock CSMS TLS | `OCPP21Adapter.test.ts` |
+| Task | Files | Status |
+|------|-------|--------|
+| Load client cert/key from `secure-store` in `OCPP21Adapter._connect()` | `OCPP21Adapter.ts`, `secure-store.ts` | ✅ |
+| Basic Auth for Profile 1/2 (URL-embedded) | `ocpp-security.ts` | ✅ |
+| CRL/OCSP validation hook (configurable) | `ocpp-security.ts`, `adapter-config-schemas.ts` | ✅ CRL hook; OCSP via API proxy later |
+| UI in `CertificateManagement.tsx` for OCPP certs | `CertificateManagement.tsx` | ✅ link to adapter vault |
+| Tests with mock CSMS | `ocpp-security.test.ts`, `OCPP21Adapter.test.ts` | ✅ |
 
-**Success criteria:** Profile 3 connection succeeds against test CSMS; Profile 1/2 unchanged.
+**Remaining:** Browser mTLS presentation (API proxy or Tauri); live CSMS integration test.
+
+**Success criteria:** Profile 3 validates credentials and connects over wss; Profile 1/2 use Basic Auth; Profile 0 unchanged.
 
 ---
 

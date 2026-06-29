@@ -88,20 +88,31 @@ export const eebusConfigSchema = adapterConnectionSchema.extend({
 
 // ─── OCPP 2.1 specific config ───────────────────────────────────────
 
-export const ocppConfigSchema = adapterConnectionSchema.extend({
-  port: port.default(9000),
-  tls: z.boolean().default(true),
-  /**
-   * OCPP 2.1 Security Profiles (OCPP-J-Annex):
-   *   0 — No security (development only)
-   *   1 — Basic Authentication (HTTP Basic)
-   *   2 — TLS with Basic Auth
-   *   3 — TLS with client-side certificates (mTLS)
-   */
-  securityProfile: z.number().int().min(0).max(3).default(2),
-  clientCert: pemString.optional(),
-  clientKey: pemString.optional(),
-});
+export const ocppConfigSchema = adapterConnectionSchema
+  .extend({
+    port: port.default(9000),
+    tls: z.boolean().default(true),
+    /**
+     * OCPP 2.1 Security Profiles (OCPP-J-Annex):
+     *   0 — No security (development only)
+     *   1 — Basic Authentication (HTTP Basic)
+     *   2 — TLS with Basic Auth
+     *   3 — TLS with client-side certificates (mTLS)
+     */
+    securityProfile: z.number().int().min(0).max(3).default(2),
+    clientCert: pemString.optional(),
+    clientKey: pemString.optional(),
+    caCert: pemString.optional(),
+    revocationCheck: z.enum(['off', 'crl', 'ocsp']).default('off'),
+  })
+  .refine(
+    (cfg) => cfg.securityProfile !== 3 || !!(cfg.clientCert && cfg.clientKey),
+    'Profile 3 requires clientCert and clientKey',
+  )
+  .refine(
+    (cfg) => (cfg.securityProfile !== 1 && cfg.securityProfile !== 2) || !!cfg.authToken?.trim(),
+    'Profile 1/2 requires authToken (authorization key)',
+  );
 
 // ─── Victron MQTT config ────────────────────────────────────────────
 

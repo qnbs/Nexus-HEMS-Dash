@@ -63,6 +63,8 @@ export type { SunSpecDeviceInfo } from './ModbusSunSpecAdapter';
 export { ModbusSunSpecAdapter, SUNSPEC_MODELS } from './ModbusSunSpecAdapter';
 export type { OCPPAdapterConfig, OCPPSecurityProfile } from './OCPP21Adapter';
 export { OCPP21Adapter } from './OCPP21Adapter';
+export type { OcppRevocationCheck, OcppSecurityInput } from './ocpp-security';
+export { prepareOcppConnection } from './ocpp-security';
 export type {
   VictronAdapterConfig,
   VictronConnectionMode,
