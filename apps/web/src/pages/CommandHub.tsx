@@ -447,7 +447,7 @@ function CommandHubComponent() {
           <button
             type="button"
             onClick={() => navigate('/optimization-ai')}
-            className="focus-ring inline-flex items-center gap-2 rounded-xl bg-(--color-text) px-4 py-2 font-semibold text-(--color-background) text-sm shadow-lg transition-opacity hover:opacity-90"
+            className="btn-primary focus-ring inline-flex items-center gap-2 px-4 py-2 text-sm"
           >
             <Sparkles size={16} aria-hidden="true" />
             {t('command.optimizeNow', 'Jetzt optimieren')}

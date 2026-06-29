@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "graphify": {
+      "command": "python",
+      "args": [
+        "-m",
+        "graphify.cli"
+      ],
+      "env": {
+        "PYTHONPATH": "."
+      }
+    }
+  }
+}
