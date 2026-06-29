@@ -74,6 +74,15 @@ jobs:
           output-file: sbom-frontend.spdx.json
           artifact-name: sbom-frontend-${{ github.sha }}.spdx.json
 
+      - name: Scan frontend image (Grype)
+        uses: anchore/scan-action@e1165082ffb1fe366ebaf02d8526e7c4989ea9d2 # v7
+        with:
+          image: nexus-hems-frontend:${{ github.sha }}
+          fail-build: true
+          severity-cutoff: critical
+          output-format: sarif
+        continue-on-error: true
+
   # ════════════════════════════════════════════════════════════════
   #  3. Syft SBOM Generation (backend image)
   # ════════════════════════════════════════════════════════════════
@@ -107,6 +116,15 @@ jobs:
           output-file: sbom-backend.spdx.json
           artifact-name: sbom-backend-${{ github.sha }}.spdx.json
 
+      - name: Scan backend image (Grype)
+        uses: anchore/scan-action@e1165082ffb1fe366ebaf02d8526e7c4989ea9d2 # v7
+        with:
+          image: nexus-hems-backend:${{ github.sha }}
+          fail-build: true
+          severity-cutoff: critical
+          output-format: sarif
+        continue-on-error: true
+
   # ════════════════════════════════════════════════════════════════
   #  4. Filesystem SBOM (source code + dependencies)
   # ════════════════════════════════════════════════════════════════
@@ -127,3 +145,12 @@ jobs:
           format: spdx-json
           output-file: sbom-source.spdx.json
           artifact-name: sbom-source-${{ github.sha }}.spdx.json
+
+      - name: Scan source SBOM (Grype)
+        uses: anchore/scan-action@e1165082ffb1fe366ebaf02d8526e7c4989ea9d2 # v7
+        with:
+          sbom: sbom-source.spdx.json
+          fail-build: true
+          severity-cutoff: critical
+          output-format: sarif
+        continue-on-error: true

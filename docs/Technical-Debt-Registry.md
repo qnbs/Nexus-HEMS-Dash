@@ -125,9 +125,9 @@ Required checks are documented but must be applied manually in GitHub Settings �
 ### SUPPLY-01 — Grype CVE Scan and Cosign Signing Not Wired in CI
 
 **Files:** `.github/workflows/sbom-scan.yml`, `.github/workflows/deploy.yml`, `docs/Master-Improvement-Roadmap.md`  
-**Status:** ⏳ Backlog
+**Status:** ⚠️ Partial — Grype in `sbom-scan.yml` (critical advisory); cosign still backlog
 
-`sbom-scan.yml` generates syft SPDX SBOMs and runs `pnpm audit --audit-level=high`. Grype image/filesystem scanning and cosign signing are documented in roadmap/CHANGELOG v1.2.0 notes but are **not** present in current workflows. `deploy.yml` is GitHub Pages only (no container push). Reconcile docs and add Grype + cosign when a GHCR push workflow lands.
+`sbom-scan.yml` generates syft SPDX SBOMs, runs `pnpm audit --audit-level=high`, and scans images/source via `anchore/scan-action@v7`. Cosign signing awaits GHCR push workflow.
 
 ---
 
@@ -470,9 +470,9 @@ Storybook config references component paths that may not have stories written ye
 **Files:** `apps/web/src/lib/auth-token.ts`, `background-sync.ts`, `sharing.ts`, `CertificateManagement.tsx`
 **Status:** ⚠️ Partial — Phase 0 (Perfection Roadmap 0.2)
 
-`auth-token.ts` provides `setAuthToken()` / `getAuthHeader()` and `exchangeApiKeyForJwt()`. `background-sync.ts` and `sharing.ts` consume the read path. **EEBUS Certificate UI** (`CertificateManagement.tsx`) still omits `Authorization` on `/api/eebus/*` fetches (see HIGH-10).
+`auth-token.ts` provides `setAuthToken()` / `getAuthHeader()` and `exchangeApiKeyForJwt()`. `background-sync.ts`, `sharing.ts`, and `CertificateManagement.tsx` use the read path. **Remaining:** expose token exchange in Settings when API base URL is configured.
 
-**Fix:** Wire `getAuthHeader()` into all EEBUS UI fetches; expose token exchange in Settings when API base URL is configured.
+**Fix:** Settings UI for `exchangeApiKeyForJwt()` when `VITE_API_URL` is set.
 
 ---
 
@@ -487,12 +487,10 @@ Storybook config references component paths that may not have stories written ye
 ---
 
 ### HIGH-11 — WebSocket Scope Authorization Incomplete for Write Commands
-**File:** `apps/api/src/ws/energy.ws.ts:17–20`
-**Status:** ⏳ Scheduled — Phase 0
+**File:** `apps/api/src/ws/ws-scope.ts`, `apps/api/src/ws/energy.ws.ts`
+**Status:** ✅ Fixed in v1.3.0 prep
 
-Only 4 command types mapped in `SCOPE_COMMAND_MAP`. `WSCommandTypeSchema` defines additional write commands (`START_CHARGING`, `SET_V2X_DISCHARGE`, `KNX_*`, OpenADR, VPP) that pass with `read` scope.
-
-**Fix:** Extend map; add Vitest matrix in `energy-ws.test.ts`.
+`SCOPE_COMMAND_MAP` covers every `WSCommandTypeSchema` variant; `read` scope cannot execute hardware commands. Vitest matrix in `ws-scope.test.ts`.
 
 ---
 
@@ -524,11 +522,9 @@ Safety-critical IndexedDB audit with 5000-entry cleanup has no unit tests.
 
 ### HIGH-15 — Grype Container Scan Documented But Not in CI
 **Files:** `.github/workflows/sbom-scan.yml`, `CHANGELOG.md`, `docs/Master-Improvement-Roadmap.md`
-**Status:** ⏳ Backlog — see **SUPPLY-01** (docs truth-sync applied in #129; Grype step still pending)
+**Status:** ⚠️ Partial — Grype wired in `sbom-scan.yml` (critical cutoff, `continue-on-error: true` pending baseline)
 
-`sbom-scan.yml` generates Syft SBOMs and runs `pnpm audit`. Grype/cosign not yet wired.
-
-**Fix:** Add `anchore/scan-action` step when GHCR image push workflow lands.
+`anchore/scan-action@v7` scans frontend/backend images and source SBOM. Tighten to blocking gate after first green baseline; cosign remains HIGH-16 / SUPPLY-01.
 
 ---
 
@@ -631,6 +627,7 @@ Extreme timeout may mask real failures; reduce after stabilization.
 | ✅ AUDIT-2026-06 | Full-scale deep audit report + Perfection Roadmap published                          | v1.3.0-prep |
 | ✅ SAF-01  | Adapter mode mock default; double opt-in for live hardware (backend + frontend)            | v1.3.0   |
 | ✅ PRF-04  | Unified PR feedback summary workflow (`pr-feedback-summary.yml`)                           | v1.3.0   |
+| ✅ HIGH-11   | WS `SCOPE_COMMAND_MAP` covers all command types; read scope blocked from writes          | v1.3.0   |
 
 ---
 

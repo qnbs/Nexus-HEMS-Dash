@@ -230,7 +230,7 @@ All detailed ADRs are in `docs/adr/`. This table provides a summary.
 | Step | Action | File | Closes | Status |
 |------|--------|------|--------|--------|
 | 1.1 | Create `sbom-scan.yml` — syft SBOM + pnpm audit | `.github/workflows/sbom-scan.yml` | G-02 (partial) | ✅ Done |
-| 1.2 | Add Grype gate + cosign to container push workflow | TBD (GHCR push) | G-02 | ⏳ Backlog (SUPPLY-01) |
+| 1.2 | Add Grype to `sbom-scan.yml` (cosign when GHCR push lands) | `.github/workflows/sbom-scan.yml` | G-02 | ⚠️ Partial (critical advisory) |
 | 1.3 | Distroless production stage — frontend | `Dockerfile` | G-03 | ✅ Done |
 | 1.4 | Distroless production stage — backend | `Dockerfile.server` | G-03 | ✅ Done |
 | 1.5 | Create `.renovaterc.json` + complete `security.yml` Snyk step | `.renovaterc.json`, `.github/workflows/security.yml` | G-17 | ✅ Done |
@@ -352,7 +352,7 @@ This feature fundamentally changes the auth architecture and is deferred to v1.2
 | E2E (Chromium + Firefox) | `ci.yml` | Yes | Yes |
 | SBOM generation (syft) | `sbom-scan.yml` | Yes | Yes |
 | pnpm dependency audit | `sbom-scan.yml` | Yes | Yes (`--audit-level=high`) |
-| Grype vulnerability scan | — | ⏳ Planned (SUPPLY-01) | — |
+| Grype vulnerability scan | `sbom-scan.yml` | Yes | Advisory (`continue-on-error`, critical cutoff) |
 | Cosign image signing | — | ⏳ Planned (SUPPLY-01) | — |
 | Lighthouse (Perf ≥85%) | `lighthouse.yml` | Yes | PR comment |
 | Chromatic visual regression | `chromatic.yml` | Yes (after token) | PR |

@@ -5,6 +5,7 @@ import { mockData, updateMockData } from '../data/mock-data.js';
 import { type AuthenticatedClient, authenticateWS, type JWTScope } from '../middleware/auth.js';
 import { setMetric, updateServerMetrics, wsMessageCount } from '../middleware/metrics.js';
 import { wsTickets } from '../routes/auth.routes.js';
+import { getRequiredScopeForCommand, isScopeAuthorized } from './ws-scope.js';
 
 // Zombie connection detection: ping every 30 s, terminate if no pong received
 const HEARTBEAT_INTERVAL_MS = 30_000;
@@ -15,11 +16,7 @@ function getWsCmdRateLimit(): number {
   return parsed > 0 ? parsed : 30;
 }
 
-// CRIT-02: Command authorization levels
-// Commands that require at minimum 'readwrite' scope
-const WRITE_COMMANDS = new Set(['SET_EV_POWER', 'SET_HEAT_PUMP_POWER', 'SET_BATTERY_POWER']);
-// Commands that require at minimum 'admin' scope
-const ADMIN_COMMANDS = new Set(['SET_GRID_LIMIT']);
+// HIGH-11: Scope requirements for every WS command type — see ws-scope.ts
 
 function validateWSCommand(parsed: unknown): { valid: boolean; error?: string } {
   const result = WSCommandSchema.safeParse(parsed);
@@ -38,8 +35,6 @@ function getWSClientIP(req: IncomingMessage): string {
   // Use the socket address (not x-forwarded-for, which can be spoofed)
   return req.socket.remoteAddress ?? 'unknown';
 }
-
-const SCOPE_ORDER: Record<JWTScope, number> = { read: 0, readwrite: 1, admin: 2 };
 
 export function setupWebSocket(wss: WebSocketServer): void {
   const requireWSAuth = process.env.NODE_ENV === 'production';
@@ -231,29 +226,22 @@ function checkScopeAuthorization(
 ): boolean {
   const client = wsAuthMap.get(ws);
   const clientScope: JWTScope = client?.scope ?? 'read';
-  if (WRITE_COMMANDS.has(parsedType) && SCOPE_ORDER[clientScope] < SCOPE_ORDER.readwrite) {
-    ws.send(
-      JSON.stringify(
-        sanitizeOutgoingWsPayload({
-          type: 'ERROR',
-          error: 'Insufficient scope: readwrite required for hardware commands',
-        }),
-      ),
-    );
-    return false;
-  }
-  if (ADMIN_COMMANDS.has(parsedType) && SCOPE_ORDER[clientScope] < SCOPE_ORDER.admin) {
-    ws.send(
-      JSON.stringify(
-        sanitizeOutgoingWsPayload({
-          type: 'ERROR',
-          error: 'Insufficient scope: admin required for grid limit commands',
-        }),
-      ),
-    );
-    return false;
-  }
-  return true;
+
+  if (isScopeAuthorized(clientScope, parsedType)) return true;
+
+  const required = getRequiredScopeForCommand(parsedType) ?? 'readwrite';
+  ws.send(
+    JSON.stringify(
+      sanitizeOutgoingWsPayload({
+        type: 'ERROR',
+        error:
+          required === 'admin'
+            ? 'Insufficient scope: admin required for grid limit commands'
+            : 'Insufficient scope: readwrite required for hardware commands',
+      }),
+    ),
+  );
+  return false;
 }
 
 function handleWsCommand(
