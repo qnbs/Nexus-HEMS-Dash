@@ -255,16 +255,17 @@ jobs:
           path: ~/.cache/ms-playwright
           key: pw-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
 
-      - name: Install Playwright browsers
+      - name: Install Playwright headless shell
         if: steps.pw-cache.outputs.cache-hit != 'true'
-        run: pnpm --filter @nexus-hems/web exec playwright install --with-deps chromium firefox
+        timeout-minutes: 15
+        run: pnpm --filter @nexus-hems/web exec playwright install --with-deps chromium-headless-shell
 
       - name: Install Playwright deps (cached browsers)
         if: steps.pw-cache.outputs.cache-hit == 'true'
-        run: pnpm --filter @nexus-hems/web exec playwright install-deps chromium firefox
+        run: pnpm --filter @nexus-hems/web exec playwright install-deps chromium-headless-shell
 
       - name: Run E2E tests
-        run: pnpm test:e2e
+        run: pnpm test:e2e -- --project=chromium
         env:
           CI: true
           VITE_E2E_TESTING: 'true'

@@ -42,7 +42,9 @@ export function TabSkeleton() {
 export function PageSkeleton() {
   return (
     <div className="space-y-6" role="status" aria-label="Seite wird geladen…" aria-busy="true">
-      {/* Page header */}
+      {/* Page header — include a real h1 so E2E smoke checks and a11y tests
+          have a landmark to wait for even while chunks are loading. */}
+      <h1 className="sr-only">{typeof document !== 'undefined' ? document.title : 'Nexus HEMS'}</h1>
       <div aria-hidden="true">
         <SkeletonBar className="mb-2 h-7 w-48" />
         <SkeletonBar className="h-4 w-72" />

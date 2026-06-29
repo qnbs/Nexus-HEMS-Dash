@@ -108,7 +108,9 @@ function createDefaultAdapters(): Record<AdapterId, AdapterEntry> {
   return {
     'victron-mqtt': {
       adapter: createAdapterInstance('victron-mqtt'),
-      enabled: true, // Primary adapter — always enabled by default
+      // Disable the default adapter in E2E mode so Playwright tests don't wait
+      // on (or retry) a real MQTT/WebSocket connection against localhost.
+      enabled: import.meta.env.VITE_E2E_TESTING !== 'true',
       status: 'disconnected',
       circuitState: 'closed',
     },
