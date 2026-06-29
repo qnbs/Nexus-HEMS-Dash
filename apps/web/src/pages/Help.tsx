@@ -13,7 +13,6 @@ import {
   ExternalLink,
   FileText,
   Gauge,
-  Github,
   Globe,
   HardDrive,
   HelpCircle,
@@ -39,6 +38,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import { BrandGithubIcon } from '../components/icons/BrandGithubIcon';
 
 type HelpTab =
   | 'getting-started'
@@ -1214,7 +1214,7 @@ export function Help() {
                     rel="noopener noreferrer"
                     className="focus-ring mb-6 inline-flex items-center gap-2 rounded-xl border border-(--color-border) bg-(--color-surface) px-4 py-2.5 font-medium text-sm transition-all duration-200 hover:border-(--color-primary)/40 hover:bg-(--color-primary)/10 hover:text-(--color-primary)"
                   >
-                    <Github size={18} aria-hidden="true" />
+                    <BrandGithubIcon size={18} aria-hidden="true" />
                     <span>GitHub Repository</span>
                     <ExternalLink size={14} className="text-(--color-muted)" aria-hidden="true" />
                   </a>
