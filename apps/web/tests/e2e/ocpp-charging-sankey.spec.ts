@@ -13,7 +13,7 @@
  */
 
 import { expect, test } from '@playwright/test';
-import { setupLocalStorage } from './e2e-setup';
+import { attachPageErrorHandler, setupLocalStorage } from './e2e-setup';
 
 type DevStoreHandle = {
   getState(): {
@@ -41,6 +41,7 @@ async function setStoreEnergy(
 
 test.describe('OCPP Charging Session → Sankey Update', () => {
   test.beforeEach(async ({ page }) => {
+    attachPageErrorHandler(page);
     await page.addInitScript(setupLocalStorage);
   });
 

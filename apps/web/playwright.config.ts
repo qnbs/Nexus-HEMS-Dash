@@ -9,19 +9,19 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
-  workers: 2,
+  workers: process.env.CI ? 1 : 2,
   reporter: process.env.CI ? 'github' : 'html',
   expect: {
     timeout: 30_000,
   },
-  timeout: 300_000,
+  timeout: 120_000,
   use: {
     baseURL: 'http://127.0.0.1:4173/Nexus-HEMS-Dash/',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     serviceWorkers: 'block',
     contextOptions: { reducedMotion: 'reduce' },
-    navigationTimeout: 120_000,
+    navigationTimeout: 30_000,
     launchOptions: {
       args: ['--disable-dev-shm-usage', '--disable-gpu', '--no-zygote', '--disable-extensions'],
     },
@@ -31,7 +31,12 @@ export default defineConfig({
     ? [
         {
           name: 'chromium',
-          use: { ...devices['Desktop Chrome'] },
+          use: {
+            ...devices['Desktop Chrome'],
+            launchOptions: {
+              args: ['--disable-dev-shm-usage', '--disable-gpu', '--no-zygote', '--disable-extensions'],
+            },
+          },
         },
         {
           name: 'firefox',

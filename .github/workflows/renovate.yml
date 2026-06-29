@@ -16,8 +16,8 @@ on:
           - 'true'
           - 'false'
 
-permissions:
-  contents: read
+# Read-only default; the renovate job grants write scopes explicitly.
+permissions: read-all
 
 jobs:
   renovate:

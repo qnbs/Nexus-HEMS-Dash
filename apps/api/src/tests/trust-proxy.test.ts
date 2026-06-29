@@ -1,5 +1,5 @@
-import { afterEach, describe, expect, it } from 'vitest';
-import { resolveTrustProxy } from '../config/trust-proxy.js';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { logTrustProxyWarning, resolveTrustProxy } from '../config/trust-proxy.js';
 
 describe('resolveTrustProxy', () => {
   const originalTrustProxy = process.env.TRUST_PROXY;
@@ -29,5 +29,49 @@ describe('resolveTrustProxy', () => {
   it('parses comma-separated subnet list', () => {
     process.env.TRUST_PROXY = 'loopback,10.0.0.0/8';
     expect(resolveTrustProxy()).toEqual(['loopback', '10.0.0.0/8']);
+  });
+});
+
+describe('logTrustProxyWarning', () => {
+  const originalTrustProxy = process.env.TRUST_PROXY;
+  const originalNodeEnv = process.env.NODE_ENV;
+
+  afterEach(() => {
+    if (originalTrustProxy === undefined) delete process.env.TRUST_PROXY;
+    else process.env.TRUST_PROXY = originalTrustProxy;
+    process.env.NODE_ENV = originalNodeEnv;
+    vi.restoreAllMocks();
+  });
+
+  it('warns once in production when TRUST_PROXY is unset', () => {
+    delete process.env.TRUST_PROXY;
+    process.env.NODE_ENV = 'production';
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    logTrustProxyWarning();
+    logTrustProxyWarning(); // second call should be no-op due to dedup
+
+    expect(warnSpy).toHaveBeenCalledTimes(1);
+    expect(warnSpy.mock.calls[0]![0]).toContain('TRUST_PROXY is not set');
+  });
+
+  it('does not warn when TRUST_PROXY is set in production', () => {
+    process.env.TRUST_PROXY = '2';
+    process.env.NODE_ENV = 'production';
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    logTrustProxyWarning();
+
+    expect(warnSpy).not.toHaveBeenCalled();
+  });
+
+  it('does not warn outside production', () => {
+    delete process.env.TRUST_PROXY;
+    process.env.NODE_ENV = 'development';
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    logTrustProxyWarning();
+
+    expect(warnSpy).not.toHaveBeenCalled();
   });
 });

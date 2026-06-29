@@ -1,5 +1,5 @@
 import { expect, type Page, test } from '@playwright/test';
-import { setupLocalStorage } from './e2e-setup';
+import { attachPageErrorHandler, setupLocalStorage } from './e2e-setup';
 
 async function waitForMainHeading(page: Page) {
   await page.locator('#main-content').waitFor({ state: 'attached', timeout: 30_000 });
@@ -20,6 +20,7 @@ async function expectSankeyGraphicVisible(page: Page) {
 
 test.describe('Command Hub', () => {
   test.beforeEach(async ({ page }) => {
+    attachPageErrorHandler(page);
     await page.addInitScript(setupLocalStorage);
   });
 

@@ -1,19 +1,15 @@
-# ─────────────────────────────────────────────────────────────────────────────
-# Weekly deep-scan (schedule-only)
-# ─────────────────────────────────────────────────────────────────────────────
-# Push/PR-Gate runs in `security-full.yml`. This workflow exists to surface
-# slower / supplementary scans on a Monday cadence:
-#   - License compliance (informational)
-#   - Full pnpm audit including dev-deps (security-full.yml audits prod-only)
-# Triggering on push/PR was redundant with security-full.yml — removed in
-# Phase-2 hardening (May 2026).
-# ─────────────────────────────────────────────────────────────────────────────
+# Registered analysis keys: security-scan.yml:codeql + security-scan.yml:semgrep
+# (required by GitHub code-scanning branch protection). Weekly deep-scan jobs
+# (license + full dev-deps audit) run on schedule / workflow_dispatch only.
 
-name: Security Deep-Scan (weekly)
+name: Security Scan
 
 on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
   schedule:
-    # Every Monday at 06:00 UTC
     - cron: '0 6 * * 1'
   workflow_dispatch:
 
@@ -22,17 +18,60 @@ permissions:
 
 concurrency:
   group: security-scan-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
-  # ──────────────────────────────────────────────────────────────────────────
-  # 1. License Compliance (informational)
-  # ──────────────────────────────────────────────────────────────────────────
+  semgrep:
+    name: Semgrep SAST
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    container:
+      image: semgrep/semgrep
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Run Semgrep
+        run: semgrep scan --config auto --sarif -o semgrep-results.sarif apps/ packages/
+        continue-on-error: true
+        env:
+          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+
+      - name: Upload Semgrep SARIF
+        uses: github/codeql-action/upload-sarif@68bde559dea0fdcac2102bfdf6230c5f70eb485e # v4.35.4
+        if: always()
+        with:
+          sarif_file: semgrep-results.sarif
+        continue-on-error: true
+
+  codeql:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@68bde559dea0fdcac2102bfdf6230c5f70eb485e # v4.35.4
+        with:
+          languages: javascript-typescript
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@68bde559dea0fdcac2102bfdf6230c5f70eb485e # v4.35.4
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@68bde559dea0fdcac2102bfdf6230c5f70eb485e # v4.35.4
+
   license-check:
     name: License Compliance
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
@@ -55,11 +94,9 @@ jobs:
           npx license-checker --production --summary 2>&1 | tail -50 >> "$GITHUB_STEP_SUMMARY" || true
           echo '```' >> "$GITHUB_STEP_SUMMARY"
 
-  # ──────────────────────────────────────────────────────────────────────────
-  # 2. Full audit including dev-deps (push gate audits prod-only)
-  # ──────────────────────────────────────────────────────────────────────────
   audit-full:
     name: Full Dependency Audit (incl. dev-deps)
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:

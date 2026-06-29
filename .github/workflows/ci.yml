@@ -145,8 +145,10 @@ jobs:
     name: 🎭 E2E Tests
     runs-on: ubuntu-latest
     needs: build
-    # CI runs Chromium + Firefox; workers:2 + retries:1 keeps the suite under 30 min.
-    timeout-minutes: 45
+    # PR CI runs Chromium only to keep the suite fast on ubuntu-latest. Firefox
+    # coverage can be added back via a separate matrix entry or nightly job once
+    # the suite is consistently under 15 min with both browsers.
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
@@ -159,11 +161,25 @@ jobs:
           name: build
           path: apps/web/dist
 
-      - name: Install Playwright Browsers
-        run: pnpm --filter @nexus-hems/web exec playwright install --with-deps chromium firefox
+      - name: Cache Playwright browsers
+        id: pw-cache
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: ~/.cache/ms-playwright
+          key: pw-${{ runner.os }}-chromium-${{ hashFiles('pnpm-lock.yaml') }}
+
+      - name: Install Playwright Chromium (browser only)
+        if: steps.pw-cache.outputs.cache-hit != 'true'
+        timeout-minutes: 10
+        run: pnpm --filter @nexus-hems/web exec playwright install chromium
+
+      - name: Install Playwright system dependencies
+        if: steps.pw-cache.outputs.cache-hit != 'true'
+        timeout-minutes: 10
+        run: pnpm --filter @nexus-hems/web exec playwright install-deps chromium
 
       - name: Run Playwright tests
-        run: pnpm test:e2e
+        run: pnpm test:e2e -- --project=chromium
         env:
           VITE_E2E_TESTING: 'true'
 

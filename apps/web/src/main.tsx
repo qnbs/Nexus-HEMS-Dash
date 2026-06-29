@@ -31,4 +31,8 @@ createRoot(document.getElementById('root')!).render(
 
 // Start the background Dexie downsampling service after React mounts.
 // 90 s startup delay avoids contending with initial data loading.
-startDownsamplingService();
+// Disabled during E2E testing to eliminate background IndexedDB work and
+// timers that can keep the Playwright process alive.
+if (import.meta.env.VITE_E2E_TESTING !== 'true') {
+  startDownsamplingService();
+}

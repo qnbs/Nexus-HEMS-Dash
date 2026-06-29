@@ -71,7 +71,7 @@ docker compose --profile monitoring up -d
 | `EEBUS_TRUST_BACKEND`    | `file`          | `file` (JSON via `EEBUS_TRUST_FILE`) or `redis` (requires `REDIS_URL`) for multi-replica API pods |
 | `TZ`                     | `Europe/Berlin` | Timezone                                                                     |
 | `GRAFANA_PASSWORD`       | **required**    | Grafana admin password — no default; docker-compose fails without it (CRIT-04) |
-| `ADAPTER_MODE`           | `live`          | `mock` for demo data; `live` for real protocol adapters                      |
+| `ADAPTER_MODE`           | `mock`          | `mock` for demo data (default); `live` for real protocol adapters            |
 | `PROMETHEUS_BEARER_TOKEN`| —               | Bearer token for Prometheus `/metrics` scrape endpoint authentication (optional) |
 
 ### Reverse proxy, CDN, and `TRUST_PROXY`
@@ -194,6 +194,25 @@ The production nginx (`nginx.conf`) enforces:
 - **Blocked paths**: dotfiles, `.env`, `.git`, lockfiles
 
 > Replace `wss://localhost:*` in CSP `connect-src` with your actual WebSocket origins via the `WS_ORIGINS` env var or nginx `envsubst`.
+
+---
+
+## Health Checks
+
+The server exposes a single health endpoint that includes protocol-adapter status:
+
+```
+GET /api/health
+```
+
+Response examples:
+
+- `ADAPTER_MODE=mock` → `200 { "status": "healthy", "adapters": [] }`
+- `ADAPTER_MODE=live` with no configured adapters → `503 { "status": "unhealthy" }`
+- `ADAPTER_MODE=live` with all adapters healthy → `200 { "status": "healthy", "adapters": [...] }`
+- `ADAPTER_MODE=live` with a failed adapter → `503 { "status": "unhealthy" }`
+
+Both the Helm chart (`helm/nexus-hems/templates/deployment-server.yaml`) and `docker-compose.yml` use `/api/health` for liveness and readiness probes. In Kubernetes, a failing readiness probe prevents traffic from reaching pods with dead adapters, avoiding silent degradation.
 
 ---
 

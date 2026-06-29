@@ -54,7 +54,7 @@ export function configureCors(app: Express): void {
         }
       },
       credentials: true,
-      methods: ['GET', 'POST'],
+      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
       allowedHeaders: ['Content-Type', 'Authorization'],
       maxAge: 86400,
     }),

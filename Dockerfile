@@ -1,5 +1,5 @@
 # ── Stage 1: Build ───────────────────────────────────────────────
-FROM node:24-alpine@sha256:01743339035a5c3c11a373cd7c83aeab6ed1457b55da6a69e014a95ac4e4700b AS build
+FROM node:24.15.0-alpine3.22@sha256:b689d4005875ae167178471a7a622ec2909459a3bbb32277260be1971af7a99f AS build
 
 WORKDIR /app
 
@@ -21,7 +21,8 @@ RUN pnpm --filter @nexus-hems/web build
 # NOTE: Pin to an immutable SHA256 digest in production via build-arg or
 # image policy (e.g. Kyverno imagePolicyWebhook).
 # Pin OCI index digest (multi-arch) — satisfies OpenSSF Scorecard Pinned-Dependencies
-FROM nginxinc/nginx-unprivileged:1.31-alpine-slim@sha256:db8d9661513d14cebe9aee82fbae9a474477714d94ec6c511a7fdab445a4ad3b AS production
+# Immutable tag + digest satisfies OpenSSF Pinned-Dependencies.
+FROM nginxinc/nginx-unprivileged:1.31-alpine-slim@sha256:ee7751c78fd1a51a8c12ac5a0ab15b2de2d486df155ef95bf52db9cef7de0d2d AS production
 
 ARG VCS_REF=unknown
 ARG BUILD_DATE=unknown

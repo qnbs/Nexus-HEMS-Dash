@@ -10,8 +10,8 @@ on:
     - cron: '0 3 * * *'
   workflow_dispatch:
 
-permissions:
-  contents: read
+# Read-only default; each job declares the least privilege it needs.
+permissions: read-all
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -49,6 +49,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      actions: write # upload-artifact via anchore/sbom-action
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -81,6 +82,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      actions: write # upload-artifact via anchore/sbom-action
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -113,6 +115,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      actions: write # upload-artifact via anchore/sbom-action
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2

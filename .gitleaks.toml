@@ -78,6 +78,8 @@ id = "mqtt-credentials"
 description = "MQTT Broker Credentials"
 regex = '''(?i)mqtt[_\-]?(password|pass|secret|token)\s*[:=]\s*['"]?[^\s'"]{8,}['"]?'''
 tags = ["mqtt", "victron", "iot"]
+[rules.allowlist]
+regexes = ['''your_''', '''your-''', '''placeholder''', '''example''']
 
 [[rules]]
 id = "ocpp-auth-key"

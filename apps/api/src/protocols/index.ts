@@ -21,12 +21,44 @@ const DEVICE_MAP_PATH = join(__dirname, '../data/device-map.json');
 
 const activeAdapters: IProtocolAdapter[] = [];
 
+export type AdapterStatus = 'starting' | 'healthy' | 'unhealthy' | 'failed' | 'stopped';
+
+export interface AdapterRunState {
+  id: string;
+  protocol: string;
+  status: AdapterStatus;
+  error?: string | undefined;
+  startedAt?: number | undefined;
+  lastCheckAt?: number | undefined;
+}
+
+const adapterStates = new Map<string, AdapterRunState>();
+
+function setState(
+  id: string,
+  protocol: string,
+  status: AdapterStatus,
+  error?: string,
+): AdapterRunState {
+  const existing = adapterStates.get(id);
+  const state: AdapterRunState = {
+    ...existing,
+    id,
+    protocol,
+    status,
+    error,
+    lastCheckAt: Date.now(),
+  };
+  adapterStates.set(id, state);
+  return state;
+}
+
 /**
  * Start all protocol adapters and connect them to the EventBus.
  * Called once on server startup.
  */
 export async function startProtocolAdapters(eventBus: EventBus): Promise<void> {
-  const mode = process.env.ADAPTER_MODE ?? 'live';
+  const mode = process.env.ADAPTER_MODE ?? 'mock';
 
   if (mode === 'mock') {
     console.log('[Adapters] ADAPTER_MODE=mock — skipping hardware adapter startup.');
@@ -52,14 +84,18 @@ export async function startProtocolAdapters(eventBus: EventBus): Promise<void> {
 
     const adapter = new ModbusAdapter(device);
     activeAdapters.push(adapter);
+    setState(device.deviceId, device.protocol, 'starting');
 
     // Connect and pipe data stream to EventBus
     adapter
       .connect()
       .then(() => {
+        setState(device.deviceId, device.protocol, 'healthy');
         pipeAdapterToEventBus(adapter, eventBus);
       })
       .catch((err: unknown) => {
+        const message = err instanceof Error ? err.message : String(err);
+        setState(device.deviceId, device.protocol, 'failed', message);
         console.error('[Adapters] Failed to start ModbusAdapter:', device.deviceId, err);
       });
   }
@@ -92,13 +128,17 @@ export async function startProtocolAdapters(eventBus: EventBus): Promise<void> {
       ],
     });
     activeAdapters.push(mqttAdapter);
+    setState(mqttAdapter.id, mqttAdapter.protocol, 'starting');
 
     mqttAdapter
       .connect()
       .then(() => {
+        setState(mqttAdapter.id, mqttAdapter.protocol, 'healthy');
         pipeAdapterToEventBus(mqttAdapter, eventBus);
       })
       .catch((err: unknown) => {
+        const message = err instanceof Error ? err.message : String(err);
+        setState(mqttAdapter.id, mqttAdapter.protocol, 'failed', message);
         console.error('[Adapters] Failed to start MqttAdapter:', err);
       });
   }
@@ -112,6 +152,9 @@ export async function startProtocolAdapters(eventBus: EventBus): Promise<void> {
  */
 export async function stopProtocolAdapters(): Promise<void> {
   await Promise.allSettled(activeAdapters.map((a) => a.disconnect()));
+  for (const adapter of activeAdapters) {
+    setState(adapter.id, adapter.protocol, 'stopped');
+  }
   activeAdapters.length = 0;
 }
 
@@ -127,4 +170,55 @@ function pipeAdapterToEventBus(adapter: IProtocolAdapter, eventBus: EventBus): v
   })().catch((err: unknown) => {
     console.error('[Adapters] Data stream error for adapter:', adapter.id, err);
   });
+}
+
+/**
+ * Return the current run-state snapshot for all configured adapters.
+ */
+export function getAdapterRunStates(): AdapterRunState[] {
+  return Array.from(adapterStates.values());
+}
+
+export interface AdapterHealthSummary {
+  mode: string;
+  overall: 'healthy' | 'degraded' | 'unhealthy';
+  adapters: AdapterRunState[];
+}
+
+/**
+ * Pure health computation from a mode string and adapter states.
+ *
+ * - mock mode         → healthy (no hardware expected)
+ * - live mode, no adapters configured → unhealthy (silent degradation)
+ * - any failed adapter → unhealthy
+ * - all healthy        → healthy
+ */
+export function computeAdapterHealth(
+  mode: string,
+  adapters: AdapterRunState[],
+): AdapterHealthSummary {
+  if (mode === 'mock') {
+    return { mode, overall: 'healthy', adapters };
+  }
+
+  if (adapters.length === 0) {
+    return { mode, overall: 'unhealthy', adapters };
+  }
+
+  const failed = adapters.some((a) => a.status === 'failed');
+  if (failed) {
+    return { mode, overall: 'unhealthy', adapters };
+  }
+
+  const allHealthy = adapters.every((a) => a.status === 'healthy');
+  return { mode, overall: allHealthy ? 'healthy' : 'degraded', adapters };
+}
+
+/**
+ * Compute overall health from configured adapter states and the current env.
+ */
+export function getAdapterHealthSummary(): AdapterHealthSummary {
+  const mode = process.env.ADAPTER_MODE ?? 'mock';
+  const adapters = getAdapterRunStates();
+  return computeAdapterHealth(mode, adapters);
 }

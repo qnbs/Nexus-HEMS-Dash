@@ -3,6 +3,8 @@
  * Enables shareable dashboards for community energy projects
  */
 
+import { getAuthToken } from './auth-token';
+
 export interface SharedDashboard {
   id: string;
   name: string;
@@ -84,7 +86,7 @@ async function createDashboardShareOnServer(
 ): Promise<{ shareId: string; redeemToken: string } | null> {
   if (typeof window === 'undefined') return null;
   try {
-    const bearer = localStorage.getItem('nexus-hems-auth-token');
+    const bearer = getAuthToken();
     if (!bearer) return null;
     const res = await fetch(`${apiBase()}/api/shares`, {
       method: 'POST',

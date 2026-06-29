@@ -449,6 +449,58 @@ Goal: Build the most beautiful, accessible, fully localized and production-ready
 
 ## graphify
 
-Before answering architecture or codebase questions, read `graphify-out/GRAPH_REPORT.md` if it exists.
-If `graphify-out/wiki/index.md` exists, navigate it for deep questions.
-Type `/graphify` in Copilot Chat to build or update the knowledge graph.
+This project uses Graphify to generate a knowledge graph for architecture analysis and AI-assisted development.
+
+### Quick Start
+
+```bash
+# Generate the knowledge graph (AST-only, no API cost)
+pnpm graphify .
+```
+
+Or run the full pipeline directly:
+
+```bash
+python -c "
+import json
+from graphify.detect import detect
+from graphify.extract import collect_files, extract
+from graphify.build import build_from_json
+from graphify.cluster import cluster
+from graphify.analyze import god_nodes, surprising_connections
+from graphify.report import generate
+from pathlib import Path
+
+result = detect(Path('.'))
+code_files = []
+for f in result.get('files', {}).get('code', []):
+    p = Path(f)
+    code_files.extend(collect_files(p) if p.is_dir() else [p])
+
+extraction = extract(code_files) if code_files else {'nodes': [], 'edges': []}
+G = build_from_json(extraction)
+communities = cluster(G)
+gods = god_nodes(G)
+surprises = surprising_connections(G, communities)
+report = generate(G, communities, {}, {}, gods, surprises, extraction)
+Path('graphify-out/GRAPH_REPORT.md').write_text(report)
+Path('graphify-out/graph.json').write_text(json.dumps({'nodes': extraction['nodes'], 'edges': extraction['edges']}, indent=2))
+print(f'Graph: {G.number_of_nodes()} nodes, {G.number_of_edges()} edges, {len(communities)} communities')
+"
+```
+
+### Rules
+
+- Before answering architecture or codebase questions, read `graphify-out/GRAPH_REPORT.md` for god nodes and community structure
+- If `graphify-out/wiki/index.md` exists, navigate it instead of reading raw files
+- For cross-module "how does X relate to Y" questions, prefer `graphify query "<question>"`, `graphify path "<A>" "<B>"`, or `graphify explain "<concept>"` over grep — these traverse the graph's EXTRACTED + INFERRED edges instead of scanning files
+- After modifying code files in this session, run `graphify update .` to keep the graph current (AST-only, no API cost)
+
+### Safety-Critical Analysis
+
+The knowledge graph helps identify:
+- **Control paths**: Trace energy flow from sensors → controllers → actuators
+- **Danger commands**: All hardware commands requiring user confirmation
+- **Adapter interfaces**: Protocol adapter contracts and implementations
+- **Safety guardrails**: Validation points in the command chain
+- **God nodes**: Architectural hotspots that may need refactoring

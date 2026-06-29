@@ -153,6 +153,40 @@ export async function removeAdapterCredentials(adapterId: AdapterCredentialId): 
 }
 
 /**
+ * EEBUS local certificate PEM vault.
+ *
+ * PEM material is encrypted with the same AES-GCM 256-bit vault passphrase
+ * used for adapter credentials. Only metadata (fingerprint, validUntil, etc.)
+ * is stored in the Dexie `eebusLocalCertificates` table; the PEM payload lives
+ * in this encrypted settings blob keyed by cert id.
+ */
+
+const EEBUS_LOCAL_CERT_PEMS_KEY = 'eebus-local-cert-pems-v1';
+
+export type EEBUSLocalCertPemMap = Record<number, string>;
+
+export async function loadEebusLocalCertPems(): Promise<EEBUSLocalCertPemMap> {
+  const record = await nexusDb.settings.get(EEBUS_LOCAL_CERT_PEMS_KEY);
+  if (!record?.value || typeof record.value !== 'string') return {};
+
+  try {
+    const passphrase = await getVaultPassphrase();
+    const decrypted = await decrypt(record.value, passphrase);
+    return JSON.parse(decrypted) as EEBUSLocalCertPemMap;
+  } catch {
+    return {};
+  }
+}
+
+export async function saveEebusLocalCertPems(pems: EEBUSLocalCertPemMap): Promise<void> {
+  const passphrase = await getVaultPassphrase();
+  const encrypted = await encrypt(JSON.stringify(pems), passphrase);
+
+  // biome-ignore lint/suspicious/noExplicitAny: StoredSettings is a complex union type
+  await nexusDb.settings.put({ key: EEBUS_LOCAL_CERT_PEMS_KEY, value: encrypted as any });
+}
+
+/**
  * List all stored adapter credential IDs (without decrypting).
  */
 export async function listAdapterCredentials(): Promise<

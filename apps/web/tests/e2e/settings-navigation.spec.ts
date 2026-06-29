@@ -1,5 +1,5 @@
 import { expect, type Page, test } from '@playwright/test';
-import { setupLocalStorage } from './e2e-setup';
+import { attachPageErrorHandler, setupLocalStorage } from './e2e-setup';
 
 async function waitForMainHeading(page: Page) {
   const heading = page.locator('#main-content h1').first();
@@ -9,6 +9,7 @@ async function waitForMainHeading(page: Page) {
 
 test.describe('Settings & Command Palette', () => {
   test.beforeEach(async ({ page }) => {
+    attachPageErrorHandler(page);
     await page.addInitScript(setupLocalStorage);
   });
 

@@ -10,8 +10,10 @@ import { wsTickets } from '../routes/auth.routes.js';
 const HEARTBEAT_INTERVAL_MS = 30_000;
 
 // HIGH-06: Configurable WS command rate limit (default 30 cmd/min)
-const WS_CMD_RATE_LIMIT =
-  Number(process.env.WS_RATE_LIMIT) > 0 ? Number(process.env.WS_RATE_LIMIT) : 30;
+function getWsCmdRateLimit(): number {
+  const parsed = Number(process.env.WS_RATE_LIMIT);
+  return parsed > 0 ? parsed : 30;
+}
 
 // CRIT-02: Command authorization levels
 // Commands that require at minimum 'readwrite' scope
@@ -157,7 +159,18 @@ export function setupWebSocket(wss: WebSocketServer): void {
 
     ws.on('message', (message) => {
       wsMessageCount.inbound++;
-      if (!checkWsRateLimit(ws, wsRateLimits)) return;
+      if (!checkWsRateLimit(ws, wsRateLimits)) {
+        ws.send(
+          JSON.stringify(
+            sanitizeOutgoingWsPayload({
+              type: 'ERROR',
+              error: `Rate limit exceeded (${getWsCmdRateLimit()} cmd/min)`,
+            }),
+          ),
+        );
+        ws.close(4429, 'Rate limit exceeded');
+        return;
+      }
       try {
         const parsed = JSON.parse(message.toString());
         handleWsCommand(ws, parsed, wsSubscriptions, wsAuthMap, wss);
@@ -181,7 +194,7 @@ export function setupWebSocket(wss: WebSocketServer): void {
 // Message handler helpers (extracted to keep cognitive complexity ≤ 25)
 // ---------------------------------------------------------------------------
 
-function checkWsRateLimit(
+export function checkWsRateLimit(
   ws: WebSocket,
   wsRateLimits: WeakMap<WebSocket, { count: number; resetAt: number }>,
 ): boolean {
@@ -192,19 +205,7 @@ function checkWsRateLimit(
     wsRateLimits.set(ws, rl);
   }
   rl.count++;
-  if (rl.count > WS_CMD_RATE_LIMIT) {
-    ws.send(
-      JSON.stringify(
-        sanitizeOutgoingWsPayload({
-          type: 'ERROR',
-          error: `Rate limit exceeded (${WS_CMD_RATE_LIMIT} cmd/min)`,
-        }),
-      ),
-    );
-    ws.close(4429, 'Rate limit exceeded');
-    return false;
-  }
-  return true;
+  return rl.count <= getWsCmdRateLimit();
 }
 
 function handleSubscribeCommand(

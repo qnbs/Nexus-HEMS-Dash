@@ -21,6 +21,7 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
+  # Registered key: security-full.yml:codeql (/language:javascript-typescript)
   # ════════════════════════════════════════════════════════════════
   #  1. CodeQL — Static Application Security Testing (GitHub)
   # ════════════════════════════════════════════════════════════════
@@ -43,7 +44,6 @@ jobs:
         uses: github/codeql-action/init@68bde559dea0fdcac2102bfdf6230c5f70eb485e # v4.35.4
         with:
           languages: javascript-typescript
-          # Security and quality queries back both code-scanning and code-quality rules.
           queries: security-and-quality
 
       - name: Autobuild
@@ -54,6 +54,7 @@ jobs:
         with:
           category: '/language:javascript-typescript'
 
+  # Also registered: security.yml:codeql + security-scan.yml:codeql
   # ════════════════════════════════════════════════════════════════
   #  2. Gitleaks — Secret Detection
   # ════════════════════════════════════════════════════════════════

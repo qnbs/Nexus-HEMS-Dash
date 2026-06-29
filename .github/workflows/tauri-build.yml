@@ -10,8 +10,8 @@ on:
   release:
     types: [published]
 
-permissions:
-  contents: read
+# Read-only default; the build-tauri job grants write scopes explicitly.
+permissions: read-all
 
 concurrency:
   group: tauri-build-${{ github.ref }}
