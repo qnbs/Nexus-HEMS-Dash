@@ -161,9 +161,9 @@ jobs:
           name: build
           path: apps/web/dist
 
-      - name: Install Playwright headless shell
-        timeout-minutes: 15
-        run: pnpm --filter @nexus-hems/web exec playwright install --with-deps chromium-headless-shell
+      - name: Install Playwright Chromium
+        timeout-minutes: 20
+        run: pnpm --filter @nexus-hems/web exec playwright install --with-deps chromium
 
       - name: Run Playwright tests
         run: pnpm test:e2e -- --project=chromium
