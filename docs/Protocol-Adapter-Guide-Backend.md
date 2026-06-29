@@ -1,10 +1,29 @@
 # Protocol Adapter Guide — Backend (Server-Side)
 
-> **Status:** Active | **Last Updated:** 2026-04-25
+> **Status:** Active | **Last Updated:** 2026-06-29
 
 This guide explains how to implement **server-side** protocol adapters in `apps/api/src/protocols/`.
 Server-side adapters run in the Express backend and feed data into the central EventBus for
 persistence to InfluxDB and broadcasting to WebSocket clients.
+
+## Adapter Mode (Safety-Critical)
+
+Backend protocol adapters **never start** unless both conditions are met:
+
+| Variable | Default | Purpose |
+| -------- | ------- | ------- |
+| `ADAPTER_MODE` | `mock` | Requested mode (`mock` or `live`) |
+| `ALLOW_LIVE_HARDWARE` | unset | Must be `true` together with `ADAPTER_MODE=live` |
+
+Resolution lives in `apps/api/src/config/adapter-mode.ts`:
+
+- `ADAPTER_MODE=mock` → effective mode `mock`, no hardware adapters started (safe for CI/demo).
+- `ADAPTER_MODE=live` without `ALLOW_LIVE_HARDWARE=true` → **effective mode stays `mock`**; server logs a warning and skips adapter startup.
+- `ADAPTER_MODE=live` + `ALLOW_LIVE_HARDWARE=true` → Modbus and MQTT adapters from `device-map.json` start.
+
+`GET /api/health` reports `mode` from **effective** mode (`getEffectiveAdapterMode()`), not the raw env value alone.
+
+See `docs/Safety-Certification-Notice.md` before enabling live mode on edge hardware.
 
 > **Frontend vs Backend Adapters:**
 > - **Frontend adapters** (`apps/web/src/core/adapters/`) connect browsers directly to hardware.
@@ -119,24 +138,20 @@ export class ExampleBackendAdapter implements IProtocolAdapter {
 
 ## Registering an Adapter
 
-Adapters are instantiated and registered in `apps/api/src/protocols/index.ts`:
+Adapters are instantiated in `apps/api/src/protocols/index.ts` inside `startProtocolAdapters()`.
+That function returns immediately when `isLiveHardwareAllowed()` is false (the default).
 
 ```typescript
-import { EventBus } from '../core/EventBus.js';
-import { ExampleBackendAdapter } from './example/ExampleBackendAdapter.js';
-
 export async function startProtocolAdapters(eventBus: EventBus): Promise<void> {
+  logAdapterModeStartup();
+
+  if (!isLiveHardwareAllowed()) {
+    return; // mock / live-without-ack — no hardware adapters
+  }
+
   const adapter = new ExampleBackendAdapter();
   await adapter.connect();
-
-  // Feed EventBus from adapter data stream
-  (async () => {
-    for await (const datapoint of adapter.getDataStream()) {
-      eventBus.emit(datapoint);
-    }
-  })().catch((err) => {
-    console.error(`[${adapter.id}] Data stream error`, err);
-  });
+  // ... wire getDataStream() → eventBus.emit()
 }
 ```
 

@@ -97,7 +97,7 @@ All critical and most high-severity findings have been remediated. See also
 | ID | Gap | Severity | Fix Phase |
 |----|-----|----------|-----------|
 | G-01 | JTI Revocation in-memory only | HIGH | ✅ Phase 3 Done |
-| G-02 | SBOM/Grype not in deploy.yml | HIGH | ✅ Phase 1 Done |
+| G-02 | Grype/cosign not wired in CI (syft SBOM + pnpm audit only) | HIGH | ⏳ SUPPLY-01 |
 | G-03 | Distroless not used in production | MEDIUM | ✅ Phase 1 Done |
 | G-07 | PII scanning missing in AI prompts | MEDIUM | ✅ Phase 3 Done |
 | G-08 | Helm PSS Labels (K8s PSP deprecated) | MEDIUM | ✅ Phase 1 Done |

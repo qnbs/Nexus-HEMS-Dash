@@ -7,6 +7,13 @@
 **Auditor:** Cursor Cloud Agent (automated deep-scan + evidence verification)  
 **Standards referenced:** OWASP Top 10 2021, CWE, NIST SP 800-53 (selected controls), WCAG 2.2 AA, React 19 Compiler guidance, Turborepo CI patterns, VDE-AR-E 2829-6 / ISO 15118-20 (domain context)
 
+> **Post-audit amendments (2026-06-29, after `main` @ `b91a5f7`):**
+> - **SAF-01 / CRIT-04 resolved** — #128 shipped `adapter-mode.ts` mock default + `ALLOW_LIVE_HARDWARE` double opt-in.
+> - **HIGH-10 resolved** — #129 wires `getAuthHeader()` into EEBUS Certificate UI fetches.
+> - **CRIT-05 partially resolved** — `auth-token.ts` exists; Settings UI for token exchange still open.
+> - **DOC-01 / SEC-06 / SUPPLY-01** — docs truth-sync in #129; Grype/cosign CI step still backlog.
+> - **Semgrep** — `ShipHandshakeService.ts` path guard refactored (0 findings locally).
+
 ---
 
 ## Executive Summary
@@ -17,7 +24,7 @@ Nexus-HEMS-Dash is a **mature, production-oriented HEMS monorepo** with exemplar
 
 | Dimension | Grade | Summary |
 |-----------|-------|---------|
-| **Safety & regulatory** | C+ | Strong software controls; no VDE/IEC/CE certification; `ADAPTER_MODE` default contradicts safety docs |
+| **Safety & regulatory** | B- | Strong software controls; mock default shipped (#128); no VDE/IEC/CE certification |
 | **Security** | B+ | JWT/WS/CORS/command-safety mature; industrial protocol gaps (OCPP Profile 3, EEBUS frontend path); doc/CI drift on Grype/cosign |
 | **Reliability & tests** | B | ~53 web + 11 API unit tests, 46 E2E; enforced coverage ~52–55% vs 85% roadmap; evcc/audit gaps |
 | **Performance** | B | Throttle, LTTB, workers, downsampling implemented; adapter worker unwired; 100+ device scale not ready |
@@ -35,11 +42,11 @@ Nexus-HEMS-Dash is a **mature, production-oriented HEMS monorepo** with exemplar
 | **Medium** | 18 | mTLS lifecycle, HA state, CSP harmonization, perf bridge unthrottled, Settings complexity |
 | **Low** | 14 | Demo share fallback, Scorecard non-blocking, Storybook gaps, commitlint scopes |
 
-### Immediate actions (Phase 0)
+### Immediate actions (Phase 0) — updated 2026-06-29
 
-1. Change `ADAPTER_MODE` default to `mock` in `apps/api/src/protocols/index.ts` (align with `Safety-Certification-Notice.md`).
-2. Implement auth token persistence or wire existing JWT flow into `background-sync.ts`, `sharing.ts`, `CertificateManagement.tsx`.
-3. Add Grype scan to `sbom-scan.yml` or correct all docs claiming it is implemented.
+1. ~~Change `ADAPTER_MODE` default to `mock`~~ ✅ Done (#128).
+2. Wire JWT into all EEBUS UI fetches ✅ (#129); expose token exchange in Settings UI ⏳.
+3. Add Grype scan to `sbom-scan.yml` or keep docs aligned (truth-sync ✅ #129; CI step ⏳ SUPPLY-01).
 4. Add `EvccAdapter` tests and `logCommandAudit` coverage (safety-critical path).
 
 ---

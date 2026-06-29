@@ -58,6 +58,8 @@ This project employs multiple layers of security:
 | `GRAFANA_PASSWORD`        | Yes (if Grafana used)  | Grafana admin password — no default, docker-compose fails without it  |
 | `ADAPTER_MODE`            | No (default: `mock`)   | `mock` for demo/testing; `live` requires `ALLOW_LIVE_HARDWARE=true` (see Safety-Certification-Notice) |
 | `ALLOW_LIVE_HARDWARE`     | No (default: unset)    | Must be `true` together with `ADAPTER_MODE=live` to start backend protocol adapters on real hardware |
+| `VITE_ADAPTER_MODE`       | No (default: `mock`)   | Frontend build-time mode; `live` requires `VITE_ALLOW_LIVE_HARDWARE=true` plus per-adapter Settings toggle |
+| `VITE_ALLOW_LIVE_HARDWARE`| No (default: unset)    | Must be `true` with `VITE_ADAPTER_MODE=live` for browser adapters to connect to hardware |
 | `PROMETHEUS_BEARER_TOKEN` | No                     | Bearer token for Prometheus scrape endpoint (`/metrics`) authentication |
 | `CORS_ORIGINS`            | No                     | Additional CORS-allowed origins beyond deployment domain              |
 | `RATE_LIMIT_TRUSTED_IPS`  | No                     | Comma-separated IPs that bypass rate limiting (internal proxies)      |
@@ -97,7 +99,7 @@ This project is tracked by the [OpenSSF Scorecard](https://scorecard.dev/viewer/
 > 2. The SHA-256 checksums recorded in the release notes for each artifact.
 > 3. For Docker images, the GHCR digest pinned in deployment manifests
 >    (`ghcr.io/qnbs/nexus-hems-dash@sha256:<digest>`), and the `cosign verify` flow once image
->    signing is enabled by `.github/workflows/deploy.yml` (SLSA L2).
+>    signing is enabled in CI (planned — see SUPPLY-01 in `docs/Technical-Debt-Registry.md`).
 >
 > Once a maintainer signing key is published, this section will be replaced with the exported public
 > key block and a fingerprint reference.

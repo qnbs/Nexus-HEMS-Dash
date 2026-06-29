@@ -60,11 +60,9 @@ const CA_FILE = process.env.EEBUS_CA_FILE
 /** Reject cert/key paths that escape the project root (mitigates EEBUS_*_FILE injection). */
 function assertResolvedPathUnderCwd(absPath: string, label: string): void {
   const root = resolve(process.cwd());
-  const target = resolve(absPath);
-  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
-  const rel = relative(root, target);
+  const rel = relative(root, absPath);
   if (rel.startsWith('..') || rel === '..') {
-    throw new Error(`[SHIP] ${label} must resolve under process.cwd() (got ${target})`);
+    throw new Error(`[SHIP] ${label} must resolve under process.cwd() (got ${absPath})`);
   }
 }
 

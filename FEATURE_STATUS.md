@@ -1,7 +1,7 @@
 # Feature Status — Nexus-HEMS-Dash
 
-**Version:** 1.2.0  
-**Last updated:** 2026-06-28  
+**Version:** 1.2.0 (1.3.0 work in `[Unreleased]`)  
+**Last updated:** 2026-06-29  
 **Purpose:** Single source of truth for what is actually implemented, partial, or planned. Use this file to keep README/marketing claims synchronized with the codebase.
 
 > **Rule:** Any PR that changes a feature's implementation status must update this file and the relevant docs before merging.
@@ -62,6 +62,8 @@
 | PDF reports + QR sharing | ✅ | `apps/web/src/components/ExportAndSharing.tsx`, `lib/sharing.ts` |
 | Prometheus monitoring | ✅ | `apps/api/src/middleware/metrics.ts`, `routes/metrics.routes.ts` |
 | Adapter health endpoint | ✅ | `GET /api/health` returns mode, overall status, and per-adapter state (`apps/api/src/routes/health.routes.ts`) |
+| Built-in adapters disabled by default | ✅ | `isBuiltinAdapterEnabledByDefault()` returns `false`; user enables adapters in Settings (`apps/web/src/lib/adapter-mode.ts`) |
+| Demo data without hardware | ✅ | Mock/simulated energy data when effective adapter mode is `mock` (`apps/api/src/data/mock-data.ts`, `EnergyContext`) |
 
 ---
 
@@ -80,9 +82,14 @@
 | Trust proxy config | ⚠️ | `TRUST_PROXY` env supported; defaults to 1 hop with warning |
 | BYOK AI vault (AES-GCM 256) | ✅ | `apps/web/src/lib/ai-keys.ts` |
 | PII sanitization | ✅ | `@nexus-hems/shared-types/src/sanitize-text.ts` |
+| Adapter mode mock default (double opt-in for live) | ✅ | Backend: `ADAPTER_MODE` + `ALLOW_LIVE_HARDWARE`; frontend: `VITE_ADAPTER_MODE` + `VITE_ALLOW_LIVE_HARDWARE` + Settings toggle (`adapter-mode.ts` both sides) |
 | SLSA build attestation | ✅ | `actions/attest-build-provenance` in `ci.yml` |
-| SBOM generation | ✅ | `.github/workflows/sbom-scan.yml` |
+| SBOM generation (syft SPDX) | ✅ | `.github/workflows/sbom-scan.yml` — frontend, backend, and source images |
+| Container CVE scan (Grype) in CI | ⏳ | SBOM workflow generates SPDX artifacts; Grype gate not yet wired (see `docs/Technical-Debt-Registry.md` SUPPLY-01) |
+| Cosign image signing in CI | ⏳ | Planned for container-registry push workflow; GitHub Pages deploy does not build/push images |
 | OpenSSF Scorecard | ✅ | `.github/workflows/scorecard.yml` |
+| DeepSource static analysis | ⚠️ | `.deepsource.toml` connected; advisory mode (see PRF-01) |
+| Unified PR feedback comment | ✅ | `.github/workflows/pr-feedback-summary.yml` |
 | Multi-user RBAC | ⏳ | ADR-009 deferred |
 
 ---
@@ -96,7 +103,7 @@
 | E2E tests (Playwright) | ⚠️ | 6 spec files; missing auth, command-safety, backend-integration coverage |
 | Fuzz/property tests | ✅ | `apps/web/src/tests/security-fuzz.test.ts` |
 | i18n parity test | ✅ | `apps/web/src/tests/i18n-sync.test.ts` |
-| Coverage gates | ⚠️ | Thresholds calibrated to current test baselines: API 32/29/37/33, web 54/44/54/55. `pnpm test:coverage` passes. Target of 60/50/60/60 (API) and 58/48/58/58 (web) requires additional route/service tests. |
+| Coverage gates | ⚠️ | Enforced thresholds: API 55/45/55/55, web 52/42/53/53 (`vitest.config.ts`). `pnpm test:coverage` passes. Staged roadmap target 70%+ (see `docs/Testing-Coverage-Strategy.md`, MED-01). |
 | Lighthouse CI | ✅ | `.github/workflows/lighthouse.yml` |
 | Chromatic visual regression | ✅ | `.github/workflows/chromatic.yml` |
 

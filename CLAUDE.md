@@ -271,6 +271,9 @@ When CI is the source of truth, push focused commits and monitor GitHub Actions 
 
 ## Key Docs
 
+- `AGENTS.md` — Cursor Cloud agent VM specifics (complements this file)
+- `FEATURE_STATUS.md` — shipped vs partial vs planned feature matrix
+- `docs/Technical-Debt-Registry.md` — canonical debt/backlog tracker
 - `docs/Safety-Certification-Notice.md` — **read before live hardware** — safety hazards, certification status, mock-vs-live delta, Tauri updater guide
 - `docs/Adapter-Dev-Guide.md` — how to write new frontend adapters
 - `docs/Protocol-Adapter-Guide-Backend.md` — backend `IProtocolAdapter` implementation guide

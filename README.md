@@ -388,7 +388,7 @@ Brand colors: `neon-green` (#22ff88) · `electric-blue` (#00f0ff) · `power-oran
 | Q1 2026 | Opt#1 + Opt#2 Zustand/React 19 compiler cleanup, 6 new test suites (circuit-breaker, tariff-providers, notifications, energy-context, +extensions) | ✅ Shipped |
 | Q4      | **Unified Command Center** — 7 focused sections, guided tours, contextual help, zero-config onboarding, full a11y audit                            | ✅ Shipped |
 | Q2 2026 | **pnpm/Turborepo Monorepo** — `apps/api` + `apps/web` + `packages/shared-types`; two-process dev; Turbo caching across all workspaces               | ✅ Shipped |
-| Q2 2026 | **v1.2.0 — Safety, Protocols, CI Hardening** — Safety-Certification-Notice, EEBUS SHIP handshake (CRIT-01), OpenADR 3.1 VEN, ISO 15118-20 BPT (V2G), VPP single-home node, PII sanitization pipeline, LTTB chart sampling, Biome 2.4.7 / Node 24 LTS toolchain, distroless backend image, SBOM + Grype CI gates | ✅ Shipped |
+| Q2 2026 | **v1.2.0 — Safety, Protocols, CI Hardening** — Safety-Certification-Notice, EEBUS SHIP handshake (CRIT-01), OpenADR 3.1 VEN, ISO 15118-20 BPT (V2G), VPP single-home node, PII sanitization pipeline, LTTB chart sampling, Biome 2.4.7 / Node 24 LTS toolchain, distroless backend image, syft SBOM + pnpm audit CI gates | ✅ Shipped |
 | Q3 2026 | v1.3.0 — Historical analytics deep-dive, OpenAPI auto-generation, multi-user RBAC, Chromatic visual regression hard gate                            | 🔄 In&nbsp;flight |
 | Q4+     | Multi-tenant SaaS, contrib adapter marketplace, OCPP 2.1 Profile 3, GDPR formal DPIA                                                                | 🔜 Planned |
 
@@ -402,7 +402,7 @@ Brand colors: `neon-green` (#22ff88) · `electric-blue` (#00f0ff) · `power-oran
 - **PII & Output Hardening:** Canonical `sanitizeUntrustedText` / `sanitizeRenderedText` / `sanitizeObjectStrings` extracted to `@nexus-hems/shared-types`; AI client + WebSocket gateway + adapter merges all delegate through the single source of truth (ADR-008)
 - **Performance:** LTTB chart sampling fully wired in `HistoricalChart` and `HistoricalAnalyticsPage`; Dexie tiered downsampling service active; per-adapter ring-buffer sizes; CSP harmonized for workers and AI providers
 - **Tariffs:** Nordpool day-ahead provider with tax + grid fee + renewables surcharge; `TariffProvider` union extended in shared types
-- **Toolchain & CI:** Node 24 LTS production baseline; Biome 2.4.7 single-source linter+formatter; distroless production server image; mandatory `pnpm audit --audit-level=high` Security Gate; SBOM + Grype scanning; Lighthouse parity (`--host 0.0.0.0`); `VITE_E2E_TESTING` cache key in `turbo.json`; `size-limit` is a real failing gate
+- **Toolchain & CI:** Node 24 LTS production baseline; Biome 2.4.7 single-source linter+formatter; distroless production server image; mandatory `pnpm audit --audit-level=high` Security Gate; syft SBOM generation (`sbom-scan.yml`); Lighthouse parity (`--host 0.0.0.0`); `VITE_E2E_TESTING` cache key in `turbo.json`; `size-limit` is a real failing gate
 - **Removed:** Tauri auto-updater + Minisign signing infrastructure (CRIT-02). Desktop users update by downloading a fresh release; rationale captured in `docs/Safety-Certification-Notice.md` §6
 </details>
 

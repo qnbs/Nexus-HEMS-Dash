@@ -178,7 +178,8 @@ classDiagram
 | **7** | Edge Docker Compose | ✅ Complete | `docker-compose.prod.yml`, `.env.prod.example` |
 | **8** | CI/Release | ✅ Complete | `.releaserc.json` (already existed), `CHANGELOG.md` |
 | **3b** | Modbus Write + Force-Charge | Planned | `apps/api/src/protocols/modbus/ModbusAdapter.ts` write extension |
-| **P1** | SBOM/Grype + Distroless | Planned | `.github/workflows/sbom-scan.yml`, `Dockerfile`, `Dockerfile.server`, `.renovaterc.json`, `helm/.../namespace.yaml` |
+| **P1** | SBOM (syft) + pnpm audit | ✅ Shipped | `.github/workflows/sbom-scan.yml` |
+| **P1b** | Grype + cosign (container registry) | ⏳ Planned (SUPPLY-01) | TBD GHCR push workflow |
 | **P2** | Performance (Dexie + LTTB + Ring) | Planned | `lib/downsampling-service.ts`, `lib/chart-sampling.ts`, `core/useEnergyStore.ts` |
 | **P3** | Security (JTI Redis + PII + mTLS) | Planned | `apps/api/src/jwt-utils.ts`, `apps/web/src/lib/db.ts`, `core/aiClient.ts`, `CertificateManagement.tsx` |
 | **P4** | Testing (60%→85% coverage) | Planned | `vitest.config.ts`, new unit/fuzz/visual test files |

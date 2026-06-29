@@ -72,8 +72,19 @@ docker compose --profile monitoring up -d
 | `TZ`                     | `Europe/Berlin` | Timezone                                                                     |
 | `GRAFANA_PASSWORD`       | **required**    | Grafana admin password — no default; docker-compose fails without it (CRIT-04) |
 | `ADAPTER_MODE`           | `mock`          | `mock` for demo data (default); `live` for real protocol adapters — requires `ALLOW_LIVE_HARDWARE=true` |
-| `ALLOW_LIVE_HARDWARE`    | unset           | Must be `true` together with `ADAPTER_MODE=live`; without it, hardware adapters never start |
+| `ALLOW_LIVE_HARDWARE`    | unset           | Must be `true` together with `ADAPTER_MODE=live`; without it, effective mode stays `mock` and hardware adapters never start |
 | `PROMETHEUS_BEARER_TOKEN`| —               | Bearer token for Prometheus `/metrics` scrape endpoint authentication (optional) |
+
+### Frontend build variables (Vite)
+
+Set at **build time** for production/PWA bundles (`apps/web`):
+
+| Variable | Default | Description |
+| -------- | ------- | ----------- |
+| `VITE_ADAPTER_MODE` | `mock` | `mock` (default) or `live` |
+| `VITE_ALLOW_LIVE_HARDWARE` | unset | Must be `true` with `VITE_ADAPTER_MODE=live` for browser adapters to connect |
+
+Even with live build vars, each adapter must be **enabled manually** in Settings. See `docs/Safety-Certification-Notice.md`.
 
 ### Reverse proxy, CDN, and `TRUST_PROXY`
 
@@ -206,12 +217,12 @@ The server exposes a single health endpoint that includes protocol-adapter statu
 GET /api/health
 ```
 
-Response examples:
+Response examples (effective mode from `getEffectiveAdapterMode()`):
 
-- `ADAPTER_MODE=mock` → `200 { "status": "healthy", "adapters": [] }`
-- `ADAPTER_MODE=live` with no configured adapters → `503 { "status": "unhealthy" }`
-- `ADAPTER_MODE=live` with all adapters healthy → `200 { "status": "healthy", "adapters": [...] }`
-- `ADAPTER_MODE=live` with a failed adapter → `503 { "status": "unhealthy" }`
+- Effective `mock` (default, or `ADAPTER_MODE=live` without `ALLOW_LIVE_HARDWARE=true`) → `200 { "status": "healthy", "mode": "mock", "adapters": [] }`
+- Effective `live` with no configured adapters in `device-map.json` → `503 { "status": "unhealthy", "mode": "live", "adapters": [] }`
+- Effective `live` with all adapters healthy → `200 { "status": "healthy", "mode": "live", "adapters": [...] }`
+- Effective `live` with a failed adapter → `503 { "status": "unhealthy", "mode": "live", "adapters": [...] }`
 
 Both the Helm chart (`helm/nexus-hems/templates/deployment-server.yaml`) and `docker-compose.yml` use `/api/health` for liveness and readiness probes. In Kubernetes, a failing readiness probe prevents traffic from reaching pods with dead adapters, avoiding silent degradation.
 
