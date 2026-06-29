@@ -40,7 +40,7 @@
       ]
     }
   },
-  "postCreateCommand": "corepack enable && corepack prepare pnpm@10.33.0 --activate && pnpm install --frozen-lockfile",
+  "postCreateCommand": "corepack enable && corepack prepare pnpm@10.33.0 --activate && pip install graphifyy -q && pnpm install --frozen-lockfile",
   "postStartCommand": "pnpm --filter @nexus-hems/web exec playwright install --with-deps chromium 2>/dev/null || true",
   "forwardPorts": [3000, 5173, 6006, 9090, 3001],
   "portsAttributes": {
