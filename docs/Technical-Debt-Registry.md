@@ -1,10 +1,10 @@
 # Technical Debt Registry — Nexus-HEMS-Dash
 
 **Last audited:** 2026-06-29
-**Version at audit:** 1.2.0 (main @ f919f08)
+**Version at audit:** 1.2.0 (main @ b91a5f7)
 **Last updated:** 2026-06-29
 **Updated version:** 1.3.0 in flight
-**Auditor:** Cursor Cloud Agent (full-scale deep audit — see `docs/Audit-Report-2026-06-29.md`)
+**Auditor:** Cursor Cloud Agent (full-scale deep audit — see `docs/Audit-Report-2026-06-29.md`; docs truth-sync pass #129)
 
 This file is the canonical issue tracker for known technical debt, security gaps, incomplete implementations, and quality issues. It is **not** a substitute for GitHub Issues — use it for context, rationale, and multi-sprint planning.
 
@@ -95,10 +95,10 @@ DeepSource coverage report card is visible, but a hard "coverage may not decreas
 
 ### PRF-04 — Unified PR Feedback Comment Missing
 
-**Files:** `.github/workflows/pr-feedback-summary.yml` (optional)  
-**Status:** ⏳ Backlog
+**Files:** `.github/workflows/pr-feedback-summary.yml`  
+**Status:** ✅ Fixed in v1.3.0 prep (#91)
 
-A single PR comment linking to Lighthouse, coverage, bundle analysis, DeepSource, and CodeAnt reports would reduce context switching. Defer until after DeepSource/CodeAnt tuning.
+Workflow posts/updates a single PR comment with links to Lighthouse, coverage, bundle analysis, and static-analysis dashboards. DeepSource/CodeAnt links appear when those integrations are configured.
 
 ### PRF-05 — Branch Protection Settings Not Codified
 
@@ -106,6 +106,28 @@ A single PR comment linking to Lighthouse, coverage, bundle analysis, DeepSource
 **Status:** ⏳ Backlog
 
 Required checks are documented but must be applied manually in GitHub Settings → Branches → main.
+
+---
+
+## Safety
+
+### SAF-01 — Implicit Live Hardware Connection on Dev/CI Startup
+
+**Files:** `apps/api/src/config/adapter-mode.ts`, `apps/web/src/lib/adapter-mode.ts`, `apps/web/src/core/useEnergyStore.ts`, `docker-compose.yml`, `helm/nexus-hems/values.yaml`  
+**Status:** ✅ Fixed in v1.3.0 (#128)
+
+`ADAPTER_MODE` / `VITE_ADAPTER_MODE` default to `mock`. Live hardware requires explicit double opt-in (`ALLOW_LIVE_HARDWARE=true` backend, `VITE_ALLOW_LIVE_HARDWARE=true` frontend build) plus per-adapter enablement in Settings. All built-in frontend adapters start disabled.
+
+---
+
+## Supply Chain
+
+### SUPPLY-01 — Grype CVE Scan and Cosign Signing Not Wired in CI
+
+**Files:** `.github/workflows/sbom-scan.yml`, `.github/workflows/deploy.yml`, `docs/Master-Improvement-Roadmap.md`  
+**Status:** ⏳ Backlog
+
+`sbom-scan.yml` generates syft SPDX SBOMs and runs `pnpm audit --audit-level=high`. Grype image/filesystem scanning and cosign signing are documented in roadmap/CHANGELOG v1.2.0 notes but are **not** present in current workflows. `deploy.yml` is GitHub Pages only (no container push). Reconcile docs and add Grype + cosign when a GHCR push workflow lands.
 
 ---
 
@@ -437,26 +459,20 @@ Storybook config references component paths that may not have stories written ye
 ### CRITICAL (new)
 
 ### CRIT-04 — Backend ADAPTER_MODE Defaults to `live` (Contradicts Safety Docs)
-**File:** `apps/api/src/protocols/index.ts:29`
-**Status:** ⏳ Scheduled — Phase 0 (Perfection Roadmap 0.1)
+**File:** `apps/api/src/config/adapter-mode.ts`, `apps/api/src/protocols/index.ts`
+**Status:** ✅ Fixed in v1.3.0 (#128)
 
-`process.env.ADAPTER_MODE ?? 'live'` starts Modbus adapters from `device-map.json` on every fresh deploy. `docs/Safety-Certification-Notice.md` §3 states mock is the intentional default for dev/CI. `mock-data.ts` defaults mock (line 12) — split-brain behavior.
-
-**Fix:** Default to `mock`; require explicit `ADAPTER_MODE=live` + non-empty device map. Add startup warning.
-
-**Risk if unfixed:** Unintended LAN Modbus polling; regulatory/safety exposure on misconfigured deployments.
+`ADAPTER_MODE` defaults to `mock`. Live hardware requires `ADAPTER_MODE=live` **and** `ALLOW_LIVE_HARDWARE=true`. `getEffectiveAdapterMode()` drives health checks and adapter startup consistently.
 
 ---
 
 ### CRIT-05 — Auth Token Read Path Without Write Path (HIGH-05 Incomplete)
-**Files:** `apps/web/src/lib/background-sync.ts:166`, `sharing.ts:87`, `CertificateManagement.tsx`
-**Status:** ⏳ Scheduled — Phase 0 (Perfection Roadmap 0.2)
+**Files:** `apps/web/src/lib/auth-token.ts`, `background-sync.ts`, `sharing.ts`, `CertificateManagement.tsx`
+**Status:** ⚠️ Partial — Phase 0 (Perfection Roadmap 0.2)
 
-`localStorage.getItem('nexus-hems-auth-token')` is used in three modules but **no `setItem` exists anywhere in the codebase**. CHANGELOG claims HIGH-05 fixed background sync auth; read path only was implemented.
+`auth-token.ts` provides `setAuthToken()` / `getAuthHeader()` and `exchangeApiKeyForJwt()`. `background-sync.ts` and `sharing.ts` consume the read path. **EEBUS Certificate UI** (`CertificateManagement.tsx`) still omits `Authorization` on `/api/eebus/*` fetches (see HIGH-10).
 
-**Fix:** `apps/web/src/lib/auth-token.ts` with set/get/clear; persist after `/api/auth/token`; wire Bearer into EEBUS UI fetches.
-
-**Risk if unfixed:** EEBUS pairing, server-backed shares, and background sync fail in production (401).
+**Fix:** Wire `getAuthHeader()` into all EEBUS UI fetches; expose token exchange in Settings when API base URL is configured.
 
 ---
 
@@ -464,11 +480,9 @@ Storybook config references component paths that may not have stories written ye
 
 ### HIGH-10 — EEBUS Certificate UI Calls Unauthenticated
 **File:** `apps/web/src/components/CertificateManagement.tsx`
-**Status:** ⏳ Scheduled — Phase 0
+**Status:** ✅ Fixed in v1.3.0 prep (#129)
 
-All `/api/eebus/*` fetches omit `Authorization` header. Routes require JWT in production (`eebus.routes.ts`).
-
-**Fix:** Attach Bearer from auth-token module (depends on CRIT-05).
+`/api/eebus/trust`, `/api/eebus/trust/:ski`, and `/api/eebus/pair/pin` fetches now attach `Authorization` via `getAuthHeader()` from `auth-token.ts`.
 
 ---
 
@@ -510,11 +524,11 @@ Safety-critical IndexedDB audit with 5000-entry cleanup has no unit tests.
 
 ### HIGH-15 — Grype Container Scan Documented But Not in CI
 **Files:** `.github/workflows/sbom-scan.yml`, `CHANGELOG.md`, `docs/Master-Improvement-Roadmap.md`
-**Status:** ⏳ Scheduled — Phase 0 (doc/CI truth-sync)
+**Status:** ⏳ Backlog — see **SUPPLY-01** (docs truth-sync applied in #129; Grype step still pending)
 
-`sbom-scan.yml` generates Syft SBOMs only. Multiple docs claim Grype gate is implemented (G-02 "Done").
+`sbom-scan.yml` generates Syft SBOMs and runs `pnpm audit`. Grype/cosign not yet wired.
 
-**Fix:** Add `anchore/scan-action` step OR correct all documentation.
+**Fix:** Add `anchore/scan-action` step when GHCR image push workflow lands.
 
 ---
 
@@ -615,6 +629,8 @@ Extreme timeout may mask real failures; reduce after stabilization.
 | ✅ CI-R3   | Lighthouse preview server uses --host 0.0.0.0 matching Playwright; IPv6 binding fixed    | v1.2.0   |
 | ✅ SAFETY  | Safety-Certification-Notice.md created; mock-vs-live hazards, checklist, updater guide   | v1.2.0   |
 | ✅ AUDIT-2026-06 | Full-scale deep audit report + Perfection Roadmap published                          | v1.3.0-prep |
+| ✅ SAF-01  | Adapter mode mock default; double opt-in for live hardware (backend + frontend)            | v1.3.0   |
+| ✅ PRF-04  | Unified PR feedback summary workflow (`pr-feedback-summary.yml`)                           | v1.3.0   |
 
 ---
 

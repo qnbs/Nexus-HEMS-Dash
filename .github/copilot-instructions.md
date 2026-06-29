@@ -412,7 +412,7 @@ docs/
 - JWT middleware (`requireJWT`) protects all endpoints except `/api/health`
 - Production mode requires `API_KEYS` env var for `/api/auth/token`
 - Production CSP uses `WS_ORIGINS` env var instead of `ws://localhost:*`
-- Mock data vs live adapters controlled via `ADAPTER_MODE=mock|live` env var
+- Mock data vs live adapters: `ADAPTER_MODE=mock|live` (default `mock`); live backend hardware requires `ALLOW_LIVE_HARDWARE=true`. Frontend build uses `VITE_ADAPTER_MODE` + `VITE_ALLOW_LIVE_HARDWARE`; all built-in adapters start disabled — see `apps/web/src/lib/adapter-mode.ts` and `docs/Safety-Certification-Notice.md`
 - Rate limiting: global (100/min), API (60/min), auth endpoints (10/min); bypass via `RATE_LIMIT_TRUSTED_IPS`
 - JWT entropy validated at startup: warns on weak secrets, dictionary words, short keys < 64 chars
 - WebSocket: JWT token auth, command whitelist, 64 KB max payload, 30 cmd/min per client

@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { getAuthHeader } from '../lib/auth-token';
 import {
   type EEBUSLocalCertificateRow,
   loadEebusLocalCertificateRows,
@@ -562,6 +563,17 @@ function formatDateShort(ms: number): string {
  * SHIP Trust Store section — reads from the API (/api/eebus/trust).
  * Shows all devices that have been paired via the SHIP handshake.
  */
+function eebusFetchInit(method?: string, body?: unknown): RequestInit {
+  const headers: Record<string, string> = { ...(getAuthHeader() ?? {}) };
+  if (body !== undefined) {
+    headers['Content-Type'] = 'application/json';
+  }
+  const init: RequestInit = { headers };
+  if (method) init.method = method;
+  if (body !== undefined) init.body = JSON.stringify(body);
+  return init;
+}
+
 function ShipTrustStore() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
@@ -576,7 +588,7 @@ function ShipTrustStore() {
   } = useQuery<EEBUSDeviceInfo[]>({
     queryKey: ['eebus-trust'],
     queryFn: async () => {
-      const resp = await fetch('/api/eebus/trust');
+      const resp = await fetch('/api/eebus/trust', eebusFetchInit());
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
       return resp.json() as Promise<EEBUSDeviceInfo[]>;
     },
@@ -586,9 +598,10 @@ function ShipTrustStore() {
 
   const removeMutation = useMutation({
     mutationFn: async (ski: string) => {
-      const resp = await fetch(`/api/eebus/trust/${encodeURIComponent(ski)}`, {
-        method: 'DELETE',
-      });
+      const resp = await fetch(
+        `/api/eebus/trust/${encodeURIComponent(ski)}`,
+        eebusFetchInit('DELETE'),
+      );
       if (!resp.ok && resp.status !== 204) throw new Error(`HTTP ${resp.status}`);
     },
     onSuccess: () => {
@@ -598,11 +611,7 @@ function ShipTrustStore() {
 
   const submitPinMutation = useMutation({
     mutationFn: async ({ ski, pin }: { ski: string; pin: string }) => {
-      const resp = await fetch('/api/eebus/pair/pin', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ski, pin }),
-      });
+      const resp = await fetch('/api/eebus/pair/pin', eebusFetchInit('POST', { ski, pin }));
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     },
     onSuccess: () => {

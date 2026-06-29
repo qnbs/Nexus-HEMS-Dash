@@ -52,6 +52,26 @@
 
 The bridge hook `useAdapterBridge()` syncs adapter data from `useEnergyStore` → `useAppStore.energyData` for backward compatibility.
 
+### Adapter Mode & Hardware Safety (Frontend)
+
+Browser adapters use the same **mock-by-default, double opt-in for live** model as the backend.
+
+| Build-time variable | Default | Purpose |
+| ------------------- | ------- | ------- |
+| `VITE_ADAPTER_MODE` | `mock` | Requested mode (`mock` or `live`) |
+| `VITE_ALLOW_LIVE_HARDWARE` | unset | Must be `true` with `VITE_ADAPTER_MODE=live` |
+
+Runtime rules (`apps/web/src/lib/adapter-mode.ts`):
+
+1. **All built-in adapters start disabled** — `isBuiltinAdapterEnabledByDefault()` returns `false`.
+2. User must enable an adapter in **Settings** (`enableAdapter`).
+3. `useAdapterBridge()` calls `connect()` only when `canConnectHardwareAdapter(enabled)` is true (live build acknowledgement **and** adapter enabled).
+4. Demo/simulated energy data is shown via `EnergyContext` when no hardware connection is active.
+
+`canConnectHardwareAdapter()` never returns true in a standard dev build (`pnpm dev`) unless you explicitly set both `VITE_ADAPTER_MODE=live` and `VITE_ALLOW_LIVE_HARDWARE=true`.
+
+See `docs/Safety-Certification-Notice.md` before connecting to real inverters, batteries, or EV chargers.
+
 ---
 
 ## Core Interface: `EnergyAdapter`

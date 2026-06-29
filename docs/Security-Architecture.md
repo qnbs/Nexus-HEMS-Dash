@@ -188,6 +188,17 @@ Prevents connection-exhaustion DoS without impacting legitimate users.
 
 ## Adapter Security
 
+### Mock-by-Default / Double Opt-In for Live Hardware
+
+| Layer | Module | Env vars | Effective live when |
+| ----- | ------ | -------- | ------------------- |
+| Backend | `apps/api/src/config/adapter-mode.ts` | `ADAPTER_MODE`, `ALLOW_LIVE_HARDWARE` | Both `live` + `true` |
+| Frontend | `apps/web/src/lib/adapter-mode.ts` | `VITE_ADAPTER_MODE`, `VITE_ALLOW_LIVE_HARDWARE` | Both `live` + `true` **and** adapter enabled in Settings |
+
+Without full acknowledgement, protocol adapters do not start (backend) and `useAdapterBridge` does not call `connect()` (frontend). Health checks use **effective** mode — `ADAPTER_MODE=live` alone still reports `mode: "mock"` and `status: "healthy"`.
+
+See `docs/Safety-Certification-Notice.md` for the pre-deployment checklist.
+
 ### Circuit Breaker
 
 Each adapter uses `apps/web/src/core/circuit-breaker.ts`:
@@ -240,7 +251,10 @@ Each adapter uses `apps/web/src/core/circuit-breaker.ts`:
 | Tool                   | Purpose                                                               |
 | ---------------------- | --------------------------------------------------------------------- |
 | **CodeQL**             | Static analysis (JavaScript/TypeScript)                               |
-| **Grype/Snyk**         | Container + filesystem vulnerability scanning                         |
+| **Syft SBOM**          | SPDX SBOM generation for frontend/backend images and source (`sbom-scan.yml`) |
+| **pnpm audit**         | Production dependency audit (`sbom-scan.yml`, `--audit-level=high`)           |
+| **Grype / Snyk**       | Container/filesystem CVE scanning — **planned** (SUPPLY-01); not in CI yet    |
+| **Cosign**             | Image signing — **planned** when GHCR push workflow lands (SUPPLY-01)         |
 | **Gitleaks**           | Secret detection (pre-commit + CI)                                    |
 | **anti-trojan-source** | Unicode Bidi character detection                                      |
 | **pnpm audit**         | Dependency vulnerability check                                        |

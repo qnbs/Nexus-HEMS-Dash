@@ -39,9 +39,9 @@ Nexus-HEMS-Dash controls or monitors safety-critical electrical infrastructure:
 The label **production-grade** refers to software quality attributes:
 
 - Strict TypeScript, zero linting warnings, WCAG 2.2 AA accessibility
-- Automated security gates (SBOM, Grype CVE scan, OWASP dependency audit)
+- Automated security gates (syft SBOM, `pnpm audit` dependency scan, CodeQL/Semgrep SAST)
 - Circuit-breaker patterns, dead-letter queues, structured logging
-- Signed Docker images (cosign, SLSA Level 2)
+- SLSA build-provenance attestations on CI builds; container image signing (cosign) planned when GHCR push workflow lands (see SUPPLY-01)
 - OCPP 2.1 / EEBUS SHIP / OpenADR 3.1 protocol compliance at the implementation level
 
 It does **not** imply regulatory approval, functional safety assessment (IEC 61508 / EN 50128 SIL), or approval for safety-critical use without independent certification.
@@ -119,7 +119,7 @@ These layers are software-only. They do not replace hardware-level protection de
 
 - [ ] Penetration test before exposing any API endpoint to the internet
 - [ ] Separate VLAN for HEMS devices, isolated from general home network
-- [ ] Regular `pnpm audit` + Grype SBOM scan schedule (at minimum before each live deployment)
+- [ ] Regular `pnpm audit` + syft SBOM review (at minimum before each live deployment); add Grype scan when SUPPLY-01 lands
 - [ ] Monitoring alerts on circuit-breaker OPEN events (Prometheus → Alertmanager)
 - [ ] Backup power for the server running the API (UPS)
 
