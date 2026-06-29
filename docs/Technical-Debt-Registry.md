@@ -1,10 +1,10 @@
 # Technical Debt Registry — Nexus-HEMS-Dash
 
-**Last audited:** 2026-05-02
-**Version at audit:** 1.2.0
-**Last updated:** 2026-05-02
-**Updated version:** 1.2.0 released
-**Auditor:** Claude Sonnet 4.6 (automated deep-scan)
+**Last audited:** 2026-06-29
+**Version at audit:** 1.2.0 (main @ f919f08)
+**Last updated:** 2026-06-29
+**Updated version:** 1.3.0 in flight
+**Auditor:** Cursor Cloud Agent (full-scale deep audit — see `docs/Audit-Report-2026-06-29.md`)
 
 This file is the canonical issue tracker for known technical debt, security gaps, incomplete implementations, and quality issues. It is **not** a substitute for GitHub Issues — use it for context, rationale, and multi-sprint planning.
 
@@ -428,6 +428,174 @@ Storybook config references component paths that may not have stories written ye
 
 ---
 
+---
+
+## June 2026 Deep Audit — New & Reclassified Items
+
+> Source: `docs/Audit-Report-2026-06-29.md` · Execution plan: `docs/Perfection-Roadmap.md`
+
+### CRITICAL (new)
+
+### CRIT-04 — Backend ADAPTER_MODE Defaults to `live` (Contradicts Safety Docs)
+**File:** `apps/api/src/protocols/index.ts:29`
+**Status:** ⏳ Scheduled — Phase 0 (Perfection Roadmap 0.1)
+
+`process.env.ADAPTER_MODE ?? 'live'` starts Modbus adapters from `device-map.json` on every fresh deploy. `docs/Safety-Certification-Notice.md` §3 states mock is the intentional default for dev/CI. `mock-data.ts` defaults mock (line 12) — split-brain behavior.
+
+**Fix:** Default to `mock`; require explicit `ADAPTER_MODE=live` + non-empty device map. Add startup warning.
+
+**Risk if unfixed:** Unintended LAN Modbus polling; regulatory/safety exposure on misconfigured deployments.
+
+---
+
+### CRIT-05 — Auth Token Read Path Without Write Path (HIGH-05 Incomplete)
+**Files:** `apps/web/src/lib/background-sync.ts:166`, `sharing.ts:87`, `CertificateManagement.tsx`
+**Status:** ⏳ Scheduled — Phase 0 (Perfection Roadmap 0.2)
+
+`localStorage.getItem('nexus-hems-auth-token')` is used in three modules but **no `setItem` exists anywhere in the codebase**. CHANGELOG claims HIGH-05 fixed background sync auth; read path only was implemented.
+
+**Fix:** `apps/web/src/lib/auth-token.ts` with set/get/clear; persist after `/api/auth/token`; wire Bearer into EEBUS UI fetches.
+
+**Risk if unfixed:** EEBUS pairing, server-backed shares, and background sync fail in production (401).
+
+---
+
+### HIGH (new / reclassified)
+
+### HIGH-10 — EEBUS Certificate UI Calls Unauthenticated
+**File:** `apps/web/src/components/CertificateManagement.tsx`
+**Status:** ⏳ Scheduled — Phase 0
+
+All `/api/eebus/*` fetches omit `Authorization` header. Routes require JWT in production (`eebus.routes.ts`).
+
+**Fix:** Attach Bearer from auth-token module (depends on CRIT-05).
+
+---
+
+### HIGH-11 — WebSocket Scope Authorization Incomplete for Write Commands
+**File:** `apps/api/src/ws/energy.ws.ts:17–20`
+**Status:** ⏳ Scheduled — Phase 0
+
+Only 4 command types mapped in `SCOPE_COMMAND_MAP`. `WSCommandTypeSchema` defines additional write commands (`START_CHARGING`, `SET_V2X_DISCHARGE`, `KNX_*`, OpenADR, VPP) that pass with `read` scope.
+
+**Fix:** Extend map; add Vitest matrix in `energy-ws.test.ts`.
+
+---
+
+### HIGH-12 — OCPP Security Profile 3 Not Operational
+**File:** `apps/web/src/core/adapters/OCPP21Adapter.ts`
+**Status:** ⏳ Scheduled — Phase 2 (Perfection Roadmap 2.1)
+
+`securityProfile` config stored but unused in `_connect()`. No client cert, Basic Auth, or CRL/OCSP per `docs/Security-Roadmap-2026.md` partial classification.
+
+---
+
+### HIGH-13 — EvccAdapter Has Zero Test Coverage
+**File:** `apps/web/src/core/adapters/EvccAdapter.ts`
+**Status:** ⏳ Scheduled — Phase 1
+
+Core adapter (7th) with REST + WebSocket paths controlling EV hardware. No dedicated test file.
+
+**Fix:** `apps/web/src/tests/evcc-adapter.test.ts`
+
+---
+
+### HIGH-14 — Command Audit Trail (`logCommandAudit`) Untested
+**File:** `apps/web/src/core/command-safety.ts:164–191`
+**Status:** ⏳ Scheduled — Phase 1
+
+Safety-critical IndexedDB audit with 5000-entry cleanup has no unit tests.
+
+---
+
+### HIGH-15 — Grype Container Scan Documented But Not in CI
+**Files:** `.github/workflows/sbom-scan.yml`, `CHANGELOG.md`, `docs/Master-Improvement-Roadmap.md`
+**Status:** ⏳ Scheduled — Phase 0 (doc/CI truth-sync)
+
+`sbom-scan.yml` generates Syft SBOMs only. Multiple docs claim Grype gate is implemented (G-02 "Done").
+
+**Fix:** Add `anchore/scan-action` step OR correct all documentation.
+
+---
+
+### HIGH-16 — Cosign Image Signing Documented But Not Implemented
+**Files:** `SECURITY.md`, `CHANGELOG.md` vs `.github/workflows/deploy.yml` (GitHub Pages only)
+**Status:** ⏳ Scheduled — Phase 1
+
+Cosign verify instructions reference container images; no signing workflow exists for GHCR publish.
+
+---
+
+### MEDIUM (new)
+
+### MED-12 — Adapter Worker Hook Exists But Has No Consumers
+**File:** `apps/web/src/core/useAdapterWorker.ts`
+**Status:** ⏳ Scheduled — Phase 1
+
+Modbus/Shelly still poll on main thread. Performance plan marks REST worker "implemented" but integration is missing.
+
+---
+
+### MED-13 — Unthrottled Bridge Side Effects in useAdapterBridge
+**File:** `apps/web/src/core/useEnergyStore.ts:443–457`
+**Status:** ⏳ Scheduled — Phase 1
+
+`mergeData` throttled to 250 ms but `bridgeToAppStore`, React Query writes, and `persistSnapshot` fire at full adapter message rate.
+
+---
+
+### MED-14 — API Test Coverage Not Enforced in CI
+**Files:** `.github/workflows/ci.yml:54–55`, `apps/api/vitest.config.ts`
+**Status:** ⏳ Scheduled — Phase 1
+
+API has 55% thresholds in config but CI runs `test:run` without `--coverage`.
+
+---
+
+### MED-15 — In-Memory WS Tickets and Share Store (HA Risk)
+**Files:** `apps/api/src/routes/auth.routes.ts:13`, `shares.routes.ts:25`
+**Status:** ⏳ Backlog — Phase 2
+
+JTI revocation supports Redis; WS tickets and share redemption do not. Multi-instance deployments have split-brain risk.
+
+---
+
+### MED-16 — Settings.tsx Monolith (~3,500 Lines)
+**File:** `apps/web/src/pages/Settings.tsx`
+**Status:** ⏳ Backlog — Phase 2
+
+Maintainability hotspot. Split into tab submodules per Perfection Roadmap 2.3.
+
+---
+
+### MED-17 — Performance Plan LTTB Scope Table Drift
+**File:** `docs/Performance-Optimization-Plan.md` (line 20 vs 156)
+**Status:** ⏳ Scheduled — Phase 0
+
+Scope table says "not fully integrated"; P3 section says "Fully Implemented". Code confirms LTTB is wired.
+
+**Fix:** Update scope table to ✅ Implemented.
+
+---
+
+### LOW (new)
+
+### LOW-09 — Fuzz Workflow Not in ci-passed Aggregate
+**File:** `.github/workflows/fuzz.yml`
+**Status:** ⏳ Backlog — Phase 1
+
+Fuzz gate runs in parallel; not required for `ci-passed` success.
+
+---
+
+### LOW-10 — A11y E2E Uses 240s waitForSelector
+**File:** `apps/web/tests/e2e/accessibility.spec.ts:26`
+**Status:** ⏳ Backlog — Phase 1
+
+Extreme timeout may mask real failures; reduce after stabilization.
+
+---
+
 ## Fixed Items
 
 | ID         | Description                                                                              | Fixed In |
@@ -446,6 +614,7 @@ Storybook config references component paths that may not have stories written ye
 | ✅ CI-R2   | E2E build artifacts consistently built with VITE_E2E_TESTING=true; turbo.json keyed      | v1.2.0   |
 | ✅ CI-R3   | Lighthouse preview server uses --host 0.0.0.0 matching Playwright; IPv6 binding fixed    | v1.2.0   |
 | ✅ SAFETY  | Safety-Certification-Notice.md created; mock-vs-live hazards, checklist, updater guide   | v1.2.0   |
+| ✅ AUDIT-2026-06 | Full-scale deep audit report + Perfection Roadmap published                          | v1.3.0-prep |
 
 ---
 
@@ -463,6 +632,15 @@ The following `pnpm.overrides` in root `package.json` exist for security reasons
 | `vite@^6.3.5`           | Arbitrary file read via crafted URL (CVE-2025-31125)         |
 | `esbuild@^0.25.0`       | Arbitrary request forwarding via dev server (CVE-2025-25193) |
 | `cookie@^0.7.0`         | Prototype pollution (CVE-2024-47764)                         |
+
+---
+
+## Release Roadmap
+
+| Version | Scope | Status |
+| ------- | ----- | ------ |
+| **v1.3.0** | **Perfection Roadmap Phase 0–1** — CRIT-04/05 auth+safety defaults, HIGH-10–16 test/supply-chain gaps, MED-12–14 perf/CI | ⏳ In flight |
+| **v1.4.0** | **Perfection Roadmap Phase 2–3** — OCPP Profile 3, EEBUS E2E, RBAC (ADR-009), certification package | ⏳ Planned |
 
 ---
 
