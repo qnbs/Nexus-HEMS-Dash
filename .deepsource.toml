@@ -1,0 +1,82 @@
+# DeepSource configuration for Nexus-HEMS-Dash
+#
+# Purpose:
+#   Deterministic static analysis, secrets detection, Docker analysis, and
+#   coverage diffing for the pnpm + Turborepo monorepo.
+#
+# Rollout mode:
+#   Advisory-first. DeepSource posts inline PR comments and a report card but
+#   is NOT a required merge gate until the initial tuning period (2–4 weeks)
+#   and the existing HIGH-severity dependency advisories are remediated.
+#
+# Safety guardrails:
+#   - Autofix is NOT enabled in this file; it must be configured from the
+#     DeepSource dashboard and restricted to style/unused-import categories.
+#   - Control-logic paths (adapters, auth, security middleware, command safety,
+#     energy controllers) must never receive auto-committed fixes.
+#
+# Docs:
+#   - docs/runbooks/deepsource-integration.md
+#   - docs/PR-FEEDBACK-PLAYBOOK.md
+
+version = 1
+
+exclude_patterns = [
+  "node_modules/**",
+  "dist/**",
+  "build/**",
+  ".turbo/**",
+  "**/*.d.ts",
+  "**/coverage/**",
+  "docs/**",
+  "**/*.test.ts",
+  "**/*.test.tsx",
+  "**/*.spec.ts",
+  "**/*.spec.tsx",
+  "apps/web/src-tauri/**",
+  "apps/web/storybook-static/**",
+  "apps/web/playwright-report/**",
+  "apps/web/test-results/**",
+  "apps/web/public/**",
+  "scripts/**",
+  ".github/**",
+]
+
+test_patterns = [
+  "apps/api/src/tests/**",
+  "apps/web/src/tests/**",
+  "apps/web/tests/e2e/**",
+]
+
+[[analyzers]]
+name = "javascript"
+enabled = true
+
+  [analyzers.meta]
+  dialect = "typescript"
+  plugins = ["react"]
+  module_system = "es-modules"
+  environment = ["nodejs", "browser", "vitest"]
+  dependency_file_paths = [
+    "apps/api/package.json",
+    "apps/web/package.json",
+    "packages/shared-types/package.json",
+  ]
+  cyclomatic_complexity_threshold = "high"
+  skip_doc_coverage = [
+    "arrow-function-expression",
+    "function-expression",
+    "method-definition",
+  ]
+
+[[analyzers]]
+name = "secrets"
+enabled = true
+
+[[analyzers]]
+name = "docker"
+enabled = true
+
+[[analyzers]]
+name = "test-coverage"
+enabled = true
