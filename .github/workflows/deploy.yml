@@ -8,8 +8,8 @@ on:
         required: true
         default: 'NO'
 
-permissions:
-  contents: read
+# Read-only default; build/deploy jobs declare required scopes.
+permissions: read-all
 
 concurrency:
   group: 'pages'
@@ -23,6 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      actions: write # upload-pages-artifact
 
     steps:
       - name: Harden the runner

@@ -4,8 +4,8 @@ on:
   push:
     branches: [main]
 
-permissions:
-  contents: read
+# Read-only default; release jobs grant write scopes explicitly.
+permissions: read-all
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true

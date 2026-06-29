@@ -331,6 +331,7 @@ async function executePoll(
     // protocol allowlist, hostname allowlist + private-IP check, port range check,
     // path/query sanitisation. Redirects are blocked via `redirect:'error'`.
     // codeql[js/client-side-request-forgery]
+    // lgtm[js/client-side-request-forgery]
     const resp = await fetch(safeUrl, {
       headers: headers ?? {},
       signal: AbortSignal.timeout(10_000),

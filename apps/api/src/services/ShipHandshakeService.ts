@@ -61,6 +61,7 @@ const CA_FILE = process.env.EEBUS_CA_FILE
 function assertResolvedPathUnderCwd(absPath: string, label: string): void {
   const root = resolve(process.cwd());
   const target = resolve(absPath);
+  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
   const rel = relative(root, target);
   if (rel.startsWith('..') || rel === '..') {
     throw new Error(`[SHIP] ${label} must resolve under process.cwd() (got ${target})`);

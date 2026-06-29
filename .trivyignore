@@ -10,6 +10,10 @@
 # `.Values.image.trustedRegistries` (defaults to ["ghcr.io/qnbs/"]).
 #
 # Rule: KSV034 — Restrict container images to only those from approved registries
+# Rule: KSV-0125 — Restrict container images to trusted registries
 # Affected files: Helm deployment templates (static template text, not rendered output)
+# The actual image validation is enforced at `helm template` render time by
+# the `nexus-hems.assertTrustedImageRepository` helper in _helpers.tpl.
 
 KSV034
+KSV-0125

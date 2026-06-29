@@ -30,6 +30,7 @@ import {
   loadEebusLocalCertificateRows,
   persistEebusLocalCertificateRows,
 } from '../lib/db';
+import { loadEebusLocalCertPems, saveEebusLocalCertPems } from '../lib/secure-store';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -41,8 +42,11 @@ export interface EEBUSCertRecord {
   deviceName: string;
   /** SHA-256 fingerprint (hex colon-separated) */
   fingerprint: string;
-  /** PEM stays in memory for the active session and is never persisted to IndexedDB. */
-  pemData?: string;
+  /**
+   * PEM is intentionally excluded from the persisted record.
+   * It is stored encrypted in the vault and kept in-memory only via certPemMap.
+   */
+  pemData?: never;
   validUntil: number;
   createdAt: number;
   status: CertStatus;
@@ -760,13 +764,22 @@ export function CertificateManagement() {
   const [certs, setCerts] = useState<EEBUSCertRecord[]>([]);
   const [importOpen, setImportOpen] = useState(false);
   const [deletingCert, setDeletingCert] = useState<EEBUSCertRecord | null>(null);
+  const certPemMap = useRef<Map<number, string>>(new Map());
+  const [pemIds, setPemIds] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     let cancelled = false;
     void (async () => {
       try {
-        const rows = await loadEebusLocalCertificateRows();
+        const [rows, encryptedPems] = await Promise.all([
+          loadEebusLocalCertificateRows(),
+          loadEebusLocalCertPems(),
+        ]);
         if (!cancelled) {
+          certPemMap.current = new Map(
+            Object.entries(encryptedPems).map(([id, pem]) => [Number(id), pem]),
+          );
+          setPemIds(new Set(Object.keys(encryptedPems).map(Number)));
           setCerts(
             rows
               .filter((r): r is EEBUSLocalCertificateRow & { id: number } => r.id !== undefined)
@@ -799,25 +812,44 @@ export function CertificateManagement() {
   const handleImport = async (pem: string, deviceName: string) => {
     const parsed = parsePEM(pem);
     if (!parsed) throw new Error('invalid-pem');
+    const id = Date.now();
     const newCert: EEBUSCertRecord = {
-      id: Date.now(),
+      id,
       deviceName,
       fingerprint: parsed.fingerprint,
-      pemData: pem,
       validUntil: parsed.validUntil,
       createdAt: Date.now(),
       status: 'trusted',
     };
+
+    // Encrypt PEM in the vault (metadata is stored unencrypted in IndexedDB).
+    certPemMap.current.set(id, pem);
+    setPemIds((prev) => new Set(prev).add(id));
+    void saveEebusLocalCertPems(Object.fromEntries(certPemMap.current)).catch(() => {
+      /* IndexedDB quota / private mode — PEM remains in-memory for the session */
+    });
+
     persistCerts([...certs, newCert]);
   };
 
   const handleDelete = async (id: number) => {
     persistCerts(certs.filter((c) => c.id !== id));
+    certPemMap.current.delete(id);
+    setPemIds((prev) => {
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
+    void saveEebusLocalCertPems(Object.fromEntries(certPemMap.current)).catch(() => {
+      /* IndexedDB quota / private mode — deletion takes effect in-memory */
+    });
   };
 
   const handleExport = (cert: EEBUSCertRecord) => {
-    if (!cert.pemData) return;
-    const blob = new Blob([cert.pemData], { type: 'application/x-pem-file' });
+    if (!cert.id) return;
+    const pem = certPemMap.current.get(cert.id);
+    if (!pem) return;
+    const blob = new Blob([pem], { type: 'application/x-pem-file' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -919,7 +951,7 @@ export function CertificateManagement() {
                   <button
                     type="button"
                     onClick={() => handleExport(cert)}
-                    disabled={!cert.pemData}
+                    disabled={!cert.id || !pemIds.has(cert.id)}
                     className="focus-ring rounded-lg p-1.5 text-(--color-text-secondary) transition-colors hover:bg-white/10 hover:text-(--color-text-primary) disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-(--color-text-secondary)"
                     aria-label={`${t('certManagement.exportCert')} — ${cert.deviceName}`}
                   >
