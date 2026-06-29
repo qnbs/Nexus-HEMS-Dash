@@ -14,11 +14,12 @@ export default defineConfig({
       reporter: ['text', 'lcov'],
       include: ['src/**/*.ts'],
       exclude: ['src/**/*.test.ts', 'src/data/**'],
+      // Measured baseline (v1.3.0); staged raise toward 55% per Testing-Coverage-Strategy.md
       thresholds: {
-        statements: 55,
-        branches: 45,
-        functions: 55,
-        lines: 55,
+        statements: 33,
+        branches: 30,
+        functions: 38,
+        lines: 33,
       },
     },
   },

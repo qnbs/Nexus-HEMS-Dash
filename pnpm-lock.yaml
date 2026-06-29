@@ -185,6 +185,9 @@ importers:
       '@types/ws':
         specifier: ^8.18.1
         version: 8.18.1
+      '@vitest/coverage-v8':
+        specifier: ^4.1.4
+        version: 4.1.4(vitest@4.1.4)
       supertest:
         specifier: ^7.2.2
         version: 7.2.2

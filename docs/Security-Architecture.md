@@ -253,8 +253,8 @@ Each adapter uses `apps/web/src/core/circuit-breaker.ts`:
 | **CodeQL**             | Static analysis (JavaScript/TypeScript)                               |
 | **Syft SBOM**          | SPDX SBOM generation for frontend/backend images and source (`sbom-scan.yml`) |
 | **pnpm audit**         | Production dependency audit (`sbom-scan.yml`, `--audit-level=high`)           |
-| **Grype / Snyk**       | Container/filesystem CVE scanning — **planned** (SUPPLY-01); not in CI yet    |
-| **Cosign**             | Image signing — **planned** when GHCR push workflow lands (SUPPLY-01)         |
+| **Grype / Snyk**       | Container/filesystem CVE scanning — Grype in `sbom-scan.yml` + `container-publish.yml` (critical, blocking) |
+| **Cosign**             | Keyless image signing + SLSA provenance on GHCR publish (`container-publish.yml`) |
 | **Gitleaks**           | Secret detection (pre-commit + CI)                                    |
 | **anti-trojan-source** | Unicode Bidi character detection                                      |
 | **pnpm audit**         | Dependency vulnerability check                                        |

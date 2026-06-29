@@ -85,8 +85,8 @@
 | Adapter mode mock default (double opt-in for live) | ✅ | Backend: `ADAPTER_MODE` + `ALLOW_LIVE_HARDWARE`; frontend: `VITE_ADAPTER_MODE` + `VITE_ALLOW_LIVE_HARDWARE` + Settings toggle (`adapter-mode.ts` both sides) |
 | SLSA build attestation | ✅ | `actions/attest-build-provenance` in `ci.yml` |
 | SBOM generation (syft SPDX) | ✅ | `.github/workflows/sbom-scan.yml` — frontend, backend, and source images |
-| Container CVE scan (Grype) in CI | ⏳ | SBOM workflow generates SPDX artifacts; Grype gate not yet wired (see `docs/Technical-Debt-Registry.md` SUPPLY-01) |
-| Cosign image signing in CI | ⏳ | Planned for container-registry push workflow; GitHub Pages deploy does not build/push images |
+| Container CVE scan (Grype) in CI | ✅ | `sbom-scan.yml` + `container-publish.yml` — critical cutoff, blocking (`fail-build: true`) |
+| Cosign image signing in CI | ✅ | `container-publish.yml` — keyless cosign + SLSA provenance on GHCR push (`ghcr.io/qnbs/nexus-hems-dash`, `nexus-hems-server`) |
 | OpenSSF Scorecard | ✅ | `.github/workflows/scorecard.yml` |
 | DeepSource static analysis | ⚠️ | `.deepsource.toml` connected; advisory mode (see PRF-01) |
 | Unified PR feedback comment | ✅ | `.github/workflows/pr-feedback-summary.yml` |

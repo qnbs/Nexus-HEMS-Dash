@@ -81,7 +81,6 @@ jobs:
           fail-build: true
           severity-cutoff: critical
           output-format: sarif
-        continue-on-error: true
 
   # ════════════════════════════════════════════════════════════════
   #  3. Syft SBOM Generation (backend image)
@@ -123,7 +122,6 @@ jobs:
           fail-build: true
           severity-cutoff: critical
           output-format: sarif
-        continue-on-error: true
 
   # ════════════════════════════════════════════════════════════════
   #  4. Filesystem SBOM (source code + dependencies)
@@ -153,4 +151,3 @@ jobs:
           fail-build: true
           severity-cutoff: critical
           output-format: sarif
-        continue-on-error: true
