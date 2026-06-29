@@ -170,7 +170,7 @@ All critical and most high-severity findings have been remediated. See also
 
 ### Distroless Migration (Phase 1, ADR-004)
 
-- **Backend:** `gcr.io/distroless/nodejs24-debian12` — no shell, no package manager
+- **Backend:** `gcr.io/distroless/nodejs24-debian13` — no shell, no package manager
 - **Frontend:** `nginxinc/nginx-unprivileged:1.29-alpine-slim` — tighter permissions
 - **Attack surface reduction:** ~80% fewer OS packages in production image
 
