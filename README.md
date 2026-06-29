@@ -56,6 +56,25 @@ For verified roadmap status and completion boundaries, use these documents as th
 | **Security**            | BYOK AI vault (AES-GCM 256) · JWT WebSocket auth · Helmet CSP · Rate limiting · CORS · Zod schema validation                                                                                                                                                                                             |
 | **Desktop & Mobile**    | Tauri v2.2 (Windows/macOS/Linux) · Capacitor 7 (iOS/Android)                                                                                                                                                                                                                                             |
 
+> **Protocol support truth:** The dashboard ships 13 frontend adapter modules that can run directly in the browser. The backend protocol layer (`apps/api/src/protocols/`) currently supports Modbus/SunSpec and generic MQTT only. See [FEATURE_STATUS.md](FEATURE_STATUS.md) for the full shipped-vs-planned matrix.
+
+### Protocol Support Matrix
+
+| Protocol | Frontend Adapter | Backend Adapter | Status |
+| :------- | :--------------- | :-------------- | :----- |
+| Victron MQTT (Cerbo GX / Venus OS) | ✅ | ⚠️ generic MQTT only | Frontend-ready; backend specialization planned |
+| Modbus/SunSpec (103/124/201) | ✅ | ✅ | Implemented |
+| KNX/IP floorplan | ✅ | ❌ | Frontend-ready; backend adapter planned |
+| OCPP 2.1 V2X (ISO 15118) | ✅ | ❌ | Frontend-ready; backend CSMS gateway planned |
+| EEBUS SPINE/SHIP (TLS 1.3 mTLS) | ✅ | ⚠️ SHIP handshake only | Pairing/trust store implemented; continuous SPINE data adapter planned |
+| evcc backend | ✅ | ❌ | Frontend-ready; backend adapter planned |
+| OpenEMS Edge (JSON-RPC) | ✅ | ❌ | Frontend-ready; backend adapter planned |
+| Home Assistant MQTT | ✅ (contrib) | ❌ | Frontend contrib adapter only |
+| Matter/Thread | ✅ (contrib) | ❌ | Frontend contrib adapter only |
+| Zigbee2MQTT | ✅ (contrib) | ❌ | Frontend contrib adapter only |
+| Shelly REST (Gen2+) | ✅ (contrib) | ❌ | Frontend contrib adapter only |
+| OpenADR 3.1 VEN | ✅ (contrib) | ⚠️ OAuth2 proxy only | Frontend contrib + API proxy; full VTN integration planned |
+
 ## Architecture
 
 ### Monorepo Structure (pnpm + Turborepo)
