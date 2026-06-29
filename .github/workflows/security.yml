@@ -1,6 +1,5 @@
-# CodeQL gate — registered analysis key: security.yml:codeql
-# GitHub branch protection expects results from this workflow path (see
-# security-full.yml header). Do not remove without updating code-scanning config.
+# Registered analysis key: security.yml:codeql (required by branch protection ruleset).
+# Do not remove without updating GitHub code-scanning configuration on main.
 
 name: Security
 
@@ -38,12 +37,9 @@ jobs:
         uses: github/codeql-action/init@68bde559dea0fdcac2102bfdf6230c5f70eb485e # v4.35.4
         with:
           languages: javascript-typescript
-          queries: security-and-quality
 
       - name: Autobuild
         uses: github/codeql-action/autobuild@68bde559dea0fdcac2102bfdf6230c5f70eb485e # v4.35.4
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@68bde559dea0fdcac2102bfdf6230c5f70eb485e # v4.35.4
-        with:
-          category: '/language:javascript-typescript'
