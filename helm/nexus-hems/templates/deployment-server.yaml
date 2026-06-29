@@ -43,6 +43,8 @@ spec:
               value: {{ .Values.env.NODE_ENV | quote }}
             - name: PORT
               value: {{ .Values.env.PORT | quote }}
+            - name: ADAPTER_MODE
+              value: {{ .Values.env.ADAPTER_MODE | default "mock" | quote }}
             {{- if .Values.existingSecret }}
             - name: JWT_SECRET
               valueFrom:

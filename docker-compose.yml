@@ -65,6 +65,7 @@ services:
     environment:
       - TZ=Europe/Berlin
       - NODE_ENV=production
+      - ADAPTER_MODE=mock
       # API_KEY_SCOPES: comma-separated "key:scope" pairs to bind scopes to keys
       # e.g., API_KEY_SCOPES=monitorkey:read,appkey:readwrite,adminkey:admin
       # If unset, all keys default to "readwrite" scope

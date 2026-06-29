@@ -29,7 +29,9 @@ describe('GET /api/health', () => {
 
   it('returns 503 unhealthy when live mode has no configured adapters', async () => {
     const originalMode = process.env.ADAPTER_MODE;
+    const originalAllow = process.env.ALLOW_LIVE_HARDWARE;
     process.env.ADAPTER_MODE = 'live';
+    process.env.ALLOW_LIVE_HARDWARE = 'true';
     try {
       const res = await supertest(app).get('/api/health').expect(503);
       expect(res.body.status).toBe('unhealthy');
@@ -37,6 +39,25 @@ describe('GET /api/health', () => {
     } finally {
       if (originalMode === undefined) delete process.env.ADAPTER_MODE;
       else process.env.ADAPTER_MODE = originalMode;
+      if (originalAllow === undefined) delete process.env.ALLOW_LIVE_HARDWARE;
+      else process.env.ALLOW_LIVE_HARDWARE = originalAllow;
+    }
+  });
+
+  it('stays healthy when live is requested without ALLOW_LIVE_HARDWARE', async () => {
+    const originalMode = process.env.ADAPTER_MODE;
+    const originalAllow = process.env.ALLOW_LIVE_HARDWARE;
+    process.env.ADAPTER_MODE = 'live';
+    delete process.env.ALLOW_LIVE_HARDWARE;
+    try {
+      const res = await supertest(app).get('/api/health').expect(200);
+      expect(res.body.status).toBe('healthy');
+      expect(res.body.mode).toBe('mock');
+    } finally {
+      if (originalMode === undefined) delete process.env.ADAPTER_MODE;
+      else process.env.ADAPTER_MODE = originalMode;
+      if (originalAllow === undefined) delete process.env.ALLOW_LIVE_HARDWARE;
+      else process.env.ALLOW_LIVE_HARDWARE = originalAllow;
     }
   });
 });

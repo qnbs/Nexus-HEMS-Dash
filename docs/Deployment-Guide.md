@@ -71,7 +71,8 @@ docker compose --profile monitoring up -d
 | `EEBUS_TRUST_BACKEND`    | `file`          | `file` (JSON via `EEBUS_TRUST_FILE`) or `redis` (requires `REDIS_URL`) for multi-replica API pods |
 | `TZ`                     | `Europe/Berlin` | Timezone                                                                     |
 | `GRAFANA_PASSWORD`       | **required**    | Grafana admin password — no default; docker-compose fails without it (CRIT-04) |
-| `ADAPTER_MODE`           | `mock`          | `mock` for demo data (default); `live` for real protocol adapters            |
+| `ADAPTER_MODE`           | `mock`          | `mock` for demo data (default); `live` for real protocol adapters — requires `ALLOW_LIVE_HARDWARE=true` |
+| `ALLOW_LIVE_HARDWARE`    | unset           | Must be `true` together with `ADAPTER_MODE=live`; without it, hardware adapters never start |
 | `PROMETHEUS_BEARER_TOKEN`| —               | Bearer token for Prometheus `/metrics` scrape endpoint authentication (optional) |
 
 ### Reverse proxy, CDN, and `TRUST_PROXY`

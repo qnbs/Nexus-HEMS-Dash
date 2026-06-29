@@ -20,6 +20,7 @@ import { useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { create } from 'zustand';
 import { useShallow } from 'zustand/react/shallow';
+import { canConnectHardwareAdapter, isBuiltinAdapterEnabledByDefault } from '../lib/adapter-mode';
 import { persistSnapshot } from '../lib/db';
 import { queryClient } from '../lib/query-client';
 import { useAppStore } from '../store';
@@ -105,12 +106,12 @@ function createAdapterInstance(
 }
 
 function createDefaultAdapters(): Record<AdapterId, AdapterEntry> {
+  const enabledByDefault = isBuiltinAdapterEnabledByDefault();
+
   return {
     'victron-mqtt': {
       adapter: createAdapterInstance('victron-mqtt'),
-      // Disable the default adapter in E2E mode so Playwright tests don't wait
-      // on (or retry) a real MQTT/WebSocket connection against localhost.
-      enabled: import.meta.env.VITE_E2E_TESTING !== 'true',
+      enabled: enabledByDefault,
       status: 'disconnected',
       circuitState: 'closed',
     },
@@ -413,7 +414,7 @@ export function useAdapterBridge() {
     const entries = Object.entries(adapters) as [AdapterId, AdapterEntry][];
 
     for (const [id, entry] of entries) {
-      if (!entry.enabled) continue;
+      if (!canConnectHardwareAdapter(entry.enabled)) continue;
 
       const baseAdapter = entry.adapter as BaseAdapter;
 

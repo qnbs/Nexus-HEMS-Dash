@@ -2,8 +2,8 @@
  * Health check endpoint — reports server status and protocol adapter health.
  *
  * Returns 200 when the server is healthy (mock mode or all configured adapters
- * are healthy). Returns 503 when ADAPTER_MODE=live and no adapters are
- * configured, or when any configured adapter failed to start.
+ * are healthy). Returns 503 when effective adapter mode is live and no adapters
+ * are configured, or when any configured adapter failed to start.
  */
 
 import { Router } from 'express';

@@ -60,13 +60,14 @@ The `ADAPTER_MODE=mock` default is intentional for developer onboarding and CI. 
 | Circuit breaker | Present but trivially exercised | Must be validated under real fault conditions |
 | Latency | Synthetic | Protocol-dependent (MQTT ≤ 500 ms, Modbus RTU ~100 ms) |
 
-**Before switching to `ADAPTER_MODE=live` on real hardware:**
+**Before switching to live hardware on real equipment:**
 
-1. Review `docs/Adapter-Dev-Guide.md` and `docs/Protocol-Adapter-Guide-Backend.md` end-to-end.
-2. Validate every adapter config against the `Hardware-Compatibility-Matrix.md`.
-3. Confirm all rate limits, SOC guardrails, and §14a power caps are correctly configured.
-4. Run with hardware **read-only** first (disable write commands in adapter config) and monitor `apps/api/data/audit-log.ndjson` for 24–48 hours.
-5. Engage a qualified electrician and, where required, a certified energy system integrator.
+1. Set `ADAPTER_MODE=live` **and** `ALLOW_LIVE_HARDWARE=true` (backend) or `VITE_ADAPTER_MODE=live` **and** `VITE_ALLOW_LIVE_HARDWARE=true` (frontend build).
+2. Review `docs/Adapter-Dev-Guide.md` and `docs/Protocol-Adapter-Guide-Backend.md` end-to-end.
+3. Validate every adapter config against the `Hardware-Compatibility-Matrix.md`.
+4. Confirm all rate limits, SOC guardrails, and §14a power caps are correctly configured.
+5. Run with hardware **read-only** first (disable write commands in adapter config) and monitor `apps/api/data/audit-log.ndjson` for 24–48 hours.
+6. Engage a qualified electrician and, where required, a certified energy system integrator.
 
 ---
 
