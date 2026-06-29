@@ -194,7 +194,7 @@ await registry.start('homeassistant-mqtt', {
   port: 1884,
   tls: false,
   mqttUser: 'homeassistant',
-  mqttPassword: 'your-password',
+  mqttPassword: 'your_mqtt_password',
   topicPrefix: 'homeassistant',
 });
 ```
@@ -285,7 +285,7 @@ sudo apt install -y mosquitto-clients
 
 # Subscribe to all sensor state updates
 mosquitto_sub -h homeassistant.local -p 1883 \
-  -u homeassistant -P your-password \
+  -u homeassistant -P your_mqtt_password \
   -t 'homeassistant/sensor/+/state' -v
 
 # Expected output:
