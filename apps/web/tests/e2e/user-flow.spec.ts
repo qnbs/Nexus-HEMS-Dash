@@ -1,8 +1,9 @@
 import { expect, test } from '@playwright/test';
-import { setupLocalStorage } from './e2e-setup';
+import { attachPageErrorHandler, setupLocalStorage } from './e2e-setup';
 
 test.describe('User Flow', () => {
   test.beforeEach(async ({ page }) => {
+    attachPageErrorHandler(page);
     await page.addInitScript(setupLocalStorage);
   });
 

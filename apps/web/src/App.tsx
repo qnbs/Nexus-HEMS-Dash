@@ -174,6 +174,9 @@ export default function App() {
 
   // Initialize background sync service
   useEffect(() => {
+    // Disabled during E2E testing to avoid periodic IndexedDB/timer work that
+    // can keep Playwright waiting and obscure real test failures.
+    if (import.meta.env.VITE_E2E_TESTING === 'true') return;
     backgroundSyncService.init();
     return () => {
       backgroundSyncService.destroy();
@@ -195,7 +198,7 @@ export default function App() {
           {!import.meta.env.VITE_E2E_TESTING && <PWAUpdateNotification />}
 
           <OfflineBanner />
-          <PWAInstallPrompt />
+          {!import.meta.env.VITE_E2E_TESTING && <PWAInstallPrompt />}
           <Toaster
             position="bottom-right"
             theme={themeDefinitions[theme].isDark ? 'dark' : 'light'}

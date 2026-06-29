@@ -47,7 +47,9 @@ export const defaultSettings: StoredSettings = {
   knxIp: '192.168.1.101',
   wsPort: 1880,
   refreshRateMs: 2000,
-  tariffProvider: 'tibber',
+  // In E2E builds default to the offline provider to avoid any external
+  // tariff API calls that can slow down or fail in CI.
+  tariffProvider: import.meta.env.VITE_E2E_TESTING === 'true' ? 'none' : 'tibber',
   tariffRegion: 'DE',
   dynamicGridFees: true,
   gridOperatorName: '',

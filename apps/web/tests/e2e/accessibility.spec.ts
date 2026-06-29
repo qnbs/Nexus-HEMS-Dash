@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
-import { setupLocalStorage } from './e2e-setup';
+import { attachPageErrorHandler, setupLocalStorage } from './e2e-setup';
 
 const routes = [
   { path: './', name: 'Command Hub' },
@@ -14,16 +14,26 @@ const routes = [
   { path: './help', name: 'Help' },
 ];
 
+const NAVIGATION_TIMEOUT_MS = 15_000;
+const MAIN_HEADING_TIMEOUT_MS = 30_000;
+
+async function gotoAndWait(page: import('@playwright/test').Page, path: string) {
+  await page.goto(path, { waitUntil: 'domcontentloaded', timeout: NAVIGATION_TIMEOUT_MS });
+  // Wait for the first real/skeleton h1 inside the main landmark.  The PageSkeleton
+  // fallback injects an h1, so this resolves as soon as the app shell mounts.
+  await page.waitForSelector('#main-content h1', { timeout: MAIN_HEADING_TIMEOUT_MS });
+}
+
 test.describe('WCAG 2.2 AA Accessibility', () => {
   test.beforeEach(async ({ page }) => {
+    attachPageErrorHandler(page);
     await page.addInitScript(setupLocalStorage);
   });
 
   for (const route of routes) {
     test(`${route.name} page should have no accessibility violations`, async ({ page }) => {
-      test.setTimeout(300_000);
-      await page.goto(route.path, { waitUntil: 'commit' });
-      await page.waitForSelector('#main-content h1', { timeout: 240_000 });
+      test.setTimeout(90_000);
+      await gotoAndWait(page, route.path);
 
       const accessibilityScanResults = await new AxeBuilder({ page })
         .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
@@ -35,8 +45,7 @@ test.describe('WCAG 2.2 AA Accessibility', () => {
   }
 
   test('Keyboard navigation should work', async ({ page }) => {
-    await page.goto('./', { waitUntil: 'commit' });
-    await page.waitForSelector('#main-content h1', { timeout: 240_000 });
+    await gotoAndWait(page, './');
 
     // Tab through interactive elements
     await page.keyboard.press('Tab');
@@ -49,8 +58,7 @@ test.describe('WCAG 2.2 AA Accessibility', () => {
   });
 
   test('Theme switcher should be keyboard accessible', async ({ page }) => {
-    await page.goto('./settings', { waitUntil: 'commit' });
-    await page.waitForSelector('#main-content h1', { timeout: 240_000 });
+    await gotoAndWait(page, './settings');
 
     // Find a theme button and activate with keyboard
     const themeButton = page.locator('button[aria-pressed]').nth(1);
@@ -62,8 +70,7 @@ test.describe('WCAG 2.2 AA Accessibility', () => {
   });
 
   test('Language switcher should be keyboard accessible', async ({ page }) => {
-    await page.goto('./settings', { waitUntil: 'commit' });
-    await page.waitForSelector('#main-content h1', { timeout: 240_000 });
+    await gotoAndWait(page, './settings');
 
     // Language switcher has DE and EN buttons with aria-pressed
     const langButton = page.locator('button[aria-pressed]').first();
@@ -75,8 +82,7 @@ test.describe('WCAG 2.2 AA Accessibility', () => {
   });
 
   test('Skip-to-content link should be present and functional', async ({ page }) => {
-    await page.goto('./', { waitUntil: 'commit' });
-    await page.waitForSelector('#main-content h1', { timeout: 240_000 });
+    await gotoAndWait(page, './');
 
     // The skip link should exist
     const skipLink = page.locator('a[href="#main-content"]');
@@ -100,8 +106,7 @@ test.describe('WCAG 2.2 AA Accessibility', () => {
       localStorage.setItem('nexus-hems-store', JSON.stringify(store));
     });
 
-    await page.goto('./settings', { waitUntil: 'commit' });
-    await page.waitForSelector('#main-content h1', { timeout: 240_000 });
+    await gotoAndWait(page, './settings');
 
     await expect(page.locator('html')).toHaveClass(/high-contrast/, { timeout: 10_000 });
   });
@@ -118,15 +123,13 @@ test.describe('WCAG 2.2 AA Accessibility', () => {
       localStorage.setItem('nexus-hems-store', JSON.stringify(store));
     });
 
-    await page.goto('./settings', { waitUntil: 'commit' });
-    await page.waitForSelector('#main-content h1', { timeout: 240_000 });
+    await gotoAndWait(page, './settings');
 
     await expect(page.locator('html')).toHaveClass(/reduced-motion/, { timeout: 10_000 });
   });
 
   test('Heading hierarchy should be correct (no skipped levels)', async ({ page }) => {
-    await page.goto('./', { waitUntil: 'commit' });
-    await page.waitForSelector('#main-content h1', { timeout: 240_000 });
+    await gotoAndWait(page, './');
 
     const headings = await page.evaluate(() => {
       const hs = document.querySelectorAll('h1, h2, h3, h4, h5, h6');
@@ -144,8 +147,7 @@ test.describe('WCAG 2.2 AA Accessibility', () => {
   });
 
   test('Sankey energy flow should have ARIA-live region for screen readers', async ({ page }) => {
-    await page.goto('./energy-flow', { waitUntil: 'commit' });
-    await page.waitForSelector('#main-content h1', { timeout: 240_000 });
+    await gotoAndWait(page, './energy-flow');
 
     // Check for the Sankey-specific ARIA-live region (sr-only, inside the Sankey container)
     const liveRegion = page.locator(
@@ -155,8 +157,7 @@ test.describe('WCAG 2.2 AA Accessibility', () => {
   });
 
   test('Sankey energy flow should have accessible sr-only data table', async ({ page }) => {
-    await page.goto('./energy-flow', { waitUntil: 'commit' });
-    await page.waitForSelector('#main-content h1', { timeout: 240_000 });
+    await gotoAndWait(page, './energy-flow');
 
     // Check for sr-only data table
     const dataTable = page.locator('table.sr-only');
@@ -168,8 +169,7 @@ test.describe('WCAG 2.2 AA Accessibility', () => {
   });
 
   test('Focus order should follow visual layout', async ({ page }) => {
-    await page.goto('./', { waitUntil: 'commit' });
-    await page.waitForSelector('#main-content h1', { timeout: 240_000 });
+    await gotoAndWait(page, './');
 
     // Tab through first 5 interactive elements and capture their bounding boxes
     const positions: number[] = [];
@@ -188,8 +188,7 @@ test.describe('WCAG 2.2 AA Accessibility', () => {
   });
 
   test('All images should have alt text', async ({ page }) => {
-    await page.goto('./', { waitUntil: 'commit' });
-    await page.waitForSelector('#main-content h1', { timeout: 240_000 });
+    await gotoAndWait(page, './');
 
     const imagesWithoutAlt = await page.evaluate(() => {
       const imgs = document.querySelectorAll('img');
@@ -201,8 +200,7 @@ test.describe('WCAG 2.2 AA Accessibility', () => {
   });
 
   test('All interactive elements should have accessible names', async ({ page }) => {
-    await page.goto('./', { waitUntil: 'commit' });
-    await page.waitForSelector('#main-content h1', { timeout: 240_000 });
+    await gotoAndWait(page, './');
 
     const accessibilityScanResults = await new AxeBuilder({ page })
       .withRules(['button-name', 'link-name', 'input-button-name', 'label'])
