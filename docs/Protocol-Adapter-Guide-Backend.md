@@ -19,7 +19,7 @@ Resolution lives in `apps/api/src/config/adapter-mode.ts`:
 
 - `ADAPTER_MODE=mock` → effective mode `mock`, no hardware adapters started (safe for CI/demo).
 - `ADAPTER_MODE=live` without `ALLOW_LIVE_HARDWARE=true` → **effective mode stays `mock`**; server logs a warning and skips adapter startup.
-- `ADAPTER_MODE=live` + `ALLOW_LIVE_HARDWARE=true` → Modbus and MQTT adapters from `device-map.json` start.
+- `ADAPTER_MODE=live` + `ALLOW_LIVE_HARDWARE=true` → Modbus adapters from `device-map.json` (default **empty** `[]`; copy `device-map.example.json` for live edge deploys) and MQTT when configured
 
 `GET /api/health` reports `mode` from **effective** mode (`getEffectiveAdapterMode()`), not the raw env value alone.
 

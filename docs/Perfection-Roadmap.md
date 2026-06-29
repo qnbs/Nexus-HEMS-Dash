@@ -54,9 +54,9 @@ gantt
 
 | Task | Files | Owner | Status |
 |------|-------|-------|--------|
-| Change `ADAPTER_MODE` default to `mock` | `apps/api/src/protocols/index.ts` | api | ⏳ |
-| Align `README.md`, `SECURITY.md`, `Deployment-Guide.md` | docs | docs | ⏳ |
-| Ship `device-map.json` as empty array with README comment | `apps/api/src/data/device-map.json` | api | ⏳ |
+| Change `ADAPTER_MODE` default to `mock` | `apps/api/src/config/adapter-mode.ts` | api | ✅ #128 |
+| Align `README.md`, `SECURITY.md`, `Deployment-Guide.md` | docs | docs | ✅ #129 |
+| Ship `device-map.json` as empty array; example in `device-map.example.json` | `apps/api/src/data/` | api | ✅ |
 | Add startup warning when `live` + non-empty device map | `protocols/index.ts` | api | ⏳ |
 
 **Success criteria:**
@@ -71,9 +71,9 @@ gantt
 
 | Task | Files | Owner | Status |
 |------|-------|-------|--------|
-| Create `apps/web/src/lib/auth-token.ts` — get/set/clear with expiry | new | web | ⏳ |
-| Write token after successful `/api/auth/token` response | auth flow consumer | web | ⏳ |
-| Wire Bearer into `CertificateManagement.tsx` fetches | web | web | ⏳ |
+| Create `apps/web/src/lib/auth-token.ts` — get/set/clear with expiry | new | web | ✅ |
+| Write token after successful `/api/auth/token` response | auth flow consumer | web | ⏳ Settings UI |
+| Wire Bearer into `CertificateManagement.tsx` fetches | web | web | ✅ #129 |
 | Wire Bearer into `EEBUSAdapter.ts` API calls | web | web | ⏳ |
 | Verify `background-sync.ts` + `sharing.ts` with integration test | tests | web | ⏳ |
 
@@ -89,9 +89,9 @@ gantt
 
 | Task | Files | Owner | Status |
 |------|-------|-------|--------|
-| Map all `WSCommandTypeSchema` write commands to `readwrite` or `admin` | `energy.ws.ts` | api | ⏳ |
-| Add Vitest matrix: each command type × scope → pass/fail | `energy-ws.test.ts` | api | ⏳ |
-| Document scope matrix in `docs/Security-Architecture.md` | docs | docs | ⏳ |
+| Map all `WSCommandTypeSchema` write commands to `readwrite` or `admin` | `ws-scope.ts` | api | ✅ #130 |
+| Add Vitest matrix: each command type × scope → pass/fail | `ws-scope.test.ts` | api | ✅ #130 |
+| Document scope matrix in `docs/Security-Architecture.md` | docs | docs | ✅ #129 |
 
 **Success criteria:** 100% write commands require `readwrite` minimum; grid limit requires `admin`.
 
@@ -101,8 +101,8 @@ gantt
 
 | Task | Files | Owner | Status |
 |------|-------|-------|--------|
-| Add Grype scan to `sbom-scan.yml` OR remove Grype claims from docs | CI + docs | ci | ⏳ |
-| Correct cosign references (container publish workflow vs Pages deploy) | `SECURITY.md`, `CHANGELOG.md` | docs | ⏳ |
+| Add Grype scan to `sbom-scan.yml` OR remove Grype claims from docs | CI + docs | ci | ⚠️ Partial #130 |
+| Correct cosign references (container publish workflow vs Pages deploy) | `SECURITY.md`, `CHANGELOG.md` | docs | ✅ #129 |
 | Update `Performance-Optimization-Plan.md` LTTB scope table | docs | docs | ⏳ |
 
 **Success criteria:** Every security claim in README traceable to a workflow file.
@@ -117,8 +117,8 @@ gantt
 
 | Priority | Test target | File to create/extend |
 |----------|-------------|----------------------|
-| P0 | `EvccAdapter` (REST + WS) | `evcc-adapter.test.ts` |
-| P0 | `logCommandAudit` + cleanup | `command-safety.test.ts` |
+| P0 | `EvccAdapter` (REST + WS) | `evcc-adapter.test.ts` | ✅ |
+| P0 | `logCommandAudit` + cleanup | `command-safety.test.ts` | ✅ |
 | P1 | All `validateCommand` schema types | extend `send-command.test.ts` |
 | P1 | `useSafeCommand` / `EmergencyStop` | `command-safety-ui.test.tsx` |
 | P2 | `ModbusSunSpecAdapter` integration | `modbus-sunspec-adapter.test.ts` |

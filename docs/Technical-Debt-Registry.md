@@ -504,19 +504,17 @@ Storybook config references component paths that may not have stories written ye
 
 ### HIGH-13 — EvccAdapter Has Zero Test Coverage
 **File:** `apps/web/src/core/adapters/EvccAdapter.ts`
-**Status:** ⏳ Scheduled — Phase 1
+**Status:** ✅ Fixed in v1.3.0 prep
 
-Core adapter (7th) with REST + WebSocket paths controlling EV hardware. No dedicated test file.
-
-**Fix:** `apps/web/src/tests/evcc-adapter.test.ts`
+`apps/web/src/tests/evcc-adapter.test.ts` — interface contract, connect/state mapping, sendCommand REST paths. `_connect()` now sets `connected` status after successful health check.
 
 ---
 
 ### HIGH-14 — Command Audit Trail (`logCommandAudit`) Untested
 **File:** `apps/web/src/core/command-safety.ts:164–191`
-**Status:** ⏳ Scheduled — Phase 1
+**Status:** ✅ Fixed in v1.3.0 prep
 
-Safety-critical IndexedDB audit with 5000-entry cleanup has no unit tests.
+`command-safety.test.ts` covers audit writes and 5000-entry cleanup trim.
 
 ---
 
@@ -628,6 +626,8 @@ Extreme timeout may mask real failures; reduce after stabilization.
 | ✅ SAF-01  | Adapter mode mock default; double opt-in for live hardware (backend + frontend)            | v1.3.0   |
 | ✅ PRF-04  | Unified PR feedback summary workflow (`pr-feedback-summary.yml`)                           | v1.3.0   |
 | ✅ HIGH-11   | WS `SCOPE_COMMAND_MAP` covers all command types; read scope blocked from writes          | v1.3.0   |
+| ✅ HIGH-13   | EvccAdapter unit tests + connected status on successful connect                            | v1.3.0   |
+| ✅ HIGH-14   | `logCommandAudit` 5000-entry cleanup covered in command-safety tests                       | v1.3.0   |
 
 ---
 

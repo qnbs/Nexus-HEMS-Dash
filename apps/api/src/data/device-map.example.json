@@ -1,0 +1,119 @@
+[
+  {
+    "deviceId": "sma-sunnyboy-01",
+    "label": "SMA Sunny Boy 5.0 — PV Inverter",
+    "host": "192.168.1.100",
+    "port": 502,
+    "protocol": "modbus-sunspec",
+    "unitId": 1,
+    "pollIntervalMs": 2000,
+    "inverterMaxWatts": 5000,
+    "registers": [
+      {
+        "address": 40083,
+        "metric": "POWER_W",
+        "scale": 1,
+        "unit": "W",
+        "dataType": "INT16",
+        "byteOrder": "BE",
+        "label": "AC Power Output (SunSpec 103)"
+      },
+      {
+        "address": 40093,
+        "metric": "ENERGY_KWH",
+        "scale": 0.001,
+        "unit": "kWh",
+        "dataType": "UINT32",
+        "byteOrder": "BE",
+        "label": "AC Energy Total (SunSpec 103)"
+      },
+      {
+        "address": 40085,
+        "metric": "VOLTAGE_V",
+        "scale": 0.1,
+        "unit": "V",
+        "dataType": "UINT16",
+        "byteOrder": "BE",
+        "label": "AC Voltage Phase A (SunSpec 103)"
+      },
+      {
+        "address": 40086,
+        "metric": "CURRENT_A",
+        "scale": 0.01,
+        "unit": "A",
+        "dataType": "INT16",
+        "byteOrder": "BE",
+        "label": "AC Current Phase A (SunSpec 103)"
+      }
+    ]
+  },
+  {
+    "deviceId": "victron-multiplus-01",
+    "label": "Victron MultiPlus-II 5000 — Battery Inverter",
+    "host": "192.168.1.101",
+    "port": 502,
+    "protocol": "modbus-sunspec",
+    "unitId": 100,
+    "pollIntervalMs": 2000,
+    "inverterMaxWatts": 5000,
+    "registers": [
+      {
+        "address": 840,
+        "metric": "SOC_PERCENT",
+        "scale": 0.1,
+        "unit": "%",
+        "dataType": "UINT16",
+        "byteOrder": "BE",
+        "label": "Battery State of Charge (Victron GX Modbus)"
+      },
+      {
+        "address": 842,
+        "metric": "POWER_W",
+        "scale": 1,
+        "unit": "W",
+        "dataType": "INT16",
+        "byteOrder": "BE",
+        "label": "Battery Power (positive=charge, negative=discharge)"
+      },
+      {
+        "address": 843,
+        "metric": "VOLTAGE_V",
+        "scale": 0.01,
+        "unit": "V",
+        "dataType": "UINT16",
+        "byteOrder": "BE",
+        "label": "Battery Voltage"
+      }
+    ]
+  },
+  {
+    "deviceId": "byd-hvs-battery-01",
+    "label": "BYD HVS 10.2 — Battery Storage",
+    "host": "192.168.1.102",
+    "port": 502,
+    "protocol": "modbus-sunspec",
+    "unitId": 1,
+    "pollIntervalMs": 5000,
+    "inverterMaxWatts": 5000,
+    "registers": [
+      {
+        "address": 6000,
+        "metric": "SOC_PERCENT",
+        "scale": 0.1,
+        "unit": "%",
+        "dataType": "UINT16",
+        "byteOrder": "BE",
+        "label": "State of Charge"
+      },
+      {
+        "address": 6001,
+        "metric": "TEMPERATURE_C",
+        "scale": 0.1,
+        "unit": "°C",
+        "dataType": "INT16",
+        "byteOrder": "BE",
+        "label": "Battery Temperature"
+      }
+    ]
+  }
+]
