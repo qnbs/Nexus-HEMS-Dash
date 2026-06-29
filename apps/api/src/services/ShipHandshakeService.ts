@@ -13,7 +13,7 @@ import { generateKeyPairSync, X509Certificate } from 'crypto';
 import { mkdir, readFile, writeFile } from 'fs/promises';
 import https from 'https';
 import { dirname, relative, resolve } from 'path';
-import { WebSocket } from 'ws';
+import { type RawData, WebSocket } from 'ws';
 import { recordEebusHandshake } from '../middleware/security-metrics.js';
 import { upsertDevice } from './EEBusTrustStore.js';
 
@@ -512,7 +512,7 @@ export function getHandshakeState(ski: string): SHIPHandshakeEntry | null {
  */
 export function submitPin(ski: string, pin: string): boolean {
   const entry = sessions.get(ski);
-  if (!entry || entry.state !== 'pin_required') return false;
+  if (entry?.state !== 'pin_required') return false;
   if (entry.pinResolve) {
     entry.pinResolve(pin);
     delete entry.pinResolve;
@@ -534,4 +534,86 @@ export function terminateSession(ski: string): void {
     entry.ws.terminate();
   }
   sessions.delete(ski);
+  detachClientRelays(ski);
+}
+
+// ─── Browser WebSocket proxy (Milestone 2.2) ───────────────────────
+
+/** Active browser client relays keyed by SKI */
+const clientRelays = new Map<string, Set<WebSocket>>();
+
+function detachClientRelays(ski: string): void {
+  const clients = clientRelays.get(ski);
+  if (!clients) return;
+  for (const client of clients) {
+    if (client.readyState === WebSocket.OPEN) {
+      client.close(1011, 'Device session ended');
+    }
+  }
+  clientRelays.delete(ski);
+}
+
+function registerRelay(ski: string, deviceWs: WebSocket, clientWs: WebSocket): void {
+  const onDeviceMessage = (data: RawData) => {
+    if (clientWs.readyState === WebSocket.OPEN) clientWs.send(data);
+  };
+  const onClientMessage = (data: RawData) => {
+    if (deviceWs.readyState === WebSocket.OPEN) deviceWs.send(data);
+  };
+
+  deviceWs.on('message', onDeviceMessage);
+  clientWs.on('message', onClientMessage);
+
+  clientWs.on('close', () => {
+    deviceWs.off('message', onDeviceMessage);
+    clientRelays.get(ski)?.delete(clientWs);
+  });
+
+  if (!clientRelays.has(ski)) clientRelays.set(ski, new Set());
+  clientRelays.get(ski)!.add(clientWs);
+}
+
+async function waitForTerminalHandshakeState(
+  ski: string,
+  timeoutMs = HANDSHAKE_TIMEOUT_MS,
+): Promise<SHIPState | 'missing'> {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const entry = sessions.get(ski);
+    if (!entry) return 'missing';
+    if (
+      entry.state === 'connected' ||
+      entry.state === 'pin_required' ||
+      entry.state === 'failed' ||
+      entry.state === 'timeout'
+    ) {
+      return entry.state;
+    }
+    await new Promise((r) => setTimeout(r, 200));
+  }
+  return 'timeout';
+}
+
+/**
+ * Attach a browser WebSocket client to the server-side SHIP session for `ski`.
+ * Initiates handshake when no connected session exists.
+ */
+export async function attachClientRelay(
+  ski: string,
+  hostname: string,
+  port: number,
+  clientWs: WebSocket,
+): Promise<'ok' | 'pin_required' | 'failed'> {
+  let entry = sessions.get(ski);
+  if (entry?.state !== 'connected' || entry.ws?.readyState !== WebSocket.OPEN) {
+    await initiateHandshake(ski, hostname, port);
+    const terminal = await waitForTerminalHandshakeState(ski);
+    if (terminal === 'pin_required') return 'pin_required';
+    if (terminal !== 'connected') return 'failed';
+    entry = sessions.get(ski);
+  }
+
+  if (!entry?.ws || entry.ws.readyState !== WebSocket.OPEN) return 'failed';
+  registerRelay(ski, entry.ws, clientWs);
+  return 'ok';
 }

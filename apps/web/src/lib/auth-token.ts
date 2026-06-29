@@ -74,3 +74,19 @@ export function getAuthHeader(): Record<string, string> | null {
   const token = getAuthToken();
   return token ? { Authorization: `Bearer ${token}` } : null;
 }
+
+/** Obtain a single-use WebSocket ticket for `/ws` or `/ws/eebus` proxy connections. */
+export async function fetchWsTicket(): Promise<string | null> {
+  const base = getApiBaseUrl();
+  const headers = getAuthHeader();
+  if (!base || !headers) return null;
+
+  try {
+    const res = await fetch(`${base}/api/auth/ws-ticket`, { method: 'POST', headers });
+    if (!res.ok) return null;
+    const data = (await res.json()) as { ticket?: string };
+    return data.ticket ?? null;
+  } catch {
+    return null;
+  }
+}

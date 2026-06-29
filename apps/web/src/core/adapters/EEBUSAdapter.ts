@@ -21,6 +21,7 @@
  *                                                            This Adapter → Dashboard
  */
 
+import { fetchWsTicket, getAuthHeader } from '../../lib/auth-token';
 import { BaseAdapter } from './BaseAdapter';
 import type {
   AdapterCapability,
@@ -134,9 +135,11 @@ export interface EEBUSDiscoveredDevice {
 
 /** Connection event for the UI */
 export interface EEBUSConnectionEvent {
-  type: 'discovered' | 'ship_state' | 'paired' | 'data' | 'error' | 'loadcontrol';
+  type: 'discovered' | 'ship_state' | 'paired' | 'pin_required' | 'data' | 'error' | 'loadcontrol';
   device?: EEBUSDiscoveredDevice;
   shipState?: SHIPConnectionState;
+  ski?: string;
+  pinHint?: string;
   message?: string;
   data?: Partial<UnifiedEnergyModel>;
 }
@@ -165,6 +168,8 @@ interface SPINEMessage {
 export interface EEBUSAdapterConfig extends Partial<AdapterConnectionConfig> {
   /** Server base URL for mDNS discovery + pairing (defaults to window.location.origin) */
   serverBaseUrl?: string;
+  /** Device SKI (hex) — required for browser proxy mode */
+  skiFingerprint?: string;
   /** Enable mock mode (no real connection required) */
   mock?: boolean;
 }
@@ -187,6 +192,8 @@ export class EEBUSAdapter extends BaseAdapter {
   private incentives: EEBUSIncentive[] = [];
   private heartbeatInterval: ReturnType<typeof setInterval> | null = null;
   private _serverBaseUrl: string | undefined;
+  private pendingPinSki: string | null = null;
+  private _skiFingerprint: string | undefined;
 
   constructor(config?: EEBUSAdapterConfig) {
     // HIGH-01: host is required in non-mock mode
@@ -208,6 +215,7 @@ export class EEBUSAdapter extends BaseAdapter {
       ...config,
     });
     this._serverBaseUrl = config?.serverBaseUrl;
+    this._skiFingerprint = config?.skiFingerprint;
   }
 
   get devices(): EEBUSDiscoveredDevice[] {
@@ -240,12 +248,53 @@ export class EEBUSAdapter extends BaseAdapter {
     this.shipState = 'init';
 
     try {
-      const protocol = this.config.tls ? 'wss' : 'ws';
-      const url = `${protocol}://${this.config.host}:${this.config.port}/ship/`;
+      if (typeof window !== 'undefined') {
+        await this._connectViaProxy();
+        return;
+      }
+      await this._connectDirect();
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : 'Connection failed';
+      this.setStatus('error', msg);
+      this.emitEvent({ type: 'error', message: msg });
+    }
+  }
 
+  /** Browser path — mTLS terminated at API `/ws/eebus` proxy (Milestone 2.2). */
+  private async _connectViaProxy(): Promise<void> {
+    const ski = this._skiFingerprint;
+    if (!ski) {
+      throw new Error('EEBUS skiFingerprint is required for browser connections');
+    }
+
+    const ticket = await fetchWsTicket();
+    if (!ticket) {
+      throw new Error('JWT required — exchange API key in Settings → Security before connecting');
+    }
+
+    const wsProtocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+    const params = new URLSearchParams({
+      ticket,
+      ski,
+      host: this.config.host,
+      port: String(this.config.port ?? 4712),
+    });
+    const url = `${wsProtocol}://${window.location.host}/ws/eebus?${params.toString()}`;
+
+    await this.openWebSocket(url);
+  }
+
+  /** Direct SHIP WebSocket (Node/Tauri only — no browser mTLS). */
+  private async _connectDirect(): Promise<void> {
+    const protocol = this.config.tls ? 'wss' : 'ws';
+    const url = `${protocol}://${this.config.host}:${this.config.port}/ship/`;
+    await this.openWebSocket(url);
+  }
+
+  private openWebSocket(url: string): Promise<void> {
+    return new Promise((resolve, reject) => {
       this.ws = new WebSocket(url);
 
-      // Connection timeout: abort if WebSocket doesn't open within 30s
       const connectionTimeout = setTimeout(() => {
         if (this.ws && this.ws.readyState !== WebSocket.OPEN) {
           this.log.warn('Connection timeout after 30s', {
@@ -256,6 +305,7 @@ export class EEBUSAdapter extends BaseAdapter {
           this.ws.close();
           this.setStatus('error', 'Connection timeout (30s)');
           this.emitEvent({ type: 'error', message: 'Connection timeout (30s)' });
+          reject(new Error('Connection timeout'));
         }
       }, 30_000);
 
@@ -268,6 +318,7 @@ export class EEBUSAdapter extends BaseAdapter {
         this.shipState = 'cmi';
         this.emitEvent({ type: 'ship_state', shipState: 'cmi' });
         this.sendSHIPInit();
+        resolve();
       };
 
       this.ws.onmessage = (event) => {
@@ -278,6 +329,7 @@ export class EEBUSAdapter extends BaseAdapter {
         clearTimeout(connectionTimeout);
         this.setStatus('error', 'WebSocket connection failed');
         this.emitEvent({ type: 'error', message: 'WebSocket connection error' });
+        reject(new Error('WebSocket error'));
       };
 
       this.ws.onclose = (event) => {
@@ -291,13 +343,17 @@ export class EEBUSAdapter extends BaseAdapter {
         this.setStatus('disconnected');
         this.shipState = 'closed';
         this.emitEvent({ type: 'ship_state', shipState: 'closed' });
+        if (event.code === 4401) {
+          const ski = this.pendingPinSki ?? this._skiFingerprint;
+          this.emitEvent({
+            type: 'pin_required',
+            ...(ski ? { ski } : {}),
+            message: 'PIN required — submit via Certificate Management or submitPairingPin()',
+          });
+        }
         this.scheduleReconnect();
       };
-    } catch (error) {
-      const msg = error instanceof Error ? error.message : 'Connection failed';
-      this.setStatus('error', msg);
-      this.emitEvent({ type: 'error', message: msg });
-    }
+    });
   }
 
   protected async _disconnect(): Promise<void> {
@@ -416,6 +472,7 @@ export class EEBUSAdapter extends BaseAdapter {
     try {
       const baseUrl = this.serverBaseUrl;
       const resp = await fetch(`${baseUrl}/api/eebus/discover`, {
+        headers: getAuthHeader() ?? {},
         signal: AbortSignal.timeout(10_000),
       });
       if (!resp.ok) throw new Error(`Discovery endpoint returned ${resp.status}`);
@@ -448,11 +505,33 @@ export class EEBUSAdapter extends BaseAdapter {
       const baseUrl = this.serverBaseUrl;
       const resp = await fetch(`${baseUrl}/api/eebus/pair`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { ...(getAuthHeader() ?? {}), 'Content-Type': 'application/json' },
         body: JSON.stringify({ ski, host: device.host, port: device.port }),
         signal: AbortSignal.timeout(15_000),
       });
       if (!resp.ok) return false;
+      const body = (await resp.json()) as {
+        status?: string;
+        pinHint?: string;
+      };
+      if (body.status === 'pin_required') {
+        this.pendingPinSki = ski;
+        const pinEvent: EEBUSConnectionEvent = {
+          type: 'pin_required',
+          ski,
+          message: 'Enter the PIN shown on your EEBUS device',
+        };
+        if (body.pinHint) pinEvent.pinHint = body.pinHint;
+        this.emitEvent(pinEvent);
+        return false;
+      }
+      if (
+        body.status !== 'connected' &&
+        body.status !== 'tls_connecting' &&
+        body.status !== 'protocol'
+      ) {
+        return false;
+      }
       this.pairedDevices.add(ski);
       device.trusted = true;
       this.discoveredDevices.set(ski, device);
@@ -462,6 +541,22 @@ export class EEBUSAdapter extends BaseAdapter {
         message: `Paired with ${device.brand} ${device.model}`,
       });
       return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /** Submit SHIP pairing PIN via API — never auto-approved in the browser (SEC-03). */
+  async submitPairingPin(ski: string, pin: string): Promise<boolean> {
+    try {
+      const baseUrl = this.serverBaseUrl;
+      const resp = await fetch(`${baseUrl}/api/eebus/pair/pin`, {
+        method: 'POST',
+        headers: { ...(getAuthHeader() ?? {}), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ski, pin }),
+        signal: AbortSignal.timeout(10_000),
+      });
+      return resp.ok;
     } catch {
       return false;
     }
@@ -493,14 +588,6 @@ export class EEBUSAdapter extends BaseAdapter {
     );
   }
 
-  private sendSHIPPinVerification(ski: string): void {
-    this.ws?.send(
-      JSON.stringify({
-        connectionPinState: [{ pinState: 'ok', ski }],
-      }),
-    );
-  }
-
   // ─── SPINE Protocol ───────────────────────────────────────────────
 
   private handleMessage(raw: string): void {
@@ -519,12 +606,17 @@ export class EEBUSAdapter extends BaseAdapter {
 
       if (message.connectionPinState) {
         this.shipState = 'pin_verify';
-        this.emitEvent({ type: 'ship_state', shipState: 'pin_verify' });
-        // Auto-respond with PIN OK using the device SKI from the message
         const ski = message.connectionPinState?.[0]?.ski;
         if (typeof ski === 'string') {
-          this.sendSHIPPinVerification(ski);
+          this.pendingPinSki = ski;
         }
+        const resolvedSki = typeof ski === 'string' ? ski : (this.pendingPinSki ?? undefined);
+        this.emitEvent({
+          type: 'pin_required',
+          ...(resolvedSki ? { ski: resolvedSki } : {}),
+          message:
+            'SHIP PIN required — use Certificate Management or submitPairingPin(); auto-PIN disabled (SEC-03)',
+        });
         return;
       }
 

@@ -17,8 +17,11 @@ import {
   type EEBUSDeviceInfo,
   EEBUSPairRequestSchema,
   EEBUSPinSubmitSchema,
+  EEBUSRevocationConfigSchema,
 } from '@nexus-hems/shared-types';
 import { Router } from 'express';
+import { getEebusRevocationConfig, setEebusRevocationConfig } from '../config/eebus-revocation.js';
+import { isPrivateHost } from '../config/private-host.js';
 import { logger } from '../core/logger.js';
 import { requireJWT, requireScope } from '../middleware/auth.js';
 import { getDevice, listDevices, removeDevice, upsertDevice } from '../services/EEBusTrustStore.js';
@@ -28,28 +31,6 @@ import {
   submitPin,
   terminateSession,
 } from '../services/ShipHandshakeService.js';
-
-// ─── SSRF guard ─────────────────────────────────────────────────────
-// Target host for SHIP handshake must be a private/local network address.
-// This prevents an attacker with admin JWT from triggering SSRF via /pair.
-
-const PRIVATE_HOST_PATTERNS = [
-  /^localhost$/,
-  /^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$/,
-  /^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$/,
-  /^172\.(1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3}$/,
-  /^192\.168\.\d{1,3}\.\d{1,3}$/,
-  /^169\.254\.\d{1,3}\.\d{1,3}$/,
-  /^::1$/,
-  /^fe80:/i,
-  /\.local$/,
-];
-
-function isPrivateHost(host: string): boolean {
-  return PRIVATE_HOST_PATTERNS.some((p) => p.test(host));
-}
-
-// ─── Route factory ──────────────────────────────────────────────────
 
 export function createEebusRoutes(): Router {
   const router = Router();
@@ -294,6 +275,31 @@ export function createEebusRoutes(): Router {
       trustedAt: 0,
     }).catch(() => {});
     res.status(201).json({ registered: true });
+  });
+
+  // ── GET/PUT /api/eebus/tls/revocation ─────────────────────────────
+  // Admin surface for OCSP/CRL policy (Milestone 2.2).
+
+  router.get('/api/eebus/tls/revocation', requireJWT, requireScope('admin'), (_req, res) => {
+    res.json(getEebusRevocationConfig());
+  });
+
+  router.put('/api/eebus/tls/revocation', requireJWT, requireScope('admin'), (req, res) => {
+    const parsed = EEBUSRevocationConfigSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ errors: parsed.error.issues });
+      return;
+    }
+    if (parsed.data.mode === 'crl' && !parsed.data.crlUrl) {
+      res.status(400).json({ error: 'crlUrl required when mode is crl' });
+      return;
+    }
+    if (parsed.data.mode === 'ocsp' && !parsed.data.ocspUrl) {
+      res.status(400).json({ error: 'ocspUrl required when mode is ocsp' });
+      return;
+    }
+    setEebusRevocationConfig(parsed.data);
+    res.json(getEebusRevocationConfig());
   });
 
   return router;
