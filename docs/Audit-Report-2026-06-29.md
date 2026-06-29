@@ -31,7 +31,7 @@ Nexus-HEMS-Dash is a **mature, production-oriented HEMS monorepo** with exemplar
 | Severity | Count | Top themes |
 |----------|-------|------------|
 | **Critical** | 2 | `ADAPTER_MODE=live` default; auth token never persisted (`nexus-hems-auth-token`) |
-| **High** | 12 | OCPP Profile 3, EEBUS SPA auth, WS scope gaps, evcc untested, API coverage not gated, Grype/cosign drift |
+| **High** | 12 | OCPP Profile 3, EEBUS SPA auth, WS scope gaps, evcc untested, coverage thresholds not enforced in CI, supply-chain scan drift |
 | **Medium** | 18 | mTLS lifecycle, HA state, CSP harmonization, perf bridge unthrottled, Settings complexity |
 | **Low** | 14 | Demo share fallback, Scorecard non-blocking, Storybook gaps, commitlint scopes |
 
