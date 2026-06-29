@@ -468,11 +468,9 @@ Storybook config references component paths that may not have stories written ye
 
 ### CRIT-05 — Auth Token Read Path Without Write Path (HIGH-05 Incomplete)
 **Files:** `apps/web/src/lib/auth-token.ts`, `background-sync.ts`, `sharing.ts`, `CertificateManagement.tsx`
-**Status:** ⚠️ Partial — Phase 0 (Perfection Roadmap 0.2)
+**Status:** ✅ Fixed in v1.3.0 prep
 
-`auth-token.ts` provides `setAuthToken()` / `getAuthHeader()` and `exchangeApiKeyForJwt()`. `background-sync.ts`, `sharing.ts`, and `CertificateManagement.tsx` use the read path. **Remaining:** expose token exchange in Settings when API base URL is configured.
-
-**Fix:** Settings UI for `exchangeApiKeyForJwt()` when `VITE_API_URL` is set.
+`auth-token.ts` provides `get/set/clear`, `exchangeApiKeyForJwt()`, and `getApiBaseUrl()` (with same-origin fallback). Settings Security tab exposes token exchange via `ApiAuthSettingsSection`. `background-sync.ts`, `sharing.ts`, and `CertificateManagement.tsx` use the read path.
 
 ---
 
@@ -545,10 +543,10 @@ Modbus/Shelly still poll on main thread. Performance plan marks REST worker "imp
 ---
 
 ### MED-13 — Unthrottled Bridge Side Effects in useAdapterBridge
-**File:** `apps/web/src/core/useEnergyStore.ts:443–457`
-**Status:** ⏳ Scheduled — Phase 1
+**File:** `apps/web/src/core/useEnergyStore.ts`
+**Status:** ✅ Fixed in v1.3.0 prep
 
-`mergeData` throttled to 250 ms but `bridgeToAppStore`, React Query writes, and `persistSnapshot` fire at full adapter message rate.
+`bridgeToAppStore`, React Query writes, and `persistSnapshot` now run inside `flushBridgeSideEffects()`, invoked once per 250 ms `flushMerge` window alongside the unified model update.
 
 ---
 

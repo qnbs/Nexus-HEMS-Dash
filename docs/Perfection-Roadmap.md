@@ -72,7 +72,7 @@ gantt
 | Task | Files | Owner | Status |
 |------|-------|-------|--------|
 | Create `apps/web/src/lib/auth-token.ts` — get/set/clear with expiry | new | web | ✅ |
-| Write token after successful `/api/auth/token` response | auth flow consumer | web | ⏳ Settings UI |
+| Write token after successful `/api/auth/token` response | `ApiAuthSettingsSection.tsx` | web | ✅ |
 | Wire Bearer into `CertificateManagement.tsx` fetches | web | web | ✅ #129 |
 | Wire Bearer into `EEBUSAdapter.ts` API calls | web | web | ⏳ |
 | Verify `background-sync.ts` + `sharing.ts` with integration test | tests | web | ⏳ |
