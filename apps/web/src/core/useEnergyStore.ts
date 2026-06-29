@@ -324,6 +324,22 @@ function flushMerge(): void {
         : [...state.history, point];
     return { unified: merged, lastUpdated: ts, history };
   });
+  flushBridgeSideEffects();
+}
+
+/** Throttled bridge: app store, React Query cache, Dexie — once per 250 ms flush. */
+function flushBridgeSideEffects(): void {
+  const unified = useEnergyStoreBase.getState().unified;
+  const legacySnapshot = unifiedToLegacy(unified);
+
+  bridgeToAppStore(unified, useAppStore.getState().setEnergyData);
+
+  queryClient.setQueryData(['energy-live'], legacySnapshot);
+  queryClient.setQueryData(['energy-snapshot', Date.now()], legacySnapshot);
+
+  if (unified.timestamp) {
+    void persistSnapshot(legacySnapshot);
+  }
 }
 
 // ─── Deep merge helper (referentially stable) ───────────────────────
@@ -442,27 +458,9 @@ export function useAdapterBridge() {
         }
       });
 
-      // Subscribe to data
+      // Subscribe to data — mergeData accumulates; bridge side effects flush at 250 ms
       entry.adapter.onData((data) => {
         mergeData(id, data);
-
-        // Bridge to legacy store
-        bridgeToAppStore(data, useAppStore.getState().setEnergyData);
-
-        // Sync to TanStack Query cache — components using useQuery(['energy-live'])
-        // get push-based updates without polling. staleTime: Infinity ensures
-        // React Query never refetches; Zustand is the single source of truth.
-        const currentUnified = useEnergyStoreBase.getState().unified;
-        const legacySnapshot = unifiedToLegacy(currentUnified);
-        queryClient.setQueryData(['energy-live'], legacySnapshot);
-
-        // Cache energy snapshot for offline fallback
-        queryClient.setQueryData(['energy-snapshot', Date.now()], legacySnapshot);
-
-        // Persist to Dexie.js (single write — no duplicate)
-        if (data.timestamp) {
-          void persistSnapshot(legacySnapshot);
-        }
       });
 
       // Subscribe to status

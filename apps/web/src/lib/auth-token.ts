@@ -5,8 +5,12 @@
 
 const AUTH_TOKEN_KEY = 'nexus-hems-auth-token';
 
-function apiBase(): string {
-  return import.meta.env.VITE_API_URL ?? '';
+/** Resolve API base URL — explicit env var or same-origin fallback (dev proxy). */
+export function getApiBaseUrl(): string {
+  const envUrl = import.meta.env.VITE_API_URL;
+  if (envUrl) return envUrl;
+  if (typeof window !== 'undefined') return window.location.origin;
+  return '';
 }
 
 export function getAuthToken(): string | null {
@@ -33,28 +37,37 @@ export function clearAuthToken(): void {
   }
 }
 
+export type TokenExchangeResult =
+  | { ok: true; token: string; scope: string }
+  | { ok: false; error: 'no_api_base' | 'invalid_credentials' | 'network' | 'invalid_response' };
+
 /** Exchange API key for JWT and persist to localStorage. */
 export async function exchangeApiKeyForJwt(
   clientId: string,
   apiKey: string,
   scope: 'read' | 'readwrite' | 'admin' = 'readwrite',
-): Promise<string | null> {
-  const base = apiBase();
-  if (!base) return null;
+): Promise<TokenExchangeResult> {
+  const base = getApiBaseUrl();
+  if (!base) return { ok: false, error: 'no_api_base' };
 
-  const res = await fetch(`${base}/api/auth/token`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ clientId, apiKey, scope }),
-  });
+  try {
+    const res = await fetch(`${base}/api/auth/token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ clientId, apiKey, scope }),
+    });
 
-  if (!res.ok) return null;
+    if (res.status === 401) return { ok: false, error: 'invalid_credentials' };
+    if (!res.ok) return { ok: false, error: 'invalid_response' };
 
-  const data = (await res.json()) as { token?: string };
-  if (!data.token) return null;
+    const data = (await res.json()) as { token?: string; scope?: string };
+    if (!data.token) return { ok: false, error: 'invalid_response' };
 
-  setAuthToken(data.token);
-  return data.token;
+    setAuthToken(data.token);
+    return { ok: true, token: data.token, scope: data.scope ?? scope };
+  } catch {
+    return { ok: false, error: 'network' };
+  }
 }
 
 export function getAuthHeader(): Record<string, string> | null {

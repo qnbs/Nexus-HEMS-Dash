@@ -41,6 +41,7 @@ import { type FormEvent, lazy, Suspense, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useSearchParams } from 'react-router-dom';
 import { AdapterConfigPanel } from '../components/AdapterConfigPanel';
+import { ApiAuthSettingsSection } from '../components/ApiAuthSettingsSection';
 import { ConfirmDialog, useConfirmDialog } from '../components/ConfirmDialog';
 import { EmergencyStop } from '../components/EmergencyStop';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
@@ -2773,6 +2774,8 @@ export function Settings() {
                       </div>
                     </div>
                   </section>
+
+                  <ApiAuthSettingsSection />
 
                   {/* Encryption Info */}
                   <section className={sectionClass}>

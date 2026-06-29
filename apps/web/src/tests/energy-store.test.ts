@@ -201,6 +201,28 @@ describe('useEnergyStore', () => {
       expect(room?.name).toContain('[IP]');
       expect(room?.name).not.toContain('Ignore previous instructions');
     });
+
+    it('throttles bridge side effects to one flush per 250 ms window', async () => {
+      vi.clearAllMocks();
+      const { persistSnapshot } = await import('../lib/db');
+      const { queryClient } = await import('../lib/query-client');
+      const setQueryData = vi.spyOn(queryClient, 'setQueryData');
+
+      const { mergeData } = useEnergyStoreBase.getState();
+      mergeData('victron-mqtt', { timestamp: 1000, pv: { totalPowerW: 1000, yieldTodayKWh: 1 } });
+      mergeData('victron-mqtt', { timestamp: 1001, pv: { totalPowerW: 2000, yieldTodayKWh: 2 } });
+      mergeData('victron-mqtt', { timestamp: 1002, pv: { totalPowerW: 3000, yieldTodayKWh: 3 } });
+
+      expect(setQueryData).not.toHaveBeenCalled();
+      expect(persistSnapshot).not.toHaveBeenCalled();
+      expect(mockSetEnergyData).not.toHaveBeenCalled();
+
+      vi.runAllTimers();
+
+      expect(mockSetEnergyData).toHaveBeenCalledTimes(1);
+      expect(setQueryData).toHaveBeenCalled();
+      expect(persistSnapshot).toHaveBeenCalledTimes(1);
+    });
   });
 
   describe('setAdapterStatus', () => {
