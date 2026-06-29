@@ -27,7 +27,7 @@ Migrate production-stage Docker images to **Google distroless**:
 | Image | Previous | New |
 |-------|----------|-----|
 | Frontend (nginx) | `nginx:1.29-alpine` | `nginx:1.29-alpine` → keep for now; `nginxinc/nginx-unprivileged:1.29-alpine-slim` as hardened variant |
-| Backend (Node.js) | `node:24-alpine` | `gcr.io/distroless/nodejs24-debian12` |
+| Backend (Node.js) | `node:24-alpine` | `gcr.io/distroless/nodejs24-debian13` |
 
 ### Dockerfile strategy
 
@@ -37,7 +37,7 @@ FROM node:24-alpine AS build
 # ...
 
 # Production stage — distroless (Node.js only, no shell)
-FROM gcr.io/distroless/nodejs24-debian12 AS production
+FROM gcr.io/distroless/nodejs24-debian13 AS production
 COPY --chown=nonroot:nonroot --from=build /tmp/api-deploy ./
 USER nonroot
 CMD ["index.ts"]  # tsx entrypoint

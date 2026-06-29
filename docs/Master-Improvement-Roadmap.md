@@ -159,7 +159,7 @@ The following capabilities were fully confirmed during discovery. They must neve
 | ID | Gap | Impact | File(s) |
 |----|-----|--------|---------|
 | G-01 | JTI Revocation **in-memory only** — lost on server restart | Security | `apps/api/src/jwt-utils.ts` |
-| G-02 | **Grype/cosign not in CI** — `sbom-scan.yml` has syft SBOM + `pnpm audit` only; no image signing yet | Security/CI | `.github/workflows/sbom-scan.yml`, `.github/workflows/deploy.yml` |
+| G-02 | ~~**Grype/cosign not in CI**~~ — resolved via `sbom-scan.yml` + `container-publish.yml` | Security/CI | `.github/workflows/sbom-scan.yml`, `.github/workflows/container-publish.yml` |
 | G-03 | **Distroless missing** — Alpine in production stage | Security | `Dockerfile`, `Dockerfile.server` |
 | G-04 | **Dexie Downsampling: schema ready, no auto-trigger** | Performance | `apps/web/src/lib/db.ts` |
 | G-05 | **Test coverage 48–49%** — target is 85% | Quality | `apps/web/vitest.config.ts` |
@@ -230,7 +230,7 @@ All detailed ADRs are in `docs/adr/`. This table provides a summary.
 | Step | Action | File | Closes | Status |
 |------|--------|------|--------|--------|
 | 1.1 | Create `sbom-scan.yml` — syft SBOM + pnpm audit | `.github/workflows/sbom-scan.yml` | G-02 (partial) | ✅ Done |
-| 1.2 | Add Grype to `sbom-scan.yml` (cosign when GHCR push lands) | `.github/workflows/sbom-scan.yml` | G-02 | ⚠️ Partial (critical advisory) |
+| 1.2 | Add Grype to `sbom-scan.yml` + cosign on GHCR push | `.github/workflows/sbom-scan.yml`, `.github/workflows/container-publish.yml` | G-02 | ✅ Done |
 | 1.3 | Distroless production stage — frontend | `Dockerfile` | G-03 | ✅ Done |
 | 1.4 | Distroless production stage — backend | `Dockerfile.server` | G-03 | ✅ Done |
 | 1.5 | Create `.renovaterc.json` + complete `security.yml` Snyk step | `.renovaterc.json`, `.github/workflows/security.yml` | G-17 | ✅ Done |
@@ -352,8 +352,8 @@ This feature fundamentally changes the auth architecture and is deferred to v1.2
 | E2E (Chromium + Firefox) | `ci.yml` | Yes | Yes |
 | SBOM generation (syft) | `sbom-scan.yml` | Yes | Yes |
 | pnpm dependency audit | `sbom-scan.yml` | Yes | Yes (`--audit-level=high`) |
-| Grype vulnerability scan | `sbom-scan.yml` | Yes | Advisory (`continue-on-error`, critical cutoff) |
-| Cosign image signing | — | ⏳ Planned (SUPPLY-01) | — |
+| Grype vulnerability scan | `sbom-scan.yml`, `container-publish.yml` | Yes | Yes (critical, blocking, `.grype.yaml`) |
+| Cosign image signing | `container-publish.yml` | Yes (main/tags) | Yes (keyless + SLSA provenance) |
 | Lighthouse (Perf ≥85%) | `lighthouse.yml` | Yes | PR comment |
 | Chromatic visual regression | `chromatic.yml` | Yes (after token) | PR |
 | Security (CodeQL + Semgrep) | `security-full.yml` | Yes | No (SARIF upload) |

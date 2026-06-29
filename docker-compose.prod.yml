@@ -80,6 +80,8 @@ services:
     volumes:
       - api_data:/app/apps/api/data
     read_only: true
+    cap_drop:
+      - ALL
     security_opt:
       - no-new-privileges:true
     tmpfs:

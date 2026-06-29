@@ -51,8 +51,8 @@ jobs:
       - name: Setup Node.js and pnpm
         uses: ./.github/actions/setup-node-pnpm
 
-      - name: API Unit Tests
-        run: pnpm --filter @nexus-hems/api test:run
+      - name: API Unit Tests with Coverage
+        run: pnpm --filter @nexus-hems/api test:coverage
         env:
           TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
           TURBO_TEAM: ${{ secrets.TURBO_TEAM }}

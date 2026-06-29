@@ -86,7 +86,8 @@ All commands below passed on this checkout. Because the local machine runs Node 
 | --------------------- | ------------------------------------ | ----------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `ci.yml`              | push: `main`, `develop`; PR: `main`  | `lint-typecheck`, `unit-tests`, `build`, `e2e-tests`, `security`, `ci-passed` | `ci-passed` is the single rollup gate. API unit tests and Web coverage both run in `unit-tests`; build emits SLSA attestation on `push: main` only. |
 | `security-full.yml`   | push/PR `main`, weekly Mon 05:00 UTC | `security-gate`                                                               | Aggregates CodeQL, Gitleaks, Semgrep, Anti-Trojan-Source, Dependency Audit, Branch Protection. Gitleaks/Semgrep/audit are hard gates.               |
-| `sbom-scan.yml`       | push: `main`, PR, manual             | `sbom-generation`                                                             | Builds frontend/backend images and source SBOMs; build/SBOM failures are hard failures.                                                             |
+| `sbom-scan.yml`       | push: `main`, PR, manual             | dependency-audit, sbom-frontend, sbom-backend, sbom-source                  | Syft SBOM + Grype (critical, blocking, `.grype.yaml`) on frontend/backend images and source; `scripts/verify-grype-policy.sh` guardrail.              |
+| `container-publish.yml` | push: `main`, tags `v*`, manual    | `publish` (matrix: frontend + server)                                       | Build → Grype gate → push GHCR → cosign keyless sign + SLSA provenance. Not a PR gate; runs on main/tags only.                                      |
 | `lighthouse.yml`      | PR, manual                           | `lighthouse`                                                                  | Builds with `VITE_E2E_TESTING=true`, waits up to 30s for preview readiness, enforces LHCI budgets.                                                  |
 | DeepSource GitHub App | PR                                   | `DeepSource: JavaScript`, `DeepSource: Secrets`                               | Advisory initially; will become required after the 2–4 week tuning period and remediation of existing HIGH-severity dependency advisories.          |
 | CodeAnt.ai GitHub App | PR                                   | `CodeAnt AI`                                                                  | Advisory only. Provides high-level AI review comments.                                                                                              |
@@ -108,6 +109,7 @@ All commands below passed on this checkout. Because the local machine runs Node 
 | ----------------------- | ----------------------------- | ------------------------------------- |
 | `deploy.yml`            | `workflow_dispatch`           | GitHub Pages deploy                   |
 | `release.yml`           | `workflow_dispatch`, push tag | semantic-release + signed Tauri build |
+| `container-publish.yml` | push `main`, tags `v*`, manual | GHCR image publish + Grype + cosign |
 | `tauri-build.yml`       | `workflow_dispatch`, release  | Cross-platform desktop builds         |
 | `fuzz.yml`              | manual / scheduled            | Security fuzz tests                   |
 | `perf-optimized-ci.yml` | `workflow_dispatch` only      | Optimized CI variant (cache-first)    |

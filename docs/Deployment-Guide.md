@@ -151,12 +151,23 @@ helm install nexus-hems ./helm/nexus-hems \
 
 ### Security Defaults
 
-- `runAsNonRoot: true` (UID 65534)
+Component-specific pod UIDs (match container base images):
+
+| Component | `runAsUser` | Base image |
+|-----------|-------------|------------|
+| Server | 65532 | distroless `nodejs24-debian13:nonroot` |
+| Frontend | 101 | `nginxinc/nginx-unprivileged` |
+
+Shared container hardening:
+
+- `runAsNonRoot: true`
 - `readOnlyRootFilesystem: true`
 - `allowPrivilegeEscalation: false`
-- All capabilities dropped
+- All capabilities dropped (`capabilities.drop: [ALL]`)
 - Seccomp profile: `RuntimeDefault`
 - PodDisruptionBudget: `minAvailable: 1`
+
+Grype CVE exceptions are documented in `docs/Supply-Chain-Grype-Policy.md` (`.grype.yaml`); no global `only-fixed` bypass.
 
 ### Ingress Annotations
 
