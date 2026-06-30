@@ -49,23 +49,48 @@ Adoption notes:
   1.3.0→1.2.0) and must be ignored.
 - Delivery: small PR, port-isolate from the existing E2E (4174 ≠ 4173), CI-first.
 
-### 2. `shared-types` compiled build output  *(optional — evaluate, do not rush)*
+### 2. `shared-types` compiled build output  *(DECLINED — 2026-07-01)*
 
-wip switches `@nexus-hems/shared-types` from being consumed as raw TS source to a
-compiled `dist/`:
-- `packages/shared-types/tsconfig.build.json` — emits `dist/` with `declaration` +
-  `declarationMap` + `sourceMap`, `rootDir: src`, excludes `*.test.ts`.
-- `packages/shared-types/package.json` — `build` → `tsc -p tsconfig.build.json`,
-  `exports` point at `./dist/index.js` + `./dist/index.d.ts`, adds `"files": ["dist"]`.
+wip switched `@nexus-hems/shared-types` from being consumed as raw TS source to a
+compiled `dist/` (`tsconfig.build.json` emitting declarations + maps; `exports`
+pointing at `./dist/index.js` + `./dist/index.d.ts`; `"files": ["dist"]`).
 
-Adoption notes:
-- Real build hygiene (publishable shape, declaration maps) **but** it changes
-  workspace consumption from source → compiled output, which can break Vite/`tsx`
-  dev resolution and Turborepo build ordering if `dist/` is stale or the build task
-  isn't wired as an upstream dependency. **Validate carefully** (dev server, type-check,
-  `pnpm build` ordering in `turbo.json`) before adopting; this is **not** a drop-in.
-- Lower priority than #1. Only pursue if we actually need a publishable/declaration
-  artifact; otherwise the current source-consumption model is simpler and fine.
+**Decision: declined.** `@nexus-hems/shared-types` is `private: true` + consumed via
+`workspace:*` and is **never published to npm**, so nothing needs compiled output or
+emitted `.d.ts` files. Both consumers read the TS source fine today — web via Vite,
+api via `tsx`/Node — and each workspace type-checks against the strict root config.
+Switching to `dist/` consumption would add a Turborepo build-ordering dependency
+(shared-types must build before every web/api type-check + build), introduce
+stale-`dist` failure modes, and break HMR on shared-types edits — real cost for zero
+benefit on an internal-only package. The current source-consumption model stays.
+
+For the record (so the now-deleted branch loses nothing), the exact file wip added:
+
+```jsonc
+// packages/shared-types/tsconfig.build.json (NOT adopted)
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2022"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": false,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "dist",
+    "rootDir": "src"
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "dist", "src/**/*.test.ts"]
+}
+```
+
+…plus `package.json` changes: `"files": ["dist"]`, `build` → `tsc -p
+tsconfig.build.json`, and `exports."."` repointed from `./src/index.ts` to
+`./dist/index.js` / `./dist/index.d.ts`. If a future need to publish shared-types
+arises, revisit this with the build-ordering wiring in `turbo.json`.
 
 ---
 
@@ -90,12 +115,15 @@ These appear in the wip diff but must **not** be carried over:
 
 ---
 
-## Closing the branch
+## Closing the branch — DONE (2026-07-01)
 
-After item #1 is merged (and #2 is adopted or explicitly declined), `wip/unrelated-wip-stash`
-holds nothing unique. Delete it locally and on the remote:
+Item 1 (production smoke test) merged to `main` via PR 160; item 2 declined above
+with its exact content preserved here. `wip/unrelated-wip-stash` (a **local-only**
+branch, never pushed) therefore holds nothing unique and was deleted:
 
 ```bash
-git branch -D wip/unrelated-wip-stash
-git push origin --delete wip/unrelated-wip-stash
+git branch -D wip/unrelated-wip-stash   # local-only; no remote ref existed
 ```
+
+This file is the permanent record of what that branch contained and why each part
+was adopted or declined.
