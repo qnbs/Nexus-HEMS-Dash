@@ -2,6 +2,7 @@ import { sanitizeObjectStrings, WSCommandSchema } from '@nexus-hems/shared-types
 import type { IncomingMessage } from 'http';
 import type { WebSocket, WebSocketServer } from 'ws';
 import { getEffectiveAdapterMode } from '../config/adapter-mode.js';
+import { isReadOnlyMode } from '../config/read-only-mode.js';
 import { type CommandOutcome, writeCommandAuditEntry } from '../data/command-audit.js';
 import { mockData, updateMockData } from '../data/mock-data.js';
 import { type AuthenticatedClient, authenticateWS, type JWTScope } from '../middleware/auth.js';
@@ -308,6 +309,23 @@ function handleWsCommand(
       'rejected_scope',
       'insufficient scope',
     );
+    return;
+  }
+
+  // SAF-01: Read-Only Mode blocks all hardware control commands
+  if (isReadOnlyMode()) {
+    auditCommand(
+      wsAuthMap,
+      ws,
+      cmd.type,
+      cmd.value ?? null,
+      'rejected_readonly',
+      'READ_ONLY_MODE=true blocks all control commands',
+    );
+    safeSend(ws, {
+      type: 'ERROR',
+      error: 'System is in read-only mode — control commands are disabled',
+    });
     return;
   }
 

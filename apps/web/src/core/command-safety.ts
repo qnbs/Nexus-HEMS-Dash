@@ -11,6 +11,7 @@
  */
 
 import { z } from 'zod';
+import { isReadOnlyModeActive } from '../lib/adapter-mode';
 import { nexusDb } from '../lib/db';
 import { metricsCollector } from '../lib/metrics';
 import type { AdapterCommand, AdapterCommandType } from './adapters/EnergyAdapter';
@@ -115,6 +116,14 @@ export interface CommandValidationResult {
 }
 
 export function validateCommand(command: AdapterCommand): CommandValidationResult {
+  // SAF-01: Read-Only Mode blocks all control commands
+  if (isReadOnlyModeActive()) {
+    return {
+      valid: false,
+      error: 'System is in read-only mode — control commands are disabled',
+    };
+  }
+
   const schema = commandSchemas[command.type];
   if (!schema) {
     return { valid: false, error: `Unknown command type: ${command.type}` };

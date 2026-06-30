@@ -74,35 +74,35 @@ Items introduced by the 2026-06-28 PR-feedback improvement initiative.
 
 ### PRF-01 — DeepSource Integrated (Advisory Mode)
 
-**Files:** `.deepsource.toml`, `docs/runbooks/deepsource-integration.md`  
+**Files:** `.deepsource.toml`, `docs/runbooks/deepsource-integration.md`
 **Status:** 🔄 In progress
 
 DeepSource is connected and configured for the monorepo. Quality gates are advisory until tuning and remediation of existing HIGH-severity dependency advisories are complete.
 
 ### PRF-02 — CodeAnt.ai AI Reviewer Integrated (Advisory Mode)
 
-**Files:** `docs/runbooks/codeant-ai-integration.md`  
+**Files:** `docs/runbooks/codeant-ai-integration.md`
 **Status:** 🔄 In progress
 
 CodeAnt.ai GitHub App installation and dashboard configuration must be completed by a repository owner. It remains advisory to avoid replacing human judgment on control logic.
 
 ### PRF-03 — Coverage Diff Not Yet Enforced
 
-**Files:** `.github/workflows/ci.yml`, `apps/web/vitest.config.ts`, `apps/api/vitest.config.ts`  
+**Files:** `.github/workflows/ci.yml`, `apps/web/vitest.config.ts`, `apps/api/vitest.config.ts`
 **Status:** ⏳ Backlog
 
 DeepSource coverage report card is visible, but a hard "coverage may not decrease" gate is not enabled until MED-01 coverage targets are closer to the 70% goal.
 
 ### PRF-04 — Unified PR Feedback Comment Missing
 
-**Files:** `.github/workflows/pr-feedback-summary.yml`  
+**Files:** `.github/workflows/pr-feedback-summary.yml`
 **Status:** ✅ Fixed in v1.3.0 prep (#91)
 
 Workflow posts/updates a single PR comment with links to Lighthouse, coverage, bundle analysis, and static-analysis dashboards. DeepSource/CodeAnt links appear when those integrations are configured.
 
 ### PRF-05 — Branch Protection Settings Not Codified
 
-**Files:** `.github/CI-AUDIT.md`, `docs/runbooks/pr-status-checks.md`  
+**Files:** `.github/CI-AUDIT.md`, `docs/runbooks/pr-status-checks.md`
 **Status:** ⏳ Backlog
 
 Required checks are documented but must be applied manually in GitHub Settings → Branches → main.
@@ -113,10 +113,17 @@ Required checks are documented but must be applied manually in GitHub Settings �
 
 ### SAF-01 — Implicit Live Hardware Connection on Dev/CI Startup
 
-**Files:** `apps/api/src/config/adapter-mode.ts`, `apps/web/src/lib/adapter-mode.ts`, `apps/web/src/core/useEnergyStore.ts`, `docker-compose.yml`, `helm/nexus-hems/values.yaml`  
+**Files:** `apps/api/src/config/adapter-mode.ts`, `apps/web/src/lib/adapter-mode.ts`, `apps/web/src/core/useEnergyStore.ts`, `docker-compose.yml`, `helm/nexus-hems/values.yaml`
 **Status:** ✅ Fixed in v1.3.0 (#128)
 
 `ADAPTER_MODE` / `VITE_ADAPTER_MODE` default to `mock`. Live hardware requires explicit double opt-in (`ALLOW_LIVE_HARDWARE=true` backend, `VITE_ALLOW_LIVE_HARDWARE=true` frontend build) plus per-adapter enablement in Settings. All built-in frontend adapters start disabled.
+
+### SAF-05 — Read-Only Deployment Mode Missing
+
+**Files:** `apps/api/src/config/read-only-mode.ts`, `apps/api/src/ws/energy.ws.ts`, `apps/web/src/lib/adapter-mode.ts`, `apps/web/src/core/command-safety.ts`
+**Status:** ✅ Fixed in v1.3.0
+
+`READ_ONLY_MODE=true` blocks all hardware control commands at both API (WebSocket) and frontend (command validation) levels. Essential for certification-grade deployments and incident investigation.
 
 ---
 
@@ -124,7 +131,7 @@ Required checks are documented but must be applied manually in GitHub Settings �
 
 ### SUPPLY-01 — Grype CVE Scan and Cosign Signing Not Wired in CI
 
-**Files:** `.github/workflows/sbom-scan.yml`, `.github/workflows/container-publish.yml`, `docs/Master-Improvement-Roadmap.md`  
+**Files:** `.github/workflows/sbom-scan.yml`, `.github/workflows/container-publish.yml`, `docs/Master-Improvement-Roadmap.md`
 **Status:** ✅ Fixed in v1.3.0 prep
 
 `sbom-scan.yml` generates syft SPDX SBOMs, runs `pnpm audit --audit-level=high`, and scans images/source via `anchore/scan-action@v7` (critical cutoff, blocking, `.grype.yaml` targeted ignores). `container-publish.yml` builds both GHCR images, Grype-gates before push, cosign keyless-signs, and attaches SLSA provenance.
@@ -133,7 +140,7 @@ Required checks are documented but must be applied manually in GitHub Settings �
 
 ### SUPPLY-02 — Grype CVE exception registry (targeted ignores)
 
-**Files:** `.grype.yaml`, `docs/Supply-Chain-Grype-Policy.md`, `scripts/verify-grype-policy.sh`  
+**Files:** `.grype.yaml`, `docs/Supply-Chain-Grype-Policy.md`, `scripts/verify-grype-policy.sh`
 **Status:** ⚠️ Active exception — quarterly review
 
 | CVE | Package | Scope | Next review |

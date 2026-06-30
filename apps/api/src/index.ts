@@ -4,6 +4,7 @@ import express from 'express';
 import http from 'http';
 import { WebSocketServer } from 'ws';
 import { logAdapterModeStartup } from './config/adapter-mode.js';
+import { logReadOnlyModeStartup } from './config/read-only-mode.js';
 import { logTrustProxyWarning, resolveTrustProxy } from './config/trust-proxy.js';
 import { eventBus } from './core/EventBus.js';
 import { logger } from './core/logger.js';
@@ -36,6 +37,7 @@ export async function startServer(): Promise<void> {
   // ─── JWT Key Initialization ───────────────────────────────────────
   initKeys();
   logAdapterModeStartup();
+  logReadOnlyModeStartup();
 
   // ─── Security Middleware ──────────────────────────────────────────
   configureCors(app);

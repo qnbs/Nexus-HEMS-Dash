@@ -27,7 +27,8 @@ export type CommandOutcome =
   | 'accepted'
   | 'rejected_validation'
   | 'rejected_scope'
-  | 'rejected_ratelimit';
+  | 'rejected_ratelimit'
+  | 'rejected_readonly';
 
 export interface CommandAuditEntry {
   ts: number;

@@ -81,3 +81,11 @@ export async function fetchBackendAdapterMode(signal?: AbortSignal): Promise<Bac
 export function isLiveSafetyMode(backendMode: BackendAdapterMode): boolean {
   return backendMode === 'live' || isLiveHardwareBuildAllowed();
 }
+
+/**
+ * Check if read-only mode is active (blocks all control commands).
+ * Mirrors backend READ_ONLY_MODE environment variable.
+ */
+export function isReadOnlyModeActive(): boolean {
+  return import.meta.env.VITE_READ_ONLY_MODE?.trim().toLowerCase() === LIVE_HARDWARE_ACK;
+}
