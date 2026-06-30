@@ -152,19 +152,22 @@ export function PWAUpdateNotification() {
           className="fixed top-4 right-4 left-4 z-notification md:right-4 md:left-auto md:max-w-sm"
         >
           <div
-            className="flex items-center gap-3 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 shadow-2xl backdrop-blur-xl"
+            className="flex items-center gap-3 rounded-2xl border border-(--state-success-border) bg-(--state-success-bg)/10 p-4 shadow-2xl backdrop-blur-xl"
             role="status"
           >
-            <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-400" aria-hidden="true" />
+            <CheckCircle2
+              className="h-5 w-5 shrink-0 text-(--state-success-fg)"
+              aria-hidden="true"
+            />
             <div className="flex-1">
-              <p className="font-semibold text-emerald-400 text-sm">
+              <p className="font-semibold text-(--state-success-fg) text-sm">
                 {t('pwa.offlineReady', 'Offline Ready')}
               </p>
               <p className="text-(--color-muted) text-xs">
                 {t('pwa.offlineReadyDesc', 'App cached — works without internet')}
               </p>
             </div>
-            <WifiOff className="h-4 w-4 text-emerald-400/60" aria-hidden="true" />
+            <WifiOff className="h-4 w-4 text-(--state-success-fg)/60" aria-hidden="true" />
           </div>
         </motion.div>
       </AnimatePresence>
@@ -182,17 +185,20 @@ export function PWAUpdateNotification() {
           className="fixed top-4 right-4 left-4 z-notification md:right-4 md:left-auto md:max-w-md"
         >
           <div
-            className="rounded-2xl border border-red-500/30 bg-red-500/10 p-4 backdrop-blur-3xl"
+            className="rounded-2xl border border-(--state-danger-border) bg-(--state-danger-bg)/10 p-4 backdrop-blur-3xl"
             role="alert"
           >
             <div className="flex items-start gap-3">
-              <AlertCircle className="h-5 w-5 shrink-0 text-red-400" aria-hidden="true" />
+              <AlertCircle
+                className="h-5 w-5 shrink-0 text-(--state-danger-fg)"
+                aria-hidden="true"
+              />
               <div className="flex-1">
-                <p className="font-medium text-red-400 text-sm">{updateError}</p>
+                <p className="font-medium text-(--state-danger-fg) text-sm">{updateError}</p>
                 <button
                   type="button"
                   onClick={() => setUpdateError(null)}
-                  className="mt-2 text-red-300 text-xs underline hover:text-red-200"
+                  className="mt-2 text-(--state-danger-fg) text-xs underline transition-opacity hover:opacity-80"
                 >
                   {t('common.dismiss', 'Dismiss')}
                 </button>

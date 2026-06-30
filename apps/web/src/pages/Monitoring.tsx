@@ -44,11 +44,13 @@ function MonitoringUnifiedComponent() {
             {/* Connection status */}
             <span
               className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 font-semibold text-[10px] uppercase tracking-wider ${
-                connected ? 'bg-emerald-500/15 text-emerald-400' : 'bg-red-500/15 text-red-400'
+                connected
+                  ? 'bg-(--state-success-bg)/15 text-(--state-success-fg)'
+                  : 'bg-(--state-danger-bg)/15 text-(--state-danger-fg)'
               }`}
             >
               <span
-                className={`energy-pulse h-1.5 w-1.5 rounded-full ${connected ? 'bg-emerald-400' : 'bg-red-400'}`}
+                className={`energy-pulse h-1.5 w-1.5 rounded-full ${connected ? 'bg-(--state-success-fg)' : 'bg-(--state-danger-fg)'}`}
               />
               {connected ? t('common.connected') : t('common.disconnected')}
             </span>
@@ -66,12 +68,12 @@ function MonitoringUnifiedComponent() {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
             {connected ? (
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/15">
-                <ShieldCheck size={24} className="text-emerald-400" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-(--state-success-bg)/15">
+                <ShieldCheck size={24} className="text-(--state-success-fg)" />
               </div>
             ) : (
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-red-500/15">
-                <ShieldAlert size={24} className="text-red-400" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-(--state-danger-bg)/15">
+                <ShieldAlert size={24} className="text-(--state-danger-fg)" />
               </div>
             )}
             <div>
@@ -179,7 +181,7 @@ function MonitoringUnifiedComponent() {
           transition={{ duration: 0.3, delay: 0.15 }}
         >
           <SummaryCard
-            icon={<Wifi size={18} className="text-emerald-400" />}
+            icon={<Wifi size={18} className="text-(--state-success-fg)" />}
             label={t('monitoringUnified.adaptersOnline')}
             value={connected ? '5/5' : '0/5'}
             status={connected ? 'ok' : 'crit'}
@@ -256,10 +258,14 @@ function StatusPill({ label, ok }: { label: string; ok: boolean }) {
   return (
     <span
       className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-medium text-[10px] ${
-        ok ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'
+        ok
+          ? 'bg-(--state-success-bg)/10 text-(--state-success-fg)'
+          : 'bg-(--state-danger-bg)/10 text-(--state-danger-fg)'
       }`}
     >
-      <span className={`h-1.5 w-1.5 rounded-full ${ok ? 'bg-emerald-400' : 'bg-red-400'}`} />
+      <span
+        className={`h-1.5 w-1.5 rounded-full ${ok ? 'bg-(--state-success-fg)' : 'bg-(--state-danger-fg)'}`}
+      />
       {label}
     </span>
   );
@@ -277,7 +283,11 @@ function SummaryCard({
   status: 'ok' | 'warn' | 'crit';
 }) {
   const dot =
-    status === 'crit' ? 'bg-red-400' : status === 'warn' ? 'bg-yellow-400' : 'bg-emerald-400';
+    status === 'crit'
+      ? 'bg-(--state-danger-fg)'
+      : status === 'warn'
+        ? 'bg-(--state-warning-fg)'
+        : 'bg-(--state-success-fg)';
 
   return (
     <div className="glass-panel rounded-2xl p-4">

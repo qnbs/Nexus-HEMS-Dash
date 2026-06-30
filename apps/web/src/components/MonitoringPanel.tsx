@@ -40,11 +40,13 @@ function AdapterRow({ name, protocol, connected, latencyMs }: AdapterRowProps) {
       <td className="px-3 py-2">
         <span
           className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 font-medium text-xs ${
-            connected ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'
+            connected
+              ? 'bg-(--state-success-bg)/10 text-(--state-success-fg)'
+              : 'bg-(--state-danger-bg)/10 text-(--state-danger-fg)'
           }`}
         >
           <span
-            className={`h-1.5 w-1.5 rounded-full ${connected ? 'bg-emerald-400' : 'bg-red-400'}`}
+            className={`h-1.5 w-1.5 rounded-full ${connected ? 'bg-(--state-success-fg)' : 'bg-(--state-danger-fg)'}`}
             aria-hidden="true"
           />
           {connected ? t('common.connected') : t('common.disconnected')}
@@ -122,11 +124,13 @@ export default function MonitoringPanel() {
         <div className="flex items-center gap-2">
           <span
             className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-medium text-xs ${
-              error ? 'bg-red-500/10 text-red-400' : 'bg-emerald-500/10 text-emerald-400'
+              error
+                ? 'bg-(--state-danger-bg)/10 text-(--state-danger-fg)'
+                : 'bg-(--state-success-bg)/10 text-(--state-success-fg)'
             }`}
           >
             <span
-              className={`h-2 w-2 animate-pulse rounded-full ${error ? 'bg-red-400' : 'bg-emerald-400'}`}
+              className={`h-2 w-2 animate-pulse rounded-full ${error ? 'bg-(--state-danger-fg)' : 'bg-(--state-success-fg)'}`}
             />
             {error ? t('monitoring.error', 'Error') : t('monitoring.live', 'Live')}
           </span>
@@ -288,9 +292,9 @@ export default function MonitoringPanel() {
               <span
                 className={`rounded px-1.5 py-0.5 text-xs ${
                   rule.severity === 'critical'
-                    ? 'bg-red-500/10 text-red-400'
+                    ? 'bg-(--state-danger-bg)/10 text-(--state-danger-fg)'
                     : rule.severity === 'warning'
-                      ? 'bg-orange-500/10 text-orange-400'
+                      ? 'bg-(--state-warning-bg)/10 text-(--state-warning-fg)'
                       : 'bg-blue-500/10 text-blue-400'
                 }`}
               >
