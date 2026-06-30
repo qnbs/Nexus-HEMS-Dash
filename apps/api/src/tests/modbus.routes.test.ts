@@ -1,0 +1,120 @@
+/**
+ * Modbus SunSpec REST proxy — GET /api/modbus/sunspec + POST /api/modbus/write
+ */
+
+import express from 'express';
+import supertest from 'supertest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+
+const SECRET = 'modbus-test-jwt-secret-min-32-characters-long';
+
+describe('Modbus SunSpec proxy API', () => {
+  const prevEnv = { ...process.env };
+
+  let createModbusRoutes: typeof import('../routes/modbus.routes.js').createModbusRoutes;
+  let signToken: typeof import('../jwt-utils.js').signToken;
+
+  beforeAll(async () => {
+    vi.resetModules();
+    process.env.NODE_ENV = 'production';
+    process.env.JWT_SECRET = SECRET;
+    delete process.env.JWT_SECRET_NEW;
+    delete process.env.ADAPTER_MODE; // → effective mock mode
+    delete process.env.ALLOW_LIVE_HARDWARE;
+
+    createModbusRoutes = (await import('../routes/modbus.routes.js')).createModbusRoutes;
+    signToken = (await import('../jwt-utils.js')).signToken;
+  }, 60_000);
+
+  afterAll(() => {
+    process.env = { ...prevEnv };
+    vi.resetModules();
+  });
+
+  function buildApp() {
+    const app = express();
+    app.use(express.json());
+    app.use(createModbusRoutes());
+    return supertest(app);
+  }
+
+  it('rejects unauthenticated reads', async () => {
+    await buildApp().get('/api/modbus/sunspec?model=battery').expect(401);
+  });
+
+  it('returns SunSpec battery model fields', async () => {
+    const bearer = await signToken({ sub: 'reader', scope: 'read' }, '1h');
+    const res = await buildApp()
+      .get('/api/modbus/sunspec?model=battery')
+      .set('Authorization', `Bearer ${bearer}`)
+      .expect(200);
+    expect(res.body).toHaveProperty('W');
+    expect(res.body).toHaveProperty('SoC');
+    expect(res.body.W_SF).toBe(0);
+  });
+
+  it('returns each supported model with its key fields', async () => {
+    const bearer = await signToken({ sub: 'reader', scope: 'read' }, '1h');
+    const api = buildApp();
+    const common = await api
+      .get('/api/modbus/sunspec?model=common')
+      .set('Authorization', `Bearer ${bearer}`)
+      .expect(200);
+    expect(common.body.Mn).toBe('Nexus-HEMS');
+    const inverter = await api
+      .get('/api/modbus/sunspec?model=inverter')
+      .set('Authorization', `Bearer ${bearer}`)
+      .expect(200);
+    expect(Array.isArray(inverter.body.strings)).toBe(true);
+    const meter = await api
+      .get('/api/modbus/sunspec?model=meter')
+      .set('Authorization', `Bearer ${bearer}`)
+      .expect(200);
+    expect(meter.body).toHaveProperty('W');
+  });
+
+  it('rejects an unknown model with 400', async () => {
+    const bearer = await signToken({ sub: 'reader', scope: 'read' }, '1h');
+    await buildApp()
+      .get('/api/modbus/sunspec?model=bogus')
+      .set('Authorization', `Bearer ${bearer}`)
+      .expect(400);
+  });
+
+  it('accepts a valid write with readwrite scope', async () => {
+    const bearer = await signToken({ sub: 'writer', scope: 'readwrite' }, '1h');
+    const res = await buildApp()
+      .post('/api/modbus/write')
+      .set('Authorization', `Bearer ${bearer}`)
+      .send({ register: 'WChaMax', value: 2000 })
+      .expect(200);
+    expect(res.body).toEqual({ ok: true, register: 'WChaMax', value: 2000 });
+  });
+
+  it('rejects a write with read-only scope (403)', async () => {
+    const bearer = await signToken({ sub: 'reader', scope: 'read' }, '1h');
+    await buildApp()
+      .post('/api/modbus/write')
+      .set('Authorization', `Bearer ${bearer}`)
+      .send({ register: 'WChaMax', value: 2000 })
+      .expect(403);
+  });
+
+  it('rejects an unknown register with 400', async () => {
+    const bearer = await signToken({ sub: 'writer', scope: 'readwrite' }, '1h');
+    await buildApp()
+      .post('/api/modbus/write')
+      .set('Authorization', `Bearer ${bearer}`)
+      .send({ register: 'EvilReg', value: 1 })
+      .expect(400);
+  });
+
+  it('rejects an out-of-range value with 400', async () => {
+    const bearer = await signToken({ sub: 'writer', scope: 'readwrite' }, '1h');
+    await buildApp()
+      .post('/api/modbus/write')
+      .set('Authorization', `Bearer ${bearer}`)
+      .send({ register: 'WMaxLimPct', value: 250 })
+      .expect(400);
+  });
+});
