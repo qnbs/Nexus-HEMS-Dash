@@ -123,6 +123,9 @@ export function ApiAuthSettingsSection() {
               className={`${inputClass} pr-10`}
               autoComplete="current-password"
               required
+              aria-required="true"
+              aria-invalid={status === 'error'}
+              aria-describedby={status === 'error' ? 'api-auth-error' : undefined}
               maxLength={256}
             />
             <button
@@ -158,7 +161,7 @@ export function ApiAuthSettingsSection() {
         </div>
 
         {status === 'error' && errorKey && (
-          <p className="text-(--state-danger-fg) text-sm" role="alert">
+          <p id="api-auth-error" className="text-(--state-danger-fg) text-sm" role="alert">
             {t(`settings.apiAuthError.${errorKey}`)}
           </p>
         )}
