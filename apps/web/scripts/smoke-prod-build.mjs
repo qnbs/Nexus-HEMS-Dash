@@ -24,8 +24,9 @@ import { chromium } from '@playwright/test';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const webRoot = path.resolve(__dirname, '..');
 const basePath = '/Nexus-HEMS-Dash/';
+const host = '127.0.0.1';
 const port = 4174;
-const url = `http://127.0.0.1:${port}${basePath}`;
+const url = `http://${host}:${port}${basePath}`;
 
 /**
  * Wait until the preview server responds with 200.
@@ -48,24 +49,40 @@ async function main() {
   let server;
   let browser;
 
+  // Buffer the preview server's own output so a startup failure is diagnosable
+  // (it is otherwise swallowed by the pipe).
+  let serverOutput = '';
+
   try {
     // vite preview respects the production base path baked into the build.
-    server = spawn('pnpm', ['exec', 'vite', 'preview', '--port', String(port), '--strictPort'], {
-      cwd: webRoot,
-      stdio: 'pipe',
-      env: { ...process.env, NODE_ENV: 'production' },
-    });
+    // Bind explicitly to the IPv4 host we poll — vite's default `localhost`
+    // can resolve to ::1 on CI runners, which an IPv4 fetch never reaches.
+    server = spawn(
+      'pnpm',
+      ['exec', 'vite', 'preview', '--host', host, '--port', String(port), '--strictPort'],
+      {
+        cwd: webRoot,
+        stdio: 'pipe',
+        env: { ...process.env, NODE_ENV: 'production' },
+      },
+    );
     server.on('error', (err) => {
       throw new Error(`Failed to start preview server: ${err.message}`);
     });
     server.stdout.on('data', (d) => {
+      serverOutput += d;
       if (process.env.SMOKE_DEBUG) process.stdout.write(d);
     });
     server.stderr.on('data', (d) => {
+      serverOutput += d;
       if (process.env.SMOKE_DEBUG) process.stderr.write(d);
     });
 
-    await waitForServer(url);
+    try {
+      await waitForServer(url);
+    } catch (err) {
+      throw new Error(`${err.message}\n--- vite preview output ---\n${serverOutput.trim()}`);
+    }
 
     const errors = [];
     browser = await chromium.launch({
