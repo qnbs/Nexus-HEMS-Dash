@@ -24,6 +24,7 @@
     "storybook:build": "storybook build --output-dir storybook-static",
     "lighthouse": "lhci autorun",
     "size": "size-limit",
+    "smoke:prod": "node scripts/smoke-prod-build.mjs",
     "cap:sync": "npx cap sync",
     "cap:build": "pnpm build && npx cap sync"
   },

@@ -126,6 +126,17 @@ jobs:
         env:
           VITE_E2E_TESTING: 'true'
 
+      # Production-build smoke test: loads the just-built dist/ in headless
+      # Chromium and fails if React does not mount or a runtime error fires.
+      # Catches "build succeeds but app white-screens" that unit tests cannot.
+      - name: Smoke-test production build (mounts, no runtime crash)
+        run: |
+          pnpm --filter @nexus-hems/web exec playwright install --with-deps chromium-headless-shell
+          pnpm --filter @nexus-hems/web smoke:prod
+        env:
+          CI: 'true'
+          VITE_E2E_TESTING: 'true'
+
       # SLSA Level 3 build-provenance: cryptographic attestation of every JS
       # asset produced from `main`. Verify with `gh attestation verify`.
       - name: Generate SLSA build-provenance attestation
