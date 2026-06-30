@@ -160,6 +160,11 @@ function formatTimestamp(ts: number, range: TimeRange): string {
   return date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
 }
 
+/** Format a possibly-missing series value for the screen-reader data table. */
+function formatCell(value: number | undefined): string {
+  return typeof value === 'number' ? String(Math.round(value)) : '—';
+}
+
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
@@ -453,6 +458,41 @@ export function HistoricalChart({ className = '' }: HistoricalChartProps) {
               )}
             </ComposedChart>
           </ResponsiveContainer>
+
+          {/* Screen-reader accessible data table mirroring the chart series.
+              Recharts renders decorative SVG only; this table is the textual
+              equivalent of the same sampled points the chart displays. */}
+          <table className="sr-only">
+            <caption>
+              {t('historicalChart.dataTableCaption')}
+              {sampledData.length > 0 &&
+                `. ${t('historicalChart.dataTableSummary', {
+                  count: sampledData.length,
+                  from: new Date(sampledData[0].timestamp).toLocaleString(),
+                  to: new Date(sampledData[sampledData.length - 1].timestamp).toLocaleString(),
+                })}`}
+            </caption>
+            <thead>
+              <tr>
+                <th scope="col">{t('historicalChart.colTime')}</th>
+                <th scope="col">{t('historicalChart.colPvProduction')}</th>
+                <th scope="col">{t('historicalChart.colGridImport')}</th>
+                <th scope="col">{t('historicalChart.colGridExport')}</th>
+                <th scope="col">{t('historicalChart.colBatterySoC')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sampledData.map((d) => (
+                <tr key={d.timestamp}>
+                  <th scope="row">{new Date(d.timestamp).toLocaleString()}</th>
+                  <td>{formatCell(d.pvProduction)}</td>
+                  <td>{formatCell(d.gridImport)}</td>
+                  <td>{formatCell(d.gridExport)}</td>
+                  <td>{formatCell(d.batterySoC)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </>
       )}
     </section>

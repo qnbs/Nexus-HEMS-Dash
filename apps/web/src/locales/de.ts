@@ -2002,6 +2002,13 @@ export const de = {
     range24h: '24 Std.',
     range7d: '7 Tage',
     range30d: '30 Tage',
+    dataTableCaption: 'Historische Energiedaten, tabellarische Ansicht für Screenreader',
+    colTime: 'Zeit',
+    colPvProduction: 'PV-Erzeugung (W)',
+    colGridImport: 'Netzbezug (W)',
+    colGridExport: 'Netzeinspeisung (W)',
+    colBatterySoC: 'Batterie-SoC (%)',
+    dataTableSummary: '{{count}} Datenpunkte von {{from}} bis {{to}}',
   },
   aiSettings: {
     title: 'AI Provider Keys',
