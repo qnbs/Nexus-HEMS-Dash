@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { useFocusTrap } from '../lib/useFocusTrap';
 
 function Harness({ active, onEscape }: { active: boolean; onEscape?: () => void }) {
-  const ref = useFocusTrap<HTMLDivElement>(active, { onEscape });
+  const ref = useFocusTrap<HTMLDivElement>(active, onEscape ? { onEscape } : {});
   return (
     <>
       <button type="button" data-testid="outside">
