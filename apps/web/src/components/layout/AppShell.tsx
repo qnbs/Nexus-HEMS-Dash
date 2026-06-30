@@ -123,7 +123,7 @@ export function AppShell({ children }: AppShellProps) {
   const themeDefinition = themeDefinitions[theme];
 
   return (
-    <div className="theme-shell min-h-screen font-sans text-(--color-text) selection:bg-(--color-primary)/30">
+    <div className="theme-shell min-h-dvh font-sans text-(--color-text) selection:bg-(--color-primary)/30">
       <div
         className="pointer-events-none fixed inset-0 z-0"
         aria-hidden="true"
@@ -147,7 +147,7 @@ export function AppShell({ children }: AppShellProps) {
       <div className="relative lg:ml-64">
         {/* Top Bar — sticky header (mobile + desktop) */}
         <motion.header
-          className="glass-panel-strong header-accent-line sticky top-0 z-sticky overflow-hidden px-3 py-1.5 sm:px-6 sm:py-3"
+          className="glass-panel-strong header-accent-line sticky top-0 z-sticky overflow-hidden px-3 pt-[max(0.375rem,env(safe-area-inset-top))] pb-1.5 sm:px-6 sm:pt-[max(0.75rem,env(safe-area-inset-top))] sm:pb-3"
           initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
@@ -216,7 +216,7 @@ export function AppShell({ children }: AppShellProps) {
               {hasDegradedAdapter && (
                 <NavLink
                   to="/monitoring"
-                  className="focus-ring inline-flex items-center gap-1.5 rounded-full border border-(--state-warning-border) bg-(--state-warning-bg)/15 px-2.5 py-1 font-semibold text-[10px] text-(--state-warning-fg) uppercase tracking-wider transition-colors hover:bg-(--state-warning-bg)/25"
+                  className="focus-ring inline-flex items-center gap-1.5 rounded-full border border-(--state-warning-border) bg-(--state-warning-bg)/15 px-2.5 py-1 font-semibold text-(--state-warning-fg) text-[10px] uppercase tracking-wider transition-colors hover:bg-(--state-warning-bg)/25"
                   title={t(
                     'header.degradedAdaptersTitle',
                     'One or more adapters are degraded — click to view Monitoring',

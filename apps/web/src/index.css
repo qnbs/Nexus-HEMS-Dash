@@ -1046,6 +1046,9 @@ html.no-animations *::after {
 html,
 body {
   background-color: #0f172a;
+  /* Prevent iOS standalone rubber-band overscroll, which makes the sticky
+     header appear to detach/shift while scrolling the page. */
+  overscroll-behavior-y: none;
 }
 
 /* Default CSS variables (ocean-dark) so content is always visible */
