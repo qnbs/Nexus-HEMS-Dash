@@ -17,7 +17,7 @@ implementation strategy, and metrics targets.
 | REST polling worker isolation | Implemented | Worker exists; remaining work is monitoring and fine-tuning |
 | AI worker isolation | Implemented | Optimization work is already offloaded; remaining work is verification/reporting |
 | Lighthouse CI | Implemented | Existing workflow enforces thresholds and stores reports |
-| LTTB chart sampling | Implemented but not fully integrated | Utility and tests exist; chart call sites still need adoption |
+| LTTB chart sampling | Implemented & integrated | `sampleIfNeeded` (LTTB) is wired into `HistoricalChart.tsx` and `HistoricalAnalyticsPage.tsx`; utility + tests in `lib/chart-sampling.ts` (MED-17 closed) |
 | `.perf` convention and runtime perf probes | Not implemented | Keep CI-first and lightweight for v1.2.0 |
 | Canvas/WebGL or virtualization fallback | Deferred | Only revisit if profiling still shows regressions after LTTB integration |
 
