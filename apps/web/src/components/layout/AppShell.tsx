@@ -156,7 +156,7 @@ export function AppShell({ children }: AppShellProps) {
           {isLive && (
             <div
               role="alert"
-              className="-mx-3 -mt-1.5 mb-2 flex items-center justify-center gap-2 bg-red-600 px-3 py-1 text-center font-bold text-white text-xs uppercase tracking-wider sm:-mx-6 sm:-mt-3 sm:mb-3"
+              className="-mx-3 -mt-1.5 mb-2 flex items-center justify-center gap-2 bg-(--state-live-bg) px-3 py-1 text-center font-bold text-(--state-live-on) text-xs uppercase tracking-wider sm:-mx-6 sm:-mt-3 sm:mb-3"
             >
               <AlertTriangle size={14} aria-hidden="true" />
               {t('mode.liveBannerWarning', 'Live hardware — commands control real equipment')}
@@ -184,7 +184,7 @@ export function AppShell({ children }: AppShellProps) {
                 className={`absolute -right-0.5 -bottom-0.5 h-2.5 w-2.5 rounded-full border-(--color-surface-strong) border-2 ${
                   connected
                     ? 'bg-(--color-neon-green) shadow-[0_0_6px_var(--color-neon-green)]'
-                    : 'bg-red-500 shadow-[0_0_6px_theme(colors.red.500)]'
+                    : 'bg-(--state-danger-bg) shadow-[0_0_6px_var(--state-danger-bg)]'
                 }`}
                 aria-hidden="true"
               />
@@ -216,7 +216,7 @@ export function AppShell({ children }: AppShellProps) {
               {hasDegradedAdapter && (
                 <NavLink
                   to="/monitoring"
-                  className="focus-ring inline-flex items-center gap-1.5 rounded-full border border-amber-500/40 bg-amber-500/15 px-2.5 py-1 font-semibold text-[10px] text-amber-400 uppercase tracking-wider transition-colors hover:bg-amber-500/25"
+                  className="focus-ring inline-flex items-center gap-1.5 rounded-full border border-(--state-warning-border) bg-(--state-warning-bg)/15 px-2.5 py-1 font-semibold text-[10px] text-(--state-warning-fg) uppercase tracking-wider transition-colors hover:bg-(--state-warning-bg)/25"
                   title={t(
                     'header.degradedAdaptersTitle',
                     'One or more adapters are degraded — click to view Monitoring',

@@ -43,7 +43,7 @@ export function OfflineBanner() {
           initial={{ opacity: 0, y: -50 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -50 }}
-          className="fixed top-0 right-0 left-0 z-notification bg-orange-500/90 px-4 py-3 text-white shadow-lg backdrop-blur-3xl"
+          className="fixed top-0 right-0 left-0 z-notification bg-(--state-offline-bg)/95 px-4 py-3 text-(--state-offline-on) shadow-lg backdrop-blur-3xl"
           role="alert"
           aria-atomic="true"
         >

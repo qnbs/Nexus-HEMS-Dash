@@ -26,15 +26,15 @@ interface ConfirmDialogProps {
 const variantStyles = {
   danger: {
     icon: AlertTriangle,
-    iconBg: 'bg-red-500/20',
-    iconColor: 'text-red-400',
-    confirmButton: 'bg-red-500 hover:bg-red-600 text-white',
+    iconBg: 'bg-(--state-danger-bg)/15',
+    iconColor: 'text-(--state-danger-fg)',
+    confirmButton: 'bg-(--state-danger-bg) text-(--state-danger-on) hover:opacity-90',
   },
   warning: {
     icon: AlertTriangle,
-    iconBg: 'bg-orange-500/20',
-    iconColor: 'text-orange-400',
-    confirmButton: 'bg-orange-500 hover:bg-orange-600 text-white',
+    iconBg: 'bg-(--state-warning-bg)/15',
+    iconColor: 'text-(--state-warning-fg)',
+    confirmButton: 'bg-(--state-warning-bg) text-(--state-warning-on) hover:opacity-90',
   },
   info: {
     icon: Info,
