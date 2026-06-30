@@ -17,6 +17,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { useFocusTrap } from '../../lib/useFocusTrap';
 import { EmptyState } from './EmptyState';
 
 export interface Command {
@@ -64,19 +65,13 @@ export function CommandPalette({
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   const inputRef = useRef<HTMLInputElement>(null);
-  const dialogRef = useRef<HTMLDivElement>(null);
-  const savedFocusRef = useRef<HTMLElement | null>(null);
 
-  // WCAG 2.1.2 / 2.4.3: save trigger focus, auto-focus input, restore on close
-  useEffect(() => {
-    if (isOpen) {
-      savedFocusRef.current = document.activeElement as HTMLElement;
-      requestAnimationFrame(() => inputRef.current?.focus());
-    } else {
-      savedFocusRef.current?.focus();
-      savedFocusRef.current = null;
-    }
-  }, [isOpen]);
+  // WCAG 2.1.2 / 2.4.3: trap Tab within the dialog, focus the search input on
+  // open, restore focus to the trigger on close, and close on Escape.
+  const dialogRef = useFocusTrap<HTMLDivElement>(isOpen, {
+    onEscape: onClose,
+    initialFocusRef: inputRef,
+  });
 
   const commands: Command[] = [
     // Actions
@@ -237,34 +232,13 @@ export function CommandPalette({
     );
   });
 
-  // WCAG 2.1.2: trap Tab focus within the open dialog
-  const trapFocus = (e: KeyboardEvent) => {
-    if (!dialogRef.current) return;
-    const focusable = Array.from(
-      dialogRef.current.querySelectorAll<HTMLElement>(
-        'button:not([disabled]), input, [tabindex]:not([tabindex="-1"])',
-      ),
-    );
-    const first = focusable[0];
-    const last = focusable[focusable.length - 1];
-    if (e.shiftKey) {
-      if (document.activeElement === first) {
-        e.preventDefault();
-        last?.focus();
-      }
-    } else if (document.activeElement === last) {
-      e.preventDefault();
-      first?.focus();
-    }
-  };
-
+  // List navigation. Escape, Tab focus-trapping, and focus restore are handled
+  // by useFocusTrap above.
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!isOpen) return;
 
-      if (e.key === 'Escape') {
-        onClose();
-      } else if (e.key === 'ArrowDown') {
+      if (e.key === 'ArrowDown') {
         e.preventDefault();
         setSelectedIndex((prev) => (prev + 1) % filteredCommands.length);
       } else if (e.key === 'ArrowUp') {
@@ -273,14 +247,12 @@ export function CommandPalette({
       } else if (e.key === 'Enter') {
         e.preventDefault();
         filteredCommands[selectedIndex]?.action();
-      } else if (e.key === 'Tab') {
-        trapFocus(e);
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, selectedIndex, filteredCommands, onClose]);
+  }, [isOpen, selectedIndex, filteredCommands]);
 
   // Reset search & selection whenever the palette opens.
   // This is a legitimate "sync state on prop change" pattern.
