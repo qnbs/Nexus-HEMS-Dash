@@ -27,9 +27,9 @@
 
 ---
 
-Nexus-HEMS is a **unified Command Center** that consolidates **13 protocol adapters** (7 core + 6 contrib) into **8 primary routes across 7 navigation sections** — orchestrating photovoltaic generation, battery storage, heat pumps, EV charging, and building automation with dynamic electricity tariffs. Instead of 18+ separate pages, every feature is accessible from a **single streamlined interface** with guided tours, contextual help, and zero-config onboarding.
+Nexus-HEMS is a **unified Command Center** that consolidates **13 protocol adapters** (7 core + 6 contrib) into **8 primary routes across 7 navigation sections** — orchestrating photovoltaic generation, battery storage, heat pumps, EV charging, and building automation with dynamic electricity tariffs. Instead of 18+ separate pages, every feature is accessible from a **single streamlined interface** with contextual in-context help and a new-user landing on the Command Hub.
 
-The current shipped release line is **1.2.0**. See [CHANGELOG.md](CHANGELOG.md) for the full release history and [docs/Technical-Debt-Registry.md](docs/Technical-Debt-Registry.md) for known debt and in-flight v1.3.0 work.
+The current shipped release line is **1.3.0**. See [CHANGELOG.md](CHANGELOG.md) for the full release history and [docs/Technical-Debt-Registry.md](docs/Technical-Debt-Registry.md) for known debt and in-flight work.
 
 > **Safety notice:** Nexus-HEMS controls safety-critical electrical infrastructure. No regulatory certification (VDE, IEC, CE) has been obtained. Read [docs/Safety-Certification-Notice.md](docs/Safety-Certification-Notice.md) before connecting to live hardware.
 
@@ -234,6 +234,7 @@ CORS_ORIGINS=https://...     # Optional: additional CORS origins
 WS_ORIGINS=wss://...         # Required in production: WebSocket origins for CSP connect-src
 ADAPTER_MODE=mock            # Default: mock (safe). Live hardware needs ADAPTER_MODE=live + ALLOW_LIVE_HARDWARE=true
 ALLOW_LIVE_HARDWARE=true       # Required with ADAPTER_MODE=live — see docs/Safety-Certification-Notice.md
+READ_ONLY_MODE=true          # Optional (SAF-05): block ALL hardware control commands at API + frontend — for certification-grade deployments, incident investigation, commissioning
 RATE_LIMIT_TRUSTED_IPS=...   # Optional: IPs exempt from rate limiting (load balancers)
 TRUST_PROXY=2                # Optional: Express trust proxy (hops or subnet list) behind CDN+proxy
 JWT_SECRET_NEW=...           # Optional: in-rotation HS256 secret; use with POST /api/auth/rotate-key (admin)
@@ -348,7 +349,7 @@ For the full threat model, trust boundaries, STRIDE analysis, and GDPR/DSGVO com
 
 ## Deployment
 
-**GitHub Pages** — manual deployment via GitHub Actions `workflow_dispatch` with explicit `DEPLOY` approval token.
+**GitHub Pages** — the live demo auto-deploys on every push to `main` (post-green-CI), with a `prune-deployments` job keeping only the newest deployments. Manual `workflow_dispatch` runs keep an explicit `DEPLOY` approval token. See [docs/adr/ADR-015-release-automation.md](docs/adr/ADR-015-release-automation.md) for the full deploy/release trigger chain.
 
 **Docker** — multi-stage build (node:24-alpine → nginx:1.29-alpine):
 
@@ -386,15 +387,28 @@ Brand colors: `neon-green` (#22ff88) · `electric-blue` (#00f0ff) · `power-oran
 | Q3      | Plugin system, adapter registry, 5 contrib adapters (Home Assistant, Matter/Thread, Zigbee2MQTT, Shelly), Capacitor Mobile                         | ✅ Shipped |
 | Q3–Q4   | Energy controllers (8 loops), MPC optimizer, hardware registry (120+ devices), plugin lifecycle, command safety, expanded unit coverage            | ✅ Shipped |
 | Q1 2026 | Opt#1 + Opt#2 Zustand/React 19 compiler cleanup, 6 new test suites (circuit-breaker, tariff-providers, notifications, energy-context, +extensions) | ✅ Shipped |
-| Q4      | **Unified Command Center** — 7 focused sections, guided tours, contextual help, zero-config onboarding, full a11y audit                            | ✅ Shipped |
+| Q4      | **Unified Command Center** — 7 focused sections, contextual in-context help, full a11y audit (the original guided-tour/onboarding overlay was later removed in favour of lighter contextual help)                            | ✅ Shipped |
 | Q2 2026 | **pnpm/Turborepo Monorepo** — `apps/api` + `apps/web` + `packages/shared-types`; two-process dev; Turbo caching across all workspaces               | ✅ Shipped |
 | Q2 2026 | **v1.2.0 — Safety, Protocols, CI Hardening** — Safety-Certification-Notice, EEBUS SHIP handshake (CRIT-01), OpenADR 3.1 VEN, ISO 15118-20 BPT (V2G), VPP single-home node, PII sanitization pipeline, LTTB chart sampling, Biome 2.4.7 / Node 24 LTS toolchain, distroless backend image, syft SBOM + pnpm audit CI gates | ✅ Shipped |
-| Q3 2026 | v1.3.0 — Historical analytics deep-dive, OpenAPI auto-generation, multi-user RBAC, Chromatic visual regression hard gate                            | 🔄 In&nbsp;flight |
+| Q2 2026 | **v1.3.0 — Read-only safety mode, EEBUS e2e security, Modbus REST proxy, design-system token foundation, PWA standalone polish, auto-deploy + deployment pruning, release-pipeline repair (ADR-015)** | ✅ Shipped |
+| Q3 2026 | Design-system A11y deep-dive (chart keyboard nav, form ARIA), data-viz palette, Historical analytics deep-dive, OpenAPI auto-generation, multi-user RBAC | 🔄 In&nbsp;flight |
 | Q4+     | Multi-tenant SaaS, contrib adapter marketplace, OCPP 2.1 Profile 3, GDPR formal DPIA                                                                | 🔜 Planned |
 
 ## Changelog
 
 <details open>
+<summary><b>v1.3.0</b> — Read-Only Safety Mode, Design System & Deploy Automation</summary>
+
+- **Read-Only Deployment Mode (SAF-05):** `READ_ONLY_MODE=true` blocks all hardware control commands at both API (WebSocket) and frontend (command-validation) levels — for certification-grade deployments, incident investigation, and commissioning
+- **EEBUS end-to-end security (SEC-03):** auto-PIN removed; the browser connects through a `/ws/eebus` mTLS proxy with `pair/status` polling and OCSP/CRL admin API/UI
+- **Backend Modbus SunSpec REST proxy (PROT-01):** `GET /api/modbus/sunspec` + `POST /api/modbus/write` close the gap the in-browser adapter polled; JWT + `readwrite`-scoped, register-allowlisted, audited
+- **Design-system foundation:** `--shadow-*` / `--radius-*` / `--duration-*` / `--ease-*` scales and a semantic `--state-{danger,warning,success,info,live,offline}-{bg,fg,on,border}` token family (theme-aware, WCAG-tuned); status/safety surfaces migrated off ~140 hardcoded `red/amber/emerald` utilities
+- **PWA standalone polish:** `viewport-fit=cover`, safe-area-aware sticky header, `min-h-dvh`, `overscroll-behavior` — the installed app's header stays pinned below the notch/status bar
+- **Deploy & release automation:** live demo auto-deploys on push to `main` with deployment pruning; release pipeline repaired (Tauri desktop build fix, honest release status) and documented in **ADR-015**; graphify knowledge-graph CI fixed
+- **Note:** the legacy blocking welcome-wizard and per-page guided tours remain removed; in-context `HelpTooltip` guidance is the current model (a lighter per-page coachmark pass is on the roadmap)
+</details>
+
+<details>
 <summary><b>v1.2.0</b> — Safety, Protocols, and CI Hardening</summary>
 
 - **Safety & Certification:** New [docs/Safety-Certification-Notice.md](docs/Safety-Certification-Notice.md) covering hazard table per domain, certification status matrix (VDE-AR-E 2829-6, VDE-AR-N 4105, ISO 15118-20, CE, GDPR), mock-vs-live delta, command-safety architecture, and pre-deployment checklist
