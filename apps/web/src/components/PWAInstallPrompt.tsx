@@ -77,12 +77,12 @@ export function PWAInstallPrompt() {
         className="fixed right-4 bottom-20 left-4 z-notification md:right-4 md:left-auto md:max-w-sm lg:bottom-4"
       >
         <div
-          className="flex items-center gap-3 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 shadow-2xl backdrop-blur-xl"
+          className="flex items-center gap-3 rounded-2xl border border-(--state-success-border) bg-(--state-success-bg)/10 p-4 shadow-2xl backdrop-blur-xl"
           role="alert"
         >
-          <CheckCircle2 className="h-6 w-6 shrink-0 text-emerald-400" aria-hidden="true" />
+          <CheckCircle2 className="h-6 w-6 shrink-0 text-(--state-success-fg)" aria-hidden="true" />
           <div>
-            <p className="font-semibold text-emerald-400 text-sm">
+            <p className="font-semibold text-(--state-success-fg) text-sm">
               {t('pwa.installed', 'Successfully installed!')}
             </p>
             <p className="text-(--color-muted) text-xs">

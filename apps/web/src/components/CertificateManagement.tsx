@@ -116,12 +116,12 @@ function StatusBadge({ status }: { status: CertStatus }) {
     revoked: {
       Icon: ShieldX,
       label: t('certManagement.statusRevoked'),
-      cls: 'bg-red-500/15 text-red-400',
+      cls: 'bg-(--state-danger-bg)/15 text-(--state-danger-fg)',
     },
     expired: {
       Icon: ShieldOff,
       label: t('certManagement.statusExpired'),
-      cls: 'bg-yellow-500/15 text-yellow-400',
+      cls: 'bg-(--state-warning-bg)/15 text-(--state-warning-fg)',
     },
   } as const;
   const { Icon, label, cls } = config[status];
@@ -253,7 +253,10 @@ function ImportDialog({ open, onClose, onImport }: ImportDialogProps) {
             </div>
 
             {error && (
-              <p role="alert" className="rounded-lg bg-red-500/15 px-3 py-2 text-red-400 text-sm">
+              <p
+                role="alert"
+                className="rounded-lg bg-(--state-danger-bg)/15 px-3 py-2 text-(--state-danger-fg) text-sm"
+              >
                 {error}
               </p>
             )}
@@ -323,8 +326,8 @@ function DeleteConfirm({ cert, onClose, onConfirm }: DeleteConfirmProps) {
           </VisuallyHidden.Root>
 
           <div className="flex items-start gap-4">
-            <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-red-500/20">
-              <Trash2 aria-hidden className="size-5 text-red-400" />
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-(--state-danger-bg)/20">
+              <Trash2 aria-hidden className="size-5 text-(--state-danger-fg)" />
             </span>
             <div>
               <p className="font-semibold text-(--color-text-primary)">
@@ -349,7 +352,7 @@ function DeleteConfirm({ cert, onClose, onConfirm }: DeleteConfirmProps) {
               type="button"
               onClick={handleConfirm}
               disabled={loading}
-              className="focus-ring flex items-center gap-2 rounded-lg bg-red-500/20 px-4 py-2 font-medium text-red-400 text-sm transition-colors hover:bg-red-500/30 disabled:pointer-events-none disabled:opacity-50"
+              className="focus-ring flex items-center gap-2 rounded-lg bg-(--state-danger-bg)/20 px-4 py-2 font-medium text-(--state-danger-fg) text-sm transition-colors hover:bg-(--state-danger-bg)/30 disabled:pointer-events-none disabled:opacity-50"
             >
               <Trash2 aria-hidden className="size-4" />
               {t('certManagement.deleteCert')}
@@ -446,7 +449,10 @@ function PinDialog({ open, ski, pinHint, onClose, onSubmit }: PinDialogProps) {
               aria-label={t('shipPairing.pinDialogTitle')}
             />
             {error && (
-              <p role="alert" className="rounded-lg bg-red-500/15 px-3 py-2 text-red-400 text-sm">
+              <p
+                role="alert"
+                className="rounded-lg bg-(--state-danger-bg)/15 px-3 py-2 text-(--state-danger-fg) text-sm"
+              >
                 {error}
               </p>
             )}
@@ -515,8 +521,8 @@ function RemoveTrustDialog({ device, onClose, onConfirm }: RemoveTrustDialogProp
             <Dialog.Title>{t('shipPairing.confirmRemove', { device: label })}</Dialog.Title>
           </VisuallyHidden.Root>
           <div className="flex items-start gap-4">
-            <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-red-500/20">
-              <Link2Off aria-hidden className="size-5 text-red-400" />
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-(--state-danger-bg)/20">
+              <Link2Off aria-hidden className="size-5 text-(--state-danger-fg)" />
             </span>
             <div>
               <p className="font-semibold text-(--color-text-primary)">
@@ -540,7 +546,7 @@ function RemoveTrustDialog({ device, onClose, onConfirm }: RemoveTrustDialogProp
               type="button"
               onClick={handleConfirm}
               disabled={loading}
-              className="focus-ring flex items-center gap-2 rounded-lg bg-red-500/20 px-4 py-2 font-medium text-red-400 text-sm transition-colors hover:bg-red-500/30 disabled:pointer-events-none disabled:opacity-50"
+              className="focus-ring flex items-center gap-2 rounded-lg bg-(--state-danger-bg)/20 px-4 py-2 font-medium text-(--state-danger-fg) text-sm transition-colors hover:bg-(--state-danger-bg)/30 disabled:pointer-events-none disabled:opacity-50"
             >
               <Trash2 aria-hidden className="size-4" />
               {t('shipPairing.removeTrust')}
@@ -670,7 +676,10 @@ function ShipTrustStore() {
 
   if (error) {
     return (
-      <p role="alert" className="rounded-lg bg-red-500/15 px-3 py-2 text-red-400 text-sm">
+      <p
+        role="alert"
+        className="rounded-lg bg-(--state-danger-bg)/15 px-3 py-2 text-(--state-danger-fg) text-sm"
+      >
         {t('shipPairing.loadError')}
       </p>
     );
@@ -718,16 +727,16 @@ function ShipTrustStore() {
                       device.status === 'trusted'
                         ? 'bg-neon-green/15'
                         : device.status === 'failed'
-                          ? 'bg-red-500/15'
-                          : 'bg-yellow-500/15'
+                          ? 'bg-(--state-danger-bg)/15'
+                          : 'bg-(--state-warning-bg)/15'
                     }`}
                   >
                     {device.status === 'trusted' ? (
                       <ShieldCheck aria-hidden className="size-4 text-neon-green" />
                     ) : device.status === 'failed' ? (
-                      <ShieldX aria-hidden className="size-4 text-red-400" />
+                      <ShieldX aria-hidden className="size-4 text-(--state-danger-fg)" />
                     ) : (
-                      <ShieldOff aria-hidden className="size-4 text-yellow-400" />
+                      <ShieldOff aria-hidden className="size-4 text-(--state-warning-fg)" />
                     )}
                   </span>
                   <div className="min-w-0">
@@ -765,7 +774,7 @@ function ShipTrustStore() {
                         setPinSki(device.ski);
                         setActivePinHint(t('shipPairing.pinDialogDesc'));
                       }}
-                      className="focus-ring rounded-lg bg-yellow-500/15 px-2 py-1.5 font-medium text-xs text-yellow-400 transition-colors hover:bg-yellow-500/25"
+                      className="focus-ring rounded-lg bg-(--state-warning-bg)/15 px-2 py-1.5 font-medium text-(--state-warning-fg) text-xs transition-colors hover:bg-(--state-warning-bg)/25"
                     >
                       {t('shipPairing.statusPinRequired')}
                     </button>
@@ -773,7 +782,7 @@ function ShipTrustStore() {
                   <button
                     type="button"
                     onClick={() => setRemovingDevice(device)}
-                    className="focus-ring rounded-lg p-1.5 text-(--color-text-secondary) transition-colors hover:bg-red-500/15 hover:text-red-400"
+                    className="focus-ring rounded-lg p-1.5 text-(--color-text-secondary) transition-colors hover:bg-(--state-danger-bg)/15 hover:text-(--state-danger-fg)"
                     aria-label={`${t('shipPairing.removeTrust')} — ${deviceLabel}`}
                   >
                     <Trash2 aria-hidden className="size-4" />
@@ -1050,7 +1059,7 @@ export function CertificateManagement() {
       {revokedCount > 0 && (
         <div
           role="alert"
-          className="flex items-center gap-2 rounded-xl border border-yellow-500/30 bg-yellow-500/10 px-4 py-2.5 text-sm text-yellow-400"
+          className="flex items-center gap-2 rounded-xl border border-(--state-warning-border) bg-(--state-warning-bg)/10 px-4 py-2.5 text-(--state-warning-fg) text-sm"
         >
           <ShieldOff aria-hidden className="size-4 shrink-0" />
           <span>
@@ -1117,7 +1126,7 @@ export function CertificateManagement() {
                   <button
                     type="button"
                     onClick={() => setDeletingCert(cert)}
-                    className="focus-ring rounded-lg p-1.5 text-(--color-text-secondary) transition-colors hover:bg-red-500/15 hover:text-red-400"
+                    className="focus-ring rounded-lg p-1.5 text-(--color-text-secondary) transition-colors hover:bg-(--state-danger-bg)/15 hover:text-(--state-danger-fg)"
                     aria-label={`${t('certManagement.deleteCert')} — ${cert.deviceName}`}
                   >
                     <Trash2 aria-hidden className="size-4" />

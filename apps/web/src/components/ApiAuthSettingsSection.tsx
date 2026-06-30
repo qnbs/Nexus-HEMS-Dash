@@ -72,8 +72,8 @@ export function ApiAuthSettingsSection() {
       <div
         className={`flex items-center gap-2 rounded-xl border p-3 text-sm ${
           hasToken
-            ? 'border-emerald-500/30 bg-emerald-500/5 text-emerald-400'
-            : 'border-amber-500/30 bg-amber-500/5 text-amber-400'
+            ? 'border-(--state-success-border) bg-(--state-success-bg)/5 text-(--state-success-fg)'
+            : 'border-(--state-warning-border) bg-(--state-warning-bg)/5 text-(--state-warning-fg)'
         }`}
         role="status"
       >
@@ -158,13 +158,13 @@ export function ApiAuthSettingsSection() {
         </div>
 
         {status === 'error' && errorKey && (
-          <p className="text-red-400 text-sm" role="alert">
+          <p className="text-(--state-danger-fg) text-sm" role="alert">
             {t(`settings.apiAuthError.${errorKey}`)}
           </p>
         )}
 
         {status === 'success' && (
-          <p className="text-emerald-400 text-sm" role="status">
+          <p className="text-(--state-success-fg) text-sm" role="status">
             {t('settings.apiAuthSuccess')}
           </p>
         )}

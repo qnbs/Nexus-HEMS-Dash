@@ -102,8 +102,8 @@ export class ErrorBoundary extends Component<Props, State> {
         >
           <div className="glass-panel w-full max-w-2xl p-8">
             <div className="flex items-start gap-4">
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-red-500/20">
-                <AlertTriangle className="h-8 w-8 text-red-400" aria-hidden="true" />
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-(--state-danger-bg)/15">
+                <AlertTriangle className="h-8 w-8 text-(--state-danger-fg)" aria-hidden="true" />
               </div>
               <div className="flex-1">
                 <h1 className="font-bold text-(--color-text) text-2xl">
@@ -113,35 +113,35 @@ export class ErrorBoundary extends Component<Props, State> {
 
                 {/* Error Details (only in development) */}
                 {import.meta.env.DEV && this.state.error && (
-                  <details className="mt-4 rounded-xl border border-red-500/30 bg-red-500/5 p-4">
-                    <summary className="cursor-pointer font-mono text-red-400 text-sm">
+                  <details className="mt-4 rounded-xl border border-(--state-danger-border) bg-(--state-danger-bg)/5 p-4">
+                    <summary className="cursor-pointer font-mono text-(--state-danger-fg) text-sm">
                       {i18next.t('error.details')}
                     </summary>
                     <div className="mt-3 space-y-2">
                       <div>
-                        <p className="font-medium text-red-300 text-xs">
+                        <p className="font-medium text-(--state-danger-fg) text-xs">
                           {i18next.t('error.message')}
                         </p>
-                        <p className="mt-1 font-mono text-red-400 text-xs">
+                        <p className="mt-1 font-mono text-(--state-danger-fg) text-xs">
                           {this.state.error.message}
                         </p>
                       </div>
                       {this.state.error.stack && (
                         <div>
-                          <p className="font-medium text-red-300 text-xs">
+                          <p className="font-medium text-(--state-danger-fg) text-xs">
                             {i18next.t('error.stack')}
                           </p>
-                          <pre className="mt-1 overflow-x-auto font-mono text-red-400 text-xs">
+                          <pre className="mt-1 overflow-x-auto font-mono text-(--state-danger-fg) text-xs">
                             {this.state.error.stack}
                           </pre>
                         </div>
                       )}
                       {this.state.errorInfo?.componentStack && (
                         <div>
-                          <p className="font-medium text-red-300 text-xs">
+                          <p className="font-medium text-(--state-danger-fg) text-xs">
                             {i18next.t('error.componentStack')}
                           </p>
-                          <pre className="mt-1 overflow-x-auto font-mono text-red-400 text-xs">
+                          <pre className="mt-1 overflow-x-auto font-mono text-(--state-danger-fg) text-xs">
                             {this.state.errorInfo.componentStack}
                           </pre>
                         </div>
