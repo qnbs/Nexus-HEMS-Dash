@@ -2683,6 +2683,17 @@ export const de = {
     loadError: 'Vertrauensspeicher konnte nicht geladen werden',
     removeError: 'Gerät konnte nicht aus dem Vertrauensspeicher entfernt werden',
   },
+  eebusRevocation: {
+    title: 'EEBUS-Zertifikatswiderruf',
+    desc: 'CRL- oder OCSP-Prüfung für SHIP-mTLS-Peer-Zertifikate konfigurieren (serverseitige Richtlinie).',
+    modeLabel: 'Widerrufsprüfmodus',
+    modeOff: 'Aus — keine CRL/OCSP-Validierung',
+    modeCrl: 'CRL — URL der Zertifikatswiderrufsliste',
+    modeOcsp: 'OCSP — Online-Zertifikatsstatusprotokoll',
+    crlUrl: 'CRL-Verteilungs-URL',
+    ocspUrl: 'OCSP-Responder-URL',
+    save: 'Widerrufsrichtlinie speichern',
+  },
   wizard: {
     stepsNavLabel: 'Assistent-Schritte',
     stepLabel: '{{label}} – Schritt {{current}} von {{total}}',

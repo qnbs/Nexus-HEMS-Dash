@@ -2662,4 +2662,15 @@ export const en = {
     loadError: 'Failed to load trust store',
     removeError: 'Failed to remove device from trust store',
   },
+  eebusRevocation: {
+    title: 'EEBUS certificate revocation',
+    desc: 'Configure CRL or OCSP checks for SHIP mTLS peer certificates (server-side policy).',
+    modeLabel: 'Revocation check mode',
+    modeOff: 'Off — no CRL/OCSP validation',
+    modeCrl: 'CRL — certificate revocation list URL',
+    modeOcsp: 'OCSP — online certificate status protocol',
+    crlUrl: 'CRL distribution URL',
+    ocspUrl: 'OCSP responder URL',
+    save: 'Save revocation policy',
+  },
 } as const;

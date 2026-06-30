@@ -7,6 +7,7 @@ import { mockData, updateMockData } from '../data/mock-data.js';
 import { type AuthenticatedClient, authenticateWS, type JWTScope } from '../middleware/auth.js';
 import { setMetric, updateServerMetrics, wsMessageCount } from '../middleware/metrics.js';
 import { wsTickets } from '../routes/auth.routes.js';
+import { handleEebusProxyConnection, isEebusProxyPath } from './eebus-proxy.ws.js';
 import { getRequiredScopeForCommand, isScopeAuthorized } from './ws-scope.js';
 
 // Zombie connection detection: ping every 30 s, terminate if no pong received
@@ -126,6 +127,11 @@ export function setupWebSocket(wss: WebSocketServer): void {
   }, 2000);
 
   wss.on('connection', async (ws: WebSocket, req: IncomingMessage) => {
+    if (isEebusProxyPath(req)) {
+      await handleEebusProxyConnection(ws, req, requireWSAuth);
+      return;
+    }
+
     // HIGH-07: Per-IP connection limit
     const clientIP = getWSClientIP(req);
     const currentConnections = wsConnectionsPerIP.get(clientIP) ?? 0;

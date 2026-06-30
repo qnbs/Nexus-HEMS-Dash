@@ -366,6 +366,15 @@ export const EEBUSPinSubmitSchema = z.object({
 
 export type EEBUSPinSubmit = z.infer<typeof EEBUSPinSubmitSchema>;
 
+/** Admin TLS revocation policy for EEBUS SHIP mTLS */
+export const EEBUSRevocationConfigSchema = z.object({
+  mode: z.enum(['off', 'crl', 'ocsp']).default('off'),
+  crlUrl: z.string().url().optional(),
+  ocspUrl: z.string().url().optional(),
+});
+
+export type EEBUSRevocationConfig = z.infer<typeof EEBUSRevocationConfigSchema>;
+
 /** Response body for GET /api/eebus/trust — array of trusted devices */
 export const EEBUSTrustListSchema = z.array(EEBUSDeviceInfoSchema);
 

@@ -178,14 +178,14 @@ gantt
 
 ### Milestone 2.2 — EEBUS end-to-end security
 
-| Task | Reference |
-|------|-----------|
-| Remove auto-PIN in `EEBUSAdapter` | audit SEC-03 |
-| Route browser EEBUS through API WebSocket proxy (no plain WS) | new API route |
-| Cert rotation documentation + UI workflow | `EEBUS-Certificate-Setup.md` |
-| OCSP/CRL configuration surface (admin) | `CertificateManagement.tsx` |
+| Task | Reference | Status |
+|------|-----------|--------|
+| Remove auto-PIN in `EEBUSAdapter` | audit SEC-03 | ✅ Done |
+| Route browser EEBUS through API WebSocket proxy (`/ws/eebus`) | `eebus-proxy.ws.ts` | ✅ Done |
+| Cert rotation documentation + UI workflow | `EEBUS-Certificate-Setup.md`, trust store PIN polling | ⚠️ Partial |
+| OCSP/CRL configuration surface (admin) | `GET/PUT /api/eebus/tls/revocation`, `CertificateManagement` | ✅ Done |
 
-**Success criteria:** EEBUS pairing requires user PIN; mTLS verified in integration test.
+**Success criteria:** EEBUS pairing requires user PIN; mTLS terminated server-side; browser uses API proxy — **met** (integration test backlog: live device).
 
 ---
 

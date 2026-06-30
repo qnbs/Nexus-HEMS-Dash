@@ -8,7 +8,7 @@
  * from the API, with PIN dialog support for devices in pin_required state.
  */
 
-import type { EEBUSDeviceInfo } from '@nexus-hems/shared-types';
+import type { EEBUSDeviceInfo, EEBUSRevocationConfig } from '@nexus-hems/shared-types';
 import * as Dialog from '@radix-ui/react-dialog';
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -580,7 +580,7 @@ function ShipTrustStore() {
   const queryClient = useQueryClient();
   const [removingDevice, setRemovingDevice] = useState<EEBUSDeviceInfo | null>(null);
   const [pinSki, setPinSki] = useState<string | null>(null);
-  const [pinHint, setPinHint] = useState<string | undefined>(undefined);
+  const [activePinHint, setActivePinHint] = useState<string | undefined>(undefined);
 
   const {
     data: devices,
@@ -619,6 +619,39 @@ function ShipTrustStore() {
       queryClient.invalidateQueries({ queryKey: ['eebus-trust'] });
     },
   });
+
+  // Poll pair/status for pending devices — auto-open PIN dialog (Milestone 2.2)
+  useEffect(() => {
+    const pending = devices?.filter((d) => d.status === 'pending') ?? [];
+    if (pending.length === 0) return;
+
+    let cancelled = false;
+    const poll = async () => {
+      for (const device of pending) {
+        try {
+          const resp = await fetch(
+            `/api/eebus/pair/status/${encodeURIComponent(device.ski)}`,
+            eebusFetchInit(),
+          );
+          if (!resp.ok || cancelled) continue;
+          const status = (await resp.json()) as { state?: string; pinHint?: string };
+          if (status.state === 'pin_required') {
+            setPinSki(device.ski);
+            setActivePinHint(status.pinHint);
+          }
+        } catch {
+          /* ignore transient poll errors */
+        }
+      }
+    };
+
+    void poll();
+    const timer = setInterval(() => void poll(), 2000);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
+  }, [devices]);
 
   const handlePinSubmit = async (pin: string) => {
     if (!pinSki) return;
@@ -730,7 +763,7 @@ function ShipTrustStore() {
                       type="button"
                       onClick={() => {
                         setPinSki(device.ski);
-                        setPinHint(t('shipPairing.pinDialogDesc'));
+                        setActivePinHint(t('shipPairing.pinDialogDesc'));
                       }}
                       className="focus-ring rounded-lg bg-yellow-500/15 px-2 py-1.5 font-medium text-xs text-yellow-400 transition-colors hover:bg-yellow-500/25"
                     >
@@ -755,8 +788,11 @@ function ShipTrustStore() {
       <PinDialog
         open={pinSki !== null}
         ski={pinSki ?? ''}
-        {...(pinHint !== undefined ? { pinHint } : {})}
-        onClose={() => setPinSki(null)}
+        {...(activePinHint !== undefined ? { pinHint: activePinHint } : {})}
+        onClose={() => {
+          setPinSki(null);
+          setActivePinHint(undefined);
+        }}
         onSubmit={handlePinSubmit}
       />
       <RemoveTrustDialog
@@ -769,6 +805,117 @@ function ShipTrustStore() {
     </section>
   );
 }
+
+function EebusRevocationForm({ initial }: { initial: EEBUSRevocationConfig }) {
+  const { t } = useTranslation();
+  const queryClient = useQueryClient();
+  const [mode, setMode] = useState<EEBUSRevocationConfig['mode']>(initial.mode);
+  const [crlUrl, setCrlUrl] = useState(initial.crlUrl ?? '');
+  const [ocspUrl, setOcspUrl] = useState(initial.ocspUrl ?? '');
+
+  const saveMutation = useMutation({
+    mutationFn: async (payload: EEBUSRevocationConfig) => {
+      const resp = await fetch('/api/eebus/tls/revocation', eebusFetchInit('PUT', payload));
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      return resp.json() as Promise<EEBUSRevocationConfig>;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['eebus-revocation'] });
+    },
+  });
+
+  const handleSave = () => {
+    const payload: EEBUSRevocationConfig = { mode };
+    if (mode === 'crl' && crlUrl) payload.crlUrl = crlUrl;
+    if (mode === 'ocsp' && ocspUrl) payload.ocspUrl = ocspUrl;
+    saveMutation.mutate(payload);
+  };
+
+  return (
+    <div className="glass-panel space-y-3 rounded-xl p-4">
+      <label className="block text-(--color-text-secondary) text-sm">
+        {t('eebusRevocation.modeLabel')}
+        <select
+          value={mode}
+          onChange={(e) => setMode(e.target.value as EEBUSRevocationConfig['mode'])}
+          className="focus-ring mt-1 w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-(--color-text-primary) text-sm"
+        >
+          <option value="off">{t('eebusRevocation.modeOff')}</option>
+          <option value="crl">{t('eebusRevocation.modeCrl')}</option>
+          <option value="ocsp">{t('eebusRevocation.modeOcsp')}</option>
+        </select>
+      </label>
+      {mode === 'crl' && (
+        <label className="block text-(--color-text-secondary) text-sm">
+          {t('eebusRevocation.crlUrl')}
+          <input
+            type="url"
+            value={crlUrl}
+            onChange={(e) => setCrlUrl(e.target.value)}
+            className="focus-ring mt-1 w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 font-mono text-(--color-text-primary) text-sm"
+            placeholder="https://ca.example.com/crl.pem"
+          />
+        </label>
+      )}
+      {mode === 'ocsp' && (
+        <label className="block text-(--color-text-secondary) text-sm">
+          {t('eebusRevocation.ocspUrl')}
+          <input
+            type="url"
+            value={ocspUrl}
+            onChange={(e) => setOcspUrl(e.target.value)}
+            className="focus-ring mt-1 w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 font-mono text-(--color-text-primary) text-sm"
+            placeholder="https://ocsp.example.com"
+          />
+        </label>
+      )}
+      <button
+        type="button"
+        onClick={handleSave}
+        disabled={saveMutation.isPending}
+        className="focus-ring rounded-lg bg-neon-green/20 px-4 py-2 font-medium text-neon-green text-sm hover:bg-neon-green/30 disabled:opacity-50"
+      >
+        {t('eebusRevocation.save')}
+      </button>
+    </div>
+  );
+}
+
+function EebusRevocationSettings() {
+  const { t } = useTranslation();
+
+  const { data, isLoading } = useQuery<EEBUSRevocationConfig>({
+    queryKey: ['eebus-revocation'],
+    queryFn: async () => {
+      const resp = await fetch('/api/eebus/tls/revocation', eebusFetchInit());
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      return resp.json() as Promise<EEBUSRevocationConfig>;
+    },
+    retry: 1,
+  });
+
+  const formKey = data ? `${data.mode}:${data.crlUrl ?? ''}:${data.ocspUrl ?? ''}` : 'loading';
+
+  return (
+    <section aria-labelledby="eebus-revocation-heading" className="mt-8 space-y-4">
+      <div>
+        <h2
+          id="eebus-revocation-heading"
+          className="font-semibold text-(--color-text-primary) text-base"
+        >
+          {t('eebusRevocation.title')}
+        </h2>
+        <p className="mt-0.5 text-(--color-text-secondary) text-sm">{t('eebusRevocation.desc')}</p>
+      </div>
+      {isLoading || !data ? (
+        <p className="text-(--color-text-secondary) text-sm">{t('common.loading')}</p>
+      ) : (
+        <EebusRevocationForm key={formKey} initial={data} />
+      )}
+    </section>
+  );
+}
+
 export function CertificateManagement() {
   const { t } = useTranslation();
   const [certs, setCerts] = useState<EEBUSCertRecord[]>([]);
@@ -1013,6 +1160,9 @@ export function CertificateManagement() {
 
       {/* ── SHIP Trust Store (API-backed) ── */}
       <ShipTrustStore />
+
+      {/* ── EEBUS TLS revocation policy (admin API) ── */}
+      <EebusRevocationSettings />
     </section>
   );
 }
