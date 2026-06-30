@@ -2049,6 +2049,16 @@ export const de = {
     degradedAdapters: 'System beeinträchtigt',
     degradedAdaptersTitle: 'Ein oder mehrere Adapter sind ausgefallen — zum Monitoring',
   },
+  mode: {
+    simulationBadge: 'Simulation',
+    simulationTitle: 'Simulationsmodus — es wird keine echte Hardware gesteuert',
+    liveBadge: 'Live-Hardware',
+    liveBannerWarning: 'Live-Hardware — Befehle steuern echte Geräte',
+    settingsLabel: 'Adapter-Modus',
+    settingsSimulation: 'Simulation (Mock-Daten) — sicher, keine Hardware-Steuerung',
+    settingsLive: 'Live-Hardware — echte Geräte werden gesteuert',
+    settingsUnknown: 'Unbekannt — Backend-Health-Endpunkt nicht erreichbar',
+  },
   safety: {
     emergencyStop: 'Notaus — Alle Geräte sofort abschalten',
     emergencyStopShort: 'NOTAUS',
@@ -2064,6 +2074,7 @@ export const de = {
     resetSystem: 'System zurücksetzen & neu starten',
     confirmCommandTitle: 'Gerätebefehl bestätigen',
     executeCommand: 'Befehl ausführen',
+    liveHardwareWarning: 'Dies betrifft LIVE-Hardware — der Befehl steuert echte Geräte.',
     confirmBattery:
       'Batterie-Steuerbefehl: {{type}} auf {{value}} setzen. Unsachgemäße Werte können den Speicher beschädigen.',
     confirmV2X: 'V2X-Entladung: {{type}} auf {{value}} W. Dies entlädt das Fahrzeug ins Hausnetz.',

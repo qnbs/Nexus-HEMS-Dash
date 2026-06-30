@@ -2,6 +2,7 @@ import {
   AlertTriangle,
   BatteryMedium,
   Command,
+  FlaskConical,
   HelpCircle,
   Settings as SettingsIcon,
   Sun,
@@ -13,6 +14,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { useEnergyStoreBase } from '../../core/useEnergyStore';
 import { themeDefinitions } from '../../design-tokens';
+import { isLiveSafetyMode } from '../../lib/adapter-mode';
 import { useAppStoreShallow } from '../../store';
 import { CommandPalette, useCommandPalette } from '../ui/CommandPalette';
 import { MobileNavigation } from '../ui/MobileNavigation';
@@ -96,7 +98,7 @@ export function AppShell({ children }: AppShellProps) {
   const { t } = useTranslation();
   const { isOpen: isCommandPaletteOpen, setIsOpen: setCommandPaletteOpen } = useCommandPalette();
 
-  const { priceCurrent, pvPower, batterySoC, gridPower, houseLoad, connected, theme } =
+  const { priceCurrent, pvPower, batterySoC, gridPower, houseLoad, connected, theme, adapterMode } =
     useAppStoreShallow((s) => ({
       priceCurrent: s.energyData.priceCurrent,
       pvPower: s.energyData.pvPower,
@@ -105,7 +107,12 @@ export function AppShell({ children }: AppShellProps) {
       houseLoad: s.energyData.houseLoad,
       connected: s.connected,
       theme: s.theme,
+      adapterMode: s.adapterMode,
     }));
+
+  // Global safety indicator: LIVE drives a persistent red banner; otherwise a
+  // muted simulation badge so the operator can always see the operating mode.
+  const isLive = isLiveSafetyMode(adapterMode);
 
   const hasDegradedAdapter = useEnergyStoreBase((s) =>
     Object.values(s.adapters).some(
@@ -145,6 +152,17 @@ export function AppShell({ children }: AppShellProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
         >
+          {/* LIVE hardware banner — full-bleed, always visible while live */}
+          {isLive && (
+            <div
+              role="alert"
+              className="-mx-3 -mt-1.5 mb-2 flex items-center justify-center gap-2 bg-red-600 px-3 py-1 text-center font-bold text-white text-xs uppercase tracking-wider sm:-mx-6 sm:-mt-3 sm:mb-3"
+            >
+              <AlertTriangle size={14} aria-hidden="true" />
+              {t('mode.liveBannerWarning', 'Live hardware — commands control real equipment')}
+            </div>
+          )}
+
           {/* Row 1: Logo + Page Title + Actions */}
           <div className="flex items-center gap-2 sm:gap-3">
             {/* Left: Logo + Connection Dot (mobile/tablet) */}
@@ -177,6 +195,23 @@ export function AppShell({ children }: AppShellProps) {
 
             {/* Right: action icons */}
             <div className="ml-auto flex items-center gap-1 sm:gap-2">
+              {/* Simulation mode badge — shown whenever the system is not driving live hardware */}
+              {!isLive && (
+                <span
+                  role="status"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-(--color-border) bg-(--color-surface-strong) px-2.5 py-1 font-semibold text-(--color-muted) text-[10px] uppercase tracking-wider"
+                  title={t(
+                    'mode.simulationTitle',
+                    'Simulation mode — no real hardware is being controlled',
+                  )}
+                >
+                  <FlaskConical size={12} aria-hidden="true" />
+                  <span className="hidden sm:inline">
+                    {t('mode.simulationBadge', 'Simulation')}
+                  </span>
+                </span>
+              )}
+
               {/* Degraded adapter warning badge */}
               {hasDegradedAdapter && (
                 <NavLink

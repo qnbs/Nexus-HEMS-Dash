@@ -62,6 +62,7 @@
 | PDF reports + QR sharing | ✅ | `apps/web/src/components/ExportAndSharing.tsx`, `lib/sharing.ts` |
 | Prometheus monitoring | ✅ | `apps/api/src/middleware/metrics.ts`, `routes/metrics.routes.ts` |
 | Adapter health endpoint | ✅ | `GET /api/health` returns mode, overall status, and per-adapter state (`apps/api/src/routes/health.routes.ts`) |
+| Live/Mock mode safety indicator | ✅ | Header banner (live) + simulation badge, Settings status, and live-hardware warning in the command-confirmation dialog — driven by `/api/health` mode (`apps/web/src/lib/adapter-mode.ts`, `AppShell.tsx`, `useSafeCommand.tsx`) |
 | Built-in adapters disabled by default | ✅ | `isBuiltinAdapterEnabledByDefault()` returns `false`; user enables adapters in Settings (`apps/web/src/lib/adapter-mode.ts`) |
 | Demo data without hardware | ✅ | Mock/simulated energy data when effective adapter mode is `mock` (`apps/api/src/data/mock-data.ts`, `EnergyContext`) |
 
@@ -79,6 +80,7 @@
 | Helmet CSP (dev + prod) | ✅ | `apps/api/src/middleware/security.ts` |
 | CORS origin filtering (localhost removed in prod) | ✅ | `configureCors()` in `apps/api/src/middleware/security.ts` |
 | Rate limiting (HTTP + WS) | ✅ | Express rate-limit + WS command rate limiter |
+| Server-side command audit log | ✅ | `apps/api/src/data/command-audit.ts` — every WS command (accepted / rejected-validation / rejected-scope / rejected-ratelimit) appended to NDJSON with clientId, scope, and effective mode; `GET /api/v1/command-audit` (admin scope) |
 | Trust proxy config | ⚠️ | `TRUST_PROXY` env supported; defaults to 1 hop with warning |
 | BYOK AI vault (AES-GCM 256) | ✅ | `apps/web/src/lib/ai-keys.ts` |
 | PII sanitization | ✅ | `@nexus-hems/shared-types/src/sanitize-text.ts` |

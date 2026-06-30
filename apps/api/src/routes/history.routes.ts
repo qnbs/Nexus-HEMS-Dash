@@ -13,6 +13,8 @@ import type { Request, Response, Router } from 'express';
 import { Router as createRouter } from 'express';
 import { z } from 'zod';
 import { logger } from '../core/logger.js';
+import { readRecentCommandAudit } from '../data/command-audit.js';
+import { requireJWT, requireScope } from '../middleware/auth.js';
 
 const MAX_POINTS = 1000;
 
@@ -116,6 +118,22 @@ export function createHistoryRoutes(): Router {
         source: 'unavailable',
       });
     }
+  });
+
+  // ---------------------------------------------------------------------------
+  // Command audit trail — GET /api/v1/command-audit?limit=
+  //
+  // Returns the most recent server-side hardware command audit entries
+  // (accepted + rejected). Admin scope required — the same sensitivity as the
+  // SET_GRID_LIMIT command itself.
+  // ---------------------------------------------------------------------------
+  router.get('/command-audit', requireJWT, requireScope('admin'), (req: Request, res: Response) => {
+    const rawLimit = Number(req.query.limit);
+    const limit = Number.isFinite(rawLimit)
+      ? Math.min(Math.max(Math.trunc(rawLimit), 1), 1000)
+      : 100;
+    const entries = readRecentCommandAudit(limit);
+    res.status(200).json({ entries, count: entries.length });
   });
 
   return router;

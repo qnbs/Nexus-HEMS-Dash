@@ -2036,6 +2036,16 @@ export const en = {
     degradedAdapters: 'System degraded',
     degradedAdaptersTitle: 'One or more adapters are degraded — click to view Monitoring',
   },
+  mode: {
+    simulationBadge: 'Simulation',
+    simulationTitle: 'Simulation mode — no real hardware is being controlled',
+    liveBadge: 'Live hardware',
+    liveBannerWarning: 'Live hardware — commands control real equipment',
+    settingsLabel: 'Adapter mode',
+    settingsSimulation: 'Simulation (mock data) — safe, no hardware is controlled',
+    settingsLive: 'Live hardware — controlling real equipment',
+    settingsUnknown: 'Unknown — backend health endpoint not reachable',
+  },
   safety: {
     emergencyStop: 'Emergency Stop — Shut down all devices immediately',
     emergencyStopShort: 'E-STOP',
@@ -2051,6 +2061,7 @@ export const en = {
     resetSystem: 'Reset system & restart',
     confirmCommandTitle: 'Confirm device command',
     executeCommand: 'Execute command',
+    liveHardwareWarning: 'This affects LIVE hardware — the command will control real equipment.',
     confirmBattery:
       'Battery control: set {{type}} to {{value}}. Incorrect values may damage the storage system.',
     confirmV2X:
