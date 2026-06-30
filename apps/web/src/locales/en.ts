@@ -1989,6 +1989,13 @@ export const en = {
     range24h: '24h',
     range7d: '7d',
     range30d: '30d',
+    dataTableCaption: 'Historical energy data, tabular view for screen readers',
+    colTime: 'Time',
+    colPvProduction: 'PV Production (W)',
+    colGridImport: 'Grid Import (W)',
+    colGridExport: 'Grid Export (W)',
+    colBatterySoC: 'Battery SoC (%)',
+    dataTableSummary: '{{count}} data points from {{from}} to {{to}}',
   },
   aiSettings: {
     title: 'AI Provider Keys',
