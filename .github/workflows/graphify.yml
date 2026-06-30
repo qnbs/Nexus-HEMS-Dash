@@ -61,8 +61,12 @@ jobs:
           gods = god_nodes(G)
           surprises = surprising_connections(G, communities)
 
-          # Generate report (graphifyy 0.9.2 signature: ..., token_cost, root)
-          report = generate(G, communities, {}, {}, gods, surprises, extraction, {}, '.')
+          # Generate report. graphifyy 0.9.2 signature:
+          #   generate(G, communities, cohesion_scores, community_labels,
+          #            god_node_list, surprise_list, detection_result, token_cost, root)
+          # detection_result must be the detect() output (has total_files / total_words /
+          # warning) — NOT the AST extraction dict, which lacks those keys.
+          report = generate(G, communities, {}, {}, gods, surprises, result, {}, '.')
           Path('graphify-out/GRAPH_REPORT.md').write_text(report)
           Path('graphify-out/graph.json').write_text(json.dumps({'nodes': extraction['nodes'], 'edges': extraction['edges']}, indent=2))
           Path('graphify-out/.graphify_analysis.json').write_text(json.dumps({
