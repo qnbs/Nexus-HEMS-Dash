@@ -598,11 +598,11 @@ Maintainability hotspot. Split into tab submodules per Perfection Roadmap 2.3.
 
 ### MED-17 — Performance Plan LTTB Scope Table Drift
 **File:** `docs/Performance-Optimization-Plan.md` (line 20 vs 156)
-**Status:** ⏳ Scheduled — Phase 0
+**Status:** ✅ Fixed (2026-06-30)
 
-Scope table says "not fully integrated"; P3 section says "Fully Implemented". Code confirms LTTB is wired.
+Scope table said "not fully integrated"; P3 section said "Fully Implemented". Code confirms LTTB is wired (`sampleIfNeeded` used in `HistoricalChart.tsx` + `HistoricalAnalyticsPage.tsx`).
 
-**Fix:** Update scope table to ✅ Implemented.
+**Fix:** Scope table updated to "Implemented & integrated". Also corrected `docs/Testing-Coverage-Strategy.md`, which mis-stated the enforced API coverage thresholds as 55/45/55/55 — the actual `apps/api/vitest.config.ts` gate is 33/30/38/33.
 
 ---
 
