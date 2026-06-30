@@ -16,12 +16,34 @@ const routes = [
 
 const NAVIGATION_TIMEOUT_MS = 15_000;
 const MAIN_HEADING_TIMEOUT_MS = 30_000;
+const THEME_APPLIED_TIMEOUT_MS = 15_000;
 
 async function gotoAndWait(page: import('@playwright/test').Page, path: string) {
   await page.goto(path, { waitUntil: 'domcontentloaded', timeout: NAVIGATION_TIMEOUT_MS });
   // Wait for the first real/skeleton h1 inside the main landmark.  The PageSkeleton
   // fallback injects an h1, so this resolves as soon as the app shell mounts.
   await page.waitForSelector('#main-content h1', { timeout: MAIN_HEADING_TIMEOUT_MS });
+  // Then wait for the theme to actually be applied to <html>.  App.tsx sets
+  // `documentElement.dataset.theme` in a useEffect that runs *after* the first paint,
+  // and the colour tokens (--color-text / --color-background) are scoped to the
+  // `[data-theme='…']` selectors in index.css.  Scanning before this effect runs
+  // catches a pre-theme paint where `bg-(--color-text)` buttons fall back to
+  // near-identical colours and trip a transient WCAG color-contrast violation.
+  // Gate axe on both the attribute *and* a resolved token value so the scan only
+  // ever runs against a fully themed page.
+  await page.waitForFunction(
+    () => {
+      const html = document.documentElement;
+      if (!html.dataset.theme) return false;
+      const styles = getComputedStyle(html);
+      return (
+        styles.getPropertyValue('--color-text').trim() !== '' &&
+        styles.getPropertyValue('--color-background').trim() !== ''
+      );
+    },
+    undefined,
+    { timeout: THEME_APPLIED_TIMEOUT_MS },
+  );
 }
 
 test.describe('WCAG 2.2 AA Accessibility', () => {
