@@ -170,6 +170,7 @@ The app has no onboarding gate — `AppShell` renders directly without any `iner
 - `requireJWT` protects all endpoints except `/api/health`
 - JWT utilities: `apps/api/src/jwt-utils.ts`
 - `ADAPTER_MODE=mock|live` controls mock vs live adapter data (default: `mock`; live requires `ALLOW_LIVE_HARDWARE=true`)
+- `READ_ONLY_MODE=true` (SAF-05) globally blocks **all** hardware control commands at both the API (WebSocket, `apps/api/src/ws/energy.ws.ts`) and frontend (`command-safety.ts`) levels, regardless of scope or adapter config — for certification-grade deployments, incident investigation, and commissioning. Helpers: `isReadOnlyMode()` (`apps/api/src/config/read-only-mode.ts`), `isReadOnlyModeActive()` (`apps/web/src/lib/adapter-mode.ts`). Blocked commands log the `rejected_readonly` audit outcome.
 - Production requires `JWT_SECRET`, `API_KEYS`, `WS_ORIGINS` env vars
 
 ### Backend Protocol Adapters
