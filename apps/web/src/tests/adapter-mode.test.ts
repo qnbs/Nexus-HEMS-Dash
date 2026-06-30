@@ -5,6 +5,7 @@ import {
   isBuiltinAdapterEnabledByDefault,
   isLiveHardwareBuildAllowed,
   isLiveSafetyMode,
+  isReadOnlyModeActive,
   resolveFrontendAdapterMode,
 } from '../lib/adapter-mode';
 
@@ -72,5 +73,14 @@ describe('fetchBackendAdapterMode', () => {
   it('returns unknown when the body has no recognised mode', async () => {
     mockFetch({ ok: true, body: { status: 'healthy' } });
     expect(await fetchBackendAdapterMode()).toBe('unknown');
+  });
+});
+
+describe('isReadOnlyModeActive', () => {
+  // Note: import.meta.env cannot be easily mocked in Vitest, so we test
+  // the function behavior indirectly through the module's actual env values
+  it('returns false in test environment (VITE_READ_ONLY_MODE not set)', () => {
+    // In test environment, VITE_READ_ONLY_MODE is typically undefined
+    expect(isReadOnlyModeActive()).toBe(false);
   });
 });

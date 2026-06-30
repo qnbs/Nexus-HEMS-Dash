@@ -25,7 +25,7 @@
 | Protocol | Frontend Adapter | Backend Adapter | Notes |
 | :------- | :--------------- | :-------------- | :---- |
 | Victron MQTT (Cerbo GX / Venus OS) | ✅ | ⚠️ | Browser adapter supports direct MQTT-over-WebSocket. Backend has generic MQTT adapter (`apps/api/src/protocols/mqtt/MqttAdapter.ts`) but no Victron-specialized parser yet. |
-| Modbus/SunSpec (103/124/201) | ✅ | ✅ | Backend `ModbusAdapter` reads device-map.json and polls registers. |
+| Modbus/SunSpec (103/124/201) | ✅ | ✅ | Backend `ModbusAdapter` reads device-map.json and polls registers; `GET /api/modbus/sunspec` + `POST /api/modbus/write` REST proxy (`routes/modbus.routes.ts`) serves the in-browser `ModbusSunSpecAdapter` as a mock SunSpec gateway (validated, audited writes; live register writes via an external bridge). |
 | KNX/IP floorplan | ✅ | ⏳ | Browser adapter exists; no backend KNX/IP adapter. |
 | OCPP 2.1 V2X (ISO 15118) | ✅ | ⏳ | Browser adapter implements JSON-RPC over WebSocket; no backend CSMS gateway. |
 | EEBUS SPINE/SHIP | ✅ | ⚠️ | Backend SHIP handshake service, trust store, and REST API exist (`apps/api/src/services/ShipHandshakeService.ts`, `routes/eebus.routes.ts`). Continuous SPINE data adapter is not yet implemented. |

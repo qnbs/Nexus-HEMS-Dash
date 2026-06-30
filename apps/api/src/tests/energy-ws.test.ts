@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import type { WebSocket } from 'ws';
+import { isReadOnlyMode } from '../config/read-only-mode.js';
 import { checkWsRateLimit, sanitizeOutgoingWsPayload } from '../ws/energy.ws.js';
 
 describe('sanitizeOutgoingWsPayload', () => {
@@ -61,5 +62,28 @@ describe('checkWsRateLimit', () => {
 
     // A new window should start and allow one more command
     expect(checkWsRateLimit(ws, limits)).toBe(true);
+  });
+});
+
+describe('isReadOnlyMode', () => {
+  const originalEnv = { ...process.env };
+
+  afterEach(() => {
+    process.env.READ_ONLY_MODE = originalEnv.READ_ONLY_MODE;
+  });
+
+  it('returns false when READ_ONLY_MODE is not set', () => {
+    delete process.env.READ_ONLY_MODE;
+    expect(isReadOnlyMode()).toBe(false);
+  });
+
+  it('returns true when READ_ONLY_MODE=true', () => {
+    process.env.READ_ONLY_MODE = 'true';
+    expect(isReadOnlyMode()).toBe(true);
+  });
+
+  it('returns false when READ_ONLY_MODE=false', () => {
+    process.env.READ_ONLY_MODE = 'false';
+    expect(isReadOnlyMode()).toBe(false);
   });
 });

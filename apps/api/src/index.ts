@@ -4,6 +4,7 @@ import express from 'express';
 import http from 'http';
 import { WebSocketServer } from 'ws';
 import { logAdapterModeStartup } from './config/adapter-mode.js';
+import { logReadOnlyModeStartup } from './config/read-only-mode.js';
 import { logTrustProxyWarning, resolveTrustProxy } from './config/trust-proxy.js';
 import { eventBus } from './core/EventBus.js';
 import { logger } from './core/logger.js';
@@ -21,6 +22,7 @@ import { createGrafanaRoutes } from './routes/grafana.routes.js';
 import { createHealthRoutes } from './routes/health.routes.js';
 import { createHistoryRoutes } from './routes/history.routes.js';
 import { createMetricsRoutes } from './routes/metrics.routes.js';
+import { createModbusRoutes } from './routes/modbus.routes.js';
 import { createOpenADRRoutes } from './routes/openadr.routes.js';
 import { createSharesRoutes } from './routes/shares.routes.js';
 import { EnergyRouterService } from './services/EnergyRouterService.js';
@@ -35,6 +37,7 @@ export async function startServer(): Promise<void> {
   // ─── JWT Key Initialization ───────────────────────────────────────
   initKeys();
   logAdapterModeStartup();
+  logReadOnlyModeStartup();
 
   // ─── Security Middleware ──────────────────────────────────────────
   configureCors(app);
@@ -76,6 +79,7 @@ export async function startServer(): Promise<void> {
   app.use(createMetricsRoutes(wss));
   app.use(createGrafanaRoutes());
   app.use(createHealthRoutes());
+  app.use(createModbusRoutes());
   app.use('/api/v1', createHistoryRoutes());
 
   // ─── WebSocket Handler ────────────────────────────────────────────

@@ -2092,6 +2092,7 @@ export const de = {
     validationFailed: 'Validierung fehlgeschlagen',
     rateLimitExceeded: 'Befehlsrate überschritten (max. 30/min)',
     circuitBreakerOpen: 'Schutzschalter offen — Adapter gesperrt',
+    readOnlyBlocked: 'System ist im Lese-Schreibschutz-Modus — Steuerbefehle sind deaktiviert',
     // Credential Vault
     vaultTitle: 'Credential-Tresor',
     vaultDesc: 'Verschlüsselte Speicherung für Adapter-Zugangsdaten (AES-GCM 256-Bit)',

@@ -2078,6 +2078,7 @@ export const en = {
     validationFailed: 'Validation failed',
     rateLimitExceeded: 'Command rate exceeded (max 30/min)',
     circuitBreakerOpen: 'Circuit breaker open — adapter locked',
+    readOnlyBlocked: 'System is in read-only mode — control commands are disabled',
     // Credential Vault
     vaultTitle: 'Credential Vault',
     vaultDesc: 'Encrypted storage for adapter credentials (AES-GCM 256-bit)',
