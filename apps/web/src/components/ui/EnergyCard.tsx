@@ -24,9 +24,9 @@ export interface EnergyCardProps {
 
 const variantAccent: Record<EnergyCardVariant, string> = {
   primary: 'hover:shadow-[0_0_0_1px_color-mix(in_srgb,var(--color-primary)_30%,transparent)]',
-  success: 'hover:shadow-[0_0_0_1px_rgba(16,185,129,0.3)]',
-  warning: 'hover:shadow-[0_0_0_1px_rgba(255,136,0,0.3)]',
-  danger: 'hover:shadow-[0_0_0_1px_rgba(239,68,68,0.3)]',
+  success: 'hover:shadow-[0_0_0_1px_var(--state-success-border)]',
+  warning: 'hover:shadow-[0_0_0_1px_var(--state-warning-border)]',
+  danger: 'hover:shadow-[0_0_0_1px_var(--state-danger-border)]',
   neutral: '',
 };
 

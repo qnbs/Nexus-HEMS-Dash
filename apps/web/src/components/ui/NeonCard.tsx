@@ -22,19 +22,19 @@ const variantStyles = {
     glow: 'shadow-[0_0_30px_rgba(34,255,136,0.3)]',
   },
   success: {
-    border: 'border-emerald-500/30',
-    bg: 'bg-emerald-500/5',
-    glow: 'shadow-[0_0_30px_rgba(16,185,129,0.3)]',
+    border: 'border-(--state-success-border)',
+    bg: 'bg-(--state-success-bg)/5',
+    glow: 'shadow-[0_0_30px_var(--state-success-border)]',
   },
   warning: {
-    border: 'border-orange-500/30',
-    bg: 'bg-orange-500/5',
-    glow: 'shadow-[0_0_30px_rgba(255,136,0,0.3)]',
+    border: 'border-(--state-warning-border)',
+    bg: 'bg-(--state-warning-bg)/5',
+    glow: 'shadow-[0_0_30px_var(--state-warning-border)]',
   },
   danger: {
-    border: 'border-red-500/30',
-    bg: 'bg-red-500/5',
-    glow: 'shadow-[0_0_30px_rgba(239,68,68,0.3)]',
+    border: 'border-(--state-danger-border)',
+    bg: 'bg-(--state-danger-bg)/5',
+    glow: 'shadow-[0_0_30px_var(--state-danger-border)]',
   },
 };
 
