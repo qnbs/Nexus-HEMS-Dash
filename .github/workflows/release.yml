@@ -57,11 +57,27 @@ jobs:
           GIT_COMMITTER_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
         run: pnpm release
 
-      - name: Release status
-        if: steps.semantic.outcome == 'failure'
+      # Honest reporting: semantic-release runs with continue-on-error so a failed
+      # push to the protected main branch does not hard-fail the workflow, but the
+      # outcome must not read as a successful release. Surface the real status.
+      # See docs/adr/ADR-015-release-automation.md.
+      - name: Release status summary
+        if: always()
         run: |
-          echo "::warning::Semantic Release failed — likely due to branch protection rules."
-          echo "To fix: create a GH_TOKEN (PAT) secret with 'repo' scope, or adjust branch protection to allow the GitHub Actions bot."
+          if [ "${{ steps.semantic.outputs.new_release_published }}" = "true" ]; then
+            echo "✅ Released v${{ steps.semantic.outputs.new_release_version }}" >> "$GITHUB_STEP_SUMMARY"
+          elif [ "${{ steps.semantic.outcome }}" = "failure" ]; then
+            echo "::warning::semantic-release failed — likely cannot push to the protected main branch."
+            {
+              echo "## ⚠️ Release did not run"
+              echo ""
+              echo "semantic-release failed — most likely it cannot push the release commit/tag to the protected \`main\` branch."
+              echo "Fix: add a \`GH_TOKEN\` PAT secret (repo scope) or a ruleset bypass for \`github-actions[bot]\`."
+              echo "Until then, cut releases manually per **docs/adr/ADR-015-release-automation.md**."
+            } >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "ℹ️ No release necessary (no release-worthy commits since the last tag)." >> "$GITHUB_STEP_SUMMARY"
+          fi
 
   # ─── Tauri Signed Desktop Binaries ─────────────────────────────
   tauri-release:
