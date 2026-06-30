@@ -58,7 +58,14 @@ jobs:
 
       - name: Gradle assembleDebug (build-check)
         working-directory: apps/web/android
-        run: ./gradlew assembleDebug --no-daemon --stacktrace
+        run: |
+          set -euo pipefail
+          # Capacitor 8's Android project targets Java 21; the runner default JDK is
+          # older. Use the JDK 21 preinstalled on ubuntu-latest.
+          export JAVA_HOME="${JAVA_HOME_21_X64:-$JAVA_HOME}"
+          export PATH="$JAVA_HOME/bin:$PATH"
+          echo "Using JAVA_HOME=$JAVA_HOME ($(java -version 2>&1 | head -1))"
+          ./gradlew assembleDebug --no-daemon --stacktrace
 
       - name: Summarize
         if: always()
