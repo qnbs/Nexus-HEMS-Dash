@@ -1,6 +1,8 @@
 import { sanitizeObjectStrings, WSCommandSchema } from '@nexus-hems/shared-types';
 import type { IncomingMessage } from 'http';
 import type { WebSocket, WebSocketServer } from 'ws';
+import { getEffectiveAdapterMode } from '../config/adapter-mode.js';
+import { type CommandOutcome, writeCommandAuditEntry } from '../data/command-audit.js';
 import { mockData, updateMockData } from '../data/mock-data.js';
 import { type AuthenticatedClient, authenticateWS, type JWTScope } from '../middleware/auth.js';
 import { setMetric, updateServerMetrics, wsMessageCount } from '../middleware/metrics.js';
@@ -34,6 +36,28 @@ const WS_MAX_CONNECTIONS_PER_IP = 10;
 function getWSClientIP(req: IncomingMessage): string {
   // Use the socket address (not x-forwarded-for, which can be spoofed)
   return req.socket.remoteAddress ?? 'unknown';
+}
+
+/** Audit a command outcome to the append-only NDJSON log. Never throws. */
+function auditCommand(
+  wsAuthMap: WeakMap<WebSocket, AuthenticatedClient>,
+  ws: WebSocket,
+  commandType: string,
+  value: number | string | boolean | null,
+  outcome: CommandOutcome,
+  reason?: string,
+): void {
+  const client = wsAuthMap.get(ws);
+  writeCommandAuditEntry({
+    ts: Date.now(),
+    clientId: client?.clientId ?? 'anonymous',
+    scope: client?.scope ?? 'read',
+    commandType,
+    value,
+    outcome,
+    reason,
+    mode: getEffectiveAdapterMode(),
+  });
 }
 
 export function setupWebSocket(wss: WebSocketServer): void {
@@ -155,6 +179,7 @@ export function setupWebSocket(wss: WebSocketServer): void {
     ws.on('message', (message) => {
       wsMessageCount.inbound++;
       if (!checkWsRateLimit(ws, wsRateLimits)) {
+        auditCommand(wsAuthMap, ws, 'unknown', null, 'rejected_ratelimit', 'rate limit exceeded');
         ws.send(
           JSON.stringify(
             sanitizeOutgoingWsPayload({
@@ -253,17 +278,32 @@ function handleWsCommand(
 ): void {
   const validation = validateWSCommand(parsed);
   if (!validation.valid) {
-    // Handle SUBSCRIBE separately — it's not in WSCommandSchema
+    // Handle SUBSCRIBE separately — it's not in WSCommandSchema (not audited as a command)
     if (parsed !== null && typeof parsed === 'object' && 'type' in parsed) {
       if (handleSubscribeCommand(ws, parsed as Record<string, unknown>, wsSubscriptions)) return;
     }
+    const attemptedType =
+      parsed !== null && typeof parsed === 'object' && 'type' in parsed
+        ? String((parsed as Record<string, unknown>).type)
+        : 'unknown';
+    auditCommand(wsAuthMap, ws, attemptedType, null, 'rejected_validation', validation.error);
     safeSend(ws, { type: 'ERROR', error: validation.error });
     return;
   }
 
   // CRIT-02: Enforce scope-based command authorization
   const cmd = parsed as { type: string; value?: number };
-  if (!checkScopeAuthorization(ws, cmd.type, wsAuthMap)) return;
+  if (!checkScopeAuthorization(ws, cmd.type, wsAuthMap)) {
+    auditCommand(
+      wsAuthMap,
+      ws,
+      cmd.type,
+      cmd.value ?? null,
+      'rejected_scope',
+      'insufficient scope',
+    );
+    return;
+  }
 
   if (cmd.type === 'SET_EV_POWER') {
     mockData.evPower = cmd.value ?? mockData.evPower;
@@ -272,6 +312,8 @@ function handleWsCommand(
   } else if (cmd.type === 'SET_BATTERY_POWER') {
     mockData.batteryPower = cmd.value ?? mockData.batteryPower;
   }
+
+  auditCommand(wsAuthMap, ws, cmd.type, cmd.value ?? null, 'accepted');
 
   // Broadcast update immediately
   mockData.gridPower =

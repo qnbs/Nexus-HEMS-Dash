@@ -31,3 +31,6 @@ chrome/
 # Graphify knowledge graph (auto-generated, AST-only, no API cost to rebuild)
 graphify-out/
 .codegraph/
+
+# Runtime audit logs (append-only NDJSON written by the API at runtime)
+apps/api/data/*.ndjson
