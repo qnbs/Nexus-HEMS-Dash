@@ -1,4 +1,4 @@
-<div align="center">
+ja<div align="center">
 
 # ⚡ Nexus-HEMS Dashboard
 
@@ -54,7 +54,7 @@ For verified roadmap status and completion boundaries, use these documents as th
 | **Plugin System**       | Adapter Registry with dynamic `import()` loading · npm-package format · `BaseAdapter` class for rapid development · Hot-loading from Settings UI                                                                                                                                                         |
 | **Platform**            | Unified Command Center (7 sections) · PWA offline-first (Workbox + IndexedDB) · 5 themes · Full i18n (DE/EN) · WCAG 2.2 AA · PDF reports + QR sharing · Prometheus monitoring                                                                                                                            |
 | **Security**            | BYOK AI vault (AES-GCM 256) · JWT WebSocket auth · Helmet CSP · Rate limiting · CORS · Zod schema validation                                                                                                                                                                                             |
-| **Desktop & Mobile**    | Tauri v2.2 (Windows/macOS/Linux) · Capacitor 7 (iOS/Android)                                                                                                                                                                                                                                             |
+| **Desktop & Mobile**    | Tauri v2 (Windows/macOS/Linux) · Capacitor 8 (iOS/Android)                                                                                                                                                                                                                                             |
 
 > **Protocol support truth:** The dashboard ships 13 frontend adapter modules that can run directly in the browser. The backend protocol layer (`apps/api/src/protocols/`) currently supports Modbus/SunSpec and generic MQTT only; the in-browser Modbus adapter reaches the backend through a SunSpec REST proxy (`GET /api/modbus/sunspec`, `POST /api/modbus/write`) that acts as a mock gateway out of the box, with live register writes delegated to an external SunSpec-REST bridge. See [FEATURE_STATUS.md](FEATURE_STATUS.md) for the full shipped-vs-planned matrix.
 
