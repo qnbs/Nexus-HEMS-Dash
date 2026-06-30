@@ -1,8 +1,10 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   canConnectHardwareAdapter,
+  fetchBackendAdapterMode,
   isBuiltinAdapterEnabledByDefault,
   isLiveHardwareBuildAllowed,
+  isLiveSafetyMode,
   resolveFrontendAdapterMode,
 } from '../lib/adapter-mode';
 
@@ -16,5 +18,59 @@ describe('adapter-mode (frontend)', () => {
   it('does not connect hardware without live build acknowledgement', () => {
     expect(canConnectHardwareAdapter(true)).toBe(false);
     expect(canConnectHardwareAdapter(false)).toBe(false);
+  });
+});
+
+describe('isLiveSafetyMode', () => {
+  // Build flag is unset in tests, so only an explicit backend 'live' is live.
+  it('treats only an explicit backend live mode as live', () => {
+    expect(isLiveSafetyMode('live')).toBe(true);
+    expect(isLiveSafetyMode('mock')).toBe(false);
+    expect(isLiveSafetyMode('unknown')).toBe(false);
+  });
+});
+
+describe('fetchBackendAdapterMode', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  function mockFetch(value: { ok: boolean; body: unknown } | Error): void {
+    if (value instanceof Error) {
+      vi.stubGlobal(
+        'fetch',
+        vi.fn(() => Promise.reject(value)),
+      );
+      return;
+    }
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() =>
+        Promise.resolve({
+          ok: value.ok,
+          json: () => Promise.resolve(value.body),
+        } as Response),
+      ),
+    );
+  }
+
+  it('returns the backend mock mode', async () => {
+    mockFetch({ ok: true, body: { mode: 'mock' } });
+    expect(await fetchBackendAdapterMode()).toBe('mock');
+  });
+
+  it('returns live even on a 503 degraded response (parses body, not status)', async () => {
+    mockFetch({ ok: false, body: { mode: 'live' } });
+    expect(await fetchBackendAdapterMode()).toBe('live');
+  });
+
+  it('returns unknown on a network error', async () => {
+    mockFetch(new Error('network down'));
+    expect(await fetchBackendAdapterMode()).toBe('unknown');
+  });
+
+  it('returns unknown when the body has no recognised mode', async () => {
+    mockFetch({ ok: true, body: { status: 'healthy' } });
+    expect(await fetchBackendAdapterMode()).toBe('unknown');
   });
 });

@@ -11,6 +11,7 @@ import {
   Download,
   Eye,
   EyeOff,
+  FlaskConical,
   Gauge,
   Globe,
   HardDrive,
@@ -46,6 +47,7 @@ import { ConfirmDialog, useConfirmDialog } from '../components/ConfirmDialog';
 import { EmergencyStop } from '../components/EmergencyStop';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { type ThemeName, themeDefinitions, themeOrder } from '../design-tokens';
+import { isLiveSafetyMode } from '../lib/adapter-mode';
 import { PAGE_REGISTRY, SETTINGS_TABS, type SettingsTabId } from '../lib/page-relations';
 import { usePWAInstall } from '../lib/pwa-install';
 import { resolveTheme, type ThemePreference } from '../lib/theme';
@@ -503,6 +505,7 @@ export function Settings() {
     setLocale,
     settings,
     updateSettings,
+    adapterMode,
   } = useAppStoreShallow((s) => ({
     theme: s.theme,
     themePreference: s.themePreference,
@@ -512,7 +515,10 @@ export function Settings() {
     setLocale: s.setLocale,
     settings: s.settings,
     updateSettings: s.updateSettings,
+    adapterMode: s.adapterMode,
   }));
+
+  const isLiveMode = isLiveSafetyMode(adapterMode);
 
   const handleThemeChange = (preference: ThemePreference) => {
     setThemePreference(preference);
@@ -3488,6 +3494,56 @@ export function Settings() {
                       <AlertTriangle size={20} className="text-rose-400" />
                       {t('settings.dangerZone', 'Danger Zone')}
                     </h2>
+
+                    {/* Adapter mode indicator */}
+                    <div
+                      className={`mb-4 flex items-start gap-3 rounded-xl border p-4 ${
+                        isLiveMode
+                          ? 'border-red-500/40 bg-red-500/10'
+                          : 'border-(--color-border) bg-(--color-surface-strong)'
+                      }`}
+                    >
+                      <div
+                        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
+                          isLiveMode ? 'bg-red-500/20' : 'bg-(--color-surface)'
+                        }`}
+                      >
+                        {isLiveMode ? (
+                          <AlertTriangle size={20} className="text-red-400" aria-hidden="true" />
+                        ) : (
+                          <FlaskConical
+                            size={20}
+                            className="text-(--color-muted)"
+                            aria-hidden="true"
+                          />
+                        )}
+                      </div>
+                      <div className="min-w-0">
+                        <p
+                          className={`font-medium text-sm ${
+                            isLiveMode ? 'text-red-400' : 'text-(--color-text)'
+                          }`}
+                        >
+                          {t('mode.settingsLabel', 'Adapter mode')}:{' '}
+                          {isLiveMode
+                            ? t('mode.liveBadge', 'Live hardware')
+                            : t('mode.simulationBadge', 'Simulation')}
+                        </p>
+                        <p className="mt-1 text-(--color-muted) text-xs">
+                          {isLiveMode
+                            ? t('mode.settingsLive', 'Live hardware — controlling real equipment')
+                            : adapterMode === 'unknown'
+                              ? t(
+                                  'mode.settingsUnknown',
+                                  'Unknown — backend health endpoint not reachable',
+                                )
+                              : t(
+                                  'mode.settingsSimulation',
+                                  'Simulation (mock data) — safe, no hardware is controlled',
+                                )}
+                        </p>
+                      </div>
+                    </div>
 
                     {/* Emergency Stop */}
                     <div className="mb-4 rounded-xl border border-red-500/30 bg-red-500/5 p-4">

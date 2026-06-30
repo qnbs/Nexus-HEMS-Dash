@@ -7,6 +7,13 @@ import type { ThemePreference } from './lib/theme';
 import type { EnergyData, FloorplanState, LocaleCode, StoredSettings } from './types';
 import { SYSTEM_PRESETS } from './types';
 
+/**
+ * Backend adapter mode reported by GET /api/health.
+ * 'unknown' until the first successful health fetch (e.g. static deploys with
+ * no backend stay 'unknown').
+ */
+export type BackendAdapterMode = 'mock' | 'live' | 'unknown';
+
 interface AppState {
   energyData: EnergyData;
   connected: boolean;
@@ -17,8 +24,11 @@ interface AppState {
   themeTransitionKey: number;
   floorplan: FloorplanState;
   settings: StoredSettings;
+  /** Effective backend hardware mode (runtime-only, never persisted). */
+  adapterMode: BackendAdapterMode;
   setEnergyData: (data: Partial<EnergyData>) => void;
   setConnected: (status: boolean) => void;
+  setAdapterMode: (mode: BackendAdapterMode) => void;
   setLocale: (locale: LocaleCode) => void;
   setTheme: (theme: ThemeName) => void;
   setThemePreference: (preference: ThemePreference) => void;
@@ -126,6 +136,7 @@ export const useAppStore = create<AppState>()(
         roomTemperature: 21.5,
       },
       settings: defaultSettings,
+      adapterMode: 'unknown' as BackendAdapterMode,
       setEnergyData: (data) =>
         set((state) => {
           // Skip update if all incoming values match current state
@@ -139,6 +150,8 @@ export const useAppStore = create<AppState>()(
         }),
       setConnected: (status) =>
         set((state) => (state.connected === status ? state : { connected: status })),
+      setAdapterMode: (mode) =>
+        set((state) => (state.adapterMode === mode ? state : { adapterMode: mode })),
       setLocale: (locale) => set({ locale }),
       setTheme: (theme) =>
         set((state) => ({ theme, themeTransitionKey: state.themeTransitionKey + 1 })),

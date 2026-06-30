@@ -48,3 +48,36 @@ export function canConnectHardwareAdapter(adapterEnabled: boolean): boolean {
   if (!adapterEnabled) return false;
   return isLiveHardwareBuildAllowed();
 }
+
+export type BackendAdapterMode = 'mock' | 'live' | 'unknown';
+
+/**
+ * Fetch the effective backend hardware mode from `GET /api/health`.
+ *
+ * Parses the `mode` field regardless of HTTP status — a live backend with no
+ * adapters configured returns 503 but is still `live`. Network/parse failures
+ * (e.g. static deploys with no backend) resolve to `unknown`.
+ */
+export async function fetchBackendAdapterMode(signal?: AbortSignal): Promise<BackendAdapterMode> {
+  try {
+    const res = await fetch('/api/health', {
+      signal: signal ?? null,
+      headers: { Accept: 'application/json' },
+    });
+    const data = (await res.json().catch(() => null)) as { mode?: unknown } | null;
+    if (data?.mode === 'live') return 'live';
+    if (data?.mode === 'mock') return 'mock';
+    return 'unknown';
+  } catch {
+    return 'unknown';
+  }
+}
+
+/**
+ * Whether the global safety indicator should treat the system as driving LIVE
+ * hardware. True when the backend reports `live` OR the frontend build itself
+ * permits hardware connections. Everything else (mock / unknown) is simulation.
+ */
+export function isLiveSafetyMode(backendMode: BackendAdapterMode): boolean {
+  return backendMode === 'live' || isLiveHardwareBuildAllowed();
+}

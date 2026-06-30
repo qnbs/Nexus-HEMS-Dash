@@ -18,6 +18,8 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ConfirmVariant } from '../components/ConfirmDialog';
 import { ConfirmDialog } from '../components/ConfirmDialog';
+import { isLiveSafetyMode } from '../lib/adapter-mode';
+import { useAppStore } from '../store';
 import type { AdapterCommand } from './adapters/EnergyAdapter';
 import {
   describeCommand,
@@ -66,6 +68,7 @@ async function executeCommand(
 
 export function useSafeCommand() {
   const { t } = useTranslation();
+  const isLive = isLiveSafetyMode(useAppStore((s) => s.adapterMode));
   const [state, setState] = useState<SafeCommandState>({ pending: false, lastError: null });
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pendingCommand, setPendingCommand] = useState<AdapterCommand | null>(null);
@@ -142,12 +145,28 @@ export function useSafeCommand() {
     ? t('safety.confirmCommandTitle', 'Gerätebefehl bestätigen')
     : '';
 
-  const dialogMessage = pendingCommand
+  const dialogBaseMessage = pendingCommand
     ? t(describeCommand(pendingCommand).labelKey, {
         type: pendingCommand.type,
         value: String(pendingCommand.value),
       })
     : '';
+
+  // In live mode, prepend an unmissable hardware warning to the confirmation.
+  const dialogMessage =
+    pendingCommand && isLive ? (
+      <div className="space-y-2">
+        <p>{dialogBaseMessage}</p>
+        <p className="font-bold text-red-400">
+          {t(
+            'safety.liveHardwareWarning',
+            'This affects LIVE hardware — the command will control real equipment.',
+          )}
+        </p>
+      </div>
+    ) : (
+      dialogBaseMessage
+    );
 
   /** Render this in your component tree to show the confirmation dialog */
   const ConfirmationDialog = () => (
