@@ -1,6 +1,12 @@
 name: Deploy
 
 on:
+  # Auto-deploy the live demo on every push to main. main only accepts
+  # green-CI PRs (branch ruleset), so a push here is already post-CI. The
+  # deploy job still needs a successful build (needs: build), so a broken
+  # build never publishes.
+  push:
+    branches: [main]
   workflow_dispatch:
     inputs:
       approveDeploy:
@@ -68,7 +74,10 @@ jobs:
           path: './apps/web/dist'
 
   deploy:
-    if: github.event_name == 'workflow_dispatch' && github.event.inputs.approveDeploy == 'DEPLOY'
+    # Auto-deploy on push to main; manual dispatch keeps the explicit DEPLOY gate.
+    if: >-
+      github.event_name == 'push' ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.approveDeploy == 'DEPLOY')
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
