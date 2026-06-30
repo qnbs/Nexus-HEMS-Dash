@@ -2,7 +2,12 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- viewport-fit=cover is required for env(safe-area-inset-*) to resolve in
+         installed/standalone PWAs (notch + home-indicator handling). -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
     <title>Nexus HEMS Dashboard</title>
     <meta
       name="description"
@@ -154,8 +159,11 @@
     <script type="module" src="/src/main.tsx"></script>
     <script nonce="__CSP_NONCE__">
       // Fallback: if app hasn't rendered after 5s (30s in E2E mode), show retry option
-      // This also works as recovery when React crashes or SW serves stale cache
-      var nexusRecoveryDelay = '__NEXUS_E2E_TESTING__' === 'true' ? 30000 : 5000;
+      // This also works as recovery when React crashes or SW serves stale cache.
+      // The placeholder is substituted at build time; assign first so the lint
+      // sees a variable comparison, not a constant literal-vs-literal condition.
+      var nexusE2eTesting = '__NEXUS_E2E_TESTING__';
+      var nexusRecoveryDelay = nexusE2eTesting === 'true' ? 30000 : 5000;
       setTimeout(() => {
         var root = document.getElementById('root');
         if (!root) return;
