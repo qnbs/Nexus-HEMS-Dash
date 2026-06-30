@@ -2,7 +2,17 @@
  * BYOK AI Settings Page — Manage encrypted API keys for multiple AI providers.
  */
 
-import { Check, Eye, EyeOff, Key, KeyRound, Shield, Sparkles, Trash2 } from 'lucide-react';
+import {
+  AlertTriangle,
+  Check,
+  Eye,
+  EyeOff,
+  Key,
+  KeyRound,
+  Shield,
+  Sparkles,
+  Trash2,
+} from 'lucide-react';
 import { motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -296,6 +306,29 @@ export default function AISettingsPage() {
               >
                 {t('aiSettings.cancel', 'Cancel')}
               </button>
+            </div>
+
+            {/* BYOK transparency warning — shown at the point of key entry */}
+            <div
+              className="flex items-start gap-3 rounded-xl border border-amber-500/40 bg-amber-500/10 p-3"
+              role="note"
+            >
+              <AlertTriangle
+                className="mt-0.5 h-5 w-5 shrink-0 text-amber-400"
+                aria-hidden="true"
+              />
+              <div className="text-(--color-muted) text-xs">
+                <p className="font-medium text-amber-400">
+                  {t('aiSettings.byokWarningTitle', 'Used directly from this browser')}
+                </p>
+                <p className="mt-1">
+                  {t('aiSettings.byokWarningDesc', {
+                    provider: AI_PROVIDERS[addingProvider].label,
+                    defaultValue:
+                      'This key is sent straight from your browser to {{provider}} and stored encrypted in this browser only — it never reaches our servers. Anyone with access to this device could use it. Never enter a key on a shared or untrusted device.',
+                  })}
+                </p>
+              </div>
             </div>
 
             {/* API Key Input */}

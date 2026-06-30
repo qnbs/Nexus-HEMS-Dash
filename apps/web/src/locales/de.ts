@@ -2009,6 +2009,9 @@ export const de = {
     securityTitle: 'Ende-zu-Ende verschlüsselt',
     securityDesc:
       'Schlüssel werden mit PBKDF2 + AES-GCM 256-Bit vor der Speicherung in IndexedDB verschlüsselt. Schlüssel werden niemals an unsere Server gesendet — nur direkt an den AI-Anbieter deiner Wahl.',
+    byokWarningTitle: 'Direkt aus diesem Browser verwendet',
+    byokWarningDesc:
+      'Dieser Schlüssel wird direkt aus deinem Browser an {{provider}} gesendet und ausschließlich verschlüsselt in diesem Browser gespeichert — er erreicht nie unsere Server. Jeder mit Zugriff auf dieses Gerät könnte ihn nutzen. Gib niemals einen Schlüssel auf einem gemeinsam genutzten oder nicht vertrauenswürdigen Gerät ein.',
     configured: 'Konfigurierte Anbieter',
     noKeys: 'Noch keine API-Schlüssel konfiguriert.',
     noKeysDesc: 'Füge unten einen Anbieter hinzu, um KI-gestützte Energieoptimierung zu starten.',

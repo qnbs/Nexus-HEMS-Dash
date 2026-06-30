@@ -1996,6 +1996,9 @@ export const en = {
     securityTitle: 'End-to-End Encrypted',
     securityDesc:
       'Keys are encrypted with PBKDF2 + AES-GCM 256-bit before storage in IndexedDB. Keys are never sent to our servers — only directly to the AI provider you choose.',
+    byokWarningTitle: 'Used directly from this browser',
+    byokWarningDesc:
+      'This key is sent straight from your browser to {{provider}} and stored encrypted in this browser only — it never reaches our servers. Anyone with access to this device could use it. Never enter a key on a shared or untrusted device.',
     configured: 'Configured Providers',
     noKeys: 'No API keys configured yet.',
     noKeysDesc: 'Add a provider below to get started with AI-powered energy optimization.',
