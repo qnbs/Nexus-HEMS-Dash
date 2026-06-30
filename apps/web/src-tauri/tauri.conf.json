@@ -10,7 +10,6 @@
     "frontendDist": "../dist"
   },
   "app": {
-    "title": "Nexus HEMS Dashboard",
     "windows": [
       {
         "title": "Nexus HEMS Dashboard",
