@@ -1996,6 +1996,9 @@ export const en = {
     securityTitle: 'End-to-End Encrypted',
     securityDesc:
       'Keys are encrypted with PBKDF2 + AES-GCM 256-bit before storage in IndexedDB. Keys are never sent to our servers — only directly to the AI provider you choose.',
+    byokWarningTitle: 'Used directly from this browser',
+    byokWarningDesc:
+      'This key is sent straight from your browser to {{provider}} and stored encrypted in this browser only — it never reaches our servers. Anyone with access to this device could use it. Never enter a key on a shared or untrusted device.',
     configured: 'Configured Providers',
     noKeys: 'No API keys configured yet.',
     noKeysDesc: 'Add a provider below to get started with AI-powered energy optimization.',
@@ -2036,6 +2039,16 @@ export const en = {
     degradedAdapters: 'System degraded',
     degradedAdaptersTitle: 'One or more adapters are degraded — click to view Monitoring',
   },
+  mode: {
+    simulationBadge: 'Simulation',
+    simulationTitle: 'Simulation mode — no real hardware is being controlled',
+    liveBadge: 'Live hardware',
+    liveBannerWarning: 'Live hardware — commands control real equipment',
+    settingsLabel: 'Adapter mode',
+    settingsSimulation: 'Simulation (mock data) — safe, no hardware is controlled',
+    settingsLive: 'Live hardware — controlling real equipment',
+    settingsUnknown: 'Unknown — backend health endpoint not reachable',
+  },
   safety: {
     emergencyStop: 'Emergency Stop — Shut down all devices immediately',
     emergencyStopShort: 'E-STOP',
@@ -2051,6 +2064,7 @@ export const en = {
     resetSystem: 'Reset system & restart',
     confirmCommandTitle: 'Confirm device command',
     executeCommand: 'Execute command',
+    liveHardwareWarning: 'This affects LIVE hardware — the command will control real equipment.',
     confirmBattery:
       'Battery control: set {{type}} to {{value}}. Incorrect values may damage the storage system.',
     confirmV2X:

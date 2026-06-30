@@ -12,6 +12,7 @@ import { PageSkeleton } from './components/ui/Skeleton';
 import { EnergyProvider } from './core/EnergyContext';
 import { useAdapterBridge } from './core/useEnergyStore';
 import { themeDefinitions } from './design-tokens';
+import { fetchBackendAdapterMode } from './lib/adapter-mode';
 import { backgroundSyncService } from './lib/background-sync';
 import { logError } from './lib/db';
 import { resolveTheme, watchSystemTheme } from './lib/theme';
@@ -87,6 +88,7 @@ export default function App() {
     compactMode,
     glowEffects,
     animations,
+    setAdapterMode,
   } = useAppStoreShallow((s) => ({
     theme: s.theme,
     locale: s.locale,
@@ -98,6 +100,7 @@ export default function App() {
     compactMode: s.settings.compactMode,
     glowEffects: s.settings.glowEffects,
     animations: s.settings.animations,
+    setAdapterMode: s.setAdapterMode,
   }));
 
   // Adapter bridge replaces the old useWebSocket hook
@@ -171,6 +174,14 @@ export default function App() {
 
     return unwatch;
   }, [themePreference, setTheme]);
+
+  // Resolve the backend hardware mode for the global safety indicator.
+  // Failures (e.g. static deploy with no backend) leave the mode 'unknown'.
+  useEffect(() => {
+    const controller = new AbortController();
+    void fetchBackendAdapterMode(controller.signal).then(setAdapterMode);
+    return () => controller.abort();
+  }, [setAdapterMode]);
 
   // Initialize background sync service
   useEffect(() => {

@@ -2009,6 +2009,9 @@ export const de = {
     securityTitle: 'Ende-zu-Ende verschlüsselt',
     securityDesc:
       'Schlüssel werden mit PBKDF2 + AES-GCM 256-Bit vor der Speicherung in IndexedDB verschlüsselt. Schlüssel werden niemals an unsere Server gesendet — nur direkt an den AI-Anbieter deiner Wahl.',
+    byokWarningTitle: 'Direkt aus diesem Browser verwendet',
+    byokWarningDesc:
+      'Dieser Schlüssel wird direkt aus deinem Browser an {{provider}} gesendet und ausschließlich verschlüsselt in diesem Browser gespeichert — er erreicht nie unsere Server. Jeder mit Zugriff auf dieses Gerät könnte ihn nutzen. Gib niemals einen Schlüssel auf einem gemeinsam genutzten oder nicht vertrauenswürdigen Gerät ein.',
     configured: 'Konfigurierte Anbieter',
     noKeys: 'Noch keine API-Schlüssel konfiguriert.',
     noKeysDesc: 'Füge unten einen Anbieter hinzu, um KI-gestützte Energieoptimierung zu starten.',
@@ -2049,6 +2052,16 @@ export const de = {
     degradedAdapters: 'System beeinträchtigt',
     degradedAdaptersTitle: 'Ein oder mehrere Adapter sind ausgefallen — zum Monitoring',
   },
+  mode: {
+    simulationBadge: 'Simulation',
+    simulationTitle: 'Simulationsmodus — es wird keine echte Hardware gesteuert',
+    liveBadge: 'Live-Hardware',
+    liveBannerWarning: 'Live-Hardware — Befehle steuern echte Geräte',
+    settingsLabel: 'Adapter-Modus',
+    settingsSimulation: 'Simulation (Mock-Daten) — sicher, keine Hardware-Steuerung',
+    settingsLive: 'Live-Hardware — echte Geräte werden gesteuert',
+    settingsUnknown: 'Unbekannt — Backend-Health-Endpunkt nicht erreichbar',
+  },
   safety: {
     emergencyStop: 'Notaus — Alle Geräte sofort abschalten',
     emergencyStopShort: 'NOTAUS',
@@ -2064,6 +2077,7 @@ export const de = {
     resetSystem: 'System zurücksetzen & neu starten',
     confirmCommandTitle: 'Gerätebefehl bestätigen',
     executeCommand: 'Befehl ausführen',
+    liveHardwareWarning: 'Dies betrifft LIVE-Hardware — der Befehl steuert echte Geräte.',
     confirmBattery:
       'Batterie-Steuerbefehl: {{type}} auf {{value}} setzen. Unsachgemäße Werte können den Speicher beschädigen.',
     confirmV2X: 'V2X-Entladung: {{type}} auf {{value}} W. Dies entlädt das Fahrzeug ins Hausnetz.',
