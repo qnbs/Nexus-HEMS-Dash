@@ -318,8 +318,8 @@ communities = cluster(G)
 gods = god_nodes(G)
 surprises = surprising_connections(G, communities)
 
-# Generate report
-report = generate(G, communities, {}, {}, gods, surprises, extraction)
+# Generate report (graphifyy 0.9.2 signature: ..., token_cost, root)
+report = generate(G, communities, {}, {}, gods, surprises, extraction, {}, '.')
 Path('graphify-out/GRAPH_REPORT.md').write_text(report)
 Path('graphify-out/graph.json').write_text(json.dumps({'nodes': extraction['nodes'], 'edges': extraction['edges']}, indent=2))
 print(f'Graph: {G.number_of_nodes()} nodes, {G.number_of_edges()} edges, {len(communities)} communities')
