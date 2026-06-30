@@ -202,3 +202,43 @@ export const contextualPanel = {
   maxWidthMobile: '100vw',
   blur: '64px',
 } as const;
+
+// ========== Foundation Scales (mirror the CSS custom properties in index.css) ==========
+// CSS variables in index.css are the source of truth for styling; these TS mirrors
+// exist for the rare cases that need the raw values in JS. Keep them in sync.
+
+/** Elevation / shadow scale — consolidates the previously inlined box-shadow patterns. */
+export const shadowScale = {
+  sm: '0 2px 6px rgba(0, 0, 0, 0.08)',
+  md: '0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08)',
+  lg: '0 12px 48px rgba(0, 0, 0, 0.18), 0 4px 12px rgba(0, 0, 0, 0.1)',
+  xl: '0 24px 64px rgba(0, 0, 0, 0.24), 0 8px 24px rgba(0, 0, 0, 0.12)',
+} as const;
+
+/** Border-radius scale. */
+export const radiusScale = {
+  xs: '0.375rem', // 6px
+  sm: '0.5rem', // 8px — tooltips, small badges
+  md: '0.75rem', // 12px
+  lg: '1rem', // 16px
+  xl: '1.5rem', // 24px — cards, panels, buttons
+  full: '9999px', // pills, badges
+} as const;
+
+/** Motion tokens — durations + easing curves for consistent transitions/animations. */
+export const motionTokens = {
+  duration: { fast: '0.15s', normal: '0.3s', slow: '0.6s' },
+  easing: {
+    standard: 'cubic-bezier(0.2, 0, 0, 1)',
+    decelerate: 'cubic-bezier(0, 0, 0.2, 1)',
+    accelerate: 'cubic-bezier(0.4, 0, 1, 1)',
+  },
+} as const;
+
+/**
+ * Semantic state / severity names. The colours live as `--state-{name}-{bg,fg,border}`
+ * CSS custom properties in index.css (tuned per dark/light theme, like `--badge-*`).
+ * Use via Tailwind arbitrary properties, e.g. `text-(--state-danger-fg)`.
+ */
+export const stateSeverities = ['danger', 'warning', 'success', 'info', 'live', 'offline'] as const;
+export type StateSeverity = (typeof stateSeverities)[number];

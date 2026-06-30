@@ -896,6 +896,13 @@ html.high-contrast {
   --color-muted: #c8d4e4;
   --color-surface: rgba(14, 22, 42, 0.92);
   --color-surface-strong: rgba(18, 28, 52, 0.96);
+  /* state borders become solid/prominent so tinted state areas stay visible */
+  --state-danger-border: rgba(248, 113, 113, 0.85);
+  --state-warning-border: rgba(252, 211, 77, 0.85);
+  --state-success-border: rgba(110, 231, 183, 0.85);
+  --state-info-border: rgba(125, 211, 252, 0.85);
+  --state-live-border: rgba(255, 255, 255, 0.85);
+  --state-offline-border: rgba(248, 113, 113, 0.85);
 }
 
 html.high-contrast [data-theme='solar-light'],
@@ -1059,6 +1066,53 @@ body {
   --badge-warn-fg: #fcd34d;
   --badge-danger-fg: #fca5a5;
   --badge-info-fg: #7dd3fc;
+
+  /* ===== Foundation scales (theme-independent; kept in :root rather than
+     @theme so Tailwind's built-in shadow and rounded utility scales are not
+     overridden). Use via arbitrary properties: shadow-(--shadow-md),
+     rounded-(--radius-xl), duration-(--duration-fast), ease-(--ease-standard). ===== */
+  --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 12px 48px rgba(0, 0, 0, 0.18), 0 4px 12px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 24px 64px rgba(0, 0, 0, 0.24), 0 8px 24px rgba(0, 0, 0, 0.12);
+
+  --radius-xs: 0.375rem;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-full: 9999px;
+
+  --duration-fast: 0.15s;
+  --duration-normal: 0.3s;
+  --duration-slow: 0.6s;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-decelerate: cubic-bezier(0, 0, 0.2, 1);
+  --ease-accelerate: cubic-bezier(0.4, 0, 1, 1);
+
+  /* ===== Semantic state / severity tokens (dark-theme defaults). Light
+     themes override only the *-fg below. -fg values are WCAG-tuned text/icon
+     colours (≥4.5:1; danger/live ≥7:1 on their surfaces); -bg are solid fills
+     used directly (banners) or with low opacity (/10–/20) for tinted areas. ===== */
+  --state-danger-fg: #fca5a5;
+  --state-danger-bg: #ef4444;
+  --state-danger-border: rgba(239, 68, 68, 0.4);
+  --state-warning-fg: #fcd34d;
+  --state-warning-bg: #f59e0b;
+  --state-warning-border: rgba(245, 158, 11, 0.4);
+  --state-success-fg: #6ee7b7;
+  --state-success-bg: #10b981;
+  --state-success-border: rgba(16, 185, 129, 0.4);
+  --state-info-fg: #7dd3fc;
+  --state-info-bg: #0ea5e9;
+  --state-info-border: rgba(14, 165, 233, 0.4);
+  /* live = real-hardware banner: white on deep red ≈ 7:1 (AAA) */
+  --state-live-fg: #ffffff;
+  --state-live-bg: #b91c1c;
+  --state-live-border: rgba(185, 28, 28, 0.6);
+  --state-offline-fg: #fca5a5;
+  --state-offline-bg: #dc2626;
+  --state-offline-border: rgba(220, 38, 38, 0.4);
 }
 
 /* CSS Variables per Theme (injected via JS) */
@@ -1098,6 +1152,12 @@ body {
   --badge-warn-fg: #b45309;
   --badge-danger-fg: #b91c1c;
   --badge-info-fg: #0369a1;
+  /* state text: dark hues for contrast on the light background */
+  --state-danger-fg: #b91c1c;
+  --state-warning-fg: #b45309;
+  --state-success-fg: #047857;
+  --state-info-fg: #0369a1;
+  --state-offline-fg: #b91c1c;
 }
 
 [data-theme='ocean-dark'] {
@@ -1154,6 +1214,12 @@ body {
   --badge-warn-fg: #b45309;
   --badge-danger-fg: #b91c1c;
   --badge-info-fg: #0369a1;
+  /* state text: dark hues for contrast on the white background */
+  --state-danger-fg: #b91c1c;
+  --state-warning-fg: #b45309;
+  --state-success-fg: #047857;
+  --state-info-fg: #0369a1;
+  --state-offline-fg: #b91c1c;
 }
 
 /* Animations */
