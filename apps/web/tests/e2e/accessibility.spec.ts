@@ -59,8 +59,23 @@ test.describe('WCAG 2.2 AA Accessibility', () => {
 
       const accessibilityScanResults = await new AxeBuilder({ page })
         .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
-        .disableRules(['target-size'])
         .analyze();
+
+      // Surface exact selectors/sizes in CI logs when something fails, so
+      // target-size (and any other) violations are actionable without a rerun.
+      if (accessibilityScanResults.violations.length > 0) {
+        console.warn(
+          `[a11y] ${route.name} violations:\n${JSON.stringify(
+            accessibilityScanResults.violations.map((v) => ({
+              id: v.id,
+              impact: v.impact,
+              nodes: v.nodes.map((n) => ({ target: n.target, html: n.html.slice(0, 140) })),
+            })),
+            null,
+            2,
+          )}`,
+        );
+      }
 
       expect(accessibilityScanResults.violations).toEqual([]);
     });
