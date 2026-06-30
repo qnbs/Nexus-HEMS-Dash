@@ -12,9 +12,10 @@ import {
   Zap,
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useFocusTrap } from '../../lib/useFocusTrap';
 
 interface NavItem {
   id: string;
@@ -28,39 +29,11 @@ function MobileNavigationComponent() {
   const location = useLocation();
   const navigate = useNavigate();
   const [moreOpen, setMoreOpen] = useState(false);
-  const moreSheetRef = useRef<HTMLDivElement>(null);
-  const moreButtonRef = useRef<HTMLButtonElement>(null);
-
-  // Focus trap for the more sheet
-  useEffect(() => {
-    if (!moreOpen) {
-      moreButtonRef.current?.focus();
-      return;
-    }
-    const sheet = moreSheetRef.current;
-    if (!sheet) return;
-    const closeBtn = sheet.querySelector<HTMLElement>('[aria-label]');
-    closeBtn?.focus();
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setMoreOpen(false);
-        return;
-      }
-      if (e.key !== 'Tab') return;
-      const focusable = sheet.querySelectorAll<HTMLElement>('button:not([disabled])');
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      if (e.shiftKey && document.activeElement === first) {
-        e.preventDefault();
-        last.focus();
-      } else if (!e.shiftKey && document.activeElement === last) {
-        e.preventDefault();
-        first.focus();
-      }
-    };
-    sheet.addEventListener('keydown', handleKeyDown);
-    return () => sheet.removeEventListener('keydown', handleKeyDown);
-  }, [moreOpen]);
+  // Trap focus within the "more" sheet while open; the hook saves and restores
+  // focus to the triggering button and closes on Escape.
+  const moreSheetRef = useFocusTrap<HTMLDivElement>(moreOpen, {
+    onEscape: () => setMoreOpen(false),
+  });
 
   const primaryItems: NavItem[] = [
     {
@@ -230,7 +203,6 @@ function MobileNavigationComponent() {
           {/* More button */}
           <button
             type="button"
-            ref={moreButtonRef}
             onClick={() => setMoreOpen(!moreOpen)}
             className={`focus-ring relative flex flex-col items-center gap-0.5 rounded-xl px-3 py-1 transition-colors active:scale-95 ${
               moreOpen || isMorePageActive ? 'text-(--color-primary)' : 'text-(--color-muted)'
