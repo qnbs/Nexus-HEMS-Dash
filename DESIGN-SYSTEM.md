@@ -16,6 +16,46 @@
 - `polar-mist`: `#eaf7ff` (Light mode backgrounds)
 - `solar-sand`: `#fff3dc` (Light mode surfaces)
 
+### Semantic State / Severity Tokens
+
+For status, validation, alert and safety surfaces — **always prefer these over raw
+`red/amber/emerald` Tailwind utilities** so colours stay theme-aware and meet WCAG
+contrast. Defined as CSS custom properties in `index.css` (`:root` dark defaults; the
+two light themes override the `*-fg`), and mirrored as `stateSeverities` in
+`design-tokens.ts`. Severities: `danger`, `warning`, `success`, `info`, `live`, `offline`.
+
+Each severity exposes four roles:
+
+| Role | CSS var | Use |
+| :--- | :--- | :--- |
+| `-fg` | `--state-danger-fg` | text/icon on a **neutral** surface or a low-opacity tint (theme-tuned; ≥4.5:1) |
+| `-on` | `--state-danger-on` | text/icon on the **solid** `-bg` (buttons/banners; danger/live ≥6:1) |
+| `-bg` | `--state-danger-bg` | solid action/fill colour, or a tint via `/10`–`/20` opacity |
+| `-border` | `--state-danger-border` | accent border for tinted areas (strengthened under `high-contrast`) |
+
+```tsx
+// tinted status badge
+<span className="border border-(--state-success-border) bg-(--state-success-bg)/10 text-(--state-success-fg)">OK</span>
+// solid action button
+<button className="bg-(--state-danger-bg) text-(--state-danger-on) hover:opacity-90">Delete</button>
+```
+
+> The older `--badge-{ok,warn,danger,info}-fg` tokens are the `-fg` ancestors of this
+> family and remain valid. `EmergencyStop` deliberately keeps its own deep-red ramp
+> (it must read unmistakably red in every theme).
+
+### Foundation Scales (`index.css :root`)
+
+Theme-independent scales — kept out of Tailwind's `@theme` so they don't override the
+built-in `shadow-*` / `rounded-*` utilities. Use via arbitrary properties.
+
+| Family | Tokens | Example |
+| :--- | :--- | :--- |
+| Elevation | `--shadow-sm` · `--shadow-md` · `--shadow-lg` · `--shadow-xl` | `shadow-(--shadow-md)` |
+| Radius | `--radius-xs` (6px) · `sm` (8px) · `md` (12px) · `lg` (16px) · `xl` (24px) · `full` | `rounded-(--radius-xl)` |
+| Motion duration | `--duration-fast` (.15s) · `--duration-normal` (.3s) · `--duration-slow` (.6s) | `duration-(--duration-fast)` |
+| Motion easing | `--ease-standard` · `--ease-decelerate` · `--ease-accelerate` | `ease-(--ease-standard)` |
+
 ## Utility Classes
 
 ### Glassmorphism
