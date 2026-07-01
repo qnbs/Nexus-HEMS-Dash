@@ -288,7 +288,7 @@ Changed to `process.env.JWT_SECRET_FILE ?? '/run/secrets/jwt_secret'`.
 
 Current thresholds:
 
-- Web: statements 70%, branches 63%, functions 57%, lines 70% (functions ~58% measured)
+- Web: statements 70%, branches 63%, functions 58%, lines 70% (functions ~59% measured)
 - API: statements 55%, branches 45%, functions 55%, lines 55%
 
 Target: 70%+ for all metrics.

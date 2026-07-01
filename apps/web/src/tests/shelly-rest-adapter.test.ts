@@ -279,3 +279,126 @@ describe('ShellyRESTAdapter — Multi-Device Configuration', () => {
     adapter.destroy();
   });
 });
+
+describe('ShellyRESTAdapter — poll() aggregation', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.useRealTimers();
+  });
+
+  it('aggregates grid and load power across EM and plug devices', async () => {
+    mockFetch = vi.fn().mockImplementation(async (url: string) => {
+      const body = String(url).includes('office-plug') ? SHELLY_PLUG_STATUS : SHELLY_EM_STATUS;
+      return { ok: true, json: async () => body, status: 200 };
+    });
+    vi.stubGlobal('fetch', mockFetch);
+
+    const adapter = new ShellyRESTAdapter({
+      devices: [
+        { host: 'grid-em.local', name: 'Grid', type: 'em' },
+        { host: 'office-plug.local', name: 'Office', type: 'plug' },
+      ],
+      pollIntervalMs: 60_000,
+    });
+
+    await adapter.connect();
+    const model = await adapter.poll();
+
+    expect(model.grid?.powerW).toBe(2600);
+    expect(model.load?.totalPowerW).toBeGreaterThan(0);
+    expect(model.grid?.energyImportKWh).toBeCloseTo(35.2, 1);
+    adapter.destroy();
+  });
+
+  it('sends digest auth header when devicePassword is configured', async () => {
+    setupFetchMock(SHELLY_EM_STATUS);
+    const adapter = new ShellyRESTAdapter({
+      devices: [{ host: 'secure-shelly.local', name: 'Secure', type: 'em' }],
+      devicePassword: 'shelly-secret',
+      pollIntervalMs: 60_000,
+    });
+
+    await adapter.connect();
+    const [, init] = mockFetch.mock.calls[0] as [string, RequestInit];
+    expect(init.headers).toMatchObject({
+      Authorization: `Basic ${btoa('admin:shelly-secret')}`,
+    });
+    adapter.destroy();
+  });
+
+  it('uses HTTPS when tls is enabled', async () => {
+    setupFetchMock(SHELLY_EM_STATUS);
+    const adapter = new ShellyRESTAdapter({
+      tls: true,
+      devices: [{ host: 'tls-shelly.local', name: 'TLS', type: 'em' }],
+      pollIntervalMs: 60_000,
+    });
+
+    await adapter.connect();
+    expect(String(mockFetch.mock.calls[0]?.[0])).toMatch(/^https:\/\//);
+    adapter.destroy();
+  });
+});
+
+describe('ShellyRESTAdapter — KNX_TOGGLE_LIGHTS command', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('posts Switch.Set when connected with a target device', async () => {
+    mockFetch = vi
+      .fn()
+      .mockResolvedValueOnce({ ok: true, json: async () => SHELLY_PLUG_STATUS, status: 200 })
+      .mockResolvedValue({ ok: true, json: async () => ({ was_on: true }), status: 200 });
+    vi.stubGlobal('fetch', mockFetch);
+
+    const adapter = new ShellyRESTAdapter({
+      devices: [{ host: 'shellyplug.local', name: 'Plug', type: 'plug' }],
+      pollIntervalMs: 60_000,
+    });
+
+    await adapter.connect();
+    const result = await adapter.sendCommand({
+      type: 'KNX_TOGGLE_LIGHTS',
+      targetDeviceId: 'shellyplug.local',
+      value: true,
+    });
+
+    expect(result).toBe(true);
+    const relayCall = mockFetch.mock.calls.find((call) =>
+      String(call[0]).includes('/rpc/Switch.Set'),
+    );
+    expect(relayCall?.[1]).toMatchObject({
+      method: 'POST',
+      body: JSON.stringify({ id: 0, on: true }),
+    });
+    adapter.destroy();
+  });
+
+  it('returns false when targetDeviceId is missing', async () => {
+    setupFetchMock(SHELLY_PLUG_STATUS);
+    const adapter = new ShellyRESTAdapter({
+      devices: [{ host: 'shellyplug.local', name: 'Plug', type: 'plug' }],
+    });
+    await adapter.connect();
+    const result = await adapter.sendCommand({ type: 'KNX_TOGGLE_LIGHTS', value: true });
+    expect(result).toBe(false);
+    adapter.destroy();
+  });
+});
+
+describe('ShellyRESTAdapter — register()', () => {
+  it('registers the shelly-rest factory in the adapter registry', async () => {
+    const { getRegisteredAdapter, unregisterAdapter } = await import(
+      '../core/adapters/adapter-registry'
+    );
+    const { register } = await import('../core/adapters/contrib/shelly-rest');
+
+    register();
+    const entry = getRegisteredAdapter('shelly-rest');
+    expect(entry?.source).toBe('contrib');
+    expect(entry?.displayName).toBe('Shelly REST');
+
+    unregisterAdapter('shelly-rest');
+  });
+});

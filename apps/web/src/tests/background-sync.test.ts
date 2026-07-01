@@ -17,18 +17,35 @@ vi.mock('../lib/db', () => ({
 
 import { backgroundSyncService } from '../lib/background-sync';
 
+type PendingAction = {
+  id: number;
+  type: string;
+  payload: Record<string, unknown>;
+  timestamp: number;
+  retries: number;
+  status: string;
+  idempotencyKey?: string;
+  retryCount?: number;
+};
+
 describe('BackgroundSyncService', () => {
+  let onlineHandler: (() => void) | null = null;
+
   beforeEach(() => {
+    backgroundSyncService.destroy();
     vi.useFakeTimers({ shouldAdvanceTime: true });
     Object.defineProperty(navigator, 'onLine', { value: true, writable: true, configurable: true });
     getAuthHeader.mockReset();
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{}', { status: 200 })));
+    onlineHandler = null;
     vi.stubGlobal('window', {
       location: { origin: 'http://localhost:5173' },
-      addEventListener: vi.fn(),
+      addEventListener: vi.fn((event: string, handler: () => void) => {
+        if (event === 'online') onlineHandler = handler;
+      }),
       removeEventListener: vi.fn(),
-      setInterval: vi.fn(),
-      clearInterval: vi.fn(),
+      setInterval: vi.fn((handler: () => void, ms: number) => setInterval(handler, ms)),
+      clearInterval: vi.fn((id: number) => clearInterval(id)),
     });
   });
 
@@ -118,5 +135,162 @@ describe('BackgroundSyncService', () => {
       'failed',
       expect.stringMatching(/No auth token available/i),
     );
+  });
+
+  it('getSyncStatus reports pending count and online state', async () => {
+    const { getPendingActions } = await import('../lib/db');
+    (getPendingActions as ReturnType<typeof vi.fn>).mockResolvedValueOnce([
+      {
+        id: 10,
+        type: 'settings',
+        payload: {},
+        timestamp: Date.now(),
+        retries: 0,
+        status: 'pending',
+      },
+    ]);
+
+    const status = await backgroundSyncService.getSyncStatus();
+
+    expect(status.pendingCount).toBe(1);
+    expect(status.isOnline).toBe(true);
+    expect(status.isSyncing).toBe(false);
+  });
+
+  it('syncs ev-control, hp-control, settings, and ai-optimize actions', async () => {
+    getAuthHeader.mockReturnValue({ Authorization: 'Bearer sync-jwt' });
+    const { getPendingActions, updateActionStatus } = await import('../lib/db');
+
+    const actions: PendingAction[] = [
+      {
+        id: 11,
+        type: 'ev-control',
+        payload: { currentA: 16 },
+        timestamp: Date.now(),
+        retries: 0,
+        status: 'pending',
+      },
+      {
+        id: 12,
+        type: 'hp-control',
+        payload: { mode: 'heat' },
+        timestamp: Date.now(),
+        retries: 0,
+        status: 'pending',
+      },
+      {
+        id: 13,
+        type: 'settings',
+        payload: { theme: 'dark' },
+        timestamp: Date.now(),
+        retries: 0,
+        status: 'pending',
+      },
+      {
+        id: 14,
+        type: 'ai-optimize',
+        payload: { horizonH: 24 },
+        timestamp: Date.now(),
+        retries: 0,
+        status: 'pending',
+      },
+    ];
+
+    (getPendingActions as ReturnType<typeof vi.fn>).mockResolvedValueOnce(actions);
+
+    await backgroundSyncService.syncPendingActions();
+
+    expect(fetch).toHaveBeenCalledWith(
+      'http://localhost:5173/api/ev/control',
+      expect.objectContaining({ method: 'POST' }),
+    );
+    expect(fetch).toHaveBeenCalledWith(
+      'http://localhost:5173/api/heatpump/control',
+      expect.objectContaining({ method: 'POST' }),
+    );
+    expect(fetch).toHaveBeenCalledWith(
+      'http://localhost:5173/api/settings',
+      expect.objectContaining({ method: 'PUT' }),
+    );
+    expect(fetch).toHaveBeenCalledWith(
+      'http://localhost:5173/api/ai/optimize',
+      expect.objectContaining({ method: 'POST' }),
+    );
+    expect(updateActionStatus).toHaveBeenCalledWith(11, 'completed');
+    expect(updateActionStatus).toHaveBeenCalledWith(14, 'completed');
+  });
+
+  it('marks unknown action types as failed', async () => {
+    getAuthHeader.mockReturnValue({ Authorization: 'Bearer sync-jwt' });
+    const { getPendingActions, updateActionStatus } = await import('../lib/db');
+    (getPendingActions as ReturnType<typeof vi.fn>).mockResolvedValueOnce([
+      {
+        id: 15,
+        type: 'unsupported-action',
+        payload: {},
+        timestamp: Date.now(),
+        retries: 0,
+        status: 'pending',
+      },
+    ]);
+
+    await backgroundSyncService.syncPendingActions();
+
+    expect(updateActionStatus).toHaveBeenCalledWith(
+      15,
+      'failed',
+      expect.stringMatching(/Unknown action type/i),
+    );
+  });
+
+  it('marks actions failed when max retries are exceeded', async () => {
+    const { getPendingActions, updateActionStatus } = await import('../lib/db');
+    (getPendingActions as ReturnType<typeof vi.fn>).mockResolvedValueOnce([
+      {
+        id: 16,
+        type: 'battery-control',
+        payload: { powerW: 1000 },
+        timestamp: Date.now(),
+        retries: 5,
+        status: 'pending',
+        retryCount: 5,
+      },
+    ]);
+
+    await backgroundSyncService.syncPendingActions();
+
+    expect(fetch).not.toHaveBeenCalled();
+    expect(updateActionStatus).toHaveBeenCalledWith(16, 'failed', 'Max retries exceeded');
+  });
+
+  it('skips sync when already syncing', async () => {
+    getAuthHeader.mockReturnValue({ Authorization: 'Bearer sync-jwt' });
+    const { getPendingActions } = await import('../lib/db');
+    let fetchCalls = 0;
+    (getPendingActions as ReturnType<typeof vi.fn>).mockImplementation(() => {
+      fetchCalls += 1;
+      if (fetchCalls === 1) {
+        return new Promise(() => {
+          /* keep isSyncing true */
+        });
+      }
+      return Promise.resolve([]);
+    });
+
+    void backgroundSyncService.syncPendingActions();
+    await backgroundSyncService.syncPendingActions();
+
+    expect(fetchCalls).toBe(1);
+  });
+
+  it('registers an online listener that triggers sync', () => {
+    const syncSpy = vi.spyOn(backgroundSyncService, 'syncPendingActions').mockResolvedValue();
+    backgroundSyncService.init();
+
+    expect(onlineHandler).toBeTypeOf('function');
+    onlineHandler?.();
+
+    expect(syncSpy).toHaveBeenCalled();
+    syncSpy.mockRestore();
   });
 });
