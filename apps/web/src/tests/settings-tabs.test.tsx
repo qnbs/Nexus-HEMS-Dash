@@ -1,6 +1,7 @@
 import type { ReactElement } from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { AdvancedTab } from '../components/settings/AdvancedTab';
 import { AppearanceTab } from '../components/settings/AppearanceTab';
 import { ControllersTab } from '../components/settings/ControllersTab';
 import { EnergyTab } from '../components/settings/EnergyTab';
@@ -31,6 +32,12 @@ vi.mock('../components/ApiAuthSettingsSection', () => ({
 }));
 vi.mock('../components/LanguageSwitcher', () => ({
   LanguageSwitcher: () => null,
+}));
+vi.mock('../components/settings/PWASettingsSection', () => ({
+  PWASettingsSection: () => null,
+}));
+vi.mock('../components/EmergencyStop', () => ({
+  EmergencyStop: () => null,
 }));
 
 const mockUpdateSettings = vi.fn();
@@ -98,9 +105,18 @@ const mockSettings = {
     heatPump: {},
     inverter: {},
   },
+  // Advanced tab
+  dashboardRefreshSec: 5,
+  autoBackup: false,
+  debugMode: false,
+  performanceMode: false,
+  experimentalFeatures: false,
+  keyboardShortcuts: true,
+  sidebarPosition: 'left',
 };
 
 vi.mock('../store', () => ({
+  defaultSettings: {},
   useAppStoreShallow: (selector: (s: Record<string, unknown>) => unknown) =>
     selector({
       settings: mockSettings,
@@ -233,6 +249,20 @@ describe('EnergyTab', () => {
     const select = container.querySelector('#settings-tariff') as HTMLSelectElement;
     fireEvent.change(select, { target: { value: 'tibber' } });
     expect(mockUpdateSettings).toHaveBeenCalledWith({ tariffProvider: 'tibber' });
+  });
+});
+
+describe('AdvancedTab', () => {
+  it('mounts without crashing (mock adapter mode → not live)', () => {
+    const { container } = renderTab(<AdvancedTab />);
+    expect(container.firstChild).toBeTruthy();
+  });
+
+  it('writes the debug-mode toggle back to the store', () => {
+    const { container } = renderTab(<AdvancedTab />);
+    const debug = container.querySelector('#debug') as HTMLInputElement;
+    fireEvent.click(debug);
+    expect(mockUpdateSettings).toHaveBeenCalledWith({ debugMode: true });
   });
 });
 
