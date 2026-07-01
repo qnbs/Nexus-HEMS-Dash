@@ -191,15 +191,16 @@ gantt
 
 ### Milestone 2.3 — Architecture refinements
 
-| Task | Rationale |
-|------|-----------|
-| Split `Settings.tsx` into tab modules | ARCH-01 |
-| Add `targetAdapterId` to `sendAdapterCommand` | ARCH-03 |
-| Register Evcc/OpenEMS in builtin registry or mark `@experimental` | ARCH-04 |
-| Introduce `useDeviceStore` for per-device state | PERF-05 |
-| Move MPC to `ai-worker.ts` | PERF-03 |
+| Task | Rationale | Status |
+|------|-----------|--------|
+| Split `Settings.tsx` into tab modules | ARCH-01 / MED-16 | ✅ Done — 3,663 → 512 LOC; 10 tabs in `components/settings/*`; 21 unit tests |
+| Wire adapter Web-Worker (`useAdapterWorker`) | MED-12 | 🔶 Infra ready; activation safety-gated (see debt registry); SSRF normalization unit-tested |
+| Add `targetAdapterId` to `sendAdapterCommand` | ARCH-03 | ⏳ Backlog |
+| Register Evcc/OpenEMS in builtin registry or mark `@experimental` | ARCH-04 | ⏳ Backlog |
+| Introduce `useDeviceStore` for per-device state | PERF-05 | ⏳ Backlog |
+| Move MPC to `ai-worker.ts` | PERF-03 | ⏳ Backlog |
 
-**Success criteria:** Settings.tsx < 800 lines per module; device list supports 50+ entries without UI jank.
+**Success criteria:** Settings.tsx < 800 lines per module ✅ (nav shell 512 LOC, no tab module > ~950 LOC and dropping); device list supports 50+ entries without UI jank.
 
 ---
 
@@ -326,7 +327,8 @@ Consider adding: `audit`, `safety`, `perf-probe`, `supply-chain` — audit `git 
 - **Security planning:** `docs/Security-Roadmap-2026.md`
 - **Performance planning:** `docs/Performance-Optimization-Plan.md`
 - **Historical roadmap:** `docs/Master-Improvement-Roadmap.md`
+- **Knowledge-graph practice:** `docs/adr/ADR-017-knowledge-graph-self-reflection.md` — Graphify (`graphify-out/`, `graphify.yml`) + Codegraph MCP are a standing self-reflection layer for architecture/control-path/blast-radius review; artifacts committed, cache git-ignored.
 
 ---
 
-*Last updated: 2026-06-29 · Next review: end of Phase 0 (target 2026-07-02)*
+*Last updated: 2026-07-01 · Next review: end of Phase 0 (target 2026-07-02)*
