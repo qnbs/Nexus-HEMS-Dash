@@ -1,3 +1,4 @@
+import { MotionConfig } from 'motion/react';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
@@ -24,7 +25,15 @@ if ('serviceWorker' in navigator && !import.meta.env.VITE_E2E_TESTING) {
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryProvider>
-      <App />
+      {/* Under E2E, skip all framer-motion animations so values snap to their final
+          state instantly. Entrance opacity/spring fades otherwise race the axe scan
+          and trip transient color-contrast violations (spring animations are JS-driven
+          and invisible to `document.getAnimations()`, so the test-side settle can't
+          catch them). `skipAnimations` is framer's documented E2E switch; gated on
+          VITE_E2E_TESTING → zero production impact. */}
+      <MotionConfig skipAnimations={import.meta.env.VITE_E2E_TESTING === 'true'}>
+        <App />
+      </MotionConfig>
     </QueryProvider>
   </StrictMode>,
 );
