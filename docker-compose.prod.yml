@@ -78,6 +78,7 @@ services:
       AWATTAR_BASE_URL: ${AWATTAR_BASE_URL:-https://api.awattar.de/v1}
       MQTT_BROKER_URL: ${MQTT_BROKER_URL:-}
       RATE_LIMIT_TRUSTED_IPS: ${RATE_LIMIT_TRUSTED_IPS:-}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
     volumes:
       - api_data:/app/apps/api/data
     read_only: true
@@ -103,6 +104,37 @@ services:
       options:
         max-size: "20m"
         max-file: "5"
+    networks:
+      - backend
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # redis — HA session state (WS tickets, dashboard shares, JTI revocation)
+  # Optional for single-replica; recommended for multi-instance API deployments.
+  # ─────────────────────────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ['redis-server', '--save', '', '--appendonly', 'no']
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+    logging:
+      driver: json-file
+      options:
+        max-size: '10m'
+        max-file: '3'
     networks:
       - backend
 

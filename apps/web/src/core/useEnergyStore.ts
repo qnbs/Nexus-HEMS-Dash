@@ -389,7 +389,8 @@ function deepMergeModel(
 // ─── Standalone command dispatcher ───────────────────────────────────
 
 /**
- * sendAdapterCommand — Sends a command to all connected adapters.
+ * sendAdapterCommand — Sends a command to connected adapters.
+ * When `command.targetAdapterId` is set, only that adapter receives the command.
  * Each adapter's BaseAdapter.sendCommand() runs the full validation
  * pipeline (Zod schema, rate limit, circuit breaker, audit trail).
  *
@@ -401,7 +402,8 @@ export function sendAdapterCommand(command: AdapterCommand): void {
     AdapterId,
     AdapterEntry,
   ][];
-  for (const [, entry] of entries) {
+  for (const [id, entry] of entries) {
+    if (command.targetAdapterId && id !== command.targetAdapterId) continue;
     if (entry.enabled && entry.status === 'connected') {
       // BaseAdapter.sendCommand() handles CB + validation + confirm + audit internally
       void entry.adapter.sendCommand(command);

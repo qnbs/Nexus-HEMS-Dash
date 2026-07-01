@@ -243,6 +243,7 @@ services:
 - [ ] `JWT_SECRET` set as Docker secret (minimum 64 chars, cryptographically random)
 - [ ] `API_KEYS` set (minimum 1 key, generated via `openssl rand -hex 32`)
 - [ ] `API_KEY_SCOPES` set with explicit `key:scope` binding for every API key (`read`, `readwrite`, or `admin`)
+- [ ] `REDIS_URL` set when running multiple API replicas (`redis://redis:6379` in `docker-compose.prod.yml`)
 - [ ] `GRAFANA_PASSWORD` set — required (no default, compose fails without it)
 - [ ] `WS_ORIGINS` set (own WebSocket origins only, no `ws://localhost:*` in production)
 - [ ] `RATE_LIMIT_TRUSTED_IPS` configured for internal load balancers/proxies (optional)

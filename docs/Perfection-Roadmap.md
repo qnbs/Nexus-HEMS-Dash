@@ -195,7 +195,7 @@ gantt
 |------|-----------|--------|
 | Split `Settings.tsx` into tab modules | ARCH-01 / MED-16 | ✅ Done — 3,663 → 512 LOC; 10 tabs in `components/settings/*`; 21 unit tests |
 | Wire adapter Web-Worker (`useAdapterWorker`) | MED-12 | 🔶 Infra ready; activation safety-gated (see debt registry); SSRF normalization unit-tested |
-| Add `targetAdapterId` to `sendAdapterCommand` | ARCH-03 | ⏳ Backlog |
+| Add `targetAdapterId` to `sendAdapterCommand` | ARCH-03 | ✅ |
 | Register Evcc/OpenEMS in builtin registry or mark `@experimental` | ARCH-04 | ⏳ Backlog |
 | Introduce `useDeviceStore` for per-device state | PERF-05 | ⏳ Backlog |
 | Move MPC to `ai-worker.ts` | PERF-03 | ⏳ Backlog |
