@@ -49,6 +49,14 @@ async function gotoAndWait(page: import('@playwright/test').Page, path: string) 
 test.describe('WCAG 2.2 AA Accessibility', () => {
   test.beforeEach(async ({ page }) => {
     attachPageErrorHandler(page);
+    // Emulate `prefers-reduced-motion: reduce` for every a11y test. The app's
+    // `@media (prefers-reduced-motion: reduce)` block zeroes every transition/animation
+    // duration, so colour-token transitions (e.g. the language toggle's
+    // `bg-(--color-text)` animating in after the theme applies) settle instantly. This
+    // removes the residual race the `gotoAndWait` theme gate can't cover: axe would
+    // otherwise sample a button mid-transition and trip a transient, non-deterministic
+    // WCAG color-contrast violation. Settled colours are the correct thing to assert.
+    await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.addInitScript(setupLocalStorage);
   });
 
