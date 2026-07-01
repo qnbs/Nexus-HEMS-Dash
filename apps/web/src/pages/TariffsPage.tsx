@@ -220,21 +220,21 @@ const MONTHLY_SAVINGS = MONTHLY_DAYS.reduce((s, d) => s + d.savings, 0);
 
 function getPriceColor(price: number): string {
   const ratio = (price - PRICE_MIN) / (PRICE_SPREAD || 1);
-  if (ratio < 0.3) return '#22c55e'; // green
-  if (ratio < 0.6) return '#eab308'; // yellow
-  if (ratio < 0.8) return '#f97316'; // orange
-  return '#ef4444'; // red
+  if (ratio < 0.3) return 'var(--price-low)';
+  if (ratio < 0.6) return 'var(--price-mid)';
+  if (ratio < 0.8) return 'var(--price-elevated)';
+  return 'var(--price-high)';
 }
 
 function getHeatmapBg(price: number): string {
   const min = 0.04;
   const max = 0.3;
   const ratio = Math.min(1, Math.max(0, (price - min) / (max - min)));
-  if (ratio < 0.2) return 'bg-emerald-500/60';
-  if (ratio < 0.4) return 'bg-emerald-500/30';
-  if (ratio < 0.6) return 'bg-yellow-500/30';
-  if (ratio < 0.8) return 'bg-orange-500/40';
-  return 'bg-red-500/50';
+  if (ratio < 0.2) return 'color-mix(in srgb, var(--price-low) 60%, transparent)';
+  if (ratio < 0.4) return 'color-mix(in srgb, var(--price-low) 30%, transparent)';
+  if (ratio < 0.6) return 'color-mix(in srgb, var(--price-mid) 40%, transparent)';
+  if (ratio < 0.8) return 'color-mix(in srgb, var(--price-elevated) 45%, transparent)';
+  return 'color-mix(in srgb, var(--price-high) 55%, transparent)';
 }
 
 const DEVICE_ICONS: Record<string, React.ReactNode> = {
@@ -313,9 +313,9 @@ function TariffsPageComponent() {
             <span
               className={`price-pill text-lg ${
                 priceZone === 'low'
-                  ? 'text-emerald-400'
+                  ? 'text-(--price-low)'
                   : priceZone === 'high'
-                    ? 'text-red-400'
+                    ? 'text-(--price-high)'
                     : ''
               }`}
             >
@@ -350,19 +350,19 @@ function TariffsPageComponent() {
 
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-(--color-muted) text-sm sm:gap-x-6">
             <span className="flex items-center gap-1.5">
-              <TrendingDown className="h-4 w-4 text-emerald-400" aria-hidden="true" />
+              <TrendingDown className="h-4 w-4 text-(--price-low)" aria-hidden="true" />
               {t('tariffs.todayLow')}:{' '}
-              <strong className="text-emerald-400">{PRICE_MIN.toFixed(3)}</strong>
+              <strong className="text-(--price-low)">{PRICE_MIN.toFixed(3)}</strong>
             </span>
             <span className="flex items-center gap-1.5">
-              <Target className="h-4 w-4 text-yellow-400" aria-hidden="true" />
+              <Target className="h-4 w-4 text-(--price-mid)" aria-hidden="true" />
               {t('tariffs.todayAvg')}:{' '}
-              <strong className="text-yellow-400">{PRICE_AVG.toFixed(3)}</strong>
+              <strong className="text-(--price-mid)">{PRICE_AVG.toFixed(3)}</strong>
             </span>
             <span className="flex items-center gap-1.5">
-              <TrendingUp className="h-4 w-4 text-red-400" aria-hidden="true" />
+              <TrendingUp className="h-4 w-4 text-(--price-high)" aria-hidden="true" />
               {t('tariffs.todayHigh')}:{' '}
-              <strong className="text-red-400">{PRICE_MAX.toFixed(3)}</strong>
+              <strong className="text-(--price-high)">{PRICE_MAX.toFixed(3)}</strong>
             </span>
           </div>
         </div>
@@ -500,46 +500,46 @@ function TariffsPageComponent() {
           <ResponsiveContainer width="100%" height="100%">
             {view48h === 'price' ? (
               <BarChart data={PRICE_TIMELINE} barCategoryGap="8%">
-                <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.3} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" opacity={0.3} />
                 <XAxis
                   dataKey="time"
-                  stroke="#9ca3af"
-                  tick={{ fill: '#9ca3af', fontSize: 10 }}
+                  stroke="var(--color-muted)"
+                  tick={{ fill: 'var(--color-muted)', fontSize: 10 }}
                   interval={3}
                 />
                 <YAxis
-                  stroke="#9ca3af"
-                  tick={{ fill: '#9ca3af', fontSize: 10 }}
+                  stroke="var(--color-muted)"
+                  tick={{ fill: 'var(--color-muted)', fontSize: 10 }}
                   tickFormatter={(v: number) => `${(v * 100).toFixed(0)}`}
                   label={{
                     value: 'ct/kWh',
                     angle: -90,
                     position: 'insideLeft',
-                    fill: '#9ca3af',
+                    fill: 'var(--color-muted)',
                     fontSize: 10,
                   }}
                 />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: '#1e293b',
-                    border: '1px solid #334155',
+                    backgroundColor: 'var(--color-surface-strong)',
+                    border: '1px solid var(--color-border)',
                     borderRadius: '12px',
-                    color: '#e2e8f0',
+                    color: 'var(--color-text)',
                   }}
                   formatter={(value: unknown) => [`${(Number(value) * 100).toFixed(2)} ct/kWh`]}
                   labelFormatter={(label: unknown) => `${label}`}
                 />
                 <ReferenceLine
                   y={PRICE_AVG}
-                  stroke="#eab308"
+                  stroke="var(--price-mid)"
                   strokeDasharray="6 4"
-                  label={{ value: 'Ø', fill: '#eab308', fontSize: 11, position: 'right' }}
+                  label={{ value: 'Ø', fill: 'var(--price-mid)', fontSize: 11, position: 'right' }}
                 />
                 <ReferenceLine
                   y={chargeThreshold}
-                  stroke="#22c55e"
+                  stroke="var(--price-low)"
                   strokeDasharray="3 3"
-                  label={{ value: '⚡', fill: '#22c55e', fontSize: 11, position: 'left' }}
+                  label={{ value: '⚡', fill: 'var(--price-low)', fontSize: 11, position: 'left' }}
                 />
                 <Bar dataKey="price" radius={[4, 4, 0, 0]}>
                   {PRICE_TIMELINE.map((entry) => (
@@ -555,41 +555,41 @@ function TariffsPageComponent() {
               <AreaChart data={PRICE_TIMELINE}>
                 <defs>
                   <linearGradient id="renewGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#22c55e" stopOpacity={0.6} />
-                    <stop offset="95%" stopColor="#22c55e" stopOpacity={0.05} />
+                    <stop offset="5%" stopColor="var(--chart-1)" stopOpacity={0.6} />
+                    <stop offset="95%" stopColor="var(--chart-1)" stopOpacity={0.05} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.3} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" opacity={0.3} />
                 <XAxis
                   dataKey="time"
-                  stroke="#9ca3af"
-                  tick={{ fill: '#9ca3af', fontSize: 10 }}
+                  stroke="var(--color-muted)"
+                  tick={{ fill: 'var(--color-muted)', fontSize: 10 }}
                   interval={3}
                 />
                 <YAxis
-                  stroke="#9ca3af"
-                  tick={{ fill: '#9ca3af', fontSize: 10 }}
+                  stroke="var(--color-muted)"
+                  tick={{ fill: 'var(--color-muted)', fontSize: 10 }}
                   label={{
                     value: '%',
                     angle: -90,
                     position: 'insideLeft',
-                    fill: '#9ca3af',
+                    fill: 'var(--color-muted)',
                     fontSize: 10,
                   }}
                 />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: '#1e293b',
-                    border: '1px solid #334155',
+                    backgroundColor: 'var(--color-surface-strong)',
+                    border: '1px solid var(--color-border)',
                     borderRadius: '12px',
-                    color: '#e2e8f0',
+                    color: 'var(--color-text)',
                   }}
                   formatter={(value: unknown) => [`${Number(value).toFixed(0)} %`]}
                 />
                 <Area
                   type="monotone"
                   dataKey="renewable"
-                  stroke="#22c55e"
+                  stroke="var(--chart-1)"
                   fill="url(#renewGrad)"
                   strokeWidth={2}
                   name={t('tariffs.renewableShare')}
@@ -602,23 +602,38 @@ function TariffsPageComponent() {
         {/* Legend */}
         <div className="mt-3 flex flex-wrap items-center gap-4 text-(--color-muted) text-xs">
           <span className="flex items-center gap-1.5">
-            <span className="inline-block h-2.5 w-2.5 rounded-full bg-emerald-500" />{' '}
+            <span
+              className="inline-block h-2.5 w-2.5 rounded-full"
+              style={{ backgroundColor: 'var(--price-low)' }}
+            />{' '}
             {t('tariffs.legendCheap')}
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="inline-block h-2.5 w-2.5 rounded-full bg-yellow-500" />{' '}
+            <span
+              className="inline-block h-2.5 w-2.5 rounded-full"
+              style={{ backgroundColor: 'var(--price-mid)' }}
+            />{' '}
             {t('tariffs.legendMid')}
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="inline-block h-2.5 w-2.5 rounded-full bg-red-500" />{' '}
+            <span
+              className="inline-block h-2.5 w-2.5 rounded-full"
+              style={{ backgroundColor: 'var(--price-high)' }}
+            />{' '}
             {t('tariffs.legendExpensive')}
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="inline-block h-0.5 w-4 border-yellow-500 border-t-2 border-dashed" />{' '}
+            <span
+              className="inline-block h-0.5 w-4 border-t-2 border-dashed"
+              style={{ borderColor: 'var(--price-mid)' }}
+            />{' '}
             {t('tariffs.legendAvg')}
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="inline-block h-0.5 w-4 border-emerald-500 border-t-2 border-dashed" />{' '}
+            <span
+              className="inline-block h-0.5 w-4 border-t-2 border-dashed"
+              style={{ borderColor: 'var(--price-low)' }}
+            />{' '}
             {t('tariffs.legendThreshold')}
           </span>
         </div>
@@ -671,7 +686,8 @@ function TariffsPageComponent() {
                     .map(({ price, h }) => (
                       <td
                         key={`${row.date}-${h}`}
-                        className={`mx-px h-5 flex-1 rounded-sm transition-all hover:scale-110 hover:ring-1 hover:ring-white/30 ${getHeatmapBg(price)}`}
+                        className="mx-px h-5 flex-1 rounded-sm transition-all hover:scale-110 hover:ring-1 hover:ring-white/30"
+                        style={{ backgroundColor: getHeatmapBg(price) }}
                         title={`${row.day} ${String(h).padStart(2, '0')}:00 — ${(price * 100).toFixed(1)} ct/kWh`}
                       />
                     ))}
@@ -682,11 +698,30 @@ function TariffsPageComponent() {
           <div className="mt-3 flex items-center gap-2 text-(--color-muted) text-[10px]">
             <span>{t('tariffs.cheap')}</span>
             <div className="flex gap-0.5">
-              <span className="inline-block h-3 w-5 rounded-sm bg-emerald-500/60" />
-              <span className="inline-block h-3 w-5 rounded-sm bg-emerald-500/30" />
-              <span className="inline-block h-3 w-5 rounded-sm bg-yellow-500/30" />
-              <span className="inline-block h-3 w-5 rounded-sm bg-orange-500/40" />
-              <span className="inline-block h-3 w-5 rounded-sm bg-red-500/50" />
+              <span
+                className="inline-block h-3 w-5 rounded-sm"
+                style={{ backgroundColor: 'color-mix(in srgb, var(--price-low) 60%, transparent)' }}
+              />
+              <span
+                className="inline-block h-3 w-5 rounded-sm"
+                style={{ backgroundColor: 'color-mix(in srgb, var(--price-low) 30%, transparent)' }}
+              />
+              <span
+                className="inline-block h-3 w-5 rounded-sm"
+                style={{ backgroundColor: 'color-mix(in srgb, var(--price-mid) 40%, transparent)' }}
+              />
+              <span
+                className="inline-block h-3 w-5 rounded-sm"
+                style={{
+                  backgroundColor: 'color-mix(in srgb, var(--price-elevated) 45%, transparent)',
+                }}
+              />
+              <span
+                className="inline-block h-3 w-5 rounded-sm"
+                style={{
+                  backgroundColor: 'color-mix(in srgb, var(--price-high) 55%, transparent)',
+                }}
+              />
             </div>
             <span>{t('tariffs.expensive')}</span>
           </div>
@@ -863,36 +898,36 @@ function TariffsPageComponent() {
           <div className="h-56" role="img" aria-label={t('tariffs.distributionAria')}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={PRICE_BINS}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.3} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" opacity={0.3} />
                 <XAxis
                   dataKey="range"
-                  stroke="#9ca3af"
-                  tick={{ fill: '#9ca3af', fontSize: 9 }}
+                  stroke="var(--color-muted)"
+                  tick={{ fill: 'var(--color-muted)', fontSize: 9 }}
                   label={{
                     value: 'ct/kWh',
                     position: 'insideBottom',
-                    fill: '#9ca3af',
+                    fill: 'var(--color-muted)',
                     fontSize: 10,
                     offset: -2,
                   }}
                 />
                 <YAxis
-                  stroke="#9ca3af"
-                  tick={{ fill: '#9ca3af', fontSize: 10 }}
+                  stroke="var(--color-muted)"
+                  tick={{ fill: 'var(--color-muted)', fontSize: 10 }}
                   label={{
                     value: '#',
                     angle: -90,
                     position: 'insideLeft',
-                    fill: '#9ca3af',
+                    fill: 'var(--color-muted)',
                     fontSize: 10,
                   }}
                 />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: '#1e293b',
-                    border: '1px solid #334155',
+                    backgroundColor: 'var(--color-surface-strong)',
+                    border: '1px solid var(--color-border)',
                     borderRadius: '12px',
-                    color: '#e2e8f0',
+                    color: 'var(--color-text)',
                   }}
                   formatter={(value: unknown) => [`${value} ${t('tariffs.hours')}`]}
                   labelFormatter={(label: unknown) => `${label} ct/kWh`}
@@ -958,10 +993,10 @@ function TariffsPageComponent() {
                   fill="none"
                   stroke={
                     monthlyBudgetPct > 90
-                      ? '#ef4444'
+                      ? 'var(--price-high)'
                       : monthlyBudgetPct > 70
-                        ? '#eab308'
-                        : '#22c55e'
+                        ? 'var(--price-mid)'
+                        : 'var(--price-low)'
                   }
                   strokeWidth="3"
                   strokeDasharray={`${monthlyBudgetPct} ${100 - monthlyBudgetPct}`}
@@ -978,19 +1013,23 @@ function TariffsPageComponent() {
         <div className="h-52" role="img" aria-label={t('tariffs.monthlyCostAria')}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={MONTHLY_DAYS}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.3} />
-              <XAxis dataKey="day" stroke="#9ca3af" tick={{ fill: '#9ca3af', fontSize: 10 }} />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" opacity={0.3} />
+              <XAxis
+                dataKey="day"
+                stroke="var(--color-muted)"
+                tick={{ fill: 'var(--color-muted)', fontSize: 10 }}
+              />
               <YAxis
-                stroke="#9ca3af"
-                tick={{ fill: '#9ca3af', fontSize: 10 }}
+                stroke="var(--color-muted)"
+                tick={{ fill: 'var(--color-muted)', fontSize: 10 }}
                 tickFormatter={(v: number) => `€${v.toFixed(0)}`}
               />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: '#1e293b',
-                  border: '1px solid #334155',
+                  backgroundColor: 'var(--color-surface-strong)',
+                  border: '1px solid var(--color-border)',
                   borderRadius: '12px',
-                  color: '#e2e8f0',
+                  color: 'var(--color-text)',
                 }}
                 formatter={(value: unknown, name: unknown) => [
                   `€${Number(value).toFixed(2)}`,
@@ -1003,12 +1042,17 @@ function TariffsPageComponent() {
               />
               <Bar
                 dataKey="actual"
-                fill="#f97316"
+                fill="var(--chart-3)"
                 radius={[4, 4, 0, 0]}
                 opacity={0.6}
                 name="actual"
               />
-              <Bar dataKey="optimized" fill="#22c55e" radius={[4, 4, 0, 0]} name="optimized" />
+              <Bar
+                dataKey="optimized"
+                fill="var(--chart-1)"
+                radius={[4, 4, 0, 0]}
+                name="optimized"
+              />
             </BarChart>
           </ResponsiveContainer>
         </div>

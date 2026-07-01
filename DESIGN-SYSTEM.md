@@ -54,13 +54,22 @@ darker hues on the two light themes.
 | Family | Tokens | Use |
 | :--- | :--- | :--- |
 | Categorical series | `--chart-1` … `--chart-6` | Distinct data series (e.g. PV, grid import/export, battery) |
-| Price tiers | `--price-low` · `--price-mid` · `--price-high` | Tariff cost windows (cheap → expensive) |
+| Price tiers | `--price-low` · `--price-mid` · `--price-elevated` · `--price-high` | Tariff cost windows, cheap → peak (4-stop heat scale) |
 
 ```tsx
 // Recharts accepts CSS custom properties in stroke/fill:
 <Area dataKey="pvProduction" stroke="var(--chart-1)" fill="var(--chart-1)" fillOpacity={0.19} />
 <Line dataKey="price" stroke="var(--price-high)" />
+
+// For tinted price-heat cells/legends, mix a tier token with transparency
+// (Tailwind's `/opacity` modifier can't apply to a CSS-var colour):
+style={{ backgroundColor: 'color-mix(in srgb, var(--price-elevated) 45%, transparent)' }}
 ```
+
+> The price scale is a **4-stop heat ramp** (`low` → `mid` → `elevated` → `high`)
+> so tariff visualisations (`TariffsPage` price bars, 7×24 heatmap, budget gauge)
+> keep a smooth gradient; the `elevated` (orange) stop reuses the WCAG-verified
+> `--chart-3` hues per theme.
 
 > Chart **chrome** (grid, axes, tooltip) reuses the core `--color-*` tokens
 > (`--color-border`, `--color-muted`, `--color-surface-strong`, `--color-text`)
