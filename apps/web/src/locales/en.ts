@@ -2082,6 +2082,7 @@ export const en = {
     confirmGeneric: 'Execute device command {{type}} with value {{value}}?',
     commandRejected: 'Command rejected',
     commandExecuted: 'Command executed',
+    commandFailed: 'Command failed',
     validationFailed: 'Validation failed',
     rateLimitExceeded: 'Command rate exceeded (max 30/min)',
     circuitBreakerOpen: 'Circuit breaker open — adapter locked',

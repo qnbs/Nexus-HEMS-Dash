@@ -16,6 +16,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
 import type { ConfirmVariant } from '../components/ConfirmDialog';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { isLiveSafetyMode } from '../lib/adapter-mode';
@@ -50,19 +51,26 @@ function auditLog(
   });
 }
 
+interface CommandResult {
+  ok: boolean;
+  error?: string;
+}
+
 async function executeCommand(
   command: AdapterCommand,
   setState: (s: SafeCommandState) => void,
-): Promise<void> {
+): Promise<CommandResult> {
   setState({ pending: true, lastError: null });
   try {
     sendAdapterCommand(command);
     auditLog(command, 'executed');
     setState({ pending: false, lastError: null });
+    return { ok: true };
   } catch (err) {
     const errorMsg = err instanceof Error ? err.message : 'Command execution failed';
     auditLog(command, 'failed', errorMsg);
     setState({ pending: false, lastError: errorMsg });
+    return { ok: false, error: errorMsg };
   }
 }
 
@@ -86,16 +94,24 @@ export function useSafeCommand() {
     };
   }, []);
 
+  /** Surface command outcome to the user via a toast (i18n) */
+  const notifyResult = (res: CommandResult) => {
+    if (res.ok) {
+      toast.success(t('safety.commandExecuted', 'Command executed'));
+    } else {
+      toast.error(`${t('safety.commandFailed', 'Command failed')}: ${res.error}`);
+    }
+  };
+
   /** Execute a command — validates, optionally shows confirmation, then sends */
   const execute = (command: AdapterCommand) => {
     // Step 1: Validate
     const validation = validateCommand(command);
     if (!validation.valid) {
-      stateSetterRef.current({
-        pending: false,
-        lastError: validation.error ?? 'Validation failed',
-      });
+      const reason = validation.error ?? t('safety.validationFailed', 'Validation failed');
+      stateSetterRef.current({ pending: false, lastError: reason });
       auditLog(command, 'rejected', validation.error);
+      toast.error(`${t('safety.commandRejected', 'Command rejected')}: ${reason}`);
       return;
     }
 
@@ -115,14 +131,15 @@ export function useSafeCommand() {
     }
 
     // Step 3: Direct execution (non-danger commands like KNX lights)
-    void executeCommand(command, stateSetterRef.current);
+    void executeCommand(command, stateSetterRef.current).then(notifyResult);
   };
 
   const handleConfirm = async () => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     if (pendingCommand) {
       auditLog(pendingCommand, 'confirmed');
-      await executeCommand(pendingCommand, stateSetterRef.current);
+      const res = await executeCommand(pendingCommand, stateSetterRef.current);
+      notifyResult(res);
     }
     setPendingCommand(null);
   };
