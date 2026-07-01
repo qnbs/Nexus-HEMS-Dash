@@ -60,7 +60,7 @@ vi.mock('../store', () => ({
 }));
 
 import type { AdapterId } from '../core/useEnergyStore';
-import { useEnergyStoreBase } from '../core/useEnergyStore';
+import { sendAdapterCommand, useEnergyStoreBase } from '../core/useEnergyStore';
 
 describe('useEnergyStore', () => {
   beforeEach(() => {
@@ -338,6 +338,42 @@ describe('useEnergyStore', () => {
         expect(s).toHaveProperty('status');
         expect(s).toHaveProperty('enabled');
       });
+    });
+  });
+
+  describe('sendAdapterCommand (ARCH-03)', () => {
+    function connectAdapter(id: AdapterId) {
+      useEnergyStoreBase.setState((s) => ({
+        adapters: {
+          ...s.adapters,
+          [id]: { ...s.adapters[id], enabled: true, status: 'connected' },
+        },
+      }));
+    }
+
+    beforeEach(() => {
+      for (const id of ['knx', 'ocpp-21'] as AdapterId[]) {
+        connectAdapter(id);
+        vi.mocked(useEnergyStoreBase.getState().adapters[id].adapter.sendCommand).mockClear();
+      }
+    });
+
+    it('broadcasts to all connected adapters when targetAdapterId is omitted', () => {
+      sendAdapterCommand({ type: 'KNX_TOGGLE_LIGHTS', value: true });
+      const { adapters } = useEnergyStoreBase.getState();
+      expect(adapters.knx.adapter.sendCommand).toHaveBeenCalledTimes(1);
+      expect(adapters['ocpp-21'].adapter.sendCommand).toHaveBeenCalledTimes(1);
+    });
+
+    it('routes only to the specified adapter when targetAdapterId is set', () => {
+      sendAdapterCommand({
+        type: 'SET_EV_POWER',
+        value: 7000,
+        targetAdapterId: 'ocpp-21',
+      });
+      const { adapters } = useEnergyStoreBase.getState();
+      expect(adapters.knx.adapter.sendCommand).not.toHaveBeenCalled();
+      expect(adapters['ocpp-21'].adapter.sendCommand).toHaveBeenCalledTimes(1);
     });
   });
 });

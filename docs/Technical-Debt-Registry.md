@@ -101,11 +101,10 @@ DeepSource coverage report card is visible, but a hard "coverage may not decreas
 Workflow posts/updates a single PR comment with links to Lighthouse, coverage, bundle analysis, and static-analysis dashboards. DeepSource/CodeAnt links appear when those integrations are configured.
 
 ### PRF-05 — Branch Protection Settings Not Codified
-
 **Files:** `.github/CI-AUDIT.md`, `docs/runbooks/pr-status-checks.md`
-**Status:** ⏳ Backlog
+**Status:** ✅ Fixed in v1.3.0
 
-Required checks are documented but must be applied manually in GitHub Settings → Branches → main.
+Required checks documented in `pr-status-checks.md` including `ci-passed` rollup (covers fuzz-tests). Branch protection must still be applied manually in GitHub Settings → Branches → main.
 
 ---
 
@@ -644,6 +643,14 @@ local UI state — no prop-drilling or shared form hook. Unit coverage:
 Scope table said "not fully integrated"; P3 section said "Fully Implemented". Code confirms LTTB is wired (`sampleIfNeeded` used in `HistoricalChart.tsx` + `HistoricalAnalyticsPage.tsx`).
 
 **Fix:** Scope table updated to "Implemented & integrated". Also corrected `docs/Testing-Coverage-Strategy.md`, which mis-stated the enforced API coverage thresholds as 55/45/55/55 — the actual `apps/api/vitest.config.ts` gate is 33/30/38/33.
+
+---
+
+### ARCH-03 — `sendAdapterCommand` Broadcasts to All Adapters
+**File:** `apps/web/src/core/useEnergyStore.ts`, `EnergyAdapter.ts`
+**Status:** ✅ Fixed in v1.3.0
+
+`AdapterCommand.targetAdapterId` routes hardware commands to a single adapter; omitting it preserves broadcast behavior for legacy callers.
 
 ---
 

@@ -16,7 +16,7 @@ These checks should be configured in **Settings → Branches → main → Requir
 | `DeepSource: Secrets`    | DeepSource GitHub App                 | Advisory initially; will become required after tuning  |
 | `Lighthouse CI`          | `.github/workflows/lighthouse.yml`    | Performance / a11y budgets                             |
 | `chromatic`              | `.github/workflows/chromatic.yml`     | Visual regression (requires `CHROMATIC_PROJECT_TOKEN`) |
-| `Security Fuzz Tests`    | `.github/workflows/fuzz.yml`          | Property-based security fuzz                           |
+| `Security Fuzz Tests`    | `.github/workflows/ci.yml` (`fuzz-tests` job) | Required via `ci-passed` rollup; `fuzz.yml` is weekly supplement |
 
 > `CodeAnt AI` is intentionally **not required** because it is advisory.
 

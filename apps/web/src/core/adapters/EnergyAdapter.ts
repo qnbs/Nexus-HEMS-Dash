@@ -220,6 +220,8 @@ export interface AdapterCommand {
   type: AdapterCommandType;
   value: number | string | boolean;
   targetDeviceId?: string;
+  /** Route command to a single adapter when set (ARCH-03). Omit to broadcast to all connected adapters. */
+  targetAdapterId?: string;
   /**
    * Structured payload for commands that require complex objects beyond a scalar value.
    * Used by: SET_V2G_BPT_PARAMS (BPTNegotiationParams), VPP_OFFER_FLEX (FlexOffer),
