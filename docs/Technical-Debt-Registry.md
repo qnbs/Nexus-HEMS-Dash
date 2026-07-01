@@ -590,22 +590,23 @@ JTI revocation supports Redis; WS tickets and share redemption do not. Multi-ins
 
 ### MED-16 — Settings.tsx Monolith (was ~3,663 Lines)
 **File:** `apps/web/src/pages/Settings.tsx`
-**Status:** 🔄 In progress — decomposing into `components/settings/*`
+**Status:** ✅ Resolved — decomposed into `components/settings/*`
 
 Maintainability hotspot. Split into tab submodules per Perfection Roadmap 2.3.
 
-**Progress (v1.3.x campaign):** now **934 LOC** (−75%). Extracted to
-`apps/web/src/components/settings/`: shared atoms (`ToggleSwitch`,
-`ThemePreviewCard`, `SettingsFeatureBar`), `PWASettingsSection`, shared class
-strings (`styles.ts`), and the `AppearanceTab`, `SystemTab`, `EnergyTab`,
-`ControllersTab`, `StorageTab`, `SecurityTab`, `NotificationsTab` modules. Pattern:
-each tab reads `settings`/`updateSettings` (and, for `AppearanceTab`, the theme
-state) from the global Zustand store via `useAppStoreShallow` and owns its local UI
-state (no prop-drilling / shared form hook); `Settings()` keeps the `motion.div`
-tabpanel wrapper. Unit tests in `apps/web/src/tests/settings-tabs.test.tsx` (19
-tests). **Remaining:** advanced tab (couples to export/import handlers in
-`Settings()`) + the trivial adapters/ai delegations — then `Settings()` is just the
-nav shell.
+**Outcome (v1.3.x campaign):** **3,663 → 512 LOC (−86%)**. `Settings()` is now just
+the tab-nav shell + page header + JSON export/import + a lazy AI route; its
+`noExcessiveCognitiveComplexity` suppression was removed (no longer needed). All ten
+tabs live under `apps/web/src/components/settings/`: `AppearanceTab`, `SystemTab`,
+`EnergyTab`, `ControllersTab`, `SecurityTab`, `StorageTab`, `NotificationsTab`,
+`AdvancedTab` (each a self-contained module) plus the shared atoms (`ToggleSwitch`,
+`ThemePreviewCard`, `SettingsFeatureBar`), `PWASettingsSection` and shared class
+strings (`styles.ts`); `adapters`/`ai` stay one-line delegations to the existing
+`AdapterConfigPanel` / `AISettingsPage`. Pattern: each tab reads
+`settings`/`updateSettings` (and, for `AppearanceTab`, the theme state; `AdvancedTab`,
+`adapterMode`) from the global Zustand store via `useAppStoreShallow` and owns its
+local UI state — no prop-drilling or shared form hook. Unit coverage:
+`apps/web/src/tests/settings-tabs.test.tsx` (21 tests).
 
 ---
 
