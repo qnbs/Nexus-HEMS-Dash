@@ -588,11 +588,23 @@ JTI revocation supports Redis; WS tickets and share redemption do not. Multi-ins
 
 ---
 
-### MED-16 — Settings.tsx Monolith (~3,500 Lines)
+### MED-16 — Settings.tsx Monolith (was ~3,663 Lines)
 **File:** `apps/web/src/pages/Settings.tsx`
-**Status:** ⏳ Backlog — Phase 2
+**Status:** 🔄 In progress — decomposing into `components/settings/*`
 
 Maintainability hotspot. Split into tab submodules per Perfection Roadmap 2.3.
+
+**Progress (v1.3.x campaign):** now **2,205 LOC** (−40%). Extracted to
+`apps/web/src/components/settings/`: shared atoms (`ToggleSwitch`,
+`ThemePreviewCard`, `SettingsFeatureBar`), `PWASettingsSection`, shared class
+strings (`styles.ts`), and the `StorageTab`, `SecurityTab`, `SystemTab`,
+`NotificationsTab`, `ControllersTab` modules. Pattern: each tab reads
+`settings`/`updateSettings` from the global Zustand store via `useAppStoreShallow`
+and owns its local UI state (no prop-drilling / shared form hook); `Settings()`
+keeps the `motion.div` tabpanel wrapper. Unit tests in
+`apps/web/src/tests/settings-tabs.test.tsx`. **Remaining tabs:** appearance
+(theme handlers), energy (largest), advanced (export/import handlers), plus the
+trivial adapters/ai delegations.
 
 ---
 
