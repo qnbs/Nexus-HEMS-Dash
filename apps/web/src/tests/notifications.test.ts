@@ -8,7 +8,14 @@
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { NotificationCategory } from '../lib/notifications';
-import { isCoolingDown, isInQuietHours, markSent } from '../lib/notifications';
+import {
+  isCoolingDown,
+  isInQuietHours,
+  isPermissionGranted,
+  markSent,
+  requestPermission,
+  showNotification,
+} from '../lib/notifications';
 
 // ─── isInQuietHours ──────────────────────────────────────────────────
 
@@ -172,5 +179,133 @@ describe('isCoolingDown() / markSent()', () => {
     for (const cat of categories) {
       expect(() => isCoolingDown(cat)).not.toThrow();
     }
+  });
+});
+
+// ─── Permission + delivery ───────────────────────────────────────────
+
+describe('isPermissionGranted()', () => {
+  const originalNotification = globalThis.Notification;
+
+  afterEach(() => {
+    if (originalNotification) {
+      Object.defineProperty(globalThis, 'Notification', {
+        configurable: true,
+        writable: true,
+        value: originalNotification,
+      });
+    } else {
+      Reflect.deleteProperty(globalThis, 'Notification');
+    }
+  });
+
+  it('returns true when browser permission is granted', () => {
+    Object.defineProperty(globalThis, 'Notification', {
+      configurable: true,
+      writable: true,
+      value: { permission: 'granted' },
+    });
+    expect(isPermissionGranted()).toBe(true);
+  });
+
+  it('returns false when Notification API is unavailable', () => {
+    Reflect.deleteProperty(globalThis, 'Notification');
+    expect(isPermissionGranted()).toBe(false);
+  });
+});
+
+describe('requestPermission()', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    Reflect.deleteProperty(globalThis, 'Notification');
+  });
+
+  it('returns true when permission is already granted', async () => {
+    Object.defineProperty(globalThis, 'Notification', {
+      configurable: true,
+      writable: true,
+      value: {
+        permission: 'granted',
+        requestPermission: vi.fn(),
+      },
+    });
+    await expect(requestPermission()).resolves.toBe(true);
+  });
+
+  it('returns false when permission is denied', async () => {
+    Object.defineProperty(globalThis, 'Notification', {
+      configurable: true,
+      writable: true,
+      value: {
+        permission: 'denied',
+        requestPermission: vi.fn(),
+      },
+    });
+    await expect(requestPermission()).resolves.toBe(false);
+  });
+
+  it('requests permission when status is default', async () => {
+    const requestPermissionMock = vi.fn().mockResolvedValue('granted');
+    Object.defineProperty(globalThis, 'Notification', {
+      configurable: true,
+      writable: true,
+      value: {
+        permission: 'default',
+        requestPermission: requestPermissionMock,
+      },
+    });
+    await expect(requestPermission()).resolves.toBe(true);
+    expect(requestPermissionMock).toHaveBeenCalled();
+  });
+});
+
+describe('showNotification()', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    Reflect.deleteProperty(globalThis, 'Notification');
+  });
+
+  it('uses the Notification constructor when service workers are unavailable', async () => {
+    const notificationCtor = vi.fn();
+    Object.defineProperty(globalThis, 'Notification', {
+      configurable: true,
+      writable: true,
+      value: Object.assign(notificationCtor, { permission: 'granted' }),
+    });
+
+    await showNotification({
+      id: '1',
+      category: 'battery-low',
+      title: 'Battery low',
+      body: 'SoC below threshold',
+      icon: '/icon.png',
+    });
+
+    expect(notificationCtor).toHaveBeenCalledWith(
+      'Battery low',
+      expect.objectContaining({
+        body: 'SoC below threshold',
+        icon: '/icon.png',
+        tag: 'battery-low',
+      }),
+    );
+  });
+
+  it('no-ops when Notification permission is not granted', async () => {
+    const notificationCtor = vi.fn();
+    Object.defineProperty(globalThis, 'Notification', {
+      configurable: true,
+      writable: true,
+      value: Object.assign(notificationCtor, { permission: 'denied' }),
+    });
+
+    await showNotification({
+      id: '2',
+      category: 'update',
+      title: 'Update',
+      body: 'New version',
+    });
+
+    expect(notificationCtor).not.toHaveBeenCalled();
   });
 });

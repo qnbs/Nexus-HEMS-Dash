@@ -1,12 +1,13 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { createElement } from 'react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
-// Use the real QueryClient — it works in jsdom without network
 vi.mock('@tanstack/react-query-devtools', () => ({
   ReactQueryDevtools: () => null,
 }));
 
 describe('Query Client Module', () => {
-  beforeEach(() => {
+  afterEach(() => {
     vi.resetModules();
   });
 
@@ -18,5 +19,11 @@ describe('Query Client Module', () => {
   it('should export QueryProvider component', async () => {
     const mod = await import('../lib/query-client');
     expect(typeof mod.QueryProvider).toBe('function');
+  });
+
+  it('QueryProvider renders children', async () => {
+    const { QueryProvider } = await import('../lib/query-client');
+    render(createElement(QueryProvider, null, createElement('span', null, 'query-child')));
+    expect(screen.getByText('query-child')).toBeInTheDocument();
   });
 });

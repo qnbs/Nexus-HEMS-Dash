@@ -284,11 +284,11 @@ Changed to `process.env.JWT_SECRET_FILE ?? '/run/secrets/jwt_secret'`.
 ### MED-01 — Test Coverage Below Industry Standard
 
 **File:** `apps/web/vitest.config.ts:18-22`, `apps/api/vitest.config.ts:13-17`
-**Status:** ⏳ Scheduled for v1.2
+**Status:** ⏳ In progress — web gates raised to 70/63/56/70 (functions ~57%); API unchanged at 55/45/55/55
 
 Current thresholds:
 
-- Web: statements 65%, branches 60%, functions 53%, lines 65% (raised from 52/42/53/53 — functions remains the bottleneck at ~55%)
+- Web: statements 70%, branches 63%, functions 56%, lines 70% (functions was the bottleneck at ~55%; now ~57%)
 - API: statements 55%, branches 45%, functions 55%, lines 55%
 
 Target: 70%+ for all metrics.
