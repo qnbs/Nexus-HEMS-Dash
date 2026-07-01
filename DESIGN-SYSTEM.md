@@ -103,6 +103,13 @@ built-in `shadow-*` / `rounded-*` utilities. Use via arbitrary properties.
 </div>
 ```
 
+> **Performance & preferences.** The backdrop blur is capped at `blur(24px)` —
+> past that the frosting is visually indistinguishable but the GPU cost keeps
+> climbing (a real mobile budget hit). Under `@media (prefers-reduced-transparency:
+> reduce)` (also what battery-saver / low-power devices signal) the glass surfaces
+> drop the backdrop-filter entirely and paint a solid `--color-surface-strong`,
+> matching the `html.high-contrast` and `forced-colors` fallbacks.
+
 ### Neon Glow Text
 
 ```tsx
