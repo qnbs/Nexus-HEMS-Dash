@@ -44,6 +44,23 @@ async function gotoAndWait(page: import('@playwright/test').Page, path: string) 
     undefined,
     { timeout: THEME_APPLIED_TIMEOUT_MS },
   );
+  // Finally, let the route's entrance animations settle. Page content mounts inside
+  // framer-motion opacity/slide wrappers (SettingsUnified's content area, page
+  // transitions); while that fade runs, axe composites a light-background button
+  // against the dark page at partial opacity and reports a transient dark-on-dark
+  // color-contrast violation — the flagged background colour varies frame to frame,
+  // the fingerprint of an animation race rather than a real defect. framer drives
+  // opacity through the Web Animations API, so awaiting every finite animation's
+  // `finished` promise settles the fade deterministically (no fixed timeout). Two
+  // rAFs first guarantee framer has committed/started the animation; infinite loops
+  // (spinners, energy-pulse) are excluded so this can never hang.
+  await page.evaluate(async () => {
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    const finite = document
+      .getAnimations()
+      .filter((a) => a.effect?.getComputedTiming().iterations !== Number.POSITIVE_INFINITY);
+    await Promise.allSettled(finite.map((a) => a.finished));
+  });
 }
 
 test.describe('WCAG 2.2 AA Accessibility', () => {
