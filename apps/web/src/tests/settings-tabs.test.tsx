@@ -1,6 +1,7 @@
 import type { ReactElement } from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { AppearanceTab } from '../components/settings/AppearanceTab';
 import { ControllersTab } from '../components/settings/ControllersTab';
 import { NotificationsTab } from '../components/settings/NotificationsTab';
 import { SecurityTab } from '../components/settings/SecurityTab';
@@ -27,9 +28,21 @@ vi.mock('../components/settings/SettingsFeatureBar', () => ({
 vi.mock('../components/ApiAuthSettingsSection', () => ({
   ApiAuthSettingsSection: () => null,
 }));
+vi.mock('../components/LanguageSwitcher', () => ({
+  LanguageSwitcher: () => null,
+}));
 
 const mockUpdateSettings = vi.fn();
+const mockSetThemePreference = vi.fn();
+const mockSetTheme = vi.fn();
 const mockSettings = {
+  animations: true,
+  compactMode: false,
+  glowEffects: true,
+  units: 'metric',
+  dateFormat: 'dd.mm.yyyy',
+  currency: 'eur',
+  fontScale: 1.0,
   influxUrl: 'http://localhost:8086',
   influxToken: 'secret-token',
   historyDays: 30,
@@ -69,7 +82,17 @@ const mockSettings = {
 
 vi.mock('../store', () => ({
   useAppStoreShallow: (selector: (s: Record<string, unknown>) => unknown) =>
-    selector({ settings: mockSettings, updateSettings: mockUpdateSettings }),
+    selector({
+      settings: mockSettings,
+      updateSettings: mockUpdateSettings,
+      theme: 'ocean-dark',
+      themePreference: 'ocean-dark',
+      setThemePreference: mockSetThemePreference,
+      setTheme: mockSetTheme,
+      locale: 'en',
+      setLocale: vi.fn(),
+      adapterMode: 'mock',
+    }),
 }));
 
 function renderTab(ui: ReactElement) {
@@ -176,5 +199,36 @@ describe('ControllersTab', () => {
   it('mounts without crashing and shows optimizer content', () => {
     const { container } = renderTab(<ControllersTab />);
     expect(container.firstChild).toBeTruthy();
+  });
+});
+
+describe('AppearanceTab', () => {
+  it('renders a theme card for every registered theme', () => {
+    renderTab(<AppearanceTab />);
+    // Each ThemePreviewCard is a button with aria-pressed
+    expect(screen.getAllByRole('button', { pressed: false }).length).toBeGreaterThan(0);
+  });
+
+  it('applies a theme selection through the store', () => {
+    renderTab(<AppearanceTab />);
+    // The active theme (ocean-dark) card is pressed; pick any other theme card.
+    const inactive = screen.getAllByRole('button', { pressed: false })[0];
+    fireEvent.click(inactive);
+    expect(mockSetThemePreference).toHaveBeenCalled();
+    expect(mockSetTheme).toHaveBeenCalled();
+  });
+
+  it('writes the animations toggle back to the store', () => {
+    const { container } = renderTab(<AppearanceTab />);
+    const animations = container.querySelector('#animations') as HTMLInputElement;
+    fireEvent.click(animations);
+    expect(mockUpdateSettings).toHaveBeenCalledWith({ animations: false });
+  });
+
+  it('writes the font-scale slider back to the store', () => {
+    const { container } = renderTab(<AppearanceTab />);
+    const slider = container.querySelector('input[type="range"]') as HTMLInputElement;
+    fireEvent.change(slider, { target: { value: '1.1' } });
+    expect(mockUpdateSettings).toHaveBeenCalledWith({ fontScale: 1.1 });
   });
 });
