@@ -73,17 +73,17 @@
         "useCollapsedElseIf": "warn"
       },
       "a11y": {
-        "noLabelWithoutControl": "warn",
-        "useButtonType": "warn",
-        "useSemanticElements": "warn",
-        "noSvgWithoutTitle": "warn",
-        "noAriaHiddenOnFocusable": "warn",
-        "noRedundantRoles": "warn",
-        "useAriaPropsSupportedByRole": "warn",
-        "noAutofocus": "warn",
-        "useAriaPropsForRole": "warn",
-        "useFocusableInteractive": "warn",
-        "noStaticElementInteractions": "warn"
+        "noLabelWithoutControl": "error",
+        "useButtonType": "error",
+        "useSemanticElements": "error",
+        "noSvgWithoutTitle": "error",
+        "noAriaHiddenOnFocusable": "error",
+        "noRedundantRoles": "error",
+        "useAriaPropsSupportedByRole": "error",
+        "noAutofocus": "error",
+        "useAriaPropsForRole": "error",
+        "useFocusableInteractive": "error",
+        "noStaticElementInteractions": "error"
       },
       "suspicious": {
         "noExplicitAny": "error",
