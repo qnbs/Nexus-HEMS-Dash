@@ -94,6 +94,20 @@ describe('CircuitBreaker', () => {
       expect(cb.currentState).toBe('open');
     });
 
+    it('applies exponential backoff on repeated open transitions (MED-09)', () => {
+      vi.useFakeTimers();
+      const cb = new CircuitBreaker({ failureThreshold: 1, cooldownMs: 1000 });
+      cb.recordFailure();
+      vi.advanceTimersByTime(1001);
+      expect(cb.currentState).toBe('half-open');
+      cb.recordFailure();
+
+      vi.advanceTimersByTime(1999);
+      expect(cb.currentState).toBe('open');
+      vi.advanceTimersByTime(2);
+      expect(cb.currentState).toBe('half-open');
+    });
+
     it('allows one execution in half-open state', () => {
       vi.useFakeTimers();
       const cb = new CircuitBreaker({ failureThreshold: 1, cooldownMs: 1000 });

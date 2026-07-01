@@ -9,32 +9,15 @@ import {
 import crypto, { timingSafeEqual } from 'crypto';
 import { Router } from 'express';
 import { requireJWT } from '../middleware/auth.js';
+import { SHARE_TTL_MS, shareTicketStore } from '../services/share-ticket-store.js';
 
-const SHARE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
-
-interface ShareEntry {
-  ownerSub: string;
-  name: string;
-  permissions: 'view' | 'control' | 'admin';
-  secretHash: Buffer;
-  expiresAt: number;
-  consumed: boolean;
-}
-
-/** Exported for integration tests only */
-export const shareTicketStore = new Map<string, ShareEntry>();
-
-setInterval(() => {
-  const now = Date.now();
-  for (const [id, entry] of shareTicketStore) {
-    if (entry.expiresAt < now) shareTicketStore.delete(id);
-  }
-}, 120_000);
+/** Re-exported for integration tests */
+export { shareTicketStore };
 
 export function createSharesRoutes(): Router {
   const router = Router();
 
-  router.post('/api/shares', requireJWT, (req, res) => {
+  router.post('/api/shares', requireJWT, async (req, res) => {
     const parsed = CreateDashboardShareRequestSchema.safeParse(req.body);
     if (!parsed.success) {
       res.status(400).json({ errors: parsed.error.issues });
@@ -49,7 +32,7 @@ export function createSharesRoutes(): Router {
     const shareId = crypto.randomUUID();
     const expiresAt = Date.now() + SHARE_TTL_MS;
 
-    shareTicketStore.set(shareId, {
+    await shareTicketStore.set(shareId, {
       ownerSub,
       name: parsed.data.name,
       permissions: parsed.data.permissions,
@@ -65,7 +48,7 @@ export function createSharesRoutes(): Router {
     });
   });
 
-  router.post('/api/shares/:shareId/redeem', (req, res) => {
+  router.post('/api/shares/:shareId/redeem', async (req, res) => {
     const parsed = RedeemDashboardShareRequestSchema.safeParse(req.body);
     if (!parsed.success) {
       res.status(400).json({ errors: parsed.error.issues });
@@ -73,13 +56,13 @@ export function createSharesRoutes(): Router {
     }
 
     const shareId = req.params.shareId;
-    const entry = shareTicketStore.get(shareId);
+    const entry = await shareTicketStore.get(shareId);
     if (!entry) {
       res.status(404).json({ error: 'Share not found' });
       return;
     }
     if (entry.expiresAt < Date.now()) {
-      shareTicketStore.delete(shareId);
+      await shareTicketStore.delete(shareId);
       res.status(410).json({ error: 'Share expired' });
       return;
     }
@@ -97,8 +80,7 @@ export function createSharesRoutes(): Router {
       return;
     }
 
-    entry.consumed = true;
-    shareTicketStore.delete(shareId);
+    await shareTicketStore.delete(shareId);
 
     res.json({
       id: shareId,

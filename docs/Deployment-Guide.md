@@ -62,6 +62,7 @@ docker compose --profile monitoring up -d
 | `NODE_ENV`               | `production`    | Environment mode                                                             |
 | `JWT_SECRET`             | —               | HMAC-SHA256 secret (min 64 chars, cryptographically random); auto-generated in dev |
 | `API_KEYS`               | —               | Comma-separated API keys for `/api/auth/token`; required in production       |
+| `API_KEY_SCOPES`         | —               | Comma-separated `key:scope` pairs; required in production (one per `API_KEYS` value) |
 | `CORS_ORIGINS`           | —               | Comma-separated allowed CORS origins                                         |
 | `WS_ORIGINS`             | —               | Comma-separated allowed WebSocket origins for CSP `connect-src` (production) |
 | `RATE_LIMIT_TRUSTED_IPS` | —               | Comma-separated IPs that bypass rate limiting (load balancers, proxies)      |
@@ -69,6 +70,7 @@ docker compose --profile monitoring up -d
 | `JWT_SECRET_NEW`         | —               | Optional in-rotation HS256 secret; signing prefers this while old tokens still verify against `JWT_SECRET`; reload via `POST /api/auth/rotate-key` (admin) |
 | `JWT_SECRET_NEW_FILE`    | —               | Mounted file path for `JWT_SECRET_NEW` (e.g. Kubernetes rotation) |
 | `EEBUS_TRUST_BACKEND`    | `file`          | `file` (JSON via `EEBUS_TRUST_FILE`) or `redis` (requires `REDIS_URL`) for multi-replica API pods |
+| `REDIS_URL`              | —               | Optional Redis URL for HA session state: JTI revocation, WS tickets, dashboard shares, EEBUS trust (`redis://host:6379`) |
 | `TZ`                     | `Europe/Berlin` | Timezone                                                                     |
 | `GRAFANA_PASSWORD`       | **required**    | Grafana admin password — no default; docker-compose fails without it (CRIT-04) |
 | `ADAPTER_MODE`           | `mock`          | `mock` for demo data (default); `live` for real protocol adapters — requires `ALLOW_LIVE_HARDWARE=true` |

@@ -1,5 +1,5 @@
 import 'fake-indexeddb/auto';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   checkRateLimit,
   DANGER_COMMANDS,
@@ -13,6 +13,11 @@ import { nexusDb } from '../lib/db';
 describe('command-safety', () => {
   beforeEach(async () => {
     await nexusDb.commandAudit.clear();
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.useRealTimers();
   });
 
   describe('validateCommand', () => {
@@ -54,11 +59,34 @@ describe('command-safety', () => {
     });
 
     it('rejects all commands when read-only mode is active', () => {
-      // Note: This test verifies the read-only check is in place
-      // The actual isReadOnlyModeActive() check happens at runtime
+      vi.stubEnv('VITE_READ_ONLY_MODE', 'true');
       const result = validateCommand({ type: 'SET_BATTERY_POWER', value: 2500 });
-      // In normal test environment, read-only mode is not active
+      expect(result.valid).toBe(false);
+      expect(result.error).toMatch(/read-only mode/i);
+    });
+
+    it('rejects power above the 25 kW safety cap', () => {
+      const result = validateCommand({ type: 'SET_EV_POWER', value: 30_000 });
+      expect(result.valid).toBe(false);
+      expect(result.error).toMatch(/Invalid value/);
+    });
+
+    it('accepts bidirectional battery power within cap', () => {
+      const result = validateCommand({ type: 'SET_BATTERY_POWER', value: -12_000 });
       expect(result.valid).toBe(true);
+    });
+
+    it('validates OpenADR acknowledge event strings', () => {
+      const result = validateCommand({
+        type: 'OPENADR_ACKNOWLEDGE_EVENT',
+        value: 'evt-2026-001',
+      });
+      expect(result.valid).toBe(true);
+    });
+
+    it('rejects VPP flex offer above safety cap', () => {
+      const result = validateCommand({ type: 'VPP_OFFER_FLEX', value: 30_000 });
+      expect(result.valid).toBe(false);
     });
   });
 
@@ -92,6 +120,24 @@ describe('command-safety', () => {
         value: 1,
       });
       expect(desc.labelKey).toBe('safety.confirmGeneric');
+    });
+
+    it('marks V2X discharge as danger', () => {
+      const desc = describeCommand({ type: 'SET_V2X_DISCHARGE', value: 3000 });
+      expect(desc.severity).toBe('danger');
+      expect(desc.labelKey).toBe('safety.confirmV2X');
+    });
+
+    it('describes EV commands as warning', () => {
+      const desc = describeCommand({ type: 'START_CHARGING', value: true });
+      expect(desc.severity).toBe('warning');
+      expect(desc.labelKey).toBe('safety.confirmEV');
+    });
+
+    it('describes heat pump commands as warning', () => {
+      const desc = describeCommand({ type: 'SET_HEAT_PUMP_POWER', value: 4000 });
+      expect(desc.severity).toBe('warning');
+      expect(desc.labelKey).toBe('safety.confirmHeatPump');
     });
   });
 
@@ -150,6 +196,38 @@ describe('command-safety', () => {
       const remaining = await nexusDb.commandAudit.orderBy('timestamp').toArray();
       expect(remaining.at(-1)?.commandType).toBe('SET_EV_CURRENT');
     });
+
+    it('writes emergency_stop and failed audit entries', async () => {
+      await logCommandAudit({
+        timestamp: Date.now(),
+        commandType: 'SET_GRID_LIMIT',
+        value: 5000,
+        status: 'emergency_stop',
+      });
+      await logCommandAudit({
+        timestamp: Date.now() + 1,
+        commandType: 'SET_BATTERY_POWER',
+        value: 1000,
+        status: 'failed',
+        error: 'adapter timeout',
+      });
+
+      const entries = await nexusDb.commandAudit.toArray();
+      expect(entries).toHaveLength(2);
+      expect(entries.map((e) => e.status).sort()).toEqual(['emergency_stop', 'failed']);
+    });
+
+    it('does not increment metrics counter for confirmed-only entries', async () => {
+      await logCommandAudit({
+        timestamp: Date.now(),
+        commandType: 'KNX_TOGGLE_LIGHTS',
+        value: true,
+        status: 'confirmed',
+      });
+      const entries = await nexusDb.commandAudit.toArray();
+      expect(entries).toHaveLength(1);
+      expect(entries[0]?.status).toBe('confirmed');
+    });
   });
 
   describe('checkRateLimit', () => {
@@ -159,6 +237,21 @@ describe('command-safety', () => {
         expect(checkRateLimit(type)).toBe(true);
       }
       expect(checkRateLimit(type)).toBe(false);
+    });
+
+    it('prunes timestamps outside the 60s window', () => {
+      vi.useFakeTimers();
+      const type = 'RATE_LIMIT_PRUNE';
+      const now = Date.now();
+      vi.setSystemTime(now);
+
+      for (let i = 0; i < 30; i++) {
+        expect(checkRateLimit(type)).toBe(true);
+      }
+      expect(checkRateLimit(type)).toBe(false);
+
+      vi.setSystemTime(now + 61_000);
+      expect(checkRateLimit(type)).toBe(true);
     });
   });
 });

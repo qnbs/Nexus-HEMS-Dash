@@ -1,10 +1,7 @@
 name: Security Fuzz
 
+# Supplementary scheduled fuzz runs. Primary gate is the fuzz-tests job in ci.yml (LOW-09).
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
   schedule:
     - cron: '0 5 * * 2'
   workflow_dispatch:

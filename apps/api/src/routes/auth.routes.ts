@@ -5,23 +5,9 @@ import { reloadJwtKeysFromEnv, revokeToken, signToken, verifyToken } from '../jw
 import type { JWTScope } from '../middleware/auth.js';
 import { clampScope, requireJWT, requireScope, validateApiKey } from '../middleware/auth.js';
 import { serverStartTime } from '../middleware/metrics.js';
+import { wsTicketStore } from '../services/ws-ticket-store.js';
 
 const JWT_EXPIRY = '24h';
-
-// HIGH-04: Single-use WS ticket store (60-second TTL, consumed on first use)
-// Exported so energy.ws.ts can pass it to authenticateWS
-export const wsTickets = new Map<
-  string,
-  { clientId: string; scope: JWTScope; expiresAt: number }
->();
-
-// Periodically clean up expired tickets (every 2 minutes)
-setInterval(() => {
-  const now = Date.now();
-  for (const [ticket, data] of wsTickets) {
-    if (data.expiresAt < now) wsTickets.delete(ticket);
-  }
-}, 120_000);
 
 export function createAuthRoutes(): Router {
   const router = Router();
@@ -116,7 +102,7 @@ export function createAuthRoutes(): Router {
   // ─── WebSocket Ticket Endpoint ───────────────────────────────────
   // HIGH-04 fix: Issues a short-lived (60s) single-use WS ticket.
   // Browser connects via wss://...?ticket=<uuid> — the JWT never appears in URL logs.
-  router.post('/api/auth/ws-ticket', requireJWT, (_req, res) => {
+  router.post('/api/auth/ws-ticket', requireJWT, async (_req, res) => {
     const payload = res.locals.jwtPayload as { sub?: string; scope?: string } | undefined;
     const clientId = payload?.sub ?? 'unknown';
     const scope = (
@@ -124,10 +110,10 @@ export function createAuthRoutes(): Router {
     ) as JWTScope;
 
     const ticket = crypto.randomUUID();
-    wsTickets.set(ticket, {
+    await wsTicketStore.issue(ticket, {
       clientId,
       scope,
-      expiresAt: Date.now() + 60_000, // 60-second TTL
+      expiresAt: Date.now() + 60_000,
     });
 
     res.json({ ticket, expiresIn: 60 });

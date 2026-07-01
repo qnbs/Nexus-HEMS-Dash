@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from 'express';
 import type { IncomingMessage } from 'http';
 import { verifyToken } from '../jwt-utils.js';
+import type { IWsTicketStore } from '../services/ws-ticket-store.js';
 
 // ─── Scope Ordering ──────────────────────────────────────────────────
 
@@ -58,7 +59,8 @@ export const API_KEY_SCOPE_MAP = new Map<string, JWTScope>(
 
 /**
  * Returns the maximum scope allowed for the given API key.
- * Falls back to 'readwrite' if no scope mapping is configured for the key.
+ * Falls back to 'readwrite' in dev when no scope mapping is configured.
+ * Production startup validation (SEC-08) requires explicit API_KEY_SCOPES bindings.
  */
 export function getApiKeyMaxScope(apiKey: string): JWTScope {
   return API_KEY_SCOPE_MAP.get(apiKey) ?? 'readwrite';
@@ -161,7 +163,7 @@ export interface AuthenticatedClient {
  */
 export async function authenticateWS(
   req: IncomingMessage,
-  wsTickets: Map<string, { clientId: string; scope: JWTScope; expiresAt: number }>,
+  ticketStore: IWsTicketStore,
 ): Promise<AuthenticatedClient | null> {
   try {
     const url = new URL(req.url || '', `http://${req.headers.host || 'localhost'}`);
@@ -169,9 +171,8 @@ export async function authenticateWS(
     // HIGH-04 fix: Prefer single-use WS ticket (prevents JWT from appearing in access logs)
     const ticket = url.searchParams.get('ticket');
     if (ticket) {
-      const ticketData = wsTickets.get(ticket);
+      const ticketData = await ticketStore.consume(ticket);
       if (ticketData && Date.now() < ticketData.expiresAt) {
-        wsTickets.delete(ticket); // single-use: consume immediately
         return {
           clientId: ticketData.clientId,
           scope: ticketData.scope,
