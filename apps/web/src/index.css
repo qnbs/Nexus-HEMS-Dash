@@ -168,47 +168,47 @@
   .glass-panel-hover:hover {
     transform: translateY(-2px);
     box-shadow:
-      0 16px 64px rgba(0, 0, 0, 0.24),
-      0 8px 16px rgba(0, 0, 0, 0.16),
-      0 0 0 1px color-mix(in srgb, var(--color-primary) 24%, transparent),
-      inset 0 1px 0 rgba(255, 255, 255, 0.12);
+      0 16px 64px rgba(0, 0, 0, 0.2),
+      0 8px 16px rgba(0, 0, 0, 0.14),
+      0 0 0 1px color-mix(in srgb, var(--color-primary) 17%, transparent),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
   }
 
   /* ========== SUBTLE GLOW EFFECTS ========== */
   .neon-glow-green {
     text-shadow:
-      0 0 6px rgba(34, 255, 136, 0.5),
-      0 0 12px rgba(34, 255, 136, 0.2);
+      0 0 5px rgba(34, 255, 136, 0.34),
+      0 0 10px rgba(34, 255, 136, 0.14);
   }
 
   .neon-glow-blue {
     text-shadow:
-      0 0 6px rgba(0, 212, 224, 0.5),
-      0 0 12px rgba(0, 212, 224, 0.2);
+      0 0 5px rgba(0, 212, 224, 0.34),
+      0 0 10px rgba(0, 212, 224, 0.14);
   }
 
   .neon-glow-orange {
     text-shadow:
-      0 0 6px rgba(255, 136, 0, 0.5),
-      0 0 12px rgba(255, 136, 0, 0.2);
+      0 0 5px rgba(255, 136, 0, 0.34),
+      0 0 10px rgba(255, 136, 0, 0.14);
   }
 
   .neon-border-green {
     box-shadow:
-      0 0 8px rgba(34, 255, 136, 0.3),
-      inset 0 0 8px rgba(34, 255, 136, 0.08);
+      0 0 6px rgba(34, 255, 136, 0.2),
+      inset 0 0 6px rgba(34, 255, 136, 0.06);
   }
 
   .neon-border-blue {
     box-shadow:
-      0 0 8px rgba(0, 212, 224, 0.3),
-      inset 0 0 8px rgba(0, 212, 224, 0.08);
+      0 0 6px rgba(0, 212, 224, 0.2),
+      inset 0 0 6px rgba(0, 212, 224, 0.06);
   }
 
   .neon-border-orange {
     box-shadow:
-      0 0 8px rgba(255, 136, 0, 0.3),
-      inset 0 0 8px rgba(255, 136, 0, 0.08);
+      0 0 6px rgba(255, 136, 0, 0.2),
+      inset 0 0 6px rgba(255, 136, 0, 0.06);
   }
 
   /* ========== ANIMATED GRADIENT BORDER ========== */
@@ -1078,7 +1078,7 @@ body {
   --color-text: #e2eaf4;
   --color-muted: #94a3b8;
   --color-border: rgba(56, 189, 248, 0.14);
-  --color-glow: rgba(56, 189, 248, 0.2);
+  --color-glow: rgba(56, 189, 248, 0.14);
   /* WCAG 1.4.3: semantic badge text — bright hues for dark backgrounds (~7:1) */
   --badge-ok-fg: #6ee7b7;
   --badge-warn-fg: #fcd34d;
@@ -1173,7 +1173,7 @@ body {
   --color-text: #e8f4f0;
   --color-muted: #94a3b8;
   --color-border: rgba(34, 255, 136, 0.14);
-  --color-glow: rgba(34, 255, 136, 0.25);
+  --color-glow: rgba(34, 255, 136, 0.16);
   --badge-ok-fg: #6ee7b7;
   --badge-warn-fg: #fcd34d;
   --badge-danger-fg: #fca5a5;
@@ -1192,7 +1192,7 @@ body {
   --color-text: #1a2a3a;
   --color-muted: #4b5563;
   --color-border: rgba(0, 132, 255, 0.14);
-  --color-glow: rgba(255, 136, 0, 0.18);
+  --color-glow: rgba(255, 136, 0, 0.12);
   /* WCAG 1.4.3: dark hues for light backgrounds (~6:1) */
   --badge-ok-fg: #047857;
   --badge-warn-fg: #b45309;
@@ -1230,7 +1230,7 @@ body {
   --color-text: #e2eaf4;
   --color-muted: #94a3b8;
   --color-border: rgba(56, 189, 248, 0.14);
-  --color-glow: rgba(56, 189, 248, 0.2);
+  --color-glow: rgba(56, 189, 248, 0.14);
   --badge-ok-fg: #6ee7b7;
   --badge-warn-fg: #fcd34d;
   --badge-danger-fg: #fca5a5;
@@ -1248,7 +1248,7 @@ body {
   --color-text: #e4f0e6;
   --color-muted: #8aaa8e;
   --color-border: rgba(74, 222, 128, 0.14);
-  --color-glow: rgba(74, 222, 128, 0.2);
+  --color-glow: rgba(74, 222, 128, 0.14);
   --badge-ok-fg: #6ee7b7;
   --badge-warn-fg: #fcd34d;
   --badge-danger-fg: #fca5a5;
@@ -1267,7 +1267,7 @@ body {
   --color-text: #111827;
   --color-muted: #6b7280;
   --color-border: rgba(209, 213, 219, 0.5);
-  --color-glow: rgba(99, 102, 241, 0.12);
+  --color-glow: rgba(99, 102, 241, 0.08);
   /* WCAG 1.4.3: dark hues for white backgrounds (~6:1) */
   --badge-ok-fg: #047857;
   --badge-warn-fg: #b45309;
