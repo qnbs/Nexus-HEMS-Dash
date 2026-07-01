@@ -58,7 +58,8 @@ export const API_KEY_SCOPE_MAP = new Map<string, JWTScope>(
 
 /**
  * Returns the maximum scope allowed for the given API key.
- * Falls back to 'readwrite' if no scope mapping is configured for the key.
+ * Falls back to 'readwrite' in dev when no scope mapping is configured.
+ * Production startup validation (SEC-08) requires explicit API_KEY_SCOPES bindings.
  */
 export function getApiKeyMaxScope(apiKey: string): JWTScope {
   return API_KEY_SCOPE_MAP.get(apiKey) ?? 'readwrite';

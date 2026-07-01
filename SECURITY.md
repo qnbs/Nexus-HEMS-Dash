@@ -54,6 +54,7 @@ This project employs multiple layers of security:
 | ------------------------- | ---------------------- | --------------------------------------------------------------------- |
 | `JWT_SECRET`              | **Yes**                | HS256 signing key, minimum 64 chars, cryptographically random         |
 | `API_KEYS`                | **Yes**                | Comma-separated API keys for `/api/auth/token` (generated via `openssl rand -hex 32`) |
+| `API_KEY_SCOPES`          | **Yes**                | Comma-separated `key:scope` pairs (`read`, `readwrite`, `admin`) — one entry per `API_KEYS` value; server refuses to start in production without explicit bindings |
 | `WS_ORIGINS`              | **Yes**                | Allowed WebSocket origins (replaces `ws://localhost:*` in production) |
 | `GRAFANA_PASSWORD`        | Yes (if Grafana used)  | Grafana admin password — no default, docker-compose fails without it  |
 | `ADAPTER_MODE`            | No (default: `mock`)   | `mock` for demo/testing; `live` requires `ALLOW_LIVE_HARDWARE=true` (see Safety-Certification-Notice) |

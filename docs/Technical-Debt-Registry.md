@@ -2,7 +2,7 @@
 
 **Last audited:** 2026-06-29
 **Version at audit:** 1.2.0 (main @ b91a5f7)
-**Last updated:** 2026-06-29
+**Last updated:** 2026-07-01
 **Updated version:** 1.3.0 in flight
 **Auditor:** Cursor Cloud Agent (full-scale deep audit — see `docs/Audit-Report-2026-06-29.md`; docs truth-sync pass #129)
 
@@ -551,6 +551,14 @@ Storybook config references component paths that may not have stories written ye
 **Status:** ✅ Fixed in v1.3.0 prep
 
 `container-publish.yml` keyless-signs `ghcr.io/qnbs/nexus-hems-dash` and `ghcr.io/qnbs/nexus-hems-server` after Grype pass; SLSA provenance attestation pushed to registry.
+
+---
+
+### SEC-08 — Default API Key Max Scope `readwrite` When Scopes Unset
+**Files:** `apps/api/src/config/auth-config.ts`, `apps/api/src/middleware/auth.ts`, `apps/api/src/index.ts`
+**Status:** ✅ Fixed in v1.3.0
+
+`validateProductionAuthConfig()` throws at startup when `NODE_ENV=production` and `API_KEY_SCOPES` is missing or does not cover every `API_KEYS` entry. Dev mode retains the `readwrite` fallback in `getApiKeyMaxScope()`.
 
 ---
 

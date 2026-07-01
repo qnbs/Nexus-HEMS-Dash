@@ -62,6 +62,7 @@ docker compose --profile monitoring up -d
 | `NODE_ENV`               | `production`    | Environment mode                                                             |
 | `JWT_SECRET`             | —               | HMAC-SHA256 secret (min 64 chars, cryptographically random); auto-generated in dev |
 | `API_KEYS`               | —               | Comma-separated API keys for `/api/auth/token`; required in production       |
+| `API_KEY_SCOPES`         | —               | Comma-separated `key:scope` pairs; required in production (one per `API_KEYS` value) |
 | `CORS_ORIGINS`           | —               | Comma-separated allowed CORS origins                                         |
 | `WS_ORIGINS`             | —               | Comma-separated allowed WebSocket origins for CSP `connect-src` (production) |
 | `RATE_LIMIT_TRUSTED_IPS` | —               | Comma-separated IPs that bypass rate limiting (load balancers, proxies)      |

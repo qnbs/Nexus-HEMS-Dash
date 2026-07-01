@@ -1,8 +1,8 @@
 import type { Express } from 'express';
 import express from 'express';
 import supertest from 'supertest';
-import { beforeEach, describe, expect, it } from 'vitest';
-import { computeAdapterHealth } from '../protocols/index.js';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { computeAdapterHealth, warnIfLiveDeviceMapActive } from '../protocols/index.js';
 import { createHealthRoutes } from '../routes/health.routes.js';
 
 describe('GET /api/health', () => {
@@ -97,5 +97,43 @@ describe('computeAdapterHealth', () => {
       { id: 'mqtt-1', protocol: 'victron-mqtt', status: 'healthy' },
     ]);
     expect(summary.overall).toBe('healthy');
+  });
+});
+
+describe('warnIfLiveDeviceMapActive', () => {
+  it('logs a warning when live mode has device-map targets', () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      warnIfLiveDeviceMapActive(2, {
+        ADAPTER_MODE: 'live',
+        ALLOW_LIVE_HARDWARE: 'true',
+      });
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('2 device target'));
+    } finally {
+      warnSpy.mockRestore();
+    }
+  });
+
+  it('does not warn in mock mode', () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      warnIfLiveDeviceMapActive(3, { ADAPTER_MODE: 'mock' });
+      expect(warnSpy).not.toHaveBeenCalled();
+    } finally {
+      warnSpy.mockRestore();
+    }
+  });
+
+  it('does not warn when device map is empty', () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      warnIfLiveDeviceMapActive(0, {
+        ADAPTER_MODE: 'live',
+        ALLOW_LIVE_HARDWARE: 'true',
+      });
+      expect(warnSpy).not.toHaveBeenCalled();
+    } finally {
+      warnSpy.mockRestore();
+    }
   });
 });

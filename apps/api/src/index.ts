@@ -4,6 +4,7 @@ import express from 'express';
 import http from 'http';
 import { WebSocketServer } from 'ws';
 import { logAdapterModeStartup } from './config/adapter-mode.js';
+import { validateProductionAuthConfig } from './config/auth-config.js';
 import { logReadOnlyModeStartup } from './config/read-only-mode.js';
 import { logTrustProxyWarning, resolveTrustProxy } from './config/trust-proxy.js';
 import { eventBus } from './core/EventBus.js';
@@ -35,6 +36,7 @@ export async function startServer(): Promise<void> {
   const isDev = process.env.NODE_ENV !== 'production';
 
   // ─── JWT Key Initialization ───────────────────────────────────────
+  validateProductionAuthConfig();
   initKeys();
   logAdapterModeStartup();
   logReadOnlyModeStartup();

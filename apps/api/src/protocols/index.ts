@@ -24,6 +24,22 @@ import { MqttAdapter } from './mqtt/MqttAdapter.js';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DEVICE_MAP_PATH = join(__dirname, '../data/device-map.json');
 
+/**
+ * Log a safety warning when live hardware mode is active and device-map.json
+ * lists one or more targets (Perfection Roadmap 0.1).
+ */
+export function warnIfLiveDeviceMapActive(
+  deviceCount: number,
+  env: NodeJS.ProcessEnv = process.env,
+): void {
+  if (!isLiveHardwareAllowed(env) || deviceCount <= 0) return;
+
+  console.warn(`[Adapters] LIVE MODE: device-map.json lists ${deviceCount} device target(s).`);
+  console.warn(
+    '[Adapters] Verify each IP/host before polling — see docs/Safety-Certification-Notice.md',
+  );
+}
+
 const activeAdapters: IProtocolAdapter[] = [];
 
 export type AdapterStatus = 'starting' | 'healthy' | 'unhealthy' | 'failed' | 'stopped';
@@ -82,6 +98,8 @@ export async function startProtocolAdapters(eventBus: EventBus): Promise<void> {
       err,
     );
   }
+
+  warnIfLiveDeviceMapActive(deviceMap.length);
 
   for (const device of deviceMap) {
     if (device.protocol !== 'modbus-sunspec') continue;

@@ -57,7 +57,7 @@ gantt
 | Change `ADAPTER_MODE` default to `mock` | `apps/api/src/config/adapter-mode.ts` | api | ✅ #128 |
 | Align `README.md`, `SECURITY.md`, `Deployment-Guide.md` | docs | docs | ✅ #129 |
 | Ship `device-map.json` as empty array; example in `device-map.example.json` | `apps/api/src/data/` | api | ✅ |
-| Add startup warning when `live` + non-empty device map | `protocols/index.ts` | api | ⏳ |
+| Add startup warning when `live` + non-empty device map | `protocols/index.ts` | api | ✅ |
 
 **Success criteria:**
 - Fresh `pnpm dev` never opens Modbus sockets without explicit `ADAPTER_MODE=live`
@@ -74,7 +74,7 @@ gantt
 | Create `apps/web/src/lib/auth-token.ts` — get/set/clear with expiry | new | web | ✅ |
 | Write token after successful `/api/auth/token` response | `ApiAuthSettingsSection.tsx` | web | ✅ |
 | Wire Bearer into `CertificateManagement.tsx` fetches | web | web | ✅ #129 |
-| Wire Bearer into `EEBUSAdapter.ts` API calls | web | web | ⏳ |
+| Wire Bearer into `EEBUSAdapter.ts` API calls | web | web | ✅ |
 | Verify `background-sync.ts` + `sharing.ts` with integration test | tests | web | ⏳ |
 
 **Success criteria:**
