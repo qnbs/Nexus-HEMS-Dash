@@ -44,6 +44,28 @@ Each severity exposes four roles:
 > family and remain valid. `EmergencyStop` deliberately keeps its own deep-red ramp
 > (it must read unmistakably red in every theme).
 
+### Data-Visualisation Palette
+
+Colours for **chart data identity** — deliberately **separate** from `--state-*`
+(which conveys status/severity). Theme-tuned so every series/tier meets WCAG 1.4.11
+non-text contrast (≥3:1) against the theme background: bright hues on dark themes,
+darker hues on the two light themes.
+
+| Family | Tokens | Use |
+| :--- | :--- | :--- |
+| Categorical series | `--chart-1` … `--chart-6` | Distinct data series (e.g. PV, grid import/export, battery) |
+| Price tiers | `--price-low` · `--price-mid` · `--price-high` | Tariff cost windows (cheap → expensive) |
+
+```tsx
+// Recharts accepts CSS custom properties in stroke/fill:
+<Area dataKey="pvProduction" stroke="var(--chart-1)" fill="var(--chart-1)" fillOpacity={0.19} />
+<Line dataKey="price" stroke="var(--price-high)" />
+```
+
+> Chart **chrome** (grid, axes, tooltip) reuses the core `--color-*` tokens
+> (`--color-border`, `--color-muted`, `--color-surface-strong`, `--color-text`)
+> rather than bespoke values, so charts follow the active theme automatically.
+
 ### Foundation Scales (`index.css :root`)
 
 Theme-independent scales — kept out of Tailwind's `@theme` so they don't override the

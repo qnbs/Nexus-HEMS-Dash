@@ -342,13 +342,13 @@ export function HistoricalChart({ className = '' }: HistoricalChartProps) {
               onMouseMove={handleMouseMove}
               onMouseUp={handleMouseUp}
             >
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
 
               <XAxis
                 dataKey="timestamp"
                 tickFormatter={(ts: number) => formatTimestamp(ts, range)}
-                tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 11 }}
-                axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
+                tick={{ fill: 'var(--color-muted)', fontSize: 11 }}
+                axisLine={{ stroke: 'var(--color-border)' }}
                 tickLine={false}
                 minTickGap={40}
               />
@@ -357,8 +357,8 @@ export function HistoricalChart({ className = '' }: HistoricalChartProps) {
               <YAxis
                 yAxisId="power"
                 orientation="left"
-                tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 11 }}
-                axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
+                tick={{ fill: 'var(--color-muted)', fontSize: 11 }}
+                axisLine={{ stroke: 'var(--color-border)' }}
                 tickLine={false}
                 tickFormatter={(v: number) => `${Math.round(v)}W`}
                 width={52}
@@ -369,8 +369,8 @@ export function HistoricalChart({ className = '' }: HistoricalChartProps) {
                 yAxisId="soc"
                 orientation="right"
                 domain={[0, 100]}
-                tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 11 }}
-                axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
+                tick={{ fill: 'var(--color-muted)', fontSize: 11 }}
+                axisLine={{ stroke: 'var(--color-border)' }}
                 tickLine={false}
                 tickFormatter={(v: number) => `${v}%`}
                 width={40}
@@ -378,11 +378,11 @@ export function HistoricalChart({ className = '' }: HistoricalChartProps) {
 
               <Tooltip
                 contentStyle={{
-                  background: 'rgba(10,20,40,0.95)',
-                  border: '1px solid rgba(255,255,255,0.1)',
+                  background: 'var(--color-surface-strong)',
+                  border: '1px solid var(--color-border)',
                   borderRadius: '8px',
                   fontSize: '12px',
-                  color: 'rgba(255,255,255,0.9)',
+                  color: 'var(--color-text)',
                 }}
                 labelFormatter={(label: unknown) =>
                   typeof label === 'number' ? new Date(label).toLocaleString() : String(label ?? '')
@@ -404,8 +404,9 @@ export function HistoricalChart({ className = '' }: HistoricalChartProps) {
                 type="monotone"
                 dataKey="pvProduction"
                 name={t('historicalChart.pvProduction')}
-                stroke="#22ff88"
-                fill="#22ff8830"
+                stroke="var(--chart-1)"
+                fill="var(--chart-1)"
+                fillOpacity={0.19}
                 strokeWidth={2}
                 dot={false}
                 activeDot={{ r: 4 }}
@@ -416,8 +417,9 @@ export function HistoricalChart({ className = '' }: HistoricalChartProps) {
                 type="monotone"
                 dataKey="gridImport"
                 name={t('historicalChart.gridImport')}
-                stroke="#00f0ff"
-                fill="#00f0ff20"
+                stroke="var(--chart-2)"
+                fill="var(--chart-2)"
+                fillOpacity={0.13}
                 strokeWidth={2}
                 dot={false}
                 activeDot={{ r: 4 }}
@@ -428,8 +430,9 @@ export function HistoricalChart({ className = '' }: HistoricalChartProps) {
                 type="monotone"
                 dataKey="gridExport"
                 name={t('historicalChart.gridExport')}
-                stroke="#ff8800"
-                fill="#ff880020"
+                stroke="var(--chart-3)"
+                fill="var(--chart-3)"
+                fillOpacity={0.13}
                 strokeWidth={2}
                 dot={false}
                 activeDot={{ r: 4 }}
@@ -440,7 +443,7 @@ export function HistoricalChart({ className = '' }: HistoricalChartProps) {
                 type="monotone"
                 dataKey="batterySoC"
                 name={t('historicalChart.batterySoC')}
-                stroke="#a855f7"
+                stroke="var(--chart-4)"
                 strokeWidth={2}
                 dot={false}
                 strokeDasharray="5 5"
@@ -452,8 +455,10 @@ export function HistoricalChart({ className = '' }: HistoricalChartProps) {
                   yAxisId="power"
                   x1={Math.min(zoomLeft, zoomRight)}
                   x2={Math.max(zoomLeft, zoomRight)}
-                  fill="rgba(255,255,255,0.05)"
-                  stroke="rgba(255,255,255,0.2)"
+                  fill="var(--color-primary)"
+                  fillOpacity={0.08}
+                  stroke="var(--color-primary)"
+                  strokeOpacity={0.3}
                 />
               )}
             </ComposedChart>

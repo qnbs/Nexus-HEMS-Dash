@@ -1126,6 +1126,22 @@ body {
   --state-offline-on: #ffffff;
   --state-offline-bg: #c2410c;
   --state-offline-border: rgba(194, 65, 12, 0.4);
+
+  /* ===== Data-visualisation palette — categorical chart series + price tiers.
+     Deliberately SEPARATE from --state-* (which conveys status/severity, not
+     data identity). Tuned per theme (dark defaults here; light themes override
+     below) to meet WCAG 1.4.11 non-text contrast (≥3:1) against the background.
+     Chart CHROME (grid/axis/tooltip) reuses the core --color-* tokens rather
+     than bespoke values. ===== */
+  --chart-1: #34d399; /* series 1 — e.g. PV / production */
+  --chart-2: #38bdf8; /* series 2 — e.g. grid import */
+  --chart-3: #fb923c; /* series 3 — e.g. grid export */
+  --chart-4: #c084fc; /* series 4 — e.g. battery / SoC */
+  --chart-5: #f472b6; /* series 5 — auxiliary */
+  --chart-6: #2dd4bf; /* series 6 — auxiliary */
+  --price-low: #34d399; /* cheap tariff window */
+  --price-mid: #fbbf24; /* medium tariff window */
+  --price-high: #f87171; /* expensive tariff window */
 }
 
 /* CSS Variables per Theme (injected via JS) */
@@ -1172,6 +1188,16 @@ body {
   --state-success-fg: #047857;
   --state-info-fg: #0369a1;
   --state-offline-fg: #9a3412;
+  /* data-viz palette — darker hues for ≥3:1 non-text contrast on light bg */
+  --chart-1: #059669;
+  --chart-2: #0284c7;
+  --chart-3: #ea580c;
+  --chart-4: #9333ea;
+  --chart-5: #db2777;
+  --chart-6: #0d9488;
+  --price-low: #059669;
+  --price-mid: #d97706;
+  --price-high: #dc2626;
 }
 
 [data-theme='ocean-dark'] {
@@ -1235,6 +1261,16 @@ body {
   --state-success-fg: #047857;
   --state-info-fg: #0369a1;
   --state-offline-fg: #9a3412;
+  /* data-viz palette — darker hues for ≥3:1 non-text contrast on white bg */
+  --chart-1: #059669;
+  --chart-2: #0284c7;
+  --chart-3: #ea580c;
+  --chart-4: #9333ea;
+  --chart-5: #db2777;
+  --chart-6: #0d9488;
+  --price-low: #059669;
+  --price-mid: #d97706;
+  --price-high: #dc2626;
 }
 
 /* Animations */
