@@ -167,50 +167,60 @@ export function PredictiveForecast() {
           <AreaChart data={forecastData}>
             <defs>
               <linearGradient id="colorPv" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#fbbf24" stopOpacity={0.8} />
-                <stop offset="95%" stopColor="#fbbf24" stopOpacity={0.1} />
+                <stop offset="5%" stopColor="var(--chart-7)" stopOpacity={0.8} />
+                <stop offset="95%" stopColor="var(--chart-7)" stopOpacity={0.1} />
               </linearGradient>
               <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#f97316" stopOpacity={0.8} />
-                <stop offset="95%" stopColor="#f97316" stopOpacity={0.1} />
+                <stop offset="5%" stopColor="var(--chart-3)" stopOpacity={0.8} />
+                <stop offset="95%" stopColor="var(--chart-3)" stopOpacity={0.1} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.3} />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" opacity={0.3} />
             <XAxis
               dataKey="time"
-              stroke="#9ca3af"
-              tick={{ fill: '#9ca3af', fontSize: 12 }}
-              tickLine={{ stroke: '#374151' }}
+              stroke="var(--color-muted)"
+              tick={{ fill: 'var(--color-muted)', fontSize: 12 }}
+              tickLine={{ stroke: 'var(--color-border)' }}
             />
             <YAxis
               yAxisId="left"
-              stroke="#9ca3af"
-              tick={{ fill: '#9ca3af', fontSize: 12 }}
-              tickLine={{ stroke: '#374151' }}
-              label={{ value: 'kW', angle: -90, position: 'insideLeft', fill: '#9ca3af' }}
+              stroke="var(--color-muted)"
+              tick={{ fill: 'var(--color-muted)', fontSize: 12 }}
+              tickLine={{ stroke: 'var(--color-border)' }}
+              label={{
+                value: 'kW',
+                angle: -90,
+                position: 'insideLeft',
+                fill: 'var(--color-muted)',
+              }}
             />
             <YAxis
               yAxisId="right"
               orientation="right"
-              stroke="#9ca3af"
-              tick={{ fill: '#9ca3af', fontSize: 12 }}
-              tickLine={{ stroke: '#374151' }}
-              label={{ value: '€/kWh', angle: 90, position: 'insideRight', fill: '#9ca3af' }}
+              stroke="var(--color-muted)"
+              tick={{ fill: 'var(--color-muted)', fontSize: 12 }}
+              tickLine={{ stroke: 'var(--color-border)' }}
+              label={{
+                value: '€/kWh',
+                angle: 90,
+                position: 'insideRight',
+                fill: 'var(--color-muted)',
+              }}
             />
             <Tooltip
               contentStyle={{
-                backgroundColor: '#1e293b',
-                border: '1px solid #334155',
+                backgroundColor: 'var(--color-surface-strong)',
+                border: '1px solid var(--color-border)',
                 borderRadius: '12px',
-                color: '#e2e8f0',
+                color: 'var(--color-text)',
               }}
             />
-            <Legend wrapperStyle={{ color: '#9ca3af' }} iconType="line" />
+            <Legend wrapperStyle={{ color: 'var(--color-muted)' }} iconType="line" />
             <Area
               yAxisId="left"
               type="monotone"
               dataKey="pvForecast"
-              stroke="#fbbf24"
+              stroke="var(--chart-7)"
               fillOpacity={1}
               fill="url(#colorPv)"
               name={t('forecast.pvGeneration')}
@@ -219,7 +229,7 @@ export function PredictiveForecast() {
               yAxisId="right"
               type="monotone"
               dataKey="price"
-              stroke="#f97316"
+              stroke="var(--chart-3)"
               strokeWidth={2}
               dot={false}
               name={t('forecast.tariffPrice')}
@@ -228,7 +238,7 @@ export function PredictiveForecast() {
               yAxisId="left"
               type="monotone"
               dataKey="consumption"
-              stroke="#06b6d4"
+              stroke="var(--chart-6)"
               strokeWidth={2}
               strokeDasharray="5 5"
               dot={false}

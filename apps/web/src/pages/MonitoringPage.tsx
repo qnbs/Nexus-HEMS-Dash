@@ -615,16 +615,16 @@ function MonitoringPageComponent() {
               <AreaChart data={loadHistory}>
                 <defs>
                   <linearGradient id="gradLoad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#00f0ff" stopOpacity={0.6} />
-                    <stop offset="95%" stopColor="#00f0ff" stopOpacity={0.02} />
+                    <stop offset="5%" stopColor="var(--chart-6)" stopOpacity={0.6} />
+                    <stop offset="95%" stopColor="var(--chart-6)" stopOpacity={0.02} />
                   </linearGradient>
                   <linearGradient id="gradCpu" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#a78bfa" stopOpacity={0.5} />
-                    <stop offset="95%" stopColor="#a78bfa" stopOpacity={0.02} />
+                    <stop offset="5%" stopColor="var(--chart-4)" stopOpacity={0.5} />
+                    <stop offset="95%" stopColor="var(--chart-4)" stopOpacity={0.02} />
                   </linearGradient>
                   <linearGradient id="gradMem" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.02} />
+                    <stop offset="5%" stopColor="var(--chart-2)" stopOpacity={0.4} />
+                    <stop offset="95%" stopColor="var(--chart-2)" stopOpacity={0.02} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" opacity={0.3} />
@@ -650,7 +650,7 @@ function MonitoringPageComponent() {
                 <Area
                   type="monotone"
                   dataKey="load"
-                  stroke="#00f0ff"
+                  stroke="var(--chart-6)"
                   fill="url(#gradLoad)"
                   strokeWidth={2}
                   name="Load (W)"
@@ -658,7 +658,7 @@ function MonitoringPageComponent() {
                 <Area
                   type="monotone"
                   dataKey="cpu"
-                  stroke="#a78bfa"
+                  stroke="var(--chart-4)"
                   fill="url(#gradCpu)"
                   strokeWidth={1.5}
                   name="CPU %"
@@ -666,7 +666,7 @@ function MonitoringPageComponent() {
                 <Area
                   type="monotone"
                   dataKey="memory"
-                  stroke="#3b82f6"
+                  stroke="var(--chart-2)"
                   fill="url(#gradMem)"
                   strokeWidth={1.5}
                   name="RAM %"
