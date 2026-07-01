@@ -75,7 +75,7 @@ gantt
 | Write token after successful `/api/auth/token` response | `ApiAuthSettingsSection.tsx` | web | ✅ |
 | Wire Bearer into `CertificateManagement.tsx` fetches | web | web | ✅ #129 |
 | Wire Bearer into `EEBUSAdapter.ts` API calls | web | web | ✅ |
-| Verify `background-sync.ts` + `sharing.ts` with integration test | tests | web | ⏳ |
+| Verify `background-sync.ts` + `sharing.ts` with integration test | tests | web | ✅ |
 
 **Success criteria:**
 - `localStorage.getItem('nexus-hems-auth-token')` populated after login

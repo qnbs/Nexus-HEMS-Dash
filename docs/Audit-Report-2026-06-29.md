@@ -15,6 +15,7 @@
 > - **Semgrep** — `ShipHandshakeService.ts` path guard refactored (0 findings locally).
 > - **SEC-08 resolved** — production startup requires explicit `API_KEY_SCOPES` for every `API_KEYS` entry (`auth-config.ts`).
 > - **Perfection Roadmap 0.1** — live mode + non-empty `device-map.json` emits startup safety warning.
+> - **Roadmap 0.2 / LOW-09** — auth integration tests for `background-sync` + `sharing`; fuzz gate wired into `ci-passed`.
 
 ---
 

@@ -1,4 +1,13 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+const { getAuthToken } = vi.hoisted(() => ({
+  getAuthToken: vi.fn<() => string | null>(),
+}));
+
+vi.mock('../lib/auth-token', () => ({
+  getAuthToken,
+}));
+
 import {
   createSharedDashboard,
   generateShareLink,
@@ -9,6 +18,13 @@ import {
 describe('Dashboard Sharing', () => {
   beforeEach(() => {
     localStorage.clear();
+    getAuthToken.mockReset();
+    vi.stubGlobal('fetch', vi.fn());
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.unstubAllEnvs();
   });
 
   describe('generateShareLink', () => {
@@ -38,6 +54,47 @@ describe('Dashboard Sharing', () => {
       const stored = localStorage.getItem(`shared-dashboard-${dashboard.id}`);
       expect(stored).toBeTruthy();
     });
+
+    it('creates server-backed share when JWT is available', async () => {
+      getAuthToken.mockReturnValue('share-jwt');
+      vi.stubEnv('VITE_API_URL', 'http://localhost:3000');
+      vi.mocked(fetch).mockResolvedValueOnce(
+        new Response(JSON.stringify({ shareId: 'srv-share-1', redeemToken: 'redeem-secret' }), {
+          status: 200,
+        }),
+      );
+
+      const dashboard = await createSharedDashboard('Community Solar', 'owner@test.com');
+
+      expect(fetch).toHaveBeenCalledWith(
+        'http://localhost:3000/api/shares',
+        expect.objectContaining({
+          method: 'POST',
+          headers: expect.objectContaining({
+            Authorization: 'Bearer share-jwt',
+          }),
+        }),
+      );
+      expect(dashboard.id).toBe('srv-share-1');
+      expect(dashboard.shareToken).toBe('redeem-secret');
+
+      const stored = JSON.parse(localStorage.getItem(`shared-dashboard-${dashboard.id}`)!);
+      expect(stored.serverBacked).toBe(true);
+      expect(stored.shareToken).toBeUndefined();
+    });
+
+    it('falls back to local demo share when server call fails', async () => {
+      getAuthToken.mockReturnValue('share-jwt');
+      vi.stubEnv('VITE_API_URL', 'http://localhost:3000');
+      vi.mocked(fetch).mockResolvedValueOnce(new Response('{}', { status: 500 }));
+
+      const dashboard = await createSharedDashboard('Offline Demo', 'owner@test.com');
+
+      expect(dashboard.shareToken).toBeTruthy();
+      const stored = JSON.parse(localStorage.getItem(`shared-dashboard-${dashboard.id}`)!);
+      expect(stored.serverBacked).toBeUndefined();
+      expect(stored.shareToken).toBeTruthy();
+    });
   });
 
   describe('joinSharedDashboard', () => {
@@ -58,6 +115,31 @@ describe('Dashboard Sharing', () => {
       await expect(joinSharedDashboard(created.id, 'wrong-token', 'user@test.com')).rejects.toThrow(
         'Invalid share token',
       );
+    });
+
+    it('redeems server-backed share via API', async () => {
+      vi.stubEnv('VITE_API_URL', 'http://localhost:3000');
+      vi.mocked(fetch).mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            id: 'srv-share-9',
+            name: 'Grid Pool',
+            permissions: 'view',
+            expiresAt: Date.now() + 86_400_000,
+          }),
+          { status: 200 },
+        ),
+      );
+
+      const joined = await joinSharedDashboard('srv-share-9', 'redeem-tok', 'guest@test.com');
+
+      expect(fetch).toHaveBeenCalledWith(
+        'http://localhost:3000/api/shares/srv-share-9/redeem',
+        expect.objectContaining({ method: 'POST' }),
+      );
+      expect(joined).not.toBeNull();
+      expect(joined!.permissions).toBe('view');
+      expect(joined!.households).toContain('guest@test.com');
     });
 
     it('should not duplicate household entries', async () => {

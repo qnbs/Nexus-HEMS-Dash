@@ -2,7 +2,7 @@
 
 **Last audited:** 2026-06-29
 **Version at audit:** 1.2.0 (main @ b91a5f7)
-**Last updated:** 2026-07-01
+**Last updated:** 2026-07-01 (test coverage + CI fuzz gate pass)
 **Updated version:** 1.3.0 in flight
 **Auditor:** Cursor Cloud Agent (full-scale deep audit — see `docs/Audit-Report-2026-06-29.md`; docs truth-sync pass #129)
 
@@ -650,10 +650,10 @@ Scope table said "not fully integrated"; P3 section said "Fully Implemented". Co
 ### LOW (new)
 
 ### LOW-09 — Fuzz Workflow Not in ci-passed Aggregate
-**File:** `.github/workflows/fuzz.yml`
-**Status:** ⏳ Backlog — Phase 1
+**File:** `.github/workflows/fuzz.yml`, `.github/workflows/ci.yml`
+**Status:** ✅ Fixed in v1.3.0
 
-Fuzz gate runs in parallel; not required for `ci-passed` success.
+`ci.yml` now runs `pnpm test:fuzz` in a dedicated `fuzz-tests` job included in the `ci-passed` aggregate gate. `fuzz.yml` remains for weekly `schedule` and `workflow_dispatch` supplementary runs (avoids duplicate fuzz on every PR).
 
 ---
 
