@@ -2096,6 +2096,7 @@ export const de = {
     confirmGeneric: 'Gerätebefehl {{type}} mit Wert {{value}} ausführen?',
     commandRejected: 'Befehl abgelehnt',
     commandExecuted: 'Befehl ausgeführt',
+    commandFailed: 'Befehl fehlgeschlagen',
     validationFailed: 'Validierung fehlgeschlagen',
     rateLimitExceeded: 'Befehlsrate überschritten (max. 30/min)',
     circuitBreakerOpen: 'Schutzschalter offen — Adapter gesperrt',
