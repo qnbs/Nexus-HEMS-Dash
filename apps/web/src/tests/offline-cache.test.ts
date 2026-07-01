@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import 'fake-indexeddb/auto';
 import {
   cacheEnergySnapshot,
@@ -6,10 +6,14 @@ import {
   cacheTariffData,
   clearOfflineCache,
   db,
+  evictOldestOfflineEntries,
+  getBrowserStorageUsage,
   getLatestEnergySnapshot,
   getLatestSankeyData,
   getLatestTariffData,
   getStorageStats,
+  monitorOfflineStorageQuota,
+  OFFLINE_STORAGE_QUOTA_WARNING_RATIO,
 } from '../lib/offline-cache';
 
 describe('Offline Cache (IndexedDB)', () => {
@@ -114,6 +118,90 @@ describe('Offline Cache (IndexedDB)', () => {
       expect(db.sankeySnapshots).toBeDefined();
       expect(db.tariffData).toBeDefined();
       expect(db.userPreferences).toBeDefined();
+    });
+  });
+
+  describe('Storage quota monitoring (LOW-05)', () => {
+    const originalStorage = navigator.storage;
+
+    afterEach(() => {
+      Object.defineProperty(navigator, 'storage', {
+        configurable: true,
+        value: originalStorage,
+      });
+      vi.useRealTimers();
+      vi.restoreAllMocks();
+    });
+
+    it('getBrowserStorageUsage returns ratio when estimate is available', async () => {
+      Object.defineProperty(navigator, 'storage', {
+        configurable: true,
+        value: {
+          estimate: vi.fn().mockResolvedValue({ usage: 850, quota: 1000 }),
+        },
+      });
+
+      const usage = await getBrowserStorageUsage();
+      expect(usage).toEqual({ usage: 850, quota: 1000, ratio: 0.85 });
+    });
+
+    it('getBrowserStorageUsage returns null when quota is zero', async () => {
+      Object.defineProperty(navigator, 'storage', {
+        configurable: true,
+        value: {
+          estimate: vi.fn().mockResolvedValue({ usage: 100, quota: 0 }),
+        },
+      });
+
+      expect(await getBrowserStorageUsage()).toBeNull();
+    });
+
+    it('evictOldestOfflineEntries removes oldest energy snapshots first', async () => {
+      await cacheEnergySnapshot({ pvPower: 100 });
+      await new Promise((r) => setTimeout(r, 10));
+      await cacheEnergySnapshot({ pvPower: 200 });
+
+      const evicted = await evictOldestOfflineEntries(1);
+      expect(evicted).toBe(1);
+
+      const latest = await getLatestEnergySnapshot();
+      expect((latest!.data as { pvPower: number }).pvPower).toBe(200);
+    });
+
+    it('monitorOfflineStorageQuota warns once and evicts when ratio exceeds threshold', async () => {
+      const onWarning = vi.fn();
+
+      Object.defineProperty(navigator, 'storage', {
+        configurable: true,
+        value: {
+          estimate: vi.fn().mockResolvedValue({
+            usage: OFFLINE_STORAGE_QUOTA_WARNING_RATIO * 1000 + 50,
+            quota: 1000,
+          }),
+        },
+      });
+
+      await cacheEnergySnapshot({ pvPower: 100 });
+      await new Promise((r) => setTimeout(r, 10));
+      await cacheEnergySnapshot({ pvPower: 200 });
+
+      const stop = monitorOfflineStorageQuota({
+        checkIntervalMs: 60_000,
+        onWarning,
+      });
+
+      await vi.waitFor(() => {
+        expect(onWarning).toHaveBeenCalledTimes(1);
+      });
+
+      expect(onWarning.mock.calls[0][0].ratio).toBeGreaterThanOrEqual(
+        OFFLINE_STORAGE_QUOTA_WARNING_RATIO,
+      );
+
+      const stats = await getStorageStats();
+      expect(stats.energySnapshots).toBeLessThan(2);
+
+      stop();
     });
   });
 });

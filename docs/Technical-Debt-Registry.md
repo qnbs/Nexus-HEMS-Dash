@@ -288,7 +288,7 @@ Changed to `process.env.JWT_SECRET_FILE ?? '/run/secrets/jwt_secret'`.
 
 Current thresholds:
 
-- Web: statements 52%, branches 42%, functions 53%, lines 53%
+- Web: statements 65%, branches 60%, functions 53%, lines 65% (raised from 52/42/53/53 — functions remains the bottleneck at ~55%)
 - API: statements 55%, branches 45%, functions 55%, lines 55%
 
 Target: 70%+ for all metrics.
@@ -431,12 +431,10 @@ Added post-construction validation loop that calls `console.warn` for each `API_
 
 ### LOW-05 — Offline Cache Has No Quota Warning
 
-**File:** `apps/web/src/lib/offline-cache.ts`
-**Status:** ⏳ Backlog
+**File:** `apps/web/src/lib/offline-cache.ts`, `apps/web/src/App.tsx`
+**Status:** ✅ Fixed in v1.3.0
 
-No monitoring of `navigator.storage.estimate()`. IndexedDB operations may silently fail when storage quota is exceeded.
-
-**Fix:** On app init, check `estimate().usage / estimate().quota > 0.8` and surface a toast warning. Implement LRU eviction in offline cache.
+`monitorOfflineStorageQuota()` checks `navigator.storage.estimate()` on app init and every 60 s (skipped during E2E). When `usage/quota > 0.8`, oldest IndexedDB cache rows are evicted (LRU) and a Sonner toast warns the user (`offline.storageQuotaWarning` i18n keys).
 
 ---
 

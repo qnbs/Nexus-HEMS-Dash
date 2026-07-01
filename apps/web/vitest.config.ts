@@ -20,10 +20,10 @@ export default defineConfig({
       reporter: ['text', 'json', 'html', 'lcov'],
       exclude: ['node_modules/', 'src/tests/', '*.config.ts', 'dist/'],
       thresholds: {
-        statements: 52,
-        branches: 42,
+        statements: 65,
+        branches: 60,
         functions: 53,
-        lines: 53,
+        lines: 65,
       },
     },
   },

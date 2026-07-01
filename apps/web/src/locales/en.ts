@@ -1367,6 +1367,9 @@ export const en = {
     limitedFeatures: 'Limited features in offline mode',
     willReconnect: 'Will reconnect automatically',
     snapshots: 'Snapshots available',
+    storageQuotaWarning: 'Device storage is {{percent}}% full',
+    storageQuotaWarningDesc:
+      'Oldest offline cache entries were removed to free space. Clear cache in Settings if problems persist.',
   },
   commandPalette: {
     title: 'Command Palette',

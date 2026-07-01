@@ -259,3 +259,128 @@ export async function clearOfflineCache(): Promise<void> {
     console.error('Failed to clear offline cache:', error);
   }
 }
+
+/** Warn when browser storage usage exceeds this fraction of quota (LOW-05). */
+export const OFFLINE_STORAGE_QUOTA_WARNING_RATIO = 0.8;
+
+export interface BrowserStorageUsage {
+  usage: number;
+  quota: number;
+  ratio: number;
+}
+
+/**
+ * Read browser storage quota via Storage Manager API.
+ * Returns null when the API is unavailable or quota is unknown.
+ */
+export async function getBrowserStorageUsage(): Promise<BrowserStorageUsage | null> {
+  if (typeof navigator === 'undefined' || !navigator.storage?.estimate) {
+    return null;
+  }
+
+  try {
+    const estimate = await navigator.storage.estimate();
+    const usage = estimate.usage ?? 0;
+    const quota = estimate.quota ?? 0;
+    if (quota <= 0) return null;
+    return { usage, quota, ratio: usage / quota };
+  } catch (error) {
+    console.error('Failed to estimate browser storage:', error);
+    return null;
+  }
+}
+
+/**
+ * LRU eviction: remove oldest offline-cache rows across IndexedDB tables.
+ * Energy snapshots are pruned first (largest volume), then Sankey and tariff rows.
+ */
+export async function evictOldestOfflineEntries(batchSize = 50): Promise<number> {
+  let evicted = 0;
+
+  try {
+    const energyIds = await db.energySnapshots.orderBy('timestamp').limit(batchSize).primaryKeys();
+    if (energyIds.length > 0) {
+      await db.energySnapshots.bulkDelete(energyIds);
+      evicted += energyIds.length;
+    }
+
+    const remaining = Math.max(0, batchSize - evicted);
+    if (remaining > 0) {
+      const sankeyIds = await db.sankeySnapshots
+        .orderBy('timestamp')
+        .limit(remaining)
+        .primaryKeys();
+      if (sankeyIds.length > 0) {
+        await db.sankeySnapshots.bulkDelete(sankeyIds);
+        evicted += sankeyIds.length;
+      }
+    }
+
+    const expiredTariffIds = await db.tariffData.where('expiresAt').below(Date.now()).primaryKeys();
+    if (expiredTariffIds.length > 0) {
+      await db.tariffData.bulkDelete(expiredTariffIds);
+      evicted += expiredTariffIds.length;
+    }
+
+    const tariffRemaining = Math.max(0, batchSize - evicted);
+    if (tariffRemaining > 0) {
+      const tariffIds = await db.tariffData
+        .orderBy('timestamp')
+        .limit(tariffRemaining)
+        .primaryKeys();
+      if (tariffIds.length > 0) {
+        await db.tariffData.bulkDelete(tariffIds);
+        evicted += tariffIds.length;
+      }
+    }
+  } catch (error) {
+    console.error('Failed to evict offline cache entries:', error);
+  }
+
+  return evicted;
+}
+
+export interface OfflineStorageQuotaMonitorOptions {
+  /** Called once when usage crosses the warning ratio. */
+  onWarning?: (usage: BrowserStorageUsage) => void;
+  warningRatio?: number;
+  checkIntervalMs?: number;
+  /** Run LRU eviction when the warning threshold is crossed (default: true). */
+  evictOnWarning?: boolean;
+}
+
+const DEFAULT_QUOTA_CHECK_INTERVAL_MS = 5 * 60 * 1000;
+
+/**
+ * Periodically monitor browser storage quota and warn before IndexedDB writes fail.
+ * Returns a cleanup function (clear interval).
+ */
+export function monitorOfflineStorageQuota(
+  options: OfflineStorageQuotaMonitorOptions = {},
+): () => void {
+  const warningRatio = options.warningRatio ?? OFFLINE_STORAGE_QUOTA_WARNING_RATIO;
+  const checkIntervalMs = options.checkIntervalMs ?? DEFAULT_QUOTA_CHECK_INTERVAL_MS;
+  const evictOnWarning = options.evictOnWarning ?? true;
+  let warned = false;
+
+  const check = async (): Promise<void> => {
+    const usage = await getBrowserStorageUsage();
+    if (!usage || usage.ratio < warningRatio) return;
+
+    if (evictOnWarning) {
+      await evictOldestOfflineEntries();
+    }
+
+    if (!warned && options.onWarning) {
+      warned = true;
+      options.onWarning(usage);
+    }
+  };
+
+  void check();
+  const intervalId = setInterval(() => {
+    void check();
+  }, checkIntervalMs);
+
+  return () => clearInterval(intervalId);
+}
