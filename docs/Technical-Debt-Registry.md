@@ -88,10 +88,10 @@ CodeAnt.ai GitHub App installation and dashboard configuration must be completed
 
 ### PRF-03 — Coverage Diff Not Yet Enforced
 
-**Files:** `.github/workflows/ci.yml`, `apps/web/vitest.config.ts`, `apps/api/vitest.config.ts`
-**Status:** ⏳ Backlog
+**Files:** `.github/workflows/ci.yml`, `scripts/check-coverage-baseline.mjs`, `apps/web/coverage-baseline.json`
+**Status:** ✅ Fixed in v1.3.0
 
-DeepSource coverage report card is visible, but a hard "coverage may not decrease" gate is not enabled until MED-01 coverage targets are closer to the 70% goal.
+`pnpm check:coverage-baseline` runs after web `test:coverage` in CI and fails when statements/branches/functions/lines drop below the committed baseline. Vitest emits `coverage-summary.json` via the `json-summary` reporter.
 
 ### PRF-04 — Unified PR Feedback Comment Missing
 
@@ -288,7 +288,7 @@ Changed to `process.env.JWT_SECRET_FILE ?? '/run/secrets/jwt_secret'`.
 
 Current thresholds:
 
-- Web: statements 70%, branches 63%, functions 56%, lines 70% (functions was the bottleneck at ~55%; now ~57%)
+- Web: statements 70%, branches 63%, functions 57%, lines 70% (functions ~58% measured)
 - API: statements 55%, branches 45%, functions 55%, lines 55%
 
 Target: 70%+ for all metrics.
