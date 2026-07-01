@@ -3,6 +3,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AppearanceTab } from '../components/settings/AppearanceTab';
 import { ControllersTab } from '../components/settings/ControllersTab';
+import { EnergyTab } from '../components/settings/EnergyTab';
 import { NotificationsTab } from '../components/settings/NotificationsTab';
 import { SecurityTab } from '../components/settings/SecurityTab';
 import { StorageTab } from '../components/settings/StorageTab';
@@ -78,6 +79,25 @@ const mockSettings = {
   evMaxPowerKW: 11,
   heatPumpPowerKW: 3,
   feedInTariffEurKWh: 0.08,
+  // Energy tab
+  tariffProvider: 'none',
+  tariffToken: '',
+  feedInTariff: 0.08,
+  chargeThreshold: 0.15,
+  gridOperator: 'default',
+  gridOperatorName: 'Test Operator',
+  gridPriceAvg: 0.3,
+  monthlyBudget: 100,
+  dynamicGridFees: false,
+  location: { lat: 52.5, lon: 13.4 },
+  systemConfig: {
+    presetId: 'custom',
+    pv: [],
+    battery: {},
+    evCharger: {},
+    heatPump: {},
+    inverter: {},
+  },
 };
 
 vi.mock('../store', () => ({
@@ -199,6 +219,20 @@ describe('ControllersTab', () => {
   it('mounts without crashing and shows optimizer content', () => {
     const { container } = renderTab(<ControllersTab />);
     expect(container.firstChild).toBeTruthy();
+  });
+});
+
+describe('EnergyTab', () => {
+  it('mounts without crashing with the default system config', () => {
+    const { container } = renderTab(<EnergyTab />);
+    expect(container.firstChild).toBeTruthy();
+  });
+
+  it('writes the tariff-provider selection back to the store', () => {
+    const { container } = renderTab(<EnergyTab />);
+    const select = container.querySelector('#settings-tariff') as HTMLSelectElement;
+    fireEvent.change(select, { target: { value: 'tibber' } });
+    expect(mockUpdateSettings).toHaveBeenCalledWith({ tariffProvider: 'tibber' });
   });
 });
 
