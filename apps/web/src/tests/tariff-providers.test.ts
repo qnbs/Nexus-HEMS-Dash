@@ -286,4 +286,158 @@ describe('fetchTariffPrices() — provider=nordpool', () => {
     expect(prices[0]?.currency).toBe('EUR');
     expect(prices[0]?.startsAt).toBeInstanceOf(Date);
   });
+
+  it('parses Nordpool market data when the API succeeds', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        data: {
+          Rows: [
+            {
+              StartTime: '2026-04-20T10:00:00Z',
+              EndTime: '2026-04-20T11:00:00Z',
+              Columns: [{ Value: '45,50' }],
+            },
+          ],
+        },
+      }),
+    } as Response);
+
+    const prices = await fetchTariffPrices('nordpool', '', 'DE-LU');
+
+    expect(prices).toHaveLength(1);
+    expect(prices[0]?.energy).toBeCloseTo(0.0455, 4);
+    expect(prices[0]?.total).toBeGreaterThan(prices[0]?.energy ?? 0);
+  });
+});
+
+describe('fetchTariffPrices() — provider=tibber', () => {
+  it('returns simulated prices when no API token is provided', async () => {
+    const prices = await fetchTariffPrices('tibber', '');
+    expect(prices.length).toBeGreaterThan(0);
+    expect(prices[0]?.currency).toBe('EUR');
+  });
+
+  it('maps GraphQL priceInfo when Tibber API succeeds', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        data: {
+          viewer: {
+            homes: [
+              {
+                currentSubscription: {
+                  priceInfo: {
+                    today: [
+                      {
+                        total: 0.31,
+                        energy: 0.18,
+                        tax: 0.05,
+                        startsAt: '2026-04-20T12:00:00.000Z',
+                      },
+                    ],
+                    tomorrow: [],
+                  },
+                },
+              },
+            ],
+          },
+        },
+      }),
+    } as Response);
+
+    const prices = await fetchTariffPrices('tibber', 'test-token');
+
+    expect(prices).toHaveLength(1);
+    expect(prices[0]?.total).toBe(0.31);
+    expect(prices[0]?.gridFee).toBeCloseTo(0.08, 4);
+  });
+
+  it('falls back to simulated prices when Tibber API fails', async () => {
+    vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('network error'));
+
+    const prices = await fetchTariffPrices('tibber', 'test-token');
+    expect(prices.length).toBeGreaterThan(0);
+  });
+});
+
+describe('fetchTariffPrices() — provider=tibber-pulse', () => {
+  it('enhances Tibber prices with renewable and CO2 metrics', async () => {
+    const prices = await fetchTariffPrices('tibber-pulse', '');
+    expect(prices.length).toBeGreaterThan(0);
+    expect(prices[0]?.renewablePercent).toBeTypeOf('number');
+    expect(prices[0]?.co2gPerKwh).toBeTypeOf('number');
+  });
+});
+
+describe('fetchTariffPrices() — provider=awattar-de / awattar-at', () => {
+  it('parses aWATTar DE market data on success', async () => {
+    const start = Date.now();
+    const end = start + 3_600_000;
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        data: [{ start_timestamp: start, end_timestamp: end, marketprice: 80 }],
+      }),
+    } as Response);
+
+    const prices = await fetchTariffPrices('awattar-de', '');
+
+    expect(prices).toHaveLength(1);
+    expect(prices[0]?.energy).toBeCloseTo(0.08, 4);
+    expect(prices[0]?.currency).toBe('EUR');
+  });
+
+  it('uses AT fee schedule for awattar-at', async () => {
+    const start = Date.now();
+    const end = start + 3_600_000;
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      expect(String(input)).toContain('api.awattar.at');
+      return {
+        ok: true,
+        json: async () => ({
+          data: [{ start_timestamp: start, end_timestamp: end, marketprice: 60 }],
+        }),
+      } as Response;
+    });
+
+    const prices = await fetchTariffPrices('awattar-at', '');
+    expect(prices[0]?.gridFee).toBeCloseTo(0.045, 4);
+  });
+
+  it('falls back when aWATTar response is not ok', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue({ ok: false } as Response);
+    const prices = await fetchTariffPrices('awattar', '');
+    expect(prices.length).toBeGreaterThan(0);
+  });
+});
+
+describe('fetchTariffPrices() — provider=octopus', () => {
+  it('returns simulated GBP prices without an API token', async () => {
+    const prices = await fetchTariffPrices('octopus', '');
+    expect(prices.length).toBeGreaterThan(0);
+    expect(prices[0]?.currency).toBe('GBP');
+  });
+
+  it('maps Octopus Agile unit rates when API succeeds', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        results: [
+          {
+            valid_from: '2026-04-20T10:00:00Z',
+            valid_to: '2026-04-20T11:00:00Z',
+            value_inc_vat: 25.5,
+            value_exc_vat: 21.0,
+          },
+        ],
+      }),
+    } as Response);
+
+    const prices = await fetchTariffPrices('octopus', 'api-key', 'DE');
+
+    expect(prices).toHaveLength(1);
+    expect(prices[0]?.total).toBeCloseTo(0.255, 4);
+    expect(prices[0]?.currency).toBe('EUR');
+  });
 });

@@ -17,13 +17,13 @@ export default defineConfig({
     exclude: ['node_modules', 'dist', 'e2e', 'tests/e2e', '**/*.spec.ts'],
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'json', 'html', 'lcov'],
+      reporter: ['text', 'json', 'json-summary', 'html', 'lcov'],
       exclude: ['node_modules/', 'src/tests/', '*.config.ts', 'dist/'],
       thresholds: {
-        statements: 52,
-        branches: 42,
-        functions: 53,
-        lines: 53,
+        statements: 70,
+        branches: 63,
+        functions: 58,
+        lines: 70,
       },
     },
   },

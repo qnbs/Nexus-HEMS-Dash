@@ -307,3 +307,143 @@ describe('Zigbee2MQTTAdapter — Custom Topic Prefix', () => {
     vi.unstubAllGlobals();
   });
 });
+
+function sendBridgeJsonMessage(
+  ws: MockWebSocket,
+  topic: string,
+  payload: Record<string, unknown> | unknown[],
+): void {
+  ws.onmessage?.({
+    data: JSON.stringify({ topic, payload }),
+  });
+}
+
+describe('Zigbee2MQTTAdapter — JSON bridge messages', () => {
+  let adapter: Zigbee2MQTTAdapter;
+
+  beforeEach(() => {
+    vi.stubGlobal('WebSocket', MockWebSocket);
+    adapter = new Zigbee2MQTTAdapter({
+      host: 'mosquitto.local',
+      port: 9001,
+      baseTopic: 'zigbee2mqtt',
+      energyDevices: ['nous-a5t'],
+    });
+  });
+
+  afterEach(() => {
+    adapter.destroy();
+    vi.unstubAllGlobals();
+    mockInstance = null;
+  });
+
+  async function connectOpen(): Promise<MockWebSocket> {
+    const p = adapter.connect();
+    const ws = mockInstance!;
+    ws.readyState = WebSocket.OPEN;
+    ws.onopen?.();
+    await p;
+    return ws;
+  }
+
+  it('updates snapshot when a device state JSON message arrives', async () => {
+    const ws = await connectOpen();
+
+    sendBridgeJsonMessage(ws, 'zigbee2mqtt/nous-a5t', {
+      power: 320,
+      energy: 4.2,
+      voltage: 231,
+      current: 1.4,
+      state: 'ON',
+    });
+
+    const snapshot = adapter.getSnapshot();
+    expect(snapshot.load?.totalPowerW).toBe(320);
+    expect(snapshot.grid?.powerW).toBe(320);
+  });
+
+  it('auto-subscribes to power-capable devices from bridge/devices', async () => {
+    const ws = await connectOpen();
+
+    sendBridgeJsonMessage(ws, 'zigbee2mqtt/bridge/devices', [
+      {
+        friendly_name: 'aqara-plug',
+        ieee_address: '0x00158d0001a2b3c4',
+        type: 'EndDevice',
+        definition: {
+          model: 'SP-EUC01',
+          vendor: 'Aqara',
+          exposes: [{ type: 'numeric', name: 'power' }],
+        },
+      },
+    ]);
+
+    expect(ws.send).toHaveBeenCalledWith(
+      JSON.stringify({ type: 'subscribe', topic: 'zigbee2mqtt/aqara-plug' }),
+    );
+  });
+
+  it('marks adapter error when bridge reports offline', async () => {
+    const ws = await connectOpen();
+
+    sendBridgeJsonMessage(ws, 'zigbee2mqtt/bridge/state', { state: 'offline' });
+
+    expect(adapter.status).toBe('error');
+  });
+
+  it('sends KNX_TOGGLE_LIGHTS to device set topic when connected', async () => {
+    const ws = await connectOpen();
+
+    const result = await adapter.sendCommand({
+      type: 'KNX_TOGGLE_LIGHTS',
+      targetDeviceId: 'nous-a5t',
+      value: false,
+    });
+
+    expect(result).toBe(true);
+    expect(ws.send).toHaveBeenCalledWith(
+      JSON.stringify({
+        topic: 'zigbee2mqtt/nous-a5t/set',
+        payload: JSON.stringify({ state: 'OFF' }),
+      }),
+    );
+  });
+});
+
+describe('Zigbee2MQTTAdapter — wildcard subscribe', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    mockInstance = null;
+  });
+
+  it('subscribes to wildcard topic when no energy devices are configured', async () => {
+    vi.stubGlobal('WebSocket', MockWebSocket);
+    const adapter = new Zigbee2MQTTAdapter({ host: 'mosquitto.local' });
+    const p = adapter.connect();
+    const ws = mockInstance!;
+    ws.readyState = WebSocket.OPEN;
+    ws.onopen?.();
+    await p;
+
+    expect(ws.send).toHaveBeenCalledWith(
+      JSON.stringify({ type: 'subscribe', topic: 'zigbee2mqtt/+' }),
+    );
+    adapter.destroy();
+  });
+});
+
+describe('Zigbee2MQTTAdapter — register()', () => {
+  it('registers the zigbee2mqtt factory in the adapter registry', async () => {
+    const { getRegisteredAdapter, unregisterAdapter } = await import(
+      '../core/adapters/adapter-registry'
+    );
+    const { register } = await import('../core/adapters/contrib/zigbee2mqtt');
+
+    register();
+    const entry = getRegisteredAdapter('zigbee2mqtt');
+    expect(entry?.source).toBe('contrib');
+    expect(entry?.displayName).toBe('Zigbee2MQTT');
+
+    unregisterAdapter('zigbee2mqtt');
+  });
+});

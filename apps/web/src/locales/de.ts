@@ -1382,6 +1382,9 @@ export const de = {
     limitedFeatures: 'Eingeschränkte Funktionen im Offline-Modus',
     willReconnect: 'Verbindung wird automatisch wiederhergestellt',
     snapshots: 'Snapshots verfügbar',
+    storageQuotaWarning: 'Gerätespeicher ist zu {{percent}} % belegt',
+    storageQuotaWarningDesc:
+      'Älteste Offline-Cache-Einträge wurden entfernt. Bei Problemen Cache in den Einstellungen leeren.',
   },
   commandPalette: {
     title: 'Befehlspalette',

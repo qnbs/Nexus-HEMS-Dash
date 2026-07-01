@@ -2,7 +2,7 @@ import { MotionConfig } from 'motion/react';
 import { lazy, Suspense, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Navigate, Route, BrowserRouter as Router, Routes, useLocation } from 'react-router-dom';
-import { Toaster } from 'sonner';
+import { Toaster, toast } from 'sonner';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { AppShell } from './components/layout/AppShell';
 import { OfflineBanner } from './components/OfflineBanner';
@@ -15,6 +15,7 @@ import { themeDefinitions } from './design-tokens';
 import { fetchBackendAdapterMode } from './lib/adapter-mode';
 import { backgroundSyncService } from './lib/background-sync';
 import { logError } from './lib/db';
+import { monitorOfflineStorageQuota } from './lib/offline-cache';
 import { resolveTheme, watchSystemTheme } from './lib/theme';
 import { useNotifications } from './lib/useNotifications';
 import { useAppStoreShallow } from './store';
@@ -76,7 +77,7 @@ function ScrollToTop(): null {
 }
 
 export default function App() {
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
   const {
     theme,
     locale,
@@ -193,6 +194,24 @@ export default function App() {
       backgroundSyncService.destroy();
     };
   }, []);
+
+  // LOW-05: warn before browser storage quota is exhausted; evict oldest cache rows
+  useEffect(() => {
+    if (import.meta.env.VITE_E2E_TESTING === 'true') return;
+
+    return monitorOfflineStorageQuota({
+      checkIntervalMs: 60_000,
+      onWarning: (usage) => {
+        toast.warning(
+          t('offline.storageQuotaWarning', { percent: Math.round(usage.ratio * 100) }),
+          {
+            description: t('offline.storageQuotaWarningDesc'),
+            duration: 8000,
+          },
+        );
+      },
+    });
+  }, [t]);
 
   return (
     <MotionConfig reducedMotion="user">

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildOptimizerRecommendations } from '../lib/optimizer';
+import { buildOptimizerRecommendations, runMpcOptimization } from '../lib/optimizer';
 import type { EnergyData, StoredSettings } from '../types';
 import { SYSTEM_PRESETS } from '../types';
 
@@ -123,5 +123,20 @@ describe('Optimizer Recommendations', () => {
       baseSettings,
     );
     expect(recs.find((r) => r.id === 'balanced')).toBeDefined();
+  });
+});
+
+describe('runMpcOptimization()', () => {
+  it('returns an optimization result for valid energy data', () => {
+    const result = runMpcOptimization(baseEnergy, baseSettings);
+    expect(result).not.toBeNull();
+    expect(result?.schedule.length).toBeGreaterThan(0);
+    expect(result?.totalCostEur).toBeTypeOf('number');
+  });
+
+  it('reuses cached MPC result within the 15-minute interval', () => {
+    const first = runMpcOptimization(baseEnergy, baseSettings);
+    const second = runMpcOptimization(baseEnergy, baseSettings);
+    expect(second).toBe(first);
   });
 });

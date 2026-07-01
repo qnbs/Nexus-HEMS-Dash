@@ -88,10 +88,10 @@ CodeAnt.ai GitHub App installation and dashboard configuration must be completed
 
 ### PRF-03 — Coverage Diff Not Yet Enforced
 
-**Files:** `.github/workflows/ci.yml`, `apps/web/vitest.config.ts`, `apps/api/vitest.config.ts`
-**Status:** ⏳ Backlog
+**Files:** `.github/workflows/ci.yml`, `scripts/check-coverage-baseline.mjs`, `apps/web/coverage-baseline.json`
+**Status:** ✅ Fixed in v1.3.0
 
-DeepSource coverage report card is visible, but a hard "coverage may not decrease" gate is not enabled until MED-01 coverage targets are closer to the 70% goal.
+`pnpm check:coverage-baseline` runs after web `test:coverage` in CI and fails when statements/branches/functions/lines drop below the committed baseline. Vitest emits `coverage-summary.json` via the `json-summary` reporter.
 
 ### PRF-04 — Unified PR Feedback Comment Missing
 
@@ -284,11 +284,11 @@ Changed to `process.env.JWT_SECRET_FILE ?? '/run/secrets/jwt_secret'`.
 ### MED-01 — Test Coverage Below Industry Standard
 
 **File:** `apps/web/vitest.config.ts:18-22`, `apps/api/vitest.config.ts:13-17`
-**Status:** ⏳ Scheduled for v1.2
+**Status:** ⏳ In progress — web gates raised to 70/63/56/70 (functions ~57%); API unchanged at 55/45/55/55
 
 Current thresholds:
 
-- Web: statements 52%, branches 42%, functions 53%, lines 53%
+- Web: statements 70%, branches 63%, functions 58%, lines 70% (functions ~59% measured)
 - API: statements 55%, branches 45%, functions 55%, lines 55%
 
 Target: 70%+ for all metrics.
@@ -431,12 +431,10 @@ Added post-construction validation loop that calls `console.warn` for each `API_
 
 ### LOW-05 — Offline Cache Has No Quota Warning
 
-**File:** `apps/web/src/lib/offline-cache.ts`
-**Status:** ⏳ Backlog
+**File:** `apps/web/src/lib/offline-cache.ts`, `apps/web/src/App.tsx`
+**Status:** ✅ Fixed in v1.3.0
 
-No monitoring of `navigator.storage.estimate()`. IndexedDB operations may silently fail when storage quota is exceeded.
-
-**Fix:** On app init, check `estimate().usage / estimate().quota > 0.8` and surface a toast warning. Implement LRU eviction in offline cache.
+`monitorOfflineStorageQuota()` checks `navigator.storage.estimate()` on app init and every 60 s (skipped during E2E). When `usage/quota > 0.8`, oldest IndexedDB cache rows are evicted (LRU) and a Sonner toast warns the user (`offline.storageQuotaWarning` i18n keys).
 
 ---
 
