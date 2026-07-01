@@ -132,7 +132,7 @@
   .glass-panel {
     border-radius: 1.5rem;
     border: 1px solid var(--color-border);
-    backdrop-filter: blur(64px);
+    backdrop-filter: blur(24px);
     background: linear-gradient(
       135deg,
       color-mix(in srgb, var(--color-surface) 72%, transparent),
@@ -148,7 +148,7 @@
   .glass-panel-strong {
     border-radius: 1.5rem;
     border: 1px solid var(--color-border);
-    backdrop-filter: blur(64px);
+    backdrop-filter: blur(24px);
     background: linear-gradient(
       135deg,
       color-mix(in srgb, var(--color-surface-strong) 88%, transparent),
@@ -598,7 +598,7 @@
   /* ========== METRIC CARDS (ENHANCED) ========== */
   .metric-card {
     border-radius: 1.5rem;
-    backdrop-filter: blur(64px);
+    backdrop-filter: blur(24px);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -999,6 +999,21 @@ html.high-contrast .status-indicator::before {
   /* biome-ignore lint/style/noDescendingSpecificity: forced-colors override must follow theme rules. */
   .energy-flow-path {
     stroke: LinkText;
+  }
+}
+
+/* ========== REDUCED TRANSPARENCY ========== */
+/* Honour the OS "reduce transparency" preference (also the signal battery-saver
+   / low-power devices raise): drop the expensive backdrop-blur GPU pass entirely
+   and paint solid surfaces instead. Improves both performance and readability. */
+@media (prefers-reduced-transparency: reduce) {
+  .glass-panel,
+  .glass-panel-strong,
+  .metric-card,
+  .energy-card,
+  .control-panel {
+    backdrop-filter: none;
+    background: var(--color-surface-strong);
   }
 }
 
@@ -1486,7 +1501,7 @@ body {
 /* ========== ENERGY CARD (Level 1: Summary + Details) ========== */
 .energy-card {
   border-radius: 1.5rem;
-  backdrop-filter: blur(64px);
+  backdrop-filter: blur(24px);
   min-height: 160px;
   display: flex;
   flex-direction: column;
@@ -1539,7 +1554,7 @@ body {
 .control-panel {
   border-radius: 1.5rem;
   border: 1px solid var(--color-border);
-  backdrop-filter: blur(64px);
+  backdrop-filter: blur(24px);
   max-width: 64rem;
   overflow: hidden;
   background: linear-gradient(
