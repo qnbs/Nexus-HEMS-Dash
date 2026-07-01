@@ -2,7 +2,7 @@
 
 > **Standard:** WCAG 2.2 AA (mandatory) · WCAG 2.2 AAA (target)
 > **Status:** Active
-> **Last Updated:** 2026-04-25
+> **Last Updated:** 2026-07-01
 
 This guide covers automated and manual accessibility testing for Nexus-HEMS-Dash, including
 WCAG criteria, tooling, browser/AT combinations, and test checklists.
@@ -53,23 +53,49 @@ const WCAG_TAGS_AAA = [...WCAG_TAGS_AA, 'wcag2aaa', 'wcag21aaa'];
 - [ ] Skip-to-content link visible on first Tab press
 - [ ] All navigation items reachable with Tab/Arrow keys
 - [ ] Focus visible on all interactive elements (`.focus-ring:focus-visible`)
-- [ ] Modal dialogs trap focus (Radix Dialog has this by default)
+- [ ] Modal dialogs trap focus (Radix Dialog natively; custom modals/sheets via
+      the shared `useFocusTrap` hook — `CommandPalette`, `MobileNavigation`)
 - [ ] `Escape` closes all modals/dropdowns
 - [ ] Command palette (Cmd+K / Ctrl+K) openable and closeable via keyboard
 - [ ] Theme switcher operable via keyboard
-- [ ] Sankey diagram has keyboard-navigable data table alternative
+- [ ] Sankey diagram has an sr-only data-table alternative + `aria-live` updates
+- [ ] Historical chart (Recharts) has an sr-only data-table alternative
 
-### Color & Contrast
+### Color & Contrast — measured per-theme verification
 
-| Theme | WCAG AA (4.5:1) | WCAG AAA (7:1) |
-|-------|-----------------|----------------|
-| `ocean-dark` | ✅ | Partial |
-| `energy-dark` | ✅ | Partial |
-| `solar-light` | ✅ | ✅ |
-| `nature-green` | ✅ | ✅ |
-| `minimal-white` | ✅ | ✅ |
+Measured WCAG 2.x contrast ratios for the key token pairs, computed from the
+theme values in `apps/web/src/index.css` (sRGB relative-luminance formula).
+**Verified 2026-07-01.** Body text and button labels target AA 4.5:1; the
+safety-critical `danger`/`live` surfaces target ≥7:1.
 
-> Check with: `pnpm storybook` → addon-a11y panel → color contrast rule
+| Theme | text / bg | muted / bg | on-primary / primary | danger-fg / bg |
+|-------|:---------:|:----------:|:--------------------:|:--------------:|
+| `ocean-dark` | 15.4 | 7.3 | 9.4 | 9.8 |
+| `energy-dark` | 16.3 | 7.2 | 15.1 | 9.7 |
+| `nature-green` | 15.2 | 7.0 | 11.2 | 9.4 |
+| `solar-light` | 13.9 | 7.2 | 6.5 | 7.9 |
+| `minimal-white` | 17.7 | 4.8 | 17.7 | 8.3 |
+
+All pairs ≥ 4.5:1 (AA) in every theme; `danger-fg` ≥ 7:1 in every theme
+(light-theme `--state-danger-fg` uses red-800 `#991b1b` to clear the safety
+target). `warning`/`success`/`info` text pairs range 4.8–12.9:1 (AA in all
+themes; AAA in the three dark themes).
+
+**Theme-independent state solids** (`-on` text on solid `-bg`):
+
+| Pair | Ratio | Target |
+|------|:-----:|:------:|
+| `danger-on` / `danger-bg` (white on `#dc2626`) | 4.8 | 4.5 |
+| `warning-on` / `warning-bg` (`#1c1206` on `#f59e0b`) | 8.6 | 4.5 |
+| `success-on` / `success-bg` (white on `#047857`) | 5.5 | 4.5 |
+| `info-on` / `info-bg` (white on `#0369a1`) | 5.9 | 4.5 |
+| `live-on` / `live-bg` (white on `#b91c1c`) — real-hardware banner | 6.5 | 6.0 |
+| `offline-on` / `offline-bg` (white on `#c2410c`) | 5.2 | 4.5 |
+
+> Re-verify after any token change by re-running the sRGB contrast computation
+> over the `[data-theme='…']` blocks in `index.css`, or via `pnpm storybook` →
+> addon-a11y panel → color-contrast rule. The CI axe scan
+> (`accessibility.spec.ts`) also enforces `color-contrast` on the live DOM.
 
 ### Screen Reader Testing Matrix
 
@@ -205,9 +231,9 @@ const WCAG_TAGS_AAA = [...WCAG_TAGS_AA, 'wcag2aaa', 'wcag21aaa'];
 
 | SC | Criterion | Status |
 |----|-----------|--------|
-| 1.4.6 | Contrast Enhanced (7:1) | `solar-light` and `minimal-white` themes |
+| 1.4.6 | Contrast Enhanced (7:1) | Body text ≥7:1 in all 5 themes; `danger`/`live` safety surfaces ≥7:1 in all themes (see contrast table) |
 | 2.4.9 | Link Purpose (Link Only) | All links unique without surrounding context |
-| 2.5.5 | Target Size (44×44 px) | Most buttons; some icon buttons need enlargement |
+| 2.5.5 | Target Size (44×44 px) | AA 2.5.8 (24×24) enforced in CI; most primary buttons also meet the AAA 44×44 |
 | 3.1.3 | Unusual Words | Glossary in /help page |
 | 3.3.4 | Error Prevention | Confirmation dialogs for destructive actions |
 
@@ -215,10 +241,13 @@ const WCAG_TAGS_AAA = [...WCAG_TAGS_AA, 'wcag2aaa', 'wcag21aaa'];
 
 ## Automated Coverage Summary
 
-axe-core rules tested per page:
+axe-core rules tested per page — **no rules disabled**. `target-size`
+(WCAG 2.2 AA 2.5.8) is enforced across all routes as of 2026-07-01; the scan runs
+the full AA rule set:
 
 ```typescript
-const DISABLED_RULES = ['target-size'];  // Known limitation — tracked separately
+const WCAG_TAGS_AA = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
+// No .disableRules(...) — target-size now passes on every route.
 ```
 
 | Page | WCAG 2.2 AA | axe violations target |

@@ -1165,8 +1165,9 @@ body {
   --badge-warn-fg: #b45309;
   --badge-danger-fg: #b91c1c;
   --badge-info-fg: #0369a1;
-  /* state text: dark hues for contrast on the light background */
-  --state-danger-fg: #b91c1c;
+  /* state text: dark hues for contrast on the light background.
+     danger uses red-800 (#991b1b) to clear the 7:1 safety target (≈7.9:1). */
+  --state-danger-fg: #991b1b;
   --state-warning-fg: #b45309;
   --state-success-fg: #047857;
   --state-info-fg: #0369a1;
@@ -1227,8 +1228,9 @@ body {
   --badge-warn-fg: #b45309;
   --badge-danger-fg: #b91c1c;
   --badge-info-fg: #0369a1;
-  /* state text: dark hues for contrast on the white background */
-  --state-danger-fg: #b91c1c;
+  /* state text: dark hues for contrast on the white background.
+     danger uses red-800 (#991b1b) to clear the 7:1 safety target (≈8.3:1). */
+  --state-danger-fg: #991b1b;
   --state-warning-fg: #b45309;
   --state-success-fg: #047857;
   --state-info-fg: #0369a1;
