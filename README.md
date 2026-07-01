@@ -1,8 +1,6 @@
-ja<div align="center">
-
 # ⚡ Nexus-HEMS Dashboard
 
-**Production-grade Home Energy Management System — One Command Center for the decentralized energy era**
+**Home Energy Management System — One Command Center for the decentralized energy era**
 
 [![CI](https://img.shields.io/github/actions/workflow/status/qnbs/Nexus-HEMS-Dash/ci.yml?branch=main&style=flat-square&logo=githubactions&logoColor=white&label=CI)](https://github.com/qnbs/Nexus-HEMS-Dash/actions/workflows/ci.yml)
 [![Security Full](https://img.shields.io/github/actions/workflow/status/qnbs/Nexus-HEMS-Dash/security-full.yml?branch=main&style=flat-square&logo=githubactions&logoColor=white&label=Security)](https://github.com/qnbs/Nexus-HEMS-Dash/actions/workflows/security-full.yml)
