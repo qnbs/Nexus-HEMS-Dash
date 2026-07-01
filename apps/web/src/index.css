@@ -1141,6 +1141,7 @@ body {
   --chart-6: #2dd4bf; /* series 6 — auxiliary */
   --price-low: #34d399; /* cheap tariff window */
   --price-mid: #fbbf24; /* medium tariff window */
+  --price-elevated: #fb923c; /* elevated tariff window (approaching peak) */
   --price-high: #f87171; /* expensive tariff window */
 }
 
@@ -1197,6 +1198,7 @@ body {
   --chart-6: #0d9488;
   --price-low: #059669;
   --price-mid: #d97706;
+  --price-elevated: #ea580c;
   --price-high: #dc2626;
 }
 
@@ -1270,6 +1272,7 @@ body {
   --chart-6: #0d9488;
   --price-low: #059669;
   --price-mid: #d97706;
+  --price-elevated: #ea580c;
   --price-high: #dc2626;
 }
 
