@@ -189,3 +189,202 @@ describe('HomeAssistantMQTTAdapter — Data Callbacks', () => {
     vi.unstubAllGlobals();
   });
 });
+
+describe('HomeAssistantMQTTAdapter — sensor state messages', () => {
+  let adapter: HomeAssistantMQTTAdapter;
+
+  beforeEach(() => {
+    vi.stubGlobal('WebSocket', MockWebSocket);
+    adapter = new HomeAssistantMQTTAdapter({ host: 'ha.local' });
+  });
+
+  afterEach(() => {
+    adapter.destroy();
+    vi.unstubAllGlobals();
+    mockInstance = null;
+  });
+
+  async function connectOpen(): Promise<MockWebSocket> {
+    const p = adapter.connect();
+    const ws = mockInstance!;
+    ws.readyState = WebSocket.OPEN;
+    ws.onopen?.();
+    await p;
+    return ws;
+  }
+
+  it('updates snapshot from entity_id/state JSON messages', async () => {
+    await connectOpen();
+
+    mockInstance!.onmessage?.({
+      data: JSON.stringify({ entity_id: 'sensor.solar_power', state: '4200' }),
+    });
+    mockInstance!.onmessage?.({
+      data: JSON.stringify({ entity_id: 'sensor.battery_power', state: '-800' }),
+    });
+    mockInstance!.onmessage?.({
+      data: JSON.stringify({ entity_id: 'sensor.battery_soc', state: '72' }),
+    });
+    mockInstance!.onmessage?.({
+      data: JSON.stringify({ entity_id: 'sensor.grid_power', state: '1500' }),
+    });
+    mockInstance!.onmessage?.({
+      data: JSON.stringify({ entity_id: 'sensor.house_power', state: '3100' }),
+    });
+
+    const snapshot = adapter.getSnapshot();
+    expect(snapshot.pv?.totalPowerW).toBe(4200);
+    expect(snapshot.battery?.powerW).toBe(-800);
+    expect(snapshot.battery?.socPercent).toBe(72);
+    expect(snapshot.grid?.powerW).toBe(1500);
+    expect(snapshot.load?.totalPowerW).toBe(3100);
+  });
+
+  it('maps EV status strings to charger snapshot', async () => {
+    await connectOpen();
+
+    mockInstance!.onmessage?.({
+      data: JSON.stringify({ entity_id: 'sensor.wallbox_power', state: '7400' }),
+    });
+    mockInstance!.onmessage?.({
+      data: JSON.stringify({ entity_id: 'sensor.ev_soc', state: '55' }),
+    });
+    mockInstance!.onmessage?.({
+      data: JSON.stringify({ entity_id: 'sensor.wallbox_status', state: 'charging' }),
+    });
+
+    const snapshot = adapter.getSnapshot();
+    expect(snapshot.evCharger?.status).toBe('charging');
+    expect(snapshot.evCharger?.powerW).toBe(7400);
+    expect(snapshot.evCharger?.socPercent).toBe(55);
+    expect(snapshot.evCharger?.vehicleConnected).toBe(true);
+  });
+
+  it('invokes onData callback when sensor values change', async () => {
+    const dataSpy = vi.fn();
+    adapter.onData(dataSpy);
+    await connectOpen();
+
+    mockInstance!.onmessage?.({
+      data: JSON.stringify({ entity_id: 'sensor.solar_power', state: '1800' }),
+    });
+
+    expect(dataSpy).toHaveBeenCalled();
+    expect(dataSpy.mock.calls.at(-1)?.[0]?.pv?.totalPowerW).toBe(1800);
+  });
+});
+
+describe('HomeAssistantMQTTAdapter — MQTT auth on connect', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    mockInstance = null;
+  });
+
+  it('sends auth payload and subscribes to mapped entity topics', async () => {
+    vi.stubGlobal('WebSocket', MockWebSocket);
+    const adapter = new HomeAssistantMQTTAdapter({
+      host: 'ha.local',
+      mqttUser: 'mqtt-user',
+      mqttPassword: 'mqtt-secret',
+    });
+
+    const p = adapter.connect();
+    const ws = mockInstance!;
+    ws.readyState = WebSocket.OPEN;
+    ws.onopen?.();
+    await p;
+
+    const payloads = ws.send.mock.calls.map((call) => JSON.parse(String(call[0])));
+    expect(payloads[0]).toEqual({
+      type: 'auth',
+      username: 'mqtt-user',
+      password: 'mqtt-secret',
+    });
+    expect(
+      payloads.some((msg) => msg.type === 'subscribe' && msg.topic?.includes('solar_power')),
+    ).toBe(true);
+
+    adapter.destroy();
+  });
+});
+
+describe('HomeAssistantMQTTAdapter — HA service commands', () => {
+  let adapter: HomeAssistantMQTTAdapter;
+
+  beforeEach(() => {
+    vi.stubGlobal('WebSocket', MockWebSocket);
+    adapter = new HomeAssistantMQTTAdapter({ host: 'ha.local' });
+  });
+
+  afterEach(() => {
+    adapter.destroy();
+    vi.unstubAllGlobals();
+    mockInstance = null;
+  });
+
+  async function connectOpen(): Promise<MockWebSocket> {
+    const p = adapter.connect();
+    const ws = mockInstance!;
+    ws.readyState = WebSocket.OPEN;
+    ws.onopen?.();
+    await p;
+    return ws;
+  }
+
+  it('rejects commands when disconnected', async () => {
+    await expect(adapter.sendCommand({ type: 'SET_EV_CURRENT', value: 16 })).resolves.toBe(false);
+  });
+
+  it('dispatches SET_EV_CURRENT, START_CHARGING, and STOP_CHARGING', async () => {
+    const ws = await connectOpen();
+
+    await expect(adapter.sendCommand({ type: 'SET_EV_CURRENT', value: 16 })).resolves.toBe(true);
+    await expect(adapter.sendCommand({ type: 'START_CHARGING', value: true })).resolves.toBe(true);
+    await expect(adapter.sendCommand({ type: 'STOP_CHARGING', value: false })).resolves.toBe(true);
+
+    const payloads = ws.send.mock.calls.map((call) => JSON.parse(String(call[0])));
+    expect(
+      payloads.some(
+        (msg) =>
+          msg.type === 'call_service' &&
+          msg.domain === 'number' &&
+          msg.service === 'set_value' &&
+          msg.data?.value === 16,
+      ),
+    ).toBe(true);
+    expect(
+      payloads.some(
+        (msg) =>
+          msg.type === 'call_service' &&
+          msg.domain === 'switch' &&
+          msg.service === 'turn_on' &&
+          msg.data?.entity_id === 'switch.wallbox_charging',
+      ),
+    ).toBe(true);
+    expect(
+      payloads.some(
+        (msg) =>
+          msg.type === 'call_service' &&
+          msg.domain === 'switch' &&
+          msg.service === 'turn_off' &&
+          msg.data?.entity_id === 'switch.wallbox_charging',
+      ),
+    ).toBe(true);
+  });
+});
+
+describe('HomeAssistantMQTTAdapter — register()', () => {
+  it('registers the homeassistant-mqtt factory in the adapter registry', async () => {
+    const { getRegisteredAdapter, unregisterAdapter } = await import(
+      '../core/adapters/adapter-registry'
+    );
+    const { register } = await import('../core/adapters/contrib/homeassistant-mqtt');
+
+    register();
+    const entry = getRegisteredAdapter('homeassistant-mqtt');
+    expect(entry?.source).toBe('contrib');
+    expect(entry?.displayName).toBe('Home Assistant MQTT');
+
+    unregisterAdapter('homeassistant-mqtt');
+  });
+});
