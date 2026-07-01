@@ -39,28 +39,35 @@ interface WorkerLatencyMessage {
 
 type WorkerOutMessage = WorkerDataMessage | WorkerErrorMessage | WorkerLatencyMessage;
 
+/**
+ * Normalize a poll target into a structured {@link PollTarget}, or `null` if it is
+ * not a safe http(s) target. Only `http:`/`https:` URLs are accepted — any other
+ * scheme (`file:`, `ftp:`, `javascript:`, …) or unparseable input returns `null`,
+ * a first line of SSRF/defence-in-depth before the worker's hostname allowlist.
+ * Exported (pure) so this security-relevant parsing can be unit-tested directly.
+ */
+export function normalizePollTarget(target: string | PollTarget): PollTarget | null {
+  if (typeof target !== 'string') return target;
+
+  try {
+    const parsed = new URL(target);
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return null;
+
+    const query = Object.fromEntries(parsed.searchParams.entries());
+    return {
+      protocol: parsed.protocol === 'https:' ? 'https' : 'http',
+      host: parsed.hostname,
+      port: parsed.port ? Number(parsed.port) : undefined,
+      path: parsed.pathname,
+      query: Object.keys(query).length > 0 ? query : undefined,
+    };
+  } catch {
+    return null;
+  }
+}
+
 export function useAdapterWorker() {
   const workerRef = useRef<Worker | null>(null);
-
-  const toPollTarget = (target: string | PollTarget): PollTarget | null => {
-    if (typeof target !== 'string') return target;
-
-    try {
-      const parsed = new URL(target);
-      if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return null;
-
-      const query = Object.fromEntries(parsed.searchParams.entries());
-      return {
-        protocol: parsed.protocol === 'https:' ? 'https' : 'http',
-        host: parsed.hostname,
-        port: parsed.port ? Number(parsed.port) : undefined,
-        path: parsed.pathname,
-        query: Object.keys(query).length > 0 ? query : undefined,
-      };
-    } catch {
-      return null;
-    }
-  };
 
   useEffect(() => {
     const worker = new Worker(new URL('./adapter-worker.ts', import.meta.url), { type: 'module' });
@@ -98,7 +105,7 @@ export function useAdapterWorker() {
     headers?: Record<string, string>,
     intervalMs?: number,
   ): void => {
-    const normalizedTarget = toPollTarget(target);
+    const normalizedTarget = normalizePollTarget(target);
     if (!normalizedTarget) {
       workerRef.current?.postMessage({ type: 'stop', adapterId });
       if (import.meta.env.DEV) {
