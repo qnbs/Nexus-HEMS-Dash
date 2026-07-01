@@ -152,7 +152,7 @@ gantt
 |------|-------|
 | Add `fuzz.yml` + `lighthouse.yml` to branch protection required checks | GitHub settings + docs |
 | Codecov upload in `ci.yml` (optional token) | `.github/workflows/ci.yml` |
-| Reduce A11y E2E waits from 240s → 60s after stabilization | `accessibility.spec.ts` |
+| Reduce A11y E2E waits from 240s → 60s after stabilization | `accessibility.spec.ts` | ✅ |
 
 **Success criteria:** Single "all green" definition covers fuzz + lighthouse on `main`.
 

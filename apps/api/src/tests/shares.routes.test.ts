@@ -23,7 +23,7 @@ describe('Dashboard shares API', () => {
     process.env.API_KEY_SCOPES = 'share-test-key:readwrite';
 
     const routes = await import('../routes/shares.routes.js');
-    routes.shareTicketStore.clear();
+    routes.shareTicketStore.clearForTests();
     const jwt = await import('../jwt-utils.js');
     createSharesRoutes = routes.createSharesRoutes;
     signToken = jwt.signToken;

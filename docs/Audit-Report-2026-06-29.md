@@ -16,6 +16,7 @@
 > - **SEC-08 resolved** — production startup requires explicit `API_KEY_SCOPES` for every `API_KEYS` entry (`auth-config.ts`).
 > - **Perfection Roadmap 0.1** — live mode + non-empty `device-map.json` emits startup safety warning.
 > - **Roadmap 0.2 / LOW-09** — auth integration tests for `background-sync` + `sharing`; fuzz gate wired into `ci-passed`.
+> - **MED-15 / LOW-10** — Redis-backed WS ticket + share stores when `REDIS_URL` set; A11y E2E timeouts reduced to 60 s per test.
 
 ---
 

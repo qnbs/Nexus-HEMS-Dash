@@ -9,9 +9,9 @@ import type { IncomingMessage } from 'http';
 import type { WebSocket } from 'ws';
 import { isPrivateHost } from '../config/private-host.js';
 import { type AuthenticatedClient, authenticateWS } from '../middleware/auth.js';
-import { wsTickets } from '../routes/auth.routes.js';
 import { getDevice } from '../services/EEBusTrustStore.js';
 import { attachClientRelay } from '../services/ShipHandshakeService.js';
+import { wsTicketStore } from '../services/ws-ticket-store.js';
 
 const SCOPE_ORDER = { read: 0, readwrite: 1, admin: 2 } as const;
 
@@ -33,7 +33,7 @@ export async function handleEebusProxyConnection(
   req: IncomingMessage,
   requireAuth: boolean,
 ): Promise<void> {
-  const authResult = await authenticateWS(req, wsTickets);
+  const authResult = await authenticateWS(req, wsTicketStore);
   if (requireAuth && (!authResult || !hasWriteScope(authResult))) {
     clientWs.close(4003, 'readwrite scope required');
     return;

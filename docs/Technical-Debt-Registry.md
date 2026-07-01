@@ -608,10 +608,10 @@ CI runs `pnpm --filter @nexus-hems/api test:coverage`; thresholds aligned to mea
 ---
 
 ### MED-15 — In-Memory WS Tickets and Share Store (HA Risk)
-**Files:** `apps/api/src/routes/auth.routes.ts:13`, `shares.routes.ts:25`
-**Status:** ⏳ Backlog — Phase 2
+**Files:** `apps/api/src/services/ws-ticket-store.ts`, `apps/api/src/services/share-ticket-store.ts`, `apps/api/src/services/redis-client.ts`
+**Status:** ✅ Fixed in v1.3.0
 
-JTI revocation supports Redis; WS tickets and share redemption do not. Multi-instance deployments have split-brain risk.
+When `REDIS_URL` is set, WS tickets and dashboard shares use Redis with TTL (`nexus:ws:ticket:*`, `nexus:share:*`). Single-use ticket consumption uses atomic `GETDEL`. Graceful in-memory fallback when Redis is unavailable.
 
 ---
 
@@ -658,10 +658,10 @@ Scope table said "not fully integrated"; P3 section said "Fully Implemented". Co
 ---
 
 ### LOW-10 — A11y E2E Uses 240s waitForSelector
-**File:** `apps/web/tests/e2e/accessibility.spec.ts:26`
-**Status:** ⏳ Backlog — Phase 1
+**File:** `apps/web/tests/e2e/accessibility.spec.ts`
+**Status:** ✅ Fixed in v1.3.0
 
-Extreme timeout may mask real failures; reduce after stabilization.
+`gotoAndWait` uses 15 s navigation / 30 s heading / 15 s theme gates; per-route axe scans use `test.setTimeout(60_000)`. `prefers-reduced-motion: reduce` + animation-settle via `getAnimations().finished` removed the need for 240 s masks.
 
 ---
 

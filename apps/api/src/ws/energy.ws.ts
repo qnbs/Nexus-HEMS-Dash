@@ -7,7 +7,7 @@ import { type CommandOutcome, writeCommandAuditEntry } from '../data/command-aud
 import { mockData, updateMockData } from '../data/mock-data.js';
 import { type AuthenticatedClient, authenticateWS, type JWTScope } from '../middleware/auth.js';
 import { setMetric, updateServerMetrics, wsMessageCount } from '../middleware/metrics.js';
-import { wsTickets } from '../routes/auth.routes.js';
+import { wsTicketStore } from '../services/ws-ticket-store.js';
 import { handleEebusProxyConnection, isEebusProxyPath } from './eebus-proxy.ws.js';
 import { getRequiredScopeForCommand, isScopeAuthorized } from './ws-scope.js';
 
@@ -146,7 +146,7 @@ export function setupWebSocket(wss: WebSocketServer): void {
     wsConnectionsPerIP.set(clientIP, currentConnections + 1);
 
     // CRIT-02 + HIGH-04: Authenticate and extract scope via ticket or JWT
-    const authResult = await authenticateWS(req, wsTickets);
+    const authResult = await authenticateWS(req, wsTicketStore);
 
     if (requireWSAuth && !authResult) {
       ws.close(4001, 'Authentication required');
