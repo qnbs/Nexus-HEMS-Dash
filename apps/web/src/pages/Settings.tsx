@@ -29,7 +29,6 @@ import {
   Settings as SettingsIcon,
   Shield,
   Sparkles,
-  Trash2,
   Type,
   Upload,
   Wifi,
@@ -46,6 +45,8 @@ import { EmergencyStop } from '../components/EmergencyStop';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { PWASettingsSection } from '../components/settings/PWASettingsSection';
 import { SettingsFeatureBar } from '../components/settings/SettingsFeatureBar';
+import { StorageTab } from '../components/settings/StorageTab';
+import { inputClass, sectionClass, sectionHeaderClass } from '../components/settings/styles';
 import { ThemePreviewCard } from '../components/settings/ThemePreviewCard';
 import { ToggleSwitch } from '../components/settings/ToggleSwitch';
 import { themeDefinitions, themeOrder } from '../design-tokens';
@@ -246,12 +247,6 @@ export function Settings() {
   ];
 
   const isSystem = themePreference === 'system';
-
-  const inputClass =
-    'w-full bg-(--color-surface) border border-(--color-border) rounded-xl px-4 py-2.5 text-(--color-text) focus:outline-none focus:border-(--color-primary)/70 focus:ring-2 focus:ring-(--color-primary)/20 transition-all duration-300 placeholder:text-(--color-muted)';
-  const sectionClass = 'glass-panel-strong p-6 rounded-2xl space-y-6';
-  const sectionHeaderClass =
-    'text-lg fluid-text-lg font-medium flex items-center gap-2 border-b border-(--color-border) pb-4';
 
   return (
     <motion.div
@@ -2443,100 +2438,7 @@ export function Settings() {
                   id="tabpanel-storage"
                   aria-labelledby="tab-storage"
                 >
-                  <SettingsFeatureBar tabId="storage" />
-                  <section className={sectionClass}>
-                    <h2 className={sectionHeaderClass}>
-                      <Database size={20} className="text-purple-400" />
-                      {t('settings.storage')}
-                    </h2>
-                    <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-                      <div className="space-y-2">
-                        <label htmlFor="settings-influx-url" className="font-medium text-sm">
-                          {t('settings.influxUrl')}
-                        </label>
-                        <input
-                          id="settings-influx-url"
-                          type="text"
-                          value={settings.influxUrl}
-                          onChange={(e) => updateSettings({ influxUrl: e.target.value })}
-                          className={inputClass}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label htmlFor="settings-influx-token" className="font-medium text-sm">
-                          {t('settings.influxToken')}
-                        </label>
-                        <div className="relative">
-                          <input
-                            id="settings-influx-token"
-                            type={showTokens.influx ? 'text' : 'password'}
-                            value={settings.influxToken}
-                            onChange={(e) => updateSettings({ influxToken: e.target.value })}
-                            className={`${inputClass} pr-10`}
-                          />
-                          <button
-                            type="button"
-                            onClick={() => toggleTokenVisibility('influx')}
-                            className="absolute top-1/2 right-3 -translate-y-1/2 p-1 text-(--color-muted) hover:text-(--color-text)"
-                            aria-label={
-                              showTokens.influx ? t('settings.hideToken') : t('settings.showToken')
-                            }
-                          >
-                            {showTokens.influx ? <EyeOff size={16} /> : <Eye size={16} />}
-                          </button>
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <label htmlFor="settings-history-days" className="font-medium text-sm">
-                          {t('settings.historyDays')}
-                        </label>
-                        <input
-                          id="settings-history-days"
-                          type="number"
-                          value={settings.historyDays}
-                          onChange={(e) => updateSettings({ historyDays: Number(e.target.value) })}
-                          className={inputClass}
-                          min={1}
-                          max={365}
-                        />
-                        <p className="text-(--color-muted) text-xs">{t('settings.historyHint')}</p>
-                      </div>
-                    </div>
-                  </section>
-
-                  {/* Local Storage Info */}
-                  <section className={sectionClass}>
-                    <h2 className={sectionHeaderClass}>
-                      <HardDrive size={20} className="text-cyan-400" />
-                      {t('settings.localStorage', 'Local Storage')}
-                    </h2>
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                      <div className="rounded-xl border border-(--color-border) bg-(--color-surface) p-4 text-center">
-                        <p className="font-bold text-(--color-primary) text-2xl">~2.4</p>
-                        <p className="text-(--color-muted) text-xs">MB IndexedDB</p>
-                      </div>
-                      <div className="rounded-xl border border-(--color-border) bg-(--color-surface) p-4 text-center">
-                        <p className="font-bold text-(--color-secondary) text-2xl">847</p>
-                        <p className="text-(--color-muted) text-xs">
-                          {t('settings.snapshots', 'Snapshots')}
-                        </p>
-                      </div>
-                      <div className="rounded-xl border border-(--color-border) bg-(--color-surface) p-4 text-center">
-                        <p className="font-bold text-2xl text-amber-400">30</p>
-                        <p className="text-(--color-muted) text-xs">
-                          {t('settings.daysRetention', 'Days retention')}
-                        </p>
-                      </div>
-                    </div>
-                    <motion.button
-                      type="button"
-                      className="flex items-center gap-2 text-rose-400 text-sm transition-colors hover:text-rose-300"
-                      whileHover={{ x: 4 }}
-                    >
-                      <Trash2 size={16} />
-                      {t('settings.clearCache', 'Clear local cache')}
-                    </motion.button>
-                  </section>
+                  <StorageTab />
                 </motion.div>
               )}
 
