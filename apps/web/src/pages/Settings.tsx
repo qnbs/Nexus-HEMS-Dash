@@ -46,48 +46,17 @@ import { ApiAuthSettingsSection } from '../components/ApiAuthSettingsSection';
 import { ConfirmDialog, useConfirmDialog } from '../components/ConfirmDialog';
 import { EmergencyStop } from '../components/EmergencyStop';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
-import { type ThemeName, themeDefinitions, themeOrder } from '../design-tokens';
+import { SettingsFeatureBar } from '../components/settings/SettingsFeatureBar';
+import { ThemePreviewCard } from '../components/settings/ThemePreviewCard';
+import { ToggleSwitch } from '../components/settings/ToggleSwitch';
+import { themeDefinitions, themeOrder } from '../design-tokens';
 import { isLiveSafetyMode } from '../lib/adapter-mode';
-import { PAGE_REGISTRY, SETTINGS_TABS, type SettingsTabId } from '../lib/page-relations';
 import { usePWAInstall } from '../lib/pwa-install';
 import { resolveTheme, type ThemePreference } from '../lib/theme';
 import { defaultSettings, useAppStoreShallow } from '../store';
 import { type PVConfig, SYSTEM_PRESETS } from '../types';
 
 const AISettingsPage = lazy(() => import('./AISettingsPage'));
-
-// ─── Feature Links Bar for each Settings Tab ────────────────────────
-function SettingsFeatureBar({ tabId }: { tabId: SettingsTabId }) {
-  const { t } = useTranslation();
-  const meta = SETTINGS_TABS[tabId];
-  if (!meta || meta.relatedPages.length === 0) return null;
-
-  return (
-    <div className="mb-4 rounded-xl border border-(--color-primary)/15 bg-(--color-primary)/5 p-3">
-      <p className="mb-2 font-semibold text-(--color-primary) text-[10px] uppercase tracking-wider">
-        {t('crossLinks.affectedFeatures')}
-      </p>
-      <div className="flex flex-wrap gap-2">
-        {meta.relatedPages.map((pageId) => {
-          const page = PAGE_REGISTRY[pageId];
-          if (!page) return null;
-          const Icon = page.icon;
-          return (
-            <Link
-              key={pageId}
-              to={page.path}
-              className="focus-ring inline-flex items-center gap-1.5 rounded-lg border border-(--color-border)/30 bg-white/5 px-2.5 py-1.5 text-(--color-text) text-xs transition-colors hover:bg-white/10 hover:text-(--color-primary)"
-            >
-              <Icon size={12} aria-hidden="true" />
-              {t(page.i18nKey)}
-              <ArrowRight size={10} className="text-(--color-muted)" aria-hidden="true" />
-            </Link>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
 
 type SettingsTab =
   | 'appearance'
@@ -100,74 +69,6 @@ type SettingsTab =
   | 'notifications'
   | 'advanced'
   | 'ai';
-
-function ThemePreviewCard({
-  def,
-  isActive,
-  onClick,
-}: {
-  def: (typeof themeDefinitions)[ThemeName];
-  isActive: boolean;
-  onClick: () => void;
-}) {
-  const [c1, c2, c3] = def.previewColors;
-  return (
-    <motion.button
-      onClick={onClick}
-      className={`focus-ring relative flex flex-col items-center gap-2 rounded-2xl border-2 p-4 transition-all duration-300 ${
-        isActive
-          ? 'border-(--color-primary) bg-(--color-primary)/10 shadow-[0_0_20px_var(--color-primary)/15]'
-          : 'border-(--color-border) bg-(--color-surface) hover:border-(--color-primary)/40'
-      }`}
-      whileHover={{ scale: 1.03, y: -2 }}
-      whileTap={{ scale: 0.97 }}
-      aria-label={def.label}
-      aria-pressed={isActive}
-    >
-      <div className="flex gap-1.5">
-        <span className="h-6 w-6 rounded-full border border-white/20" style={{ background: c1 }} />
-        <span className="h-6 w-6 rounded-full border border-white/20" style={{ background: c2 }} />
-        <span className="h-6 w-6 rounded-full border border-white/20" style={{ background: c3 }} />
-      </div>
-      <span className="font-medium text-xs">{def.label}</span>
-      {isActive && (
-        <motion.div
-          layoutId="theme-check"
-          className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-(--color-text) text-(--color-background)"
-          transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-        >
-          <Check className="h-3 w-3" />
-        </motion.div>
-      )}
-    </motion.button>
-  );
-}
-
-function ToggleSwitch({
-  checked,
-  onChange,
-  label,
-  id,
-}: {
-  checked: boolean;
-  onChange: (v: boolean) => void;
-  label: string;
-  id: string;
-}) {
-  return (
-    <label htmlFor={id} className="relative inline-flex cursor-pointer items-center">
-      <input
-        id={id}
-        type="checkbox"
-        checked={checked}
-        onChange={(e) => onChange(e.target.checked)}
-        className="peer sr-only"
-      />
-      <span className="sr-only">{label}</span>
-      <div className="h-6 w-11 rounded-full border border-(--color-border) bg-(--color-surface) transition-colors duration-300 after:absolute after:top-[2px] after:left-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow-sm after:transition-transform after:duration-300 peer-checked:bg-(--color-primary) peer-checked:after:translate-x-5 peer-focus:ring-(--color-primary)/30 peer-focus:ring-2" />
-    </label>
-  );
-}
 
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: PWA install and service worker state management
 function PWASettingsSection() {
