@@ -53,7 +53,7 @@ darker hues on the two light themes.
 
 | Family | Tokens | Use |
 | :--- | :--- | :--- |
-| Categorical series | `--chart-1` … `--chart-6` | Distinct data series (e.g. PV, grid import/export, battery) |
+| Categorical series | `--chart-1` … `--chart-7` | Distinct data series (green/blue/orange/purple/pink/teal + `--chart-7` solar-gold for PV) |
 | Price tiers | `--price-low` · `--price-mid` · `--price-elevated` · `--price-high` | Tariff cost windows, cheap → peak (4-stop heat scale) |
 
 ```tsx

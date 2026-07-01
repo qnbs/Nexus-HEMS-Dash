@@ -139,13 +139,17 @@ function AnalyticsPageComponent() {
       {
         name: t('analytics.selfConsumptionSavings'),
         value: Math.round(selfSavings * 100),
-        color: '#22ff88',
+        color: 'var(--chart-1)',
       },
-      { name: t('analytics.gridCostLabel'), value: Math.round(gridCost * 100), color: '#f97316' },
+      {
+        name: t('analytics.gridCostLabel'),
+        value: Math.round(gridCost * 100),
+        color: 'var(--chart-3)',
+      },
       {
         name: t('analytics.feedInRevenue'),
         value: Math.round(feedInRevenue * 100),
-        color: '#00f0ff',
+        color: 'var(--chart-6)',
       },
     ].filter((d) => d.value > 0);
   })();
@@ -406,16 +410,16 @@ function AnalyticsPageComponent() {
               <AreaChart data={balanceData}>
                 <defs>
                   <linearGradient id="gradPv" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#fbbf24" stopOpacity={0.7} />
-                    <stop offset="95%" stopColor="#fbbf24" stopOpacity={0.05} />
+                    <stop offset="5%" stopColor="var(--chart-7)" stopOpacity={0.7} />
+                    <stop offset="95%" stopColor="var(--chart-7)" stopOpacity={0.05} />
                   </linearGradient>
                   <linearGradient id="gradCons" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.5} />
-                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.05} />
+                    <stop offset="5%" stopColor="var(--chart-2)" stopOpacity={0.5} />
+                    <stop offset="95%" stopColor="var(--chart-2)" stopOpacity={0.05} />
                   </linearGradient>
                   <linearGradient id="gradSurplus" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#22ff88" stopOpacity={0.6} />
-                    <stop offset="95%" stopColor="#22ff88" stopOpacity={0.02} />
+                    <stop offset="5%" stopColor="var(--chart-1)" stopOpacity={0.6} />
+                    <stop offset="95%" stopColor="var(--chart-1)" stopOpacity={0.02} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" opacity={0.3} />
@@ -449,7 +453,7 @@ function AnalyticsPageComponent() {
                 <Area
                   type="monotone"
                   dataKey="pv"
-                  stroke="#fbbf24"
+                  stroke="var(--chart-7)"
                   fill="url(#gradPv)"
                   strokeWidth={2}
                   name="PV"
@@ -457,7 +461,7 @@ function AnalyticsPageComponent() {
                 <Area
                   type="monotone"
                   dataKey="consumption"
-                  stroke="#3b82f6"
+                  stroke="var(--chart-2)"
                   fill="url(#gradCons)"
                   strokeWidth={2}
                   name={t('analytics.consumptionLabel')}
@@ -465,7 +469,7 @@ function AnalyticsPageComponent() {
                 <Area
                   type="monotone"
                   dataKey="surplus"
-                  stroke="#22ff88"
+                  stroke="var(--chart-1)"
                   fill="url(#gradSurplus)"
                   strokeWidth={1.5}
                   strokeDasharray="4 2"
@@ -640,19 +644,19 @@ function AnalyticsPageComponent() {
               />
               <Bar
                 dataKey="production"
-                fill="#fbbf24"
+                fill="var(--chart-7)"
                 radius={[4, 4, 0, 0]}
                 name={t('analytics.productionKwh')}
               />
               <Bar
                 dataKey="consumption"
-                fill="#3b82f6"
+                fill="var(--chart-2)"
                 radius={[4, 4, 0, 0]}
                 name={t('analytics.consumptionKwh')}
               />
               <Bar
                 dataKey="savings"
-                fill="#22ff88"
+                fill="var(--chart-1)"
                 radius={[4, 4, 0, 0]}
                 name={t('analytics.savingsEur')}
               />
@@ -948,7 +952,7 @@ function AnalyticsPageComponent() {
                   <Line
                     type="monotone"
                     dataKey="value"
-                    stroke="#a855f7"
+                    stroke="var(--chart-4)"
                     strokeWidth={2}
                     dot={false}
                   />

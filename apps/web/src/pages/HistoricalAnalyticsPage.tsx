@@ -430,12 +430,12 @@ export default function HistoricalAnalyticsPage() {
             >
               <defs>
                 <linearGradient id="pvGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#facc15" stopOpacity={0.4} />
-                  <stop offset="100%" stopColor="#facc15" stopOpacity={0.05} />
+                  <stop offset="0%" stopColor="var(--chart-7)" stopOpacity={0.4} />
+                  <stop offset="100%" stopColor="var(--chart-7)" stopOpacity={0.05} />
                 </linearGradient>
                 <linearGradient id="loadGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.3} />
-                  <stop offset="100%" stopColor="#3b82f6" stopOpacity={0.05} />
+                  <stop offset="0%" stopColor="var(--chart-2)" stopOpacity={0.3} />
+                  <stop offset="100%" stopColor="var(--chart-2)" stopOpacity={0.05} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" opacity={0.3} />
@@ -460,7 +460,7 @@ export default function HistoricalAnalyticsPage() {
                 type="monotone"
                 dataKey="pvPower"
                 name={t('historicalAnalytics.pvPower')}
-                stroke="#facc15"
+                stroke="var(--chart-7)"
                 fill="url(#pvGrad)"
                 strokeWidth={2}
               />
@@ -468,7 +468,7 @@ export default function HistoricalAnalyticsPage() {
                 type="monotone"
                 dataKey="houseLoad"
                 name={t('historicalAnalytics.houseLoad')}
-                stroke="#3b82f6"
+                stroke="var(--chart-2)"
                 fill="url(#loadGrad)"
                 strokeWidth={2}
               />
@@ -476,7 +476,7 @@ export default function HistoricalAnalyticsPage() {
                 type="monotone"
                 dataKey="gridPower"
                 name={t('historicalAnalytics.gridPower')}
-                stroke="#ef4444"
+                stroke="var(--chart-5)"
                 strokeWidth={1.5}
                 dot={false}
               />
@@ -484,7 +484,7 @@ export default function HistoricalAnalyticsPage() {
                 type="monotone"
                 dataKey="batteryPower"
                 name={t('historicalAnalytics.batteryPower')}
-                stroke="#a855f7"
+                stroke="var(--chart-4)"
                 strokeWidth={1.5}
                 dot={false}
               />
@@ -519,8 +519,8 @@ export default function HistoricalAnalyticsPage() {
             >
               <defs>
                 <linearGradient id="socGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#a855f7" stopOpacity={0.4} />
-                  <stop offset="100%" stopColor="#a855f7" stopOpacity={0.05} />
+                  <stop offset="0%" stopColor="var(--chart-4)" stopOpacity={0.4} />
+                  <stop offset="100%" stopColor="var(--chart-4)" stopOpacity={0.05} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" opacity={0.3} />
@@ -549,7 +549,7 @@ export default function HistoricalAnalyticsPage() {
                 type="monotone"
                 dataKey="batterySoC"
                 name={t('historicalAnalytics.batterySoC')}
-                stroke="#a855f7"
+                stroke="var(--chart-4)"
                 fill="url(#socGrad)"
                 strokeWidth={2}
               />
@@ -627,13 +627,13 @@ export default function HistoricalAnalyticsPage() {
                   <Bar
                     dataKey="r2"
                     name={t('historicalAnalytics.r2Score')}
-                    fill="#22ff88"
+                    fill="var(--chart-1)"
                     radius={[4, 4, 0, 0]}
                   />
                   <Bar
                     dataKey="mape"
                     name={t('historicalAnalytics.mape')}
-                    fill="#ff8800"
+                    fill="var(--chart-3)"
                     radius={[4, 4, 0, 0]}
                   />
                 </BarChart>

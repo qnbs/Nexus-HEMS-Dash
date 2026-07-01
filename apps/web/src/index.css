@@ -1139,6 +1139,7 @@ body {
   --chart-4: #c084fc; /* series 4 — e.g. battery / SoC */
   --chart-5: #f472b6; /* series 5 — auxiliary */
   --chart-6: #2dd4bf; /* series 6 — auxiliary */
+  --chart-7: #fbbf24; /* series 7 — solar / PV gold */
   --price-low: #34d399; /* cheap tariff window */
   --price-mid: #fbbf24; /* medium tariff window */
   --price-elevated: #fb923c; /* elevated tariff window (approaching peak) */
@@ -1196,6 +1197,7 @@ body {
   --chart-4: #9333ea;
   --chart-5: #db2777;
   --chart-6: #0d9488;
+  --chart-7: #b45309;
   --price-low: #059669;
   --price-mid: #d97706;
   --price-elevated: #ea580c;
@@ -1270,6 +1272,7 @@ body {
   --chart-4: #9333ea;
   --chart-5: #db2777;
   --chart-6: #0d9488;
+  --chart-7: #b45309;
   --price-low: #059669;
   --price-mid: #d97706;
   --price-elevated: #ea580c;
