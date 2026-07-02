@@ -352,13 +352,7 @@ export class Zigbee2MQTTAdapter extends BaseAdapter {
           payload !== null &&
           (payload as Record<string, unknown>).state === 'online');
       const existing: ZigbeeDeviceState = this.deviceStates.get(deviceName) ?? {
-        available: false,
-        power: undefined,
-        energy: undefined,
-        voltage: undefined,
-        current: undefined,
-        state: undefined,
-        temperature: undefined,
+        ...EMPTY_ZIGBEE_STATE,
       };
       this.deviceStates.set(deviceName, { ...existing, available: Boolean(isOnline) });
       return;
@@ -372,13 +366,8 @@ export class Zigbee2MQTTAdapter extends BaseAdapter {
     const p = payload as Record<string, unknown>;
 
     const existing: ZigbeeDeviceState = this.deviceStates.get(deviceName) ?? {
+      ...EMPTY_ZIGBEE_STATE,
       available: true,
-      power: undefined,
-      energy: undefined,
-      voltage: undefined,
-      current: undefined,
-      state: undefined,
-      temperature: undefined,
     };
     const state: ZigbeeDeviceState = {
       ...existing,
