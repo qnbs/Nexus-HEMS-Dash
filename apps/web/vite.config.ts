@@ -34,8 +34,9 @@ export default defineConfig(({ mode }) => {
   const e2eTesting = env.VITE_E2E_TESTING === 'true';
 
   const plugins: PluginOption[] = [
-    // Dev + E2E keep localhost WS origins for the proxy; the hosted prod shell strips them.
-    cspNoncePlugin(cspNonce, e2eTesting, isProd && !e2eTesting),
+    // Only the dev-server proxy needs localhost WS origins; every production build
+    // (E2E preview and deploy alike) is a backendless static bundle, so strip them.
+    cspNoncePlugin(cspNonce, e2eTesting, isProd),
 
     // React Compiler auto-memoizes — requires @rolldown/plugin-babel in Vite 8.
     // OXC handles TS/JSX compilation; Babel runs only for React Compiler.

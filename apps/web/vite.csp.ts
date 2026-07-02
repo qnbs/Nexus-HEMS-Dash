@@ -8,7 +8,9 @@
  * surface and inconsistent with the hardened server policy (env-driven
  * `WS_ORIGINS`, see `apps/api/src/middleware/security.ts`).
  *
- * Dev/E2E builds keep the localhost origins; production builds strip them.
+ * Only the dev server proxy needs these origins; every production build (E2E
+ * preview and deploy alike) is a backendless static bundle, so dev builds keep
+ * them and all production builds strip them.
  */
 
 /** Matches `ws://localhost:*`, `wss://localhost:*`, `ws://127.0.0.1:*`, `wss://127.0.0.1:*` (with any leading whitespace). */
