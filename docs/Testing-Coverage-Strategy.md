@@ -13,10 +13,10 @@ covering test types, priorities, tooling, and step-by-step implementation plan.
 
 | Metric | Current Enforced Thresholds | Stage 1 Target | Stage 2 | Stage 3 |
 |--------|-----------------------------|----------------|---------|---------|
-| Statements | Web 70% / API **47%** (enforced) → 55% target | **60%** | 75% | 85% |
-| Branches | Web 70% / API **38%** (enforced) → 55% target | **55%** | 70% | 85% |
-| Functions | Web 68%* / API **55%** (enforced) | **62%** | 76% | 85% |
-| Lines | Web 70% / API **48%** (enforced) → 55% target | **62%** | 76% | 85% |
+| Statements | Web 70% / API **55%** (enforced) | **60%** | 75% | 85% |
+| Branches | Web 70% / API **46%** (enforced) | **55%** | 70% | 85% |
+| Functions | Web 68%* / API **62%** (enforced) | **62%** | 76% | 85% |
+| Lines | Web 70% / API **55%** (enforced) | **62%** | 76% | 85% |
 
 **60+ existing test/spec files across web, api, and E2E** — infrastructure is solid, coverage gap is primarily in:
 - Page-level components (no tests)
@@ -42,7 +42,7 @@ covering test types, priorities, tooling, and step-by-step implementation plan.
 Current config truth:
 
 - `apps/web/vitest.config.ts` enforces `70 / 70 / 68 / 70` (*functions temporarily 68, target 70 — see `docs/Test-Coverage-TODO.md`)
-- `apps/api/vitest.config.ts` enforces `47 / 38 / 55 / 48` (statements / branches / functions / lines) — raised from v1.3.0 33% baseline in P1-05 (2026-07-02)
+- `apps/api/vitest.config.ts` enforces `55 / 46 / 62 / 55` (statements / branches / functions / lines) — P1-05 target met 2026-07-02
 - The stage targets below are roadmap goals and should only be described as active once the config is raised accordingly.
 
 ### Coverage Collection

@@ -42,7 +42,7 @@
 | P1-02 | `Help.tsx` hardcoded version strings | ✅ About tech stack → i18n keys |
 | P1-03 | EEBUS mTLS empty-cert rejection | ✅ Shipped #217 |
 | P1-04 | Per-adapter reconnect metrics dashboards | ✅ `nexus-adapter-health.json` |
-| P1-05 | Coverage thresholds staging | ✅ API gates 47/38/55/48 (functions at 55%); statements path to 55% |
+| P1-05 | Coverage thresholds staging | ✅ API gates **55/46/62/55** (statements 55% target met) |
 | P2-01 | Integration tests: LiveEnergyAggregator + multi-adapter | ✅ `live-energy-eventbus.integration.test.ts` |
 
 ### P2 — Medium
@@ -149,7 +149,7 @@ flowchart TD
 - [x] A11y E2E covers primary + settings sub-routes + plugins
 - [x] Operator guides for major integrations
 - [x] Full E2E EEBUS pairing flow (certificates tab keyboard + axe)
-- [ ] CI green on main after merge
+- [x] CI green on main after merge
 - [ ] Security scanners (CodeQL, Gitleaks) — CI-owned
 - [ ] Live hardware smoke test — operator responsibility (`docs/Safety-Certification-Notice.md`)
 
