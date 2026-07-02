@@ -699,13 +699,14 @@ the mock path verbatim as the default. Keystone that unblocks MED-20. Safety gat
 ---
 
 ### MED-18 — No Per-Adapter Prometheus Metrics
-**Files:** `apps/api/src/middleware/metrics.ts`, `apps/api/src/protocols/*`
-**Status:** ⏳ Scheduled — ADR-018 (Proposed)
+**Files:** `apps/api/src/middleware/adapter-metrics.ts`, `apps/api/src/middleware/metrics.ts`, `apps/api/src/protocols/*`, `apps/api/src/routes/metrics.routes.ts`
+**Status:** ✅ Fixed in v1.3.x — `adapter-metrics.ts` publishes per-instance gauges/counters to `/metrics` and `/api/metrics/json` (ADR-018)
 
-Only platform-level gauges exist (`hems_pv_power_watts`, `hems_websocket_connections_active`, …).
-Backend adapter instances emit no metrics — only in-memory run-state (id/protocol/status) is
-tracked. Ship per-instance connect success/fail, poll latency, last-data age, and error-breakdown
-metrics alongside the HIGH-17 bridge so live data flow is observable.
+Backend adapter instances now emit `hems_adapter_connected`, `hems_adapter_latency_seconds`,
+`hems_adapter_data_freshness_seconds`, `hems_adapter_data_updates_total`, `hems_adapter_errors_total`,
+`hems_adapter_reconnects_total`, and `hems_adapter_dlq_total` with `{ adapter, protocol }` labels.
+Wired from `protocols/index.ts` lifecycle, Modbus/MQTT poll hooks, and a 15 s health refresh.
+Monitoring page adapter cards consume these via the existing JSON metrics poll.
 
 ---
 

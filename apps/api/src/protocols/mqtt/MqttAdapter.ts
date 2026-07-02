@@ -20,6 +20,11 @@ import {
   type UnifiedEnergyDatapoint,
 } from '@nexus-hems/shared-types';
 import mqtt, { type IClientOptions, type MqttClient } from 'mqtt';
+import {
+  recordAdapterDlq,
+  recordAdapterError,
+  recordAdapterReconnect,
+} from '../../middleware/adapter-metrics.js';
 import { API_RUNTIME_DIR, DEAD_LETTER_QUEUE_PATH } from '../../runtime-paths.js';
 
 const MAX_DLQ_LINES = 10_000;
@@ -112,6 +117,7 @@ export class MqttAdapter implements IProtocolAdapter {
       this.client.on('reconnect', () => {
         console.log(`[MqttAdapter:${this.id}] Reconnecting…`);
         this.connected = false;
+        recordAdapterReconnect(this.id, this.protocol);
       });
 
       this.client.on('offline', () => {
@@ -181,6 +187,7 @@ export class MqttAdapter implements IProtocolAdapter {
         error: 'No matching topic pattern',
         protocol: this.protocol,
       });
+      recordAdapterDlq(this.id, this.protocol);
       return;
     }
 
@@ -195,6 +202,7 @@ export class MqttAdapter implements IProtocolAdapter {
       deviceId = this.extractDeviceId(topic, parsed, matchedPattern.deviceIdExtract);
     } catch (err) {
       this.consecutiveErrors++;
+      recordAdapterError(this.id, this.protocol, 'parse');
       writeToDLQ({
         ts: Date.now(),
         source: topic,
@@ -229,6 +237,7 @@ export class MqttAdapter implements IProtocolAdapter {
         error: result.error.message,
         protocol: this.protocol,
       });
+      recordAdapterDlq(this.id, this.protocol);
     }
   }
 

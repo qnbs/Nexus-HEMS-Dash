@@ -18,6 +18,13 @@ import {
   logAdapterModeStartup,
 } from '../config/adapter-mode.js';
 import type { EventBus } from '../core/EventBus.js';
+import {
+  publishAllAdapterMetrics,
+  recordAdapterConnection,
+  recordAdapterDatapoint,
+  recordAdapterHealthSnapshot,
+  recordAdapterRegistration,
+} from '../middleware/adapter-metrics.js';
 import { type DeviceConfig, ModbusAdapter } from './modbus/ModbusAdapter.js';
 import { MqttAdapter } from './mqtt/MqttAdapter.js';
 
@@ -54,6 +61,25 @@ export interface AdapterRunState {
 }
 
 const adapterStates = new Map<string, AdapterRunState>();
+const activeAdapterRefs = new Map<string, IProtocolAdapter>();
+
+let metricsRefreshTimer: ReturnType<typeof setInterval> | null = null;
+
+function mapRunStatusToConnection(
+  status: AdapterStatus,
+): 'connected' | 'disconnected' | 'degraded' | 'failed' {
+  switch (status) {
+    case 'healthy':
+      return 'connected';
+    case 'starting':
+    case 'unhealthy':
+      return 'degraded';
+    case 'failed':
+      return 'failed';
+    default:
+      return 'disconnected';
+  }
+}
 
 function setState(
   id: string,
@@ -71,6 +97,7 @@ function setState(
     lastCheckAt: Date.now(),
   };
   adapterStates.set(id, state);
+  recordAdapterConnection(id, protocol, mapRunStatusToConnection(status));
   return state;
 }
 
@@ -106,6 +133,8 @@ export async function startProtocolAdapters(eventBus: EventBus): Promise<void> {
 
     const adapter = new ModbusAdapter(device);
     activeAdapters.push(adapter);
+    activeAdapterRefs.set(device.deviceId, adapter);
+    recordAdapterRegistration(device.deviceId, device.protocol);
     setState(device.deviceId, device.protocol, 'starting');
 
     // Connect and pipe data stream to EventBus
@@ -153,6 +182,8 @@ export async function startProtocolAdapters(eventBus: EventBus): Promise<void> {
       ],
     });
     activeAdapters.push(mqttAdapter);
+    activeAdapterRefs.set(mqttAdapter.id, mqttAdapter);
+    recordAdapterRegistration(mqttAdapter.id, mqttAdapter.protocol);
     setState(mqttAdapter.id, mqttAdapter.protocol, 'starting');
 
     mqttAdapter
@@ -169,6 +200,45 @@ export async function startProtocolAdapters(eventBus: EventBus): Promise<void> {
   }
 
   console.log(`[Adapters] Started ${activeAdapters.length} adapter(s).`);
+  startAdapterMetricsRefresh();
+}
+
+/**
+ * Periodically refresh adapter health snapshots into Prometheus gauges.
+ */
+function startAdapterMetricsRefresh(): void {
+  if (metricsRefreshTimer !== null) return;
+
+  metricsRefreshTimer = setInterval(() => {
+    publishAllAdapterMetrics();
+    for (const [id, adapter] of activeAdapterRefs) {
+      adapter
+        .healthCheck()
+        .then((health) => {
+          recordAdapterHealthSnapshot(id, adapter.protocol, {
+            status: health.status,
+            ...(health.lastSuccessMs !== undefined ? { lastSuccessMs: health.lastSuccessMs } : {}),
+            ...(health.consecutiveErrors !== undefined
+              ? { consecutiveErrors: health.consecutiveErrors }
+              : {}),
+          });
+        })
+        .catch(() => {
+          recordAdapterConnection(id, adapter.protocol, 'failed');
+        });
+    }
+  }, 15_000);
+
+  if (typeof metricsRefreshTimer === 'object' && 'unref' in metricsRefreshTimer) {
+    metricsRefreshTimer.unref();
+  }
+}
+
+function stopAdapterMetricsRefresh(): void {
+  if (metricsRefreshTimer !== null) {
+    clearInterval(metricsRefreshTimer);
+    metricsRefreshTimer = null;
+  }
 }
 
 /**
@@ -176,11 +246,13 @@ export async function startProtocolAdapters(eventBus: EventBus): Promise<void> {
  * Called on SIGTERM / SIGINT.
  */
 export async function stopProtocolAdapters(): Promise<void> {
+  stopAdapterMetricsRefresh();
   await Promise.allSettled(activeAdapters.map((a) => a.disconnect()));
   for (const adapter of activeAdapters) {
     setState(adapter.id, adapter.protocol, 'stopped');
   }
   activeAdapters.length = 0;
+  activeAdapterRefs.clear();
 }
 
 /**
@@ -190,10 +262,12 @@ export async function stopProtocolAdapters(): Promise<void> {
 function pipeAdapterToEventBus(adapter: IProtocolAdapter, eventBus: EventBus): void {
   (async () => {
     for await (const datapoint of adapter.getDataStream()) {
+      recordAdapterDatapoint(adapter.id, adapter.protocol);
       eventBus.emit(datapoint);
     }
   })().catch((err: unknown) => {
     console.error('[Adapters] Data stream error for adapter:', adapter.id, err);
+    recordAdapterConnection(adapter.id, adapter.protocol, 'failed');
   });
 }
 

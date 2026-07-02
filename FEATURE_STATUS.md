@@ -66,7 +66,7 @@
 | SG Ready heat pump control | ⚠️ | Frontend command types exist; backend execution path limited |
 | Hardware registry (113 devices, ~30 brands) | ⚠️ | Exists in code: `apps/web/src/core/hardware-registry.ts` — 113 devices across inverter/wallbox/meter/battery/heatpump with tested query helpers (`hardware-registry.test.ts`). **Not surfaced in any UI and no add-adapter-instance wizard yet** (MED-19, ADR-019). |
 | PDF reports + QR sharing | ✅ | `apps/web/src/components/ExportAndSharing.tsx`, `lib/sharing.ts` |
-| Prometheus monitoring | ✅ | `apps/api/src/middleware/metrics.ts`, `routes/metrics.routes.ts` |
+| Prometheus monitoring | ✅ | `apps/api/src/middleware/metrics.ts`, `routes/metrics.routes.ts`; per-backend-adapter series via `adapter-metrics.ts` (MED-18) |
 | Adapter health endpoint | ✅ | `GET /api/health` returns mode, overall status, and per-adapter state (`apps/api/src/routes/health.routes.ts`) |
 | Live/Mock mode safety indicator | ✅ | Header banner (live) + simulation badge, Settings status, and live-hardware warning in the command-confirmation dialog — driven by `/api/health` mode (`apps/web/src/lib/adapter-mode.ts`, `AppShell.tsx`, `useSafeCommand.tsx`) |
 | Built-in adapters disabled by default | ✅ | `isBuiltinAdapterEnabledByDefault()` returns `false`; user enables adapters in Settings (`apps/web/src/lib/adapter-mode.ts`) |
