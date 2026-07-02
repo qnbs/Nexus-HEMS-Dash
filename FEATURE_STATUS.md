@@ -31,7 +31,8 @@
 | EEBUS SPINE/SHIP | ✅ | ✅ | Full backend `IProtocolAdapter` (`apps/api/src/protocols/eebus/EebusProtocolAdapter.ts`) connects to all trusted devices in the trust store, maintains persistent SHIP sessions, parses SPINE `measurementListData` + `loadControlLimitListData` datagrams, and emits role-tagged `UnifiedEnergyDatapoint` to the EventBus. Registered in `protocols/index.ts`. Frontend `CertificateManagement.tsx` wired into Settings → EEBUS Certs tab. Supported use cases: MPC, MGCP, LPC (§14a EnWG), EV charging, heat pump. Trust-store polling for newly paired devices. Unit tests: `EebusProtocolAdapter.test.ts` (17 cases). |
 | evcc backend | ✅ | ✅ | Browser adapter for direct REST+WS. Backend `EvccAdapter` (`apps/api/src/protocols/evcc/EvccAdapter.ts`) polls `/api/state` and subscribes to `/ws`, emitting role-tagged datapoints to the EventBus (MED-20). Enable with `EVCC_BASE_URL` in live mode. |
 | OpenEMS Edge (JSON-RPC) | ✅ | ⏳ | Browser adapter exists; no backend OpenEMS adapter. |
-| Home Assistant MQTT | ✅ (contrib) | ⏳ | Frontend contrib adapter only. |
+| Home Assistant MQTT | ✅ (contrib, enhanced) | ⏳ | Full rewrite: ha-ws-api mode (direct HA WS API + Long-Lived Access Token), MQTT Discovery mode, auto-entity-discovery by `device_class`, 10+ command types (EV, heat pump, KNX lights/temp). i18n keys for new config fields. |
+| ExecAdapter (Custom Scripts) | ✅ (contrib, new) | ✅ (new) | Safe shell script integration: whitelisted scripts only (`EXEC_SCRIPTS_CONFIG`), argv-array execution (no shell), 30s timeout, 64 KB output cap, `READ_ONLY_MODE` compliance. Frontend `ExecAdapter`, backend `ExecService` + `/api/exec/*` routes. |
 | Matter/Thread | ✅ (contrib) | ⏳ | Frontend contrib adapter only. |
 | Zigbee2MQTT | ✅ (contrib) | ⏳ | Frontend contrib adapter only. |
 | Shelly REST (Gen2+) | ✅ (contrib) | ⏳ | Frontend contrib adapter only. |
