@@ -1,7 +1,12 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import type { WebSocket } from 'ws';
 import { isReadOnlyMode } from '../config/read-only-mode.js';
-import { checkWsRateLimit, filterMockData, sanitizeOutgoingWsPayload, validateWSCommand } from '../ws/energy.ws.js';
+import {
+  checkWsRateLimit,
+  filterMockData,
+  sanitizeOutgoingWsPayload,
+  validateWSCommand,
+} from '../ws/energy.ws.js';
 
 describe('validateWSCommand', () => {
   it('accepts a valid hardware command', () => {
