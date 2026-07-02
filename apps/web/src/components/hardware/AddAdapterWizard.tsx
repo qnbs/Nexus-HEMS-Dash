@@ -76,6 +76,13 @@ export function AddAdapterWizard({ device, onClose }: AddAdapterWizardProps) {
       setTesting(false);
       return;
     }
+    // BaseAdapter.connect() is non-throwing by contract (ADR-024): on failure it
+    // records the failure and sets status 'error' instead of rejecting. Capture the
+    // error message via the status callback so a failed probe is not reported as OK.
+    let lastError: string | undefined;
+    probe.onStatus((status, error) => {
+      if (status === 'error' && error) lastError = error;
+    });
     try {
       await Promise.race([
         probe.connect(),
@@ -83,6 +90,9 @@ export function AddAdapterWizard({ device, onClose }: AddAdapterWizardProps) {
           setTimeout(() => reject(new Error(t('hardwareRegistry.wizard.testTimeout'))), 8000);
         }),
       ]);
+      if (probe.status === 'error') {
+        throw new Error(lastError ?? t('hardwareRegistry.wizard.testFailed'));
+      }
       await probe.disconnect();
       setTestOk(true);
       setTestMessage(t('hardwareRegistry.wizard.testSuccess'));
