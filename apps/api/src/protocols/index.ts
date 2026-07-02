@@ -25,6 +25,7 @@ import {
   recordAdapterHealthSnapshot,
   recordAdapterRegistration,
 } from '../middleware/adapter-metrics.js';
+import { EvccAdapter } from './evcc/EvccAdapter.js';
 import { KnxAdapter, type KnxGaMapping } from './knx/KnxAdapter.js';
 import { type DeviceConfig, ModbusAdapter } from './modbus/ModbusAdapter.js';
 import { MqttAdapter } from './mqtt/MqttAdapter.js';
@@ -244,6 +245,35 @@ export async function startProtocolAdapters(eventBus: EventBus): Promise<void> {
         '[Adapters] KNX_BRIDGE_WS_URL set but knx-ga-map.json is empty — copy knx-ga-map.example.json',
       );
     }
+  }
+
+  // -------------------------------------------------------------------------
+  // evcc Adapter (REST /api/state + optional /ws push)
+  // -------------------------------------------------------------------------
+  const evccBaseUrl = process.env.EVCC_BASE_URL;
+  if (evccBaseUrl) {
+    const evccAdapter = new EvccAdapter({
+      id: 'evcc-01',
+      baseUrl: evccBaseUrl,
+      ...(process.env.EVCC_AUTH_TOKEN ? { authToken: process.env.EVCC_AUTH_TOKEN } : {}),
+      ...(process.env.EVCC_DEVICE_ID ? { deviceId: process.env.EVCC_DEVICE_ID } : {}),
+    });
+    activeAdapters.push(evccAdapter);
+    activeAdapterRefs.set(evccAdapter.id, evccAdapter);
+    recordAdapterRegistration(evccAdapter.id, evccAdapter.protocol);
+    setState(evccAdapter.id, evccAdapter.protocol, 'starting');
+
+    evccAdapter
+      .connect()
+      .then(() => {
+        setState(evccAdapter.id, evccAdapter.protocol, 'healthy');
+        pipeAdapterToEventBus(evccAdapter, eventBus);
+      })
+      .catch((err: unknown) => {
+        const message = err instanceof Error ? err.message : String(err);
+        setState(evccAdapter.id, evccAdapter.protocol, 'failed', message);
+        console.error('[Adapters] Failed to start EvccAdapter:', err);
+      });
   }
 
   console.log(`[Adapters] Started ${activeAdapters.length} adapter(s).`);

@@ -29,7 +29,7 @@
 | KNX/IP floorplan | ✅ | ✅ | Browser adapter for floorplan/room control. Backend `KnxAdapter` (`apps/api/src/protocols/knx/KnxAdapter.ts`) connects to a knxd/custom WebSocket JSON bridge, maps group addresses from `knx-ga-map.json`, and emits Zod-validated datapoints to the EventBus (MED-20). Enable with `KNX_BRIDGE_WS_URL` + live mode. |
 | OCPP 2.1 V2X (ISO 15118) | ✅ | ⏳ | Browser adapter implements JSON-RPC over WebSocket; no backend CSMS gateway. |
 | EEBUS SPINE/SHIP | ✅ | ⚠️ | Backend SHIP handshake service, trust store, and REST API exist (`apps/api/src/services/ShipHandshakeService.ts`, `routes/eebus.routes.ts`). Continuous SPINE data adapter is not yet implemented. |
-| evcc backend | ✅ | ⏳ | Browser adapter exists; no backend evcc adapter. |
+| evcc backend | ✅ | ✅ | Browser adapter for direct REST+WS. Backend `EvccAdapter` (`apps/api/src/protocols/evcc/EvccAdapter.ts`) polls `/api/state` and subscribes to `/ws`, emitting role-tagged datapoints to the EventBus (MED-20). Enable with `EVCC_BASE_URL` in live mode. |
 | OpenEMS Edge (JSON-RPC) | ✅ | ⏳ | Browser adapter exists; no backend OpenEMS adapter. |
 | Home Assistant MQTT | ✅ (contrib) | ⏳ | Frontend contrib adapter only. |
 | Matter/Thread | ✅ (contrib) | ⏳ | Frontend contrib adapter only. |
