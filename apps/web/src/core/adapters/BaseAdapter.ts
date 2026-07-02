@@ -153,7 +153,10 @@ export abstract class BaseAdapter implements EnergyAdapter {
     // navigator.onLine listeners — auto-reconnect on network recovery
     if (typeof window !== 'undefined') {
       this._onlineHandler = () => {
-        if (this._status === 'disconnected' && !this.destroyed) {
+        // Ignore synthetic `online` events for adapters that never attempted a connection
+        // (e.g. disabled built-ins during E2E offline-banner tests).
+        if (this.destroyed || this._lastConnectAttemptAt === 0) return;
+        if (this._status === 'disconnected' || this._status === 'error') {
           this.resetRetryDelay();
           this._reconnectAttempts = 0;
           void this.connect();
@@ -210,7 +213,14 @@ export abstract class BaseAdapter implements EnergyAdapter {
     if (typeof navigator !== 'undefined' && !navigator.onLine) return;
     this.destroyed = false;
     this._lastConnectAttemptAt = Date.now();
-    await this._connect();
+    try {
+      await this._connect();
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : 'Connection failed';
+      this.setStatus('error', msg);
+      this._totalErrors++;
+      this.circuitBreaker.recordFailure();
+    }
   }
 
   async disconnect(): Promise<void> {
