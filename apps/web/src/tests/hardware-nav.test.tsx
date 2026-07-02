@@ -56,6 +56,16 @@ describe('Sidebar navigation', () => {
     await user.click(screen.getByRole('button', { name: 'nav.collapseSidebar' }));
     expect(screen.getByRole('button', { name: 'nav.expandSidebar' })).toBeInTheDocument();
   });
+
+  it('marks the hardware nav link active on /settings/hardware', () => {
+    render(
+      <MemoryRouter initialEntries={['/settings/hardware']}>
+        <Sidebar />
+      </MemoryRouter>,
+    );
+    const link = screen.getByRole('link', { name: /nav\.hardware/ });
+    expect(link.className).toMatch(/sidebar-link-active|primary/);
+  });
 });
 
 describe('CommandPalette navigation', () => {
@@ -139,6 +149,17 @@ describe('CommandPalette navigation', () => {
     expect(screen.getByText('command.noResults')).toBeInTheDocument();
   });
 
+  it('closes on Escape', () => {
+    const onClose = vi.fn();
+    render(
+      <MemoryRouter>
+        <CommandPalette isOpen onClose={onClose} />
+      </MemoryRouter>,
+    );
+    fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Escape' });
+    expect(onClose).toHaveBeenCalled();
+  });
+
   it('does not auto-focus the search input on touch viewports (no keyboard pop)', async () => {
     // jsdom has no window.matchMedia, so autoFocusInput resolves falsy → the
     // mobile path focuses the dialog container instead of the text input.
@@ -200,5 +221,26 @@ describe('MobileNavigation', () => {
     await waitFor(() => {
       expect(screen.queryByText('nav.aiKeys')).not.toBeInTheDocument();
     });
+  });
+
+  it('highlights the active primary tab for the current route', () => {
+    render(
+      <MemoryRouter initialEntries={['/tariffs']}>
+        <MobileNavigation />
+      </MemoryRouter>,
+    );
+    const tariffsBtn = screen.getByRole('button', { name: 'nav.tariffs' });
+    expect(tariffsBtn).toHaveAttribute('aria-current', 'page');
+    expect(tariffsBtn.className).toMatch(/text-\(--color-primary\)/);
+  });
+
+  it('highlights the More button when a overflow route is active', () => {
+    render(
+      <MemoryRouter initialEntries={['/monitoring']}>
+        <MobileNavigation />
+      </MemoryRouter>,
+    );
+    const moreBtn = screen.getByTestId('mobile-more-btn');
+    expect(moreBtn.className).toMatch(/text-\(--color-primary\)/);
   });
 });
