@@ -389,6 +389,33 @@ Added `openCount` field; each OPEN transition increments it. `currentState` gett
 
 ---
 
+## Audit Remediation — 2026-07-02 (PR #227)
+
+### AUD-01 — Static Shell CSP Shipped Localhost WebSocket Origins to Production
+
+**File:** [`apps/web/index.html`](apps/web/index.html), [`apps/web/vite.config.ts`](apps/web/vite.config.ts), [`apps/web/vite.csp.ts`](apps/web/vite.csp.ts)
+**Status:** ✅ Fixed in PR #227
+
+The static meta CSP (effective policy for GitHub Pages, no Express in front) shipped `ws(s)://localhost:*` / `ws(s)://127.0.0.1:*` in `connect-src`. `cspNoncePlugin` now strips them from production builds via `stripLocalhostWsOrigins`; dev/E2E keep them for the Vite proxy. Unit test + `smoke-prod-build.mjs` `dist/index.html` assertion guard it.
+
+### AUD-02 — CSP `style-src 'unsafe-inline'` Still Present (dev + prod)
+
+**File:** [`apps/web/index.html`](apps/web/index.html), [`apps/api/src/middleware/security.ts`](apps/api/src/middleware/security.ts)
+**Status:** ⏳ Scheduled (target v1.7.0)
+**Severity:** MED
+
+Both shells retain `style-src 'unsafe-inline'`. Move toward nonce/hash-based styles to drop `unsafe-inline` for styles (Tailwind v4 injected styles + Radix inline styles are the main consumers). Scope: audit inline-style sources, adopt the existing nonce for `<style>`, verify no runtime style regressions. Not a blocker.
+
+### AUD-03 — Adapter Safety Matrix Gaps (missing per-adapter tests)
+
+**File:** [`docs/Adapter-Safety-Matrix.md`](docs/Adapter-Safety-Matrix.md)
+**Status:** ⏳ Scheduled
+**Severity:** LOW–MED
+
+Static audit (PR #227) found **no** 🔴 defects beyond the fixed wizard false-success (ADR-024). Open 🟡 cells are missing adapter-specific tests, covered by base-class guarantees: **G-1** OpenEMSAdapter connect-failure test (MED), **G-2** ExecAdapter web test (also P1), **G-3** HA `ha-ws-api` transport (P1), **G-4** ExampleContribAdapter smoke test (LOW).
+
+---
+
 ## LOW
 
 ### LOW-01 — SSRF Allowlist Missing mDNS `.local` Hostnames

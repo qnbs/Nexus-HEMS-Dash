@@ -198,6 +198,11 @@ export abstract class BaseAdapter implements EnergyAdapter {
 
   // ─── Lifecycle (Template Method) ────────────────────────────────
 
+  /**
+   * Non-throwing by contract (ADR-024): on failure this records the failure and
+   * sets status 'error' — it does NOT reject. Callers detect failure via
+   * `status === 'error'` and the `onStatus(status, error?)` callback.
+   */
   async connect(): Promise<void> {
     if (this._status === 'connected' || this._status === 'connecting') return;
     if (!this.circuitBreaker.canExecute()) {
