@@ -63,7 +63,7 @@
 | 8 real-time controllers | ✅ | `apps/web/src/core/energy-controllers.ts` |
 | 24h/7d predictive forecast | ✅ | `apps/web/src/components/PredictiveForecast.tsx`, `lib/ml-forecast.ts` |
 | Live tariff widget (Tibber/aWATTar/Octopus/Nordpool) | ✅ | `apps/web/src/lib/tariff-providers.ts` |
-| Smart EV charging (§14a EnWG) | ⚠️ | Frontend OCPP P1: W-unit grid limits, V2H/V2G commands; backend CSMS gateway ⏳ |
+| Smart EV charging (§14a EnWG) | ⚠️ | Frontend OCPP P1 + backend CSMS gateway (SP0); SP3 mTLS ⏳ HIGH-12 |
 | SG Ready heat pump control | ⚠️ | Frontend commands + P2 `HeatPumpAdapter` backend (6 manufacturers); full closed-loop ⏳ |
 | Hardware registry (190 devices, ~50 brands) | ✅ | Catalog browser at `/settings/hardware` (`HardwareRegistryPage.tsx`) with search + category/manufacturer/protocol filters and add-adapter wizard (`AddAdapterWizard.tsx`, `hardware-adapter-map.ts`) — connection test + enable flow (MED-19). |
 | PDF reports + QR sharing | ✅ | `apps/web/src/components/ExportAndSharing.tsx`, `lib/sharing.ts` |

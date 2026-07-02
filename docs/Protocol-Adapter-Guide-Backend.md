@@ -17,9 +17,10 @@ mode, data reaches the browser UI via `LiveEnergyAggregator` → WebSocket gatew
 | EEBUS SPINE/SHIP | `eebus/EebusProtocolAdapter.ts` | trust store (disable: `EEBUS_DISABLE=true`) | v1.5.0 |
 | HeatPump | `heatpump/HeatPumpAdapter.ts` | `HEATPUMP_HOST` | v1.6.1 |
 | OpenEMS | `openems/OpenEMSProtocolAdapter.ts` | `OPENEMS_HOST` | v1.7.0 |
+| OCPP CSMS | `ocpp/OcppCsmsProtocolAdapter.ts` | `OCPP_CSMS_PORT` | v1.7.0 |
 | Exec scripts | `services/ExecService.ts` | `EXEC_SCRIPTS_CONFIG` | v1.5.0 |
 
-**Planned:** OCPP CSMS gateway, OpenEMS JSON-RPC (MED-20).
+**Planned:** OCPP CSMS Security Profile 3 / mTLS (HIGH-12).
 
 ## Adapter Mode (Safety-Critical)
 
