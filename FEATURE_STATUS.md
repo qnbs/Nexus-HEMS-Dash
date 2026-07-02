@@ -24,8 +24,8 @@
 
 | Protocol | Frontend Adapter | Backend Adapter | Notes |
 | :------- | :--------------- | :-------------- | :---- |
-| Victron MQTT (Cerbo GX / Venus OS) | ✅ | ⚠️ | Browser adapter supports direct MQTT-over-WebSocket. Backend `MqttAdapter` (`apps/api/src/protocols/mqtt/MqttAdapter.ts`) subscribes Victron Venus OS topic patterns and emits Zod-validated datapoints to the EventBus. **Caveat (HIGH-17):** that backend output is not yet bridged to the WebSocket gateway, so the UI still receives mock data even in live mode. |
-| Modbus/SunSpec (103/124/201) | ✅ | ⚠️ | `GET /api/modbus/sunspec` + `POST /api/modbus/write` REST proxy (`routes/modbus.routes.ts`) serves the in-browser `ModbusSunSpecAdapter` a mock SunSpec gateway (validated, audited writes; live register writes via an external bridge) — this path works. Separately, the backend `ModbusAdapter` polls `device-map.json` into the EventBus, but **that live-polled data is not yet bridged to the WebSocket gateway → UI (HIGH-17)**. |
+| Victron MQTT (Cerbo GX / Venus OS) | ✅ | ✅ | Browser adapter supports direct MQTT-over-WebSocket. Backend `MqttAdapter` (`apps/api/src/protocols/mqtt/MqttAdapter.ts`) subscribes role-tagged Victron Venus OS topic patterns and emits Zod-validated datapoints to the EventBus; in live mode these reach the UI via the `LiveEnergyAggregator` WebSocket bridge (HIGH-17). |
+| Modbus/SunSpec (103/124/201) | ✅ | ✅ | `GET /api/modbus/sunspec` + `POST /api/modbus/write` REST proxy (`routes/modbus.routes.ts`) serves the in-browser `ModbusSunSpecAdapter` a mock SunSpec gateway (validated, audited writes; live register writes via an external bridge). The backend `ModbusAdapter` polls `device-map.json` into the EventBus; role-tagged registers reach the UI in live mode via the `LiveEnergyAggregator` bridge (HIGH-17). |
 | KNX/IP floorplan | ✅ | ⏳ | Browser adapter exists; no backend KNX/IP adapter. |
 | OCPP 2.1 V2X (ISO 15118) | ✅ | ⏳ | Browser adapter implements JSON-RPC over WebSocket; no backend CSMS gateway. |
 | EEBUS SPINE/SHIP | ✅ | ⚠️ | Backend SHIP handshake service, trust store, and REST API exist (`apps/api/src/services/ShipHandshakeService.ts`, `routes/eebus.routes.ts`). Continuous SPINE data adapter is not yet implemented. |
@@ -38,10 +38,10 @@
 | OpenADR 3.1 VEN | ✅ (contrib) | ⚠️ | Frontend contrib adapter + backend OAuth2 proxy (`routes/openadr.routes.ts`). Full VTN integration and event handling is partial. |
 | Example template | ✅ (contrib) | ⏳ | Template for custom adapters. |
 
-> **Backend keystone (HIGH-17, ADR-018):** the two real backend adapters (Modbus, MQTT) emit
-> validated datapoints to the EventBus (→ InfluxDB + optimizer), but `apps/api/src/ws/energy.ws.ts`
-> broadcasts mock data in **both** mock and live mode — it never subscribes to the EventBus. So no
-> backend adapter's data reaches the UI yet. Wiring that bridge is the prerequisite for backend
+> **Backend keystone (HIGH-17, ADR-018) — RESOLVED:** the WebSocket gateway now subscribes to the
+> EventBus via `LiveEnergyAggregator` (`apps/api/src/services/LiveEnergyAggregator.ts`), which folds
+> role-tagged datapoints into the `EnergyData` snapshot. In live mode with fresh data the gateway
+> broadcasts real adapter data; otherwise it falls back to mock byte-for-byte. This unblocks backend
 > protocol parity (MED-20) and per-adapter metrics (MED-18). See `docs/Audit-Report-2026-07-02.md`.
 
 ---

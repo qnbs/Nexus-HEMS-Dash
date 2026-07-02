@@ -136,16 +136,19 @@ export async function startProtocolAdapters(eventBus: EventBus): Promise<void> {
           pattern: 'N/+/system/+/Dc/Battery/Power',
           metric: 'POWER_W',
           deviceIdExtract: 'topic[1]',
+          role: 'battery',
         },
         {
           pattern: 'N/+/system/+/Dc/Battery/Soc',
           metric: 'SOC_PERCENT',
           deviceIdExtract: 'topic[1]',
+          role: 'battery',
         },
         {
           pattern: 'N/+/vebus/+/Ac/Out/P',
           metric: 'POWER_W',
           deviceIdExtract: 'topic[1]',
+          role: 'load',
         },
       ],
     });

@@ -12,6 +12,7 @@ import EventEmitter from 'node:events';
 import { appendFileSync, mkdirSync } from 'node:fs';
 import {
   type AdapterHealth,
+  type EnergyRole,
   energyDatapointSchema,
   type IProtocolAdapter,
   type MetricType,
@@ -41,6 +42,8 @@ export interface TopicPattern {
   deviceIdExtract: string;
   /** Optional value multiplier (default: 1) */
   scale?: number;
+  /** Optional role in the unified energy model (HIGH-17) — enables live UI data. */
+  role?: EnergyRole;
 }
 
 export interface MqttAdapterConfig {
@@ -210,6 +213,7 @@ export class MqttAdapter implements IProtocolAdapter {
       metric: matchedPattern.metric,
       value: rawValue * scale,
       qualityIndicator: 'GOOD' as const,
+      ...(matchedPattern.role ? { role: matchedPattern.role } : {}),
     };
 
     const result = energyDatapointSchema.safeParse(candidate);

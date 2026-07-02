@@ -50,6 +50,24 @@ export const MetricTypeSchema = z.enum([
 export type MetricType = z.infer<typeof MetricTypeSchema>;
 
 // ---------------------------------------------------------------------------
+// Energy Role (HIGH-17)
+// ---------------------------------------------------------------------------
+
+/**
+ * The role a datapoint's source plays in the unified energy model.
+ *
+ * The datapoint model is metric-centric (deviceId + metric + value), but the
+ * client `EnergyData` model is role-centric (pvPower, batteryPower, …). A single
+ * device (e.g. a Victron system) can emit multiple roles via different
+ * registers/topics, so `role` is a property of the source mapping — attached at
+ * emit time — not of the deviceId. Optional and backward-compatible: producers
+ * that omit it simply do not contribute to the live `EnergyData` snapshot.
+ */
+export const EnergyRoleSchema = z.enum(['pv', 'battery', 'grid', 'load', 'ev', 'heatpump']);
+
+export type EnergyRole = z.infer<typeof EnergyRoleSchema>;
+
+// ---------------------------------------------------------------------------
 // Quality Indicators
 // ---------------------------------------------------------------------------
 
@@ -84,6 +102,12 @@ export const energyDatapointSchema = z.object({
   value: z.number().finite(),
   /** Quality classification */
   qualityIndicator: QualityIndicatorSchema,
+  /**
+   * Optional role of the source in the unified energy model (HIGH-17).
+   * When present, the LiveEnergyAggregator folds this datapoint into the
+   * matching `EnergyData` field for live-mode WebSocket broadcast.
+   */
+  role: EnergyRoleSchema.optional(),
 });
 
 export type UnifiedEnergyDatapoint = z.infer<typeof energyDatapointSchema>;
