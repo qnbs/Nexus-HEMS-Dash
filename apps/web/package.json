@@ -25,6 +25,7 @@
     "lighthouse": "lhci autorun",
     "size": "size-limit",
     "smoke:prod": "node scripts/smoke-prod-build.mjs",
+    "capture:operators": "node scripts/capture-operator-screenshots.mjs",
     "cap:sync": "npx cap sync",
     "cap:build": "pnpm build && npx cap sync"
   },

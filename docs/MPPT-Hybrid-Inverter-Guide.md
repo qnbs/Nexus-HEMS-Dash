@@ -4,6 +4,9 @@
 
 ## Frontend adapter
 
+![Live energy flow — PV / MPPT Sankey](./images/operators/mppt-modbus-live.png)
+*Energy Flow → production & storage nodes*
+
 **Settings → Adapters → Modbus SunSpec**
 
 | Field | Example |

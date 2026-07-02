@@ -1,9 +1,13 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import type { WebSocket, WebSocketServer } from 'ws';
 import { isReadOnlyMode } from '../config/read-only-mode.js';
+import type { AuthenticatedClient } from '../middleware/auth.js';
 import {
+  checkScopeAuthorization,
   checkWsRateLimit,
   filterMockData,
+  handleSubscribeCommand,
+  handleWsCommand,
   sanitizeOutgoingWsPayload,
   validateWSCommand,
 } from '../ws/energy.ws.js';

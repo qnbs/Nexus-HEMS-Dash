@@ -1,6 +1,6 @@
 # Operator Screenshots — Capture Guide
 
-> Placeholder assets for integration guides (P3 polish). Screenshots are **not** committed to the repo by default — maintainers add PNGs under `docs/images/operators/` and reference them from guides.
+> Operator PNGs for integration guides (P3-01). Assets live under `docs/images/operators/` and are embedded from the guides listed below.
 
 ---
 
@@ -8,28 +8,39 @@
 
 ```
 docs/images/operators/
-  ha-ws-api-settings.png      # Settings → Adapters → HA token
-  ha-mqtt-broker.png          # MQTT broker mode
+  ha-ws-api-settings.png      # Settings → Adapters → HA contrib card
+  ha-mqtt-broker.png          # MQTT broker / contrib adapters
   eebus-certificates.png      # Settings → EEBUS certificates tab
-  eebus-pairing-wizard.png    # Pairing approve step
+  eebus-pairing-wizard.png    # Import certificate dialog
   heatpump-modbus-settings.png
   wallbox-evcc-link.png
   mppt-modbus-live.png
-  grafana-adapter-health.png  # nexus-hems-adapters dashboard
+  grafana-adapter-health.png  # Monitoring → Adapter Health (Grafana equivalent)
 ```
 
 ---
 
-## Capture checklist (1280×800, light + dark theme)
+## Regenerating screenshots
+
+```bash
+VITE_E2E_TESTING=true pnpm --filter @nexus-hems/web build
+pnpm --filter @nexus-hems/web capture:operators
+```
+
+Capture settings: **1280×800**, **ocean-dark** theme, English UI. Script: `apps/web/scripts/capture-operator-screenshots.mjs`.
+
+---
+
+## Capture checklist
 
 | Guide | Screen | Steps |
 |-------|--------|-------|
-| [Home Assistant](Home-Assistant-Integration-Guide.md) | HA adapter settings | Settings → Adapters → Home Assistant → ha-ws-api filled |
+| [Home Assistant](Home-Assistant-Integration-Guide.md) | HA adapter settings | Settings → Adapters → load contrib → Home Assistant card |
 | [EEBUS](EEBUS-Integration-Guide.md) | Certificates tab | Settings → tab=certificates → trust store visible |
-| [Heat Pump](Heat-Pump-Integration-Guide.md) | Modbus host | Settings → Adapters → backend heatpump env hint |
+| [Heat Pump](Heat-Pump-Integration-Guide.md) | Modbus host | Settings → Hardware → heatpump category |
 | [Wallbox](Wallbox-EV-Charging-Guide.md) | evcc / OCPP panel | Devices → EV section |
-| [MPPT](MPPT-Hybrid-Inverter-Guide.md) | Live energy PV | Energy Flow → production tab |
-| [Grafana](Grafana-Dashboards-Custom.md) | Adapter Health | Import `nexus-adapter-health.json` |
+| [MPPT](MPPT-Hybrid-Inverter-Guide.md) | Live energy PV | Energy Flow → Sankey |
+| [Grafana](Grafana-Dashboards-Custom.md) | Adapter Health | Monitoring → Adapter Health (in-app; Grafana `nexus-hems-adapters`) |
 
 ---
 
@@ -44,7 +55,8 @@ Use **German and English** captions in `de`/`en` guide sections when screenshots
 
 ---
 
-## Automation (future)
+## Automation notes
 
-- Playwright `toHaveScreenshot()` for Settings sub-routes (stored in `apps/web/tests/e2e/__screenshots__/`)
+- Playwright `toHaveScreenshot()` for Settings sub-routes — `apps/web/tests/e2e/__screenshots__/`
 - Chromatic for component-level captures — not a substitute for full-page operator flows
+- CI does not regenerate PNGs on every run; re-run `capture:operators` when Settings UI changes materially
