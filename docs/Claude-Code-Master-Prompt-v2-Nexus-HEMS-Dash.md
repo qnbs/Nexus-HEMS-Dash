@@ -53,8 +53,8 @@ without breaking safety, mock defaults, or the two sacred components (`SankeyDia
 
 | Layer | Location | Interface | Count |
 |-------|----------|-----------|-------|
-| **Frontend** | `apps/web/src/core/adapters/` | `EnergyAdapter` / `BaseAdapter` | 13 (7 core + 6 contrib) |
-| **Backend** | `apps/api/src/protocols/` | `IProtocolAdapter` | 2 real (Modbus, MQTT) |
+| **Frontend** | `apps/web/src/core/adapters/` | `EnergyAdapter` / `BaseAdapter` | 14 (7 core + 7 contrib) |
+| **Backend** | `apps/api/src/protocols/` | `IProtocolAdapter` | 8 (Modbus, MQTT, KNX, evcc, EEBUS, HeatPump, OpenEMS, OCPP CSMS) + Exec service |
 
 Data flow (backend, live):
 

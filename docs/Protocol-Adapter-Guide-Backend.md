@@ -1,12 +1,12 @@
 # Protocol Adapter Guide — Backend (Server-Side)
 
-> **Status:** Active | **Last Updated:** 2026-07-02 | **Shipped release:** v1.6.1
+> **Status:** Active | **Last Updated:** 2026-07-03 | **Shipped release:** v1.7.0
 
 This guide explains how to implement **server-side** protocol adapters in `apps/api/src/protocols/`.
 Server-side adapters run in the Express backend and feed data into the central EventBus. In **live**
 mode, data reaches the browser UI via `LiveEnergyAggregator` → WebSocket gateway (HIGH-17, v1.4.0).
 
-## Shipped Backend Adapters (v1.6.1)
+## Shipped Backend Adapters (v1.7.0)
 
 | Adapter | File | Enable env | Since |
 |---------|------|------------|-------|

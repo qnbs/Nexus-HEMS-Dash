@@ -1,10 +1,10 @@
 # Technical Debt Registry — Nexus-HEMS-Dash
 
-**Last audited:** 2026-07-02 (delta — see `docs/Audit-Report-2026-07-02.md`)
-**Version at audit:** 1.6.1 shipped (`main` after v1.6.1 release chain)
-**Last updated:** 2026-07-02 (audit delta: HIGH-17, MED-18/19/20)
-**Updated version:** v1.3.x → v1.4.0 campaign in flight
-**Auditor:** Cursor Cloud Agent (2026-06-29 full audit — `docs/Audit-Report-2026-06-29.md`; truth-sync #129); Claude Code (2026-07-02 delta)
+**Last audited:** 2026-07-03 (version-sync review); delta — see `docs/Audit-Report-2026-07-02.md`
+**Version at audit:** 1.7.0 shipped (`main` after v1.7.0 release chain, PRs #227–#232)
+**Last updated:** 2026-07-03 (version-sync to v1.7.0; prior delta: HIGH-17, MED-18/19/20)
+**Release line:** v1.7.0 shipped; v1.8.0 scope in flight (AUD-02 CSP `unsafe-inline` reduction)
+**Auditor:** Cursor Cloud Agent (2026-06-29 full audit — `docs/Audit-Report-2026-06-29.md`; truth-sync #129); Claude Code (2026-07-02 delta, 2026-07-03 version-sync)
 
 This file is the canonical issue tracker for known technical debt, security gaps, incomplete implementations, and quality issues. It is **not** a substitute for GitHub Issues — use it for context, rationale, and multi-sprint planning.
 
