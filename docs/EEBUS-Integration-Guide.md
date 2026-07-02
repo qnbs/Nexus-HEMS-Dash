@@ -2,6 +2,8 @@
 
 > SPINE/SHIP pairing, mTLS certificates, and §14a load control via the `eebus` adapter (frontend) and `EebusProtocolAdapter` (backend).
 
+> Operator screenshots: see `docs/Operator-Screenshots.md` for capture checklist.
+
 ## Quick start
 
 1. **Settings → EEBUS Certs** — generate or import client certificate; note SKI.

@@ -1,5 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { invalidateExecConfigCache, runScript } from '../services/ExecService.js';
+import {
+  invalidateExecConfigCache,
+  listAvailableScripts,
+  runScript,
+} from '../services/ExecService.js';
 
 describe('ExecService', () => {
   const originalConfig = process.env.EXEC_SCRIPTS_CONFIG;
@@ -9,8 +13,11 @@ describe('ExecService', () => {
     process.env.EXEC_SCRIPTS_CONFIG = JSON.stringify({
       scripts: {
         read_meter: {
-          command: '/bin/echo',
-          commandArgs: ['{"readings":[{"metric":"POWER_W","value":1500,"role":"pv"}]}'],
+          command: 'node',
+          commandArgs: [
+            '-e',
+            "console.log(JSON.stringify({readings:[{metric:'POWER_W',value:1500,role:'pv'}]}))",
+          ],
           allowedArgs: ['--device'],
           timeoutMs: 1000,
         },
@@ -38,5 +45,15 @@ describe('ExecService', () => {
     await expect(runScript({ scriptId: 'read_meter', args: { '--port': '502' } })).rejects.toThrow(
       /not allowed/,
     );
+  });
+
+  it('lists configured script IDs', () => {
+    const ids = listAvailableScripts().map((s) => s.id);
+    expect(ids).toContain('read_meter');
+  });
+
+  it('runs a whitelisted script and parses JSON output', async () => {
+    const output = await runScript({ scriptId: 'read_meter' });
+    expect(output.readings[0]?.value).toBe(1500);
   });
 });

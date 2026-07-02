@@ -203,7 +203,7 @@ Biome settings: line width 100, 2-space indent, LF, single quotes, trailing comm
 
 Current enforced coverage thresholds are package-specific:
 - `apps/web/vitest.config.ts`: 70 statements / 70 branches / 68 functions / 70 lines (functions temporarily 68, target 70 — see `docs/Test-Coverage-TODO.md`)
-- `apps/api/vitest.config.ts`: 33 statements / 30 branches / 38 functions / 33 lines (measured v1.3.0 baseline, staged toward 55)
+- `apps/api/vitest.config.ts`: 47 statements / 38 branches / 55 functions / 48 lines (P1-05 staged raise from v1.3.0 33% baseline; statements target 55%)
 - `docs/Testing-Coverage-Strategy.md` contains the higher staged roadmap targets; do not assume those targets are already enforced in config.
 
 Biome 2.4 note: use `biome format apps/ packages/` for the read-only `format:check` script. Do not use `biome format --write=false`; this version rejects that flag/value combination.

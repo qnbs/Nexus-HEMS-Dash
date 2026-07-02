@@ -94,6 +94,22 @@ describe('LiveEnergyAggregator', () => {
     expect(agg.hasLiveData(1_000_000)).toBe(false);
   });
 
+  it('ignores unknown energy roles', () => {
+    agg.onBatch([
+      {
+        timestamp: 1_000_000,
+        deviceId: 'tariff-meter',
+        protocol: 'modbus-sunspec',
+        metric: 'POWER_W',
+        value: 100,
+        qualityIndicator: 'GOOD',
+        role: 'tariff' as EnergyRole,
+      },
+    ]);
+    expect(agg.getSnapshot().pvPower).toBe(0);
+    expect(agg.hasLiveData(1_000_000)).toBe(false);
+  });
+
   it('reports fresh data only inside the freshness window', () => {
     const agg2 = new LiveEnergyAggregator(30_000);
     agg2.onBatch([dp('pv', 'POWER_W', 1000, 1_000_000)]);
@@ -107,6 +123,11 @@ describe('LiveEnergyAggregator', () => {
     const snap = agg.getSnapshot();
     snap.pvPower = 99;
     expect(agg.getSnapshot().pvPower).toBe(1000);
+  });
+
+  it('folds grid voltage into gridVoltage field', () => {
+    agg.onBatch([dp('grid', 'VOLTAGE_V', 231.2)]);
+    expect(agg.getSnapshot().gridVoltage).toBeCloseTo(231.2);
   });
 
   it('reset() clears the snapshot and freshness', () => {
