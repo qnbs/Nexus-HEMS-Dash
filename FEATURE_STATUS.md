@@ -1,6 +1,6 @@
 # Feature Status — Nexus-HEMS-Dash
 
-**Version:** 1.3.0 shipped (2026-06-30; v1.3.x → v1.4.0 campaign work in `[Unreleased]`)  
+**Version:** 1.6.1 shipped (2026-07-02)  
 **Last updated:** 2026-07-02  
 **Purpose:** Single source of truth for what is actually implemented, partial, or planned. Use this file to keep README/marketing claims synchronized with the codebase.
 
@@ -63,8 +63,8 @@
 | 8 real-time controllers | ✅ | `apps/web/src/core/energy-controllers.ts` |
 | 24h/7d predictive forecast | ✅ | `apps/web/src/components/PredictiveForecast.tsx`, `lib/ml-forecast.ts` |
 | Live tariff widget (Tibber/aWATTar/Octopus/Nordpool) | ✅ | `apps/web/src/lib/tariff-providers.ts` |
-| Smart EV charging (§14a EnWG) | ⚠️ | Frontend support exists; no real backend grid-signal integration |
-| SG Ready heat pump control | ⚠️ | Frontend command types exist; backend execution path limited |
+| Smart EV charging (§14a EnWG) | ⚠️ | Frontend OCPP P1: W-unit grid limits, V2H/V2G commands; backend CSMS gateway ⏳ |
+| SG Ready heat pump control | ⚠️ | Frontend commands + P2 `HeatPumpAdapter` backend (6 manufacturers); full closed-loop ⏳ |
 | Hardware registry (190 devices, ~50 brands) | ✅ | Catalog browser at `/settings/hardware` (`HardwareRegistryPage.tsx`) with search + category/manufacturer/protocol filters and add-adapter wizard (`AddAdapterWizard.tsx`, `hardware-adapter-map.ts`) — connection test + enable flow (MED-19). |
 | PDF reports + QR sharing | ✅ | `apps/web/src/components/ExportAndSharing.tsx`, `lib/sharing.ts` |
 | Prometheus monitoring | ✅ | `apps/api/src/middleware/metrics.ts`, `routes/metrics.routes.ts`; per-backend-adapter series via `adapter-metrics.ts` (MED-18) |
@@ -126,7 +126,7 @@
 | Docker server image | ✅ | `Dockerfile.server` |
 | Helm chart | ✅ | `helm/nexus-hems/` |
 | GitHub Pages deploy | ✅ | `.github/workflows/deploy.yml` |
-| Automated container registry push | ⏳ | Images built locally only; no CI push to GHCR |
+| Automated container registry push | ✅ | `container-publish.yml` — GHCR push + Grype gate + cosign sign on tag/main |
 | Automated Helm deploy / lint in CI | ⏳ | No workflow validates the chart in CI |
 | Tauri desktop build | ⚠️ | `apps/web/src-tauri/` exists; auto-updater removed |
 | Capacitor mobile build | ⚠️ | Core/cli at 8.x, plugins aligned in `package.json`; verify with `cap sync` |

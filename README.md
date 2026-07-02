@@ -27,7 +27,7 @@
 
 Nexus-HEMS is a **unified Command Center** that consolidates **13 protocol adapters** (7 core + 6 contrib) into **8 primary routes across 7 navigation sections** — orchestrating photovoltaic generation, battery storage, heat pumps, EV charging, and building automation with dynamic electricity tariffs. Instead of 18+ separate pages, every feature is accessible from a **single streamlined interface** with contextual in-context help and a new-user landing on the Command Hub.
 
-The current shipped release line is **1.3.0**. See [CHANGELOG.md](CHANGELOG.md) for the full release history and [docs/Technical-Debt-Registry.md](docs/Technical-Debt-Registry.md) for known debt and in-flight work.
+The current shipped release line is **1.6.1**. See [CHANGELOG.md](CHANGELOG.md) for the full release history and [docs/Technical-Debt-Registry.md](docs/Technical-Debt-Registry.md) for known debt and in-flight work.
 
 > **Safety notice:** Nexus-HEMS controls safety-critical electrical infrastructure. No regulatory certification (VDE, IEC, CE) has been obtained. Read [docs/Safety-Certification-Notice.md](docs/Safety-Certification-Notice.md) before connecting to live hardware.
 
@@ -54,7 +54,7 @@ For verified roadmap status and completion boundaries, use these documents as th
 | **Security**            | BYOK AI vault (AES-GCM 256) · JWT WebSocket auth · Helmet CSP · Rate limiting · CORS · Zod schema validation                                                                                                                                                                                             |
 | **Desktop & Mobile**    | Tauri v2 (Windows/macOS/Linux) · Capacitor 8 (iOS/Android)                                                                                                                                                                                                                                             |
 
-> **Protocol support truth:** The dashboard ships 13 frontend adapter modules that can run directly in the browser. The backend protocol layer (`apps/api/src/protocols/`) ships Modbus/SunSpec, MQTT (role-tagged Victron topics), KNX/IP and evcc adapters; in live mode their EventBus data reaches the UI via the `LiveEnergyAggregator` WebSocket bridge (HIGH-17). The in-browser Modbus adapter also reaches the backend through a SunSpec REST proxy (`GET /api/modbus/sunspec`, `POST /api/modbus/write`) that acts as a mock gateway out of the box, with live register writes delegated to an external SunSpec-REST bridge. See [FEATURE_STATUS.md](FEATURE_STATUS.md) for the full shipped-vs-planned matrix.
+> **Protocol support truth:** The dashboard ships 13 frontend adapter modules. The backend protocol layer (`apps/api/src/protocols/`) ships Modbus/SunSpec, MQTT, KNX/IP, evcc, EEBUS SPINE/SHIP, HeatPump, and Exec adapters; in live mode their EventBus data reaches the UI via the `LiveEnergyAggregator` WebSocket bridge (HIGH-17, v1.4.0).
 
 ### Protocol Support Matrix
 

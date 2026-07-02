@@ -5,6 +5,8 @@
 - **Deciders:** Maintainer
 - **Related:** ADR-002 (Zustand dual-store), ADR-010 (Home Assistant integration), `docs/Adapter-Dev-Guide.md`, `docs/Audit-Report-2026-07-02.md`, `apps/web/src/core/hardware-registry.ts`, MED-19 in `docs/Technical-Debt-Registry.md`
 
+> **Supersession (v1.6.1):** MED-19 resolved — registry browser + wizard at `/settings/hardware`; registry expanded to **190 devices** (P2 #212). Context below reflects the 2026-07-02 decision baseline.
+
 ## Context
 
 A proposed body of work framed the platform as "Victron-centric" and called for a

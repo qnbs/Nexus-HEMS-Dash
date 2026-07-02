@@ -1,6 +1,6 @@
 {
   "name": "@nexus-hems/web",
-  "version": "1.3.0",
+  "version": "1.6.1",
   "private": true,
   "type": "module",
   "description": "Nexus-HEMS React 19 SPA — Vite 8, Tailwind v4, Zustand 5, TanStack Query v5",

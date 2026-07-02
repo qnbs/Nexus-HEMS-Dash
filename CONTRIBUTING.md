@@ -334,7 +334,7 @@ Create an ADR using this template:
 
 | Metric              | Budget   | Enforcement           |
 | ------------------- | -------- | --------------------- |
-| Total JS (gzipped)  | ≤1100 KB | `pnpm size` in CI     |
+| Total JS (gzipped)  | ≤1120 KB | `pnpm size` in CI     |
 | Total CSS (gzipped) | ≤25 KB   | `pnpm size` in CI     |
 | Framework chunk     | ≤85 KB   | size-limit            |
 | Vendor Recharts     | ≤110 KB  | size-limit            |

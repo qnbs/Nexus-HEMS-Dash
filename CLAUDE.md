@@ -4,11 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Nexus-HEMS Dashboard is a production-grade, real-time Home Energy Management System dashboard. It consolidates 13 protocol adapters (7 core: Victron MQTT, Modbus/SunSpec, KNX, OCPP 2.1, EEBUS/SPINE, evcc, OpenEMS; 6 contrib: Home Assistant, Matter/Thread, Zigbee2MQTT, Shelly, OpenADR 3.1, Example) into a unified React 19 SPA served by an Express 5 backend. Deployable as PWA, Docker container, Tauri desktop app, Helm/Kubernetes release, or Capacitor mobile app. Current package version: `1.3.0`.
+Nexus-HEMS Dashboard is a production-grade, real-time Home Energy Management System dashboard. It consolidates 13 protocol adapters (7 core: Victron MQTT, Modbus/SunSpec, KNX, OCPP 2.1, EEBUS/SPINE, evcc, OpenEMS; 6 contrib: Home Assistant, Matter/Thread, Zigbee2MQTT, Shelly, OpenADR 3.1, Example) into a unified React 19 SPA served by an Express 5 backend. Deployable as PWA, Docker container, Tauri desktop app, Helm/Kubernetes release, or Capacitor mobile app. Current package version: `1.6.1`.
 
 **Safety note:** This system controls safety-critical electrical hardware. No regulatory certification (VDE, IEC, CE) has been obtained. See `docs/Safety-Certification-Notice.md` before connecting to live hardware. Always use `ADAPTER_MODE=mock` for development; switch to `live` only after reviewing the pre-deployment checklist in that document.
 
-`package.json` is now at `1.3.0`; the active `1.3.x` work stream is tracked in `CHANGELOG.md` and `docs/Technical-Debt-Registry.md` (registry item IDs like HIGH-17, MED-18/19 map to merged PRs).
+The current shipped release line is **1.6.1**. See [CHANGELOG.md](CHANGELOG.md) for the full release history and [docs/Technical-Debt-Registry.md](docs/Technical-Debt-Registry.md) for known debt and in-flight work.
 
 > ## ⚠️ Hardware Profile & Cloud-First CI Policy (read before running anything)
 >
@@ -251,7 +251,7 @@ Enforced by `pnpm size` (size-limit) and Lighthouse CI. Do not exceed:
 
 | Metric | Budget |
 |---|---|
-| Total JS (gzipped) | ≤ 1100 KB |
+| Total JS (gzipped) | ≤ 1120 KB |
 | Total CSS (gzipped) | ≤ 25 KB |
 | Framework chunk | ≤ 85 KB |
 | Vendor Recharts | ≤ 110 KB |
