@@ -16,12 +16,14 @@ test.describe('EEBUS pairing & certificates', () => {
     await page.waitForSelector('#main-content h1', { timeout: 30_000 });
 
     await expect(page.locator('#cert-mgmt-heading')).toBeVisible();
-    await expect(page.getByRole('button', { name: /import/i })).toBeVisible();
+    const importCertButton = page.getByRole('button', {
+      name: /Import Certificate|Zertifikat importieren/i,
+    });
+    await expect(importCertButton).toBeVisible();
     await expect(page.locator('#ship-trust-heading')).toBeVisible();
 
-    const importButton = page.getByRole('button', { name: /import/i }).first();
-    await importButton.focus();
-    await expect(importButton).toBeFocused();
+    await importCertButton.focus();
+    await expect(importCertButton).toBeFocused();
   });
 
   test('EEBUS certificates tab is keyboard reachable from settings nav', async ({ page }) => {

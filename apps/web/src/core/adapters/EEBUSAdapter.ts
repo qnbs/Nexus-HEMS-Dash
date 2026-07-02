@@ -267,6 +267,13 @@ export class EEBUSAdapter extends BaseAdapter {
       throw new Error(validation.error);
     }
 
+    if (this._isMock) {
+      this.setStatus('connected');
+      this.shipState = 'connected';
+      this.emitEvent({ type: 'ship_state', shipState: 'connected' });
+      return;
+    }
+
     try {
       if (typeof window !== 'undefined') {
         await this._connectViaProxy();

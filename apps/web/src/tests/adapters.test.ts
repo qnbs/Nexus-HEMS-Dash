@@ -16,7 +16,7 @@ describe('EnergyAdapter Interface (EEBUSAdapter stub)', () => {
   let adapter: EnergyAdapter;
 
   beforeEach(() => {
-    adapter = new EEBUSAdapter({ host: 'eebus.local', port: 4712 });
+    adapter = new EEBUSAdapter({ host: 'eebus.local', port: 4712, mock: true });
   });
 
   it('should have correct id and name', () => {
@@ -33,11 +33,9 @@ describe('EnergyAdapter Interface (EEBUSAdapter stub)', () => {
     expect(adapter.status).toBe('disconnected');
   });
 
-  it('should transition to connecting when connect is called', async () => {
+  it('should transition to connected in mock mode when connect is called', async () => {
     await adapter.connect();
-    // With an explicit host, WebSocket creation is attempted and then falls back
-    // to error/disconnected in the test environment without a real backend.
-    expect(['connecting', 'error', 'disconnected']).toContain(adapter.status);
+    expect(adapter.status).toBe('connected');
   });
 
   it('should return empty snapshot', () => {
