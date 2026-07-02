@@ -666,26 +666,6 @@ function ShipTrustStore() {
     setPinSki(null);
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-8 text-(--color-text-secondary) text-sm">
-        <span className="mr-2 animate-spin">⟳</span>
-        {t('common.loading')}
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <p
-        role="alert"
-        className="rounded-lg bg-(--state-danger-bg)/15 px-3 py-2 text-(--state-danger-fg) text-sm"
-      >
-        {t('shipPairing.loadError')}
-      </p>
-    );
-  }
-
   return (
     <section aria-labelledby="ship-trust-heading" className="mt-8 space-y-4">
       <div>
@@ -701,7 +681,19 @@ function ShipTrustStore() {
         </p>
       </div>
 
-      {!devices?.length ? (
+      {isLoading ? (
+        <div className="flex items-center justify-center py-8 text-(--color-text-secondary) text-sm">
+          <span className="mr-2 animate-spin">⟳</span>
+          {t('common.loading')}
+        </div>
+      ) : error ? (
+        <p
+          role="alert"
+          className="rounded-lg bg-(--state-danger-bg)/15 px-3 py-2 text-(--state-danger-fg) text-sm"
+        >
+          {t('shipPairing.loadError')}
+        </p>
+      ) : !devices?.length ? (
         <div className="glass-panel flex flex-col items-center gap-3 rounded-2xl py-10 text-center">
           <ShieldOff aria-hidden className="size-10 text-(--color-text-secondary)/40" />
           <p className="font-medium text-(--color-text-secondary)">

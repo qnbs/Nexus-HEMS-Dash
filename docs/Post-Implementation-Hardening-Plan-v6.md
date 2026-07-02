@@ -42,13 +42,14 @@
 | P1-02 | `Help.tsx` hardcoded version strings | ✅ About tech stack → i18n keys |
 | P1-03 | EEBUS mTLS empty-cert rejection | ✅ Shipped #217 |
 | P1-04 | Per-adapter reconnect metrics dashboards | ✅ `nexus-adapter-health.json` |
-| P1-05 | Coverage thresholds staging | ⏳ reconnect/DLQ tests added; API gate still 33% |
+| P1-05 | Coverage thresholds staging | ✅ API gates 47/38/55/48 (functions at 55%); statements path to 55% |
+| P2-01 | Integration tests: LiveEnergyAggregator + multi-adapter | ✅ `live-energy-eventbus.integration.test.ts` |
 
 ### P2 — Medium
 
 | ID | Task |
 |----|------|
-| P2-01 | Integration tests: LiveEnergyAggregator + multi-adapter |
+| P2-01 | Integration tests: LiveEnergyAggregator + multi-adapter | ✅ EventBus + multi-protocol fold |
 | P2-02 | Flaky animation a11y stabilization (already mitigated via reduced-motion in E2E) |
 | P2-03 | README adapter count 13 → 14 alignment | ✅ 7 core + 7 contrib |
 | P2-04 | `accessibility-aaa.spec.ts` doc references → point to `accessibility.spec.ts` only | ✅ Fixed in #217 |
@@ -57,9 +58,9 @@
 
 | ID | Task |
 |----|------|
-| P3-01 | Operator guide screenshots |
-| P3-02 | ADR for HA dual-mode (ha-ws-api vs mqtt-broker) |
-| P3-03 | Lighthouse budget re-baseline after Sankey data growth |
+| P3-01 | Operator guide screenshots | ⏳ `docs/Operator-Screenshots.md` capture guide |
+| P3-02 | ADR for HA dual-mode (ha-ws-api vs mqtt-broker) | ✅ ADR-023 |
+| P3-03 | Lighthouse budget re-baseline after Sankey data growth | ✅ `docs/Lighthouse-Baseline-2026-07.md` |
 
 ---
 
@@ -101,6 +102,10 @@ Manual checklist: `docs/Accessibility-Testing-Guide.md`
 | `shelly-webhook.routes.test.ts` | private vs public IP |
 | `ExecService.test.ts` | whitelist + arg validation |
 | `homeassistant-mqtt-adapter.test.ts` | ha-ws-api auth_required |
+| `EventBus.test.ts` | buffer, flush, backpressure, subscriber errors |
+| `live-energy-eventbus.integration.test.ts` | multi-adapter EventBus → aggregator fold |
+| `exec.routes.test.ts` / `metrics.routes.test.ts` | JWT scope gates |
+| `grafana.routes.test.ts` / `history.routes.test.ts` | dashboard JSON + history validation |
 
 ### 3.5 Documentation
 

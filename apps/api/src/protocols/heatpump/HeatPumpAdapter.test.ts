@@ -60,4 +60,11 @@ describe('HeatPumpAdapter', () => {
     const health = await adapter.healthCheck();
     expect(health.status).toBe('offline');
   });
+
+  it('disconnect clears poll timer without hanging', async () => {
+    mockReadHoldingRegisters.mockResolvedValue({ data: [0] });
+    await adapter.connect();
+    await adapter.disconnect();
+    expect(mockClose).toHaveBeenCalled();
+  });
 });
