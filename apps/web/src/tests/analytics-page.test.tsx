@@ -87,8 +87,7 @@ describe('AnalyticsPage', () => {
     const user = userEvent.setup();
     render(<AnalyticsPage />);
 
-    const metricSelect = screen.getByLabelText('analytics.mlForecastSelectMetric');
-    await user.selectOptions(metricSelect, 'houseLoad');
+    await user.click(screen.getByRole('radio', { name: /Hausverbrauch/ }));
     await user.click(screen.getByRole('button', { name: 'analytics.mlForecastRun' }));
 
     await waitFor(() => {

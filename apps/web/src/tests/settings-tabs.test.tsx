@@ -245,9 +245,8 @@ describe('EnergyTab', () => {
   });
 
   it('writes the tariff-provider selection back to the store', () => {
-    const { container } = renderTab(<EnergyTab />);
-    const select = container.querySelector('#settings-tariff') as HTMLSelectElement;
-    fireEvent.change(select, { target: { value: 'tibber' } });
+    renderTab(<EnergyTab />);
+    fireEvent.click(screen.getByRole('radio', { name: 'settings.tibber' }));
     expect(mockUpdateSettings).toHaveBeenCalledWith({ tariffProvider: 'tibber' });
   });
 });
