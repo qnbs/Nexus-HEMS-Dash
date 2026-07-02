@@ -27,6 +27,7 @@ import { createModbusRoutes } from './routes/modbus.routes.js';
 import { createOpenADRRoutes } from './routes/openadr.routes.js';
 import { createSharesRoutes } from './routes/shares.routes.js';
 import { EnergyRouterService } from './services/EnergyRouterService.js';
+import { liveEnergyAggregator } from './services/LiveEnergyAggregator.js';
 import { TimeseriesService } from './services/TimeseriesService.js';
 import { setupWebSocket } from './ws/energy.ws.js';
 
@@ -85,11 +86,16 @@ export async function startServer(): Promise<void> {
   app.use('/api/v1', createHistoryRoutes());
 
   // ─── WebSocket Handler ────────────────────────────────────────────
-  setupWebSocket(wss);
+  // HIGH-17: the live-energy aggregator folds EventBus datapoints into the
+  // EnergyData snapshot the gateway broadcasts in live mode (ADR-018).
+  setupWebSocket(wss, liveEnergyAggregator);
 
   // ─── Time-Series Service (InfluxDB + WAL) ─────────────────────────
   const timeseriesService = new TimeseriesService();
   eventBus.subscribe('timeseries', timeseriesService);
+
+  // ─── Live energy snapshot (HIGH-17 EventBus → WebSocket bridge) ────
+  eventBus.subscribe('live-energy', liveEnergyAggregator);
   await timeseriesService.recoverWAL().catch((err: unknown) => {
     logger.warn('WAL recovery failed', { error: err instanceof Error ? err.message : String(err) });
   });

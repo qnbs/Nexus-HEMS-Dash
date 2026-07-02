@@ -22,6 +22,7 @@ type ModbusRTU = ModbusRTUType;
 
 import {
   type AdapterHealth,
+  type EnergyRole,
   energyDatapointSchema,
   type IProtocolAdapter,
   type MetricType,
@@ -71,6 +72,8 @@ interface RegisterConfig {
   dataType: 'INT16' | 'UINT16' | 'INT32' | 'UINT32' | 'FLOAT32';
   byteOrder: 'BE' | 'LE';
   label: string;
+  /** Optional role in the unified energy model (HIGH-17) — enables live UI data. */
+  role?: EnergyRole;
 }
 
 export interface DeviceConfig {
@@ -232,6 +235,7 @@ export class ModbusAdapter implements IProtocolAdapter {
           metric: reg.metric,
           value: scaledValue,
           qualityIndicator: 'GOOD' as const,
+          ...(reg.role ? { role: reg.role } : {}),
         };
 
         const result = energyDatapointSchema.safeParse(candidate);

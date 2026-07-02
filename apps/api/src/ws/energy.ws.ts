@@ -1,4 +1,4 @@
-import { sanitizeObjectStrings, WSCommandSchema } from '@nexus-hems/shared-types';
+import { type EnergyData, sanitizeObjectStrings, WSCommandSchema } from '@nexus-hems/shared-types';
 import type { IncomingMessage } from 'http';
 import type { WebSocket, WebSocketServer } from 'ws';
 import { getEffectiveAdapterMode } from '../config/adapter-mode.js';
@@ -7,6 +7,7 @@ import { type CommandOutcome, writeCommandAuditEntry } from '../data/command-aud
 import { mockData, updateMockData } from '../data/mock-data.js';
 import { type AuthenticatedClient, authenticateWS, type JWTScope } from '../middleware/auth.js';
 import { setMetric, updateServerMetrics, wsMessageCount } from '../middleware/metrics.js';
+import type { LiveEnergyAggregator } from '../services/LiveEnergyAggregator.js';
 import { wsTicketStore } from '../services/ws-ticket-store.js';
 import { handleEebusProxyConnection, isEebusProxyPath } from './eebus-proxy.ws.js';
 import { getRequiredScopeForCommand, isScopeAuthorized } from './ws-scope.js';
@@ -62,7 +63,20 @@ function auditCommand(
   });
 }
 
-export function setupWebSocket(wss: WebSocketServer): void {
+/**
+ * Choose the broadcast source (HIGH-17): the live aggregator snapshot when the
+ * effective adapter mode is `live` AND fresh live data exists, otherwise the mock
+ * stream. This keeps mock/demo deployments byte-for-byte unchanged and only
+ * surfaces real backend-adapter data once it is actually flowing. See ADR-018.
+ */
+export function resolveBroadcastData(liveAggregator?: LiveEnergyAggregator): EnergyData {
+  if (liveAggregator && getEffectiveAdapterMode() === 'live' && liveAggregator.hasLiveData()) {
+    return liveAggregator.getSnapshot();
+  }
+  return mockData;
+}
+
+export function setupWebSocket(wss: WebSocketServer, liveAggregator?: LiveEnergyAggregator): void {
   const requireWSAuth = process.env.NODE_ENV === 'production';
   const wsAuthMap = new WeakMap<WebSocket, AuthenticatedClient>();
   const wsRateLimits = new WeakMap<WebSocket, { count: number; resetAt: number }>();
@@ -96,7 +110,10 @@ export function setupWebSocket(wss: WebSocketServer): void {
   setInterval(() => {
     updateMockData();
 
-    updateServerMetrics(mockData, wss.clients.size);
+    // HIGH-17: broadcast live adapter data in live mode, mock otherwise.
+    const broadcastData = resolveBroadcastData(liveAggregator);
+
+    updateServerMetrics(broadcastData, wss.clients.size);
     setMetric(
       'hems_websocket_messages_total',
       'Total WebSocket messages received',
@@ -119,8 +136,8 @@ export function setupWebSocket(wss: WebSocketServer): void {
       // If subscribed is empty (no SUBSCRIBE sent), send full payload (backward-compatible)
       const payload =
         subscribed && subscribed.size > 0
-          ? filterMockData(mockData as unknown as Record<string, unknown>, subscribed)
-          : mockData;
+          ? filterMockData(broadcastData as unknown as Record<string, unknown>, subscribed)
+          : broadcastData;
 
       safeSend(client, { type: 'ENERGY_UPDATE', data: payload });
       wsMessageCount.outbound++;
@@ -180,8 +197,8 @@ export function setupWebSocket(wss: WebSocketServer): void {
       : 'anonymous(read)';
     console.log(`[WS] Client connected (${clientInfo}) from ${clientIP}`);
 
-    // Send initial data
-    safeSend(ws, { type: 'ENERGY_UPDATE', data: mockData });
+    // Send initial data (live snapshot in live mode, mock otherwise — HIGH-17)
+    safeSend(ws, { type: 'ENERGY_UPDATE', data: resolveBroadcastData(liveAggregator) });
 
     ws.on('message', (message) => {
       wsMessageCount.inbound++;
@@ -200,7 +217,7 @@ export function setupWebSocket(wss: WebSocketServer): void {
       }
       try {
         const parsed = JSON.parse(message.toString());
-        handleWsCommand(ws, parsed, wsSubscriptions, wsAuthMap, wss);
+        handleWsCommand(ws, parsed, wsSubscriptions, wsAuthMap, wss, liveAggregator);
       } catch (e) {
         console.error('Failed to parse message', e);
       }
@@ -282,6 +299,7 @@ function handleWsCommand(
   wsSubscriptions: WeakMap<WebSocket, Set<string>>,
   wsAuthMap: WeakMap<WebSocket, AuthenticatedClient>,
   wss: WebSocketServer,
+  liveAggregator?: LiveEnergyAggregator,
 ): void {
   const validation = validateWSCommand(parsed);
   if (!validation.valid) {
@@ -346,8 +364,9 @@ function handleWsCommand(
     mockData.evPower +
     mockData.heatPumpPower -
     mockData.pvPower;
+  const broadcastData = resolveBroadcastData(liveAggregator);
   wss.clients.forEach((c) => {
-    if (c.readyState === 1) safeSend(c, { type: 'ENERGY_UPDATE', data: mockData });
+    if (c.readyState === 1) safeSend(c, { type: 'ENERGY_UPDATE', data: broadcastData });
   });
 }
 

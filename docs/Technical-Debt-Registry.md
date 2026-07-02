@@ -679,8 +679,8 @@ premise is false — the platform is already vendor-neutral; the genuine gap is 
 Direction recorded in ADR-018 (backend-mediated adapters) and ADR-019 (registry surfacing).
 
 ### HIGH-17 — Backend Adapter Data Not Bridged to WebSocket Gateway
-**Files:** `apps/api/src/ws/energy.ws.ts`, `apps/api/src/core/EventBus.ts`, `apps/api/src/config/adapter-mode.ts`
-**Status:** ⏳ Scheduled — ADR-018 (Proposed)
+**Files:** `apps/api/src/ws/energy.ws.ts`, `apps/api/src/core/EventBus.ts`, `apps/api/src/services/LiveEnergyAggregator.ts`, `apps/api/src/config/adapter-mode.ts`
+**Status:** ✅ Fixed in v1.3.x — `LiveEnergyAggregator` bridges EventBus → WebSocket (ADR-018)
 
 The two real backend adapters (`protocols/modbus/ModbusAdapter.ts`, `protocols/mqtt/MqttAdapter.ts`)
 pipe Zod-validated datapoints into `EventBus`, which fans out to InfluxDB (`TimeseriesService`)
