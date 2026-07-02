@@ -1,3 +1,5 @@
+> **Supersession (2026-07-02):** HIGH-17 and MED-19 resolved; hardware registry **190 devices**; P1/P2 adapter work shipped (#211/#212). Historical snapshot only.
+
 # Nexus-HEMS-Dash — Full-Scale Audit Report (2026-07-02)
 
 **Version:** 2026-07-02 full-scale consolidation  

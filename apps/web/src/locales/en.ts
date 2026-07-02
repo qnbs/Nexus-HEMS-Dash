@@ -2279,9 +2279,11 @@ export const en = {
     contribMatterThread: 'Matter/Thread',
     contribMatterThreadDesc: 'Matter devices via Thread/WiFi mesh',
     contribZigbee2mqtt: 'Zigbee2MQTT',
-    contribZigbee2mqttDesc: 'Zigbee devices via Zigbee2MQTT bridge',
+    contribZigbee2mqttDesc:
+      'Zigbee devices via Z2M bridge — role classification, availability tracking, EV/heat-pump plugs',
     contribShellyRest: 'Shelly REST',
-    contribShellyRestDesc: 'Shelly Gen2+ devices (Pro 3EM, Plus Plug, Pro 4PM)',
+    contribShellyRestDesc:
+      'Shelly Gen1/2/3 via REST — 3-phase EM, webhook push, relay control, PV monitor',
     adapterRegistered: 'Adapter registered',
     adapterUnregistered: 'Adapter unregistered',
     adapterSource: 'Source',
@@ -2346,6 +2348,72 @@ export const en = {
     mtlsRequired: 'Security Profile 3 requires mTLS certificates',
     clientCert: 'Client Certificate (PEM)',
     clientKey: 'Client Key (PEM)',
+    // OCPP V2X & §14a EnWG (P1)
+    ocppV2xSection: 'V2X & §14a EnWG Features',
+    ocppV2xIntro:
+      'Bidirectional charging and German grid regulation via OCPP 2.1 ChargingStationMaxProfile (watts).',
+    ocppV2xV2h: 'Vehicle-to-Home (V2H)',
+    ocppV2xV2hDesc:
+      'V2X-capable chargers can supply the house via negative W limits (sendDischargeToHome). Requires v2xCapable in adapter config.',
+    ocppV2xV2g: 'Vehicle-to-Grid (V2G)',
+    ocppV2xV2gDesc:
+      'SET_V2X_DISCHARGE sends a negative ChargingStationMaxProfile limit in watts for grid feed-in.',
+    ocppV2xS14a: '§14a EnWG Grid Curtailment',
+    ocppV2xS14aDesc:
+      'SET_GRID_LIMIT uses chargingRateUnit: W (not A) per OCPP 2.1 B12 — avoids 3-phase rounding errors at 4.2 kW.',
+    ocppPhaseConfig: 'Phase Selection',
+    ocppPhaseConfigDesc:
+      'SET_EV_PHASES selects 1-phase or 3-phase charging; per-phase current is adjusted automatically.',
+    ocppTargetSoc: 'Target SoC Scheduling',
+    ocppTargetSocDesc:
+      'SET_EV_TARGET_SOC builds a charging schedule from desired state of charge and optional departure time.',
+    ocppSmartCost: 'Smart Cost Limit',
+    ocppSmartCostDesc:
+      'SET_SMART_COST_LIMIT pauses charging when the live tariff exceeds the configured €/kWh threshold.',
+    ocppMinCurrent: 'Minimum Current Floor',
+    ocppMinCurrentDesc:
+      'SET_EV_MIN_CURRENT enforces the IEC 61851 minimum charging current on the active profile.',
+    // Zigbee2MQTT (contrib)
+    zigbeeSpecific: 'Zigbee2MQTT Setup Guide',
+    zigbeeHelpIntro:
+      'Connect to a Zigbee2MQTT MQTT broker via the JSON-over-WebSocket bridge (same transport as Home Assistant MQTT).',
+    zigbeeBaseTopic: 'Base Topic',
+    zigbeeBaseTopicHint:
+      'Default: zigbee2mqtt. Device state, set commands, and availability use this prefix.',
+    zigbeeMqttAuth: 'MQTT Authentication',
+    zigbeeMqttAuthHint:
+      'Username and password are forwarded in the MQTT CONNECT packet (P1). Set on the broker and in adapter config.',
+    zigbeeEnergyDevices: 'Energy Monitoring Devices',
+    zigbeeEnergyDevicesHint:
+      'Optional: list friendly names of smart plugs or EM devices to track explicitly (auto-discovery also runs).',
+    zigbeeRoleHints: 'Device Role Classification',
+    zigbeeRoleHintsDesc:
+      'Plugs are auto-classified by friendly-name keywords: grid (EM meters), load (smart plugs), heatpump (heat_pump, waermepumpe, wp_), ev (wallbox, ladepunkt, ev_charger).',
+    zigbeeCommands: 'Available Commands',
+    zigbeeCommandsDesc:
+      'SET_EV_CURRENT, SET_EV_POWER, SET_HEAT_PUMP_POWER via zigbee2mqtt/<friendly_name>/set JSON payloads.',
+    zigbeeAvailability: 'Availability Tracking',
+    zigbeeAvailabilityHint:
+      'Devices reporting offline on the /availability topic are skipped in energy aggregation.',
+    // Shelly REST (contrib)
+    shellySpecific: 'Shelly REST Setup Guide',
+    shellyHelpIntro:
+      'Poll Shelly devices directly via HTTP REST. Supports Gen1 (/status), Gen2 and Gen3 (RPC API).',
+    shellyGenSupport: 'Generation Support',
+    shellyGenSupportDesc:
+      'Gen1: GET /status (Plug S, EM, 3EM, 2.5). Gen2/3: RPC with auto-detection via Shelly.GetDeviceInfo.',
+    shellyWebhook: 'Webhook Push (optional)',
+    shellyWebhookHint:
+      'Point devices at POST /api/shelly/webhook on the API to reduce polling; HTTP polling remains as fallback.',
+    shellyPhases: '3-Phase Disaggregation',
+    shellyPhasesHint:
+      'Shelly 3EM (Gen1 emeters[] or Gen2 em:0) maps L1/L2/L3 power into GridData.phases[].',
+    shellyPvCapability: 'PV Monitoring',
+    shellyPvCapabilityHint:
+      'Shelly Plus 1PM can be registered with the pv capability as a production monitor.',
+    shellyRelayCommand: 'Relay Control',
+    shellyRelayCommandHint:
+      'SET_RELAY: Gen1 via GET /relay/N?turn=on|off; Gen2/3 via POST /rpc/Switch.Set.',
     // EEBUS
     eebusSpecific: 'EEBUS SPINE/SHIP',
     skiFingerprint: 'SKI Fingerprint',

@@ -46,9 +46,9 @@ For verified roadmap status and completion boundaries, use these documents as th
 
 | Category                | Features                                                                                                                                                                                                                                                                                                 |
 | :---------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Energy**              | Real-time D3.js Sankey flow · AI optimizer (multi-provider BYOK) · MPC day-ahead optimizer · 8 real-time controllers · 24h/7d predictive forecast · Live tariff widget (Tibber/aWATTar/Octopus/Nordpool) · Smart EV charging (§14a EnWG) · SG Ready heat pump control · Hardware registry (113 devices) |
+| **Energy**              | Real-time D3.js Sankey flow · AI optimizer (multi-provider BYOK) · MPC day-ahead optimizer · 8 real-time controllers · 24h/7d predictive forecast · Live tariff widget (Tibber/aWATTar/Octopus/Nordpool) · Smart EV charging (§14a EnWG) · SG Ready heat pump control · Hardware registry (190 devices) |
 | **Protocols (Core)**    | Victron MQTT (Cerbo GX / Venus OS) · Modbus/SunSpec (103/124/201) · KNX/IP floorplan · OCPP 2.1 V2X (ISO 15118) · EEBUS SPINE/SHIP (TLS 1.3 mTLS) · evcc backend · OpenEMS Edge (JSON-RPC)                                                                                                               |
-| **Protocols (Contrib)** | Home Assistant MQTT · Matter/Thread · Zigbee2MQTT · Shelly REST (Gen2+) · OpenADR 3.1 VEN · Example template                                                                                                                                                                                             |
+| **Protocols (Contrib)** | Home Assistant MQTT · Matter/Thread · Zigbee2MQTT · Shelly REST (Gen1/2/3) · OpenADR 3.1 VEN · Example template                                                                                                                                                                                             |
 | **Plugin System**       | Adapter Registry with dynamic `import()` loading · npm-package format · `BaseAdapter` class for rapid development · Hot-loading from Settings UI                                                                                                                                                         |
 | **Platform**            | Unified Command Center (7 sections) · PWA offline-first (Workbox + IndexedDB) · 5 themes · Full i18n (DE/EN) · WCAG 2.2 AA · PDF reports + QR sharing · Prometheus monitoring                                                                                                                            |
 | **Security**            | BYOK AI vault (AES-GCM 256) · JWT WebSocket auth · Helmet CSP · Rate limiting · CORS · Zod schema validation                                                                                                                                                                                             |
@@ -64,13 +64,13 @@ For verified roadmap status and completion boundaries, use these documents as th
 | Modbus/SunSpec (103/124/201) | ✅ | ✅ | Implemented |
 | KNX/IP floorplan | ✅ | ✅ | Backend `KnxAdapter` via knxd/WebSocket JSON bridge, `knx-ga-map.json` (MED-20) |
 | OCPP 2.1 V2X (ISO 15118) | ✅ | ❌ | Frontend-ready; backend CSMS gateway planned |
-| EEBUS SPINE/SHIP (TLS 1.3 mTLS) | ✅ | ⚠️ SHIP handshake only | Pairing/trust store implemented; continuous SPINE data adapter planned |
+| EEBUS SPINE/SHIP (TLS 1.3 mTLS) | ✅ | ✅ | Backend `EebusProtocolAdapter` — SPINE measurements + §14a load control (MED-20) |
 | evcc backend | ✅ | ✅ | Backend `EvccAdapter` polls `/api/state` + subscribes `/ws` (MED-20) |
 | OpenEMS Edge (JSON-RPC) | ✅ | ❌ | Frontend-ready; backend adapter planned |
 | Home Assistant MQTT | ✅ (contrib) | ❌ | Frontend contrib adapter only |
 | Matter/Thread | ✅ (contrib) | ❌ | Frontend contrib adapter only |
-| Zigbee2MQTT | ✅ (contrib) | ❌ | Frontend contrib adapter only |
-| Shelly REST (Gen2+) | ✅ (contrib) | ❌ | Frontend contrib adapter only |
+| Zigbee2MQTT | ✅ (contrib) | ❌ | Frontend contrib — role classification, EV/heat-pump plugs, availability tracking |
+| Shelly REST (Gen1/2/3) | ✅ (contrib) | ⚠️ Webhook receiver | Frontend contrib + `/api/shelly/webhook` push receiver; Gen1/2/3 REST polling |
 | OpenADR 3.1 VEN | ✅ (contrib) | ⚠️ OAuth2 proxy only | Frontend contrib + API proxy; full VTN integration planned |
 
 ## Architecture
@@ -114,7 +114,7 @@ In development, `apps/web` (Vite) proxies `/api/*`, `/metrics`, and `/ws` reques
                      ├──→ ControllerPipeline (8 real-time controllers)
                      ├──→ MPC Optimizer (LP day-ahead scheduling)
                      ├──→ AI Optimizer (Gemini / OpenAI / Anthropic / xAI / Groq / Ollama)
-                     ├──→ Hardware Registry (113 certified devices)
+                     ├──→ Hardware Registry (190 certified devices)
                      └──→ Dexie.js IndexedDB (Offline Cache)
 ```
 
@@ -286,7 +286,7 @@ AWATTAR_BASE_URL=https://api.awattar.de/v1  # aWATTar DE Day-Ahead prices (no AP
 | HomeAssistantMQTTAdapter | MQTT Discovery          | WebSocket    | Home Assistant integration (Mosquitto)            |
 | MatterThreadAdapter      | Matter 1.3 / Thread 1.3 | WebSocket    | Matter-certified smart home devices               |
 | Zigbee2MQTTAdapter       | MQTT (Z2M bridge)       | WebSocket    | Zigbee devices via Zigbee2MQTT bridge             |
-| ShellyRESTAdapter        | HTTP/REST Gen2+         | HTTP polling | Shelly Pro 3EM, Plus Plug S, Pro 4PM              |
+| ShellyRESTAdapter        | HTTP/REST Gen1/2/3      | HTTP polling + webhook | Shelly Plug S, 3EM, Plus 1PM, Pro series          |
 | OpenADR31Adapter         | OpenADR 3.1.0           | HTTPS        | VEN client for demand-response events from a VTN  |
 | ExampleContribAdapter    | —                       | —            | Template for custom adapter development           |
 
@@ -383,7 +383,7 @@ Brand colors: `neon-green` (#22ff88) · `electric-blue` (#00f0ff) · `power-oran
 | :------ | :------------------------------------------------------------------------------------------------------------------------------------------------- | :--------- |
 | Q1–Q3   | 5 core adapters, 5 themes, AI optimizer, EEBUS, PWA, Monitoring, Docker, Tauri, WCAG 2.2 AA, React Compiler, Backend hardening                     | ✅ Shipped |
 | Q3      | Plugin system, adapter registry, 5 contrib adapters (Home Assistant, Matter/Thread, Zigbee2MQTT, Shelly), Capacitor Mobile                         | ✅ Shipped |
-| Q3–Q4   | Energy controllers (8 loops), MPC optimizer, hardware registry (113 devices), plugin lifecycle, command safety, expanded unit coverage            | ✅ Shipped |
+| Q3–Q4   | Energy controllers (8 loops), MPC optimizer, hardware registry (190 devices), plugin lifecycle, command safety, expanded unit coverage            | ✅ Shipped |
 | Q1 2026 | Opt#1 + Opt#2 Zustand/React 19 compiler cleanup, 6 new test suites (circuit-breaker, tariff-providers, notifications, energy-context, +extensions) | ✅ Shipped |
 | Q4      | **Unified Command Center** — 7 focused sections, contextual in-context help, full a11y audit (the original guided-tour/onboarding overlay was later removed in favour of lighter contextual help)                            | ✅ Shipped |
 | Q2 2026 | **pnpm/Turborepo Monorepo** — `apps/api` + `apps/web` + `packages/shared-types`; two-process dev; Turbo caching across all workspaces               | ✅ Shipped |
@@ -504,7 +504,7 @@ MIT — see [LICENSE](LICENSE).
 - 🧩 Plugin-System: Adapter-Registry mit dynamischem Laden, npm-Paket-Format, BaseAdapter-Klasse
 - 🎛️ 8 Echtzeit-Energieregler: ESS, Peak Shaving, Netz-optimiert, Eigenverbrauch, Notstrom, SG Ready, EV Smart, EV V2G Entladung
 - 📐 MPC-Optimierer: EMHASS-inspirierter LP Day-Ahead-Scheduler mit Tariferkennung
-- 🗃️ Hardware-Registry: 113 zertifizierte Geräte (Wechselrichter, Wallboxen, Zähler, Batterien, Wärmepumpen)
+- 🗃️ Hardware-Registry: 190 zertifizierte Geräte (Wechselrichter, Wallboxen, Zähler, Batterien, Wärmepumpen)
 - 🚗 Intelligentes EV-Laden (PV-Überschuss, §14a EnWG, SG Ready, V2X)
 - 🏠 KNX-Grundriss mit interaktiver Gebäudeautomation
 - 📈 Prädiktive Vorhersage + Live-Tarif-Widget (5 Anbieter)

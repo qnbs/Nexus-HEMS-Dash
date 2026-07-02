@@ -1,6 +1,6 @@
 # ADR-019: Adapter-instance management & hardware-registry surfacing (not "brand de-biasing")
 
-- **Status:** Proposed
+- **Status:** Accepted (implemented — PR #204, v1.3.x; registry expanded to 190 devices in P2 #212)
 - **Date:** 2026-07-02
 - **Deciders:** Maintainer
 - **Related:** ADR-002 (Zustand dual-store), ADR-010 (Home Assistant integration), `docs/Adapter-Dev-Guide.md`, `docs/Audit-Report-2026-07-02.md`, `apps/web/src/core/hardware-registry.ts`, MED-19 in `docs/Technical-Debt-Registry.md`

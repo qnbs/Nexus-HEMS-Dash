@@ -28,7 +28,7 @@ full HEMS device ecosystem.
 | OpenEMS | ✅ Full | — | Frontend only |
 | Home Assistant | ⚠️ Contrib (basic) | — | Stub (JSON-over-WS shim) |
 | Zigbee2MQTT | ⚠️ Contrib (basic) | — | Stub |
-| Shelly | ⚠️ Contrib (basic) | — | Gen2+ only, no Gen1/Gen3 RPC |
+| Shelly | ✅ Contrib (Gen1/2/3) | ⚠️ Webhook receiver | Gen1 `/status`, Gen2/3 RPC, `/api/shelly/webhook` push |
 | Matter/Thread | ⚠️ Contrib (stub) | — | Planned |
 | OpenADR 3.1 | ✅ Contrib | ✅ | Production |
 | ExecAdapter | ❌ Missing | ❌ Missing | Not implemented |
@@ -368,7 +368,7 @@ Full Go sidecar deferred to v1.5.
 
 #### D2: Hardware Registry Expansion (P2-HARDWARE-REG)
 
-Expand `apps/web/src/lib/hardware-registry.json` (currently 113 devices) toward 200+:
+Expand `apps/web/src/core/hardware-registry.ts` (currently **190 devices**, P2 #212) toward 250+:
 
 New categories:
 - MPPT charge controllers (EPever, SRNE, Renogy, Victron SmartSolar)

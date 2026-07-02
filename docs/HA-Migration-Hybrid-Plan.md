@@ -35,7 +35,7 @@ management, and non-energy automations.
 | AI forecast (7 providers) | ❌ | ✅ |
 | Offline PWA | ❌ | ✅ |
 | WCAG 2.2 AA | ⚠️ | ✅ |
-| Hardware registry (113 devices) | Via integrations | ✅ Native |
+| Hardware registry (190 devices) | Via integrations | ✅ Native |
 
 ### Why Keep HA?
 

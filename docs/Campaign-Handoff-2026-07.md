@@ -89,18 +89,13 @@ new location.
 - ARCH-04 evcc/OpenEMS registry; PERF-05 `useDeviceStore`; PERF-03 MPC → `ai-worker.ts`.
   (ARCH-03 `targetAdapterId` and MED-15 in-memory stores resolved in #193.)
 
-### Backend-adapter track (next code phase — 2026-07-02 audit delta)
-The 2026-07-02 audit (`docs/Audit-Report-2026-07-02.md`) found the real keystone gap: backend
-adapter data never reaches the UI. Sequence, after the E/F tail — each PR keeps the safety gates
+### Backend-adapter track (2026-07-02 audit delta — **largely complete**)
+The 2026-07-02 audit (`docs/Audit-Report-2026-07-02.md`) identified the keystone gap: backend
+adapter data not reaching the UI. **Resolved items:** HIGH-17 (#197), MED-18 (#203), MED-19 (#204),
+KNX/evcc/EEBUS-SPINE backend adapters (MED-20 partial, #205/#206/#210). **Remaining MED-20:**
+OCPP CSMS gateway, OpenEMS backend adapter. Each PR keeps the safety gates
 (`ADAPTER_MODE`/`ALLOW_LIVE_HARDWARE`/`READ_ONLY_MODE` + command audit) and carries tests + docs
-+ i18n (en/de):
-1. **HIGH-17** — wire the EventBus → WebSocket bridge (gated on resolved live mode; keeps mock
-   default verbatim). Keystone. **ADR-018.**
-2. **MED-18** — per-adapter Prometheus metrics, shipped with the bridge. **ADR-018.**
-3. **MED-19** — hardware-registry browser + schema-driven add-adapter wizard (the real
-   "flexibility" win; not "de-biasing"). **ADR-019.**
-4. **MED-20** — backend protocol parity (KNX/OCPP-CSMS/EEBUS-SPINE/evcc/OpenEMS), one protocol
-   per PR on the Modbus/MQTT pattern; folds in HIGH-12. **ADR-018.**
++ i18n (en/de).
 
 ---
 

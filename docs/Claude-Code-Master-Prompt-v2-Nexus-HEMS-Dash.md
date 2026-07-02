@@ -81,7 +81,7 @@ active and data is fresh (< 30 s); otherwise mock data is used byte-for-byte.
 Verified facts:
 
 - `isBuiltinAdapterEnabledByDefault()` → `false`; all built-ins start disabled.
-- `hardware-registry.ts`: **113 devices, ~30 manufacturers; Victron ≈ 6%**.
+- `hardware-registry.ts`: **190 devices, ~50 manufacturers; Victron ≈ 6%** (expanded from 113 in P2 #212).
 - All 13 frontend adapters are full `BaseAdapter` implementations of comparable maturity.
 - `useEnergyStore.accumulatePending()` is last-write-wins for every adapter equally.
 
@@ -108,7 +108,7 @@ Use this taxonomy in designs, UI copy, and ADRs — not vendor names.
 | **T3 — Backend edge** | `IProtocolAdapter` on API host | Modbus, MQTT (live) | Requires `ADAPTER_MODE=live` + `ALLOW_LIVE_HARDWARE=true` |
 | **T4 — Backend proxy** | API mediates protocol for browser | Modbus SunSpec REST (`/api/modbus/*`), EEBUS SHIP | Central auth + audit; production pattern |
 | **T5 — Planned backend** | ADR-018 target per protocol | KNX/IP, OCPP CSMS, EEBUS SPINE stream, evcc, OpenEMS | One protocol per PR; follow Modbus/MQTT template |
-| **T6 — Registry catalog** | `hardware-registry.ts` metadata | 113 devices, protocol hints, defaults | Browse + pre-fill wizard (MED-19); not runtime adapters |
+| **T6 — Registry catalog** | `hardware-registry.ts` metadata | 190 devices, protocol hints, defaults | Browse + pre-fill wizard at `/settings/hardware` (MED-19 ✅) |
 
 ---
 

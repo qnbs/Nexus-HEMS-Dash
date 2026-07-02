@@ -268,7 +268,7 @@ gantt
 | API test coverage (statements) | 55% (unenforced) | 60% (enforced) | 70% |
 | WCAG 2.2 AA compliance | ~88% | 92% | 95% |
 | Lighthouse performance | ≥85% | ≥85% | ≥90% |
-| Bundle total JS (gzip) | ≤1100 kB | ≤1100 kB | ≤1000 kB |
+| Bundle total JS (gzip) | ≤1120 kB | ≤1120 kB | ≤1000 kB |
 | Open Critical CVEs (prod) | 0 | 0 | 0 |
 | Grype container gate | ❌ | ✅ | ✅ |
 

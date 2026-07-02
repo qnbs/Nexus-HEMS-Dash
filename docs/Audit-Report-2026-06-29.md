@@ -1,3 +1,5 @@
+> **Supersession (2026-07-02):** Bundle gate is now **1120 kB** gzip (P1 i18n); HIGH-17/MED-18/MED-19 resolved; registry **190 devices**. Historical baseline for v1.2.0→1.3.0 transition.
+
 # Nexus-HEMS-Dash — Full-Scale Deep Audit Report
 
 **Version:** 2026-06-29 (Maximal Optimized v2.0)  
