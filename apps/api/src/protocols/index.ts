@@ -25,6 +25,7 @@ import {
   recordAdapterHealthSnapshot,
   recordAdapterRegistration,
 } from '../middleware/adapter-metrics.js';
+import { EebusProtocolAdapter } from './eebus/EebusProtocolAdapter.js';
 import { EvccAdapter } from './evcc/EvccAdapter.js';
 import { KnxAdapter, type KnxGaMapping } from './knx/KnxAdapter.js';
 import { type DeviceConfig, ModbusAdapter } from './modbus/ModbusAdapter.js';
@@ -273,6 +274,32 @@ export async function startProtocolAdapters(eventBus: EventBus): Promise<void> {
         const message = err instanceof Error ? err.message : String(err);
         setState(evccAdapter.id, evccAdapter.protocol, 'failed', message);
         console.error('[Adapters] Failed to start EvccAdapter:', err);
+      });
+  }
+
+  // -------------------------------------------------------------------------
+  // EEBUS SPINE/SHIP Adapter
+  // Activates when the EEBUS trust store contains at least one trusted device.
+  // Disable explicitly with EEBUS_DISABLE=true (e.g. for environments without
+  // local network access to EEBUS devices).
+  // -------------------------------------------------------------------------
+  if (process.env.EEBUS_DISABLE !== 'true') {
+    const eebusAdapter = new EebusProtocolAdapter({ id: 'eebus-spine-01' });
+    activeAdapters.push(eebusAdapter);
+    activeAdapterRefs.set(eebusAdapter.id, eebusAdapter);
+    recordAdapterRegistration(eebusAdapter.id, eebusAdapter.protocol);
+    setState(eebusAdapter.id, eebusAdapter.protocol, 'starting');
+
+    eebusAdapter
+      .connect()
+      .then(() => {
+        setState(eebusAdapter.id, eebusAdapter.protocol, 'healthy');
+        pipeAdapterToEventBus(eebusAdapter, eventBus);
+      })
+      .catch((err: unknown) => {
+        const message = err instanceof Error ? err.message : String(err);
+        setState(eebusAdapter.id, eebusAdapter.protocol, 'failed', message);
+        console.error('[Adapters] Failed to start EebusProtocolAdapter:', err);
       });
   }
 

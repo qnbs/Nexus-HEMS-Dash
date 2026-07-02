@@ -594,6 +594,9 @@ export const de = {
     gridOperatorInputPlaceholder: 'z.B. Stromnetz Hamburg, E.ON Netz',
     appearance: 'Aussehen',
     energyShort: 'Energie',
+    certificatesTab: 'EEBUS Zert.',
+    certificatesTabDesc:
+      'EEBUS SPINE/SHIP-Gerätezertifikate, Vertrauensspeicher und Pairing-PIN verwalten.',
     storageShort: 'Speicher',
     notifications: 'Benachrichtigungen',
     advanced: 'Erweitert',
