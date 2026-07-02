@@ -294,3 +294,201 @@ describe('MatterThreadAdapter — Configuration Variants', () => {
     adapter.destroy();
   });
 });
+
+const CLUSTER = {
+  ON_OFF: 0x0006,
+  THERMOSTAT: 0x0201,
+  ELECTRICAL_MEASUREMENT: 0x0b04,
+  EPM: 0x0090,
+  EEM: 0x0091,
+  DEM: 0x0098,
+} as const;
+
+describe('MatterThreadAdapter — snapshot and DEM clusters', () => {
+  let adapter: MatterThreadAdapter;
+
+  beforeEach(() => {
+    vi.stubGlobal('WebSocket', MockWebSocket);
+    adapter = new MatterThreadAdapter({ host: 'ha-matter.local', nodeIds: [1] });
+  });
+
+  afterEach(() => {
+    adapter.destroy();
+    vi.unstubAllGlobals();
+    mockInstance = null;
+  });
+
+  async function connectOpen(): Promise<MockWebSocket> {
+    const p = adapter.connect();
+    const ws = mockInstance!;
+    ws.readyState = WebSocket.OPEN;
+    ws.onopen?.();
+    await p;
+    return ws;
+  }
+
+  it('parses node list results with DEM, EPM, and EEM clusters', async () => {
+    const ws = await connectOpen();
+    const firstMsg = JSON.parse(ws.send.mock.calls[0][0] as string) as { messageId: string };
+
+    ws.onmessage?.({
+      data: matterResponse(firstMsg.messageId, [
+        {
+          nodeId: 1,
+          endpoints: [
+            {
+              endpointId: 1,
+              clusters: {
+                [CLUSTER.ELECTRICAL_MEASUREMENT]: { activePower: 1800 },
+                [CLUSTER.DEM]: {
+                  featureMap: 3,
+                  esaState: 'running',
+                  optOutState: 'none',
+                  esaCanGenerate: true,
+                },
+                [CLUSTER.EPM]: { activePower: 2_500_000, reactivePower: 400_000 },
+                [CLUSTER.EEM]: {
+                  cumulativeEnergyImported: 8_000_000,
+                  cumulativeEnergyExported: 1_500_000,
+                },
+              },
+            },
+          ],
+        },
+      ]),
+    });
+
+    const snapshot = adapter.getSnapshot();
+    expect(snapshot.load?.totalPowerW).toBe(1800);
+    const demStates = adapter.getDEMStates();
+    expect(demStates.get(1)?.esaState).toBe('running');
+    expect(demStates.get(1)?.activePowerW).toBe(2500);
+    expect(demStates.get(1)?.cumulativeImportWh).toBe(8000);
+  });
+
+  it('updates load power from attribute_updated events', async () => {
+    const ws = await connectOpen();
+
+    ws.onmessage?.({
+      data: matterEvent(1, CLUSTER.ELECTRICAL_MEASUREMENT, 'activePower', 3200),
+    });
+
+    expect(adapter.getSnapshot().load?.totalPowerW).toBe(3200);
+  });
+
+  it('updates DEM state from attribute_updated events', async () => {
+    const ws = await connectOpen();
+
+    ws.onmessage?.({
+      data: JSON.stringify({
+        type: 'event',
+        event: 'attribute_updated',
+        data: {
+          nodeId: 1,
+          cluster: CLUSTER.DEM,
+          attribute: 'esaState',
+          value: 2,
+        },
+      }),
+    });
+
+    expect(adapter.getDEMStates().get(1)?.esaState).toBe('running');
+  });
+});
+
+describe('MatterThreadAdapter — Matter command dispatch', () => {
+  let adapter: MatterThreadAdapter;
+
+  beforeEach(() => {
+    vi.stubGlobal('WebSocket', MockWebSocket);
+    adapter = new MatterThreadAdapter({ host: 'ha-matter.local', nodeIds: [1, 2] });
+  });
+
+  afterEach(() => {
+    adapter.destroy();
+    vi.unstubAllGlobals();
+    mockInstance = null;
+  });
+
+  async function connectOpen(): Promise<MockWebSocket> {
+    const p = adapter.connect();
+    const ws = mockInstance!;
+    ws.readyState = WebSocket.OPEN;
+    ws.onopen?.();
+    await p;
+    return ws;
+  }
+
+  it('sends OnOff and thermostat writes for device commands', async () => {
+    const ws = await connectOpen();
+
+    await expect(
+      adapter.sendCommand({ type: 'KNX_TOGGLE_LIGHTS', targetDeviceId: '1', value: true }),
+    ).resolves.toBe(true);
+    await expect(
+      adapter.sendCommand({ type: 'SET_HEAT_PUMP_MODE', targetDeviceId: '2', value: 4 }),
+    ).resolves.toBe(true);
+
+    const payloads = ws.send.mock.calls.map((call) => JSON.parse(String(call[0])));
+    expect(
+      payloads.some(
+        (msg) => msg.type === 'write_attribute' && msg.data?.cluster === CLUSTER.ON_OFF,
+      ),
+    ).toBe(true);
+    expect(
+      payloads.some(
+        (msg) => msg.type === 'write_attribute' && msg.data?.cluster === CLUSTER.THERMOSTAT,
+      ),
+    ).toBe(true);
+  });
+
+  it('sends DEM flex and V2G constraint commands', async () => {
+    const ws = await connectOpen();
+
+    await expect(
+      adapter.sendCommand({
+        type: 'VPP_OFFER_FLEX',
+        targetDeviceId: '1',
+        value: 3.5,
+        payload: { durationS: 600 },
+      }),
+    ).resolves.toBe(true);
+    await expect(
+      adapter.sendCommand({
+        type: 'SET_V2G_BPT_PARAMS',
+        targetDeviceId: '1',
+        value: 1,
+        payload: { evMaximumChargePowerW: 11_000, evMinimumChargePowerW: 0 },
+      }),
+    ).resolves.toBe(true);
+
+    const payloads = ws.send.mock.calls.map((call) => JSON.parse(String(call[0])));
+    expect(
+      payloads.some((msg) => msg.type === 'invoke_command' && msg.data?.cluster === CLUSTER.DEM),
+    ).toBe(true);
+    expect(
+      payloads.some(
+        (msg) =>
+          msg.type === 'write_attribute' &&
+          msg.data?.cluster === CLUSTER.DEM &&
+          msg.data?.attribute === 'forecast',
+      ),
+    ).toBe(true);
+  });
+});
+
+describe('MatterThreadAdapter — register()', () => {
+  it('registers the matter-thread factory in the adapter registry', async () => {
+    const { getRegisteredAdapter, unregisterAdapter } = await import(
+      '../core/adapters/adapter-registry'
+    );
+    const { register } = await import('../core/adapters/contrib/matter-thread');
+
+    register();
+    const entry = getRegisteredAdapter('matter-thread');
+    expect(entry?.source).toBe('contrib');
+    expect(entry?.displayName).toBe('Matter/Thread');
+
+    unregisterAdapter('matter-thread');
+  });
+});

@@ -126,3 +126,44 @@ describe('PAGE_RELATIONS', () => {
     }
   });
 });
+
+describe('SETUP_STEPS', () => {
+  it('evaluates setup completion checks against representative settings', async () => {
+    const { SETUP_STEPS } = await import('../lib/page-relations');
+
+    const incomplete = {
+      victronIp: '192.168.1.100',
+      knxIp: '192.168.1.101',
+      tariffProvider: 'none',
+      pushNotifications: false,
+      priceAlerts: false,
+      batteryAlerts: false,
+      influxUrl: '',
+      mtls: false,
+      systemConfig: { presetId: 'custom-preset' },
+    };
+
+    expect(SETUP_STEPS.find((step) => step.id === 'gateway')?.checkFn(incomplete)).toBe(false);
+    expect(SETUP_STEPS.find((step) => step.id === 'tariff')?.checkFn(incomplete)).toBe(false);
+    expect(SETUP_STEPS.find((step) => step.id === 'security')?.checkFn(incomplete)).toBe(false);
+    expect(SETUP_STEPS.find((step) => step.id === 'ai-provider')?.checkFn(incomplete)).toBe(true);
+
+    const complete = {
+      victronIp: '10.0.0.20',
+      knxIp: '10.0.0.30',
+      tariffProvider: 'awattar',
+      pushNotifications: true,
+      influxUrl: 'http://influx.local:8086',
+      mtls: true,
+      systemConfig: { presetId: 'family-home' },
+    };
+
+    expect(SETUP_STEPS.find((step) => step.id === 'gateway')?.checkFn(complete)).toBe(true);
+    expect(SETUP_STEPS.find((step) => step.id === 'energy-system')?.checkFn(complete)).toBe(true);
+    expect(SETUP_STEPS.find((step) => step.id === 'tariff')?.checkFn(complete)).toBe(true);
+    expect(SETUP_STEPS.find((step) => step.id === 'knx')?.checkFn(complete)).toBe(true);
+    expect(SETUP_STEPS.find((step) => step.id === 'notifications')?.checkFn(complete)).toBe(true);
+    expect(SETUP_STEPS.find((step) => step.id === 'data-storage')?.checkFn(complete)).toBe(true);
+    expect(SETUP_STEPS.find((step) => step.id === 'security')?.checkFn(complete)).toBe(true);
+  });
+});

@@ -225,3 +225,239 @@ describe('OpenADR31Adapter — event parsing', () => {
     OPENADR_TEST_TIMEOUT_MS,
   );
 });
+
+describe('OpenADR31Adapter — interface contract', () => {
+  beforeEach(() => {
+    mockFetch = vi.fn();
+    vi.stubGlobal('fetch', mockFetch);
+    vi.stubGlobal('crypto', { randomUUID: () => 'test-uuid' });
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('exposes id, name, and tariff capability', () => {
+    const adapter = new OpenADR31Adapter({ programId: 'prog-1' });
+    expect(adapter.id).toBe('openadr-3-1');
+    expect(adapter.name).toMatch(/openadr/i);
+    expect(adapter.capabilities).toContain('tariff');
+    expect(adapter.status).toBe('disconnected');
+    adapter.destroy();
+  });
+
+  it('returns empty snapshot before tariff override is applied', () => {
+    const adapter = new OpenADR31Adapter();
+    expect(adapter.getSnapshot()).toEqual({});
+    adapter.destroy();
+  });
+});
+
+describe('OpenADR31Adapter — connect and disconnect lifecycle', () => {
+  beforeEach(() => {
+    mockFetch = vi.fn();
+    vi.stubGlobal('fetch', mockFetch);
+    vi.stubGlobal('crypto', { randomUUID: () => 'test-uuid' });
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it(
+    'connects, polls events, and disconnects cleanly',
+    async () => {
+      mockFetch
+        .mockResolvedValueOnce({ ok: true, json: async () => tokenResponse })
+        .mockResolvedValueOnce({ ok: true, json: async () => [] });
+
+      const adapter = new OpenADR31Adapter({
+        programId: 'test-program',
+        pollIntervalMs: 999_999_999,
+      });
+
+      await adapter.connect();
+      expect(adapter.status).toBe('connected');
+
+      await adapter.disconnect();
+      expect(adapter.status).toBe('disconnected');
+      expect(adapter.getActiveEvents().size).toBe(0);
+      expect(adapter.getTariffOverride()).toBeNull();
+      expect(adapter.isEVDisabledBy14a()).toBe(false);
+
+      adapter.destroy();
+    },
+    OPENADR_TEST_TIMEOUT_MS,
+  );
+
+  it(
+    'rejects connect when token refresh fails',
+    async () => {
+      mockFetch.mockResolvedValueOnce({ ok: false, status: 401, statusText: 'Unauthorized' });
+
+      const adapter = new OpenADR31Adapter({ programId: 'test-program' });
+      await expect(adapter.connect()).rejects.toThrow(/token refresh failed/i);
+      adapter.destroy();
+    },
+    OPENADR_TEST_TIMEOUT_MS,
+  );
+});
+
+describe('OpenADR31Adapter — commands and registry', () => {
+  beforeEach(() => {
+    mockFetch = vi.fn();
+    vi.stubGlobal('fetch', mockFetch);
+    vi.stubGlobal('crypto', { randomUUID: () => 'test-uuid' });
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it(
+    'acknowledges an active event and submits a VEN report',
+    async () => {
+      mockFetch
+        .mockResolvedValueOnce({ ok: true, json: async () => tokenResponse })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => [buildEvent('SIMPLE', 2, 'evt-ack')],
+        })
+        .mockResolvedValueOnce({ ok: true, json: async () => tokenResponse })
+        .mockResolvedValueOnce({ ok: true, json: async () => ({ ok: true }) })
+        .mockResolvedValueOnce({ ok: true, json: async () => tokenResponse })
+        .mockResolvedValueOnce({ ok: true, json: async () => ({ ok: true }) });
+
+      const adapter = new OpenADR31Adapter({
+        programId: 'test-program',
+        pollIntervalMs: 999_999_999,
+      });
+
+      adapter.onData(() => {});
+      await (adapter as unknown as WithPollEvents).pollEvents();
+
+      await expect(
+        adapter.sendCommand({ type: 'OPENADR_ACKNOWLEDGE_EVENT', value: 'evt-ack' }),
+      ).resolves.toBe(true);
+      await expect(
+        adapter.sendCommand({ type: 'OPENADR_SUBMIT_REPORT', value: 'usage-report' }),
+      ).resolves.toBe(true);
+
+      const acknowledgeCall = mockFetch.mock.calls.find((call) =>
+        String(call[0]).includes('/acknowledge'),
+      );
+      const reportCall = mockFetch.mock.calls.find((call) => String(call[0]).includes('/reports'));
+      expect(acknowledgeCall?.[1]).toMatchObject({ method: 'POST' });
+      expect(reportCall?.[1]).toMatchObject({ method: 'POST' });
+
+      adapter.destroy();
+    },
+    OPENADR_TEST_TIMEOUT_MS,
+  );
+
+  it(
+    'returns false when acknowledging an unknown event id',
+    async () => {
+      const adapter = new OpenADR31Adapter({ programId: 'test-program' });
+      await expect(
+        adapter.sendCommand({ type: 'OPENADR_ACKNOWLEDGE_EVENT', value: 'missing-event' }),
+      ).resolves.toBe(false);
+      adapter.destroy();
+    },
+    OPENADR_TEST_TIMEOUT_MS,
+  );
+
+  it('registers the openadr-3-1 factory in the adapter registry', async () => {
+    const { getRegisteredAdapter, unregisterAdapter } = await import(
+      '../core/adapters/adapter-registry'
+    );
+    await import('../core/adapters/contrib/openadr-3-1');
+
+    const entry = getRegisteredAdapter('openadr-3-1');
+    expect(entry?.displayName).toBe('openadr-3-1');
+    expect(entry?.source).toBe('contrib');
+    expect(typeof entry?.factory).toBe('function');
+
+    unregisterAdapter('openadr-3-1');
+  });
+});
+
+describe('OpenADR31Adapter — aggregate state rebuild', () => {
+  beforeEach(() => {
+    mockFetch = vi.fn();
+    vi.stubGlobal('fetch', mockFetch);
+    vi.stubGlobal('crypto', { randomUUID: () => 'test-uuid' });
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it(
+    'clears expired events and rebuilds tariff override from active price events',
+    async () => {
+      const expiredEvent = {
+        ...buildEvent('ELECTRICITY_PRICE', 0.12, 'evt-expired'),
+        intervalPeriod: {
+          start: new Date(Date.now() - 3_600_000).toISOString(),
+          duration: 'PT30M',
+        },
+        intervals: [
+          {
+            id: 0,
+            intervalPeriod: {
+              start: new Date(Date.now() - 3_600_000).toISOString(),
+              duration: 'PT30M',
+            },
+            payloads: [{ type: 'PRICE', values: [0.12] }],
+          },
+        ],
+      };
+      const activePriceEvent = {
+        id: 'evt-active-price',
+        eventName: 'ELECTRICITY_PRICE-evt-active-price',
+        programID: 'test-program',
+        priority: 10,
+        payloadDescriptors: [{ payloadType: 'ELECTRICITY_PRICE' }],
+        intervalPeriod: {
+          start: new Date(Date.now() - 60_000).toISOString(),
+          duration: 'PT2H',
+        },
+        intervals: [
+          {
+            id: 0,
+            intervalPeriod: {
+              start: new Date(Date.now() - 60_000).toISOString(),
+              duration: 'PT2H',
+            },
+            payloads: [{ type: 'PRICE', values: [0.31] }],
+          },
+        ],
+        targets: [],
+      };
+
+      mockFetch
+        .mockResolvedValueOnce({ ok: true, json: async () => tokenResponse })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => [expiredEvent, activePriceEvent],
+        });
+
+      const adapter = new OpenADR31Adapter({
+        programId: 'test-program',
+        pollIntervalMs: 999_999_999,
+      });
+
+      adapter.onData(() => {});
+      await (adapter as unknown as WithPollEvents).pollEvents();
+
+      expect(adapter.getActiveEvents().has('evt-expired')).toBe(false);
+      expect(adapter.getActiveEvents().has('evt-active-price')).toBe(true);
+      expect(adapter.getTariffOverride()?.currentPriceEurKWh).toBe(0.31);
+      expect(adapter.getSnapshot().tariff?.currentPriceEurKWh).toBe(0.31);
+
+      adapter.destroy();
+    },
+    OPENADR_TEST_TIMEOUT_MS,
+  );
+});
