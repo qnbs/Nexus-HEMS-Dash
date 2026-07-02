@@ -724,14 +724,14 @@ Protocol→adapter mapping in `hardware-adapter-map.ts`.
 
 ### MED-20 — Backend Protocol Parity Gap
 **Files:** `apps/api/src/protocols/` (`modbus/`, `mqtt/`, `knx/`), `FEATURE_STATUS.md`
-**Status:** 🔄 In progress — KNX/IP backend adapter shipped (ADR-018); evcc, OpenEMS, OCPP, EEBUS SPINE remain
+**Status:** 🔄 In progress — KNX/IP + evcc backend adapters shipped (ADR-018); OpenEMS, OCPP, EEBUS SPINE remain
 
-KNX backend adapter (`KnxAdapter`) connects to a WebSocket JSON bridge, maps group addresses from
-`knx-ga-map.json`, validates with Zod, and feeds the EventBus. Remaining protocols without backend
-adapters: OCPP-CSMS, EEBUS continuous SPINE, evcc, OpenEMS.
+KNX backend adapter (`KnxAdapter`) connects to a WebSocket JSON bridge. **evcc backend adapter**
+(`EvccAdapter`) polls `/api/state` and optionally listens on `/ws`. Both validate with Zod and feed
+the EventBus. Remaining protocols without backend adapters: OCPP-CSMS, EEBUS continuous SPINE, OpenEMS.
 
-**Fix:** one backend `IProtocolAdapter` per remaining protocol (evcc REST/WS next), mirroring the
-Modbus/MQTT/KNX structure. One protocol per PR; fold in HIGH-12 (OCPP Security Profile 3).
+**Fix:** one backend `IProtocolAdapter` per remaining protocol (OpenEMS JSON-RPC next), mirroring the
+Modbus/MQTT/KNX/evcc structure. One protocol per PR; fold in HIGH-12 (OCPP Security Profile 3).
 
 ---
 
