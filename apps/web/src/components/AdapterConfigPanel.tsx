@@ -37,6 +37,7 @@ import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { listRegisteredAdapters, loadAllContribAdapters } from '../core/adapters/adapter-registry';
 import { Disclosure } from './ui/Disclosure';
+import { SelectField } from './ui/SelectField';
 
 // ─── Types ───────────────────────────────────────────────────────────
 
@@ -976,29 +977,21 @@ export function AdapterConfigPanel() {
                             placeholder="CP001"
                           />
                         </div>
-                        <div className="space-y-2">
-                          <label
-                            htmlFor={`adapter-secprofile-${adapter.id}`}
-                            className="font-medium text-(--color-muted) text-xs"
-                          >
-                            {t('adapterConfig.securityProfile')}
-                          </label>
-                          <select
-                            id={`adapter-secprofile-${adapter.id}`}
-                            className={inputClass}
-                            value={adapter.securityProfile ?? 2}
-                            onChange={(e) =>
-                              updateAdapter(adapter.id, {
-                                securityProfile: Number(e.target.value) as 0 | 1 | 2 | 3,
-                              })
-                            }
-                          >
-                            <option value={0}>{t('adapterConfig.secProfile0')}</option>
-                            <option value={1}>{t('adapterConfig.secProfile1')}</option>
-                            <option value={2}>{t('adapterConfig.secProfile2')}</option>
-                            <option value={3}>{t('adapterConfig.secProfile3')}</option>
-                          </select>
-                        </div>
+                        <SelectField
+                          id={`adapter-secprofile-${adapter.id}`}
+                          label={t('adapterConfig.securityProfile')}
+                          value={String(adapter.securityProfile ?? 2)}
+                          onChange={(e) =>
+                            updateAdapter(adapter.id, {
+                              securityProfile: Number(e.target.value) as 0 | 1 | 2 | 3,
+                            })
+                          }
+                        >
+                          <option value="0">{t('adapterConfig.secProfile0')}</option>
+                          <option value="1">{t('adapterConfig.secProfile1')}</option>
+                          <option value="2">{t('adapterConfig.secProfile2')}</option>
+                          <option value="3">{t('adapterConfig.secProfile3')}</option>
+                        </SelectField>
                         <div className="flex items-center justify-between rounded-xl border border-(--color-border) bg-(--color-surface) p-3 md:col-span-2">
                           <div>
                             <p className="font-medium text-xs">ISO 15118 Plug & Charge</p>

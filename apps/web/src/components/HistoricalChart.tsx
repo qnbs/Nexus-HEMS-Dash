@@ -294,18 +294,24 @@ export function HistoricalChart({ className = '' }: HistoricalChartProps) {
           </fieldset>
 
           {/* Granularity selector */}
-          <select
-            value={granularity}
-            onChange={(e) => setGranularity(e.target.value as Granularity)}
-            aria-label={t('historicalChart.selectGranularity')}
-            className="focus-ring rounded-lg bg-white/5 px-3 py-1 text-white/80 text-xs"
-          >
+          <fieldset className="flex flex-wrap gap-1 border-0 p-0">
+            <legend className="sr-only">{t('historicalChart.selectGranularity')}</legend>
             {GRANULARITIES.map((g) => (
-              <option key={g.value} value={g.value}>
+              <button
+                key={g.value}
+                type="button"
+                onClick={() => setGranularity(g.value)}
+                aria-pressed={granularity === g.value}
+                className={`focus-ring rounded-md px-3 py-1 font-medium text-xs transition-colors ${
+                  granularity === g.value
+                    ? 'bg-neon-green/20 text-neon-green'
+                    : 'text-white/60 hover:text-white'
+                }`}
+              >
                 {g.label}
-              </option>
+              </button>
             ))}
-          </select>
+          </fieldset>
 
           {/* Reset zoom */}
           {zoomDomain !== null && (

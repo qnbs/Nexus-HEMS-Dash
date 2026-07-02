@@ -29,10 +29,11 @@ import { EmptyState } from '../components/ui/EmptyState';
 import { EnergyCard, type EnergyCardVariant } from '../components/ui/EnergyCard';
 import { HelpTooltip } from '../components/ui/HelpTooltip';
 import { LiveMetric } from '../components/ui/LiveMetric';
-import { SelectField } from '../components/ui/SelectField';
+import { SgReadyModeSelector } from '../components/ui/SgReadyModeSelector';
 import { useEnergyContext } from '../core/EnergyContext';
 import { useLegacySendCommand } from '../core/useLegacySendCommand';
 import { hapticClick, hapticModeChange, hapticSuccess } from '../lib/haptics';
+import { SG_READY_POWER_W } from '../lib/sg-ready';
 import { useAppStoreShallow } from '../store';
 import type { CommandType, EvMode, EvState, HpMode, HpState } from '../types';
 
@@ -136,7 +137,7 @@ export default function DevicesAutomation() {
           <div
             className="flex gap-1 rounded-xl bg-(--color-surface)/50 p-1"
             role="tablist"
-            aria-label={t('devicesAuto.viewToggle', 'Ansicht wechseln')}
+            aria-label={t('devicesAuto.viewToggle')}
           >
             <button
               type="button"
@@ -153,7 +154,7 @@ export default function DevicesAutomation() {
               }`}
             >
               <LayoutGrid size={14} />
-              {t('devicesAuto.viewGrid', 'Geräte')}
+              {t('devicesAuto.viewGrid')}
             </button>
             <button
               type="button"
@@ -170,7 +171,7 @@ export default function DevicesAutomation() {
               }`}
             >
               <MapIcon size={14} />
-              {t('devicesAuto.viewFloorplan', 'Grundriss')}
+              {t('devicesAuto.viewFloorplan')}
             </button>
           </div>
         }
@@ -230,12 +231,7 @@ export default function DevicesAutomation() {
 
               {/* Category filters + help */}
               <div className="flex items-center gap-2">
-                <HelpTooltip
-                  content={t(
-                    'tour.devices.filterHelp',
-                    'Filtern Sie Geräte nach Kategorie oder nutzen Sie die Suche',
-                  )}
-                />
+                <HelpTooltip content={t('tour.devices.filterHelp')} />
                 <div
                   className="flex flex-wrap gap-1.5"
                   role="radiogroup"
@@ -1063,8 +1059,7 @@ function HeatPumpDetail({
     async (_state: HpState, formData: FormData) => {
       hapticModeChange();
       const mode = (formData.get('hpMode') ?? '2') as HpMode;
-      const powerMap: Record<string, number> = { '1': 0, '2': 800, '3': 1500, '4': 2500 };
-      const power = powerMap[mode] ?? 800;
+      const power = SG_READY_POWER_W[mode] ?? 800;
       await new Promise((resolve) => setTimeout(resolve, 600));
       sendCommand('SET_HEAT_PUMP_POWER', power);
       hapticSuccess();
@@ -1073,27 +1068,22 @@ function HeatPumpDetail({
     { mode: '2' as HpMode, power: 800, message: '' },
   );
 
+  const activeModeLabel = t(`control.hpMode${hpState.mode}` as const);
+
   return (
     <div className="space-y-4">
       <MetricRow
         label={t('devicesAuto.currentPower')}
         value={`${(data.heatPumpPower / 1000).toFixed(2)} kW`}
       />
-      <MetricRow label={t('devicesAuto.sgReadyMode')} value={`${t('control.hpMode2')}`} />
+      <MetricRow label={t('devicesAuto.sgReadyMode')} value={activeModeLabel} />
 
-      <Disclosure variant="nested" title={t('control.hpTitle')} defaultOpen>
+      <section className="space-y-3" aria-labelledby="hp-sg-ready-title">
+        <h3 id="hp-sg-ready-title" className="eyebrow text-(--color-muted)">
+          {t('control.hpTitle')}
+        </h3>
         <form action={hpAction} className="space-y-3">
-          <SelectField
-            name="hpMode"
-            label={t('control.hpTitle')}
-            defaultValue={hpState.mode}
-            onChange={hapticClick}
-          >
-            <option value="1">{t('control.hpMode1')}</option>
-            <option value="2">{t('control.hpMode2')}</option>
-            <option value="3">{t('control.hpMode3')}</option>
-            <option value="4">{t('control.hpMode4')}</option>
-          </SelectField>
+          <SgReadyModeSelector key={hpState.mode} name="hpMode" value={hpState.mode} />
           {hpState.message && (
             <p className="text-(--color-primary) text-sm" role="status" aria-live="polite">
               ✓ {hpState.message}
@@ -1108,7 +1098,7 @@ function HeatPumpDetail({
             {isHpPending ? t('common.saving') : t('common.apply')}
           </motion.button>
         </form>
-      </Disclosure>
+      </section>
     </div>
   );
 }

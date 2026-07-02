@@ -87,7 +87,7 @@ function SettingsUnifiedComponent() {
   const quickTiles = [
     {
       icon: <Palette size={16} />,
-      label: t('settings.appearance', 'Appearance'),
+      label: t('settings.appearance'),
       tab: 'appearance',
       color: 'text-pink-400',
       bg: 'bg-pink-500/10',
@@ -101,21 +101,21 @@ function SettingsUnifiedComponent() {
     },
     {
       icon: <Zap size={16} />,
-      label: t('settings.energyShort', 'Energy'),
+      label: t('settings.energyShort'),
       tab: 'energy',
       color: 'text-yellow-400',
       bg: 'bg-yellow-500/10',
     },
     {
       icon: <Cable size={16} />,
-      label: t('adapterConfig.tabLabel', 'Adapters'),
+      label: t('adapterConfig.tabLabel'),
       tab: 'adapters',
       color: 'text-cyan-400',
       bg: 'bg-cyan-500/10',
     },
     {
       icon: <Cpu size={16} />,
-      label: t('settings.controllersTab', 'Controllers'),
+      label: t('settings.controllersTab'),
       tab: 'controllers',
       color: 'text-orange-400',
       bg: 'bg-orange-500/10',
@@ -129,28 +129,28 @@ function SettingsUnifiedComponent() {
     },
     {
       icon: <Database size={16} />,
-      label: t('settings.storageShort', 'Storage'),
+      label: t('settings.storageShort'),
       tab: 'storage',
       color: 'text-purple-400',
       bg: 'bg-purple-500/10',
     },
     {
       icon: <Bell size={16} />,
-      label: t('settings.notifications', 'Notifications'),
+      label: t('settings.notifications'),
       tab: 'notifications',
       color: 'text-red-400',
       bg: 'bg-red-500/10',
     },
     {
       icon: <Gauge size={16} />,
-      label: t('settings.advanced', 'Advanced'),
+      label: t('settings.advanced'),
       tab: 'advanced',
       color: 'text-gray-400',
       bg: 'bg-gray-500/10',
     },
     {
       icon: <Sparkles size={16} />,
-      label: t('settings.aiTab', 'AI Providers'),
+      label: t('settings.aiTab'),
       tab: 'ai',
       color: 'text-violet-400',
       bg: 'bg-violet-500/10',
@@ -171,14 +171,9 @@ function SettingsUnifiedComponent() {
         <nav className="w-full shrink-0 lg:w-64" aria-label={t('settingsUnified.title')}>
           <div className="mb-2 flex items-center gap-2 px-1">
             <span className="font-semibold text-(--color-muted) text-[10px] uppercase tracking-widest">
-              {t('settingsUnified.sections', 'Bereiche')}
+              {t('settingsUnified.sections')}
             </span>
-            <HelpTooltip
-              content={t(
-                'tour.settings.navHelp',
-                'Wähle einen Bereich aus, um Einstellungen, Plugins oder Hilfe zu öffnen.',
-              )}
-            />
+            <HelpTooltip content={t('tour.settings.navHelp')} />
           </div>
           <div className="space-y-2">
             {sections.map((section) => (

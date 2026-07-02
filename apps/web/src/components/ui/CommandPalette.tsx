@@ -88,7 +88,7 @@ export function CommandPalette({
     },
     {
       id: 'export-report',
-      label: t('command.exportReport', 'Export Monthly Report'),
+      label: t('command.exportReport'),
       icon: ICON_FILEDOWN,
       action: () => {
         onExportReport?.();
@@ -101,7 +101,7 @@ export function CommandPalette({
     // Navigation
     {
       id: 'nav-dashboard',
-      label: t('nav.home', 'Overview'),
+      label: t('nav.home'),
       icon: ICON_HOME,
       action: () => {
         navigate('/');
@@ -112,7 +112,7 @@ export function CommandPalette({
     },
     {
       id: 'nav-energy-flow',
-      label: t('nav.energyFlow', 'Energy Flow'),
+      label: t('nav.energyFlow'),
       icon: ICON_ACTIVITY,
       action: () => {
         navigate('/energy-flow');
@@ -123,7 +123,7 @@ export function CommandPalette({
     },
     {
       id: 'nav-devices',
-      label: t('nav.devicesOverview', 'Devices & Automation'),
+      label: t('nav.devicesOverview'),
       icon: ICON_CAR,
       action: () => {
         navigate('/devices');
@@ -134,7 +134,7 @@ export function CommandPalette({
     },
     {
       id: 'nav-ai',
-      label: t('nav.aiOptimizer', 'AI Optimizer'),
+      label: t('nav.aiOptimizer'),
       icon: ICON_SPARKLES_PURPLE,
       action: () => {
         navigate('/optimization-ai');
@@ -145,7 +145,7 @@ export function CommandPalette({
     },
     {
       id: 'nav-ai-settings',
-      label: t('command.aiSettings', 'AI Provider Keys'),
+      label: t('command.aiSettings'),
       icon: ICON_SPARKLES_CYAN,
       action: () => {
         navigate('/settings/ai');
@@ -156,7 +156,7 @@ export function CommandPalette({
     },
     {
       id: 'nav-tariffs',
-      label: t('nav.tariffs', 'Tariffs'),
+      label: t('nav.tariffs'),
       icon: ICON_TRENDING_UP,
       action: () => {
         navigate('/tariffs');
@@ -167,7 +167,7 @@ export function CommandPalette({
     },
     {
       id: 'nav-analytics',
-      label: t('nav.analytics', 'Analytics'),
+      label: t('nav.analytics'),
       icon: ICON_BAR_CHART,
       action: () => {
         navigate('/analytics');
@@ -178,7 +178,7 @@ export function CommandPalette({
     },
     {
       id: 'nav-monitoring',
-      label: t('nav.monitoring', 'Monitoring'),
+      label: t('nav.monitoring'),
       icon: ICON_MONITOR,
       action: () => {
         navigate('/monitoring');
@@ -189,7 +189,7 @@ export function CommandPalette({
     },
     {
       id: 'nav-settings',
-      label: t('nav.settings', 'Settings'),
+      label: t('nav.settings'),
       icon: ICON_SETTINGS,
       action: () => {
         navigate('/settings');
@@ -200,7 +200,7 @@ export function CommandPalette({
     },
     {
       id: 'nav-help',
-      label: t('nav.help', 'Help'),
+      label: t('nav.help'),
       icon: ICON_HELP,
       action: () => {
         navigate('/help');
@@ -213,7 +213,7 @@ export function CommandPalette({
     // Devices
     {
       id: 'device-grid',
-      label: t('command.viewGrid', 'View Grid Status'),
+      label: t('command.viewGrid'),
       icon: ICON_ZAP,
       action: () => {
         navigate('/energy-flow');
@@ -296,7 +296,7 @@ export function CommandPalette({
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder={t('command.searchPlaceholder', 'Search commands…')}
+                placeholder={t('command.searchPlaceholder')}
                 className="flex-1 bg-transparent text-(--color-text) outline-none placeholder:text-(--color-muted)"
                 role="combobox"
                 aria-expanded="true"
@@ -307,10 +307,10 @@ export function CommandPalette({
                     : undefined
                 }
                 aria-autocomplete="list"
-                aria-label={t('accessibility.searchCommands', 'Search commands')}
+                aria-label={t('accessibility.searchCommands')}
               />
               <span id="cmd-palette-title" className="sr-only">
-                {t('accessibility.commandPaletteTitle', 'Command palette')}
+                {t('accessibility.commandPaletteTitle')}
               </span>
               <kbd className="rounded bg-(--color-surface-strong) px-2 py-1 text-(--color-muted) text-xs">
                 ESC
@@ -321,7 +321,7 @@ export function CommandPalette({
             <div className="max-h-96 overflow-y-auto p-2">
               {filteredCommands.length === 0 ? (
                 <div role="status" aria-live="polite">
-                  <EmptyState icon={SearchX} title={t('command.noResults', 'No commands found')} />
+                  <EmptyState icon={SearchX} title={t('command.noResults')} />
                 </div>
               ) : (
                 <div className="space-y-1" role="listbox" id="command-listbox">
@@ -353,10 +353,10 @@ export function CommandPalette({
                         <p className="font-medium">{cmd.label}</p>
                         <p className="text-(--color-muted) text-xs capitalize">
                           {cmd.category === 'navigation'
-                            ? t('command.categoryNavigation', 'Navigation')
+                            ? t('command.categoryNavigation')
                             : cmd.category === 'action'
-                              ? t('command.categoryAction', 'Action')
-                              : t('command.categoryDevice', 'Device')}
+                              ? t('command.categoryAction')
+                              : t('command.categoryDevice')}
                         </p>
                       </div>
                       {index === selectedIndex && (
@@ -372,7 +372,7 @@ export function CommandPalette({
 
             {/* Footer */}
             <div className="flex items-center justify-between border-(--color-border) border-t px-4 py-3 text-(--color-muted) text-xs">
-              <span>{t('command.navigate', 'Navigate')}</span>
+              <span>{t('command.navigate')}</span>
               <div className="flex gap-2">
                 <kbd className="rounded bg-(--color-surface-strong) px-2 py-1">↑↓</kbd>
                 <kbd className="rounded bg-(--color-surface-strong) px-2 py-1">↵</kbd>

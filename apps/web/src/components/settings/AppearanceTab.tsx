@@ -4,8 +4,9 @@ import { themeDefinitions, themeOrder } from '../../design-tokens';
 import { resolveTheme, type ThemePreference } from '../../lib/theme';
 import { useAppStoreShallow } from '../../store';
 import { LanguageSwitcher } from '../LanguageSwitcher';
+import { SelectField } from '../ui/SelectField';
 import { SettingsFeatureBar } from './SettingsFeatureBar';
-import { inputClass, sectionClass, sectionHeaderClass } from './styles';
+import { sectionClass, sectionHeaderClass } from './styles';
 import { ThemePreviewCard } from './ThemePreviewCard';
 import { ToggleSwitch } from './ToggleSwitch';
 
@@ -159,74 +160,52 @@ export function AppearanceTab() {
           <LanguageSwitcher />
         </div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <label htmlFor="settings-language" className="font-medium text-sm">
-              {t('common.language')}
-            </label>
-            <select
-              id="settings-language"
-              className={inputClass}
-              value={locale}
-              onChange={(e) => {
-                const l = e.target.value as 'de' | 'en';
-                setLocale(l);
-                void i18n.changeLanguage(l);
-              }}
-            >
-              <option value="de">Deutsch</option>
-              <option value="en">English</option>
-            </select>
-          </div>
-          <div className="space-y-2">
-            <label htmlFor="settings-units" className="font-medium text-sm">
-              {t('settings.units', 'Units')}
-            </label>
-            <select
-              id="settings-units"
-              className={inputClass}
-              value={settings.units ?? 'metric'}
-              onChange={(e) => updateSettings({ units: e.target.value as 'metric' | 'imperial' })}
-            >
-              <option value="metric">{t('settings.metric', 'Metric (kW, kWh, °C)')}</option>
-              <option value="imperial">{t('settings.imperial', 'Imperial (BTU, °F)')}</option>
-            </select>
-          </div>
-          <div className="space-y-2">
-            <label htmlFor="settings-dateformat" className="font-medium text-sm">
-              {t('settings.dateFormat', 'Date format')}
-            </label>
-            <select
-              id="settings-dateformat"
-              className={inputClass}
-              value={settings.dateFormat ?? 'dd.mm.yyyy'}
-              onChange={(e) =>
-                updateSettings({
-                  dateFormat: e.target.value as 'dd.mm.yyyy' | 'mm/dd/yyyy' | 'yyyy-mm-dd',
-                })
-              }
-            >
-              <option value="dd.mm.yyyy">DD.MM.YYYY</option>
-              <option value="mm/dd/yyyy">MM/DD/YYYY</option>
-              <option value="yyyy-mm-dd">YYYY-MM-DD</option>
-            </select>
-          </div>
-          <div className="space-y-2">
-            <label htmlFor="settings-currency" className="font-medium text-sm">
-              {t('settings.currency', 'Currency')}
-            </label>
-            <select
-              id="settings-currency"
-              className={inputClass}
-              value={settings.currency ?? 'eur'}
-              onChange={(e) =>
-                updateSettings({ currency: e.target.value as 'eur' | 'chf' | 'gbp' })
-              }
-            >
-              <option value="eur">€ Euro</option>
-              <option value="chf">CHF Franken</option>
-              <option value="gbp">£ Pound</option>
-            </select>
-          </div>
+          <SelectField
+            id="settings-language"
+            label={t('common.language')}
+            value={locale}
+            onChange={(e) => {
+              const l = e.target.value as 'de' | 'en';
+              setLocale(l);
+              void i18n.changeLanguage(l);
+            }}
+          >
+            <option value="de">Deutsch</option>
+            <option value="en">English</option>
+          </SelectField>
+          <SelectField
+            id="settings-units"
+            label={t('settings.units', 'Units')}
+            value={settings.units ?? 'metric'}
+            onChange={(e) => updateSettings({ units: e.target.value as 'metric' | 'imperial' })}
+          >
+            <option value="metric">{t('settings.metric', 'Metric (kW, kWh, °C)')}</option>
+            <option value="imperial">{t('settings.imperial', 'Imperial (BTU, °F)')}</option>
+          </SelectField>
+          <SelectField
+            id="settings-dateformat"
+            label={t('settings.dateFormat', 'Date format')}
+            value={settings.dateFormat ?? 'dd.mm.yyyy'}
+            onChange={(e) =>
+              updateSettings({
+                dateFormat: e.target.value as 'dd.mm.yyyy' | 'mm/dd/yyyy' | 'yyyy-mm-dd',
+              })
+            }
+          >
+            <option value="dd.mm.yyyy">DD.MM.YYYY</option>
+            <option value="mm/dd/yyyy">MM/DD/YYYY</option>
+            <option value="yyyy-mm-dd">YYYY-MM-DD</option>
+          </SelectField>
+          <SelectField
+            id="settings-currency"
+            label={t('settings.currency', 'Currency')}
+            value={settings.currency ?? 'eur'}
+            onChange={(e) => updateSettings({ currency: e.target.value as 'eur' | 'chf' | 'gbp' })}
+          >
+            <option value="eur">€ Euro</option>
+            <option value="chf">CHF Franken</option>
+            <option value="gbp">£ Pound</option>
+          </SelectField>
         </div>
       </section>
 

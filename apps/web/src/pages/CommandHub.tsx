@@ -79,6 +79,30 @@ function useMetrics() {
   };
 }
 
+const METRIC_DETAIL_KEYS = new Set([
+  'import',
+  'export',
+  'batteryCharging',
+  'batteryDischarging',
+  'batteryIdle',
+]);
+
+function formatMetricDetail(
+  card: MetricDef,
+  metrics: ReturnType<typeof useMetrics>,
+  t: (key: string) => string,
+): string | undefined {
+  const detail = card.getDetail(metrics);
+  if (!detail) return undefined;
+  if (card.id === 'pv') {
+    return `${t('commandHub.pvDetail')}: ${detail}`;
+  }
+  if (METRIC_DETAIL_KEYS.has(detail)) {
+    return t(`metrics.${detail}`);
+  }
+  return detail;
+}
+
 const metricCards: MetricDef[] = [
   {
     id: 'pv',
@@ -245,7 +269,7 @@ function CommandHubComponent() {
                 details={
                   card.getDetail(metrics) ? (
                     <p className="text-(--color-muted) text-xs">
-                      {t(`metrics.${card.getDetail(metrics)}`, card.getDetail(metrics))}
+                      {formatMetricDetail(card, metrics, t)}
                     </p>
                   ) : undefined
                 }
@@ -290,7 +314,7 @@ function CommandHubComponent() {
                   details={
                     card.getDetail(metrics) ? (
                       <p className="text-(--color-muted) text-xs">
-                        {t(`metrics.${card.getDetail(metrics)}`)}
+                        {formatMetricDetail(card, metrics, t)}
                       </p>
                     ) : undefined
                   }

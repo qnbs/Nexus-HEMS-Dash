@@ -190,6 +190,7 @@ export const en = {
     evCharging: 'EV Charging',
     totalLoad: 'Total Load',
     viewDetails: 'View details',
+    currentPrice: 'Current electricity price',
   },
   commandHub: {
     title: 'Command Hub',
@@ -327,6 +328,7 @@ export const en = {
     timeSeriesHint: '24h to 365d with zoom',
     exportPdf: 'PDF Export',
     exportPdfHint: 'Reports & QR sharing',
+    quickLinks: 'Quick access',
   },
   monitoringUnified: {
     title: 'Monitoring & Health',
@@ -358,6 +360,7 @@ export const en = {
     helpSection: 'Help & FAQ',
     helpSectionDesc: 'Troubleshooting & documentation',
     quickAccess: 'Quick Access',
+    sections: 'Sections',
   },
   control: {
     evOff: 'Off',
@@ -370,6 +373,14 @@ export const en = {
     hpMode2: 'Mode 2: Normal operation',
     hpMode3: 'Mode 3: Recommendation',
     hpMode4: 'Mode 4: Forced start',
+    hpMode1Desc: 'Blocks heat pump operation — utility lockout signal active.',
+    hpMode2Desc: 'Standard base-load operation for everyday heating.',
+    hpMode3Desc: 'Increased consumption recommended — ideal for PV surplus or low tariff.',
+    hpMode4Desc: 'Forced-start command — maximum heating output requested.',
+    hpMode1Power: '0 kW',
+    hpMode2Power: '~0.8 kW',
+    hpMode3Power: '~1.5 kW',
+    hpMode4Power: '~2.5 kW',
     hpUpdated: 'SG Ready mode applied',
     batteryTitle: 'Battery strategy',
     batteryMode: 'Current mode',

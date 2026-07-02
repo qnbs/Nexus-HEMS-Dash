@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAppStoreShallow } from '../../store';
 import { type PVConfig, SYSTEM_PRESETS } from '../../types';
+import { SelectField } from '../ui/SelectField';
 import { SettingsFeatureBar } from './SettingsFeatureBar';
 import { inputClass, sectionClass, sectionHeaderClass } from './styles';
 
@@ -26,29 +27,24 @@ export function EnergyTab() {
           {t('settings.energy')}
         </h2>
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-          <div className="space-y-2">
-            <label htmlFor="settings-tariff" className="font-medium text-sm">
-              {t('settings.tariffProvider')}
-            </label>
-            <select
-              id="settings-tariff"
-              className={inputClass}
-              value={settings.tariffProvider}
-              onChange={(e) =>
-                updateSettings({
-                  tariffProvider: e.target.value as import('../../types').TariffProvider,
-                })
-              }
-            >
-              <option value="tibber">{t('settings.tibber')}</option>
-              <option value="tibber-pulse">{t('settings.tibberPulse')}</option>
-              <option value="awattar-de">{t('settings.awattarDE')}</option>
-              <option value="awattar-at">{t('settings.awattarAT')}</option>
-              <option value="octopus">{t('settings.octopus')}</option>
-              <option value="awattar">{t('settings.awattar')}</option>
-              <option value="none">{t('settings.none')}</option>
-            </select>
-          </div>
+          <SelectField
+            id="settings-tariff"
+            label={t('settings.tariffProvider')}
+            value={settings.tariffProvider}
+            onChange={(e) =>
+              updateSettings({
+                tariffProvider: e.target.value as import('../../types').TariffProvider,
+              })
+            }
+          >
+            <option value="tibber">{t('settings.tibber')}</option>
+            <option value="tibber-pulse">{t('settings.tibberPulse')}</option>
+            <option value="awattar-de">{t('settings.awattarDE')}</option>
+            <option value="awattar-at">{t('settings.awattarAT')}</option>
+            <option value="octopus">{t('settings.octopus')}</option>
+            <option value="awattar">{t('settings.awattar')}</option>
+            <option value="none">{t('settings.none')}</option>
+          </SelectField>
           <div className="space-y-2">
             <label htmlFor="settings-api-token" className="font-medium text-sm">
               {t('settings.apiTokenLabel')}
@@ -276,33 +272,28 @@ export function EnergyTab() {
               kW
             </p>
           </div>
-          <div className="space-y-2">
-            <label htmlFor="settings-inv-mode" className="font-medium text-sm">
-              {t('settings.inverterMode')}
-            </label>
-            <select
-              id="settings-inv-mode"
-              className={inputClass}
-              value={settings.systemConfig.inverter.mode}
-              onChange={(e) =>
-                updateSettings({
-                  systemConfig: {
-                    ...settings.systemConfig,
-                    presetId: 'custom',
-                    presetName: 'Custom',
-                    inverter: {
-                      ...settings.systemConfig.inverter,
-                      mode: e.target.value as 'single' | 'parallel' | 'three-phase',
-                    },
+          <SelectField
+            id="settings-inv-mode"
+            label={t('settings.inverterMode')}
+            value={settings.systemConfig.inverter.mode}
+            onChange={(e) =>
+              updateSettings({
+                systemConfig: {
+                  ...settings.systemConfig,
+                  presetId: 'custom',
+                  presetName: 'Custom',
+                  inverter: {
+                    ...settings.systemConfig.inverter,
+                    mode: e.target.value as 'single' | 'parallel' | 'three-phase',
                   },
-                })
-              }
-            >
-              <option value="single">{t('settings.modeSingle')}</option>
-              <option value="parallel">{t('settings.modeParallel')}</option>
-              <option value="three-phase">{t('settings.modeThreePhase')}</option>
-            </select>
-          </div>
+                },
+              })
+            }
+          >
+            <option value="single">{t('settings.modeSingle')}</option>
+            <option value="parallel">{t('settings.modeParallel')}</option>
+            <option value="three-phase">{t('settings.modeThreePhase')}</option>
+          </SelectField>
         </div>
       </section>
 
@@ -338,34 +329,29 @@ export function EnergyTab() {
               className={inputClass}
             />
           </div>
-          <div className="space-y-2">
-            <label htmlFor="settings-orientation" className="font-medium text-sm">
-              {t('settings.pvOrientation', 'Orientation')}
-            </label>
-            <select
-              id="settings-orientation"
-              className={inputClass}
-              value={settings.systemConfig.pv.orientation}
-              onChange={(e) =>
-                updateSettings({
-                  systemConfig: {
-                    ...settings.systemConfig,
-                    presetId: 'custom',
-                    presetName: 'Custom',
-                    pv: {
-                      ...settings.systemConfig.pv,
-                      orientation: e.target.value as PVConfig['orientation'],
-                    },
+          <SelectField
+            id="settings-orientation"
+            label={t('settings.pvOrientation', 'Orientation')}
+            value={settings.systemConfig.pv.orientation}
+            onChange={(e) =>
+              updateSettings({
+                systemConfig: {
+                  ...settings.systemConfig,
+                  presetId: 'custom',
+                  presetName: 'Custom',
+                  pv: {
+                    ...settings.systemConfig.pv,
+                    orientation: e.target.value as PVConfig['orientation'],
                   },
-                })
-              }
-            >
-              <option value="south">{t('settings.south', 'South')}</option>
-              <option value="east-west">{t('settings.eastWest', 'East/West')}</option>
-              <option value="east">{t('settings.east', 'East')}</option>
-              <option value="west">{t('settings.west', 'West')}</option>
-            </select>
-          </div>
+                },
+              })
+            }
+          >
+            <option value="south">{t('settings.south', 'South')}</option>
+            <option value="east-west">{t('settings.eastWest', 'East/West')}</option>
+            <option value="east">{t('settings.east', 'East')}</option>
+            <option value="west">{t('settings.west', 'West')}</option>
+          </SelectField>
           <div className="space-y-2">
             <label htmlFor="settings-pv-tilt" className="font-medium text-sm">
               {t('settings.pvTilt', 'Tilt angle (°)')}
@@ -629,38 +615,33 @@ export function EnergyTab() {
               className={inputClass}
             />
           </div>
-          <div className="space-y-2">
-            <label htmlFor="settings-strategy" className="font-medium text-sm">
-              {t('settings.batteryStrategy', 'Default strategy')}
-            </label>
-            <select
-              id="settings-strategy"
-              className={inputClass}
-              value={settings.systemConfig.battery.strategy}
-              onChange={(e) =>
-                updateSettings({
-                  systemConfig: {
-                    ...settings.systemConfig,
-                    presetId: 'custom',
-                    presetName: 'Custom',
-                    battery: {
-                      ...settings.systemConfig.battery,
-                      strategy: e.target.value as
-                        | 'self-consumption'
-                        | 'force-charge'
-                        | 'time-of-use'
-                        | 'auto',
-                    },
+          <SelectField
+            id="settings-strategy"
+            label={t('settings.batteryStrategy', 'Default strategy')}
+            value={settings.systemConfig.battery.strategy}
+            onChange={(e) =>
+              updateSettings({
+                systemConfig: {
+                  ...settings.systemConfig,
+                  presetId: 'custom',
+                  presetName: 'Custom',
+                  battery: {
+                    ...settings.systemConfig.battery,
+                    strategy: e.target.value as
+                      | 'self-consumption'
+                      | 'force-charge'
+                      | 'time-of-use'
+                      | 'auto',
                   },
-                })
-              }
-            >
-              <option value="self-consumption">{t('control.selfConsumption')}</option>
-              <option value="force-charge">{t('control.forceCharge')}</option>
-              <option value="time-of-use">{t('settings.timeOfUse')}</option>
-              <option value="auto">{t('control.auto')}</option>
-            </select>
-          </div>
+                },
+              })
+            }
+          >
+            <option value="self-consumption">{t('control.selfConsumption')}</option>
+            <option value="force-charge">{t('control.forceCharge')}</option>
+            <option value="time-of-use">{t('settings.timeOfUse')}</option>
+            <option value="auto">{t('control.auto')}</option>
+          </SelectField>
         </div>
       </section>
 

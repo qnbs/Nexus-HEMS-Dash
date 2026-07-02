@@ -371,7 +371,7 @@ export function AppShell({ children }: AppShellProps) {
             {/* Price Pill (mobile — compact) */}
             <div
               className="inline-flex shrink-0 items-center gap-1 rounded-full bg-(--color-surface)/60 px-2 py-0.5 font-medium text-xs md:hidden"
-              title={t('dashboard.currentPrice', 'Current electricity price')}
+              title={t('dashboard.currentPrice')}
             >
               <span className="text-(--color-primary)">{priceCurrent.toFixed(2)} ct</span>
             </div>
