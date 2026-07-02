@@ -255,7 +255,7 @@ describe('OCPP21Adapter — sendCommand dispatch', { timeout: OCPP_PIPELINE_TIME
     adapter.destroy();
   });
 
-  it('SET_EV_POWER → SetChargingProfile with power/voltage conversion', async () => {
+  it('SET_EV_POWER → SetChargingProfile with W unit (OCPP 2.1 chargingRateUnit W)', async () => {
     const { OCPP21Adapter } = await import('../core/adapters/OCPP21Adapter');
     const adapter = new OCPP21Adapter(OCPP_TEST_CONFIG);
 
@@ -268,11 +268,16 @@ describe('OCPP21Adapter — sendCommand dispatch', { timeout: OCPP_PIPELINE_TIME
     expect(profileCalls.length).toBeGreaterThanOrEqual(1);
 
     const profile = profileCalls[profileCalls.length - 1].payload;
-    const schedule = (profile.chargingProfile as Record<string, unknown>).chargingSchedule as {
+    const chargingProfile = profile.chargingProfile as Record<string, unknown>;
+    const schedule = chargingProfile.chargingSchedule as {
+      chargingRateUnit: string;
       chargingSchedulePeriod: { limit: number }[];
     }[];
-    // 7360W / 230V ≈ 32A
-    expect(schedule[0].chargingSchedulePeriod[0].limit).toBe(32);
+
+    // P1: SET_EV_POWER now sends chargingRateUnit 'W' directly (OCPP 2.1 §7.3.27)
+    // No A conversion — avoids rounding errors on 3-phase EVSEs
+    expect(schedule[0].chargingRateUnit).toBe('W');
+    expect(schedule[0].chargingSchedulePeriod[0].limit).toBe(7360);
 
     adapter.destroy();
   });
