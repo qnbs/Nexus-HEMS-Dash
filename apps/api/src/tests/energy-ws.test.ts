@@ -1,7 +1,16 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import type { WebSocket } from 'ws';
+import type { WebSocket, WebSocketServer } from 'ws';
 import { isReadOnlyMode } from '../config/read-only-mode.js';
-import { checkWsRateLimit, filterMockData, sanitizeOutgoingWsPayload, validateWSCommand } from '../ws/energy.ws.js';
+import type { AuthenticatedClient } from '../middleware/auth.js';
+import {
+  checkScopeAuthorization,
+  checkWsRateLimit,
+  filterMockData,
+  handleSubscribeCommand,
+  handleWsCommand,
+  sanitizeOutgoingWsPayload,
+  validateWSCommand,
+} from '../ws/energy.ws.js';
 
 describe('validateWSCommand', () => {
   it('accepts a valid hardware command', () => {
@@ -88,6 +97,135 @@ describe('checkWsRateLimit', () => {
 
     // A new window should start and allow one more command
     expect(checkWsRateLimit(ws, limits)).toBe(true);
+  });
+});
+
+describe('handleSubscribeCommand', () => {
+  function mockWs(): WebSocket & { sent: unknown[] } {
+    return {
+      sent: [],
+      send(payload: string) {
+        this.sent.push(JSON.parse(payload));
+      },
+    } as WebSocket & { sent: unknown[] };
+  }
+
+  it('acks valid metric subscriptions', () => {
+    const ws = mockWs();
+    const subs = new WeakMap<WebSocket, Set<string>>();
+    const ok = handleSubscribeCommand(
+      ws,
+      { type: 'SUBSCRIBE', metrics: ['pvPower', 'gridPower'] },
+      subs,
+    );
+    expect(ok).toBe(true);
+    expect(subs.get(ws)?.has('pvPower')).toBe(true);
+    expect(ws.sent[0]).toEqual({
+      type: 'SUBSCRIBE_ACK',
+      metrics: ['pvPower', 'gridPower'],
+    });
+  });
+
+  it('rejects invalid subscribe payloads', () => {
+    const ws = mockWs();
+    const subs = new WeakMap<WebSocket, Set<string>>();
+    expect(handleSubscribeCommand(ws, { type: 'SUBSCRIBE', metrics: [1, 2] }, subs)).toBe(false);
+    expect(handleSubscribeCommand(ws, { type: 'OTHER' }, subs)).toBe(false);
+  });
+});
+
+describe('checkScopeAuthorization', () => {
+  function mockWs(): WebSocket & { sent: unknown[] } {
+    return {
+      sent: [],
+      send(payload: string) {
+        this.sent.push(JSON.parse(payload));
+      },
+    } as WebSocket & { sent: unknown[] };
+  }
+
+  it('rejects read scope for readwrite hardware commands', () => {
+    const ws = mockWs();
+    const auth = new WeakMap<WebSocket, AuthenticatedClient>();
+    auth.set(ws, { clientId: 'reader', scope: 'read' });
+    expect(checkScopeAuthorization(ws, 'SET_BATTERY_POWER', auth)).toBe(false);
+    expect((ws.sent[0] as { error: string }).error).toMatch(/readwrite/i);
+  });
+
+  it('rejects readwrite scope for admin-only grid limit', () => {
+    const ws = mockWs();
+    const auth = new WeakMap<WebSocket, AuthenticatedClient>();
+    auth.set(ws, { clientId: 'writer', scope: 'readwrite' });
+    expect(checkScopeAuthorization(ws, 'SET_GRID_LIMIT', auth)).toBe(false);
+    expect((ws.sent[0] as { error: string }).error).toMatch(/admin/i);
+  });
+
+  it('allows readwrite scope for hardware commands', () => {
+    const ws = mockWs();
+    const auth = new WeakMap<WebSocket, AuthenticatedClient>();
+    auth.set(ws, { clientId: 'writer', scope: 'readwrite' });
+    expect(checkScopeAuthorization(ws, 'SET_BATTERY_POWER', auth)).toBe(true);
+    expect(ws.sent).toHaveLength(0);
+  });
+
+  it('allows admin scope for grid limit commands', () => {
+    const ws = mockWs();
+    const auth = new WeakMap<WebSocket, AuthenticatedClient>();
+    auth.set(ws, { clientId: 'admin', scope: 'admin' });
+    expect(checkScopeAuthorization(ws, 'SET_GRID_LIMIT', auth)).toBe(true);
+  });
+});
+
+describe('handleWsCommand', () => {
+  const originalReadOnly = process.env.READ_ONLY_MODE;
+
+  function mockWs(): WebSocket & { sent: unknown[] } {
+    return {
+      sent: [],
+      send(payload: string) {
+        this.sent.push(JSON.parse(payload));
+      },
+    } as WebSocket & { sent: unknown[] };
+  }
+
+  afterEach(() => {
+    if (originalReadOnly === undefined) delete process.env.READ_ONLY_MODE;
+    else process.env.READ_ONLY_MODE = originalReadOnly;
+  });
+
+  it('routes invalid commands to SUBSCRIBE handler when applicable', () => {
+    const ws = mockWs();
+    const subs = new WeakMap<WebSocket, Set<string>>();
+    const auth = new WeakMap<WebSocket, AuthenticatedClient>();
+    const wss = { clients: new Set<WebSocket>() } as WebSocketServer;
+
+    handleWsCommand(ws, { type: 'SUBSCRIBE', metrics: ['pvPower'] }, subs, auth, wss);
+    expect(subs.get(ws)?.has('pvPower')).toBe(true);
+  });
+
+  it('blocks hardware commands when READ_ONLY_MODE is active', () => {
+    process.env.READ_ONLY_MODE = 'true';
+    const ws = mockWs();
+    const auth = new WeakMap<WebSocket, AuthenticatedClient>();
+    auth.set(ws, { clientId: 'writer', scope: 'readwrite' });
+    const wss = { clients: new Set<WebSocket>() } as WebSocketServer;
+
+    handleWsCommand(ws, { type: 'SET_EV_POWER', value: 1500 }, new WeakMap(), auth, wss);
+    expect((ws.sent[0] as { type: string }).type).toBe('ERROR');
+  });
+
+  it('applies SET_BATTERY_POWER and broadcasts ENERGY_UPDATE', () => {
+    delete process.env.READ_ONLY_MODE;
+    const ws = mockWs();
+    const peer = mockWs();
+    const auth = new WeakMap<WebSocket, AuthenticatedClient>();
+    auth.set(ws, { clientId: 'writer', scope: 'readwrite' });
+    const wss = { clients: new Set<WebSocket>([ws, peer]) } as WebSocketServer;
+    Object.defineProperty(ws, 'readyState', { value: 1 });
+    Object.defineProperty(peer, 'readyState', { value: 1 });
+
+    handleWsCommand(ws, { type: 'SET_BATTERY_POWER', value: -500 }, new WeakMap(), auth, wss);
+    expect(peer.sent.some((msg) => (msg as { type: string }).type === 'ENERGY_UPDATE')).toBe(true);
   });
 });
 

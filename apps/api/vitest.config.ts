@@ -14,12 +14,12 @@ export default defineConfig({
       reporter: ['text', 'lcov'],
       include: ['src/**/*.ts'],
       exclude: ['src/**/*.test.ts', 'src/data/**'],
-      // Staged raise: v1.6.1 measured ~47% statements / 55% functions (P1-05); target 55% statements
+      // Staged raise: v1.6.1 measured ~55% statements / 63% functions (P1-05 complete)
       thresholds: {
-        statements: 47,
-        branches: 38,
-        functions: 55,
-        lines: 48,
+        statements: 55,
+        branches: 46,
+        functions: 62,
+        lines: 55,
       },
     },
   },

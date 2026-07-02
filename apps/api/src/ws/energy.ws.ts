@@ -253,7 +253,8 @@ export function checkWsRateLimit(
   return rl.count <= getWsCmdRateLimit();
 }
 
-function handleSubscribeCommand(
+/** @internal Exported for unit tests (energy-ws.test.ts). */
+export function handleSubscribeCommand(
   ws: WebSocket,
   parsed: Record<string, unknown>,
   wsSubscriptions: WeakMap<WebSocket, Set<string>>,
@@ -269,7 +270,8 @@ function handleSubscribeCommand(
   return true;
 }
 
-function checkScopeAuthorization(
+/** @internal Exported for unit tests (energy-ws.test.ts). */
+export function checkScopeAuthorization(
   ws: WebSocket,
   parsedType: string,
   wsAuthMap: WeakMap<WebSocket, AuthenticatedClient>,
@@ -294,7 +296,8 @@ function checkScopeAuthorization(
   return false;
 }
 
-function handleWsCommand(
+/** @internal Exported for unit tests (energy-ws.test.ts). */
+export function handleWsCommand(
   ws: WebSocket,
   parsed: unknown,
   wsSubscriptions: WeakMap<WebSocket, Set<string>>,
