@@ -1,8 +1,6 @@
 import {
   AlertTriangle,
   CheckCircle2,
-  ChevronDown,
-  ChevronUp,
   Clock,
   Info,
   Layers,
@@ -15,11 +13,11 @@ import {
   Trash2,
   XCircle,
 } from 'lucide-react';
-import { AnimatePresence, motion } from 'motion/react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '../components/layout/PageHeader';
 import { BrowseAdaptersPanel } from '../components/plugins/BrowseAdaptersPanel';
+import { Disclosure } from '../components/ui/Disclosure';
 import { NeonCard, NeonCardBody } from '../components/ui/NeonCard';
 import { PageCrossLinks } from '../components/ui/PageCrossLinks';
 import { type PluginEntry, type PluginState, pluginManager } from '../core/plugin-system';
@@ -154,7 +152,6 @@ function PluginCard({
   onUninstall: (id: string) => void;
 }) {
   const { t } = useTranslation();
-  const [expanded, setExpanded] = useState(false);
   const { plugin, state, installedAt, activatedAt, error } = entry;
   const descriptor = plugin.descriptor;
   const stateStyle = STATE_STYLES[state] ?? STATE_STYLES.installed;
@@ -198,19 +195,6 @@ function PluginCard({
               <StateIcon className="h-3 w-3" />
               {t(STATE_I18N[state] ?? 'plugins.installed')}
             </span>
-
-            {/* Expand */}
-            <button
-              type="button"
-              onClick={() => setExpanded(!expanded)}
-              className="focus-ring rounded-lg p-1 text-(--color-muted) hover:text-(--color-text)"
-              aria-expanded={expanded}
-              aria-label={
-                expanded ? t('common.collapse', 'Einklappen') : t('common.expand', 'Ausklappen')
-              }
-            >
-              {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-            </button>
           </div>
         </div>
 
@@ -261,73 +245,60 @@ function PluginCard({
           )}
         </div>
 
-        {/* Expanded details */}
-        <AnimatePresence>
-          {expanded && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="overflow-hidden"
-            >
-              <div className="mt-2 space-y-3 rounded-xl border border-(--color-border) bg-white/[0.02] p-4">
-                {descriptor.author && (
-                  <div className="fluid-text-sm flex justify-between">
-                    <span className="text-(--color-muted)">{t('plugins.author')}</span>
-                    <span>{descriptor.author}</span>
-                  </div>
-                )}
-                <div className="fluid-text-sm flex justify-between">
-                  <span className="text-(--color-muted)">{t('plugins.installed')}</span>
-                  <span>{new Date(installedAt).toLocaleString()}</span>
-                </div>
-                {activatedAt && (
-                  <div className="fluid-text-sm flex justify-between">
-                    <span className="text-(--color-muted)">
-                      {t('plugins.lastActivated', 'Letzte Aktivierung')}
-                    </span>
-                    <span>{new Date(activatedAt).toLocaleString()}</span>
-                  </div>
-                )}
-                {descriptor.provides && descriptor.provides.length > 0 && (
-                  <div>
-                    <span className="fluid-text-xs font-semibold text-(--color-muted) uppercase tracking-wider">
-                      {t('plugins.providesServices', 'Bereitgestellte Services')}
-                    </span>
-                    <div className="mt-1 flex flex-wrap gap-1">
-                      {descriptor.provides.map((svc) => (
-                        <span
-                          key={svc}
-                          className="rounded-full bg-white/5 px-2 py-0.5 font-mono text-(--color-muted) text-[10px]"
-                        >
-                          {svc}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {descriptor.dependencies && Object.keys(descriptor.dependencies).length > 0 && (
-                  <div>
-                    <span className="fluid-text-xs font-semibold text-(--color-muted) uppercase tracking-wider">
-                      {t('plugins.dependencies')}
-                    </span>
-                    <div className="mt-1 flex flex-wrap gap-1">
-                      {Object.entries(descriptor.dependencies).map(([depId, ver]) => (
-                        <span
-                          key={depId}
-                          className="rounded-full bg-white/5 px-2 py-0.5 font-mono text-(--color-muted) text-[10px]"
-                        >
-                          {depId}@{ver}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
+        <Disclosure variant="nested" title={t('plugins.metadata')} defaultOpen={false}>
+          <div className="space-y-3">
+            {descriptor.author && (
+              <div className="fluid-text-sm flex justify-between">
+                <span className="text-(--color-muted)">{t('plugins.author')}</span>
+                <span>{descriptor.author}</span>
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            )}
+            <div className="fluid-text-sm flex justify-between">
+              <span className="text-(--color-muted)">{t('plugins.installed')}</span>
+              <span>{new Date(installedAt).toLocaleString()}</span>
+            </div>
+            {activatedAt && (
+              <div className="fluid-text-sm flex justify-between">
+                <span className="text-(--color-muted)">{t('plugins.lastActivated')}</span>
+                <span>{new Date(activatedAt).toLocaleString()}</span>
+              </div>
+            )}
+            {descriptor.provides && descriptor.provides.length > 0 && (
+              <div>
+                <span className="fluid-text-xs font-semibold text-(--color-muted) uppercase tracking-wider">
+                  {t('plugins.providesServices')}
+                </span>
+                <div className="mt-1 flex flex-wrap gap-1">
+                  {descriptor.provides.map((svc) => (
+                    <span
+                      key={svc}
+                      className="rounded-full bg-white/5 px-2 py-0.5 font-mono text-(--color-muted) text-[10px]"
+                    >
+                      {svc}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+            {descriptor.dependencies && Object.keys(descriptor.dependencies).length > 0 && (
+              <div>
+                <span className="fluid-text-xs font-semibold text-(--color-muted) uppercase tracking-wider">
+                  {t('plugins.dependencies')}
+                </span>
+                <div className="mt-1 flex flex-wrap gap-1">
+                  {Object.entries(descriptor.dependencies).map(([depId, ver]) => (
+                    <span
+                      key={depId}
+                      className="rounded-full bg-white/5 px-2 py-0.5 font-mono text-(--color-muted) text-[10px]"
+                    >
+                      {depId}@{ver}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </Disclosure>
       </NeonCardBody>
     </NeonCard>
   );
@@ -343,10 +314,7 @@ function EmptyPluginState() {
         <Layers className="mx-auto mb-4 h-12 w-12 text-(--color-muted)" />
         <h3 className="fluid-text-lg mb-2 font-semibold">{t('plugins.noPlugins')}</h3>
         <p className="fluid-text-sm mx-auto max-w-md text-(--color-muted)">
-          {t(
-            'plugins.noPluginsDescription',
-            'Das Plugin-System ist bereit. Plugins können über die API installiert werden.',
-          )}
+          {t('plugins.noPluginsDescription')}
         </p>
       </NeonCardBody>
     </NeonCard>

@@ -5,6 +5,12 @@ import type { TFunction } from 'i18next';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { persistSankeySnapshot } from '../lib/db';
+import {
+  sankeyLinkTooltip,
+  sankeyNodeDisplay,
+  sankeyNodeLabel,
+  sankeyNodeTooltip,
+} from '../lib/sankey-labels';
 import type { EnergyData } from '../types';
 import type {
   SankeyGraphResult,
@@ -41,7 +47,7 @@ function buildAnnouncement(data: EnergyData, t: TFunction<'translation'>): strin
 }
 
 export function SankeyDiagram({ data }: { data: EnergyData }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const svgRef = useRef<SVGSVGElement>(null);
   const workerRef = useRef<Comlink.Remote<SankeyWorkerAPI> | null>(null);
   const rawWorkerRef = useRef<Worker | null>(null);
@@ -177,7 +183,7 @@ export function SankeyDiagram({ data }: { data: EnergyData }) {
           .style('filter', `drop-shadow(0 0 4px ${d.sourceColor}50)`);
       })
       .append('title')
-      .text((d) => `${d.sourceName} → ${d.targetName}\n${Math.round(d.value)} W`);
+      .text((d) => sankeyLinkTooltip(t, d.sourceId, d.targetId, d.value));
 
     // Draw nodes
     const node = svg
@@ -209,7 +215,7 @@ export function SankeyDiagram({ data }: { data: EnergyData }) {
           .style('filter', `drop-shadow(0 2px 4px ${d.color}30)`);
       })
       .append('title')
-      .text((d) => `${d.name}\n${Math.round(d.value)} W`);
+      .text((d) => sankeyNodeTooltip(t, d.id, d.value));
 
     node
       .append('text')
@@ -217,7 +223,7 @@ export function SankeyDiagram({ data }: { data: EnergyData }) {
       .attr('y', (d) => (d.y1 - d.y0) / 2)
       .attr('dy', '0.35em')
       .attr('text-anchor', (d) => (d.x0 < width / 2 ? 'start' : 'end'))
-      .text((d) => (isMobile ? `${d.name}` : `${d.name} (${Math.round(d.value)}W)`))
+      .text((d) => sankeyNodeDisplay(t, d.id, d.value, isMobile))
       .attr('fill', 'var(--color-text)')
       .attr('font-size', fontSize)
       .attr('font-family', 'Inter, sans-serif')
@@ -229,12 +235,12 @@ export function SankeyDiagram({ data }: { data: EnergyData }) {
     void persistSankeySnapshot(
       data,
       graph.links.map((l) => ({
-        source: l.sourceName,
-        target: l.targetName,
+        source: l.sourceId,
+        target: l.targetId,
         value: l.value,
       })),
     );
-  }, [graph, data]);
+  }, [graph, data, t, i18n.language]);
 
   return (
     <>
@@ -269,48 +275,13 @@ export function SankeyDiagram({ data }: { data: EnergyData }) {
           </tr>
         </thead>
         <tbody>
-          {data.pvPower > 0 && (
-            <tr>
-              <td>PV</td>
-              <td>House</td>
-              <td>{Math.min(data.pvPower, data.houseLoad).toFixed(0)}</td>
+          {graph?.links.map((link) => (
+            <tr key={`${link.sourceId}-${link.targetId}-${link.value}`}>
+              <td>{sankeyNodeLabel(t, link.sourceId)}</td>
+              <td>{sankeyNodeLabel(t, link.targetId)}</td>
+              <td>{Math.round(link.value)}</td>
             </tr>
-          )}
-          {data.gridPower > 0 && (
-            <tr>
-              <td>Grid</td>
-              <td>House</td>
-              <td>{data.gridPower.toFixed(0)}</td>
-            </tr>
-          )}
-          {data.batteryPower > 0 && (
-            <tr>
-              <td>Battery</td>
-              <td>House</td>
-              <td>{data.batteryPower.toFixed(0)}</td>
-            </tr>
-          )}
-          {data.batteryPower < 0 && (
-            <tr>
-              <td>PV</td>
-              <td>Battery</td>
-              <td>{Math.abs(data.batteryPower).toFixed(0)}</td>
-            </tr>
-          )}
-          {data.evPower > 0 && (
-            <tr>
-              <td>PV/Grid</td>
-              <td>EV</td>
-              <td>{data.evPower.toFixed(0)}</td>
-            </tr>
-          )}
-          {data.heatPumpPower > 0 && (
-            <tr>
-              <td>PV/Grid</td>
-              <td>Heat Pump</td>
-              <td>{data.heatPumpPower.toFixed(0)}</td>
-            </tr>
-          )}
+          ))}
         </tbody>
       </table>
     </>

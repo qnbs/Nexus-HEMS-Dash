@@ -1,20 +1,10 @@
-import {
-  Activity,
-  ChevronDown,
-  ChevronUp,
-  Eye,
-  Lock,
-  Server,
-  ShieldAlert,
-  ShieldCheck,
-  Wifi,
-} from 'lucide-react';
+import { Activity, Eye, Lock, Server, ShieldAlert, ShieldCheck, Wifi } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { lazy, Suspense, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '../components/layout/PageHeader';
+import { Disclosure } from '../components/ui/Disclosure';
 import { EmptyState } from '../components/ui/EmptyState';
-import { HelpTooltip } from '../components/ui/HelpTooltip';
 import { PageCrossLinks } from '../components/ui/PageCrossLinks';
 import { TabSkeleton } from '../components/ui/Skeleton';
 import { useAppStoreShallow } from '../store';
@@ -31,7 +21,6 @@ function MonitoringUnifiedComponent() {
     debugMode: s.settings.debugMode ?? false,
   }));
   const [powerUserMode, setPowerUserMode] = useState(debugMode ?? false);
-  const [showAdvancedHint, setShowAdvancedHint] = useState(false);
 
   return (
     <div className="space-y-6">
@@ -103,37 +92,17 @@ function MonitoringUnifiedComponent() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, delay: 0.1 }}
       >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <Disclosure
+          variant="nested"
+          className="border-0 bg-transparent shadow-none"
+          title={t('monitoringUnified.powerUserMode')}
+          subtitle={t('monitoringUnified.powerUserModeHint')}
+          icon={
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-(--color-primary)/10">
               <Server size={20} className="text-(--color-primary)" />
             </div>
-            <div>
-              <p className="flex items-center gap-1.5 font-medium text-(--color-text) text-sm">
-                {t('monitoringUnified.powerUserMode')}
-                <HelpTooltip
-                  content={t(
-                    'tour.monitoring.powerUserHelp',
-                    'Zeigt Prometheus-Metriken, Adapter-Logs und erweiterte Diagnosedaten.',
-                  )}
-                />
-              </p>
-              <p className="text-(--color-muted) text-xs">
-                {t('monitoringUnified.powerUserModeHint')}
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            {!powerUserMode && (
-              <button
-                type="button"
-                onClick={() => setShowAdvancedHint(!showAdvancedHint)}
-                className="focus-ring rounded-lg p-1.5 text-(--color-muted) hover:text-(--color-text)"
-                aria-label={t('common.info')}
-              >
-                {showAdvancedHint ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-              </button>
-            )}
+          }
+          actions={
             <label
               htmlFor="power-user-toggle"
               className="relative inline-flex cursor-pointer items-center"
@@ -148,28 +117,17 @@ function MonitoringUnifiedComponent() {
               <span className="sr-only">{t('monitoringUnified.powerUserMode')}</span>
               <div className="h-6 w-11 rounded-full border border-(--color-border) bg-(--color-surface) transition-colors duration-300 after:absolute after:top-[2px] after:left-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow-sm after:transition-transform after:duration-300 peer-checked:bg-(--color-primary) peer-checked:after:translate-x-5 peer-focus:ring-(--color-primary)/30 peer-focus:ring-2" />
             </label>
-          </div>
-        </div>
-
-        {/* Info hint when collapsed */}
-        <AnimatePresence>
-          {showAdvancedHint && !powerUserMode && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="overflow-hidden"
-            >
-              <div className="mt-3 rounded-xl border border-(--color-primary)/20 bg-(--color-primary)/5 p-3 text-(--color-muted) text-xs">
-                <span className="font-medium text-(--color-primary)" aria-hidden="true">
-                  💡{' '}
-                </span>
-                {t('monitoringUnified.powerUserHint')}
-              </div>
-            </motion.div>
+          }
+        >
+          {!powerUserMode && (
+            <div className="rounded-xl border border-(--color-primary)/20 bg-(--color-primary)/5 p-3 text-(--color-muted) text-xs">
+              <span className="font-medium text-(--color-primary)" aria-hidden="true">
+                💡{' '}
+              </span>
+              {t('monitoringUnified.powerUserHint')}
+            </div>
           )}
-        </AnimatePresence>
+        </Disclosure>
       </motion.div>
 
       {/* ─── Summary Cards (always visible) ────────────────────────── */}

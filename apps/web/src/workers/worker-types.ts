@@ -27,6 +27,8 @@ export interface EnergyDataFull extends EnergyDataInput {
 
 // ─── Sankey Worker ───────────────────────────────────────────────────
 
+export type SankeyNodeId = 'pv' | 'grid' | 'battery' | 'house' | 'heatPump' | 'ev';
+
 export interface SankeyWorkerInput {
   data: EnergyDataInput;
   width: number;
@@ -34,7 +36,7 @@ export interface SankeyWorkerInput {
 }
 
 export interface SankeyGraphNode {
-  name: string;
+  id: SankeyNodeId;
   color: string;
   x0: number;
   y0: number;
@@ -46,8 +48,8 @@ export interface SankeyGraphNode {
 export interface SankeyGraphLink {
   sourceIndex: number;
   targetIndex: number;
-  sourceName: string;
-  targetName: string;
+  sourceId: SankeyNodeId;
+  targetId: SankeyNodeId;
   sourceColor: string;
   targetColor: string;
   value: number;
