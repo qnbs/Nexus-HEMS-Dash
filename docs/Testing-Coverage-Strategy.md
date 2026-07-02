@@ -9,14 +9,14 @@ covering test types, priorities, tooling, and step-by-step implementation plan.
 
 ---
 
-## Current State (2026-04-25 Baseline)
+## Current State (web gates raised to 70% in #195; API at 2026-04-25 baseline)
 
 | Metric | Current Enforced Thresholds | Stage 1 Target | Stage 2 | Stage 3 |
 |--------|-----------------------------|----------------|---------|---------|
-| Statements | Web 52% / API 33% | **60%** | 75% | 85% |
-| Branches | Web 42% / API 30% | **55%** | 70% | 85% |
-| Functions | Web 53% / API 38% | **62%** | 76% | 85% |
-| Lines | Web 53% / API 33% | **62%** | 76% | 85% |
+| Statements | Web 70% / API 33% | **60%** | 75% | 85% |
+| Branches | Web 70% / API 30% | **55%** | 70% | 85% |
+| Functions | Web 70% / API 38% | **62%** | 76% | 85% |
+| Lines | Web 70% / API 33% | **62%** | 76% | 85% |
 
 **60+ existing test/spec files across web, api, and E2E** — infrastructure is solid, coverage gap is primarily in:
 - Page-level components (no tests)
@@ -41,7 +41,7 @@ covering test types, priorities, tooling, and step-by-step implementation plan.
 
 Current config truth:
 
-- `apps/web/vitest.config.ts` enforces `52 / 42 / 53 / 53`
+- `apps/web/vitest.config.ts` enforces `70 / 70 / 70 / 70`
 - `apps/api/vitest.config.ts` enforces `33 / 30 / 38 / 33` (statements / branches / functions / lines)
 - The stage targets below are roadmap goals and should only be described as active once the config is raised accordingly.
 
@@ -53,10 +53,10 @@ coverage: {
   provider: 'v8',
   reporter: ['text', 'json', 'html', 'lcov'],  // lcov for Codecov
   thresholds: {
-    statements: 52,
-    branches: 42,
-    functions: 53,
-    lines: 53,
+    statements: 70,
+    branches: 70,
+    functions: 70,
+    lines: 70,
   },
 }
 ```

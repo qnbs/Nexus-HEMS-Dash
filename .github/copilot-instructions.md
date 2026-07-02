@@ -198,7 +198,7 @@ Circuit Breaker (`apps/web/src/core/circuit-breaker.ts`): FSM with CLOSED → OP
 **Toolchain docs:** `docs/Toolchain-Architecture.md`, `docs/Biome-Migration-Roadmap.md`.
 
 - **Husky** + **lint-staged** for pre-commit hooks
-- **Vitest v4** (jsdom, V8 coverage — currently enforced thresholds: web 52/42/53/53, api 55/45/55/55; roadmap target is higher) — unit tests in `apps/web/src/tests/`
+- **Vitest v4** (jsdom, V8 coverage — currently enforced thresholds: web 70/70/70/70, api 33/30/38/33; roadmap target is higher) — unit tests in `apps/web/src/tests/`
 - **Playwright** — local E2E is Chromium-only; CI installs and runs Chromium + Firefox; WebKit/mobile projects are disabled for now
 - **Lighthouse CI** (Perf ≥ 85%, A11y ≥ 90%, Best Practices ≥ 90%; `errors-in-console` disabled for demo mode)
 - **Storybook 10** — component stories in `*.stories.tsx` co-located with components
