@@ -1,7 +1,7 @@
 # Feature Status — Nexus-HEMS-Dash
 
-**Version:** 1.2.0 (1.3.0 work in `[Unreleased]`)  
-**Last updated:** 2026-06-29  
+**Version:** 1.3.0 shipped (2026-06-30; v1.3.x → v1.4.0 campaign work in `[Unreleased]`)  
+**Last updated:** 2026-07-02  
 **Purpose:** Single source of truth for what is actually implemented, partial, or planned. Use this file to keep README/marketing claims synchronized with the codebase.
 
 > **Rule:** Any PR that changes a feature's implementation status must update this file and the relevant docs before merging.
@@ -24,8 +24,8 @@
 
 | Protocol | Frontend Adapter | Backend Adapter | Notes |
 | :------- | :--------------- | :-------------- | :---- |
-| Victron MQTT (Cerbo GX / Venus OS) | ✅ | ⚠️ | Browser adapter supports direct MQTT-over-WebSocket. Backend has generic MQTT adapter (`apps/api/src/protocols/mqtt/MqttAdapter.ts`) but no Victron-specialized parser yet. |
-| Modbus/SunSpec (103/124/201) | ✅ | ✅ | Backend `ModbusAdapter` reads device-map.json and polls registers; `GET /api/modbus/sunspec` + `POST /api/modbus/write` REST proxy (`routes/modbus.routes.ts`) serves the in-browser `ModbusSunSpecAdapter` as a mock SunSpec gateway (validated, audited writes; live register writes via an external bridge). |
+| Victron MQTT (Cerbo GX / Venus OS) | ✅ | ⚠️ | Browser adapter supports direct MQTT-over-WebSocket. Backend `MqttAdapter` (`apps/api/src/protocols/mqtt/MqttAdapter.ts`) subscribes Victron Venus OS topic patterns and emits Zod-validated datapoints to the EventBus. **Caveat (HIGH-17):** that backend output is not yet bridged to the WebSocket gateway, so the UI still receives mock data even in live mode. |
+| Modbus/SunSpec (103/124/201) | ✅ | ⚠️ | `GET /api/modbus/sunspec` + `POST /api/modbus/write` REST proxy (`routes/modbus.routes.ts`) serves the in-browser `ModbusSunSpecAdapter` a mock SunSpec gateway (validated, audited writes; live register writes via an external bridge) — this path works. Separately, the backend `ModbusAdapter` polls `device-map.json` into the EventBus, but **that live-polled data is not yet bridged to the WebSocket gateway → UI (HIGH-17)**. |
 | KNX/IP floorplan | ✅ | ⏳ | Browser adapter exists; no backend KNX/IP adapter. |
 | OCPP 2.1 V2X (ISO 15118) | ✅ | ⏳ | Browser adapter implements JSON-RPC over WebSocket; no backend CSMS gateway. |
 | EEBUS SPINE/SHIP | ✅ | ⚠️ | Backend SHIP handshake service, trust store, and REST API exist (`apps/api/src/services/ShipHandshakeService.ts`, `routes/eebus.routes.ts`). Continuous SPINE data adapter is not yet implemented. |
@@ -37,6 +37,12 @@
 | Shelly REST (Gen2+) | ✅ (contrib) | ⏳ | Frontend contrib adapter only. |
 | OpenADR 3.1 VEN | ✅ (contrib) | ⚠️ | Frontend contrib adapter + backend OAuth2 proxy (`routes/openadr.routes.ts`). Full VTN integration and event handling is partial. |
 | Example template | ✅ (contrib) | ⏳ | Template for custom adapters. |
+
+> **Backend keystone (HIGH-17, ADR-018):** the two real backend adapters (Modbus, MQTT) emit
+> validated datapoints to the EventBus (→ InfluxDB + optimizer), but `apps/api/src/ws/energy.ws.ts`
+> broadcasts mock data in **both** mock and live mode — it never subscribes to the EventBus. So no
+> backend adapter's data reaches the UI yet. Wiring that bridge is the prerequisite for backend
+> protocol parity (MED-20) and per-adapter metrics (MED-18). See `docs/Audit-Report-2026-07-02.md`.
 
 ---
 
@@ -58,7 +64,7 @@
 | Live tariff widget (Tibber/aWATTar/Octopus/Nordpool) | ✅ | `apps/web/src/lib/tariff-providers.ts` |
 | Smart EV charging (§14a EnWG) | ⚠️ | Frontend support exists; no real backend grid-signal integration |
 | SG Ready heat pump control | ⚠️ | Frontend command types exist; backend execution path limited |
-| Hardware registry (120+ devices) | ⏳ | Docs list devices; no dynamic runtime registry evidenced |
+| Hardware registry (113 devices, ~30 brands) | ⚠️ | Exists in code: `apps/web/src/core/hardware-registry.ts` — 113 devices across inverter/wallbox/meter/battery/heatpump with tested query helpers (`hardware-registry.test.ts`). **Not surfaced in any UI and no add-adapter-instance wizard yet** (MED-19, ADR-019). |
 | PDF reports + QR sharing | ✅ | `apps/web/src/components/ExportAndSharing.tsx`, `lib/sharing.ts` |
 | Prometheus monitoring | ✅ | `apps/api/src/middleware/metrics.ts`, `routes/metrics.routes.ts` |
 | Adapter health endpoint | ✅ | `GET /api/health` returns mode, overall status, and per-adapter state (`apps/api/src/routes/health.routes.ts`) |
@@ -100,12 +106,12 @@
 
 | Feature | Status | Evidence / Notes |
 | :------ | :----- | :--------------- |
-| Unit tests (web) | ✅ | 50+ test files |
+| Unit tests (web) | ✅ | 55+ test files; v1.3.x campaign added `settings-tabs` (21), `adapter-worker-target` (12), `hardware-registry` (11), `use-safe-command` (3); #194 added contrib-adapter tests |
 | Unit tests (api) | ✅ | 10+ test files |
 | E2E tests (Playwright) | ⚠️ | 6 spec files; missing auth, command-safety, backend-integration coverage |
 | Fuzz/property tests | ✅ | `apps/web/src/tests/security-fuzz.test.ts` |
 | i18n parity test | ✅ | `apps/web/src/tests/i18n-sync.test.ts` |
-| Coverage gates | ⚠️ | Enforced thresholds: API 55/45/55/55, web 70/63/58/70 (`vitest.config.ts`). PRF-03 baseline gate via `pnpm check:coverage-baseline`. Staged roadmap target 70%+ (MED-01). |
+| Coverage gates | ⚠️ | Enforced thresholds: API 55/45/55/55, web 70/70/70/70 (`vitest.config.ts`, raised in #195). PRF-03 baseline gate via `pnpm check:coverage-baseline` (web floor 78/72/70/80). Staged roadmap target 70%+ (MED-01). |
 | Lighthouse CI | ✅ | `.github/workflows/lighthouse.yml` |
 | Chromatic visual regression | ✅ | `.github/workflows/chromatic.yml` |
 

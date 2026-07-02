@@ -3,7 +3,7 @@
 > **Status:** Phases A–D + G complete; F substantial; E partially done.
 > **Snapshot:** 2026-07-02 · `main` after the data-viz / Settings-decomposition / a11y-flake / docs work.
 > **Purpose:** resumable to-do + roadmap for the remaining tail of the campaign.
-> **Related:** `docs/Perfection-Roadmap.md`, `docs/Technical-Debt-Registry.md`, `CHANGELOG.md` (`[Unreleased]`), `docs/adr/ADR-016..017`.
+> **Related:** `docs/Perfection-Roadmap.md`, `docs/Technical-Debt-Registry.md`, `CHANGELOG.md` (`[Unreleased]`), `docs/adr/ADR-016..019`, `docs/Audit-Report-2026-07-02.md` (delta audit + backend-track sequence).
 
 Delivery model (unchanged): small CI-green PRs; `main` is ruleset-protected → merge
 with `gh pr merge <N> --squash --admin --delete-branch`; **every PR carries its tests
@@ -86,8 +86,21 @@ new location.
 
 ### Backlog (from Technical-Debt-Registry — not in original campaign scope)
 - HIGH-12 OCPP Security Profile 3 (browser mTLS limited).
-- ARCH-03 `targetAdapterId` on `sendAdapterCommand`; ARCH-04 evcc/OpenEMS registry;
-  PERF-05 `useDeviceStore`; PERF-03 MPC → `ai-worker.ts`; MED-15 in-memory stores.
+- ARCH-04 evcc/OpenEMS registry; PERF-05 `useDeviceStore`; PERF-03 MPC → `ai-worker.ts`.
+  (ARCH-03 `targetAdapterId` and MED-15 in-memory stores resolved in #193.)
+
+### Backend-adapter track (next code phase — 2026-07-02 audit delta)
+The 2026-07-02 audit (`docs/Audit-Report-2026-07-02.md`) found the real keystone gap: backend
+adapter data never reaches the UI. Sequence, after the E/F tail — each PR keeps the safety gates
+(`ADAPTER_MODE`/`ALLOW_LIVE_HARDWARE`/`READ_ONLY_MODE` + command audit) and carries tests + docs
++ i18n (en/de):
+1. **HIGH-17** — wire the EventBus → WebSocket bridge (gated on resolved live mode; keeps mock
+   default verbatim). Keystone. **ADR-018.**
+2. **MED-18** — per-adapter Prometheus metrics, shipped with the bridge. **ADR-018.**
+3. **MED-19** — hardware-registry browser + schema-driven add-adapter wizard (the real
+   "flexibility" win; not "de-biasing"). **ADR-019.**
+4. **MED-20** — backend protocol parity (KNX/OCPP-CSMS/EEBUS-SPINE/evcc/OpenEMS), one protocol
+   per PR on the Modbus/MQTT pattern; folds in HIGH-12. **ADR-018.**
 
 ---
 

@@ -1,10 +1,10 @@
 # Technical Debt Registry — Nexus-HEMS-Dash
 
-**Last audited:** 2026-06-29
-**Version at audit:** 1.2.0 (main @ b91a5f7)
-**Last updated:** 2026-07-01 (test coverage + CI fuzz gate pass)
-**Updated version:** 1.3.0 in flight
-**Auditor:** Cursor Cloud Agent (full-scale deep audit — see `docs/Audit-Report-2026-06-29.md`; docs truth-sync pass #129)
+**Last audited:** 2026-07-02 (delta — see `docs/Audit-Report-2026-07-02.md`)
+**Version at audit:** 1.3.0 shipped (`main` @ e60e7f7, after #194)
+**Last updated:** 2026-07-02 (audit delta: HIGH-17, MED-18/19/20)
+**Updated version:** v1.3.x → v1.4.0 campaign in flight
+**Auditor:** Cursor Cloud Agent (2026-06-29 full audit — `docs/Audit-Report-2026-06-29.md`; truth-sync #129); Claude Code (2026-07-02 delta)
 
 This file is the canonical issue tracker for known technical debt, security gaps, incomplete implementations, and quality issues. It is **not** a substitute for GitHub Issues — use it for context, rationale, and multi-sprint planning.
 
@@ -667,6 +667,79 @@ Scope table said "not fully integrated"; P3 section said "Fully Implemented". Co
 **Status:** ✅ Fixed in v1.3.0
 
 `gotoAndWait` uses 15 s navigation / 30 s heading / 15 s theme gates; per-route axe scans use `test.setTimeout(60_000)`. `prefers-reduced-motion: reduce` + animation-settle via `getAnimations().finished` removed the need for 240 s masks.
+
+---
+
+## July 2026 Audit Delta — New Items (2026-07-02)
+
+New items from the 2026-07-02 audit delta (`docs/Audit-Report-2026-07-02.md`). These correct a
+proposed "full-scale transformation" brief against verified code (`main` @ e60e7f7): the real
+keystone gap is that backend adapter data never reaches the UI (HIGH-17), and the "Victron bias"
+premise is false — the platform is already vendor-neutral; the genuine gap is UX (MED-19).
+Direction recorded in ADR-018 (backend-mediated adapters) and ADR-019 (registry surfacing).
+
+### HIGH-17 — Backend Adapter Data Not Bridged to WebSocket Gateway
+**Files:** `apps/api/src/ws/energy.ws.ts`, `apps/api/src/core/EventBus.ts`, `apps/api/src/config/adapter-mode.ts`
+**Status:** ⏳ Scheduled — ADR-018 (Proposed)
+
+The two real backend adapters (`protocols/modbus/ModbusAdapter.ts`, `protocols/mqtt/MqttAdapter.ts`)
+pipe Zod-validated datapoints into `EventBus`, which fans out to InfluxDB (`TimeseriesService`)
+and the optimizer (`EnergyRouterService`). But `energy.ws.ts` **never subscribes to EventBus** —
+it broadcasts `data/mock-data.ts` on a 2 s loop in **both mock and live mode** (re-verified on
+`main` @ e60e7f7: only `timeseries` and `energy-router` subscribe). Real adapter data therefore
+never reaches the browser, and "live mode" shows the operator simulated data (a correctness/trust
+gap, not just a missing feature). `docs/Backend-Implementation-Roadmap.md` §1 already designed the
+WS gateway as an EventBus subscriber; this is unfinished wiring.
+
+**Fix:** subscribe the WS gateway to EventBus and broadcast real batched `UnifiedEnergyDatapoint`s
+when the resolved adapter mode is `live` (via `adapter-mode.ts`, never a raw env read), retaining
+the mock path verbatim as the default. Keystone that unblocks MED-20. Safety gates
+(`READ_ONLY_MODE`, command audit, scope checks) unchanged.
+
+---
+
+### MED-18 — No Per-Adapter Prometheus Metrics
+**Files:** `apps/api/src/middleware/metrics.ts`, `apps/api/src/protocols/*`
+**Status:** ⏳ Scheduled — ADR-018 (Proposed)
+
+Only platform-level gauges exist (`hems_pv_power_watts`, `hems_websocket_connections_active`, …).
+Backend adapter instances emit no metrics — only in-memory run-state (id/protocol/status) is
+tracked. Ship per-instance connect success/fail, poll latency, last-data age, and error-breakdown
+metrics alongside the HIGH-17 bridge so live data flow is observable.
+
+---
+
+### MED-19 — No Add-Adapter-Instance UI; Hardware Registry Not Surfaced
+**Files:** `apps/web/src/core/hardware-registry.ts`, `apps/web/src/components/settings/`
+**Status:** ⏳ Scheduled — ADR-019 (Proposed)
+
+This is the genuine gap behind the (false) "brand-agnostic" framing. `hardware-registry.ts`
+already holds 113 devices across ~30 manufacturers (Victron ~6%) with tested query helpers, but
+it is used only by tests — **never surfaced in a browsable UI**, and there is **no "add adapter
+instance" wizard**. Adapters are configured via store calls, not a discoverable flow.
+
+**Fix:** a searchable/filterable registry view (reuse the existing query functions) + a
+schema-driven add-instance wizard (protocol → optional registry pre-fill → Zod-schema params →
+test → name/enable), on the modular Settings pattern (MED-16). Neutralize cosmetic Victron
+references only (`defaultName_victron`, help copy). Explicitly **do not** add a parallel
+`DeviceProfile`/`VendorProfile` abstraction (ADR-019 — the registry shape + adapter Zod schemas
+already cover it).
+
+---
+
+### MED-20 — Backend Protocol Parity Gap
+**Files:** `apps/api/src/protocols/` (only `modbus/`, `mqtt/`), `FEATURE_STATUS.md`
+**Status:** ⏳ Backlog — ADR-018 (Proposed); cross-ref HIGH-12
+
+KNX, OCPP-CSMS, EEBUS continuous SPINE, evcc, and OpenEMS have **no backend adapter** — only
+browser-direct frontend adapters. EEBUS has a backend SHIP handshake/trust store/REST (v1.3.0)
+but no continuous SPINE data adapter; OpenADR has a backend OAuth2 proxy. Blocked on HIGH-17
+(no point adding backend adapters until their data can reach the UI).
+
+**Fix:** one backend `IProtocolAdapter` per protocol, mirroring the Modbus/MQTT structure
+(Zod + DLQ + backoff, registered in `protocols/index.ts`), with an optional "backend proxy"
+connection mode on the matching browser adapter. One protocol per PR; fold in HIGH-12 (OCPP
+Security Profile 3).
 
 ---
 
