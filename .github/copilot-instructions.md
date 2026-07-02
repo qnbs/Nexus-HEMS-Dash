@@ -101,7 +101,7 @@ Circuit Breaker (`apps/web/src/core/circuit-breaker.ts`): FSM with CLOSED → OP
 
 ### Hardware Registry
 
-`apps/web/src/core/hardware-registry.ts` — 120+ certified devices across 5 categories:
+`apps/web/src/core/hardware-registry.ts` — 113 certified devices across 5 categories:
 
 | Category    | Examples                                    |
 | ----------- | ------------------------------------------- |
@@ -352,7 +352,7 @@ apps/web/                      # @nexus-hems/web — React 19 Vite SPA
 │   │   ├── circuit-breaker.ts #   FSM circuit breaker (CLOSED/OPEN/HALF_OPEN)
 │   │   ├── command-safety.ts  #   Zod validation, rate limiting, audit trail
 │   │   ├── energy-controllers.ts # 8 real-time control loops + ControllerPipeline
-│   │   ├── hardware-registry.ts  # 120+ certified device registry
+│   │   ├── hardware-registry.ts  # 113 certified device registry
 │   │   ├── plugin-system.ts   #   OSGi-inspired plugin lifecycle manager
 │   │   ├── vpp-service.ts     #   VPP UC 2.6.2 / VDE-AR-E 2829-6 flex bidding
 │   │   ├── uc26-translator.ts #   Matter↔OpenADR 3.1 interworking (UC 2.6.1–2.6.3)

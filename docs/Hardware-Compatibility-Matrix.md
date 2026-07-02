@@ -162,6 +162,8 @@
 
 ## Add a New Device
 
+> **Browse in-app:** the full registry ships as a searchable/filterable catalog at **`/settings/hardware`** (`HardwareRegistryPage`), with category / manufacturer / protocol filters and an add-adapter wizard (`AddAdapterWizard`) that maps a chosen device to a protocol adapter, runs a mock/live connection test, and enables it (MED-19).
+
 If your device is not listed:
 
 1. Check if it supports any listed protocol — if yes, configure the corresponding adapter.

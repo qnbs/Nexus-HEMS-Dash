@@ -213,6 +213,20 @@ Required scope: `SET_EV_POWER`, `SET_HEAT_PUMP_POWER`, `SET_BATTERY_POWER` requi
 | `hems_websocket_messages_total`     | counter | `direction`  |
 | `hems_websocket_connections_active` | gauge   | —            |
 
+### Per-adapter metrics (MED-18)
+
+Emitted by `apps/api/src/middleware/adapter-metrics.ts` for each backend protocol adapter instance, all labelled `{ adapter, protocol }`:
+
+| Metric                                 | Type    | Labels              |
+| -------------------------------------- | ------- | ------------------- |
+| `hems_adapter_connected`               | gauge   | `adapter, protocol` |
+| `hems_adapter_latency_seconds`         | gauge   | `adapter, protocol` |
+| `hems_adapter_data_freshness_seconds`  | gauge   | `adapter, protocol` |
+| `hems_adapter_data_updates_total`      | counter | `adapter, protocol` |
+| `hems_adapter_errors_total`            | counter | `adapter, protocol` |
+| `hems_adapter_reconnects_total`        | counter | `adapter, protocol` |
+| `hems_adapter_dlq_total`               | counter | `adapter, protocol` |
+
 ---
 
 ## Security

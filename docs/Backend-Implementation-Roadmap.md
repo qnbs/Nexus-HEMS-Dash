@@ -15,6 +15,11 @@ The EventBus decouples protocol adapters from downstream consumers (TSDB writer,
 EnergyRouterService). Using Node.js `EventEmitter` keeps the dependency footprint minimal and avoids
 introducing RxJS into the backend.
 
+> **Implemented (HIGH-17, ADR-018):** the WebSocket gateway consumer is `LiveEnergyAggregator`
+> (`apps/api/src/services/LiveEnergyAggregator.ts`), which folds role-tagged `UnifiedEnergyDatapoint`s
+> into the `EnergyData` snapshot the browser consumes and is broadcast in resolved `live` mode with
+> fresh data (otherwise the mock stream). Datapoints carry an optional `role` field for this mapping.
+
 ### Backpressure Strategy
 
 Protocol adapters may emit data at different rates (Modbus: ~1 Hz, MQTT: bursts). A 500 ms time

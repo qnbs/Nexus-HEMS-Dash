@@ -439,6 +439,25 @@ All headings and body text use `clamp()`-based fluid type — scales smoothly be
 
 ---
 
+## 🧩 Shared Primitives & Layout Shell
+
+### Component primitives
+
+Prefer these branded primitives (`apps/web/src/components/ui/`) over raw native controls so theme tokens and a11y wiring stay consistent:
+
+- **`Disclosure`** — glass-panel expandable section with an a11y-safe trigger/actions split; the canonical building block for the Progressive Disclosure principle below. Used across Help, Command Hub, Monitoring, Plugins, Tariffs, adapter config and ErrorBoundary dev details.
+- **`SelectField`** — styled wrapper around a native `<select>` (keeps native keyboard/mobile behaviour; restyled to the theme).
+- **`ChoiceCardGroup`** — accessible radio-group rendered as selectable cards; replaces gray native pickers where options benefit from richer labels/descriptions (Settings, Analytics, Command Hub, Devices, Tariffs, AI settings, adapter config, command palette).
+- **`SgReadyModeSelector`** — domain selector for heat-pump SG-Ready modes, built on `ChoiceCardGroup` + `lib/sg-ready.ts`.
+
+All four keep user-visible strings in i18n (`t()`); the generic primitives receive already-translated text via props.
+
+### Layout shell — fixed header
+
+The app header is `position: fixed` (sidebar-aware via `lg:left-64`) with a JS-measured `--header-height` CSS variable that reserves exactly the matching top padding on the content column (`AppShell.tsx`, `index.css`). Do **not** revert it to `sticky`/`relative`, and avoid adding `position` utilities inside `@layer utilities` in `index.css` — by source order they can silently override Tailwind position classes (the root cause of the pre-fix scroll-away bug). A `prefers-reduced-transparency` solid fallback and a scroll-triggered elevation shadow are included; regression-guarded by `header-fixed.spec.ts`.
+
+---
+
 ## 🏗️ Unified UI Principles v1
 
 ### 1. Progressive Disclosure
