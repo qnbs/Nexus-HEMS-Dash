@@ -723,18 +723,15 @@ Protocol→adapter mapping in `hardware-adapter-map.ts`.
 ---
 
 ### MED-20 — Backend Protocol Parity Gap
-**Files:** `apps/api/src/protocols/` (only `modbus/`, `mqtt/`), `FEATURE_STATUS.md`
-**Status:** ⏳ Backlog — ADR-018 (Proposed); cross-ref HIGH-12
+**Files:** `apps/api/src/protocols/` (`modbus/`, `mqtt/`, `knx/`), `FEATURE_STATUS.md`
+**Status:** 🔄 In progress — KNX/IP backend adapter shipped (ADR-018); evcc, OpenEMS, OCPP, EEBUS SPINE remain
 
-KNX, OCPP-CSMS, EEBUS continuous SPINE, evcc, and OpenEMS have **no backend adapter** — only
-browser-direct frontend adapters. EEBUS has a backend SHIP handshake/trust store/REST (v1.3.0)
-but no continuous SPINE data adapter; OpenADR has a backend OAuth2 proxy. Blocked on HIGH-17
-(no point adding backend adapters until their data can reach the UI).
+KNX backend adapter (`KnxAdapter`) connects to a WebSocket JSON bridge, maps group addresses from
+`knx-ga-map.json`, validates with Zod, and feeds the EventBus. Remaining protocols without backend
+adapters: OCPP-CSMS, EEBUS continuous SPINE, evcc, OpenEMS.
 
-**Fix:** one backend `IProtocolAdapter` per protocol, mirroring the Modbus/MQTT structure
-(Zod + DLQ + backoff, registered in `protocols/index.ts`), with an optional "backend proxy"
-connection mode on the matching browser adapter. One protocol per PR; fold in HIGH-12 (OCPP
-Security Profile 3).
+**Fix:** one backend `IProtocolAdapter` per remaining protocol (evcc REST/WS next), mirroring the
+Modbus/MQTT/KNX structure. One protocol per PR; fold in HIGH-12 (OCPP Security Profile 3).
 
 ---
 

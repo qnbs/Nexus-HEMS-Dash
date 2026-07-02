@@ -25,11 +25,13 @@ import {
   recordAdapterHealthSnapshot,
   recordAdapterRegistration,
 } from '../middleware/adapter-metrics.js';
+import { KnxAdapter, type KnxGaMapping } from './knx/KnxAdapter.js';
 import { type DeviceConfig, ModbusAdapter } from './modbus/ModbusAdapter.js';
 import { MqttAdapter } from './mqtt/MqttAdapter.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DEVICE_MAP_PATH = join(__dirname, '../data/device-map.json');
+const KNX_GA_MAP_PATH = join(__dirname, '../data/knx-ga-map.json');
 
 /**
  * Log a safety warning when live hardware mode is active and device-map.json
@@ -197,6 +199,51 @@ export async function startProtocolAdapters(eventBus: EventBus): Promise<void> {
         setState(mqttAdapter.id, mqttAdapter.protocol, 'failed', message);
         console.error('[Adapters] Failed to start MqttAdapter:', err);
       });
+  }
+
+  // -------------------------------------------------------------------------
+  // KNX/IP Adapter (WebSocket JSON bridge — knxd / custom gateway)
+  // -------------------------------------------------------------------------
+  const knxBridgeUrl = process.env.KNX_BRIDGE_WS_URL;
+  if (knxBridgeUrl) {
+    let knxMappings: KnxGaMapping[] = [];
+    try {
+      const raw = readFileSync(KNX_GA_MAP_PATH, 'utf8');
+      knxMappings = JSON.parse(raw) as KnxGaMapping[];
+    } catch (err) {
+      console.warn(
+        '[Adapters] knx-ga-map.json not found or invalid — KNX adapter needs mappings:',
+        err,
+      );
+    }
+
+    if (knxMappings.length > 0) {
+      const knxAdapter = new KnxAdapter({
+        id: 'knx-bridge-01',
+        wsUrl: knxBridgeUrl,
+        mappings: knxMappings,
+      });
+      activeAdapters.push(knxAdapter);
+      activeAdapterRefs.set(knxAdapter.id, knxAdapter);
+      recordAdapterRegistration(knxAdapter.id, knxAdapter.protocol);
+      setState(knxAdapter.id, knxAdapter.protocol, 'starting');
+
+      knxAdapter
+        .connect()
+        .then(() => {
+          setState(knxAdapter.id, knxAdapter.protocol, 'healthy');
+          pipeAdapterToEventBus(knxAdapter, eventBus);
+        })
+        .catch((err: unknown) => {
+          const message = err instanceof Error ? err.message : String(err);
+          setState(knxAdapter.id, knxAdapter.protocol, 'failed', message);
+          console.error('[Adapters] Failed to start KnxAdapter:', err);
+        });
+    } else {
+      console.warn(
+        '[Adapters] KNX_BRIDGE_WS_URL set but knx-ga-map.json is empty — copy knx-ga-map.example.json',
+      );
+    }
   }
 
   console.log(`[Adapters] Started ${activeAdapters.length} adapter(s).`);
