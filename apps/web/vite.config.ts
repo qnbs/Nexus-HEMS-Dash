@@ -6,16 +6,23 @@ import path from 'path';
 import { visualizer } from 'rollup-plugin-visualizer';
 import { defineConfig, loadEnv, type PluginOption } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
+import { stripLocalhostWsOrigins } from './vite.csp';
 
-function cspNoncePlugin(nonce: string, e2eTesting: boolean): PluginOption {
+function cspNoncePlugin(
+  nonce: string,
+  e2eTesting: boolean,
+  stripLocalhostWs: boolean,
+): PluginOption {
   return {
     name: 'nexus-csp-nonce',
     enforce: 'post',
     transformIndexHtml(html) {
-      return html
+      const withNonce = html
         .replaceAll('__CSP_NONCE__', nonce)
         .replaceAll('__NEXUS_E2E_TESTING__', String(e2eTesting))
         .replace(/<script(?![^>]*\bnonce=)/g, `<script nonce="${nonce}"`);
+      // Production shell must not ship dev-only localhost WebSocket origins.
+      return stripLocalhostWs ? stripLocalhostWsOrigins(withNonce) : withNonce;
     },
   };
 }
@@ -27,7 +34,8 @@ export default defineConfig(({ mode }) => {
   const e2eTesting = env.VITE_E2E_TESTING === 'true';
 
   const plugins: PluginOption[] = [
-    cspNoncePlugin(cspNonce, e2eTesting),
+    // Dev + E2E keep localhost WS origins for the proxy; the hosted prod shell strips them.
+    cspNoncePlugin(cspNonce, e2eTesting, isProd && !e2eTesting),
 
     // React Compiler auto-memoizes — requires @rolldown/plugin-babel in Vite 8.
     // OXC handles TS/JSX compilation; Babel runs only for React Compiler.

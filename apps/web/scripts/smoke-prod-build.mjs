@@ -17,6 +17,7 @@
  */
 
 import { spawn } from 'node:child_process';
+import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from '@playwright/test';
@@ -54,6 +55,17 @@ async function main() {
   let serverOutput = '';
 
   try {
+    // P2 / ADR-024: the production HTML shell must not ship dev-only localhost
+    // WebSocket origins in its CSP connect-src (they are inert but unnecessary
+    // attack surface for the hosted bundle). Fail fast before the browser run.
+    const indexHtml = await readFile(path.join(webRoot, 'dist', 'index.html'), 'utf8');
+    const connectSrc = indexHtml.match(/connect-src[^;]*/)?.[0] ?? '';
+    if (/localhost|127\.0\.0\.1/.test(connectSrc)) {
+      throw new Error(
+        `Production index.html CSP connect-src contains localhost origins:\n${connectSrc}`,
+      );
+    }
+
     // vite preview respects the production base path baked into the build.
     // Bind explicitly to the IPv4 host we poll — vite's default `localhost`
     // can resolve to ::1 on CI runners, which an IPv4 fetch never reaches.
