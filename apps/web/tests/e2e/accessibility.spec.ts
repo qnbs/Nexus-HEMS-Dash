@@ -11,6 +11,7 @@ const routes = [
   { path: './analytics', name: 'Analytics' },
   { path: './monitoring', name: 'Monitoring' },
   { path: './settings', name: 'Settings' },
+  { path: './settings?tab=certificates', name: 'EEBUS Certificates' },
   { path: './settings/hardware', name: 'Hardware Registry' },
   { path: './settings/ai', name: 'AI Settings' },
   { path: './plugins', name: 'Plugins' },

@@ -30,6 +30,7 @@ import type {
   EVChargerData,
   UnifiedEnergyModel,
 } from './EnergyAdapter';
+import { validateEebusConnectConfig } from './eebus-security';
 
 // ─── EEBUS SPINE Data Types ──────────────────────────────────────────
 
@@ -194,6 +195,7 @@ export class EEBUSAdapter extends BaseAdapter {
   private _serverBaseUrl: string | undefined;
   private pendingPinSki: string | null = null;
   private _skiFingerprint: string | undefined;
+  private readonly _isMock: boolean;
 
   constructor(config?: EEBUSAdapterConfig) {
     // HIGH-01: host is required in non-mock mode
@@ -216,6 +218,7 @@ export class EEBUSAdapter extends BaseAdapter {
     });
     this._serverBaseUrl = config?.serverBaseUrl;
     this._skiFingerprint = config?.skiFingerprint;
+    this._isMock = config?.mock === true;
   }
 
   get devices(): EEBUSDiscoveredDevice[] {
@@ -246,6 +249,23 @@ export class EEBUSAdapter extends BaseAdapter {
   protected async _connect(): Promise<void> {
     this.setStatus('connecting');
     this.shipState = 'init';
+
+    const validation = validateEebusConnectConfig(
+      {
+        host: this.config.host,
+        ...(this.config.tls !== undefined ? { tls: this.config.tls } : {}),
+        mock: this._isMock,
+        ...(this.config.clientCert !== undefined ? { clientCert: this.config.clientCert } : {}),
+        ...(this.config.clientKey !== undefined ? { clientKey: this.config.clientKey } : {}),
+        ...(this._skiFingerprint !== undefined ? { skiFingerprint: this._skiFingerprint } : {}),
+      },
+      { isBrowser: typeof window !== 'undefined' },
+    );
+    if (!validation.ok) {
+      this.setStatus('error', validation.error);
+      this.emitEvent({ type: 'error', message: validation.error });
+      throw new Error(validation.error);
+    }
 
     try {
       if (typeof window !== 'undefined') {

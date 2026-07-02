@@ -20,6 +20,7 @@
  */
 
 import type { AdapterConnectionConfig } from '../core/adapters/EnergyAdapter';
+import { hasPemMaterial } from '../core/adapters/ocpp-security';
 import { decrypt, encrypt } from './crypto';
 import { nexusDb } from './db';
 
@@ -240,7 +241,7 @@ export async function mergeCredentialsIntoConfig(
       : config.caCert != null
         ? { caCert: config.caCert }
         : {}),
-    tls: !!(creds.clientCert || config.tls),
+    tls: !!(hasPemMaterial(creds.clientCert) || hasPemMaterial(config.clientCert) || config.tls),
   };
 }
 

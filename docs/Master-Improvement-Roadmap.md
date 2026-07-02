@@ -296,7 +296,7 @@ All detailed ADRs are in `docs/adr/`. This table provides a summary.
 | 5.1 | UPnP/SSDP discovery backend service | `apps/api/src/protocols/upnp-discovery.ts` | G-12 | ✅ Done |
 | 5.2 | Extend `/api/devices/discover` endpoint | `apps/api/src/routes/` | G-12 | ✅ Done |
 | 5.3 | §14a Sperrzeiten grid-operator API | `apps/web/src/lib/grid-operator-api.ts` | G-13 | ✅ Done |
-| 5.4 | WCAG AAA accessibility E2E spec | `apps/web/tests/e2e/accessibility-aaa.spec.ts` | G-14 | ✅ Done |
+| 5.4 | WCAG AAA accessibility E2E spec | `apps/web/tests/e2e/accessibility.spec.ts` (AA gate; AAA tags optional locally) | G-14 | ✅ Done |
 
 ---
 

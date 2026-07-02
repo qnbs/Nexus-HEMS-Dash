@@ -14,6 +14,7 @@ import { mkdir, readFile, writeFile } from 'fs/promises';
 import https from 'https';
 import { dirname, relative, resolve } from 'path';
 import { type RawData, WebSocket } from 'ws';
+import { isLiveHardwareAllowed } from '../config/adapter-mode.js';
 import { recordEebusHandshake } from '../middleware/security-metrics.js';
 import { upsertDevice } from './EEBusTrustStore.js';
 
@@ -86,13 +87,35 @@ const SHIP_MSG_ACCESS = '"ACCESS_METHODS_RESPONSE"';
 let _certPem: string | null = null;
 let _keyPem: string | null = null;
 
+/** Returns true when value looks like PEM material (non-empty). */
+function hasPemMaterial(value?: string): boolean {
+  const trimmed = value?.trim();
+  if (!trimmed) return false;
+  return trimmed.startsWith('-----BEGIN ') || /^[A-Za-z0-9+/=\s]+$/.test(trimmed);
+}
+
 async function loadOrGenerateCert(): Promise<{ cert: string; key: string }> {
-  if (_certPem && _keyPem) return { cert: _certPem, key: _keyPem };
+  if (_certPem && _keyPem) {
+    if (!hasPemMaterial(_certPem) && isLiveHardwareAllowed()) {
+      throw new Error(
+        'EEBUS server certificate is empty — configure EEBUS_CERT_FILE before live SHIP',
+      );
+    }
+    return { cert: _certPem, key: _keyPem };
+  }
   try {
     _certPem = await readFile(CERT_FILE, 'utf-8');
     _keyPem = await readFile(KEY_FILE, 'utf-8');
+    if (!hasPemMaterial(_certPem) || !hasPemMaterial(_keyPem)) {
+      throw new Error('EEBUS cert/key files exist but contain no valid PEM material');
+    }
     return { cert: _certPem, key: _keyPem };
-  } catch {
+  } catch (readErr) {
+    if (isLiveHardwareAllowed()) {
+      throw new Error(
+        `[SHIP] Live hardware requires valid EEBUS_CERT_FILE and EEBUS_KEY_FILE: ${String(readErr)}`,
+      );
+    }
     // Generate ECDSA P-256 self-signed certificate (SHIP preferred curve)
     console.info('[SHIP] Generating ECDSA P-256 server certificate...');
     const { privateKey, publicKey } = generateKeyPairSync('ec', { namedCurve: 'prime256v1' });
@@ -134,20 +157,28 @@ async function loadOrGenerateCert(): Promise<{ cert: string; key: string }> {
       }
       _certPem = await readFile(CERT_FILE, 'utf-8');
       _keyPem = await readFile(KEY_FILE, 'utf-8');
+      if (!hasPemMaterial(_certPem) || !hasPemMaterial(_keyPem)) {
+        throw new Error('Generated EEBUS certificate files are empty');
+      }
       console.info('[SHIP] Server certificate generated at', CERT_FILE);
       return { cert: _certPem, key: _keyPem };
     } catch {
-      // openssl not available — write key and use placeholder cert
+      if (isLiveHardwareAllowed()) {
+        throw new Error(
+          '[SHIP] Cannot generate EEBUS TLS material in live mode without openssl — provide EEBUS_CERT_FILE/EEBUS_KEY_FILE',
+        );
+      }
+      // openssl not available — dev/mock only: refuse empty cert handshake
       console.warn(
-        '[SHIP] openssl not available. Writing key; EEBUS TLS will operate in dev mode.',
+        '[SHIP] openssl not available. Writing key only; SHIP TLS disabled until cert files are provided.',
       );
       await mkdir(dirname(KEY_FILE), { recursive: true });
       await writeFile(KEY_FILE, keyPem, { mode: 0o600 });
-      void publicKey; // not used in this fallback path
+      void publicKey;
       _keyPem = keyPem;
-      // No cert in fallback path — skip cert write
-      _certPem = '';
-      return { cert: '', key: keyPem };
+      throw new Error(
+        '[SHIP] EEBUS server certificate unavailable — install openssl or mount PEM files',
+      );
     }
   }
 }
@@ -261,26 +292,30 @@ async function runHandshake(entry: SHIPHandshakeEntry): Promise<void> {
     return;
   }
 
-  const tlsAgent = serverCert
-    ? new https.Agent({
-        cert: serverCert,
-        key: serverKey,
-        ...(trustedCaBundle ? { ca: trustedCaBundle } : {}),
-        rejectUnauthorized: true,
-        checkServerIdentity: (_servername: string, peerCertificate: SHIPPeerCertificate) => {
-          const peerSKI = getPeerCertificateSKI(peerCertificate);
-          if (!peerSKI) {
-            return new Error('Peer certificate did not expose an SKI or fingerprint');
-          }
-          if (peerSKI !== ski) {
-            return new Error(`SKI mismatch: expected ${ski}, got ${peerSKI}`);
-          }
-          return undefined;
-        },
-        minVersion: 'TLSv1.3',
-        maxVersion: 'TLSv1.3',
-      } as unknown as https.AgentOptions)
-    : undefined;
+  if (!hasPemMaterial(serverCert) || !hasPemMaterial(serverKey)) {
+    entry.state = 'failed';
+    entry.message = 'EEBUS server TLS certificate or key is missing — SHIP mTLS refused';
+    return;
+  }
+
+  const tlsAgent = new https.Agent({
+    cert: serverCert,
+    key: serverKey,
+    ...(trustedCaBundle ? { ca: trustedCaBundle } : {}),
+    rejectUnauthorized: true,
+    checkServerIdentity: (_servername: string, peerCertificate: SHIPPeerCertificate) => {
+      const peerSKI = getPeerCertificateSKI(peerCertificate);
+      if (!peerSKI) {
+        return new Error('Peer certificate did not expose an SKI or fingerprint');
+      }
+      if (peerSKI !== ski) {
+        return new Error(`SKI mismatch: expected ${ski}, got ${peerSKI}`);
+      }
+      return undefined;
+    },
+    minVersion: 'TLSv1.3',
+    maxVersion: 'TLSv1.3',
+  } as unknown as https.AgentOptions);
 
   const url = `wss://${hostname}:${port}/ship/`;
 

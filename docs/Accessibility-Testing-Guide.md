@@ -33,8 +33,9 @@ for (const route of routes) {
 ### WCAG AAA Supplemental Scan
 
 ```typescript
-// apps/web/tests/e2e/accessibility-aaa.spec.ts
-const WCAG_TAGS_AAA = [...WCAG_TAGS_AA, 'wcag2aaa', 'wcag21aaa'];
+// apps/web/tests/e2e/accessibility.spec.ts (WCAG 2.2 AA — canonical E2E a11y gate)
+// Optional AAA tags can be added locally: 'wcag2aaa', 'wcag21aaa'
+const WCAG_TAGS_AA = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 
 // Known AAA criteria for energy dashboards:
 // 1.4.6 Contrast Enhanced (7:1 ratio)
