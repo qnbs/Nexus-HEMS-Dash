@@ -64,7 +64,7 @@
 | Live tariff widget (Tibber/aWATTar/Octopus/Nordpool) | ✅ | `apps/web/src/lib/tariff-providers.ts` |
 | Smart EV charging (§14a EnWG) | ⚠️ | Frontend support exists; no real backend grid-signal integration |
 | SG Ready heat pump control | ⚠️ | Frontend command types exist; backend execution path limited |
-| Hardware registry (113 devices, ~30 brands) | ⚠️ | Catalog browser at `/settings/hardware` (`HardwareRegistryPage.tsx`) with search + category/manufacturer/protocol filters (MED-19 partial). Add-adapter wizard still planned. |
+| Hardware registry (113 devices, ~30 brands) | ✅ | Catalog browser at `/settings/hardware` (`HardwareRegistryPage.tsx`) with search + category/manufacturer/protocol filters and add-adapter wizard (`AddAdapterWizard.tsx`, `hardware-adapter-map.ts`) — connection test + enable flow (MED-19). |
 | PDF reports + QR sharing | ✅ | `apps/web/src/components/ExportAndSharing.tsx`, `lib/sharing.ts` |
 | Prometheus monitoring | ✅ | `apps/api/src/middleware/metrics.ts`, `routes/metrics.routes.ts`; per-backend-adapter series via `adapter-metrics.ts` (MED-18) |
 | Adapter health endpoint | ✅ | `GET /api/health` returns mode, overall status, and per-adapter state (`apps/api/src/routes/health.routes.ts`) |

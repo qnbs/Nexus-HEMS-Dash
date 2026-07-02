@@ -21,6 +21,10 @@ vi.mock('../components/ui/PageCrossLinks', () => ({
   PageCrossLinks: () => <div data-testid="page-cross-links" />,
 }));
 
+vi.mock('../components/hardware/AddAdapterWizard', () => ({
+  AddAdapterWizard: () => <div data-testid="add-adapter-wizard" />,
+}));
+
 describe('HardwareRegistryPage', () => {
   it('renders catalog stats and device cards from the hardware registry', () => {
     render(

@@ -1,8 +1,8 @@
-import { Battery, Car, Gauge, HardDrive, Search, Thermometer, Zap } from 'lucide-react';
+import { Battery, Car, Gauge, HardDrive, Plus, Search, Thermometer, Zap } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
+import { AddAdapterWizard } from '../components/hardware/AddAdapterWizard';
 import { PageHeader } from '../components/layout/PageHeader';
 import { PageCrossLinks } from '../components/ui/PageCrossLinks';
 import { SelectField } from '../components/ui/SelectField';
@@ -34,7 +34,13 @@ function collectProtocols(devices: DeviceDefinition[]): DeviceProtocol[] {
   return [...set].sort();
 }
 
-function DeviceCard({ device }: { device: DeviceDefinition }) {
+function DeviceCard({
+  device,
+  onConfigure,
+}: {
+  device: DeviceDefinition;
+  onConfigure: (device: DeviceDefinition) => void;
+}) {
   const { t } = useTranslation();
   const Icon = CATEGORY_ICONS[device.category];
 
@@ -75,12 +81,13 @@ function DeviceCard({ device }: { device: DeviceDefinition }) {
               ? `${device.capacityKWh} kWh`
               : t(`hardwareRegistry.categories.${device.category}`)}
         </span>
-        <Link
-          to="/settings?tab=adapters"
+        <button
+          type="button"
+          onClick={() => onConfigure(device)}
           className="focus-ring rounded-lg bg-(--color-primary)/15 px-3 py-1.5 font-medium text-(--color-primary) text-xs"
         >
           {t('hardwareRegistry.configure')}
-        </Link>
+        </button>
       </div>
     </article>
   );
@@ -97,6 +104,7 @@ export default function HardwareRegistryPage() {
   const [category, setCategory] = useState<DeviceCategory | 'all'>('all');
   const [manufacturer, setManufacturer] = useState('all');
   const [protocol, setProtocol] = useState<DeviceProtocol | 'all'>('all');
+  const [wizardDevice, setWizardDevice] = useState<DeviceDefinition | null | undefined>(undefined);
 
   const filtered = useMemo(() => {
     const base = query.trim() ? searchDevices(query.trim()) : allDevices;
@@ -119,7 +127,24 @@ export default function HardwareRegistryPage() {
         title={t('hardwareRegistry.title')}
         subtitle={t('hardwareRegistry.subtitle')}
         icon={<HardDrive size={22} aria-hidden="true" />}
+        actions={
+          <button
+            type="button"
+            onClick={() => setWizardDevice(null)}
+            className="focus-ring inline-flex items-center gap-2 rounded-xl bg-(--color-primary)/15 px-4 py-2 font-medium text-(--color-primary) text-sm"
+          >
+            <Plus size={16} aria-hidden="true" />
+            {t('hardwareRegistry.addAdapter')}
+          </button>
+        }
       />
+
+      {wizardDevice !== undefined ? (
+        <AddAdapterWizard
+          {...(wizardDevice !== null ? { device: wizardDevice } : {})}
+          onClose={() => setWizardDevice(undefined)}
+        />
+      ) : null}
 
       <motion.section
         className="glass-panel-strong grid grid-cols-2 gap-3 p-4 sm:grid-cols-5"
@@ -217,7 +242,7 @@ export default function HardwareRegistryPage() {
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {filtered.map((device) => (
-            <DeviceCard key={device.id} device={device} />
+            <DeviceCard key={device.id} device={device} onConfigure={setWizardDevice} />
           ))}
         </div>
       )}
