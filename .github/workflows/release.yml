@@ -140,6 +140,7 @@ jobs:
           APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         with:
+          projectPath: apps/web/src-tauri
           tagName: v${{ needs.release.outputs.new_release_version }}
           releaseName: 'Nexus HEMS Dashboard v${{ needs.release.outputs.new_release_version }}'
           releaseBody: 'Desktop builds for Nexus HEMS Dashboard v${{ needs.release.outputs.new_release_version }}. Binaries for Windows, macOS, and Linux.'

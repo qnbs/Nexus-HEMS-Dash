@@ -26,9 +26,23 @@
  */
 
 import EventEmitter from 'node:events';
+import type { Request } from 'express';
 import { Router } from 'express';
 import { z } from 'zod';
+import { isPrivateHost } from '../config/private-host.js';
 import { requireJWT, requireScope } from '../middleware/auth.js';
+
+/** Normalize Express client IP (handles IPv4-mapped IPv6). */
+function normalizeClientIp(ip: string): string {
+  return ip.startsWith('::ffff:') ? ip.slice(7) : ip;
+}
+
+function isTrustedShellySource(req: Request): boolean {
+  const raw = req.ip ?? req.socket.remoteAddress ?? '';
+  const ip = normalizeClientIp(raw);
+  if (!ip) return false;
+  return isPrivateHost(ip);
+}
 
 // ─── Webhook Event Bus ────────────────────────────────────────────────
 
@@ -64,6 +78,11 @@ export function createShellyWebhookRoutes(): Router {
    */
   router.post('/api/shelly/webhook', requireJWT, requireScope('readwrite'), (req, res) => {
     res.status(200).json({ ok: true });
+
+    // SSRF guard: Shelly devices live on the local LAN — reject public-IP sources.
+    if (!isTrustedShellySource(req)) {
+      return;
+    }
 
     const parsed = shellyNotifySchema.safeParse(req.body);
     if (!parsed.success) {

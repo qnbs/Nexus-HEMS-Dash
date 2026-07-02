@@ -95,7 +95,7 @@ function LiveEnergyFlowComponent() {
   const { t, i18n } = useTranslation();
   const locale = i18n.language;
   const { data: energyData, connected, selfSufficiencyPercent, isExporting } = useEnergyContext();
-  const { sendCommand } = useLegacySendCommand();
+  const { sendCommand, ConfirmationDialog } = useLegacySendCommand();
   const isDemo = !connected;
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -350,6 +350,7 @@ function LiveEnergyFlowComponent() {
           )}
         </AnimatePresence>
       </div>
+      <ConfirmationDialog />
     </div>
   );
 }

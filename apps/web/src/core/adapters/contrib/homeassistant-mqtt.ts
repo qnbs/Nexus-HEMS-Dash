@@ -348,7 +348,7 @@ export class HomeAssistantMQTTAdapter extends BaseAdapter {
    *
    * Handshake:
    *   1. Receive `auth_required`
-   *   2. Send `auth` with Long-Lived Access Token (or skip if no token — dev mode)
+   *   2. Send `auth` with Long-Lived Access Token (required)
    *   3. Receive `auth_ok`
    *   4. Subscribe to state changes (all or filtered by energy device_class)
    */
@@ -398,16 +398,13 @@ export class HomeAssistantMQTTAdapter extends BaseAdapter {
   ): void {
     switch (msg.type) {
       case 'auth_required':
-        // Send authentication
-        if (this.haToken) {
-          this.sendHAWS({ type: 'auth', access_token: this.haToken });
-        } else {
-          // No token — HA may be in untrusted_ip mode (dev/local only)
-          // Some HA setups allow connecting from trusted networks without auth
-          this.log.warn('HA WebSocket API: no haToken configured — attempting anonymous', {
-            adapterId: this.id,
-          });
+        if (!this.haToken) {
+          clearTimeout(timeout);
+          this.setStatus('error', 'HA authentication required — configure haToken');
+          reject(new Error('HA WebSocket API requires haToken'));
+          break;
         }
+        this.sendHAWS({ type: 'auth', access_token: this.haToken });
         break;
 
       case 'auth_ok':

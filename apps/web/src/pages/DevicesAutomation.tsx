@@ -108,7 +108,7 @@ const CATEGORY_FILTERS: { key: DeviceCategory; labelKey: string; icon: React.Rea
 export default function DevicesAutomation() {
   const { t } = useTranslation();
   const { data: displayData, unified } = useEnergyContext();
-  const { sendCommand } = useLegacySendCommand();
+  const { sendCommand, ConfirmationDialog } = useLegacySendCommand();
   const settings = useAppStoreShallow((s) => s.settings);
 
   const [search, setSearch] = useState('');
@@ -311,6 +311,7 @@ export default function DevicesAutomation() {
         settings={settings}
         sendCommand={sendCommand}
       />
+      <ConfirmationDialog />
     </div>
   );
 }

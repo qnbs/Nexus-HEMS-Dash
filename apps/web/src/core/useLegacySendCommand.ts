@@ -2,15 +2,16 @@
  * useLegacySendCommand — Backward-compatible wrapper
  *
  * Bridges the old `sendCommand(type: CommandType, value: number)` API
- * to the new adapter-based command routing with safety validation.
+ * to useSafeCommand with confirmation dialogs, validation, and audit trail.
  *
  * Usage: Drop-in replacement for `useWebSocket().sendCommand` in pages
  * that still use ControlPanel with the legacy signature.
+ * Render `<ConfirmationDialog />` in the component tree.
  */
 
 import type { CommandType } from '../types';
 import type { AdapterCommand } from './adapters/EnergyAdapter';
-import { sendAdapterCommand } from './useEnergyStore';
+import { useSafeCommand } from './useSafeCommand';
 
 /** Map legacy CommandType to AdapterCommand */
 function toLegacyCommand(type: CommandType, value: number): AdapterCommand {
@@ -26,10 +27,11 @@ function toLegacyCommand(type: CommandType, value: number): AdapterCommand {
 }
 
 export function useLegacySendCommand() {
+  const { execute, pending, lastError, ConfirmationDialog } = useSafeCommand();
+
   const sendCommand = (type: CommandType, value: number) => {
-    // Commands go through sendAdapterCommand which validates via Zod + rate limiting + audit
-    sendAdapterCommand(toLegacyCommand(type, value));
+    execute(toLegacyCommand(type, value));
   };
 
-  return { sendCommand };
+  return { sendCommand, pending, lastError, ConfirmationDialog };
 }

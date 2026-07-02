@@ -1,7 +1,33 @@
 # Home Assistant Integration Guide
 
 > **Nexus-HEMS-Dash** integrates with Home Assistant via the `homeassistant-mqtt` contrib adapter.
-> This guide covers every step from Mosquitto broker setup to entity mapping and live verification.
+> Two connection modes are supported: **ha-ws-api** (recommended) and **mqtt-broker** (legacy).
+
+---
+
+## Connection Modes
+
+| Mode | When to use | Requirements |
+|------|-------------|--------------|
+| **ha-ws-api** (default) | HA 2023.9+, direct WebSocket API | Long-Lived Access Token (`haToken`), port 8123 |
+| **mqtt-broker** | Existing Mosquitto/MQTT Discovery setup | MQTT WebSocket port (typically 1884) |
+
+### ha-ws-api (recommended)
+
+1. In Home Assistant: **Profile → Security → Long-Lived Access Tokens** → Create token.
+2. In Nexus: **Settings → Adapters → Home Assistant** → set:
+   - `haMode`: `ha-ws-api`
+   - `host`: HA hostname or IP (e.g. `homeassistant.local`)
+   - `port`: `8123`
+   - `haToken`: your token (stored locally, never sent to third parties)
+   - Optional: enable **auto-discover energy entities** by `device_class`
+3. Verify: Monitoring → adapter status **connected**; Command Hub shows live PV/battery/grid if entities are mapped.
+
+> **Security:** Anonymous WebSocket connections are **not** supported. If `haToken` is missing, the adapter rejects `auth_required` and surfaces an error.
+
+### mqtt-broker (legacy)
+
+See sections below for Mosquitto broker setup and MQTT Discovery topic subscription.
 
 ---
 
