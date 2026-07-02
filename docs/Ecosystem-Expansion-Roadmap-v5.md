@@ -3,7 +3,9 @@
 **Date:** 2026-07-02  
 **Status:** Active — replaces tactical items in `docs/Perfection-Roadmap.md` for protocol/device scope  
 **Source:** Comprehensive v5.0 audit (July 2026)  
-**Baseline:** v1.3.0 (post-July-1 refactoring + EEBUS backend adapter from PR #208)
+**Baseline:** v1.6.1 (P0/P1/P2 items below largely shipped in v1.4.0–v1.6.1; see `CHANGELOG.md`)
+
+> **Status sync (2026-07-02):** P0 (HA, Modbus profiles, ExecAdapter), P1 (MQTT, Zigbee, Shelly, OCPP V2X), and P2 (HeatPump, 190-device registry) are **shipped**. Remaining: P2-EEBUS-GO sidecar, P2-MATTER full SDK, P3 certification items.
 
 ---
 
@@ -15,58 +17,57 @@ the architecture is first-class, the **breadth and depth of protocol/device cove
 requires systematic expansion across 10 areas to reach production readiness for the
 full HEMS device ecosystem.
 
-**Current state at v1.3.0:**
+**Current state at v1.6.1:**
 
 | Area | Frontend | Backend | Quality |
 |------|----------|---------|---------|
 | Victron MQTT | ✅ Full | ✅ (MQTT adapter) | Production |
-| Modbus/SunSpec | ✅ Full | ✅ | Production (3 example devices) |
+| Modbus/SunSpec | ✅ Full | ✅ | Production (15 example profiles) |
 | KNX/IP | ✅ Full | ✅ | Production |
-| OCPP 2.1 | ✅ Full | — | Partial (backend bridge planned) |
-| EEBUS SPINE/SHIP | ✅ Full | ✅ (PR #208) | Production (JSON-WS; Go bridge in v1.5) |
+| OCPP 2.1 | ✅ Full (P1) | ⏳ | Frontend P1: W-unit §14a, V2H/V2G; CSMS gateway planned |
+| EEBUS SPINE/SHIP | ✅ Full | ✅ | Production (`EebusProtocolAdapter`; Go sidecar in v1.5+) |
 | evcc | ✅ Full | ✅ | Production |
-| OpenEMS | ✅ Full | — | Frontend only |
-| Home Assistant | ⚠️ Contrib (basic) | — | Stub (JSON-over-WS shim) |
-| Zigbee2MQTT | ⚠️ Contrib (basic) | — | Stub |
-| Shelly | ✅ Contrib (Gen1/2/3) | ⚠️ Webhook receiver | Gen1 `/status`, Gen2/3 RPC, `/api/shelly/webhook` push |
-| Matter/Thread | ⚠️ Contrib (stub) | — | Planned |
+| OpenEMS | ✅ Full | ⏳ | Frontend only |
+| Home Assistant | ✅ Contrib (dual-mode) | ⏳ | ha-ws-api + MQTT Discovery; backend proxy planned |
+| Zigbee2MQTT | ✅ Contrib (P1) | ⏳ | Role classification, availability, EV/WP commands |
+| Shelly | ✅ Contrib (Gen1/2/3) | ⚠️ Webhook | Gen1/2/3 REST + `/api/shelly/webhook` push |
+| Matter/Thread | ⚠️ Contrib (stub) | ⏳ | HA bridge recommended (ADR-022) |
 | OpenADR 3.1 | ✅ Contrib | ✅ | Production |
-| ExecAdapter | ❌ Missing | ❌ Missing | Not implemented |
-| MPPT (non-Victron) | ❌ Missing (register profiles) | — | No device-map profiles |
-| Hybrid Inverters | ❌ Partial (SMA only) | — | 1 device profile |
+| ExecAdapter | ✅ Contrib | ✅ | Whitelist-only script execution |
+| HeatPump | ✅ (via backend) | ✅ | `HeatPumpAdapter` — 6 manufacturer profiles |
+| MPPT / Hybrid | ✅ (registry) | ⚠️ | 190-device registry; Modbus profiles in device-map |
 
 ---
 
 ## Prioritized Master Task List
 
-### P0 — Critical (blocking production deployments)
+### P0 — Critical ✅ Shipped (v1.5.0)
 
-| ID | Task | Files Affected | Risk |
-|----|------|----------------|------|
-| P0-HA | Upgrade HomeAssistant adapter: real MQTT.js + MQTT Discovery + HA WS API | `contrib/homeassistant-mqtt.ts`, tests | Medium |
-| P0-MODBUS | Add 15+ hybrid inverter Modbus profiles (Deye, Growatt, Luxpower, Huawei, Fronius) | `device-map.example.json` | Low |
-| P0-EXEC | New ExecAdapter: safe script execution + API backend | `contrib/exec-adapter.ts`, `api/exec.routes.ts` | High (security) |
-| P0-PLAN | This document + ADR-021 | `docs/`, `docs/adr/` | None |
+| ID | Task | Status |
+|----|------|--------|
+| P0-HA | Home Assistant dual-mode adapter | ✅ v1.5.0 |
+| P0-MODBUS | 15+ hybrid inverter Modbus profiles | ✅ v1.5.0 |
+| P0-EXEC | ExecAdapter + API backend | ✅ v1.5.0 |
+| P0-PLAN | This document + ADR-021 | ✅ |
 
-### P1 — High (significant value add, no blockers)
+### P1 — High ✅ Shipped (v1.6.0)
 
-| ID | Task | Files Affected | Risk |
-|----|------|----------------|------|
-| P1-MQTT | Enhanced MqttAdapter: TLS client certs, QoS 1/2, retain, will, topic templates | `MqttAdapter.ts`, backend `protocols/mqtt/` | Low |
-| P1-ZIGBEE | Upgrade Zigbee2MQTT: real MQTT.js, full device discovery, OTA | `contrib/zigbee2mqtt.ts` | Low |
-| P1-SHELLY | Shelly Gen1+Gen3 support, webhook push, energy monitoring | `contrib/shelly-rest.ts` | Low |
-| P1-OCPP-V2X | Complete V2X bidirectional + §14a EnWG OCPP implementation | `OCPP21Adapter.ts` | Medium |
-| P1-HA-WS | Home Assistant WebSocket API adapter (alternative to MQTT) | new `contrib/homeassistant-ws.ts` | Medium |
+| ID | Task | Status |
+|----|------|--------|
+| P1-MQTT | Enhanced MqttAdapter: TLS, QoS, LWT, templates | ✅ v1.6.0 |
+| P1-ZIGBEE | Zigbee2MQTT: roles, availability, commands | ✅ v1.6.0 |
+| P1-SHELLY | Shelly Gen1/3, webhook, 3-phase | ✅ v1.6.0 |
+| P1-OCPP-V2X | V2X + §14a EnWG W-unit fix | ✅ v1.6.0 |
 
-### P2 — Medium (planned for v1.4+)
+### P2 — Medium (partially shipped v1.6.1)
 
-| ID | Task | Files Affected | Risk |
-|----|------|----------------|------|
-| P2-EEBUS-GO | enbility/eebus-go Go sidecar for full SHIP binary + SPINE cert | new `go/eebus-proxy/`, `api/eebus-go.routes.ts` | Very High |
-| P2-MPPT | MPPT charge controller adapters (EPever XTRA, SRNE, Renogy over RS485/Modbus) | `device-map.example.json`, new register profiles | Low |
-| P2-HEATPUMP | Viessmann/Stiebel Eltron/Wolf dedicated Modbus adapters | new backend protocol adapters | Medium |
-| P2-HARDWARE-REG | Expand hardware-registry.json: 100+ devices, manufacturer metadata, capability matrix | `apps/web/src/lib/hardware-registry.json` | Low |
-| P2-MATTER | Full Matter/Thread SDK integration (chip-tool / matter.js) | `contrib/matter-thread.ts` | Very High |
+| ID | Task | Status |
+|----|------|--------|
+| P2-EEBUS-GO | enbility/eebus-go Go sidecar | ⏳ ADR-022 |
+| P2-MPPT | MPPT register profiles | ✅ registry + device-map |
+| P2-HEATPUMP | HeatPumpAdapter (6 manufacturers) | ✅ v1.6.1 |
+| P2-HARDWARE-REG | Hardware registry 190 devices | ✅ v1.6.1 |
+| P2-MATTER | Full Matter/Thread SDK | ⏳ ADR-022 Option B (HA bridge) |
 
 ### P3 — Future (v1.5+ / certification roadmap)
 

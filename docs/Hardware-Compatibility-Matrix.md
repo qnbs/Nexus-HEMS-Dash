@@ -79,8 +79,8 @@
 |---|---|---|:---:|:---:|:---:|:---:|:---:|---|---|
 | **Victron Energy** | Energy Meter EM24 | 3 | ✅ | — | — | ✅ | — | VictronMQTTAdapter | |
 | **Carlo Gavazzi** | EM340 / EM530 | 3 | ✅ | ✅ | — | — | — | ModbusSunSpecAdapter | |
-| **Shelly** | 3EM / Pro 3EM | 3 | — | — | ✅ | ✅ | — | ShellyRESTAdapter | Gen2 API |
-| **Shelly** | EM / Plus EM | 1 | — | — | ✅ | ✅ | — | ShellyRESTAdapter | Gen2 API |
+| **Shelly** | 3EM / Pro 3EM | 3 | — | — | ✅ | ✅ | — | ShellyRESTAdapter | Gen1/2/3 REST |
+| **Shelly** | EM / Plus EM | 1 | — | — | ✅ | ✅ | — | ShellyRESTAdapter | Gen1/2/3 REST |
 | **Janitza** | UMG 96RM / 604 | 3 | — | ✅ | — | — | — | ModbusSunSpecAdapter | Industrial |
 | **SMA** | Sunny Home Manager 2.0 | 3 | — | — | — | ✅ | — | HA MQTT / evcc | SMA Speedwire |
 | **Fronius** | Smart Meter TS 65 | 3 | — | ✅ | ✅ | — | ✅ | ModbusSunSpecAdapter | |

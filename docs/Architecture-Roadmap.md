@@ -179,16 +179,17 @@ classDiagram
 | **8** | CI/Release | ✅ Complete | `.releaserc.json` (already existed), `CHANGELOG.md` |
 | **3b** | Modbus Write + Force-Charge | Planned | `apps/api/src/protocols/modbus/ModbusAdapter.ts` write extension |
 | **P1** | SBOM (syft) + pnpm audit | ✅ Shipped | `.github/workflows/sbom-scan.yml` |
-| **P1b** | Grype + cosign (container registry) | ⏳ Planned (SUPPLY-01) | TBD GHCR push workflow |
+| **P1b** | Grype + cosign (container registry) | ✅ Shipped | `container-publish.yml` — GHCR + Grype + cosign |
 | **P2** | Performance (Dexie + LTTB + Ring) | Planned | `lib/downsampling-service.ts`, `lib/chart-sampling.ts`, `core/useEnergyStore.ts` |
 | **P3** | Security (JTI Redis + PII + mTLS) | Planned | `apps/api/src/jwt-utils.ts`, `apps/web/src/lib/db.ts`, `core/aiClient.ts`, `CertificateManagement.tsx` |
 | **P4** | Testing (60%→85% coverage) | Planned | `vitest.config.ts`, new unit/fuzz/visual test files |
 | **P5** | Features (UPnP + §14a + WCAG AAA) | Planned | `lib/upnp-discovery.ts`, grid operator API, accessibility enhancements |
 | **P6** | Community (Log4brains + CLI) | Planned | `log4brains`, `create-nexus-adapter` CLI |
-| **9** | OCPP 2.1 Backend Adapter | Planned | `apps/api/src/protocols/ocpp/OcppAdapter.ts` |
-| **10** | EEBUS SPINE/SHIP Backend | Planned | `apps/api/src/protocols/eebus/EebusAdapter.ts` |
-| **11** | KNX Backend Adapter | Planned | `apps/api/src/protocols/knx/KnxAdapter.ts` |
-| **12** | Redis Pub/Sub (cluster mode) | Planned | Replace EventBus for multi-instance deployments |
+| **9** | OCPP 2.1 Backend Adapter | ⏳ Planned | `apps/api/src/protocols/ocpp/OcppAdapter.ts` (frontend P1 enhanced in v1.6.0) |
+| **10** | EEBUS SPINE/SHIP Backend | ✅ Shipped | `apps/api/src/protocols/eebus/EebusProtocolAdapter.ts` (v1.5.0) |
+| **11** | KNX Backend Adapter | ✅ Shipped | `apps/api/src/protocols/knx/KnxAdapter.ts` (v1.4.0) |
+| **12** | HeatPump Backend Adapter | ✅ Shipped | `apps/api/src/protocols/heatpump/HeatPumpAdapter.ts` (v1.6.1) |
+| **13** | Redis Pub/Sub (cluster mode) | ⏳ Planned | Replace EventBus for multi-instance deployments |
 
 ---
 

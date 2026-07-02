@@ -1,7 +1,7 @@
 # Technical Debt Registry — Nexus-HEMS-Dash
 
 **Last audited:** 2026-07-02 (delta — see `docs/Audit-Report-2026-07-02.md`)
-**Version at audit:** 1.3.0 shipped (`main` @ e60e7f7, after #194)
+**Version at audit:** 1.6.1 shipped (`main` after v1.6.1 release chain)
 **Last updated:** 2026-07-02 (audit delta: HIGH-17, MED-18/19/20)
 **Updated version:** v1.3.x → v1.4.0 campaign in flight
 **Auditor:** Cursor Cloud Agent (2026-06-29 full audit — `docs/Audit-Report-2026-06-29.md`; truth-sync #129); Claude Code (2026-07-02 delta)
@@ -680,21 +680,11 @@ Direction recorded in ADR-018 (backend-mediated adapters) and ADR-019 (registry 
 
 ### HIGH-17 — Backend Adapter Data Not Bridged to WebSocket Gateway
 **Files:** `apps/api/src/ws/energy.ws.ts`, `apps/api/src/core/EventBus.ts`, `apps/api/src/services/LiveEnergyAggregator.ts`, `apps/api/src/config/adapter-mode.ts`
-**Status:** ✅ Resolved — PR #197 (v1.3.x); `LiveEnergyAggregator` bridges EventBus → WebSocket (ADR-018)
+**Status:** ✅ Resolved — PR #197 (v1.4.0); `LiveEnergyAggregator` bridges EventBus → WebSocket (ADR-018)
 
-The two real backend adapters (`protocols/modbus/ModbusAdapter.ts`, `protocols/mqtt/MqttAdapter.ts`)
-pipe Zod-validated datapoints into `EventBus`, which fans out to InfluxDB (`TimeseriesService`)
-and the optimizer (`EnergyRouterService`). But `energy.ws.ts` **never subscribes to EventBus** —
-it broadcasts `data/mock-data.ts` on a 2 s loop in **both mock and live mode** (re-verified on
-`main` @ e60e7f7: only `timeseries` and `energy-router` subscribe). Real adapter data therefore
-never reaches the browser, and "live mode" shows the operator simulated data (a correctness/trust
-gap, not just a missing feature). `docs/Backend-Implementation-Roadmap.md` §1 already designed the
-WS gateway as an EventBus subscriber; this is unfinished wiring.
+**Was:** `energy.ws.ts` never subscribed to EventBus — it broadcast mock data in both mock and live mode.
 
-**Fix:** subscribe the WS gateway to EventBus and broadcast real batched `UnifiedEnergyDatapoint`s
-when the resolved adapter mode is `live` (via `adapter-mode.ts`, never a raw env read), retaining
-the mock path verbatim as the default. Keystone that unblocks MED-20. Safety gates
-(`READ_ONLY_MODE`, command audit, scope checks) unchanged.
+**Now:** `LiveEnergyAggregator` folds role-tagged datapoints into the `EnergyData` snapshot. In live mode with fresh data the gateway broadcasts real adapter data; otherwise mock fallback is byte-for-byte unchanged.
 
 ---
 
@@ -724,14 +714,11 @@ Protocol→adapter mapping in `hardware-adapter-map.ts`.
 
 ### MED-20 — Backend Protocol Parity Gap
 **Files:** `apps/api/src/protocols/` (`modbus/`, `mqtt/`, `knx/`, `evcc/`), `FEATURE_STATUS.md`
-**Status:** 🔄 In progress — KNX/IP (PR 205) + evcc (PR 206) backend adapters shipped (ADR-018); OpenEMS, OCPP, EEBUS SPINE remain
+**Status:** 🔄 In progress — KNX (v1.4.0), evcc (v1.4.0), EEBUS SPINE (v1.5.0), HeatPump (v1.6.1) shipped; **OpenEMS** and **OCPP CSMS** remain
 
-KNX backend adapter (`KnxAdapter`) connects to a WebSocket JSON bridge. **evcc backend adapter**
-(`EvccAdapter`) polls `/api/state` and optionally listens on `/ws`. Both validate with Zod and feed
-the EventBus. Remaining protocols without backend adapters: OCPP-CSMS, EEBUS continuous SPINE, OpenEMS.
+**Shipped backend adapters:** Modbus, MQTT, Knx, Evcc, EebusProtocol, HeatPump (+ ExecService for scripts).
 
-**Fix:** one backend `IProtocolAdapter` per remaining protocol (OpenEMS JSON-RPC next), mirroring the
-Modbus/MQTT/KNX/evcc structure. One protocol per PR; fold in HIGH-12 (OCPP Security Profile 3).
+**Remaining:** OCPP-CSMS gateway, OpenEMS JSON-RPC backend adapter. One protocol per PR; fold in HIGH-12 (OCPP Security Profile 3).
 
 ---
 

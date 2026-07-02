@@ -87,13 +87,13 @@ Verified facts:
 
 Victron appears only in cosmetic surfaces (locale `defaultName_victron`, help copy, e2e simulator).
 
-**The real gap is UX (MED-19):** no browsable hardware registry UI, no schema-driven "add adapter
-instance" wizard. See ADR-019.
+**The real gap was UX (MED-19) — now resolved:** hardware registry browser + add-adapter wizard at `/settings/hardware` (v1.4.0). See ADR-019.
 
-### 3.3 Backend protocol parity is the long pole (MED-20)
+### 3.3 Backend protocol parity (MED-20 — partial)
 
-KNX, OCPP-CSMS, continuous EEBUS SPINE, evcc, OpenEMS have **no** backend `IProtocolAdapter` yet.
-EEBUS has SHIP handshake + trust store; OpenADR has OAuth2 proxy — partial only.
+**Shipped:** KNX (v1.4.0), evcc (v1.4.0), EEBUS SPINE (v1.5.0), HeatPump (v1.6.1).
+
+**Remaining:** OCPP CSMS gateway, OpenEMS JSON-RPC backend adapter.
 
 ---
 
@@ -105,70 +105,34 @@ Use this taxonomy in designs, UI copy, and ADRs — not vendor names.
 |------|---------|----------|------------------|
 | **T1 — Core frontend** | Shipped builtin adapters; full `BaseAdapter` | Victron MQTT, Modbus/SunSpec, KNX, OCPP 2.1, EEBUS, evcc, OpenEMS | Enable in Settings; browser-direct or REST proxy |
 | **T2 — Contrib frontend** | Dynamic plugin adapters | HA MQTT, Matter, Zigbee2MQTT, Shelly, OpenADR 3.1 | Hot-load from Plugins page |
-| **T3 — Backend edge** | `IProtocolAdapter` on API host | Modbus, MQTT (live) | Requires `ADAPTER_MODE=live` + `ALLOW_LIVE_HARDWARE=true` |
-| **T4 — Backend proxy** | API mediates protocol for browser | Modbus SunSpec REST (`/api/modbus/*`), EEBUS SHIP | Central auth + audit; production pattern |
-| **T5 — Planned backend** | ADR-018 target per protocol | KNX/IP, OCPP CSMS, EEBUS SPINE stream, evcc, OpenEMS | One protocol per PR; follow Modbus/MQTT template |
+| **T3 — Backend edge** | `IProtocolAdapter` on API host | Modbus, MQTT, KNX, evcc, EEBUS SPINE, HeatPump | Requires `ADAPTER_MODE=live` + `ALLOW_LIVE_HARDWARE=true` |
+| **T4 — Backend proxy** | API mediates protocol for browser | Modbus SunSpec REST (`/api/modbus/*`), EEBUS SHIP, Exec (`/api/exec/*`), Shelly webhook | Central auth + audit |
+| **T5 — Planned backend** | ADR-018 remaining targets | OCPP CSMS, OpenEMS JSON-RPC | One protocol per PR |
 | **T6 — Registry catalog** | `hardware-registry.ts` metadata | 190 devices, protocol hints, defaults | Browse + pre-fill wizard at `/settings/hardware` (MED-19 ✅) |
 
 ---
 
 ## 5. Priority workstreams (ordered)
 
-### WS-1 — MED-18: Per-adapter Prometheus metrics
+### WS-1 — MED-18: Per-adapter Prometheus metrics ✅ Shipped (v1.4.0)
 
-**Why:** Live data now flows; operators cannot see per-instance health.
+Per-adapter gauges/counters via `adapter-metrics.ts`; Monitoring page consumes them.
 
-**Scope:**
+### WS-2 — MED-19: Hardware registry browser + add-adapter wizard ✅ Shipped (v1.4.0)
 
-- Extend `apps/api/src/middleware/metrics.ts` with per-adapter-instance gauges/histograms:
-  connect success/fail, poll latency, last-data age, error breakdown, DLQ depth.
-- Emit from `IProtocolAdapter` implementations and/or a thin wrapper in `protocols/index.ts`.
-- Surface summary in Monitoring page (read-only; no new control paths).
+`/settings/hardware` + `AddAdapterWizard`; registry expanded to 190 devices (v1.6.1).
 
-**Acceptance:**
+### WS-3 — MED-20: Backend protocol parity (one protocol per PR) 🔄 Partial
 
-- `/metrics` exposes labeled series per `adapter_id` + `protocol`.
-- Unit tests for metric registration; docs update in `FEATURE_STATUS.md`.
+**Done:** KNX (v1.4.0), evcc (v1.4.0), EEBUS SPINE (v1.5.0), HeatPump (v1.6.1).
 
-### WS-2 — MED-19: Hardware registry browser + add-adapter wizard
-
-**Why:** Genuine multi-vendor UX win; reuses existing data — no new abstraction.
-
-**Scope:**
-
-- New Settings sub-route or Devices section: searchable registry (manufacturer, protocol,
-  category, SG Ready, V2X filters) driven by `getAllDevices`, `searchDevices`, etc.
-- Wizard: protocol → optional registry device (pre-fill Zod config) → connection params → test →
-  name + enable → `useEnergyStore` instance registration.
-- Neutralize cosmetic Victron defaults (`defaultName_victron` → protocol-based naming).
-
-**Acceptance:**
-
-- WCAG 2.2 AA, en+de i18n, theme tokens (no raw hex).
-- E2E: wizard happy path in mock mode; unit tests for registry filters + wizard state machine.
-- ADR-019 consequences satisfied; no parallel `DeviceProfile` type.
-
-### WS-3 — MED-20: Backend protocol parity (one protocol per PR)
-
-**Why:** Production deployments need server-side mediation (firewall, single connection, audit).
-
-**Pattern (repeat per protocol):**
-
-1. `apps/api/src/protocols/<name>/` implementing `IProtocolAdapter`.
-2. Zod validate every datapoint; DLQ on failure; register in `protocols/index.ts`.
-3. Map roles for `LiveEnergyAggregator` compatibility.
-4. Optional browser adapter "backend proxy" connection mode.
-5. Tests: unit + integration with mock hardware; update `device-map.json` if Modbus-based.
-6. Docs: `Protocol-Adapter-Guide-Backend.md` checklist; `FEATURE_STATUS.md` row.
-
-**Suggested order:** KNX/IP → evcc REST/WS → OpenEMS JSON-RPC → OCPP CSMS gateway → EEBUS SPINE
-continuous adapter.
+**Next:** OpenEMS JSON-RPC, OCPP CSMS gateway (repeat Modbus/MQTT pattern per protocol).
 
 ### WS-4 — Campaign tail (from `Campaign-Handoff-2026-07.md`)
 
 - Phase E remainder: `PageTour`, `EmptyState`/`Skeleton` polish.
 - Phase F: E2E for auth, command-safety, backend-integration paths.
-- UI modernization (in flight PR #201): choice-card selectors replacing native `<select>`.
+- UI modernization: choice-card selectors ✅ shipped (v1.4.0).
 
 ---
 

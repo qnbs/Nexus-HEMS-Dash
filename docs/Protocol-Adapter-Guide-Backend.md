@@ -1,10 +1,24 @@
 # Protocol Adapter Guide — Backend (Server-Side)
 
-> **Status:** Active | **Last Updated:** 2026-06-29
+> **Status:** Active | **Last Updated:** 2026-07-02 | **Shipped release:** v1.6.1
 
 This guide explains how to implement **server-side** protocol adapters in `apps/api/src/protocols/`.
-Server-side adapters run in the Express backend and feed data into the central EventBus for
-persistence to InfluxDB and broadcasting to WebSocket clients.
+Server-side adapters run in the Express backend and feed data into the central EventBus. In **live**
+mode, data reaches the browser UI via `LiveEnergyAggregator` → WebSocket gateway (HIGH-17, v1.4.0).
+
+## Shipped Backend Adapters (v1.6.1)
+
+| Adapter | File | Enable env | Since |
+|---------|------|------------|-------|
+| Modbus/SunSpec | `modbus/ModbusAdapter.ts` | `device-map.json` + live mode | v1.3.0 |
+| Victron MQTT | `mqtt/MqttAdapter.ts` | MQTT broker env + live mode | v1.3.0 |
+| KNX/IP | `knx/KnxAdapter.ts` | `KNX_BRIDGE_WS_URL` | v1.4.0 |
+| evcc | `evcc/EvccAdapter.ts` | `EVCC_BASE_URL` | v1.4.0 |
+| EEBUS SPINE/SHIP | `eebus/EebusProtocolAdapter.ts` | trust store (disable: `EEBUS_DISABLE=true`) | v1.5.0 |
+| HeatPump | `heatpump/HeatPumpAdapter.ts` | `HEATPUMP_HOST` | v1.6.1 |
+| Exec scripts | `services/ExecService.ts` | `EXEC_SCRIPTS_CONFIG` | v1.5.0 |
+
+**Planned:** OCPP CSMS gateway, OpenEMS JSON-RPC (MED-20).
 
 ## Adapter Mode (Safety-Critical)
 
