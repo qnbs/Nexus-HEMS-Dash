@@ -17,7 +17,7 @@ import { motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-
+import { ChoiceCardGroup } from '../components/ui/ChoiceCardGroup';
 import { EmptyState } from '../components/ui/EmptyState';
 import {
   AI_PROVIDERS,
@@ -359,22 +359,23 @@ export default function AISettingsPage() {
 
             {/* Model Selection */}
             <div className="space-y-2">
-              <label htmlFor="ai-model" className="font-medium text-(--color-muted) text-sm">
-                {t('aiSettings.model', 'Model')}
-              </label>
+              <span className="font-medium text-(--color-muted) text-sm" id="ai-model-label">
+                {t('aiSettings.model')}
+              </span>
               {AI_PROVIDERS[addingProvider].models.length > 0 ? (
-                <select
-                  id="ai-model"
+                <ChoiceCardGroup
+                  key={`${addingProvider}-${modelInput}`}
+                  name="ai-model"
                   value={modelInput}
-                  onChange={(e) => setModelInput(e.target.value)}
-                  className="w-full rounded-xl border border-(--color-border) bg-(--color-surface) px-4 py-2.5 text-(--color-text) outline-none transition-colors focus:border-(--color-primary)/50 focus:ring-(--color-primary)/20 focus:ring-2"
-                >
-                  {AI_PROVIDERS[addingProvider].models.map((m) => (
-                    <option key={m} value={m}>
-                      {m}
-                    </option>
-                  ))}
-                </select>
+                  onChange={setModelInput}
+                  aria-label={t('aiSettings.model')}
+                  size="compact"
+                  options={AI_PROVIDERS[addingProvider].models.map((m) => ({
+                    value: m,
+                    label: m,
+                    tone: 'primary' as const,
+                  }))}
+                />
               ) : (
                 <input
                   id="ai-model"
@@ -382,6 +383,7 @@ export default function AISettingsPage() {
                   value={modelInput}
                   onChange={(e) => setModelInput(e.target.value)}
                   placeholder="model-name"
+                  aria-labelledby="ai-model-label"
                   className="w-full rounded-xl border border-(--color-border) bg-(--color-surface) px-4 py-2.5 text-(--color-text) outline-none transition-colors focus:border-(--color-primary)/50 focus:ring-(--color-primary)/20 focus:ring-2"
                 />
               )}

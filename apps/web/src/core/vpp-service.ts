@@ -206,7 +206,7 @@ export class VPPService {
    */
   async submitOffer(offerId: string): Promise<boolean> {
     const offer = this.offers.get(offerId);
-    if (!offer || offer.status !== 'draft') return false;
+    if (offer?.status !== 'draft') return false;
 
     if (this.mode === 'dev') {
       // DEV mode: mark accepted locally for testing without network call

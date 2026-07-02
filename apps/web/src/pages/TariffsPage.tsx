@@ -295,7 +295,7 @@ function TariffsPageComponent() {
     <div className="space-y-6">
       {/* ── Header ─────────────────────────────────────── */}
       <PageHeader
-        title={t('nav.tariffs', 'Tarife')}
+        title={t('nav.tariffs')}
         subtitle={t('tariffs.subtitle')}
         icon={<TrendingUp size={22} aria-hidden="true" />}
         actions={
@@ -658,7 +658,7 @@ function TariffsPageComponent() {
                 <th
                   scope="col"
                   className="w-16 shrink-0 font-normal"
-                  aria-label={t('tariffs.day', 'Day')}
+                  aria-label={t('tariffs.day')}
                 />
                 {Array.from({ length: 24 }, (_, h) => h).map((h) => (
                   <th
@@ -956,7 +956,7 @@ function TariffsPageComponent() {
             </div>
             <div className="relative h-12 w-12">
               <svg viewBox="0 0 36 36" className="h-12 w-12 -rotate-90">
-                <title>{t('tariffs.budgetProgress', 'Monthly budget progress')}</title>
+                <title>{t('tariffs.budgetProgress')}</title>
                 <circle
                   cx="18"
                   cy="18"

@@ -3,8 +3,10 @@ import { motion } from 'motion/react';
 import { useActionState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { hapticClick, hapticModeChange, hapticSuccess } from '../lib/haptics';
+import { SG_READY_POWER_W } from '../lib/sg-ready';
 import { useAppStoreShallow } from '../store';
 import type { CommandType, EnergyData, EvMode, EvState, HpMode, HpState } from '../types';
+import { SgReadyModeSelector } from './ui/SgReadyModeSelector';
 
 export function ControlPanel({
   sendCommand,
@@ -43,11 +45,7 @@ export function ControlPanel({
     async (_state: HpState, formData: FormData) => {
       hapticModeChange();
       const mode = (formData.get('hpMode') ?? '2') as HpMode;
-      // SG Ready Modes: 1=Sperre(0W), 2=Normal(800W), 3=Empfehlung(1500W), 4=Befehl(2500W)
-      let power = 800;
-      if (mode === '1') power = 0;
-      if (mode === '3') power = 1500;
-      if (mode === '4') power = 2500;
+      const power = SG_READY_POWER_W[mode] ?? 800;
 
       await new Promise((resolve) => setTimeout(resolve, 600));
       sendCommand('SET_HEAT_PUMP_POWER', power);
@@ -170,18 +168,7 @@ export function ControlPanel({
         </div>
 
         <form action={hpAction} className="space-y-3">
-          <select
-            name="hpMode"
-            defaultValue={hpState.mode}
-            onChange={hapticClick}
-            aria-label={t('control.hpTitle')}
-            className="focus-ring w-full rounded-lg border border-(--color-border) bg-(--color-surface) px-3 py-2 text-(--color-text) text-sm focus:outline-none"
-          >
-            <option value="1">{t('control.hpMode1')}</option>
-            <option value="2">{t('control.hpMode2')}</option>
-            <option value="3">{t('control.hpMode3')}</option>
-            <option value="4">{t('control.hpMode4')}</option>
-          </select>
+          <SgReadyModeSelector key={hpState.mode} name="hpMode" value={hpState.mode} />
           {hpState.message && (
             <motion.p
               initial={{ opacity: 0, scale: 0.95 }}

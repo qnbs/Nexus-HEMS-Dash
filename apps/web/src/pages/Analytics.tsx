@@ -83,14 +83,9 @@ function AnalyticsUnifiedComponent() {
       {/* ─── Quick-Link Cards ──────────────────────────────────────── */}
       <div className="mb-1 flex items-center gap-2">
         <h2 className="font-semibold text-(--color-muted) text-xs uppercase tracking-widest">
-          {t('analyticsUnified.quickLinks', 'Schnellzugriff')}
+          {t('analyticsUnified.quickLinks')}
         </h2>
-        <HelpTooltip
-          content={t(
-            'tour.analytics.quickHelp',
-            'Klicke auf eine Kachel, um direkt zum entsprechenden Analysebereich zu springen.',
-          )}
-        />
+        <HelpTooltip content={t('tour.analytics.quickHelp')} />
       </div>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {quickLinks.map((link, i) => (

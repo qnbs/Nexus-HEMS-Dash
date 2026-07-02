@@ -32,7 +32,7 @@ function TabBar({ active, onChange }: { active: PluginTab; onChange: (t: PluginT
     <div
       className="flex gap-1 rounded-2xl border border-(--color-border) bg-white/[0.02] p-1"
       role="tablist"
-      aria-label={t('plugins.tabsLabel', 'Plugin views')}
+      aria-label={t('plugins.tabsLabel')}
     >
       <button
         type="button"
@@ -118,7 +118,7 @@ function PluginOverviewCard({ entries }: { entries: PluginEntry[] }) {
                 {active}/{total} {t('plugins.running')}
                 {services.length > 0 && (
                   <span className="ml-2">
-                    • {services.length} {t('plugins.services', 'Services')}
+                    • {services.length} {t('plugins.services')}
                   </span>
                 )}
               </p>
@@ -334,9 +334,7 @@ function ServicesList() {
       <NeonCardBody>
         <div className="mb-3 flex items-center gap-2">
           <Info className="h-4 w-4 text-(--color-primary)" />
-          <h3 className="fluid-text-base font-semibold">
-            {t('plugins.serviceRegistry', 'Service Registry')}
-          </h3>
+          <h3 className="fluid-text-base font-semibold">{t('plugins.serviceRegistry')}</h3>
         </div>
         <div className="flex flex-wrap gap-2">
           {services.map((svc) => (

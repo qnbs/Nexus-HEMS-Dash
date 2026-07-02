@@ -192,6 +192,7 @@ export const de = {
     evCharging: 'E-Auto',
     totalLoad: 'Gesamtlast',
     viewDetails: 'Details anzeigen',
+    currentPrice: 'Aktueller Strompreis',
   },
   commandHub: {
     title: 'Command Hub',
@@ -329,6 +330,7 @@ export const de = {
     timeSeriesHint: '24h bis 365d mit Zoom',
     exportPdf: 'PDF-Export',
     exportPdfHint: 'Berichte & QR-Sharing',
+    quickLinks: 'Schnellzugriff',
   },
   monitoringUnified: {
     title: 'Monitoring & Health',
@@ -360,6 +362,7 @@ export const de = {
     helpSection: 'Hilfe & FAQ',
     helpSectionDesc: 'Troubleshooting & Dokumentation',
     quickAccess: 'Schnellzugriff',
+    sections: 'Bereiche',
   },
   control: {
     evTitle: 'Wallbox-Ladestrategie',
@@ -372,6 +375,14 @@ export const de = {
     hpMode2: 'Modus 2: Normalbetrieb',
     hpMode3: 'Modus 3: Empfehlung',
     hpMode4: 'Modus 4: Anlaufbefehl',
+    hpMode1Desc: 'Wärmepumpenbetrieb gesperrt — EVU-Sperrsignal aktiv.',
+    hpMode2Desc: 'Standard-Grundlastbetrieb für den Alltag.',
+    hpMode3Desc: 'Erhöhte Abnahme empfohlen — ideal bei PV-Überschuss oder Niedertarif.',
+    hpMode4Desc: 'Anlaufbefehl — maximale Heizleistung angefordert.',
+    hpMode1Power: '0 kW',
+    hpMode2Power: '~0,8 kW',
+    hpMode3Power: '~1,5 kW',
+    hpMode4Power: '~2,5 kW',
     hpUpdated: 'SG-Ready-Modus gesetzt',
     batteryTitle: 'Batteriestrategie',
     batteryMode: 'Aktueller Modus',
