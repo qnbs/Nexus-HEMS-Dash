@@ -19,6 +19,7 @@ export const ProtocolTypeSchema = z.enum([
   'modbus-sunspec',
   'knx',
   'evcc',
+  'openems',
   'ocpp',
   'eebus',
   'homeassistant-mqtt',

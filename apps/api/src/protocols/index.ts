@@ -31,6 +31,7 @@ import { createHeatPumpAdapterFromEnv } from './heatpump/HeatPumpAdapter.js';
 import { KnxAdapter, type KnxGaMapping } from './knx/KnxAdapter.js';
 import { type DeviceConfig, ModbusAdapter } from './modbus/ModbusAdapter.js';
 import { MqttAdapter } from './mqtt/MqttAdapter.js';
+import { createOpenEMSAdapterFromEnv } from './openems/OpenEMSProtocolAdapter.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DEVICE_MAP_PATH = join(__dirname, '../data/device-map.json');
@@ -325,6 +326,30 @@ export async function startProtocolAdapters(eventBus: EventBus): Promise<void> {
         const message = err instanceof Error ? err.message : String(err);
         setState(heatPumpAdapter.id, heatPumpAdapter.protocol, 'failed', message);
         console.error('[Adapters] Failed to start HeatPumpAdapter:', err);
+      });
+  }
+
+  // -------------------------------------------------------------------------
+  // OpenEMS Edge Adapter (JSON-RPC over WebSocket)
+  // Enable via env: OPENEMS_HOST=192.168.1.x
+  // -------------------------------------------------------------------------
+  const openEmsAdapter = createOpenEMSAdapterFromEnv();
+  if (openEmsAdapter) {
+    activeAdapters.push(openEmsAdapter);
+    activeAdapterRefs.set(openEmsAdapter.id, openEmsAdapter);
+    recordAdapterRegistration(openEmsAdapter.id, openEmsAdapter.protocol);
+    setState(openEmsAdapter.id, openEmsAdapter.protocol, 'starting');
+
+    openEmsAdapter
+      .connect()
+      .then(() => {
+        setState(openEmsAdapter.id, openEmsAdapter.protocol, 'healthy');
+        pipeAdapterToEventBus(openEmsAdapter, eventBus);
+      })
+      .catch((err: unknown) => {
+        const message = err instanceof Error ? err.message : String(err);
+        setState(openEmsAdapter.id, openEmsAdapter.protocol, 'failed', message);
+        console.error('[Adapters] Failed to start OpenEMSProtocolAdapter:', err);
       });
   }
 

@@ -754,12 +754,12 @@ Protocol→adapter mapping in `hardware-adapter-map.ts`.
 ---
 
 ### MED-20 — Backend Protocol Parity Gap
-**Files:** `apps/api/src/protocols/` (`modbus/`, `mqtt/`, `knx/`, `evcc/`), `FEATURE_STATUS.md`
-**Status:** 🔄 In progress — KNX (v1.4.0), evcc (v1.4.0), EEBUS SPINE (v1.5.0), HeatPump (v1.6.1) shipped; **OpenEMS** and **OCPP CSMS** remain
+**Files:** `apps/api/src/protocols/` (`modbus/`, `mqtt/`, `knx/`, `evcc/`, `openems/`), `FEATURE_STATUS.md`
+**Status:** 🔄 In progress — KNX (v1.4.0), evcc (v1.4.0), EEBUS SPINE (v1.5.0), HeatPump (v1.6.1), **OpenEMS backend (2026-07-02)** shipped; **OCPP CSMS** remains
 
-**Shipped backend adapters:** Modbus, MQTT, Knx, Evcc, EebusProtocol, HeatPump (+ ExecService for scripts).
+**Shipped backend adapters:** Modbus, MQTT, Knx, Evcc, EebusProtocol, HeatPump, OpenEMS (+ ExecService for scripts).
 
-**Remaining:** OCPP-CSMS gateway, OpenEMS JSON-RPC backend adapter. One protocol per PR; fold in HIGH-12 (OCPP Security Profile 3).
+**Remaining:** OCPP-CSMS gateway. One protocol per PR; fold in HIGH-12 (OCPP Security Profile 3).
 
 ---
 

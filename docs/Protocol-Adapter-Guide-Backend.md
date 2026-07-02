@@ -16,6 +16,7 @@ mode, data reaches the browser UI via `LiveEnergyAggregator` → WebSocket gatew
 | evcc | `evcc/EvccAdapter.ts` | `EVCC_BASE_URL` | v1.4.0 |
 | EEBUS SPINE/SHIP | `eebus/EebusProtocolAdapter.ts` | trust store (disable: `EEBUS_DISABLE=true`) | v1.5.0 |
 | HeatPump | `heatpump/HeatPumpAdapter.ts` | `HEATPUMP_HOST` | v1.6.1 |
+| OpenEMS | `openems/OpenEMSProtocolAdapter.ts` | `OPENEMS_HOST` | v1.7.0 |
 | Exec scripts | `services/ExecService.ts` | `EXEC_SCRIPTS_CONFIG` | v1.5.0 |
 
 **Planned:** OCPP CSMS gateway, OpenEMS JSON-RPC (MED-20).
