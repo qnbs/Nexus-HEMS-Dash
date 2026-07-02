@@ -19,7 +19,9 @@ permissions: read-all
 
 concurrency:
   group: 'pages'
-  cancel-in-progress: true
+  # Do not cancel an in-flight Pages publish — rapid main pushes otherwise leave
+  # github-pages in a bad state and the next deploy fails with "try again later".
+  cancel-in-progress: false
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -91,9 +93,27 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
+        continue-on-error: true
         uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
         with:
-          timeout: 1800000
+          timeout: 600000
+
+      - name: Wait before Pages retry
+        if: steps.deployment.outcome == 'failure'
+        run: sleep 45
+
+      - name: Retry Pages deploy
+        if: steps.deployment.outcome == 'failure'
+        id: deployment_retry
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
+        with:
+          timeout: 600000
+
+      - name: Fail if Pages deploy did not succeed
+        if: steps.deployment.outcome == 'failure' && steps.deployment_retry.outcome != 'success'
+        run: |
+          echo "::error::GitHub Pages deployment failed (initial + retry). Re-run the Deploy workflow or check github-pages environment status."
+          exit 1
 
   prune-deployments:
     # Auto-deploy creates one github-pages deployment per push, which pile up
