@@ -2355,6 +2355,43 @@ export const en = {
     haHeatPumpEntity: 'Heat Pump Mode/Climate Entity',
     haDiscoveredCount: '{{count}} energy entities discovered',
     // ExecAdapter
+    // Zigbee2MQTT
+    zigbeeSpecific: 'Zigbee2MQTT Configuration',
+    zigbeeBaseTopic: 'Base Topic',
+    zigbeeBaseTopicHint: 'MQTT topic prefix (default: zigbee2mqtt)',
+    zigbeeEnergyDevices: 'Energy Device Names',
+    zigbeeEnergyDevicesHint:
+      'Comma-separated friendly names of energy-monitoring devices (auto-discovered if empty)',
+    zigbeeHeatPumpHints: 'Heat Pump Name Hints',
+    zigbeeEvHints: 'EV Charger Name Hints',
+    zigbeeBridgeVersion: 'Z2M Bridge Version',
+    zigbeeTrackedDevices: '{{count}} devices tracked',
+    // Shelly
+    shellySpecific: 'Shelly Device Configuration',
+    shellyDeviceList: 'Device Hosts',
+    shellyDeviceListHint: 'Comma-separated IP addresses or hostnames of Shelly devices',
+    shellyGen: 'Generation',
+    shellyGenAuto: 'Auto-detect',
+    shellyGen1: 'Gen1 (legacy)',
+    shellyGen2: 'Gen2 (RPC)',
+    shellyGen3: 'Gen3 (RPC)',
+    shellyWebhookNote:
+      'Configure Shelly → Actions → URL Action to POST to /api/shelly/webhook for push updates',
+    shellyPollInterval: 'Poll Interval (ms)',
+    // OCPP V2X / §14a
+    ocppV2xTitle: 'V2X / Bidirectional Charging',
+    ocppV2hLabel: 'V2H — Vehicle-to-Home',
+    ocppV2hHint:
+      'Discharge EV battery to power the house (V2H). Requires V2X-capable wallbox and vehicle.',
+    ocppTargetSoc: 'Target SoC (%)',
+    ocppTargetSocHint: 'EV will be charged to this SoC by departure time',
+    ocppDepartureTime: 'Departure Time',
+    ocppSmartCostLimit: 'Smart Cost Limit (€/kWh)',
+    ocppSmartCostLimitHint: 'Pause charging when spot price exceeds this value',
+    ocppPhaseConfig: 'Active Phases',
+    ocppPhase1: 'Single-phase (L1)',
+    ocppPhase3: 'Three-phase (L1+L2+L3)',
+    ocppGridLimitNote: '§14a EnWG: grid limit sent in Watts (W) via ChargingStationMaxProfile',
     execSpecific: 'Custom Script Configuration',
     execScriptId: 'Script ID',
     execScriptIdHint: 'Must match a key in EXEC_SCRIPTS_CONFIG on the server',

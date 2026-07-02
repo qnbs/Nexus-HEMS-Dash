@@ -1,15 +1,20 @@
 /**
- * MqttAdapter — Backend protocol adapter for MQTT brokers.
+ * MqttAdapter — Backend protocol adapter for MQTT brokers (P1 enhanced).
  *
- * Subscribes to configured topic patterns, parses payloads, validates against
- * energyDatapointSchema, and emits validated UnifiedEnergyDatapoint values
- * into the provided EventBus.
- *
- * Malformed or unmapped messages are routed to the Dead-Letter Queue.
+ * P1 additions over v1.3.0 baseline:
+ *   • TLS client certificates via env vars (MQTT_CLIENT_CERT / _KEY / _CA_CERT)
+ *     or inline PEM / file path in clientOptions
+ *   • Per-pattern QoS (0 / 1 / 2); default remains QoS 1
+ *   • Retained-message control: processRetained: false skips stale retained state
+ *   • Last Will Testament (lwt.topic / .payload / .qos / .retain in config)
+ *   • Topic template substitution: {varName} placeholders expanded from templateVars
+ *   • Publish helper: publishMessage() for bidirectional control
+ *   • Dot-notation payload path extraction: 'payload.sensors.0.power'
+ *   • Static device ID shorthand: 'static:my-device-id'
  */
 
 import EventEmitter from 'node:events';
-import { appendFileSync, mkdirSync } from 'node:fs';
+import { appendFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs';
 import {
   type AdapterHealth,
   type EnergyRole,
@@ -31,34 +36,109 @@ const MAX_DLQ_LINES = 10_000;
 let dlqLineCount = 0;
 
 // ---------------------------------------------------------------------------
-// Topic Pattern Configuration
+// Configuration
 // ---------------------------------------------------------------------------
 
 export interface TopicPattern {
-  /** MQTT topic pattern (supports + and # wildcards) */
+  /**
+   * MQTT topic pattern. Supports standard MQTT wildcards (+ and #) and
+   * {varName} template placeholders that are expanded from `config.templateVars`.
+   * Example: 'N/{portalId}/battery/+/Soc'
+   */
   pattern: string;
   /** Metric type this topic represents */
   metric: MetricType;
   /**
    * How to extract the deviceId from an incoming topic.
-   * 'topic[N]' uses the Nth segment (0-indexed).
-   * 'payload.field' reads a JSON field from the payload.
+   * - 'topic[N]'      — Nth segment (0-indexed)
+   * - 'payload.a.b'   — dot-notation path through parsed JSON payload
+   * - 'static:ID'     — fixed string ID (use when all messages share one device)
    */
   deviceIdExtract: string;
-  /** Optional value multiplier (default: 1) */
+  /** Value scale factor (default: 1) */
   scale?: number;
-  /** Optional role in the unified energy model (HIGH-17) — enables live UI data. */
+  /** Energy role — enables live UI data bridge via LiveEnergyAggregator (HIGH-17) */
   role?: EnergyRole;
+  /** MQTT QoS for this subscription (default: 1) */
+  qos?: 0 | 1 | 2;
+  /**
+   * Whether to process broker-retained messages.
+   * Set `false` for event-driven sensors where a stale retained value is misleading.
+   * Default: `true`.
+   */
+  processRetained?: boolean;
+}
+
+/** Last Will Testament — published on ungraceful disconnect */
+export interface MqttLwtConfig {
+  topic: string;
+  payload: string;
+  qos?: 0 | 1 | 2;
+  retain?: boolean;
 }
 
 export interface MqttAdapterConfig {
   id: string;
   protocol: ProtocolType;
   brokerUrl: string;
-  /** Optional MQTT client options (TLS, auth, QoS, etc.) */
-  clientOptions?: IClientOptions;
-  /** Topic-to-metric mapping rules */
   topicPatterns: TopicPattern[];
+  /**
+   * Template variable substitutions applied to all topic pattern strings.
+   * E.g. `{ portalId: 'abc123' }` with pattern `'N/{portalId}/battery/+/Soc'`
+   * becomes `'N/abc123/battery/+/Soc'` at subscription time.
+   */
+  templateVars?: Record<string, string>;
+  /** Last Will Testament — published when the client disconnects ungracefully */
+  lwt?: MqttLwtConfig;
+  /**
+   * MQTT client options (mqtt.js IClientOptions).
+   * TLS certificates are also loaded from env vars when not provided here:
+   *   MQTT_CLIENT_CERT  — path to PEM file, inline PEM, or base64 PEM
+   *   MQTT_CLIENT_KEY   — path to PEM key file, inline PEM, or base64 PEM
+   *   MQTT_CA_CERT      — path to CA bundle, inline PEM, or base64 PEM
+   *   MQTT_USERNAME     — broker username
+   *   MQTT_PASSWORD     — broker password
+   */
+  clientOptions?: IClientOptions;
+}
+
+// ---------------------------------------------------------------------------
+// TLS helpers
+// ---------------------------------------------------------------------------
+
+function loadPEM(pathOrPem: string | undefined): Buffer | undefined {
+  if (!pathOrPem) return undefined;
+  if (pathOrPem.trim().startsWith('-----BEGIN')) return Buffer.from(pathOrPem, 'utf-8');
+  try {
+    if (existsSync(pathOrPem)) return readFileSync(pathOrPem);
+  } catch {
+    // not a valid path — try base64
+  }
+  try {
+    return Buffer.from(pathOrPem, 'base64');
+  } catch {
+    return undefined;
+  }
+}
+
+function buildEnvTlsOptions(): Partial<IClientOptions> {
+  const cert = loadPEM(process.env.MQTT_CLIENT_CERT);
+  const key = loadPEM(process.env.MQTT_CLIENT_KEY);
+  const ca = loadPEM(process.env.MQTT_CA_CERT);
+  return {
+    ...(cert ? { cert } : {}),
+    ...(key ? { key } : {}),
+    ...(ca ? { ca } : {}),
+    ...(cert && key ? { rejectUnauthorized: true } : {}),
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Topic template expansion
+// ---------------------------------------------------------------------------
+
+export function expandTopicTemplate(pattern: string, vars: Record<string, string>): string {
+  return pattern.replace(/\{([^}]+)\}/g, (_m, name: string) => vars[name] ?? `{${name}}`);
 }
 
 // ---------------------------------------------------------------------------
@@ -70,25 +150,49 @@ export class MqttAdapter implements IProtocolAdapter {
   readonly protocol: ProtocolType;
 
   private readonly config: MqttAdapterConfig;
+  /** Topic patterns with template placeholders already expanded */
+  private readonly expandedPatterns: TopicPattern[];
   private client: MqttClient | null = null;
   private connected = false;
   private lastSuccessMs: number | undefined;
   private consecutiveErrors = 0;
   private readonly emitter = new EventEmitter();
-  private destroyed = false;
+  private _destroyed = false;
 
   constructor(config: MqttAdapterConfig) {
     this.config = config;
     this.id = config.id;
     this.protocol = config.protocol;
+
+    const vars = config.templateVars ?? {};
+    this.expandedPatterns = config.topicPatterns.map((tp) => ({
+      ...tp,
+      pattern: expandTopicTemplate(tp.pattern, vars),
+    }));
   }
 
   async connect(): Promise<void> {
     return new Promise((resolve, reject) => {
       const opts: IClientOptions = {
-        reconnectPeriod: 5000,
+        reconnectPeriod: 5_000,
         connectTimeout: 10_000,
+        // Env-level credentials (lowest priority)
+        ...(process.env.MQTT_USERNAME ? { username: process.env.MQTT_USERNAME } : {}),
+        ...(process.env.MQTT_PASSWORD ? { password: process.env.MQTT_PASSWORD } : {}),
+        ...buildEnvTlsOptions(),
+        // Config options win over env
         ...this.config.clientOptions,
+        // LWT
+        ...(this.config.lwt
+          ? {
+              will: {
+                topic: this.config.lwt.topic,
+                payload: Buffer.from(this.config.lwt.payload, 'utf-8'),
+                qos: this.config.lwt.qos ?? 1,
+                retain: this.config.lwt.retain ?? false,
+              },
+            }
+          : {}),
       };
 
       this.client = mqtt.connect(this.config.brokerUrl, opts);
@@ -98,15 +202,11 @@ export class MqttAdapter implements IProtocolAdapter {
         this.consecutiveErrors = 0;
         console.log(`[MqttAdapter:${this.id}] Connected to ${this.config.brokerUrl}`);
 
-        // Subscribe to all configured topic patterns
-        for (const tp of this.config.topicPatterns) {
-          this.client?.subscribe(tp.pattern, { qos: 1 }, (err) => {
-            if (err) {
-              console.error('[MqttAdapter] Subscribe error:', this.id, tp.pattern, err);
-            }
+        for (const tp of this.expandedPatterns) {
+          this.client?.subscribe(tp.pattern, { qos: tp.qos ?? 1 }, (err) => {
+            if (err) console.error('[MqttAdapter] Subscribe error:', this.id, tp.pattern, err);
           });
         }
-
         resolve();
       });
 
@@ -124,19 +224,18 @@ export class MqttAdapter implements IProtocolAdapter {
         this.connected = false;
       });
 
-      this.client.on('message', (topic, payload) => {
-        this.handleMessage(topic, payload);
+      this.client.on('message', (topic, payload, packet?: { retain?: boolean }) => {
+        this.handleMessage(topic, payload, packet?.retain ?? false);
       });
     });
   }
 
   async disconnect(): Promise<void> {
-    this.destroyed = true;
+    this._destroyed = true;
+    this.emitter.emit('destroy');
     this.emitter.removeAllListeners();
     await new Promise<void>((resolve) => {
-      this.client?.end(true, {}, () => {
-        resolve();
-      });
+      this.client?.end(true, {}, () => resolve());
     });
     this.connected = false;
   }
@@ -149,27 +248,57 @@ export class MqttAdapter implements IProtocolAdapter {
     };
   }
 
-  async *getDataStream(): AsyncGenerator<UnifiedEnergyDatapoint> {
-    while (!this.destroyed) {
-      const datapoint = await new Promise<UnifiedEnergyDatapoint | null>((resolve) => {
-        const onData = (dp: UnifiedEnergyDatapoint): void => {
-          cleanup();
-          resolve(dp);
-        };
-        const onDestroy = (): void => {
-          cleanup();
-          resolve(null);
-        };
-        const cleanup = (): void => {
-          this.emitter.off('data', onData);
-          this.emitter.off('destroy', onDestroy);
-        };
-        this.emitter.once('data', onData);
-        this.emitter.once('destroy', onDestroy);
+  /**
+   * Publish a message to the broker (bidirectional control).
+   * Requires an active connection.
+   */
+  publishMessage(
+    topic: string,
+    payload: string,
+    qos: 0 | 1 | 2 = 1,
+    retain = false,
+  ): Promise<void> {
+    if (!this.client || !this.connected) return Promise.reject(new Error('Not connected'));
+    return new Promise<void>((resolve, reject) => {
+      this.client!.publish(topic, payload, { qos, retain }, (err) => {
+        if (err) reject(err);
+        else resolve();
       });
+    });
+  }
 
-      if (datapoint === null) break;
-      yield datapoint;
+  async *getDataStream(): AsyncGenerator<UnifiedEnergyDatapoint> {
+    const queue: Array<UnifiedEnergyDatapoint | null> = [];
+    let notify: (() => void) | null = null;
+
+    const onData = (dp: UnifiedEnergyDatapoint): void => {
+      queue.push(dp);
+      notify?.();
+      notify = null;
+    };
+    const onDestroy = (): void => {
+      queue.push(null);
+      notify?.();
+      notify = null;
+    };
+
+    this.emitter.on('data', onData);
+    this.emitter.once('destroy', onDestroy);
+
+    try {
+      while (!this._destroyed) {
+        if (queue.length === 0) {
+          await new Promise<void>((r) => {
+            notify = r;
+          });
+        }
+        const item = queue.shift();
+        if (item === null || item === undefined) break;
+        yield item;
+      }
+    } finally {
+      this.emitter.off('data', onData);
+      this.emitter.off('destroy', onDestroy);
     }
   }
 
@@ -177,9 +306,9 @@ export class MqttAdapter implements IProtocolAdapter {
   // Private
   // ---------------------------------------------------------------------------
 
-  private handleMessage(topic: string, payload: Buffer): void {
-    const matchedPattern = this.findMatchingPattern(topic);
-    if (!matchedPattern) {
+  private handleMessage(topic: string, payload: Buffer, isRetained: boolean): void {
+    const pattern = this.findMatchingPattern(topic);
+    if (!pattern) {
       writeToDLQ({
         ts: Date.now(),
         source: topic,
@@ -191,15 +320,22 @@ export class MqttAdapter implements IProtocolAdapter {
       return;
     }
 
+    // Skip retained messages when the pattern opts out
+    if (isRetained && pattern.processRetained === false) return;
+
     let rawValue: number;
     let deviceId: string;
-
     try {
       const payloadStr = payload.toString('utf8');
-      const parsed: unknown = JSON.parse(payloadStr);
-
+      const parsed: unknown = (() => {
+        try {
+          return JSON.parse(payloadStr);
+        } catch {
+          return payloadStr;
+        }
+      })();
       rawValue = this.extractValue(parsed, payloadStr);
-      deviceId = this.extractDeviceId(topic, parsed, matchedPattern.deviceIdExtract);
+      deviceId = this.extractDeviceId(topic, parsed, pattern.deviceIdExtract);
     } catch (err) {
       this.consecutiveErrors++;
       recordAdapterError(this.id, this.protocol, 'parse');
@@ -213,15 +349,14 @@ export class MqttAdapter implements IProtocolAdapter {
       return;
     }
 
-    const scale = matchedPattern.scale ?? 1;
     const candidate = {
       timestamp: Date.now(),
       deviceId,
       protocol: this.protocol,
-      metric: matchedPattern.metric,
-      value: rawValue * scale,
+      metric: pattern.metric,
+      value: rawValue * (pattern.scale ?? 1),
       qualityIndicator: 'GOOD' as const,
-      ...(matchedPattern.role ? { role: matchedPattern.role } : {}),
+      ...(pattern.role ? { role: pattern.role } : {}),
     };
 
     const result = energyDatapointSchema.safeParse(candidate);
@@ -242,58 +377,68 @@ export class MqttAdapter implements IProtocolAdapter {
   }
 
   private findMatchingPattern(topic: string): TopicPattern | null {
-    for (const tp of this.config.topicPatterns) {
+    for (const tp of this.expandedPatterns) {
       if (topicMatchesPattern(topic, tp.pattern)) return tp;
     }
     return null;
   }
 
   private extractValue(parsed: unknown, rawStr: string): number {
-    // Numeric payload (e.g. "3450.5")
     if (typeof parsed === 'number') return parsed;
-    // Object with "value" field
-    if (typeof parsed === 'object' && parsed !== null && 'value' in parsed) {
-      const v = (parsed as Record<string, unknown>).value;
-      if (typeof v === 'number') return v;
+    if (typeof parsed === 'object' && parsed !== null) {
+      // Venus OS / dbus-mqtt: { "value": N }
+      const obj = parsed as Record<string, unknown>;
+      if ('value' in obj) {
+        const v = obj.value;
+        if (typeof v === 'number') return v;
+        if (v === null) throw new Error('Null value (device offline / no reading)');
+      }
+      // Common field names fallback
+      for (const field of ['power', 'energy', 'Power', 'Energy', 'val']) {
+        const v = obj[field];
+        if (typeof v === 'number' && Number.isFinite(v)) return v;
+      }
     }
-    // Raw numeric string
-    const n = Number(rawStr.trim());
+    const n = Number(typeof parsed === 'string' ? parsed.trim() : rawStr.trim());
     if (!Number.isNaN(n)) return n;
-    throw new Error(`Cannot extract numeric value from payload: ${rawStr.slice(0, 100)}`);
+    throw new Error(`Cannot extract numeric value: ${rawStr.slice(0, 100)}`);
   }
 
   private extractDeviceId(topic: string, parsed: unknown, extract: string): string {
+    if (extract.startsWith('static:')) return extract.slice(7);
     if (extract.startsWith('topic[')) {
       const idx = parseInt(extract.slice(6, -1), 10);
-      const segments = topic.split('/');
-      const segment = segments[idx];
-      if (segment === undefined) throw new Error(`Topic segment ${idx} out of range: ${topic}`);
-      return segment;
+      const seg = topic.split('/')[idx];
+      if (seg === undefined) throw new Error(`Topic segment ${idx} out of range: ${topic}`);
+      return seg;
     }
     if (extract.startsWith('payload.') && typeof parsed === 'object' && parsed !== null) {
-      const field = extract.slice(8);
-      const val = (parsed as Record<string, unknown>)[field];
-      if (typeof val === 'string') return val;
+      const path = extract.slice(8).split('.');
+      let obj: unknown = parsed;
+      for (const key of path) {
+        if (typeof obj !== 'object' || obj === null) break;
+        obj = (obj as Record<string, unknown>)[key];
+      }
+      if (typeof obj === 'string') return obj;
+      if (typeof obj === 'number') return String(obj);
     }
     return this.id;
   }
 }
 
 // ---------------------------------------------------------------------------
-// MQTT topic pattern matching (MQTT wildcard semantics)
+// MQTT wildcard topic matching
 // ---------------------------------------------------------------------------
 
-function topicMatchesPattern(topic: string, pattern: string): boolean {
+export function topicMatchesPattern(topic: string, pattern: string): boolean {
   if (pattern === '#') return true;
-  const topicParts = topic.split('/');
-  const patternParts = pattern.split('/');
-
-  for (let i = 0; i < patternParts.length; i++) {
-    const pp = patternParts[i];
-    if (pp === '#') return true;
-    if (pp !== '+' && pp !== topicParts[i]) return false;
+  const tParts = topic.split('/');
+  const pParts = pattern.split('/');
+  for (let i = 0; i < pParts.length; i++) {
+    if (pParts[i] === '#') return true;
+    if (pParts[i] !== '+' && pParts[i] !== tParts[i]) return false;
   }
-  return topicParts.length === patternParts.length;
+  return tParts.length === pParts.length;
 }
 
 // ---------------------------------------------------------------------------
@@ -309,14 +454,12 @@ interface DLQEntry {
 }
 
 function writeToDLQ(entry: DLQEntry): void {
-  if (dlqLineCount >= MAX_DLQ_LINES) {
-    dlqLineCount = 0;
-  }
+  if (dlqLineCount >= MAX_DLQ_LINES) dlqLineCount = 0;
   try {
     mkdirSync(API_RUNTIME_DIR, { recursive: true });
     appendFileSync(DEAD_LETTER_QUEUE_PATH, `${JSON.stringify(entry)}\n`, 'utf8');
     dlqLineCount++;
   } catch {
-    // Never let DLQ errors bubble up
+    /* never propagate DLQ errors */
   }
 }

@@ -2370,6 +2370,44 @@ export const de = {
     haHeatPumpEntity: 'Wärmepumpen-Modus-/Klima-Entität',
     haDiscoveredCount: '{{count}} Energie-Entitäten erkannt',
     // ExecAdapter
+    // Zigbee2MQTT
+    zigbeeSpecific: 'Zigbee2MQTT Konfiguration',
+    zigbeeBaseTopic: 'Basis-Topic',
+    zigbeeBaseTopicHint: 'MQTT-Topic-Präfix (Standard: zigbee2mqtt)',
+    zigbeeEnergyDevices: 'Energie-Gerätename',
+    zigbeeEnergyDevicesHint:
+      'Kommagetrennte Klartextnamen der Energiemessgeräte (leer = automatische Erkennung)',
+    zigbeeHeatPumpHints: 'Wärmepumpen-Namenshinweise',
+    zigbeeEvHints: 'Wallbox-Namenshinweise',
+    zigbeeBridgeVersion: 'Z2M-Bridge-Version',
+    zigbeeTrackedDevices: '{{count}} Geräte verfolgt',
+    // Shelly
+    shellySpecific: 'Shelly-Gerätekonfiguration',
+    shellyDeviceList: 'Gerätehosts',
+    shellyDeviceListHint: 'Kommagetrennte IP-Adressen oder Hostnamen der Shelly-Geräte',
+    shellyGen: 'Generation',
+    shellyGenAuto: 'Automatisch erkennen',
+    shellyGen1: 'Gen1 (Legacy)',
+    shellyGen2: 'Gen2 (RPC)',
+    shellyGen3: 'Gen3 (RPC)',
+    shellyWebhookNote:
+      'Shelly → Aktionen → URL-Aktion auf /api/shelly/webhook einstellen für Push-Updates',
+    shellyPollInterval: 'Abfrageintervall (ms)',
+    // OCPP V2X / §14a
+    ocppV2xTitle: 'V2X / Bidirektionales Laden',
+    ocppV2hLabel: 'V2H — Fahrzeug-zu-Haus',
+    ocppV2hHint:
+      'EV-Akku zur Hausversorgung entladen (V2H). Erfordert V2X-fähige Wallbox und Fahrzeug.',
+    ocppTargetSoc: 'Ziel-SoC (%)',
+    ocppTargetSocHint: 'EV wird bis zu diesem SoC zur Abfahrtszeit geladen',
+    ocppDepartureTime: 'Abfahrtszeit',
+    ocppSmartCostLimit: 'Smart-Kostengrenze (€/kWh)',
+    ocppSmartCostLimitHint: 'Laden pausieren, wenn Spotpreis diesen Wert überschreitet',
+    ocppPhaseConfig: 'Aktive Phasen',
+    ocppPhase1: 'Einphasig (L1)',
+    ocppPhase3: 'Dreiphasig (L1+L2+L3)',
+    ocppGridLimitNote:
+      '§14a EnWG: Netzlimit wird in Watt (W) via ChargingStationMaxProfile gesendet',
     execSpecific: 'Eigenes Skript konfigurieren',
     execScriptId: 'Skript-ID',
     execScriptIdHint: 'Muss einem Schlüssel in EXEC_SCRIPTS_CONFIG auf dem Server entsprechen',

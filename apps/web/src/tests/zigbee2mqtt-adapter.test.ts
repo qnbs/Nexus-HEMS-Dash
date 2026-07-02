@@ -358,8 +358,11 @@ describe('Zigbee2MQTTAdapter — JSON bridge messages', () => {
     });
 
     const snapshot = adapter.getSnapshot();
+    // P1 behaviour: smart plugs contribute to load, not grid.
+    // Grid is only set when a dedicated EM device (role 'grid') is present.
     expect(snapshot.load?.totalPowerW).toBe(320);
-    expect(snapshot.grid?.powerW).toBe(320);
+    // grid.powerW reflects only EM grid meters; plug power goes to load only
+    expect(snapshot.grid?.powerW).toBe(0);
   });
 
   it('auto-subscribes to power-capable devices from bridge/devices', async () => {
