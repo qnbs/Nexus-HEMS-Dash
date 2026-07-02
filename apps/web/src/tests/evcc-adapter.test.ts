@@ -164,7 +164,13 @@ describe('EvccAdapter — connect and state mapping', () => {
 
   it('fails connect when health endpoint is unreachable', async () => {
     mockFetch.mockImplementation(async () => ({ ok: false, status: 503, json: async () => ({}) }));
-    await expect(adapter.connect()).rejects.toThrow(/not reachable/i);
+    let connectError: string | undefined;
+    adapter.onStatus((status, error) => {
+      if (status === 'error') connectError = error;
+    });
+    await adapter.connect();
+    expect(adapter.status).toBe('error');
+    expect(connectError).toMatch(/not reachable/i);
   });
 });
 

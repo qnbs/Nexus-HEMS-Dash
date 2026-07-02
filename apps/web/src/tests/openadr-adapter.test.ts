@@ -291,12 +291,18 @@ describe('OpenADR31Adapter — connect and disconnect lifecycle', () => {
   );
 
   it(
-    'rejects connect when token refresh fails',
+    'fails connect when token refresh fails',
     async () => {
       mockFetch.mockResolvedValueOnce({ ok: false, status: 401, statusText: 'Unauthorized' });
 
       const adapter = new OpenADR31Adapter({ programId: 'test-program' });
-      await expect(adapter.connect()).rejects.toThrow(/token refresh failed/i);
+      let connectError: string | undefined;
+      adapter.onStatus((status, error) => {
+        if (status === 'error') connectError = error;
+      });
+      await adapter.connect();
+      expect(adapter.status).toBe('error');
+      expect(connectError).toMatch(/token refresh failed/i);
       adapter.destroy();
     },
     OPENADR_TEST_TIMEOUT_MS,
