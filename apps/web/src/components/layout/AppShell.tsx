@@ -9,7 +9,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
-import type { ReactNode } from 'react';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { useEnergyStoreBase } from '../../core/useEnergyStore';
@@ -122,6 +122,34 @@ export function AppShell({ children }: AppShellProps) {
 
   const themeDefinition = themeDefinitions[theme];
 
+  // Fixed-header plumbing: publish the header's measured height as
+  // `--header-height` so the content column can reserve exactly the right space,
+  // and track scroll so the header gains a shadow once content passes beneath it.
+  const headerRef = useRef<HTMLElement>(null);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const el = headerRef.current;
+    if (!el) return;
+    const root = document.documentElement;
+    const applyHeight = () => root.style.setProperty('--header-height', `${el.offsetHeight}px`);
+    applyHeight();
+    const observer = new ResizeObserver(applyHeight);
+    observer.observe(el);
+    window.addEventListener('resize', applyHeight);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', applyHeight);
+    };
+  }, []);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 4);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
   return (
     <div className="theme-shell min-h-dvh font-sans text-(--color-text) selection:bg-(--color-primary)/30">
       <div
@@ -144,10 +172,14 @@ export function AppShell({ children }: AppShellProps) {
       <Sidebar />
 
       {/* Main Content Area (with sidebar offset on desktop) */}
-      <div className="relative lg:ml-64">
-        {/* Top Bar — sticky header (mobile + desktop) */}
+      {/* Reserve space for the fixed header via the JS-measured --header-height
+          (with a safe fallback for first paint before the effect runs). */}
+      <div className="relative lg:ml-64" style={{ paddingTop: 'var(--header-height, 4.5rem)' }}>
+        {/* Top Bar — fixed header (mobile + desktop), sidebar-aware on lg. */}
         <motion.header
-          className="glass-panel-strong header-accent-line sticky top-0 z-sticky overflow-hidden px-3 pt-[max(0.375rem,env(safe-area-inset-top))] pb-1.5 sm:px-6 sm:pt-[max(0.75rem,env(safe-area-inset-top))] sm:pb-3"
+          ref={headerRef}
+          data-scrolled={scrolled ? 'true' : 'false'}
+          className="app-header header-accent-line fixed top-0 right-0 left-0 z-sticky overflow-hidden px-3 pt-[max(0.375rem,env(safe-area-inset-top))] pb-1.5 sm:px-6 sm:pt-[max(0.75rem,env(safe-area-inset-top))] sm:pb-3 lg:left-64"
           initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
