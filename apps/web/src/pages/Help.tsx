@@ -1248,7 +1248,7 @@ export function Help() {
                     className="focus-ring mb-6 inline-flex items-center gap-2 rounded-xl border border-(--color-border) bg-(--color-surface) px-4 py-2.5 font-medium text-sm transition-all duration-200 hover:border-(--color-primary)/40 hover:bg-(--color-primary)/10 hover:text-(--color-primary)"
                   >
                     <BrandGithubIcon size={18} aria-hidden="true" />
-                    <span>GitHub Repository</span>
+                    <span>{t('help.githubRepo')}</span>
                     <ExternalLink size={14} className="text-(--color-muted)" aria-hidden="true" />
                   </a>
 
@@ -1257,23 +1257,37 @@ export function Help() {
                     <h3 className="mb-4 font-medium">{t('help.techStack')}</h3>
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                       {[
-                        { category: 'Frontend', items: 'React 19, TypeScript, Vite, Tailwind CSS' },
-                        { category: 'State', items: 'Zustand, React Query, Dexie.js' },
+                        {
+                          category: t('help.aboutTechFrontend'),
+                          items: t('help.aboutTechFrontendItems'),
+                        },
+                        {
+                          category: t('help.aboutTechState'),
+                          items: t('help.aboutTechStateItems'),
+                        },
                         {
                           category: t('help.visualization'),
-                          items: 'D3.js Sankey, Recharts, Motion',
+                          items: t('help.aboutTechVisualizationItems'),
                         },
-                        { category: 'Backend', items: 'Node.js, Express, WebSockets, MQTT' },
-                        { category: 'AI', items: 'OpenAI, Anthropic, Gemini, Groq, Ollama (BYOK)' },
-                        { category: 'PWA', items: 'Workbox, Service Worker, Background Sync' },
+                        {
+                          category: t('help.aboutTechBackend'),
+                          items: t('help.aboutTechBackendItems'),
+                        },
+                        {
+                          category: t('help.aboutTechAi'),
+                          items: t('help.aboutTechAiItems'),
+                        },
+                        {
+                          category: t('help.aboutTechPwa'),
+                          items: t('help.aboutTechPwaItems'),
+                        },
                         {
                           category: t('help.protocols'),
-                          items:
-                            '14 adapters: MQTT, Modbus, KNX, OCPP, EEBUS, evcc, HA, Zigbee2MQTT, Shelly…',
+                          items: t('help.aboutTechProtocolsItems'),
                         },
                         {
                           category: t('help.testing'),
-                          items: 'Vitest, Playwright, axe-core (a11y)',
+                          items: t('help.aboutTechTestingItems'),
                         },
                       ].map((tech) => (
                         <div

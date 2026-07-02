@@ -14,8 +14,8 @@
 | **Shelly webhook SSRF** | Private-IP source guard enforced in `shelly-webhook.routes.ts` | Per-device host allowlist not yet wired (JWT still required) |
 | **HeatPump backend adapter** | connect try/catch, UINT16 power reads, reconnect timer cleanup | Live Modbus hardware validation still manual |
 | **HA WebSocket API** | `auth_required` without `haToken` now hard-fails | mTLS to HA not supported (HA uses token auth) |
-| **Help / i18n drift** | Updated to v1.6.1, 14 adapters | `Help.tsx` hardcoded strings may still reference v1.3.0 |
-| **A11y E2E** | Added `/settings/hardware`, `/settings/ai`, `/plugins` | EEBUS pairing wizard not yet in axe suite |
+| **Help / i18n drift** | Updated to v1.6.1, 14 adapters; About tech stack fully i18n | None in About tab |
+| **A11y E2E** | Added `/settings/hardware`, `/settings/ai`, `/plugins`; EEBUS certificates axe in `eebus-pairing.spec.ts` | Full pairing wizard flow still manual |
 | **Unit tests** | HeatPump, Shelly webhook, ExecService, HA ws-api auth | EEBUS SHIP/mTLS integration tests still thin |
 | **Operator guides** | HA guide updated; MPPT/Heat Pump/Wallbox/EEBUS guides added | Full certification runbooks remain out of scope |
 
@@ -38,11 +38,11 @@
 
 | ID | Task | Rationale |
 |----|------|-----------|
-| P1-01 | EEBUS pairing E2E | Wizard is safety-critical; keyboard trap + axe coverage |
-| P1-02 | `Help.tsx` hardcoded version strings | Remove remaining v1.3.0 literals |
-| P1-03 | EEBUS mTLS empty-cert rejection | Prevent silent downgrade in `EEBUSAdapter` |
-| P1-04 | Per-adapter reconnect metrics dashboards | Grafana panels for new backend adapters |
-| P1-05 | Coverage thresholds staging | api heatpump/exec paths toward 55% statement target |
+| P1-01 | EEBUS pairing E2E | ✅ Certificates tab keyboard + axe (`eebus-pairing.spec.ts`) |
+| P1-02 | `Help.tsx` hardcoded version strings | ✅ About tech stack → i18n keys |
+| P1-03 | EEBUS mTLS empty-cert rejection | ✅ Shipped #217 |
+| P1-04 | Per-adapter reconnect metrics dashboards | ✅ `nexus-adapter-health.json` |
+| P1-05 | Coverage thresholds staging | ⏳ reconnect/DLQ tests added; API gate still 33% |
 
 ### P2 — Medium
 
@@ -50,8 +50,8 @@
 |----|------|
 | P2-01 | Integration tests: LiveEnergyAggregator + multi-adapter |
 | P2-02 | Flaky animation a11y stabilization (already mitigated via reduced-motion in E2E) |
-| P2-03 | README adapter count 13 → 14 alignment |
-| P2-04 | `accessibility-aaa.spec.ts` doc references → point to `accessibility.spec.ts` only |
+| P2-03 | README adapter count 13 → 14 alignment | ✅ 7 core + 7 contrib |
+| P2-04 | `accessibility-aaa.spec.ts` doc references → point to `accessibility.spec.ts` only | ✅ Fixed in #217 |
 
 ### P3 — Polish
 
@@ -143,7 +143,7 @@ flowchart TD
 - [x] Help i18n reflects v1.6.1 / 14 adapters
 - [x] A11y E2E covers primary + settings sub-routes + plugins
 - [x] Operator guides for major integrations
-- [ ] Full E2E EEBUS pairing flow
+- [x] Full E2E EEBUS pairing flow (certificates tab keyboard + axe)
 - [ ] CI green on main after merge
 - [ ] Security scanners (CodeQL, Gitleaks) — CI-owned
 - [ ] Live hardware smoke test — operator responsibility (`docs/Safety-Certification-Notice.md`)
