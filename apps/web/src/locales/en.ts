@@ -351,14 +351,14 @@ export const en = {
   },
   settingsUnified: {
     title: 'Settings & Plugins',
-    subtitle: 'Configuration, plugin marketplace & help',
+    subtitle: 'Adapters, energy, security, plugins & help — unified control center',
     configSection: 'Configuration',
-    configSectionDesc: 'Theme, adapters, energy, security',
+    configSectionDesc: 'Theme, 13 adapters, tariffs, EEBUS certs, storage',
     pluginsSection: 'Plugins',
-    pluginsSectionDesc: 'Plugin lifecycle & marketplace',
+    pluginsSectionDesc: 'Contrib adapter lifecycle & hot-loading marketplace',
     marketplace: 'Marketplace',
     helpSection: 'Help & FAQ',
-    helpSectionDesc: 'Troubleshooting & documentation',
+    helpSectionDesc: 'Integration guide, glossary, troubleshooting',
     quickAccess: 'Quick Access',
     sections: 'Sections',
   },
@@ -844,6 +844,7 @@ export const en = {
     title: 'Help & Documentation',
     subtitle: 'Everything you need to know about Nexus HEMS',
     searchPlaceholder: 'Search documentation...',
+    searchNoResults: 'No matching topics — try another keyword or browse the tabs below.',
     openLink: 'Open',
     usage: 'Usage',
     usageTitle: 'Usage Information',
@@ -864,7 +865,7 @@ export const en = {
     faqTitle: 'Frequently Asked Questions (FAQ)',
     about: 'About',
     aboutTitle: 'About the App',
-    version: 'Version 4.6.0',
+    version: 'Version 1.3.0',
     hems: 'Home Energy Management System',
     hemsDesc:
       'A system for monitoring, controlling, and optimizing energy consumption in a building.',
@@ -891,7 +892,7 @@ export const en = {
     faqSecurityAnswer:
       'Yes. The system uses a local Public Key Infrastructure (PKI) with mTLS. Communication between dashboard and backend is encrypted. Historical data is primarily stored locally in your browser (IndexedDB).',
     aboutDesc:
-      'Nexus-HEMS Dash is a state-of-the-art visualization and control layer for integrated energy management systems. It was developed to make the complexity of sector coupling (electricity, heat, mobility) manageable.',
+      'Nexus-HEMS Dash v1.3.0 is a production-grade visualization and control layer for integrated energy management. It unifies 13 protocol adapters, real-time Sankey flows, MPC optimization, and AI-assisted forecasting — making sector coupling (electricity, heat, mobility) manageable.',
     techStack: 'Technology Stack',
     techFrontend: 'Frontend: React 19, Tailwind CSS, Lucide Icons',
     techState: 'State Management: Zustand',
@@ -908,15 +909,15 @@ export const en = {
     welcomeIntro:
       'Nexus-HEMS Dash is the central control point for your Home Energy Management System. Monitor real-time energy flows, control your smart home devices, optimize EV charging and heat pump operation with AI-powered recommendations, and leverage dynamic electricity tariffs for maximum savings.',
     quickStart: 'Quick Start Guide',
-    step1Title: 'Connect your devices',
+    step1Title: 'Connect adapters & hardware',
     step1Desc:
-      'Go to Settings → System and enter the IP addresses for your Victron Cerbo GX (or Raspberry Pi), KNX IP router, and Node-RED WebSocket server.',
-    step2Title: 'Configure energy parameters',
+      'Open Settings → Adapters to enable built-in or contrib protocol adapters (mock mode works without hardware). Use Settings → Hardware catalog to browse 190+ devices and run the add-adapter wizard.',
+    step2Title: 'Configure energy & tariffs',
     step2Desc:
-      'Set up your tariff provider (Tibber/aWATTar), charge threshold, and §14a EnWG grid import limit under Settings → Energy.',
-    step3Title: 'Monitor your energy flow',
+      'Set tariff provider (Tibber, aWATTar, Octopus, Nordpool), charge thresholds, and §14a EnWG grid import limit under Settings → Energy. Mock mode uses simulated prices.',
+    step3Title: 'Verify monitoring & health',
     step3Desc:
-      'The Dashboard shows a real-time Sankey diagram visualizing energy flows between PV, grid, battery, and consumers. Data refreshes every 2 seconds via WebSocket.',
+      'Open Monitoring to see adapter status, circuit breakers, and system health. The header shows Mock vs Live mode; live hardware requires double opt-in in Settings.',
     step4Title: 'Optimize with AI',
     step4Desc:
       'Enable the AI Optimizer to get real-time recommendations for EV charging, battery strategy, and heat pump operation based on weather forecasts and tariff predictions.',
@@ -976,7 +977,10 @@ export const en = {
       'OSGi-inspired plugin lifecycle with install, resolve, start, stop, uninstall. Dependency injection, service registry, and event bus.',
     featureHardwareRegistry: 'Hardware Registry',
     featureHardwareRegistryDesc:
-      'Browse 120+ certified devices across inverters, wallboxes, meters, batteries, and heat pumps with manufacturer specs.',
+      'Browse 190+ certified devices (inverters, wallboxes, meters, batteries, heat pumps) at Settings → Hardware. Add-adapter wizard with connection test.',
+    featureMonitoring: 'System Monitoring',
+    featureMonitoringDesc:
+      'Adapter health, circuit breaker state, Prometheus metrics, and live/mock mode indicator. Per-adapter status on the Monitoring page.',
     featureHistorical: 'Historical Analytics',
     featureHistoricalDesc:
       'Long-term energy data analysis with trend comparison, cost tracking, and performance metrics over weeks and months.',
@@ -1024,7 +1028,7 @@ export const en = {
     faqGeneral: 'General',
     faqWhatIs: 'What is Nexus HEMS?',
     faqWhatIsAnswer:
-      'Nexus HEMS is a real-time Home Energy Management System dashboard. It visualizes energy flows between solar panels, battery storage, the power grid, and household consumers. It integrates with Victron Cerbo GX, KNX building automation, and dynamic electricity tariff providers.',
+      'Nexus HEMS is a production-grade Home Energy Management System dashboard (v1.3.0). It unifies 13 protocol adapters (7 core + 6 contrib), real-time Sankey energy flow, MPC optimization, dynamic tariffs, KNX floorplan, OCPP 2.1 EV charging, and AI-assisted forecasting — deployable as PWA, Docker, Helm, Tauri, or Capacitor app.',
     faqOffline: 'Does the app work offline?',
     faqOfflineAnswer:
       'Yes. As a PWA, the app caches all assets and recent data locally. You can view the last known energy state, browse settings, and queue control commands that will be synced when connectivity is restored.',
@@ -1048,7 +1052,10 @@ export const en = {
       'Nexus HEMS is a Progressive Web App (PWA). You can install it from your browser to your home screen for a native app-like experience. It works on both iOS and Android with responsive layouts optimized for all screen sizes.',
     faqApi: 'Can I integrate custom APIs?',
     faqApiAnswer:
-      'Yes. The adapter architecture supports custom integrations. Built-in adapters exist for Victron MQTT, KNX/IP, Modbus SunSpec, OCPP 2.1, and EEBus. You can extend the system by adding new adapters in the core/adapters directory.',
+      'Yes. The adapter registry supports 13 protocols: Victron MQTT, Modbus/SunSpec, KNX, OCPP 2.1, EEBUS, evcc, OpenEMS, plus contrib adapters (Home Assistant MQTT, Matter/Thread, Zigbee2MQTT, Shelly REST, OpenADR 3.1, ExecAdapter, Example). Enable adapters under Settings → Adapters or install contrib plugins from Settings → Plugins.',
+    faqMockMode: 'How does mock vs live mode work?',
+    faqMockModeAnswer:
+      'By default the dashboard runs in mock mode with simulated energy data — no hardware required. Live mode needs ADAPTER_MODE=live + ALLOW_LIVE_HARDWARE=true on the API, matching Vite build flags, and per-adapter enablement in Settings. A banner in the header shows the active mode.',
     faqCerboVsRpi: 'Cerbo GX or Raspberry Pi — which is better?',
     faqCerboVsRpiAnswer:
       'The Cerbo GX is the recommended production solution — it includes VE.Bus/VE.Can interfaces, industrial-grade reliability, and official Victron support. A Raspberry Pi with Venus OS is an excellent development/testing platform and works well for non-Victron-centric systems or tight budgets. Both run Venus OS and support the same D-Bus/MQTT interface.',
@@ -1073,15 +1080,20 @@ export const en = {
     troubleshootingTitle: 'Troubleshooting',
     troubleConnection: 'Dashboard shows "Disconnected"',
     troubleConn1:
-      'Check that your Victron Cerbo GX (or Raspberry Pi) is powered on and connected to the network',
-    troubleConn2: 'Verify the IP address in Settings → System matches your Cerbo GX',
-    troubleConn3: 'Ensure Node-RED is running and the WebSocket port is correct (default: 1880)',
-    troubleConn4: 'Check that your browser allows WebSocket connections',
+      'In mock mode no hardware is needed — check Monitoring for adapter status. For live mode, verify Cerbo GX / API host is reachable',
+    troubleConn2:
+      'Confirm adapter host/IP under Settings → Adapters and run the connection test in the hardware wizard',
+    troubleConn3:
+      'Check GET /api/health returns healthy; WebSocket at /ws must be allowed by your browser',
+    troubleConn4:
+      'Ensure JWT or API key is configured under Settings → Security if the API requires auth',
     troubleNoData: 'No energy data showing',
-    troubleData1: 'The Victron system may be in standby mode (no PV generation at night)',
-    troubleData2: 'Check the data refresh rate in Settings (default: 2000ms)',
-    troubleData3: 'Clear browser cache and reload the page',
-    troubleData4: 'Check Node-RED flow for errors',
+    troubleData1: 'Built-in adapters are disabled by default — enable them in Settings → Adapters',
+    troubleData2:
+      'Mock mode always provides simulated data; live mode needs fresh adapter data within 30 s',
+    troubleData3:
+      'Open Monitoring → circuit breakers if an adapter is OPEN after repeated failures',
+    troubleData4: 'Check the browser console and API logs for validation or DLQ errors',
     troublePwa: 'PWA not installing',
     troublePwa1: 'PWA installation requires HTTPS (except on localhost)',
     troublePwa2: 'Make sure the manifest.json is valid and accessible',
@@ -1093,7 +1105,7 @@ export const en = {
     troubleKnx3: 'Ensure group addresses match your ETS project configuration',
     troubleKnx4: 'Test connections via ETS diagnostics first',
     troubleAi: 'AI Optimizer not responding',
-    troubleAi1: 'Check that your AI API key is configured under Settings → AI Keys',
+    troubleAi1: 'Configure AI provider keys under Settings → AI Providers (/settings/ai)',
     troubleAi2: 'Verify your API key has sufficient quota',
     troubleAi3: 'AI features require an internet connection',
     troubleAi4: "Try regenerating your API key in the provider's dashboard",
@@ -1105,7 +1117,7 @@ export const en = {
     perf4: 'Periodically clear the local cache in Settings → Storage to free up IndexedDB space',
 
     // About
-    versionFull: 'Version 4.6.0 — Build 2026.03',
+    versionFull: 'Version 1.3.0 — shipped June 2026',
     visualization: 'Visualization',
     testing: 'Testing',
     a11yTitle: 'Accessibility',

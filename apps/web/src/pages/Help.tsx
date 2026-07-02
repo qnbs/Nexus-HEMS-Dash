@@ -34,7 +34,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { BrandGithubIcon } from '../components/icons/BrandGithubIcon';
@@ -111,6 +111,43 @@ export function Help() {
     { key: 'about', icon: <Info size={18} />, label: t('help.about') },
   ];
 
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+
+  const searchResults = useMemo(() => {
+    if (normalizedQuery.length < 2) return [];
+    const entries: { tab: HelpTab; title: string; body: string }[] = [
+      { tab: 'getting-started', title: t('help.quickStart'), body: t('help.welcomeIntro') },
+      { tab: 'getting-started', title: t('help.step1Title'), body: t('help.step1Desc') },
+      { tab: 'faq', title: t('help.faqWhatIs'), body: t('help.faqWhatIsAnswer') },
+      { tab: 'faq', title: t('help.faqMockMode'), body: t('help.faqMockModeAnswer') },
+      { tab: 'faq', title: t('help.faqApi'), body: t('help.faqApiAnswer') },
+      { tab: 'troubleshooting', title: t('help.troubleConnection'), body: t('help.troubleConn1') },
+      {
+        tab: 'features',
+        title: t('help.featureHardwareRegistry'),
+        body: t('help.featureHardwareRegistryDesc'),
+      },
+      {
+        tab: 'features',
+        title: t('help.featureMonitoring'),
+        body: t('help.featureMonitoringDesc'),
+      },
+      {
+        tab: 'integration',
+        title: t('help.integrationGuideTitle'),
+        body: t('help.integrationGuideIntro'),
+      },
+      { tab: 'about', title: t('help.aboutTitle'), body: t('help.aboutDesc') },
+    ];
+    return entries
+      .filter(
+        (e) =>
+          e.title.toLowerCase().includes(normalizedQuery) ||
+          e.body.toLowerCase().includes(normalizedQuery),
+      )
+      .slice(0, 8);
+  }, [normalizedQuery, t]);
+
   return (
     <motion.div
       className="mx-auto max-w-5xl"
@@ -147,6 +184,31 @@ export function Help() {
           aria-label={t('help.searchPlaceholder')}
           className="w-full rounded-xl border border-(--color-border) bg-(--color-surface) py-3 pr-4 pl-11 text-(--color-text) text-sm transition-all placeholder:text-(--color-muted) focus:border-(--color-primary)/70 focus:outline-none focus:ring-(--color-primary)/20 focus:ring-2"
         />
+        {normalizedQuery.length >= 2 && (
+          <div className="absolute top-full right-0 left-0 z-20 mt-2 rounded-xl border border-(--color-border) bg-(--color-surface-strong) p-3 shadow-lg">
+            {searchResults.length === 0 ? (
+              <p className="text-(--color-muted) text-xs">{t('help.searchNoResults')}</p>
+            ) : (
+              <ul className="space-y-1">
+                {searchResults.map((hit) => (
+                  <li key={`${hit.tab}-${hit.title}`}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveTab(hit.tab);
+                        setSearchQuery('');
+                      }}
+                      className="focus-ring w-full rounded-lg px-3 py-2 text-left transition-colors hover:bg-white/5"
+                    >
+                      <span className="block font-medium text-sm">{hit.title}</span>
+                      <span className="line-clamp-1 text-(--color-muted) text-xs">{hit.body}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="flex flex-col gap-6 lg:flex-row">
@@ -210,7 +272,7 @@ export function Help() {
                         title: t('help.step1Title'),
                         desc: t('help.step1Desc'),
                         icon: <Server size={18} />,
-                        link: '/settings?tab=system',
+                        link: '/settings?tab=adapters',
                       },
                       {
                         step: 2,
@@ -762,7 +824,14 @@ export function Help() {
                       title={t('help.featureHA')}
                       description={t('help.featureHADesc')}
                       color="bg-teal-500/15"
-                      link="/energy-flow"
+                      link="/plugins"
+                    />
+                    <FeatureCard
+                      icon={<Gauge size={20} className="text-slate-400" />}
+                      title={t('help.featureMonitoring')}
+                      description={t('help.featureMonitoringDesc')}
+                      color="bg-slate-500/15"
+                      link="/monitoring"
                     />
                     <FeatureCard
                       icon={<WifiOff size={20} className="text-orange-400" />}
@@ -795,7 +864,7 @@ export function Help() {
                       title={t('help.featureHardwareRegistry')}
                       description={t('help.featureHardwareRegistryDesc')}
                       color="bg-lime-500/15"
-                      link="/devices"
+                      link="/settings/hardware"
                     />
                     <FeatureCard
                       icon={<Clock size={20} className="text-sky-400" />}
@@ -812,18 +881,22 @@ export function Help() {
                   <h3 className="mb-4 font-medium text-lg">{t('help.protocols')}</h3>
                   <div className="flex flex-wrap gap-2">
                     {[
-                      'Modbus TCP',
-                      'MQTT',
+                      'Victron MQTT',
+                      'Modbus TCP / SunSpec',
                       'KNX/IP',
-                      'WebSocket',
                       'OCPP 2.1',
-                      'SunSpec',
-                      'EEBus',
+                      'EEBUS SPINE/SHIP',
+                      'evcc',
+                      'OpenEMS',
+                      'Home Assistant',
+                      'Matter/Thread',
+                      'Zigbee2MQTT',
+                      'Shelly REST',
+                      'OpenADR 3.1',
+                      'ExecAdapter',
+                      'MQTT / WebSocket',
                       'SG Ready',
-                      'VE.Bus',
-                      'Tibber API',
-                      'aWATTar API',
-                      'Open-Meteo API',
+                      'Tibber / aWATTar / Octopus / Nordpool',
                     ].map((proto) => (
                       <span
                         key={proto}
@@ -917,6 +990,9 @@ export function Help() {
                     </Disclosure>
                     <Disclosure title={t('help.faqOffline')}>
                       {t('help.faqOfflineAnswer')}
+                    </Disclosure>
+                    <Disclosure title={t('help.faqMockMode')}>
+                      {t('help.faqMockModeAnswer')}
                     </Disclosure>
                     <Disclosure title={t('help.faqCerboVsRpi')}>
                       {t('help.faqCerboVsRpiAnswer')}
@@ -1188,11 +1264,12 @@ export function Help() {
                           items: 'D3.js Sankey, Recharts, Motion',
                         },
                         { category: 'Backend', items: 'Node.js, Express, WebSockets, MQTT' },
-                        { category: 'AI', items: 'Gemini 2.5 Pro, Claude Opus 4, Grok (xAI)' },
+                        { category: 'AI', items: 'OpenAI, Anthropic, Gemini, Groq, Ollama (BYOK)' },
                         { category: 'PWA', items: 'Workbox, Service Worker, Background Sync' },
                         {
                           category: t('help.protocols'),
-                          items: 'Modbus, MQTT, KNX/IP, OCPP, EEBus',
+                          items:
+                            '13 adapters: MQTT, Modbus, KNX, OCPP, EEBUS, evcc, HA, Zigbee2MQTT, Shelly…',
                         },
                         {
                           category: t('help.testing'),
@@ -1239,7 +1316,7 @@ export function Help() {
                       <p>• Google — Gemini 2.5 Pro AI model (Prototyping in AI Studio)</p>
                       <p>• EMHASS — MPC/LP optimization concepts</p>
                       <p>• OpenEMS — OSGi controller architecture inspiration</p>
-                      <p>• evcc — EV charging integration patterns</p>
+                      <p>• Zigbee2MQTT & Shelly — Contrib smart-device integrations</p>
                     </div>
                   </div>
 

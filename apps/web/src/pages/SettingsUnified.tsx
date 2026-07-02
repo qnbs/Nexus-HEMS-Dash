@@ -167,7 +167,7 @@ function SettingsUnifiedComponent() {
     {
       icon: <Sparkles size={16} />,
       label: t('settings.aiTab'),
-      tab: 'ai',
+      route: '/settings/ai',
       color: 'text-violet-400',
       bg: 'bg-violet-500/10',
     },
