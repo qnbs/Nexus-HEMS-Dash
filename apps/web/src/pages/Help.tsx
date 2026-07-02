@@ -6,7 +6,6 @@ import {
   Cable,
   Car,
   CheckCircle2,
-  ChevronDown,
   Clock,
   Cpu,
   Download,
@@ -39,6 +38,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { BrandGithubIcon } from '../components/icons/BrandGithubIcon';
+import { Disclosure } from '../components/ui/Disclosure';
 
 type HelpTab =
   | 'getting-started'
@@ -49,45 +49,6 @@ type HelpTab =
   | 'shortcuts'
   | 'troubleshooting'
   | 'about';
-
-function AccordionItem({
-  title,
-  children,
-  defaultOpen = false,
-}: {
-  title: string;
-  children: React.ReactNode;
-  defaultOpen?: boolean;
-}) {
-  const [open, setOpen] = useState(defaultOpen);
-  return (
-    <div className="overflow-hidden rounded-xl border border-(--color-border) bg-(--color-surface)">
-      <button
-        type="button"
-        onClick={() => setOpen(!open)}
-        className="focus-ring flex w-full cursor-pointer items-center justify-between p-4 text-left font-medium text-(--color-text) text-sm transition-colors hover:bg-white/5"
-        aria-expanded={open}
-      >
-        {title}
-        <motion.span animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }}>
-          <ChevronDown className="h-4 w-4 text-(--color-muted)" />
-        </motion.span>
-      </button>
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.25 }}
-          >
-            <div className="px-4 pb-4 text-(--color-muted) text-sm leading-relaxed">{children}</div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-}
 
 function FeatureCard({
   icon,
@@ -102,6 +63,8 @@ function FeatureCard({
   color: string;
   link?: string;
 }) {
+  const { t } = useTranslation();
+
   const content = (
     <motion.div
       className={`glass-panel rounded-xl border border-(--color-border) p-5 transition-all hover:border-(--color-primary)/30 ${link ? 'cursor-pointer' : ''}`}
@@ -116,7 +79,7 @@ function FeatureCard({
       {link && (
         <span className="mt-2 inline-flex items-center gap-1 font-medium text-(--color-primary) text-[10px]">
           <ExternalLink size={10} aria-hidden="true" />
-          Öffnen
+          {t('help.openLink')}
         </span>
       )}
     </motion.div>
@@ -946,18 +909,18 @@ export function Help() {
                     {t('help.faqGeneral')}
                   </h3>
                   <div className="mb-6 space-y-3">
-                    <AccordionItem title={t('help.faqWhatIs')} defaultOpen>
+                    <Disclosure title={t('help.faqWhatIs')} defaultOpen>
                       {t('help.faqWhatIsAnswer')}
-                    </AccordionItem>
-                    <AccordionItem title={t('help.faqPowerOutage')}>
+                    </Disclosure>
+                    <Disclosure title={t('help.faqPowerOutage')}>
                       {t('help.faqPowerOutageAnswer')}
-                    </AccordionItem>
-                    <AccordionItem title={t('help.faqOffline')}>
+                    </Disclosure>
+                    <Disclosure title={t('help.faqOffline')}>
                       {t('help.faqOfflineAnswer')}
-                    </AccordionItem>
-                    <AccordionItem title={t('help.faqCerboVsRpi')}>
+                    </Disclosure>
+                    <Disclosure title={t('help.faqCerboVsRpi')}>
                       {t('help.faqCerboVsRpiAnswer')}
-                    </AccordionItem>
+                    </Disclosure>
                   </div>
 
                   {/* Energy & Tariffs */}
@@ -965,15 +928,11 @@ export function Help() {
                     {t('help.faqEnergySection')}
                   </h3>
                   <div className="mb-6 space-y-3">
-                    <AccordionItem title={t('help.faqEnwg')}>
-                      {t('help.faqEnwgAnswer')}
-                    </AccordionItem>
-                    <AccordionItem title={t('help.faqTariff')}>
-                      {t('help.faqTariffAnswer')}
-                    </AccordionItem>
-                    <AccordionItem title={t('help.faqSgReady')}>
+                    <Disclosure title={t('help.faqEnwg')}>{t('help.faqEnwgAnswer')}</Disclosure>
+                    <Disclosure title={t('help.faqTariff')}>{t('help.faqTariffAnswer')}</Disclosure>
+                    <Disclosure title={t('help.faqSgReady')}>
                       {t('help.faqSgReadyAnswer')}
-                    </AccordionItem>
+                    </Disclosure>
                   </div>
 
                   {/* Security */}
@@ -981,12 +940,12 @@ export function Help() {
                     {t('help.faqSecuritySection')}
                   </h3>
                   <div className="mb-6 space-y-3">
-                    <AccordionItem title={t('help.faqSecurity')}>
+                    <Disclosure title={t('help.faqSecurity')}>
                       {t('help.faqSecurityAnswer')}
-                    </AccordionItem>
-                    <AccordionItem title={t('help.faqDataStorage')}>
+                    </Disclosure>
+                    <Disclosure title={t('help.faqDataStorage')}>
                       {t('help.faqDataStorageAnswer')}
-                    </AccordionItem>
+                    </Disclosure>
                   </div>
 
                   {/* Technical */}
@@ -994,13 +953,11 @@ export function Help() {
                     {t('help.faqTechnical')}
                   </h3>
                   <div className="space-y-3">
-                    <AccordionItem title={t('help.faqBrowsers')}>
+                    <Disclosure title={t('help.faqBrowsers')}>
                       {t('help.faqBrowsersAnswer')}
-                    </AccordionItem>
-                    <AccordionItem title={t('help.faqMobile')}>
-                      {t('help.faqMobileAnswer')}
-                    </AccordionItem>
-                    <AccordionItem title={t('help.faqApi')}>{t('help.faqApiAnswer')}</AccordionItem>
+                    </Disclosure>
+                    <Disclosure title={t('help.faqMobile')}>{t('help.faqMobileAnswer')}</Disclosure>
+                    <Disclosure title={t('help.faqApi')}>{t('help.faqApiAnswer')}</Disclosure>
                   </div>
                 </div>
               </motion.div>
@@ -1110,46 +1067,46 @@ export function Help() {
                 <div className="glass-panel-strong rounded-2xl p-6">
                   <h2 className="mb-6 font-semibold text-xl">{t('help.troubleshootingTitle')}</h2>
                   <div className="space-y-3">
-                    <AccordionItem title={t('help.troubleConnection')} defaultOpen>
+                    <Disclosure title={t('help.troubleConnection')} defaultOpen>
                       <ul className="space-y-2">
                         <li>1. {t('help.troubleConn1')}</li>
                         <li>2. {t('help.troubleConn2')}</li>
                         <li>3. {t('help.troubleConn3')}</li>
                         <li>4. {t('help.troubleConn4')}</li>
                       </ul>
-                    </AccordionItem>
-                    <AccordionItem title={t('help.troubleNoData')}>
+                    </Disclosure>
+                    <Disclosure title={t('help.troubleNoData')}>
                       <ul className="space-y-2">
                         <li>• {t('help.troubleData1')}</li>
                         <li>• {t('help.troubleData2')}</li>
                         <li>• {t('help.troubleData3')}</li>
                         <li>• {t('help.troubleData4')}</li>
                       </ul>
-                    </AccordionItem>
-                    <AccordionItem title={t('help.troublePwa')}>
+                    </Disclosure>
+                    <Disclosure title={t('help.troublePwa')}>
                       <ul className="space-y-2">
                         <li>• {t('help.troublePwa1')}</li>
                         <li>• {t('help.troublePwa2')}</li>
                         <li>• {t('help.troublePwa3')}</li>
                         <li>• {t('help.troublePwa4')}</li>
                       </ul>
-                    </AccordionItem>
-                    <AccordionItem title={t('help.troubleKnx')}>
+                    </Disclosure>
+                    <Disclosure title={t('help.troubleKnx')}>
                       <ul className="space-y-2">
                         <li>• {t('help.troubleKnx1')}</li>
                         <li>• {t('help.troubleKnx2')}</li>
                         <li>• {t('help.troubleKnx3')}</li>
                         <li>• {t('help.troubleKnx4')}</li>
                       </ul>
-                    </AccordionItem>
-                    <AccordionItem title={t('help.troubleAi')}>
+                    </Disclosure>
+                    <Disclosure title={t('help.troubleAi')}>
                       <ul className="space-y-2">
                         <li>• {t('help.troubleAi1')}</li>
                         <li>• {t('help.troubleAi2')}</li>
                         <li>• {t('help.troubleAi3')}</li>
                         <li>• {t('help.troubleAi4')}</li>
                       </ul>
-                    </AccordionItem>
+                    </Disclosure>
                   </div>
                 </div>
 

@@ -228,18 +228,14 @@ function LiveEnergyFlowComponent() {
               {formatPower(Math.abs(energyData.gridPower), locale)}
             </span>
             <span className="price-pill">
-              {energyData.priceCurrent.toFixed(3)} {t('units.euroPerKwh', '€/kWh')}
+              {energyData.priceCurrent.toFixed(3)} {t('units.euroPerKwh')}
             </span>
           </div>
           <button
             type="button"
             onClick={toggleFullscreen}
             className="focus-ring flex h-8 w-8 items-center justify-center rounded-lg text-(--color-muted) transition-colors hover:bg-(--color-surface) hover:text-(--color-text)"
-            aria-label={
-              isFullscreen
-                ? t('sankey.exitFullscreen', 'Vollbild beenden')
-                : t('sankey.enterFullscreen', 'Vollbild')
-            }
+            aria-label={isFullscreen ? t('sankey.exitFullscreen') : t('sankey.enterFullscreen')}
           >
             {isFullscreen ? (
               <Minimize2 className="h-4 w-4" aria-hidden="true" />
@@ -284,11 +280,8 @@ function LiveEnergyFlowComponent() {
         {!connected && !hasData ? (
           <EmptyState
             icon={WifiOff}
-            title={t('tour.liveEnergy.emptyTitle', 'Keine Verbindung')}
-            description={t(
-              'tour.liveEnergy.emptyDesc',
-              'Verbinden Sie Ihren Wechselrichter oder Cerbo GX, um den Live-Energiefluss zu sehen.',
-            )}
+            title={t('tour.liveEnergy.emptyTitle')}
+            description={t('tour.liveEnergy.emptyDesc')}
             pulse
           />
         ) : (
@@ -397,7 +390,7 @@ function FloatingDevicePanel({
               type="button"
               data-drag-handle
               className="focus-ring cursor-grab rounded text-(--color-muted) active:cursor-grabbing"
-              aria-roledescription={t('liveEnergy.draggableHandle', 'draggable handle')}
+              aria-roledescription={t('liveEnergy.draggableHandle')}
               aria-label={t(
                 'liveEnergy.movePanel',
                 'Move panel — arrow keys to reposition, Shift for large steps',
@@ -904,7 +897,7 @@ function StatsPanel({
           {t('dashboard.pvYieldToday')}: {energyData.pvYieldToday.toFixed(1)} kWh
         </span>
         <span>
-          {energyData.priceCurrent.toFixed(3)} {t('units.euroPerKwh', '€/kWh')}
+          {energyData.priceCurrent.toFixed(3)} {t('units.euroPerKwh')}
         </span>
       </div>
     </div>

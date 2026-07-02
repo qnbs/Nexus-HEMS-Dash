@@ -5,6 +5,8 @@
  * d3-sankey layout algorithm, then returns the positioned graph
  * ready for DOM rendering on the main thread.
  *
+ * Node labels are locale-neutral IDs — the UI translates them via i18n.
+ *
  * Uses Comlink for type-safe RPC — no manual postMessage plumbing.
  */
 
@@ -13,6 +15,7 @@ import { sankey as sankeyLayout } from 'd3-sankey';
 import type {
   EnergyDataInput,
   SankeyGraphResult,
+  SankeyNodeId,
   SankeyWorkerAPI,
   SankeyWorkerInput,
 } from './worker-types';
@@ -21,7 +24,7 @@ import type {
 export type { SankeyGraphResult, SankeyWorkerInput } from './worker-types';
 
 interface SankeyNode {
-  name: string;
+  id: SankeyNodeId;
   color: string;
   x0?: number;
   y0?: number;
@@ -43,13 +46,13 @@ interface SankeyLink {
 
 // ─── Core computation ────────────────────────────────────────────────
 
-const NODES: Array<{ name: string; color: string }> = [
-  { name: 'PV', color: '#facc15' },
-  { name: 'Grid', color: '#ef4444' },
-  { name: 'Battery', color: '#10b981' },
-  { name: 'House', color: '#3b82f6' },
-  { name: 'Heat Pump', color: '#f97316' },
-  { name: 'EV', color: '#8b5cf6' },
+const NODES: Array<{ id: SankeyNodeId; color: string }> = [
+  { id: 'pv', color: '#facc15' },
+  { id: 'grid', color: '#ef4444' },
+  { id: 'battery', color: '#10b981' },
+  { id: 'house', color: '#3b82f6' },
+  { id: 'heatPump', color: '#f97316' },
+  { id: 'ev', color: '#8b5cf6' },
 ];
 
 function computeEnergyFlow(
@@ -152,7 +155,7 @@ function computeSankeyGraph(input: SankeyWorkerInput): SankeyGraphResult | null 
 
   return {
     nodes: graph.nodes.map((n) => ({
-      name: n.name,
+      id: n.id,
       color: n.color,
       x0: n.x0 ?? 0,
       y0: n.y0 ?? 0,
@@ -164,10 +167,10 @@ function computeSankeyGraph(input: SankeyWorkerInput): SankeyGraphResult | null 
       const src = l.source as SankeyNode;
       const tgt = l.target as SankeyNode;
       return {
-        sourceIndex: NODES.findIndex((n) => n.name === src.name),
-        targetIndex: NODES.findIndex((n) => n.name === tgt.name),
-        sourceName: src.name,
-        targetName: tgt.name,
+        sourceIndex: NODES.findIndex((n) => n.id === src.id),
+        targetIndex: NODES.findIndex((n) => n.id === tgt.id),
+        sourceId: src.id,
+        targetId: tgt.id,
         sourceColor: src.color,
         targetColor: tgt.color,
         value: l.value,

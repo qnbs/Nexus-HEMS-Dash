@@ -78,11 +78,7 @@ export function OptimizedSankey({
               type="button"
               onClick={toggleFullscreen}
               className="focus-ring flex h-8 w-8 items-center justify-center rounded-lg text-(--color-muted) transition-colors hover:bg-(--color-surface) hover:text-(--color-text)"
-              aria-label={
-                isFullscreen
-                  ? t('sankey.exitFullscreen', 'Vollbild beenden')
-                  : t('sankey.enterFullscreen', 'Vollbild')
-              }
+              aria-label={isFullscreen ? t('sankey.exitFullscreen') : t('sankey.enterFullscreen')}
             >
               {isFullscreen ? (
                 <Minimize2 className="h-4 w-4" aria-hidden="true" />
@@ -125,19 +121,17 @@ export function OptimizedSankey({
                 exit={{ x: '100%' }}
                 transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                 role="complementary"
-                aria-label={t('sankey.detailPanel', 'Detail-Panel')}
+                aria-label={t('sankey.detailPanel')}
               >
                 {/* Panel header with close */}
                 <div className="flex items-center justify-between border-(--color-border) border-b px-4 py-3">
-                  <span className="eyebrow text-(--color-muted)">
-                    {t('sankey.details', 'Details')}
-                  </span>
+                  <span className="eyebrow text-(--color-muted)">{t('sankey.details')}</span>
                   {onDetailClose && (
                     <button
                       type="button"
                       onClick={onDetailClose}
                       className="focus-ring flex h-8 w-8 items-center justify-center rounded-lg text-(--color-muted) transition-colors hover:bg-(--color-surface) hover:text-(--color-text)"
-                      aria-label={t('common.close', 'Schließen')}
+                      aria-label={t('common.close')}
                     >
                       <X className="h-4 w-4" aria-hidden="true" />
                     </button>

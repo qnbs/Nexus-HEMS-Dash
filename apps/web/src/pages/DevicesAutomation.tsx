@@ -24,10 +24,12 @@ import { useTranslation } from 'react-i18next';
 import { DemoBadge } from '../components/DemoBadge';
 import { PageHeader } from '../components/layout/PageHeader';
 import { ControlPanel as ControlPanelUI } from '../components/ui/ControlPanel';
+import { Disclosure } from '../components/ui/Disclosure';
 import { EmptyState } from '../components/ui/EmptyState';
 import { EnergyCard, type EnergyCardVariant } from '../components/ui/EnergyCard';
 import { HelpTooltip } from '../components/ui/HelpTooltip';
 import { LiveMetric } from '../components/ui/LiveMetric';
+import { SelectField } from '../components/ui/SelectField';
 import { useEnergyContext } from '../core/EnergyContext';
 import { useLegacySendCommand } from '../core/useLegacySendCommand';
 import { hapticClick, hapticModeChange, hapticSuccess } from '../lib/haptics';
@@ -284,10 +286,7 @@ export default function DevicesAutomation() {
               <EmptyState
                 icon={Search}
                 title={t('devicesAuto.noResults')}
-                description={t(
-                  'tour.devices.emptyDesc',
-                  'Versuchen Sie einen anderen Suchbegriff oder setzen Sie den Filter zurück.',
-                )}
+                description={t('tour.devices.emptyDesc')}
                 pulse
                 action={
                   <button
@@ -349,7 +348,26 @@ function DeviceCard({
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.25 }}
     >
-      <EnergyCard variant={device.variant}>
+      <EnergyCard
+        variant={device.variant}
+        footer={
+          <QuickAction
+            deviceId={device.id}
+            data={data}
+            settings={settings}
+            sendCommand={sendCommand}
+          />
+        }
+        details={
+          <DeviceInlineDetails
+            deviceId={device.id}
+            data={data}
+            unified={unified}
+            settings={settings}
+            onOpenDetail={onOpenDetail}
+          />
+        }
+      >
         <div className="flex w-full flex-col gap-3">
           {/* Header row */}
           <div className="flex items-center justify-between gap-2">
@@ -362,27 +380,72 @@ function DeviceCard({
 
           {/* Metric row */}
           <DeviceMetricRow deviceId={device.id} data={data} unified={unified} settings={settings} />
-
-          {/* Quick action + detail button */}
-          <div className="flex items-center gap-2">
-            <QuickAction
-              deviceId={device.id}
-              data={data}
-              settings={settings}
-              sendCommand={sendCommand}
-            />
-            <button
-              type="button"
-              onClick={onOpenDetail}
-              className="focus-ring ml-auto flex items-center gap-1 rounded-lg border border-(--color-border) bg-(--color-surface) px-3 py-1.5 font-medium text-(--color-muted) text-xs transition-colors hover:border-(--color-primary)/40 hover:text-(--color-primary)"
-            >
-              {t('devicesAuto.details')}
-              <ChevronRight size={14} aria-hidden="true" />
-            </button>
-          </div>
         </div>
       </EnergyCard>
     </motion.div>
+  );
+}
+
+// ─── Inline card details (expandable) ────────────────────────────────
+
+function DeviceInlineDetails({
+  deviceId,
+  data,
+  unified,
+  settings,
+  onOpenDetail,
+}: {
+  deviceId: string;
+  data: import('../types').EnergyData;
+  unified: import('../core/adapters/EnergyAdapter').UnifiedEnergyModel;
+  settings: import('../types').StoredSettings;
+  onOpenDetail: () => void;
+}) {
+  const { t } = useTranslation();
+  const peakKWp = settings.systemConfig.pv.peakPowerKWp;
+
+  return (
+    <div className="space-y-3 border-(--color-border) border-t pt-3">
+      {deviceId === 'pv' && (
+        <>
+          <MetricRow label={t('devicesAuto.peakPower')} value={`${peakKWp} kWp`} />
+          <MetricRow
+            label={t('devicesAuto.utilization')}
+            value={`${peakKWp > 0 ? ((data.pvPower / 1000 / peakKWp) * 100).toFixed(0) : 0}%`}
+          />
+        </>
+      )}
+      {deviceId === 'storage' && (
+        <MetricRow label={t('devicesAuto.voltage')} value={`${data.batteryVoltage.toFixed(1)} V`} />
+      )}
+      {deviceId === 'ev' && (
+        <MetricRow
+          label={t('devicesAuto.model')}
+          value={settings.systemConfig.evCharger.model || '—'}
+        />
+      )}
+      {deviceId === 'heatpump' && (
+        <MetricRow label={t('devicesAuto.sgReadyMode')} value={t('control.hpMode2')} />
+      )}
+      {deviceId === 'building' &&
+        (unified.knx?.rooms ?? []).slice(0, 2).map((room) => (
+          <div key={room.name} className="flex items-center justify-between text-xs">
+            <span className="font-medium text-(--color-text)">{room.name}</span>
+            <span className="text-(--color-muted)">{room.temperature.toFixed(1)} °C</span>
+          </div>
+        ))}
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          onOpenDetail();
+        }}
+        className="focus-ring flex w-full items-center justify-center gap-1 rounded-lg border border-(--color-border) bg-(--color-surface) px-3 py-1.5 font-medium text-(--color-muted) text-xs transition-colors hover:border-(--color-primary)/40 hover:text-(--color-primary)"
+      >
+        {t('devicesAuto.fullDetails')}
+        <ChevronRight size={14} aria-hidden="true" />
+      </button>
+    </div>
   );
 }
 
@@ -816,14 +879,18 @@ function PVDetail({
       />
       <MetricRow label={t('devicesAuto.peakPower')} value={`${peakKWp} kWp`} />
       <MetricRow label={t('devicesAuto.utilization')} value={`${utilizationPct.toFixed(0)}%`} />
-      <MetricRow
-        label={t('devicesAuto.orientation')}
-        value={settings.systemConfig.pv.orientation}
-      />
-      <MetricRow
-        label={t('devicesAuto.strings')}
-        value={`${settings.systemConfig.pv.strings} × ${settings.systemConfig.pv.mpptCount} MPPT`}
-      />
+      <Disclosure variant="nested" title={t('devicesAuto.technicalDetails')} defaultOpen={false}>
+        <div className="space-y-3">
+          <MetricRow
+            label={t('devicesAuto.orientation')}
+            value={settings.systemConfig.pv.orientation}
+          />
+          <MetricRow
+            label={t('devicesAuto.strings')}
+            value={`${settings.systemConfig.pv.strings} × ${settings.systemConfig.pv.mpptCount} MPPT`}
+          />
+        </div>
+      </Disclosure>
     </div>
   );
 }
@@ -856,32 +923,34 @@ function StorageDetail({
         />
       </div>
 
-      <div className="flex gap-2 pt-2">
-        <motion.button
-          type="button"
-          onClick={() => {
-            hapticModeChange();
-            sendCommand('SET_BATTERY_POWER', 3000);
-            hapticSuccess();
-          }}
-          className="btn-primary focus-ring flex-1 text-sm"
-          whileTap={{ scale: 0.97 }}
-        >
-          {t('control.forceCharge')}
-        </motion.button>
-        <motion.button
-          type="button"
-          onClick={() => {
-            hapticModeChange();
-            sendCommand('SET_BATTERY_POWER', 0);
-            hapticSuccess();
-          }}
-          className="btn-secondary focus-ring flex-1 text-sm"
-          whileTap={{ scale: 0.97 }}
-        >
-          {t('control.auto')}
-        </motion.button>
-      </div>
+      <Disclosure variant="nested" title={t('control.batteryTitle')} defaultOpen>
+        <div className="flex gap-2">
+          <motion.button
+            type="button"
+            onClick={() => {
+              hapticModeChange();
+              sendCommand('SET_BATTERY_POWER', 3000);
+              hapticSuccess();
+            }}
+            className="btn-primary focus-ring flex-1 text-sm"
+            whileTap={{ scale: 0.97 }}
+          >
+            {t('control.forceCharge')}
+          </motion.button>
+          <motion.button
+            type="button"
+            onClick={() => {
+              hapticModeChange();
+              sendCommand('SET_BATTERY_POWER', 0);
+              hapticSuccess();
+            }}
+            className="btn-secondary focus-ring flex-1 text-sm"
+            whileTap={{ scale: 0.97 }}
+          >
+            {t('control.auto')}
+          </motion.button>
+        </div>
+      </Disclosure>
     </div>
   );
 }
@@ -932,43 +1001,49 @@ function EVDetail({
         value={settings.systemConfig.evCharger.model || '—'}
       />
 
-      <form action={evAction} className="space-y-3 pt-2">
-        <div className="grid grid-cols-3 gap-2" role="radiogroup" aria-label={t('control.evTitle')}>
-          {(['off', 'pv', 'fast'] as const).map((mode) => (
-            <label
-              key={mode}
-              className={`cursor-pointer rounded-lg border px-2 py-2 text-center font-medium text-xs transition-all focus-within:ring-(--color-primary)/40 focus-within:ring-2 sm:text-sm ${
-                evState.mode === mode
-                  ? 'border-(--color-primary) bg-(--color-primary)/20 text-(--color-primary)'
-                  : 'border-(--color-border) bg-(--color-surface) text-(--color-muted) hover:border-(--color-primary)/40'
-              }`}
-            >
-              <input
-                type="radio"
-                name="evMode"
-                value={mode}
-                className="sr-only"
-                checked={evState.mode === mode}
-                onChange={hapticClick}
-              />
-              {t(`control.ev${mode.charAt(0).toUpperCase() + mode.slice(1)}`)}
-            </label>
-          ))}
-        </div>
-        {evState.message && (
-          <p className="text-(--color-primary) text-sm" role="status" aria-live="polite">
-            ✓ {evState.message}
-          </p>
-        )}
-        <motion.button
-          type="submit"
-          disabled={isEvPending}
-          className="btn-primary focus-ring w-full"
-          whileTap={{ scale: 0.97 }}
-        >
-          {isEvPending ? t('common.saving') : t('common.apply')}
-        </motion.button>
-      </form>
+      <Disclosure variant="nested" title={t('control.evTitle')} defaultOpen>
+        <form action={evAction} className="space-y-3">
+          <div
+            className="grid grid-cols-3 gap-2"
+            role="radiogroup"
+            aria-label={t('control.evTitle')}
+          >
+            {(['off', 'pv', 'fast'] as const).map((mode) => (
+              <label
+                key={mode}
+                className={`cursor-pointer rounded-lg border px-2 py-2 text-center font-medium text-xs transition-all focus-within:ring-(--color-primary)/40 focus-within:ring-2 sm:text-sm ${
+                  evState.mode === mode
+                    ? 'border-(--color-primary) bg-(--color-primary)/20 text-(--color-primary)'
+                    : 'border-(--color-border) bg-(--color-surface) text-(--color-muted) hover:border-(--color-primary)/40'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="evMode"
+                  value={mode}
+                  className="sr-only"
+                  checked={evState.mode === mode}
+                  onChange={hapticClick}
+                />
+                {t(`control.ev${mode.charAt(0).toUpperCase() + mode.slice(1)}`)}
+              </label>
+            ))}
+          </div>
+          {evState.message && (
+            <p className="text-(--color-primary) text-sm" role="status" aria-live="polite">
+              ✓ {evState.message}
+            </p>
+          )}
+          <motion.button
+            type="submit"
+            disabled={isEvPending}
+            className="btn-primary focus-ring w-full"
+            whileTap={{ scale: 0.97 }}
+          >
+            {isEvPending ? t('common.saving') : t('common.apply')}
+          </motion.button>
+        </form>
+      </Disclosure>
     </div>
   );
 }
@@ -1006,33 +1081,34 @@ function HeatPumpDetail({
       />
       <MetricRow label={t('devicesAuto.sgReadyMode')} value={`${t('control.hpMode2')}`} />
 
-      <form action={hpAction} className="space-y-3 pt-2">
-        <select
-          name="hpMode"
-          defaultValue={hpState.mode}
-          onChange={hapticClick}
-          aria-label={t('control.hpTitle')}
-          className="focus-ring w-full rounded-lg border border-(--color-border) bg-(--color-surface) px-3 py-2 text-(--color-text) text-sm"
-        >
-          <option value="1">{t('control.hpMode1')}</option>
-          <option value="2">{t('control.hpMode2')}</option>
-          <option value="3">{t('control.hpMode3')}</option>
-          <option value="4">{t('control.hpMode4')}</option>
-        </select>
-        {hpState.message && (
-          <p className="text-(--color-primary) text-sm" role="status" aria-live="polite">
-            ✓ {hpState.message}
-          </p>
-        )}
-        <motion.button
-          type="submit"
-          disabled={isHpPending}
-          className="btn-primary focus-ring w-full"
-          whileTap={{ scale: 0.97 }}
-        >
-          {isHpPending ? t('common.saving') : t('common.apply')}
-        </motion.button>
-      </form>
+      <Disclosure variant="nested" title={t('control.hpTitle')} defaultOpen>
+        <form action={hpAction} className="space-y-3">
+          <SelectField
+            name="hpMode"
+            label={t('control.hpTitle')}
+            defaultValue={hpState.mode}
+            onChange={hapticClick}
+          >
+            <option value="1">{t('control.hpMode1')}</option>
+            <option value="2">{t('control.hpMode2')}</option>
+            <option value="3">{t('control.hpMode3')}</option>
+            <option value="4">{t('control.hpMode4')}</option>
+          </SelectField>
+          {hpState.message && (
+            <p className="text-(--color-primary) text-sm" role="status" aria-live="polite">
+              ✓ {hpState.message}
+            </p>
+          )}
+          <motion.button
+            type="submit"
+            disabled={isHpPending}
+            className="btn-primary focus-ring w-full"
+            whileTap={{ scale: 0.97 }}
+          >
+            {isHpPending ? t('common.saving') : t('common.apply')}
+          </motion.button>
+        </form>
+      </Disclosure>
     </div>
   );
 }

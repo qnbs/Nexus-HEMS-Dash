@@ -6,10 +6,10 @@
  * energy data as if an OCPP adapter pushed TransactionEvent updates.
  *
  * Flow:
- *   1. Navigate to /energy-flow → demo data shows EV = 3700 W
- *   2. Inject "charging started" (11 kW) → Sankey EV row = 11000 W
- *   3. Inject "charging update" (22 kW) → Sankey EV row = 22000 W
- *   4. Inject "charging ended" (0 W) → EV row disappears
+ *   1. Navigate to /energy-flow → demo data shows EV inflow = 3700 W
+ *   2. Inject "charging started" (11 kW) → total EV inflow = 11000 W
+ *   3. Inject "charging update" (22 kW) → total EV inflow = 22000 W
+ *   4. Inject "charging ended" (0 W) → EV inflow rows disappear
  */
 
 import { expect, test } from '@playwright/test';
@@ -39,6 +39,23 @@ async function setStoreEnergy(
   );
 }
 
+async function expectEvInflowPower(page: import('@playwright/test').Page, expectedWatts: number) {
+  await expect
+    .poll(async () => {
+      const rows = page.locator('table.sr-only tr[data-sankey-target="ev"]');
+      const count = await rows.count();
+      if (expectedWatts === 0) return count;
+
+      let total = 0;
+      for (let i = 0; i < count; i++) {
+        const text = await rows.nth(i).locator('td').nth(2).textContent();
+        total += Number.parseInt(text?.trim() ?? '0', 10);
+      }
+      return total;
+    })
+    .toBe(expectedWatts);
+}
+
 test.describe('OCPP Charging Session → Sankey Update', () => {
   test.beforeEach(async ({ page }) => {
     attachPageErrorHandler(page);
@@ -50,16 +67,13 @@ test.describe('OCPP Charging Session → Sankey Update', () => {
     await page.goto('./energy-flow');
     await page.waitForSelector('svg[role="img"]', { timeout: 15_000 });
 
-    // SR-only data table rendered by SankeyDiagram
     const sankeyTable = page.locator('table.sr-only');
     await expect(sankeyTable).toBeAttached({ timeout: 10_000 });
 
-    // ── 1. Demo data — EV = 3700 W ──────────────────────────────
-    const evRow = sankeyTable.locator('tr', { hasText: 'EV' });
-    await expect(evRow).toBeVisible({ timeout: 10_000 });
-    await expect(evRow.locator('td').last()).toHaveText('3700');
+    // ── 1. Demo data — EV inflow = 3700 W ─────────────────────────
+    await expectEvInflowPower(page, 3700);
 
-    // ── 2. OCPP TransactionEvent Started — 11 kW ────────────────
+    // ── 2. OCPP TransactionEvent Started — 11 kW ────────────────────
     await setStoreEnergy(page, {
       pvPower: 5000,
       gridPower: 9180,
@@ -73,14 +87,14 @@ test.describe('OCPP Charging Session → Sankey Update', () => {
       pvYieldToday: 15.3,
       priceCurrent: 0.28,
     });
-    await expect(evRow.locator('td').last()).toHaveText('11000', { timeout: 5_000 });
+    await expectEvInflowPower(page, 11000);
 
-    // ── 3. OCPP MeterValues Update — 22 kW ──────────────────────
+    // ── 3. OCPP MeterValues Update — 22 kW ────────────────────────
     await setStoreEnergy(page, { evPower: 22000, gridPower: 20180 });
-    await expect(evRow.locator('td').last()).toHaveText('22000', { timeout: 5_000 });
+    await expectEvInflowPower(page, 22000);
 
-    // ── 4. OCPP TransactionEvent Ended — EV = 0 W ───────────────
+    // ── 4. OCPP TransactionEvent Ended — EV = 0 W ─────────────────
     await setStoreEnergy(page, { evPower: 0, gridPower: 180 });
-    await expect(evRow).toHaveCount(0, { timeout: 5_000 });
+    await expectEvInflowPower(page, 0);
   });
 });

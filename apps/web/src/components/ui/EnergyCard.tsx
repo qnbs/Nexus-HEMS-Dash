@@ -10,6 +10,8 @@ export interface EnergyCardProps {
   children: ReactNode;
   /** Expandable detail section shown below the header */
   details?: ReactNode;
+  /** Optional action row below the header (outside the expand trigger) */
+  footer?: ReactNode;
   /** Whether the details section starts expanded */
   defaultExpanded?: boolean;
   /** Controlled expanded state — overrides internal toggle */
@@ -50,6 +52,7 @@ const variantAccent: Record<EnergyCardVariant, string> = {
 export function EnergyCard({
   children,
   details,
+  footer,
   defaultExpanded = false,
   expanded: controlledExpanded,
   onExpandedChange,
@@ -105,6 +108,8 @@ export function EnergyCard({
           </motion.span>
         )}
       </div>
+
+      {footer ? <div className="energy-card-footer">{footer}</div> : null}
 
       {/* Collapsible details */}
       <AnimatePresence initial={false}>

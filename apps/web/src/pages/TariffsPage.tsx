@@ -7,7 +7,6 @@ import {
   Calendar,
   Car,
   CheckCircle2,
-  ChevronDown,
   CircleDot,
   Clock,
   Flame,
@@ -22,7 +21,7 @@ import {
   Wallet,
   Zap,
 } from 'lucide-react';
-import { AnimatePresence, motion } from 'motion/react';
+import { motion } from 'motion/react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -42,6 +41,7 @@ import { ErrorBoundary } from '../components/ErrorBoundary';
 import { LivePriceWidget } from '../components/LivePriceWidget';
 import { PageHeader } from '../components/layout/PageHeader';
 import { PredictiveForecast } from '../components/PredictiveForecast';
+import { Disclosure } from '../components/ui/Disclosure';
 import { PageCrossLinks } from '../components/ui/PageCrossLinks';
 import { useAppStoreShallow } from '../store';
 
@@ -742,20 +742,16 @@ function TariffsPageComponent() {
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {CHARGE_WINDOWS.map((win, i) => (
-            <motion.button
+            <div
               key={`${win.start}-${win.end}`}
-              className={`group relative overflow-hidden rounded-2xl border p-4 text-left transition-all ${
+              className={`group relative overflow-hidden rounded-2xl border p-4 transition-all ${
                 win.category === 'optimal'
                   ? 'border-emerald-500/30 bg-emerald-500/5 hover:bg-emerald-500/10'
                   : win.category === 'good'
                     ? 'border-blue-500/30 bg-blue-500/5 hover:bg-blue-500/10'
                     : 'border-zinc-500/20 bg-zinc-500/5 hover:bg-zinc-500/10'
               }`}
-              onClick={() => setExpandedWindow(expandedWindow === i ? null : i)}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
             >
-              {/* Category badge */}
               <span
                 className={`absolute top-3 right-3 rounded-full px-2 py-0.5 font-bold text-[10px] uppercase ${
                   win.category === 'optimal'
@@ -772,46 +768,30 @@ function TariffsPageComponent() {
                     : t('tariffs.catAcceptable')}
               </span>
 
-              <p className="font-semibold text-(--color-text) text-lg">
-                {win.start} – {win.end}
-              </p>
-              <p className="mt-1 text-(--color-muted) text-sm tabular-nums">
-                Ø {(win.avgPrice * 100).toFixed(1)} ct/kWh · {win.duration}h
-              </p>
-
-              <AnimatePresence>
-                {expandedWindow === i && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="mt-3 grid grid-cols-2 gap-2 border-(--color-border) border-t pt-3">
-                      <div>
-                        <p className="text-(--color-muted) text-[10px]">
-                          {t('tariffs.potentialSavings')}
-                        </p>
-                        <p className="font-semibold text-emerald-400">€{win.savings.toFixed(2)}</p>
-                      </div>
-                      <div>
-                        <p className="text-(--color-muted) text-[10px]">
-                          {t('tariffs.renewableShare')}
-                        </p>
-                        <p className="font-semibold text-green-400">{win.renewable}%</p>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              <ChevronDown
-                className={`absolute right-3 bottom-3 h-4 w-4 text-(--color-muted) transition-transform ${
-                  expandedWindow === i ? 'rotate-180' : ''
-                }`}
-                aria-hidden="true"
-              />
-            </motion.button>
+              <Disclosure
+                variant="nested"
+                className="border-0 bg-transparent shadow-none"
+                open={expandedWindow === i}
+                onOpenChange={(open) => setExpandedWindow(open ? i : null)}
+                title={`${win.start} – ${win.end}`}
+                subtitle={`Ø ${(win.avgPrice * 100).toFixed(1)} ct/kWh · ${win.duration}h`}
+              >
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <p className="text-(--color-muted) text-[10px]">
+                      {t('tariffs.potentialSavings')}
+                    </p>
+                    <p className="font-semibold text-emerald-400">€{win.savings.toFixed(2)}</p>
+                  </div>
+                  <div>
+                    <p className="text-(--color-muted) text-[10px]">
+                      {t('tariffs.renewableShare')}
+                    </p>
+                    <p className="font-semibold text-green-400">{win.renewable}%</p>
+                  </div>
+                </div>
+              </Disclosure>
+            </div>
           ))}
         </div>
       </motion.section>

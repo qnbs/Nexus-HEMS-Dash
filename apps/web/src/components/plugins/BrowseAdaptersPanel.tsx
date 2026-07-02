@@ -18,6 +18,7 @@ import {
   type InstallProgress,
   type MarketplaceEntry,
 } from '../../core/adapters/adapter-marketplace';
+import { Disclosure } from '../ui/Disclosure';
 import { NeonCard, NeonCardBody } from '../ui/NeonCard';
 
 // ─── Permission badge ─────────────────────────────────────────────────
@@ -121,7 +122,6 @@ function InstallButton({ entry }: { entry: MarketplaceEntry }) {
 
 function MarketplaceCard({ entry }: { entry: MarketplaceEntry }) {
   const { t } = useTranslation();
-  const [expanded, setExpanded] = useState(false);
 
   return (
     <NeonCard variant="default" hover={false}>
@@ -148,15 +148,14 @@ function MarketplaceCard({ entry }: { entry: MarketplaceEntry }) {
           <PermissionBadge permission={entry.permissions} />
         </div>
 
-        {/* Description — native button avoids p+role="button" a11y error */}
-        <button
-          type="button"
-          className={`fluid-text-sm w-full cursor-pointer text-left text-(--color-muted) ${expanded ? '' : 'line-clamp-2'}`}
-          onClick={() => setExpanded(!expanded)}
-          aria-expanded={expanded}
-        >
-          {entry.description}
-        </button>
+        {/* Description */}
+        {entry.description.length > 120 ? (
+          <Disclosure variant="nested" title={t('marketplace.description')} defaultOpen={false}>
+            <p className="fluid-text-sm text-(--color-muted)">{entry.description}</p>
+          </Disclosure>
+        ) : (
+          <p className="fluid-text-sm text-(--color-muted)">{entry.description}</p>
+        )}
 
         {/* Tags */}
         <div className="flex flex-wrap gap-1">

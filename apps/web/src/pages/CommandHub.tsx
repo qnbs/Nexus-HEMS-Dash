@@ -2,9 +2,7 @@ import {
   Activity,
   Battery,
   Car,
-  ChevronDown,
   ChevronRight,
-  ChevronUp,
   FileBarChart,
   Home,
   Leaf,
@@ -14,7 +12,7 @@ import {
   Thermometer,
   Zap,
 } from 'lucide-react';
-import { AnimatePresence, motion } from 'motion/react';
+import { motion } from 'motion/react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
@@ -22,6 +20,7 @@ import { AIOptimizerPanel } from '../components/AIOptimizerPanel';
 import { DemoBadge } from '../components/DemoBadge';
 import { OptimizedSankey } from '../components/energy/OptimizedSankey';
 import { PageHeader } from '../components/layout/PageHeader';
+import { Disclosure } from '../components/ui/Disclosure';
 import { EmptyState } from '../components/ui/EmptyState';
 import { EnergyCard } from '../components/ui/EnergyCard';
 import { FloatingActionBar } from '../components/ui/FloatingActionBar';
@@ -275,73 +274,50 @@ function CommandHubComponent() {
         </motion.div>
 
         {/* Secondary metrics (expandable) */}
-        <AnimatePresence>
-          {showAllMetrics && (
-            <motion.div
-              className="mt-3 grid @md:grid-cols-3 @xl:grid-cols-4 grid-cols-2 gap-3"
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.25 }}
-            >
-              {metricCards.slice(4).map((card) => (
-                <Link key={card.id} to={card.link} className="focus-ring rounded-2xl">
-                  <EnergyCard
-                    variant={card.variant}
-                    details={
-                      card.getDetail(metrics) ? (
-                        <p className="text-(--color-muted) text-xs">
-                          {t(`metrics.${card.getDetail(metrics)}`, card.getDetail(metrics))}
-                        </p>
-                      ) : undefined
-                    }
-                  >
-                    <span className="shrink-0">{card.icon}</span>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate font-medium text-(--color-muted) text-[11px] uppercase tracking-wide">
-                        {t(card.labelKey)}
-                      </p>
-                      <LiveMetric
-                        value={card.getValue(metrics)}
-                        unit={card.unit}
-                        format={card.format}
-                        size="sm"
-                        precision={
-                          card.format === 'percent' ? 0 : card.format === 'currency' ? 1 : 2
-                        }
-                      />
-                    </div>
-                    <ChevronRight
-                      size={14}
-                      className="shrink-0 text-(--color-muted) opacity-0 transition-opacity group-hover:opacity-100"
-                      aria-hidden="true"
-                    />
-                  </EnergyCard>
-                </Link>
-              ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Expand/collapse toggle */}
-        <button
-          type="button"
-          onClick={() => setShowAllMetrics((v) => !v)}
-          className="focus-ring mt-3 flex w-full items-center justify-center gap-1.5 rounded-xl border border-(--color-border)/50 py-1.5 font-medium text-(--color-muted) text-xs transition-colors hover:border-(--color-primary)/40 hover:text-(--color-primary)"
-          aria-expanded={showAllMetrics}
+        <Disclosure
+          variant="glass"
+          className="mt-3"
+          open={showAllMetrics}
+          onOpenChange={setShowAllMetrics}
+          title={t('commandHub.secondaryMetrics')}
+          subtitle={showAllMetrics ? undefined : t('commandHub.showMoreMetrics')}
         >
-          {showAllMetrics ? (
-            <>
-              <ChevronUp size={14} aria-hidden="true" />
-              {t('commandHub.showFewerMetrics')}
-            </>
-          ) : (
-            <>
-              <ChevronDown size={14} aria-hidden="true" />
-              {t('commandHub.showMoreMetrics')}
-            </>
-          )}
-        </button>
+          <div className="grid @md:grid-cols-3 @xl:grid-cols-4 grid-cols-2 gap-3">
+            {metricCards.slice(4).map((card) => (
+              <Link key={card.id} to={card.link} className="focus-ring rounded-2xl">
+                <EnergyCard
+                  variant={card.variant}
+                  details={
+                    card.getDetail(metrics) ? (
+                      <p className="text-(--color-muted) text-xs">
+                        {t(`metrics.${card.getDetail(metrics)}`)}
+                      </p>
+                    ) : undefined
+                  }
+                >
+                  <span className="shrink-0">{card.icon}</span>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-medium text-(--color-muted) text-[11px] uppercase tracking-wide">
+                      {t(card.labelKey)}
+                    </p>
+                    <LiveMetric
+                      value={card.getValue(metrics)}
+                      unit={card.unit}
+                      format={card.format}
+                      size="sm"
+                      precision={card.format === 'percent' ? 0 : card.format === 'currency' ? 1 : 2}
+                    />
+                  </div>
+                  <ChevronRight
+                    size={14}
+                    className="shrink-0 text-(--color-muted) opacity-0 transition-opacity group-hover:opacity-100"
+                    aria-hidden="true"
+                  />
+                </EnergyCard>
+              </Link>
+            ))}
+          </div>
+        </Disclosure>
       </section>
 
       {/* ─── Mini Sankey (Echtzeit-Energiefluss) ─────────────── */}

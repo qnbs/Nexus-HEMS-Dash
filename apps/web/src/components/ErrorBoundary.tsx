@@ -9,6 +9,7 @@ import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { logger } from '../lib/logger';
 import { metricsCollector } from '../lib/metrics';
 import { Sentry, sentryEnabled } from '../lib/sentry';
+import { Disclosure } from './ui/Disclosure';
 
 interface Props {
   children: ReactNode;
@@ -113,11 +114,13 @@ export class ErrorBoundary extends Component<Props, State> {
 
                 {/* Error Details (only in development) */}
                 {import.meta.env.DEV && this.state.error && (
-                  <details className="mt-4 rounded-xl border border-(--state-danger-border) bg-(--state-danger-bg)/5 p-4">
-                    <summary className="cursor-pointer font-mono text-(--state-danger-fg) text-sm">
-                      {i18next.t('error.details')}
-                    </summary>
-                    <div className="mt-3 space-y-2">
+                  <Disclosure
+                    variant="nested"
+                    className="mt-4 border border-(--state-danger-border) bg-(--state-danger-bg)/5"
+                    title={i18next.t('error.details')}
+                    defaultOpen={false}
+                  >
+                    <div className="space-y-2">
                       <div>
                         <p className="font-medium text-(--state-danger-fg) text-xs">
                           {i18next.t('error.message')}
@@ -147,7 +150,7 @@ export class ErrorBoundary extends Component<Props, State> {
                         </div>
                       )}
                     </div>
-                  </details>
+                  </Disclosure>
                 )}
 
                 {/* Actions */}
