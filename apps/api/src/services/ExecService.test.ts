@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
   invalidateExecConfigCache,
   listAvailableScripts,
+  runCommandScript,
   runScript,
 } from '../services/ExecService.js';
 
@@ -55,5 +56,26 @@ describe('ExecService', () => {
   it('runs a whitelisted script and parses JSON output', async () => {
     const output = await runScript({ scriptId: 'read_meter' });
     expect(output.readings[0]?.value).toBe(1500);
+  });
+
+  describe('runCommandScript — READ_ONLY_MODE guard', () => {
+    const originalReadOnly = process.env.READ_ONLY_MODE;
+
+    afterEach(() => {
+      if (originalReadOnly === undefined) delete process.env.READ_ONLY_MODE;
+      else process.env.READ_ONLY_MODE = originalReadOnly;
+    });
+
+    it('blocks command scripts when READ_ONLY_MODE is active', async () => {
+      process.env.READ_ONLY_MODE = 'true';
+      const result = await runCommandScript({ scriptId: 'read_meter', commandType: 'SET_X' });
+      expect(result.success).toBe(false);
+    });
+
+    it('runs command scripts when READ_ONLY_MODE is off', async () => {
+      delete process.env.READ_ONLY_MODE;
+      const result = await runCommandScript({ scriptId: 'read_meter', commandType: 'SET_X' });
+      expect(result.success).toBe(true);
+    });
   });
 });

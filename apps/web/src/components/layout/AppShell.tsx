@@ -4,6 +4,7 @@ import {
   Command,
   FlaskConical,
   HelpCircle,
+  Lock,
   Settings as SettingsIcon,
   Sun,
   Zap,
@@ -14,7 +15,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { useEnergyStoreBase } from '../../core/useEnergyStore';
 import { themeDefinitions } from '../../design-tokens';
-import { isLiveSafetyMode } from '../../lib/adapter-mode';
+import { isLiveSafetyMode, isReadOnlyModeActive } from '../../lib/adapter-mode';
 import { useAppStoreShallow } from '../../store';
 import { CommandPalette, useCommandPalette } from '../ui/CommandPalette';
 import { MobileNavigation } from '../ui/MobileNavigation';
@@ -113,6 +114,9 @@ export function AppShell({ children }: AppShellProps) {
   // Global safety indicator: LIVE drives a persistent red banner; otherwise a
   // muted simulation badge so the operator can always see the operating mode.
   const isLive = isLiveSafetyMode(adapterMode);
+  // READ-ONLY (SAF-05) blocks all control commands; surface it persistently so
+  // an operator is never surprised by silently-rejected commands.
+  const isReadOnly = isReadOnlyModeActive();
 
   const hasDegradedAdapter = useEnergyStoreBase((s) =>
     Object.values(s.adapters).some(
@@ -192,6 +196,18 @@ export function AppShell({ children }: AppShellProps) {
             >
               <AlertTriangle size={14} aria-hidden="true" />
               {t('mode.liveBannerWarning')}
+            </div>
+          )}
+
+          {/* READ-ONLY banner — informational; all control commands are blocked.
+              Distinct (amber/info, role="status") from the red LIVE alert. */}
+          {isReadOnly && (
+            <div
+              role="status"
+              className="-mx-3 -mt-1.5 mb-2 flex items-center justify-center gap-2 border-(--state-warning-border) border-b bg-(--state-warning-bg)/20 px-3 py-1 text-center font-semibold text-(--state-warning-fg) text-xs uppercase tracking-wider sm:-mx-6 sm:-mt-3 sm:mb-3"
+            >
+              <Lock size={14} aria-hidden="true" />
+              {t('mode.readOnlyBannerWarning')}
             </div>
           )}
 
