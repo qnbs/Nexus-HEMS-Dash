@@ -552,24 +552,11 @@ export class OCPP21Adapter extends BaseAdapter {
   // ─── OCPP 2.1 outbound commands ──────────────────────────────────
 
   private sendSetChargingProfile(maxCurrentA: number): boolean {
-    this.call('SetChargingProfile', {
-      evseId: 1,
-      chargingProfile: {
-        id: 1,
-        stackLevel: 0,
-        chargingProfilePurpose: 'TxDefaultProfile',
-        chargingProfileKind: 'Absolute',
-        chargingSchedule: [
-          {
-            id: 1,
-            chargingRateUnit: 'A',
-            chargingSchedulePeriod: [{ startPeriod: 0, limit: maxCurrentA }],
-          },
-        ],
-      },
-    }).catch(() => {});
     this.charger.maxCurrentA = maxCurrentA;
-    return true;
+    return this.sendProfile(1, 1, 0, 'TxDefaultProfile', {
+      chargingRateUnit: 'A',
+      chargingSchedulePeriod: [{ startPeriod: 0, limit: maxCurrentA }],
+    });
   }
 
   private sendRemoteStart(): boolean {
@@ -611,31 +598,14 @@ export class OCPP21Adapter extends BaseAdapter {
 
     this.charger.bptParams = params;
     this.charger.iso15118Active = true;
-
-    // Apply BPT profile: negative limit = discharge (vehicle-to-grid).
-    // OCPP 2.1 B07.FR.04 permits negative Schedule limits for BPT.
-    this.call('SetChargingProfile', {
-      evseId: 1,
-      chargingProfile: {
-        id: 3,
-        stackLevel: 2,
-        chargingProfilePurpose: 'TxProfile',
-        chargingProfileKind: 'Absolute',
-        chargingSchedule: [
-          {
-            id: 3,
-            chargingRateUnit: 'W',
-            chargingSchedulePeriod: [{ startPeriod: 0, limit: -params.evMaximumDischargePowerW }],
-            // minChargingRate maps to the discharge minimum floor
-            minChargingRate: params.evMinimumDischargePowerW,
-          },
-        ],
-      },
-    }).catch(() => {});
-
+    const ok = this.sendProfile(1, 3, 2, 'TxProfile', {
+      chargingRateUnit: 'W',
+      chargingSchedulePeriod: [{ startPeriod: 0, limit: -params.evMaximumDischargePowerW }],
+      minChargingRate: params.evMinimumDischargePowerW,
+    });
     this.charger.v2xActive = params.evMaximumDischargePowerW > 0;
     this.emitChargerData();
-    return true;
+    return ok;
   }
 
   /**
@@ -651,145 +621,75 @@ export class OCPP21Adapter extends BaseAdapter {
       return false;
     }
 
-    // Clamp to negotiated BPT limits if available
     const effectivePowerW = this.charger.bptParams
       ? Math.min(dischargePowerW, this.charger.bptParams.evMaximumDischargePowerW)
       : dischargePowerW;
-
-    const dischargeCurrentA = Math.round(effectivePowerW / this.charger.voltageV);
-    this.call('SetChargingProfile', {
-      evseId: 1,
-      chargingProfile: {
-        id: 2,
-        stackLevel: 1,
-        chargingProfilePurpose: 'TxProfile',
-        chargingProfileKind: 'Absolute',
-        chargingSchedule: [
-          {
-            id: 2,
-            chargingRateUnit: 'A',
-            chargingSchedulePeriod: [{ startPeriod: 0, limit: -dischargeCurrentA }],
-          },
-        ],
-      },
-    }).catch(() => {});
+    const ok = this.sendProfile(1, 2, 1, 'TxProfile', {
+      chargingRateUnit: 'A',
+      chargingSchedulePeriod: [
+        { startPeriod: 0, limit: -Math.round(effectivePowerW / this.charger.voltageV) },
+      ],
+    });
     this.charger.v2xActive = effectivePowerW > 0;
+    return ok;
+  }
+
+  /** Shared SetChargingProfile helper — reduces duplicated OCPP 2.1 payload boilerplate */
+  private sendProfile(
+    evseId: number,
+    id: number,
+    stackLevel: number,
+    purpose: string,
+    schedule: Record<string, unknown>,
+    profileExtra?: Record<string, unknown>,
+  ): boolean {
+    this.call('SetChargingProfile', {
+      evseId,
+      chargingProfile: {
+        id,
+        stackLevel,
+        chargingProfilePurpose: purpose,
+        chargingProfileKind: 'Absolute',
+        chargingSchedule: [{ id, ...schedule }],
+        ...profileExtra,
+      },
+    }).catch(() => {});
     return true;
   }
 
-  /**
-   * §14a EnWG grid operator curtailment via ChargingStationMaxProfile.
-   *
-   * OCPP 2.1 B12.FR.03 / VDE-AR-N 4105-2: The grid operator sends a power limit in WATTS.
-   * Using chargingRateUnit: 'W' avoids the rounding errors introduced by the A conversion
-   * (especially relevant for 3-phase EVSEs where the per-phase current would be limit/3).
-   */
+  /** §14a EnWG: grid limit in W via ChargingStationMaxProfile (OCPP 2.1 B12) */
   private sendGridCurtailment(maxPowerW: number): boolean {
-    this.call('SetChargingProfile', {
-      evseId: 0, // Station-wide (EVSE ID 0 = charging station)
-      chargingProfile: {
-        id: 100,
-        stackLevel: 10, // Highest priority profile
-        chargingProfilePurpose: 'ChargingStationMaxProfile',
-        chargingProfileKind: 'Absolute',
-        chargingSchedule: [
-          {
-            id: 100,
-            // W unit per OCPP 2.1 §7.3.27 + §14a EnWG compliance requirement
-            chargingRateUnit: 'W',
-            chargingSchedulePeriod: [{ startPeriod: 0, limit: maxPowerW }],
-          },
-        ],
-      },
-    }).catch(() => {});
-    return true;
+    return this.sendProfile(0, 100, 10, 'ChargingStationMaxProfile', {
+      chargingRateUnit: 'W',
+      chargingSchedulePeriod: [{ startPeriod: 0, limit: maxPowerW }],
+    });
   }
 
-  /**
-   * SET_EV_POWER — set charging power in Watts via TxDefaultProfile.
-   * OCPP 2.1 supports chargingRateUnit: 'W' directly (no A conversion needed).
-   */
   private sendSetChargingProfileW(powerW: number): boolean {
-    this.call('SetChargingProfile', {
-      evseId: 1,
-      chargingProfile: {
-        id: 1,
-        stackLevel: 0,
-        chargingProfilePurpose: 'TxDefaultProfile',
-        chargingProfileKind: 'Absolute',
-        chargingSchedule: [
-          {
-            id: 1,
-            chargingRateUnit: 'W',
-            chargingSchedulePeriod: [{ startPeriod: 0, limit: powerW }],
-          },
-        ],
-      },
-    }).catch(() => {});
-    return true;
+    return this.sendProfile(1, 1, 0, 'TxDefaultProfile', {
+      chargingRateUnit: 'W',
+      chargingSchedulePeriod: [{ startPeriod: 0, limit: powerW }],
+    });
   }
 
-  /**
-   * SET_EV_MIN_CURRENT — set minimum charging current (A).
-   * Prevents the EVSE from charging below this floor (e.g. IEC 61851 minimum 6A).
-   */
   private sendMinCurrentLimit(minCurrentA: number): boolean {
-    this.call('SetChargingProfile', {
-      evseId: 1,
-      chargingProfile: {
-        id: 5,
-        stackLevel: 0,
-        chargingProfilePurpose: 'TxDefaultProfile',
-        chargingProfileKind: 'Absolute',
-        chargingSchedule: [
-          {
-            id: 5,
-            chargingRateUnit: 'A',
-            chargingSchedulePeriod: [{ startPeriod: 0, limit: this.charger.maxCurrentA }],
-            minChargingRate: minCurrentA,
-          },
-        ],
-      },
-    }).catch(() => {});
-    return true;
+    return this.sendProfile(1, 5, 0, 'TxDefaultProfile', {
+      chargingRateUnit: 'A',
+      chargingSchedulePeriod: [{ startPeriod: 0, limit: this.charger.maxCurrentA }],
+      minChargingRate: minCurrentA,
+    });
   }
 
-  /**
-   * SET_EV_PHASES — configure number of active phases (1 or 3).
-   * OCPP 2.1 §K10: phaseToUse field in ChargingSchedule controls phase assignment.
-   */
   private sendPhaseConfig(phases: 1 | 3): boolean {
-    // Per OCPP 2.1 K10.FR.01: phaseToUse = 1 → L1 only; 3 → L1+L2+L3
-    const currentPerPhase =
+    const limit =
       phases === 1 ? this.charger.maxCurrentA : Math.round(this.charger.maxCurrentA / 3);
-
-    this.call('SetChargingProfile', {
-      evseId: 1,
-      chargingProfile: {
-        id: 6,
-        stackLevel: 1,
-        chargingProfilePurpose: 'TxProfile',
-        chargingProfileKind: 'Absolute',
-        chargingSchedule: [
-          {
-            id: 6,
-            chargingRateUnit: 'A',
-            chargingSchedulePeriod: [{ startPeriod: 0, limit: currentPerPhase }],
-            ...(phases === 1 ? { startSchedule: new Date().toISOString() } : {}),
-          },
-        ],
-      },
-    }).catch(() => {});
-    return true;
+    return this.sendProfile(1, 6, 1, 'TxProfile', {
+      chargingRateUnit: 'A',
+      chargingSchedulePeriod: [{ startPeriod: 0, limit }],
+      ...(phases === 1 ? { startSchedule: new Date().toISOString() } : {}),
+    });
   }
 
-  /**
-   * SET_EV_TARGET_SOC — schedule charging to reach target SoC by departure time.
-   * Maps to an OCPP 2.1 Absolute TxDefaultProfile with a schedule period that
-   * ramps down to minChargingRate as the battery approaches full.
-   *
-   * command.payload.departureTime (Unix ms) is used if provided.
-   */
   private sendTargetSocProfile(
     targetSocPercent: number,
     payload?: Record<string, unknown>,
@@ -797,112 +697,50 @@ export class OCPP21Adapter extends BaseAdapter {
     const departureTime =
       typeof payload?.departureTime === 'number'
         ? new Date(payload.departureTime).toISOString()
-        : new Date(Date.now() + 8 * 3600 * 1000).toISOString(); // default: 8h from now
-
-    this.call('SetChargingProfile', {
-      evseId: 1,
-      chargingProfile: {
-        id: 7,
-        stackLevel: 0,
-        chargingProfilePurpose: 'TxDefaultProfile',
-        chargingProfileKind: 'Absolute',
-        // ISO 15118-20 §8.3.5.3.2: targetSoC in salesTariff / profile metadata
-        chargingSchedule: [
-          {
-            id: 7,
-            startSchedule: departureTime,
-            chargingRateUnit: 'W',
-            chargingSchedulePeriod: [
-              // Full power until 80% SoC, then taper to 20% of max to protect battery
-              { startPeriod: 0, limit: this.charger.maxCurrentA * this.charger.voltageV },
-              {
-                startPeriod: 3600,
-                limit: Math.round(this.charger.maxCurrentA * this.charger.voltageV * 0.2),
-              },
-            ],
-          },
+        : new Date(Date.now() + 8 * 3600 * 1000).toISOString();
+    const maxW = this.charger.maxCurrentA * this.charger.voltageV;
+    const ok = this.sendProfile(
+      1,
+      7,
+      0,
+      'TxDefaultProfile',
+      {
+        startSchedule: departureTime,
+        chargingRateUnit: 'W',
+        chargingSchedulePeriod: [
+          { startPeriod: 0, limit: maxW },
+          { startPeriod: 3600, limit: Math.round(maxW * 0.2) },
         ],
-        // SoC target communicated via OCPP 2.1 TargetSoC field (optional)
-        ...(targetSocPercent > 0 ? { targetSoC: targetSocPercent } : {}),
       },
-    }).catch(() => {});
-
+      targetSocPercent > 0 ? { targetSoC: targetSocPercent } : undefined,
+    );
     this.charger.evSocPercent = this.charger.evSocPercent || 0;
-    return true;
+    return ok;
   }
 
-  /**
-   * SET_SMART_COST_LIMIT — tariff-based smart charging limit (€/kWh).
-   * When the current tariff exceeds this threshold, charging is paused via a
-   * zero-current TxDefaultProfile; when below, full charging resumes.
-   * Requires the adapter caller to re-send this command when tariff changes.
-   */
   private sendSmartCostLimit(maxCostEurKwh: number): boolean {
-    // Pause charging (0 W) when cost is too high; caller will resend with updated limit
-    // Note: real tariff-awareness requires integration with the MPC optimizer
-    const pauseCharging = maxCostEurKwh <= 0;
-    this.call('SetChargingProfile', {
-      evseId: 1,
-      chargingProfile: {
-        id: 8,
-        stackLevel: 2,
-        chargingProfilePurpose: 'TxDefaultProfile',
-        chargingProfileKind: 'Absolute',
-        chargingSchedule: [
-          {
-            id: 8,
-            chargingRateUnit: 'W',
-            chargingSchedulePeriod: [
-              {
-                startPeriod: 0,
-                limit: pauseCharging ? 0 : this.charger.maxCurrentA * this.charger.voltageV,
-              },
-            ],
-          },
-        ],
-      },
-    }).catch(() => {});
-    return true;
+    const maxW = this.charger.maxCurrentA * this.charger.voltageV;
+    return this.sendProfile(1, 8, 2, 'TxDefaultProfile', {
+      chargingRateUnit: 'W',
+      chargingSchedulePeriod: [{ startPeriod: 0, limit: maxCostEurKwh <= 0 ? 0 : maxW }],
+    });
   }
 
-  /**
-   * V2H — Vehicle-to-Home discharge via TxProfile with negative limit.
-   * Unlike V2G (which exports to the grid), V2H only supplies the local house.
-   * OCPP 2.1 B07.FR.04 permits negative Schedule limits for BPT.
-   *
-   * SOC guardrail: blocks if evSocPercent < V2G_MIN_SOC_PERCENT.
-   */
-  /** @internal exposed for future SET_V2H_DISCHARGE command type */
+  /** V2H discharge — negative W limit via TxProfile (OCPP 2.1 B07) */
   sendDischargeToHome(powerW: number): boolean {
     if (!this.charger.v2xCapable) return false;
     if (this.charger.evSocPercent > 0 && this.charger.evSocPercent < V2G_MIN_SOC_PERCENT) {
       return false;
     }
-
     const effectivePowerW = this.charger.bptParams
       ? Math.min(powerW, this.charger.bptParams.evMaximumDischargePowerW)
       : powerW;
-
-    this.call('SetChargingProfile', {
-      evseId: 1,
-      chargingProfile: {
-        id: 9,
-        stackLevel: 1,
-        chargingProfilePurpose: 'TxProfile',
-        chargingProfileKind: 'Absolute',
-        chargingSchedule: [
-          {
-            id: 9,
-            // Negative W = discharge (V2H); W unit avoids 3-phase rounding
-            chargingRateUnit: 'W',
-            chargingSchedulePeriod: [{ startPeriod: 0, limit: -effectivePowerW }],
-          },
-        ],
-      },
-    }).catch(() => {});
-
+    const ok = this.sendProfile(1, 9, 1, 'TxProfile', {
+      chargingRateUnit: 'W',
+      chargingSchedulePeriod: [{ startPeriod: 0, limit: -effectivePowerW }],
+    });
     this.charger.v2xActive = effectivePowerW > 0;
     this.emitChargerData();
-    return true;
+    return ok;
   }
 }

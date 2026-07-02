@@ -60,6 +60,16 @@ export interface Zigbee2MQTTConfig extends Partial<AdapterConnectionConfig> {
 
 type DeviceRole = 'grid' | 'load' | 'heatpump' | 'ev' | 'unknown';
 
+const EMPTY_ZIGBEE_STATE: ZigbeeDeviceState = {
+  available: false,
+  power: undefined,
+  energy: undefined,
+  voltage: undefined,
+  current: undefined,
+  state: undefined,
+  temperature: undefined,
+};
+
 interface ZigbeeDeviceState {
   power: number | undefined;
   energy: number | undefined;
@@ -122,21 +132,8 @@ export class Zigbee2MQTTAdapter extends BaseAdapter {
 
     this.baseTopic = config?.baseTopic ?? 'zigbee2mqtt';
     this.energyDevices = new Set(config?.energyDevices ?? []);
-    this.heatPumpHints = config?.heatPumpNameHints ?? [
-      'heat_pump',
-      'waermepumpe',
-      'wp_',
-      'heatpump',
-      'boiler',
-      'warmepumpe',
-    ];
-    this.evHints = config?.evNameHints ?? [
-      'wallbox',
-      'ev_charger',
-      'charging',
-      'ladepunkt',
-      'evse',
-    ];
+    this.heatPumpHints = config?.heatPumpNameHints ?? ['heat_pump', 'heatpump', 'wp_', 'boiler'];
+    this.evHints = config?.evNameHints ?? ['wallbox', 'ev_charger', 'evse', 'ladepunkt'];
 
     if (config?.mqttUser && config?.mqttPassword) {
       this.mqttCredentials = { user: config.mqttUser, password: config.mqttPassword };
