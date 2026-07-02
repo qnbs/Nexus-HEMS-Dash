@@ -6,7 +6,7 @@ Cloud agents may not have `actions:write` to dispatch or rerun workflows. Use th
 
 1. **Actions** → **Tauri Desktop Build** → **Run workflow**
 2. Branch: `main`
-3. Version: `1.6.1` (without leading `v`)
+3. Version: `1.7.0` (without leading `v`)
 4. Wait for linux + macos + windows matrix jobs
 
 Or re-run a failed release-triggered build from the failed run page once the fix is on `main`.

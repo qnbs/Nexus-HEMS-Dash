@@ -1,7 +1,7 @@
 # Feature Status — Nexus-HEMS-Dash
 
-**Version:** 1.6.1 shipped (2026-07-02)  
-**Last updated:** 2026-07-02  
+**Version:** 1.7.0 shipped (2026-07-02)  
+**Last updated:** 2026-07-03  
 **Purpose:** Single source of truth for what is actually implemented, partial, or planned. Use this file to keep README/marketing claims synchronized with the codebase.
 
 > **Rule:** Any PR that changes a feature's implementation status must update this file and the relevant docs before merging.

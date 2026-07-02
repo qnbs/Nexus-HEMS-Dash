@@ -370,7 +370,7 @@ apps/web/                      # @nexus-hems/web — React 19 Vite SPA
 │   │       ├── EEBUSAdapter.ts
 │   │       ├── EvccAdapter.ts     # evcc backend via REST + WebSocket
 │   │       ├── OpenEMSAdapter.ts  # OpenEMS Edge via JSON-RPC 2.0 / WebSocket
-│   │       └── contrib/           # 6 contrib adapters + README
+│   │       └── contrib/           # 7 contrib adapters + README
 │   ├── lib/
 │   │   ├── db.ts              #   Dexie.js schema + migrations
 │   │   ├── ai-keys.ts         #   AES-GCM 256-bit key vault
