@@ -15,17 +15,21 @@
  *   const evCharger = useEnergyStore((s) => s.unified.evCharger);
  */
 
-import { sanitizeObjectStrings, sanitizeUntrustedText } from '@nexus-hems/shared-types';
+import {
+  sanitizeObjectStrings,
+  sanitizeUntrustedText,
+  WSMessageSchema,
+} from '@nexus-hems/shared-types';
 import { useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { create } from 'zustand';
 import { useShallow } from 'zustand/react/shallow';
 import { canConnectHardwareAdapter, isBuiltinAdapterEnabledByDefault } from '../lib/adapter-mode';
 import { persistSnapshot } from '../lib/db';
+import { logger } from '../lib/logger';
 import { queryClient } from '../lib/query-client';
 import { useAppStore } from '../store';
 import { createRegisteredAdapter, registerBuiltinAdapters } from './adapters/adapter-registry';
-
 import type { BaseAdapter } from './adapters/BaseAdapter';
 import type {
   AdapterCommand,
@@ -35,6 +39,7 @@ import type {
   UnifiedEnergyModel,
 } from './adapters/EnergyAdapter';
 import type { CircuitState } from './circuit-breaker';
+import { mapServerEnergyDataToUnified } from './server-energy-mapping';
 
 // ─── Adapter registry ────────────────────────────────────────────────
 
@@ -66,9 +71,17 @@ export interface EnergyStoreState {
   lastUpdated: number | null;
   /** Sliding-window ring buffer — up to 1 000 flushed snapshots, newest last */
   history: HistoryPoint[];
+  /**
+   * Whether the optional backend WebSocket consumer (`useServerWebSocket`,
+   * gated by `VITE_BACKEND_WS`) is currently connected. `false` for the
+   * default client-side-adapter build where the socket is never opened.
+   */
+  serverWsConnected: boolean;
 
   // Actions
   mergeData: (adapterId: string, data: Partial<UnifiedEnergyModel>) => void;
+  /** Reflect the backend WebSocket connection state (see `useServerWebSocket`) */
+  setServerWsConnected: (connected: boolean) => void;
   setAdapterStatus: (adapterId: AdapterId, status: AdapterStatus, error?: string) => void;
   enableAdapter: (adapterId: AdapterId, enabled: boolean) => void;
   /** Add a dynamically loaded contrib/npm adapter to the store */
@@ -191,6 +204,7 @@ export const useEnergyStoreBase = create<EnergyStoreState>()((set) => ({
   anyConnected: false,
   lastUpdated: null,
   history: [],
+  serverWsConnected: false,
 
   mergeData: (_adapterId, data) => {
     const sanitizedData = sanitizeObjectStrings(data, 128);
@@ -203,6 +217,12 @@ export const useEnergyStoreBase = create<EnergyStoreState>()((set) => ({
     if (_flushTimer === null) {
       _flushTimer = setTimeout(flushMerge, UI_THROTTLE_MS);
     }
+  },
+
+  setServerWsConnected: (connected) => {
+    set((state) =>
+      state.serverWsConnected === connected ? state : { serverWsConnected: connected },
+    );
   },
 
   setAdapterStatus: (adapterId, status, error) => {
@@ -615,30 +635,62 @@ export function useEnergyStore<T>(selector: (state: EnergyStoreState) => T): T {
 const WS_BACKOFF_INITIAL_MS = 1_000;
 const WS_BACKOFF_MAX_MS = 30_000;
 const WS_BACKOFF_MULTIPLIER = 2;
+/**
+ * Liveness watchdog: the backend broadcasts an `ENERGY_UPDATE` every ~2 s
+ * (`energy.ws.ts`). If no valid frame arrives within this window the socket is
+ * treated as stale-but-open (half-open TCP, proxy timeout) and force-closed to
+ * trigger the reconnect path — `onclose` alone cannot detect a silent stall.
+ */
+const WS_LIVENESS_TIMEOUT_MS = 6_000;
+
+/** Virtual adapter id under which server-pushed snapshots are merged. */
+const SERVER_ADAPTER_ID = 'server' as AdapterId;
 
 /**
- * useServerWebSocket — connects the browser to the HEMS Express WebSocket
- * server with exponential backoff + jitter.
+ * useServerWebSocket — opt-in browser consumer of the HEMS Express WebSocket
+ * broadcast (HIGH-17 / ADR-018 / ADR-025).
  *
- * Receives ENERGY_UPDATE broadcasts and merges them into useEnergyStore.
- * Useful in mock/dev mode and as a fallback when hardware adapters are
- * not configured. Call with `enabled={true}` to activate.
+ * Connects with exponential backoff + jitter, **validates every inbound frame
+ * with `WSMessageSchema`**, projects the flat wire `EnergyData` into the nested
+ * `UnifiedEnergyModel` via {@link mapServerEnergyDataToUnified}, and merges it
+ * into the store under the `'server'` virtual adapter. A liveness watchdog
+ * reconnects on a silent stall, and `serverWsConnected` reflects socket state.
  *
- * Reconnect schedule: 1 s → 2 s → 4 s → 8 s → 16 s → 30 s (max).
- * ±25 % jitter prevents thundering herd after a server restart.
+ * Disabled by default — pass `enabled={isBackendWsEnabled()}`. In the default
+ * client-side-adapter build the socket is never opened (gh-pages static demo
+ * behaviour is unchanged).
  *
+ * Reconnect schedule: 1 s → 2 s → 4 s → 8 s → 16 s → 30 s (max), ±25 % jitter.
  * Mount once — e.g. in App.tsx alongside useAdapterBridge().
  */
 export function useServerWebSocket(enabled: boolean): void {
   const wsRef = useRef<WebSocket | null>(null);
   const retryDelayRef = useRef(WS_BACKOFF_INITIAL_MS);
   const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const watchdogTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const destroyedRef = useRef(false);
 
   useEffect(() => {
     if (!enabled) return;
 
     destroyedRef.current = false;
+
+    function clearWatchdog(): void {
+      if (watchdogTimerRef.current !== null) {
+        clearTimeout(watchdogTimerRef.current);
+        watchdogTimerRef.current = null;
+      }
+    }
+
+    /** (Re)arm the stall detector; a silent socket is force-closed to reconnect. */
+    function kickWatchdog(): void {
+      clearWatchdog();
+      if (destroyedRef.current) return;
+      watchdogTimerRef.current = setTimeout(() => {
+        logger.warn('Backend WS stalled — forcing reconnect', 'useServerWebSocket');
+        wsRef.current?.close();
+      }, WS_LIVENESS_TIMEOUT_MS);
+    }
 
     function connect(): void {
       if (destroyedRef.current) return;
@@ -658,25 +710,38 @@ export function useServerWebSocket(enabled: boolean): void {
 
       ws.onopen = () => {
         retryDelayRef.current = WS_BACKOFF_INITIAL_MS;
+        useEnergyStoreBase.getState().setServerWsConnected(true);
+        kickWatchdog();
       };
 
       ws.onmessage = (event: MessageEvent) => {
+        let raw: unknown;
         try {
-          const msg = JSON.parse(String(event.data)) as { type: string; data: unknown };
-          if (msg.type === 'ENERGY_UPDATE') {
-            // Route server-pushed data into the adapter store under the
-            // 'server' virtual adapter ID so UI components react normally.
-            useEnergyStoreBase
-              .getState()
-              .mergeData('server' as AdapterId, msg.data as Partial<UnifiedEnergyModel>);
-          }
+          raw = JSON.parse(String(event.data));
         } catch {
-          // Ignore unparseable frames
+          logger.warn('Dropped non-JSON WS frame', 'useServerWebSocket');
+          return;
+        }
+        // Validate against the shared discriminated-union contract; drop
+        // anything that does not match rather than trusting the wire.
+        const parsed = WSMessageSchema.safeParse(raw);
+        if (!parsed.success) {
+          logger.warn('Dropped WS frame failing schema validation', 'useServerWebSocket');
+          return;
+        }
+        if (parsed.data.type === 'ENERGY_UPDATE') {
+          // Project flat wire EnergyData → nested UnifiedEnergyModel before merge.
+          useEnergyStoreBase
+            .getState()
+            .mergeData(SERVER_ADAPTER_ID, mapServerEnergyDataToUnified(parsed.data.data));
+          kickWatchdog();
         }
       };
 
       ws.onclose = () => {
         wsRef.current = null;
+        clearWatchdog();
+        useEnergyStoreBase.getState().setServerWsConnected(false);
         scheduleReconnect();
       };
 
@@ -700,6 +765,7 @@ export function useServerWebSocket(enabled: boolean): void {
 
     return () => {
       destroyedRef.current = true;
+      clearWatchdog();
       if (retryTimerRef.current !== null) {
         clearTimeout(retryTimerRef.current);
         retryTimerRef.current = null;
@@ -707,6 +773,7 @@ export function useServerWebSocket(enabled: boolean): void {
       wsRef.current?.close();
       wsRef.current = null;
       retryDelayRef.current = WS_BACKOFF_INITIAL_MS;
+      useEnergyStoreBase.getState().setServerWsConnected(false);
     };
   }, [enabled]);
 }

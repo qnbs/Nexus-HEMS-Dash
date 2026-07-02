@@ -177,4 +177,17 @@ describe('resolveBroadcastData (energy.ws)', () => {
     expect(result).not.toBe(mockData);
     expect(result.pvPower).toBe(4321);
   });
+
+  it('falls back to mock when a live snapshot fails EnergyData validation (R2)', () => {
+    process.env.ADAPTER_MODE = 'live';
+    process.env.ALLOW_LIVE_HARDWARE = 'true';
+    // Stub aggregator that reports fresh data but emits an out-of-contract
+    // snapshot (batterySoC > 100). resolveBroadcastData must not ship it.
+    const badSnapshot = { ...mockData, batterySoC: 150 };
+    const stub = {
+      hasLiveData: () => true,
+      getSnapshot: () => badSnapshot,
+    } as unknown as LiveEnergyAggregator;
+    expect(resolveBroadcastData(stub)).toBe(mockData);
+  });
 });
