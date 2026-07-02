@@ -1,6 +1,7 @@
 import {
   Activity,
   BarChart3,
+  Cpu,
   HelpCircle,
   LayoutDashboard,
   Monitor,
@@ -71,6 +72,7 @@ const navSections: NavSection[] = [
     labelKey: 'nav.groupSettingsPlugins',
     items: [
       { path: '/settings', labelKey: 'nav.settingsPlugins', icon: <Settings size={20} /> },
+      { path: '/settings/hardware', labelKey: 'nav.hardware', icon: <Cpu size={20} /> },
       { path: '/help', labelKey: 'nav.help', icon: <HelpCircle size={20} /> },
     ],
   },
@@ -163,7 +165,7 @@ function SidebarComponent() {
                 <li key={item.path}>
                   <NavLink
                     to={item.path}
-                    end={item.path === '/'}
+                    end={item.path === '/' || item.path === '/settings'}
                     title={collapsed ? t(item.labelKey) : undefined}
                     className={({ isActive }) =>
                       `sidebar-link group flex items-center rounded-xl font-medium text-sm transition-all duration-200 ${

@@ -2,10 +2,12 @@ import {
   Activity,
   BarChart3,
   Car,
+  Cpu,
   FileDown,
   HelpCircle,
   Home,
   Monitor,
+  Puzzle,
   Search,
   SearchX,
   Settings,
@@ -50,6 +52,8 @@ const ICON_TRENDING_UP = <TrendingUp className="h-5 w-5 text-orange-400" />;
 const ICON_BAR_CHART = <BarChart3 className="h-5 w-5" />;
 const ICON_MONITOR = <Monitor className="h-5 w-5" />;
 const ICON_SETTINGS = <Settings className="h-5 w-5" />;
+const ICON_CPU = <Cpu className="h-5 w-5" />;
+const ICON_PUZZLE = <Puzzle className="h-5 w-5" />;
 const ICON_HELP = <HelpCircle className="h-5 w-5" />;
 const ICON_ZAP = <Zap className="h-5 w-5 text-red-400" />;
 
@@ -65,12 +69,20 @@ export function CommandPalette({
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   const inputRef = useRef<HTMLInputElement>(null);
+  const containerFocusRef = useRef<HTMLDivElement>(null);
 
-  // WCAG 2.1.2 / 2.4.3: trap Tab within the dialog, focus the search input on
-  // open, restore focus to the trigger on close, and close on Escape.
+  // On touch / narrow viewports, auto-focusing the search input on open would
+  // pop the on-screen keyboard unprompted. Focus the dialog container there
+  // instead — the keyboard then appears only when the user taps the field.
+  // Desktop (≥ lg) keeps input autofocus so Cmd/Ctrl+K → type works immediately.
+  const autoFocusInput =
+    typeof window !== 'undefined' && !!window.matchMedia?.('(min-width: 1024px)').matches;
+
+  // WCAG 2.1.2 / 2.4.3: trap Tab within the dialog, move focus in on open,
+  // restore focus to the trigger on close, and close on Escape.
   const dialogRef = useFocusTrap<HTMLDivElement>(isOpen, {
     onEscape: onClose,
-    initialFocusRef: inputRef,
+    initialFocusRef: autoFocusInput ? inputRef : containerFocusRef,
   });
 
   const commands: Command[] = [
@@ -199,6 +211,28 @@ export function CommandPalette({
       keywords: ['config', 'options', 'einstellungen'],
     },
     {
+      id: 'nav-hardware',
+      label: t('nav.hardware'),
+      icon: ICON_CPU,
+      action: () => {
+        navigate('/settings/hardware');
+        onClose();
+      },
+      category: 'navigation',
+      keywords: ['hardware', 'registry', 'catalog', 'device', 'inverter', 'geräte', 'katalog'],
+    },
+    {
+      id: 'nav-plugins',
+      label: t('nav.plugins'),
+      icon: ICON_PUZZLE,
+      action: () => {
+        navigate('/plugins');
+        onClose();
+      },
+      category: 'navigation',
+      keywords: ['plugin', 'adapter', 'extension', 'marketplace', 'erweiterung'],
+    },
+    {
       id: 'nav-help',
       label: t('nav.help'),
       icon: ICON_HELP,
@@ -288,6 +322,16 @@ export function CommandPalette({
             aria-modal="true"
             aria-labelledby="cmd-palette-title"
           >
+            {/* Initial-focus sentinel: on touch viewports focus lands here (not
+                the text input) so opening the palette does not pop the on-screen
+                keyboard. tabIndex=-1 keeps it out of the Tab order. */}
+            <div
+              ref={containerFocusRef}
+              tabIndex={-1}
+              aria-hidden="true"
+              className="sr-only"
+              data-testid="cmd-initial-focus"
+            />
             {/* Search Input */}
             <div className="flex items-center gap-3 border-(--color-border) border-b p-4">
               <Search className="h-5 w-5 text-(--color-muted)" aria-hidden="true" />
