@@ -711,20 +711,14 @@ Monitoring page adapter cards consume these via the existing JSON metrics poll.
 ---
 
 ### MED-19 — No Add-Adapter-Instance UI; Hardware Registry Not Surfaced
-**Files:** `apps/web/src/core/hardware-registry.ts`, `apps/web/src/components/settings/`
-**Status:** ⏳ Scheduled — ADR-019 (Proposed)
+**Files:** `apps/web/src/core/hardware-registry.ts`, `apps/web/src/pages/HardwareRegistryPage.tsx`, `apps/web/src/components/hardware/AddAdapterWizard.tsx`
+**Status:** ✅ Shipped (ADR-019)
 
-This is the genuine gap behind the (false) "brand-agnostic" framing. `hardware-registry.ts`
-already holds 113 devices across ~30 manufacturers (Victron ~6%) with tested query helpers, but
-it is used only by tests — **never surfaced in a browsable UI**, and there is **no "add adapter
-instance" wizard**. Adapters are configured via store calls, not a discoverable flow.
-
-**Fix:** a searchable/filterable registry view (reuse the existing query functions) + a
-schema-driven add-instance wizard (protocol → optional registry pre-fill → Zod-schema params →
-test → name/enable), on the modular Settings pattern (MED-16). Neutralize cosmetic Victron
-references only (`defaultName_victron`, help copy). Explicitly **do not** add a parallel
-`DeviceProfile`/`VendorProfile` abstraction (ADR-019 — the registry shape + adapter Zod schemas
-already cover it).
+`hardware-registry.ts` holds 113 devices across ~30 manufacturers with tested query helpers.
+**`/settings/hardware`** surfaces a searchable, filterable catalog (category, manufacturer,
+protocol). **Add-adapter wizard** (`AddAdapterWizard.tsx`): protocol pick or registry pre-fill →
+connection params → mock/live connection test → enable adapter + redirect to Settings adapters tab.
+Protocol→adapter mapping in `hardware-adapter-map.ts`.
 
 ---
 

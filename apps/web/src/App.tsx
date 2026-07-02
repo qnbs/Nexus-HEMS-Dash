@@ -58,6 +58,7 @@ const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 const AISettingsPage = lazy(() => import('./pages/AISettingsPage'));
 const MonitoringUnified = lazy(() => import('./pages/Monitoring'));
 const PluginsPage = lazy(() => import('./pages/PluginsPage'));
+const HardwareRegistryPage = lazy(() => import('./pages/HardwareRegistryPage'));
 
 /** Scrolls to top and moves focus to main content on SPA route changes.
  * Skips focus management on initial render so the skip-to-content link
@@ -277,6 +278,7 @@ export default function App() {
                     <Route element={<SettingsLayout />}>
                       <Route path="/settings" element={<SettingsUnified />} />
                       <Route path="/settings/ai" element={<AISettingsPage />} />
+                      <Route path="/settings/hardware" element={<HardwareRegistryPage />} />
                       <Route path="/plugins" element={<PluginsPage />} />
                       <Route path="/help" element={<Help />} />
                     </Route>
@@ -288,7 +290,10 @@ export default function App() {
                     <Route path="/ev" element={<Navigate to="/devices" replace />} />
                     <Route path="/floorplan" element={<Navigate to="/devices" replace />} />
                     <Route path="/controllers" element={<Navigate to="/settings" replace />} />
-                    <Route path="/hardware" element={<Navigate to="/devices" replace />} />
+                    <Route
+                      path="/hardware"
+                      element={<Navigate to="/settings/hardware" replace />}
+                    />
                     <Route
                       path="/historical-analytics"
                       element={<Navigate to="/analytics" replace />}
