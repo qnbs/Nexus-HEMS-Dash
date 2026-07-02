@@ -283,17 +283,15 @@ Changed to `process.env.JWT_SECRET_FILE ?? '/run/secrets/jwt_secret'`.
 
 ### MED-01 — Test Coverage Below Industry Standard
 
-**File:** `apps/web/vitest.config.ts:18-22`, `apps/api/vitest.config.ts:13-17`
-**Status:** ⏳ In progress — web gates at 70/70/68/70 (functions temporarily 68, see `docs/Test-Coverage-TODO.md`); API at the measured v1.3.0 baseline 33/30/38/33 (staged toward 55)
+**File:** `apps/web/vitest.config.ts:18-22`, `apps/web/coverage-baseline.json`, `apps/api/vitest.config.ts:13-17`
+**Status:** ⏳ In progress — **web PRF-03 baseline restored to 78/70/70/80** (measured 78.93/71.22/71.96/80.87, 2026-07-02); branches stretch target 72% deferred; API staged toward 55%
 
-Current thresholds:
+Current enforced thresholds:
 
-- Web: statements 70%, branches 70%, functions 68% (temporarily; target 70), lines 70%
+- Web vitest + baseline: statements **78%**, branches **70%**, functions **70%**, lines **80%**
 - API: statements 33%, branches 30%, functions 38%, lines 33% (measured v1.3.0 baseline, staged toward 55%)
 
-Target: 70%+ for all metrics.
-
-**Fix:** Prioritize branch coverage for adapters (circuit breaker transitions), JWT utilities (key rotation paths), and MPC optimizer (constraint validation).
+**Fix:** Continue ratcheting API gates as backend adapter tests land; raise web branches to 72% once measured coverage clears with margin.
 
 ---
 
@@ -398,21 +396,37 @@ Added `openCount` field; each OPEN transition increments it. `currentState` gett
 
 The static meta CSP (effective policy for GitHub Pages, no Express in front) shipped `ws(s)://localhost:*` / `ws(s)://127.0.0.1:*` in `connect-src`. `cspNoncePlugin` now strips them from production builds via `stripLocalhostWsOrigins`; dev/E2E keep them for the Vite proxy. Unit test + `smoke-prod-build.mjs` `dist/index.html` assertion guard it.
 
-### AUD-02 — CSP `style-src 'unsafe-inline'` Still Present (dev + prod)
+### AUD-02 — CSP `style-src 'unsafe-inline'` Reduction Plan
 
-**File:** [`apps/web/index.html`](apps/web/index.html), [`apps/api/src/middleware/security.ts`](apps/api/src/middleware/security.ts)
-**Status:** ⏳ Scheduled (target v1.7.0)
+**File:** [`apps/web/index.html`](apps/web/index.html), [`apps/api/src/middleware/security.ts`](apps/api/src/middleware/security.ts), [`apps/web/nginx.conf`](apps/web/nginx.conf), [`apps/web/src-tauri/tauri.conf.json`](apps/web/src-tauri/tauri.conf.json)
+**Status:** ⏳ Scheduled (target v1.8.0 — itemized plan below)
 **Severity:** MED
 
-Both shells retain `style-src 'unsafe-inline'`. Move toward nonce/hash-based styles to drop `unsafe-inline` for styles (Tailwind v4 injected styles + Radix inline styles are the main consumers). Scope: audit inline-style sources, adopt the existing nonce for `<style>`, verify no runtime style regressions. Not a blocker.
+**Already nonce-clean (no `unsafe-inline`):**
+
+| Surface | `style-src` today | Notes |
+|---|---|---|
+| GitHub Pages / Vite `index.html` meta CSP | `'self' 'nonce-__CSP_NONCE__'` | Build-time nonce via `cspNoncePlugin`; prod `dist/index.html` verified |
+
+**Still requires `unsafe-inline` (or equivalent work):**
+
+| # | Surface | Consumer | Removal path |
+|---|---|---|---|
+| 1 | API Helmet prod (`security.ts:115-118`) | Tailwind v4 runtime `<style>` injection + Radix `style={{}}` on first paint | Hash known Tailwind chunks at build; pass nonce to Helmet `styleSrc`; add Playwright style-regression gate |
+| 2 | API Helmet dev (`security.ts:100`) | Vite HMR style injection | Keep dev-only `unsafe-inline`; document as dev exception |
+| 3 | Docker/nginx (`nginx.conf:37`) | Same as #1 + `fonts.googleapis.com` | Mirror nonce/hash policy from #1; move fonts to self-hosted `@font-face` |
+| 4 | Tauri desktop (`tauri.conf.json:27`) | Embedded WebView Tailwind | Align with #1 after web build emits hashed style manifest |
+| 5 | Radix primitives | Inline `style` props on portals/tooltips | Audit per-component; prefer CSS variables in `@theme` over inline styles where Radix allows |
+
+**Acceptance:** drop `unsafe-inline` from prod API Helmet + nginx + Tauri without visual regression; dev exception documented; no other CSP directive weakened.
 
 ### AUD-03 — Adapter Safety Matrix Gaps (missing per-adapter tests)
 
 **File:** [`docs/Adapter-Safety-Matrix.md`](docs/Adapter-Safety-Matrix.md)
-**Status:** ⏳ Scheduled
+**Status:** ✅ Resolved (2026-07-02)
 **Severity:** LOW–MED
 
-Static audit (PR #227) found **no** 🔴 defects beyond the fixed wizard false-success (ADR-024). Open 🟡 cells are missing adapter-specific tests, covered by base-class guarantees: **G-1** OpenEMSAdapter connect-failure test (MED), **G-2** ExecAdapter web test (also P1), **G-3** HA `ha-ws-api` transport (P1), **G-4** ExampleContribAdapter smoke test (LOW).
+G-1…G-4 closed with `openems-adapter.test.ts`, `exec-adapter.test.ts`, extended `homeassistant-mqtt-adapter.test.ts` (ha-ws-api), and `example-contrib-adapter.test.ts`. Matrix cells re-marked 🟢 with linked tests.
 
 ---
 
