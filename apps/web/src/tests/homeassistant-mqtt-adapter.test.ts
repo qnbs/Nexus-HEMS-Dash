@@ -381,12 +381,17 @@ describe('HomeAssistantMQTTAdapter — ha-ws-api auth', () => {
       haMode: 'ha-ws-api',
       port: 8123,
     });
+    let connectError: string | undefined;
+    adapter.onStatus((status, error) => {
+      if (status === 'error') connectError = error;
+    });
     const p = adapter.connect();
     mockInstance!.onmessage?.({
       data: JSON.stringify({ type: 'auth_required', ha_version: '2024.1' }),
     });
-    await expect(p).rejects.toThrow(/haToken/);
+    await p;
     expect(adapter.status).toBe('error');
+    expect(connectError).toMatch(/haToken/);
     adapter.destroy();
     vi.unstubAllGlobals();
     mockInstance = null;
