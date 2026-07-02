@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -25,12 +25,12 @@ import { allNavItems, Sidebar } from '../components/layout/Sidebar';
 import { CommandPalette } from '../components/ui/CommandPalette';
 import { MobileNavigation } from '../components/ui/MobileNavigation';
 
-describe('hardware registry navigation wiring (MED-19 discoverability)', () => {
-  beforeEach(() => {
-    mockNavigate.mockClear();
-  });
+beforeEach(() => {
+  mockNavigate.mockClear();
+});
 
-  it('registers /settings/hardware as a sidebar nav item', () => {
+describe('Sidebar navigation', () => {
+  it('registers /settings/hardware as a sidebar nav item (MED-19 discoverability)', () => {
     const item = allNavItems.find((i) => i.path === '/settings/hardware');
     expect(item).toBeDefined();
     expect(item?.labelKey).toBe('nav.hardware');
@@ -46,21 +46,97 @@ describe('hardware registry navigation wiring (MED-19 discoverability)', () => {
     expect(link).toHaveAttribute('href', '/settings/hardware');
   });
 
-  it('navigates to /settings/hardware from the command palette', async () => {
+  it('collapses and expands via the toggle button', async () => {
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter>
+        <Sidebar />
+      </MemoryRouter>,
+    );
+    await user.click(screen.getByRole('button', { name: 'nav.collapseSidebar' }));
+    expect(screen.getByRole('button', { name: 'nav.expandSidebar' })).toBeInTheDocument();
+  });
+});
+
+describe('CommandPalette navigation', () => {
+  const navPaths: Record<string, string> = {
+    'nav-dashboard': '/',
+    'nav-energy-flow': '/energy-flow',
+    'nav-devices': '/devices',
+    'nav-ai': '/optimization-ai',
+    'nav-ai-settings': '/settings/ai',
+    'nav-tariffs': '/tariffs',
+    'nav-analytics': '/analytics',
+    'nav-monitoring': '/monitoring',
+    'nav-settings': '/settings',
+    'nav-hardware': '/settings/hardware',
+    'nav-plugins': '/plugins',
+    'nav-help': '/help',
+    'device-grid': '/energy-flow',
+  };
+
+  it('routes every navigation command to its target path', async () => {
     const user = userEvent.setup();
     const onClose = vi.fn();
-    render(
+    const { container } = render(
       <MemoryRouter>
         <CommandPalette isOpen onClose={onClose} />
       </MemoryRouter>,
     );
 
-    const option = screen.getByText('nav.hardware').closest('button');
-    expect(option).not.toBeNull();
-    await user.click(option as HTMLButtonElement);
-
-    expect(mockNavigate).toHaveBeenCalledWith('/settings/hardware');
+    for (const [id, path] of Object.entries(navPaths)) {
+      const btn = container.querySelector(`#cmd-${id}`) as HTMLButtonElement | null;
+      expect(btn, `command ${id} should render`).not.toBeNull();
+      await user.click(btn as HTMLButtonElement);
+      expect(mockNavigate).toHaveBeenCalledWith(path);
+    }
     expect(onClose).toHaveBeenCalled();
+  });
+
+  it('invokes the optimize and export actions', async () => {
+    const user = userEvent.setup();
+    const onOptimize = vi.fn();
+    const onExportReport = vi.fn();
+    const { container } = render(
+      <MemoryRouter>
+        <CommandPalette
+          isOpen
+          onClose={vi.fn()}
+          onOptimize={onOptimize}
+          onExportReport={onExportReport}
+        />
+      </MemoryRouter>,
+    );
+
+    await user.click(container.querySelector('#cmd-optimize') as HTMLButtonElement);
+    await user.click(container.querySelector('#cmd-export-report') as HTMLButtonElement);
+    expect(onOptimize).toHaveBeenCalled();
+    expect(onExportReport).toHaveBeenCalled();
+  });
+
+  it('supports arrow-key selection and Enter activation', () => {
+    const onOptimize = vi.fn();
+    render(
+      <MemoryRouter>
+        <CommandPalette isOpen onClose={vi.fn()} onOptimize={onOptimize} />
+      </MemoryRouter>,
+    );
+    // Start at index 0 (optimize); Down then Up returns to it; Enter activates.
+    fireEvent.keyDown(window, { key: 'ArrowDown' });
+    fireEvent.keyDown(window, { key: 'ArrowUp' });
+    fireEvent.keyDown(window, { key: 'Enter' });
+    expect(onOptimize).toHaveBeenCalled();
+  });
+
+  it('shows the empty state when nothing matches the search', async () => {
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter>
+        <CommandPalette isOpen onClose={vi.fn()} />
+      </MemoryRouter>,
+    );
+    await user.type(screen.getByRole('combobox'), 'zzzz-no-command-zzzz');
+    expect(screen.getByText('command.noResults')).toBeInTheDocument();
   });
 
   it('does not auto-focus the search input on touch viewports (no keyboard pop)', async () => {
@@ -71,7 +147,6 @@ describe('hardware registry navigation wiring (MED-19 discoverability)', () => {
         <CommandPalette isOpen onClose={vi.fn()} />
       </MemoryRouter>,
     );
-
     const input = screen.getByRole('combobox');
     await waitFor(() => {
       // Focus moved into the dialog (onto the sentinel), not onto the text input.
@@ -79,22 +154,21 @@ describe('hardware registry navigation wiring (MED-19 discoverability)', () => {
     });
     expect(document.activeElement).not.toBe(input);
   });
+});
 
-  it('navigates to /plugins from the command palette', async () => {
+describe('MobileNavigation', () => {
+  it('navigates from the primary bottom-bar items', async () => {
     const user = userEvent.setup();
-    const onClose = vi.fn();
     render(
       <MemoryRouter>
-        <CommandPalette isOpen onClose={onClose} />
+        <MobileNavigation />
       </MemoryRouter>,
     );
-
-    const option = screen.getByText('nav.plugins').closest('button');
-    await user.click(option as HTMLButtonElement);
-    expect(mockNavigate).toHaveBeenCalledWith('/plugins');
+    await user.click(screen.getByRole('button', { name: 'nav.energyFlow' }));
+    expect(mockNavigate).toHaveBeenCalledWith('/energy-flow');
   });
 
-  it('surfaces the hardware page via the mobile More sheet', async () => {
+  it('opens the More sheet, navigates to hardware, and closes', async () => {
     const user = userEvent.setup();
     render(
       <MemoryRouter>
@@ -103,10 +177,28 @@ describe('hardware registry navigation wiring (MED-19 discoverability)', () => {
     );
 
     await user.click(screen.getByTestId('mobile-more-btn'));
-    const hardwareBtn = (await screen.findByText('nav.hardware')).closest('button');
-    expect(hardwareBtn).not.toBeNull();
-    await user.click(hardwareBtn as HTMLButtonElement);
+    // The overflow sheet now also exposes plugins and AI keys.
+    expect(await screen.findByText('nav.plugins')).toBeInTheDocument();
+    expect(screen.getByText('nav.aiKeys')).toBeInTheDocument();
 
+    await user.click(
+      (await screen.findByText('nav.hardware')).closest('button') as HTMLButtonElement,
+    );
     expect(mockNavigate).toHaveBeenCalledWith('/settings/hardware');
+  });
+
+  it('closes the More sheet via the close button', async () => {
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter>
+        <MobileNavigation />
+      </MemoryRouter>,
+    );
+    await user.click(screen.getByTestId('mobile-more-btn'));
+    const closeBtn = await screen.findByRole('button', { name: 'common.close' });
+    await user.click(closeBtn);
+    await waitFor(() => {
+      expect(screen.queryByText('nav.aiKeys')).not.toBeInTheDocument();
+    });
   });
 });

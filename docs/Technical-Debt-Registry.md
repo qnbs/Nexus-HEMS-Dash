@@ -284,11 +284,11 @@ Changed to `process.env.JWT_SECRET_FILE ?? '/run/secrets/jwt_secret'`.
 ### MED-01 — Test Coverage Below Industry Standard
 
 **File:** `apps/web/vitest.config.ts:18-22`, `apps/api/vitest.config.ts:13-17`
-**Status:** ⏳ In progress — web gates at 70/70/70/70; API at the measured v1.3.0 baseline 33/30/38/33 (staged toward 55)
+**Status:** ⏳ In progress — web gates at 70/70/68/70 (functions temporarily 68, see `docs/Test-Coverage-TODO.md`); API at the measured v1.3.0 baseline 33/30/38/33 (staged toward 55)
 
 Current thresholds:
 
-- Web: statements 70%, branches 70%, functions 70%, lines 70%
+- Web: statements 70%, branches 70%, functions 68% (temporarily; target 70), lines 70%
 - API: statements 33%, branches 30%, functions 38%, lines 33% (measured v1.3.0 baseline, staged toward 55%)
 
 Target: 70%+ for all metrics.

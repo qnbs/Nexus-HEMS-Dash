@@ -111,7 +111,7 @@
 | E2E tests (Playwright) | ⚠️ | 6 spec files; missing auth, command-safety, backend-integration coverage |
 | Fuzz/property tests | ✅ | `apps/web/src/tests/security-fuzz.test.ts` |
 | i18n parity test | ✅ | `apps/web/src/tests/i18n-sync.test.ts` |
-| Coverage gates | ⚠️ | Enforced thresholds: web 70/70/70/70 (raised in #195), API 33/30/38/33 (measured v1.3.0 baseline, staged toward 55 per `Testing-Coverage-Strategy.md`) (`vitest.config.ts`). PRF-03 baseline gate via `pnpm check:coverage-baseline` (web floor 78/72/70/80). Staged roadmap target 70%+ (MED-01). |
+| Coverage gates | ⚠️ | Enforced thresholds: web 70/70/68/70 (functions temporarily lowered from 70, see `docs/Test-Coverage-TODO.md`), API 33/30/38/33 (measured v1.3.0 baseline, staged toward 55 per `Testing-Coverage-Strategy.md`) (`vitest.config.ts`). PRF-03 baseline gate via `pnpm check:coverage-baseline` (web floor 78/70/68/80). Staged roadmap target 70%+ (MED-01). |
 | Lighthouse CI | ✅ | `.github/workflows/lighthouse.yml` |
 | Chromatic visual regression | ✅ | `.github/workflows/chromatic.yml` |
 

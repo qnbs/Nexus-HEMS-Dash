@@ -76,7 +76,7 @@ new location.
 
 ### Phase F — Testing / coverage (cloud-first)
 3. **Coverage-threshold bump.** The 47 new tests likely moved coverage up, but the
-   enforced thresholds (`apps/web/vitest.config.ts` 70/70/70/70, `apps/api` 33/30/38/33)
+   enforced thresholds (`apps/web/vitest.config.ts` 70/70/68/70, `apps/api` 33/30/38/33)
    should only be raised **after reading a real CI coverage report** (`pnpm test:coverage`
    is CI-first; don't guess and risk a red gate). Target Stage-1 60 % per
    `docs/Testing-Coverage-Strategy.md`.

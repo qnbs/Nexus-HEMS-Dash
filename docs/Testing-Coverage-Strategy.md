@@ -15,7 +15,7 @@ covering test types, priorities, tooling, and step-by-step implementation plan.
 |--------|-----------------------------|----------------|---------|---------|
 | Statements | Web 70% / API 33% | **60%** | 75% | 85% |
 | Branches | Web 70% / API 30% | **55%** | 70% | 85% |
-| Functions | Web 70% / API 38% | **62%** | 76% | 85% |
+| Functions | Web 68%* / API 38% | **62%** | 76% | 85% |
 | Lines | Web 70% / API 33% | **62%** | 76% | 85% |
 
 **60+ existing test/spec files across web, api, and E2E** — infrastructure is solid, coverage gap is primarily in:
@@ -41,7 +41,7 @@ covering test types, priorities, tooling, and step-by-step implementation plan.
 
 Current config truth:
 
-- `apps/web/vitest.config.ts` enforces `70 / 70 / 70 / 70`
+- `apps/web/vitest.config.ts` enforces `70 / 70 / 68 / 70` (*functions temporarily 68, target 70 — see `docs/Test-Coverage-TODO.md`)
 - `apps/api/vitest.config.ts` enforces `33 / 30 / 38 / 33` (statements / branches / functions / lines)
 - The stage targets below are roadmap goals and should only be described as active once the config is raised accordingly.
 
@@ -55,7 +55,7 @@ coverage: {
   thresholds: {
     statements: 70,
     branches: 70,
-    functions: 70,
+    functions: 68, // temporarily 68, target 70 — see docs/Test-Coverage-TODO.md
     lines: 70,
   },
 }

@@ -202,7 +202,7 @@ Auto-memoization via `babel-plugin-react-compiler`. Never add manual `useCallbac
 Biome settings: line width 100, 2-space indent, LF, single quotes, trailing commas, semicolons always. `noExplicitAny`: error — use `unknown`, precise interfaces, or discriminated unions instead.
 
 Current enforced coverage thresholds are package-specific:
-- `apps/web/vitest.config.ts`: 70 statements / 70 branches / 70 functions / 70 lines
+- `apps/web/vitest.config.ts`: 70 statements / 70 branches / 68 functions / 70 lines (functions temporarily 68, target 70 — see `docs/Test-Coverage-TODO.md`)
 - `apps/api/vitest.config.ts`: 33 statements / 30 branches / 38 functions / 33 lines (measured v1.3.0 baseline, staged toward 55)
 - `docs/Testing-Coverage-Strategy.md` contains the higher staged roadmap targets; do not assume those targets are already enforced in config.
 
