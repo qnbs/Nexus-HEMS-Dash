@@ -33,6 +33,7 @@ import {
   persistEebusLocalCertificateRows,
 } from '../lib/db';
 import { loadEebusLocalCertPems, saveEebusLocalCertPems } from '../lib/secure-store';
+import { SelectField } from './ui/SelectField';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -842,18 +843,15 @@ function EebusRevocationForm({ initial }: { initial: EEBUSRevocationConfig }) {
 
   return (
     <div className="glass-panel space-y-3 rounded-xl p-4">
-      <label className="block text-(--color-text-secondary) text-sm">
-        {t('eebusRevocation.modeLabel')}
-        <select
-          value={mode}
-          onChange={(e) => setMode(e.target.value as EEBUSRevocationConfig['mode'])}
-          className="focus-ring mt-1 w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-(--color-text-primary) text-sm"
-        >
-          <option value="off">{t('eebusRevocation.modeOff')}</option>
-          <option value="crl">{t('eebusRevocation.modeCrl')}</option>
-          <option value="ocsp">{t('eebusRevocation.modeOcsp')}</option>
-        </select>
-      </label>
+      <SelectField
+        label={t('eebusRevocation.modeLabel')}
+        value={mode}
+        onChange={(e) => setMode(e.target.value as EEBUSRevocationConfig['mode'])}
+      >
+        <option value="off">{t('eebusRevocation.modeOff')}</option>
+        <option value="crl">{t('eebusRevocation.modeCrl')}</option>
+        <option value="ocsp">{t('eebusRevocation.modeOcsp')}</option>
+      </SelectField>
       {mode === 'crl' && (
         <label className="block text-(--color-text-secondary) text-sm">
           {t('eebusRevocation.crlUrl')}

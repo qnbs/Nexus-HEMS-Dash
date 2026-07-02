@@ -44,6 +44,7 @@ import {
 import { ExportAndSharing } from '../components/ExportAndSharing';
 import { PageHeader } from '../components/layout/PageHeader';
 import { PredictiveForecast } from '../components/PredictiveForecast';
+import { ChoiceCardGroup } from '../components/ui/ChoiceCardGroup';
 import { PageCrossLinks } from '../components/ui/PageCrossLinks';
 import { getUbaFactor } from '../lib/co2-report';
 import type { EnergySnapshot } from '../lib/db';
@@ -882,30 +883,32 @@ function AnalyticsPageComponent() {
               <p className="text-(--color-muted) text-xs">{t('analytics.mlForecastSubtitle')}</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <select
-              value={selectedMetric}
-              onChange={(e) => setSelectedMetric(e.target.value)}
-              className="focus-ring rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-(--color-text) text-xs"
-              aria-label={t('analytics.mlForecastSelectMetric')}
-            >
-              {getForecastableMetrics().map((m) => (
-                <option key={m.key} value={m.key}>
-                  {m.label} ({m.unit})
-                </option>
-              ))}
-            </select>
-            <button
-              type="button"
-              onClick={handleRunForecast}
-              disabled={forecastLoading}
-              className="focus-ring flex items-center gap-1.5 rounded-lg bg-purple-500/20 px-3 py-1.5 font-medium text-purple-300 text-xs transition hover:bg-purple-500/30 disabled:opacity-50"
-            >
-              <BrainCircuit size={14} aria-hidden="true" />
-              {forecastLoading ? '…' : t('analytics.mlForecastRun')}
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={handleRunForecast}
+            disabled={forecastLoading}
+            className="focus-ring flex items-center gap-1.5 rounded-lg bg-purple-500/20 px-3 py-1.5 font-medium text-purple-300 text-xs transition hover:bg-purple-500/30 disabled:opacity-50"
+          >
+            <BrainCircuit size={14} aria-hidden="true" />
+            {forecastLoading ? '…' : t('analytics.mlForecastRun')}
+          </button>
         </div>
+
+        <ChoiceCardGroup
+          key={selectedMetric}
+          name="ml-forecast-metric"
+          value={selectedMetric}
+          onChange={setSelectedMetric}
+          aria-label={t('analytics.mlForecastSelectMetric')}
+          layout="grid"
+          size="compact"
+          options={getForecastableMetrics().map((m) => ({
+            value: m.key,
+            label: m.label,
+            meta: m.unit,
+            tone: 'primary' as const,
+          }))}
+        />
 
         {forecastResult && (
           <div className="space-y-3">

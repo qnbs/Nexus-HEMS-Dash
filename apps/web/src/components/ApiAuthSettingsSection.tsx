@@ -7,6 +7,7 @@ import {
   getApiBaseUrl,
   getAuthToken,
 } from '../lib/auth-token';
+import { SelectField } from './ui/SelectField';
 
 const inputClass =
   'w-full rounded-xl border border-(--color-border) bg-(--color-surface) px-4 py-2.5 text-sm text-(--color-text) placeholder:text-(--color-muted) focus:border-(--color-primary)/50 focus:outline-none focus:ring-2 focus:ring-(--color-primary)/20';
@@ -143,22 +144,17 @@ export function ApiAuthSettingsSection() {
           </div>
         </div>
 
-        <div className="space-y-2">
-          <label htmlFor="api-auth-scope" className="font-medium text-sm">
-            {t('settings.apiAuthScope')}
-          </label>
-          <select
-            id="api-auth-scope"
-            value={scope}
-            onChange={(e) => setScope(e.target.value as Scope)}
-            className={inputClass}
-          >
-            <option value="read">{t('settings.apiAuthScopeRead')}</option>
-            <option value="readwrite">{t('settings.apiAuthScopeReadWrite')}</option>
-            <option value="admin">{t('settings.apiAuthScopeAdmin')}</option>
-          </select>
-          <p className="text-(--color-muted) text-xs">{t('settings.apiAuthScopeHint')}</p>
-        </div>
+        <SelectField
+          id="api-auth-scope"
+          label={t('settings.apiAuthScope')}
+          value={scope}
+          onChange={(e) => setScope(e.target.value as Scope)}
+          hint={t('settings.apiAuthScopeHint')}
+        >
+          <option value="read">{t('settings.apiAuthScopeRead')}</option>
+          <option value="readwrite">{t('settings.apiAuthScopeReadWrite')}</option>
+          <option value="admin">{t('settings.apiAuthScopeAdmin')}</option>
+        </SelectField>
 
         {status === 'error' && errorKey && (
           <p id="api-auth-error" className="text-(--state-danger-fg) text-sm" role="alert">
