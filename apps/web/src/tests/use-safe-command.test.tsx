@@ -1,5 +1,5 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AdapterCommand } from '../core/adapters/EnergyAdapter';
 
 const mockValidate = vi.fn();
@@ -74,5 +74,45 @@ describe('useSafeCommand — command feedback', () => {
       expect(toast.error).toHaveBeenCalledWith(expect.stringContaining('adapter offline')),
     );
     expect(mockAudit).toHaveBeenCalledWith(expect.objectContaining({ status: 'failed' }));
+  });
+});
+
+describe('useSafeCommand — danger-command confirmation gate', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.useFakeTimers();
+    mockValidate.mockReturnValue({ valid: true });
+    // This command requires confirmation (danger command).
+    mockRequiresConfirmation.mockReturnValue(true);
+  });
+
+  afterEach(() => {
+    vi.runOnlyPendingTimers();
+    vi.useRealTimers();
+  });
+
+  it('does NOT send a danger command until it is confirmed', () => {
+    const { result } = renderHook(() => useSafeCommand());
+
+    act(() => result.current.execute(command));
+
+    // Confirmation is pending — the command must not have been dispatched.
+    expect(mockSend).not.toHaveBeenCalled();
+    // No 'executed'/'confirmed' audit yet either.
+    expect(mockAudit).not.toHaveBeenCalledWith(expect.objectContaining({ status: 'executed' }));
+    expect(mockAudit).not.toHaveBeenCalledWith(expect.objectContaining({ status: 'confirmed' }));
+  });
+
+  it('auto-cancels an unconfirmed danger command after the 3 s timeout', () => {
+    const { result } = renderHook(() => useSafeCommand());
+
+    act(() => result.current.execute(command));
+    act(() => vi.advanceTimersByTime(3_000));
+
+    // Timed out → rejected audit, still never sent.
+    expect(mockSend).not.toHaveBeenCalled();
+    expect(mockAudit).toHaveBeenCalledWith(
+      expect.objectContaining({ status: 'rejected', error: expect.stringContaining('timeout') }),
+    );
   });
 });

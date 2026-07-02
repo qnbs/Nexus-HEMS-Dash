@@ -2162,6 +2162,7 @@ export const en = {
     simulationTitle: 'Simulation mode — no real hardware is being controlled',
     liveBadge: 'Live hardware',
     liveBannerWarning: 'Live hardware — commands control real equipment',
+    readOnlyBannerWarning: 'Read-only mode — all control commands are blocked',
     settingsLabel: 'Adapter mode',
     settingsSimulation: 'Simulation (mock data) — safe, no hardware is controlled',
     settingsLive: 'Live hardware — controlling real equipment',

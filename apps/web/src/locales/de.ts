@@ -2173,6 +2173,7 @@ export const de = {
     simulationTitle: 'Simulationsmodus — es wird keine echte Hardware gesteuert',
     liveBadge: 'Live-Hardware',
     liveBannerWarning: 'Live-Hardware — Befehle steuern echte Geräte',
+    readOnlyBannerWarning: 'Nur-Lese-Modus — alle Steuerbefehle sind blockiert',
     settingsLabel: 'Adapter-Modus',
     settingsSimulation: 'Simulation (Mock-Daten) — sicher, keine Hardware-Steuerung',
     settingsLive: 'Live-Hardware — echte Geräte werden gesteuert',
