@@ -172,29 +172,24 @@ export default function OptimizationAI() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center gap-3">
-        <PageHeader
-          title={t('optimizationWizard.pageTitle')}
-          subtitle={t('optimizationWizard.pageSubtitle')}
-          icon={<Sparkles size={22} />}
-        />
-        {isDemo && <DemoBadge />}
-        <HelpTooltip
-          content={t(
-            'tour.optimization.help',
-            'KI-gestützter 3-Schritt-Assistent: Tarife analysieren, Empfehlungen prüfen, mit einem Klick anwenden.',
-          )}
-        />
-      </div>
+      <PageHeader
+        mobileSticky
+        title={t('optimizationWizard.pageTitle')}
+        subtitle={t('optimizationWizard.pageSubtitle')}
+        icon={<Sparkles size={22} />}
+        actions={
+          <>
+            {isDemo && <DemoBadge />}
+            <HelpTooltip content={t('tour.optimization.help')} />
+          </>
+        }
+      />
 
       {!hasData && !wizardOpen && (
         <EmptyState
           icon={Sparkles}
-          title={t('empty.noEnergyData', 'Keine Energiedaten verfügbar')}
-          description={t(
-            'tour.optimization.emptyDesc',
-            'Verbinden Sie einen Adapter, um den Optimierungsassistenten nutzen zu können.',
-          )}
+          title={t('empty.noEnergyData')}
+          description={t('tour.optimization.emptyDesc')}
           pulse
         />
       )}
@@ -283,13 +278,7 @@ export default function OptimizationAI() {
                       <h3 className="mb-3 font-medium text-(--color-muted) text-sm">
                         {t('forecast.tariffForecast')}
                       </h3>
-                      <div
-                        role="img"
-                        aria-label={t(
-                          'chart.tariffForecastAriaLabel',
-                          'Tariff price forecast chart',
-                        )}
-                      >
+                      <div role="img" aria-label={t('chart.tariffForecastAriaLabel')}>
                         <ResponsiveContainer width="100%" height={180}>
                           <AreaChart data={chartData}>
                             <defs>
@@ -339,13 +328,7 @@ export default function OptimizationAI() {
                       <h3 className="mb-3 font-medium text-(--color-muted) text-sm">
                         {t('optimizationWizard.renewableShare')}
                       </h3>
-                      <div
-                        role="img"
-                        aria-label={t(
-                          'chart.renewableShareAriaLabel',
-                          'Renewable energy share chart',
-                        )}
-                      >
+                      <div role="img" aria-label={t('chart.renewableShareAriaLabel')}>
                         <ResponsiveContainer width="100%" height={120}>
                           <BarChart data={chartData}>
                             <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />

@@ -165,7 +165,7 @@ export function AppShell({ children }: AppShellProps) {
         href="#main-content"
         className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-100 focus:rounded-xl focus:bg-(--color-text) focus:px-4 focus:py-2 focus:text-(--color-background) focus:shadow-lg"
       >
-        {t('accessibility.skipToContent', 'Skip to main content')}
+        {t('accessibility.skipToContent')}
       </a>
 
       {/* Desktop Sidebar */}
@@ -191,7 +191,7 @@ export function AppShell({ children }: AppShellProps) {
               className="-mx-3 -mt-1.5 mb-2 flex items-center justify-center gap-2 bg-(--state-live-bg) px-3 py-1 text-center font-bold text-(--state-live-on) text-xs uppercase tracking-wider sm:-mx-6 sm:-mt-3 sm:mb-3"
             >
               <AlertTriangle size={14} aria-hidden="true" />
-              {t('mode.liveBannerWarning', 'Live hardware — commands control real equipment')}
+              {t('mode.liveBannerWarning')}
             </div>
           )}
 
@@ -232,15 +232,10 @@ export function AppShell({ children }: AppShellProps) {
                 <span
                   role="status"
                   className="inline-flex items-center gap-1.5 rounded-full border border-(--color-border) bg-(--color-surface-strong) px-2.5 py-1 font-semibold text-(--color-muted) text-[10px] uppercase tracking-wider"
-                  title={t(
-                    'mode.simulationTitle',
-                    'Simulation mode — no real hardware is being controlled',
-                  )}
+                  title={t('mode.simulationTitle')}
                 >
                   <FlaskConical size={12} aria-hidden="true" />
-                  <span className="hidden sm:inline">
-                    {t('mode.simulationBadge', 'Simulation')}
-                  </span>
+                  <span className="hidden sm:inline">{t('mode.simulationBadge')}</span>
                 </span>
               )}
 
@@ -249,23 +244,18 @@ export function AppShell({ children }: AppShellProps) {
                 <NavLink
                   to="/monitoring"
                   className="focus-ring inline-flex items-center gap-1.5 rounded-full border border-(--state-warning-border) bg-(--state-warning-bg)/15 px-2.5 py-1 font-semibold text-(--state-warning-fg) text-[10px] uppercase tracking-wider transition-colors hover:bg-(--state-warning-bg)/25"
-                  title={t(
-                    'header.degradedAdaptersTitle',
-                    'One or more adapters are degraded — click to view Monitoring',
-                  )}
-                  aria-label={t('header.degradedAdapters', 'System degraded')}
+                  title={t('header.degradedAdaptersTitle')}
+                  aria-label={t('header.degradedAdapters')}
                 >
                   <AlertTriangle size={12} aria-hidden="true" />
-                  <span className="hidden sm:inline">
-                    {t('header.degradedAdapters', 'System degraded')}
-                  </span>
+                  <span className="hidden sm:inline">{t('header.degradedAdapters')}</span>
                 </NavLink>
               )}
 
               {/* Electricity Price (tablet+) */}
               <motion.div
                 className="price-pill hidden md:inline-flex"
-                aria-label={t('dashboard.currentPrice', 'Current electricity price')}
+                aria-label={t('dashboard.currentPrice')}
                 whileHover={{ scale: 1.05 }}
                 transition={{ type: 'spring', stiffness: 400, damping: 17 }}
               >
@@ -277,11 +267,11 @@ export function AppShell({ children }: AppShellProps) {
                 type="button"
                 onClick={() => setCommandPaletteOpen(true)}
                 className="focus-ring inline-flex items-center gap-2 rounded-full border border-(--color-border) bg-(--color-surface-strong) p-2 text-sm transition-colors duration-200 hover:bg-(--color-primary)/10 sm:px-3"
-                title={t('command.open', 'Open command palette')}
+                title={t('command.open')}
               >
                 <Command className="h-4 w-4" aria-hidden="true" />
-                <span className="sr-only sm:hidden">{t('command.search', 'Search')}</span>
-                <span className="hidden sm:inline">{t('command.search', 'Search')}</span>
+                <span className="sr-only sm:hidden">{t('command.search')}</span>
+                <span className="hidden sm:inline">{t('command.search')}</span>
                 <kbd className="hidden rounded bg-(--color-surface-strong) px-1.5 py-0.5 text-xs lg:inline">
                   ⌘K
                 </kbd>
@@ -325,13 +315,13 @@ export function AppShell({ children }: AppShellProps) {
           <div
             className="scrollbar-hide mt-1.5 flex items-center gap-1 overflow-x-auto lg:hidden"
             role="status"
-            aria-label={t('header.liveStatus', 'Live energy status')}
+            aria-label={t('header.liveStatus')}
             aria-live="polite"
           >
             {/* PV Power */}
             <div
               className="inline-flex shrink-0 items-center gap-1 rounded-full bg-(--color-surface)/60 px-2 py-0.5 font-medium text-xs"
-              title={t('header.pvPower', 'PV power')}
+              title={t('header.pvPower')}
             >
               <Sun className="h-3 w-3 text-amber-400" aria-hidden="true" />
               <span className="text-(--color-text)">
@@ -342,7 +332,7 @@ export function AppShell({ children }: AppShellProps) {
             {/* Battery SoC */}
             <div
               className="inline-flex shrink-0 items-center gap-1 rounded-full bg-(--color-surface)/60 px-2 py-0.5 font-medium text-xs"
-              title={t('header.batterySoC', 'Battery charge')}
+              title={t('header.batterySoC')}
             >
               <BatteryMedium
                 className={`h-3 w-3 ${
@@ -360,11 +350,7 @@ export function AppShell({ children }: AppShellProps) {
             {/* Grid Power (import/export) */}
             <div
               className="inline-flex shrink-0 items-center gap-1 rounded-full bg-(--color-surface)/60 px-2 py-0.5 font-medium text-xs"
-              title={
-                gridPower >= 0
-                  ? t('header.gridImport', 'Grid import')
-                  : t('header.gridExport', 'Grid export')
-              }
+              title={gridPower >= 0 ? t('header.gridImport') : t('header.gridExport')}
             >
               <Zap
                 className={`h-3 w-3 ${gridPower >= 0 ? 'text-red-400' : 'text-(--color-neon-green)'}`}
@@ -393,7 +379,7 @@ export function AppShell({ children }: AppShellProps) {
             {/* Self-sufficiency mini indicator */}
             <div
               className="inline-flex shrink-0 items-center gap-1 rounded-full bg-(--color-surface)/60 px-2 py-0.5 font-medium text-xs"
-              title={t('header.selfSufficiency', 'Self-sufficiency')}
+              title={t('header.selfSufficiency')}
             >
               <SelfSufficiencyRing
                 percentage={
@@ -418,7 +404,7 @@ export function AppShell({ children }: AppShellProps) {
         <main
           id="main-content"
           tabIndex={-1}
-          className="pattern-grid mx-auto max-w-7xl px-4 py-6 pb-[max(5rem,calc(5rem+env(safe-area-inset-bottom)))] outline-none sm:px-6 lg:px-8 lg:pb-6"
+          className="pattern-grid mx-auto max-w-7xl px-4 py-6 pb-[max(7.5rem,calc(7.5rem+env(safe-area-inset-bottom)))] outline-none sm:px-6 lg:px-8 lg:pb-6"
         >
           <Breadcrumbs />
           {children}

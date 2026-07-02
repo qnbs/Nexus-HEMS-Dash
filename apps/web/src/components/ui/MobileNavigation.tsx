@@ -39,25 +39,25 @@ function MobileNavigationComponent() {
     {
       id: 'home',
       icon: <LayoutDashboard className="h-5 w-5" />,
-      label: t('nav.home', 'Home'),
+      label: t('nav.home'),
       path: '/',
     },
     {
       id: 'energy-flow',
       icon: <Activity className="h-5 w-5" />,
-      label: t('nav.energyFlow', 'Flow'),
+      label: t('nav.energyFlow'),
       path: '/energy-flow',
     },
     {
       id: 'devices',
       icon: <Zap className="h-5 w-5" />,
-      label: t('nav.devicesOverview', 'Devices'),
+      label: t('nav.devicesOverview'),
       path: '/devices',
     },
     {
       id: 'tariffs',
       icon: <TrendingUp className="h-5 w-5" />,
-      label: t('nav.tariffs', 'Tariffs'),
+      label: t('nav.tariffs'),
       path: '/tariffs',
     },
   ];
@@ -66,31 +66,31 @@ function MobileNavigationComponent() {
     {
       id: 'optimization-ai',
       icon: <Sparkles className="h-5 w-5" />,
-      label: t('nav.aiOptimizer', 'AI'),
+      label: t('nav.aiOptimizer'),
       path: '/optimization-ai',
     },
     {
       id: 'analytics',
       icon: <BarChart3 className="h-5 w-5" />,
-      label: t('nav.analytics', 'Analytics'),
+      label: t('nav.analytics'),
       path: '/analytics',
     },
     {
       id: 'monitoring',
       icon: <Monitor className="h-5 w-5" />,
-      label: t('nav.monitoring', 'Monitoring'),
+      label: t('nav.monitoring'),
       path: '/monitoring',
     },
     {
       id: 'settings',
       icon: <Settings className="h-5 w-5" />,
-      label: t('nav.settings', 'Settings'),
+      label: t('nav.settings'),
       path: '/settings',
     },
     {
       id: 'help',
       icon: <HelpCircle className="h-5 w-5" />,
-      label: t('nav.help', 'Help'),
+      label: t('nav.help'),
       path: '/help',
     },
   ];
@@ -128,17 +128,17 @@ function MobileNavigationComponent() {
               className="fixed right-0 bottom-[calc(3.5rem+env(safe-area-inset-bottom,0px))] left-0 z-modal rounded-t-3xl border-(--color-border) border-t bg-(--color-surface) p-4 shadow-[0_-8px_30px_rgba(0,0,0,0.3)] backdrop-blur-3xl lg:hidden"
               role="dialog"
               aria-modal="true"
-              aria-label={t('nav.allPages', 'All Pages')}
+              aria-label={t('nav.allPages')}
             >
               <div className="mb-3 flex items-center justify-between">
                 <span className="font-semibold text-(--color-text) text-sm">
-                  {t('nav.allPages', 'All Pages')}
+                  {t('nav.allPages')}
                 </span>
                 <button
                   type="button"
                   onClick={() => setMoreOpen(false)}
                   className="focus-ring rounded-full p-1.5 text-(--color-muted) transition-colors hover:bg-white/10 hover:text-(--color-text)"
-                  aria-label={t('common.close', 'Close')}
+                  aria-label={t('common.close')}
                 >
                   <X size={18} />
                 </button>
@@ -173,7 +173,7 @@ function MobileNavigationComponent() {
       {/* Bottom Navigation Bar */}
       <nav
         className="fixed right-0 bottom-0 left-0 z-fixed lg:hidden"
-        aria-label={t('mobile.navigation', 'Mobile Navigation')}
+        aria-label={t('mobile.navigation')}
       >
         <div className="absolute inset-0 border-(--color-border) border-t bg-(--color-surface) backdrop-blur-3xl">
           <div className="absolute top-0 right-0 left-0 h-px bg-gradient-to-r from-transparent via-(--color-primary)/20 to-transparent" />
@@ -208,13 +208,13 @@ function MobileNavigationComponent() {
               moreOpen || isMorePageActive ? 'text-(--color-primary)' : 'text-(--color-muted)'
             }`}
             aria-expanded={moreOpen}
-            aria-label={t('accessibility.moreNavPages', 'More pages')}
+            aria-label={t('accessibility.moreNavPages')}
             data-testid="mobile-more-btn"
           >
             <div className="flex h-8 w-8 items-center justify-center">
               <MoreHorizontal className="h-5 w-5" />
             </div>
-            <span className="font-medium text-[10px]">{t('nav.more', 'More')}</span>
+            <span className="font-medium text-[10px]">{t('nav.more')}</span>
           </button>
         </div>
       </nav>

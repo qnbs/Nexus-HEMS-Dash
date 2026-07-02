@@ -1241,7 +1241,7 @@ export const de = {
     highEndNet5: 'mTLS-Zertifikate für verschlüsselte WebSocket-Verbindungen',
   },
   ai: {
-    title: 'AI Optimizer',
+    title: 'KI-Optimierer',
     subtitle: 'Intelligente Echtzeit-Optimierung für EV, Batterie und Wärmepumpe',
     statusOptimal: 'Optimales Einspeisefenster: PV-Überschuss gewinnbringend exportieren.',
     statusCharge: 'Tarif-Tal erkannt: Batterie und EV jetzt laden.',
@@ -1255,7 +1255,7 @@ export const de = {
     surplus: 'PV-Überschuss',
     optimizeNow: 'Jetzt optimieren',
     optimizing: 'Optimiere...',
-    optimizerTitle: 'AI Energie-Optimierer',
+    optimizerTitle: 'KI-Energieoptimierer',
     optimizerSubtitle: 'KI-gestützte Empfehlungen für optimales Energiemanagement',
     analyzing: 'Analysiere Energiefluss...',
     recommendations: 'Empfehlungen',
@@ -2577,7 +2577,7 @@ export const de = {
     pageTitle: 'Optimierungs-Assistent',
     pageSubtitle: 'KI-gestützte 3-Schritt-Optimierung für Ihr Energiesystem',
     step1Title: 'Analyse',
-    step2Title: 'AI-Vorschläge',
+    step2Title: 'KI-Vorschläge',
     step3Title: 'Bestätigung',
     analyseTitle: 'Tarife & Vorhersage analysieren',
     suggestionsTitle: 'KI-Empfehlungen',
@@ -2604,7 +2604,7 @@ export const de = {
   tour: {
     hub: {
       metricsHelp:
-        'Live-Kennzahlen zeigen PV-Erzeugung, Batteriestatus, Netzleistung und Eigenverbrauch.',
+        'Live-Kennzahlen zu PV-Erzeugung, Batteriespeicher, Netzbezug und Eigenverbrauch. Tippen Sie auf eine Karte für Details.',
     },
     analytics: {
       quickHelp: 'Klicke auf eine Kachel, um direkt zum entsprechenden Analysebereich zu springen.',
