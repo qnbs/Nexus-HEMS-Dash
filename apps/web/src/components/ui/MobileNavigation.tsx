@@ -1,10 +1,13 @@
 import {
   Activity,
   BarChart3,
+  Cpu,
   HelpCircle,
+  KeyRound,
   LayoutDashboard,
   Monitor,
   MoreHorizontal,
+  Puzzle,
   Settings,
   Sparkles,
   TrendingUp,
@@ -82,10 +85,28 @@ function MobileNavigationComponent() {
       path: '/monitoring',
     },
     {
+      id: 'plugins',
+      icon: <Puzzle className="h-5 w-5" />,
+      label: t('nav.plugins'),
+      path: '/plugins',
+    },
+    {
       id: 'settings',
       icon: <Settings className="h-5 w-5" />,
       label: t('nav.settings'),
       path: '/settings',
+    },
+    {
+      id: 'hardware',
+      icon: <Cpu className="h-5 w-5" />,
+      label: t('nav.hardware'),
+      path: '/settings/hardware',
+    },
+    {
+      id: 'ai-keys',
+      icon: <KeyRound className="h-5 w-5" />,
+      label: t('nav.aiKeys'),
+      path: '/settings/ai',
     },
     {
       id: 'help',

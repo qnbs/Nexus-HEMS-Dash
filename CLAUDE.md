@@ -4,11 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Nexus-HEMS Dashboard is a production-grade, real-time Home Energy Management System dashboard. It consolidates 13 protocol adapters (7 core: Victron MQTT, Modbus/SunSpec, KNX, OCPP 2.1, EEBUS/SPINE, evcc, OpenEMS; 6 contrib: Home Assistant, Matter/Thread, Zigbee2MQTT, Shelly, OpenADR 3.1, Example) into a unified React 19 SPA served by an Express 5 backend. Deployable as PWA, Docker container, Tauri desktop app, Helm/Kubernetes release, or Capacitor mobile app. Current package version: `1.2.0`.
+Nexus-HEMS Dashboard is a production-grade, real-time Home Energy Management System dashboard. It consolidates 13 protocol adapters (7 core: Victron MQTT, Modbus/SunSpec, KNX, OCPP 2.1, EEBUS/SPINE, evcc, OpenEMS; 6 contrib: Home Assistant, Matter/Thread, Zigbee2MQTT, Shelly, OpenADR 3.1, Example) into a unified React 19 SPA served by an Express 5 backend. Deployable as PWA, Docker container, Tauri desktop app, Helm/Kubernetes release, or Capacitor mobile app. Current package version: `1.3.0`.
 
 **Safety note:** This system controls safety-critical electrical hardware. No regulatory certification (VDE, IEC, CE) has been obtained. See `docs/Safety-Certification-Notice.md` before connecting to live hardware. Always use `ADAPTER_MODE=mock` for development; switch to `live` only after reviewing the pre-deployment checklist in that document.
 
-The current shipped baseline is `1.2.0`. Active `1.3.0` work is tracked in `CHANGELOG.md` and `docs/Technical-Debt-Registry.md`.
+`package.json` is now at `1.3.0`; the active `1.3.x` work stream is tracked in `CHANGELOG.md` and `docs/Technical-Debt-Registry.md` (registry item IDs like HIGH-17, MED-18/19 map to merged PRs).
 
 > ## ⚠️ Hardware Profile & Cloud-First CI Policy (read before running anything)
 >
@@ -163,6 +163,8 @@ Plugin lifecycle (OSGi-inspired): install → resolve → start → stop → uni
 
 The app has no onboarding gate — `AppShell` renders directly without any `inert`/overlay mechanism. New users land directly on `CommandHub`.
 
+The app header is `position: fixed` with a JS-measured `--header-height` CSS variable driving the matching top padding on the content column (fixes a scroll-away regression where a custom `@layer utilities` rule in `index.css` could override Tailwind's `sticky`/`fixed` by source order). Do not switch the header back to `sticky`/`relative`, and be careful adding position utilities in `index.css` `@layer utilities` — they can silently win over Tailwind classes.
+
 ### Server
 
 - `apps/api/index.ts` thin wrapper → `startServer()` in `apps/api/src/index.ts`
@@ -177,12 +179,14 @@ The app has no onboarding gate — `AppShell` renders directly without any `iner
 
 Distinct from the frontend adapter system. Lives in `apps/api/src/protocols/` and runs on edge hardware (Raspberry Pi / NUC) with direct network access.
 
-Data flow: `Hardware → IProtocolAdapter → EventBus (500ms buffer) → InfluxDB + WebSocket Gateway → React UI`
+Data flow: `Hardware → IProtocolAdapter → EventBus (500ms buffer) → InfluxDB + LiveEnergyAggregator → WebSocket Gateway → React UI`
 
 - Implement `IProtocolAdapter` from `@nexus-hems/shared-types` (not `EnergyAdapter` — that's the frontend interface)
 - Validate every datapoint with `energyDatapointSchema.safeParse()` before emitting; route failures to Dead-Letter Queue
 - Register adapters in `apps/api/src/protocols/index.ts`
 - Modbus-based adapters must also update `device-map.json`
+- **EventBus → WebSocket bridge (HIGH-17, ADR-018):** `LiveEnergyAggregator` (`apps/api/src/services/LiveEnergyAggregator.ts`) subscribes to the EventBus and folds metric-centric, role-tagged `UnifiedEnergyDatapoint`s into the role-centric `EnergyData` snapshot the browser consumes. `energy.ws.ts` (`resolveBroadcastData()`) broadcasts that snapshot only when the effective adapter mode is `live` **and** fresh live data exists (30 s window); otherwise it falls back to the mock stream. Untagged/unmapped datapoints still flow to InfluxDB + the optimizer but do not reach the UI.
+- **Per-adapter metrics (MED-18):** `apps/api/src/middleware/adapter-metrics.ts` exposes per-adapter Prometheus counters/gauges via `/metrics` (`metrics.routes.ts`).
 - See `docs/Protocol-Adapter-Guide-Backend.md` for reconnect patterns, DLQ, and full testing checklist
 
 ### React Compiler
@@ -198,8 +202,8 @@ Auto-memoization via `babel-plugin-react-compiler`. Never add manual `useCallbac
 Biome settings: line width 100, 2-space indent, LF, single quotes, trailing commas, semicolons always. `noExplicitAny`: error — use `unknown`, precise interfaces, or discriminated unions instead.
 
 Current enforced coverage thresholds are package-specific:
-- `apps/web/vitest.config.ts`: 52 statements / 42 branches / 53 functions / 53 lines
-- `apps/api/vitest.config.ts`: 55 statements / 45 branches / 55 functions / 55 lines
+- `apps/web/vitest.config.ts`: 70 statements / 70 branches / 68 functions / 70 lines (functions temporarily 68, target 70 — see `docs/Test-Coverage-TODO.md`)
+- `apps/api/vitest.config.ts`: 33 statements / 30 branches / 38 functions / 33 lines (measured v1.3.0 baseline, staged toward 55)
 - `docs/Testing-Coverage-Strategy.md` contains the higher staged roadmap targets; do not assume those targets are already enforced in config.
 
 Biome 2.4 note: use `biome format apps/ packages/` for the read-only `format:check` script. Do not use `biome format --write=false`; this version rejects that flag/value combination.
@@ -232,11 +236,14 @@ Use `pnpm.overrides` (never top-level `"overrides"`) for dependency overrides. K
 | `/settings` | `SettingsUnified` | Config, adapters, language, theme |
 | `/plugins` | `PluginsPage` | Adapter plugin browser & hot-loading (SettingsLayout) |
 | `/settings/ai` | `AISettingsPage` | AI provider keys & model config (SettingsLayout) |
+| `/settings/hardware` | `HardwareRegistryPage` | Hardware registry browser + add-adapter wizard (MED-19); legacy `/hardware` redirects here |
 | `/help` | `Help` | Docs, FAQ, about, AI acknowledgments (SettingsLayout) |
 
 ## Design System
 
 5 themes in `apps/web/src/design-tokens.ts`: `energy-dark`, `solar-light`, `ocean-dark` (default), `nature-green`, `minimal-white`. CSS custom properties via Tailwind v4 `@theme` in `apps/web/src/index.css`. Brand utilities: `glass-panel`, `neon-glow-green/blue/orange`, `energy-pulse`, `focus-ring`. See `DESIGN-SYSTEM.md` for full catalog.
+
+Prefer the branded selector primitives over raw native controls: `ChoiceCardGroup`, `SelectField`, `Disclosure`, and `SgReadyModeSelector` (`apps/web/src/components/ui/`) replaced the gray native `<select>`/radio pickers across settings and wizards (#200/#201). Reach for these when adding new option/toggle UIs so the theme and a11y wiring stay consistent.
 
 ## Performance Budgets
 

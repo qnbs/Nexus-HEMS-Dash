@@ -1,6 +1,6 @@
 # Observability Plan — Nexus-HEMS-Dash
 
-> **Status:** Active — Implementation roadmap through v1.2.0
+> **Status:** Active — Implementation roadmap through v1.3.x
 > **Created:** 2026-04-25
 > **Owner:** @qnbs
 
@@ -20,7 +20,7 @@ extensions.
 | Metrics (server) | Prometheus/prom-client via `/metrics` endpoint | ✅ Active | 6 scrape jobs |
 | Metrics (frontend) | Custom `setMetric()` bridge | ✅ Active | hems_* namespace |
 | Alerting | Prometheus Alertmanager | ✅ Active | 13 rules across 3 groups |
-| Dashboards | Grafana (2 dashboards) | ✅ Partial | Missing adapter matrix, cost/revenue |
+| Dashboards | Grafana (2 dashboards) | ✅ Partial | Per-adapter health metrics now ship (`hems_adapter_*`, MED-18); dedicated adapter-matrix + cost/revenue dashboard JSON still outstanding |
 | Logging | stdout JSON (docker compose `json-file`) | ✅ Active | No structured trace correlation |
 | Profiling | None | ❌ Missing | No continuous profiling |
 
@@ -234,5 +234,5 @@ Import standard K8s dashboard ID `15661` from Grafana.com (Kubernetes Cluster Mo
 3. **Alert routing**: Send `critical` and `warning` to dedicated Slack/PagerDuty channel;
    `info` to email digest only. Configure Alertmanager receivers in `alertmanager.yml`.
 4. **Retention**: Prometheus 30d (configured), Tempo 7d (storage-constrained), Loki 14d.
-5. **Security**: Prometheus `/metrics` endpoint protected by `requireJWT` + `readwrite` scope
-   (already implemented in `apps/api/src/routes/metrics.routes.ts`).
+5. **Security**: Prometheus `/metrics` endpoint protected by `requireJWT`
+   (already implemented in `apps/api/src/routes/metrics.routes.ts`; JWT required, no additional scope check).

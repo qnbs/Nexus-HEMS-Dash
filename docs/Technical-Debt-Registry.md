@@ -284,12 +284,12 @@ Changed to `process.env.JWT_SECRET_FILE ?? '/run/secrets/jwt_secret'`.
 ### MED-01 — Test Coverage Below Industry Standard
 
 **File:** `apps/web/vitest.config.ts:18-22`, `apps/api/vitest.config.ts:13-17`
-**Status:** ⏳ In progress — web gates raised to 70/63/56/70 (functions ~57%); API unchanged at 55/45/55/55
+**Status:** ⏳ In progress — web gates at 70/70/68/70 (functions temporarily 68, see `docs/Test-Coverage-TODO.md`); API at the measured v1.3.0 baseline 33/30/38/33 (staged toward 55)
 
 Current thresholds:
 
-- Web: statements 70%, branches 63%, functions 58%, lines 70% (functions ~59% measured)
-- API: statements 55%, branches 45%, functions 55%, lines 55%
+- Web: statements 70%, branches 70%, functions 68% (temporarily; target 70), lines 70%
+- API: statements 33%, branches 30%, functions 38%, lines 33% (measured v1.3.0 baseline, staged toward 55%)
 
 Target: 70%+ for all metrics.
 
@@ -680,7 +680,7 @@ Direction recorded in ADR-018 (backend-mediated adapters) and ADR-019 (registry 
 
 ### HIGH-17 — Backend Adapter Data Not Bridged to WebSocket Gateway
 **Files:** `apps/api/src/ws/energy.ws.ts`, `apps/api/src/core/EventBus.ts`, `apps/api/src/services/LiveEnergyAggregator.ts`, `apps/api/src/config/adapter-mode.ts`
-**Status:** ✅ Fixed in v1.3.x — `LiveEnergyAggregator` bridges EventBus → WebSocket (ADR-018)
+**Status:** ✅ Resolved — PR #197 (v1.3.x); `LiveEnergyAggregator` bridges EventBus → WebSocket (ADR-018)
 
 The two real backend adapters (`protocols/modbus/ModbusAdapter.ts`, `protocols/mqtt/MqttAdapter.ts`)
 pipe Zod-validated datapoints into `EventBus`, which fans out to InfluxDB (`TimeseriesService`)
@@ -700,7 +700,7 @@ the mock path verbatim as the default. Keystone that unblocks MED-20. Safety gat
 
 ### MED-18 — No Per-Adapter Prometheus Metrics
 **Files:** `apps/api/src/middleware/adapter-metrics.ts`, `apps/api/src/middleware/metrics.ts`, `apps/api/src/protocols/*`, `apps/api/src/routes/metrics.routes.ts`
-**Status:** ✅ Fixed in v1.3.x — `adapter-metrics.ts` publishes per-instance gauges/counters to `/metrics` and `/api/metrics/json` (ADR-018)
+**Status:** ✅ Resolved — PR #203 (v1.3.x); `adapter-metrics.ts` publishes per-instance gauges/counters to `/metrics` and `/api/metrics/json` (ADR-018)
 
 Backend adapter instances now emit `hems_adapter_connected`, `hems_adapter_latency_seconds`,
 `hems_adapter_data_freshness_seconds`, `hems_adapter_data_updates_total`, `hems_adapter_errors_total`,
@@ -712,7 +712,7 @@ Monitoring page adapter cards consume these via the existing JSON metrics poll.
 
 ### MED-19 — No Add-Adapter-Instance UI; Hardware Registry Not Surfaced
 **Files:** `apps/web/src/core/hardware-registry.ts`, `apps/web/src/pages/HardwareRegistryPage.tsx`, `apps/web/src/components/hardware/AddAdapterWizard.tsx`
-**Status:** ✅ Shipped (ADR-019)
+**Status:** ✅ Resolved — PR #204; `HardwareRegistryPage` + `AddAdapterWizard` at `/settings/hardware` (ADR-019)
 
 `hardware-registry.ts` holds 113 devices across ~30 manufacturers with tested query helpers.
 **`/settings/hardware`** surfaces a searchable, filterable catalog (category, manufacturer,
@@ -723,8 +723,8 @@ Protocol→adapter mapping in `hardware-adapter-map.ts`.
 ---
 
 ### MED-20 — Backend Protocol Parity Gap
-**Files:** `apps/api/src/protocols/` (`modbus/`, `mqtt/`, `knx/`), `FEATURE_STATUS.md`
-**Status:** 🔄 In progress — KNX/IP + evcc backend adapters shipped (ADR-018); OpenEMS, OCPP, EEBUS SPINE remain
+**Files:** `apps/api/src/protocols/` (`modbus/`, `mqtt/`, `knx/`, `evcc/`), `FEATURE_STATUS.md`
+**Status:** 🔄 In progress — KNX/IP (PR 205) + evcc (PR 206) backend adapters shipped (ADR-018); OpenEMS, OCPP, EEBUS SPINE remain
 
 KNX backend adapter (`KnxAdapter`) connects to a WebSocket JSON bridge. **evcc backend adapter**
 (`EvccAdapter`) polls `/api/state` and optionally listens on `/ws`. Both validate with Zod and feed

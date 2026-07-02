@@ -46,7 +46,7 @@ For verified roadmap status and completion boundaries, use these documents as th
 
 | Category                | Features                                                                                                                                                                                                                                                                                                 |
 | :---------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Energy**              | Real-time D3.js Sankey flow · AI optimizer (multi-provider BYOK) · MPC day-ahead optimizer · 8 real-time controllers · 24h/7d predictive forecast · Live tariff widget (Tibber/aWATTar/Octopus/Nordpool) · Smart EV charging (§14a EnWG) · SG Ready heat pump control · Hardware registry (120+ devices) |
+| **Energy**              | Real-time D3.js Sankey flow · AI optimizer (multi-provider BYOK) · MPC day-ahead optimizer · 8 real-time controllers · 24h/7d predictive forecast · Live tariff widget (Tibber/aWATTar/Octopus/Nordpool) · Smart EV charging (§14a EnWG) · SG Ready heat pump control · Hardware registry (113 devices) |
 | **Protocols (Core)**    | Victron MQTT (Cerbo GX / Venus OS) · Modbus/SunSpec (103/124/201) · KNX/IP floorplan · OCPP 2.1 V2X (ISO 15118) · EEBUS SPINE/SHIP (TLS 1.3 mTLS) · evcc backend · OpenEMS Edge (JSON-RPC)                                                                                                               |
 | **Protocols (Contrib)** | Home Assistant MQTT · Matter/Thread · Zigbee2MQTT · Shelly REST (Gen2+) · OpenADR 3.1 VEN · Example template                                                                                                                                                                                             |
 | **Plugin System**       | Adapter Registry with dynamic `import()` loading · npm-package format · `BaseAdapter` class for rapid development · Hot-loading from Settings UI                                                                                                                                                         |
@@ -54,18 +54,18 @@ For verified roadmap status and completion boundaries, use these documents as th
 | **Security**            | BYOK AI vault (AES-GCM 256) · JWT WebSocket auth · Helmet CSP · Rate limiting · CORS · Zod schema validation                                                                                                                                                                                             |
 | **Desktop & Mobile**    | Tauri v2 (Windows/macOS/Linux) · Capacitor 8 (iOS/Android)                                                                                                                                                                                                                                             |
 
-> **Protocol support truth:** The dashboard ships 13 frontend adapter modules that can run directly in the browser. The backend protocol layer (`apps/api/src/protocols/`) currently supports Modbus/SunSpec and generic MQTT only; the in-browser Modbus adapter reaches the backend through a SunSpec REST proxy (`GET /api/modbus/sunspec`, `POST /api/modbus/write`) that acts as a mock gateway out of the box, with live register writes delegated to an external SunSpec-REST bridge. See [FEATURE_STATUS.md](FEATURE_STATUS.md) for the full shipped-vs-planned matrix.
+> **Protocol support truth:** The dashboard ships 13 frontend adapter modules that can run directly in the browser. The backend protocol layer (`apps/api/src/protocols/`) ships Modbus/SunSpec, MQTT (role-tagged Victron topics), KNX/IP and evcc adapters; in live mode their EventBus data reaches the UI via the `LiveEnergyAggregator` WebSocket bridge (HIGH-17). The in-browser Modbus adapter also reaches the backend through a SunSpec REST proxy (`GET /api/modbus/sunspec`, `POST /api/modbus/write`) that acts as a mock gateway out of the box, with live register writes delegated to an external SunSpec-REST bridge. See [FEATURE_STATUS.md](FEATURE_STATUS.md) for the full shipped-vs-planned matrix.
 
 ### Protocol Support Matrix
 
 | Protocol | Frontend Adapter | Backend Adapter | Status |
 | :------- | :--------------- | :-------------- | :----- |
-| Victron MQTT (Cerbo GX / Venus OS) | ✅ | ⚠️ generic MQTT only | Frontend-ready; backend specialization planned |
+| Victron MQTT (Cerbo GX / Venus OS) | ✅ | ✅ | Backend `MqttAdapter` subscribes role-tagged Venus OS topics → EventBus → UI via the HIGH-17 bridge |
 | Modbus/SunSpec (103/124/201) | ✅ | ✅ | Implemented |
-| KNX/IP floorplan | ✅ | ❌ | Frontend-ready; backend adapter planned |
+| KNX/IP floorplan | ✅ | ✅ | Backend `KnxAdapter` via knxd/WebSocket JSON bridge, `knx-ga-map.json` (MED-20) |
 | OCPP 2.1 V2X (ISO 15118) | ✅ | ❌ | Frontend-ready; backend CSMS gateway planned |
 | EEBUS SPINE/SHIP (TLS 1.3 mTLS) | ✅ | ⚠️ SHIP handshake only | Pairing/trust store implemented; continuous SPINE data adapter planned |
-| evcc backend | ✅ | ❌ | Frontend-ready; backend adapter planned |
+| evcc backend | ✅ | ✅ | Backend `EvccAdapter` polls `/api/state` + subscribes `/ws` (MED-20) |
 | OpenEMS Edge (JSON-RPC) | ✅ | ❌ | Frontend-ready; backend adapter planned |
 | Home Assistant MQTT | ✅ (contrib) | ❌ | Frontend contrib adapter only |
 | Matter/Thread | ✅ (contrib) | ❌ | Frontend contrib adapter only |
@@ -114,7 +114,7 @@ In development, `apps/web` (Vite) proxies `/api/*`, `/metrics`, and `/ws` reques
                      ├──→ ControllerPipeline (8 real-time controllers)
                      ├──→ MPC Optimizer (LP day-ahead scheduling)
                      ├──→ AI Optimizer (Gemini / OpenAI / Anthropic / xAI / Groq / Ollama)
-                     ├──→ Hardware Registry (120+ certified devices)
+                     ├──→ Hardware Registry (113 certified devices)
                      └──→ Dexie.js IndexedDB (Offline Cache)
 ```
 
@@ -260,7 +260,7 @@ AWATTAR_BASE_URL=https://api.awattar.de/v1  # aWATTar DE Day-Ahead prices (no AP
 | **Tariffs**              | `/tariffs`         | Live prices, forecasts, optimal charging windows                 |
 | **Analytics**            | `/analytics`       | 8 KPIs, energy balance, costs, historical trends                 |
 | **Monitoring**           | `/monitoring`      | System health, adapter matrix, metrics, power-user mode          |
-| **Settings**             | `/settings`        | Appearance, system, energy, security, adapters, plugins, AI keys |
+| **Settings**             | `/settings`        | Appearance, system, energy, security, adapters, plugins, AI keys, hardware registry (`/settings/hardware`) |
 | **Help**                 | `/help`            | Docs, FAQ, glossary, shortcuts, troubleshooting, about & credits |
 
 > Legacy routes (`/production`, `/storage`, `/consumption`, `/ev`, `/floorplan`, `/ai-optimizer`, `/controllers`, `/hardware`) automatically redirect to their new unified sections.
@@ -383,7 +383,7 @@ Brand colors: `neon-green` (#22ff88) · `electric-blue` (#00f0ff) · `power-oran
 | :------ | :------------------------------------------------------------------------------------------------------------------------------------------------- | :--------- |
 | Q1–Q3   | 5 core adapters, 5 themes, AI optimizer, EEBUS, PWA, Monitoring, Docker, Tauri, WCAG 2.2 AA, React Compiler, Backend hardening                     | ✅ Shipped |
 | Q3      | Plugin system, adapter registry, 5 contrib adapters (Home Assistant, Matter/Thread, Zigbee2MQTT, Shelly), Capacitor Mobile                         | ✅ Shipped |
-| Q3–Q4   | Energy controllers (8 loops), MPC optimizer, hardware registry (120+ devices), plugin lifecycle, command safety, expanded unit coverage            | ✅ Shipped |
+| Q3–Q4   | Energy controllers (8 loops), MPC optimizer, hardware registry (113 devices), plugin lifecycle, command safety, expanded unit coverage            | ✅ Shipped |
 | Q1 2026 | Opt#1 + Opt#2 Zustand/React 19 compiler cleanup, 6 new test suites (circuit-breaker, tariff-providers, notifications, energy-context, +extensions) | ✅ Shipped |
 | Q4      | **Unified Command Center** — 7 focused sections, contextual in-context help, full a11y audit (the original guided-tour/onboarding overlay was later removed in favour of lighter contextual help)                            | ✅ Shipped |
 | Q2 2026 | **pnpm/Turborepo Monorepo** — `apps/api` + `apps/web` + `packages/shared-types`; two-process dev; Turbo caching across all workspaces               | ✅ Shipped |
@@ -504,7 +504,7 @@ MIT — see [LICENSE](LICENSE).
 - 🧩 Plugin-System: Adapter-Registry mit dynamischem Laden, npm-Paket-Format, BaseAdapter-Klasse
 - 🎛️ 8 Echtzeit-Energieregler: ESS, Peak Shaving, Netz-optimiert, Eigenverbrauch, Notstrom, SG Ready, EV Smart, EV V2G Entladung
 - 📐 MPC-Optimierer: EMHASS-inspirierter LP Day-Ahead-Scheduler mit Tariferkennung
-- 🗃️ Hardware-Registry: 120+ zertifizierte Geräte (Wechselrichter, Wallboxen, Zähler, Batterien, Wärmepumpen)
+- 🗃️ Hardware-Registry: 113 zertifizierte Geräte (Wechselrichter, Wallboxen, Zähler, Batterien, Wärmepumpen)
 - 🚗 Intelligentes EV-Laden (PV-Überschuss, §14a EnWG, SG Ready, V2X)
 - 🏠 KNX-Grundriss mit interaktiver Gebäudeautomation
 - 📈 Prädiktive Vorhersage + Live-Tarif-Widget (5 Anbieter)

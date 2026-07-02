@@ -21,7 +21,7 @@ Grafana UI: **http://localhost:3001** (admin / admin for dev — change in prod!
 
 ## Pre-Provisioned Dashboards
 
-Grafana auto-imports dashboards from `grafana/provisioning/dashboards/`. The following are included:
+Grafana auto-imports dashboards from `grafana/provisioning/dashboards/`. Two dashboard JSON files ship today — `json/nexus-energy-overview.json` and `json/nexus-error-tracking.json` (UID `nexus-hems-error-tracking`, which already carries adapter-error, adapter-latency and circuit-breaker panels). The layouts below document the intended panel set: the Overview maps to the shipped energy dashboard, while the **Adapter Health** and **API & Security** dashboards are the target expansion (no separate JSON yet).
 
 ### 1. Nexus-HEMS Overview
 
@@ -41,10 +41,14 @@ Grafana auto-imports dashboards from `grafana/provisioning/dashboards/`. The fol
 
 **UID:** `nexus-hems-adapters`
 
-Shows per-adapter metrics:
-- `hems_adapter_connect_duration_ms` — connection latency
-- `hems_adapter_errors_total` — error rate per adapter
-- `hems_circuit_breaker_state` — 0=CLOSED, 1=OPEN, 2=HALF_OPEN
+Shows per-adapter metrics (`{adapter, protocol}` labels, MED-18 — `apps/api/src/middleware/adapter-metrics.ts`):
+- `hems_adapter_connected` — 0/1 connection status
+- `hems_adapter_latency_seconds` — poll / connection latency
+- `hems_adapter_data_freshness_seconds` — age of last datapoint
+- `hems_adapter_data_updates_total` — datapoints emitted per adapter
+- `hems_adapter_errors_total` — error count per adapter
+- `hems_adapter_reconnects_total` — reconnect count per adapter
+- `hems_adapter_dlq_total` — dead-letter-queue count per adapter
 
 ### 3. API & Security
 
@@ -177,9 +181,14 @@ curl -X POST http://localhost:9090/-/reload
 | `hems_grid_price_euros_kwh` | Gauge | Current grid price (€/kWh) |
 | `hems_energy_cost_euros` | Counter | Cumulative energy cost (€) |
 | `hems_adapters_active_total` | Gauge | Number of active adapters |
-| `hems_adapter_connected` | Gauge | Per-adapter connection status (0/1) |
-| `hems_circuit_breaker_state` | Gauge | Per-adapter circuit breaker (0/1/2) |
-| `hems_adapter_errors_total` | Counter | Per-adapter error count |
+| `hems_adapter_connected` | Gauge | Per-adapter connection status (0/1) (MED-18, `{adapter, protocol}`) |
+| `hems_adapter_latency_seconds` | Gauge | Per-adapter poll/connection latency (MED-18) |
+| `hems_adapter_data_freshness_seconds` | Gauge | Per-adapter last-datapoint age (MED-18) |
+| `hems_adapter_data_updates_total` | Counter | Per-adapter datapoints emitted (MED-18) |
+| `hems_adapter_errors_total` | Counter | Per-adapter error count (MED-18) |
+| `hems_adapter_reconnects_total` | Counter | Per-adapter reconnect count (MED-18) |
+| `hems_adapter_dlq_total` | Counter | Per-adapter dead-letter count (MED-18) |
+| `hems_circuit_breaker_state` | Gauge | Per-adapter circuit breaker (0/1/2), frontend-emitted |
 | `websocket_connections_active` | Gauge | Active WebSocket connections |
 | `http_requests_total` | Counter | HTTP request count by method/path/status |
 | `http_request_duration_seconds` | Histogram | HTTP latency |
