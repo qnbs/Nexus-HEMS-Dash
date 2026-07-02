@@ -20,13 +20,10 @@ export default defineConfig({
       reporter: ['text', 'json', 'json-summary', 'html', 'lcov'],
       exclude: ['node_modules/', 'src/tests/', '*.config.ts', 'dist/'],
       thresholds: {
-        statements: 70,
+        statements: 78,
         branches: 70,
-        // Temporarily 68 (target 70): rendering the previously-untested nav
-        // components pulled global function coverage to ~69.5%. Restore to 70
-        // as the nav/UI suites are built out — see docs/Test-Coverage-TODO.md.
-        functions: 68,
-        lines: 70,
+        functions: 70,
+        lines: 80,
       },
     },
   },

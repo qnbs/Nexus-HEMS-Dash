@@ -148,6 +148,24 @@ describe('ExecAdapter — executePoll error handling', () => {
   });
 });
 
+describe('ExecAdapter — connect & transport (ADR-024)', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('connect succeeds even when the initial poll fetch fails (non-fatal poll)', async () => {
+    const a = makeAdapter();
+    mockFetchOnce(new Error('backend unreachable'));
+    let connectError: string | undefined;
+    a.onStatus((status, error) => {
+      if (status === 'error') connectError = error;
+    });
+    await a.connect();
+    expect(a.status).toBe('connected');
+    expect(connectError).toBeUndefined();
+    await a.disconnect();
+    a.destroy();
+  });
+});
+
 describe('ExecAdapter — commands & lifecycle', () => {
   afterEach(() => vi.unstubAllGlobals());
 

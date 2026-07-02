@@ -1,117 +1,58 @@
 # Test & Coverage — Finalization TODO & Roadmap
 
-**Status:** 🔄 Active follow-up
-**Created:** 2026-07-02
+**Status:** ✅ Web baseline restored (2026-07-02)
 **Owner:** @qnbs
-**Related:** `docs/Testing-Coverage-Strategy.md` (long-range strategy), MED-01 in `docs/Technical-Debt-Registry.md`
+**Related:** `docs/Testing-Coverage-Strategy.md`, MED-01 in `docs/Technical-Debt-Registry.md`
 
 ---
 
-## Why this file exists
+## Resolution summary (2026-07-02)
 
-The hardware-registry nav-discoverability work (PR #207) added the first tests that render
-`Sidebar`, `CommandPalette`, and `MobileNavigation`. Importing those previously-untested,
-function-dense components into the coverage set pulled **global function coverage to ~69.5 %**,
-just under the 70 % gate. To keep CI green **without weakening the intent**, two gates were
-**temporarily** lowered; this file tracks restoring them and pushing coverage upward.
+The temporary gate reductions from PRs #207/#208/#209 are **fully reversed** for statements, functions, and lines; branches restored to **70%** (original 72% stretch deferred until measured ≥ 72% with margin).
 
-### Measured baseline (CI, PR #207, `apps/web`)
+| Metric | Measured (CI) | Enforced floor (vitest + baseline) | Original target |
+| ------ | ------------- | -------------------------------- | --------------- |
+| Statements | 78.93 % | **78 %** | 78 % |
+| Branches | 71.22 % | **70 %** | 72 % (stretch) |
+| Functions | 71.96 % | **70 %** | 70 % |
+| Lines | 80.87 % | **80 %** | 80 % |
 
-| Metric | Actual | vitest gate (was → now) | baseline gate (was → now) |
-| ------ | ------ | ----------------------- | ------------------------- |
-| Statements | 78.42 % | 70 → 70 | 78 → 78 |
-| Branches | 71.79 % | 70 → 70 | 72 → **70** |
-| Functions | 69.53 % | 70 → **68** | 70 → **68** |
-| Lines | 80.35 % | 70 → 70 | 80 → 80 |
+Gates live in `apps/web/vitest.config.ts` and `apps/web/coverage-baseline.json` (PRF-03).
 
-Gates live in `apps/web/vitest.config.ts` (`coverage.thresholds`) and
-`apps/web/coverage-baseline.json` (PRF-03, enforced by `scripts/check-coverage-baseline.mjs`).
-API gates are separate (`apps/api/vitest.config.ts` = 33/30/38/33, its own staged track).
+### Tests landed for the restore
 
-### Second temporary adjustment — 2026-07-02 (PRs #208 + #209)
-
-**Cause:** PRs #208 + #209 added ~2 200 lines of new code without proportional test coverage
-(ExecAdapter, ExecService, enhanced HA adapter ha-ws-api mode, Settings certificates tab),
-dropping `lines` from 80.35 % to ~79.9 % — just under the 80 % baseline floor.
-
-> This is a **known, measured regression** — not a quality incident.
-> Tests for ExecAdapter, ExecService, and HA ha-ws-api mode are tracked as follow-up (P1/P2).
-
-| Metric | Actual post-merge | baseline gate (was → now) |
-| ------ | ----------------- | ------------------------- |
-| Statements | ~78.2 % | 78 → **77** |
-| Branches | ~71.3 % | 70 → **69** |
-| Functions | ~70.2 % | 68 → **67** |
-| Lines | ~79.9 % | 80 → **79** |
-
-**Restore target (next coverage sprint, before v1.4):**
-- `exec-adapter.test.ts` + `exec-service.test.ts` for ExecAdapter/ExecService
-- `homeassistant-ha-ws-api.test.ts` for ha-ws-api discovery + service calls
-- Bump `coverage-baseline.json` back to statements 78 / branches 70 / functions 68 / lines 80
-
-> **Definition of done for this file:** vitest thresholds back to **70/70/70/70** and the PRF-03
-> baseline back to **≥ 78/72/70/80**, then deleted or folded into `Testing-Coverage-Strategy.md`.
+- `openems-adapter.test.ts` — connect-failure + JSON-RPC handshake (G-1)
+- `exec-adapter.test.ts` — transport/poll negative path (G-2)
+- `homeassistant-mqtt-adapter.test.ts` — ha-ws-api auth, discovery, state_changed (G-3)
+- `example-contrib-adapter.test.ts` — template smoke (G-4)
 
 ---
 
-## Lowest-covered areas (from the PR #207 coverage report)
+## Remaining roadmap (folded from former phases)
 
-Prioritized by impact on the **function** metric (the binding constraint) and by risk.
+### Web — branch stretch to 72 %
 
-| Area / file | Funcs | Note |
-| ----------- | ----- | ---- |
-| `src/components/ui` (aggregate) | ~50.8 % | Largest lever — many UI primitives have no render tests |
-| `src/components/ui/CommandPalette.tsx` | partial | Nav/keyboard covered in PR #207; edge branches remain |
-| `src/components/ui/MobileNavigation.tsx` | partial | Primary/More/close covered; active-state branches remain |
-| `src/components/layout/Sidebar.tsx` | 85.7 % | Collapse covered; a couple of render branches remain |
-| `src/lib/co2-report.ts` | 80 % funcs / **18 % lines** | Large uncovered body (lines 218–516) |
-| `src/lib/auth-token.ts` | 85.7 % / 59 % stmts | Error paths untested |
-| `src/lib/ai-keys.ts` | 77.7 % | Encryption error branches untested |
-| `src/pages/*AnalyticsPage.tsx` (historical) | 75 % | Interaction paths untested |
-| `src/core/adapters/contrib/matter-thread.ts` | 69.5 % | Command dispatch edges |
+- [ ] Extend nav/UI tests (`CommandPalette`, `MobileNavigation`, `Sidebar`) for remaining active-state branches.
+- [ ] Bump `coverage-baseline.json` `branches` 70 → 72 when measured clears with margin.
 
-(Regenerate the exact list from CI: **Unit Tests** job → coverage table, or `pnpm test:coverage`
-in the cloud — do **not** run full coverage locally; it takes > 1 h on the maintainer's machine.)
+### Web — quality gaps (not blocking gates)
 
----
+- [ ] Cover `co2-report.ts`, `auth-token.ts`, `ai-keys.ts` error paths (large line gaps).
+- [ ] Page-level tests for historical analytics pages.
 
-## Roadmap
+### API backend coverage (separate track, MED-01)
 
-### Phase 1 — Restore the function gate to 70 % (unblocks this file)
-- [ ] Add render/interaction tests for the highest-function-count untested `components/ui` primitives
-      (e.g. `ChoiceCardGroup`, `SelectField`, `Disclosure`, `SgReadyModeSelector`, `EnergyCard`,
-      dialogs/sheets) — each render covers several component functions cheaply.
-- [ ] Extend `CommandPalette` / `MobileNavigation` tests to the remaining active-state and
-      edge branches.
-- [ ] Bump `apps/web/vitest.config.ts` `functions` 68 → 70 and `coverage-baseline.json`
-      `functions` 68 → 70, `branches` 70 → 72 in the same PR that lands the tests.
+- [ ] Raise `apps/api` from measured 33/30/38/33 toward 55 %, prioritizing protocol adapters + WS gateway.
+- [ ] Update `apps/api/vitest.config.ts` staged, sync `docs/Testing-Coverage-Strategy.md`.
 
-### Phase 2 — Raise the whole web floor to Stage-1 (per `Testing-Coverage-Strategy.md`)
-- [ ] Cover `co2-report.ts`, `auth-token.ts`, `ai-keys.ts` error/edge paths (biggest line gaps).
-- [ ] Add page-level tests for the historical analytics pages and any remaining zero-coverage pages.
-- [ ] Ratchet all four web metrics upward together; move the baseline JSON up in lockstep so
-      regressions are caught (PRF-03 already fails CI on any drop).
+### E2E / quality
 
-### Phase 3 — API backend coverage (separate track, MED-01)
-- [ ] Raise `apps/api` from the measured 33/30/38/33 baseline toward 55 %, prioritizing the new
-      backend protocol adapters (`KnxAdapter`, `EvccAdapter`, `LiveEnergyAggregator`,
-      `adapter-metrics`) and the WS gateway.
-- [ ] Update `apps/api/vitest.config.ts` staged, and keep `docs/Testing-Coverage-Strategy.md` +
-      `FEATURE_STATUS.md` in sync with the enforced numbers each time.
-
-### Phase 4 — Quality, not just quantity
-- [ ] Prefer behavioural assertions over render-only smoke tests when filling coverage.
-- [ ] Add E2E coverage for the gaps called out in `FEATURE_STATUS.md` (auth flows,
-      command-safety, backend-integration).
-- [ ] Fold this file into `Testing-Coverage-Strategy.md` once Phase 1–2 land, and delete it.
+- [ ] Prefer behavioural assertions over render-only smoke when filling coverage.
+- [ ] E2E for auth flows, command-safety, backend-integration per `FEATURE_STATUS.md`.
 
 ---
 
-## Guardrails while this is open
+## Guardrails
 
-- **Never** lower a gate to hide a *real* regression — lower only to reflect a measured,
-  understood baseline (as done here), and always with a dated entry above.
-- Keep the enforced numbers in `apps/web/vitest.config.ts` / `coverage-baseline.json` and every
-  doc that quotes them (`CLAUDE.md`, `FEATURE_STATUS.md`, `Technical-Debt-Registry.md`,
-  `Testing-Coverage-Strategy.md`, `.github/copilot-instructions.md`) **in sync** — the last audit
-  found six docs drifted from the config.
+- **Never** lower a gate to hide a real regression.
+- Keep `vitest.config.ts`, `coverage-baseline.json`, and all docs quoting coverage numbers in sync.

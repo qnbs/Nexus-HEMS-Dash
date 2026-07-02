@@ -420,6 +420,121 @@ describe('HomeAssistantMQTTAdapter — ha-ws-api auth', () => {
   });
 });
 
+describe('HomeAssistantMQTTAdapter — ha-ws-api discovery & transport', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    mockInstance = null;
+  });
+
+  it('fails connect on auth_invalid', async () => {
+    vi.stubGlobal('WebSocket', MockWebSocket);
+    const adapter = new HomeAssistantMQTTAdapter({
+      host: 'ha.local',
+      haMode: 'ha-ws-api',
+      port: 8123,
+      haToken: 'bad-token',
+    });
+    let connectError: string | undefined;
+    adapter.onStatus((status, error) => {
+      if (status === 'error') connectError = error;
+    });
+
+    const p = adapter.connect();
+    mockInstance!.readyState = WebSocket.OPEN;
+    mockInstance!.onmessage?.({ data: JSON.stringify({ type: 'auth_required' }) });
+    mockInstance!.onmessage?.({ data: JSON.stringify({ type: 'auth_invalid' }) });
+    await p;
+
+    expect(adapter.status).toBe('error');
+    expect(connectError).toMatch(/authentication invalid/i);
+    adapter.destroy();
+  });
+
+  it('subscribes and requests states when haDiscovery is enabled', async () => {
+    vi.stubGlobal('WebSocket', MockWebSocket);
+    const adapter = new HomeAssistantMQTTAdapter({
+      host: 'ha.local',
+      haMode: 'ha-ws-api',
+      port: 8123,
+      haToken: 'valid-token',
+      haDiscovery: true,
+    });
+
+    const p = adapter.connect();
+    mockInstance!.readyState = WebSocket.OPEN;
+    mockInstance!.onmessage?.({ data: JSON.stringify({ type: 'auth_required' }) });
+    mockInstance!.onmessage?.({ data: JSON.stringify({ type: 'auth_ok' }) });
+    await p;
+
+    const payloads = mockInstance!.send.mock.calls.map((c) => JSON.parse(String(c[0])));
+    expect(payloads.some((m) => m.type === 'subscribe_events')).toBe(true);
+    expect(payloads.some((m) => m.type === 'get_states')).toBe(true);
+    adapter.destroy();
+  });
+
+  it('maps state_changed solar events into the energy model', async () => {
+    vi.stubGlobal('WebSocket', MockWebSocket);
+    const adapter = new HomeAssistantMQTTAdapter({
+      host: 'ha.local',
+      haMode: 'ha-ws-api',
+      port: 8123,
+      haToken: 'valid-token',
+      haDiscovery: true,
+    });
+
+    const p = adapter.connect();
+    mockInstance!.readyState = WebSocket.OPEN;
+    mockInstance!.onmessage?.({ data: JSON.stringify({ type: 'auth_required' }) });
+    mockInstance!.onmessage?.({ data: JSON.stringify({ type: 'auth_ok' }) });
+    await p;
+
+    mockInstance!.onmessage?.({
+      data: JSON.stringify({
+        type: 'event',
+        event: {
+          event_type: 'state_changed',
+          data: {
+            entity_id: 'sensor.solar_power',
+            new_state: {
+              state: '3500',
+              attributes: {
+                device_class: 'power',
+                unit_of_measurement: 'W',
+                friendly_name: 'Solar',
+              },
+            },
+          },
+        },
+      }),
+    });
+
+    expect(adapter.getSnapshot().pv?.totalPowerW).toBe(3500);
+    adapter.destroy();
+  });
+
+  it('sets status error when ha-ws-api WebSocket errors', async () => {
+    vi.stubGlobal('WebSocket', MockWebSocket);
+    const adapter = new HomeAssistantMQTTAdapter({
+      host: 'ha.local',
+      haMode: 'ha-ws-api',
+      port: 8123,
+      haToken: 'valid-token',
+    });
+    let connectError: string | undefined;
+    adapter.onStatus((status, error) => {
+      if (status === 'error') connectError = error;
+    });
+
+    const p = adapter.connect();
+    mockInstance!.onerror?.({});
+    await p;
+
+    expect(adapter.status).toBe('error');
+    expect(connectError).toMatch(/connection failed|connection error/i);
+    adapter.destroy();
+  });
+});
+
 describe('HomeAssistantMQTTAdapter — register()', () => {
   it('registers the homeassistant-mqtt factory in the adapter registry', async () => {
     const { getRegisteredAdapter, unregisterAdapter } = await import(

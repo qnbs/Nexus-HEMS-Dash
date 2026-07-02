@@ -223,6 +223,7 @@ export class OpenEMSAdapter extends BaseAdapter {
           await this.discoverComponents();
           await this.subscribeChannels();
           this.startPolling();
+          this.setStatus('connected');
           resolve();
         } catch (e) {
           reject(e);
