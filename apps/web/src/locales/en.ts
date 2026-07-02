@@ -591,6 +591,9 @@ export const en = {
     gridOperatorInputPlaceholder: 'e.g. Stromnetz Hamburg, E.ON Netz',
     appearance: 'Appearance',
     energyShort: 'Energy',
+    certificatesTab: 'EEBUS Certs',
+    certificatesTabDesc:
+      'Manage EEBUS SPINE/SHIP device certificates, trust store, and pairing PIN.',
     storageShort: 'Storage',
     notifications: 'Notifications',
     advanced: 'Advanced',

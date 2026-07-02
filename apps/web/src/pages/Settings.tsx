@@ -5,6 +5,7 @@ import {
   Cpu,
   Database,
   Download,
+  FileKey,
   Gauge,
   Palette,
   RefreshCw,
@@ -21,6 +22,7 @@ import { type FormEvent, lazy, Suspense, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { AdapterConfigPanel } from '../components/AdapterConfigPanel';
+import { CertificateManagement } from '../components/CertificateManagement';
 import { ConfirmDialog, useConfirmDialog } from '../components/ConfirmDialog';
 import { AdvancedTab } from '../components/settings/AdvancedTab';
 import { AppearanceTab } from '../components/settings/AppearanceTab';
@@ -42,6 +44,7 @@ type SettingsTab =
   | 'controllers'
   | 'adapters'
   | 'security'
+  | 'certificates'
   | 'storage'
   | 'notifications'
   | 'advanced'
@@ -61,6 +64,7 @@ export function Settings() {
     'controllers',
     'adapters',
     'security',
+    'certificates',
     'storage',
     'notifications',
     'advanced',
@@ -182,6 +186,11 @@ export function Settings() {
       label: t('adapterConfig.tabLabel', 'Adapters'),
     },
     { key: 'security', icon: <Shield size={18} />, label: t('settings.security') },
+    {
+      key: 'certificates',
+      icon: <FileKey size={18} />,
+      label: t('settings.certificatesTab', 'EEBUS Certs'),
+    },
     { key: 'storage', icon: <Database size={18} />, label: t('settings.storageShort', 'Storage') },
     {
       key: 'notifications',
@@ -405,6 +414,23 @@ export function Settings() {
                   aria-labelledby="tab-security"
                 >
                   <SecurityTab />
+                </motion.div>
+              )}
+
+              {/* === EEBUS CERTIFICATES & PAIRING === */}
+              {activeTab === 'certificates' && (
+                <motion.div
+                  key="certificates"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.3 }}
+                  className="space-y-6"
+                  role="tabpanel"
+                  id="tabpanel-certificates"
+                  aria-labelledby="tab-certificates"
+                >
+                  <CertificateManagement />
                 </motion.div>
               )}
 
