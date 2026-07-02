@@ -1,7 +1,33 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import type { WebSocket } from 'ws';
 import { isReadOnlyMode } from '../config/read-only-mode.js';
-import { checkWsRateLimit, sanitizeOutgoingWsPayload } from '../ws/energy.ws.js';
+import { checkWsRateLimit, filterMockData, sanitizeOutgoingWsPayload, validateWSCommand } from '../ws/energy.ws.js';
+
+describe('validateWSCommand', () => {
+  it('accepts a valid hardware command', () => {
+    const result = validateWSCommand({ type: 'SET_GRID_LIMIT', value: 4200 });
+    expect(result.valid).toBe(true);
+  });
+
+  it('rejects commands with invalid shape', () => {
+    const result = validateWSCommand({ type: 123, value: 'nope' });
+    expect(result.valid).toBe(false);
+    expect(result.error).toBeDefined();
+  });
+});
+
+describe('filterMockData', () => {
+  it('returns only subscribed metric keys', () => {
+    const data = { pvPower: 100, batteryPower: -50, gridPower: 10, houseLoad: 80 };
+    const filtered = filterMockData(data, new Set(['pvPower', 'gridPower']));
+    expect(filtered).toEqual({ pvPower: 100, gridPower: 10 });
+  });
+
+  it('ignores keys not present in the payload', () => {
+    const filtered = filterMockData({ pvPower: 1 }, new Set(['pvPower', 'evPower']));
+    expect(filtered).toEqual({ pvPower: 1 });
+  });
+});
 
 describe('sanitizeOutgoingWsPayload', () => {
   it('masks PII inside outbound websocket payloads', () => {

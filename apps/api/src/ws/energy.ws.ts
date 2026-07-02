@@ -23,7 +23,8 @@ function getWsCmdRateLimit(): number {
 
 // HIGH-11: Scope requirements for every WS command type — see ws-scope.ts
 
-function validateWSCommand(parsed: unknown): { valid: boolean; error?: string } {
+/** @internal Exported for unit tests (energy-ws.test.ts). */
+export function validateWSCommand(parsed: unknown): { valid: boolean; error?: string } {
   const result = WSCommandSchema.safeParse(parsed);
   if (!result.success) {
     const firstIssue = result.error.issues[0];
@@ -387,7 +388,8 @@ function safeSend(ws: WebSocket, payload: unknown): void {
  * If the client subscribed to e.g. ['pvPower', 'batteryPower'], only those
  * keys are included in the broadcast payload.
  */
-function filterMockData(
+/** @internal Exported for unit tests (energy-ws.test.ts). */
+export function filterMockData(
   data: Record<string, unknown>,
   subscribed: Set<string>,
 ): Record<string, unknown> {
