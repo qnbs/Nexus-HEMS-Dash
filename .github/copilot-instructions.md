@@ -37,7 +37,7 @@ The shipped baseline is **1.6.1** (2026-07-02). See `CHANGELOG.md` for the relea
 - Use `useAppStoreShallow` for multiple selectors to merge subscriptions — never two separate `useAppStore` calls for data from the same render path.
 - For selectors that access only one or two scalar values, use `useAppStore((s) => s.settings.x)` direct scalar selectors — never subscribe to the whole `settings` object.
 
-### Adapter System (13 adapters: 7 core + 6 contrib)
+### Adapter System (14 adapters: 7 core + 7 contrib)
 
 All adapters in `apps/web/src/core/adapters/` implement the `EnergyAdapter` interface (`EnergyAdapter.ts`).
 Contrib adapters extend `BaseAdapter` (`BaseAdapter.ts`) for simplified development.
@@ -53,13 +53,14 @@ The `AdapterRegistry` (`adapter-registry.ts`) manages registration, lifecycle, a
 - **EvccAdapter** — evcc backend (95%+ hardware support) via REST + WebSocket
 - **OpenEMSAdapter** — OpenEMS Edge via JSON-RPC 2.0 over WebSocket
 
-**Contrib Adapters (6) — Plugin System:**
+**Contrib Adapters (7) — Plugin System:**
 
 - **HomeAssistantMQTTAdapter** — Home Assistant MQTT discovery / Mosquitto
 - **MatterThreadAdapter** — Matter 1.3 / Thread 1.3 smart home devices
 - **Zigbee2MQTTAdapter** — Zigbee devices via Zigbee2MQTT bridge
 - **ShellyRESTAdapter** — Shelly Gen1/2/3 via HTTP REST (Plug S, 3EM, Plus 1PM, Pro series) + webhook push
 - **OpenADR31Adapter** — OpenADR 3.1.0 VEN client for demand-response events from a VTN
+- **ExecAdapter** — Whitelisted custom script execution via backend ExecService
 - **ExampleContribAdapter** — Template for custom adapter development
 
 **Plugin System:**

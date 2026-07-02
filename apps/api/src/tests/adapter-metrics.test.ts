@@ -13,9 +13,11 @@ const {
   publishAllAdapterMetrics,
   recordAdapterConnection,
   recordAdapterDatapoint,
+  recordAdapterDlq,
   recordAdapterError,
   recordAdapterHealthSnapshot,
   recordAdapterPollLatency,
+  recordAdapterReconnect,
   resetAdapterMetricsForTests,
 } = await import('../middleware/adapter-metrics.js');
 
@@ -99,5 +101,30 @@ describe('recordAdapterHealthSnapshot', () => {
 
     const freshness = getServerMetrics().get('hems_adapter_data_freshness_seconds');
     expect(freshness?.find((s) => s.labels.adapter === 'inverter-01')?.value).toBeGreaterThan(4);
+  });
+});
+
+describe('recordAdapterReconnect', () => {
+  it('increments hems_adapter_reconnects_total with adapter and protocol labels', () => {
+    recordAdapterReconnect('heatpump-01', 'modbus-heatpump');
+    recordAdapterReconnect('heatpump-01', 'modbus-heatpump');
+
+    const samples = getServerMetrics().get('hems_adapter_reconnects_total');
+    const sample = samples?.find(
+      (s) => s.labels.adapter === 'heatpump-01' && s.labels.protocol === 'modbus-heatpump',
+    );
+    expect(sample?.value).toBe(2);
+  });
+});
+
+describe('recordAdapterDlq', () => {
+  it('increments hems_adapter_dlq_total with adapter and protocol labels', () => {
+    recordAdapterDlq('mqtt-01', 'victron-mqtt');
+
+    const samples = getServerMetrics().get('hems_adapter_dlq_total');
+    const sample = samples?.find(
+      (s) => s.labels.adapter === 'mqtt-01' && s.labels.protocol === 'victron-mqtt',
+    );
+    expect(sample?.value).toBe(1);
   });
 });

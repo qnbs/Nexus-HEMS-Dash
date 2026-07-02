@@ -21,7 +21,7 @@ Grafana UI: **http://localhost:3001** (admin / admin for dev — change in prod!
 
 ## Pre-Provisioned Dashboards
 
-Grafana auto-imports dashboards from `grafana/provisioning/dashboards/`. Two dashboard JSON files ship today — `json/nexus-energy-overview.json` and `json/nexus-error-tracking.json` (UID `nexus-hems-error-tracking`, which already carries adapter-error, adapter-latency and circuit-breaker panels). The layouts below document the intended panel set: the Overview maps to the shipped energy dashboard, while the **Adapter Health** and **API & Security** dashboards are the target expansion (no separate JSON yet).
+Grafana auto-imports dashboards from `grafana/provisioning/dashboards/`. Three dashboard JSON files ship today — `json/nexus-energy-overview.json`, `json/nexus-error-tracking.json` (UID `nexus-hems-error-tracking`, adapter-error/latency/circuit-breaker panels), and `json/nexus-adapter-health.json` (UID `nexus-hems-adapters`, reconnect/freshness/DLQ panels per MED-18). The **API & Security** dashboard below is the remaining target expansion (no separate JSON yet).
 
 ### 1. Nexus-HEMS Overview
 
