@@ -35,10 +35,15 @@ export type DeviceProtocol =
   | 'fronius-solarapi'
   | 'huawei-fusionsolar'
   | 'enphase-api'
+  | 'shelly-gen1'
   | 'shelly-gen2'
+  | 'shelly-gen3'
   | 'homeassistant'
   | 'openwb'
-  | 'evcc-api';
+  | 'evcc-api'
+  | 'matter-thread'
+  | 'zigbee2mqtt'
+  | 'openems-api';
 
 export interface DeviceDefinition {
   /** Unique device identifier (kebab-case) */
@@ -1299,6 +1304,929 @@ reg({
   phases: 1,
   maxCurrentA: 80,
   v2x: true,
+});
+
+// ─── P2 Additions: MPPT Controllers ────────────────────────────────
+
+reg({
+  id: 'epever-xtra-4415n',
+  manufacturer: 'EPever',
+  model: 'XTRA 4415N 40A MPPT',
+  category: 'inverter',
+  protocols: ['modbus-rtu'],
+  ratedPowerW: 2100,
+  description: 'MPPT solar charge controller 40A, 12/24/48V, RS485 Modbus',
+  defaultModbusAddress: 1,
+  docsUrl: 'https://www.epever.com/product/xtra-mppt-charge-controller',
+});
+reg({
+  id: 'epever-tracer-an-40a',
+  manufacturer: 'EPever',
+  model: 'Tracer-AN 40A MPPT',
+  category: 'inverter',
+  protocols: ['modbus-rtu'],
+  ratedPowerW: 2080,
+  description: 'MPPT solar charge controller 40A, RS485 Modbus',
+  defaultModbusAddress: 1,
+});
+reg({
+  id: 'renogy-rover-elite-40a',
+  manufacturer: 'Renogy',
+  model: 'Rover Elite 40A MPPT',
+  category: 'inverter',
+  protocols: ['modbus-rtu'],
+  ratedPowerW: 2000,
+  description: 'MPPT charge controller 40A, RS485 Modbus RTU',
+  defaultModbusAddress: 1,
+});
+reg({
+  id: 'renogy-wanderer-30a',
+  manufacturer: 'Renogy',
+  model: 'Wanderer 30A PWM',
+  category: 'inverter',
+  protocols: ['modbus-rtu'],
+  ratedPowerW: 450,
+  description: 'PWM charge controller 30A, Modbus RTU',
+  defaultModbusAddress: 1,
+});
+reg({
+  id: 'srne-ml2440-40a',
+  manufacturer: 'SRNE',
+  model: 'ML2440 40A MPPT',
+  category: 'inverter',
+  protocols: ['modbus-rtu'],
+  ratedPowerW: 2080,
+  description: 'MPPT charge controller 40A, RS485 Modbus',
+  defaultModbusAddress: 1,
+});
+reg({
+  id: 'victron-smartsolar-150-85',
+  manufacturer: 'Victron Energy',
+  model: 'SmartSolar MPPT 150/85-Tr',
+  category: 'inverter',
+  protocols: ['victron-dbus', 'modbus-tcp', 'mqtt'],
+  ratedPowerW: 4590,
+  description: 'MPPT solar charger 150V/85A via Cerbo GX VE.Can/VE.Direct',
+  evccTemplate: 'victron',
+});
+reg({
+  id: 'victron-smartsolar-150-35',
+  manufacturer: 'Victron Energy',
+  model: 'SmartSolar MPPT 150/35',
+  category: 'inverter',
+  protocols: ['victron-dbus', 'mqtt'],
+  ratedPowerW: 1890,
+  description: 'MPPT solar charger 150V/35A via VE.Direct',
+  evccTemplate: 'victron',
+});
+
+// ─── P2 Additions: Additional Hybrid Inverters ──────────────────────
+
+reg({
+  id: 'deye-sun-6k-sg04lp3',
+  manufacturer: 'Deye',
+  model: 'SUN-6K-SG04LP3-EU',
+  category: 'inverter',
+  protocols: ['modbus-tcp', 'mqtt'],
+  ratedPowerW: 6000,
+  phases: 3,
+  description: 'Hybrid inverter, LV battery, 3-phase, Modbus TCP (port 8899)',
+  defaultPort: 8899,
+  defaultModbusAddress: 1,
+  docsUrl: 'https://www.deye.com.cn/',
+});
+reg({
+  id: 'deye-sun-12k-sg04lp3',
+  manufacturer: 'Deye',
+  model: 'SUN-12K-SG04LP3-EU',
+  category: 'inverter',
+  protocols: ['modbus-tcp', 'mqtt'],
+  ratedPowerW: 12000,
+  phases: 3,
+  description: 'Hybrid inverter 12kW, LV battery, 3-phase',
+  defaultPort: 8899,
+  defaultModbusAddress: 1,
+});
+reg({
+  id: 'deye-sun-8k-sg01lp1',
+  manufacturer: 'Deye',
+  model: 'SUN-8K-SG01LP1-EU',
+  category: 'inverter',
+  protocols: ['modbus-tcp', 'mqtt'],
+  ratedPowerW: 8000,
+  phases: 1,
+  description: 'Hybrid inverter 8kW, LV battery, single-phase',
+  defaultPort: 8899,
+  defaultModbusAddress: 1,
+});
+reg({
+  id: 'growatt-sph6000',
+  manufacturer: 'Growatt',
+  model: 'SPH 6000',
+  category: 'inverter',
+  protocols: ['modbus-tcp', 'modbus-rtu'],
+  ratedPowerW: 6000,
+  phases: 1,
+  description: 'Hybrid solar inverter with battery, Modbus TCP port 502',
+  defaultPort: 502,
+  defaultModbusAddress: 1,
+  evccTemplate: 'growatt',
+});
+reg({
+  id: 'growatt-sph10000',
+  manufacturer: 'Growatt',
+  model: 'SPH 10000',
+  category: 'inverter',
+  protocols: ['modbus-tcp', 'modbus-rtu'],
+  ratedPowerW: 10000,
+  phases: 3,
+  description: 'Three-phase hybrid inverter, Modbus TCP',
+  defaultPort: 502,
+  defaultModbusAddress: 1,
+  evccTemplate: 'growatt',
+});
+reg({
+  id: 'growatt-spa6000',
+  manufacturer: 'Growatt',
+  model: 'SPA 6000',
+  category: 'inverter',
+  protocols: ['modbus-tcp'],
+  ratedPowerW: 6000,
+  phases: 1,
+  description: 'AC coupling hybrid inverter, Modbus TCP',
+  defaultPort: 502,
+  defaultModbusAddress: 1,
+  evccTemplate: 'growatt',
+});
+reg({
+  id: 'luxpower-sna5000',
+  manufacturer: 'Luxpower',
+  model: 'SNA 5000',
+  category: 'inverter',
+  protocols: ['modbus-tcp'],
+  ratedPowerW: 5000,
+  phases: 1,
+  description: 'LV hybrid inverter, EU split-phase, Modbus TCP',
+  defaultPort: 502,
+  defaultModbusAddress: 1,
+  evccTemplate: 'luxpower',
+});
+reg({
+  id: 'luxpower-lxp-5k',
+  manufacturer: 'Luxpower',
+  model: 'LXP 5K',
+  category: 'inverter',
+  protocols: ['modbus-tcp'],
+  ratedPowerW: 5000,
+  phases: 1,
+  description: 'Hybrid inverter, UK/EU variant',
+  defaultPort: 502,
+  defaultModbusAddress: 1,
+});
+reg({
+  id: 'sungrow-sh6rs',
+  manufacturer: 'Sungrow',
+  model: 'SH6.0RS',
+  category: 'inverter',
+  protocols: ['modbus-tcp', 'http-rest'],
+  ratedPowerW: 6000,
+  phases: 1,
+  description: 'Residential hybrid inverter, SBR battery compatible, Modbus TCP',
+  defaultPort: 502,
+  defaultModbusAddress: 1,
+  evccTemplate: 'sungrow',
+  openEmsFactoryId: 'Sungrow.Ess',
+});
+reg({
+  id: 'sungrow-sh10rt',
+  manufacturer: 'Sungrow',
+  model: 'SH10RT',
+  category: 'inverter',
+  protocols: ['modbus-tcp', 'http-rest'],
+  ratedPowerW: 10000,
+  phases: 3,
+  description: 'Three-phase residential hybrid, Modbus TCP',
+  defaultPort: 502,
+  defaultModbusAddress: 1,
+  evccTemplate: 'sungrow',
+});
+reg({
+  id: 'sofar-solar-hyd6kt',
+  manufacturer: 'Sofar Solar',
+  model: 'HYD 6KTL-3PH',
+  category: 'inverter',
+  protocols: ['modbus-tcp'],
+  ratedPowerW: 6000,
+  phases: 3,
+  description: 'Three-phase hybrid inverter, Modbus TCP',
+  defaultPort: 502,
+  defaultModbusAddress: 1,
+  evccTemplate: 'sofar',
+});
+reg({
+  id: 'solax-x-hybrid-g4',
+  manufacturer: 'SolaX',
+  model: 'X-Hybrid G4 5.0kW',
+  category: 'inverter',
+  protocols: ['modbus-tcp', 'http-rest'],
+  ratedPowerW: 5000,
+  phases: 1,
+  description: 'Hybrid inverter with T-BAT battery, Modbus TCP + SolaX local API',
+  defaultPort: 502,
+  defaultModbusAddress: 1,
+  evccTemplate: 'solax',
+  openEmsFactoryId: 'Solax.Ess',
+});
+reg({
+  id: 'fox-ess-h3-pro',
+  manufacturer: 'Fox ESS',
+  model: 'H3 Pro 12kW',
+  category: 'inverter',
+  protocols: ['modbus-tcp', 'mqtt'],
+  ratedPowerW: 12000,
+  phases: 3,
+  description: 'Three-phase hybrid inverter with battery, Modbus TCP',
+  defaultPort: 502,
+  defaultModbusAddress: 1,
+  evccTemplate: 'foxess',
+});
+reg({
+  id: 'rct-power-storage-dc',
+  manufacturer: 'RCT Power',
+  model: 'Power Storage DC 6.0',
+  category: 'inverter',
+  protocols: ['modbus-tcp'],
+  ratedPowerW: 6000,
+  phases: 1,
+  description: 'DC-coupled hybrid inverter, proprietary Modbus over TCP',
+  defaultPort: 8899,
+  defaultModbusAddress: 1,
+  evccTemplate: 'rct-power',
+  openEmsFactoryId: 'RCT.Ess',
+});
+reg({
+  id: 'kaco-blueplanet-hybrid',
+  manufacturer: 'KACO',
+  model: 'blueplanet hybrid 10.0 NX3',
+  category: 'inverter',
+  protocols: ['sunspec', 'modbus-tcp'],
+  ratedPowerW: 10000,
+  phases: 3,
+  sunspecModels: [103, 124, 201],
+  description: 'Three-phase hybrid with SunSpec compliance',
+  defaultPort: 502,
+  defaultModbusAddress: 3,
+  evccTemplate: 'kaco',
+});
+reg({
+  id: 'kostal-plenticore-plus',
+  manufacturer: 'Kostal',
+  model: 'PLENTICORE plus 10',
+  category: 'inverter',
+  protocols: ['modbus-tcp', 'http-rest'],
+  ratedPowerW: 10000,
+  phases: 3,
+  description: 'Three-phase hybrid inverter, Modbus TCP + REST API',
+  defaultPort: 1502,
+  defaultModbusAddress: 71,
+  evccTemplate: 'kostal',
+  openEmsFactoryId: 'Kostal.Ess',
+});
+reg({
+  id: 'fenecon-home-10',
+  manufacturer: 'FENECON',
+  model: 'Home 10',
+  category: 'inverter',
+  protocols: ['openems-api', 'modbus-tcp'],
+  ratedPowerW: 10000,
+  phases: 3,
+  description: 'AC-coupled home storage, OpenEMS Edge REST API',
+  defaultPort: 8084,
+  openEmsFactoryId: 'Fenecon.Home',
+  evccTemplate: 'fenecon',
+});
+reg({
+  id: 'azzurro-3ph10ktl-v3',
+  manufacturer: 'Azzurro (ZCS)',
+  model: '3PH10KTL-V3 Hybrid',
+  category: 'inverter',
+  protocols: ['modbus-tcp'],
+  ratedPowerW: 10000,
+  phases: 3,
+  description: 'Three-phase hybrid inverter (ZCS Azzurro), Modbus TCP',
+  defaultPort: 502,
+  defaultModbusAddress: 1,
+});
+reg({
+  id: 'solarwatt-manager-flex',
+  manufacturer: 'SOLARWATT',
+  model: 'Manager flex',
+  category: 'inverter',
+  protocols: ['http-rest'],
+  ratedPowerW: 5000,
+  phases: 1,
+  description: 'DC-coupled storage system, local HTTP API',
+  evccTemplate: 'solarwatt',
+});
+
+// ─── P2 Additions: More Battery Systems ─────────────────────────────
+
+reg({
+  id: 'pylontech-us2000c',
+  manufacturer: 'Pylontech',
+  model: 'US2000C 2.4kWh',
+  category: 'battery',
+  protocols: ['modbus-rtu', 'modbus-tcp'],
+  capacityKWh: 2.4,
+  ratedPowerW: 1500,
+  description: 'LiFePO4 battery module, RS485 Modbus BMS communication',
+  defaultModbusAddress: 1,
+});
+reg({
+  id: 'pylontech-us3000c',
+  manufacturer: 'Pylontech',
+  model: 'US3000C 3.5kWh',
+  category: 'battery',
+  protocols: ['modbus-rtu', 'modbus-tcp'],
+  capacityKWh: 3.5,
+  ratedPowerW: 2500,
+  description: 'LiFePO4 battery module, RS485 Modbus BMS',
+  defaultModbusAddress: 1,
+});
+reg({
+  id: 'pylontech-h48074',
+  manufacturer: 'Pylontech',
+  model: 'H48074 HV 3.55kWh',
+  category: 'battery',
+  protocols: ['modbus-rtu', 'modbus-tcp'],
+  capacityKWh: 3.55,
+  ratedPowerW: 3550,
+  description: 'High-voltage battery module 48V',
+  defaultModbusAddress: 1,
+});
+reg({
+  id: 'dyness-dt10',
+  manufacturer: 'Dyness',
+  model: 'DT10 10.24kWh',
+  category: 'battery',
+  protocols: ['modbus-rtu'],
+  capacityKWh: 10.24,
+  ratedPowerW: 5000,
+  description: 'LiFePO4 high-voltage tower battery, RS485',
+  defaultModbusAddress: 1,
+});
+reg({
+  id: 'foxess-ecs4100',
+  manufacturer: 'Fox ESS',
+  model: 'ECS4100 4.1kWh',
+  category: 'battery',
+  protocols: ['modbus-tcp'],
+  capacityKWh: 4.1,
+  ratedPowerW: 3000,
+  description: 'LV battery for Fox ESS H3/H1 inverters',
+  defaultModbusAddress: 1,
+});
+reg({
+  id: 'solax-t-bat-hv',
+  manufacturer: 'SolaX',
+  model: 'T-BAT HV 5.8',
+  category: 'battery',
+  protocols: ['modbus-tcp'],
+  capacityKWh: 5.8,
+  ratedPowerW: 3500,
+  description: 'High-voltage battery for SolaX X-Hybrid G4',
+  defaultModbusAddress: 1,
+});
+reg({
+  id: 'varta-pulse-neo',
+  manufacturer: 'VARTA',
+  model: 'pulse neo 6.5',
+  category: 'battery',
+  protocols: ['modbus-tcp', 'http-rest'],
+  capacityKWh: 6.5,
+  ratedPowerW: 3300,
+  description: 'AC-coupled home storage, local Modbus + REST API',
+  defaultPort: 502,
+  defaultModbusAddress: 1,
+  evccTemplate: 'varta',
+});
+reg({
+  id: 'senec-home-v4',
+  manufacturer: 'SENEC',
+  model: 'SENEC.Home V4',
+  category: 'battery',
+  protocols: ['http-rest', 'mqtt'],
+  capacityKWh: 10,
+  ratedPowerW: 5000,
+  description: 'AC home storage, local LALA.CGI API',
+  evccTemplate: 'senec',
+});
+reg({
+  id: 'sonnen-eco8',
+  manufacturer: 'sonnen',
+  model: 'sonnen eco 8.5kWh',
+  category: 'battery',
+  protocols: ['http-rest', 'modbus-tcp'],
+  capacityKWh: 8,
+  ratedPowerW: 3300,
+  description: 'AC-coupled eco storage, local REST API + Modbus',
+  evccTemplate: 'sonnen',
+  openEmsFactoryId: 'Sonnen.Ess',
+});
+reg({
+  id: 'e3dc-s10x',
+  manufacturer: 'E3/DC',
+  model: 'S10 X',
+  category: 'battery',
+  protocols: ['modbus-tcp', 'http-rest'],
+  capacityKWh: 13.5,
+  ratedPowerW: 5000,
+  description: 'All-in-one home power station, Modbus TCP (port 502)',
+  defaultPort: 502,
+  defaultModbusAddress: 6,
+  evccTemplate: 'e3dc',
+  openEmsFactoryId: 'E3DC.Ess',
+});
+reg({
+  id: 'alpha-ess-smile5',
+  manufacturer: 'Alpha ESS',
+  model: 'SMILE5',
+  category: 'battery',
+  protocols: ['modbus-tcp', 'http-rest'],
+  capacityKWh: 5.7,
+  ratedPowerW: 5000,
+  description: '5kW AC hybrid with SMILE-B3 battery, Modbus TCP unit 85',
+  defaultPort: 502,
+  defaultModbusAddress: 85,
+  evccTemplate: 'alphaess',
+});
+
+// ─── P2 Additions: Additional Smart Meters ──────────────────────────
+
+reg({
+  id: 'eastron-sdm630',
+  manufacturer: 'Eastron',
+  model: 'SDM630 3-phase',
+  category: 'meter',
+  protocols: ['modbus-rtu', 'modbus-tcp'],
+  phases: 3,
+  description: '3-phase bidirectional energy meter, FLOAT32 Modbus registers',
+  defaultModbusAddress: 1,
+});
+reg({
+  id: 'eastron-sdm72d-m',
+  manufacturer: 'Eastron',
+  model: 'SDM72D-M MID',
+  category: 'meter',
+  protocols: ['modbus-rtu', 'modbus-tcp'],
+  phases: 3,
+  description: '3-phase MID-certified energy meter, Modbus RTU',
+  defaultModbusAddress: 1,
+});
+reg({
+  id: 'siemens-pac2200',
+  manufacturer: 'Siemens',
+  model: 'PAC2200',
+  category: 'meter',
+  protocols: ['modbus-tcp'],
+  phases: 3,
+  description: 'Three-phase power monitoring device, Modbus TCP',
+  defaultPort: 502,
+  defaultModbusAddress: 1,
+});
+reg({
+  id: 'abb-b24-112-100',
+  manufacturer: 'ABB',
+  model: 'B24 112-100',
+  category: 'meter',
+  protocols: ['modbus-tcp', 'modbus-rtu'],
+  phases: 3,
+  description: 'MID energy meter, Modbus RTU + M-Bus',
+  defaultModbusAddress: 1,
+});
+reg({
+  id: 'orno-we-514',
+  manufacturer: 'ORNO',
+  model: 'WE-514 3-phase',
+  category: 'meter',
+  protocols: ['modbus-rtu'],
+  phases: 3,
+  description: 'Three-phase energy meter with RS485 Modbus',
+  defaultModbusAddress: 1,
+});
+reg({
+  id: 'janitza-umg-509',
+  manufacturer: 'Janitza',
+  model: 'UMG 509',
+  category: 'meter',
+  protocols: ['modbus-tcp', 'modbus-rtu'],
+  phases: 3,
+  description: 'Universal measurement device, Modbus TCP/RTU',
+  defaultPort: 502,
+  defaultModbusAddress: 1,
+});
+reg({
+  id: 'schneider-pm5560',
+  manufacturer: 'Schneider Electric',
+  model: 'PowerLogic PM5560',
+  category: 'meter',
+  protocols: ['modbus-tcp', 'modbus-rtu'],
+  phases: 3,
+  description: 'Power and energy meter, Modbus TCP/RTU',
+  defaultPort: 502,
+  defaultModbusAddress: 1,
+});
+reg({
+  id: 'shelly-pro3em',
+  manufacturer: 'Shelly',
+  model: 'Pro 3EM',
+  category: 'meter',
+  protocols: ['shelly-gen2', 'mqtt', 'http-rest'],
+  phases: 3,
+  description: '3-phase energy meter with relay, Gen2 RPC API',
+  defaultPort: 80,
+  evccTemplate: 'shelly',
+});
+reg({
+  id: 'shelly-pro-em50',
+  manufacturer: 'Shelly',
+  model: 'Pro EM50',
+  category: 'meter',
+  protocols: ['shelly-gen2', 'mqtt', 'http-rest'],
+  phases: 1,
+  description: 'Single-phase energy meter 50A, Gen2 RPC API',
+  defaultPort: 80,
+  evccTemplate: 'shelly',
+});
+
+// ─── P2 Additions: More Wallboxes ───────────────────────────────────
+
+reg({
+  id: 'mennekes-amtron-premium',
+  manufacturer: 'Mennekes',
+  model: 'AMTRON Premium 22C2 3.0',
+  category: 'wallbox',
+  protocols: ['ocpp-21', 'modbus-tcp'],
+  ratedPowerW: 22000,
+  phases: 3,
+  maxCurrentA: 32,
+  description: 'Smart wallbox 22kW, OCPP 2.1 + Modbus TCP',
+  evccTemplate: 'mennekes',
+});
+reg({
+  id: 'phoenix-contact-ev-charge',
+  manufacturer: 'Phoenix Contact',
+  model: 'EV-Charge Control 22',
+  category: 'wallbox',
+  protocols: ['ocpp-21', 'eebus', 'modbus-tcp'],
+  ratedPowerW: 22000,
+  phases: 3,
+  maxCurrentA: 32,
+  description: '22kW industrial EV charger, OCPP 2.1 + EEBUS',
+  evccTemplate: 'phoenix-contact',
+});
+reg({
+  id: 'amperfied-connect-me',
+  manufacturer: 'Amperfied',
+  model: 'connect.me 22kW',
+  category: 'wallbox',
+  protocols: ['ocpp-21'],
+  ratedPowerW: 22000,
+  phases: 3,
+  maxCurrentA: 32,
+  description: 'Smart wallbox by Heidelberger Druckmaschinen, OCPP 2.1',
+  evccTemplate: 'amperfied',
+});
+reg({
+  id: 'compleo-ebox-professional',
+  manufacturer: 'Compleo',
+  model: 'eBox Professional',
+  category: 'wallbox',
+  protocols: ['ocpp-21', 'modbus-tcp'],
+  ratedPowerW: 22000,
+  phases: 3,
+  maxCurrentA: 32,
+  description: 'Commercial wallbox 22kW, OCPP 2.1',
+  evccTemplate: 'compleo',
+});
+reg({
+  id: 'vestel-evc04',
+  manufacturer: 'Vestel',
+  model: 'EVC04 22kW',
+  category: 'wallbox',
+  protocols: ['ocpp-21'],
+  ratedPowerW: 22000,
+  phases: 3,
+  maxCurrentA: 32,
+  description: '22kW AC wallbox OCPP 2.1',
+  evccTemplate: 'vestel',
+});
+reg({
+  id: 'bender-cc612',
+  manufacturer: 'Bender',
+  model: 'CC612',
+  category: 'wallbox',
+  protocols: ['ocpp-21', 'modbus-tcp'],
+  ratedPowerW: 22000,
+  phases: 3,
+  maxCurrentA: 32,
+  description: 'Industrial EV charger, OCPP 2.1 + Modbus TCP',
+});
+reg({
+  id: 'en-plus-eve-mini',
+  manufacturer: 'Entratek',
+  model: 'eve Mini 22',
+  category: 'wallbox',
+  protocols: ['ocpp-21', 'modbus-tcp'],
+  ratedPowerW: 22000,
+  phases: 3,
+  maxCurrentA: 32,
+  description: '22kW smart wallbox, OCPP 2.1',
+  evccTemplate: 'entratek',
+});
+reg({
+  id: 'em2go-wallbox-22',
+  manufacturer: 'em2go',
+  model: 'Wallbox 22kW Plus',
+  category: 'wallbox',
+  protocols: ['ocpp-21', 'modbus-tcp'],
+  ratedPowerW: 22000,
+  phases: 3,
+  maxCurrentA: 32,
+  description: '22kW compact wallbox OCPP 2.1',
+  evccTemplate: 'em2go',
+});
+
+// ─── P2 Additions: Shelly Gen1 & Gen3 ──────────────────────────────
+
+reg({
+  id: 'shelly-plug-s-gen1',
+  manufacturer: 'Shelly',
+  model: 'Plug S (Gen1)',
+  category: 'meter',
+  protocols: ['shelly-gen1', 'mqtt', 'http-rest'],
+  phases: 1,
+  ratedPowerW: 2500,
+  description: 'Smart plug with energy monitoring, Gen1 HTTP API',
+  defaultPort: 80,
+  evccTemplate: 'shelly',
+});
+reg({
+  id: 'shelly-3em-gen1',
+  manufacturer: 'Shelly',
+  model: '3EM (Gen1)',
+  category: 'meter',
+  protocols: ['shelly-gen1', 'mqtt', 'http-rest'],
+  phases: 3,
+  description: '3-phase energy meter Gen1, /emeters/ API',
+  defaultPort: 80,
+  evccTemplate: 'shelly',
+});
+reg({
+  id: 'shelly-em-gen1',
+  manufacturer: 'Shelly',
+  model: 'EM (Gen1)',
+  category: 'meter',
+  protocols: ['shelly-gen1', 'mqtt', 'http-rest'],
+  phases: 1,
+  description: 'Energy meter with 2 clamps, Gen1',
+  defaultPort: 80,
+  evccTemplate: 'shelly',
+});
+reg({
+  id: 'shelly-plus-plug-s',
+  manufacturer: 'Shelly',
+  model: 'Plus Plug S (Gen2)',
+  category: 'meter',
+  protocols: ['shelly-gen2', 'mqtt', 'http-rest'],
+  phases: 1,
+  ratedPowerW: 2500,
+  description: 'Smart plug 16A, Gen2 RPC API',
+  defaultPort: 80,
+  evccTemplate: 'shelly',
+});
+reg({
+  id: 'shelly-pro-3em-gen3',
+  manufacturer: 'Shelly',
+  model: 'Pro 3EM (Gen3)',
+  category: 'meter',
+  protocols: ['shelly-gen3', 'mqtt', 'http-rest'],
+  phases: 3,
+  description: '3-phase energy meter Gen3, em1:X component API',
+  defaultPort: 80,
+  evccTemplate: 'shelly',
+});
+reg({
+  id: 'shelly-plus-1pm-gen2',
+  manufacturer: 'Shelly',
+  model: 'Plus 1PM (Gen2)',
+  category: 'meter',
+  protocols: ['shelly-gen2', 'mqtt', 'http-rest'],
+  phases: 1,
+  ratedPowerW: 3680,
+  description: '1-channel relay with power monitoring, Gen2',
+  defaultPort: 80,
+  evccTemplate: 'shelly',
+});
+
+// ─── P2 Additions: More Heat Pumps ──────────────────────────────────
+
+reg({
+  id: 'viessmann-vitocal-200a',
+  manufacturer: 'Viessmann',
+  model: 'Vitocal 200-A AWO 201.B16',
+  category: 'heatpump',
+  protocols: ['modbus-tcp', 'eebus', 'http-rest'],
+  ratedPowerW: 16000,
+  sgReady: true,
+  description: 'Air/water heat pump 16kW, Viessmann ISG/E3 Modbus TCP + EEBUS',
+  defaultPort: 4000,
+  evccTemplate: 'viessmann',
+});
+reg({
+  id: 'viessmann-vitocal-300a',
+  manufacturer: 'Viessmann',
+  model: 'Vitocal 300-A AWO 302.B13',
+  category: 'heatpump',
+  protocols: ['modbus-tcp', 'eebus'],
+  ratedPowerW: 13000,
+  sgReady: true,
+  description: 'Split air/water heat pump 13kW, Vitoconnect + Modbus',
+  evccTemplate: 'viessmann',
+});
+reg({
+  id: 'stiebel-eltron-wpl17',
+  manufacturer: 'Stiebel Eltron',
+  model: 'WPL 17 E',
+  category: 'heatpump',
+  protocols: ['modbus-tcp', 'eebus', 'knx'],
+  ratedPowerW: 17000,
+  sgReady: true,
+  description: 'Air/water heat pump 17kW, ISG web Modbus TCP port 502',
+  defaultPort: 502,
+  defaultModbusAddress: 1,
+  evccTemplate: 'stiebel-eltron',
+});
+reg({
+  id: 'stiebel-eltron-wpl22',
+  manufacturer: 'Stiebel Eltron',
+  model: 'WPL 22 E',
+  category: 'heatpump',
+  protocols: ['modbus-tcp', 'eebus', 'knx'],
+  ratedPowerW: 22000,
+  sgReady: true,
+  description: 'Air/water heat pump 22kW, ISG web Modbus TCP',
+  defaultPort: 502,
+  defaultModbusAddress: 1,
+  evccTemplate: 'stiebel-eltron',
+});
+reg({
+  id: 'nibe-f2040',
+  manufacturer: 'NIBE',
+  model: 'F2040 6-20',
+  category: 'heatpump',
+  protocols: ['modbus-tcp'],
+  ratedPowerW: 20000,
+  sgReady: true,
+  description: 'Air/water heat pump with inverter compressor, Modbus',
+  evccTemplate: 'nibe',
+});
+reg({
+  id: 'nibe-f2120-14',
+  manufacturer: 'NIBE',
+  model: 'F2120-14',
+  category: 'heatpump',
+  protocols: ['modbus-tcp'],
+  ratedPowerW: 14000,
+  sgReady: true,
+  description: 'Monobloc air source heat pump 14kW',
+  evccTemplate: 'nibe',
+});
+reg({
+  id: 'wolf-bwl-1s',
+  manufacturer: 'Wolf',
+  model: 'BWL-1S-12 Split',
+  category: 'heatpump',
+  protocols: ['modbus-tcp', 'knx'],
+  ratedPowerW: 12000,
+  sgReady: true,
+  description: 'Split air/water heat pump 12kW, ISM7i Modbus gateway',
+  defaultPort: 502,
+  defaultModbusAddress: 1,
+  evccTemplate: 'wolf',
+});
+reg({
+  id: 'waterkotte-ai1-eco-touch',
+  manufacturer: 'Waterkotte',
+  model: 'AI1 EcoTouch 11',
+  category: 'heatpump',
+  protocols: ['modbus-tcp'],
+  ratedPowerW: 11000,
+  sgReady: true,
+  description: 'Ground source heat pump, Modbus TCP',
+  defaultPort: 502,
+  defaultModbusAddress: 1,
+  evccTemplate: 'waterkotte',
+});
+reg({
+  id: 'alpha-innotec-awd',
+  manufacturer: 'Alpha-InnoTec',
+  model: 'AWD 90-2',
+  category: 'heatpump',
+  protocols: ['modbus-tcp', 'knx'],
+  ratedPowerW: 9000,
+  sgReady: true,
+  description: 'Air/water heat pump, Luxtronik 2.0 Modbus',
+  defaultPort: 8000,
+  defaultModbusAddress: 1,
+});
+reg({
+  id: 'mitsubishi-ecodan-heatpump',
+  manufacturer: 'Mitsubishi',
+  model: 'Ecodan PUHZ-SW100VHA',
+  category: 'heatpump',
+  protocols: ['modbus-tcp', 'http-rest'],
+  ratedPowerW: 10000,
+  sgReady: true,
+  description: 'Air source heat pump, Melcloud REST API + optional Modbus',
+  evccTemplate: 'mitsubishi-ecodan',
+});
+reg({
+  id: 'atlantic-explorer-heatpump',
+  manufacturer: 'Atlantic',
+  model: 'Explorer IO 10kW',
+  category: 'heatpump',
+  protocols: ['modbus-tcp'],
+  ratedPowerW: 10000,
+  sgReady: true,
+  description: 'Air/water monobloc heat pump, Modbus TCP',
+  defaultPort: 502,
+  defaultModbusAddress: 1,
+});
+
+// ─── P2 Additions: Zigbee Energy Sensors ────────────────────────────
+
+reg({
+  id: 'nous-a5t-zigbee-plug',
+  manufacturer: 'NOUS',
+  model: 'A5T Zigbee Smart Plug 16A',
+  category: 'meter',
+  protocols: ['zigbee2mqtt'],
+  phases: 1,
+  ratedPowerW: 3680,
+  description: 'Zigbee 3.0 smart plug with energy monitoring via Zigbee2MQTT',
+});
+reg({
+  id: 'aqara-smart-plug-zigbee',
+  manufacturer: 'Aqara',
+  model: 'Smart Plug (Zigbee EU)',
+  category: 'meter',
+  protocols: ['zigbee2mqtt'],
+  phases: 1,
+  ratedPowerW: 2500,
+  description: 'Zigbee smart plug with energy monitoring via Zigbee2MQTT',
+});
+reg({
+  id: 'sonoff-s60-zigbee',
+  manufacturer: 'SONOFF',
+  model: 'S60 Zigbee Smart Plug',
+  category: 'meter',
+  protocols: ['zigbee2mqtt'],
+  phases: 1,
+  ratedPowerW: 3450,
+  description: 'Zigbee 3.0 plug 16A with power monitoring via Zigbee2MQTT',
+});
+reg({
+  id: 'third-reality-zigbee-plug',
+  manufacturer: 'Third Reality',
+  model: '3RSP019BZ Smart Plug',
+  category: 'meter',
+  protocols: ['zigbee2mqtt'],
+  phases: 1,
+  ratedPowerW: 1800,
+  description: 'Zigbee smart plug with energy monitoring',
+});
+
+// ─── P2 Additions: Matter/Thread Devices ────────────────────────────
+
+reg({
+  id: 'eve-energy-matter',
+  manufacturer: 'Eve Systems',
+  model: 'Eve Energy (Matter)',
+  category: 'meter',
+  protocols: ['matter-thread', 'homeassistant'],
+  phases: 1,
+  ratedPowerW: 3680,
+  description: 'Smart plug with energy monitoring, Matter 1.2 + Thread',
+  docsUrl: 'https://www.evehome.com/de/eve-energy',
+});
+reg({
+  id: 'nanoleaf-lines-matter',
+  manufacturer: 'Nanoleaf',
+  model: 'Essentials Bulb (Matter)',
+  category: 'meter',
+  protocols: ['matter-thread'],
+  description: 'Matter 1.0 light bulb with power state',
 });
 
 // ─── Query Functions ─────────────────────────────────────────────────

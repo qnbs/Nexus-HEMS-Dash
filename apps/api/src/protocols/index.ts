@@ -27,6 +27,7 @@ import {
 } from '../middleware/adapter-metrics.js';
 import { EebusProtocolAdapter } from './eebus/EebusProtocolAdapter.js';
 import { EvccAdapter } from './evcc/EvccAdapter.js';
+import { createHeatPumpAdapterFromEnv } from './heatpump/HeatPumpAdapter.js';
 import { KnxAdapter, type KnxGaMapping } from './knx/KnxAdapter.js';
 import { type DeviceConfig, ModbusAdapter } from './modbus/ModbusAdapter.js';
 import { MqttAdapter } from './mqtt/MqttAdapter.js';
@@ -300,6 +301,30 @@ export async function startProtocolAdapters(eventBus: EventBus): Promise<void> {
         const message = err instanceof Error ? err.message : String(err);
         setState(eebusAdapter.id, eebusAdapter.protocol, 'failed', message);
         console.error('[Adapters] Failed to start EebusProtocolAdapter:', err);
+      });
+  }
+
+  // -------------------------------------------------------------------------
+  // Heat Pump Adapter (Modbus TCP — Stiebel, Viessmann, Wolf, NIBE, Alpha, Daikin)
+  // Enable via env: HEATPUMP_HOST=192.168.1.x HEATPUMP_MANUFACTURER=stiebel
+  // -------------------------------------------------------------------------
+  const heatPumpAdapter = createHeatPumpAdapterFromEnv();
+  if (heatPumpAdapter) {
+    activeAdapters.push(heatPumpAdapter);
+    activeAdapterRefs.set(heatPumpAdapter.id, heatPumpAdapter);
+    recordAdapterRegistration(heatPumpAdapter.id, heatPumpAdapter.protocol);
+    setState(heatPumpAdapter.id, heatPumpAdapter.protocol, 'starting');
+
+    heatPumpAdapter
+      .connect()
+      .then(() => {
+        setState(heatPumpAdapter.id, heatPumpAdapter.protocol, 'healthy');
+        pipeAdapterToEventBus(heatPumpAdapter, eventBus);
+      })
+      .catch((err: unknown) => {
+        const message = err instanceof Error ? err.message : String(err);
+        setState(heatPumpAdapter.id, heatPumpAdapter.protocol, 'failed', message);
+        console.error('[Adapters] Failed to start HeatPumpAdapter:', err);
       });
   }
 
