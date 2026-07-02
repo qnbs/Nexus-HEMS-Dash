@@ -70,6 +70,55 @@ describe('Predictive AI', () => {
       const rec = await generatePredictiveRecommendation(mockEnergyData, forecast, mockSettings);
       expect(rec.estimatedSavings).toBeGreaterThanOrEqual(0);
     });
+
+    it('should recommend preheat when the battery is full and prices are moderate', async () => {
+      const forecast = await fetchTariffForecast('tibber', 'token');
+      const rec = await generatePredictiveRecommendation(
+        { ...mockEnergyData, batterySoC: 85, priceCurrent: 0.17, pvPower: 500 },
+        forecast,
+        mockSettings,
+      );
+      expect(rec.action).toBe('preheat');
+    });
+
+    it('should recommend waiting when a much cheaper slot is ahead', async () => {
+      const now = new Date();
+      const forecast = [
+        {
+          timestamp: new Date(now.getTime() + 3_600_000),
+          pricePerKwh: 0.05,
+          renewable: 50,
+          co2Intensity: 120,
+        },
+        { timestamp: now, pricePerKwh: 0.45, renewable: 30, co2Intensity: 200 },
+      ];
+      const rec = await generatePredictiveRecommendation(
+        { ...mockEnergyData, priceCurrent: 0.45, pvPower: 500, batterySoC: 40 },
+        forecast,
+        mockSettings,
+      );
+      expect(rec.action).toBe('wait');
+      expect(rec.confidence).toBeGreaterThan(0.8);
+    });
+
+    it('should prioritize surplus PV for EV charging', async () => {
+      const now = new Date();
+      const forecast = [
+        { timestamp: now, pricePerKwh: 0.22, renewable: 60, co2Intensity: 100 },
+        {
+          timestamp: new Date(now.getTime() + 3_600_000),
+          pricePerKwh: 0.24,
+          renewable: 55,
+          co2Intensity: 110,
+        },
+      ];
+      const rec = await generatePredictiveRecommendation(
+        { ...mockEnergyData, pvPower: 4500, priceCurrent: 0.28, batterySoC: 55 },
+        forecast,
+        mockSettings,
+      );
+      expect(rec.action).toBe('charge_ev');
+    });
   });
 
   describe('queryAIForOptimization', () => {

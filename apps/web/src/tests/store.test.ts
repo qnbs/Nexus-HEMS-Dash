@@ -1,5 +1,6 @@
+import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { defaultSettings, useAppStore } from '../store';
+import { defaultSettings, useAppStore, useAppStoreShallow } from '../store';
 
 // Mock persistSettings to avoid Dexie in unit tests
 vi.mock('../lib/db', () => ({
@@ -70,11 +71,53 @@ describe('Zustand Store', () => {
     expect(useAppStore.getState().floorplan.lightsOn).toBe(true); // unchanged
   });
 
+  it('skips floorplan updates when values are unchanged', () => {
+    const stateBefore = useAppStore.getState();
+    useAppStore.getState().updateFloorplan({ lightsOn: true });
+    expect(useAppStore.getState()).toBe(stateBefore);
+  });
+
   it('should update settings and persist', async () => {
     const db = await import('../lib/db');
     useAppStore.getState().updateSettings({ chargeThreshold: 0.12 });
     expect(useAppStore.getState().settings.chargeThreshold).toBe(0.12);
     expect(db.persistSettings).toHaveBeenCalled();
+  });
+
+  it('skips settings persistence when values are unchanged', async () => {
+    const db = await import('../lib/db');
+    vi.mocked(db.persistSettings).mockClear();
+    const before = useAppStore.getState().settings.chargeThreshold;
+    useAppStore.getState().updateSettings({ chargeThreshold: before });
+    expect(db.persistSettings).not.toHaveBeenCalled();
+  });
+
+  it('updates adapter mode and skips when unchanged', () => {
+    useAppStore.getState().setAdapterMode('mock');
+    expect(useAppStore.getState().adapterMode).toBe('mock');
+    const stateBefore = useAppStore.getState();
+    useAppStore.getState().setAdapterMode('mock');
+    expect(useAppStore.getState()).toBe(stateBefore);
+    useAppStore.getState().setAdapterMode('live');
+    expect(useAppStore.getState().adapterMode).toBe('live');
+  });
+
+  it('updates theme preference and bumps the transition key', () => {
+    const keyBefore = useAppStore.getState().themeTransitionKey;
+    useAppStore.getState().setThemePreference('system');
+    expect(useAppStore.getState().themePreference).toBe('system');
+    expect(useAppStore.getState().themeTransitionKey).toBe(keyBefore + 1);
+  });
+
+  it('selects multiple fields via useAppStoreShallow without throwing', () => {
+    const { result } = renderHook(() =>
+      useAppStoreShallow((s) => ({
+        connected: s.connected,
+        locale: s.locale,
+      })),
+    );
+    expect(result.current.connected).toBe(false);
+    expect(result.current.locale).toBe('de');
   });
 });
 
@@ -112,6 +155,12 @@ describe('setEnergyData equality-skip guard', () => {
     expect(energyData.batterySoC).toBe(85);
     expect(energyData.pvPower).toBe(3000); // unchanged
     expect(energyData.houseLoad).toBe(2000); // unchanged
+  });
+
+  it('returns the same state reference when incoming energy data is identical', () => {
+    const stateBefore = useAppStore.getState();
+    useAppStore.getState().setEnergyData({ pvPower: 3000, batterySoC: 60 });
+    expect(useAppStore.getState()).toBe(stateBefore);
   });
 });
 

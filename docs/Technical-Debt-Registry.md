@@ -284,14 +284,14 @@ Changed to `process.env.JWT_SECRET_FILE ?? '/run/secrets/jwt_secret'`.
 ### MED-01 — Test Coverage Below Industry Standard
 
 **File:** `apps/web/vitest.config.ts:18-22`, `apps/web/coverage-baseline.json`, `apps/api/vitest.config.ts:13-17`
-**Status:** ⏳ In progress — **web PRF-03 baseline restored to 78/70/70/80** (measured 78.93/71.22/71.96/80.87, 2026-07-02); branches stretch target 72% deferred; API staged toward 55%
+**Status:** ⏳ In progress — **web PRF-03 baseline at 78/72/70/80** (measured 79.60/72.00/73.46/81.58, 2026-07-02); API staged toward 55%
 
 Current enforced thresholds:
 
 - Web vitest + baseline: statements **78%**, branches **70%**, functions **70%**, lines **80%**
 - API: statements 33%, branches 30%, functions 38%, lines 33% (measured v1.3.0 baseline, staged toward 55%)
 
-**Fix:** Continue ratcheting API gates as backend adapter tests land; raise web branches to 72% once measured coverage clears with margin.
+**Fix:** Continue ratcheting API gates as backend adapter tests land; web branches stretch to 72% **done** (2026-07-02).
 
 ---
 
