@@ -264,7 +264,7 @@ export class EEBUSAdapter extends BaseAdapter {
     if (!validation.ok) {
       this.setStatus('error', validation.error);
       this.emitEvent({ type: 'error', message: validation.error });
-      throw new Error(validation.error);
+      return;
     }
 
     if (this._isMock) {
