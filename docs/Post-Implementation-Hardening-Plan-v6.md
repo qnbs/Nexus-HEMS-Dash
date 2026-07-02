@@ -58,7 +58,7 @@
 
 | ID | Task |
 |----|------|
-| P3-01 | Operator guide screenshots | ⏳ `docs/Operator-Screenshots.md` capture guide |
+| P3-01 | Operator guide screenshots | ✅ PNGs in `docs/images/operators/` + `capture:operators` script |
 | P3-02 | ADR for HA dual-mode (ha-ws-api vs mqtt-broker) | ✅ ADR-023 |
 | P3-03 | Lighthouse budget re-baseline after Sankey data growth | ✅ `docs/Lighthouse-Baseline-2026-07.md` |
 

@@ -6,7 +6,14 @@
 
 ## Quick start
 
+![EEBUS certificates tab](./images/operators/eebus-certificates.png)
+*Settings → EEBUS → Certificates (trust store + import)*
+
 1. **Settings → EEBUS Certs** — generate or import client certificate; note SKI.
+
+![EEBUS pairing — import certificate dialog](./images/operators/eebus-pairing-wizard.png)
+*Import certificate wizard (pairing step)*
+
 2. **Pair device** — use the EEBUS pairing wizard; approve trust on the heat pump / EVSE / energy manager.
 3. **Enable adapter** — Settings → Adapters → EEBUS → live mode requires double opt-in (`ADAPTER_MODE=live` + `ALLOW_LIVE_HARDWARE=true`).
 4. **Verify** — Monitoring shows SHIP session health; Live Energy Flow shows grid/limit datapoints when LPC/MGCP use cases are active.

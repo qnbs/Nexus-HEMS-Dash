@@ -4,6 +4,9 @@
 
 ## Frontend control
 
+![Heat pump hardware registry — Modbus profiles](./images/operators/heatpump-modbus-settings.png)
+*Settings → Hardware → filter heat pump category*
+
 - **Live Energy Flow** / **Devices** — SG Ready mode selector and heat pump power commands use `useSafeCommand` (confirmation for dangerous setpoints).
 - KNX floorplan may expose room/setpoint actuators separately.
 

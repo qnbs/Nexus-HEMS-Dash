@@ -4,6 +4,9 @@
 
 ## OCPP 2.1 adapter (frontend)
 
+![Wallbox / EV devices panel](./images/operators/wallbox-evcc-link.png)
+*Devices → EV section (OCPP / evcc quick actions)*
+
 **Settings → Adapters → OCPP 2.1**
 
 - CSMS WebSocket URL, charge point ID, ISO 15118 options.

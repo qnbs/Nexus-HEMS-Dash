@@ -39,6 +39,9 @@ Grafana auto-imports dashboards from `grafana/provisioning/dashboards/`. Three d
 
 ### 2. Adapter Health
 
+![Adapter health — in-app Monitoring equivalent](./images/operators/grafana-adapter-health.png)
+*Monitoring → Adapter Health (Grafana `nexus-hems-adapters` dashboard shows the same MED-18 metrics)*
+
 **UID:** `nexus-hems-adapters`
 
 Shows per-adapter metrics (`{adapter, protocol}` labels, MED-18 — `apps/api/src/middleware/adapter-metrics.ts`):

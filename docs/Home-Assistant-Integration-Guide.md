@@ -14,6 +14,9 @@
 
 ### ha-ws-api (recommended)
 
+![Home Assistant adapter settings — ha-ws-api mode](./images/operators/ha-ws-api-settings.png)
+*Settings → Adapters → Home Assistant MQTT contrib card (ocean-dark, v1.6.1)*
+
 1. In Home Assistant: **Profile → Security → Long-Lived Access Tokens** → Create token.
 2. In Nexus: **Settings → Adapters → Home Assistant** → set:
    - `haMode`: `ha-ws-api`
@@ -26,6 +29,9 @@
 > **Security:** Anonymous WebSocket connections are **not** supported. If `haToken` is missing, the adapter rejects `auth_required` and surfaces an error.
 
 ### mqtt-broker (legacy)
+
+![MQTT broker mode — contrib adapter card](./images/operators/ha-mqtt-broker.png)
+*Settings → Adapters → load contrib adapters for MQTT Discovery setup*
 
 See sections below for Mosquitto broker setup and MQTT Discovery topic subscription.
 
