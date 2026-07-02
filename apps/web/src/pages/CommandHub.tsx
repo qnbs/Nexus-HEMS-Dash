@@ -203,8 +203,8 @@ function CommandHubComponent() {
     <div className="space-y-6">
       {/* ─── Page Header ─────────────────────────────────────── */}
       <PageHeader
-        title={t('commandHub.title', 'Command Hub')}
-        subtitle={t('commandHub.subtitle', 'Gesamtübersicht aller Energiesysteme')}
+        title={t('commandHub.title')}
+        subtitle={t('commandHub.subtitle')}
         icon={<Home size={22} aria-hidden="true" />}
         actions={
           <div className="flex items-center gap-2">
@@ -226,17 +226,12 @@ function CommandHubComponent() {
       />
 
       {/* ─── LiveMetric Cards (4 primary + 4 expandable) ────────── */}
-      <section aria-label={t('commandHub.metricsOverview', 'Kennzahlen')} className="@container">
+      <section aria-label={t('commandHub.metricsOverview')} className="@container">
         <div className="mb-2 flex items-center gap-2">
           <h2 className="font-semibold text-(--color-muted) text-xs uppercase tracking-widest">
-            {t('commandHub.metricsOverview', 'Kennzahlen')}
+            {t('commandHub.metricsOverview')}
           </h2>
-          <HelpTooltip
-            content={t(
-              'tour.hub.metricsHelp',
-              'Live-Werte aller Energiekomponenten. Klicke auf eine Karte für Details.',
-            )}
-          />
+          <HelpTooltip content={t('tour.hub.metricsHelp')} />
         </div>
         <motion.div
           className="grid @md:grid-cols-3 @xl:grid-cols-4 grid-cols-2 gap-3"
@@ -338,12 +333,12 @@ function CommandHubComponent() {
           {showAllMetrics ? (
             <>
               <ChevronUp size={14} aria-hidden="true" />
-              {t('commandHub.showFewerMetrics', '4 metrics less')}
+              {t('commandHub.showFewerMetrics')}
             </>
           ) : (
             <>
               <ChevronDown size={14} aria-hidden="true" />
-              {t('commandHub.showMoreMetrics', '4 more metrics')}
+              {t('commandHub.showMoreMetrics')}
             </>
           )}
         </button>
@@ -353,11 +348,8 @@ function CommandHubComponent() {
       {energyData.pvPower === 0 && energyData.houseLoad === 0 && energyData.gridPower === 0 ? (
         <EmptyState
           icon={Activity}
-          title={t('empty.noEnergyData', 'Keine Energiedaten verfügbar')}
-          description={t(
-            'empty.noEnergyDataDesc',
-            'Verbinde einen Gateway in den Einstellungen, um Echtzeitdaten zu sehen.',
-          )}
+          title={t('empty.noEnergyData')}
+          description={t('empty.noEnergyDataDesc')}
           pulse
           action={
             <button
@@ -365,7 +357,7 @@ function CommandHubComponent() {
               onClick={() => navigate('/settings')}
               className="focus-ring rounded-xl bg-(--color-primary)/15 px-4 py-2 font-medium text-(--color-primary) text-sm transition-colors hover:bg-(--color-primary)/25"
             >
-              {t('empty.goToSettings', 'Einstellungen öffnen')}
+              {t('empty.goToSettings')}
             </button>
           }
         />
@@ -391,13 +383,13 @@ function CommandHubComponent() {
                   size={12}
                   className={isExporting ? 'text-emerald-400' : 'text-(--color-muted)'}
                 />
-                {selfSufficiencyPercent}% {t('commandHub.autonomous', 'autark')}
+                {selfSufficiencyPercent}% {t('commandHub.autonomous')}
               </span>
               <Link
                 to="/energy-flow"
                 className="focus-ring inline-flex items-center gap-1 rounded-lg px-2 py-1 font-medium text-(--color-primary) transition-colors hover:bg-(--color-primary)/10"
               >
-                {t('nav.viewAll', 'Details')}
+                {t('nav.viewAll')}
                 <ChevronRight size={14} />
               </Link>
             </div>
@@ -424,13 +416,13 @@ function CommandHubComponent() {
         <div className="mb-3 flex items-center justify-between">
           <h2 id="hub-ai-title" className="fluid-text-base flex items-center gap-2 font-medium">
             <Sparkles size={18} className="text-purple-400" aria-hidden="true" />
-            {t('commandHub.aiRecommendation', 'KI-Empfehlung des Tages')}
+            {t('commandHub.aiRecommendation')}
           </h2>
           <Link
             to="/optimization-ai"
             className="focus-ring inline-flex items-center gap-1 rounded-lg px-2 py-1 font-medium text-(--color-primary) text-xs transition-colors hover:bg-(--color-primary)/10"
           >
-            {t('commandHub.allRecommendations', 'Alle Empfehlungen')}
+            {t('commandHub.allRecommendations')}
             <ChevronRight size={14} />
           </Link>
         </div>
@@ -442,7 +434,7 @@ function CommandHubComponent() {
       {/* ─── Quick-Actions FloatingActionBar ──────────────────── */}
       <FloatingActionBar
         open={actionsOpen}
-        ariaLabel={t('commandHub.quickActions', 'Schnellaktionen')}
+        ariaLabel={t('commandHub.quickActions')}
         primaryAction={
           <button
             type="button"
@@ -450,7 +442,7 @@ function CommandHubComponent() {
             className="btn-primary focus-ring inline-flex items-center gap-2 px-4 py-2 text-sm"
           >
             <Sparkles size={16} aria-hidden="true" />
-            {t('command.optimizeNow', 'Jetzt optimieren')}
+            {t('ai.optimizeNow')}
           </button>
         }
         secondaryAction={
@@ -461,7 +453,7 @@ function CommandHubComponent() {
               className="focus-ring inline-flex items-center gap-2 rounded-xl border border-(--color-border) bg-(--color-surface-strong) px-3 py-2 font-medium text-(--color-text) text-sm transition-colors hover:bg-white/5"
             >
               <FileBarChart size={16} aria-hidden="true" />
-              <span className="hidden sm:inline">{t('command.exportReport', 'Bericht')}</span>
+              <span className="hidden sm:inline">{t('command.exportReport')}</span>
             </button>
             <button
               type="button"
@@ -469,7 +461,7 @@ function CommandHubComponent() {
               className="focus-ring inline-flex items-center gap-2 rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 font-medium text-red-400 text-sm transition-colors hover:bg-red-500/20"
             >
               <ShieldAlert size={16} aria-hidden="true" />
-              <span className="hidden sm:inline">{t('emergencyStopShort', 'Notaus')}</span>
+              <span className="hidden sm:inline">{t('safety.emergencyStopShort')}</span>
             </button>
           </div>
         }

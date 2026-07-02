@@ -5,12 +5,27 @@ interface PageHeaderProps {
   subtitle?: string;
   icon?: React.ReactNode;
   actions?: React.ReactNode;
+  /**
+   * Sticky sub-header band below the fixed AppShell header — mobile only.
+   * Used on /optimization-ai where KPI glass cards otherwise bleed through the
+   * subtitle row on scroll. The global app header is already position:fixed
+   * (see header-fixed.spec.ts / CHANGELOG #198).
+   */
+  mobileSticky?: boolean;
 }
 
-function PageHeaderComponent({ title, subtitle, icon, actions }: PageHeaderProps) {
+function PageHeaderComponent({
+  title,
+  subtitle,
+  icon,
+  actions,
+  mobileSticky = false,
+}: PageHeaderProps) {
   return (
     <motion.div
-      className="mb-4 flex flex-col gap-4 sm:mb-6 sm:flex-row sm:items-center sm:justify-between"
+      className={`mb-4 flex flex-col gap-4 sm:mb-6 sm:flex-row sm:items-center sm:justify-between${
+        mobileSticky ? 'page-header page-header--mobile-only' : ''
+      }`}
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
@@ -27,9 +42,14 @@ function PageHeaderComponent({ title, subtitle, icon, actions }: PageHeaderProps
           </motion.div>
         )}
         <div className="min-w-0">
-          <h1 className="fluid-text-2xl truncate font-semibold tracking-tight">{title}</h1>
+          {/* Mobile: route title lives in AppShell — keep h1 for a11y/SEO only */}
+          <h1 className="lg:fluid-text-2xl sr-only truncate font-semibold tracking-tight lg:not-sr-only lg:mb-0">
+            {title}
+          </h1>
           {subtitle && (
-            <p className="fluid-text-sm mt-0.5 truncate text-(--color-muted)">{subtitle}</p>
+            <p className="fluid-text-sm truncate font-medium text-(--color-text) lg:mt-0.5 lg:font-normal lg:text-(--color-muted)">
+              {subtitle}
+            </p>
           )}
         </div>
       </div>

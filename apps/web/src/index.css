@@ -619,6 +619,63 @@
     }
   }
 
+  /* ========== PAGE HEADER (mobile-only sticky sub-band) ========== */
+  /* Sits below the fixed .app-header. Only applied on pages that opt in via
+     PageHeader mobileSticky (currently /optimization-ai). Desktop resets in
+     .page-header--mobile-only. Do NOT use for the global app header. */
+  .page-header {
+    position: sticky;
+    top: var(--header-height, 4.5rem);
+    z-index: 40;
+    margin-left: -1rem;
+    margin-right: -1rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+    background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--color-background) 95%, transparent),
+      color-mix(in srgb, var(--color-background) 88%, transparent)
+    );
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid color-mix(in srgb, var(--color-border) 40%, transparent);
+  }
+  @media (min-width: 640px) {
+    .page-header {
+      margin-left: -1.5rem;
+      margin-right: -1.5rem;
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+  }
+  @media (min-width: 1024px) {
+    .page-header--mobile-only {
+      position: static;
+      z-index: auto;
+      margin-left: 0;
+      margin-right: 0;
+      padding: 0;
+      background: transparent;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      border-bottom: none;
+    }
+  }
+  @media (prefers-reduced-transparency: reduce) {
+    .page-header {
+      background: var(--color-background);
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+    }
+    @media (min-width: 1024px) {
+      .page-header--mobile-only {
+        background: transparent;
+      }
+    }
+  }
+
   /* ========== SECTION DIVIDER ========== */
   .section-divider {
     height: 1px;
@@ -1120,6 +1177,9 @@ body {
   --badge-warn-fg: #fcd34d;
   --badge-danger-fg: #fca5a5;
   --badge-info-fg: #7dd3fc;
+
+  /* Mobile bottom nav — matches MobileNavigation bar + safe area inset */
+  --mobile-nav-height: calc(3.5rem + env(safe-area-inset-bottom, 0px));
 
   /* ===== Foundation scales (theme-independent; kept in :root rather than
      @theme so Tailwind's built-in shadow and rounded utility scales are not
@@ -1659,9 +1719,11 @@ body {
   animation: slide-up 0.4s ease-out;
 }
 
-@supports (padding-bottom: env(safe-area-inset-bottom)) {
+/* Lift FAB above the mobile bottom nav (lg:hidden, < 1024px) */
+@media (max-width: 1023px) {
   .floating-action-bar {
-    padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
+    bottom: calc(var(--mobile-nav-height) + 0.75rem);
+    padding-bottom: 0.5rem;
   }
 }
 

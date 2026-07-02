@@ -77,7 +77,7 @@ export function CommandPalette({
     // Actions
     {
       id: 'optimize',
-      label: t('command.optimizeNow', 'Optimize Energy Now'),
+      label: t('ai.optimizeNow'),
       icon: ICON_SPARKLES,
       action: () => {
         onOptimize?.();
