@@ -123,25 +123,27 @@ describe('MqttAdapter', () => {
     expect(result.value?.value).toBe(85.5);
   });
 
-  it('routes unmatched topics to DLQ (no data yielded)', async () => {
-    // Send a message on an unregistered topic
-    const stream = adapter.getDataStream();
-    let yielded = false;
+  it('routes unmatched topics to DLQ (no data yielded before disconnect)', async () => {
+    // Collect any data emitted before disconnect
+    const received: unknown[] = [];
 
-    // Start listening but expect no data for 50ms
-    const timeoutPromise = new Promise<void>((resolve) => setTimeout(resolve, 50));
-    const dpPromise = stream.next().then(() => {
-      yielded = true;
-    });
-
+    // Emit the unmatched topic BEFORE starting the generator so we can verify
+    // that no data enters the queue for unmatched topics.
     mockClientInstance.emit('message', 'unknown/topic/here', Buffer.from('123'));
 
-    await timeoutPromise;
-    await adapter.disconnect();
+    // Drain the generator (will only complete on disconnect, yielding no items)
+    const stream = adapter.getDataStream();
+    const collectPromise = (async () => {
+      for await (const dp of stream) {
+        received.push(dp);
+      }
+    })();
 
-    // dpPromise may resolve after disconnect — that's fine, we only check yielded flag
-    void dpPromise;
-    expect(yielded).toBe(false);
+    await adapter.disconnect();
+    await collectPromise;
+
+    // No datapoints should have been yielded for an unmatched topic
+    expect(received).toHaveLength(0);
   });
 
   it('handles numeric string payload', async () => {

@@ -27,6 +27,7 @@ import { createMetricsRoutes } from './routes/metrics.routes.js';
 import { createModbusRoutes } from './routes/modbus.routes.js';
 import { createOpenADRRoutes } from './routes/openadr.routes.js';
 import { createSharesRoutes } from './routes/shares.routes.js';
+import { createShellyWebhookRoutes } from './routes/shelly-webhook.routes.js';
 import { EnergyRouterService } from './services/EnergyRouterService.js';
 import { liveEnergyAggregator } from './services/LiveEnergyAggregator.js';
 import { TimeseriesService } from './services/TimeseriesService.js';
@@ -80,6 +81,7 @@ export async function startServer(): Promise<void> {
   app.use(createSharesRoutes());
   app.use(createEebusRoutes());
   app.use(createExecRoutes());
+  app.use(createShellyWebhookRoutes());
   app.use(createOpenADRRoutes());
   app.use(createMetricsRoutes(wss));
   app.use(createGrafanaRoutes());
