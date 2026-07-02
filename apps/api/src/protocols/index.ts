@@ -31,6 +31,7 @@ import { createHeatPumpAdapterFromEnv } from './heatpump/HeatPumpAdapter.js';
 import { KnxAdapter, type KnxGaMapping } from './knx/KnxAdapter.js';
 import { type DeviceConfig, ModbusAdapter } from './modbus/ModbusAdapter.js';
 import { MqttAdapter } from './mqtt/MqttAdapter.js';
+import { createOcppCsmsAdapterFromEnv } from './ocpp/OcppCsmsProtocolAdapter.js';
 import { createOpenEMSAdapterFromEnv } from './openems/OpenEMSProtocolAdapter.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -350,6 +351,30 @@ export async function startProtocolAdapters(eventBus: EventBus): Promise<void> {
         const message = err instanceof Error ? err.message : String(err);
         setState(openEmsAdapter.id, openEmsAdapter.protocol, 'failed', message);
         console.error('[Adapters] Failed to start OpenEMSProtocolAdapter:', err);
+      });
+  }
+
+  // -------------------------------------------------------------------------
+  // OCPP 2.1 CSMS Gateway (WebSocket server for charge points)
+  // Enable via env: OCPP_CSMS_PORT=9000
+  // -------------------------------------------------------------------------
+  const ocppCsmsAdapter = createOcppCsmsAdapterFromEnv();
+  if (ocppCsmsAdapter) {
+    activeAdapters.push(ocppCsmsAdapter);
+    activeAdapterRefs.set(ocppCsmsAdapter.id, ocppCsmsAdapter);
+    recordAdapterRegistration(ocppCsmsAdapter.id, ocppCsmsAdapter.protocol);
+    setState(ocppCsmsAdapter.id, ocppCsmsAdapter.protocol, 'starting');
+
+    ocppCsmsAdapter
+      .connect()
+      .then(() => {
+        setState(ocppCsmsAdapter.id, ocppCsmsAdapter.protocol, 'healthy');
+        pipeAdapterToEventBus(ocppCsmsAdapter, eventBus);
+      })
+      .catch((err: unknown) => {
+        const message = err instanceof Error ? err.message : String(err);
+        setState(ocppCsmsAdapter.id, ocppCsmsAdapter.protocol, 'failed', message);
+        console.error('[Adapters] Failed to start OcppCsmsProtocolAdapter:', err);
       });
   }
 

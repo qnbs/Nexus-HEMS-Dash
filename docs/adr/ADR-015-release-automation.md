@@ -32,7 +32,7 @@ the release pipeline is **semantic-release** (`pnpm release`, config in
    `main` rulesets. `release.yml` already prefers `secrets.GH_TOKEN || secrets.GITHUB_TOKEN`.
    **Action item (maintainer):** create the `GH_TOKEN` secret, or add the
    `github-actions[bot]` to a ruleset bypass list. Until then, releases are cut
-   **manually** (procedure below).
+   **manually** (procedure below). Step-by-step PAT scopes: **`docs/Release-GH_TOKEN-Setup.md`**.
 2. **Honest reporting.** `release.yml` writes an explicit release-status line to the
    job summary so a no-op run is no longer indistinguishable from a successful release.
 3. **Fix the desktop build** by removing the invalid `app.title` from `tauri.conf.json`.
