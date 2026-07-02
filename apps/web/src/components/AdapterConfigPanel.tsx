@@ -279,6 +279,96 @@ const CONTRIB_ADAPTERS = [
   },
 ] as const;
 
+const CONTRIB_HELP_IDS = new Set(['zigbee2mqtt', 'shelly-rest']);
+
+function AdapterHelpItem({ titleKey, descKey }: { titleKey: string; descKey: string }) {
+  const { t } = useTranslation();
+  return (
+    <li className="rounded-lg border border-(--color-border)/60 bg-(--color-surface)/40 px-3 py-2">
+      <p className="font-medium text-(--color-text) text-xs">{t(titleKey)}</p>
+      <p className="mt-0.5 text-(--color-muted) text-[10px] leading-relaxed">{t(descKey)}</p>
+    </li>
+  );
+}
+
+function ContribAdapterHelpPanel({ adapterId }: { adapterId: string }) {
+  const { t } = useTranslation();
+
+  if (adapterId === 'zigbee2mqtt') {
+    return (
+      <Disclosure
+        variant="nested"
+        title={t('adapterConfig.zigbeeSpecific')}
+        subtitle={t('adapterConfig.zigbeeHelpIntro')}
+        className="mt-3"
+      >
+        <ul className="space-y-2">
+          <AdapterHelpItem
+            titleKey="adapterConfig.zigbeeBaseTopic"
+            descKey="adapterConfig.zigbeeBaseTopicHint"
+          />
+          <AdapterHelpItem
+            titleKey="adapterConfig.zigbeeMqttAuth"
+            descKey="adapterConfig.zigbeeMqttAuthHint"
+          />
+          <AdapterHelpItem
+            titleKey="adapterConfig.zigbeeEnergyDevices"
+            descKey="adapterConfig.zigbeeEnergyDevicesHint"
+          />
+          <AdapterHelpItem
+            titleKey="adapterConfig.zigbeeRoleHints"
+            descKey="adapterConfig.zigbeeRoleHintsDesc"
+          />
+          <AdapterHelpItem
+            titleKey="adapterConfig.zigbeeCommands"
+            descKey="adapterConfig.zigbeeCommandsDesc"
+          />
+          <AdapterHelpItem
+            titleKey="adapterConfig.zigbeeAvailability"
+            descKey="adapterConfig.zigbeeAvailabilityHint"
+          />
+        </ul>
+      </Disclosure>
+    );
+  }
+
+  if (adapterId === 'shelly-rest') {
+    return (
+      <Disclosure
+        variant="nested"
+        title={t('adapterConfig.shellySpecific')}
+        subtitle={t('adapterConfig.shellyHelpIntro')}
+        className="mt-3"
+      >
+        <ul className="space-y-2">
+          <AdapterHelpItem
+            titleKey="adapterConfig.shellyGenSupport"
+            descKey="adapterConfig.shellyGenSupportDesc"
+          />
+          <AdapterHelpItem
+            titleKey="adapterConfig.shellyWebhook"
+            descKey="adapterConfig.shellyWebhookHint"
+          />
+          <AdapterHelpItem
+            titleKey="adapterConfig.shellyPhases"
+            descKey="adapterConfig.shellyPhasesHint"
+          />
+          <AdapterHelpItem
+            titleKey="adapterConfig.shellyPvCapability"
+            descKey="adapterConfig.shellyPvCapabilityHint"
+          />
+          <AdapterHelpItem
+            titleKey="adapterConfig.shellyRelayCommand"
+            descKey="adapterConfig.shellyRelayCommandHint"
+          />
+        </ul>
+      </Disclosure>
+    );
+  }
+
+  return null;
+}
+
 function ContribAdapterSection() {
   const { t } = useTranslation();
   const [loadedIds, setLoadedIds] = useState<string[]>([]);
@@ -359,6 +449,9 @@ function ContribAdapterSection() {
                     </span>
                   ))}
                 </div>
+                {CONTRIB_HELP_IDS.has(adapter.id) && (
+                  <ContribAdapterHelpPanel adapterId={adapter.id} />
+                )}
               </div>
             </div>
           );
@@ -1050,6 +1143,45 @@ export function AdapterConfigPanel() {
                             </div>
                           </div>
                         )}
+                        <div className="md:col-span-2">
+                          <Disclosure
+                            variant="nested"
+                            title={t('adapterConfig.ocppV2xSection')}
+                            subtitle={t('adapterConfig.ocppV2xIntro')}
+                            icon={<Shield size={14} className="text-cyan-400" aria-hidden />}
+                          >
+                            <ul className="space-y-2">
+                              <AdapterHelpItem
+                                titleKey="adapterConfig.ocppV2xS14a"
+                                descKey="adapterConfig.ocppV2xS14aDesc"
+                              />
+                              <AdapterHelpItem
+                                titleKey="adapterConfig.ocppPhaseConfig"
+                                descKey="adapterConfig.ocppPhaseConfigDesc"
+                              />
+                              <AdapterHelpItem
+                                titleKey="adapterConfig.ocppTargetSoc"
+                                descKey="adapterConfig.ocppTargetSocDesc"
+                              />
+                              <AdapterHelpItem
+                                titleKey="adapterConfig.ocppSmartCost"
+                                descKey="adapterConfig.ocppSmartCostDesc"
+                              />
+                              <AdapterHelpItem
+                                titleKey="adapterConfig.ocppMinCurrent"
+                                descKey="adapterConfig.ocppMinCurrentDesc"
+                              />
+                              <AdapterHelpItem
+                                titleKey="adapterConfig.ocppV2xV2h"
+                                descKey="adapterConfig.ocppV2xV2hDesc"
+                              />
+                              <AdapterHelpItem
+                                titleKey="adapterConfig.ocppV2xV2g"
+                                descKey="adapterConfig.ocppV2xV2gDesc"
+                              />
+                            </ul>
+                          </Disclosure>
+                        </div>
                       </div>
                     </div>
                   )}

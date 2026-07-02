@@ -674,8 +674,8 @@ Scope table said "not fully integrated"; P3 section said "Fully Implemented". Co
 
 New items from the 2026-07-02 audit delta (`docs/Audit-Report-2026-07-02.md`). These correct a
 proposed "full-scale transformation" brief against verified code (`main` @ e60e7f7): the real
-keystone gap is that backend adapter data never reaches the UI (HIGH-17), and the "Victron bias"
-premise is false — the platform is already vendor-neutral; the genuine gap is UX (MED-19).
+keystone gap was that backend adapter data never reached the UI (HIGH-17, **now resolved** in PR #197), and the "Victron bias"
+premise is false — the platform is already vendor-neutral; the genuine gap was UX (MED-19, **resolved** in PR #204; registry now **190 devices**, P2 #212).
 Direction recorded in ADR-018 (backend-mediated adapters) and ADR-019 (registry surfacing).
 
 ### HIGH-17 — Backend Adapter Data Not Bridged to WebSocket Gateway
@@ -714,7 +714,7 @@ Monitoring page adapter cards consume these via the existing JSON metrics poll.
 **Files:** `apps/web/src/core/hardware-registry.ts`, `apps/web/src/pages/HardwareRegistryPage.tsx`, `apps/web/src/components/hardware/AddAdapterWizard.tsx`
 **Status:** ✅ Resolved — PR #204; `HardwareRegistryPage` + `AddAdapterWizard` at `/settings/hardware` (ADR-019)
 
-`hardware-registry.ts` holds 113 devices across ~30 manufacturers with tested query helpers.
+`hardware-registry.ts` holds **190 devices** across ~50 manufacturers with tested query helpers (expanded in P2 #212 from 113).
 **`/settings/hardware`** surfaces a searchable, filterable catalog (category, manufacturer,
 protocol). **Add-adapter wizard** (`AddAdapterWizard.tsx`): protocol pick or registry pre-fill →
 connection params → mock/live connection test → enable adapter + redirect to Settings adapters tab.

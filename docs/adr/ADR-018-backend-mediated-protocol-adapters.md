@@ -1,6 +1,6 @@
 # ADR-018: Backend-mediated protocol adapters (EventBus → WebSocket bridge + proxy pattern)
 
-- **Status:** Proposed
+- **Status:** Accepted (implemented — PR #197, v1.3.x)
 - **Date:** 2026-07-02
 - **Deciders:** Maintainer
 - **Related:** ADR-002 (Zustand dual-store), ADR-006 (ring-buffer per-adapter sizing), `docs/Backend-Implementation-Roadmap.md`, `docs/Protocol-Adapter-Guide-Backend.md`, `docs/Audit-Report-2026-07-02.md`, HIGH-17 / MED-18 / MED-20 in `docs/Technical-Debt-Registry.md`

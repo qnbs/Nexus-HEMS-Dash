@@ -84,7 +84,7 @@ technischer Kriterien, Marktadoption und Implementierungsstatus (v1.2.0).
 - `VictronMQTTAdapter` (Core): Cerbo GX / Venus OS, vollständige Daten-Aggregation
 - `HomeAssistantMQTTAdapter` (Contrib): HA MQTT Discovery, bi-direktionaler Sync
 - `Zigbee2MQTTAdapter` (Contrib): Zigbee-Geräte via Bridge
-- `ShellyRESTAdapter` (Contrib): Shelly Pro 3EM via HTTP/REST Gen2+
+- `ShellyRESTAdapter` (Contrib): Shelly Gen1/2/3 via HTTP REST + optional webhook push
 
 ---
 

@@ -89,5 +89,5 @@ Every contrib adapter automatically gets:
 | ------------------- | ----------------------- | ----------------------------- | ---------------------------------- |
 | Home Assistant MQTT | `homeassistant-mqtt.ts` | MQTT Discovery (Mosquitto WS) | pv, battery, grid, load, evCharger |
 | Matter/Thread       | `matter-thread.ts`      | Matter WS Controller          | pv, grid, load                     |
-| Zigbee2MQTT         | `zigbee2mqtt.ts`        | Zigbee2MQTT MQTT Bridge       | load, grid                         |
-| Shelly REST         | `shelly-rest.ts`        | Shelly Gen2+ HTTP RPC         | grid, load                         |
+| Zigbee2MQTT         | `zigbee2mqtt.ts`        | Zigbee2MQTT MQTT Bridge       | load, grid, ev, heatpump           |
+| Shelly REST         | `shelly-rest.ts`        | Shelly Gen1/2/3 HTTP REST     | grid, load, pv                     |

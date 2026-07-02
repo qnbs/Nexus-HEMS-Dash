@@ -1,3 +1,5 @@
+> **Supersession (2026-07-02):** HIGH-17 (EventBus→WebSocket bridge) and MED-19 (registry browser + wizard) are **resolved** (PRs #197/#203/#204). Registry expanded to **190 devices** (P2 #212). P1 adapter enhancements (#211): Shelly Gen1/3, Zigbee2MQTT roles, OCPP §14a W-unit. This report remains a historical snapshot of the 2026-07-02 baseline.
+
 # Nexus-HEMS-Dash — Audit Delta Report (2026-07-02)
 
 **Version:** 2026-07-02 (delta addendum to `docs/Audit-Report-2026-06-29.md`)
