@@ -333,6 +333,7 @@ export const en = {
   monitoringUnified: {
     title: 'Monitoring & Health',
     subtitle: 'System status, adapter health & Prometheus metrics',
+    backendWs: 'Backend WS',
     systemHealthy: 'System is running normally',
     systemDegraded: 'System degradation detected',
     statusHint: 'Adapter connectivity & system resources',

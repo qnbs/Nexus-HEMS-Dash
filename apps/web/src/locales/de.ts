@@ -335,6 +335,7 @@ export const de = {
   monitoringUnified: {
     title: 'Monitoring & Health',
     subtitle: 'Systemstatus, Adapter-Health & Prometheus-Metriken',
+    backendWs: 'Backend-WS',
     systemHealthy: 'System läuft normal',
     systemDegraded: 'Systemstörung erkannt',
     statusHint: 'Adapter-Konnektivität & Systemressourcen',

@@ -10,9 +10,9 @@ import { PWAInstallPrompt } from './components/PWAInstallPrompt';
 import { PWAUpdateNotification } from './components/PWAUpdateNotification';
 import { PageSkeleton } from './components/ui/Skeleton';
 import { EnergyProvider } from './core/EnergyContext';
-import { useAdapterBridge } from './core/useEnergyStore';
+import { useAdapterBridge, useServerWebSocket } from './core/useEnergyStore';
 import { themeDefinitions } from './design-tokens';
-import { fetchBackendAdapterMode } from './lib/adapter-mode';
+import { fetchBackendAdapterMode, isBackendWsEnabled } from './lib/adapter-mode';
 import { backgroundSyncService } from './lib/background-sync';
 import { logError } from './lib/db';
 import { monitorOfflineStorageQuota } from './lib/offline-cache';
@@ -107,6 +107,11 @@ export default function App() {
 
   // Adapter bridge replaces the old useWebSocket hook
   useAdapterBridge();
+
+  // Opt-in backend WebSocket consumer (HIGH-17 / ADR-025). Default OFF: only
+  // full-stack deployments that set VITE_BACKEND_WS=true open this socket; the
+  // static gh-pages demo keeps running the client-side adapters above.
+  useServerWebSocket(isBackendWsEnabled());
 
   // Push notifications for energy events (EV ready, tariff spike, battery low, etc.)
   useNotifications();

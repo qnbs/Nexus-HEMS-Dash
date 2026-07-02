@@ -7,6 +7,8 @@ import { Disclosure } from '../components/ui/Disclosure';
 import { EmptyState } from '../components/ui/EmptyState';
 import { PageCrossLinks } from '../components/ui/PageCrossLinks';
 import { TabSkeleton } from '../components/ui/Skeleton';
+import { useEnergyStore } from '../core/useEnergyStore';
+import { isBackendWsEnabled } from '../lib/adapter-mode';
 import { useAppStoreShallow } from '../store';
 
 // ─── Lazy-load the full monitoring panel ─────────────────────────────
@@ -20,6 +22,8 @@ function MonitoringUnifiedComponent() {
     connected: s.connected,
     debugMode: s.settings.debugMode ?? false,
   }));
+  // Opt-in backend WebSocket link state (only meaningful when VITE_BACKEND_WS is on).
+  const serverWsConnected = useEnergyStore((s) => s.serverWsConnected);
   const [powerUserMode, setPowerUserMode] = useState(debugMode ?? false);
 
   return (
@@ -81,6 +85,9 @@ function MonitoringUnifiedComponent() {
             <StatusPill label="KNX/IP" ok={true} />
             <StatusPill label="OCPP" ok={true} />
             <StatusPill label="EEBUS" ok={true} />
+            {isBackendWsEnabled() && (
+              <StatusPill label={t('monitoringUnified.backendWs')} ok={serverWsConnected} />
+            )}
           </div>
         </div>
       </motion.section>

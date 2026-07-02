@@ -1,8 +1,14 @@
-import { type EnergyData, sanitizeObjectStrings, WSCommandSchema } from '@nexus-hems/shared-types';
+import {
+  type EnergyData,
+  EnergyDataSchema,
+  sanitizeObjectStrings,
+  WSCommandSchema,
+} from '@nexus-hems/shared-types';
 import type { IncomingMessage } from 'http';
 import type { WebSocket, WebSocketServer } from 'ws';
 import { getEffectiveAdapterMode } from '../config/adapter-mode.js';
 import { isReadOnlyMode } from '../config/read-only-mode.js';
+import { logger } from '../core/logger.js';
 import { type CommandOutcome, writeCommandAuditEntry } from '../data/command-audit.js';
 import { mockData, updateMockData } from '../data/mock-data.js';
 import { type AuthenticatedClient, authenticateWS, type JWTScope } from '../middleware/auth.js';
@@ -72,7 +78,16 @@ function auditCommand(
  */
 export function resolveBroadcastData(liveAggregator?: LiveEnergyAggregator): EnergyData {
   if (liveAggregator && getEffectiveAdapterMode() === 'live' && liveAggregator.hasLiveData()) {
-    return liveAggregator.getSnapshot();
+    // R2: the live snapshot is folded from external adapter datapoints, so
+    // validate it against the wire contract before it can reach any client.
+    // A malformed snapshot falls back to the mock stream rather than shipping
+    // invalid data (fail-safe; mockData is internally generated and trusted).
+    const parsed = EnergyDataSchema.safeParse(liveAggregator.getSnapshot());
+    if (parsed.success) return parsed.data;
+    logger.warn('Live snapshot failed EnergyData validation — falling back to mock', {
+      issues: parsed.error.issues.length,
+    });
+    return mockData;
   }
   return mockData;
 }

@@ -727,6 +727,8 @@ Direction recorded in ADR-018 (backend-mediated adapters) and ADR-019 (registry 
 
 **Now:** `LiveEnergyAggregator` folds role-tagged datapoints into the `EnergyData` snapshot. In live mode with fresh data the gateway broadcasts real adapter data; otherwise mock fallback is byte-for-byte unchanged.
 
+**Follow-up (2026-07-03, ADR-025):** a verification audit found the frontend consumer `useServerWebSocket` was never mounted (the broadcast had no shipped consumer) and the `ENERGY_UPDATE` wire was unvalidated. Resolved: consumer mounted behind `VITE_BACKEND_WS` (opt-in; static demo unchanged) with a flat→nested `EnergyData → UnifiedEnergyModel` projection, a liveness watchdog, and **Zod validation both ends** (`WSMessageSchema` on receive, `EnergyDataSchema` on send with mock fallback).
+
 ---
 
 ### MED-18 — No Per-Adapter Prometheus Metrics

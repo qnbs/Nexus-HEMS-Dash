@@ -89,3 +89,17 @@ export function isLiveSafetyMode(backendMode: BackendAdapterMode): boolean {
 export function isReadOnlyModeActive(): boolean {
   return import.meta.env.VITE_READ_ONLY_MODE?.trim().toLowerCase() === LIVE_HARDWARE_ACK;
 }
+
+/**
+ * Whether the browser should open a WebSocket to the HEMS backend to consume
+ * server-pushed `ENERGY_UPDATE` broadcasts (HIGH-17 / ADR-018 live path).
+ *
+ * Default OFF: the GitHub Pages static demo and standard PWA builds run the
+ * protocol adapters client-side (see `useAdapterBridge`) and never open this
+ * socket. Full-stack deployments where the Express API is reachable set
+ * `VITE_BACKEND_WS=true` to consume the backend
+ * EventBus → LiveEnergyAggregator broadcast instead.
+ */
+export function isBackendWsEnabled(): boolean {
+  return import.meta.env.VITE_BACKEND_WS?.trim().toLowerCase() === LIVE_HARDWARE_ACK;
+}
