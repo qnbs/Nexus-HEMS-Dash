@@ -19,6 +19,7 @@ import {
 import { startProtocolAdapters, stopProtocolAdapters } from './protocols/index.js';
 import { createAuthRoutes } from './routes/auth.routes.js';
 import { createEebusRoutes } from './routes/eebus.routes.js';
+import { createExecRoutes } from './routes/exec.routes.js';
 import { createGrafanaRoutes } from './routes/grafana.routes.js';
 import { createHealthRoutes } from './routes/health.routes.js';
 import { createHistoryRoutes } from './routes/history.routes.js';
@@ -78,6 +79,7 @@ export async function startServer(): Promise<void> {
   app.use(createAuthRoutes());
   app.use(createSharesRoutes());
   app.use(createEebusRoutes());
+  app.use(createExecRoutes());
   app.use(createOpenADRRoutes());
   app.use(createMetricsRoutes(wss));
   app.use(createGrafanaRoutes());
