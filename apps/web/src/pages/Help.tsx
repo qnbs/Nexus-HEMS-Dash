@@ -1269,7 +1269,7 @@ export function Help() {
                         {
                           category: t('help.protocols'),
                           items:
-                            '13 adapters: MQTT, Modbus, KNX, OCPP, EEBUS, evcc, HA, Zigbee2MQTT, Shelly…',
+                            '14 adapters: MQTT, Modbus, KNX, OCPP, EEBUS, evcc, HA, Zigbee2MQTT, Shelly…',
                         },
                         {
                           category: t('help.testing'),

@@ -373,6 +373,48 @@ describe('HomeAssistantMQTTAdapter — HA service commands', () => {
   });
 });
 
+describe('HomeAssistantMQTTAdapter — ha-ws-api auth', () => {
+  it('rejects connect when auth_required but no haToken', async () => {
+    vi.stubGlobal('WebSocket', MockWebSocket);
+    const adapter = new HomeAssistantMQTTAdapter({
+      host: 'ha.local',
+      haMode: 'ha-ws-api',
+      port: 8123,
+    });
+    const p = adapter.connect();
+    mockInstance!.onmessage?.({
+      data: JSON.stringify({ type: 'auth_required', ha_version: '2024.1' }),
+    });
+    await expect(p).rejects.toThrow(/haToken/);
+    expect(adapter.status).toBe('error');
+    adapter.destroy();
+    vi.unstubAllGlobals();
+    mockInstance = null;
+  });
+
+  it('authenticates with haToken on auth_required', async () => {
+    vi.stubGlobal('WebSocket', MockWebSocket);
+    const adapter = new HomeAssistantMQTTAdapter({
+      host: 'ha.local',
+      haMode: 'ha-ws-api',
+      port: 8123,
+      haToken: 'test-long-lived-token',
+    });
+    const p = adapter.connect();
+    mockInstance!.readyState = WebSocket.OPEN;
+    mockInstance!.onmessage?.({ data: JSON.stringify({ type: 'auth_required' }) });
+    expect(mockInstance!.send).toHaveBeenCalledWith(
+      JSON.stringify({ type: 'auth', access_token: 'test-long-lived-token' }),
+    );
+    mockInstance!.onmessage?.({ data: JSON.stringify({ type: 'auth_ok' }) });
+    await p;
+    expect(adapter.status).toBe('connected');
+    adapter.destroy();
+    vi.unstubAllGlobals();
+    mockInstance = null;
+  });
+});
+
 describe('HomeAssistantMQTTAdapter — register()', () => {
   it('registers the homeassistant-mqtt factory in the adapter registry', async () => {
     const { getRegisteredAdapter, unregisterAdapter } = await import(

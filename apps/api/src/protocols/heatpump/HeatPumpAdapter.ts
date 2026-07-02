@@ -258,6 +258,7 @@ export class HeatPumpAdapter implements IProtocolAdapter {
   private readonly profile: RegisterProfile;
   private client: ModbusRTU | null = null;
   private pollTimer: ReturnType<typeof setInterval> | null = null;
+  private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   private connected = false;
   private lastSuccessMs: number | undefined;
   private consecutiveErrors = 0;
@@ -280,23 +281,32 @@ export class HeatPumpAdapter implements IProtocolAdapter {
   }
 
   async connect(): Promise<void> {
-    // Create a fresh ModbusRTU client and connect via TCP
-    this.client = new ModbusRTU();
-    await this.client!.connectTCP(this.config.host, { port: this.config.port });
-    this.client!.setID(this.config.unitId);
+    try {
+      this.client = new ModbusRTU();
+      await this.client.connectTCP(this.config.host, { port: this.config.port });
+      this.client.setID(this.config.unitId);
 
-    this.connected = true;
-    this.consecutiveErrors = 0;
-    console.log(
-      `[HeatPumpAdapter:${this.id}] Connected to ${this.config.host}:${this.config.port} (${this.config.manufacturer})`,
-    );
+      this.connected = true;
+      this.consecutiveErrors = 0;
+      console.log(
+        `[HeatPumpAdapter:${this.id}] Connected to ${this.config.host}:${this.config.port} (${this.config.manufacturer})`,
+      );
 
-    // Start polling
-    this.pollTimer = setInterval(() => {
-      void this.poll();
-    }, this.config.pollIntervalMs);
-    if (typeof this.pollTimer === 'object' && 'unref' in this.pollTimer) {
-      (this.pollTimer as NodeJS.Timeout).unref();
+      this.pollTimer = setInterval(() => {
+        void this.poll();
+      }, this.config.pollIntervalMs);
+      if (typeof this.pollTimer === 'object' && 'unref' in this.pollTimer) {
+        (this.pollTimer as NodeJS.Timeout).unref();
+      }
+    } catch (err) {
+      try {
+        this.client?.close();
+      } catch {
+        /* ignore */
+      }
+      this.client = null;
+      this.connected = false;
+      throw err;
     }
   }
 
@@ -305,6 +315,10 @@ export class HeatPumpAdapter implements IProtocolAdapter {
     if (this.pollTimer) {
       clearInterval(this.pollTimer);
       this.pollTimer = null;
+    }
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
     }
     try {
       this.client?.close();
@@ -374,7 +388,7 @@ export class HeatPumpAdapter implements IProtocolAdapter {
 
       // Power consumption
       if (profile.powerW !== undefined) {
-        const powerRaw = await this.readRegister(profile.powerW);
+        const powerRaw = await this.readRegister(profile.powerW, profile.powerDataType);
         if (powerRaw !== null) {
           const powerW = powerRaw * profile.powerScale;
           this.emit(datapoints, deviceId, 'POWER_W', powerW, 'heatpump');
@@ -439,13 +453,16 @@ export class HeatPumpAdapter implements IProtocolAdapter {
     }
   }
 
-  private async readRegister(address: number): Promise<number | null> {
+  private async readRegister(
+    address: number,
+    dataType: 'INT16' | 'UINT16' = 'INT16',
+  ): Promise<number | null> {
     try {
       const result = await this.client!.readHoldingRegisters(address, 1);
       const raw = result.data[0];
       if (raw === undefined) return null;
 
-      // Handle signed 16-bit for temperature registers
+      if (dataType === 'UINT16') return raw;
       return raw > 32767 ? raw - 65536 : raw;
     } catch {
       return null;
@@ -493,21 +510,34 @@ export class HeatPumpAdapter implements IProtocolAdapter {
   }
 
   private scheduleReconnect(): void {
-    if (this.destroyed) return;
-    setTimeout(async () => {
-      if (this.destroyed) return;
-      try {
-        this.client = new ModbusRTU();
-        await this.client!.connectTCP(this.config.host, { port: this.config.port });
-        this.client!.setID(this.config.unitId);
-        this.connected = true;
-        this.consecutiveErrors = 0;
-        console.log(`[HeatPumpAdapter:${this.id}] Reconnected`);
-      } catch (err) {
-        console.error(`[HeatPumpAdapter:${this.id}] Reconnect failed:`, err);
-        this.scheduleReconnect();
-      }
+    if (this.destroyed || this.reconnectTimer) return;
+    this.reconnectTimer = setTimeout(() => {
+      this.reconnectTimer = null;
+      void this.attemptReconnect();
     }, 10_000);
+    if (typeof this.reconnectTimer === 'object' && 'unref' in this.reconnectTimer) {
+      (this.reconnectTimer as NodeJS.Timeout).unref();
+    }
+  }
+
+  private async attemptReconnect(): Promise<void> {
+    if (this.destroyed) return;
+    try {
+      try {
+        this.client?.close();
+      } catch {
+        /* ignore */
+      }
+      this.client = new ModbusRTU();
+      await this.client.connectTCP(this.config.host, { port: this.config.port });
+      this.client.setID(this.config.unitId);
+      this.connected = true;
+      this.consecutiveErrors = 0;
+      console.log(`[HeatPumpAdapter:${this.id}] Reconnected`);
+    } catch (err) {
+      console.error(`[HeatPumpAdapter:${this.id}] Reconnect failed:`, err);
+      this.scheduleReconnect();
+    }
   }
 }
 
