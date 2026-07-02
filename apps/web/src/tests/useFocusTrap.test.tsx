@@ -1,4 +1,5 @@
 import { fireEvent, render, waitFor } from '@testing-library/react';
+import { useRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { useFocusTrap } from '../lib/useFocusTrap';
 
@@ -66,5 +67,47 @@ describe('useFocusTrap', () => {
 
     rerender(<Harness active={false} />);
     expect(document.activeElement).toBe(outside);
+  });
+
+  it('prevents Tab when the trap has no focusable descendants', () => {
+    function EmptyHarness({ active }: { active: boolean }) {
+      const ref = useFocusTrap<HTMLDivElement>(active);
+      return active ? <div ref={ref} role="dialog" tabIndex={-1} data-testid="empty" /> : null;
+    }
+
+    const { getByTestId } = render(<EmptyHarness active />);
+    const dialog = getByTestId('empty');
+    dialog.focus();
+    fireEvent.keyDown(document, { key: 'Tab' });
+    expect(document.activeElement).toBe(dialog);
+  });
+
+  it('wraps Tab when focus is outside the trapped region', async () => {
+    const { getByTestId } = render(<Harness active />);
+    getByTestId('outside').focus();
+    fireEvent.keyDown(document, { key: 'Tab' });
+    expect(document.activeElement).toBe(getByTestId('first'));
+    fireEvent.keyDown(document, { key: 'Tab', shiftKey: true });
+    expect(document.activeElement).toBe(getByTestId('last'));
+  });
+
+  it('uses initialFocusRef instead of the first focusable descendant', async () => {
+    function FocusHarness() {
+      const preferredRef = useRef<HTMLButtonElement>(null);
+      const ref = useFocusTrap<HTMLDivElement>(true, { initialFocusRef: preferredRef });
+      return (
+        <div ref={ref} role="dialog">
+          <button type="button" data-testid="first">
+            first
+          </button>
+          <button type="button" ref={preferredRef} data-testid="preferred">
+            preferred
+          </button>
+        </div>
+      );
+    }
+
+    const { getByTestId } = render(<FocusHarness />);
+    await waitFor(() => expect(document.activeElement).toBe(getByTestId('preferred')));
   });
 });

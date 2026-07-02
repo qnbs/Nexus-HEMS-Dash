@@ -21,7 +21,7 @@ export default defineConfig({
       exclude: ['node_modules/', 'src/tests/', '*.config.ts', 'dist/'],
       thresholds: {
         statements: 78,
-        branches: 70,
+        branches: 72,
         functions: 70,
         lines: 80,
       },

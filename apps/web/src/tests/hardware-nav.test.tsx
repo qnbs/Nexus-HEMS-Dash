@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, renderHook, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -22,11 +22,13 @@ vi.mock('react-router-dom', async (importOriginal) => {
 vi.stubGlobal('__APP_VERSION__', '0.0.0-test');
 
 import { allNavItems, Sidebar } from '../components/layout/Sidebar';
-import { CommandPalette } from '../components/ui/CommandPalette';
+import { CommandPalette, useCommandPalette } from '../components/ui/CommandPalette';
 import { MobileNavigation } from '../components/ui/MobileNavigation';
+import { useAppStore } from '../store';
 
 beforeEach(() => {
   mockNavigate.mockClear();
+  useAppStore.setState({ connected: false });
 });
 
 describe('Sidebar navigation', () => {
@@ -64,6 +66,50 @@ describe('Sidebar navigation', () => {
       </MemoryRouter>,
     );
     const link = screen.getByRole('link', { name: /nav\.hardware/ });
+    expect(link.className).toMatch(/sidebar-link-active|primary/);
+  });
+
+  it('shows connected status when the store reports a live link', () => {
+    useAppStore.setState({ connected: true });
+    render(
+      <MemoryRouter>
+        <Sidebar />
+      </MemoryRouter>,
+    );
+    expect(screen.getByText('common.connected')).toBeInTheDocument();
+  });
+
+  it('shows disconnected status when the store reports no link', () => {
+    render(
+      <MemoryRouter>
+        <Sidebar />
+      </MemoryRouter>,
+    );
+    expect(screen.getByText('common.disconnected')).toBeInTheDocument();
+  });
+
+  it('re-expands after collapse and exposes link titles in collapsed mode', async () => {
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter>
+        <Sidebar />
+      </MemoryRouter>,
+    );
+    await user.click(screen.getByRole('button', { name: 'nav.collapseSidebar' }));
+    const homeLink = screen.getByRole('link', { name: 'nav.home' });
+    expect(homeLink).toHaveAttribute('title', 'nav.home');
+    await user.click(screen.getByRole('button', { name: 'nav.expandSidebar' }));
+    expect(screen.getByRole('button', { name: 'nav.collapseSidebar' })).toBeInTheDocument();
+    expect(screen.getByText('common.appName')).toBeInTheDocument();
+  });
+
+  it('marks the home nav link active on /', () => {
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <Sidebar />
+      </MemoryRouter>,
+    );
+    const link = screen.getByRole('link', { name: /nav\.home/ });
     expect(link.className).toMatch(/sidebar-link-active|primary/);
   });
 });
@@ -160,6 +206,90 @@ describe('CommandPalette navigation', () => {
     expect(onClose).toHaveBeenCalled();
   });
 
+  it('filters commands by keyword and activates via Enter on the filtered row', async () => {
+    const user = userEvent.setup();
+    const onClose = vi.fn();
+    render(
+      <MemoryRouter>
+        <CommandPalette isOpen onClose={onClose} />
+      </MemoryRouter>,
+    );
+    await user.type(screen.getByRole('combobox'), 'netzbezug');
+    const gridBtn = screen.getByRole('option', { name: /command\.viewGrid/i });
+    expect(gridBtn).toBeInTheDocument();
+    fireEvent.keyDown(window, { key: 'Enter' });
+    expect(mockNavigate).toHaveBeenCalledWith('/energy-flow');
+    expect(onClose).toHaveBeenCalled();
+  });
+
+  it('highlights commands on mouse enter', async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <MemoryRouter>
+        <CommandPalette isOpen onClose={vi.fn()} />
+      </MemoryRouter>,
+    );
+    const exportBtn = container.querySelector('#cmd-export-report') as HTMLButtonElement;
+    await user.hover(exportBtn);
+    expect(exportBtn).toHaveAttribute('aria-selected', 'true');
+  });
+
+  it('closes when the backdrop is clicked', async () => {
+    const user = userEvent.setup();
+    const onClose = vi.fn();
+    const { container } = render(
+      <MemoryRouter>
+        <CommandPalette isOpen onClose={onClose} />
+      </MemoryRouter>,
+    );
+    const backdrop = container.querySelector('.z-modal-backdrop') as HTMLElement;
+    await user.click(backdrop);
+    expect(onClose).toHaveBeenCalled();
+  });
+
+  it('auto-focuses the search input on desktop viewports', async () => {
+    const matchMedia = vi.fn().mockImplementation((query: string) => ({
+      matches: query === '(min-width: 1024px)',
+      media: query,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    }));
+    vi.stubGlobal('matchMedia', matchMedia);
+
+    render(
+      <MemoryRouter>
+        <CommandPalette isOpen onClose={vi.fn()} />
+      </MemoryRouter>,
+    );
+    const input = screen.getByRole('combobox');
+    await waitFor(() => {
+      expect(document.activeElement).toBe(input);
+    });
+
+    vi.unstubAllGlobals();
+  });
+
+  it('runs optimize action without optional callbacks', async () => {
+    const user = userEvent.setup();
+    const onClose = vi.fn();
+    const { container } = render(
+      <MemoryRouter>
+        <CommandPalette isOpen onClose={onClose} />
+      </MemoryRouter>,
+    );
+    await user.click(container.querySelector('#cmd-optimize') as HTMLButtonElement);
+    expect(onClose).toHaveBeenCalled();
+  });
+
+  it('does not render when closed', () => {
+    render(
+      <MemoryRouter>
+        <CommandPalette isOpen={false} onClose={vi.fn()} />
+      </MemoryRouter>,
+    );
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
   it('does not auto-focus the search input on touch viewports (no keyboard pop)', async () => {
     // jsdom has no window.matchMedia, so autoFocusInput resolves falsy → the
     // mobile path focuses the dialog container instead of the text input.
@@ -174,6 +304,21 @@ describe('CommandPalette navigation', () => {
       expect(screen.getByRole('dialog').contains(document.activeElement)).toBe(true);
     });
     expect(document.activeElement).not.toBe(input);
+  });
+});
+
+describe('useCommandPalette', () => {
+  it('toggles open state on Cmd/Ctrl+K', () => {
+    const { result } = renderHook(() => useCommandPalette());
+    expect(result.current.isOpen).toBe(false);
+    act(() => {
+      fireEvent.keyDown(window, { key: 'k', metaKey: true });
+    });
+    expect(result.current.isOpen).toBe(true);
+    act(() => {
+      fireEvent.keyDown(window, { key: 'k', ctrlKey: true });
+    });
+    expect(result.current.isOpen).toBe(false);
   });
 });
 
@@ -242,5 +387,83 @@ describe('MobileNavigation', () => {
     );
     const moreBtn = screen.getByTestId('mobile-more-btn');
     expect(moreBtn.className).toMatch(/text-\(--color-primary\)/);
+  });
+
+  it('highlights the home tab on / and navigates primary items', async () => {
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <MobileNavigation />
+      </MemoryRouter>,
+    );
+    const homeBtn = screen.getByRole('button', { name: 'nav.home' });
+    expect(homeBtn).toHaveAttribute('aria-current', 'page');
+    await user.click(screen.getByRole('button', { name: 'nav.devicesOverview' }));
+    expect(mockNavigate).toHaveBeenCalledWith('/devices');
+  });
+
+  it('closes the More sheet when the backdrop is clicked', async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <MemoryRouter>
+        <MobileNavigation />
+      </MemoryRouter>,
+    );
+    await user.click(screen.getByTestId('mobile-more-btn'));
+    expect(await screen.findByText('nav.plugins')).toBeInTheDocument();
+    const backdrop = container.querySelector('.z-modal-backdrop') as HTMLElement;
+    await user.click(backdrop);
+    await waitFor(() => {
+      expect(screen.queryByText('nav.plugins')).not.toBeInTheDocument();
+    });
+  });
+
+  it('navigates to plugins from the More sheet', async () => {
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter>
+        <MobileNavigation />
+      </MemoryRouter>,
+    );
+    await user.click(screen.getByTestId('mobile-more-btn'));
+    await user.click(
+      (await screen.findByText('nav.plugins')).closest('button') as HTMLButtonElement,
+    );
+    expect(mockNavigate).toHaveBeenCalledWith('/plugins');
+  });
+
+  it('calls navigator.vibrate on navigation when supported', async () => {
+    const vibrate = vi.fn();
+    Object.defineProperty(navigator, 'vibrate', {
+      configurable: true,
+      value: vibrate,
+    });
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter>
+        <MobileNavigation />
+      </MemoryRouter>,
+    );
+    await user.click(screen.getByRole('button', { name: 'nav.tariffs' }));
+    expect(vibrate).toHaveBeenCalledWith(10);
+    Object.defineProperty(navigator, 'vibrate', {
+      configurable: true,
+      value: undefined,
+    });
+  });
+
+  it('closes the More sheet on Escape', async () => {
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter>
+        <MobileNavigation />
+      </MemoryRouter>,
+    );
+    await user.click(screen.getByTestId('mobile-more-btn'));
+    expect(await screen.findByText('nav.plugins')).toBeInTheDocument();
+    fireEvent.keyDown(document, { key: 'Escape' });
+    await waitFor(() => {
+      expect(screen.queryByText('nav.plugins')).not.toBeInTheDocument();
+    });
   });
 });

@@ -8,14 +8,14 @@
 
 ## Resolution summary (2026-07-02)
 
-The temporary gate reductions from PRs #207/#208/#209 are **fully reversed** for statements, functions, and lines; branches restored to **70%** (original 72% stretch deferred until measured ≥ 72% with margin).
+The temporary gate reductions from PRs #207/#208/#209 are **fully reversed** for statements, functions, and lines; branches restored to **72%** stretch target (measured 72.00%, 2026-07-02).
 
 | Metric | Measured (CI) | Enforced floor (vitest + baseline) | Original target |
 | ------ | ------------- | -------------------------------- | --------------- |
-| Statements | 78.93 % | **78 %** | 78 % |
-| Branches | 71.22 % | **70 %** | 72 % (stretch) |
-| Functions | 71.96 % | **70 %** | 70 % |
-| Lines | 80.87 % | **80 %** | 80 % |
+| Statements | 79.60 % | **78 %** | 78 % |
+| Branches | 72.00 % | **72 %** | 72 % (stretch) |
+| Functions | 73.46 % | **70 %** | 70 % |
+| Lines | 81.58 % | **80 %** | 80 % |
 
 Gates live in `apps/web/vitest.config.ts` and `apps/web/coverage-baseline.json` (PRF-03).
 
@@ -32,8 +32,8 @@ Gates live in `apps/web/vitest.config.ts` and `apps/web/coverage-baseline.json` 
 
 ### Web — branch stretch to 72 %
 
-- [ ] Extend nav/UI tests (`CommandPalette`, `MobileNavigation`, `Sidebar`) for remaining active-state branches.
-- [ ] Bump `coverage-baseline.json` `branches` 70 → 72 when measured clears with margin.
+- [x] Extend nav/UI tests (`CommandPalette`, `MobileNavigation`, `Sidebar`, `Disclosure`, `ChoiceCardGroup`, `ConfirmDialog`, `ErrorBoundary`) for remaining active-state branches.
+- [x] Bump `coverage-baseline.json` `branches` 70 → 72 (measured 72.00%, 2026-07-02).
 
 ### Web — quality gaps (not blocking gates)
 

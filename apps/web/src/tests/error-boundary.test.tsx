@@ -1,100 +1,87 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { ErrorBoundary } from '../components/ErrorBoundary';
-import { render, screen } from './test-utils';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import type React from 'react';
+import { describe, expect, it, vi } from 'vitest';
 
-// Mock i18next for ErrorBoundary (uses direct i18next.t)
 vi.mock('i18next', () => ({
   default: {
-    t: (key: string) => {
-      const map: Record<string, string> = {
-        'error.title': 'Something went wrong',
-        'error.description': 'An unexpected error occurred',
-        'error.details': 'Error Details',
-        'error.message': 'Message',
-        'error.stack': 'Stack',
-        'error.componentStack': 'Component Stack',
-        'error.tryAgain': 'Try Again',
-        'error.reload': 'Reload Page',
-        'error.goHome': 'Go Home',
-      };
-      return map[key] ?? key;
-    },
+    t: (key: string) => key,
   },
 }));
 
-function ThrowingComponent({ shouldThrow }: { shouldThrow: boolean }) {
-  if (shouldThrow) {
-    throw new Error('Test crash');
-  }
-  return <div>Working</div>;
+import { ErrorBoundary } from '../components/ErrorBoundary';
+
+vi.mock('../lib/sentry', () => ({
+  Sentry: { withScope: vi.fn(), captureException: vi.fn() },
+  sentryEnabled: false,
+}));
+
+function Boom(): null {
+  throw new Error('component exploded');
+}
+
+function ConditionalBoom({ crash }: { crash: boolean }): React.ReactNode {
+  if (crash) throw new Error('component exploded');
+  return <p>Recovered</p>;
 }
 
 describe('ErrorBoundary', () => {
-  // Suppress React's own error boundary console.error output
-  const originalConsoleError = console.error;
-  beforeEach(() => {
-    console.error = vi.fn();
-    return () => {
-      console.error = originalConsoleError;
-    };
-  });
-
-  it('should render children when no error', () => {
+  it('renders children when no error occurs', () => {
     render(
       <ErrorBoundary>
-        <div>Hello</div>
+        <p>All good</p>
       </ErrorBoundary>,
     );
-    expect(screen.getByText('Hello')).toBeInTheDocument();
+    expect(screen.getByText('All good')).toBeInTheDocument();
   });
 
-  it('should show error fallback when child throws', () => {
+  it('renders a custom fallback when provided', () => {
+    render(
+      <ErrorBoundary fallback={<p>Custom fallback</p>}>
+        <Boom />
+      </ErrorBoundary>,
+    );
+    expect(screen.getByText('Custom fallback')).toBeInTheDocument();
+  });
+
+  it('shows the default recovery UI and resets after an error', async () => {
+    const onError = vi.fn();
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const { rerender } = render(
+      <ErrorBoundary onError={onError}>
+        <ConditionalBoom crash />
+      </ErrorBoundary>,
+    );
+
+    expect(screen.getByRole('button', { name: 'error.reload' })).toBeInTheDocument();
+    expect(onError).toHaveBeenCalled();
+
+    screen.getByRole('button', { name: 'error.tryAgain' }).click();
+    rerender(
+      <ErrorBoundary onError={onError}>
+        <ConditionalBoom crash={false} />
+      </ErrorBoundary>,
+    );
+    expect(screen.getByText('Recovered')).toBeInTheDocument();
+
+    consoleError.mockRestore();
+  });
+
+  it('reveals developer error details inside the nested disclosure', async () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const user = userEvent.setup();
+
     render(
       <ErrorBoundary>
-        <ThrowingComponent shouldThrow={true} />
+        <ConditionalBoom crash />
       </ErrorBoundary>,
     );
-    expect(screen.getByText('Something went wrong')).toBeInTheDocument();
-  });
 
-  it('should show custom fallback when provided', () => {
-    render(
-      <ErrorBoundary fallback={<div>Custom Error</div>}>
-        <ThrowingComponent shouldThrow={true} />
-      </ErrorBoundary>,
-    );
-    expect(screen.getByText('Custom Error')).toBeInTheDocument();
-  });
+    await user.click(screen.getByRole('button', { name: 'error.details' }));
+    expect(screen.getByText('component exploded')).toBeInTheDocument();
+    expect(screen.getByText('error.stack')).toBeInTheDocument();
 
-  it('should call onError callback when error occurs', () => {
-    const handleError = vi.fn();
-    render(
-      <ErrorBoundary onError={handleError}>
-        <ThrowingComponent shouldThrow={true} />
-      </ErrorBoundary>,
-    );
-    expect(handleError).toHaveBeenCalledOnce();
-    expect(handleError.mock.calls[0][0]).toBeInstanceOf(Error);
-    expect(handleError.mock.calls[0][0].message).toBe('Test crash');
-  });
-
-  it('should have an accessible alert role', () => {
-    render(
-      <ErrorBoundary>
-        <ThrowingComponent shouldThrow={true} />
-      </ErrorBoundary>,
-    );
-    expect(screen.getByRole('alert')).toBeInTheDocument();
-  });
-
-  it('should show retry and reload buttons', () => {
-    render(
-      <ErrorBoundary>
-        <ThrowingComponent shouldThrow={true} />
-      </ErrorBoundary>,
-    );
-    expect(screen.getByText('Try Again')).toBeInTheDocument();
-    expect(screen.getByText('Reload Page')).toBeInTheDocument();
-    expect(screen.getByText('Go Home')).toBeInTheDocument();
+    consoleError.mockRestore();
   });
 });

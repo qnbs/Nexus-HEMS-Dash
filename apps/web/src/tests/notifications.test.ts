@@ -308,4 +308,38 @@ describe('showNotification()', () => {
 
     expect(notificationCtor).not.toHaveBeenCalled();
   });
+
+  it('prefers service worker notifications when registration is ready', async () => {
+    const showViaSw = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, 'serviceWorker', {
+      configurable: true,
+      value: {
+        ready: Promise.resolve({ showNotification: showViaSw }),
+      },
+    });
+    Object.defineProperty(globalThis, 'Notification', {
+      configurable: true,
+      writable: true,
+      value: { permission: 'granted' },
+    });
+
+    await showNotification({
+      id: '3',
+      category: 'tariff-drop',
+      title: 'Price drop',
+      body: 'Charge now',
+      icon: '/icon.png',
+      tag: 'custom-tag',
+    });
+
+    expect(showViaSw).toHaveBeenCalledWith(
+      'Price drop',
+      expect.objectContaining({
+        body: 'Charge now',
+        icon: '/icon.png',
+        badge: '/icon.png',
+        tag: 'custom-tag',
+      }),
+    );
+  });
 });

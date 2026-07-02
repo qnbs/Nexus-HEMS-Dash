@@ -1,5 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { hapticClick, hapticSuccess, isHapticSupported, triggerHaptic } from '../lib/haptics';
+import {
+  hapticClick,
+  hapticModeChange,
+  hapticSuccess,
+  isHapticSupported,
+  triggerHaptic,
+} from '../lib/haptics';
 
 describe('Haptic Feedback', () => {
   beforeEach(() => {
@@ -43,5 +49,21 @@ describe('Haptic Feedback', () => {
 
     triggerHaptic('medium');
     expect(vibrateMock).toHaveBeenCalled();
+  });
+
+  it('covers remaining patterns and swallows vibrate errors', () => {
+    const vibrateMock = vi.fn().mockImplementation(() => {
+      throw new Error('blocked');
+    });
+    Object.defineProperty(navigator, 'vibrate', {
+      value: vibrateMock,
+      writable: true,
+      configurable: true,
+    });
+
+    expect(() => triggerHaptic('heavy')).not.toThrow();
+    expect(() => triggerHaptic('warning')).not.toThrow();
+    expect(() => triggerHaptic('error')).not.toThrow();
+    expect(() => hapticModeChange()).not.toThrow();
   });
 });

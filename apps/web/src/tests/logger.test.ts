@@ -93,4 +93,20 @@ describe('Logger', () => {
     child.error('error', undefined, { code: 500 });
     expect(console.info).toHaveBeenCalled();
   });
+
+  it('should emit JSON logs when ?log=json is present', () => {
+    vi.stubGlobal('window', {
+      location: { search: '?log=json', hostname: 'localhost' },
+      localStorage: { getItem: () => null },
+    });
+    vi.resetModules();
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    // Re-import logger so detectJsonMode picks up the stubbed window
+    return import('../lib/logger').then(({ logger: jsonLogger }) => {
+      jsonLogger.info('json mode', 'JsonCtx');
+      expect(logSpy).toHaveBeenCalled();
+      logSpy.mockRestore();
+      vi.unstubAllGlobals();
+    });
+  });
 });

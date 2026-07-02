@@ -73,4 +73,75 @@ describe('auth-token', () => {
 
     expect(result).toEqual({ ok: false, error: 'invalid_credentials' });
   });
+
+  it('exchangeApiKeyForJwt returns network on fetch failure', async () => {
+    vi.stubGlobal('window', { location: { origin: 'http://localhost:3000' } });
+    vi.mocked(fetch).mockRejectedValueOnce(new Error('offline'));
+
+    const { exchangeApiKeyForJwt } = await import('../lib/auth-token');
+    const result = await exchangeApiKeyForJwt('client-1', 'secret-key');
+
+    expect(result).toEqual({ ok: false, error: 'network' });
+  });
+
+  it('exchangeApiKeyForJwt returns invalid_response when body lacks token', async () => {
+    vi.stubGlobal('window', { location: { origin: 'http://localhost:3000' } });
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response(JSON.stringify({ scope: 'read' }), { status: 200 }),
+    );
+
+    const { exchangeApiKeyForJwt } = await import('../lib/auth-token');
+    const result = await exchangeApiKeyForJwt('client-1', 'secret-key');
+
+    expect(result).toEqual({ ok: false, error: 'invalid_response' });
+  });
+
+  it('getAuthHeader returns null when no token is stored', async () => {
+    const { clearAuthToken, getAuthHeader } = await import('../lib/auth-token');
+    clearAuthToken();
+    expect(getAuthHeader()).toBeNull();
+  });
+
+  it('fetchWsTicket returns a ticket when authenticated', async () => {
+    vi.stubGlobal('window', { location: { origin: 'http://localhost:3000' } });
+    const { setAuthToken, fetchWsTicket } = await import('../lib/auth-token');
+    setAuthToken('jwt-abc');
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response(JSON.stringify({ ticket: 'ws-ticket-1' }), { status: 200 }),
+    );
+
+    await expect(fetchWsTicket()).resolves.toBe('ws-ticket-1');
+  });
+
+  it('fetchWsTicket returns null without auth header', async () => {
+    vi.stubGlobal('window', { location: { origin: 'http://localhost:3000' } });
+    const { fetchWsTicket } = await import('../lib/auth-token');
+    await expect(fetchWsTicket()).resolves.toBeNull();
+  });
+
+  it('fetchWsTicket returns null on non-OK responses', async () => {
+    vi.stubGlobal('window', { location: { origin: 'http://localhost:3000' } });
+    const { setAuthToken, fetchWsTicket } = await import('../lib/auth-token');
+    setAuthToken('jwt-abc');
+    vi.mocked(fetch).mockResolvedValueOnce(new Response('{}', { status: 503 }));
+    await expect(fetchWsTicket()).resolves.toBeNull();
+  });
+
+  it('exchangeApiKeyForJwt returns invalid_response on non-OK HTTP status', async () => {
+    vi.stubGlobal('window', { location: { origin: 'http://localhost:3000' } });
+    vi.mocked(fetch).mockResolvedValueOnce(new Response('{}', { status: 500 }));
+
+    const { exchangeApiKeyForJwt } = await import('../lib/auth-token');
+    const result = await exchangeApiKeyForJwt('client-1', 'secret-key');
+
+    expect(result).toEqual({ ok: false, error: 'invalid_response' });
+  });
+
+  it('fetchWsTicket returns null on network failure', async () => {
+    vi.stubGlobal('window', { location: { origin: 'http://localhost:3000' } });
+    const { setAuthToken, fetchWsTicket } = await import('../lib/auth-token');
+    setAuthToken('jwt-abc');
+    vi.mocked(fetch).mockRejectedValueOnce(new Error('offline'));
+    await expect(fetchWsTicket()).resolves.toBeNull();
+  });
 });
