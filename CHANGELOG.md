@@ -1,3 +1,5 @@
+## [1.7.0](https://github.com/qnbs/Nexus-HEMS-Dash/compare/v1.6.1...v1.7.0) (2026-07-02)
+
 # Changelog
 
 All notable changes to **Nexus-HEMS-Dash** are documented in this file.
