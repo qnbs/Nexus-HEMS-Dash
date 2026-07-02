@@ -5,6 +5,7 @@ import {
   Cpu,
   Database,
   Gauge,
+  HardDrive,
   HelpCircle,
   Palette,
   Puzzle,
@@ -17,7 +18,7 @@ import {
 import { AnimatePresence, motion } from 'motion/react';
 import { lazy, Suspense, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PageHeader } from '../components/layout/PageHeader';
 import { HelpTooltip } from '../components/ui/HelpTooltip';
 import { PageCrossLinks } from '../components/ui/PageCrossLinks';
@@ -37,6 +38,7 @@ type SettingsSection = 'settings' | 'plugins' | 'help';
 function SettingsUnifiedComponent() {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
 
   // Derive initial section from URL
   const sectionParam = searchParams.get('section') as SettingsSection | null;
@@ -84,7 +86,14 @@ function SettingsUnifiedComponent() {
   ];
 
   // Quick-access tiles for the Settings sub-tabs
-  const quickTiles = [
+  const quickTiles: {
+    icon: React.ReactNode;
+    label: string;
+    color: string;
+    bg: string;
+    tab?: string;
+    route?: string;
+  }[] = [
     {
       icon: <Palette size={16} />,
       label: t('settings.appearance'),
@@ -112,6 +121,13 @@ function SettingsUnifiedComponent() {
       tab: 'adapters',
       color: 'text-cyan-400',
       bg: 'bg-cyan-500/10',
+    },
+    {
+      icon: <HardDrive size={16} />,
+      label: t('hardwareRegistry.title'),
+      route: '/settings/hardware',
+      color: 'text-teal-400',
+      bg: 'bg-teal-500/10',
     },
     {
       icon: <Cpu size={16} />,
@@ -245,12 +261,15 @@ function SettingsUnifiedComponent() {
                 <div className="grid grid-cols-2 gap-1.5">
                   {quickTiles.map((tile) => (
                     <button
-                      key={tile.tab}
+                      key={tile.tab ?? tile.route ?? tile.label}
                       type="button"
                       onClick={() => {
+                        if (tile.route) {
+                          navigate(tile.route);
+                          return;
+                        }
                         handleSectionChange('settings');
-                        // Navigate to the specific settings tab via URL params
-                        setSearchParams({ tab: tile.tab }, { replace: true });
+                        setSearchParams({ tab: tile.tab ?? 'appearance' }, { replace: true });
                       }}
                       className="focus-ring flex items-center gap-2 rounded-xl px-2.5 py-2 text-left text-xs transition-colors hover:bg-white/5"
                     >
