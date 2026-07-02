@@ -4,9 +4,9 @@
   "identifier": "com.nexus-hems.dashboard",
   "version": "1.6.1",
   "build": {
-    "beforeDevCommand": "cd .. && pnpm dev",
+    "beforeDevCommand": "pnpm --filter @nexus-hems/web dev",
     "devUrl": "http://localhost:5173",
-    "beforeBuildCommand": "cd .. && pnpm exec vite build --base /",
+    "beforeBuildCommand": "pnpm --filter @nexus-hems/web exec vite build --base /",
     "frontendDist": "../dist"
   },
   "app": {
