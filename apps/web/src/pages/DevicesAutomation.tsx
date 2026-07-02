@@ -350,6 +350,14 @@ function DeviceCard({
     >
       <EnergyCard
         variant={device.variant}
+        footer={
+          <QuickAction
+            deviceId={device.id}
+            data={data}
+            settings={settings}
+            sendCommand={sendCommand}
+          />
+        }
         details={
           <DeviceInlineDetails
             deviceId={device.id}
@@ -372,16 +380,6 @@ function DeviceCard({
 
           {/* Metric row */}
           <DeviceMetricRow deviceId={device.id} data={data} unified={unified} settings={settings} />
-
-          {/* Quick action — stop propagation so card expand is not toggled */}
-          <div className="flex items-center gap-2">
-            <QuickAction
-              deviceId={device.id}
-              data={data}
-              settings={settings}
-              sendCommand={sendCommand}
-            />
-          </div>
         </div>
       </EnergyCard>
     </motion.div>
@@ -652,8 +650,7 @@ function BatteryQuickAction({
   return (
     <button
       type="button"
-      onClick={(e) => {
-        e.stopPropagation();
+      onClick={() => {
         hapticModeChange();
         sendCommand('SET_BATTERY_POWER', isCharging ? 0 : 3000);
         hapticSuccess();
@@ -681,8 +678,7 @@ function EVQuickAction({
   return (
     <button
       type="button"
-      onClick={(e) => {
-        e.stopPropagation();
+      onClick={() => {
         hapticModeChange();
         if (isCharging) {
           sendCommand('SET_EV_POWER', 0);
@@ -713,8 +709,7 @@ function HeatPumpQuickAction({
   return (
     <button
       type="button"
-      onClick={(e) => {
-        e.stopPropagation();
+      onClick={() => {
         hapticModeChange();
         sendCommand('SET_HEAT_PUMP_POWER', 1500);
         hapticSuccess();
@@ -737,8 +732,7 @@ function BuildingQuickAction({
   return (
     <button
       type="button"
-      onClick={(e) => {
-        e.stopPropagation();
+      onClick={() => {
         hapticModeChange();
         sendCommand('TOGGLE_KNX_LIGHTS', 0);
         hapticSuccess();

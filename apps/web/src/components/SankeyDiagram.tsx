@@ -276,7 +276,11 @@ export function SankeyDiagram({ data }: { data: EnergyData }) {
         </thead>
         <tbody>
           {graph?.links.map((link) => (
-            <tr key={`${link.sourceId}-${link.targetId}-${link.value}`}>
+            <tr
+              key={`${link.sourceId}-${link.targetId}-${link.value}`}
+              data-sankey-source={link.sourceId}
+              data-sankey-target={link.targetId}
+            >
               <td>{sankeyNodeLabel(t, link.sourceId)}</td>
               <td>{sankeyNodeLabel(t, link.targetId)}</td>
               <td>{Math.round(link.value)}</td>
