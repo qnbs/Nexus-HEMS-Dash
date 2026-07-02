@@ -29,6 +29,12 @@ import {
   type ProtocolType,
   type UnifiedEnergyDatapoint,
 } from '@nexus-hems/shared-types';
+import {
+  recordAdapterDlq,
+  recordAdapterError,
+  recordAdapterPollLatency,
+  recordAdapterReconnect,
+} from '../../middleware/adapter-metrics.js';
 import { API_RUNTIME_DIR, DEAD_LETTER_QUEUE_PATH } from '../../runtime-paths.js';
 
 const MAX_RECONNECT_DELAY_MS = 60_000;
@@ -200,6 +206,9 @@ export class ModbusAdapter implements IProtocolAdapter {
         );
       } catch (err) {
         attempt++;
+        if (attempt > 1) {
+          recordAdapterReconnect(this.id, this.protocol);
+        }
         const delayMs = Math.min(1000 * 2 ** (attempt - 1), MAX_RECONNECT_DELAY_MS);
         console.warn('[ModbusAdapter] Connect attempt failed:', this.id, attempt, delayMs, err);
         await new Promise((r) => setTimeout(r, delayMs));
@@ -222,6 +231,8 @@ export class ModbusAdapter implements IProtocolAdapter {
       await this.connectWithBackoff();
       return;
     }
+
+    const pollStarted = Date.now();
 
     for (const reg of this.device.registers) {
       try {
@@ -251,9 +262,11 @@ export class ModbusAdapter implements IProtocolAdapter {
             error: result.error.message,
             protocol: this.device.protocol,
           });
+          recordAdapterDlq(this.id, this.protocol);
         }
       } catch (err) {
         this.consecutiveErrors++;
+        recordAdapterError(this.id, this.protocol, 'poll');
         if (this.consecutiveErrors >= 5) {
           this.connected = false;
           // Reconnect in background
@@ -270,6 +283,8 @@ export class ModbusAdapter implements IProtocolAdapter {
         });
       }
     }
+
+    recordAdapterPollLatency(this.id, this.protocol, Date.now() - pollStarted);
   }
 
   private async readRegister(reg: RegisterConfig): Promise<number> {
