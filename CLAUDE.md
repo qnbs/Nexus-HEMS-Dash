@@ -125,7 +125,7 @@ All adapters implement `EnergyAdapter` interface (`apps/web/src/core/adapters/En
 
 **7 core adapters** (`apps/web/src/core/adapters/`):
 - `VictronMQTTAdapter` — Victron Cerbo GX / Venus OS via MQTT-over-WebSocket
-- `ModbusSunSpecAdapter` — SunSpec Models 103/124/201 via REST bridge
+- `ModbusSunSpecAdapter` — SunSpec Models 103/124/201 via REST bridge. Register→scalar decoding lives in the shared `apps/web/src/core/sunspec-transforms.ts` (MED-12), used by **both** the main-thread adapter and the off-thread `adapter-worker.ts` so parity is a single code path (enforced by `sunspec-transform-parity.test.ts`). Change the transform there, not in two places.
 - `KNXAdapter` — KNX/IP via knxd WebSocket bridge
 - `OCPP21Adapter` — EV charging, V2X, ISO 15118, §14a EnWG
 - `EEBUSAdapter` — EEBUS SPINE/SHIP, mDNS, TLS 1.3 mTLS
@@ -174,6 +174,8 @@ The app header is `position: fixed` with a JS-measured `--header-height` CSS var
 - JWT utilities: `apps/api/src/jwt-utils.ts`
 - `ADAPTER_MODE=mock|live` controls mock vs live adapter data (default: `mock`; live requires `ALLOW_LIVE_HARDWARE=true`)
 - `READ_ONLY_MODE=true` (SAF-05) globally blocks **all** hardware control commands at both the API (WebSocket, `apps/api/src/ws/energy.ws.ts`) and frontend (`command-safety.ts`) levels, regardless of scope or adapter config — for certification-grade deployments, incident investigation, and commissioning. Helpers: `isReadOnlyMode()` (`apps/api/src/config/read-only-mode.ts`), `isReadOnlyModeActive()` (`apps/web/src/lib/adapter-mode.ts`). Blocked commands log the `rejected_readonly` audit outcome.
+- **OCPP Security Profile 3 mTLS proxy:** the browser never holds CSMS client certificates. The web client POSTs mTLS credentials to `POST /api/ocpp/proxy-session` (`ocpp.routes.ts`) over HTTPS+JWT, receiving a single-use session id (`ocpp-session-store.ts`); it then opens `/ws/ocpp?ticket=<uuid>&session=<uuid>` (`ws/ocpp-proxy.ws.ts`) with a single-use WS ticket (**readwrite** scope minimum). The server consumes the session, enforces the target is a **private/local host** (`isPrivateHost`), opens the mTLS `wss://` upstream (`OcppProxyRelay.ts`, TLS ≥1.2, `rejectUnauthorized`), and relays frames bidirectionally. Frontend helpers: `apps/web/src/lib/ocpp-proxy.ts`.
+- **CSP nonce (AUD-02):** production Helmet + nginx drop `style-src 'unsafe-inline'`. `apps/api/src/config/csp-nonce.ts` extracts the Vite build-time nonce from `index.html` and builds `style-src`/`script-src` with `'nonce-…'`; keep the Tauri CSP in sync via `apps/web/scripts/sync-tauri-csp.ts` (guarded by `tauri-csp.test.ts`).
 - Production requires `JWT_SECRET`, `API_KEYS`, `WS_ORIGINS` env vars
 
 ### Backend Protocol Adapters
@@ -209,7 +211,7 @@ Current enforced coverage thresholds are package-specific:
 
 Biome 2.4 note: use `biome format apps/ packages/` for the read-only `format:check` script. Do not use `biome format --write=false`; this version rejects that flag/value combination.
 
-Use `pnpm.overrides` (never top-level `"overrides"`) for dependency overrides. Keep `pnpm.onlyBuiltDependencies` in sync with approved native/postinstall packages (`esbuild`, `better-sqlite3`, serialport bindings, `core-js`, `protobufjs`, and all `@rolldown/binding-*` platform packages).
+Use `pnpm.overrides` (never top-level `"overrides"`) for dependency overrides. Keep `pnpm.onlyBuiltDependencies` in sync with approved native/postinstall packages (`@google/genai`, `esbuild`, `better-sqlite3`, serialport bindings, `core-js`, `protobufjs`, and all `@rolldown/binding-*` platform packages).
 
 ## Critical Constraints
 
@@ -252,7 +254,7 @@ Enforced by `pnpm size` (size-limit) and Lighthouse CI. Do not exceed:
 
 | Metric | Budget |
 |---|---|
-| Total JS (gzipped) | ≤ 1120 KB |
+| Total JS (gzipped) | ≤ 1130 KB |
 | Total CSS (gzipped) | ≤ 25 KB |
 | Framework chunk | ≤ 85 KB |
 | Vendor Recharts | ≤ 110 KB |
@@ -269,6 +271,8 @@ Conventional Commits enforced by commitlint. Types: `feat, fix, docs, style, ref
 
 **Create an ADR** (`docs/adr/ADR-NNN-title.md`) when a change affects: state management approach, new external dependency >50 KB gzipped, protocol adapter architecture, security model, or build toolchain.
 
+**Releases are manual-only** (ADR-015 amended 2026-07-03). `release.yml` runs semantic-release on **manual workflow dispatch only** — never on `push → main` (auto-release caused version churn: three releases in one evening). All version fields (root/workspace/Tauri `package.json`, `helm/nexus-hems/Chart.yaml`) must stay in sync; `.releaserc.json` commits them together. Desktop binaries are owned solely by `tauri-build.yml`. Do not re-enable push-triggered releases. Canonical timeline + incident log: `docs/Release-History.md`.
+
 ## Workflow for Every Change
 
 1. Read relevant files before modifying: affected components, adapter interfaces, both Zustand stores.
@@ -283,6 +287,8 @@ When CI is the source of truth, push focused commits and monitor GitHub Actions 
 - `AGENTS.md` — Cursor Cloud agent VM specifics (complements this file)
 - `FEATURE_STATUS.md` — shipped vs partial vs planned feature matrix
 - `docs/Technical-Debt-Registry.md` — canonical debt/backlog tracker
+- `docs/Release-History.md` — canonical tag timeline + manual-release procedure (ADR-015)
+- `docs/Manual-Workflow-Triggers.md` — how to dispatch release/Tauri/heavy CI workflows by hand
 - `docs/Safety-Certification-Notice.md` — **read before live hardware** — safety hazards, certification status, mock-vs-live delta, Tauri updater guide
 - `docs/Adapter-Dev-Guide.md` — how to write new frontend adapters
 - `docs/Protocol-Adapter-Guide-Backend.md` — backend `IProtocolAdapter` implementation guide
