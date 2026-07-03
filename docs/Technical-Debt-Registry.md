@@ -100,18 +100,18 @@ CodeAnt.ai is now configured via repo files (`.codeant/` — analyzer de-duplica
 
 Workflow posts/updates a single PR comment with links to Lighthouse, coverage, bundle analysis, and static-analysis dashboards. DeepSource/Codecov links are now wired; the malformed "Coverage artifact" table row was fixed (ADR-027).
 
-### PRF-06 — Layered Quality Platforms & CI Consolidation
-
-**Files:** `.codecov.yml`, `.coderabbit.yaml`, `.codeant/`, `.deepsource.toml`, `.github/workflows/ci.yml`, `.github/workflows/security-full.yml`, `.github/dependabot.yml`, `DEVOPS.md`, `docs/adr/ADR-027-layered-quality-platforms.md`
-**Status:** 🔄 In progress (owner actions pending)
-
-Codecov wired (advisory, web+api flags) with `json-summary` added to `apps/api`; CodeRabbit added (`.coderabbit.yaml` + runbook); CodeAnt configured (`.codeant/`); Dependabot/Renovate reconciled (Renovate owns npm/docker/cargo, Dependabot owns github-actions); CodeQL/Semgrep/Scorecard consolidated to single sources (`security.yml` + `security-scan.yml` deleted). **Owner actions pending:** install Codecov/CodeRabbit/CodeAnt GitHub Apps, add `CODECOV_TOKEN`, update the `main` branch-protection ruleset (remove `CodeQL Analysis` ×2 + `Semgrep SAST`; require `CodeQL` + `Semgrep OSS`). See `DEVOPS.md`.
-
 ### PRF-05 — Branch Protection Settings Not Codified
 **Files:** `.github/CI-AUDIT.md`, `docs/runbooks/pr-status-checks.md`
 **Status:** ✅ Fixed in v1.3.0
 
 Required checks documented in `pr-status-checks.md` including `ci-passed` rollup (covers fuzz-tests). Branch protection must still be applied manually in GitHub Settings → Branches → main.
+
+### PRF-06 — Layered Quality Platforms & CI Consolidation
+
+**Files:** `.codecov.yml`, `.coderabbit.yaml`, `.codeant/`, `.deepsource.toml`, `.github/workflows/ci.yml`, `.github/workflows/security-full.yml`, `.github/dependabot.yml`, `DEVOPS.md`, `docs/adr/ADR-027-layered-quality-platforms.md`
+**Status:** 🔄 In progress (owner App installs pending)
+
+Codecov wired (advisory, web+api flags) with `json-summary` added to `apps/api`; CodeRabbit added (`.coderabbit.yaml` + runbook); CodeAnt configured (`.codeant/`); Dependabot/Renovate reconciled (Renovate owns npm/docker/cargo, Dependabot owns github-actions); CodeQL/Semgrep/Scorecard consolidated to single sources (`security.yml` + `security-scan.yml` deleted). The `main` ruleset requires only `CI Passed`, `E2E Tests`, `lighthouse`, so the deleted `CodeQL Analysis`/`Semgrep SAST` checks were never required — no ruleset edit needed. **Owner actions pending:** install the Codecov/CodeRabbit/CodeAnt GitHub Apps and add `CODECOV_TOKEN`. See `DEVOPS.md`.
 
 ---
 

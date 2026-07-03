@@ -25,7 +25,8 @@
       "files": [
         "apps/web/src/core/adapters/**/*.ts",
         "apps/web/src/core/command-safety.ts",
-        "apps/web/src/core/circuit-breaker.ts"
+        "apps/web/src/core/circuit-breaker.ts",
+        "apps/web/src/core/energy-controllers.ts"
       ],
       "scope": ["ide", "pr"]
     },

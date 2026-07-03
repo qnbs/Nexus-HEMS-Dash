@@ -149,15 +149,15 @@ version. Recurring actions:
    force-pushed `stable` branch; the SHA pin captures whichever stable
    was current on `2026-02-13`. Re-pin manually after the next major
    Rust release if you want a newer stable.
-3. **Branch-protection `Required Checks` (ADR-027 consolidation — action required).**
-   `security.yml` and `security-scan.yml` are **deleted**; CodeQL/Semgrep are now
-   single-sourced in `security-full.yml`. In `Settings → Rules`/`Branches → main`:
-   **remove** the stale required checks `CodeQL Analysis` (×2, from the deleted files)
-   and `Semgrep SAST`; ensure the required set is: `CI Passed`, `Security Gate`
-   (or `CodeQL` + `Semgrep OSS` individually), `DeepSource: JavaScript`,
-   `DeepSource: Secrets`, `Lighthouse CI`, `chromatic`, `Security Fuzz`.
-   DeepSource/Codecov/CodeRabbit/CodeAnt remain advisory (non-required). Add DeepSource
-   to required checks only after existing HIGH-severity dependency advisories are remediated.
+3. **Branch-protection `Required Checks` (verified 2026-07-03).**
+   `main` is governed by one ruleset ("Main Branch Protection (Production)"). The
+   **currently required** checks are: `✅ CI Passed`, `🎭 E2E Tests`, `lighthouse`.
+   The ADR-027 consolidation deleted `security.yml` + `security-scan.yml`, but their
+   `CodeQL Analysis`/`Semgrep SAST` checks were **never required**, so no ruleset edit is
+   needed. **Recommended optional additions:** `Security Gate` (or `CodeQL` + `Semgrep OSS`
+   from `security-full.yml`), `chromatic`, `Security Fuzz`. `DeepSource: JavaScript`/`Secrets`,
+   Codecov, CodeRabbit, and CodeAnt stay **advisory**; promote DeepSource to required only
+   after existing HIGH-severity dependency advisories are remediated.
 4. **DeepSource and CodeAnt.ai are newly integrated.** DeepSource is
    running in advisory mode while false positives are tuned. CodeAnt.ai
    remains advisory permanently. See `docs/runbooks/deepsource-integration.md`
