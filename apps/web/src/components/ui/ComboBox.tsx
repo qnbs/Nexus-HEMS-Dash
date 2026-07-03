@@ -132,7 +132,6 @@ export function ComboBox({
   useLayoutEffect(() => {
     if (open) positionPopover();
     // positionPopover reads refs only; safe to omit from deps.
-     
   }, [open]);
 
   // Reposition on scroll (any ancestor, hence capture) and resize while open.
@@ -145,7 +144,6 @@ export function ComboBox({
       window.removeEventListener('scroll', reposition, true);
       window.removeEventListener('resize', reposition);
     };
-     
   }, [open]);
 
   // Focus the search input (or keep focus on the popover) when opening.
