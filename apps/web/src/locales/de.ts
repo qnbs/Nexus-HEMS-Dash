@@ -2210,6 +2210,7 @@ export const de = {
     commandRejected: 'Befehl abgelehnt',
     commandExecuted: 'Befehl ausgeführt',
     commandFailed: 'Befehl fehlgeschlagen',
+    commandNotAccepted: 'Kein verbundener Adapter hat den Befehl akzeptiert',
     validationFailed: 'Validierung fehlgeschlagen',
     rateLimitExceeded: 'Befehlsrate überschritten (max. 30/min)',
     circuitBreakerOpen: 'Schutzschalter offen — Adapter gesperrt',

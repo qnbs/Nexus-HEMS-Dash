@@ -342,6 +342,58 @@ describe('OCPP21Adapter — V2X Support', () => {
   });
 });
 
+describe('OCPP21Adapter — V2G SOC fail-safe guard', () => {
+  // V2G_MIN_SOC_PERCENT is a module-private constant = 15.
+  const MIN_SOC = 15;
+  let adapter: OCPP21Adapter;
+  // Typed view onto the private discharge methods + mutable charger state so we
+  // can exercise the SOC guard directly without a live OCPP session.
+  type V2GInternals = {
+    charger: { v2xCapable: boolean; evSocPercent: number; voltageV: number };
+    sendV2XDischarge(w: number): boolean;
+    sendDischargeToHome(w: number): boolean;
+  };
+  const internals = () => adapter as unknown as V2GInternals;
+
+  beforeEach(() => {
+    vi.stubGlobal('WebSocket', MockWebSocket);
+    adapter = new OCPP21Adapter({
+      host: 'evse.local',
+      port: 9000,
+      iso15118: true,
+      v2xCapable: true,
+      securityProfile: 0,
+      tls: false,
+    });
+    internals().charger.v2xCapable = true;
+    internals().charger.voltageV = 230;
+  });
+
+  afterEach(() => {
+    adapter.destroy();
+    vi.unstubAllGlobals();
+    mockInstance = null;
+  });
+
+  it('blocks V2G discharge at SOC 0 (unknown/not-yet-reported = fail-safe)', () => {
+    internals().charger.evSocPercent = 0;
+    expect(internals().sendV2XDischarge(3000)).toBe(false);
+    expect(internals().sendDischargeToHome(3000)).toBe(false);
+  });
+
+  it('blocks V2G discharge just below the SOC floor', () => {
+    internals().charger.evSocPercent = MIN_SOC - 1;
+    expect(internals().sendV2XDischarge(3000)).toBe(false);
+    expect(internals().sendDischargeToHome(3000)).toBe(false);
+  });
+
+  it('allows V2G discharge at or above the SOC floor', () => {
+    internals().charger.evSocPercent = MIN_SOC + 20;
+    expect(internals().sendV2XDischarge(3000)).toBe(true);
+    expect(internals().sendDischargeToHome(3000)).toBe(true);
+  });
+});
+
 describe('OCPP21Adapter — Security Profiles', () => {
   beforeEach(() => {
     vi.stubGlobal('WebSocket', MockWebSocket);

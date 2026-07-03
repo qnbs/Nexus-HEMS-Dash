@@ -422,19 +422,29 @@ function deepMergeModel(
  *
  * No outer pre-check is performed here on purpose: it would consume a
  * second rate-limit slot per command, halving the documented 30 cmd/min.
+ *
+ * Returns the real dispatch outcome (resolves true iff at least one connected
+ * adapter accepted the command) so callers can surface the true result instead
+ * of an optimistic "executed". The authoritative per-adapter audit row is
+ * written inside BaseAdapter.sendCommand; this dispatcher does not audit.
  */
-export function sendAdapterCommand(command: AdapterCommand): void {
+export async function sendAdapterCommand(command: AdapterCommand): Promise<boolean> {
   const entries = Object.entries(useEnergyStoreBase.getState().adapters) as [
     AdapterId,
     AdapterEntry,
   ][];
+  const dispatches: Promise<boolean>[] = [];
   for (const [id, entry] of entries) {
     if (command.targetAdapterId && id !== command.targetAdapterId) continue;
     if (entry.enabled && entry.status === 'connected') {
-      // BaseAdapter.sendCommand() handles CB + validation + confirm + audit internally
-      void entry.adapter.sendCommand(command);
+      // BaseAdapter.sendCommand() handles CB + validation + confirm + audit internally.
+      // A user-cancel throws CommandCancelledError — treat any rejection as "not accepted".
+      dispatches.push(Promise.resolve(entry.adapter.sendCommand(command)).catch(() => false));
     }
   }
+  if (dispatches.length === 0) return false;
+  const results = await Promise.all(dispatches);
+  return results.some((accepted) => accepted);
 }
 
 // ─── Bridge hook: syncs adapters ↔ old store ─────────────────────────

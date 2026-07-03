@@ -7,6 +7,7 @@ import {
   logCommandAudit,
   requiresConfirmation,
   validateCommand,
+  validateCommandShape,
 } from '../core/command-safety';
 import { nexusDb } from '../lib/db';
 
@@ -87,6 +88,42 @@ describe('command-safety', () => {
     it('rejects VPP flex offer above safety cap', () => {
       const result = validateCommand({ type: 'VPP_OFFER_FLEX', value: 30_000 });
       expect(result.valid).toBe(false);
+    });
+  });
+
+  describe('validateCommandShape (token-free pre-check)', () => {
+    it('validates shape without ever consuming a rate-limit token', () => {
+      const command = { type: 'SET_HEAT_PUMP_MODE' as const, value: 2 };
+      // Far exceed RATE_LIMIT_MAX (30). The shape check must never rate-limit,
+      // so the UI pre-check cannot "double-spend" a token that the dispatch
+      // boundary (validateCommand → checkRateLimit) later consumes.
+      for (let i = 0; i < 100; i++) {
+        expect(validateCommandShape(command).valid).toBe(true);
+      }
+    });
+
+    it('still rejects an out-of-range value', () => {
+      const result = validateCommandShape({ type: 'SET_EV_CURRENT', value: 100 });
+      expect(result.valid).toBe(false);
+      expect(result.error).toMatch(/Invalid value/);
+    });
+
+    it('still rejects all commands in read-only mode', () => {
+      vi.stubEnv('VITE_READ_ONLY_MODE', 'true');
+      const result = validateCommandShape({ type: 'SET_BATTERY_POWER', value: 2500 });
+      expect(result.valid).toBe(false);
+      expect(result.error).toMatch(/read-only mode/i);
+    });
+
+    it('leaves a full token budget for validateCommand after a shape pre-check', () => {
+      const command = { type: 'SET_GRID_LIMIT' as const, value: 5000 };
+      // A UI pre-check (shape) followed by the single authoritative gate must
+      // still allow the documented 30 dispatches within one window.
+      validateCommandShape(command);
+      for (let i = 0; i < 30; i++) {
+        expect(validateCommand(command).valid).toBe(true);
+      }
+      expect(validateCommand(command).valid).toBe(false);
     });
   });
 
