@@ -1,6 +1,6 @@
 # Feature Status — Nexus-HEMS-Dash
 
-**Version:** 1.7.0 shipped (2026-07-02)  
+**Version:** 1.9.0 shipped (2026-07-02)  
 **Last updated:** 2026-07-03  
 **Purpose:** Single source of truth for what is actually implemented, partial, or planned. Use this file to keep README/marketing claims synchronized with the codebase.
 
@@ -27,10 +27,10 @@
 | Victron MQTT (Cerbo GX / Venus OS) | ✅ | ✅ | Browser adapter supports direct MQTT-over-WebSocket. Backend `MqttAdapter` (`apps/api/src/protocols/mqtt/MqttAdapter.ts`) subscribes role-tagged Victron Venus OS topic patterns and emits Zod-validated datapoints to the EventBus; in live mode these reach the UI via the `LiveEnergyAggregator` WebSocket bridge (HIGH-17). |
 | Modbus/SunSpec (103/124/201) | ✅ | ✅ | `GET /api/modbus/sunspec` + `POST /api/modbus/write` REST proxy (`routes/modbus.routes.ts`) serves the in-browser `ModbusSunSpecAdapter` a mock SunSpec gateway (validated, audited writes; live register writes via an external bridge). The backend `ModbusAdapter` polls `device-map.json` into the EventBus; role-tagged registers reach the UI in live mode via the `LiveEnergyAggregator` bridge (HIGH-17). |
 | KNX/IP floorplan | ✅ | ✅ | Browser adapter for floorplan/room control. Backend `KnxAdapter` (`apps/api/src/protocols/knx/KnxAdapter.ts`) connects to a knxd/custom WebSocket JSON bridge, maps group addresses from `knx-ga-map.json`, and emits Zod-validated datapoints to the EventBus (MED-20). Enable with `KNX_BRIDGE_WS_URL` + live mode. |
-| OCPP 2.1 V2X (ISO 15118) | ✅ (P1 enhanced) | ⏳ | SET_GRID_LIMIT now uses W unit (§14a EnWG compliant). New commands: SET_EV_TARGET_SOC, SET_EV_PHASES, SET_EV_MIN_CURRENT, SET_SMART_COST_LIMIT. sendDischargeToHome (V2H) method. |
+| OCPP 2.1 V2X (ISO 15118) | ✅ (P1 enhanced) | ⚠️ | Frontend adapter + backend `OcppCsmsProtocolAdapter` CSMS gateway (SP0). SP3 mTLS still open (HIGH-12). |
 | EEBUS SPINE/SHIP | ✅ | ✅ | Full backend `IProtocolAdapter` (`apps/api/src/protocols/eebus/EebusProtocolAdapter.ts`) connects to all trusted devices in the trust store, maintains persistent SHIP sessions, parses SPINE `measurementListData` + `loadControlLimitListData` datagrams, and emits role-tagged `UnifiedEnergyDatapoint` to the EventBus. Registered in `protocols/index.ts`. Frontend `CertificateManagement.tsx` wired into Settings → EEBUS Certs tab. Supported use cases: MPC, MGCP, LPC (§14a EnWG), EV charging, heat pump. Trust-store polling for newly paired devices. Unit tests: `EebusProtocolAdapter.test.ts` (17 cases). |
 | evcc backend | ✅ | ✅ | Browser adapter for direct REST+WS. Backend `EvccAdapter` (`apps/api/src/protocols/evcc/EvccAdapter.ts`) polls `/api/state` and subscribes to `/ws`, emitting role-tagged datapoints to the EventBus (MED-20). Enable with `EVCC_BASE_URL` in live mode. |
-| OpenEMS Edge (JSON-RPC) | ✅ | ⏳ | Browser adapter exists; no backend OpenEMS adapter. |
+| OpenEMS Edge (JSON-RPC) | ✅ | ✅ | Browser `OpenEMSAdapter` + backend `OpenEMSProtocolAdapter` (`apps/api/src/protocols/openems/`). Configurable `additionalWritableProperties` per component (LOW-02). |
 | Home Assistant MQTT | ✅ (contrib, dual-mode) | ⏳ | Full rewrite: ha-ws-api mode (direct HA WS API + Long-Lived Access Token), MQTT Discovery mode, auto-entity-discovery by `device_class`, 10+ command types (EV, heat pump, KNX lights/temp). i18n keys for new config fields. |
 | ExecAdapter (Custom Scripts) | ✅ (contrib, new) | ✅ (new) | Safe shell script integration: whitelisted scripts only (`EXEC_SCRIPTS_CONFIG`), argv-array execution (no shell), 30s timeout, 64 KB output cap, `READ_ONLY_MODE` compliance. Frontend `ExecAdapter`, backend `ExecService` + `/api/exec/*` routes. |
 | Matter/Thread | ✅ (contrib) | ⏳ | Frontend contrib adapter only. |
@@ -69,7 +69,8 @@
 | PDF reports + QR sharing | ✅ | `apps/web/src/components/ExportAndSharing.tsx`, `lib/sharing.ts` |
 | Prometheus monitoring | ✅ | `apps/api/src/middleware/metrics.ts`, `routes/metrics.routes.ts`; per-backend-adapter series via `adapter-metrics.ts` (MED-18) |
 | Adapter health endpoint | ✅ | `GET /api/health` returns mode, overall status, and per-adapter state (`apps/api/src/routes/health.routes.ts`) |
-| Live/Mock mode safety indicator | ✅ | Header banner (live) + simulation badge, Settings status, and live-hardware warning in the command-confirmation dialog — driven by `/api/health` mode (`apps/web/src/lib/adapter-mode.ts`, `AppShell.tsx`, `useSafeCommand.tsx`) |
+| Live/Mock mode safety indicator | ✅ | Header banner (live) + simulation badge + persistent read-only banner (`mode.readOnlyBannerWarning`), Settings status, and live-hardware warning in the command-confirmation dialog — driven by `/api/health` mode (`apps/web/src/lib/adapter-mode.ts`, `AppShell.tsx`, `useSafeCommand.tsx`) |
+| Opt-in backend WebSocket consumer | ✅ | `VITE_BACKEND_WS` flag mounts `useServerWebSocket` (ADR-025); maps server `EnergyData` → `UnifiedEnergyModel`; Monitoring shows `serverWsConnected` pill |
 | Built-in adapters disabled by default | ✅ | `isBuiltinAdapterEnabledByDefault()` returns `false`; user enables adapters in Settings (`apps/web/src/lib/adapter-mode.ts`) |
 | Demo data without hardware | ✅ | Mock/simulated energy data when effective adapter mode is `mock` (`apps/api/src/data/mock-data.ts`, `EnergyContext`) |
 
@@ -88,7 +89,7 @@
 | CORS origin filtering (localhost removed in prod) | ✅ | `configureCors()` in `apps/api/src/middleware/security.ts` |
 | Rate limiting (HTTP + WS) | ✅ | Express rate-limit + WS command rate limiter |
 | Server-side command audit log | ✅ | `apps/api/src/data/command-audit.ts` — every WS command (accepted / rejected-validation / rejected-scope / rejected-ratelimit) appended to NDJSON with clientId, scope, and effective mode; `GET /api/v1/command-audit` (admin scope) |
-| Trust proxy config | ⚠️ | `TRUST_PROXY` env supported; defaults to 1 hop with warning |
+| Trust proxy config | ✅ | `TRUST_PROXY` env via `resolveTrustProxy()` (`apps/api/src/config/trust-proxy.ts`); documented in Deployment Guide (MED-10) |
 | BYOK AI vault (AES-GCM 256) | ✅ | `apps/web/src/lib/ai-keys.ts` |
 | PII sanitization | ✅ | `@nexus-hems/shared-types/src/sanitize-text.ts` |
 | Adapter mode mock default (double opt-in for live) | ✅ | Backend: `ADAPTER_MODE` + `ALLOW_LIVE_HARDWARE`; frontend: `VITE_ADAPTER_MODE` + `VITE_ALLOW_LIVE_HARDWARE` + Settings toggle (`adapter-mode.ts` both sides) |
@@ -112,7 +113,7 @@
 | E2E tests (Playwright) | ⚠️ | 6 spec files; missing auth, command-safety, backend-integration coverage |
 | Fuzz/property tests | ✅ | `apps/web/src/tests/security-fuzz.test.ts` |
 | i18n parity test | ✅ | `apps/web/src/tests/i18n-sync.test.ts` |
-| Coverage gates | ⚠️ | Enforced thresholds: web 70/70/68/70 (functions temporarily lowered from 70, see `docs/Test-Coverage-TODO.md`), API 33/30/38/33 (measured v1.3.0 baseline, staged toward 55 per `Testing-Coverage-Strategy.md`) (`vitest.config.ts`). PRF-03 baseline gate via `pnpm check:coverage-baseline` (web floor 78/70/68/80). Staged roadmap target 70%+ (MED-01). |
+| Coverage gates | ✅ | Web vitest + PRF-03 baseline: **78/72/70/80** (statements/branches/functions/lines). API: **55/46/62/55**. See `apps/web/coverage-baseline.json`, `vitest.config.ts`. |
 | Lighthouse CI | ✅ | `.github/workflows/lighthouse.yml` |
 | Chromatic visual regression | ✅ | `.github/workflows/chromatic.yml` |
 

@@ -154,3 +154,22 @@ describe('OpenEMSAdapter — successful connect', () => {
     adapter.destroy();
   });
 });
+
+describe('OpenEMSAdapter — additionalWritableProperties (LOW-02)', () => {
+  it('accepts per-component extra writable property names in config', () => {
+    const adapter = new OpenEMSAdapter({
+      host: 'openems.local',
+      additionalWritableProperties: {
+        customController0: ['targetPower', 'enable'],
+      },
+    });
+    expect(adapter.id).toBe('openems');
+    expect(
+      (
+        adapter as unknown as {
+          config?: { additionalWritableProperties?: Record<string, string[]> };
+        }
+      ).config?.additionalWritableProperties?.customController0,
+    ).toEqual(['targetPower', 'enable']);
+  });
+});

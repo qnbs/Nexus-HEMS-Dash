@@ -4,11 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Nexus-HEMS Dashboard is a production-grade, real-time Home Energy Management System dashboard. It consolidates 14 protocol adapters (7 core: Victron MQTT, Modbus/SunSpec, KNX, OCPP 2.1, EEBUS/SPINE, evcc, OpenEMS; 7 contrib: Home Assistant, Matter/Thread, Zigbee2MQTT, Shelly, OpenADR 3.1, ExecAdapter, Example) into a unified React 19 SPA served by an Express 5 backend. Deployable as PWA, Docker container, Tauri desktop app, Helm/Kubernetes release, or Capacitor mobile app. Current package version: `1.7.0`.
+Nexus-HEMS Dashboard is a production-grade, real-time Home Energy Management System dashboard. It consolidates 14 protocol adapters (7 core: Victron MQTT, Modbus/SunSpec, KNX, OCPP 2.1, EEBUS/SPINE, evcc, OpenEMS; 7 contrib: Home Assistant, Matter/Thread, Zigbee2MQTT, Shelly, OpenADR 3.1, ExecAdapter, Example) into a unified React 19 SPA served by an Express 5 backend. Deployable as PWA, Docker container, Tauri desktop app, Helm/Kubernetes release, or Capacitor mobile app. Current package version: `1.9.0`.
 
 **Safety note:** This system controls safety-critical electrical hardware. No regulatory certification (VDE, IEC, CE) has been obtained. See `docs/Safety-Certification-Notice.md` before connecting to live hardware. Always use `ADAPTER_MODE=mock` for development; switch to `live` only after reviewing the pre-deployment checklist in that document.
 
-The current shipped release line is **1.7.0**. See [CHANGELOG.md](CHANGELOG.md) for the full release history and [docs/Technical-Debt-Registry.md](docs/Technical-Debt-Registry.md) for known debt and in-flight work.
+The current shipped release line is **1.9.0**. Releases are **manual-only** (ADR-015 amended 2026-07-03). See [CHANGELOG.md](CHANGELOG.md), [docs/Release-History.md](docs/Release-History.md), and [docs/Technical-Debt-Registry.md](docs/Technical-Debt-Registry.md).
 
 > ## ⚠️ Hardware Profile & Cloud-First CI Policy (read before running anything)
 >

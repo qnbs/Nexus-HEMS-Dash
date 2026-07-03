@@ -2,7 +2,10 @@
 
 **Related:** ADR-015 (`docs/adr/ADR-015-release-automation.md`), `.github/workflows/release.yml`
 
-semantic-release must push a `chore(release): … [skip ci]` commit **and** a version tag back to `main`. The default `GITHUB_TOKEN` cannot bypass repository rulesets on `main`, so releases stall at v1.6.1 until a PAT is configured.
+> **Note (2026-07-03):** Releases are **manual-only**. Run **Actions → Release → Run workflow**
+> with `approveRelease=RELEASE`. Automatic release on every `main` push is disabled.
+
+semantic-release must push a `chore(release): … [skip ci]` commit **and** a version tag back to `main`. The default `GITHUB_TOKEN` cannot bypass repository rulesets on `main`, so releases stall without a PAT or ruleset bypass.
 
 ## Option A — Classic PAT (simplest, matches ADR-015)
 
@@ -14,8 +17,6 @@ semantic-release must push a `chore(release): … [skip ci]` commit **and** a ve
    |-------|-----|
    | **`repo`** | Push release commits + tags to `main`, read repo metadata |
 
-   For a **public** repository only, `public_repo` can suffice in theory; this project documents **`repo`** as the supported path.
-
 5. Copy the token (shown once).
 6. Repository **qnbs/Nexus-HEMS-Dash** → **Settings** → **Secrets and variables** → **Actions** → **New repository secret**:
    - **Name:** `GH_TOKEN` (exact spelling — `release.yml` uses `secrets.GH_TOKEN || secrets.GITHUB_TOKEN`)
@@ -23,60 +24,29 @@ semantic-release must push a `chore(release): … [skip ci]` commit **and** a ve
 
 7. **Ruleset bypass (required if push still fails):**
    - Repo → **Settings** → **Rules** → **Rulesets** → open the `main` ruleset
-   - **Bypass list** → add the **GitHub user** that owns the PAT (or a dedicated `release-bot` machine user)
-   - Ensure bypass allows **push** (and signed commits if your ruleset requires commit signing — the bypass actor must sign or the rule must exempt bypassed actors)
+   - **Bypass list** → add the **GitHub user** that owns the PAT
+   - Ensure bypass allows **push**
 
-8. Trigger: merge any `feat:` / `fix:` commit to `main`, or re-run the **Release** workflow manually.
+8. Trigger: **Actions → Release → Run workflow** with `approveRelease=RELEASE` on `main`.
 
 ## Option B — Fine-grained PAT (GitHub recommended)
 
-1. GitHub → **Settings** → **Developer settings** → **Fine-grained personal access tokens** → **Generate new token**.
-2. **Resource owner:** `qnbs`
-3. **Repository access:** **Only select repositories** → `Nexus-HEMS-Dash`
-4. **Permissions:**
-
-   | Permission | Access | Why |
-   |------------|--------|-----|
-   | **Contents** | Read and write | Push release commit + tag |
-   | **Metadata** | Read-only | Required baseline |
-   | **Pull requests** | Read and write | `@semantic-release/github` release notes |
-   | **Issues** | Read and write | GitHub release / issue linkage |
-   | **Workflows** | Read-only | Sufficient for semantic-release (no workflow edits) |
-
-5. Save as repository secret **`GH_TOKEN`** (same as Option A).
-6. Add the token owner to the **ruleset bypass list** (same as step 7 above).
+Same as Option A in ADR-015; save as repository secret **`GH_TOKEN`**.
 
 ## Option C — Ruleset bypass for `github-actions[bot]` (no PAT)
 
-If you prefer not to store a PAT:
-
-1. Repo → **Settings** → **Rules** → **Rulesets** → `main`
-2. **Bypass list** → add **`github-actions[bot]`** with push permission
-3. Ensure required status checks still run on normal PRs (bypass only applies to the bot actor)
-
-This can work when the ruleset allows the default `GITHUB_TOKEN` for trusted actors. If pushes still fail, use Option A/B.
+Add **`github-actions[bot]`** to the ruleset bypass list with push permission.
 
 ## Verify
 
-After configuring:
-
 ```bash
-GH_PAGER=cat PAGER=cat gh run list --workflow=release.yml --branch main --limit 3
-GH_PAGER=cat PAGER=cat gh run view <run-id> --log | grep -E 'Released|semantic-release|failed to push'
+GH_PAGER=cat PAGER=cat gh workflow run release.yml --ref main -f approveRelease=RELEASE
+GH_PAGER=cat PAGER=cat gh run list --workflow=release.yml --limit 3
 git fetch --tags origin && git tag --sort=-creatordate | head -3
 ```
-
-Success indicators:
-
-- Job summary: `✅ Released v1.7.0` (or next version)
-- New annotated tag `v1.7.x` on `main`
-- `CHANGELOG.md` on `main` with `[Unreleased]` emptied and new version section
-- GitHub **Releases** page shows generated notes
-- Downstream: `tauri-build.yml` + `container-publish.yml` trigger on the new release/tag
 
 ## Security notes
 
 - Never commit the PAT to the repo or log it in CI output.
 - Rotate on expiry; revoke immediately if leaked.
-- Use a dedicated machine user (`release-bot`) if the maintainer account should not bypass rulesets personally.
 - `GH_TOKEN` is only consumed by `release.yml` — other workflows continue using `GITHUB_TOKEN`.

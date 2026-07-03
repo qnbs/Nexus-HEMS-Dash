@@ -1,10 +1,17 @@
 name: Release
 
+# Manual-only: semantic-release is not triggered on push to main.
+# Cut releases via Actions → Release → Run workflow (approveRelease=RELEASE).
+# See docs/adr/ADR-015-release-automation.md and docs/Manual-Workflow-Triggers.md.
 on:
-  push:
-    branches: [main]
+  workflow_dispatch:
+    inputs:
+      approveRelease:
+        description: 'Type RELEASE to run semantic-release (bump, CHANGELOG, tag, GitHub Release)'
+        required: true
+        default: 'NO'
 
-# Read-only default; release jobs grant write scopes explicitly.
+# Read-only default; release job grants write scopes explicitly.
 permissions: read-all
 
 env:
@@ -16,12 +23,12 @@ concurrency:
 
 jobs:
   release:
+    if: github.event.inputs.approveRelease == 'RELEASE'
     runs-on: ubuntu-latest
     permissions:
       contents: write
       issues: write
       pull-requests: write
-    if: "!contains(github.event.head_commit.message, '[skip ci]')"
     timeout-minutes: 15
     outputs:
       new_release_published: ${{ steps.semantic.outputs.new_release_published }}
@@ -37,7 +44,7 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-          # GH_TOKEN (PAT) needed to push to protected branches
+          # GH_TOKEN (PAT) needed to push to protected branches when cutting a release.
           token: ${{ secrets.GH_TOKEN || secrets.GITHUB_TOKEN }}
 
       - name: Setup Node.js and pnpm
@@ -57,10 +64,6 @@ jobs:
           GIT_COMMITTER_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
         run: pnpm release
 
-      # Honest reporting: semantic-release runs with continue-on-error so a failed
-      # push to the protected main branch does not hard-fail the workflow, but the
-      # outcome must not read as a successful release. Surface the real status.
-      # See docs/adr/ADR-015-release-automation.md.
       - name: Release status summary
         if: always()
         run: |
@@ -73,76 +76,8 @@ jobs:
               echo ""
               echo "semantic-release failed — most likely it cannot push the release commit/tag to the protected \`main\` branch."
               echo "Fix: add a \`GH_TOKEN\` PAT secret (repo scope) or a ruleset bypass for \`github-actions[bot]\`."
-              echo "Until then, cut releases manually per **docs/adr/ADR-015-release-automation.md**."
+              echo "Fallback: cut releases manually per **docs/adr/ADR-015-release-automation.md**."
             } >> "$GITHUB_STEP_SUMMARY"
           else
             echo "ℹ️ No release necessary (no release-worthy commits since the last tag)." >> "$GITHUB_STEP_SUMMARY"
           fi
-
-  # ─── Tauri Signed Desktop Binaries ─────────────────────────────
-  tauri-release:
-    needs: release
-    if: needs.release.outputs.new_release_published == 'true'
-    permissions:
-      contents: write
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - platform: ubuntu-22.04
-            target: linux
-          - platform: macos-latest
-            target: macos
-          - platform: windows-latest
-            target: windows
-    runs-on: ${{ matrix.platform }}
-    steps:
-      - name: Harden the runner (Linux only)
-        if: runner.os == 'Linux'
-        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
-        with:
-          egress-policy: audit
-
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-
-      - name: Setup Node.js and pnpm
-        uses: ./.github/actions/setup-node-pnpm
-
-      - name: Install Rust stable
-        uses: dtolnay/rust-toolchain@631a55b12751854ce901bb631d5902ceb48146f7 # stable
-        with:
-          toolchain: stable
-
-      - name: Rust cache
-        uses: swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
-        with:
-          workspaces: apps/web/src-tauri
-
-      - name: Install Linux dependencies
-        if: matrix.target == 'linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            libwebkit2gtk-4.1-dev \
-            libappindicator3-dev \
-            librsvg2-dev \
-            patchelf
-
-      - name: Build Tauri app (signed)
-        uses: tauri-apps/tauri-action@84b9d35b5fc46c1e45415bdb6144030364f7ebc5 # action-v0.6.2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # macOS code signing
-          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
-          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
-          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-        with:
-          projectPath: apps/web/src-tauri
-          tagName: v${{ needs.release.outputs.new_release_version }}
-          releaseName: 'Nexus HEMS Dashboard v${{ needs.release.outputs.new_release_version }}'
-          releaseBody: 'Desktop builds for Nexus HEMS Dashboard v${{ needs.release.outputs.new_release_version }}. Binaries for Windows, macOS, and Linux.'
-          releaseDraft: false
-          prerelease: false

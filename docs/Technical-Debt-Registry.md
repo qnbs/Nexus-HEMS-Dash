@@ -1,10 +1,10 @@
 # Technical Debt Registry — Nexus-HEMS-Dash
 
-**Last audited:** 2026-07-03 (version-sync review); delta — see `docs/Audit-Report-2026-07-02.md`
-**Version at audit:** 1.7.0 shipped (`main` after v1.7.0 release chain, PRs #227–#232)
-**Last updated:** 2026-07-03 (version-sync to v1.7.0; prior delta: HIGH-17, MED-18/19/20)
-**Release line:** v1.7.0 shipped; v1.8.0 scope in flight (AUD-02 CSP `unsafe-inline` reduction)
-**Auditor:** Cursor Cloud Agent (2026-06-29 full audit — `docs/Audit-Report-2026-06-29.md`; truth-sync #129); Claude Code (2026-07-02 delta, 2026-07-03 version-sync)
+**Last audited:** 2026-07-03 (full status review — `docs/Audit-Report-2026-07-03.md`)
+**Version at audit:** 1.9.0 shipped (`main`, PRs #227–#235)
+**Last updated:** 2026-07-03 (manual release workflow, Tauri CI, LOW-02, version sync)
+**Release line:** v1.9.0 shipped; release dispatch manual-only (ADR-015 amended)
+**Auditor:** Cursor Cloud Agent (2026-06-29 full audit; 2026-07-02 delta; 2026-07-03 full review)
 
 This file is the canonical issue tracker for known technical debt, security gaps, incomplete implementations, and quality issues. It is **not** a substitute for GitHub Issues — use it for context, rationale, and multi-sprint planning.
 
@@ -443,12 +443,10 @@ Added `/\.local$/` to `ALLOWED_HOSTNAME_PATTERNS`. Security note in comment: mDN
 
 ### LOW-02 — OpenEMS Writable Property Allowlist Hardcoded
 
-**File:** `apps/web/src/core/adapters/OpenEMSAdapter.ts:491`
-**Status:** ⏳ Backlog
+**File:** `apps/web/src/core/adapters/OpenEMSAdapter.ts`, `EnergyAdapter.ts`
+**Status:** ✅ Fixed in v1.9.0 prep
 
-Custom OpenEMS installations cannot add new writable properties without forking the adapter.
-
-**Fix:** Allow users to provide an `additionalWritableProperties` array in adapter config.
+`AdapterConnectionConfig.additionalWritableProperties` merges user-supplied property names per component ID into the built-in allowlist (or enables writes on custom components with no built-in rule).
 
 ---
 
