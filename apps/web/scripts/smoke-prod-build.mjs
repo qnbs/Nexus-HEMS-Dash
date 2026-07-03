@@ -66,6 +66,18 @@ async function main() {
       );
     }
 
+    const styleSrc = indexHtml.match(/style-src[^;]*/)?.[0] ?? '';
+    if (/unsafe-inline/.test(styleSrc)) {
+      throw new Error(
+        `Production index.html CSP style-src must not contain unsafe-inline (AUD-02):\n${styleSrc}`,
+      );
+    }
+    if (!/'nonce-/.test(styleSrc)) {
+      throw new Error(
+        `Production index.html CSP style-src must include a build nonce (AUD-02):\n${styleSrc}`,
+      );
+    }
+
     // vite preview respects the production base path baked into the build.
     // Bind explicitly to the IPv4 host we poll — vite's default `localhost`
     // can resolve to ::1 on CI runners, which an IPv4 fetch never reaches.
