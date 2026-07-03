@@ -336,6 +336,27 @@ export const EEBUSPairResponseSchema = z.object({
 
 export type EEBUSPairResponse = z.infer<typeof EEBUSPairResponseSchema>;
 
+/** POST /api/ocpp/proxy-session — mTLS credentials for browser SP3 proxy */
+export const OcppProxySessionRequestSchema = z.object({
+  host: z.string().trim().min(1).max(253),
+  port: z.number().int().min(1).max(65535),
+  stationId: z.string().trim().min(1).max(128),
+  clientCert: z.string().trim().min(1).max(32_000),
+  clientKey: z.string().trim().min(1).max(32_000),
+  caCert: z.string().trim().max(32_000).optional(),
+  revocationCheck: z.enum(['off', 'crl', 'ocsp']).optional(),
+});
+
+export type OcppProxySessionRequest = z.infer<typeof OcppProxySessionRequestSchema>;
+
+/** Response body for POST /api/ocpp/proxy-session */
+export const OcppProxySessionResponseSchema = z.object({
+  sessionId: z.string().uuid(),
+  expiresIn: z.number().int().positive(),
+});
+
+export type OcppProxySessionResponse = z.infer<typeof OcppProxySessionResponseSchema>;
+
 /** Response body for GET /api/eebus/pair/status/:ski */
 export const EEBUSPairStatusSchema = z.object({
   status: z.enum([

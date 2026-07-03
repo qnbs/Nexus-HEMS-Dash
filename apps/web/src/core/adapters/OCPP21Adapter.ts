@@ -213,11 +213,41 @@ export class OCPP21Adapter extends BaseAdapter {
       return;
     }
 
-    if (prep.warnings?.length) {
+    let connectUrl = prep.url;
+    const useBrowserProxy = this.securityProfile === 3 && typeof window !== 'undefined';
+
+    if (useBrowserProxy) {
+      const { createOcppProxySession, buildOcppProxyWebSocketUrl } = await import(
+        '../../lib/ocpp-proxy'
+      );
+      const session = await createOcppProxySession({
+        host: merged.host,
+        port: merged.port,
+        stationId: this.stationId,
+        clientCert: merged.clientCert ?? '',
+        clientKey: merged.clientKey ?? '',
+        ...(merged.caCert !== undefined ? { caCert: merged.caCert } : {}),
+        revocationCheck: this.revocationCheck,
+      });
+      if (!session.ok) {
+        const msg =
+          session.error === 'no_auth'
+            ? 'JWT required — exchange API key in Settings → Security before connecting'
+            : 'Failed to create OCPP proxy session';
+        this.setStatus('error', msg);
+        return;
+      }
+      const proxyUrl = await buildOcppProxyWebSocketUrl(session.sessionId);
+      if (!proxyUrl.ok) {
+        this.setStatus('error', 'Failed to obtain WebSocket ticket for OCPP proxy');
+        return;
+      }
+      connectUrl = proxyUrl.url;
+    } else if (prep.warnings?.length) {
       this.log.warn(prep.warnings.join(' '), { securityProfile: this.securityProfile });
     }
 
-    const ws = new WebSocket(prep.url, prep.protocols);
+    const ws = new WebSocket(connectUrl, prep.protocols);
 
     ws.onopen = () => {
       this.resetRetryDelay();

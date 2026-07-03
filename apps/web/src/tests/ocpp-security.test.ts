@@ -94,7 +94,7 @@ describe('ocpp-security', () => {
       expect(prep.ok).toBe(true);
       if (prep.ok) {
         expect(prep.url).toBe('wss://evse.local:9000/ocpp/CP001');
-        expect(prep.warnings?.[0]).toMatch(/Browser WebSocket/i);
+        expect(prep.warnings?.[0]).toMatch(/API proxy/i);
       }
     });
   });

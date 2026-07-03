@@ -17,7 +17,7 @@ The project is in **strong operational shape**: CI green, GitHub Pages deploy he
 3. Tauri desktop CI blocked by missing icons + mobile-only Rust plugins on desktop → **fixed**.
 4. Documentation drift (`FEATURE_STATUS`, `CLAUDE.md`, `README`, `CHANGELOG` structure) → **truth-synced**.
 
-**Remaining intentional backlog:** OCPP SP3 mTLS (HIGH-12), CSP `unsafe-inline` reduction (AUD-02), adapter worker activation (MED-12), multi-user RBAC (ADR-009), Storybook coverage (LOW-08).
+**Remaining intentional backlog:** CSP `unsafe-inline` reduction (AUD-02), adapter worker activation (MED-12), multi-user RBAC (ADR-009), Storybook coverage (LOW-08).
 
 ---
 
@@ -54,7 +54,7 @@ The project is in **strong operational shape**: CI green, GitHub Pages deploy he
 
 | ID | Severity | Item | Next step |
 |----|----------|------|-----------|
-| HIGH-12 | HIGH | OCPP SP3 mTLS | API proxy or Tauri desktop path |
+| HIGH-12 | HIGH | OCPP SP3 mTLS | ✅ API proxy `/ws/ocpp` + `POST /api/ocpp/proxy-session` |
 | AUD-02 | MED | CSP `style-src unsafe-inline` | v1.8.0+ phased hash/nonce plan |
 | MED-12 | MED | Adapter worker not activated | Byte-for-byte parity harness before live switch |
 | MED-01 | MED | API coverage toward 70%+ | Continue ratcheting as tests land |

@@ -16,6 +16,7 @@ import { setMetric, updateServerMetrics, wsMessageCount } from '../middleware/me
 import type { LiveEnergyAggregator } from '../services/LiveEnergyAggregator.js';
 import { wsTicketStore } from '../services/ws-ticket-store.js';
 import { handleEebusProxyConnection, isEebusProxyPath } from './eebus-proxy.ws.js';
+import { handleOcppProxyConnection, isOcppProxyPath } from './ocpp-proxy.ws.js';
 import { getRequiredScopeForCommand, isScopeAuthorized } from './ws-scope.js';
 
 // Zombie connection detection: ping every 30 s, terminate if no pong received
@@ -163,6 +164,11 @@ export function setupWebSocket(wss: WebSocketServer, liveAggregator?: LiveEnergy
   wss.on('connection', async (ws: WebSocket, req: IncomingMessage) => {
     if (isEebusProxyPath(req)) {
       await handleEebusProxyConnection(ws, req, requireWSAuth);
+      return;
+    }
+
+    if (isOcppProxyPath(req)) {
+      await handleOcppProxyConnection(ws, req, requireWSAuth);
       return;
     }
 
