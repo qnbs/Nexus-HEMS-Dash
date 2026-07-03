@@ -22,6 +22,9 @@ env:
 
 jobs:
   # Registered key: security-full.yml:codeql (/language:javascript-typescript)
+  # SINGLE CodeQL source (ADR-027) — the former duplicate definitions in
+  # security.yml and security-scan.yml were removed. Branch-protection rulesets
+  # must require THIS check ("CodeQL"), not the deleted "CodeQL Analysis" ones.
   # ════════════════════════════════════════════════════════════════
   #  1. CodeQL — Static Application Security Testing (GitHub)
   # ════════════════════════════════════════════════════════════════
@@ -54,7 +57,6 @@ jobs:
         with:
           category: '/language:javascript-typescript'
 
-  # Also registered: security.yml:codeql + security-scan.yml:codeql
   # ════════════════════════════════════════════════════════════════
   #  2. Gitleaks — Secret Detection
   # ════════════════════════════════════════════════════════════════
@@ -77,6 +79,8 @@ jobs:
   # ════════════════════════════════════════════════════════════════
   #  3. Semgrep — SAST Rules
   # ════════════════════════════════════════════════════════════════
+  # SINGLE Semgrep source (ADR-027). The former "Semgrep SAST" job in
+  # security-scan.yml was removed; require this check ("Semgrep OSS") in rulesets.
   semgrep:
     name: Semgrep OSS
     runs-on: ubuntu-latest
@@ -190,27 +194,57 @@ jobs:
         continue-on-error: true
 
   # ════════════════════════════════════════════════════════════════
-  #  7. OpenSSF Scorecard — Supply Chain Security Score
+  #  7. Deep Scans (scheduled / manual only) — license + full dev-dep audit
   # ════════════════════════════════════════════════════════════════
-  scorecard:
-    name: 'OpenSSF Scorecard'
+  # OpenSSF Scorecard runs in the dedicated scorecard.yml (single source — ADR-027).
+  # These two jobs were consolidated here from the now-deleted security-scan.yml.
+  license-check:
+    name: License Compliance
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
-    # Scorecard only works on default branch push or schedule
-    if: github.event_name != 'pull_request'
+    timeout-minutes: 15
     permissions:
-      id-token: write
+      contents: read
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          persist-credentials: false
 
-      - name: Run OpenSSF Scorecard
-        uses: ossf/scorecard-action@4eaacf0543bb3f2c246792bd56e8cdeffafb205a # v2.4.3
+      - name: Setup Node.js and pnpm
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: Check production licenses (block on GPL/AGPL)
+        run: npx license-checker --production --failOn 'GPL-3.0;AGPL-3.0' --summary
         continue-on-error: true
-        with:
-          results_file: scorecard-results.sarif
-          results_format: sarif
-          publish_results: true
+
+      - name: License summary
+        run: |
+          echo "## License Compliance Summary" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          npx license-checker --production --summary 2>&1 | tail -50 >> "$GITHUB_STEP_SUMMARY" || true
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+  audit-full:
+    name: Full Dependency Audit (incl. dev-deps)
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Setup Node.js and pnpm
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: Audit ALL deps (including dev-deps)
+        run: |
+          echo "## Full pnpm Audit (incl. dev-deps)" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          pnpm audit --audit-level=high 2>&1 | tail -40 >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "_Production-deps gate runs on every push in the dependency-check job above._" >> "$GITHUB_STEP_SUMMARY"
 
   # ════════════════════════════════════════════════════════════════
   #  8. Branch Protection Reminder — Verify repo hardening
