@@ -24,7 +24,11 @@ import { useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { create } from 'zustand';
 import { useShallow } from 'zustand/react/shallow';
-import { canConnectHardwareAdapter, isBuiltinAdapterEnabledByDefault } from '../lib/adapter-mode';
+import {
+  canConnectHardwareAdapter,
+  isAdapterWorkerEnabled,
+  isBuiltinAdapterEnabledByDefault,
+} from '../lib/adapter-mode';
 import { persistSnapshot } from '../lib/db';
 import { logger } from '../lib/logger';
 import { queryClient } from '../lib/query-client';
@@ -38,8 +42,10 @@ import type {
   EnergyAdapter,
   UnifiedEnergyModel,
 } from './adapters/EnergyAdapter';
+import { ModbusSunSpecAdapter } from './adapters/ModbusSunSpecAdapter';
 import type { CircuitState } from './circuit-breaker';
 import { mapServerEnergyDataToUnified } from './server-energy-mapping';
+import { useAdapterWorker } from './useAdapterWorker';
 
 // ─── Adapter registry ────────────────────────────────────────────────
 
@@ -445,16 +451,27 @@ export function sendAdapterCommand(command: AdapterCommand): void {
  * Uses getState() for actions to avoid full-store subscription.
  */
 export function useAdapterBridge() {
+  const { startSunSpecPolling, stopPolling } = useAdapterWorker();
+  const workerAdapterIdsRef = useRef<AdapterId[]>([]);
+
   // Zustand actions are stable — no hook subscriptions needed.
   // Retrieve via getState() inside callbacks to avoid stale closures.
   useEffect(() => {
     const { adapters, mergeData, setAdapterStatus } = useEnergyStoreBase.getState();
     const entries = Object.entries(adapters) as [AdapterId, AdapterEntry][];
+    const workerEnabled = isAdapterWorkerEnabled();
 
     for (const [id, entry] of entries) {
       if (!canConnectHardwareAdapter(entry.enabled)) continue;
 
       const baseAdapter = entry.adapter as BaseAdapter;
+      const sunspecAdapter =
+        workerEnabled && entry.adapter instanceof ModbusSunSpecAdapter ? entry.adapter : null;
+
+      if (sunspecAdapter) {
+        sunspecAdapter.setDelegatePollingToWorker(true);
+        workerAdapterIdsRef.current.push(id);
+      }
 
       // Wire circuit breaker state changes into the store and surface toasts
       baseAdapter.circuitBreaker.onStateChange((circuitState) => {
@@ -497,6 +514,12 @@ export function useAdapterBridge() {
         useAppStore.getState().setConnected(anyConn);
       });
 
+      if (sunspecAdapter) {
+        setAdapterStatus(id, 'connecting');
+        startSunSpecPolling(id, sunspecAdapter.getWorkerPollConfig());
+        continue;
+      }
+
       // Connect (only if circuit breaker allows)
       if (baseAdapter.circuitBreaker.canExecute()) {
         void entry.adapter.connect();
@@ -504,11 +527,15 @@ export function useAdapterBridge() {
     }
 
     return () => {
+      for (const workerId of workerAdapterIdsRef.current) {
+        stopPolling(workerId);
+      }
+      workerAdapterIdsRef.current = [];
       for (const [, entry] of entries) {
         entry.adapter.destroy();
       }
     };
-  }, []); // Only on mount — adapters are stable references, callbacks via refs
+  }, [startSunSpecPolling, stopPolling]); // Only on mount — adapters are stable references, callbacks via refs
 }
 
 // ─── Legacy bridge helpers ───────────────────────────────────────────

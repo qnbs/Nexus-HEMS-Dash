@@ -1,16 +1,35 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { ModbusSunSpecAdapter } from '../core/adapters/ModbusSunSpecAdapter';
 import { useAdapterWorker } from '../core/useAdapterWorker';
 
 const mocks = vi.hoisted(() => ({
   mergeData: vi.fn(),
+  setAdapterStatus: vi.fn(),
+  setConnected: vi.fn(),
+  recordSuccess: vi.fn(),
+  recordFailure: vi.fn(),
   recordAdapterError: vi.fn(),
   recordAdapterStatus: vi.fn(),
 }));
 
+let testAdapter: ModbusSunSpecAdapter;
+
 vi.mock('../core/useEnergyStore', () => ({
   useEnergyStoreBase: {
-    getState: () => ({ mergeData: mocks.mergeData }),
+    getState: () => ({
+      mergeData: mocks.mergeData,
+      setAdapterStatus: mocks.setAdapterStatus,
+      get adapters() {
+        return { 'modbus-sunspec': { adapter: testAdapter } };
+      },
+    }),
+  },
+}));
+
+vi.mock('../store', () => ({
+  useAppStore: {
+    getState: () => ({ setConnected: mocks.setConnected }),
   },
 }));
 
@@ -35,7 +54,14 @@ class MockWorker {
 describe('useAdapterWorker', () => {
   beforeEach(() => {
     MockWorker.instances = [];
+    testAdapter = new ModbusSunSpecAdapter({ host: '127.0.0.1' });
+    vi.spyOn(testAdapter.circuitBreaker, 'recordSuccess').mockImplementation(mocks.recordSuccess);
+    vi.spyOn(testAdapter.circuitBreaker, 'recordFailure').mockImplementation(mocks.recordFailure);
     mocks.mergeData.mockReset();
+    mocks.setAdapterStatus.mockReset();
+    mocks.setConnected.mockReset();
+    mocks.recordSuccess.mockReset();
+    mocks.recordFailure.mockReset();
     mocks.recordAdapterError.mockReset();
     mocks.recordAdapterStatus.mockReset();
     vi.stubGlobal('Worker', MockWorker as unknown as typeof Worker);
@@ -43,6 +69,7 @@ describe('useAdapterWorker', () => {
 
   afterEach(() => {
     vi.unstubAllGlobals();
+    vi.restoreAllMocks();
   });
 
   it('starts polling with normalized targets and routes worker messages to the store', () => {
@@ -83,7 +110,11 @@ describe('useAdapterWorker', () => {
     });
 
     expect(mocks.mergeData).toHaveBeenCalledWith('modbus-sunspec', { totalPowerW: 1200 });
+    expect(mocks.setAdapterStatus).toHaveBeenCalledWith('modbus-sunspec', 'connected');
+    expect(mocks.recordSuccess).toHaveBeenCalled();
     expect(mocks.recordAdapterError).toHaveBeenCalledWith('modbus-sunspec', 'HTTP 500');
+    expect(mocks.recordFailure).toHaveBeenCalled();
+    expect(mocks.setAdapterStatus).toHaveBeenCalledWith('modbus-sunspec', 'error', 'HTTP 500');
     expect(mocks.recordAdapterStatus).toHaveBeenCalledWith(
       'modbus-sunspec',
       'modbus-sunspec',

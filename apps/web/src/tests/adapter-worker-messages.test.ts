@@ -141,6 +141,50 @@ describe('adapter-worker message handler', () => {
     });
   });
 
+  it('polls SunSpec models and emits merged unified data', async () => {
+    vi.mocked(fetch).mockImplementation(async (input) => {
+      const url = String(input);
+      if (url.includes('model=inverter')) {
+        return {
+          ok: true,
+          json: async () => ({ W: 100, W_SF: 1, WH: 5000, WH_SF: 0 }),
+        } as Response;
+      }
+      if (url.includes('model=battery')) {
+        return {
+          ok: true,
+          json: async () => ({ W: -200, SoC: 80, W_SF: 0, SoC_SF: 0 }),
+        } as Response;
+      }
+      if (url.includes('model=meter')) {
+        return {
+          ok: true,
+          json: async () => ({ W: 1500, W_SF: 0, TotWhImp: 12_000, TotWh_SF: -1 }),
+        } as Response;
+      }
+      return { ok: false, json: async () => ({}) } as Response;
+    });
+
+    dispatch({
+      type: 'sunspecPoll',
+      adapterId: 'modbus-sunspec',
+      target: { protocol: 'http', host: '192.168.1.50', path: '/api/modbus/sunspec' },
+      intervalMs: 60_000,
+    });
+
+    await vi.waitFor(() => {
+      expect(posted).toContainEqual({
+        type: 'data',
+        adapterId: 'modbus-sunspec',
+        result: expect.objectContaining({
+          pv: expect.objectContaining({ totalPowerW: 1000 }),
+          battery: expect.objectContaining({ socPercent: 80 }),
+          grid: expect.objectContaining({ energyImportKWh: 1.2 }),
+        }),
+      });
+    });
+  });
+
   it('clears all pollers on stopAll', async () => {
     vi.useFakeTimers();
     vi.mocked(fetch).mockResolvedValue({

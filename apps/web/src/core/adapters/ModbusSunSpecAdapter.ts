@@ -24,19 +24,12 @@
  *   POST /api/modbus/write              →  Write register { register, value }
  */
 
-import {
-  parseSunSpecBatteryScalars,
-  parseSunSpecInverterScalars,
-  parseSunSpecMeterScalars,
-} from '../sunspec-transforms';
+import { mergeSunSpecRegistersToUnified } from '../sunspec-transforms';
 import { BaseAdapter } from './BaseAdapter';
 import type {
   AdapterCapability,
   AdapterCommand,
   AdapterConnectionConfig,
-  BatteryData,
-  GridData,
-  PVData,
   UnifiedEnergyModel,
 } from './EnergyAdapter';
 
@@ -152,6 +145,7 @@ export class ModbusSunSpecAdapter extends BaseAdapter {
   private pollTimer: ReturnType<typeof setInterval> | null = null;
   private consecutiveErrors = 0;
   private isPollInFlight = false;
+  private delegatePollingToWorker = false;
   private readonly baseUrl: string;
 
   /** Discovered device info (populated after first successful connection) */
@@ -183,6 +177,34 @@ export class ModbusSunSpecAdapter extends BaseAdapter {
 
     const proto = this.config.tls ? 'https' : 'http';
     this.baseUrl = `${proto}://${this.config.host}:${this.config.port}`;
+  }
+
+  /** MED-12: when true, `useAdapterBridge` polls via Web Worker instead of main thread. */
+  setDelegatePollingToWorker(delegate: boolean): void {
+    this.delegatePollingToWorker = delegate;
+  }
+
+  /** Poll target for the adapter worker (REST bridge SunSpec gateway). */
+  getWorkerPollConfig(): {
+    protocol: 'http' | 'https';
+    host: string;
+    port?: number;
+    path: string;
+    pollIntervalMs: number;
+    headers?: Record<string, string>;
+  } {
+    const headers: Record<string, string> = { Accept: 'application/json' };
+    if (this.config.authToken) {
+      headers.Authorization = `Bearer ${this.config.authToken}`;
+    }
+    return {
+      protocol: this.config.tls ? 'https' : 'http',
+      host: this.config.host,
+      port: this.config.port,
+      path: '/api/modbus/sunspec',
+      pollIntervalMs: this.config.pollIntervalMs ?? DEFAULT_POLL_INTERVAL_MS,
+      ...(Object.keys(headers).length > 0 ? { headers } : {}),
+    };
   }
 
   /**
@@ -331,16 +353,11 @@ export class ModbusSunSpecAdapter extends BaseAdapter {
       }
     });
 
-    const pv = this.parseInverter(inverterRegs);
-    const bat = this.parseBattery(batteryRegs);
-    const grid = this.parseMeter(meterRegs);
-
-    const model: Partial<UnifiedEnergyModel> = {
-      timestamp: Date.now(),
-      ...(pv && { pv }),
-      ...(bat && { battery: bat }),
-      ...(grid && { grid }),
-    };
+    const model = mergeSunSpecRegistersToUnified({
+      inverter: inverterRegs as unknown as Record<string, unknown> | null,
+      battery: batteryRegs as unknown as Record<string, unknown> | null,
+      meter: meterRegs as unknown as Record<string, unknown> | null,
+    });
 
     this.snapshot = model;
     return model;
@@ -381,6 +398,7 @@ export class ModbusSunSpecAdapter extends BaseAdapter {
   // ─── Internal ─────────────────────────────────────────────────────
 
   private startPolling(): void {
+    if (this.delegatePollingToWorker) return;
     this.stopPolling();
     const interval = this.config.pollIntervalMs ?? DEFAULT_POLL_INTERVAL_MS;
 
@@ -468,53 +486,5 @@ export class ModbusSunSpecAdapter extends BaseAdapter {
       default:
         return null;
     }
-  }
-
-  // ─── SunSpec parsers (with scale factor support) ──────────────────
-
-  private parseInverter(regs: SunSpecInverterRegs | null): PVData | undefined {
-    if (!regs) return undefined;
-    const core = parseSunSpecInverterScalars(regs as unknown as Record<string, unknown>);
-    return {
-      totalPowerW: core.totalPowerW,
-      yieldTodayKWh: core.yieldTodayKWh,
-      strings: regs.strings?.map((s, i) => ({
-        id: i + 1,
-        powerW: s.DCW,
-        voltageV: s.DCV,
-        currentA: s.DCA,
-      })),
-    };
-  }
-
-  private parseBattery(regs: SunSpecBatteryRegs | null): BatteryData | undefined {
-    if (!regs) return undefined;
-    const core = parseSunSpecBatteryScalars(regs as unknown as Record<string, unknown>);
-    return {
-      powerW: core.powerW,
-      socPercent: core.socPercent,
-      voltageV: core.voltageV ?? regs.V,
-      currentA: core.currentA ?? regs.A,
-      temperatureC: core.temperatureC,
-      cycleCount: core.cycleCount,
-      stateOfHealthPercent: core.stateOfHealthPercent,
-    };
-  }
-
-  private parseMeter(regs: SunSpecMeterRegs | null): GridData | undefined {
-    if (!regs) return undefined;
-    const core = parseSunSpecMeterScalars(regs as unknown as Record<string, unknown>);
-    return {
-      powerW: core.powerW,
-      voltageV: core.voltageV ?? regs.PhV,
-      frequencyHz: core.frequencyHz,
-      energyImportKWh: core.energyImportKWh,
-      energyExportKWh: core.energyExportKWh,
-      phases: regs.phases?.map((p) => ({
-        voltageV: p.PhV,
-        currentA: p.A,
-        powerW: p.W,
-      })),
-    };
   }
 }

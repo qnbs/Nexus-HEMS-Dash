@@ -16,8 +16,10 @@
 
 import { useEffect, useRef } from 'react';
 import { metricsCollector } from '../lib/metrics';
+import { useAppStore } from '../store';
 import type { PollTarget } from './adapter-worker';
-import { useEnergyStoreBase } from './useEnergyStore';
+import { BaseAdapter } from './adapters/BaseAdapter';
+import { type AdapterId, useEnergyStoreBase } from './useEnergyStore';
 
 interface WorkerDataMessage {
   type: 'data';
@@ -38,6 +40,11 @@ interface WorkerLatencyMessage {
 }
 
 type WorkerOutMessage = WorkerDataMessage | WorkerErrorMessage | WorkerLatencyMessage;
+
+function circuitBreakerFor(adapterId: AdapterId) {
+  const adapter = useEnergyStoreBase.getState().adapters[adapterId]?.adapter;
+  return adapter instanceof BaseAdapter ? adapter.circuitBreaker : undefined;
+}
 
 /**
  * Normalize a poll target into a structured {@link PollTarget}, or `null` if it is
@@ -77,15 +84,26 @@ export function useAdapterWorker() {
       const msg = event.data;
 
       switch (msg.type) {
-        case 'data':
-          // Route data through the store merge pipeline
+        case 'data': {
           useEnergyStoreBase
             .getState()
             .mergeData(msg.adapterId, msg.result as Record<string, unknown>);
+          circuitBreakerFor(msg.adapterId as AdapterId)?.recordSuccess();
+          useEnergyStoreBase.getState().setAdapterStatus(msg.adapterId as AdapterId, 'connected');
+          const anyConn = Object.values(useEnergyStoreBase.getState().adapters).some(
+            (a) => a.enabled && a.status === 'connected',
+          );
+          useAppStore.getState().setConnected(anyConn);
           break;
-        case 'error':
+        }
+        case 'error': {
           metricsCollector.recordAdapterError(msg.adapterId, msg.error);
+          circuitBreakerFor(msg.adapterId as AdapterId)?.recordFailure();
+          useEnergyStoreBase
+            .getState()
+            .setAdapterStatus(msg.adapterId as AdapterId, 'error', msg.error);
           break;
+        }
         case 'latency':
           metricsCollector.recordAdapterStatus(msg.adapterId, msg.adapterId, true, msg.ms);
           break;
@@ -98,6 +116,41 @@ export function useAdapterWorker() {
       workerRef.current = null;
     };
   }, []);
+
+  const startSunSpecPolling = (
+    adapterId: string,
+    config: {
+      protocol: 'http' | 'https';
+      host: string;
+      port?: number;
+      path?: string;
+      headers?: Record<string, string>;
+      pollIntervalMs?: number;
+    },
+  ): void => {
+    const target: PollTarget = {
+      protocol: config.protocol,
+      host: config.host,
+      port: config.port,
+      path: config.path ?? '/api/modbus/sunspec',
+    };
+    const normalizedTarget = normalizePollTarget(target);
+    if (!normalizedTarget) {
+      workerRef.current?.postMessage({ type: 'stop', adapterId });
+      if (import.meta.env.DEV) {
+        console.warn('[useAdapterWorker] Ignored invalid SunSpec poll target for', adapterId);
+      }
+      return;
+    }
+
+    workerRef.current?.postMessage({
+      type: 'sunspecPoll',
+      adapterId,
+      target: normalizedTarget,
+      headers: config.headers,
+      intervalMs: config.pollIntervalMs,
+    });
+  };
 
   const startPolling = (
     adapterId: string,
@@ -139,5 +192,5 @@ export function useAdapterWorker() {
     workerRef.current?.postMessage({ type: 'stopAll' });
   };
 
-  return { startPolling, stopPolling, transform, stopAll };
+  return { startPolling, startSunSpecPolling, stopPolling, transform, stopAll };
 }
