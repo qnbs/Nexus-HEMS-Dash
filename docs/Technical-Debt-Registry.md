@@ -285,15 +285,15 @@ Changed to `process.env.JWT_SECRET_FILE ?? '/run/secrets/jwt_secret'`.
 
 ### MED-01 — Test Coverage Below Industry Standard
 
-**File:** `apps/web/vitest.config.ts:18-22`, `apps/web/coverage-baseline.json`, `apps/api/vitest.config.ts:13-17`
-**Status:** ⏳ In progress — **web PRF-03 baseline at 78/72/70/80** (measured 79.60/72.00/73.46/81.58, 2026-07-02); API staged toward 55%
+**File:** `apps/web/vitest.config.ts:22-27`, `apps/web/coverage-baseline.json`, `apps/api/vitest.config.ts:18-23`
+**Status:** ⏳ In progress — **web PRF-03 baseline at 78/72/70/80** (measured 79.60/72.00/73.46/81.58, 2026-07-02); API gate raised to 55/46/62/55
 
-Current enforced thresholds:
+Current enforced thresholds (verified against the live vitest configs, 2026-07-03):
 
-- Web vitest + baseline: statements **78%**, branches **70%**, functions **70%**, lines **80%**
-- API: statements 33%, branches 30%, functions 38%, lines 33% (measured v1.3.0 baseline, staged toward 55%)
+- Web `apps/web/vitest.config.ts`: statements **78%**, branches **72%**, functions **70%**, lines **80%**
+- API `apps/api/vitest.config.ts`: statements **55%**, branches **46%**, functions **62%**, lines **55%** (P1-05 staged raise from the v1.3.0 33% baseline; statements target 55% reached)
 
-**Fix:** Continue ratcheting API gates as backend adapter tests land; web branches stretch to 72% **done** (2026-07-02).
+**Fix:** web branches stretch to 72% **done** (2026-07-02); API gate raised from the 33/30/38/33 v1.3.0 baseline to 55/46/62/55 **done**. Higher roadmap targets tracked in `docs/Testing-Coverage-Strategy.md`.
 
 ---
 
@@ -636,7 +636,7 @@ Commands still route through the adapter on the main thread.
 **Files:** `.github/workflows/ci.yml`, `apps/api/vitest.config.ts`, `apps/api/package.json`
 **Status:** ✅ Fixed in v1.3.0 prep
 
-CI runs `pnpm --filter @nexus-hems/api test:coverage`; thresholds aligned to measured baseline (~34% lines) pending staged raise per `docs/Testing-Coverage-Strategy.md`.
+CI runs `pnpm --filter @nexus-hems/api test:coverage`; the gate has since been raised from the v1.3.0 ~34%-lines baseline to the current **55/46/62/55** (statements/branches/functions/lines) enforced in `apps/api/vitest.config.ts`, with higher targets staged in `docs/Testing-Coverage-Strategy.md`.
 
 ---
 
@@ -676,7 +676,7 @@ local UI state — no prop-drilling or shared form hook. Unit coverage:
 
 Scope table said "not fully integrated"; P3 section said "Fully Implemented". Code confirms LTTB is wired (`sampleIfNeeded` used in `HistoricalChart.tsx` + `HistoricalAnalyticsPage.tsx`).
 
-**Fix:** Scope table updated to "Implemented & integrated". Also corrected `docs/Testing-Coverage-Strategy.md`, which mis-stated the enforced API coverage thresholds as 55/45/55/55 — the actual `apps/api/vitest.config.ts` gate is 33/30/38/33.
+**Fix:** Scope table updated to "Implemented & integrated". Also corrected `docs/Testing-Coverage-Strategy.md`, which mis-stated the enforced API coverage thresholds as 55/45/55/55 — at that time (2026-06-30) the actual `apps/api/vitest.config.ts` gate was 33/30/38/33. It has since been raised to **55/46/62/55** (see MED-01).
 
 ---
 
@@ -757,6 +757,43 @@ Protocol→adapter mapping in `hardware-adapter-map.ts`.
 **Shipped backend adapters:** Modbus, MQTT, Knx, Evcc, EebusProtocol, HeatPump, OpenEMS, OCPP CSMS (+ ExecService for scripts).
 
 **Remaining:** optional `style-src-attr` tightening (AUD-02 follow-up), multi-user RBAC (ADR-009).
+
+---
+
+## July 2026 Audit Delta II — New Items (2026-07-03)
+
+Surfaced by a code-first verification pass over `main`. The safety command-path and
+backend fail-open/SSRF findings were fixed in their own PRs; the items below are
+**deferred by design** and tracked here.
+
+### SEC-11 — `NODE_ENV`-unset global auth fail-open
+**Files:** `apps/api/src/middleware/auth.ts` (`isDev = process.env.NODE_ENV !== 'production'`), `apps/api/src/middleware/security.ts`
+**Status:** ⏳ Deferred — documented; hardening pending maintainer sign-off
+
+When `NODE_ENV` is unset (not exactly `production`), `requireJWT`, `requireScope`, WS auth, and rate
+limiting all treat the process as dev and relax enforcement. Flipping the default to secure-by-default
+risks breaking dev/CI flows repo-wide, so the change is deferred. **Mitigation to add:** a loud startup
+warning when `NODE_ENV` is unset in a server context, plus an explicit `require production hardening`
+opt-in. Do not rely on the absence of `NODE_ENV` for any security property.
+
+### SEC-12 — BYOK vault passphrase stored at-rest in IndexedDB
+**Files:** `apps/web/src/lib/secure-store.ts` (`vault-passphrase-v1`), `apps/web/src/lib/crypto.ts`, `apps/web/src/lib/ai-keys.ts`
+**Status:** ⏳ Tracked — redesign in ADR-026 (non-extractable `CryptoKey`)
+
+The AES-GCM vault passphrase is 32 random bytes written **plaintext** into IndexedDB and used to derive
+the key for all AI keys + adapter credentials. The AEAD primitives are correct, but anything that can
+read IndexedDB (on-origin XSS, malicious extension, disk/profile access) recovers the passphrase
+(CWE-312/CWE-522). Redesign to a non-extractable `CryptoKey` handle is tracked in ADR-026. No existing
+users → no migration needed.
+
+### DOC-03 — READ_ONLY_MODE requires two flags (deployment footgun)
+**Files:** `apps/api/src/config/read-only-mode.ts`, `apps/web/src/lib/adapter-mode.ts`, `docs/Safety-Certification-Notice.md`, `docs/Deployment-Guide.md`
+**Status:** ✅ Documented (2026-07-03)
+
+Backend `READ_ONLY_MODE=true` blocks commands at the API/WebSocket layer but does **not** stop
+browser-side adapter commands. Certification-grade read-only requires **both** `READ_ONLY_MODE=true`
+(backend) **and** build-time `VITE_READ_ONLY_MODE=true` (frontend). Now called out in the Safety notice
+and Deployment guide so operators don't assume a single flag is sufficient.
 
 ---
 
