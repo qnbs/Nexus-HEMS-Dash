@@ -135,7 +135,10 @@ export function requireScope(minScope: JWTScope) {
       return;
     }
     const payload = res.locals.jwtPayload as { scope?: string } | undefined;
-    const tokenScope = (payload?.scope ?? 'readwrite') as JWTScope;
+    // Deny-by-default: a token with no scope claim gets least privilege, not
+    // readwrite. signToken always sets a scope, so this only affects malformed
+    // or hand-crafted tokens — which should get the minimum, never write access.
+    const tokenScope = (payload?.scope ?? 'read') as JWTScope;
     if (SCOPE_ORDER[tokenScope] < SCOPE_ORDER[minScope]) {
       res.status(403).json({ error: `Insufficient scope: ${minScope} required` });
       return;
@@ -193,9 +196,19 @@ export async function authenticateWS(
     const jwtToken = bearerToken ?? queryToken;
     if (!jwtToken) return null;
 
+    // CWE-598: a JWT in the query string can leak into access/proxy logs. Prefer
+    // the single-use ?ticket= or the Authorization header. Warn so operators can
+    // migrate non-browser clients before the fallback is eventually removed.
+    if (!bearerToken && queryToken) {
+      console.warn(
+        '[Auth] Deprecated: JWT supplied via ?token= query param — use a single-use ?ticket= or the Authorization header (the query-token fallback may be removed in a future release).',
+      );
+    }
+
     const decoded = await verifyToken(jwtToken);
+    // Deny-by-default: an unknown/missing scope claim maps to least privilege.
     const scope = (
-      ['read', 'readwrite', 'admin'].includes(decoded.scope) ? decoded.scope : 'readwrite'
+      ['read', 'readwrite', 'admin'].includes(decoded.scope) ? decoded.scope : 'read'
     ) as JWTScope;
 
     return {

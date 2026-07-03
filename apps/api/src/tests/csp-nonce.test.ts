@@ -28,8 +28,10 @@ describe('buildProductionStyleSrc (AUD-02)', () => {
     expect(buildProductionStyleSrc('nonce-value')).toEqual(["'self'", "'nonce-nonce-value'"]);
   });
 
-  it('falls back to unsafe-inline without build nonce', () => {
-    expect(buildProductionStyleSrc()).toEqual(["'self'", "'unsafe-inline'"]);
+  it('fails closed to self-only (no unsafe-inline) without a build nonce', () => {
+    // A missing nonce must NOT silently degrade to 'unsafe-inline' — that would
+    // re-open the style-injection surface AUD-02 closed. Matches script-src.
+    expect(buildProductionStyleSrc()).toEqual(["'self'"]);
   });
 });
 

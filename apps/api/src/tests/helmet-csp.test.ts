@@ -22,13 +22,16 @@ describe('configureHelmet production CSP (AUD-02)', () => {
     expect(csp).not.toContain('unsafe-inline');
   });
 
-  it('retains style-src unsafe-inline fallback without build nonce', async () => {
+  it('fails closed (no style-src unsafe-inline) without a build nonce', async () => {
+    // A missing build nonce must NOT degrade style-src to 'unsafe-inline' — that
+    // would silently re-open the surface AUD-02 closed. It fails closed to 'self'.
     const app = express();
     configureHelmet(app, false);
     app.get('/', (_req, res) => res.send('ok'));
 
     const res = await supertest(app).get('/');
     const csp = res.headers['content-security-policy'] as string;
-    expect(csp).toContain('unsafe-inline');
+    expect(csp).not.toContain('unsafe-inline');
+    expect(csp).toContain("style-src 'self'");
   });
 });
