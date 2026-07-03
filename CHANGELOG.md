@@ -11,6 +11,7 @@ Release notes are maintained here and published via [semantic-release](https://g
 
 ### Security
 
+- **CSP style-src reduction (AUD-02 phase 2)** — Tauri production `tauri build` syncs nonce-aligned CSP via `sync-tauri-csp.ts`; drops `style-src 'unsafe-inline'`; `style-src-attr 'unsafe-inline'` for Radix/motion positioning; dev `tauri dev` keeps HMR exception.
 - **CSP style-src reduction (AUD-02 phase 1)** — production API Helmet drops `style-src 'unsafe-inline'` when Vite build nonce is present; Docker/nginx CSP uses `nonce-${CSP_NONCE}` extracted from `index.html` at container start; removed stale Google Fonts CSP origins; `smoke-prod-build.mjs` asserts meta CSP has no `unsafe-inline`.
 
 ### Added

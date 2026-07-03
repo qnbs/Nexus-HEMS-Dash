@@ -29,9 +29,12 @@ free of a native command surface and enforce all safety at the web/API layers:
    layer is **not** in the command path and therefore cannot bypass it.
 3. **Strict CSP.** `tauri.conf.json` defines `app.security.csp` restricting
    `script-src 'self'`, `connect-src` to `self` + the known tariff/AI hosts + `wss:`,
-   `img-src 'self' data: blob:`. `style-src` retains `'unsafe-inline'` because Tailwind
-   v4 injects runtime styles; this is an **accepted** residual (no script execution
-   risk) and revisited if a nonce/hash pipeline becomes practical.
+   `img-src 'self' data: blob:`. **AUD-02 phase 2 (2026-07-03):** production
+   `tauri build` runs `scripts/sync-tauri-csp.ts` after Vite to align
+   `script-src` / `style-src` with the per-build nonce from `dist/index.html`
+   (no `style-src 'unsafe-inline'`). `style-src-attr 'unsafe-inline'` remains
+   for Radix/motion runtime positioning attributes — not a script-execution
+   vector. Dev (`tauri dev`) keeps `style-src 'unsafe-inline'` for Vite HMR.
 4. **No capabilities/allowlist needed.** With no custom commands, there is no
    capability scope to define; the Tauri v1 `allowlist` pattern is not used. If custom
    commands are ever introduced, narrow per-window capability files under
@@ -57,6 +60,7 @@ safety regression.
 - The desktop build adds **no command attack surface** and inherits the web/API safety
   guarantees unchanged — the audited posture is "hardened" with no code changes required.
 - `Safety-Certification-Notice.md` should cross-reference this ADR for the desktop enforcement story.
-- The remaining desktop follow-ups are operational, not safety-blocking: review CSP
-  `style-src` over time, audit `shell.open` call sites, and re-enable signed updates only
+- The remaining desktop follow-ups are operational, not safety-blocking: audit
+  `shell.open` call sites, migrate remaining inline `style={{}}` to CSS where
+  practical (to tighten `style-src-attr`), and re-enable signed updates only
   with proper signing infrastructure.

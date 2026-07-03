@@ -399,26 +399,27 @@ The static meta CSP (effective policy for GitHub Pages, no Express in front) shi
 ### AUD-02 — CSP `style-src 'unsafe-inline'` Reduction Plan
 
 **File:** [`apps/web/index.html`](apps/web/index.html), [`apps/api/src/middleware/security.ts`](apps/api/src/middleware/security.ts), [`apps/web/nginx.conf`](apps/web/nginx.conf), [`apps/web/src-tauri/tauri.conf.json`](apps/web/src-tauri/tauri.conf.json)
-**Status:** 🔶 Phase 1 shipped — API Helmet + Docker/nginx nonce-only; Tauri + Radix inline attrs remain
+**Status:** ✅ Phase 2 shipped — Tauri production CSP nonce sync + `style-src-attr`; dev HMR exception retained
 **Severity:** MED
 
-**Nonce-clean (no `unsafe-inline` in production):**
+**Nonce-clean (no `style-src 'unsafe-inline'` in production):**
 
 | Surface | `style-src` today | Notes |
 |---|---|---|
 | GitHub Pages / Vite `index.html` meta CSP | `'self' 'nonce-__CSP_NONCE__'` | Build-time nonce via `cspNoncePlugin`; `smoke-prod-build.mjs` asserts no `unsafe-inline` |
 | API Helmet prod (`security.ts`) | `'self' 'nonce-{build}'` when `buildNonce` extracted from `index.html` | AUD-02 phase 1 — drops `unsafe-inline` when nonce present; fallback retains `unsafe-inline` if HTML unreadable |
 | Docker/nginx (`nginx.conf`) | `'self' 'nonce-${CSP_NONCE}'` | `docker-entrypoint.sh` extracts nonce from baked `index.html`; removed Google Fonts origins (self-hosted) |
+| Tauri desktop prod (`tauri.conf.json`) | `'self' 'nonce-{build}'` + `style-src-attr 'unsafe-inline'` | AUD-02 phase 2 — `sync-tauri-csp.ts` patches CSP after Vite build; Radix/motion positioning attrs only |
 
 **Still requires `unsafe-inline` (or equivalent work):**
 
 | # | Surface | Consumer | Removal path |
 |---|---|---|---|
 | 1 | API Helmet dev (`security.ts:100`) | Vite HMR style injection | Keep dev-only `unsafe-inline`; documented dev exception |
-| 2 | Tauri desktop (`tauri.conf.json:27`) | Static CSP cannot embed per-build nonce without hook | Build-time `tauri.conf` nonce injection or ADR-016 amendment |
-| 3 | Radix primitives | Inline `style` props on portals/tooltips | Audit per-component; prefer CSS variables in `@theme` |
+| 2 | Tauri dev (`tauri.conf.json`) | Vite HMR during `tauri dev` | Keep dev-only `style-src 'unsafe-inline'`; production patched at build |
+| 3 | Tauri/Radix/motion prod | Inline `style=""` attrs (positioning, dynamic colors) | `style-src-attr 'unsafe-inline'`; migrate app-owned inline styles to CSS where practical |
 
-**Acceptance (phase 1):** drop `unsafe-inline` from prod API Helmet + nginx without visual regression; dev exception documented; no other CSP directive weakened. **Remaining:** Tauri static CSP + Radix attribute styles.
+**Acceptance (phase 2):** Tauri production build drops `style-src 'unsafe-inline'`, uses build nonce, documents `style-src-attr` for Radix; dev exception retained. **Optional follow-up:** reduce `style-src-attr` surface by migrating app inline styles.
 
 ### AUD-03 — Adapter Safety Matrix Gaps (missing per-adapter tests)
 
@@ -757,7 +758,7 @@ Protocol→adapter mapping in `hardware-adapter-map.ts`.
 
 **Shipped backend adapters:** Modbus, MQTT, Knx, Evcc, EebusProtocol, HeatPump, OpenEMS, OCPP CSMS (+ ExecService for scripts).
 
-**Remaining:** Tauri/Radix CSP tail (AUD-02 phase 2), adapter worker activation (MED-12), multi-user RBAC (ADR-009).
+**Remaining:** optional `style-src-attr` tightening (AUD-02 follow-up), adapter worker activation (MED-12), multi-user RBAC (ADR-009).
 
 ---
 
