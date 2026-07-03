@@ -128,8 +128,8 @@
 | Helm chart | ✅ | `helm/nexus-hems/` |
 | GitHub Pages deploy | ✅ | `.github/workflows/deploy.yml` |
 | Automated container registry push | ✅ | `container-publish.yml` — GHCR push + Grype gate + cosign sign on tag/main |
-| Automated Helm deploy / lint in CI | ⏳ | No workflow validates the chart in CI |
-| Tauri desktop build | ⚠️ | `apps/web/src-tauri/` exists; auto-updater removed |
+| Automated Helm chart lint in CI | ✅ | `ci.yml` `helm-chart` job — `helm lint` + `helm template` smoke |
+| Tauri desktop build | ⚠️ | Icons + mobile-plugin gating fixed (#236); verify via **Tauri Desktop Build** workflow (`version=1.9.0`) |
 | Capacitor mobile build | ⚠️ | Core/cli at 8.x, plugins aligned in `package.json`; verify with `cap sync` |
 
 ---
