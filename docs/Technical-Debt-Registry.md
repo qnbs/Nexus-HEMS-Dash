@@ -399,26 +399,26 @@ The static meta CSP (effective policy for GitHub Pages, no Express in front) shi
 ### AUD-02 — CSP `style-src 'unsafe-inline'` Reduction Plan
 
 **File:** [`apps/web/index.html`](apps/web/index.html), [`apps/api/src/middleware/security.ts`](apps/api/src/middleware/security.ts), [`apps/web/nginx.conf`](apps/web/nginx.conf), [`apps/web/src-tauri/tauri.conf.json`](apps/web/src-tauri/tauri.conf.json)
-**Status:** ⏳ Scheduled (target v1.8.0 — itemized plan below)
+**Status:** 🔶 Phase 1 shipped — API Helmet + Docker/nginx nonce-only; Tauri + Radix inline attrs remain
 **Severity:** MED
 
-**Already nonce-clean (no `unsafe-inline`):**
+**Nonce-clean (no `unsafe-inline` in production):**
 
 | Surface | `style-src` today | Notes |
 |---|---|---|
-| GitHub Pages / Vite `index.html` meta CSP | `'self' 'nonce-__CSP_NONCE__'` | Build-time nonce via `cspNoncePlugin`; prod `dist/index.html` verified |
+| GitHub Pages / Vite `index.html` meta CSP | `'self' 'nonce-__CSP_NONCE__'` | Build-time nonce via `cspNoncePlugin`; `smoke-prod-build.mjs` asserts no `unsafe-inline` |
+| API Helmet prod (`security.ts`) | `'self' 'nonce-{build}'` when `buildNonce` extracted from `index.html` | AUD-02 phase 1 — drops `unsafe-inline` when nonce present; fallback retains `unsafe-inline` if HTML unreadable |
+| Docker/nginx (`nginx.conf`) | `'self' 'nonce-${CSP_NONCE}'` | `docker-entrypoint.sh` extracts nonce from baked `index.html`; removed Google Fonts origins (self-hosted) |
 
 **Still requires `unsafe-inline` (or equivalent work):**
 
 | # | Surface | Consumer | Removal path |
 |---|---|---|---|
-| 1 | API Helmet prod (`security.ts:115-118`) | Tailwind v4 runtime `<style>` injection + Radix `style={{}}` on first paint | Hash known Tailwind chunks at build; pass nonce to Helmet `styleSrc`; add Playwright style-regression gate |
-| 2 | API Helmet dev (`security.ts:100`) | Vite HMR style injection | Keep dev-only `unsafe-inline`; document as dev exception |
-| 3 | Docker/nginx (`nginx.conf:37`) | Same as #1 + `fonts.googleapis.com` | Mirror nonce/hash policy from #1; move fonts to self-hosted `@font-face` |
-| 4 | Tauri desktop (`tauri.conf.json:27`) | Embedded WebView Tailwind | Align with #1 after web build emits hashed style manifest |
-| 5 | Radix primitives | Inline `style` props on portals/tooltips | Audit per-component; prefer CSS variables in `@theme` over inline styles where Radix allows |
+| 1 | API Helmet dev (`security.ts:100`) | Vite HMR style injection | Keep dev-only `unsafe-inline`; documented dev exception |
+| 2 | Tauri desktop (`tauri.conf.json:27`) | Static CSP cannot embed per-build nonce without hook | Build-time `tauri.conf` nonce injection or ADR-016 amendment |
+| 3 | Radix primitives | Inline `style` props on portals/tooltips | Audit per-component; prefer CSS variables in `@theme` |
 
-**Acceptance:** drop `unsafe-inline` from prod API Helmet + nginx + Tauri without visual regression; dev exception documented; no other CSP directive weakened.
+**Acceptance (phase 1):** drop `unsafe-inline` from prod API Helmet + nginx without visual regression; dev exception documented; no other CSP directive weakened. **Remaining:** Tauri static CSP + Radix attribute styles.
 
 ### AUD-03 — Adapter Safety Matrix Gaps (missing per-adapter tests)
 
@@ -757,7 +757,7 @@ Protocol→adapter mapping in `hardware-adapter-map.ts`.
 
 **Shipped backend adapters:** Modbus, MQTT, Knx, Evcc, EebusProtocol, HeatPump, OpenEMS, OCPP CSMS (+ ExecService for scripts).
 
-**Remaining:** CSP `unsafe-inline` reduction (AUD-02), adapter worker activation (MED-12), multi-user RBAC (ADR-009).
+**Remaining:** Tauri/Radix CSP tail (AUD-02 phase 2), adapter worker activation (MED-12), multi-user RBAC (ADR-009).
 
 ---
 

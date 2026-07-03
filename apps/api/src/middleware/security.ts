@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import type { Express, NextFunction, Request, Response } from 'express';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
+import { buildProductionScriptSrc, buildProductionStyleSrc } from '../config/csp-nonce.js';
 
 // ─── CORS — Origin Whitelist ─────────────────────────────────────────
 
@@ -82,6 +83,9 @@ export function configureRequestTracking(app: Express): void {
 // the inline theme-loader, SPA-redirect, and recovery-UI scripts that Vite
 // embeds with nonce="<value>" — without it those scripts are blocked when
 // Express serves the static HTML (HTTP header overrides the meta CSP tag).
+//
+// AUD-02: production drops style-src 'unsafe-inline' when buildNonce is present
+// (matches GitHub Pages meta CSP). Dev keeps unsafe-inline for Vite HMR.
 export function configureHelmet(app: Express, isDev: boolean, buildNonce?: string): void {
   // Production CSP: configurable WebSocket origins via WS_ORIGINS env var.
   // No more blanket ws://localhost:* in production.
@@ -111,12 +115,8 @@ export function configureHelmet(app: Express, isDev: boolean, buildNonce?: strin
         : {
             directives: {
               defaultSrc: ["'self'"],
-              scriptSrc: ["'self'", ...(buildNonce ? [`'nonce-${buildNonce}'`] : [])],
-              styleSrc: [
-                "'self'",
-                "'unsafe-inline'",
-                ...(buildNonce ? [`'nonce-${buildNonce}'`] : []),
-              ],
+              scriptSrc: buildProductionScriptSrc(buildNonce),
+              styleSrc: buildProductionStyleSrc(buildNonce),
               imgSrc: ["'self'", 'data:', 'blob:', 'https:'],
               connectSrc: [
                 "'self'",

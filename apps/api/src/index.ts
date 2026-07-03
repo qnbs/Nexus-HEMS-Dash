@@ -5,6 +5,7 @@ import http from 'http';
 import { WebSocketServer } from 'ws';
 import { logAdapterModeStartup } from './config/adapter-mode.js';
 import { validateProductionAuthConfig } from './config/auth-config.js';
+import { extractCspNonceFromIndexHtml } from './config/csp-nonce.js';
 import { logReadOnlyModeStartup } from './config/read-only-mode.js';
 import { logTrustProxyWarning, resolveTrustProxy } from './config/trust-proxy.js';
 import { validateWsOrigins } from './config/ws-origins.js';
@@ -62,7 +63,7 @@ export async function startServer(): Promise<void> {
     try {
       const webDist = path.resolve(process.env.WEB_DIST_PATH ?? '../web/dist');
       const html = readFileSync(path.join(webDist, 'index.html'), 'utf8');
-      buildNonce = html.match(/'nonce-([^']+)'/)?.[1];
+      buildNonce = extractCspNonceFromIndexHtml(html);
     } catch {
       // Built HTML not available yet — inline scripts will be blocked until
       // the web package is built and WEB_DIST_PATH is set correctly.

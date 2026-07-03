@@ -1,6 +1,8 @@
 #!/bin/sh
-# MED-03: Validate WS_ORIGINS before nginx starts.
+# MED-03 / AUD-02: Validate WS_ORIGINS and inject CSP_NONCE before nginx starts.
 # WS_ORIGINS is injected into the nginx CSP connect-src header via envsubst.
+# CSP_NONCE is read from the baked index.html (vite cspNoncePlugin) for
+# script-src/style-src nonce directives — no 'unsafe-inline' in production.
 # A malformed value would produce an invalid CSP header — potentially opening
 # an XSS vector or silently breaking all WebSocket connectivity.
 #
@@ -37,6 +39,26 @@ if [ -n "$WS_ORIGINS" ]; then
         ;;
     esac
   done
+fi
+
+# AUD-02: Extract build-time CSP nonce from the production index.html shell.
+INDEX_HTML="${INDEX_HTML:-/usr/share/nginx/html/index.html}"
+if [ -f "$INDEX_HTML" ]; then
+  CSP_NONCE=$(grep -o "nonce-[A-Za-z0-9+/=_-]*" "$INDEX_HTML" | head -1 | sed 's/^nonce-//')
+  if [ -z "$CSP_NONCE" ]; then
+    echo "[entrypoint] ERROR: Could not extract CSP nonce from $INDEX_HTML" >&2
+    exit 1
+  fi
+  case "$CSP_NONCE" in
+    *[!A-Za-z0-9+/=_-]*)
+      echo "[entrypoint] ERROR: CSP nonce contains invalid characters" >&2
+      exit 1
+      ;;
+  esac
+  export CSP_NONCE
+else
+  echo "[entrypoint] ERROR: index.html not found at $INDEX_HTML" >&2
+  exit 1
 fi
 
 # Hand off to the nginx-unprivileged base image entrypoint, which runs
