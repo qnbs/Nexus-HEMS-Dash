@@ -616,8 +616,10 @@ export class OCPP21Adapter extends BaseAdapter {
    */
   private sendV2GBPTParams(params: BPTNegotiationParams): boolean {
     if (!this.charger.v2xCapable) return false;
-    if (this.charger.evSocPercent > 0 && this.charger.evSocPercent < V2G_MIN_SOC_PERCENT) {
-      return false; // SOC too low — cannot initiate V2G
+    // Fail-safe: a non-positive/unknown SOC (0 = not yet reported) is treated as
+    // unsafe. Only proceed when SOC is known to be at or above the floor.
+    if (!(this.charger.evSocPercent >= V2G_MIN_SOC_PERCENT)) {
+      return false; // SOC too low or unknown — cannot initiate V2G
     }
     if (
       this.charger.evSocPercent >= V2G_MAX_CHARGE_SOC_PERCENT &&
@@ -646,8 +648,8 @@ export class OCPP21Adapter extends BaseAdapter {
   private sendV2XDischarge(dischargePowerW: number): boolean {
     if (!this.charger.v2xCapable) return false;
 
-    // SOC guardrail
-    if (this.charger.evSocPercent > 0 && this.charger.evSocPercent < V2G_MIN_SOC_PERCENT) {
+    // SOC guardrail — fail-safe: 0/unknown SOC is unsafe, block discharge.
+    if (!(this.charger.evSocPercent >= V2G_MIN_SOC_PERCENT)) {
       return false;
     }
 
@@ -759,7 +761,8 @@ export class OCPP21Adapter extends BaseAdapter {
   /** V2H discharge — negative W limit via TxProfile (OCPP 2.1 B07) */
   sendDischargeToHome(powerW: number): boolean {
     if (!this.charger.v2xCapable) return false;
-    if (this.charger.evSocPercent > 0 && this.charger.evSocPercent < V2G_MIN_SOC_PERCENT) {
+    // Fail-safe: 0/unknown SOC is unsafe, block discharge to home.
+    if (!(this.charger.evSocPercent >= V2G_MIN_SOC_PERCENT)) {
       return false;
     }
     const effectivePowerW = this.charger.bptParams

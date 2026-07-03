@@ -2198,6 +2198,7 @@ export const en = {
     commandRejected: 'Command rejected',
     commandExecuted: 'Command executed',
     commandFailed: 'Command failed',
+    commandNotAccepted: 'No connected adapter accepted the command',
     validationFailed: 'Validation failed',
     rateLimitExceeded: 'Command rate exceeded (max 30/min)',
     circuitBreakerOpen: 'Circuit breaker open — adapter locked',

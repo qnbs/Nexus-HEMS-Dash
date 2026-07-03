@@ -15,6 +15,7 @@ const routeLabels: Record<string, string> = {
   '/monitoring/full': 'nav.monitoring',
   '/settings': 'nav.settings',
   '/settings/ai': 'nav.aiKeys',
+  '/settings/hardware': 'nav.hardware',
   '/settings/config': 'nav.settings',
   '/plugins': 'nav.plugins',
   '/help': 'nav.help',

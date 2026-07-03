@@ -309,7 +309,7 @@ function SettingsUnifiedComponent() {
                 transition={{ duration: 0.25 }}
               >
                 <Suspense fallback={<TabSkeleton />}>
-                  <PluginsPage />
+                  <PluginsPage embedded />
                 </Suspense>
               </motion.div>
             )}
@@ -323,7 +323,7 @@ function SettingsUnifiedComponent() {
                 transition={{ duration: 0.25 }}
               >
                 <Suspense fallback={<TabSkeleton />}>
-                  <HelpPage />
+                  <HelpPage embedded />
                 </Suspense>
               </motion.div>
             )}

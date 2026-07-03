@@ -115,7 +115,16 @@ export interface CommandValidationResult {
   error?: string;
 }
 
-export function validateCommand(command: AdapterCommand): CommandValidationResult {
+/**
+ * Validate a command's shape only — Read-Only-Mode gate + Zod schema — WITHOUT
+ * consuming a rate-limit token.
+ *
+ * UI layers (useSafeCommand) call this for pre-dispatch rejection so that a
+ * single user action is not charged twice against the sliding-window rate
+ * limiter. The rate-limit token is spent exactly once at the true dispatch
+ * boundary (BaseAdapter.sendCommand → validateCommand).
+ */
+export function validateCommandShape(command: AdapterCommand): CommandValidationResult {
   // SAF-01: Read-Only Mode blocks all control commands
   if (isReadOnlyModeActive()) {
     return {
@@ -137,6 +146,20 @@ export function validateCommand(command: AdapterCommand): CommandValidationResul
       error: `Invalid value for ${command.type}: ${issues}`,
     };
   }
+
+  return { valid: true };
+}
+
+/**
+ * Full command gate: shape validation followed by rate-limit token consumption.
+ * This is the single authoritative gate and MUST run exactly once per command,
+ * at the dispatch boundary (BaseAdapter.sendCommand). Callers that only need a
+ * UI pre-check should use validateCommandShape to avoid double-charging the
+ * rate limiter for one user action.
+ */
+export function validateCommand(command: AdapterCommand): CommandValidationResult {
+  const shape = validateCommandShape(command);
+  if (!shape.valid) return shape;
 
   if (!checkRateLimit(command.type)) {
     return {
