@@ -14,7 +14,8 @@ env:
 
 concurrency:
   group: fuzz-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  # Scheduled/manual only (never PR) — don't cancel an in-flight fuzz run.
+  cancel-in-progress: false
 
 jobs:
   fuzz-tests:
