@@ -18,6 +18,7 @@ import { useEffect, useRef } from 'react';
 import { metricsCollector } from '../lib/metrics';
 import { useAppStore } from '../store';
 import type { PollTarget } from './adapter-worker';
+import { BaseAdapter } from './adapters/BaseAdapter';
 import { type AdapterId, useEnergyStoreBase } from './useEnergyStore';
 
 interface WorkerDataMessage {
@@ -39,6 +40,11 @@ interface WorkerLatencyMessage {
 }
 
 type WorkerOutMessage = WorkerDataMessage | WorkerErrorMessage | WorkerLatencyMessage;
+
+function circuitBreakerFor(adapterId: AdapterId) {
+  const adapter = useEnergyStoreBase.getState().adapters[adapterId]?.adapter;
+  return adapter instanceof BaseAdapter ? adapter.circuitBreaker : undefined;
+}
 
 /**
  * Normalize a poll target into a structured {@link PollTarget}, or `null` if it is
@@ -82,8 +88,7 @@ export function useAdapterWorker() {
           useEnergyStoreBase
             .getState()
             .mergeData(msg.adapterId, msg.result as Record<string, unknown>);
-          const entry = useEnergyStoreBase.getState().adapters[msg.adapterId as AdapterId];
-          entry?.adapter.circuitBreaker.recordSuccess();
+          circuitBreakerFor(msg.adapterId as AdapterId)?.recordSuccess();
           useEnergyStoreBase.getState().setAdapterStatus(msg.adapterId as AdapterId, 'connected');
           const anyConn = Object.values(useEnergyStoreBase.getState().adapters).some(
             (a) => a.enabled && a.status === 'connected',
@@ -93,8 +98,7 @@ export function useAdapterWorker() {
         }
         case 'error': {
           metricsCollector.recordAdapterError(msg.adapterId, msg.error);
-          const entry = useEnergyStoreBase.getState().adapters[msg.adapterId as AdapterId];
-          entry?.adapter.circuitBreaker.recordFailure();
+          circuitBreakerFor(msg.adapterId as AdapterId)?.recordFailure();
           useEnergyStoreBase
             .getState()
             .setAdapterStatus(msg.adapterId as AdapterId, 'error', msg.error);

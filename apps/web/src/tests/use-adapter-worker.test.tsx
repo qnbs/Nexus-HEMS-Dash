@@ -1,5 +1,6 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { ModbusSunSpecAdapter } from '../core/adapters/ModbusSunSpecAdapter';
 import { useAdapterWorker } from '../core/useAdapterWorker';
 
 const mocks = vi.hoisted(() => ({
@@ -12,20 +13,15 @@ const mocks = vi.hoisted(() => ({
   recordAdapterStatus: vi.fn(),
 }));
 
+let testAdapter: ModbusSunSpecAdapter;
+
 vi.mock('../core/useEnergyStore', () => ({
   useEnergyStoreBase: {
     getState: () => ({
       mergeData: mocks.mergeData,
       setAdapterStatus: mocks.setAdapterStatus,
-      adapters: {
-        'modbus-sunspec': {
-          adapter: {
-            circuitBreaker: {
-              recordSuccess: mocks.recordSuccess,
-              recordFailure: mocks.recordFailure,
-            },
-          },
-        },
+      get adapters() {
+        return { 'modbus-sunspec': { adapter: testAdapter } };
       },
     }),
   },
@@ -58,6 +54,9 @@ class MockWorker {
 describe('useAdapterWorker', () => {
   beforeEach(() => {
     MockWorker.instances = [];
+    testAdapter = new ModbusSunSpecAdapter({ host: '127.0.0.1' });
+    vi.spyOn(testAdapter.circuitBreaker, 'recordSuccess').mockImplementation(mocks.recordSuccess);
+    vi.spyOn(testAdapter.circuitBreaker, 'recordFailure').mockImplementation(mocks.recordFailure);
     mocks.mergeData.mockReset();
     mocks.setAdapterStatus.mockReset();
     mocks.setConnected.mockReset();
@@ -70,6 +69,7 @@ describe('useAdapterWorker', () => {
 
   afterEach(() => {
     vi.unstubAllGlobals();
+    vi.restoreAllMocks();
   });
 
   it('starts polling with normalized targets and routes worker messages to the store', () => {
