@@ -1,7 +1,7 @@
 # Safety & Certification Notice — Nexus-HEMS-Dash
 
-**Last updated:** 2026-05-02
-**Applies to:** All versions ≤ 1.2.0
+**Last updated:** 2026-07-03
+**Applies to:** All versions (current release line **1.9.0**)
 
 ---
 
@@ -41,7 +41,7 @@ The label **production-grade** refers to software quality attributes:
 - Strict TypeScript, zero linting warnings, WCAG 2.2 AA accessibility
 - Automated security gates (syft SBOM, `pnpm audit` dependency scan, CodeQL/Semgrep SAST)
 - Circuit-breaker patterns, dead-letter queues, structured logging
-- SLSA build-provenance attestations on CI builds; container image signing (cosign) planned when GHCR push workflow lands (see SUPPLY-01)
+- SLSA build-provenance attestations on CI builds; GHCR container images are Grype-gated and **cosign keyless-signed** at publish (`container-publish.yml`, shipped v1.3.0 — SUPPLY-01)
 - OCPP 2.1 / EEBUS SHIP / OpenADR 3.1 protocol compliance at the implementation level
 
 It does **not** imply regulatory approval, functional safety assessment (IEC 61508 / EN 50128 SIL), or approval for safety-critical use without independent certification.
@@ -79,29 +79,37 @@ The following layers are implemented to reduce — but not eliminate — risk:
 User UI / AI Suggestion
   │
   ▼
+READ-ONLY MODE kill-switch (SAF-05) ── blocks ALL control commands when enabled
+  │        frontend: VITE_READ_ONLY_MODE (command-safety.ts)
+  │        backend:  READ_ONLY_MODE (energy.ws.ts) → audit outcome "rejected_readonly"
+  ▼
 Zod schema validation (packages/shared-types)
   │
   ▼
-Rate limiting: 30 cmd/min per connection (WS_RATE_LIMIT)
+Rate limiting: 30 cmd/min (single token spend at the dispatch boundary)
   │
   ▼
 IndexedDB audit trail (apps/web/src/core/command-safety.ts)
   │
   ▼
-SOC guardrails: EV min 10% / max 95% (OCPP21Adapter)
-§14a cap: 4.2 kW max grid charge (EnergyRouterService)
+SOC guardrails: V2G/V2H discharge blocked below 15% AND when SOC is
+unknown/0 (fail-safe, OCPP21Adapter); §14a cap 4.2 kW grid charge
   │
   ▼
 Circuit breaker: CLOSED → OPEN after 5 failures, 30s cooldown
   │
   ▼
-Hardware adapter (OCPP / Modbus / MQTT / EEBUS)
+Hardware adapter (OCPP SP3 mTLS / Modbus / MQTT / EEBUS SHIP mTLS)
   │
   ▼
 Physical hardware (inverter / wallbox / heat pump / battery)
 ```
 
 These layers are software-only. They do not replace hardware-level protection devices (fuses, MCBs, RCDs, BMS overcurrent protection).
+
+**Read-only mode is a two-flag control (deployment footgun).** Backend `READ_ONLY_MODE=true` blocks commands only at the API / WebSocket layer — it does **not** stop browser-side adapter commands issued directly from the SPA. Certification-grade, provably-read-only deployments **must set both** `READ_ONLY_MODE=true` (backend) **and** build-time `VITE_READ_ONLY_MODE=true` (frontend). See DOC-03 in the Technical Debt Registry.
+
+**Live backend data path (HIGH-17 / ADR-018).** When the backend runs in `ADAPTER_MODE=live` with fresh data, `LiveEnergyAggregator` folds EventBus datapoints into the `EnergyData` snapshot broadcast over WebSocket; otherwise the mock stream is served unchanged. The browser consumer is opt-in behind `VITE_BACKEND_WS` (ADR-025). OCPP Security Profile 3 and EEBUS SHIP use server-held mTLS via the backend proxy (HIGH-12) — the browser never holds CSMS client certificates.
 
 ---
 
@@ -119,7 +127,8 @@ These layers are software-only. They do not replace hardware-level protection de
 
 - [ ] Penetration test before exposing any API endpoint to the internet
 - [ ] Separate VLAN for HEMS devices, isolated from general home network
-- [ ] Regular `pnpm audit` + syft SBOM review (at minimum before each live deployment); add Grype scan when SUPPLY-01 lands
+- [ ] Regular `pnpm audit` + syft SBOM review (at minimum before each live deployment); the Grype image/source scan is wired in CI (`sbom-scan.yml`, `container-publish.yml` — SUPPLY-01)
+- [ ] Set **both** `READ_ONLY_MODE=true` (backend) and `VITE_READ_ONLY_MODE=true` (frontend) for commissioning / incident investigation — a single flag does not fully disable control (see §4)
 - [ ] Monitoring alerts on circuit-breaker OPEN events (Prometheus → Alertmanager)
 - [ ] Backup power for the server running the API (UPS)
 
