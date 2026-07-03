@@ -184,7 +184,7 @@ function MonitoringUnifiedComponent() {
             className="overflow-hidden"
           >
             <Suspense fallback={<TabSkeleton />}>
-              <MonitoringPage />
+              <MonitoringPage embedded />
             </Suspense>
           </motion.div>
         )}

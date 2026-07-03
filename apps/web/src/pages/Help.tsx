@@ -95,7 +95,13 @@ function FeatureCard({
   return content;
 }
 
-export function Help() {
+/**
+ * @param embedded When rendered as the "help" section inside SettingsUnified,
+ *   that wrapper already supplies the page header; this page suppresses its own
+ *   title block to avoid a duplicate <h1>. Defaults to false so the standalone
+ *   /help route keeps its header.
+ */
+export function Help({ embedded = false }: { embedded?: boolean } = {}) {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<HelpTab>('getting-started');
   const [searchQuery, setSearchQuery] = useState('');
@@ -156,22 +162,24 @@ export function Help() {
       transition={{ duration: 0.5 }}
     >
       {/* Page Header */}
-      <motion.div
-        className="mb-8 flex items-center justify-between gap-3"
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.5, delay: 0.1 }}
-      >
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-(--color-border) bg-(--color-primary)/10">
-            <HelpCircle className="text-(--color-primary)" size={22} />
+      {!embedded && (
+        <motion.div
+          className="mb-8 flex items-center justify-between gap-3"
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+        >
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-(--color-border) bg-(--color-primary)/10">
+              <HelpCircle className="text-(--color-primary)" size={22} />
+            </div>
+            <div>
+              <h1 className="fluid-text-2xl font-semibold tracking-tight">{t('help.title')}</h1>
+              <p className="text-(--color-muted) text-sm">{t('help.subtitle')}</p>
+            </div>
           </div>
-          <div>
-            <h1 className="fluid-text-2xl font-semibold tracking-tight">{t('help.title')}</h1>
-            <p className="text-(--color-muted) text-sm">{t('help.subtitle')}</p>
-          </div>
-        </div>
-      </motion.div>
+        </motion.div>
+      )}
 
       {/* Search */}
       <div className="relative mb-6">

@@ -156,7 +156,7 @@ function AnalyticsUnifiedComponent() {
             transition={{ duration: 0.25 }}
           >
             <Suspense fallback={<TabSkeleton />}>
-              <AnalyticsPage />
+              <AnalyticsPage embedded />
             </Suspense>
           </motion.div>
         )}
@@ -173,7 +173,7 @@ function AnalyticsUnifiedComponent() {
             transition={{ duration: 0.25 }}
           >
             <Suspense fallback={<TabSkeleton />}>
-              <HistoricalAnalyticsPage />
+              <HistoricalAnalyticsPage embedded />
             </Suspense>
           </motion.div>
         )}

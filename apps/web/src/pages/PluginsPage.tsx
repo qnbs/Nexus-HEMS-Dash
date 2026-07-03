@@ -391,7 +391,13 @@ function InstalledTab({
   );
 }
 
-function PluginsPageComponent() {
+/**
+ * @param embedded When rendered as the "plugins" section inside SettingsUnified,
+ *   that wrapper already supplies the page header + cross-links footer; this page
+ *   suppresses its own to avoid a duplicate <h1> and duplicate panels. Defaults
+ *   to false so the standalone /plugins route keeps full page chrome.
+ */
+function PluginsPageComponent({ embedded = false }: { embedded?: boolean }) {
   const { t } = useTranslation();
   const [tab, setTab] = useState<PluginTab>('installed');
   const [entries, setEntries] = useState<PluginEntry[]>(() => pluginManager.list());
@@ -415,11 +421,13 @@ function PluginsPageComponent() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title={t('plugins.title')}
-        subtitle={t('plugins.subtitle')}
-        icon={<Puzzle className="h-5 w-5" />}
-      />
+      {!embedded && (
+        <PageHeader
+          title={t('plugins.title')}
+          subtitle={t('plugins.subtitle')}
+          icon={<Puzzle className="h-5 w-5" />}
+        />
+      )}
 
       <TabBar active={tab} onChange={setTab} />
 
@@ -434,7 +442,7 @@ function PluginsPageComponent() {
         <BrowseAdaptersPanel />
       )}
 
-      <PageCrossLinks />
+      {!embedded && <PageCrossLinks />}
     </div>
   );
 }

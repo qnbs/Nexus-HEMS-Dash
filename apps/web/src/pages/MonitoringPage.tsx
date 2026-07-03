@@ -134,8 +134,13 @@ function VirtualEventLog({ events }: { events: EventLogEntry[] }) {
 
 // ─── Component ────────────────────────────────────────────────────────
 
+/**
+ * @param embedded When rendered as a tab panel inside the unified Monitoring
+ *   wrapper, the wrapper supplies the page header + cross-links footer; this
+ *   page suppresses its own to avoid a duplicate <h1> and duplicate panels.
+ */
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: monitoring page component with multiple adapter states
-function MonitoringPageComponent() {
+function MonitoringPageComponent({ embedded = false }: { embedded?: boolean }) {
   const { t } = useTranslation();
   const energyData = useAppStoreShallow((s) => ({
     pvPower: s.energyData.pvPower,
@@ -458,31 +463,33 @@ function MonitoringPageComponent() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title={t('monitoring.pageTitle', 'Monitoring')}
-        subtitle={t('monitoring.pageDescription')}
-        icon={<Eye size={22} aria-hidden="true" />}
-        actions={
-          <div className="flex flex-wrap items-center gap-2">
-            <span
-              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 font-semibold text-[10px] uppercase tracking-wider ${
-                error ? 'bg-red-500/15 text-red-400' : 'bg-emerald-500/15 text-emerald-400'
-              }`}
-            >
+      {!embedded && (
+        <PageHeader
+          title={t('monitoring.pageTitle', 'Monitoring')}
+          subtitle={t('monitoring.pageDescription')}
+          icon={<Eye size={22} aria-hidden="true" />}
+          actions={
+            <div className="flex flex-wrap items-center gap-2">
               <span
-                className={`energy-pulse h-1.5 w-1.5 rounded-full ${error ? 'bg-red-400' : 'bg-emerald-400'}`}
-              />
-              {error ? t('monitoring.error') : t('monitoring.live')}
-            </span>
-            {activeAlerts > 0 && (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-orange-500/15 px-3 py-1.5 font-semibold text-[10px] text-orange-400 uppercase tracking-wider">
-                <AlertTriangle size={10} aria-hidden="true" />
-                {activeAlerts} {t('monitoring.activeAlerts')}
+                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 font-semibold text-[10px] uppercase tracking-wider ${
+                  error ? 'bg-red-500/15 text-red-400' : 'bg-emerald-500/15 text-emerald-400'
+                }`}
+              >
+                <span
+                  className={`energy-pulse h-1.5 w-1.5 rounded-full ${error ? 'bg-red-400' : 'bg-emerald-400'}`}
+                />
+                {error ? t('monitoring.error') : t('monitoring.live')}
               </span>
-            )}
-          </div>
-        }
-      />
+              {activeAlerts > 0 && (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-orange-500/15 px-3 py-1.5 font-semibold text-[10px] text-orange-400 uppercase tracking-wider">
+                  <AlertTriangle size={10} aria-hidden="true" />
+                  {activeAlerts} {t('monitoring.activeAlerts')}
+                </span>
+              )}
+            </div>
+          }
+        />
+      )}
 
       {/* ─── System Health Banner ──────────────────────────────────── */}
       <motion.section
@@ -969,7 +976,7 @@ function MonitoringPageComponent() {
       </motion.section>
 
       {/* ─── Cross-Links & Navigation ─────────────────────────── */}
-      <PageCrossLinks />
+      {!embedded && <PageCrossLinks />}
     </div>
   );
 }
