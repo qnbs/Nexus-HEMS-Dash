@@ -17,7 +17,10 @@
 [![E2E](https://img.shields.io/badge/E2E-Playwright-00A0E9?style=flat-square&logo=playwright&logoColor=white)](apps/web/tests/e2e/)
 [![Adapters](<https://img.shields.io/badge/Adapters-13_(7%2B6)-22ff88?style=flat-square>)](#protocol-adapters)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/qnbs/Nexus-HEMS-Dash/badge?style=flat-square)](https://securityscorecards.dev/viewer/?uri=github.com/qnbs/Nexus-HEMS-Dash)
-[![Coverage](https://codecov.io/gh/qnbs/Nexus-HEMS-Dash/branch/main/graph/badge.svg?style=flat-square)](https://codecov.io/gh/qnbs/Nexus-HEMS-Dash)
+[![Coverage](https://codecov.io/gh/qnbs/Nexus-HEMS-Dash/branch/main/graph/badge.svg?style=flat-square)](https://app.codecov.io/gh/qnbs/Nexus-HEMS-Dash)
+[![DeepSource](https://img.shields.io/badge/DeepSource-active-22ff88?style=flat-square&logo=deepsource&logoColor=white)](https://app.deepsource.com/gh/qnbs/Nexus-HEMS-Dash/)
+[![CodeRabbit](https://img.shields.io/badge/CodeRabbit-AI_review-FF570A?style=flat-square&logo=coderabbit&logoColor=white)](https://coderabbit.ai)
+[![CodeAnt AI](https://img.shields.io/badge/CodeAnt_AI-advisory-22ff88?style=flat-square)](docs/runbooks/codeant-ai-integration.md)
 
 **[Live Demo](https://qnbs.github.io/Nexus-HEMS-Dash/)** · **[Open in Codespaces](https://codespaces.new/qnbs/Nexus-HEMS-Dash)** · **[Adapter Dev Guide](docs/Adapter-Dev-Guide.md)** · **[Storybook](apps/web/.storybook/main.ts)**
 

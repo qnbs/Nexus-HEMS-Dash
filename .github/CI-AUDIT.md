@@ -85,19 +85,21 @@ All commands below passed on this checkout. Because the local machine runs Node 
 | Workflow / App        | Trigger                              | Job(s) used as required                                                       | Notes                                                                                                                                               |
 | --------------------- | ------------------------------------ | ----------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `ci.yml`              | push: `main`, `develop`; PR: `main`  | `lint-typecheck`, `unit-tests`, `build`, `e2e-tests`, `security`, `fuzz-tests`, `ci-passed` | `ci-passed` is the single rollup gate. API unit tests and Web coverage both run in `unit-tests`; `fuzz-tests` runs `pnpm test:fuzz`; build emits SLSA attestation on `push: main` only. |
-| `security-full.yml`   | push/PR `main`, weekly Mon 05:00 UTC | `security-gate`                                                               | Aggregates CodeQL, Gitleaks, Semgrep, Anti-Trojan-Source, Dependency Audit, Branch Protection. Gitleaks/Semgrep/audit are hard gates.               |
+| `security-full.yml`   | push/PR `main`, weekly Mon 05:00 UTC | `security-gate`                                                               | **Single CodeQL (`CodeQL`) + Semgrep (`Semgrep OSS`) source** (ADR-027). Aggregates CodeQL, Gitleaks, Semgrep, Anti-Trojan-Source, Dependency Audit, Branch Protection. Gitleaks/Semgrep/audit are hard gates. Also runs License Compliance + full dev-dep audit on schedule/dispatch.  |
 | `sbom-scan.yml`       | push: `main`, PR, manual             | dependency-audit, sbom-frontend, sbom-backend, sbom-source                  | Syft SBOM + Grype (critical, blocking, `.grype.yaml`) on frontend/backend images and source; `scripts/verify-grype-policy.sh` guardrail.              |
 | `container-publish.yml` | push: `main`, tags `v*`, manual    | `publish` (matrix: frontend + server)                                       | Build → Grype gate → push GHCR → cosign keyless sign + SLSA provenance. Not a PR gate; runs on main/tags only.                                      |
 | `lighthouse.yml`      | PR, manual                           | `lighthouse`                                                                  | Builds with `VITE_E2E_TESTING=true`, waits up to 30s for preview readiness, enforces LHCI budgets.                                                  |
 | DeepSource GitHub App | PR                                   | `DeepSource: JavaScript`, `DeepSource: Secrets`                               | Advisory initially; will become required after the 2–4 week tuning period and remediation of existing HIGH-severity dependency advisories.          |
-| CodeAnt.ai GitHub App | PR                                   | `CodeAnt AI`                                                                  | Advisory only. Provides high-level AI review comments.                                                                                              |
+| Codecov GitHub App    | PR                                   | `codecov/project`, `codecov/patch`                                            | Advisory (`informational`, see `.codecov.yml`). Uploads web+api flags from `ci.yml`. Hard coverage floor stays `check-coverage-baseline.mjs`.       |
+| CodeRabbit GitHub App | PR                                   | `CodeRabbit`                                                                  | Advisory only. AI contextual review (`.coderabbit.yaml`).                                                                                           |
+| CodeAnt.ai GitHub App | PR                                   | `CodeAnt AI`                                                                  | Advisory only. AI review comments (`.codeant/` config).                                                                                             |
 
 ### Weekly / schedule-only
 
 | Workflow             | Schedule           | Purpose                                              |
 | -------------------- | ------------------ | ---------------------------------------------------- |
-| `security-scan.yml`  | Mon 06:00 UTC      | License compliance, full pnpm audit (incl. dev-deps) |
-| `scorecard.yml`      | (existing)         | OpenSSF Scorecard publish                            |
+| `security-full.yml`  | Mon 05:00 UTC      | License compliance + full pnpm audit (incl. dev-deps) — folded in from the deleted `security-scan.yml` (ADR-027) |
+| `scorecard.yml`      | Mon 03:00 UTC      | OpenSSF Scorecard publish (single source — ADR-027) |
 | `lighthouse.yml`     | (on PR + manual)   | Lighthouse CI (perf budgets)                         |
 | `chromatic.yml`      | (on PR + manual)   | Visual regression                                    |
 | `sbom-scan.yml`      | (on push + manual) | SBOM (Syft) for frontend, backend, source            |
@@ -133,6 +135,7 @@ version. Recurring actions:
 | `tauri-apps/tauri-action`         | `84b9d35b5fc46c1e45415bdb6144030364f7ebc5` | action-v0.6.2                |
 | `chromaui/action`                 | `0794e6939fe40ce46a88963f818092afc427da5b` | v15.3.0                      |
 | `github/codeql-action/*`          | `68bde559dea0fdcac2102bfdf6230c5f70eb485e` | v4.35.4                      |
+| `codecov/codecov-action`          | `0fb7174895f61a3b6b78fc075e0cd60383518dac` | v5.5.5                       |
 | `dtolnay/rust-toolchain`          | `631a55b12751854ce901bb631d5902ceb48146f7` | (rolling stable, 2026-02-13) |
 
 ## Known limitations
@@ -146,14 +149,15 @@ version. Recurring actions:
    force-pushed `stable` branch; the SHA pin captures whichever stable
    was current on `2026-02-13`. Re-pin manually after the next major
    Rust release if you want a newer stable.
-3. **Branch-protection `Required Checks`**. After this Phase-2 push,
-   you may have stale required-check entries in
-   `Settings → Branches → main` referencing the deleted `security.yml`.
-   Update to: `CI Passed`, `Security Gate`, `DeepSource: JavaScript`,
+3. **Branch-protection `Required Checks` (ADR-027 consolidation — action required).**
+   `security.yml` and `security-scan.yml` are **deleted**; CodeQL/Semgrep are now
+   single-sourced in `security-full.yml`. In `Settings → Rules`/`Branches → main`:
+   **remove** the stale required checks `CodeQL Analysis` (×2, from the deleted files)
+   and `Semgrep SAST`; ensure the required set is: `CI Passed`, `Security Gate`
+   (or `CodeQL` + `Semgrep OSS` individually), `DeepSource: JavaScript`,
    `DeepSource: Secrets`, `Lighthouse CI`, `chromatic`, `Security Fuzz`.
-   DeepSource checks are advisory until the tuning period ends; add them
-   to required checks only after existing HIGH-severity dependency
-   advisories are remediated.
+   DeepSource/Codecov/CodeRabbit/CodeAnt remain advisory (non-required). Add DeepSource
+   to required checks only after existing HIGH-severity dependency advisories are remediated.
 4. **DeepSource and CodeAnt.ai are newly integrated.** DeepSource is
    running in advisory mode while false positives are tuned. CodeAnt.ai
    remains advisory permanently. See `docs/runbooks/deepsource-integration.md`

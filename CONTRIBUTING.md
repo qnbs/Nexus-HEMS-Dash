@@ -234,7 +234,7 @@ AI API keys (OpenAI, Anthropic, Gemini, etc.) are managed through the in-app BYO
 
 ## Pull Request Feedback & Quality Checks
 
-This repository uses a layered feedback system to make PR reviews fast, actionable, and educational.
+This repository uses a layered feedback system to make PR reviews fast, actionable, and educational. The full architecture (which tool owns which signal, and why) is in [`DEVOPS.md`](DEVOPS.md) and [ADR-027](docs/adr/ADR-027-layered-quality-platforms.md).
 
 ### Tooling overview
 
@@ -243,6 +243,8 @@ This repository uses a layered feedback system to make PR reviews fast, actionab
 | **Biome + ESLint** | Lint, format, React rules                           | Yes                                                                        |
 | **TypeScript**     | Strict type checking                                | Yes                                                                        |
 | **DeepSource**     | Static analysis, secrets detection, coverage diff   | Advisory initially; JavaScript + Secrets will become required after tuning |
+| **Codecov**        | Coverage %/delta vs base (flags: web, api)          | Advisory (`informational`); hard floor is `check-coverage-baseline.mjs`    |
+| **CodeRabbit**     | AI contextual review (logic, architecture, tests)   | Advisory                                                                   |
 | **CodeAnt.ai**     | AI-powered architectural / maintainability feedback | Advisory                                                                   |
 | **Lighthouse CI**  | Performance, accessibility, PWA budgets             | Yes                                                                        |
 | **Chromatic**      | Visual regression                                   | Yes (when configured)                                                      |

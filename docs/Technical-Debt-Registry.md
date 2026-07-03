@@ -81,10 +81,10 @@ DeepSource is connected and configured for the monorepo. Quality gates are advis
 
 ### PRF-02 — CodeAnt.ai AI Reviewer Integrated (Advisory Mode)
 
-**Files:** `docs/runbooks/codeant-ai-integration.md`
+**Files:** `.codeant/configuration.json`, `.codeant/instructions.json`, `docs/runbooks/codeant-ai-integration.md`
 **Status:** 🔄 In progress
 
-CodeAnt.ai GitHub App installation and dashboard configuration must be completed by a repository owner. It remains advisory to avoid replacing human judgment on control logic.
+CodeAnt.ai is now configured via repo files (`.codeant/` — analyzer de-duplication + domain/safety instructions, ADR-027), not dashboard-only. The GitHub App installation must still be completed by a repository owner. It remains advisory to avoid replacing human judgment on control logic.
 
 ### PRF-03 — Coverage Diff Not Yet Enforced
 
@@ -98,7 +98,14 @@ CodeAnt.ai GitHub App installation and dashboard configuration must be completed
 **Files:** `.github/workflows/pr-feedback-summary.yml`
 **Status:** ✅ Fixed in v1.3.0 prep (#91)
 
-Workflow posts/updates a single PR comment with links to Lighthouse, coverage, bundle analysis, and static-analysis dashboards. DeepSource/CodeAnt links appear when those integrations are configured.
+Workflow posts/updates a single PR comment with links to Lighthouse, coverage, bundle analysis, and static-analysis dashboards. DeepSource/Codecov links are now wired; the malformed "Coverage artifact" table row was fixed (ADR-027).
+
+### PRF-06 — Layered Quality Platforms & CI Consolidation
+
+**Files:** `.codecov.yml`, `.coderabbit.yaml`, `.codeant/`, `.deepsource.toml`, `.github/workflows/ci.yml`, `.github/workflows/security-full.yml`, `.github/dependabot.yml`, `DEVOPS.md`, `docs/adr/ADR-027-layered-quality-platforms.md`
+**Status:** 🔄 In progress (owner actions pending)
+
+Codecov wired (advisory, web+api flags) with `json-summary` added to `apps/api`; CodeRabbit added (`.coderabbit.yaml` + runbook); CodeAnt configured (`.codeant/`); Dependabot/Renovate reconciled (Renovate owns npm/docker/cargo, Dependabot owns github-actions); CodeQL/Semgrep/Scorecard consolidated to single sources (`security.yml` + `security-scan.yml` deleted). **Owner actions pending:** install Codecov/CodeRabbit/CodeAnt GitHub Apps, add `CODECOV_TOKEN`, update the `main` branch-protection ruleset (remove `CodeQL Analysis` ×2 + `Semgrep SAST`; require `CodeQL` + `Semgrep OSS`). See `DEVOPS.md`.
 
 ### PRF-05 — Branch Protection Settings Not Codified
 **Files:** `.github/CI-AUDIT.md`, `docs/runbooks/pr-status-checks.md`
