@@ -1,13 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import 'fake-indexeddb/auto';
 
-// Mock crypto module
+// Mock crypto module — ADR-026 key-based API. generateVaultKey returns a stand-in
+// handle; the encrypt/decrypt mocks ignore it and just tag the payload so the
+// roundtrip is observable without real WebCrypto.
 vi.mock('../lib/crypto', () => ({
-  encrypt: vi.fn(async (text: string, _pass: string) => `ENC:${text}`),
-  decrypt: vi.fn(async (cipher: string, _pass: string) => cipher.replace('ENC:', '')),
+  generateVaultKey: vi.fn(async () => ({ mockVaultKey: true })),
+  encryptWithKey: vi.fn(async (text: string, _key: unknown) => `ENC:${text}`),
+  decryptWithKey: vi.fn(async (cipher: string, _key: unknown) => cipher.replace('ENC:', '')),
 }));
-
-// Passphrase is now held in-memory (module-scope variable), no sessionStorage mock needed.
 
 import { AI_PROVIDERS, getAIKey, listAIKeys, removeAIKey, saveAIKey } from '../lib/ai-keys';
 import { nexusDb } from '../lib/db';

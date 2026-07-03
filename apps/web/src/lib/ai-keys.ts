@@ -2,15 +2,14 @@
  * Encrypted AI key storage using Dexie + Web Crypto API.
  * Keys are encrypted with AES-GCM 256-bit before storage.
  *
- * HIGH-09 fix: The vault passphrase is now persisted in Dexie `settings` table
- * (key 'vault-passphrase-v1') via secure-store.ts. This survives page reloads
- * while remaining origin-isolated. The passphrase is never written to
- * sessionStorage, localStorage, or any other inspectable Web Storage API.
+ * ADR-026: encryption uses the shared non-extractable vault CryptoKey from
+ * secure-store (getVaultKey) — a key handle whose raw bytes can never be
+ * exported, persisted in IndexedDB. It replaces the former plaintext passphrase.
  */
 
-import { decrypt, encrypt } from './crypto';
+import { decryptWithKey, encryptWithKey } from './crypto';
 import { nexusDb } from './db';
-import { getVaultPassphrase } from './secure-store';
+import { getVaultKey } from './secure-store';
 
 export type AIProvider = 'openai' | 'anthropic' | 'google' | 'xai' | 'groq' | 'ollama' | 'custom';
 
@@ -97,8 +96,8 @@ export async function saveAIKey(
         'AI keys cannot be stored. Please use a non-private browsing context.',
     );
   }
-  const passphrase = await getVaultPassphrase();
-  const encryptedKey = await encrypt(apiKey, passphrase);
+  const key = await getVaultKey();
+  const encryptedKey = await encryptWithKey(apiKey, key);
 
   await nexusDb.aiKeys.put({
     provider,
@@ -122,8 +121,8 @@ export async function getAIKey(provider: AIProvider): Promise<{
   if (!record) return null;
 
   try {
-    const passphrase = await getVaultPassphrase();
-    const apiKey = await decrypt(record.encryptedKey, passphrase);
+    const key = await getVaultKey();
+    const apiKey = await decryptWithKey(record.encryptedKey, key);
 
     // Update last used timestamp
     await nexusDb.aiKeys.update(provider, { lastUsed: Date.now() });

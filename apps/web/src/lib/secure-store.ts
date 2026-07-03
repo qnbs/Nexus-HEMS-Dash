@@ -4,24 +4,26 @@
  * Uses Web Crypto API (AES-GCM 256-bit) to encrypt adapter credentials
  * (mTLS certs, auth tokens, passwords) before storing them in IndexedDB.
  *
- * Architecture:
- *   1. Per-session master key derived via PBKDF2 from a random passphrase
- *   2. Each adapter config encrypted individually with unique IV
- *   3. Credentials NEVER stored in plaintext — only encrypted blobs in Dexie
- *   4. Session passphrase held in-memory only (cleared on page unload)
+ * Architecture (ADR-026):
+ *   1. A single non-extractable AES-GCM 256-bit master CryptoKey, persisted as a
+ *      key *handle* in IndexedDB — its raw bytes can never be exported.
+ *   2. Each adapter config encrypted individually with a unique IV.
+ *   3. Credentials NEVER stored in plaintext — only encrypted blobs in Dexie.
  *
  * Supports: mTLS client certs/keys, auth tokens, MQTT passwords,
  *           EEBUS SHIP SKI fingerprints, OCPP security profiles.
  *
- * HIGH-09 fix: The vault passphrase is now persisted in Dexie `settings` table
- * under key 'vault-passphrase-v1'. This survives page reloads while remaining
- * origin-isolated (same protection level as the encrypted keys themselves).
- * The passphrase is never written to localStorage or sessionStorage.
+ * ADR-026: The vault key is a `generateKey({ extractable: false })` handle stored
+ * in the Dexie `settings` table under 'vault-key-v2'. Unlike the previous scheme
+ * (a base64 passphrase written plaintext into IndexedDB, recoverable by anything
+ * that could read the DB — CWE-312/CWE-522), a non-extractable handle yields no
+ * key material to passive exfiltration (extension, disk, profile copy). On-origin
+ * XSS can still *use* the handle; that residual is documented in ADR-026.
  */
 
 import type { AdapterConnectionConfig } from '../core/adapters/EnergyAdapter';
 import { hasPemMaterial } from '../core/adapters/ocpp-security';
-import { decrypt, encrypt } from './crypto';
+import { decryptWithKey, encryptWithKey, generateVaultKey } from './crypto';
 import { nexusDb } from './db';
 
 // ─── Types ───────────────────────────────────────────────────────────
@@ -58,52 +60,53 @@ export interface EncryptedAdapterCredential {
   updatedAt: number;
 }
 
-// ─── Persistent Vault Passphrase (HIGH-09) ───────────────────────────
+// ─── Persistent Non-Extractable Vault Key (ADR-026) ──────────────────
 
 /**
- * Dexie settings key used to store the vault passphrase.
- * This is an origin-bound key — same protection level as the encrypted vault entries.
- * It is never written to localStorage, sessionStorage, or any other non-IndexedDB storage.
+ * Dexie settings key that stores the vault CryptoKey *handle*. IndexedDB holds
+ * the key via structured clone; because the key is non-extractable, reading this
+ * record yields an unusable-for-export handle, not raw key bytes.
  */
-const VAULT_PASSPHRASE_KEY = 'vault-passphrase-v1';
+const VAULT_KEY_KEY = 'vault-key-v2';
 
 /**
- * In-memory cache of the passphrase for the current page session.
- * Populated lazily on first call to getVaultPassphrase().
+ * In-memory cache of the vault key for the current page session.
+ * Populated lazily on first call to getVaultKey().
  */
-let _cachedVaultPassphrase: string | null = null;
+let _cachedVaultKey: CryptoKey | null = null;
 
 /**
- * Returns the vault passphrase.
- * HIGH-09: Passphrase is loaded from Dexie on first call (persists across reloads).
- * If not found, generates a new random passphrase and persists it to Dexie.
+ * Returns the non-extractable vault key, loading it from IndexedDB or generating
+ * and persisting a fresh one on first use.
+ *
+ * ADR-026: replaces the former plaintext passphrase. No migration path exists by
+ * design (the app has zero existing users); any legacy 'vault-passphrase-v1'
+ * record is simply ignored.
  */
-export async function getVaultPassphrase(): Promise<string> {
-  if (_cachedVaultPassphrase) return _cachedVaultPassphrase;
+export async function getVaultKey(): Promise<CryptoKey> {
+  if (_cachedVaultKey) return _cachedVaultKey;
 
   try {
-    const record = await nexusDb.settings.get(VAULT_PASSPHRASE_KEY);
-    if (record?.value && typeof record.value === 'string') {
-      _cachedVaultPassphrase = record.value;
-      return _cachedVaultPassphrase;
+    const record = await nexusDb.settings.get(VAULT_KEY_KEY);
+    if (record?.value instanceof CryptoKey) {
+      _cachedVaultKey = record.value;
+      return _cachedVaultKey;
     }
   } catch {
-    // Dexie unavailable — fall through to generate new passphrase
+    // Dexie unavailable — fall through to generate a new key
   }
 
-  // Generate and persist a new passphrase
-  const array = crypto.getRandomValues(new Uint8Array(32));
-  const passphrase = btoa(String.fromCharCode(...array));
+  const key = await generateVaultKey();
 
   try {
-    // biome-ignore lint/suspicious/noExplicitAny: StoredSettings is a complex union type
-    await nexusDb.settings.put({ key: VAULT_PASSPHRASE_KEY, value: passphrase as any });
+    // biome-ignore lint/suspicious/noExplicitAny: StoredSettings is a complex union type; the value is a structured-cloned CryptoKey handle
+    await nexusDb.settings.put({ key: VAULT_KEY_KEY, value: key as any });
   } catch (err) {
-    console.warn('[SecureStore] Could not persist vault passphrase to IndexedDB:', err);
+    console.warn('[SecureStore] Could not persist vault key to IndexedDB:', err);
   }
 
-  _cachedVaultPassphrase = passphrase;
-  return passphrase;
+  _cachedVaultKey = key;
+  return key;
 }
 
 // ─── Public API ──────────────────────────────────────────────────────
@@ -115,9 +118,9 @@ export async function saveAdapterCredentials(
   adapterId: AdapterCredentialId,
   credentials: AdapterCredentials,
 ): Promise<void> {
-  const passphrase = await getVaultPassphrase();
+  const key = await getVaultKey();
   const payload = JSON.stringify(credentials);
-  const encryptedPayload = await encrypt(payload, passphrase);
+  const encryptedPayload = await encryptWithKey(payload, key);
 
   await nexusDb.adapterCredentials.put({
     adapterId,
@@ -137,11 +140,11 @@ export async function getAdapterCredentials(
   if (!record) return null;
 
   try {
-    const passphrase = await getVaultPassphrase();
-    const decrypted = await decrypt(record.encryptedPayload, passphrase);
+    const key = await getVaultKey();
+    const decrypted = await decryptWithKey(record.encryptedPayload, key);
     return JSON.parse(decrypted) as AdapterCredentials;
   } catch {
-    // Decryption failed — session expired, credentials must be re-entered
+    // Decryption failed — key unavailable/rotated, credentials must be re-entered
     return null;
   }
 }
@@ -171,8 +174,8 @@ export async function loadEebusLocalCertPems(): Promise<EEBUSLocalCertPemMap> {
   if (!record?.value || typeof record.value !== 'string') return {};
 
   try {
-    const passphrase = await getVaultPassphrase();
-    const decrypted = await decrypt(record.value, passphrase);
+    const key = await getVaultKey();
+    const decrypted = await decryptWithKey(record.value, key);
     return JSON.parse(decrypted) as EEBUSLocalCertPemMap;
   } catch {
     return {};
@@ -180,8 +183,8 @@ export async function loadEebusLocalCertPems(): Promise<EEBUSLocalCertPemMap> {
 }
 
 export async function saveEebusLocalCertPems(pems: EEBUSLocalCertPemMap): Promise<void> {
-  const passphrase = await getVaultPassphrase();
-  const encrypted = await encrypt(JSON.stringify(pems), passphrase);
+  const key = await getVaultKey();
+  const encrypted = await encryptWithKey(JSON.stringify(pems), key);
 
   // biome-ignore lint/suspicious/noExplicitAny: StoredSettings is a complex union type
   await nexusDb.settings.put({ key: EEBUS_LOCAL_CERT_PEMS_KEY, value: encrypted as any });
@@ -250,5 +253,5 @@ export async function mergeCredentialsIntoConfig(
  */
 export async function clearVault(): Promise<void> {
   await nexusDb.adapterCredentials.clear();
-  _cachedVaultPassphrase = null;
+  _cachedVaultKey = null;
 }
