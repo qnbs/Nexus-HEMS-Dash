@@ -59,7 +59,16 @@
     [
       "@semantic-release/git",
       {
-        "assets": ["CHANGELOG.md", "package.json", "pnpm-lock.yaml"],
+        "assets": [
+          "CHANGELOG.md",
+          "package.json",
+          "pnpm-lock.yaml",
+          "apps/api/package.json",
+          "apps/web/package.json",
+          "packages/shared-types/package.json",
+          "apps/web/src-tauri/tauri.conf.json",
+          "apps/web/src-tauri/Cargo.toml"
+        ],
         "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
       }
     ]

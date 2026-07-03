@@ -181,6 +181,11 @@ export interface AdapterConnectionConfig {
   };
   /** Polling interval for poll-based adapters (Modbus) */
   pollIntervalMs?: number;
+  /**
+   * OpenEMS-only: extra writable property names per component ID.
+   * Merged into the built-in allowlist for `updateComponentConfig` commands.
+   */
+  additionalWritableProperties?: Record<string, string[]>;
 }
 
 // ─── Adapter Commands ────────────────────────────────────────────────

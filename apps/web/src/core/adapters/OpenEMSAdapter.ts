@@ -473,12 +473,18 @@ export class OpenEMSAdapter extends BaseAdapter {
 
   private getWritablePropertyAllowlist(componentId: string): Set<string> | null {
     const component = this.edgeComponents.get(componentId);
+    const extra =
+      this.config?.additionalWritableProperties?.[componentId]?.filter(isSafePropertyName) ?? [];
 
     for (const rule of OPENEMS_WRITABLE_COMPONENT_RULES) {
       if (!rule.idPattern.test(componentId)) continue;
       if (rule.factoryId && (!component || component.factoryId !== rule.factoryId)) continue;
       if (rule.factoryPrefix && !component?.factoryId.startsWith(rule.factoryPrefix)) continue;
-      return new Set(rule.allowedProperties);
+      return new Set([...rule.allowedProperties, ...extra]);
+    }
+
+    if (extra.length > 0) {
+      return new Set(extra);
     }
 
     return null;

@@ -107,10 +107,10 @@ All commands below passed on this checkout. Because the local machine runs Node 
 
 | Workflow                | Trigger                       | Purpose                               |
 | ----------------------- | ----------------------------- | ------------------------------------- |
-| `deploy.yml`            | `workflow_dispatch`           | GitHub Pages deploy                   |
-| `release.yml`           | `workflow_dispatch`, push tag | semantic-release + signed Tauri build |
+| `deploy.yml`            | `push: main`, `workflow_dispatch` (`approveDeploy=DEPLOY`) | GitHub Pages live demo |
+| `release.yml`           | `workflow_dispatch` (`approveRelease=RELEASE`) | Manual semantic-release only |
 | `container-publish.yml` | push `main`, tags `v*`, manual | GHCR image publish + Grype + cosign |
-| `tauri-build.yml`       | `workflow_dispatch`, release  | Cross-platform desktop builds         |
+| `tauri-build.yml`       | `workflow_dispatch`, `release: published` | Cross-platform desktop builds |
 | `fuzz.yml`              | manual / scheduled            | Security fuzz tests                   |
 | `perf-optimized-ci.yml` | `workflow_dispatch` only      | Optimized CI variant (cache-first)    |
 
