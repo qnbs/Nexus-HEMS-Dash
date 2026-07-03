@@ -320,48 +320,60 @@ export class Zigbee2MQTTAdapter extends BaseAdapter {
       this.handleBridgeDevices(payload as ZigbeeBridgeDevice[]);
       return;
     }
-
-    // Bridge online/offline state
     if (topic === `${base}/bridge/state`) {
-      const state =
-        typeof payload === 'object' && payload !== null
-          ? (payload as Record<string, unknown>).state
-          : payload;
-      if (state === 'offline') this.setStatus('error', 'Zigbee2MQTT bridge offline');
-      else if (this._status === 'error') this.setStatus('connected');
+      this.handleBridgeState(payload);
       return;
     }
-
-    // Bridge info (coordinator + version)
     if (topic === `${base}/bridge/info`) {
-      if (typeof payload === 'object' && payload !== null) {
-        const info = payload as Record<string, unknown>;
-        const version = (info.version as Record<string, unknown> | undefined)?.zigbee2mqtt;
-        if (typeof version === 'string') this.bridgeVersion = version;
-      }
+      this.handleBridgeInfo(payload);
+      return;
+    }
+    if (topic.endsWith('/availability')) {
+      this.handleAvailabilityTopic(topic, payload);
       return;
     }
 
-    // Availability topic: <base>/<name>/availability
-    const availSuffix = '/availability';
-    if (topic.endsWith(availSuffix)) {
-      const deviceName = topic.slice(base.length + 1, -availSuffix.length);
-      const isOnline =
-        payload === 'online' ||
-        (typeof payload === 'object' &&
-          payload !== null &&
-          (payload as Record<string, unknown>).state === 'online');
-      const existing: ZigbeeDeviceState = this.deviceStates.get(deviceName) ?? {
-        ...EMPTY_ZIGBEE_STATE,
-      };
-      this.deviceStates.set(deviceName, { ...existing, available: Boolean(isOnline) });
-      return;
-    }
-
-    // Device state update
+    // Device state update: <base>/<name>[/...]
     const deviceName = topic.slice(base.length + 1).split('/')[0];
     if (!deviceName || deviceName === 'bridge') return;
+    this.handleDeviceStateTopic(deviceName, payload);
+  }
 
+  /** Bridge online/offline state. */
+  private handleBridgeState(payload: unknown): void {
+    const state =
+      typeof payload === 'object' && payload !== null
+        ? (payload as Record<string, unknown>).state
+        : payload;
+    if (state === 'offline') this.setStatus('error', 'Zigbee2MQTT bridge offline');
+    else if (this._status === 'error') this.setStatus('connected');
+  }
+
+  /** Bridge info (coordinator + version). */
+  private handleBridgeInfo(payload: unknown): void {
+    if (typeof payload !== 'object' || payload === null) return;
+    const info = payload as Record<string, unknown>;
+    const version = (info.version as Record<string, unknown> | undefined)?.zigbee2mqtt;
+    if (typeof version === 'string') this.bridgeVersion = version;
+  }
+
+  /** Availability topic: `<base>/<name>/availability`. */
+  private handleAvailabilityTopic(topic: string, payload: unknown): void {
+    const availSuffix = '/availability';
+    const deviceName = topic.slice(this.baseTopic.length + 1, -availSuffix.length);
+    const isOnline =
+      payload === 'online' ||
+      (typeof payload === 'object' &&
+        payload !== null &&
+        (payload as Record<string, unknown>).state === 'online');
+    const existing: ZigbeeDeviceState = this.deviceStates.get(deviceName) ?? {
+      ...EMPTY_ZIGBEE_STATE,
+    };
+    this.deviceStates.set(deviceName, { ...existing, available: Boolean(isOnline) });
+  }
+
+  /** Device state payload → merged ZigbeeDeviceState. */
+  private handleDeviceStateTopic(deviceName: string, payload: unknown): void {
     if (typeof payload !== 'object' || payload === null) return;
     const p = payload as Record<string, unknown>;
 

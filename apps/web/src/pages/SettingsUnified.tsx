@@ -161,8 +161,8 @@ function SettingsUnifiedComponent() {
       icon: <Gauge size={16} />,
       label: t('settings.advanced'),
       tab: 'advanced',
-      color: 'text-gray-400',
-      bg: 'bg-gray-500/10',
+      color: 'text-(--color-muted)',
+      bg: 'bg-(--color-muted)/10',
     },
     {
       icon: <Sparkles size={16} />,

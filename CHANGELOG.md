@@ -11,11 +11,13 @@ Release notes are maintained here and published via [semantic-release](https://g
 
 ### Security
 
+- **JWT secret enforcement is production-fatal (CRIT-03)** — `checkSecretEntropy` now aborts boot in production when `JWT_SECRET`/`JWT_SECRET_NEW` matches a known-weak pattern or has estimated entropy `< 128` bits (previously warn-only; the registry's "fixed in v1.1.1" claim was stale). A secret shorter than the recommended 64 chars stays a non-fatal warning; dev/test remain warn-only. Thrown messages never leak the secret, its length, or the entropy value.
 - **CSP style-src reduction (AUD-02 phase 2)** — Tauri production `tauri build` syncs nonce-aligned CSP via `sync-tauri-csp.ts`; drops `style-src 'unsafe-inline'`; `style-src-attr 'unsafe-inline'` for Radix/motion positioning; dev `tauri dev` keeps HMR exception.
 - **CSP style-src reduction (AUD-02 phase 1)** — production API Helmet drops `style-src 'unsafe-inline'` when Vite build nonce is present; Docker/nginx CSP uses `nonce-${CSP_NONCE}` extracted from `index.html` at container start; removed stale Google Fonts CSP origins; `smoke-prod-build.mjs` asserts meta CSP has no `unsafe-inline`.
 
 ### Added
 
+- **Branded ComboBox dropdown (WS-8)** — `SelectField` now routes long option lists (manufacturers, protocols, timezones, adapters) to a themed listbox popover with type-to-filter and full keyboard support, replacing the dated native OS `<select>` fallback. `ChoiceCardGroup` still serves short lists; native `<select>` is kept only for `multiple`. The **Total JS** size budget rises 1120 → 1130 kB to accommodate the new component (~2.6 kB gzipped); the app was already at the prior ceiling.
 - **Storybook coverage (LOW-08)** — stories for `SankeyDiagram`, `Floorplan`, and `AdapterConfigPanel` (visual regression baseline for high-complexity components).
 - **Adapter worker activation (MED-12)** — `useAdapterBridge` offloads Modbus SunSpec REST polling to `adapter-worker` when `VITE_ADAPTER_WORKER=true` (requires live hardware ack); shared `mergeSunSpecRegistersToUnified()`; `sunspecPoll` worker message.
 - **SunSpec transform parity module (MED-12)** — shared `sunspec-transforms.ts` used by `ModbusSunSpecAdapter` and `adapter-worker`; golden parity tests before worker activation.

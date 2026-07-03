@@ -40,6 +40,10 @@ function mockWs(): WebSocket & { closeCode?: number; closeReason?: string } {
       this.closeCode = code;
       this.closeReason = reason;
     },
+    // Real ws exposes once(); the per-IP limiter registers a 'close' listener.
+    once() {
+      return this;
+    },
   };
   return ws as WebSocket & { closeCode?: number; closeReason?: string };
 }

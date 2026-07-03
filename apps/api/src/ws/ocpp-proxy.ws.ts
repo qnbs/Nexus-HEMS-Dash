@@ -12,6 +12,7 @@ import { type AuthenticatedClient, authenticateWS } from '../middleware/auth.js'
 import { attachOcppProxyRelay } from '../services/OcppProxyRelay.js';
 import { ocppSessionStore } from '../services/ocpp-session-store.js';
 import { wsTicketStore } from '../services/ws-ticket-store.js';
+import { getWSClientIP, releaseConnection, tryAcquireConnection } from './ws-conn-limit.js';
 
 const SCOPE_ORDER = { read: 0, readwrite: 1, admin: 2 } as const;
 
@@ -33,6 +34,15 @@ export async function handleOcppProxyConnection(
   req: IncomingMessage,
   requireAuth: boolean,
 ): Promise<void> {
+  // HIGH-06: proxy connections share the per-IP cap with the energy stream.
+  const clientIP = getWSClientIP(req);
+  if (!tryAcquireConnection(clientIP)) {
+    clientWs.close(4429, 'Too many connections from this IP');
+    return;
+  }
+  // Release the slot on any exit path (early rejection or relay teardown).
+  clientWs.once('close', () => releaseConnection(clientIP));
+
   const authResult = await authenticateWS(req, wsTicketStore);
   if (requireAuth && (!authResult || !hasWriteScope(authResult))) {
     clientWs.close(4003, 'readwrite scope required');

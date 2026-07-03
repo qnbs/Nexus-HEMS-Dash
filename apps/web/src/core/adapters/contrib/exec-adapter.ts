@@ -267,126 +267,140 @@ export class ExecAdapter extends BaseAdapter {
 
     for (const r of readings) {
       if (!Number.isFinite(r.value)) continue;
-
       switch (r.role) {
         case 'pv':
-          if (r.metric === 'POWER_W') {
-            model.pv = {
-              ...model.pv,
-              totalPowerW: r.value,
-              yieldTodayKWh: model.pv?.yieldTodayKWh ?? 0,
-            };
-          } else if (r.metric === 'ENERGY_KWH') {
-            model.pv = {
-              ...model.pv,
-              totalPowerW: model.pv?.totalPowerW ?? 0,
-              yieldTodayKWh: r.value,
-            };
-          }
+          this.applyPvReading(model, r);
           break;
-
         case 'battery':
-          if (r.metric === 'POWER_W') {
-            model.battery = {
-              ...model.battery,
-              powerW: r.value,
-              socPercent: model.battery?.socPercent ?? 0,
-              voltageV: model.battery?.voltageV ?? 0,
-              currentA: model.battery?.currentA ?? 0,
-            };
-          } else if (r.metric === 'SOC_PERCENT') {
-            const clamped = Math.min(100, Math.max(0, r.value));
-            model.battery = {
-              ...model.battery,
-              socPercent: clamped,
-              powerW: model.battery?.powerW ?? 0,
-              voltageV: model.battery?.voltageV ?? 0,
-              currentA: model.battery?.currentA ?? 0,
-            };
-          } else if (r.metric === 'VOLTAGE_V') {
-            model.battery = {
-              ...model.battery,
-              voltageV: r.value,
-              powerW: model.battery?.powerW ?? 0,
-              socPercent: model.battery?.socPercent ?? 0,
-              currentA: model.battery?.currentA ?? 0,
-            };
-          } else if (r.metric === 'TEMPERATURE_C') {
-            model.battery = {
-              ...model.battery,
-              temperatureC: r.value,
-              powerW: model.battery?.powerW ?? 0,
-              socPercent: model.battery?.socPercent ?? 0,
-              voltageV: model.battery?.voltageV ?? 0,
-              currentA: model.battery?.currentA ?? 0,
-            };
-          }
+          this.applyBatteryReading(model, r);
           break;
-
         case 'grid':
-          if (r.metric === 'POWER_W') {
-            model.grid = { ...model.grid, powerW: r.value, voltageV: model.grid?.voltageV ?? 230 };
-          } else if (r.metric === 'VOLTAGE_V') {
-            model.grid = { ...model.grid, voltageV: r.value, powerW: model.grid?.powerW ?? 0 };
-          } else if (r.metric === 'FREQUENCY_HZ') {
-            model.grid = {
-              ...model.grid,
-              frequencyHz: r.value,
-              powerW: model.grid?.powerW ?? 0,
-              voltageV: model.grid?.voltageV ?? 230,
-            };
-          }
+          this.applyGridReading(model, r);
           break;
-
         case 'load':
-          if (r.metric === 'POWER_W') {
-            const existing = model.load ?? {
-              totalPowerW: 0,
-              heatPumpPowerW: 0,
-              evPowerW: 0,
-              otherPowerW: 0,
-            };
-            model.load = {
-              ...existing,
-              totalPowerW: r.value,
-              otherPowerW: Math.max(0, r.value - existing.heatPumpPowerW - existing.evPowerW),
-            };
-          }
+          this.applyLoadReading(model, r);
           break;
-
         case 'heatpump':
-          if (r.metric === 'POWER_W') {
-            const existing = model.load ?? {
-              totalPowerW: 0,
-              heatPumpPowerW: 0,
-              evPowerW: 0,
-              otherPowerW: 0,
-            };
-            model.load = { ...existing, heatPumpPowerW: r.value };
-          }
+          this.applyHeatpumpReading(model, r);
           break;
-
         case 'ev':
-          if (r.metric === 'POWER_W') {
-            model.evCharger = {
-              ...model.evCharger,
-              powerW: r.value,
-              status: r.value > 0 ? 'charging' : 'available',
-              energySessionKWh: model.evCharger?.energySessionKWh ?? 0,
-              maxCurrentA: model.evCharger?.maxCurrentA ?? 32,
-              vehicleConnected: r.value > 0,
-              v2xCapable: false,
-              v2xActive: false,
-            };
-          }
+          this.applyEvReading(model, r);
           break;
-
         default:
           break;
       }
     }
 
     return model;
+  }
+
+  private applyPvReading(model: Partial<UnifiedEnergyModel>, r: ExecReading): void {
+    if (r.metric === 'POWER_W') {
+      model.pv = {
+        ...model.pv,
+        totalPowerW: r.value,
+        yieldTodayKWh: model.pv?.yieldTodayKWh ?? 0,
+      };
+    } else if (r.metric === 'ENERGY_KWH') {
+      model.pv = {
+        ...model.pv,
+        totalPowerW: model.pv?.totalPowerW ?? 0,
+        yieldTodayKWh: r.value,
+      };
+    }
+  }
+
+  private applyBatteryReading(model: Partial<UnifiedEnergyModel>, r: ExecReading): void {
+    if (r.metric === 'POWER_W') {
+      model.battery = {
+        ...model.battery,
+        powerW: r.value,
+        socPercent: model.battery?.socPercent ?? 0,
+        voltageV: model.battery?.voltageV ?? 0,
+        currentA: model.battery?.currentA ?? 0,
+      };
+    } else if (r.metric === 'SOC_PERCENT') {
+      const clamped = Math.min(100, Math.max(0, r.value));
+      model.battery = {
+        ...model.battery,
+        socPercent: clamped,
+        powerW: model.battery?.powerW ?? 0,
+        voltageV: model.battery?.voltageV ?? 0,
+        currentA: model.battery?.currentA ?? 0,
+      };
+    } else if (r.metric === 'VOLTAGE_V') {
+      model.battery = {
+        ...model.battery,
+        voltageV: r.value,
+        powerW: model.battery?.powerW ?? 0,
+        socPercent: model.battery?.socPercent ?? 0,
+        currentA: model.battery?.currentA ?? 0,
+      };
+    } else if (r.metric === 'TEMPERATURE_C') {
+      model.battery = {
+        ...model.battery,
+        temperatureC: r.value,
+        powerW: model.battery?.powerW ?? 0,
+        socPercent: model.battery?.socPercent ?? 0,
+        voltageV: model.battery?.voltageV ?? 0,
+        currentA: model.battery?.currentA ?? 0,
+      };
+    }
+  }
+
+  private applyGridReading(model: Partial<UnifiedEnergyModel>, r: ExecReading): void {
+    if (r.metric === 'POWER_W') {
+      model.grid = { ...model.grid, powerW: r.value, voltageV: model.grid?.voltageV ?? 230 };
+    } else if (r.metric === 'VOLTAGE_V') {
+      model.grid = { ...model.grid, voltageV: r.value, powerW: model.grid?.powerW ?? 0 };
+    } else if (r.metric === 'FREQUENCY_HZ') {
+      model.grid = {
+        ...model.grid,
+        frequencyHz: r.value,
+        powerW: model.grid?.powerW ?? 0,
+        voltageV: model.grid?.voltageV ?? 230,
+      };
+    }
+  }
+
+  private applyLoadReading(model: Partial<UnifiedEnergyModel>, r: ExecReading): void {
+    if (r.metric !== 'POWER_W') return;
+    const existing = model.load ?? {
+      totalPowerW: 0,
+      heatPumpPowerW: 0,
+      evPowerW: 0,
+      otherPowerW: 0,
+    };
+    model.load = {
+      ...existing,
+      totalPowerW: r.value,
+      otherPowerW: Math.max(0, r.value - existing.heatPumpPowerW - existing.evPowerW),
+    };
+  }
+
+  private applyHeatpumpReading(model: Partial<UnifiedEnergyModel>, r: ExecReading): void {
+    if (r.metric !== 'POWER_W') return;
+    const existing = model.load ?? {
+      totalPowerW: 0,
+      heatPumpPowerW: 0,
+      evPowerW: 0,
+      otherPowerW: 0,
+    };
+    model.load = { ...existing, heatPumpPowerW: r.value };
+  }
+
+  private applyEvReading(model: Partial<UnifiedEnergyModel>, r: ExecReading): void {
+    if (r.metric !== 'POWER_W') return;
+    model.evCharger = {
+      ...model.evCharger,
+      powerW: r.value,
+      status: r.value > 0 ? 'charging' : 'available',
+      energySessionKWh: model.evCharger?.energySessionKWh ?? 0,
+      maxCurrentA: model.evCharger?.maxCurrentA ?? 32,
+      vehicleConnected: r.value > 0,
+      v2xCapable: false,
+      v2xActive: false,
+    };
   }
 
   private get serverBaseUrl(): string {

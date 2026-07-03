@@ -17,6 +17,12 @@ import type { LiveEnergyAggregator } from '../services/LiveEnergyAggregator.js';
 import { wsTicketStore } from '../services/ws-ticket-store.js';
 import { handleEebusProxyConnection, isEebusProxyPath } from './eebus-proxy.ws.js';
 import { handleOcppProxyConnection, isOcppProxyPath } from './ocpp-proxy.ws.js';
+import {
+  getMaxConnectionsPerIP,
+  getWSClientIP,
+  releaseConnection,
+  tryAcquireConnection,
+} from './ws-conn-limit.js';
 import { getRequiredScopeForCommand, isScopeAuthorized } from './ws-scope.js';
 
 // Zombie connection detection: ping every 30 s, terminate if no pong received
@@ -40,14 +46,8 @@ export function validateWSCommand(parsed: unknown): { valid: boolean; error?: st
   return { valid: true };
 }
 
-// HIGH-07: Per-IP connection rate limiting
-const wsConnectionsPerIP = new Map<string, number>();
-const WS_MAX_CONNECTIONS_PER_IP = 10;
-
-function getWSClientIP(req: IncomingMessage): string {
-  // Use the socket address (not x-forwarded-for, which can be spoofed)
-  return req.socket.remoteAddress ?? 'unknown';
-}
+// HIGH-06/HIGH-07: Per-IP connection limiting now lives in ./ws-conn-limit.ts so
+// the OCPP/EEBUS proxy paths share the same cap. See that module for rationale.
 
 /** Audit a command outcome to the append-only NDJSON log. Never throws. */
 function auditCommand(
@@ -172,17 +172,15 @@ export function setupWebSocket(wss: WebSocketServer, liveAggregator?: LiveEnergy
       return;
     }
 
-    // HIGH-07: Per-IP connection limit
+    // HIGH-07: Per-IP connection limit (shared cap across all ws paths)
     const clientIP = getWSClientIP(req);
-    const currentConnections = wsConnectionsPerIP.get(clientIP) ?? 0;
-    if (currentConnections >= WS_MAX_CONNECTIONS_PER_IP) {
+    if (!tryAcquireConnection(clientIP)) {
       ws.close(4429, 'Too many connections from this IP');
       console.warn(
-        `[WS] Rejected connection from ${clientIP} (limit: ${WS_MAX_CONNECTIONS_PER_IP})`,
+        `[WS] Rejected connection from ${clientIP} (limit: ${getMaxConnectionsPerIP()})`,
       );
       return;
     }
-    wsConnectionsPerIP.set(clientIP, currentConnections + 1);
 
     // CRIT-02 + HIGH-04: Authenticate and extract scope via ticket or JWT
     const authResult = await authenticateWS(req, wsTicketStore);
@@ -190,9 +188,7 @@ export function setupWebSocket(wss: WebSocketServer, liveAggregator?: LiveEnergy
     if (requireWSAuth && !authResult) {
       ws.close(4001, 'Authentication required');
       // Clean up per-IP counter on failed auth
-      const remaining = (wsConnectionsPerIP.get(clientIP) ?? 1) - 1;
-      if (remaining <= 0) wsConnectionsPerIP.delete(clientIP);
-      else wsConnectionsPerIP.set(clientIP, remaining);
+      releaseConnection(clientIP);
       console.warn('[WS] Rejected unauthenticated connection');
       return;
     }
@@ -249,9 +245,7 @@ export function setupWebSocket(wss: WebSocketServer, liveAggregator?: LiveEnergy
       const info = wsAuthMap.get(ws);
       console.log(`[WS] Client disconnected (${info?.clientId || 'unknown'})`);
       // HIGH-07: Clean up per-IP connection count
-      const remaining = (wsConnectionsPerIP.get(clientIP) ?? 1) - 1;
-      if (remaining <= 0) wsConnectionsPerIP.delete(clientIP);
-      else wsConnectionsPerIP.set(clientIP, remaining);
+      releaseConnection(clientIP);
     });
   });
 }

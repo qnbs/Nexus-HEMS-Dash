@@ -18,6 +18,7 @@ import {
   suggestAdapterIdForDevice,
 } from '../../lib/hardware-adapter-map';
 import { useAppStore } from '../../store';
+import { SelectField } from '../ui/SelectField';
 
 type WizardStep = 'adapter' | 'connection' | 'test' | 'done';
 
@@ -167,24 +168,21 @@ export function AddAdapterWizard({ device, onClose }: AddAdapterWizardProps) {
 
         {step === 'adapter' && (
           <div className="space-y-4">
-            <label htmlFor="wizard-adapter-id" className="font-medium text-sm">
-              {t('hardwareRegistry.wizard.pickAdapter')}
-            </label>
-            <select
+            <SelectField
               id="wizard-adapter-id"
+              label={t('hardwareRegistry.wizard.pickAdapter')}
               value={adapterId}
               onChange={(e) => {
                 setAdapterId(e.target.value);
                 setPort(defaultPortForAdapter(e.target.value, device));
               }}
-              className={inputClass}
             >
               {registered.map((entry) => (
                 <option key={entry.id} value={entry.id}>
                   {entry.displayName ?? entry.id}
                 </option>
               ))}
-            </select>
+            </SelectField>
           </div>
         )}
 

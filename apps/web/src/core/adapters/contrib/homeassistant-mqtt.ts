@@ -102,6 +102,18 @@ const ENERGY_DEVICE_CLASSES = new Set([
   'temperature', // °C
 ]);
 
+/**
+ * Entity-id keyword → role table for power/energy sensors (solar/pv is handled
+ * separately because it also depends on device_class). First match wins.
+ */
+const POWER_ENERGY_ID_KEYWORDS: { keywords: string[]; role: HAEnergyRole }[] = [
+  { keywords: ['battery', 'bat'], role: 'batteryPower' },
+  { keywords: ['grid', 'net', 'import', 'export'], role: 'gridPower' },
+  { keywords: ['wallbox', 'ev', 'charger'], role: 'evPower' },
+  { keywords: ['heat', 'pump', 'hvac'], role: 'heatPumpPower' },
+  { keywords: ['house', 'home', 'total', 'consumption'], role: 'housePower' },
+];
+
 /** Default static entity map (mqtt-broker mode fallback) */
 const DEFAULT_ENTITY_MAP = {
   pvPower: 'sensor.solar_power',
@@ -644,29 +656,20 @@ export class HomeAssistantMQTTAdapter extends BaseAdapter {
 
     // unit-based disambiguation
     if (deviceClass === 'power' || deviceClass === 'energy') {
-      const id = entityId.toLowerCase();
-      if (id.includes('solar') || id.includes('pv')) {
-        return deviceClass === 'energy' ? 'pvEnergyToday' : 'pvPower';
-      }
-      if (id.includes('battery') || id.includes('bat')) return 'batteryPower';
-      if (
-        id.includes('grid') ||
-        id.includes('net') ||
-        id.includes('import') ||
-        id.includes('export')
-      )
-        return 'gridPower';
-      if (id.includes('wallbox') || id.includes('ev') || id.includes('charger')) return 'evPower';
-      if (id.includes('heat') || id.includes('pump') || id.includes('hvac')) return 'heatPumpPower';
-      if (
-        id.includes('house') ||
-        id.includes('home') ||
-        id.includes('total') ||
-        id.includes('consumption')
-      )
-        return 'housePower';
+      return this.classifyPowerEnergyById(entityId.toLowerCase(), deviceClass);
     }
 
+    return null;
+  }
+
+  /** Map a lowercased power/energy entity id to a role via keyword table. */
+  private classifyPowerEnergyById(id: string, deviceClass: string): HAEnergyRole | null {
+    if (id.includes('solar') || id.includes('pv')) {
+      return deviceClass === 'energy' ? 'pvEnergyToday' : 'pvPower';
+    }
+    for (const { keywords, role } of POWER_ENERGY_ID_KEYWORDS) {
+      if (keywords.some((keyword) => id.includes(keyword))) return role;
+    }
     return null;
   }
 

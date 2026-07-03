@@ -7,7 +7,7 @@ import supertest from 'supertest';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { WebSocketServer } from 'ws';
 
-const SECRET = 'metrics-routes-test-jwt-secret-min-32c';
+const SECRET = 'nexus-hems-ci-fixture-jwt-signing-key-not-a-real-credential';
 
 describe('Metrics API routes', () => {
   const prevEnv = { ...process.env };

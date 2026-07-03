@@ -11,9 +11,11 @@ import express from 'express';
 import supertest from 'supertest';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 
-// Set env BEFORE importing middleware (module-level env reads)
+// Set env BEFORE importing middleware (module-level env reads).
+// Strong secret (no weak pattern, high entropy) so the production-mode CORS
+// tests below can boot key material without tripping the CRIT-03 guard.
 process.env.NODE_ENV = 'test';
-process.env.JWT_SECRET = 'test-secret-for-unit-tests-that-is-long-enough-for-hs256-algo';
+process.env.JWT_SECRET = 'nexus-hems-ci-fixture-jwt-signing-key-not-a-real-credential';
 
 const { configureCors, configureRequestTracking } = await import('../middleware/security.js');
 
