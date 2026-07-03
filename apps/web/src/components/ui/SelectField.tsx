@@ -8,6 +8,7 @@ import {
   useMemo,
 } from 'react';
 import { ChoiceCardGroup } from './ChoiceCardGroup';
+import { ComboBox } from './ComboBox';
 
 export interface SelectFieldProps extends SelectHTMLAttributes<HTMLSelectElement> {
   label: string;
@@ -75,6 +76,33 @@ export function SelectField({
             } as React.ChangeEvent<HTMLSelectElement>);
           }}
           options={options.map((o) => ({ value: o.value, label: o.label, tone: 'primary' }))}
+        />
+        {hint ? <p className="select-field-hint">{hint}</p> : null}
+      </div>
+    );
+  }
+
+  // Long lists (and any non-card single-select) use the branded ComboBox popover
+  // instead of the dated native `<select>` (WS-8). Native is kept only for
+  // `multiple`, which the ComboBox does not model.
+  if (options.length > 0 && !selectProps.multiple) {
+    return (
+      <div className={`select-field ${className}`.trim()}>
+        <span id={fieldId ? `${fieldId}-label` : undefined} className="select-field-label">
+          {label}
+        </span>
+        <ComboBox
+          {...(fieldId ? { id: fieldId } : {})}
+          label={label}
+          value={currentValue}
+          disabled={disabled === true}
+          options={options}
+          onChange={(next) => {
+            onChange?.({
+              target: { value: next, name: name ?? '' },
+              currentTarget: { value: next, name: name ?? '' },
+            } as React.ChangeEvent<HTMLSelectElement>);
+          }}
         />
         {hint ? <p className="select-field-hint">{hint}</p> : null}
       </div>
