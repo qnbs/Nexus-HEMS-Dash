@@ -26,7 +26,7 @@ import {
   describeCommand,
   logCommandAudit,
   requiresConfirmation,
-  validateCommand,
+  validateCommandShape,
 } from './command-safety';
 import { sendAdapterCommand } from './useEnergyStore';
 
@@ -62,13 +62,19 @@ async function executeCommand(
 ): Promise<CommandResult> {
   setState({ pending: true, lastError: null });
   try {
-    sendAdapterCommand(command);
-    auditLog(command, 'executed');
-    setState({ pending: false, lastError: null });
-    return { ok: true };
+    // Await the real dispatch outcome — the authoritative "executed"/"failed"
+    // audit row is written by BaseAdapter.sendCommand, so we do NOT log an
+    // (optimistic, possibly-contradictory) outcome here.
+    const accepted = await sendAdapterCommand(command);
+    if (accepted) {
+      setState({ pending: false, lastError: null });
+      return { ok: true };
+    }
+    const notAccepted = 'command_not_accepted';
+    setState({ pending: false, lastError: notAccepted });
+    return { ok: false, error: notAccepted };
   } catch (err) {
     const errorMsg = err instanceof Error ? err.message : 'Command execution failed';
-    auditLog(command, 'failed', errorMsg);
     setState({ pending: false, lastError: errorMsg });
     return { ok: false, error: errorMsg };
   }
@@ -98,15 +104,24 @@ export function useSafeCommand() {
   const notifyResult = (res: CommandResult) => {
     if (res.ok) {
       toast.success(t('safety.commandExecuted', 'Command executed'));
-    } else {
-      toast.error(`${t('safety.commandFailed', 'Command failed')}: ${res.error}`);
+      return;
     }
+    const detail =
+      res.error === 'command_not_accepted'
+        ? t('safety.commandNotAccepted', 'No connected adapter accepted the command')
+        : res.error;
+    toast.error(
+      detail
+        ? `${t('safety.commandFailed', 'Command failed')}: ${detail}`
+        : t('safety.commandFailed', 'Command failed'),
+    );
   };
 
   /** Execute a command — validates, optionally shows confirmation, then sends */
   const execute = (command: AdapterCommand) => {
-    // Step 1: Validate
-    const validation = validateCommand(command);
+    // Step 1: Validate shape only (no rate-token spend — the single token is
+    // consumed once at the dispatch boundary in BaseAdapter.sendCommand)
+    const validation = validateCommandShape(command);
     if (!validation.valid) {
       const reason = validation.error ?? t('safety.validationFailed', 'Validation failed');
       stateSetterRef.current({ pending: false, lastError: reason });
