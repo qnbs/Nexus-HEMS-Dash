@@ -184,12 +184,12 @@ The Tauri auto-updater plugin and Minisign signing infrastructure have been remo
 
 ### CRIT-03 — JWT Weak-Entropy Secrets Warn But Don't Block in Production
 
-**File:** `apps/api/src/jwt-utils.ts:167-194`
-**Status:** ✅ Fixed in v1.1.1 (see commit history)
+**File:** `apps/api/src/jwt-utils.ts` (`checkSecretEntropy`, `resolveSigningMaterial`)
+**Status:** ✅ Fixed in v1.9.x remediation pass
 
-`checkSecretEntropy()` called with weak-pattern secrets logs `console.error` but the server still starts. In production, a known-weak pattern (e.g. `JWT_SECRET=password123`) should throw.
+**Correction:** the prior "✅ Fixed in v1.1.1" claim was **stale/inaccurate**. A 2026-07-03 verification found `checkSecretEntropy()` only emitted `console.warn`/`console.error` for weak patterns, low entropy, and short length — and was invoked *only* inside production branches, so a weak or low-entropy `JWT_SECRET` (e.g. `changeme-changeme-changeme-…`, ≥32 chars) still **booted the server** in production.
 
-**Fix applied:** Changed weak-pattern detection in production mode to `throw new Error(...)` instead of `console.error(...)`.
+**Fix applied (this pass):** `checkSecretEntropy(secret, source, isProd)` now aborts boot in production by throwing on (a) a known-weak dictionary pattern, or (b) estimated entropy `< 128` bits. A secret shorter than the recommended 64 chars remains a **non-fatal warning**. In dev/test every condition is warn-only (never throws), and the check now runs in all environments so dev surfaces warnings without blocking. Thrown/logged messages never include the secret, its length, or the derived entropy value (CodeQL `js/clear-text-logging` preserved). Covered by `apps/api/src/tests/jwt-secret-enforcement.test.ts`.
 
 ---
 
@@ -245,10 +245,12 @@ Added `isKeyStorageAvailable(): Promise<boolean>` helper that probes Dexie with 
 
 ### HIGH-06 — WebSocket Broadcast Lacks Per-Connection Rate Limiting
 
-**File:** `apps/api/src/ws/energy.ws.ts`
-**Status:** ✅ Fixed in v1.2.0
+**File:** `apps/api/src/ws/energy.ws.ts`, `apps/api/src/ws/ws-conn-limit.ts`
+**Status:** ✅ Fixed in v1.2.0; per-IP cap extended to relay proxies in v1.9.x
 
-WS command rate limit is now configurable via `WS_RATE_LIMIT` env var (default 30 cmd/min). When the limit is exceeded, the connection is closed with code `4429 Rate limit exceeded` in addition to the error frame.
+WS command rate limit is configurable via `WS_RATE_LIMIT` env var (default 30 cmd/min). When the limit is exceeded, the connection is closed with code `4429 Rate limit exceeded` in addition to the error frame.
+
+**v1.9.x extension:** the per-IP connection cap (`WS_MAX_CONNECTIONS_PER_IP`, default 10) was previously enforced only on the energy stream — the OCPP (`/ws/ocpp`) and EEBUS (`/ws/eebus`) mTLS relay proxies bypassed it. The accounting now lives in the shared `ws-conn-limit.ts` module and is applied to both proxy handlers (slot released on connection close). Relays forward opaque frames, so a per-connection cap is the correct primitive there rather than the per-message limiter. Covered by `ws-conn-limit.test.ts`.
 
 ---
 
@@ -762,7 +764,7 @@ Protocol→adapter mapping in `hardware-adapter-map.ts`.
 
 | ID         | Description                                                                              | Fixed In |
 | ---------- | ---------------------------------------------------------------------------------------- | -------- |
-| ✅ CRIT-03 | JWT weak-pattern secrets throw in production                                             | v1.1.1   |
+| ✅ CRIT-03 | JWT weak-pattern **and** low-entropy secrets throw & abort boot in production            | v1.9.x   |
 | ✅ CI-01   | Docker Build jobs removed from CI pipelines                                              | v1.1.1   |
 | ✅ CI-02   | Unconfigured scanners (Snyk, Socket, Aikido) removed                                     | v1.1.1   |
 | ✅ TEST-01 | normalize-unified.test.ts timeout fixed with beforeAll                                   | v1.1.1   |

@@ -41,6 +41,12 @@ Between `v1.7.0` and `v1.9.0`, semantic-release ran on **every `main` push** aft
 
 ---
 
+## 2026-07-03 GitHub Pages 403 (transient, resolved)
+
+An audit observed `https://qnbs.github.io/Nexus-HEMS-Dash/` returning HTTP 403 (101-byte body). Investigation found **no code or configuration fault**: `vite.config.ts` `base` is `/Nexus-HEMS-Dash/`, `.nojekyll` is present at the repo root and in `apps/web/public/` (copied into `dist/`), the Pages source is **GitHub Actions** (`build_type: workflow`, source `main:/`), HTTPS is enforced, and every recent `deploy.yml` run on `main` succeeded. Re-probing returned **HTTP 200** serving the SPA shell. Root cause: the transient "try again later" Pages state after rapid `main` pushes — already mitigated by PR #232's `concurrency` queue + sleep/retry and the `prune-deployments` job. No action required; monitor via `deploy.yml`.
+
+---
+
 ## How to cut a release (going forward)
 
 ### Preferred — manual workflow dispatch

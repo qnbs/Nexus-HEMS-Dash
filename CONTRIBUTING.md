@@ -118,6 +118,8 @@ All user-facing text must be translated in both locales:
 
 Use `useTranslation()` hook, never hardcode strings. Both files must be updated simultaneously.
 
+**Parity is CI-enforced (MED-08):** `apps/web/src/tests/i18n-sync.test.ts` recursively diffs the key paths of `en.ts` and `de.ts` and fails the unit-test gate on any drift (a key present in only one locale). A missing translation therefore breaks CI rather than silently falling back — add the key to **both** files.
+
 ### Accessibility (WCAG 2.2 AA)
 
 - Semantic HTML (`<nav>`, `<main>`, `<button>`, etc.)
