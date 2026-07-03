@@ -117,6 +117,34 @@ Same metrics in JSON format for the in-app monitoring dashboard.
 }
 ```
 
+### `POST /api/ocpp/proxy-session`
+
+Issue a short-lived (60 s) single-use OCPP mTLS proxy session for browser Security Profile 3 connections. Credentials are stored server-side and consumed when the client opens `/ws/ocpp`.
+
+**Auth:** JWT with `readwrite` or `admin` scope.
+
+**Body** (validated by `OcppProxySessionRequestSchema`)
+
+```json
+{
+  "host": "192.168.1.100",
+  "port": 9000,
+  "stationId": "CP001",
+  "clientCert": "-----BEGIN CERTIFICATE-----\\n...",
+  "clientKey": "-----BEGIN PRIVATE KEY-----\\n...",
+  "caCert": "-----BEGIN CERTIFICATE-----\\n...",
+  "revocationCheck": "off"
+}
+```
+
+**Response**
+
+```json
+{ "sessionId": "<uuid>", "expiresIn": 60 }
+```
+
+**SSRF guard:** `host` must be a private/local network address.
+
 ### `GET /api/eebus/discover`
 
 List EEBUS devices found via mDNS (`_ship._tcp`).
@@ -139,13 +167,35 @@ Returns a Grafana dashboard JSON model pre-configured for all `hems_*` metrics.
 
 ## WebSocket Protocol
 
-Connect to `ws://host:port` with authentication:
+### Energy gateway (`/ws`)
+
+Connect to `ws://host:port/ws` (or `ws://host:port` depending on deployment) with authentication:
 
 - **Recommended**: Query parameter `?ticket=<single-use-ticket>` (obtain from `POST /api/auth/ws-ticket`)
 - **Fallback**: Query parameter `?token=<JWT>` (long-lived token in URL — less secure)
 - Header: `Authorization: Bearer <JWT>` (not available for initial WS handshake in all browsers)
 
 In production (`NODE_ENV=production`) authentication is **required**; in development anonymous connections are accepted.
+
+### EEBUS SHIP proxy (`/ws/eebus`)
+
+Browser clients connect with a WS ticket; the API terminates mTLS to the device.
+
+```
+ws://host/ws/eebus?ticket=<uuid>&ski=<hex>&host=<hostname>&port=4712
+```
+
+Requires `readwrite` scope. `ski` is mandatory; `host` may be omitted when the device is in the trust store.
+
+### OCPP 2.1 mTLS proxy (`/ws/ocpp`)
+
+Browser Security Profile 3 clients connect after `POST /api/ocpp/proxy-session`:
+
+```
+ws://host/ws/ocpp?ticket=<uuid>&session=<uuid>
+```
+
+Requires `readwrite` scope. The `session` id is single-use and holds client certificate material server-side.
 
 > **Per-IP connection limit**: Maximum 10 concurrent WebSocket connections per IP address. Excess connections are rejected with HTTP 429.
 

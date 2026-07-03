@@ -599,8 +599,8 @@ Storybook config references component paths that may not have stories written ye
 ### MEDIUM (new)
 
 ### MED-12 — Adapter Worker Hook Exists But Has No Consumers
-**File:** `apps/web/src/core/useAdapterWorker.ts`
-**Status:** 🔶 Infrastructure ready; production activation deliberately deferred (safety-gated)
+**File:** `apps/web/src/core/useAdapterWorker.ts`, `apps/web/src/core/sunspec-transforms.ts`
+**Status:** 🔶 Parity harness landed; production activation still safety-gated
 
 Modbus/Shelly still poll on the main thread. The worker (`adapter-worker.ts`, SSRF
 hostname allowlist + SunSpec inverter/battery/meter transforms) and the
@@ -608,20 +608,20 @@ hostname allowlist + SunSpec inverter/battery/meter transforms) and the
 `data` messages through the **same** `useEnergyStore.mergeData(adapterId, …)`
 pipeline the in-thread adapters use, so it is a drop-in alternative poll source.
 
+**Parity (2026-07-03):** scalar SunSpec parsing extracted to shared
+`sunspec-transforms.ts` — consumed by both `ModbusSunSpecAdapter` and
+`adapter-worker`. Golden fixtures in `sunspec-transform-parity.test.ts` lock the
+contract before live worker activation.
+
 **Activation seam:** in `useAdapterBridge()` (`useEnergyStore.ts`), for a
 `ModbusSunSpecAdapter` entry whose config is a REST-bridge endpoint, call
 `useAdapterWorker().startPolling(id, url, headers, pollIntervalMs)` instead of
 `entry.adapter.connect()` and skip the adapter's own `pollTimer`.
 
-**Why deferred:** this moves a **safety-critical, real-time** data path onto the
-worker. Activating it safely requires an integration harness that proves the
-worker's SunSpec transform yields a byte-for-byte-equivalent `UnifiedEnergyModel`
-to the adapter's in-thread parsing (scale factors, register maps, edge cases) — not
-available without live/mock hardware fixtures. Per the project's safety-first ethos
-we do not swap the live path blind. **Done now:** the security-critical URL/SSRF
-normalization was extracted to the pure, exported `normalizePollTarget()` and unit
-tested (`apps/web/src/tests/adapter-worker-target.test.ts`, 12 cases: http/https
-parsing, port/query, non-http scheme rejection, unparseable input).
+**Why still deferred:** moving the live poll path requires soak testing with
+hardware/mock fixtures beyond scalar parity. Per safety-first policy we do not
+swap the live path blind. URL/SSRF normalization remains in
+`normalizePollTarget()` (`adapter-worker-target.test.ts`, 12 cases).
 
 ---
 

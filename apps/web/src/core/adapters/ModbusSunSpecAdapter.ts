@@ -24,6 +24,11 @@
  *   POST /api/modbus/write              →  Write register { register, value }
  */
 
+import {
+  parseSunSpecBatteryScalars,
+  parseSunSpecInverterScalars,
+  parseSunSpecMeterScalars,
+} from '../sunspec-transforms';
 import { BaseAdapter } from './BaseAdapter';
 import type {
   AdapterCapability,
@@ -467,16 +472,12 @@ export class ModbusSunSpecAdapter extends BaseAdapter {
 
   // ─── SunSpec parsers (with scale factor support) ──────────────────
 
-  private applyScaleFactor(value: number, sf: number | undefined): number {
-    if (sf === undefined || sf === 0) return value;
-    return value * 10 ** sf;
-  }
-
   private parseInverter(regs: SunSpecInverterRegs | null): PVData | undefined {
     if (!regs) return undefined;
+    const core = parseSunSpecInverterScalars(regs as unknown as Record<string, unknown>);
     return {
-      totalPowerW: this.applyScaleFactor(regs.W, regs.W_SF),
-      yieldTodayKWh: this.applyScaleFactor(regs.WH, regs.WH_SF) / 1000,
+      totalPowerW: core.totalPowerW,
+      yieldTodayKWh: core.yieldTodayKWh,
       strings: regs.strings?.map((s, i) => ({
         id: i + 1,
         powerW: s.DCW,
@@ -488,29 +489,27 @@ export class ModbusSunSpecAdapter extends BaseAdapter {
 
   private parseBattery(regs: SunSpecBatteryRegs | null): BatteryData | undefined {
     if (!regs) return undefined;
+    const core = parseSunSpecBatteryScalars(regs as unknown as Record<string, unknown>);
     return {
-      powerW: this.applyScaleFactor(regs.W, regs.W_SF),
-      socPercent: this.applyScaleFactor(regs.SoC, regs.SoC_SF),
-      voltageV: regs.V,
-      currentA: regs.A,
-      temperatureC: regs.TmpBdy,
-      cycleCount: regs.CycCnt,
-      stateOfHealthPercent: regs.SoH,
+      powerW: core.powerW,
+      socPercent: core.socPercent,
+      voltageV: core.voltageV ?? regs.V,
+      currentA: core.currentA ?? regs.A,
+      temperatureC: core.temperatureC,
+      cycleCount: core.cycleCount,
+      stateOfHealthPercent: core.stateOfHealthPercent,
     };
   }
 
   private parseMeter(regs: SunSpecMeterRegs | null): GridData | undefined {
     if (!regs) return undefined;
+    const core = parseSunSpecMeterScalars(regs as unknown as Record<string, unknown>);
     return {
-      powerW: this.applyScaleFactor(regs.W, regs.W_SF),
-      voltageV: regs.PhV,
-      frequencyHz: regs.Hz,
-      energyImportKWh: regs.TotWhImp
-        ? this.applyScaleFactor(regs.TotWhImp, regs.TotWh_SF) / 1000
-        : undefined,
-      energyExportKWh: regs.TotWhExp
-        ? this.applyScaleFactor(regs.TotWhExp, regs.TotWh_SF) / 1000
-        : undefined,
+      powerW: core.powerW,
+      voltageV: core.voltageV ?? regs.PhV,
+      frequencyHz: core.frequencyHz,
+      energyImportKWh: core.energyImportKWh,
+      energyExportKWh: core.energyExportKWh,
       phases: regs.phases?.map((p) => ({
         voltageV: p.PhV,
         currentA: p.A,
