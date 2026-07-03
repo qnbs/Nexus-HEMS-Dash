@@ -479,12 +479,10 @@ Added post-construction validation loop that calls `console.warn` for each `API_
 
 ### LOW-06 — Commitlint Has Unused Scopes
 
-**File:** `commitlint.config.js`
-**Status:** ⏳ Backlog
+**File:** `commitlint.config.js`, `CONTRIBUTING.md`
+**Status:** ✅ Fixed in v1.9.0 prep
 
-~20 allowed scopes defined but only ~5 used in practice. Developers are confused about correct scope.
-
-**Fix:** Audit `git log --oneline` for scope usage. Remove unused scopes or document them in a `CONTRIBUTING.md` scope guide.
+Scope guide table added to `CONTRIBUTING.md` mapping each allowed scope to its domain. Unknown scopes remain advisory (`scope-enum` level 1).
 
 ---
 
@@ -811,8 +809,9 @@ The following `pnpm.overrides` in root `package.json` exist for security reasons
 
 | Version | Scope | Status |
 | ------- | ----- | ------ |
-| **v1.3.0** | **Perfection Roadmap Phase 0–1** — CRIT-04/05 auth+safety defaults, HIGH-10–16 test/supply-chain gaps, MED-12–14 perf/CI | ⏳ In flight |
-| **v1.4.0** | **Perfection Roadmap Phase 2–3** — OCPP Profile 3, EEBUS E2E, RBAC (ADR-009), certification package | ⏳ Planned |
+| **v1.3.0–v1.7.0** | Perfection Roadmap Phase 0–1 — safety defaults, auth, supply chain, backend bridge, coverage | ✅ Shipped |
+| **v1.8.0–v1.9.0** | ADR-025 backend WS consumer, read-only banner, release curation (#236) | ✅ Shipped |
+| **v1.10.0+** | Phase 2–3 — OCPP SP3 mTLS proxy (HIGH-12), CSP reduction (AUD-02), RBAC (ADR-009) | ⏳ Planned |
 
 ---
 

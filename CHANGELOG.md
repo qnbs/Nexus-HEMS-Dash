@@ -15,7 +15,9 @@ Release notes are maintained here and published via [semantic-release](https://g
 - **Version sync** — workspace `package.json`, `tauri.conf.json`, and `Cargo.toml` aligned to **1.9.0**; `.releaserc.json` git assets extended.
 - **Tauri desktop CI** — generated `src-tauri/icons/*`; mobile-only plugins (`haptics`, `barcode_scanner`) gated to Android/iOS targets.
 - **OpenEMS writable allowlist (LOW-02)** — `additionalWritableProperties` per component ID in adapter config.
-- **Docs truth-sync** — `FEATURE_STATUS.md`, ADR-015, `Manual-Workflow-Triggers.md`, `docs/Release-History.md`, audit report `docs/Audit-Report-2026-07-03.md`.
+- **Helm chart CI gate** — `ci.yml` runs `helm lint` + `helm template` smoke; `Chart.yaml` `appVersion` synced to **1.9.0**.
+- **Tauri workflow default** — `tauri-build.yml` dispatch default version `1.9.0`.
+- **Docs** — debt registry release roadmap, `FEATURE_STATUS` Helm/Tauri rows, `CONTRIBUTING` scope + coverage tables (LOW-06).
 
 ## [1.9.0] - 2026-07-02
 

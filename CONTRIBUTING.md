@@ -153,7 +153,19 @@ This project uses the **React Compiler** (`babel-plugin-react-compiler`) for aut
 4. Ensure the staged local gate passes: `pnpm verify:basis`; run `pnpm build` when build/runtime paths changed
 5. Commit with Conventional Commits: `feat:`, `fix:`, `test:`, `docs:`, `refactor:`, `chore:`, `perf:`, `ci:`
 
-   Common scopes: `adapter`, `store`, `sankey`, `floorplan`, `ui`, `settings`, `auth`, `db`, `e2e`, `deps`, `docker`, `ci`, `theme`
+   Common scopes (optional; commitlint warns on unknown scopes):
+
+   | Scope | Use for |
+   |-------|---------|
+   | `adapter` | Protocol adapters (general) |
+   | `victron`, `knx`, `eebus`, `ocpp`, `modbus` | Protocol-specific adapter work |
+   | `sankey`, `floorplan` | D3 Sankey / KNX floorplan (do not break) |
+   | `store` | Zustand stores |
+   | `ui`, `theme`, `settings` | Components, design tokens, settings |
+   | `auth`, `db`, `tariff`, `ai`, `pwa` | Security, IndexedDB, tariffs, AI, offline |
+   | `e2e`, `ci`, `deps`, `docker` | Tests, workflows, dependencies, containers |
+
+   Omit scope when the change spans multiple areas: `feat: add backend WS health pill`.
 
    Examples:
    - `feat(adapter): add Zigbee2MQTT retry logic`
@@ -285,7 +297,7 @@ Create an ADR using this template:
 
 | Layer        | Tool                                         | Threshold                           | Focus                                                                                       |
 | ------------ | -------------------------------------------- | ----------------------------------- | ------------------------------------------------------------------------------------------- |
-| **Unit**     | Vitest + jsdom                               | Stmts ≥52%, Branches ≥42%, Fns ≥53% | Store logic, adapters, crypto, formatters, circuit-breaker, tariff-providers, notifications |
+| **Unit**     | Vitest + jsdom                               | Web **78/72/70/80**; API **55/46/62/55** stmts/branches/fns/lines | Store, adapters, API routes; see `vitest.config.ts` + `coverage-baseline.json` |
 | **E2E**      | Playwright (Chromium local; + Firefox in CI) | All specs pass                      | User flows, navigation, settings                                                            |
 | **A11y**     | @axe-core/playwright                         | WCAG 2.2 AA on all routes           | Keyboard nav, contrast, ARIA                                                                |
 | **Visual**   | Chromatic + Storybook                        | No unreviewed changes               | Component regression                                                                        |
