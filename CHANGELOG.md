@@ -16,6 +16,7 @@ Release notes are maintained here and published via [semantic-release](https://g
 
 ### Added
 
+- **Storybook coverage (LOW-08)** — stories for `SankeyDiagram`, `Floorplan`, and `AdapterConfigPanel` (visual regression baseline for high-complexity components).
 - **Adapter worker activation (MED-12)** — `useAdapterBridge` offloads Modbus SunSpec REST polling to `adapter-worker` when `VITE_ADAPTER_WORKER=true` (requires live hardware ack); shared `mergeSunSpecRegistersToUnified()`; `sunspecPoll` worker message.
 - **SunSpec transform parity module (MED-12)** — shared `sunspec-transforms.ts` used by `ModbusSunSpecAdapter` and `adapter-worker`; golden parity tests before worker activation.
 - **OCPP Security Profile 3 mTLS API proxy (HIGH-12)** — `POST /api/ocpp/proxy-session` stores short-lived mTLS credentials server-side; browser connects via `/ws/ocpp?ticket=&session=` relay (mirrors EEBUS `/ws/eebus` pattern). `OCPP21Adapter` uses proxy automatically for SP3 in browser.

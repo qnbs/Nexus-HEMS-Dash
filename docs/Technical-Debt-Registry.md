@@ -499,11 +499,11 @@ All 4 font preloads with SRI hashes are already present in `apps/web/index.html`
 ### LOW-08 — Storybook References Placeholder Components
 
 **File:** `.storybook/main.ts`
-**Status:** ⏳ Backlog — depends on Storybook 10.3 support
+**Status:** ✅ Resolved — core high-complexity stories added (SankeyDiagram, Floorplan, AdapterConfigPanel)
 
 Storybook config references component paths that may not have stories written yet.
 
-**Fix:** Add stories for `SankeyDiagram`, `FloorplanEditor`, `AdapterConfigPanel` — the three highest-complexity components with no visual regression tests.
+**Fix:** Add stories for `SankeyDiagram`, `FloorplanEditor`, `AdapterConfigPanel` — the three highest-complexity components with no visual regression tests. **Done 2026-07-03:** `SankeyDiagram.stories.tsx`, `Floorplan.stories.tsx`, `AdapterConfigPanel.stories.tsx`.
 
 ---
 
@@ -754,7 +754,7 @@ Protocol→adapter mapping in `hardware-adapter-map.ts`.
 
 **Shipped backend adapters:** Modbus, MQTT, Knx, Evcc, EebusProtocol, HeatPump, OpenEMS, OCPP CSMS (+ ExecService for scripts).
 
-**Remaining:** optional `style-src-attr` tightening (AUD-02 follow-up), multi-user RBAC (ADR-009), Storybook coverage (LOW-08).
+**Remaining:** optional `style-src-attr` tightening (AUD-02 follow-up), multi-user RBAC (ADR-009).
 
 ---
 
