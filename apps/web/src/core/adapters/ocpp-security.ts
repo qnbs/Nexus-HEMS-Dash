@@ -4,8 +4,8 @@
  * Browser WebSocket cannot attach custom Authorization headers or present
  * client certificates. Profile 1/2 use HTTP Basic credentials embedded in the
  * WebSocket URL (station ID + authorization key). Profile 3 validates mTLS
- * material from the encrypted vault; full client-cert presentation requires
- * Tauri/desktop or an API-side proxy.
+ * material from the encrypted vault; browser clients use the API `/ws/ocpp` proxy
+ * (POST `/api/ocpp/proxy-session` + single-use WS ticket) for full mTLS.
  */
 
 import type { OCPPSecurityProfile } from './OCPP21Adapter';
@@ -94,7 +94,7 @@ export function prepareOcppConnection(input: OcppSecurityInput): OcppConnectionP
       };
     }
     warnings.push(
-      'Browser WebSocket cannot present client certificates; use Tauri/desktop or API proxy for full mTLS.',
+      'Browser WebSocket cannot present client certificates; use API proxy (/ws/ocpp) or Tauri/desktop for full mTLS.',
     );
   }
 

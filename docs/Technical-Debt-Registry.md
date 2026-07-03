@@ -549,10 +549,10 @@ Storybook config references component paths that may not have stories written ye
 ---
 
 ### HIGH-12 — OCPP Security Profile 3 Not Operational
-**File:** `apps/web/src/core/adapters/OCPP21Adapter.ts`, `ocpp-security.ts`
-**Status:** ⚠️ Partial — v1.3.0 prep
+**File:** `apps/web/src/core/adapters/OCPP21Adapter.ts`, `ocpp-security.ts`, `apps/api/src/ws/ocpp-proxy.ws.ts`
+**Status:** ✅ Fixed in v1.10.0 prep
 
-`securityProfile` now drives `_connect()`: secure-store credential merge, Basic Auth URL for profiles 1/2, mTLS PEM validation for profile 3, configurable CRL hook. Browser WebSocket cannot present client certificates — full mTLS requires Tauri/desktop or API proxy (documented in `ocpp-security.ts` and Certificate Management UI).
+`securityProfile` drives `_connect()`: secure-store credential merge, Basic Auth URL for profiles 1/2, mTLS PEM validation for profile 3. Browser SP3 uses API proxy — `POST /api/ocpp/proxy-session` + `/ws/ocpp` mTLS relay (server holds client cert; mirrors EEBUS `/ws/eebus` pattern). Tauri/desktop may still connect directly.
 
 ---
 
@@ -757,7 +757,7 @@ Protocol→adapter mapping in `hardware-adapter-map.ts`.
 
 **Shipped backend adapters:** Modbus, MQTT, Knx, Evcc, EebusProtocol, HeatPump, OpenEMS, OCPP CSMS (+ ExecService for scripts).
 
-**Remaining:** OCPP Security Profile 3 (mTLS) for CSMS — HIGH-12, separate scoped PR.
+**Remaining:** CSP `unsafe-inline` reduction (AUD-02), adapter worker activation (MED-12), multi-user RBAC (ADR-009).
 
 ---
 
@@ -811,7 +811,7 @@ The following `pnpm.overrides` in root `package.json` exist for security reasons
 | ------- | ----- | ------ |
 | **v1.3.0–v1.7.0** | Perfection Roadmap Phase 0–1 — safety defaults, auth, supply chain, backend bridge, coverage | ✅ Shipped |
 | **v1.8.0–v1.9.0** | ADR-025 backend WS consumer, read-only banner, release curation (#236) | ✅ Shipped |
-| **v1.10.0+** | Phase 2–3 — OCPP SP3 mTLS proxy (HIGH-12), CSP reduction (AUD-02), RBAC (ADR-009) | ⏳ Planned |
+| **v1.10.0+** | Phase 2–3 — CSP reduction (AUD-02), RBAC (ADR-009), API coverage ratchet (MED-01) | ⏳ Planned |
 
 ---
 

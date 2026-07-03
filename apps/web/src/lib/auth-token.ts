@@ -75,7 +75,7 @@ export function getAuthHeader(): Record<string, string> | null {
   return token ? { Authorization: `Bearer ${token}` } : null;
 }
 
-/** Obtain a single-use WebSocket ticket for `/ws` or `/ws/eebus` proxy connections. */
+/** Obtain a single-use WebSocket ticket for `/ws`, `/ws/eebus`, or `/ws/ocpp` proxy connections. */
 export async function fetchWsTicket(): Promise<string | null> {
   const base = getApiBaseUrl();
   const headers = getAuthHeader();

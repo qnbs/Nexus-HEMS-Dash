@@ -26,6 +26,7 @@ import { createHealthRoutes } from './routes/health.routes.js';
 import { createHistoryRoutes } from './routes/history.routes.js';
 import { createMetricsRoutes } from './routes/metrics.routes.js';
 import { createModbusRoutes } from './routes/modbus.routes.js';
+import { createOcppRoutes } from './routes/ocpp.routes.js';
 import { createOpenADRRoutes } from './routes/openadr.routes.js';
 import { createSharesRoutes } from './routes/shares.routes.js';
 import { createShellyWebhookRoutes } from './routes/shelly-webhook.routes.js';
@@ -71,8 +72,8 @@ export async function startServer(): Promise<void> {
   configureHelmet(app, isDev, buildNonce);
   configureRateLimiting(app, isDev);
 
-  // Parse JSON for POST routes
-  app.use(express.json({ limit: '10kb' }));
+  // Parse JSON for POST routes (64kb allows OCPP mTLS PEM bundles via proxy-session)
+  app.use(express.json({ limit: '64kb' }));
 
   // ─── HTTP Server + WebSocket ──────────────────────────────────────
   const server = http.createServer(app);
@@ -82,6 +83,7 @@ export async function startServer(): Promise<void> {
   app.use(createAuthRoutes());
   app.use(createSharesRoutes());
   app.use(createEebusRoutes());
+  app.use(createOcppRoutes());
   app.use(createExecRoutes());
   app.use(createShellyWebhookRoutes());
   app.use(createOpenADRRoutes());

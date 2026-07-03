@@ -20,7 +20,7 @@ mode, data reaches the browser UI via `LiveEnergyAggregator` → WebSocket gatew
 | OCPP CSMS | `ocpp/OcppCsmsProtocolAdapter.ts` | `OCPP_CSMS_PORT` | v1.7.0 |
 | Exec scripts | `services/ExecService.ts` | `EXEC_SCRIPTS_CONFIG` | v1.5.0 |
 
-**Planned:** OCPP CSMS Security Profile 3 / mTLS (HIGH-12).
+**Shipped:** OCPP CSMS Security Profile 3 / mTLS browser proxy (`/ws/ocpp`, HIGH-12). Backend `OcppCsmsProtocolAdapter` remains SP0 gateway.
 
 ## Adapter Mode (Safety-Critical)
 

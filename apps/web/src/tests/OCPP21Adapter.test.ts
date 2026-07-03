@@ -379,7 +379,37 @@ describe('OCPP21Adapter — Security Profiles', () => {
     adapter.destroy();
   });
 
-  it('connects with profile 3 when PEM credentials are configured', async () => {
+  it('connects with profile 3 via API proxy in browser', async () => {
+    localStorage.setItem('nexus-hems-auth-token', 'jwt-token');
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValueOnce(
+          new Response(JSON.stringify({ sessionId: 'sess-test' }), { status: 200 }),
+        )
+        .mockResolvedValueOnce(new Response(JSON.stringify({ ticket: 't1' }), { status: 200 })),
+    );
+
+    const adapter = new OCPP21Adapter({
+      host: 'csms.local',
+      port: 9000,
+      securityProfile: 3,
+      stationId: 'WB-01',
+      clientCert: '-----BEGIN CERTIFICATE-----\nMIIB\n-----END CERTIFICATE-----',
+      clientKey: '-----BEGIN PRIVATE KEY-----\nMIIE\n-----END PRIVATE KEY-----',
+    });
+    await adapter.connect();
+    expect(mockInstance?.url).toContain('/ws/ocpp?');
+    expect(mockInstance?.url).toContain('ticket=t1');
+    expect(mockInstance?.url).toContain('session=sess-test');
+    mockInstance!.onclose?.();
+    adapter.destroy();
+  });
+
+  it('connects with profile 3 directly when not in browser', async () => {
+    vi.stubGlobal('window', undefined);
+
     const adapter = new OCPP21Adapter({
       host: 'csms.local',
       port: 9000,
