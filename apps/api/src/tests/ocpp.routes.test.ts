@@ -6,7 +6,7 @@ import express from 'express';
 import supertest from 'supertest';
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
-const SECRET = 'ocpp-routes-test-jwt-secret-min-32-chars';
+const SECRET = 'nexus-hems-ci-fixture-jwt-signing-key-not-a-real-credential';
 const PEM_CERT = '-----BEGIN CERTIFICATE-----\nMIIB\n-----END CERTIFICATE-----';
 const PEM_KEY = '-----BEGIN PRIVATE KEY-----\nMIIE\n-----END PRIVATE KEY-----';
 

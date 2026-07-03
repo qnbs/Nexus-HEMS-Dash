@@ -6,7 +6,7 @@ import express from 'express';
 import supertest from 'supertest';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
-const SECRET = 'modbus-test-jwt-secret-min-32-characters-long';
+const SECRET = 'nexus-hems-ci-fixture-jwt-signing-key-not-a-real-credential';
 
 describe('Modbus SunSpec proxy API', () => {
   const prevEnv = { ...process.env };

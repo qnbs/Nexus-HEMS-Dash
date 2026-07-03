@@ -7,7 +7,7 @@ import supertest from 'supertest';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { setEebusRevocationConfig } from '../config/eebus-revocation.js';
 
-const SECRET = 'eebus-routes-test-jwt-secret-min-32-chars';
+const SECRET = 'nexus-hems-ci-fixture-jwt-signing-key-not-a-real-credential';
 const SKI = 'a'.repeat(40);
 
 const listDevices = vi.fn();

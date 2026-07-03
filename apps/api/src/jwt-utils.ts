@@ -194,10 +194,19 @@ function makeKeySlot(secret: string, kidOverride?: string): KeySlot {
 }
 
 /**
- * Estimate entropy of a secret string (rough heuristic).
- * Warns if the secret appears to have low entropy (dictionary words, patterns).
+ * Estimate entropy of a secret string and enforce cryptographic hygiene (CRIT-03).
+ *
+ * In production (`isProd === true`) a known-weak pattern OR an estimated entropy
+ * below 128 bits is **fatal** — this throws to abort boot rather than starting with
+ * a guessable signing key. A secret shorter than the recommended length stays a
+ * non-fatal warning. In dev/test every condition is warn-only (never throws) so
+ * local workflows are not blocked.
+ *
+ * Log/throw hygiene: messages never include the secret, its length, or the derived
+ * entropy value (CodeQL [js/clear-text-logging]).
  */
-function checkSecretEntropy(secret: string, source: string): void {
+// Exported for unit testing (CRIT-03 enforcement). Not part of the public signing API.
+export function checkSecretEntropy(secret: string, source: string, isProd: boolean): void {
   // Basic entropy checks
   const hasLower = /[a-z]/.test(secret);
   const hasUpper = /[A-Z]/.test(secret);
@@ -207,35 +216,46 @@ function checkSecretEntropy(secret: string, source: string): void {
     (hasLower ? 26 : 0) + (hasUpper ? 26 : 0) + (hasDigit ? 10 : 0) + (hasSpecial ? 32 : 0);
   const estimatedEntropy = secret.length * Math.log2(charsetSize || 1);
 
-  // Warn if entropy is low (< 128 bits is weak for cryptographic use)
+  // Known-weak patterns — most severe, checked first. Only the source label is
+  // referenced, never the matched pattern or the secret.
+  const weakPatterns = ['password', 'secret', '123456', 'admin', 'test', 'changeme', 'default'];
+  const lowerSecret = secret.toLowerCase();
+  const hasWeakPattern = weakPatterns.some((pattern) => lowerSecret.includes(pattern));
+  if (hasWeakPattern) {
+    if (isProd) {
+      throw new Error(
+        `[JWT] FATAL: ${source} contains a known-weak pattern. Refusing to start in production. ` +
+          'Use a cryptographically random secret (e.g., openssl rand -base64 64).',
+      );
+    }
+    console.error(
+      `[JWT] SECURITY RISK: ${source} contains a known-weak pattern. ` +
+        'Use a cryptographically random secret in production!',
+    );
+  }
+
+  // Low entropy (< 128 bits is weak for cryptographic use).
   if (estimatedEntropy < 128) {
-    // Do NOT log estimatedEntropy (derived from secret) — CodeQL [js/clear-text-logging]
+    if (isProd) {
+      // Do NOT include estimatedEntropy (derived from secret) — CodeQL [js/clear-text-logging]
+      throw new Error(
+        `[JWT] FATAL: ${source} has insufficient entropy for production. Refusing to start. ` +
+          'Use a cryptographically random secret (e.g., openssl rand -base64 64).',
+      );
+    }
     console.warn(
       `[JWT] WARNING: ${source} appears to have low entropy. ` +
         'Use a cryptographically random secret (e.g., openssl rand -base64 64).',
     );
   }
 
-  // Warn if secret is shorter than recommended
-  // Compare against a pre-defined constant so the secret length itself is never logged
+  // Shorter than recommended — non-fatal in every environment.
+  // Compare against a pre-defined constant so the secret length itself is never logged.
   if (secret.length < JWT_RECOMMENDED_SECRET_LENGTH) {
     console.warn(
       `[JWT] WARNING: ${source} is shorter than the recommended ${JWT_RECOMMENDED_SECRET_LENGTH} characters. ` +
         'Consider using a longer secret for HS256.',
     );
-  }
-
-  // Warn about common weak patterns — only the matched pattern name is logged, never the secret
-  const weakPatterns = ['password', 'secret', '123456', 'admin', 'test', 'changeme', 'default'];
-  const lowerSecret = secret.toLowerCase();
-  for (const pattern of weakPatterns) {
-    if (lowerSecret.includes(pattern)) {
-      console.error(
-        `[JWT] SECURITY RISK: ${source} contains a known-weak pattern. ` +
-          'Use a cryptographically random secret in production!',
-      );
-      break;
-    }
   }
 }
 
@@ -290,15 +310,13 @@ function resolveSigningMaterial(): SigningMaterial {
         '[JWT] JWT_SECRET (or JWT_SECRET_FILE) is required when JWT_SECRET_NEW is configured.',
       );
     }
-    if (isProd) {
-      checkSecretEntropy(main, 'JWT_SECRET (verification)');
-      checkSecretEntropy(fresh, 'JWT_SECRET_NEW (signing)');
-    }
+    checkSecretEntropy(main, 'JWT_SECRET (verification)', isProd);
+    checkSecretEntropy(fresh, 'JWT_SECRET_NEW (signing)', isProd);
     return { signing: fresh, verificationFallback: main };
   }
 
   if (main && main.length >= JWT_MIN_SECRET_LENGTH) {
-    if (isProd) checkSecretEntropy(main, 'JWT_SECRET env var');
+    checkSecretEntropy(main, 'JWT_SECRET env var', isProd);
     return { signing: main, verificationFallback: null };
   }
 
