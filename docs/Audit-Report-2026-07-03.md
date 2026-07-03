@@ -56,7 +56,7 @@ The project is in **strong operational shape**: CI green, GitHub Pages deploy he
 |----|----------|------|-----------|
 | HIGH-12 | HIGH | OCPP SP3 mTLS | ✅ API proxy `/ws/ocpp` + `POST /api/ocpp/proxy-session` |
 | AUD-02 | MED | CSP `style-src unsafe-inline` | v1.8.0+ phased hash/nonce plan |
-| MED-12 | MED | Adapter worker not activated | Byte-for-byte parity harness before live switch |
+| MED-12 | MED | Adapter worker not activated | Scalar parity harness (`sunspec-transforms.ts`); live switch still gated |
 | MED-01 | MED | API coverage toward 70%+ | Continue ratcheting as tests land |
 | PRF-01/02 | LOW | DeepSource/CodeAnt advisory | Owner tuning |
 | LOW-08 | LOW | Storybook gaps | Sankey, Floorplan, AdapterConfigPanel stories |

@@ -107,60 +107,24 @@ const SAFE_PATH = /^\/[A-Za-z0-9._~%!$&'()*+,;=:@/-]*$/;
 
 // ─── SunSpec scale factor helper (compute-heavy, offloaded here) ─────
 
-function applyScaleFactor(value: number, sf: number | undefined): number {
-  if (sf === undefined || sf === 0) return value;
-  return value * 10 ** sf;
-}
+import {
+  parseSunSpecBatteryScalars,
+  parseSunSpecInverterScalars,
+  parseSunSpecMeterScalars,
+} from './sunspec-transforms.js';
 
 // ─── Transform functions ─────────────────────────────────────────────
 
 function transformSunSpecInverter(raw: Record<string, unknown>): Record<string, unknown> {
-  const W = Number(raw.W ?? 0);
-  const WH = Number(raw.WH ?? 0);
-  const W_SF = raw.W_SF != null ? Number(raw.W_SF) : undefined;
-  const WH_SF = raw.WH_SF != null ? Number(raw.WH_SF) : undefined;
-
-  return {
-    totalPowerW: applyScaleFactor(W, W_SF),
-    yieldTodayKWh: applyScaleFactor(WH, WH_SF) / 1000,
-    voltageV: raw.PhVphA != null ? Number(raw.PhVphA) : undefined,
-    currentA: raw.A != null ? Number(raw.A) : undefined,
-    frequencyHz: raw.Hz != null ? Number(raw.Hz) : undefined,
-    state: raw.St != null ? Number(raw.St) : undefined,
-  };
+  return parseSunSpecInverterScalars(raw);
 }
 
 function transformSunSpecBattery(raw: Record<string, unknown>): Record<string, unknown> {
-  const W = Number(raw.W ?? 0);
-  const SoC = Number(raw.SoC ?? 0);
-  const W_SF = raw.W_SF != null ? Number(raw.W_SF) : undefined;
-  const SoC_SF = raw.SoC_SF != null ? Number(raw.SoC_SF) : undefined;
-
-  return {
-    powerW: applyScaleFactor(W, W_SF),
-    socPercent: applyScaleFactor(SoC, SoC_SF),
-    voltageV: raw.V != null ? Number(raw.V) : undefined,
-    currentA: raw.A != null ? Number(raw.A) : undefined,
-    temperatureC: raw.TmpBdy != null ? Number(raw.TmpBdy) : undefined,
-    cycleCount: raw.CycCnt != null ? Number(raw.CycCnt) : undefined,
-    stateOfHealthPercent: raw.SoH != null ? Number(raw.SoH) : undefined,
-  };
+  return parseSunSpecBatteryScalars(raw);
 }
 
 function transformSunSpecMeter(raw: Record<string, unknown>): Record<string, unknown> {
-  const W = Number(raw.W ?? 0);
-  const W_SF = raw.W_SF != null ? Number(raw.W_SF) : undefined;
-  const TotWh_SF = raw.TotWh_SF != null ? Number(raw.TotWh_SF) : undefined;
-  const TotWhImp = raw.TotWhImp != null ? Number(raw.TotWhImp) : undefined;
-  const TotWhExp = raw.TotWhExp != null ? Number(raw.TotWhExp) : undefined;
-
-  return {
-    powerW: applyScaleFactor(W, W_SF),
-    voltageV: raw.PhV != null ? Number(raw.PhV) : undefined,
-    frequencyHz: raw.Hz != null ? Number(raw.Hz) : undefined,
-    energyImportKWh: TotWhImp != null ? applyScaleFactor(TotWhImp, TotWh_SF) / 1000 : undefined,
-    energyExportKWh: TotWhExp != null ? applyScaleFactor(TotWhExp, TotWh_SF) / 1000 : undefined,
-  };
+  return parseSunSpecMeterScalars(raw);
 }
 
 // ─── URL allowlist for SSRF prevention ───────────────────────────────

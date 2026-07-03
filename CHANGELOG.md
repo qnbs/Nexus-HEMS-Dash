@@ -11,9 +11,12 @@ Release notes are maintained here and published via [semantic-release](https://g
 
 ### Added
 
+- **SunSpec transform parity module (MED-12)** — shared `sunspec-transforms.ts` used by `ModbusSunSpecAdapter` and `adapter-worker`; golden parity tests before worker activation.
 - **OCPP Security Profile 3 mTLS API proxy (HIGH-12)** — `POST /api/ocpp/proxy-session` stores short-lived mTLS credentials server-side; browser connects via `/ws/ocpp?ticket=&session=` relay (mirrors EEBUS `/ws/eebus` pattern). `OCPP21Adapter` uses proxy automatically for SP3 in browser.
 
 ### Changed
+
+- **API reference** — documented `POST /api/ocpp/proxy-session`, `/ws/ocpp`, and `/ws/eebus` WebSocket proxy paths.
 
 - **Release workflow manual-only (ADR-015)** — `release.yml` no longer runs on `main` push; dispatch with `approveRelease=RELEASE`. Removed duplicate `tauri-release` job; desktop builds remain on `tauri-build.yml`.
 - **Version sync** — workspace `package.json`, `tauri.conf.json`, and `Cargo.toml` aligned to **1.9.0**; `.releaserc.json` git assets extended.
