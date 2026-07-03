@@ -16,10 +16,22 @@ describe('isPrivateHost (SSRF guard)', () => {
     expect(isPrivateHost('192.168.1.10')).toBe(true);
   });
 
-  it('accepts link-local and mDNS .local hosts', () => {
-    expect(isPrivateHost('169.254.1.1')).toBe(true);
+  it('accepts IPv6 link-local and mDNS .local hosts', () => {
     expect(isPrivateHost('fe80::1')).toBe(true);
     expect(isPrivateHost('cerbo.local')).toBe(true);
+  });
+
+  it('rejects IPv4 link-local incl. the cloud metadata endpoint (SSRF)', () => {
+    // 169.254.0.0/16 is no longer treated as private — it covers 169.254.169.254.
+    expect(isPrivateHost('169.254.169.254')).toBe(false);
+    expect(isPrivateHost('169.254.1.1')).toBe(false);
+  });
+
+  it('normalizes a :port suffix and bracketed IPv6 literals', () => {
+    expect(isPrivateHost('192.168.0.5:502')).toBe(true);
+    expect(isPrivateHost('[::1]:8443')).toBe(true);
+    expect(isPrivateHost('[fe80::1]')).toBe(true);
+    expect(isPrivateHost('8.8.8.8:443')).toBe(false);
   });
 
   it('rejects public and out-of-range addresses', () => {

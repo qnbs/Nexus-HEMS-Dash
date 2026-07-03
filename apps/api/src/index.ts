@@ -8,7 +8,7 @@ import { validateProductionAuthConfig } from './config/auth-config.js';
 import { extractCspNonceFromIndexHtml } from './config/csp-nonce.js';
 import { logReadOnlyModeStartup } from './config/read-only-mode.js';
 import { logTrustProxyWarning, resolveTrustProxy } from './config/trust-proxy.js';
-import { validateWsOrigins } from './config/ws-origins.js';
+import { isAllowedWsOrigin, parseWsOrigins, validateWsOrigins } from './config/ws-origins.js';
 import { eventBus } from './core/EventBus.js';
 import { logger } from './core/logger.js';
 import { initKeys } from './jwt-utils.js';
@@ -78,7 +78,34 @@ export async function startServer(): Promise<void> {
 
   // ─── HTTP Server + WebSocket ──────────────────────────────────────
   const server = http.createServer(app);
-  const wss = new WebSocketServer({ server, maxPayload: 64 * 1024 });
+
+  // CSWSH guard (CWE-346): reject cross-origin browser WebSocket upgrades. The
+  // browser sends the page Origin on the handshake; a foreign Origin that is not
+  // in the WS_ORIGINS allowlist is rejected before the socket opens. A *missing*
+  // Origin (non-browser clients: CLI relays, charge points) is allowed — those
+  // still authenticate downstream via single-use ticket / JWT. In dev with no
+  // allowlist configured we do not block local tooling.
+  const wsOriginAllowlist = parseWsOrigins(process.env.WS_ORIGINS);
+  const wss = new WebSocketServer({
+    server,
+    maxPayload: 64 * 1024,
+    verifyClient: ({ origin }, cb) => {
+      if (!origin) {
+        cb(true);
+        return;
+      }
+      if (isAllowedWsOrigin(origin, wsOriginAllowlist)) {
+        cb(true);
+        return;
+      }
+      if (isDev && wsOriginAllowlist.length === 0) {
+        cb(true);
+        return;
+      }
+      logger.warn('Rejected WebSocket upgrade from disallowed origin', { origin });
+      cb(false, 403, 'Forbidden origin');
+    },
+  });
 
   // ─── Routes ───────────────────────────────────────────────────────
   app.use(createAuthRoutes());
