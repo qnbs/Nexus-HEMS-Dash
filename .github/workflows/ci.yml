@@ -48,7 +48,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Setup Helm
-        uses: azure/setup-helm@511ed8c345b4d86fe0c3147cbee5b2a1d5e2e9b2 # v4.2.0
+        uses: azure/setup-helm@df50d879fa2c7ad2245510549f2c2eb28d0da618 # v4.2.0
         with:
           version: v3.16.4
 
