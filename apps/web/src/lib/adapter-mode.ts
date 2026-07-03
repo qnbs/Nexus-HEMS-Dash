@@ -103,3 +103,13 @@ export function isReadOnlyModeActive(): boolean {
 export function isBackendWsEnabled(): boolean {
   return import.meta.env.VITE_BACKEND_WS?.trim().toLowerCase() === LIVE_HARDWARE_ACK;
 }
+
+/**
+ * Whether the browser should offload Modbus SunSpec REST polling to the
+ * adapter Web Worker (MED-12). Requires live hardware acknowledgement — same
+ * safety gate as `canConnectHardwareAdapter`.
+ */
+export function isAdapterWorkerEnabled(): boolean {
+  if (!isLiveHardwareBuildAllowed()) return false;
+  return import.meta.env.VITE_ADAPTER_WORKER?.trim().toLowerCase() === LIVE_HARDWARE_ACK;
+}

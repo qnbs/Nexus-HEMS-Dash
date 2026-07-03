@@ -46,6 +46,14 @@ interface TransformMessage {
   format: 'sunspec-inverter' | 'sunspec-battery' | 'sunspec-meter' | 'venus-mqtt' | 'json';
 }
 
+interface SunSpecPollMessage {
+  type: 'sunspecPoll';
+  adapterId: string;
+  target: PollTarget;
+  headers?: Record<string, string>;
+  intervalMs?: number;
+}
+
 interface StopMessage {
   type: 'stop';
   adapterId: string;
@@ -55,7 +63,12 @@ interface StopAllMessage {
   type: 'stopAll';
 }
 
-type WorkerInMessage = PollMessage | TransformMessage | StopMessage | StopAllMessage;
+type WorkerInMessage =
+  | PollMessage
+  | SunSpecPollMessage
+  | TransformMessage
+  | StopMessage
+  | StopAllMessage;
 
 interface DataOutMessage {
   type: 'data';
@@ -108,6 +121,7 @@ const SAFE_PATH = /^\/[A-Za-z0-9._~%!$&'()*+,;=:@/-]*$/;
 // ─── SunSpec scale factor helper (compute-heavy, offloaded here) ─────
 
 import {
+  mergeSunSpecRegistersToUnified,
   parseSunSpecBatteryScalars,
   parseSunSpecInverterScalars,
   parseSunSpecMeterScalars,
@@ -318,6 +332,97 @@ async function executePoll(
   }
 }
 
+const SUNSPEC_MODELS = ['inverter', 'battery', 'meter'] as const;
+
+async function fetchSunSpecModel(
+  baseUrl: URL,
+  model: (typeof SUNSPEC_MODELS)[number],
+  headers?: Record<string, string>,
+): Promise<Record<string, unknown> | null> {
+  const modelUrl = new URL(baseUrl.toString());
+  modelUrl.searchParams.set('model', model);
+  if (!isAllowedUrl(modelUrl)) return null;
+
+  const safeProtocol = modelUrl.protocol === 'https:' ? 'https:' : 'http:';
+  const safeHostname = modelUrl.hostname;
+  const safePort = modelUrl.port;
+  const safePath = modelUrl.pathname;
+  const safeSearch = modelUrl.search;
+  const authority = safePort ? `${safeHostname}:${safePort}` : safeHostname;
+  const safeUrl = `${safeProtocol}//${authority}${safePath}${safeSearch}`;
+
+  const resp = await fetch(safeUrl, {
+    headers: headers ?? {},
+    signal: AbortSignal.timeout(10_000),
+    redirect: 'error',
+  });
+  if (!resp.ok) return null;
+  return (await resp.json()) as Record<string, unknown>;
+}
+
+async function executeSunSpecPoll(
+  adapterId: string,
+  baseUrl: URL,
+  headers?: Record<string, string>,
+): Promise<void> {
+  if (!isAllowedUrl(baseUrl)) {
+    postOut({ type: 'error', adapterId, error: 'Request blocked: URL failed safety re-check' });
+    return;
+  }
+
+  const start = performance.now();
+  try {
+    const results = await Promise.allSettled(
+      SUNSPEC_MODELS.map((model) => fetchSunSpecModel(baseUrl, model, headers)),
+    );
+
+    const inverter = results[0].status === 'fulfilled' ? results[0].value : null;
+    const battery = results[1].status === 'fulfilled' ? results[1].value : null;
+    const meter = results[2].status === 'fulfilled' ? results[2].value : null;
+
+    if (!inverter && !battery && !meter) {
+      postOut({ type: 'error', adapterId, error: 'SunSpec poll failed: no model data' });
+      return;
+    }
+
+    const elapsed = performance.now() - start;
+    postOut({ type: 'latency', adapterId, ms: Math.round(elapsed) });
+    postOut({
+      type: 'data',
+      adapterId,
+      result: mergeSunSpecRegistersToUnified({ inverter, battery, meter }),
+    });
+  } catch (err) {
+    postOut({
+      type: 'error',
+      adapterId,
+      error: err instanceof Error ? err.message : 'SunSpec poll failed',
+    });
+  }
+}
+
+function startPoller(
+  adapterId: string,
+  intervalMs: number | undefined,
+  pollOnce: () => void,
+): void {
+  const existing = pollers.get(adapterId);
+  if (existing) clearInterval(existing);
+
+  const interval = clampPollInterval(intervalMs);
+  let inFlight = false;
+  const guardedPoll = () => {
+    if (inFlight) return;
+    inFlight = true;
+    void Promise.resolve(pollOnce()).finally(() => {
+      inFlight = false;
+    });
+  };
+
+  guardedPoll();
+  pollers.set(adapterId, setInterval(guardedPoll, interval));
+}
+
 // ─── Type-safe postMessage ───────────────────────────────────────────
 
 function postOut(msg: WorkerOutMessage): void {
@@ -335,10 +440,6 @@ self.onmessage = (event: MessageEvent<WorkerInMessage>) => {
 
   switch (msg.type) {
     case 'poll': {
-      // Stop existing poller for this adapter if any
-      const existing = pollers.get(msg.adapterId);
-      if (existing) clearInterval(existing);
-
       const sanitizedUrl = buildAllowedPollUrl(msg.target);
       if (!sanitizedUrl) {
         postOut({
@@ -350,20 +451,27 @@ self.onmessage = (event: MessageEvent<WorkerInMessage>) => {
       }
 
       const sanitizedHeaders = sanitizePollHeaders(msg.headers);
+      startPoller(msg.adapterId, msg.intervalMs, () =>
+        executePoll(msg.adapterId, sanitizedUrl, sanitizedHeaders),
+      );
+      break;
+    }
 
-      const interval = clampPollInterval(msg.intervalMs);
-      let inFlight = false;
-      const pollOnce = () => {
-        if (inFlight) return;
-        inFlight = true;
-        void executePoll(msg.adapterId, sanitizedUrl, sanitizedHeaders).finally(() => {
-          inFlight = false;
+    case 'sunspecPoll': {
+      const sanitizedUrl = buildAllowedPollUrl(msg.target);
+      if (!sanitizedUrl) {
+        postOut({
+          type: 'error',
+          adapterId: msg.adapterId,
+          error: 'Request blocked: invalid SunSpec poll target',
         });
-      };
+        break;
+      }
 
-      // Execute immediately, then schedule
-      pollOnce();
-      pollers.set(msg.adapterId, setInterval(pollOnce, interval));
+      const sanitizedHeaders = sanitizePollHeaders(msg.headers);
+      startPoller(msg.adapterId, msg.intervalMs, () =>
+        executeSunSpecPoll(msg.adapterId, sanitizedUrl, sanitizedHeaders),
+      );
       break;
     }
 

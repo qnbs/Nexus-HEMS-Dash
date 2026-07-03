@@ -7,6 +7,7 @@
 
 import { describe, expect, it } from 'vitest';
 import {
+  mergeSunSpecRegistersToUnified,
   parseSunSpecBatteryScalars,
   parseSunSpecInverterScalars,
   parseSunSpecMeterScalars,
@@ -65,6 +66,18 @@ describe('sunspec-transform parity (MED-12)', () => {
       energyImportKWh: 1.2,
       energyExportKWh: 0.34,
     });
+  });
+
+  it('merges inverter, battery, and meter payloads into a unified partial model', () => {
+    const model = mergeSunSpecRegistersToUnified({
+      inverter: { W: 100, W_SF: 1, WH: 5000, WH_SF: 0 },
+      battery: { W: -200, SoC: 80, W_SF: 0, SoC_SF: 0 },
+      meter: { W: 1500, W_SF: 0, TotWhImp: 12_000, TotWh_SF: -1 },
+    });
+    expect(model.pv?.totalPowerW).toBe(1000);
+    expect(model.battery?.socPercent).toBe(80);
+    expect(model.grid?.energyImportKWh).toBe(1.2);
+    expect(model.timestamp).toBeTypeOf('number');
   });
 
   it('treats zero scale factor as identity (adapter-worker edge case)', () => {

@@ -601,28 +601,24 @@ Storybook config references component paths that may not have stories written ye
 
 ### MED-12 — Adapter Worker Hook Exists But Has No Consumers
 **File:** `apps/web/src/core/useAdapterWorker.ts`, `apps/web/src/core/sunspec-transforms.ts`
-**Status:** 🔶 Parity harness landed; production activation still safety-gated
+**Status:** ✅ Activated — opt-in via `VITE_ADAPTER_WORKER=true` + live hardware ack; SunSpec REST polling off main thread
 
-Modbus/Shelly still poll on the main thread. The worker (`adapter-worker.ts`, SSRF
-hostname allowlist + SunSpec inverter/battery/meter transforms) and the
-`useAdapterWorker` hook are complete: `startPolling()` posts a poll job and routes
-`data` messages through the **same** `useEnergyStore.mergeData(adapterId, …)`
-pipeline the in-thread adapters use, so it is a drop-in alternative poll source.
+Modbus/Shelly still poll on the main thread except **Modbus SunSpec** when the worker
+flag is enabled. The worker (`adapter-worker.ts`, SSRF hostname allowlist + SunSpec
+inverter/battery/meter transforms) and the `useAdapterWorker` hook route poll results
+through the **same** `useEnergyStore.mergeData(adapterId, …)` pipeline the in-thread
+adapters use.
 
 **Parity (2026-07-03):** scalar SunSpec parsing extracted to shared
 `sunspec-transforms.ts` — consumed by both `ModbusSunSpecAdapter` and
 `adapter-worker`. Golden fixtures in `sunspec-transform-parity.test.ts` lock the
-contract before live worker activation.
+contract. `mergeSunSpecRegistersToUnified()` shared for worker + adapter poll output.
 
-**Activation seam:** in `useAdapterBridge()` (`useEnergyStore.ts`), for a
-`ModbusSunSpecAdapter` entry whose config is a REST-bridge endpoint, call
-`useAdapterWorker().startPolling(id, url, headers, pollIntervalMs)` instead of
-`entry.adapter.connect()` and skip the adapter's own `pollTimer`.
-
-**Why still deferred:** moving the live poll path requires soak testing with
-hardware/mock fixtures beyond scalar parity. Per safety-first policy we do not
-swap the live path blind. URL/SSRF normalization remains in
-`normalizePollTarget()` (`adapter-worker-target.test.ts`, 12 cases).
+**Activation (2026-07-03):** `useAdapterBridge()` calls
+`useAdapterWorker().startSunSpecPolling()` for enabled `ModbusSunSpecAdapter` entries
+when `isAdapterWorkerEnabled()` (`VITE_ADAPTER_WORKER=true` + live hardware build).
+Adapter `connect()` / main-thread `pollTimer` skipped via `setDelegatePollingToWorker(true)`.
+Commands still route through the adapter on the main thread.
 
 ---
 
@@ -758,7 +754,7 @@ Protocol→adapter mapping in `hardware-adapter-map.ts`.
 
 **Shipped backend adapters:** Modbus, MQTT, Knx, Evcc, EebusProtocol, HeatPump, OpenEMS, OCPP CSMS (+ ExecService for scripts).
 
-**Remaining:** optional `style-src-attr` tightening (AUD-02 follow-up), adapter worker activation (MED-12), multi-user RBAC (ADR-009).
+**Remaining:** optional `style-src-attr` tightening (AUD-02 follow-up), multi-user RBAC (ADR-009), Storybook coverage (LOW-08).
 
 ---
 

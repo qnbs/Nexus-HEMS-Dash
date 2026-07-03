@@ -17,7 +17,7 @@ The project is in **strong operational shape**: CI green, GitHub Pages deploy he
 3. Tauri desktop CI blocked by missing icons + mobile-only Rust plugins on desktop → **fixed**.
 4. Documentation drift (`FEATURE_STATUS`, `CLAUDE.md`, `README`, `CHANGELOG` structure) → **truth-synced**.
 
-**Remaining intentional backlog:** adapter worker activation (MED-12), multi-user RBAC (ADR-009), Storybook coverage (LOW-08), optional `style-src-attr` tightening (AUD-02 follow-up).
+**Remaining intentional backlog:** multi-user RBAC (ADR-009), Storybook coverage (LOW-08), optional `style-src-attr` tightening (AUD-02 follow-up).
 
 ---
 
@@ -56,7 +56,7 @@ The project is in **strong operational shape**: CI green, GitHub Pages deploy he
 |----|----------|------|-----------|
 | HIGH-12 | HIGH | OCPP SP3 mTLS | ✅ API proxy `/ws/ocpp` + `POST /api/ocpp/proxy-session` |
 | AUD-02 | MED | CSP `style-src unsafe-inline` | ✅ Phase 2: Tauri nonce sync + `style-src-attr`; dev HMR exception |
-| MED-12 | MED | Adapter worker not activated | Scalar parity harness (`sunspec-transforms.ts`); live switch still gated |
+| MED-12 | MED | Adapter worker not activated | ✅ SunSpec worker polling via `VITE_ADAPTER_WORKER=true` |
 | MED-01 | MED | API coverage toward 70%+ | Continue ratcheting as tests land |
 | PRF-01/02 | LOW | DeepSource/CodeAnt advisory | Owner tuning |
 | LOW-08 | LOW | Storybook gaps | Sankey, Floorplan, AdapterConfigPanel stories |

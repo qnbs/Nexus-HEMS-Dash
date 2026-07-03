@@ -4,13 +4,36 @@ import { useAdapterWorker } from '../core/useAdapterWorker';
 
 const mocks = vi.hoisted(() => ({
   mergeData: vi.fn(),
+  setAdapterStatus: vi.fn(),
+  setConnected: vi.fn(),
+  recordSuccess: vi.fn(),
+  recordFailure: vi.fn(),
   recordAdapterError: vi.fn(),
   recordAdapterStatus: vi.fn(),
 }));
 
 vi.mock('../core/useEnergyStore', () => ({
   useEnergyStoreBase: {
-    getState: () => ({ mergeData: mocks.mergeData }),
+    getState: () => ({
+      mergeData: mocks.mergeData,
+      setAdapterStatus: mocks.setAdapterStatus,
+      adapters: {
+        'modbus-sunspec': {
+          adapter: {
+            circuitBreaker: {
+              recordSuccess: mocks.recordSuccess,
+              recordFailure: mocks.recordFailure,
+            },
+          },
+        },
+      },
+    }),
+  },
+}));
+
+vi.mock('../store', () => ({
+  useAppStore: {
+    getState: () => ({ setConnected: mocks.setConnected }),
   },
 }));
 
@@ -36,6 +59,10 @@ describe('useAdapterWorker', () => {
   beforeEach(() => {
     MockWorker.instances = [];
     mocks.mergeData.mockReset();
+    mocks.setAdapterStatus.mockReset();
+    mocks.setConnected.mockReset();
+    mocks.recordSuccess.mockReset();
+    mocks.recordFailure.mockReset();
     mocks.recordAdapterError.mockReset();
     mocks.recordAdapterStatus.mockReset();
     vi.stubGlobal('Worker', MockWorker as unknown as typeof Worker);
@@ -83,7 +110,11 @@ describe('useAdapterWorker', () => {
     });
 
     expect(mocks.mergeData).toHaveBeenCalledWith('modbus-sunspec', { totalPowerW: 1200 });
+    expect(mocks.setAdapterStatus).toHaveBeenCalledWith('modbus-sunspec', 'connected');
+    expect(mocks.recordSuccess).toHaveBeenCalled();
     expect(mocks.recordAdapterError).toHaveBeenCalledWith('modbus-sunspec', 'HTTP 500');
+    expect(mocks.recordFailure).toHaveBeenCalled();
+    expect(mocks.setAdapterStatus).toHaveBeenCalledWith('modbus-sunspec', 'error', 'HTTP 500');
     expect(mocks.recordAdapterStatus).toHaveBeenCalledWith(
       'modbus-sunspec',
       'modbus-sunspec',

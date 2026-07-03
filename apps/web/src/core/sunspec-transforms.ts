@@ -5,6 +5,8 @@
  * so MED-12 parity is enforced by a single code path before worker activation.
  */
 
+import type { BatteryData, GridData, PVData, UnifiedEnergyModel } from './adapters/EnergyAdapter';
+
 export function applySunSpecScaleFactor(value: number, sf: number | undefined): number {
   if (sf === undefined || sf === 0) return value;
   return value * 10 ** sf;
@@ -109,5 +111,91 @@ export function parseSunSpecMeterScalars(raw: Record<string, unknown>): SunSpecM
     ...(frequencyHz !== undefined ? { frequencyHz } : {}),
     ...(energyImportKWh !== undefined ? { energyImportKWh } : {}),
     ...(energyExportKWh !== undefined ? { energyExportKWh } : {}),
+  };
+}
+
+function parseInverterPvData(regs: Record<string, unknown>): PVData | undefined {
+  const core = parseSunSpecInverterScalars(regs);
+  const stringsRaw = regs.strings;
+  const strings = Array.isArray(stringsRaw)
+    ? stringsRaw.flatMap((entry, index) => {
+        if (!entry || typeof entry !== 'object') return [];
+        const s = entry as Record<string, unknown>;
+        return [
+          {
+            id: index + 1,
+            powerW: num(s.DCW),
+            voltageV: num(s.DCV),
+            currentA: num(s.DCA),
+          },
+        ];
+      })
+    : undefined;
+
+  return {
+    totalPowerW: core.totalPowerW,
+    yieldTodayKWh: core.yieldTodayKWh,
+    ...(strings && strings.length > 0 ? { strings } : {}),
+  };
+}
+
+function parseBatteryData(regs: Record<string, unknown>): BatteryData | undefined {
+  const core = parseSunSpecBatteryScalars(regs);
+  return {
+    powerW: core.powerW,
+    socPercent: core.socPercent,
+    voltageV: core.voltageV ?? num(regs.V),
+    currentA: core.currentA ?? num(regs.A),
+    temperatureC: core.temperatureC,
+    cycleCount: core.cycleCount,
+    stateOfHealthPercent: core.stateOfHealthPercent,
+  };
+}
+
+function parseGridData(regs: Record<string, unknown>): GridData | undefined {
+  const core = parseSunSpecMeterScalars(regs);
+  const phasesRaw = regs.phases;
+  const phases = Array.isArray(phasesRaw)
+    ? phasesRaw.flatMap((entry) => {
+        if (!entry || typeof entry !== 'object') return [];
+        const p = entry as Record<string, unknown>;
+        return [
+          {
+            voltageV: num(p.PhV),
+            currentA: num(p.A),
+            powerW: num(p.W),
+          },
+        ];
+      })
+    : undefined;
+
+  return {
+    powerW: core.powerW,
+    voltageV: core.voltageV ?? num(regs.PhV),
+    frequencyHz: core.frequencyHz,
+    energyImportKWh: core.energyImportKWh,
+    energyExportKWh: core.energyExportKWh,
+    ...(phases && phases.length > 0 ? { phases } : {}),
+  };
+}
+
+/**
+ * Merge optional SunSpec register payloads into a partial unified model.
+ * Shared by `ModbusSunSpecAdapter.poll()` and the adapter worker (MED-12).
+ */
+export function mergeSunSpecRegistersToUnified(input: {
+  inverter?: Record<string, unknown> | null;
+  battery?: Record<string, unknown> | null;
+  meter?: Record<string, unknown> | null;
+}): Partial<UnifiedEnergyModel> {
+  const pv = input.inverter ? parseInverterPvData(input.inverter) : undefined;
+  const battery = input.battery ? parseBatteryData(input.battery) : undefined;
+  const grid = input.meter ? parseGridData(input.meter) : undefined;
+
+  return {
+    timestamp: Date.now(),
+    ...(pv ? { pv } : {}),
+    ...(battery ? { battery } : {}),
+    ...(grid ? { grid } : {}),
   };
 }
