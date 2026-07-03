@@ -11,7 +11,9 @@ export default defineConfig({
     include: ['src/**/*.test.ts'],
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'lcov'],
+      // json-summary powers Codecov flag uploads + tooling parity with apps/web
+      // (which already emits it for scripts/check-coverage-baseline.mjs).
+      reporter: ['text', 'json-summary', 'lcov'],
       include: ['src/**/*.ts'],
       exclude: ['src/**/*.test.ts', 'src/data/**'],
       // Staged raise: v1.6.1 measured ~55% statements / 63% functions (P1-05 complete)

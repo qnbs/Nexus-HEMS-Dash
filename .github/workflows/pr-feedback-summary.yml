@@ -22,6 +22,13 @@ permissions:
   pull-requests: write
   actions: read
 
+concurrency:
+  # Key on the head branch (repeats across the 4 upstream workflow_run completions
+  # for the same PR) so overlapping summary-postings dedupe. workflow_run.id would be
+  # unique per run, making the group a no-op.
+  group: ${{ github.workflow }}-${{ github.event.workflow_run.head_branch }}
+  cancel-in-progress: true
+
 jobs:
   summarize:
     name: Post PR Feedback Summary
@@ -51,8 +58,9 @@ jobs:
             | Detail | Link |
             |--------|------|
             | Workflow run | [View run](${runUrl}) |
-            | DeepSource report | [View report card](https://deepsource.io/gh/${repo.owner}/${repo.repo}/transformers/) |
-            | Coverage artifact | 
+            | Coverage (Codecov) | [View PR report](https://app.codecov.io/gh/${repo.owner}/${repo.repo}/pull/${pr.number}) |
+            | DeepSource report | [View report card](https://app.deepsource.com/gh/${repo.owner}/${repo.repo}/) |
+            | Coverage artifact | Download “coverage-report” artifact from the CI run |
             | Bundle analysis | Download “bundle-analysis” artifact from the CI run |
             | Lighthouse report | Download “lighthouse-report” artifact (if Lighthouse run) |
 

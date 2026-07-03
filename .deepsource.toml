@@ -80,3 +80,10 @@ enabled = true
 [[analyzers]]
 name = "test-coverage"
 enabled = true
+
+# No [[transformers]] block by design.
+#   Formatting is owned exclusively by Biome (ADR-001, Biome-first toolchain).
+#   DeepSource ships no `biome` transformer, and its JS transformers (`prettier`,
+#   `standardjs`) are explicitly banned by this repo — registering one would fight
+#   Biome and thrash `git blame`. DeepSource Autofix (dashboard-only, style/unused
+#   categories) is the intended remediation path; see docs/runbooks/deepsource-integration.md.

@@ -20,6 +20,7 @@ jobs:
   lint-typecheck:
     name: Lint & Type Check
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
@@ -44,6 +45,7 @@ jobs:
   helm-chart:
     name: Helm Chart Lint
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
@@ -62,26 +64,61 @@ jobs:
     name: Unit Tests
     runs-on: ubuntu-latest
     needs: lint-typecheck
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          # fetch-depth 2 lets Codecov resolve the comparison base commit.
+          fetch-depth: 2
+          # Read-only test job — don't leave GITHUB_TOKEN in .git/config (zizmor artipacked).
+          persist-credentials: false
 
       - name: Setup Node.js and pnpm
         uses: ./.github/actions/setup-node-pnpm
 
       - name: API Unit Tests with Coverage
-        run: pnpm --filter @nexus-hems/api test:coverage
+        run: |
+          echo "::group::@nexus-hems/api coverage"
+          pnpm --filter @nexus-hems/api test:coverage
+          echo "::endgroup::"
         env:
           TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
           TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
 
       - name: Web Unit Tests with Coverage
-        run: pnpm test:coverage
+        run: |
+          echo "::group::@nexus-hems/web coverage"
+          pnpm test:coverage
+          echo "::endgroup::"
         env:
           TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
           TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
 
       - name: Coverage baseline gate (PRF-03)
         run: pnpm check:coverage-baseline
+
+      # Codecov is ADVISORY (informational status, see .codecov.yml). The blocking
+      # coverage gate is the PRF-03 baseline step above. fail_ci_if_error stays false
+      # so a Codecov outage never blocks the merge. Requires the CODECOV_TOKEN secret.
+      - name: Upload web coverage to Codecov
+        uses: codecov/codecov-action@0fb7174895f61a3b6b78fc075e0cd60383518dac # v5.5.5
+        if: always()
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: apps/web/coverage/lcov.info
+          flags: web
+          fail_ci_if_error: false
+          disable_search: true
+
+      - name: Upload api coverage to Codecov
+        uses: codecov/codecov-action@0fb7174895f61a3b6b78fc075e0cd60383518dac # v5.5.5
+        if: always()
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: apps/api/coverage/lcov.info
+          flags: api
+          fail_ci_if_error: false
+          disable_search: true
 
       - name: Upload coverage
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -95,6 +132,7 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     needs: lint-typecheck
+    timeout-minutes: 30
     permissions:
       contents: read
       # SLSA build-provenance attestation only on push to main (see attest step).
@@ -231,6 +269,7 @@ jobs:
     name: Security Gate
     runs-on: ubuntu-latest
     needs: [lint-typecheck]
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
@@ -273,6 +312,7 @@ jobs:
     name: ✅ CI Passed
     runs-on: ubuntu-latest
     if: always()
+    timeout-minutes: 5
     needs:
       - lint-typecheck
       - helm-chart
@@ -284,13 +324,19 @@ jobs:
     steps:
       - name: Evaluate full CI workflow
         run: |
-          echo "Lint & Type Check: ${{ needs.lint-typecheck.result }}"
-          echo "Helm Chart Lint: ${{ needs.helm-chart.result }}"
-          echo "Unit Tests: ${{ needs.unit-tests.result }}"
-          echo "Build: ${{ needs.build.result }}"
-          echo "E2E Tests: ${{ needs.e2e-tests.result }}"
-          echo "Security Gate: ${{ needs.security.result }}"
-          echo "Fuzz Tests: ${{ needs.fuzz-tests.result }}"
+          {
+            echo "## ✅ CI Gate Results"
+            echo ""
+            echo "| Job | Status |"
+            echo "|-----|--------|"
+            echo "| Lint & Type Check | ${{ needs.lint-typecheck.result }} |"
+            echo "| Helm Chart Lint | ${{ needs.helm-chart.result }} |"
+            echo "| Unit Tests (+ coverage) | ${{ needs.unit-tests.result }} |"
+            echo "| Build (+ SLSA, size) | ${{ needs.build.result }} |"
+            echo "| E2E Tests | ${{ needs.e2e-tests.result }} |"
+            echo "| Security Gate | ${{ needs.security.result }} |"
+            echo "| Fuzz Tests | ${{ needs.fuzz-tests.result }} |"
+          } >> "$GITHUB_STEP_SUMMARY"
           if [[ "${{ needs.lint-typecheck.result }}" != "success" || \
                 "${{ needs.helm-chart.result }}" != "success" || \
                 "${{ needs.unit-tests.result }}" != "success" || \

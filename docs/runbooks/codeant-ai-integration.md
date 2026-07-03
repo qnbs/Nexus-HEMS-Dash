@@ -21,30 +21,43 @@ CodeAnt.ai provides AI-powered code review comments on pull requests. It complem
 3. Select `qnbs/Nexus-HEMS-Dash`.
 4. Grant the requested repository permissions.
 
-No configuration file is required in the repo; CodeAnt is primarily dashboard-driven.
+CodeAnt reads repo-level config from the **`.codeant/`** directory (docs:
+https://docs.codeant.ai/pull_request/customize/global_repo_config). The dashboard is
+still used for App install, org-wide defaults, and severity, but the analyzer scoping
+and review guidance below are version-controlled in the repo.
 
 ---
 
 ## Configuration
 
-In the CodeAnt dashboard:
+### Repo config files (`.codeant/`)
 
-1. **Disable overlapping rules.** Turn off rules that duplicate Biome/DeepSource:
-   - Formatting
-   - Line length
-   - Unused imports
-   - Simple lint/style issues
+| File | Purpose |
+|------|---------|
+| `.codeant/configuration.json` | Which analyzers run + file include/exclude filters |
+| `.codeant/instructions.json` | Domain/safety guidance that shapes review comments |
 
-2. **Enable high-value rules:**
-   - Architectural feedback
-   - Maintainability / complexity
-   - Security smells
-   - Missing tests for complex logic
-   - Error-handling gaps
+**`.codeant/configuration.json` — analyzer de-duplication.** Analyzers already owned by
+the deterministic stack are **disabled** so CodeAnt adds signal, not noise (see
+[DEVOPS.md](../../DEVOPS.md) ownership matrix / [ADR-027](../adr/ADR-027-layered-quality-platforms.md)):
 
-3. **Set severity.** Keep inline comments at `warning` or higher; reserve `error` for clear security issues.
+- `secrets_analysis` → **disabled** (Gitleaks + DeepSource own secrets)
+- `sca_analysis` → **disabled** (pnpm audit + Grype/Trivy + Renovate)
+- `iac_analysis` → **disabled** (Trivy Helm + DeepSource docker)
+- `docstring_analysis` → **disabled** (DeepSource doc-coverage)
+- **Kept:** `sast_analysis` (AI SAST complements CodeQL/Semgrep), `deadcode`,
+  `duplicatecode`, `antipatterns` (architecture), `complex_function`.
 
-4. **Blocking policy.** Keep CodeAnt **advisory** (non-blocking) indefinitely. It should inform human reviewers, not replace them.
+**`.codeant/instructions.json`** encodes React 19 + React Compiler, i18n dual-locale,
+a11y, safety-critical control paths, Zod/auth, and shared-types breaking-change rules —
+the same guidance as `.coderabbit.yaml`'s `path_instructions`.
+
+### Dashboard settings
+
+1. **Severity.** Keep inline comments at `warning` or higher; reserve `error` for clear security issues.
+2. **Blocking policy.** Keep CodeAnt **advisory** (non-blocking) indefinitely — no
+   `.codeant/quality_gates_conditions.json` is committed, so CodeAnt does not gate merges.
+   It informs human reviewers, not replaces them.
 
 ---
 

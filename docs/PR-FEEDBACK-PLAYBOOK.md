@@ -35,8 +35,8 @@ flowchart LR
     D --> F
     E --> F
 
-    F -->|Yes| G[DeepSource report card<br/>inline annotations]
-    F -->|Yes| H[CodeAnt.ai review<br/>advisory comments]
+    F -->|Yes| G[DeepSource + Codecov<br/>quality & coverage signals]
+    F -->|Yes| H[CodeRabbit + CodeAnt.ai<br/>AI review · advisory]
     F -->|No| I[Fix and push again]
 
     G --> J[Merge]
@@ -54,6 +54,8 @@ flowchart LR
 | **ESLint (React-only)** | React Compiler, hooks, refresh rules                                   | Yes (via `pnpm lint` in CI)                                                                              | [Toolchain Architecture](Toolchain-Architecture.md)                                                |
 | **TypeScript**          | Strict type checking                                                   | Yes (via `pnpm type-check` in CI)                                                                        | [Toolchain Architecture](Toolchain-Architecture.md)                                                |
 | **DeepSource**          | Static analysis, secrets, Docker, coverage diff                        | Advisory initially; `DeepSource: JavaScript` and `DeepSource: Secrets` will become required after tuning | [runbooks/deepsource-integration.md](runbooks/deepsource-integration.md)                           |
+| **Codecov**             | Coverage %, patch/project delta vs base (flags: web, api)              | Advisory (`informational`); the blocking floor is `check-coverage-baseline.mjs` (PRF-03)                 | [runbooks/working-with-coverage.md](runbooks/working-with-coverage.md)                             |
+| **CodeRabbit**          | AI contextual review — logic, architecture, missing tests, domain risk | Advisory                                                                                                 | [runbooks/coderabbit-integration.md](runbooks/coderabbit-integration.md)                           |
 | **CodeAnt.ai**          | AI-powered architectural, maintainability, and security-smell feedback | Advisory                                                                                                 | [runbooks/codeant-ai-integration.md](runbooks/codeant-ai-integration.md)                           |
 | **Lighthouse CI**       | Performance, accessibility, best-practices, PWA budgets                | Yes                                                                                                      | [runbooks/lighthouse-ci.md](runbooks/lighthouse-ci.md) (planned)                                   |
 | **Chromatic**           | Visual regression via Storybook                                        | Yes (if token configured)                                                                                | [adr/ADR-007-chromatic-visual-regression-gate.md](adr/ADR-007-chromatic-visual-regression-gate.md) |

@@ -295,6 +295,17 @@ When CI is the source of truth, push focused commits and monitor GitHub Actions 
 - `docs/Toolchain-Architecture.md` — living toolchain reference
 - `docs/Security-Architecture.md` — threat model, STRIDE, GDPR
 - `docs/Deployment-Guide.md` — Docker/Helm/Tauri deployment
+- `DEVOPS.md` — CI/CD + code-quality-platform layering (see below)
+
+## Code-Quality Platforms
+
+Quality feedback is layered (full matrix + ownership in `DEVOPS.md`, ADR-027):
+
+- **Blocking (Layer 1):** `ci.yml` (lint, type-check, unit tests + `check-coverage-baseline.mjs`, build, size, E2E, fuzz) and `security-full.yml` (single CodeQL/Semgrep, Gitleaks, dep audit). These alone gate merges.
+- **Advisory signals (Layer 2):** **DeepSource** (`.deepsource.toml`) + **Codecov** (`.codecov.yml`, `informational`, flags web/api). The hard coverage floor stays `check-coverage-baseline.mjs` — Codecov never blocks.
+- **Advisory AI review (Layer 3):** **CodeRabbit** (`.coderabbit.yaml`) + **CodeAnt.ai** (`.codeant/`). Analyzers are de-duplicated so each signal has one owner.
+
+When acting on any platform's findings: never auto-apply fixes to control logic, adapters, auth, rate limits, or safety guardrails — surface for human review. Dependency updates: **Renovate** owns npm/docker/cargo, **Dependabot** owns github-actions only. Never re-add a duplicate CodeQL/Semgrep/Scorecard definition — they are single-sourced (`security-full.yml` / `scorecard.yml`).
 
 ## graphify
 
