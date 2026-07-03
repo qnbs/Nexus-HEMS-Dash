@@ -78,6 +78,18 @@ async function main() {
       );
     }
 
+    // AUD-02 phase 2: Tauri desktop CSP must be nonce-aligned after sync-tauri-csp.
+    const { buildTauriProductionCsp, extractCspNonceFromIndexHtml, isTauriProductionCsp } =
+      await import('../tauri-csp.ts');
+    const nonce = extractCspNonceFromIndexHtml(indexHtml);
+    if (!nonce) {
+      throw new Error('Production index.html missing CSP nonce for Tauri CSP sync (AUD-02)');
+    }
+    const tauriCsp = buildTauriProductionCsp(nonce);
+    if (!isTauriProductionCsp(tauriCsp)) {
+      throw new Error(`Tauri production CSP validation failed (AUD-02):\n${tauriCsp}`);
+    }
+
     // vite preview respects the production base path baked into the build.
     // Bind explicitly to the IPv4 host we poll — vite's default `localhost`
     // can resolve to ::1 on CI runners, which an IPv4 fetch never reaches.
