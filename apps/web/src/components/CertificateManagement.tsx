@@ -582,6 +582,101 @@ function eebusFetchInit(method?: string, body?: unknown): RequestInit {
   return init;
 }
 
+/** Status → badge background + icon for a trusted SHIP device row. */
+function shipStatusVisuals(status: EEBUSDeviceInfo['status']): {
+  bgClass: string;
+  Icon: typeof ShieldCheck;
+  iconClass: string;
+} {
+  if (status === 'trusted') {
+    return { bgClass: 'bg-neon-green/15', Icon: ShieldCheck, iconClass: 'text-neon-green' };
+  }
+  if (status === 'failed') {
+    return {
+      bgClass: 'bg-(--state-danger-bg)/15',
+      Icon: ShieldX,
+      iconClass: 'text-(--state-danger-fg)',
+    };
+  }
+  return {
+    bgClass: 'bg-(--state-warning-bg)/15',
+    Icon: ShieldOff,
+    iconClass: 'text-(--state-warning-fg)',
+  };
+}
+
+/** A single trusted-device row in the SHIP trust store list. */
+function TrustedDeviceRow({
+  device,
+  onRequestPin,
+  onRemove,
+}: {
+  device: EEBUSDeviceInfo;
+  onRequestPin: () => void;
+  onRemove: () => void;
+}) {
+  const { t } = useTranslation();
+  const deviceLabel =
+    device.brand && device.model ? `${device.brand} ${device.model}` : device.hostname;
+  const isPinRequired = device.status === 'pending';
+  const { bgClass, Icon, iconClass } = shipStatusVisuals(device.status);
+
+  return (
+    <li className="glass-panel flex flex-wrap items-center gap-4 rounded-xl px-4 py-3">
+      <div className="flex min-w-0 flex-1 items-center gap-3">
+        <span
+          className={`flex size-8 shrink-0 items-center justify-center rounded-full ${bgClass}`}
+        >
+          <Icon aria-hidden className={`size-4 ${iconClass}`} />
+        </span>
+        <div className="min-w-0">
+          <p className="truncate font-medium text-(--color-text-primary)">{deviceLabel}</p>
+          <p className="mt-0.5 truncate font-mono text-(--color-text-secondary) text-xs">
+            SKI: {device.ski.slice(0, 20)}…
+          </p>
+          <p className="text-(--color-text-secondary)/70 text-xs">
+            {device.hostname}:{device.port}
+            {device.deviceType ? ` · ${device.deviceType}` : ''}
+          </p>
+        </div>
+      </div>
+
+      <div className="flex flex-col items-end gap-1 text-right text-(--color-text-secondary) text-xs">
+        {device.trustedAt > 0 && (
+          <span>
+            {t('shipPairing.pairedAt')} {formatDateShort(device.trustedAt)}
+          </span>
+        )}
+        {device.lastConnectedAt && (
+          <span>
+            {t('shipPairing.lastConnected')} {formatDateShort(device.lastConnectedAt)}
+          </span>
+        )}
+      </div>
+
+      <div className="flex items-center gap-1">
+        {isPinRequired && (
+          <button
+            type="button"
+            onClick={onRequestPin}
+            className="focus-ring rounded-lg bg-(--state-warning-bg)/15 px-2 py-1.5 font-medium text-(--state-warning-fg) text-xs transition-colors hover:bg-(--state-warning-bg)/25"
+          >
+            {t('shipPairing.statusPinRequired')}
+          </button>
+        )}
+        <button
+          type="button"
+          onClick={onRemove}
+          className="focus-ring rounded-lg p-1.5 text-(--color-text-secondary) transition-colors hover:bg-(--state-danger-bg)/15 hover:text-(--state-danger-fg)"
+          aria-label={`${t('shipPairing.removeTrust')} — ${deviceLabel}`}
+        >
+          <Trash2 aria-hidden className="size-4" />
+        </button>
+      </div>
+    </li>
+  );
+}
+
 function ShipTrustStore() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
@@ -705,85 +800,17 @@ function ShipTrustStore() {
         </div>
       ) : (
         <ul className="space-y-2" aria-label={t('shipPairing.trustStoreTitle')}>
-          {devices.map((device) => {
-            const deviceLabel =
-              device.brand && device.model ? `${device.brand} ${device.model}` : device.hostname;
-            const isPinRequired = device.status === 'pending';
-            return (
-              <li
-                key={device.ski}
-                className="glass-panel flex flex-wrap items-center gap-4 rounded-xl px-4 py-3"
-              >
-                <div className="flex min-w-0 flex-1 items-center gap-3">
-                  <span
-                    className={`flex size-8 shrink-0 items-center justify-center rounded-full ${
-                      device.status === 'trusted'
-                        ? 'bg-neon-green/15'
-                        : device.status === 'failed'
-                          ? 'bg-(--state-danger-bg)/15'
-                          : 'bg-(--state-warning-bg)/15'
-                    }`}
-                  >
-                    {device.status === 'trusted' ? (
-                      <ShieldCheck aria-hidden className="size-4 text-neon-green" />
-                    ) : device.status === 'failed' ? (
-                      <ShieldX aria-hidden className="size-4 text-(--state-danger-fg)" />
-                    ) : (
-                      <ShieldOff aria-hidden className="size-4 text-(--state-warning-fg)" />
-                    )}
-                  </span>
-                  <div className="min-w-0">
-                    <p className="truncate font-medium text-(--color-text-primary)">
-                      {deviceLabel}
-                    </p>
-                    <p className="mt-0.5 truncate font-mono text-(--color-text-secondary) text-xs">
-                      SKI: {device.ski.slice(0, 20)}…
-                    </p>
-                    <p className="text-(--color-text-secondary)/70 text-xs">
-                      {device.hostname}:{device.port}
-                      {device.deviceType ? ` · ${device.deviceType}` : ''}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex flex-col items-end gap-1 text-right text-(--color-text-secondary) text-xs">
-                  {device.trustedAt > 0 && (
-                    <span>
-                      {t('shipPairing.pairedAt')} {formatDateShort(device.trustedAt)}
-                    </span>
-                  )}
-                  {device.lastConnectedAt && (
-                    <span>
-                      {t('shipPairing.lastConnected')} {formatDateShort(device.lastConnectedAt)}
-                    </span>
-                  )}
-                </div>
-
-                <div className="flex items-center gap-1">
-                  {isPinRequired && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setPinSki(device.ski);
-                        setActivePinHint(t('shipPairing.pinDialogDesc'));
-                      }}
-                      className="focus-ring rounded-lg bg-(--state-warning-bg)/15 px-2 py-1.5 font-medium text-(--state-warning-fg) text-xs transition-colors hover:bg-(--state-warning-bg)/25"
-                    >
-                      {t('shipPairing.statusPinRequired')}
-                    </button>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => setRemovingDevice(device)}
-                    className="focus-ring rounded-lg p-1.5 text-(--color-text-secondary) transition-colors hover:bg-(--state-danger-bg)/15 hover:text-(--state-danger-fg)"
-                    aria-label={`${t('shipPairing.removeTrust')} — ${deviceLabel}`}
-                  >
-                    <Trash2 aria-hidden className="size-4" />
-                  </button>
-                </div>
-              </li>
-            );
-          })}
+          {devices.map((device) => (
+            <TrustedDeviceRow
+              key={device.ski}
+              device={device}
+              onRequestPin={() => {
+                setPinSki(device.ski);
+                setActivePinHint(t('shipPairing.pinDialogDesc'));
+              }}
+              onRemove={() => setRemovingDevice(device)}
+            />
+          ))}
         </ul>
       )}
 
