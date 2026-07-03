@@ -60,6 +60,51 @@ export async function encrypt(plaintext: string, passphrase: string): Promise<st
   return btoa(String.fromCharCode(...combined));
 }
 
+// ─── Non-extractable CryptoKey vault (ADR-026) ───────────────────────
+//
+// The passphrase functions above derive a key from a secret string; if that
+// secret is persisted (e.g. in IndexedDB) it can be read back, so AES-GCM
+// provides only obfuscation at rest. The functions below instead use a
+// *non-extractable* CryptoKey: the raw bytes can never be exported — not even
+// with full IndexedDB read access — so passive exfiltration (extension, disk,
+// profile copy) no longer yields the key. The handle is stored directly in
+// IndexedDB via structured clone. On-origin XSS can still *use* the handle;
+// that residual is documented in ADR-026.
+
+/** Generate a fresh non-extractable AES-GCM 256-bit vault key. */
+export async function generateVaultKey(): Promise<CryptoKey> {
+  return crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+}
+
+/**
+ * Encrypt with a raw AES-GCM CryptoKey (no PBKDF2/salt — the key is already a
+ * strong random key). Returns base64(iv + ciphertext).
+ */
+export async function encryptWithKey(plaintext: string, key: CryptoKey): Promise<string> {
+  const iv = crypto.getRandomValues(new Uint8Array(IV_LENGTH));
+  const ciphertext = await crypto.subtle.encrypt(
+    { name: 'AES-GCM', iv },
+    key,
+    new TextEncoder().encode(plaintext),
+  );
+
+  const combined = new Uint8Array(IV_LENGTH + ciphertext.byteLength);
+  combined.set(iv, 0);
+  combined.set(new Uint8Array(ciphertext), IV_LENGTH);
+
+  return btoa(String.fromCharCode(...combined));
+}
+
+/** Decrypt a base64(iv + ciphertext) blob produced by {@link encryptWithKey}. */
+export async function decryptWithKey(encoded: string, key: CryptoKey): Promise<string> {
+  const combined = Uint8Array.from(atob(encoded), (c) => c.charCodeAt(0));
+  const iv = combined.slice(0, IV_LENGTH);
+  const ciphertext = combined.slice(IV_LENGTH);
+
+  const plaintext = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ciphertext);
+  return new TextDecoder().decode(plaintext);
+}
+
 /**
  * Decrypts a base64-encoded AES-GCM 256-bit ciphertext using a passphrase.
  */

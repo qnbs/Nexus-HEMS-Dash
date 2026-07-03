@@ -4,6 +4,7 @@ import { nexusDb } from '../lib/db';
 import {
   clearVault,
   getAdapterCredentials,
+  getVaultKey,
   hasAdapterCredentials,
   listAdapterCredentials,
   loadEebusLocalCertPems,
@@ -16,8 +17,18 @@ import {
 describe('Secure Store', () => {
   beforeEach(async () => {
     await clearVault();
+    await nexusDb.settings.delete('vault-key-v2');
     await nexusDb.settings.delete('vault-passphrase-v1');
     await nexusDb.settings.delete('eebus-local-cert-pems-v1');
+  });
+
+  it('uses a non-extractable AES-GCM vault key (ADR-026)', async () => {
+    const key = await getVaultKey();
+    expect(key).toBeInstanceOf(CryptoKey);
+    expect(key.extractable).toBe(false);
+    expect(key.algorithm.name).toBe('AES-GCM');
+    // A non-extractable key cannot have its raw bytes exported.
+    await expect(crypto.subtle.exportKey('raw', key)).rejects.toThrow();
   });
 
   it('should save and retrieve adapter credentials', async () => {
