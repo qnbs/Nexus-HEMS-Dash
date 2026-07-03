@@ -132,7 +132,12 @@ function formatTimestamp(ts: number, range: TimeRange): string {
 
 // ─── Component ──────────────────────────────────────────────────────
 
-export default function HistoricalAnalyticsPage() {
+/**
+ * @param embedded When rendered as a tab panel inside the unified Analytics
+ *   wrapper, the wrapper supplies the page header + cross-links footer; this
+ *   page suppresses its own to avoid a duplicate <h1> and duplicate panels.
+ */
+export default function HistoricalAnalyticsPage({ embedded = false }: { embedded?: boolean }) {
   const { t } = useTranslation();
   const { influxUrl, influxToken } = useAppStoreShallow((s) => ({
     influxUrl: s.settings.influxUrl,
@@ -305,11 +310,13 @@ export default function HistoricalAnalyticsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title={t('historicalAnalytics.title')}
-        subtitle={t('historicalAnalytics.subtitle')}
-        icon={<Database size={28} />}
-      />
+      {!embedded && (
+        <PageHeader
+          title={t('historicalAnalytics.title')}
+          subtitle={t('historicalAnalytics.subtitle')}
+          icon={<Database size={28} />}
+        />
+      )}
 
       {/* ── Connection Status + Time Range Selector ──────────────── */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -764,7 +771,7 @@ export default function HistoricalAnalyticsPage() {
         </div>
       </motion.section>
 
-      <PageCrossLinks />
+      {!embedded && <PageCrossLinks />}
     </div>
   );
 }

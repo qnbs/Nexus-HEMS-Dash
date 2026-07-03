@@ -104,7 +104,13 @@ function generateMonthlyComparison(pvYieldToday: number) {
 }
 
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: page component with multiple data transforms
-function AnalyticsPageComponent() {
+/**
+ * @param embedded When rendered inside the unified Analytics wrapper (as a tab
+ *   panel), the wrapper already supplies the page header and cross-links footer,
+ *   so this page suppresses its own to avoid a duplicate <h1> and duplicate
+ *   "related sections" panels. Defaults to false for standalone use.
+ */
+function AnalyticsPageComponent({ embedded = false }: { embedded?: boolean }) {
   const { t } = useTranslation();
   const energyData = useAppStoreShallow((s) => s.energyData);
 
@@ -307,31 +313,33 @@ function AnalyticsPageComponent() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title={t('nav.analytics', 'Analytics')}
-        subtitle={t('analytics.subtitle')}
-        icon={<BarChart3 size={22} aria-hidden="true" />}
-        actions={
-          <div className="flex flex-wrap items-center gap-2">
-            {isPeakHour && (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-orange-500/15 px-3 py-1.5 font-semibold text-[10px] text-orange-400 uppercase tracking-wider">
-                <Zap size={10} className="energy-pulse" aria-hidden="true" />
-                {t('analytics.peakHours')}
+      {!embedded && (
+        <PageHeader
+          title={t('nav.analytics', 'Analytics')}
+          subtitle={t('analytics.subtitle')}
+          icon={<BarChart3 size={22} aria-hidden="true" />}
+          actions={
+            <div className="flex flex-wrap items-center gap-2">
+              {isPeakHour && (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-orange-500/15 px-3 py-1.5 font-semibold text-[10px] text-orange-400 uppercase tracking-wider">
+                  <Zap size={10} className="energy-pulse" aria-hidden="true" />
+                  {t('analytics.peakHours')}
+                </span>
+              )}
+              {isSolarPeak && (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-yellow-500/15 px-3 py-1.5 font-semibold text-[10px] text-yellow-400 uppercase tracking-wider">
+                  <Sun size={10} aria-hidden="true" />
+                  {t('analytics.solarPeak')}
+                </span>
+              )}
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-3 py-1.5 font-semibold text-[10px] text-emerald-400 uppercase tracking-wider">
+                <Activity size={10} className="energy-pulse" aria-hidden="true" />
+                {t('common.live')}
               </span>
-            )}
-            {isSolarPeak && (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-yellow-500/15 px-3 py-1.5 font-semibold text-[10px] text-yellow-400 uppercase tracking-wider">
-                <Sun size={10} aria-hidden="true" />
-                {t('analytics.solarPeak')}
-              </span>
-            )}
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-3 py-1.5 font-semibold text-[10px] text-emerald-400 uppercase tracking-wider">
-              <Activity size={10} className="energy-pulse" aria-hidden="true" />
-              {t('common.live')}
-            </span>
-          </div>
-        }
-      />
+            </div>
+          }
+        />
+      )}
 
       {/* ─── 8 KPI Cards ──────────────────────────────────────────── */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-8">
@@ -1102,7 +1110,7 @@ function AnalyticsPageComponent() {
       </motion.div>
 
       {/* ─── Cross-Links & Navigation ─────────────────────────── */}
-      <PageCrossLinks />
+      {!embedded && <PageCrossLinks />}
     </div>
   );
 }
