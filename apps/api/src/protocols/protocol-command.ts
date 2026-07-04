@@ -7,12 +7,15 @@
  */
 
 import {
+  BatteryPowerValueSchema,
   EvCurrentValueSchema,
   EvPowerValueSchema,
   HEAT_PUMP_MODE_ERROR,
   HeatPumpModeValueSchema,
+  MAX_BATTERY_POWER_W,
   MAX_EV_CURRENT_A,
   MAX_EV_POWER_W,
+  SET_BATTERY_POWER_ERROR,
   SET_EV_CURRENT_ERROR,
   SET_EV_POWER_ERROR,
   WSCommandSchema,
@@ -21,27 +24,22 @@ import {
 import { z } from 'zod';
 
 export {
+  BatteryPowerValueSchema,
   EvCurrentValueSchema,
   EvPowerValueSchema,
   HEAT_PUMP_MODE_ERROR,
   HeatPumpModeValueSchema,
+  MAX_BATTERY_POWER_W,
   MAX_EV_CURRENT_A,
   MAX_EV_POWER_W,
+  SET_BATTERY_POWER_ERROR,
   SET_EV_CURRENT_ERROR,
   SET_EV_POWER_ERROR,
 };
-/** Bidirectional ESS power cap (matches WSCommandSchema 25 kW safety limit). */
-export const MAX_BATTERY_POWER_W = 25_000;
-
 /** V2X discharge power in watts (aligns with frontend command-safety 25 kW cap). */
 export const EvDischargeValueSchema = z.number().finite().min(0).max(MAX_BATTERY_POWER_W);
 /** OCPP §14a grid limit in watts (frontend OCPP21Adapter uses W; min 100 W avoids kW ambiguity). */
 export const OcppGridLimitWattsSchema = z.number().finite().min(100).max(MAX_BATTERY_POWER_W);
-export const BatteryPowerValueSchema = z
-  .number()
-  .finite()
-  .min(-MAX_BATTERY_POWER_W)
-  .max(MAX_BATTERY_POWER_W);
 /** OpenEMS ESS mode aliases accepted at the protocol boundary. */
 export const BatteryModeValueSchema = z.union([z.literal('charge'), z.literal('discharge')]);
 /** Peak-shaving limit in kW (OpenEMS maps ×1000 → watts). */
@@ -91,7 +89,7 @@ export const ProtocolCommandRequestSchema = WSCommandSchema.and(
   if (cmd.type === 'SET_BATTERY_POWER' && !BatteryPowerValueSchema.safeParse(cmd.value).success) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: 'SET_BATTERY_POWER requires a finite wattage between -25000 and 25000',
+      message: SET_BATTERY_POWER_ERROR,
     });
   }
   if (cmd.type === 'SET_BATTERY_MODE' && !BatteryModeValueSchema.safeParse(cmd.value).success) {

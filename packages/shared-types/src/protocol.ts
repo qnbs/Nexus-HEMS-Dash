@@ -194,7 +194,8 @@ export const WSCommandTypeSchema = z.enum([
 export type WSCommandType = z.infer<typeof WSCommandTypeSchema>;
 
 /** MED-08 residential power cap — aligns with frontend command-safety.ts */
-const MAX_POWER_W = 25_000;
+export const MAX_BATTERY_POWER_W = 25_000;
+const MAX_POWER_W = MAX_BATTERY_POWER_W;
 const MAX_HP_POWER_W = 15_000;
 /** IEC 61851 residential ceiling — single source for WS + API protocol validation. */
 export const MAX_EV_CURRENT_A = 80;
@@ -232,6 +233,29 @@ export const HeatPumpModeValueSchema = z
   .int({ error: HEAT_PUMP_MODE_ERROR })
   .min(1, { error: HEAT_PUMP_MODE_ERROR })
   .max(4, { error: HEAT_PUMP_MODE_ERROR });
+
+/** Shared validation copy for bidirectional ESS power at the WS boundary. */
+export const SET_BATTERY_POWER_ERROR = `SET_BATTERY_POWER requires a finite wattage between -${MAX_BATTERY_POWER_W} and ${MAX_BATTERY_POWER_W}`;
+
+/** Bidirectional ESS power (watts) — WS + protocol boundary. */
+export const BatteryPowerValueSchema = z
+  .number({ error: SET_BATTERY_POWER_ERROR })
+  .finite({ error: SET_BATTERY_POWER_ERROR })
+  .min(-MAX_BATTERY_POWER_W, { error: SET_BATTERY_POWER_ERROR })
+  .max(MAX_BATTERY_POWER_W, { error: SET_BATTERY_POWER_ERROR });
+
+/** Shared validation copy for battery mode strings/numbers at the WS boundary. */
+export const SET_BATTERY_MODE_ERROR = 'SET_BATTERY_MODE requires a supported mode string or number';
+
+/** Shared validation copy for KNX room temperature setpoints. */
+export const KNX_TEMPERATURE_ERROR = 'KNX_SET_TEMPERATURE requires a temperature between 5 and 35';
+
+/** KNX room temperature setpoint (°C) — WS boundary. */
+export const KnxTemperatureValueSchema = z
+  .number({ error: KNX_TEMPERATURE_ERROR })
+  .finite({ error: KNX_TEMPERATURE_ERROR })
+  .min(5, { error: KNX_TEMPERATURE_ERROR })
+  .max(35, { error: KNX_TEMPERATURE_ERROR });
 
 const BatteryModeWsValueSchema = z.union([
   z.literal('charge'),
@@ -285,12 +309,8 @@ function refineWsCommandValue(
       validateNonNegativePower('SET_HEAT_PUMP_POWER', value, MAX_HP_POWER_W, reject);
       return;
     case 'SET_BATTERY_POWER':
-      if (typeof value !== 'number' || !Number.isFinite(value)) {
-        reject('SET_BATTERY_POWER requires a numeric value');
-        return;
-      }
-      if (value < -MAX_POWER_W || value > MAX_POWER_W) {
-        reject(`SET_BATTERY_POWER requires a value between -${MAX_POWER_W} and ${MAX_POWER_W}`);
+      if (!BatteryPowerValueSchema.safeParse(value).success) {
+        reject(SET_BATTERY_POWER_ERROR);
       }
       return;
     case 'SET_HEAT_PUMP_MODE':
@@ -300,12 +320,12 @@ function refineWsCommandValue(
       return;
     case 'SET_BATTERY_MODE':
       if (!BatteryModeWsValueSchema.safeParse(value).success) {
-        reject('SET_BATTERY_MODE requires a supported mode string or number');
+        reject(SET_BATTERY_MODE_ERROR);
       }
       return;
     case 'KNX_SET_TEMPERATURE':
-      if (typeof value !== 'number' || !Number.isFinite(value) || value < 5 || value > 35) {
-        reject('KNX_SET_TEMPERATURE requires a temperature between 5 and 35');
+      if (!KnxTemperatureValueSchema.safeParse(value).success) {
+        reject(KNX_TEMPERATURE_ERROR);
       }
       return;
     case 'KNX_TOGGLE_LIGHTS':

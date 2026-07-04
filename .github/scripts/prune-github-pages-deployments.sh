@@ -28,6 +28,7 @@ if [ "${#ids[@]}" -le "${KEEP}" ]; then
   echo "Nothing to prune."
   exit 0
 fi
+failures=0
 for id in "${ids[@]:${KEEP}}"; do
   gh api -X POST "repos/${REPO}/deployments/${id}/statuses" \
     -f state=inactive >/dev/null 2>&1 || true
@@ -35,5 +36,11 @@ for id in "${ids[@]:${KEEP}}"; do
     echo "deleted deployment ${id}"
   else
     echo "::warning::could not delete deployment ${id}"
+    failures=$((failures + 1))
   fi
 done
+
+if [ "${failures}" -gt 0 ]; then
+  echo "::error::Failed to delete ${failures} '${ENV}' deployment(s)." >&2
+  exit 1
+fi

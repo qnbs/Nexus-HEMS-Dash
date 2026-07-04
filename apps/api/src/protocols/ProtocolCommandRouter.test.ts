@@ -1,3 +1,4 @@
+import { SET_EV_POWER_ERROR } from '@nexus-hems/shared-types';
 import { afterEach, describe, expect, it } from 'vitest';
 import {
   clearProtocolCommandHandlers,
@@ -160,7 +161,7 @@ describe('ProtocolCommandRouter', () => {
     expect(result).toEqual({
       handled: false,
       success: false,
-      error: 'SET_EV_POWER requires a numeric value',
+      error: SET_EV_POWER_ERROR,
     });
     expect(getProtocolCommandHandlerCount()).toBe(1);
   });

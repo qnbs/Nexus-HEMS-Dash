@@ -51,6 +51,7 @@ import {
   GridLimitValueSchema,
   HEAT_PUMP_MODE_ERROR,
   HeatPumpModeValueSchema,
+  SET_BATTERY_POWER_ERROR,
   SET_EV_CURRENT_ERROR,
   SET_EV_POWER_ERROR,
 } from '../protocol-command.js';
@@ -523,7 +524,7 @@ export class OpenEMSProtocolAdapter implements IProtocolAdapter, IProtocolComman
             handled: true,
             success: false,
             adapterId: this.id,
-            error: 'SET_BATTERY_POWER requires a finite wattage between -25000 and 25000',
+            error: SET_BATTERY_POWER_ERROR,
           };
         }
         ok = await this.updateSafeComponentConfig(this.essControllerId, [
