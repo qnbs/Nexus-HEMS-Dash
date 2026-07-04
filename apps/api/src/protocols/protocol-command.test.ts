@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { isProtocolCommandHandler, validateProtocolCommandRequest } from './protocol-command.js';
+import {
+  BatteryPowerValueSchema,
+  isProtocolCommandHandler,
+  validateProtocolCommandRequest,
+} from './protocol-command.js';
 
 describe('validateProtocolCommandRequest', () => {
   it('accepts valid EV power commands', () => {
@@ -46,6 +50,13 @@ describe('validateProtocolCommandRequest', () => {
     if (result.valid) {
       expect(result.command.chargePointId).toBe('cp-1');
     }
+  });
+
+  it('validates battery power within ±25 kW', () => {
+    expect(BatteryPowerValueSchema.safeParse(20_000).success).toBe(true);
+    expect(BatteryPowerValueSchema.safeParse(-20_000).success).toBe(true);
+    expect(BatteryPowerValueSchema.safeParse(25_001).success).toBe(false);
+    expect(BatteryPowerValueSchema.safeParse(-25_001).success).toBe(false);
   });
 
   it('accepts boolean charging commands', () => {

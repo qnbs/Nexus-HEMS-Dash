@@ -169,4 +169,102 @@ describe('HomeAssistantMqttProtocolAdapter', () => {
     expect(result.success).toBe(false);
     expect(result.error).toContain('HA_WALLBOX_CURRENT_ENTITY');
   });
+
+  it('returns handled:false for unsupported command types', async () => {
+    const result = await adapter.sendCommand({ type: 'SET_BATTERY_POWER', value: 1000 });
+    expect(result).toEqual({ handled: false, success: false });
+  });
+
+  it('reports not connected when MQTT client is down', async () => {
+    await adapter.disconnect();
+    const result = await adapter.sendCommand({ type: 'START_CHARGING', value: true });
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('not connected');
+  });
+
+  it('publishes STOP_CHARGING and SET_EV_POWER when entities are configured', async () => {
+    const cmdAdapter = new HomeAssistantMqttProtocolAdapter({
+      ...testConfig,
+      wallboxSwitchEntityId: 'switch.wallbox_charging',
+      wallboxCurrentEntityId: 'number.wallbox_max_current',
+    });
+    await cmdAdapter.connect();
+
+    await cmdAdapter.sendCommand({ type: 'STOP_CHARGING', value: false });
+    await cmdAdapter.sendCommand({ type: 'SET_EV_POWER', value: 6900 });
+
+    expect(mockClientInstance.publish).toHaveBeenCalledWith(
+      'homeassistant/switch/turn_off',
+      JSON.stringify({ entity_id: 'switch.wallbox_charging' }),
+      { qos: 1 },
+      expect.any(Function),
+    );
+    expect(mockClientInstance.publish).toHaveBeenCalledWith(
+      'homeassistant/number/set_value',
+      JSON.stringify({ entity_id: 'number.wallbox_max_current', value: 30 }),
+      { qos: 1 },
+      expect.any(Function),
+    );
+
+    await cmdAdapter.disconnect();
+  });
+
+  it('publishes SET_HEAT_PUMP_MODE when climate entity is configured', async () => {
+    const cmdAdapter = new HomeAssistantMqttProtocolAdapter({
+      ...testConfig,
+      heatPumpModeEntityId: 'climate.heat_pump',
+    });
+    await cmdAdapter.connect();
+
+    const result = await cmdAdapter.sendCommand({ type: 'SET_HEAT_PUMP_MODE', value: 2 });
+    expect(result.success).toBe(true);
+    expect(mockClientInstance.publish).toHaveBeenCalledWith(
+      'homeassistant/climate/set_hvac_mode',
+      JSON.stringify({ entity_id: 'climate.heat_pump', hvac_mode: 2 }),
+      { qos: 1 },
+      expect.any(Function),
+    );
+
+    await cmdAdapter.disconnect();
+  });
+
+  it('returns publish error when MQTT broker rejects the service call', async () => {
+    const failingClient = new MockMqttClient();
+    failingClient.publish = vi.fn(
+      (_topic: string, _payload: string, _opts: unknown, cb?: (err: Error | null) => void) => {
+        cb?.(new Error('publish denied'));
+        return failingClient;
+      },
+    );
+
+    const mqtt = await import('mqtt');
+    vi.mocked(mqtt.default.connect).mockImplementationOnce(() => {
+      setTimeout(() => failingClient.emit('connect'), 0);
+      return failingClient as unknown as ReturnType<typeof mqtt.default.connect>;
+    });
+
+    const cmdAdapter = new HomeAssistantMqttProtocolAdapter({
+      ...testConfig,
+      wallboxSwitchEntityId: 'switch.wallbox_charging',
+    });
+    await cmdAdapter.connect();
+
+    const result = await cmdAdapter.sendCommand({ type: 'START_CHARGING', value: true });
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('publish denied');
+
+    await cmdAdapter.disconnect();
+  });
+
+  it('createHomeAssistantMqttAdapterFromEnv passes wallbox and heat-pump env vars', () => {
+    const adapter = createHomeAssistantMqttAdapterFromEnv({
+      HA_MQTT_BROKER_URL: 'mqtt://localhost:1883',
+      HA_WALLBOX_CURRENT_ENTITY: 'number.ev_amps',
+      HA_WALLBOX_SWITCH_ENTITY: 'switch.ev_charge',
+      HA_HEAT_PUMP_MODE_ENTITY: 'climate.hp',
+      HA_WALLBOX_MAINS_VOLTAGE: '400',
+    });
+    expect(adapter).not.toBeNull();
+    expect(adapter?.supportsCommand('SET_EV_POWER')).toBe(true);
+  });
 });

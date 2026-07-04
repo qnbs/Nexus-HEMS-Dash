@@ -341,4 +341,93 @@ describe('OpenEMSProtocolAdapter', () => {
     expect(result.success).toBe(false);
     expect(result.error).toContain('25000');
   });
+
+  it('writes CHARGE_GRID mode for positive SET_BATTERY_POWER', async () => {
+    await adapter.connect();
+    const result = await adapter.sendCommand({ type: 'SET_BATTERY_POWER', value: 4000 });
+    expect(result.success).toBe(true);
+
+    const updateCall = mockWsHolder.current?.send.mock.calls.find((call) => {
+      const payload = JSON.parse(String(call[0])) as { method: string };
+      return payload.method === 'updateComponentConfig';
+    });
+    const request = JSON.parse(String(updateCall?.[0])) as {
+      params: { properties: { name: string; value: unknown }[] };
+    };
+    expect(request.params.properties).toEqual(
+      expect.arrayContaining([
+        { name: 'power', value: 4000 },
+        { name: 'mode', value: 'CHARGE_GRID' },
+      ]),
+    );
+  });
+
+  it('maps SET_BATTERY_MODE charge and discharge aliases', async () => {
+    await adapter.connect();
+    await adapter.sendCommand({ type: 'SET_BATTERY_MODE', value: 'charge' });
+    await adapter.sendCommand({ type: 'SET_BATTERY_MODE', value: 'discharge' });
+
+    const modeValues = mockWsHolder.current?.send.mock.calls
+      .map(
+        (call) =>
+          JSON.parse(String(call[0])) as {
+            method: string;
+            params?: { properties?: { name: string; value: unknown }[] };
+          },
+      )
+      .filter((req) => req.method === 'updateComponentConfig')
+      .flatMap((req) => req.params?.properties ?? [])
+      .filter((property) => property.name === 'mode')
+      .map((property) => property.value);
+
+    expect(modeValues).toContain('CHARGE_GRID');
+    expect(modeValues).toContain('DISCHARGE_TO_GRID');
+  });
+
+  it('writes peak shaving limit for SET_GRID_LIMIT in watts', async () => {
+    await adapter.connect();
+    const result = await adapter.sendCommand({ type: 'SET_GRID_LIMIT', value: 4.2 });
+    expect(result.success).toBe(true);
+
+    const updateCall = mockWsHolder.current?.send.mock.calls.find((call) => {
+      const payload = JSON.parse(String(call[0])) as {
+        method: string;
+        params: { componentId: string; properties: { value: number }[] };
+      };
+      return (
+        payload.method === 'updateComponentConfig' &&
+        payload.params.componentId === 'ctrlPeakShaving0'
+      );
+    });
+    const request = JSON.parse(String(updateCall?.[0])) as {
+      params: { properties: { value: number }[] };
+    };
+    expect(request.params.properties[0]?.value).toBe(4200);
+  });
+
+  it('rejects invalid SET_GRID_LIMIT values', async () => {
+    await adapter.connect();
+    const result = await adapter.sendCommand({ type: 'SET_GRID_LIMIT', value: -1 });
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('non-negative');
+  });
+
+  it('rejects invalid SET_HEAT_PUMP_MODE values', async () => {
+    await adapter.connect();
+    const result = await adapter.sendCommand({
+      type: 'SET_HEAT_PUMP_MODE',
+      value: 'off' as unknown as number,
+    });
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('numeric');
+  });
+
+  it('returns handled:false for unsupported command types', async () => {
+    await adapter.connect();
+    const result = await adapter.sendCommand({
+      type: 'KNX_TOGGLE_LIGHTS',
+      value: true,
+    });
+    expect(result).toEqual({ handled: false, success: false });
+  });
 });
