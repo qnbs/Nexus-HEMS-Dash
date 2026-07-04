@@ -260,7 +260,9 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
 
   private handleMessage(ws: WebSocket, msg: OcppInboundMessage): void {
     if (msg[0] === OCPP_CALLRESULT) {
-      this.resolveOutboundPending(msg[1], true);
+      const payload = msg[2] as { status?: string };
+      const accepted = payload.status === undefined || payload.status === 'Accepted';
+      this.resolveOutboundPending(msg[1], accepted);
       return;
     }
     if (msg[0] === OCPP_CALLERROR) {

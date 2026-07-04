@@ -264,4 +264,22 @@ describe('OcppCsmsProtocolAdapter', () => {
     expect(result.error).toContain('rejected or timed out');
     client.close();
   });
+
+  it('fails when charge point responds with Rejected status', async () => {
+    const client = new WebSocket(`ws://127.0.0.1:${boundPort}/CP-REJ`, 'ocpp2.0.1');
+    await new Promise<void>((resolve, reject) => {
+      client.once('open', () => resolve());
+      client.once('error', reject);
+    });
+    client.on('message', (data) => {
+      const msg = JSON.parse(String(data)) as [number, string, ...unknown[]];
+      if (msg[0] === 2) {
+        client.send(JSON.stringify([3, msg[1], { status: 'Rejected' }]));
+      }
+    });
+
+    const result = await adapter.sendCommand({ type: 'SET_EV_POWER', value: 5000 });
+    expect(result.success).toBe(false);
+    client.close();
+  });
 });

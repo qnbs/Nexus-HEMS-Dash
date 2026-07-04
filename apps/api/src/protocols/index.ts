@@ -347,17 +347,18 @@ export async function startProtocolAdapters(eventBus: EventBus): Promise<void> {
   if (openEmsAdapter) {
     activeAdapters.push(openEmsAdapter);
     activeAdapterRefs.set(openEmsAdapter.id, openEmsAdapter);
-    registerCommandCapableAdapter(openEmsAdapter);
     recordAdapterRegistration(openEmsAdapter.id, openEmsAdapter.protocol);
     setState(openEmsAdapter.id, openEmsAdapter.protocol, 'starting');
 
     openEmsAdapter
       .connect()
       .then(() => {
+        registerCommandCapableAdapter(openEmsAdapter);
         setState(openEmsAdapter.id, openEmsAdapter.protocol, 'healthy');
         pipeAdapterToEventBus(openEmsAdapter, eventBus);
       })
       .catch((err: unknown) => {
+        unregisterCommandCapableAdapter(openEmsAdapter);
         const message = err instanceof Error ? err.message : String(err);
         setState(openEmsAdapter.id, openEmsAdapter.protocol, 'failed', message);
         console.error('[Adapters] Failed to start OpenEMSProtocolAdapter:', err);
@@ -372,17 +373,18 @@ export async function startProtocolAdapters(eventBus: EventBus): Promise<void> {
   if (homeAssistantAdapter) {
     activeAdapters.push(homeAssistantAdapter);
     activeAdapterRefs.set(homeAssistantAdapter.id, homeAssistantAdapter);
-    registerCommandCapableAdapter(homeAssistantAdapter);
     recordAdapterRegistration(homeAssistantAdapter.id, homeAssistantAdapter.protocol);
     setState(homeAssistantAdapter.id, homeAssistantAdapter.protocol, 'starting');
 
     homeAssistantAdapter
       .connect()
       .then(() => {
+        registerCommandCapableAdapter(homeAssistantAdapter);
         setState(homeAssistantAdapter.id, homeAssistantAdapter.protocol, 'healthy');
         pipeAdapterToEventBus(homeAssistantAdapter, eventBus);
       })
       .catch((err: unknown) => {
+        unregisterCommandCapableAdapter(homeAssistantAdapter);
         const message = err instanceof Error ? err.message : String(err);
         setState(homeAssistantAdapter.id, homeAssistantAdapter.protocol, 'failed', message);
         console.error('[Adapters] Failed to start HomeAssistantProtocolAdapter:', err);
@@ -469,17 +471,18 @@ export async function startProtocolAdapters(eventBus: EventBus): Promise<void> {
   if (ocppCsmsAdapter) {
     activeAdapters.push(ocppCsmsAdapter);
     activeAdapterRefs.set(ocppCsmsAdapter.id, ocppCsmsAdapter);
-    registerCommandCapableAdapter(ocppCsmsAdapter);
     recordAdapterRegistration(ocppCsmsAdapter.id, ocppCsmsAdapter.protocol);
     setState(ocppCsmsAdapter.id, ocppCsmsAdapter.protocol, 'starting');
 
     ocppCsmsAdapter
       .connect()
       .then(() => {
+        registerCommandCapableAdapter(ocppCsmsAdapter);
         setState(ocppCsmsAdapter.id, ocppCsmsAdapter.protocol, 'healthy');
         pipeAdapterToEventBus(ocppCsmsAdapter, eventBus);
       })
       .catch((err: unknown) => {
+        unregisterCommandCapableAdapter(ocppCsmsAdapter);
         const message = err instanceof Error ? err.message : String(err);
         setState(ocppCsmsAdapter.id, ocppCsmsAdapter.protocol, 'failed', message);
         console.error('[Adapters] Failed to start OcppCsmsProtocolAdapter:', err);

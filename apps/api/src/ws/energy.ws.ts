@@ -423,9 +423,12 @@ async function dispatchLiveCommand(
       command.type,
       command.value,
       'rejected_validation',
-      'No live adapter handles this command',
+      result.error ?? 'No live adapter handles this command',
     );
-    safeSend(ws, { type: 'ERROR', error: 'No live adapter handles this command' });
+    safeSend(ws, {
+      type: 'ERROR',
+      error: result.error ?? 'No live adapter handles this command',
+    });
     return;
   }
 

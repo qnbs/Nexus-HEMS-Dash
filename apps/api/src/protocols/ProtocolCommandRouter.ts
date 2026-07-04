@@ -7,7 +7,7 @@ import type {
   ProtocolCommandRequest,
   ProtocolCommandResult,
 } from './protocol-command.js';
-import { isProtocolCommandHandler } from './protocol-command.js';
+import { isProtocolCommandHandler, validateProtocolCommandRequest } from './protocol-command.js';
 
 const handlers: IProtocolCommandHandler[] = [];
 
@@ -49,11 +49,18 @@ export function getProtocolCommandHandlerCount(): number {
 export async function dispatchProtocolCommand(
   command: ProtocolCommandRequest,
 ): Promise<ProtocolCommandResult> {
+  const validation = validateProtocolCommandRequest(command);
+  if (!validation.valid) {
+    return { handled: false, success: false, error: validation.error };
+  }
+
+  const validated = validation.command;
+
   for (const handler of handlers) {
-    if (!handler.supportsCommand(command.type)) continue;
+    if (!handler.supportsCommand(validated.type)) continue;
 
     try {
-      const result = await handler.sendCommand(command);
+      const result = await handler.sendCommand(validated);
       if (result.handled) return result;
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);

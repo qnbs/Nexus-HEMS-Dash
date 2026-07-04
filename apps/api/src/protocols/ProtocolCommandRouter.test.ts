@@ -118,4 +118,19 @@ describe('ProtocolCommandRouter', () => {
     const result = await dispatchProtocolCommand({ type: 'SET_EV_POWER', value: 1 });
     expect(result).toEqual({ handled: true, success: false, error: 'transport down' });
   });
+
+  it('rejects invalid command payloads before dispatching', async () => {
+    registerProtocolCommandHandler(stubHandler('ocpp', ['SET_EV_POWER'], { success: true }));
+
+    const result = await dispatchProtocolCommand({
+      type: 'SET_EV_POWER',
+      value: true as unknown as number,
+    });
+    expect(result).toEqual({
+      handled: false,
+      success: false,
+      error: 'SET_EV_POWER requires a numeric value',
+    });
+    expect(getProtocolCommandHandlerCount()).toBe(1);
+  });
 });

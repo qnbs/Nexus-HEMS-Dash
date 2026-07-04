@@ -260,7 +260,7 @@ If a bot suggests such a change, **decline the thread** and cite
 
 ## 9. Agent checklist (copy for every PR turn)
 
-```
+```text
 [ ] Push latest commit
 [ ] Poll CI — all required jobs green on latest SHA?
 [ ] CodeRabbit finished? (not "review in progress")
