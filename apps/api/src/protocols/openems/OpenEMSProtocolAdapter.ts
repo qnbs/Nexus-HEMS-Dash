@@ -44,9 +44,12 @@ import type {
   ProtocolCommandResult,
 } from '../protocol-command.js';
 import {
+  BatteryModeValueSchema,
   BatteryPowerValueSchema,
   EvCurrentValueSchema,
   EvPowerValueSchema,
+  GridLimitValueSchema,
+  HeatPumpModeValueSchema,
 } from '../protocol-command.js';
 import { isSafeComponentId, sanitizeWritableProperties } from './openems-writable-rules.js';
 
@@ -521,47 +524,48 @@ export class OpenEMSProtocolAdapter implements IProtocolAdapter, IProtocolComman
         break;
       }
       case 'SET_BATTERY_MODE': {
-        const mode = String(command.value);
-        const mappedMode =
-          mode === 'charge'
-            ? 'CHARGE_GRID'
-            : mode === 'discharge'
-              ? 'DISCHARGE_TO_GRID'
-              : command.value;
+        const mode = BatteryModeValueSchema.safeParse(command.value);
+        if (!mode.success) {
+          return {
+            handled: true,
+            success: false,
+            adapterId: this.id,
+            error: 'SET_BATTERY_MODE requires charge or discharge',
+          };
+        }
+        const mappedMode = mode.data === 'charge' ? 'CHARGE_GRID' : 'DISCHARGE_TO_GRID';
         ok = await this.updateSafeComponentConfig(this.essControllerId, [
           { name: 'mode', value: mappedMode },
         ]);
         break;
       }
       case 'SET_GRID_LIMIT': {
-        if (
-          typeof command.value !== 'number' ||
-          !Number.isFinite(command.value) ||
-          command.value < 0
-        ) {
+        const limit = GridLimitValueSchema.safeParse(command.value);
+        if (!limit.success) {
           return {
             handled: true,
             success: false,
             adapterId: this.id,
-            error: 'SET_GRID_LIMIT requires a non-negative number (kW)',
+            error: 'SET_GRID_LIMIT requires a finite kW value between 0 and 25',
           };
         }
         ok = await this.updateSafeComponentConfig(this.peakShavingControllerId, [
-          { name: 'peakShavingPower', value: command.value * 1000 },
+          { name: 'peakShavingPower', value: limit.data * 1000 },
         ]);
         break;
       }
       case 'SET_HEAT_PUMP_MODE': {
-        if (typeof command.value !== 'number' || !Number.isFinite(command.value)) {
+        const mode = HeatPumpModeValueSchema.safeParse(command.value);
+        if (!mode.success) {
           return {
             handled: true,
             success: false,
             adapterId: this.id,
-            error: 'SET_HEAT_PUMP_MODE requires a numeric value',
+            error: 'SET_HEAT_PUMP_MODE requires a finite SG Ready mode between 1 and 4',
           };
         }
         ok = await this.updateSafeComponentConfig(this.hpSgReadyControllerId, [
-          { name: 'mode', value: command.value },
+          { name: 'mode', value: mode.data },
         ]);
         break;
       }

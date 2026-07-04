@@ -7,7 +7,12 @@
 
 import type { WSCommandType } from '@nexus-hems/shared-types';
 import type { ProtocolCommandRequest } from '../protocol-command.js';
-import { EvCurrentValueSchema, EvPowerValueSchema } from '../protocol-command.js';
+import {
+  EvCurrentValueSchema,
+  EvPowerValueSchema,
+  HeatPumpModeValueSchema,
+  MAX_EV_CURRENT_A,
+} from '../protocol-command.js';
 
 export interface HAMqttServiceCall {
   domain: string;
@@ -61,7 +66,8 @@ export function mapProtocolCommandToMqttService(
       if (!entities.wallboxCurrentEntityId) {
         return { error: 'HA_WALLBOX_CURRENT_ENTITY not configured' };
       }
-      const currentA = Math.round((power.data / entities.mainsVoltage) * 10) / 10;
+      const derivedA = Math.round((power.data / entities.mainsVoltage) * 10) / 10;
+      const currentA = Math.min(derivedA, MAX_EV_CURRENT_A);
       return {
         domain: 'number',
         service: 'set_value',
@@ -87,8 +93,9 @@ export function mapProtocolCommandToMqttService(
         payload: { entity_id: entities.wallboxSwitchEntityId },
       };
     case 'SET_HEAT_PUMP_MODE': {
-      if (typeof command.value !== 'number' || !Number.isFinite(command.value)) {
-        return { error: 'SET_HEAT_PUMP_MODE requires a numeric value' };
+      const mode = HeatPumpModeValueSchema.safeParse(command.value);
+      if (!mode.success) {
+        return { error: 'SET_HEAT_PUMP_MODE requires a finite SG Ready mode between 1 and 4' };
       }
       if (!entities.heatPumpModeEntityId) {
         return { error: 'HA_HEAT_PUMP_MODE_ENTITY not configured' };
@@ -96,7 +103,7 @@ export function mapProtocolCommandToMqttService(
       return {
         domain: 'climate',
         service: 'set_hvac_mode',
-        payload: { entity_id: entities.heatPumpModeEntityId, hvac_mode: command.value },
+        payload: { entity_id: entities.heatPumpModeEntityId, hvac_mode: mode.data },
       };
     }
     default:

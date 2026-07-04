@@ -22,6 +22,12 @@ export const BatteryPowerValueSchema = z
   .finite()
   .min(-MAX_BATTERY_POWER_W)
   .max(MAX_BATTERY_POWER_W);
+/** OpenEMS ESS mode aliases accepted at the protocol boundary. */
+export const BatteryModeValueSchema = z.union([z.literal('charge'), z.literal('discharge')]);
+/** Peak-shaving limit in kW (OpenEMS maps ×1000 → watts). */
+export const GridLimitValueSchema = z.number().finite().min(0).max(25);
+/** SG Ready mode 1–4 (aligns with frontend command-safety). */
+export const HeatPumpModeValueSchema = z.number().finite().min(1).max(4);
 
 export const ProtocolCommandRequestSchema = WSCommandSchema.and(
   z.object({
@@ -38,6 +44,30 @@ export const ProtocolCommandRequestSchema = WSCommandSchema.and(
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       message: 'SET_EV_CURRENT requires a finite amp value between 0 and 32',
+    });
+  }
+  if (cmd.type === 'SET_BATTERY_POWER' && !BatteryPowerValueSchema.safeParse(cmd.value).success) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'SET_BATTERY_POWER requires a finite wattage between -25000 and 25000',
+    });
+  }
+  if (cmd.type === 'SET_BATTERY_MODE' && !BatteryModeValueSchema.safeParse(cmd.value).success) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'SET_BATTERY_MODE requires charge or discharge',
+    });
+  }
+  if (cmd.type === 'SET_GRID_LIMIT' && !GridLimitValueSchema.safeParse(cmd.value).success) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'SET_GRID_LIMIT requires a finite kW value between 0 and 25',
+    });
+  }
+  if (cmd.type === 'SET_HEAT_PUMP_MODE' && !HeatPumpModeValueSchema.safeParse(cmd.value).success) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'SET_HEAT_PUMP_MODE requires a finite SG Ready mode between 1 and 4',
     });
   }
 });

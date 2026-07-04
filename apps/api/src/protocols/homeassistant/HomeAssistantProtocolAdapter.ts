@@ -604,7 +604,10 @@ export function createHomeAssistantAdapterFromEnv(
       ? { wallboxSwitchEntityId: env.HA_WALLBOX_SWITCH_ENTITY.trim() }
       : {}),
     ...(env.HA_WALLBOX_MAINS_VOLTAGE?.trim()
-      ? { mainsVoltage: Number(env.HA_WALLBOX_MAINS_VOLTAGE.trim()) }
+      ? (() => {
+          const parsed = Number(env.HA_WALLBOX_MAINS_VOLTAGE.trim());
+          return Number.isFinite(parsed) && parsed > 0 ? { mainsVoltage: parsed } : {};
+        })()
       : {}),
   });
 }

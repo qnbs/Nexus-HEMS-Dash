@@ -46,6 +46,18 @@ describe('ha-mqtt-command-mapper', () => {
     expect(result).toEqual({ error: 'HA_WALLBOX_CURRENT_ENTITY not configured' });
   });
 
+  it('clamps SET_EV_POWER derived amps to 32 A ceiling', () => {
+    const result = mapProtocolCommandToMqttService(
+      { type: 'SET_EV_POWER', value: 22_000 },
+      entities,
+    );
+    expect(result).toMatchObject({
+      domain: 'number',
+      service: 'set_value',
+      payload: { entity_id: 'number.wallbox_max_current', value: 32 },
+    });
+  });
+
   it('converts SET_EV_POWER watts to amps using mains voltage', () => {
     const result = mapProtocolCommandToMqttService({ type: 'SET_EV_POWER', value: 6900 }, entities);
     expect(result).toMatchObject({
@@ -125,12 +137,24 @@ describe('ha-mqtt-command-mapper', () => {
     });
   });
 
+  it('rejects out-of-range SET_HEAT_PUMP_MODE values', () => {
+    const result = mapProtocolCommandToMqttService(
+      { type: 'SET_HEAT_PUMP_MODE', value: 5 },
+      entities,
+    );
+    expect(result).toEqual({
+      error: 'SET_HEAT_PUMP_MODE requires a finite SG Ready mode between 1 and 4',
+    });
+  });
+
   it('rejects non-numeric SET_HEAT_PUMP_MODE values', () => {
     const result = mapProtocolCommandToMqttService(
       { type: 'SET_HEAT_PUMP_MODE', value: 'heat' as unknown as number },
       entities,
     );
-    expect(result).toEqual({ error: 'SET_HEAT_PUMP_MODE requires a numeric value' });
+    expect(result).toEqual({
+      error: 'SET_HEAT_PUMP_MODE requires a finite SG Ready mode between 1 and 4',
+    });
   });
 
   it('rejects SET_HEAT_PUMP_MODE when climate entity is missing', () => {

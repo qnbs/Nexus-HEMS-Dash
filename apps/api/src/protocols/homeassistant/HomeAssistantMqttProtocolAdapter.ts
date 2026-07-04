@@ -439,7 +439,10 @@ export function createHomeAssistantMqttAdapterFromEnv(
       ? { heatPumpModeEntityId: env.HA_HEAT_PUMP_MODE_ENTITY.trim() }
       : {}),
     ...(env.HA_WALLBOX_MAINS_VOLTAGE?.trim()
-      ? { mainsVoltage: Number(env.HA_WALLBOX_MAINS_VOLTAGE.trim()) }
+      ? (() => {
+          const parsed = Number(env.HA_WALLBOX_MAINS_VOLTAGE.trim());
+          return Number.isFinite(parsed) && parsed > 0 ? { mainsVoltage: parsed } : {};
+        })()
       : {}),
   });
 }

@@ -409,7 +409,17 @@ describe('OpenEMSProtocolAdapter', () => {
     await adapter.connect();
     const result = await adapter.sendCommand({ type: 'SET_GRID_LIMIT', value: -1 });
     expect(result.success).toBe(false);
-    expect(result.error).toContain('non-negative');
+    expect(result.error).toContain('kW value between 0 and 25');
+  });
+
+  it('rejects invalid SET_BATTERY_MODE values', async () => {
+    await adapter.connect();
+    const result = await adapter.sendCommand({
+      type: 'SET_BATTERY_MODE',
+      value: 'self-consumption',
+    });
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('charge or discharge');
   });
 
   it('rejects invalid SET_HEAT_PUMP_MODE values', async () => {
@@ -419,7 +429,7 @@ describe('OpenEMSProtocolAdapter', () => {
       value: 'off' as unknown as number,
     });
     expect(result.success).toBe(false);
-    expect(result.error).toContain('numeric');
+    expect(result.error).toContain('SG Ready mode between 1 and 4');
   });
 
   it('returns handled:false for unsupported command types', async () => {

@@ -267,4 +267,25 @@ describe('HomeAssistantMqttProtocolAdapter', () => {
     expect(adapter).not.toBeNull();
     expect(adapter?.supportsCommand('SET_EV_POWER')).toBe(true);
   });
+
+  it('createHomeAssistantMqttAdapterFromEnv ignores invalid mains voltage and defaults to 230', async () => {
+    const adapter = createHomeAssistantMqttAdapterFromEnv({
+      HA_MQTT_BROKER_URL: 'mqtt://localhost:1883',
+      HA_WALLBOX_CURRENT_ENTITY: 'number.ev_amps',
+      HA_WALLBOX_MAINS_VOLTAGE: 'not-a-number',
+    });
+    expect(adapter).not.toBeNull();
+    await adapter!.connect();
+
+    const result = await adapter!.sendCommand({ type: 'SET_EV_POWER', value: 6900 });
+    expect(result.success).toBe(true);
+    expect(mockClientInstance.publish).toHaveBeenCalledWith(
+      'homeassistant/number/set_value',
+      JSON.stringify({ entity_id: 'number.ev_amps', value: 30 }),
+      { qos: 1 },
+      expect.any(Function),
+    );
+
+    await adapter!.disconnect();
+  });
 });
