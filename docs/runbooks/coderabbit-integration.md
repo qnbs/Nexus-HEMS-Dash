@@ -93,6 +93,7 @@ If CodeRabbit becomes noisy:
 
 ## Related
 
+- [pr-review-correction-loop.md](pr-review-correction-loop.md) — mandatory correction-loop checklist
 - [codeant-ai-integration.md](codeant-ai-integration.md)
 - [deepsource-integration.md](deepsource-integration.md)
 - [working-with-coverage.md](working-with-coverage.md)

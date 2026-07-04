@@ -122,5 +122,6 @@ Update this runbook if an alternative is chosen.
 
 ## Related
 
+- [pr-review-correction-loop.md](pr-review-correction-loop.md) — mandatory correction-loop checklist
 - [deepsource-integration.md](deepsource-integration.md)
 - [../PR-FEEDBACK-PLAYBOOK.md](../PR-FEEDBACK-PLAYBOOK.md)

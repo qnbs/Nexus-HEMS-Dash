@@ -4,7 +4,7 @@
 
 **Audience:** Anyone opening or reviewing a PR in `qnbs/Nexus-HEMS-Dash`.
 
-**Last updated:** 2026-06-28
+**Last updated:** 2026-07-04
 
 ---
 
@@ -63,6 +63,11 @@ flowchart LR
 ---
 
 ## 4. The Correction Loop
+
+> **Operational checklist:** see [runbooks/pr-review-correction-loop.md](runbooks/pr-review-correction-loop.md)
+> for the mandatory step-by-step process (trigger all review bots, CI babysitting,
+> per-platform correction loops, exit criteria). Agents and maintainers must follow
+> that runbook on every PR.
 
 When a check fails, follow this loop:
 
@@ -177,6 +182,7 @@ These are the status checks you will see on a PR:
 
 ## 9. Related Runbooks
 
+- [runbooks/pr-review-correction-loop.md](runbooks/pr-review-correction-loop.md) — **mandatory** correction-loop checklist
 - [runbooks/ci-primary-gate.md](runbooks/ci-primary-gate.md)
 - [runbooks/security-full-gate.md](runbooks/security-full-gate.md)
 - [runbooks/deepsource-integration.md](runbooks/deepsource-integration.md)
