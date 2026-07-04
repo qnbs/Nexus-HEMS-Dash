@@ -12,6 +12,7 @@ import { useNotifications } from './lib/useNotifications';
 import { useAppStoreShallow } from './store';
 
 /** Nexus-HEMS root application shell and route provider. */
+// skipcq: JS-0067 — Vite/React ESM root entry; module-scope export is required
 export default function App() {
   const { i18n, t } = useTranslation();
   const {

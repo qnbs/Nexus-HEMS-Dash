@@ -14,6 +14,7 @@ export const useBackendHealthPoll = (): void => {
       .then(({ mode, readOnly }) => {
         setAdapterMode(mode);
         setBackendReadOnly(readOnly);
+        // Non-React command-safety path reads the module flag synchronously.
         setRuntimeBackendReadOnly(readOnly);
       })
       .catch(ignorePromiseRejection);

@@ -8,11 +8,11 @@
 import type { IncomingMessage } from 'http';
 import type { WebSocket } from 'ws';
 import { isPrivateHost } from '../config/private-host.js';
-import { isReadOnlyMode } from '../config/read-only-mode.js';
 import { type AuthenticatedClient, authenticateWS } from '../middleware/auth.js';
 import { getDevice } from '../services/EEBusTrustStore.js';
 import { attachClientRelay } from '../services/ShipHandshakeService.js';
 import { wsTicketStore } from '../services/ws-ticket-store.js';
+import { rejectProxyIfReadOnly } from './proxy-readonly-guard.js';
 import { getWSClientIP, releaseConnection, tryAcquireConnection } from './ws-conn-limit.js';
 
 const SCOPE_ORDER = { read: 0, readwrite: 1, admin: 2 } as const;
@@ -52,10 +52,7 @@ export async function handleEebusProxyConnection(
     return;
   }
 
-  if (isReadOnlyMode()) {
-    clientWs.close(4403, 'System is in read-only mode — control commands are disabled');
-    return;
-  }
+  if (rejectProxyIfReadOnly(clientWs)) return;
 
   const url = new URL(req.url || '', `http://${req.headers.host || 'localhost'}`);
   const ski = url.searchParams.get('ski')?.trim();
