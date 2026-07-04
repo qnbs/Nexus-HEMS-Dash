@@ -14,7 +14,6 @@
  */
 
 import EventEmitter from 'node:events';
-import { appendFileSync, mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
@@ -30,16 +29,13 @@ import {
   recordAdapterError,
   recordAdapterReconnect,
 } from '../../middleware/adapter-metrics.js';
-import { API_RUNTIME_DIR, DEAD_LETTER_QUEUE_PATH } from '../../runtime-paths.js';
 import { loadHAEntityMappings } from '../homeassistant/HomeAssistantProtocolAdapter.js';
 import {
   type HAEntityMapping,
   parseHANumericState,
   resolveHAEntityRole,
 } from '../homeassistant/ha-role-resolver.js';
-
-const MAX_DLQ_LINES = 10_000;
-let dlqLineCount = 0;
+import { writeToProtocolDLQ } from '../protocol-dlq.js';
 
 interface HAMqttDiscoveryConfig {
   unique_id?: string;
@@ -53,14 +49,6 @@ interface TrackedEntity {
   stateTopic: string;
   deviceClass: string;
   unit: string;
-}
-
-interface DLQEntry {
-  ts: number;
-  source: string;
-  rawPayload: string;
-  error: string;
-  protocol: ProtocolType;
 }
 
 export interface HomeAssistantMqttProtocolAdapterConfig {
@@ -98,6 +86,7 @@ export class HomeAssistantMqttProtocolAdapter implements IProtocolAdapter {
     this.id = config.id;
     this.deviceIdPrefix = config.deviceId ?? 'ha-site';
     this.staticMap = new Map((config.entityMappings ?? []).map((entry) => [entry.entityId, entry]));
+    // Populate stateTopicToEntity only — client is null; subscribeCoreTopics() subscribes on connect.
     for (const mapping of config.entityMappings ?? []) {
       this.trackEntity(mapping.entityId, this.stateTopicForEntity(mapping.entityId), '', '');
     }
@@ -107,6 +96,8 @@ export class HomeAssistantMqttProtocolAdapter implements IProtocolAdapter {
     if (this.destroyed) return;
 
     return new Promise((resolve, reject) => {
+      let connectSettled = false;
+
       const opts: IClientOptions = {
         reconnectPeriod: 5_000,
         connectTimeout: 10_000,
@@ -121,11 +112,18 @@ export class HomeAssistantMqttProtocolAdapter implements IProtocolAdapter {
         this.connected = true;
         this.consecutiveErrors = 0;
         this.subscribeCoreTopics();
+        connectSettled = true;
         resolve();
       });
 
-      this.client.once('error', (err) => {
-        if (!this.connected) reject(err);
+      this.client.on('error', (err) => {
+        if (!this.connected && !connectSettled) {
+          connectSettled = true;
+          reject(err);
+          return;
+        }
+        recordAdapterError(this.id, this.protocol, 'connection_error');
+        this.consecutiveErrors++;
       });
 
       this.client.on('reconnect', () => {
@@ -139,7 +137,7 @@ export class HomeAssistantMqttProtocolAdapter implements IProtocolAdapter {
         } catch (err) {
           recordAdapterError(this.id, this.protocol, 'parse_error');
           this.consecutiveErrors++;
-          writeToDLQ({
+          writeToProtocolDLQ({
             ts: Date.now(),
             source: topic,
             rawPayload: payload.toString('utf8').slice(0, 4096),
@@ -160,7 +158,11 @@ export class HomeAssistantMqttProtocolAdapter implements IProtocolAdapter {
     if (this.client) {
       this.client.removeAllListeners();
       await new Promise<void>((resolve) => {
-        this.client?.end(false, {}, () => resolve());
+        const timer = setTimeout(resolve, 5_000);
+        this.client?.end(false, {}, () => {
+          clearTimeout(timer);
+          resolve();
+        });
       });
       this.client = null;
     }
@@ -243,6 +245,7 @@ export class HomeAssistantMqttProtocolAdapter implements IProtocolAdapter {
   ): void {
     const tracked: TrackedEntity = { entityId, stateTopic, deviceClass, unit };
     this.stateTopicToEntity.set(stateTopic, tracked);
+    // Subscribe when client is already connected (discovery); constructor path is map-only.
     this.client?.subscribe(stateTopic, { qos: 1 });
   }
 
@@ -281,7 +284,7 @@ export class HomeAssistantMqttProtocolAdapter implements IProtocolAdapter {
     });
 
     if (!datapoint.success) {
-      writeToDLQ({
+      writeToProtocolDLQ({
         ts: Date.now(),
         source: tracked.entityId,
         rawPayload: raw,
@@ -302,6 +305,13 @@ export class HomeAssistantMqttProtocolAdapter implements IProtocolAdapter {
     try {
       config = JSON.parse(raw) as HAMqttDiscoveryConfig;
     } catch {
+      writeToProtocolDLQ({
+        ts: Date.now(),
+        source: 'discovery-config',
+        rawPayload: raw.slice(0, 4096),
+        error: 'invalid discovery config JSON',
+        protocol: this.protocol,
+      });
       recordAdapterDlq(this.id, this.protocol);
       return;
     }
@@ -337,18 +347,5 @@ export function createHomeAssistantMqttAdapterFromEnv(
     topicPrefix: env.HA_MQTT_TOPIC_PREFIX?.trim() || 'homeassistant',
     deviceId: env.HA_DEVICE_ID?.trim() || 'ha-site',
     entityMappings: mappings,
-  });
-}
-
-function writeToDLQ(entry: DLQEntry): void {
-  if (dlqLineCount >= MAX_DLQ_LINES) return;
-  setImmediate(() => {
-    try {
-      mkdirSync(API_RUNTIME_DIR, { recursive: true });
-      appendFileSync(DEAD_LETTER_QUEUE_PATH, `${JSON.stringify(entry)}\n`, 'utf8');
-      dlqLineCount++;
-    } catch {
-      /* best-effort */
-    }
   });
 }

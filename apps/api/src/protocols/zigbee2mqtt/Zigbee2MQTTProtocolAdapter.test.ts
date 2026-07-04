@@ -181,6 +181,74 @@ describe('Zigbee2MQTTProtocolAdapter', () => {
     expect(roles).toEqual(['grid', 'heatpump']);
   });
 
+  it('filters unconfigured devices when energyDevices allowlist is set', async () => {
+    const filteredAdapter = new Zigbee2MQTTProtocolAdapter({
+      ...testConfig,
+      energyDevices: ['grid_meter'],
+    });
+    await filteredAdapter.connect();
+
+    const stream = filteredAdapter.getDataStream();
+    const collectPromise = (async () => {
+      const values = [];
+      for await (const dp of stream) {
+        values.push(dp);
+      }
+      return values;
+    })();
+
+    mockClientInstance.emit(
+      'message',
+      'zigbee2mqtt/bridge/devices',
+      Buffer.from(
+        JSON.stringify([
+          {
+            friendly_name: 'heat_pump_plug',
+            type: 'EndDevice',
+            definition: {
+              exposes: [
+                { type: 'switch', name: 'state' },
+                { type: 'numeric', name: 'power' },
+              ],
+            },
+          },
+          {
+            friendly_name: 'grid_meter',
+            type: 'EndDevice',
+            definition: {
+              description: 'Energy meter',
+              exposes: [
+                { type: 'numeric', name: 'power' },
+                { type: 'numeric', name: 'energy' },
+              ],
+            },
+          },
+        ]),
+      ),
+      { retain: false },
+    );
+
+    mockClientInstance.emit(
+      'message',
+      'zigbee2mqtt/grid_meter',
+      Buffer.from(JSON.stringify({ power: 1500 })),
+      { retain: false },
+    );
+    mockClientInstance.emit(
+      'message',
+      'zigbee2mqtt/heat_pump_plug',
+      Buffer.from(JSON.stringify({ power: 800 })),
+      { retain: false },
+    );
+
+    await filteredAdapter.disconnect();
+    const values = await collectPromise;
+
+    expect(values).toHaveLength(1);
+    expect(values[0]?.role).toBe('grid');
+    expect(values[0]?.value).toBe(1500);
+  });
+
   it('skips offline devices after availability topic reports offline', async () => {
     const stream = adapter.getDataStream();
     const collectPromise = (async () => {

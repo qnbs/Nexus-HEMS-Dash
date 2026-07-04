@@ -247,7 +247,7 @@ export class Zigbee2MQTTProtocolAdapter implements IProtocolAdapter {
     this.client?.subscribe(`${base}/${friendlyName}/availability`, { qos: 1 });
   }
 
-  private handleMessage(topic: string, payload: Buffer, retained: boolean): void {
+  private handleMessage(topic: string, payload: Buffer, _retained: boolean): void {
     const base = this.config.baseTopic;
     const text = payload.toString('utf8');
 
@@ -270,11 +270,7 @@ export class Zigbee2MQTTProtocolAdapter implements IProtocolAdapter {
     const friendlyName = relative.split('/')[0];
     if (!friendlyName) return;
 
-    if (
-      retained &&
-      this.configuredEnergyDevices.size > 0 &&
-      !this.configuredEnergyDevices.has(friendlyName)
-    ) {
+    if (this.configuredEnergyDevices.size > 0 && !this.configuredEnergyDevices.has(friendlyName)) {
       return;
     }
 

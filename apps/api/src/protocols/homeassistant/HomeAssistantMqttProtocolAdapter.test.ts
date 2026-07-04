@@ -28,6 +28,13 @@ vi.mock('mqtt', () => ({
   },
 }));
 
+vi.mock('../../middleware/adapter-metrics.js', () => ({
+  recordAdapterDlq: vi.fn(),
+  recordAdapterError: vi.fn(),
+  recordAdapterReconnect: vi.fn(),
+}));
+
+import { recordAdapterError } from '../../middleware/adapter-metrics.js';
 import {
   createHomeAssistantMqttAdapterFromEnv,
   HomeAssistantMqttProtocolAdapter,
@@ -119,5 +126,14 @@ describe('HomeAssistantMqttProtocolAdapter', () => {
     expect(
       createHomeAssistantMqttAdapterFromEnv({ HA_MQTT_BROKER_URL: 'mqtt://localhost:1883' }),
     ).not.toBeNull();
+  });
+
+  it('tracks repeated MQTT client errors after connect', async () => {
+    mockClientInstance.emit('error', new Error('broker hiccup'));
+    mockClientInstance.emit('error', new Error('broker hiccup again'));
+
+    expect(recordAdapterError).toHaveBeenCalledTimes(2);
+    const health = await adapter.healthCheck();
+    expect(health.consecutiveErrors).toBe(2);
   });
 });
