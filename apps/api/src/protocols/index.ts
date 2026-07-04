@@ -28,6 +28,7 @@ import {
 import { EebusProtocolAdapter } from './eebus/EebusProtocolAdapter.js';
 import { EvccAdapter } from './evcc/EvccAdapter.js';
 import { createHeatPumpAdapterFromEnv } from './heatpump/HeatPumpAdapter.js';
+import { createHomeAssistantAdapterFromEnv } from './homeassistant/HomeAssistantProtocolAdapter.js';
 import { KnxAdapter, type KnxGaMapping } from './knx/KnxAdapter.js';
 import { type DeviceConfig, ModbusAdapter } from './modbus/ModbusAdapter.js';
 import { MqttAdapter } from './mqtt/MqttAdapter.js';
@@ -351,6 +352,30 @@ export async function startProtocolAdapters(eventBus: EventBus): Promise<void> {
         const message = err instanceof Error ? err.message : String(err);
         setState(openEmsAdapter.id, openEmsAdapter.protocol, 'failed', message);
         console.error('[Adapters] Failed to start OpenEMSProtocolAdapter:', err);
+      });
+  }
+
+  // -------------------------------------------------------------------------
+  // Home Assistant (WebSocket API — read-only telemetry)
+  // Enable via env: HA_HOST=homeassistant.local HA_TOKEN=<long-lived-token>
+  // -------------------------------------------------------------------------
+  const homeAssistantAdapter = createHomeAssistantAdapterFromEnv();
+  if (homeAssistantAdapter) {
+    activeAdapters.push(homeAssistantAdapter);
+    activeAdapterRefs.set(homeAssistantAdapter.id, homeAssistantAdapter);
+    recordAdapterRegistration(homeAssistantAdapter.id, homeAssistantAdapter.protocol);
+    setState(homeAssistantAdapter.id, homeAssistantAdapter.protocol, 'starting');
+
+    homeAssistantAdapter
+      .connect()
+      .then(() => {
+        setState(homeAssistantAdapter.id, homeAssistantAdapter.protocol, 'healthy');
+        pipeAdapterToEventBus(homeAssistantAdapter, eventBus);
+      })
+      .catch((err: unknown) => {
+        const message = err instanceof Error ? err.message : String(err);
+        setState(homeAssistantAdapter.id, homeAssistantAdapter.protocol, 'failed', message);
+        console.error('[Adapters] Failed to start HomeAssistantProtocolAdapter:', err);
       });
   }
 
