@@ -1,5 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { isProtocolCommandHandler, validateProtocolCommandRequest } from './protocol-command.js';
+import {
+  BatteryModeValueSchema,
+  BatteryPowerValueSchema,
+  GridLimitValueSchema,
+  HeatPumpModeEntityIdSchema,
+  HeatPumpModeValueSchema,
+  isProtocolCommandHandler,
+  MainsVoltageSchema,
+  parseOptionalMainsVoltageEnv,
+  validateProtocolCommandRequest,
+} from './protocol-command.js';
 
 describe('validateProtocolCommandRequest', () => {
   it('accepts valid EV power commands', () => {
@@ -48,9 +58,69 @@ describe('validateProtocolCommandRequest', () => {
     }
   });
 
+  it('validates battery power within ±25 kW', () => {
+    expect(BatteryPowerValueSchema.safeParse(20_000).success).toBe(true);
+    expect(BatteryPowerValueSchema.safeParse(-20_000).success).toBe(true);
+    expect(BatteryPowerValueSchema.safeParse(25_001).success).toBe(false);
+    expect(BatteryPowerValueSchema.safeParse(-25_001).success).toBe(false);
+  });
+
   it('accepts boolean charging commands', () => {
     const result = validateProtocolCommandRequest({ type: 'START_CHARGING', value: true });
     expect(result.valid).toBe(true);
+  });
+
+  it('validates SET_BATTERY_POWER via superRefine', () => {
+    expect(validateProtocolCommandRequest({ type: 'SET_BATTERY_POWER', value: 10_000 }).valid).toBe(
+      true,
+    );
+    expect(validateProtocolCommandRequest({ type: 'SET_BATTERY_POWER', value: 26_000 }).valid).toBe(
+      false,
+    );
+  });
+
+  it('validates SET_BATTERY_MODE charge and discharge', () => {
+    expect(
+      validateProtocolCommandRequest({ type: 'SET_BATTERY_MODE', value: 'charge' }).valid,
+    ).toBe(true);
+    expect(
+      validateProtocolCommandRequest({ type: 'SET_BATTERY_MODE', value: 'discharge' }).valid,
+    ).toBe(true);
+    expect(
+      validateProtocolCommandRequest({ type: 'SET_BATTERY_MODE', value: 'self-consumption' }).valid,
+    ).toBe(false);
+  });
+
+  it('validates SET_GRID_LIMIT in kW', () => {
+    expect(validateProtocolCommandRequest({ type: 'SET_GRID_LIMIT', value: 4.2 }).valid).toBe(true);
+    expect(validateProtocolCommandRequest({ type: 'SET_GRID_LIMIT', value: -1 }).valid).toBe(false);
+    expect(validateProtocolCommandRequest({ type: 'SET_GRID_LIMIT', value: 26 }).valid).toBe(false);
+  });
+
+  it('validates SET_HEAT_PUMP_MODE SG Ready range', () => {
+    expect(validateProtocolCommandRequest({ type: 'SET_HEAT_PUMP_MODE', value: 2 }).valid).toBe(
+      true,
+    );
+    expect(validateProtocolCommandRequest({ type: 'SET_HEAT_PUMP_MODE', value: 0 }).valid).toBe(
+      false,
+    );
+    expect(validateProtocolCommandRequest({ type: 'SET_HEAT_PUMP_MODE', value: 5 }).valid).toBe(
+      false,
+    );
+  });
+
+  it('exports value schemas for adapter reuse', () => {
+    expect(BatteryModeValueSchema.safeParse('charge').success).toBe(true);
+    expect(GridLimitValueSchema.safeParse(25).success).toBe(true);
+    expect(HeatPumpModeValueSchema.safeParse(4).success).toBe(true);
+    expect(HeatPumpModeEntityIdSchema.safeParse('number.hp_sg_ready').success).toBe(true);
+    expect(HeatPumpModeEntityIdSchema.safeParse('number').success).toBe(false);
+    expect(HeatPumpModeEntityIdSchema.safeParse('climate.heat_pump').success).toBe(false);
+    expect(MainsVoltageSchema.safeParse('230').success).toBe(true);
+    expect(MainsVoltageSchema.safeParse('invalid').success).toBe(false);
+    expect(parseOptionalMainsVoltageEnv('400')).toBe(400);
+    expect(parseOptionalMainsVoltageEnv('not-a-number')).toBeUndefined();
+    expect(parseOptionalMainsVoltageEnv(undefined)).toBeUndefined();
   });
 });
 

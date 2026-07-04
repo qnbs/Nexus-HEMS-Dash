@@ -94,21 +94,26 @@ Push **before** heavy local verification when cloud CI is the source of truth
 
 ### Manual triggers (when a bot did not run or review is stale)
 
-Post these as **PR comments** (maintainer or agent via `gh pr comment`):
+**Preferred (agents + maintainers):** push a commit — `.github/workflows/coderabbit-rereview.yml`
+posts `@coderabbitai review` automatically when the head SHA has no CodeRabbit review yet.
+
+**Maintainer-only** (agents get `403` on `gh pr comment`):
 
 | Platform | Command / action | When to use |
 |----------|------------------|-------------|
-| **CodeRabbit** | `@coderabbitai review` | No summary after ~10 min, or after large rebase |
+| **CodeRabbit** | `@coderabbitai review` (PR comment) | No summary after ~10 min, or after large rebase |
+| **CodeRabbit** | `gh workflow run coderabbit-rereview.yml -f pr_number=<num>` | Manual re-trigger without a new commit |
+| **CodeRabbit** | `./scripts/request-coderabbit-review.sh <num>` | Local helper (falls back to workflow dispatch) |
 | **CodeRabbit** | `@coderabbitai full review` | Request full re-review of entire diff |
 | **CodeRabbit** | `@coderabbitai help` | List available commands |
 | **DeepSource AI** | `@deepsourcebot review` | DeepSource report card says AI review not run |
 | **CodeAnt** | Re-sync: push empty commit or close/reopen PR | If `CodeAnt AI` check missing after 15 min |
 | **Codecov** | Re-run `ci.yml` workflow | If upload failed; check `CODECOV_TOKEN` secret |
 
-Example (agent):
+Example (maintainer — agents should push commits instead):
 
 ```bash
-gh pr comment 265 --body "@coderabbitai review"
+./scripts/request-coderabbit-review.sh 265
 gh pr comment 265 --body "@deepsourcebot review"
 ```
 

@@ -405,10 +405,12 @@ export async function startProtocolAdapters(eventBus: EventBus): Promise<void> {
     homeAssistantMqttAdapter
       .connect()
       .then(() => {
+        registerCommandCapableAdapter(homeAssistantMqttAdapter);
         setState(homeAssistantMqttAdapter.id, homeAssistantMqttAdapter.protocol, 'healthy');
         pipeAdapterToEventBus(homeAssistantMqttAdapter, eventBus);
       })
       .catch((err: unknown) => {
+        unregisterCommandCapableAdapter(homeAssistantMqttAdapter);
         const message = err instanceof Error ? err.message : String(err);
         setState(homeAssistantMqttAdapter.id, homeAssistantMqttAdapter.protocol, 'failed', message);
         console.error('[Adapters] Failed to start HomeAssistantMqttProtocolAdapter:', err);

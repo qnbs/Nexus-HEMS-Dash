@@ -42,6 +42,7 @@ import type {
   ProtocolCommandRequest,
   ProtocolCommandResult,
 } from '../protocol-command.js';
+import { parseOptionalMainsVoltageEnv } from '../protocol-command.js';
 import {
   type HAEntityMapping,
   parseHANumericState,
@@ -589,6 +590,8 @@ export function createHomeAssistantAdapterFromEnv(
     );
   }
 
+  const mainsVoltage = parseOptionalMainsVoltageEnv(env.HA_WALLBOX_MAINS_VOLTAGE);
+
   return new HomeAssistantProtocolAdapter({
     id: env.HA_ADAPTER_ID?.trim() || 'homeassistant-01',
     host,
@@ -603,9 +606,7 @@ export function createHomeAssistantAdapterFromEnv(
     ...(env.HA_WALLBOX_SWITCH_ENTITY?.trim()
       ? { wallboxSwitchEntityId: env.HA_WALLBOX_SWITCH_ENTITY.trim() }
       : {}),
-    ...(env.HA_WALLBOX_MAINS_VOLTAGE?.trim()
-      ? { mainsVoltage: Number(env.HA_WALLBOX_MAINS_VOLTAGE.trim()) }
-      : {}),
+    ...(mainsVoltage !== undefined ? { mainsVoltage } : {}),
   });
 }
 

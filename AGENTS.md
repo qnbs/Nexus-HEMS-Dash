@@ -41,6 +41,18 @@ low-RAM workstation; in the cloud VM it is fine to run `pnpm type-check`,
   `curl http://localhost:5173/api/health` (through the Vite proxy) should return
   JSON like `{"status":"healthy","mode":"mock","adapters":[],...}`.
 
+### PR review automation (CodeRabbit)
+
+- **Cursor Cloud agent tokens cannot post PR comments** (`403 Resource not accessible by
+  integration`). Do not rely on `gh pr comment … @coderabbitai review` from agents.
+- **On every non-draft PR push**, `.github/workflows/coderabbit-rereview.yml` posts
+  `@coderabbitai review` when the head commit has no CodeRabbit review yet (deduped per
+  SHA). A second trigger runs after **CI** succeeds.
+- **Agents:** push fix commits — the workflow requests re-review automatically.
+- **Maintainers:** `./scripts/request-coderabbit-review.sh <pr>` or
+  `gh workflow run coderabbit-rereview.yml -f pr_number=<num> -f force=false`.
+- Full checklist: `docs/runbooks/pr-review-correction-loop.md`.
+
 ### Docs to read for common agent tasks
 
 | Task | Start here |

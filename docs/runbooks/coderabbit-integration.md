@@ -66,6 +66,31 @@ domain (energy/safety) risk.
 4. If incorrect or unsafe, reply explaining why and resolve the thread.
 5. Use `@coderabbitai` chat for follow-up questions or to request a re-review.
 
+### Automated re-review (preferred)
+
+`.github/workflows/coderabbit-rereview.yml` posts `@coderabbitai review` when:
+
+- A non-draft PR receives new commits (`synchronize`, `opened`, `ready_for_review`, …), or
+- **CI** completes successfully on a PR branch,
+
+and the head SHA has no CodeRabbit review yet (one request per SHA, marker
+`<!-- coderabbit-review-request:<sha> -->`).
+
+**Cursor Cloud agents** cannot post PR comments (`gh pr comment` → 403). Push commits
+instead; the workflow handles re-review. Maintainers may also run:
+
+```bash
+./scripts/request-coderabbit-review.sh <pr-number>
+# or
+gh workflow run coderabbit-rereview.yml -f pr_number=<num> -f force=false
+```
+
+Manual comment (maintainer `gh` session only):
+
+```bash
+gh pr comment <num> --body "@coderabbitai review"
+```
+
 ### Outside-diff comments
 
 Some findings cannot be posted inline (*"outside the diff range"*). They appear only

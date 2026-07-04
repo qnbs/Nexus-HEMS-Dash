@@ -1,7 +1,7 @@
 # Feature Status — Nexus-HEMS-Dash
 
 **Version:** 1.9.0 shipped (2026-07-02)  
-**Last updated:** 2026-07-04 (post-audit phase 5 — backend command dispatch for OCPP/OpenEMS/HA WS)  
+**Last updated:** 2026-07-04 (post-audit phase 6 — HA MQTT service publish + OpenEMS battery/heat-pump writes)  
 **Purpose:** Single source of truth for what is actually implemented, partial, or planned. Use this file to keep README/marketing claims synchronized with the codebase.
 
 > **Rule:** Any PR that changes a feature's implementation status must update this file and the relevant docs before merging.
@@ -30,8 +30,8 @@
 | OCPP 2.1 V2X (ISO 15118) | ✅ (P1 enhanced) | ✅ | Frontend adapter + backend `OcppCsmsProtocolAdapter` CSMS gateway (SP0) with outbound EV commands (`SetChargingProfile`, `RequestStart/StopTransaction`) via `ProtocolCommandRouter`. SP3 mTLS via `/ws/ocpp` API proxy (HIGH-12). |
 | EEBUS SPINE/SHIP | ✅ | ✅ | Full backend `IProtocolAdapter` (`apps/api/src/protocols/eebus/EebusProtocolAdapter.ts`) connects to all trusted devices in the trust store, maintains persistent SHIP sessions, parses SPINE `measurementListData` + `loadControlLimitListData` datagrams, and emits role-tagged `UnifiedEnergyDatapoint` to the EventBus. Registered in `protocols/index.ts`. Frontend `CertificateManagement.tsx` wired into Settings → EEBUS Certs tab. Supported use cases: MPC, MGCP, LPC (§14a EnWG), EV charging, heat pump. Trust-store polling for newly paired devices. Unit tests: `EebusProtocolAdapter.test.ts` (17 cases). |
 | evcc backend | ✅ | ✅ | Browser adapter for direct REST+WS. Backend `EvccAdapter` (`apps/api/src/protocols/evcc/EvccAdapter.ts`) polls `/api/state` and subscribes to `/ws`, emitting role-tagged datapoints to the EventBus (MED-20). Enable with `EVCC_BASE_URL` in live mode. |
-| OpenEMS Edge (JSON-RPC) | ✅ | ✅ | Browser `OpenEMSAdapter` + backend `OpenEMSProtocolAdapter` with EV writes (`updateComponentConfig` for `evcs*` / `ctrlEvcs*`) via `ProtocolCommandRouter`. Configurable `OPENEMS_EVCS_COMPONENT_ID` / `OPENEMS_EVCS_CTRL_ID`. |
-| Home Assistant MQTT | ✅ (contrib, dual-mode) | ⚠️ | Frontend: ha-ws-api + MQTT discovery, commands. Backend: **ha-ws-api** telemetry + EV `call_service` commands (`HA_WALLBOX_*_ENTITY`); **MQTT broker MVP** read-only (`HomeAssistantMqttProtocolAdapter`). MQTT service publish deferred. |
+| OpenEMS Edge (JSON-RPC) | ✅ | ✅ | Browser `OpenEMSAdapter` + backend `OpenEMSProtocolAdapter` with EV + battery/heat-pump/grid writes via `ProtocolCommandRouter` (Phase 5–6). Configurable `OPENEMS_*_CTRL_ID` env vars. |
+| Home Assistant MQTT | ✅ (contrib, dual-mode) | ⚠️ | Frontend: ha-ws-api + MQTT discovery, commands. Backend: **ha-ws-api** telemetry + EV `call_service` commands; **MQTT broker** telemetry + MQTT service publish for EV/heat-pump (`HomeAssistantMqttProtocolAdapter`, Phase 6). |
 | ExecAdapter (Custom Scripts) | ✅ (contrib, new) | ✅ (new) | Safe shell script integration: whitelisted scripts only (`EXEC_SCRIPTS_CONFIG`), argv-array execution (no shell), 30s timeout, 64 KB output cap, `READ_ONLY_MODE` compliance. Frontend `ExecAdapter`, backend `ExecService` + `/api/exec/*` routes. |
 | Matter/Thread | ✅ (contrib) | ⚠️ | Frontend contrib adapter. Backend **Phase 1 MVP** (`MatterProtocolAdapter`): read-only WS telemetry via `MATTER_BRIDGE_HOST`, static `matter-node-map.json`, EPM/EEM/ElectricalMeasurement clusters. |
 | Zigbee2MQTT | ✅ (contrib, P1 enhanced) | ⚠️ | Frontend: role classification, EV/heat-pump plugs, availability tracking. Backend **Phase 1 MVP** (`Zigbee2MQTTProtocolAdapter`): read-only mqtt.js bridge via `Z2M_BROKER_URL`, auto-discovery + `z2m-device-map.json`. |
