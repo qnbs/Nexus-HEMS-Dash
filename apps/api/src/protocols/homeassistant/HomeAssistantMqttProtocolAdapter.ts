@@ -1,0 +1,354 @@
+/**
+ * HomeAssistantMqttProtocolAdapter — Backend IProtocolAdapter for HA MQTT Discovery.
+ *
+ * Phase 1 (MVP): native mqtt.js transport, HA MQTT Discovery config topics,
+ * static entity map + device_class heuristics (shared ha-role-resolver).
+ * Read-only telemetry (no service publishes).
+ *
+ * Env vars (live mode only):
+ *   HA_MQTT_BROKER_URL     — MQTT broker URL (required to enable)
+ *   HA_MQTT_TOPIC_PREFIX   — discovery prefix (default: homeassistant)
+ *   HA_MQTT_ADAPTER_ID     — adapter instance id (default: ha-mqtt-01)
+ *   HA_DEVICE_ID           — deviceId prefix (default: ha-site)
+ *   HA_ENTITY_MAP_PATH     — override path to entity map JSON
+ */
+
+import EventEmitter from 'node:events';
+import { appendFileSync, mkdirSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import {
+  type AdapterHealth,
+  energyDatapointSchema,
+  type IProtocolAdapter,
+  type ProtocolType,
+  type UnifiedEnergyDatapoint,
+} from '@nexus-hems/shared-types';
+import mqtt, { type IClientOptions, type MqttClient } from 'mqtt';
+import {
+  recordAdapterDlq,
+  recordAdapterError,
+  recordAdapterReconnect,
+} from '../../middleware/adapter-metrics.js';
+import { API_RUNTIME_DIR, DEAD_LETTER_QUEUE_PATH } from '../../runtime-paths.js';
+import { loadHAEntityMappings } from '../homeassistant/HomeAssistantProtocolAdapter.js';
+import {
+  type HAEntityMapping,
+  parseHANumericState,
+  resolveHAEntityRole,
+} from '../homeassistant/ha-role-resolver.js';
+
+const MAX_DLQ_LINES = 10_000;
+let dlqLineCount = 0;
+
+interface HAMqttDiscoveryConfig {
+  unique_id?: string;
+  state_topic?: string;
+  device_class?: string;
+  unit_of_measurement?: string;
+}
+
+interface TrackedEntity {
+  entityId: string;
+  stateTopic: string;
+  deviceClass: string;
+  unit: string;
+}
+
+interface DLQEntry {
+  ts: number;
+  source: string;
+  rawPayload: string;
+  error: string;
+  protocol: ProtocolType;
+}
+
+export interface HomeAssistantMqttProtocolAdapterConfig {
+  id: string;
+  brokerUrl: string;
+  topicPrefix?: string;
+  deviceId?: string;
+  entityMappings?: HAEntityMapping[];
+  clientOptions?: IClientOptions;
+}
+
+export class HomeAssistantMqttProtocolAdapter implements IProtocolAdapter {
+  readonly id: string;
+  readonly protocol: ProtocolType = 'homeassistant-mqtt';
+
+  private readonly config: Required<
+    Pick<HomeAssistantMqttProtocolAdapterConfig, 'brokerUrl' | 'topicPrefix'>
+  > &
+    HomeAssistantMqttProtocolAdapterConfig;
+  private readonly deviceIdPrefix: string;
+  private readonly staticMap: Map<string, HAEntityMapping>;
+  private readonly stateTopicToEntity = new Map<string, TrackedEntity>();
+  private client: MqttClient | null = null;
+  private connected = false;
+  private destroyed = false;
+  private lastSuccessMs: number | undefined;
+  private consecutiveErrors = 0;
+  private readonly emitter = new EventEmitter();
+
+  constructor(config: HomeAssistantMqttProtocolAdapterConfig) {
+    this.config = {
+      ...config,
+      topicPrefix: config.topicPrefix ?? 'homeassistant',
+    };
+    this.id = config.id;
+    this.deviceIdPrefix = config.deviceId ?? 'ha-site';
+    this.staticMap = new Map((config.entityMappings ?? []).map((entry) => [entry.entityId, entry]));
+    for (const mapping of config.entityMappings ?? []) {
+      this.trackEntity(mapping.entityId, this.stateTopicForEntity(mapping.entityId), '', '');
+    }
+  }
+
+  async connect(): Promise<void> {
+    if (this.destroyed) return;
+
+    return new Promise((resolve, reject) => {
+      const opts: IClientOptions = {
+        reconnectPeriod: 5_000,
+        connectTimeout: 10_000,
+        ...(process.env.MQTT_USERNAME ? { username: process.env.MQTT_USERNAME } : {}),
+        ...(process.env.MQTT_PASSWORD ? { password: process.env.MQTT_PASSWORD } : {}),
+        ...this.config.clientOptions,
+      };
+
+      this.client = mqtt.connect(this.config.brokerUrl, opts);
+
+      this.client.once('connect', () => {
+        this.connected = true;
+        this.consecutiveErrors = 0;
+        this.subscribeCoreTopics();
+        resolve();
+      });
+
+      this.client.once('error', (err) => {
+        if (!this.connected) reject(err);
+      });
+
+      this.client.on('reconnect', () => {
+        this.connected = false;
+        recordAdapterReconnect(this.id, this.protocol);
+      });
+
+      this.client.on('message', (topic, payload) => {
+        try {
+          this.handleMessage(topic, payload.toString('utf8'));
+        } catch (err) {
+          recordAdapterError(this.id, this.protocol, 'parse_error');
+          this.consecutiveErrors++;
+          writeToDLQ({
+            ts: Date.now(),
+            source: topic,
+            rawPayload: payload.toString('utf8').slice(0, 4096),
+            error: err instanceof Error ? err.message : String(err),
+            protocol: this.protocol,
+          });
+        }
+      });
+
+      this.client.on('close', () => {
+        this.connected = false;
+      });
+    });
+  }
+
+  async disconnect(): Promise<void> {
+    this.destroyed = true;
+    if (this.client) {
+      this.client.removeAllListeners();
+      await new Promise<void>((resolve) => {
+        this.client?.end(false, {}, () => resolve());
+      });
+      this.client = null;
+    }
+    this.connected = false;
+    this.emitter.emit('destroy');
+  }
+
+  async healthCheck(): Promise<AdapterHealth> {
+    if (this.destroyed) {
+      return { status: 'offline', consecutiveErrors: this.consecutiveErrors };
+    }
+    if (this.connected) {
+      return {
+        status: 'healthy',
+        ...(this.lastSuccessMs !== undefined ? { lastSuccessMs: this.lastSuccessMs } : {}),
+        consecutiveErrors: this.consecutiveErrors,
+      };
+    }
+    return {
+      status: 'offline',
+      errorMessage: 'HA MQTT client not connected',
+      consecutiveErrors: this.consecutiveErrors,
+    };
+  }
+
+  async *getDataStream(): AsyncGenerator<UnifiedEnergyDatapoint> {
+    const queue: Array<UnifiedEnergyDatapoint | null> = [];
+    let notify: (() => void) | null = null;
+
+    const onData = (dp: UnifiedEnergyDatapoint): void => {
+      queue.push(dp);
+      notify?.();
+      notify = null;
+    };
+    const onDestroy = (): void => {
+      queue.push(null);
+      notify?.();
+      notify = null;
+    };
+
+    this.emitter.on('data', onData);
+    this.emitter.once('destroy', onDestroy);
+
+    try {
+      while (true) {
+        if (queue.length === 0) {
+          await new Promise<void>((resolve) => {
+            notify = resolve;
+          });
+        }
+        const item = queue.shift();
+        if (item === null || item === undefined) break;
+        yield item;
+      }
+    } finally {
+      this.emitter.off('data', onData);
+      this.emitter.off('destroy', onDestroy);
+    }
+  }
+
+  private subscribeCoreTopics(): void {
+    const prefix = this.config.topicPrefix;
+    this.client?.subscribe(`${prefix}/+/+/config`, { qos: 1 });
+    for (const entity of this.stateTopicToEntity.values()) {
+      this.client?.subscribe(entity.stateTopic, { qos: 1 });
+    }
+  }
+
+  private stateTopicForEntity(entityId: string): string {
+    const [domain, ...rest] = entityId.split('.');
+    const objectId = rest.join('.');
+    return `${this.config.topicPrefix}/${domain}/${objectId}/state`;
+  }
+
+  private trackEntity(
+    entityId: string,
+    stateTopic: string,
+    deviceClass: string,
+    unit: string,
+  ): void {
+    const tracked: TrackedEntity = { entityId, stateTopic, deviceClass, unit };
+    this.stateTopicToEntity.set(stateTopic, tracked);
+    this.client?.subscribe(stateTopic, { qos: 1 });
+  }
+
+  private handleMessage(topic: string, raw: string): void {
+    const prefix = this.config.topicPrefix;
+    if (topic.endsWith('/config') && topic.startsWith(`${prefix}/`)) {
+      this.handleDiscoveryConfig(raw);
+      return;
+    }
+
+    const tracked = this.stateTopicToEntity.get(topic);
+    if (!tracked) return;
+
+    const resolution = resolveHAEntityRole(
+      tracked.entityId,
+      tracked.deviceClass,
+      tracked.unit,
+      this.staticMap,
+    );
+    if (!resolution) return;
+
+    const value = parseHANumericState(raw, tracked.unit, resolution.metric, resolution.scale);
+    if (value === null) {
+      recordAdapterDlq(this.id, this.protocol);
+      return;
+    }
+
+    const datapoint = energyDatapointSchema.safeParse({
+      timestamp: Date.now(),
+      deviceId: `${this.deviceIdPrefix}:${tracked.entityId}`,
+      protocol: this.protocol,
+      metric: resolution.metric,
+      value,
+      qualityIndicator: 'GOOD',
+      role: resolution.role,
+    });
+
+    if (!datapoint.success) {
+      writeToDLQ({
+        ts: Date.now(),
+        source: tracked.entityId,
+        rawPayload: raw,
+        error: datapoint.error.message,
+        protocol: this.protocol,
+      });
+      recordAdapterDlq(this.id, this.protocol);
+      return;
+    }
+
+    this.lastSuccessMs = Date.now();
+    this.consecutiveErrors = 0;
+    this.emitter.emit('data', datapoint.data);
+  }
+
+  private handleDiscoveryConfig(raw: string): void {
+    let config: HAMqttDiscoveryConfig;
+    try {
+      config = JSON.parse(raw) as HAMqttDiscoveryConfig;
+    } catch {
+      recordAdapterDlq(this.id, this.protocol);
+      return;
+    }
+
+    if (!config.state_topic) return;
+    const entityId =
+      config.unique_id ?? config.state_topic.split('/').slice(-2, -1)[0] ?? config.state_topic;
+    const deviceClass = config.device_class ?? '';
+    const unit = config.unit_of_measurement ?? '';
+    const resolution = resolveHAEntityRole(entityId, deviceClass, unit, this.staticMap);
+    if (!resolution) return;
+
+    this.trackEntity(entityId, config.state_topic, deviceClass, unit);
+  }
+}
+
+export function createHomeAssistantMqttAdapterFromEnv(
+  env: NodeJS.ProcessEnv = process.env,
+  entityMappings?: HAEntityMapping[],
+): HomeAssistantMqttProtocolAdapter | null {
+  const brokerUrl = env.HA_MQTT_BROKER_URL?.trim();
+  if (!brokerUrl) return null;
+
+  const mapPath =
+    env.HA_ENTITY_MAP_PATH?.trim() ||
+    join(dirname(fileURLToPath(import.meta.url)), '../../data/ha-entity-map.json');
+
+  const mappings = entityMappings ?? loadHAEntityMappings(mapPath);
+
+  return new HomeAssistantMqttProtocolAdapter({
+    id: env.HA_MQTT_ADAPTER_ID?.trim() || 'ha-mqtt-01',
+    brokerUrl,
+    topicPrefix: env.HA_MQTT_TOPIC_PREFIX?.trim() || 'homeassistant',
+    deviceId: env.HA_DEVICE_ID?.trim() || 'ha-site',
+    entityMappings: mappings,
+  });
+}
+
+function writeToDLQ(entry: DLQEntry): void {
+  if (dlqLineCount >= MAX_DLQ_LINES) return;
+  setImmediate(() => {
+    try {
+      mkdirSync(API_RUNTIME_DIR, { recursive: true });
+      appendFileSync(DEAD_LETTER_QUEUE_PATH, `${JSON.stringify(entry)}\n`, 'utf8');
+      dlqLineCount++;
+    } catch {
+      /* best-effort */
+    }
+  });
+}

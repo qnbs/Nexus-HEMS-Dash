@@ -43,6 +43,44 @@ export async function gotoAndWaitForHealth(page: Page, path = './'): Promise<voi
 }
 
 /**
+ * Replace WebSocket with a controllable mock for backend WS consumer E2E tests.
+ * Requires `VITE_BACKEND_WS=true` at build time.
+ */
+export function setupMockBackendWebSocket(): void {
+  class MockWebSocket {
+    static readonly CONNECTING = 0;
+    static readonly OPEN = 1;
+    static readonly CLOSING = 2;
+    static readonly CLOSED = 3;
+    readyState = MockWebSocket.CONNECTING;
+    onopen: (() => void) | null = null;
+    onmessage: ((event: { data: string }) => void) | null = null;
+    onerror: (() => void) | null = null;
+    onclose: (() => void) | null = null;
+
+    constructor(_url: string, _protocols?: string | string[]) {
+      (window as { __mockBackendWs?: MockWebSocket }).__mockBackendWs = this;
+      setTimeout(() => {
+        this.readyState = MockWebSocket.OPEN;
+        this.onopen?.();
+      }, 0);
+    }
+
+    close(): void {
+      this.readyState = MockWebSocket.CLOSED;
+      this.onclose?.();
+    }
+
+    send(): void {
+      /* consumer is receive-only for ENERGY_UPDATE */
+    }
+  }
+
+  (window as { WebSocket: typeof MockWebSocket }).WebSocket =
+    MockWebSocket as unknown as typeof WebSocket;
+}
+
+/**
  * Shared E2E setup: seed the persisted store in localStorage.
  * Call this inside addInitScript() in every test's beforeEach.
  */

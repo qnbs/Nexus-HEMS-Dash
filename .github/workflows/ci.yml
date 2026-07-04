@@ -148,6 +148,7 @@ jobs:
         run: pnpm build
         env:
           VITE_E2E_TESTING: 'true'
+          VITE_BACKEND_WS: 'true'
           TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
           TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
 

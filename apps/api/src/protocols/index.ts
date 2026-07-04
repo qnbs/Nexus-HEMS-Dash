@@ -28,6 +28,7 @@ import {
 import { EebusProtocolAdapter } from './eebus/EebusProtocolAdapter.js';
 import { EvccAdapter } from './evcc/EvccAdapter.js';
 import { createHeatPumpAdapterFromEnv } from './heatpump/HeatPumpAdapter.js';
+import { createHomeAssistantMqttAdapterFromEnv } from './homeassistant/HomeAssistantMqttProtocolAdapter.js';
 import { createHomeAssistantAdapterFromEnv } from './homeassistant/HomeAssistantProtocolAdapter.js';
 import { KnxAdapter, type KnxGaMapping } from './knx/KnxAdapter.js';
 import { createMatterAdapterFromEnv } from './matter/MatterProtocolAdapter.js';
@@ -378,6 +379,30 @@ export async function startProtocolAdapters(eventBus: EventBus): Promise<void> {
         const message = err instanceof Error ? err.message : String(err);
         setState(homeAssistantAdapter.id, homeAssistantAdapter.protocol, 'failed', message);
         console.error('[Adapters] Failed to start HomeAssistantProtocolAdapter:', err);
+      });
+  }
+
+  // -------------------------------------------------------------------------
+  // Home Assistant MQTT (Discovery broker — read-only telemetry)
+  // Enable via env: HA_MQTT_BROKER_URL=mqtt://mosquitto:1883
+  // -------------------------------------------------------------------------
+  const homeAssistantMqttAdapter = createHomeAssistantMqttAdapterFromEnv();
+  if (homeAssistantMqttAdapter) {
+    activeAdapters.push(homeAssistantMqttAdapter);
+    activeAdapterRefs.set(homeAssistantMqttAdapter.id, homeAssistantMqttAdapter);
+    recordAdapterRegistration(homeAssistantMqttAdapter.id, homeAssistantMqttAdapter.protocol);
+    setState(homeAssistantMqttAdapter.id, homeAssistantMqttAdapter.protocol, 'starting');
+
+    homeAssistantMqttAdapter
+      .connect()
+      .then(() => {
+        setState(homeAssistantMqttAdapter.id, homeAssistantMqttAdapter.protocol, 'healthy');
+        pipeAdapterToEventBus(homeAssistantMqttAdapter, eventBus);
+      })
+      .catch((err: unknown) => {
+        const message = err instanceof Error ? err.message : String(err);
+        setState(homeAssistantMqttAdapter.id, homeAssistantMqttAdapter.protocol, 'failed', message);
+        console.error('[Adapters] Failed to start HomeAssistantMqttProtocolAdapter:', err);
       });
   }
 
