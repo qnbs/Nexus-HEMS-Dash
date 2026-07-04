@@ -69,7 +69,7 @@ echo "(secret will not be printed — stored directly in target)"
 echo ""
 
 # ─── Apply to .env.prod (local --apply) ─────────────────────────────
-if [[ "$APPLY_LOCAL" == "true" ]]; then
+if [[ "$APPLY_LOCAL" = "true" ]]; then
   if [[ ! -f "$ENV_FILE" ]]; then
     echo "ERROR: $ENV_FILE not found. Create it first from .env.prod.example" >&2
     exit 1
@@ -96,7 +96,7 @@ if [[ "$APPLY_LOCAL" == "true" ]]; then
 fi
 
 # ─── Apply to Kubernetes Secret (--kubernetes) ───────────────────────
-if [[ "$APPLY_K8S" == "true" ]]; then
+if [[ "$APPLY_K8S" = "true" ]]; then
   if ! command -v kubectl &>/dev/null; then
     echo "ERROR: kubectl not found in PATH" >&2
     exit 1

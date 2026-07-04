@@ -268,7 +268,7 @@ export function PageCrossLinks() {
           {/* Help Link */}
           {helpTab && (
             <Link
-              to={`/help`}
+              to="/help"
               className="focus-ring mt-2 flex items-center gap-2 rounded-lg border border-(--color-border)/20 bg-white/3 p-2.5 text-sm transition-colors hover:bg-white/8"
             >
               <HelpCircle
