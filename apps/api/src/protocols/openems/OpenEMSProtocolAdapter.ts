@@ -451,6 +451,15 @@ export class OpenEMSProtocolAdapter implements IProtocolAdapter, IProtocolComman
       return { handled: false, success: false };
     }
 
+    let gridLimitKw: number | undefined;
+    if (command.type === 'SET_GRID_LIMIT') {
+      const limit = GridLimitValueSchema.safeParse(command.value);
+      if (!limit.success) {
+        return { handled: false, success: false };
+      }
+      gridLimitKw = limit.data;
+    }
+
     if (!this.connected || !this.ws || this.ws.readyState !== WebSocket.OPEN) {
       return {
         handled: true,
@@ -540,12 +549,8 @@ export class OpenEMSProtocolAdapter implements IProtocolAdapter, IProtocolComman
         break;
       }
       case 'SET_GRID_LIMIT': {
-        const limit = GridLimitValueSchema.safeParse(command.value);
-        if (!limit.success) {
-          return { handled: false, success: false };
-        }
         ok = await this.updateSafeComponentConfig(this.peakShavingControllerId, [
-          { name: 'peakShavingPower', value: limit.data * 1000 },
+          { name: 'peakShavingPower', value: (gridLimitKw ?? 0) * 1000 },
         ]);
         break;
       }

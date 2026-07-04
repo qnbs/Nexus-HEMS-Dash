@@ -412,6 +412,12 @@ describe('OpenEMSProtocolAdapter', () => {
     expect(result.success).toBe(false);
   });
 
+  it('passes through OCPP-watt SET_GRID_LIMIT when disconnected', async () => {
+    const result = await adapter.sendCommand({ type: 'SET_GRID_LIMIT', value: 4200 });
+    expect(result.handled).toBe(false);
+    expect(result.success).toBe(false);
+  });
+
   it('rejects invalid SET_BATTERY_MODE values', async () => {
     await adapter.connect();
     const result = await adapter.sendCommand({

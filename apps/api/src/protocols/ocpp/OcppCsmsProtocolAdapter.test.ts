@@ -24,28 +24,38 @@ async function connectChargePoint(port: number, cpId: string): Promise<WebSocket
   return client;
 }
 
-async function seedSoc(client: WebSocket, socPercent: number, voltageV = 230): Promise<void> {
-  client.send(
-    JSON.stringify([
-      2,
-      `soc-${Date.now()}`,
-      'TransactionEvent',
+async function seedSoc(
+  client: WebSocket,
+  socPercent: number,
+  voltageV = 230,
+  options?: { transactionId?: string },
+): Promise<void> {
+  const callId = `soc-${Date.now()}`;
+  const payload: Record<string, unknown> = {
+    eventType: 'Updated',
+    meterValue: [
       {
-        eventType: 'Updated',
-        meterValue: [
-          {
-            timestamp: new Date().toISOString(),
-            sampledValue: [
-              { measurand: 'SoC', value: socPercent, unit: 'Percent' },
-              { measurand: 'Voltage', value: voltageV, unit: 'V' },
-            ],
-          },
+        timestamp: new Date().toISOString(),
+        sampledValue: [
+          { measurand: 'SoC', value: socPercent, unit: 'Percent' },
+          { measurand: 'Voltage', value: voltageV, unit: 'V' },
         ],
       },
-    ]),
-  );
+    ],
+  };
+  if (options?.transactionId) {
+    payload.transactionInfo = { transactionId: options.transactionId };
+  }
+  client.send(JSON.stringify([2, callId, 'TransactionEvent', payload]));
   await new Promise<void>((resolve) => {
-    client.once('message', () => resolve());
+    const onMessage = (data: WebSocket.RawData) => {
+      const msg = JSON.parse(String(data)) as [number, string, ...unknown[]];
+      if (msg[0] === 3 && msg[1] === callId) {
+        client.off('message', onMessage);
+        resolve();
+      }
+    };
+    client.on('message', onMessage);
   });
 }
 
@@ -393,7 +403,7 @@ describe('OcppCsmsProtocolAdapter', () => {
 
   it('sends negative TxProfile on SET_V2X_DISCHARGE when SOC is sufficient', async () => {
     const client = await connectChargePoint(boundPort, 'CP-V2G');
-    await seedSoc(client, 50, 230);
+    await seedSoc(client, 50, 230, { transactionId: 'tx-v2g-1' });
 
     const outbound = new Promise<unknown>((resolve) => {
       client.once('message', (data) => resolve(JSON.parse(String(data))));
@@ -406,11 +416,35 @@ describe('OcppCsmsProtocolAdapter', () => {
     expect(msg[2]).toBe('SetChargingProfile');
     const profile = msg[3].chargingProfile as {
       chargingProfilePurpose: string;
+      transactionId: string;
       chargingSchedule: { chargingRateUnit: string; chargingSchedulePeriod: { limit: number }[] }[];
     };
     expect(profile.chargingProfilePurpose).toBe('TxProfile');
+    expect(profile.transactionId).toBe('tx-v2g-1');
     expect(profile.chargingSchedule[0]?.chargingRateUnit).toBe('A');
     expect(profile.chargingSchedule[0]?.chargingSchedulePeriod[0]?.limit).toBe(-20);
+
+    client.close();
+  });
+
+  it('blocks SET_V2X_DISCHARGE without an active transaction', async () => {
+    const client = await connectChargePoint(boundPort, 'CP-V2G-NOTX');
+    await seedSoc(client, 50);
+
+    const result = await adapter.sendCommand({ type: 'SET_V2X_DISCHARGE', value: 3000 });
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('No active transaction');
+
+    client.close();
+  });
+
+  it('blocks SET_V2X_DISCHARGE when SoC telemetry is out of range', async () => {
+    const client = await connectChargePoint(boundPort, 'CP-V2G-BAD');
+    await seedSoc(client, 150, 230, { transactionId: 'tx-bad-soc' });
+
+    const result = await adapter.sendCommand({ type: 'SET_V2X_DISCHARGE', value: 3000 });
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('SOC below minimum');
 
     client.close();
   });

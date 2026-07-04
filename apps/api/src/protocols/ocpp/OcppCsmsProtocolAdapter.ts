@@ -45,6 +45,11 @@ import {
 const V2G_MIN_SOC_PERCENT = 15;
 /** Default mains voltage when no Voltage meter value is available (EU single-phase). */
 const DEFAULT_MAINS_VOLTAGE_V = 230;
+/** Plausible EVSE mains voltage range (single/three-phase). */
+const MIN_MAINS_VOLTAGE_V = 100;
+const MAX_MAINS_VOLTAGE_V = 500;
+/** Valid SoC percent range from MeterValues telemetry. */
+const MAX_SOC_PERCENT = 100;
 
 const OCPP_CALL = 2;
 const OCPP_CALLRESULT = 3;
@@ -514,6 +519,14 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
             error: `V2G blocked: EV SOC below minimum ${V2G_MIN_SOC_PERCENT}%`,
           };
         }
+        if (!session.transactionId) {
+          return {
+            handled: true,
+            success: false,
+            adapterId: this.id,
+            error: 'No active transaction for V2G discharge',
+          };
+        }
         acknowledged = await this.sendV2XDischarge(ws, session, discharge.data);
         break;
       }
@@ -621,10 +634,18 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
     dischargePowerW: number,
   ): Promise<boolean> {
     const negativeA = -Math.round(dischargePowerW / session.lastVoltageV);
-    return this.sendSetChargingProfile(ws, 1, 2, 1, 'TxProfile', {
-      chargingRateUnit: 'A',
-      chargingSchedulePeriod: [{ startPeriod: 0, limit: negativeA }],
-    });
+    return this.sendSetChargingProfile(
+      ws,
+      1,
+      2,
+      1,
+      'TxProfile',
+      {
+        chargingRateUnit: 'A',
+        chargingSchedulePeriod: [{ startPeriod: 0, limit: negativeA }],
+      },
+      { transactionId: session.transactionId },
+    );
   }
 
   /** §14a EnWG grid limit via ChargingStationMaxProfile in watts (OCPP 2.1 B12). */
@@ -693,11 +714,13 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
             break;
           }
           case 'SoC':
-            session.lastSocPercent = value;
-            this.emitMetric(session, 'SOC_PERCENT', value);
+            if (value >= 0 && value <= MAX_SOC_PERCENT) {
+              session.lastSocPercent = value;
+              this.emitMetric(session, 'SOC_PERCENT', value);
+            }
             break;
           case 'Voltage':
-            if (value > 0) {
+            if (value >= MIN_MAINS_VOLTAGE_V && value <= MAX_MAINS_VOLTAGE_V) {
               session.lastVoltageV = value;
             }
             break;
