@@ -66,7 +66,7 @@ describe('AdapterConfigPanel', () => {
     });
   });
 
-  it('blocks save in read-only mode', async () => {
+  it('blocks save in read-only mode', () => {
     mockReadOnly.mockReturnValue(true);
     render(<AdapterConfigPanel />);
     const addButtons = screen.getAllByRole('button', { name: /adapterConfig\.type_victron/i });

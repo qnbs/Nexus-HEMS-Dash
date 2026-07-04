@@ -114,3 +114,72 @@ export const computeAnalyticsDashboardMetrics = (
     },
   };
 };
+
+const efficiencyBarColor = (value: number, green: number, yellow: number) =>
+  value > green ? 'bg-emerald-500/70' : value > yellow ? 'bg-yellow-500/70' : 'bg-red-500/70';
+
+/** Efficiency progress-bar rows for the Analytics efficiency section. */
+export const buildEfficiencySectionMetrics = (
+  t: TFunction,
+  selfRate: number,
+  autarky: number,
+  inverterEfficiency: number,
+  batteryRoundTrip: number,
+) => [
+  {
+    label: t('analytics.inverterEfficiency'),
+    value: inverterEfficiency,
+    max: 100,
+    suffix: '%',
+    color: inverterEfficiency > 95 ? 'bg-emerald-500/70' : 'bg-yellow-500/70',
+  },
+  {
+    label: t('analytics.batteryRoundTrip'),
+    value: batteryRoundTrip,
+    max: 100,
+    suffix: '%',
+    color: batteryRoundTrip > 90 ? 'bg-emerald-500/70' : 'bg-yellow-500/70',
+  },
+  {
+    label: t('analytics.selfConsumptionRate'),
+    value: selfRate,
+    max: 100,
+    suffix: '%',
+    color: efficiencyBarColor(selfRate, 60, 30),
+  },
+  {
+    label: t('analytics.autarky'),
+    value: autarky,
+    max: 100,
+    suffix: '%',
+    color: efficiencyBarColor(autarky, 70, 40),
+  },
+];
+
+/** Data-quality status rows for the Analytics efficiency section. */
+export const buildDataQualityItems = (t: TFunction) => [
+  {
+    label: t('analytics.dataCompleteness'),
+    value: 98.7,
+    desc: t('analytics.dataCompletenessDesc'),
+    status: 'ok' as const,
+  },
+  {
+    label: t('analytics.sensorAccuracy'),
+    value: 99.2,
+    desc: t('analytics.sensorAccuracyDesc'),
+    status: 'ok' as const,
+  },
+  {
+    label: t('analytics.updateFrequency'),
+    value: 100,
+    desc: t('analytics.updateFrequencyDesc'),
+    status: 'ok' as const,
+  },
+  {
+    label: t('analytics.dataRetention'),
+    value: 85,
+    desc: t('analytics.dataRetentionDesc'),
+    status: 'warn' as const,
+  },
+];

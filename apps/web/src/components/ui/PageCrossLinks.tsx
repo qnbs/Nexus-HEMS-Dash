@@ -4,19 +4,12 @@
 import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
-import { PAGE_REGISTRY, PAGE_RELATIONS, type PageId, SETUP_STEPS } from '../../lib/page-relations';
+import { SETUP_STEPS } from '../../lib/page-relations';
 import { useAppStoreShallow } from '../../store';
 import { QuickSettingsSection } from './cross-links/QuickSettingsSection';
 import { RelatedPagesSection } from './cross-links/RelatedPagesSection';
+import { resolvePageCrossLinks } from './cross-links/resolve-page-cross-links';
 import { SetupProgressSection } from './cross-links/SetupProgressSection';
-
-const pathToPageId = (pathname: string): PageId | null => {
-  const clean = pathname.replace(/\/$/, '') || '/';
-  for (const [id, meta] of Object.entries(PAGE_REGISTRY)) {
-    if (meta.path === clean) return id as PageId;
-  }
-  return null;
-};
 
 /** Contextual related pages, settings shortcuts, and setup progress footer. */
 export const PageCrossLinks = () => {
@@ -24,16 +17,13 @@ export const PageCrossLinks = () => {
   const { pathname } = useLocation();
   const settings = useAppStoreShallow((s) => s.settings);
 
-  const pageId = pathToPageId(pathname);
-  if (!pageId || !PAGE_RELATIONS[pageId]) return null;
+  const resolved = resolvePageCrossLinks(pathname);
+  if (!resolved) return null;
 
-  const relations = PAGE_RELATIONS[pageId];
-  const relatedPages = relations.related.map((id) => PAGE_REGISTRY[id]).filter(Boolean);
+  const { relations, relatedPages } = resolved;
   const settingsObj = settings as unknown as Record<string, unknown>;
   const completedSteps = SETUP_STEPS.filter((step) => step.checkFn(settingsObj)).length;
   const totalSteps = SETUP_STEPS.length;
-
-  if (pageId === 'settings' || pageId === 'help' || pageId === 'ai-settings') return null;
 
   return (
     <motion.div

@@ -41,7 +41,7 @@ vi.mock('../components/EmergencyStop', () => ({
 }));
 vi.mock('../lib/db', () => ({
   getLocalStorageStats: vi.fn().mockResolvedValue({ usageMb: 2.4, snapshots: 847 }),
-  clearAllData: vi.fn().mockResolvedValue(undefined),
+  clearAllData: vi.fn().mockResolvedValue(null),
 }));
 vi.mock('../core/useEnergyStore', () => ({
   useEnergyStore: (selector: (s: Record<string, unknown>) => unknown) =>
@@ -145,9 +145,7 @@ vi.mock('../store', () => ({
     }),
 }));
 
-function renderTab(ui: ReactElement) {
-  return render(<MemoryRouter>{ui}</MemoryRouter>);
-}
+const renderTab = (ui: ReactElement) => render(<MemoryRouter>{ui}</MemoryRouter>);
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -156,7 +154,7 @@ beforeEach(() => {
 // ─── ToggleSwitch (shared atom) ──────────────────────────────────────
 describe('ToggleSwitch', () => {
   it('reflects the checked state', () => {
-    render(<ToggleSwitch id="t1" checked={true} onChange={() => {}} label="Toggle" />);
+    render(<ToggleSwitch id="t1" checked={true} onChange={vi.fn()} label="Toggle" />);
     expect(screen.getByRole('checkbox')).toBeChecked();
   });
 
@@ -168,7 +166,7 @@ describe('ToggleSwitch', () => {
   });
 
   it('exposes an accessible label', () => {
-    render(<ToggleSwitch id="t3" checked={false} onChange={() => {}} label="My switch" />);
+    render(<ToggleSwitch id="t3" checked={false} onChange={vi.fn()} label="My switch" />);
     expect(screen.getByText('My switch')).toBeInTheDocument();
   });
 });

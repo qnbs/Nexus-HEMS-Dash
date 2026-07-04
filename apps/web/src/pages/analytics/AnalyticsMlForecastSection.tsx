@@ -5,6 +5,7 @@ import { ChoiceCardGroup } from '../../components/ui/ChoiceCardGroup';
 import type { ForecastResult } from '../../lib/ml-forecast';
 import { getForecastableMetrics } from '../../lib/ml-forecast';
 import { MlForecastLineChart } from './MlForecastLineChart';
+import { MlForecastSectionHeader } from './MlForecastSectionHeader';
 
 export interface AnalyticsMlForecastSectionProps {
   t: TFunction;
@@ -30,26 +31,11 @@ export const AnalyticsMlForecastSection = ({
     animate={{ opacity: 1, y: 0 }}
     transition={{ duration: 0.5, delay: 0.44 }}
   >
-    <div className="flex flex-wrap items-center justify-between gap-3">
-      <div className="flex items-center gap-2">
-        <BrainCircuit size={20} className="text-purple-400" aria-hidden="true" />
-        <div>
-          <h3 className="fluid-text-base font-semibold text-(--color-text)">
-            {t('analytics.mlForecastTitle')}
-          </h3>
-          <p className="text-(--color-muted) text-xs">{t('analytics.mlForecastSubtitle')}</p>
-        </div>
-      </div>
-      <button
-        type="button"
-        onClick={onRunForecast}
-        disabled={forecastLoading}
-        className="focus-ring flex items-center gap-1.5 rounded-lg bg-purple-500/20 px-3 py-1.5 font-medium text-purple-300 text-xs transition hover:bg-purple-500/30 disabled:opacity-50"
-      >
-        <BrainCircuit size={14} aria-hidden="true" />
-        {forecastLoading ? '…' : t('analytics.mlForecastRun')}
-      </button>
-    </div>
+    <MlForecastSectionHeader
+      t={t}
+      forecastLoading={forecastLoading}
+      onRunForecast={onRunForecast}
+    />
 
     <ChoiceCardGroup
       key={selectedMetric}

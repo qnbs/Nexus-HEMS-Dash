@@ -2,6 +2,10 @@ import type { EnergyData } from '@nexus-hems/shared-types';
 import type { TFunction } from 'i18next';
 import { Activity, Gauge, Shield } from 'lucide-react';
 import { motion } from 'motion/react';
+import {
+  buildDataQualityItems,
+  buildEfficiencySectionMetrics,
+} from '../../lib/analytics-derived-metrics';
 import { DataQualityRow } from './DataQualityRow';
 import { EfficiencyMetricBar } from './EfficiencyMetricBar';
 
@@ -23,65 +27,14 @@ export const AnalyticsEfficiencySection = ({
   inverterEfficiency,
   batteryRoundTrip,
 }: AnalyticsEfficiencySectionProps) => {
-  const efficiencyMetrics = [
-    {
-      label: t('analytics.inverterEfficiency'),
-      value: inverterEfficiency,
-      max: 100,
-      suffix: '%',
-      color: inverterEfficiency > 95 ? 'bg-emerald-500/70' : 'bg-yellow-500/70',
-    },
-    {
-      label: t('analytics.batteryRoundTrip'),
-      value: batteryRoundTrip,
-      max: 100,
-      suffix: '%',
-      color: batteryRoundTrip > 90 ? 'bg-emerald-500/70' : 'bg-yellow-500/70',
-    },
-    {
-      label: t('analytics.selfConsumptionRate'),
-      value: selfRate,
-      max: 100,
-      suffix: '%',
-      color:
-        selfRate > 60 ? 'bg-emerald-500/70' : selfRate > 30 ? 'bg-yellow-500/70' : 'bg-red-500/70',
-    },
-    {
-      label: t('analytics.autarky'),
-      value: autarky,
-      max: 100,
-      suffix: '%',
-      color:
-        autarky > 70 ? 'bg-emerald-500/70' : autarky > 40 ? 'bg-yellow-500/70' : 'bg-red-500/70',
-    },
-  ];
-
-  const dataQualityItems = [
-    {
-      label: t('analytics.dataCompleteness'),
-      value: 98.7,
-      desc: t('analytics.dataCompletenessDesc'),
-      status: 'ok' as const,
-    },
-    {
-      label: t('analytics.sensorAccuracy'),
-      value: 99.2,
-      desc: t('analytics.sensorAccuracyDesc'),
-      status: 'ok' as const,
-    },
-    {
-      label: t('analytics.updateFrequency'),
-      value: 100,
-      desc: t('analytics.updateFrequencyDesc'),
-      status: 'ok' as const,
-    },
-    {
-      label: t('analytics.dataRetention'),
-      value: 85,
-      desc: t('analytics.dataRetentionDesc'),
-      status: 'warn' as const,
-    },
-  ];
+  const efficiencyMetrics = buildEfficiencySectionMetrics(
+    t,
+    selfRate,
+    autarky,
+    inverterEfficiency,
+    batteryRoundTrip,
+  );
+  const dataQualityItems = buildDataQualityItems(t);
 
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">

@@ -10,6 +10,7 @@ const RPI_VS_GX_ROWS = [
 ] as const;
 
 /** Raspberry Pi vs Cerbo GX comparison table in the integration guide. */
+// skipcq: JS-0415 - HTML table header/body nesting exceeds JSX depth 4 by design
 export const RpiComparisonTable = () => {
   const { t } = useTranslation();
 

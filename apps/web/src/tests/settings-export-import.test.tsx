@@ -35,7 +35,7 @@ vi.mock('../store', () => ({
   ) => selector({ settings: { theme: 'ocean-dark' }, updateSettings: mockUpdateSettings }),
 }));
 
-function mockDownloadElement(click = vi.fn()) {
+const mockDownloadElement = (click = vi.fn()) => {
   const originalCreateElement = document.createElement.bind(document);
   vi.spyOn(document, 'createElement').mockImplementation(
     (tagName: string, options?: ElementCreationOptions) => {
@@ -46,7 +46,7 @@ function mockDownloadElement(click = vi.fn()) {
     },
   );
   return click;
-}
+};
 
 describe('Settings export/import actions', () => {
   afterEach(() => {

@@ -1,10 +1,10 @@
 import { useTranslation } from 'react-i18next';
 import packageJson from '../../../../package.json';
 import { HelpTabPanelShell } from '../HelpTabPanelShell';
+import { HelpAboutFooterSections } from './HelpAboutFooterSections';
 import { HelpAboutGithubLink } from './HelpAboutGithubLink';
 import { HelpAboutHero } from './HelpAboutHero';
 import { HelpAboutTechStackGrid } from './HelpAboutTechStackGrid';
-import { HelpAiProviderCard } from './HelpAiProviderCard';
 
 /** About tab: version, tech stack, license, credits, and AI acknowledgments. */
 export const HelpAboutPanel = () => {
@@ -56,41 +56,7 @@ export const HelpAboutPanel = () => {
 
         <HelpAboutTechStackGrid techStack={techStack} />
 
-        <div className="mt-6 border-(--color-border) border-t pt-6">
-          <h3 className="mb-3 font-medium">{t('help.a11yTitle')}</h3>
-          <p className="text-(--color-muted) text-sm leading-relaxed">{t('help.a11yDesc')}</p>
-        </div>
-
-        <div className="mt-6 border-(--color-border) border-t pt-6">
-          <h3 className="mb-3 font-medium">{t('help.license')}</h3>
-          <p className="text-(--color-muted) text-sm leading-relaxed">{t('help.licenseDesc')}</p>
-        </div>
-
-        <div className="mt-6 border-(--color-border) border-t pt-6">
-          <h3 className="mb-3 font-medium">{t('help.credits')}</h3>
-          <div className="space-y-1 text-(--color-muted) text-sm">
-            <p>• {t('help.creditVictron')}</p>
-            <p>• {t('help.creditKnx')}</p>
-            <p>• {t('help.creditTariffs')}</p>
-            <p>• {t('help.creditD3')}</p>
-            <p>• {t('help.creditGoogle')}</p>
-            <p>• {t('help.creditEmhass')}</p>
-            <p>• {t('help.creditOpenEms')}</p>
-            <p>• {t('help.creditContrib')}</p>
-          </div>
-        </div>
-
-        <div className="mt-6 border-(--color-border) border-t pt-6">
-          <h3 className="mb-3 font-medium">{t('help.aiAcknowledgments')}</h3>
-          <p className="mb-4 text-(--color-muted) text-sm leading-relaxed">
-            {t('help.aiAcknowledgmentsDesc')}
-          </p>
-          <div className="grid gap-3 sm:grid-cols-3">
-            {aiProviders.map((ai) => (
-              <HelpAiProviderCard key={ai.name} {...ai} />
-            ))}
-          </div>
-        </div>
+        <HelpAboutFooterSections aiProviders={aiProviders} />
       </div>
     </HelpTabPanelShell>
   );

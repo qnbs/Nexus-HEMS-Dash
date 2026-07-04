@@ -18,6 +18,7 @@ export interface EnergyBalanceAreaChartProps {
 }
 
 /** 24-hour PV vs consumption area chart for the Analytics balance section. */
+// skipcq: JS-0415 - Recharts gradient defs exceed JSX depth 4 by design
 export const EnergyBalanceAreaChart = ({ t, balanceData }: EnergyBalanceAreaChartProps) => (
   <div className="h-[260px]" role="img" aria-label={t('analytics.balanceChartAria')}>
     <ResponsiveContainer width="100%" height="100%">
