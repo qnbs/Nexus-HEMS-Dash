@@ -1,7 +1,7 @@
 # Release History — Nexus-HEMS-Dash
 
-**Last curated:** 2026-07-03  
-**Current release:** `v1.9.0`  
+**Last curated:** 2026-07-04  
+**Current release:** `v1.10.0`  
 **Policy:** Manual-only semantic-release (ADR-015 amended 2026-07-03)
 
 This document records the **canonical release timeline**, known anomalies from the automatic-release period, and how to cut future releases correctly.
@@ -12,6 +12,7 @@ This document records the **canonical release timeline**, known anomalies from t
 
 | Tag | Date (UTC) | Head commit | Highlights |
 |-----|------------|-------------|------------|
+| `v1.10.0` | 2026-07-04 | `e75dfd4` | Post-audit phases 1–8, WS schema hardening, Helm `WS_ORIGINS`, Pages deploy prune, security wave (#236–#268) |
 | `v1.9.0` | 2026-07-02 | `4138235` | Read-only banner, `ControlPanel` removal, `ENERGY_UPDATE` Zod validation |
 | `v1.8.0` | 2026-07-02 | `1407ad5` | ADR-025 backend WS consumer (`VITE_BACKEND_WS`) |
 | `v1.7.0` | 2026-07-02 | `c963a5d` | OpenEMS + OCPP CSMS backend, coverage 78/72/70/80, GH_TOKEN release docs |

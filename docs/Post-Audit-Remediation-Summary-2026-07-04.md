@@ -1,6 +1,6 @@
 # Post-Audit Remediation Summary — 2026-07-04
 
-**Repository:** Nexus-HEMS-Dash v1.9.0 (`main` @ post-PR #260)  
+**Repository:** Nexus-HEMS-Dash v1.10.0 (`main` @ release 2026-07-04)  
 **Auditor:** Cursor Cloud Agent (Composer 2.5)  
 **Scope:** Full monorepo — `apps/api`, `apps/web`, `packages/shared-types`, docs, CI, Docker/Helm  
 **Method:** Evidence-based code review + `pnpm verify:basis` + security scans + sub-agent deep dives

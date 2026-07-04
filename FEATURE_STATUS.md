@@ -1,7 +1,7 @@
 # Feature Status — Nexus-HEMS-Dash
 
-**Version:** 1.9.0 shipped (2026-07-02)  
-**Last updated:** 2026-07-04 (post-audit phase 8 — Helm WS_ORIGINS + WSCommandSchema hardening)  
+**Version:** 1.10.0 shipped (2026-07-04)  
+**Last updated:** 2026-07-04 (release 1.10.0 — post-audit phases 1–8 complete)  
 **Purpose:** Single source of truth for what is actually implemented, partial, or planned. Use this file to keep README/marketing claims synchronized with the codebase.
 
 > **Rule:** Any PR that changes a feature's implementation status must update this file and the relevant docs before merging.
@@ -131,7 +131,7 @@
 | GitHub Pages deploy | ✅ | `.github/workflows/deploy.yml` |
 | Automated container registry push | ✅ | `container-publish.yml` — GHCR push + Grype gate + cosign sign on tag/main |
 | Automated Helm chart lint in CI | ✅ | `ci.yml` `helm-chart` job — `helm lint` + `helm template` smoke |
-| Tauri desktop build | ⚠️ | Icons + mobile-plugin gating fixed (#236); verify via **Tauri Desktop Build** workflow (`version=1.9.0`) |
+| Tauri desktop build | ⚠️ | Icons + mobile-plugin gating fixed (#236); verify via **Tauri Desktop Build** workflow (`version=1.10.0`) |
 | Capacitor mobile build | ⚠️ | Core/cli at 8.x, plugins aligned in `package.json`; verify with `cap sync` |
 
 ---

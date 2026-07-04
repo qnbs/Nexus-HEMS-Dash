@@ -19,7 +19,7 @@ Triggered automatically when a **GitHub Release is published**, or manually:
 
 1. **Actions** → **Tauri Desktop Build** → **Run workflow**
 2. Branch: `main`
-3. Version: current root `package.json` version (without leading `v`, e.g. `1.9.0`)
+3. Version: current root `package.json` version (without leading `v`, e.g. `1.10.0`)
 4. Wait for linux + macos + windows matrix jobs
 
 ## Deploy (GitHub Pages)
