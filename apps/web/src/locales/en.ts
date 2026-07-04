@@ -357,7 +357,7 @@ export const en = {
     title: 'Settings & Plugins',
     subtitle: 'Adapters, energy, security, plugins & help — unified control center',
     configSection: 'Configuration',
-    configSectionDesc: 'Theme, 14 adapters, tariffs, EEBUS certs, storage',
+    configSectionDesc: 'Theme, 13 adapters, tariffs, EEBUS certs, storage',
     pluginsSection: 'Plugins',
     pluginsSectionDesc: 'Contrib adapter lifecycle & hot-loading marketplace',
     marketplace: 'Marketplace',
@@ -659,6 +659,22 @@ export const en = {
     connectionStatus: 'Connection Status',
     mqttConfig: 'MQTT / Home Assistant',
     mqttAutoHint: 'Automatically discover Home Assistant devices',
+    readOnlyHint:
+      'Hardware control inputs are disabled. Control commands are blocked until read-only mode is turned off.',
+    haTitle: 'Home Assistant Integration',
+    haDescription:
+      'Connect via the HA WebSocket API (recommended) or MQTT broker discovery. Configuration is validated and stored in the encrypted vault.',
+    haConnectionMode: 'Connection mode',
+    haModeWsApi: 'HA WebSocket API',
+    haModeWsApiDesc: 'Direct connection with a long-lived access token — no MQTT broker required.',
+    haModeMqtt: 'MQTT broker',
+    haModeMqttDesc: 'MQTT-over-WebSocket with Home Assistant MQTT discovery.',
+    haBaseUrl: 'Home Assistant URL',
+    haToken: 'Long-lived access token',
+    haTokenHint: 'Create under Profile → Security → Long-lived access tokens in Home Assistant.',
+    haEnableAdapter: 'Enable Home Assistant adapter',
+    haSaveSuccess: 'Home Assistant settings saved',
+    haSaveFailed: 'Could not save Home Assistant settings: {{error}}',
     maxGridHint: '§14a EnWG limit: 4.2 kW for controllable consumers',
     pvSystem: 'PV System',
     pvPeakPower: 'Peak power (kWp)',
@@ -685,6 +701,10 @@ export const en = {
     snapshots: 'Snapshots',
     daysRetention: 'Days retention',
     clearCache: 'Clear local cache',
+    clearCacheConfirmTitle: 'Clear local cache',
+    clearCacheConfirmMessage:
+      'This removes cached snapshots and offline data from this device. Settings are kept.',
+    clearCacheConfirmAction: 'Clear cache',
     pushNotifications: 'Push notifications',
     pushHint: 'Receive alerts for important system events',
     priceAlerts: 'Price alerts',
@@ -869,7 +889,7 @@ export const en = {
     faqTitle: 'Frequently Asked Questions (FAQ)',
     about: 'About',
     aboutTitle: 'About the App',
-    version: 'Version 1.6.1',
+    version: 'Version {{version}}',
     hems: 'Home Energy Management System',
     hemsDesc:
       'A system for monitoring, controlling, and optimizing energy consumption in a building.',
@@ -896,7 +916,7 @@ export const en = {
     faqSecurityAnswer:
       'Yes. The system uses a local Public Key Infrastructure (PKI) with mTLS. Communication between dashboard and backend is encrypted. Historical data is primarily stored locally in your browser (IndexedDB).',
     aboutDesc:
-      'Nexus-HEMS Dash v1.6.1 is a production-grade visualization and control layer for integrated energy management. It unifies 14 protocol adapters, real-time Sankey flows, MPC optimization, and AI-assisted forecasting — making sector coupling (electricity, heat, mobility) manageable.',
+      'Nexus-HEMS Dash v{{version}} is a production-grade visualization and control layer for integrated energy management. It unifies 14 protocol adapters, real-time Sankey flows, MPC optimization, and AI-assisted forecasting — making sector coupling (electricity, heat, mobility) manageable.',
     techStack: 'Technology Stack',
     techFrontend: 'Frontend: React 19, Tailwind CSS, Lucide Icons',
     techState: 'State Management: Zustand',
@@ -989,6 +1009,30 @@ export const en = {
     featureHistoricalDesc:
       'Long-term energy data analysis with trend comparison, cost tracking, and performance metrics over weeks and months.',
     protocols: 'Supported Protocols & Standards',
+    protocolVictron: 'Victron MQTT',
+    protocolModbus: 'Modbus TCP / SunSpec',
+    protocolKnx: 'KNX/IP',
+    protocolOcpp: 'OCPP 2.1',
+    protocolEebus: 'EEBUS SPINE/SHIP',
+    protocolEvcc: 'evcc',
+    protocolOpenEms: 'OpenEMS',
+    protocolHa: 'Home Assistant',
+    protocolMatter: 'Matter/Thread',
+    protocolZigbee: 'Zigbee2MQTT',
+    protocolShelly: 'Shelly REST',
+    protocolOpenAdr: 'OpenADR 3.1',
+    protocolExec: 'ExecAdapter',
+    protocolMqttWs: 'MQTT / WebSocket',
+    protocolSgReady: 'SG Ready',
+    protocolTariffs: 'Tibber / aWATTar / Octopus / Nordpool',
+    creditVictron: 'Victron Energy — Cerbo GX, VE.Bus, Venus OS',
+    creditKnx: 'KNX Association — KNX/IP building automation standard',
+    creditTariffs: 'Tibber & aWATTar — Dynamic electricity tariff APIs',
+    creditD3: 'D3.js — Data-driven visualization library',
+    creditGoogle: 'Google — Gemini 2.5 Pro AI model (Prototyping in AI Studio)',
+    creditEmhass: 'EMHASS — MPC/LP optimization concepts',
+    creditOpenEms: 'OpenEMS — OSGi controller architecture inspiration',
+    creditContrib: 'Zigbee2MQTT & Shelly — Contrib smart-device integrations',
 
     // Glossary extended
     glossMppt: 'MPPT (Maximum Power Point Tracking)',
@@ -1032,7 +1076,7 @@ export const en = {
     faqGeneral: 'General',
     faqWhatIs: 'What is Nexus HEMS?',
     faqWhatIsAnswer:
-      'Nexus HEMS is a production-grade Home Energy Management System dashboard (v1.6.1). It unifies 14 protocol adapters (7 core + 7 contrib), real-time Sankey energy flow, MPC optimization, dynamic tariffs, KNX floorplan, OCPP 2.1 EV charging, and AI-assisted forecasting — deployable as PWA, Docker, Helm, Tauri, or Capacitor app.',
+      'Nexus HEMS is a production-grade Home Energy Management System dashboard (v{{version}}). It unifies 14 protocol adapters (7 core + 7 contrib), real-time Sankey energy flow, MPC optimization, dynamic tariffs, KNX floorplan, OCPP 2.1 EV charging, EEBUS, Home Assistant, and AI-assisted forecasting — deployable as PWA, Docker, Helm, Tauri, or Capacitor app.',
     faqOffline: 'Does the app work offline?',
     faqOfflineAnswer:
       'Yes. As a PWA, the app caches all assets and recent data locally. You can view the last known energy state, browse settings, and queue control commands that will be synced when connectivity is restored.',
@@ -1056,10 +1100,13 @@ export const en = {
       'Nexus HEMS is a Progressive Web App (PWA). You can install it from your browser to your home screen for a native app-like experience. It works on both iOS and Android with responsive layouts optimized for all screen sizes.',
     faqApi: 'Can I integrate custom APIs?',
     faqApiAnswer:
-      'Yes. The adapter registry supports 14 protocols: Victron MQTT, Modbus/SunSpec, KNX, OCPP 2.1, EEBUS, evcc, OpenEMS, plus contrib adapters (Home Assistant, Matter/Thread, Zigbee2MQTT, Shelly REST, OpenADR 3.1, ExecAdapter, Example). Enable adapters under Settings → Adapters or install contrib plugins from Settings → Plugins.',
+      'Yes. The adapter registry supports 13 protocols (7 core + 6 contrib): Victron MQTT, Modbus/SunSpec, KNX, OCPP 2.1, EEBUS, evcc, OpenEMS, plus contrib adapters (Home Assistant, Matter/Thread, Zigbee2MQTT, Shelly REST, OpenADR 3.1, ExecAdapter). Enable adapters under Settings → Adapters or install contrib plugins from Settings → Plugins.',
     faqMockMode: 'How does mock vs live mode work?',
     faqMockModeAnswer:
       'By default the dashboard runs in mock mode with simulated energy data — no hardware required. Live mode needs ADAPTER_MODE=live + ALLOW_LIVE_HARDWARE=true on the API, matching Vite build flags, and per-adapter enablement in Settings. A banner in the header shows the active mode.',
+    faqReadOnly: 'What is read-only mode?',
+    faqReadOnlyAnswer:
+      'Read-only mode (READ_ONLY_MODE) blocks every hardware control command at the API and in the browser — useful for certification, commissioning, and incident review. Settings inputs that change adapters or send commands are disabled and a banner explains the restriction.',
     faqCerboVsRpi: 'Cerbo GX or Raspberry Pi — which is better?',
     faqCerboVsRpiAnswer:
       'The Cerbo GX is the recommended production solution — it includes VE.Bus/VE.Can interfaces, industrial-grade reliability, and official Victron support. A Raspberry Pi with Venus OS is an excellent development/testing platform and works well for non-Victron-centric systems or tight budgets. Both run Venus OS and support the same D-Bus/MQTT interface.',
@@ -1113,6 +1160,13 @@ export const en = {
     troubleAi2: 'Verify your API key has sufficient quota',
     troubleAi3: 'AI features require an internet connection',
     troubleAi4: "Try regenerating your API key in the provider's dashboard",
+    troubleReadOnly: 'Controls disabled in read-only mode',
+    troubleReadOnly1:
+      'READ_ONLY_MODE is active — adapter saves and hardware commands are blocked until the flag is cleared on the API',
+    troubleReadOnly2:
+      'Use mock mode for UI testing; live commissioning requires read-only to be off',
+    troubleReadOnly3:
+      'See Settings → Advanced for the adapter-mode badge and Monitoring for adapter health',
     perfTips: 'Performance Tips',
     perf1: 'Use the PWA installation for better performance and offline caching',
     perf2:
@@ -1121,7 +1175,7 @@ export const en = {
     perf4: 'Periodically clear the local cache in Settings → Storage to free up IndexedDB space',
 
     // About
-    versionFull: 'Version 1.6.1 — shipped July 2026',
+    versionFull: 'Version {{version}} — shipped July 2026',
     visualization: 'Visualization',
     testing: 'Testing',
     githubRepo: 'GitHub Repository',
@@ -1137,7 +1191,7 @@ export const en = {
     aboutTechPwa: 'PWA',
     aboutTechPwaItems: 'Workbox, Service Worker, Background Sync',
     aboutTechProtocolsItems:
-      '14 adapters: MQTT, Modbus, KNX, OCPP, EEBUS, evcc, HA, Zigbee2MQTT, Shelly, Exec…',
+      '13 adapters: MQTT, Modbus, KNX, OCPP, EEBUS, evcc, HA, Zigbee2MQTT, Shelly, Exec…',
     aboutTechTestingItems: 'Vitest, Playwright, axe-core (a11y)',
     a11yTitle: 'Accessibility',
     a11yDesc:
@@ -1150,6 +1204,7 @@ export const en = {
       'Rapid prototyping in Google AI Studio Apps, initial architecture, energy optimization, MPC solver design',
     aiClaudeDesc:
       'Main development in GitHub Codespaces — architecture, React Compiler compliance, a11y audit, E2E tests, design system, UI/UX transformation',
+    aiClaudeName: 'Claude Sonnet',
     aiGrokDesc:
       'Advisory, code review, debugging, protocol adapter research, architecture decisions',
 
@@ -2331,6 +2386,8 @@ export const en = {
     tlsHint: 'Encrypted connection (wss:// / mqtts://)',
     noAdapters: 'No adapters configured',
     noAdaptersHint: 'Add an adapter to connect your energy system.',
+    saveSuccess: 'Adapter configuration saved',
+    saveFailed: 'Could not save adapter: {{error}}',
     remove: 'Remove adapter',
     // Adapter types
     type_victron: 'Victron MQTT',

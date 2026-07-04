@@ -821,6 +821,17 @@ export async function getDatabaseSize(): Promise<number> {
   return 0;
 }
 
+export async function getLocalStorageStats(): Promise<{ usageMb: number; snapshots: number }> {
+  const [usageBytes, snapshots] = await Promise.all([
+    getDatabaseSize(),
+    nexusDb.energySnapshots.count(),
+  ]);
+  return {
+    usageMb: usageBytes / (1024 * 1024),
+    snapshots,
+  };
+}
+
 /**
  * Clear all database data (for reset)
  */

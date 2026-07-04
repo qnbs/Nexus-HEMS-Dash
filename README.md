@@ -28,7 +28,7 @@
 
 ---
 
-Nexus-HEMS is a **unified Command Center** that consolidates **14 protocol adapters** (7 core + 7 contrib) into **8 primary routes across 7 navigation sections** — orchestrating photovoltaic generation, battery storage, heat pumps, EV charging, and building automation with dynamic electricity tariffs. Instead of 18+ separate pages, every feature is accessible from a **single streamlined interface** with contextual in-context help and a new-user landing on the Command Hub.
+Nexus-HEMS is a **unified Command Center** that consolidates **13 protocol adapters** (7 core + 6 contrib) into **8 primary routes across 7 navigation sections** — orchestrating photovoltaic generation, battery storage, heat pumps, EV charging, and building automation with dynamic electricity tariffs. Instead of 18+ separate pages, every feature is accessible from a **single streamlined interface** with contextual in-context help and a new-user landing on the Command Hub.
 
 The current shipped release line is **1.9.0**. See [CHANGELOG.md](CHANGELOG.md) and [docs/Release-History.md](docs/Release-History.md) for release curation notes.
 
@@ -57,7 +57,7 @@ For verified roadmap status and completion boundaries, use these documents as th
 | **Security**            | BYOK AI vault (AES-GCM 256) · JWT WebSocket auth · Helmet CSP · Rate limiting · CORS · Zod schema validation                                                                                                                                                                                             |
 | **Desktop & Mobile**    | Tauri v2 (Windows/macOS/Linux) · Capacitor 8 (iOS/Android)                                                                                                                                                                                                                                             |
 
-> **Protocol support truth:** The dashboard ships 14 frontend adapter modules (7 core + 7 contrib). The backend protocol layer (`apps/api/src/protocols/`) ships Modbus/SunSpec, MQTT, KNX/IP, evcc, EEBUS SPINE/SHIP, HeatPump, and Exec adapters; in live mode their EventBus data reaches the UI via the `LiveEnergyAggregator` WebSocket bridge (HIGH-17, v1.4.0).
+> **Protocol support truth:** The dashboard ships 13 frontend adapter modules (7 core + 6 contrib). `example-contrib.ts` is a development template, not a shipped adapter. The backend protocol layer (`apps/api/src/protocols/`) ships Modbus/SunSpec, MQTT, KNX/IP, evcc, EEBUS SPINE/SHIP, HeatPump, and Exec adapters; in live mode their EventBus data reaches the UI via the `LiveEnergyAggregator` WebSocket bridge (HIGH-17, v1.4.0).
 
 ### Protocol Support Matrix
 
@@ -427,7 +427,7 @@ Brand colors: `neon-green` (#22ff88) · `electric-blue` (#00f0ff) · `power-oran
 - **Capacitor Mobile:** Capacitor 7 configuration for iOS/Android native shells and push-ready app metadata
 - **Tariff Providers:** Tibber, aWATTar DE/AT, Octopus Energy, Nordpool, and dynamic grid fees
 - **Unified Command Center:** 7 focused sections with legacy route redirects, guided tours, empty states, and contextual help
-- **Adapter Platform:** 14 adapters total (7 core + 7 contrib), contrib plugin loading, lifecycle management, and monitoring health views
+- **Adapter Platform:** 13 adapters total (7 core + 6 contrib), contrib plugin loading, lifecycle management, and monitoring health views
 - **Controller Stack:** ESS, peak shaving, tariff-aware charging, self-consumption, emergency reserve, heat pump SG Ready, EV smart charging, and EV V2G discharge loops
 - **Security & CI:** JWT/WebSocket hardening, Node 24 CI baseline, dependency overrides, pnpm audit workflow, and Biome-first checks
 - **A11y & i18n:** WCAG 2.2 AA fixes, forced-colors/reduced-motion support, and complete DE/EN localization coverage for new UI

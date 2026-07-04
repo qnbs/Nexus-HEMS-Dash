@@ -66,9 +66,7 @@ export function registerAdapter(
   meta?: Partial<Omit<AdapterRegistration, 'id' | 'factory'>>,
 ): void {
   if (!/^[a-z][a-z0-9-]*$/.test(id)) {
-    throw new Error(
-      `[AdapterRegistry] Invalid adapter id "${id}". Use lowercase kebab-case (e.g. "my-adapter").`,
-    );
+    throw new Error(`[Registry] Invalid adapter id "${id}"`);
   }
 
   if (registry.has(id)) {
@@ -166,7 +164,7 @@ export async function loadContribAdapter(id: string): Promise<boolean> {
 
   // Validate id to prevent path traversal
   if (!/^[a-z][a-z0-9-]*$/.test(id)) {
-    console.error('[AdapterRegistry] Invalid contrib adapter id:', id);
+    console.error('[Registry] Invalid contrib id:', id);
     return false;
   }
 
@@ -187,10 +185,7 @@ export async function loadContribAdapter(id: string): Promise<boolean> {
         .map((p) => p.replace('./contrib/', '').replace('.ts', ''))
         .sort()
         .join(', ');
-      console.error(
-        `[AdapterRegistry] Contrib adapter not found: "${id}" at ${modulePath}. ` +
-          `Available contrib adapters: ${availableIds || '(none)'}`,
-      );
+      console.error(`[Registry] Contrib "${id}" missing. Known: ${availableIds || 'none'}`);
       return false;
     }
 
@@ -226,7 +221,7 @@ export async function loadContribAdapter(id: string): Promise<boolean> {
     }
     return true;
   } catch (err) {
-    console.error('[AdapterRegistry] Failed to load contrib adapter:', id, err);
+    console.error('[Registry] Failed to load contrib:', id, err);
     return false;
   }
 }

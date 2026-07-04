@@ -9,238 +9,30 @@
  *   - EEBUS SPINE/SHIP (host, port, SKI, mTLS)
  */
 
-import {
-  Activity,
-  AlertTriangle,
-  Cable,
-  Check,
-  Circle,
-  CircleAlert,
-  CircleCheck,
-  CircleMinus,
-  Download,
-  Eye,
-  EyeOff,
-  Gauge,
-  Package,
-  Plug,
-  Plus,
-  Radio,
-  Server,
-  Shield,
-  ShieldCheck,
-  Trash2,
-  Wifi,
-} from 'lucide-react';
+import { Check, Download, Gauge, Package, Plus, Radio, Server, Wifi } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
+import { saveAdapterPanelEntry } from '../core/adapter-config-panel-save';
 import { listRegisteredAdapters, loadAllContribAdapters } from '../core/adapters/adapter-registry';
+import { isReadOnlyModeActive } from '../lib/adapter-mode';
+import { ignorePromiseRejection } from '../lib/ignore-promise-rejection';
+import { ComplianceChecklist } from './AdapterComplianceChecklist';
+import { AdapterConfigEntrySection } from './AdapterConfigEntrySection';
+import { AdapterHelpItem } from './adapter-config-shared';
+import {
+  ADAPTER_DEFAULTS,
+  ADAPTER_META,
+  type AdapterEntry,
+  type AdapterType,
+  type GAMappingEntry,
+} from './adapter-config-types';
+import { ReadOnlySettingsBanner } from './settings/ReadOnlySettingsBanner';
 import { Disclosure } from './ui/Disclosure';
-import { SelectField } from './ui/SelectField';
 
-// ─── Types ───────────────────────────────────────────────────────────
-
-type AdapterType = 'victron' | 'modbus' | 'knx' | 'ocpp' | 'eebus';
-
-interface AdapterEntry {
-  id: string;
-  type: AdapterType;
-  name: string;
-  enabled: boolean;
-  host: string;
-  port: number;
-  tls: boolean;
-  authToken: string;
-  pollIntervalMs: number;
-  // Victron
-  gatewayType?: 'cerbo-gx' | 'venus-gx' | 'rpi-victron';
-  // OCPP
-  securityProfile?: 0 | 1 | 2 | 3;
-  stationId?: string;
-  iso15118?: boolean;
-  clientCert?: string;
-  clientKey?: string;
-  // EEBUS
-  skiFingerprint?: string;
-  // KNX
-  knxTransport?: 'websocket' | 'mqtt';
-  gaMapping?: GAMappingEntry[];
-}
-
-interface GAMappingEntry {
-  roomId: string;
-  roomName: string;
-  lightGA: string;
-  dimmerGA: string;
-  temperatureGA: string;
-  setpointGA: string;
-  windowGA: string;
-  humidityGA: string;
-}
-
-const ADAPTER_DEFAULTS: Record<AdapterType, Partial<AdapterEntry>> = {
-  victron: { port: 1880, tls: false, gatewayType: 'cerbo-gx', pollIntervalMs: 3000 },
-  modbus: { port: 502, tls: false, pollIntervalMs: 5000 },
-  knx: { port: 3671, tls: false, knxTransport: 'websocket', gaMapping: [], pollIntervalMs: 3000 },
-  ocpp: {
-    port: 9000,
-    tls: true,
-    securityProfile: 2,
-    stationId: 'CP001',
-    iso15118: false,
-    pollIntervalMs: 5000,
-  },
-  eebus: { port: 4712, tls: true, skiFingerprint: '', pollIntervalMs: 5000 },
-};
-
-const ADAPTER_META: Record<
-  AdapterType,
-  { icon: typeof Server; color: string; capabilities: string[] }
-> = {
-  victron: {
-    icon: Activity,
-    color: 'text-blue-400',
-    capabilities: ['pv', 'battery', 'grid', 'load'],
-  },
-  modbus: { icon: Gauge, color: 'text-amber-400', capabilities: ['pv', 'battery', 'grid'] },
-  knx: { icon: Radio, color: 'text-green-400', capabilities: ['knx'] },
-  ocpp: { icon: Plug, color: 'text-cyan-400', capabilities: ['evCharger'] },
-  eebus: { icon: Cable, color: 'text-purple-400', capabilities: ['evCharger', 'load', 'grid'] },
-};
-
-// ─── Helper: ToggleSwitch ────────────────────────────────────────────
-
-function ToggleSwitch({
-  checked,
-  onChange,
-  label,
-  id,
-}: {
-  checked: boolean;
-  onChange: (v: boolean) => void;
-  label: string;
-  id: string;
-}) {
-  return (
-    <label htmlFor={id} className="relative inline-flex cursor-pointer items-center">
-      <input
-        id={id}
-        type="checkbox"
-        checked={checked}
-        onChange={(e) => onChange(e.target.checked)}
-        className="peer sr-only"
-      />
-      <span className="sr-only">{label}</span>
-      <div className="h-6 w-11 rounded-full border border-(--color-border) bg-(--color-surface) transition-colors duration-300 after:absolute after:top-[2px] after:left-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow-sm after:transition-transform after:duration-300 peer-checked:bg-(--color-primary) peer-checked:after:translate-x-5 peer-focus:ring-(--color-primary)/30 peer-focus:ring-2" />
-    </label>
-  );
-}
-
-// ─── Compliance Matrix Data ──────────────────────────────────────────
-
-type ComplianceStatus = 'compliant' | 'partial' | 'na';
-
-interface ComplianceItem {
-  key: string;
-  descKey: string;
-  adapters: Record<AdapterType, ComplianceStatus>;
-}
-
-const COMPLIANCE_MATRIX: ComplianceItem[] = [
-  // §14a EnWG
-  {
-    key: 'c14a_gridCurtailment',
-    descKey: 'c14a_gridCurtailmentDesc',
-    adapters: {
-      victron: 'compliant',
-      modbus: 'compliant',
-      knx: 'na',
-      ocpp: 'compliant',
-      eebus: 'compliant',
-    },
-  },
-  {
-    key: 'c14a_smartMeterGateway',
-    descKey: 'c14a_smartMeterGatewayDesc',
-    adapters: {
-      victron: 'partial',
-      modbus: 'partial',
-      knx: 'na',
-      ocpp: 'partial',
-      eebus: 'compliant',
-    },
-  },
-  {
-    key: 'c14a_loadManagement',
-    descKey: 'c14a_loadManagementDesc',
-    adapters: {
-      victron: 'compliant',
-      modbus: 'compliant',
-      knx: 'partial',
-      ocpp: 'compliant',
-      eebus: 'compliant',
-    },
-  },
-  {
-    key: 'c14a_reducedTariff',
-    descKey: 'c14a_reducedTariffDesc',
-    adapters: {
-      victron: 'partial',
-      modbus: 'partial',
-      knx: 'na',
-      ocpp: 'compliant',
-      eebus: 'compliant',
-    },
-  },
-  // VDE-AR-N 4105
-  {
-    key: 'vde_activePowerCurtail',
-    descKey: 'vde_activePowerCurtailDesc',
-    adapters: {
-      victron: 'compliant',
-      modbus: 'compliant',
-      knx: 'na',
-      ocpp: 'na',
-      eebus: 'partial',
-    },
-  },
-  {
-    key: 'vde_reactivePowerControl',
-    descKey: 'vde_reactivePowerControlDesc',
-    adapters: {
-      victron: 'compliant',
-      modbus: 'compliant',
-      knx: 'na',
-      ocpp: 'na',
-      eebus: 'partial',
-    },
-  },
-  {
-    key: 'vde_frequencyProtection',
-    descKey: 'vde_frequencyProtectionDesc',
-    adapters: { victron: 'compliant', modbus: 'compliant', knx: 'na', ocpp: 'na', eebus: 'na' },
-  },
-  {
-    key: 'vde_voltageProtection',
-    descKey: 'vde_voltageProtectionDesc',
-    adapters: { victron: 'compliant', modbus: 'compliant', knx: 'na', ocpp: 'na', eebus: 'na' },
-  },
-  {
-    key: 'vde_gridCodeCompliant',
-    descKey: 'vde_gridCodeCompliantDesc',
-    adapters: { victron: 'compliant', modbus: 'partial', knx: 'na', ocpp: 'na', eebus: 'na' },
-  },
-];
-
-const STATUS_CONFIG: Record<
-  ComplianceStatus,
-  { icon: typeof CircleCheck; color: string; labelKey: string }
-> = {
-  compliant: { icon: CircleCheck, color: 'text-emerald-400', labelKey: 'adapterConfig.compliant' },
-  partial: { icon: CircleAlert, color: 'text-amber-400', labelKey: 'adapterConfig.partial' },
-  na: { icon: CircleMinus, color: 'text-(--color-muted)', labelKey: 'adapterConfig.notApplicable' },
-};
+export { AdapterHelpItem, GAMappingPanel, ToggleSwitch } from './adapter-config-shared';
+export type { AdapterEntry, AdapterType, GAMappingEntry };
 
 // ─── Contrib Adapter Section ─────────────────────────────────────────
 
@@ -281,17 +73,7 @@ const CONTRIB_ADAPTERS = [
 
 const CONTRIB_HELP_IDS = new Set(['zigbee2mqtt', 'shelly-rest']);
 
-function AdapterHelpItem({ titleKey, descKey }: { titleKey: string; descKey: string }) {
-  const { t } = useTranslation();
-  return (
-    <li className="rounded-lg border border-(--color-border)/60 bg-(--color-surface)/40 px-3 py-2">
-      <p className="font-medium text-(--color-text) text-xs">{t(titleKey)}</p>
-      <p className="mt-0.5 text-(--color-muted) text-[10px] leading-relaxed">{t(descKey)}</p>
-    </li>
-  );
-}
-
-function ContribAdapterHelpPanel({ adapterId }: { adapterId: string }) {
+const ContribAdapterHelpPanel = ({ adapterId }: { adapterId: string }) => {
   const { t } = useTranslation();
 
   if (adapterId === 'zigbee2mqtt') {
@@ -367,9 +149,9 @@ function ContribAdapterHelpPanel({ adapterId }: { adapterId: string }) {
   }
 
   return null;
-}
+};
 
-function ContribAdapterSection() {
+const ContribAdapterSection = () => {
   const { t } = useTranslation();
   const [loadedIds, setLoadedIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
@@ -464,257 +246,18 @@ function ContribAdapterSection() {
       </div>
     </section>
   );
-}
-
-// ─── ComplianceChecklist ─────────────────────────────────────────────
-
-function ComplianceChecklist({ activeAdapters }: { activeAdapters: AdapterType[] }) {
-  const { t } = useTranslation();
-  const displayAdapters: AdapterType[] =
-    activeAdapters.length > 0
-      ? activeAdapters
-      : (['victron', 'modbus', 'knx', 'ocpp', 'eebus'] as AdapterType[]);
-
-  return (
-    <section className="glass-panel-strong space-y-5 rounded-2xl p-6">
-      <h2 className="fluid-text-lg flex items-center gap-2 border-(--color-border) border-b pb-4 font-medium text-lg">
-        <ShieldCheck size={20} className="text-emerald-400" />
-        {t('adapterConfig.complianceTitle')}
-      </h2>
-      <p className="text-(--color-muted) text-sm">{t('adapterConfig.complianceDescription')}</p>
-
-      <div className="-mx-2 overflow-x-auto px-2">
-        <table className="w-full text-xs">
-          <thead>
-            <tr className="border-(--color-border) border-b">
-              <th className="py-2 pr-4 text-left font-medium text-(--color-muted)">
-                {t('adapterConfig.complianceTitle')}
-              </th>
-              {displayAdapters.map((type) => {
-                const meta = ADAPTER_META[type];
-                const Icon = meta.icon;
-                return (
-                  <th key={type} className="px-2 py-2 text-center font-medium">
-                    <div className="flex flex-col items-center gap-1">
-                      <Icon size={14} className={meta.color} />
-                      <span className="text-[10px]">{t(`adapterConfig.type_${type}`)}</span>
-                    </div>
-                  </th>
-                );
-              })}
-            </tr>
-          </thead>
-          <tbody>
-            {COMPLIANCE_MATRIX.map((item) => (
-              <tr
-                key={item.key}
-                className="border-(--color-border)/50 border-b transition-colors hover:bg-(--color-surface)/50"
-              >
-                <td className="py-2.5 pr-4">
-                  <p className="font-medium text-(--color-text)">
-                    {t(`adapterConfig.${item.key}`)}
-                  </p>
-                  <p className="mt-0.5 text-(--color-muted) text-[10px]">
-                    {t(`adapterConfig.${item.descKey}`)}
-                  </p>
-                </td>
-                {displayAdapters.map((type) => {
-                  const status = item.adapters[type];
-                  const cfg = STATUS_CONFIG[status];
-                  const StatusIcon = cfg.icon;
-                  return (
-                    <td key={type} className="px-2 py-2.5 text-center">
-                      <div className="flex flex-col items-center gap-0.5">
-                        <StatusIcon size={16} className={cfg.color} />
-                        <span className={`text-[9px] ${cfg.color}`}>{t(cfg.labelKey)}</span>
-                      </div>
-                    </td>
-                  );
-                })}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Summary counts */}
-      <div className="flex flex-wrap gap-4 pt-2">
-        {displayAdapters.map((type) => {
-          const meta = ADAPTER_META[type];
-          const Icon = meta.icon;
-          const counts = COMPLIANCE_MATRIX.reduce(
-            (acc, item) => {
-              acc[item.adapters[type]]++;
-              return acc;
-            },
-            { compliant: 0, partial: 0, na: 0 } as Record<ComplianceStatus, number>,
-          );
-          return (
-            <div
-              key={type}
-              className="flex items-center gap-2 rounded-lg border border-(--color-border) bg-(--color-surface)/50 px-3 py-2"
-            >
-              <Icon size={14} className={meta.color} />
-              <span className="font-medium text-xs">{t(`adapterConfig.type_${type}`)}</span>
-              <div className="ml-1 flex items-center gap-1.5">
-                <span className="flex items-center gap-0.5 text-emerald-400">
-                  <Circle size={6} fill="currentColor" />
-                  {counts.compliant}
-                </span>
-                <span className="flex items-center gap-0.5 text-amber-400">
-                  <Circle size={6} fill="currentColor" />
-                  {counts.partial}
-                </span>
-                <span className="flex items-center gap-0.5 text-(--color-muted)">
-                  <Circle size={6} fill="currentColor" />
-                  {counts.na}
-                </span>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </section>
-  );
-}
-
-// ─── GA Mapping Sub-Panel ────────────────────────────────────────────
-
-function GAMappingPanel({
-  mapping,
-  onChange,
-}: {
-  mapping: GAMappingEntry[];
-  onChange: (m: GAMappingEntry[]) => void;
-}) {
-  const { t } = useTranslation();
-  const inputClass =
-    'w-full bg-(--color-surface) border border-(--color-border) rounded-lg px-3 py-1.5 text-xs text-(--color-text) focus:outline-none focus:border-(--color-primary)/70 focus:ring-1 focus:ring-(--color-primary)/20 transition-all placeholder:text-(--color-muted) font-mono';
-
-  const addRoom = () => {
-    onChange([
-      ...mapping,
-      {
-        roomId: `room-${mapping.length + 1}`,
-        roomName: '',
-        lightGA: '',
-        dimmerGA: '',
-        temperatureGA: '',
-        setpointGA: '',
-        windowGA: '',
-        humidityGA: '',
-      },
-    ]);
-  };
-
-  const removeRoom = (idx: number) => {
-    onChange(mapping.filter((_, i) => i !== idx));
-  };
-
-  const updateRoom = (idx: number, field: keyof GAMappingEntry, value: string) => {
-    const updated = [...mapping];
-    updated[idx] = { ...updated[idx], [field]: value };
-    onChange(updated);
-  };
-
-  return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <p className="font-medium text-sm">{t('adapterConfig.gaMapping')}</p>
-        <motion.button
-          type="button"
-          onClick={addRoom}
-          className="focus-ring flex items-center gap-1 rounded-lg border border-(--color-border) bg-(--color-surface-strong) px-2.5 py-1.5 text-(--color-muted) text-xs transition-colors hover:border-(--color-primary)/30 hover:text-(--color-primary)"
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-        >
-          <Plus size={12} />
-          {t('adapterConfig.addRoom')}
-        </motion.button>
-      </div>
-      <p className="text-(--color-muted) text-xs">{t('adapterConfig.gaMappingHint')}</p>
-
-      {mapping.length === 0 && (
-        <div className="rounded-lg border border-(--color-border) border-dashed p-4 text-center text-(--color-muted) text-xs">
-          {t('adapterConfig.noRooms')}
-        </div>
-      )}
-
-      <AnimatePresence>
-        {mapping.map((room, idx) => (
-          <motion.div
-            key={room.roomId}
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="rounded-xl border border-(--color-border) bg-(--color-surface)/50 p-4"
-          >
-            <div className="mb-3 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-(--color-primary)/15 font-medium text-(--color-primary) text-xs">
-                  {idx + 1}
-                </span>
-                <input
-                  type="text"
-                  value={room.roomName}
-                  onChange={(e) => updateRoom(idx, 'roomName', e.target.value)}
-                  placeholder={t('adapterConfig.roomName')}
-                  className="border-transparent border-b bg-transparent px-1 py-0.5 font-medium text-(--color-text) text-sm transition-colors focus:border-(--color-primary) focus:outline-none"
-                />
-              </div>
-              <button
-                type="button"
-                onClick={() => removeRoom(idx)}
-                className="p-1 text-(--color-muted) transition-colors hover:text-rose-400"
-                aria-label={t('common.cancel')}
-              >
-                <Trash2 size={14} />
-              </button>
-            </div>
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-              {(
-                [
-                  ['lightGA', 'adapterConfig.lightGA'],
-                  ['dimmerGA', 'adapterConfig.dimmerGA'],
-                  ['temperatureGA', 'adapterConfig.temperatureGA'],
-                  ['setpointGA', 'adapterConfig.setpointGA'],
-                  ['windowGA', 'adapterConfig.windowGA'],
-                  ['humidityGA', 'adapterConfig.humidityGA'],
-                ] as [keyof GAMappingEntry, string][]
-              ).map(([field, labelKey]) => (
-                <div key={field} className="space-y-1">
-                  <label
-                    htmlFor={`room-${room.roomId}-${field}`}
-                    className="font-medium text-(--color-muted) text-[10px] uppercase tracking-wider"
-                  >
-                    {t(labelKey)}
-                  </label>
-                  <input
-                    id={`room-${room.roomId}-${field}`}
-                    type="text"
-                    value={room[field]}
-                    onChange={(e) => updateRoom(idx, field, e.target.value)}
-                    placeholder="x/y/z"
-                    className={inputClass}
-                  />
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        ))}
-      </AnimatePresence>
-    </div>
-  );
-}
+};
 
 // ─── AdapterConfigPanel ──────────────────────────────────────────────
 
-export function AdapterConfigPanel() {
+export const AdapterConfigPanel = () => {
   const { t } = useTranslation();
+  const isReadOnly = isReadOnlyModeActive();
   const [adapters, setAdapters] = useState<AdapterEntry[]>([]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showTokens, setShowTokens] = useState<Record<string, boolean>>({});
   const [savedId, setSavedId] = useState<string | null>(null);
+  const [savingId, setSavingId] = useState<string | null>(null);
   const adapterCounter = useRef(0);
 
   const inputClass =
@@ -749,9 +292,30 @@ export function AdapterConfigPanel() {
     setAdapters((prev) => prev.map((a) => (a.id === id ? { ...a, ...patch } : a)));
   };
 
-  const handleSave = (id: string) => {
-    setSavedId(id);
-    setTimeout(() => setSavedId(null), 2000);
+  const handleSave = async (id: string) => {
+    if (isReadOnly) {
+      toast.error(t('mode.readOnlyBlocked'));
+      return;
+    }
+
+    const entry = adapters.find((a) => a.id === id);
+    if (!entry) return;
+
+    setSavingId(id);
+    try {
+      const result = await saveAdapterPanelEntry(entry);
+      if (!result.ok) {
+        toast.error(t('adapterConfig.saveFailed', { error: result.error }));
+        return;
+      }
+      setSavedId(id);
+      toast.success(t('adapterConfig.saveSuccess'));
+      setTimeout(() => setSavedId(null), 2000);
+    } catch {
+      toast.error(t('adapterConfig.saveFailed', { error: t('common.error') }));
+    } finally {
+      setSavingId(null);
+    }
   };
 
   const toggleToken = (id: string) => {
@@ -764,6 +328,7 @@ export function AdapterConfigPanel() {
 
   return (
     <div className="space-y-6">
+      <ReadOnlySettingsBanner />
       {/* Header */}
       <section className={sectionClass}>
         <h2 className={sectionHeaderClass}>
@@ -817,513 +382,27 @@ export function AdapterConfigPanel() {
       )}
 
       <AnimatePresence>
-        {/* biome-ignore lint/complexity/noExcessiveCognitiveComplexity: adapter form renders different fields per adapter type */}
-        {adapters.map((adapter) => {
-          const meta = ADAPTER_META[adapter.type];
-          const Icon = meta.icon;
-          const isExpanded = expandedId === adapter.id;
-
-          return (
-            <motion.section
-              key={adapter.id}
-              layout
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className={sectionClass}
-            >
-              <Disclosure
-                variant="nested"
-                className="border-0 bg-transparent shadow-none"
-                open={isExpanded}
-                onOpenChange={(open) => setExpandedId(open ? adapter.id : null)}
-                title={adapter.name}
-                subtitle={
-                  <>
-                    {t(`adapterConfig.type_${adapter.type}`)}
-                    {adapter.host ? ` · ${adapter.host}:${adapter.port}` : ''}
-                  </>
-                }
-                icon={
-                  <div
-                    className={`flex h-9 w-9 items-center justify-center rounded-xl bg-(--color-surface-strong) ${meta.color}`}
-                  >
-                    <Icon size={18} />
-                  </div>
-                }
-                actions={
-                  <>
-                    <div className="hidden gap-1 sm:flex">
-                      {meta.capabilities.map((cap) => (
-                        <span
-                          key={cap}
-                          className="rounded-full border border-(--color-border) bg-(--color-surface) px-2 py-0.5 text-(--color-muted) text-[10px]"
-                        >
-                          {t(`adapterConfig.cap_${cap}`)}
-                        </span>
-                      ))}
-                    </div>
-                    <ToggleSwitch
-                      id={`enable-${adapter.id}`}
-                      checked={adapter.enabled}
-                      onChange={(v) => updateAdapter(adapter.id, { enabled: v })}
-                      label={t('adapterConfig.enabled')}
-                    />
-                  </>
-                }
-              >
-                <div className="space-y-5">
-                  {/* Connection */}
-                  <div>
-                    <h3 className="mb-3 flex items-center gap-2 font-medium text-sm">
-                      <Wifi size={14} className="text-emerald-400" />
-                      {t('adapterConfig.connection')}
-                    </h3>
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                      <div className="space-y-2">
-                        <label
-                          htmlFor={`adapter-name-${adapter.id}`}
-                          className="font-medium text-(--color-muted) text-xs"
-                        >
-                          {t('adapterConfig.adapterName')}
-                        </label>
-                        <input
-                          id={`adapter-name-${adapter.id}`}
-                          type="text"
-                          value={adapter.name}
-                          onChange={(e) => updateAdapter(adapter.id, { name: e.target.value })}
-                          className={inputClass}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label
-                          htmlFor={`adapter-host-${adapter.id}`}
-                          className="font-medium text-(--color-muted) text-xs"
-                        >
-                          {t('adapterConfig.host')}
-                        </label>
-                        <input
-                          id={`adapter-host-${adapter.id}`}
-                          type="text"
-                          value={adapter.host}
-                          onChange={(e) => updateAdapter(adapter.id, { host: e.target.value })}
-                          className={inputClass}
-                          placeholder="192.168.1.100"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label
-                          htmlFor={`adapter-port-${adapter.id}`}
-                          className="font-medium text-(--color-muted) text-xs"
-                        >
-                          {t('adapterConfig.port')}
-                        </label>
-                        <input
-                          id={`adapter-port-${adapter.id}`}
-                          type="number"
-                          value={adapter.port}
-                          onChange={(e) =>
-                            updateAdapter(adapter.id, { port: Number(e.target.value) })
-                          }
-                          className={inputClass}
-                          min={1}
-                          max={65535}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label
-                          htmlFor={`adapter-poll-${adapter.id}`}
-                          className="font-medium text-(--color-muted) text-xs"
-                        >
-                          {t('adapterConfig.pollInterval')}
-                        </label>
-                        <div className="flex items-center gap-2">
-                          <input
-                            id={`adapter-poll-${adapter.id}`}
-                            type="number"
-                            value={adapter.pollIntervalMs}
-                            onChange={(e) =>
-                              updateAdapter(adapter.id, {
-                                pollIntervalMs: Number(e.target.value),
-                              })
-                            }
-                            className={inputClass}
-                            min={500}
-                            max={60000}
-                            step={500}
-                          />
-                          <span className="whitespace-nowrap text-(--color-muted) text-xs">ms</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Security */}
-                  <div>
-                    <h3 className="mb-3 flex items-center gap-2 font-medium text-sm">
-                      <Shield size={14} className="text-orange-400" />
-                      {t('adapterConfig.security')}
-                    </h3>
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                      <div className="flex items-center justify-between rounded-xl border border-(--color-border) bg-(--color-surface) p-3">
-                        <div>
-                          <p className="font-medium text-xs">TLS / SSL</p>
-                          <p className="text-(--color-muted) text-[10px]">
-                            {t('adapterConfig.tlsHint')}
-                          </p>
-                        </div>
-                        <ToggleSwitch
-                          id={`tls-${adapter.id}`}
-                          checked={adapter.tls}
-                          onChange={(v) => updateAdapter(adapter.id, { tls: v })}
-                          label="TLS"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label
-                          htmlFor={`adapter-token-${adapter.id}`}
-                          className="font-medium text-(--color-muted) text-xs"
-                        >
-                          {t('adapterConfig.authToken')}
-                        </label>
-                        <div className="relative">
-                          <input
-                            id={`adapter-token-${adapter.id}`}
-                            type={showTokens[adapter.id] ? 'text' : 'password'}
-                            value={adapter.authToken}
-                            onChange={(e) =>
-                              updateAdapter(adapter.id, { authToken: e.target.value })
-                            }
-                            className={`${inputClass} pr-10`}
-                            placeholder="••••••••"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => toggleToken(adapter.id)}
-                            className="absolute top-1/2 right-3 -translate-y-1/2 p-1 text-(--color-muted) hover:text-(--color-text)"
-                            aria-label={
-                              showTokens[adapter.id] ? t('common.hideKey') : t('common.showKey')
-                            }
-                          >
-                            {showTokens[adapter.id] ? <EyeOff size={14} /> : <Eye size={14} />}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Victron-specific */}
-                  {adapter.type === 'victron' && (
-                    <div>
-                      <h3 className="mb-3 flex items-center gap-2 font-medium text-sm">
-                        <Activity size={14} className="text-blue-400" />
-                        {t('adapterConfig.victronSpecific')}
-                      </h3>
-                      <div className="space-y-2">
-                        <p className="font-medium text-(--color-muted) text-xs">
-                          {t('adapterConfig.gatewayType')}
-                        </p>
-                        <div className="grid grid-cols-3 gap-2">
-                          {(['cerbo-gx', 'venus-gx', 'rpi-victron'] as const).map((gw) => (
-                            <button
-                              key={gw}
-                              type="button"
-                              onClick={() => updateAdapter(adapter.id, { gatewayType: gw })}
-                              className={`rounded-lg border-2 p-2 text-left text-xs transition-all ${
-                                adapter.gatewayType === gw
-                                  ? 'border-(--color-primary) bg-(--color-primary)/10'
-                                  : 'border-(--color-border) bg-(--color-surface) hover:border-(--color-primary)/40'
-                              }`}
-                              aria-pressed={adapter.gatewayType === gw}
-                            >
-                              <span className="font-medium">{t(`adapterConfig.gw_${gw}`)}</span>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* OCPP-specific */}
-                  {adapter.type === 'ocpp' && (
-                    <div>
-                      <h3 className="mb-3 flex items-center gap-2 font-medium text-sm">
-                        <Plug size={14} className="text-cyan-400" />
-                        {t('adapterConfig.ocppSpecific')}
-                      </h3>
-                      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                        <div className="space-y-2">
-                          <label
-                            htmlFor={`adapter-station-${adapter.id}`}
-                            className="font-medium text-(--color-muted) text-xs"
-                          >
-                            {t('adapterConfig.stationId')}
-                          </label>
-                          <input
-                            id={`adapter-station-${adapter.id}`}
-                            type="text"
-                            value={adapter.stationId ?? ''}
-                            onChange={(e) =>
-                              updateAdapter(adapter.id, { stationId: e.target.value })
-                            }
-                            className={inputClass}
-                            placeholder="CP001"
-                          />
-                        </div>
-                        <SelectField
-                          id={`adapter-secprofile-${adapter.id}`}
-                          label={t('adapterConfig.securityProfile')}
-                          value={String(adapter.securityProfile ?? 2)}
-                          onChange={(e) =>
-                            updateAdapter(adapter.id, {
-                              securityProfile: Number(e.target.value) as 0 | 1 | 2 | 3,
-                            })
-                          }
-                        >
-                          <option value="0">{t('adapterConfig.secProfile0')}</option>
-                          <option value="1">{t('adapterConfig.secProfile1')}</option>
-                          <option value="2">{t('adapterConfig.secProfile2')}</option>
-                          <option value="3">{t('adapterConfig.secProfile3')}</option>
-                        </SelectField>
-                        <div className="flex items-center justify-between rounded-xl border border-(--color-border) bg-(--color-surface) p-3 md:col-span-2">
-                          <div>
-                            <p className="font-medium text-xs">ISO 15118 Plug & Charge</p>
-                            <p className="text-(--color-muted) text-[10px]">
-                              {t('adapterConfig.iso15118Hint')}
-                            </p>
-                          </div>
-                          <ToggleSwitch
-                            id={`iso15118-${adapter.id}`}
-                            checked={adapter.iso15118 ?? false}
-                            onChange={(v) => updateAdapter(adapter.id, { iso15118: v })}
-                            label="ISO 15118"
-                          />
-                        </div>
-                        {adapter.securityProfile === 3 && (
-                          <div className="space-y-3 md:col-span-2">
-                            <div className="flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/5 px-3 py-2 text-amber-400 text-xs">
-                              <AlertTriangle size={14} />
-                              {t('adapterConfig.mtlsRequired')}
-                            </div>
-                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                              <div className="space-y-2">
-                                <label
-                                  htmlFor={`adapter-cert-ocpp-${adapter.id}`}
-                                  className="font-medium text-(--color-muted) text-xs"
-                                >
-                                  {t('adapterConfig.clientCert')}
-                                </label>
-                                <textarea
-                                  id={`adapter-cert-ocpp-${adapter.id}`}
-                                  value={adapter.clientCert ?? ''}
-                                  onChange={(e) =>
-                                    updateAdapter(adapter.id, { clientCert: e.target.value })
-                                  }
-                                  className={`${inputClass} h-20 resize-none font-mono text-xs`}
-                                  placeholder="-----BEGIN CERTIFICATE-----"
-                                />
-                              </div>
-                              <div className="space-y-2">
-                                <label
-                                  htmlFor={`adapter-key-ocpp-${adapter.id}`}
-                                  className="font-medium text-(--color-muted) text-xs"
-                                >
-                                  {t('adapterConfig.clientKey')}
-                                </label>
-                                <textarea
-                                  id={`adapter-key-ocpp-${adapter.id}`}
-                                  value={adapter.clientKey ?? ''}
-                                  onChange={(e) =>
-                                    updateAdapter(adapter.id, { clientKey: e.target.value })
-                                  }
-                                  className={`${inputClass} h-20 resize-none font-mono text-xs`}
-                                  placeholder="-----BEGIN PRIVATE KEY-----"
-                                />
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                        <div className="md:col-span-2">
-                          <Disclosure
-                            variant="nested"
-                            title={t('adapterConfig.ocppV2xSection')}
-                            subtitle={t('adapterConfig.ocppV2xIntro')}
-                            icon={<Shield size={14} className="text-cyan-400" aria-hidden />}
-                          >
-                            <ul className="space-y-2">
-                              <AdapterHelpItem
-                                titleKey="adapterConfig.ocppV2xS14a"
-                                descKey="adapterConfig.ocppV2xS14aDesc"
-                              />
-                              <AdapterHelpItem
-                                titleKey="adapterConfig.ocppPhaseConfig"
-                                descKey="adapterConfig.ocppPhaseConfigDesc"
-                              />
-                              <AdapterHelpItem
-                                titleKey="adapterConfig.ocppTargetSoc"
-                                descKey="adapterConfig.ocppTargetSocDesc"
-                              />
-                              <AdapterHelpItem
-                                titleKey="adapterConfig.ocppSmartCost"
-                                descKey="adapterConfig.ocppSmartCostDesc"
-                              />
-                              <AdapterHelpItem
-                                titleKey="adapterConfig.ocppMinCurrent"
-                                descKey="adapterConfig.ocppMinCurrentDesc"
-                              />
-                              <AdapterHelpItem
-                                titleKey="adapterConfig.ocppV2xV2h"
-                                descKey="adapterConfig.ocppV2xV2hDesc"
-                              />
-                              <AdapterHelpItem
-                                titleKey="adapterConfig.ocppV2xV2g"
-                                descKey="adapterConfig.ocppV2xV2gDesc"
-                              />
-                            </ul>
-                          </Disclosure>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* EEBUS-specific */}
-                  {adapter.type === 'eebus' && (
-                    <div>
-                      <h3 className="mb-3 flex items-center gap-2 font-medium text-sm">
-                        <Cable size={14} className="text-purple-400" />
-                        {t('adapterConfig.eebusSpecific')}
-                      </h3>
-                      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                        <div className="space-y-2">
-                          <label
-                            htmlFor={`adapter-ski-${adapter.id}`}
-                            className="font-medium text-(--color-muted) text-xs"
-                          >
-                            {t('adapterConfig.skiFingerprint')}
-                          </label>
-                          <input
-                            id={`adapter-ski-${adapter.id}`}
-                            type="text"
-                            value={adapter.skiFingerprint ?? ''}
-                            onChange={(e) =>
-                              updateAdapter(adapter.id, { skiFingerprint: e.target.value })
-                            }
-                            className={`${inputClass} font-mono`}
-                            placeholder="0123456789abcdef..."
-                            maxLength={40}
-                          />
-                          <p className="text-(--color-muted) text-[10px]">
-                            {t('adapterConfig.skiFingerprintHint')}
-                          </p>
-                        </div>
-                        <div className="space-y-3">
-                          <div className="flex items-center gap-2 rounded-lg border border-purple-500/20 bg-purple-500/5 px-3 py-2 text-purple-300 text-xs">
-                            <Shield size={14} />
-                            {t('adapterConfig.eebusRequiresTls')}
-                          </div>
-                          <div className="space-y-2">
-                            <label
-                              htmlFor={`adapter-cert-eebus-${adapter.id}`}
-                              className="font-medium text-(--color-muted) text-xs"
-                            >
-                              {t('adapterConfig.clientCert')}
-                            </label>
-                            <textarea
-                              id={`adapter-cert-eebus-${adapter.id}`}
-                              value={adapter.clientCert ?? ''}
-                              onChange={(e) =>
-                                updateAdapter(adapter.id, { clientCert: e.target.value })
-                              }
-                              className={`${inputClass} h-20 resize-none font-mono text-xs`}
-                              placeholder="-----BEGIN CERTIFICATE-----"
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <label
-                              htmlFor={`adapter-key-eebus-${adapter.id}`}
-                              className="font-medium text-(--color-muted) text-xs"
-                            >
-                              {t('adapterConfig.clientKey')}
-                            </label>
-                            <textarea
-                              id={`adapter-key-eebus-${adapter.id}`}
-                              value={adapter.clientKey ?? ''}
-                              onChange={(e) =>
-                                updateAdapter(adapter.id, { clientKey: e.target.value })
-                              }
-                              className={`${inputClass} h-20 resize-none font-mono text-xs`}
-                              placeholder="-----BEGIN PRIVATE KEY-----"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* KNX-specific: GA Mapping */}
-                  {adapter.type === 'knx' && (
-                    <div>
-                      <h3 className="mb-3 flex items-center gap-2 font-medium text-sm">
-                        <Radio size={14} className="text-green-400" />
-                        {t('adapterConfig.knxSpecific')}
-                      </h3>
-                      <div className="mb-4 space-y-2">
-                        <p className="font-medium text-(--color-muted) text-xs">
-                          {t('adapterConfig.knxTransport')}
-                        </p>
-                        <div className="grid grid-cols-2 gap-2">
-                          {(['websocket', 'mqtt'] as const).map((tr) => (
-                            <button
-                              key={tr}
-                              type="button"
-                              onClick={() => updateAdapter(adapter.id, { knxTransport: tr })}
-                              className={`rounded-lg border-2 p-2 text-center font-medium text-xs transition-all ${
-                                adapter.knxTransport === tr
-                                  ? 'border-(--color-primary) bg-(--color-primary)/10 text-(--color-primary)'
-                                  : 'border-(--color-border) bg-(--color-surface) text-(--color-muted) hover:border-(--color-primary)/40'
-                              }`}
-                              aria-pressed={adapter.knxTransport === tr}
-                            >
-                              {tr === 'websocket' ? 'WebSocket (knxd)' : 'MQTT Bridge'}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                      <GAMappingPanel
-                        mapping={adapter.gaMapping ?? []}
-                        onChange={(m) => updateAdapter(adapter.id, { gaMapping: m })}
-                      />
-                    </div>
-                  )}
-
-                  {/* Action Buttons */}
-                  <div className="flex items-center justify-between border-(--color-border) border-t pt-4">
-                    <motion.button
-                      type="button"
-                      onClick={() => removeAdapter(adapter.id)}
-                      className="flex items-center gap-2 rounded-xl border border-rose-500/30 bg-rose-500/5 px-3 py-2 text-rose-400 text-xs transition-colors hover:bg-rose-500/10"
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      <Trash2 size={14} />
-                      {t('adapterConfig.remove')}
-                    </motion.button>
-                    <motion.button
-                      type="button"
-                      onClick={() => handleSave(adapter.id)}
-                      className="flex items-center gap-2 rounded-xl bg-(--color-text) px-4 py-2 font-medium text-(--color-background) text-sm transition-opacity hover:opacity-90"
-                      whileHover={{ scale: 1.02, y: -1 }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      {savedId === adapter.id ? <Check size={16} /> : <Server size={16} />}
-                      {savedId === adapter.id ? t('common.saved') : t('common.save')}
-                    </motion.button>
-                  </div>
-                </div>
-              </Disclosure>
-            </motion.section>
-          );
-        })}
+        {adapters.map((adapter) => (
+          <AdapterConfigEntrySection
+            key={adapter.id}
+            adapter={adapter}
+            isExpanded={expandedId === adapter.id}
+            onExpandChange={(open) => setExpandedId(open ? adapter.id : null)}
+            onUpdate={(patch) => updateAdapter(adapter.id, patch)}
+            showToken={showTokens[adapter.id] ?? false}
+            onToggleToken={() => toggleToken(adapter.id)}
+            onRemove={() => removeAdapter(adapter.id)}
+            onSave={() => {
+              handleSave(adapter.id).catch(ignorePromiseRejection);
+            }}
+            isReadOnly={isReadOnly}
+            isSaving={savingId === adapter.id}
+            isSaved={savedId === adapter.id}
+            inputClass={inputClass}
+            sectionClass={sectionClass}
+            t={t}
+          />
+        ))}
       </AnimatePresence>
 
       {/* Contrib / Community Adapters */}
@@ -1333,4 +412,4 @@ export function AdapterConfigPanel() {
       <ComplianceChecklist activeAdapters={adapters.map((a) => a.type)} />
     </div>
   );
-}
+};

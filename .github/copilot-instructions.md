@@ -37,7 +37,7 @@ The shipped baseline is **1.6.1** (2026-07-02). See `CHANGELOG.md` for the relea
 - Use `useAppStoreShallow` for multiple selectors to merge subscriptions — never two separate `useAppStore` calls for data from the same render path.
 - For selectors that access only one or two scalar values, use `useAppStore((s) => s.settings.x)` direct scalar selectors — never subscribe to the whole `settings` object.
 
-### Adapter System (14 adapters: 7 core + 7 contrib)
+### Adapter System (13 adapters: 7 core + 6 contrib)
 
 All adapters in `apps/web/src/core/adapters/` implement the `EnergyAdapter` interface (`EnergyAdapter.ts`).
 Contrib adapters extend `BaseAdapter` (`BaseAdapter.ts`) for simplified development.
@@ -370,7 +370,7 @@ apps/web/                      # @nexus-hems/web — React 19 Vite SPA
 │   │       ├── EEBUSAdapter.ts
 │   │       ├── EvccAdapter.ts     # evcc backend via REST + WebSocket
 │   │       ├── OpenEMSAdapter.ts  # OpenEMS Edge via JSON-RPC 2.0 / WebSocket
-│   │       └── contrib/           # 7 contrib adapters + README
+│   │       └── contrib/           # 6 shipped contrib adapters + Example template + README
 │   ├── lib/
 │   │   ├── db.ts              #   Dexie.js schema + migrations
 │   │   ├── ai-keys.ts         #   AES-GCM 256-bit key vault

@@ -39,6 +39,19 @@ vi.mock('../components/settings/PWASettingsSection', () => ({
 vi.mock('../components/EmergencyStop', () => ({
   EmergencyStop: () => null,
 }));
+vi.mock('../lib/db', () => ({
+  getLocalStorageStats: vi.fn().mockResolvedValue({ usageMb: 2.4, snapshots: 847 }),
+  clearAllData: vi.fn().mockResolvedValue(null),
+}));
+vi.mock('../core/useEnergyStore', () => ({
+  useEnergyStore: (selector: (s: Record<string, unknown>) => unknown) =>
+    selector({
+      adapters: {
+        'victron-mqtt': { status: 'connected' },
+        knx: { status: 'disconnected' },
+      },
+    }),
+}));
 
 const mockUpdateSettings = vi.fn();
 const mockSetThemePreference = vi.fn();
@@ -128,12 +141,11 @@ vi.mock('../store', () => ({
       locale: 'en',
       setLocale: vi.fn(),
       adapterMode: 'mock',
+      connected: true,
     }),
 }));
 
-function renderTab(ui: ReactElement) {
-  return render(<MemoryRouter>{ui}</MemoryRouter>);
-}
+const renderTab = (ui: ReactElement) => render(<MemoryRouter>{ui}</MemoryRouter>);
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -142,7 +154,7 @@ beforeEach(() => {
 // ─── ToggleSwitch (shared atom) ──────────────────────────────────────
 describe('ToggleSwitch', () => {
   it('reflects the checked state', () => {
-    render(<ToggleSwitch id="t1" checked={true} onChange={() => {}} label="Toggle" />);
+    render(<ToggleSwitch id="t1" checked onChange={vi.fn()} label="Toggle" />);
     expect(screen.getByRole('checkbox')).toBeChecked();
   });
 
@@ -154,18 +166,20 @@ describe('ToggleSwitch', () => {
   });
 
   it('exposes an accessible label', () => {
-    render(<ToggleSwitch id="t3" checked={false} onChange={() => {}} label="My switch" />);
+    render(<ToggleSwitch id="t3" checked={false} onChange={vi.fn()} label="My switch" />);
     expect(screen.getByText('My switch')).toBeInTheDocument();
   });
 });
 
 // ─── Extracted stateful tabs ─────────────────────────────────────────
 describe('StorageTab', () => {
-  it('renders the InfluxDB fields from the store', () => {
+  it('renders the InfluxDB fields and live storage stats', async () => {
     const { container } = renderTab(<StorageTab />);
     expect(container.querySelector<HTMLInputElement>('#settings-influx-url')?.value).toBe(
       'http://localhost:8086',
     );
+    expect(await screen.findByText('2.4')).toBeInTheDocument();
+    expect(screen.getByText('847')).toBeInTheDocument();
   });
 
   it('writes InfluxDB URL changes back to the store', () => {

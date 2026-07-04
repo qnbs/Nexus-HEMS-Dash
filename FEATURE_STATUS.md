@@ -37,7 +37,9 @@
 | Zigbee2MQTT | ✅ (contrib, P1 enhanced) | ⏳ | MQTT credentials forwarded; full device classification (grid/load/heatpump/ev by name hints); per-device availability tracking; SET_EV_CURRENT, SET_HEAT_PUMP_POWER commands; bridge version + `trackedDeviceCount`. |
 | Shelly REST (Gen1/2/3) | ✅ (contrib, P1 enhanced) | ✅ (webhook route) | Gen1 support (GET /status); auto-detect generation; SET_RELAY command; pv capability; 3-phase phases[] disaggregation; /api/shelly/webhook push receiver (ShellyWebhookBus). |
 | OpenADR 3.1 VEN | ✅ (contrib) | ⚠️ | Frontend contrib adapter + backend OAuth2 proxy (`routes/openadr.routes.ts`). Full VTN integration and event handling is partial. |
-| Example template | ✅ (contrib) | ⏳ | Template for custom adapters. |
+| Example template | ✅ (contrib) | ⏳ | Template for custom adapters — not counted in the shipped 13-adapter inventory. |
+
+> **Shipped frontend count:** 13 adapters (7 core + 6 contrib). The Example row above is a development template only (`example-contrib.ts`).
 
 > **Backend keystone (HIGH-17, ADR-018) — RESOLVED:** the WebSocket gateway now subscribes to the
 > EventBus via `LiveEnergyAggregator` (`apps/api/src/services/LiveEnergyAggregator.ts`), which folds

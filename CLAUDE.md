@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Nexus-HEMS Dashboard is a production-grade, real-time Home Energy Management System dashboard. It consolidates 14 protocol adapters (7 core: Victron MQTT, Modbus/SunSpec, KNX, OCPP 2.1, EEBUS/SPINE, evcc, OpenEMS; 7 contrib: Home Assistant, Matter/Thread, Zigbee2MQTT, Shelly, OpenADR 3.1, ExecAdapter, Example) into a unified React 19 SPA served by an Express 5 backend. Deployable as PWA, Docker container, Tauri desktop app, Helm/Kubernetes release, or Capacitor mobile app. Current package version: `1.9.0`.
+Nexus-HEMS Dashboard is a production-grade, real-time Home Energy Management System dashboard. It consolidates 13 protocol adapters (7 core: Victron MQTT, Modbus/SunSpec, KNX, OCPP 2.1, EEBUS/SPINE, evcc, OpenEMS; 6 shipped contrib: Home Assistant, Matter/Thread, Zigbee2MQTT, Shelly, OpenADR 3.1, ExecAdapter; plus an Example contrib template) into a unified React 19 SPA served by an Express 5 backend. Deployable as PWA, Docker container, Tauri desktop app, Helm/Kubernetes release, or Capacitor mobile app. Current package version: `1.9.0`.
 
 **Safety note:** This system controls safety-critical electrical hardware. No regulatory certification (VDE, IEC, CE) has been obtained. See `docs/Safety-Certification-Notice.md` before connecting to live hardware. Always use `ADAPTER_MODE=mock` for development; switch to `live` only after reviewing the pre-deployment checklist in that document.
 
@@ -132,7 +132,7 @@ All adapters implement `EnergyAdapter` interface (`apps/web/src/core/adapters/En
 - `EvccAdapter` — evcc backend (95%+ hardware support) via REST + WebSocket
 - `OpenEMSAdapter` — OpenEMS Edge via JSON-RPC 2.0 over WebSocket
 
-**7 contrib adapters** (`apps/web/src/core/adapters/contrib/`):
+**6 shipped contrib adapters** (`apps/web/src/core/adapters/contrib/`; plus `example-contrib.ts` template):
 - `HomeAssistantMQTTAdapter`, `MatterThreadAdapter`, `Zigbee2MQTTAdapter`, `ShellyRESTAdapter`
 - `OpenADR31Adapter` — OpenADR 3.1.0 VEN client for demand-response events
 - `ExecAdapter` (`exec-adapter.ts`) — whitelisted custom script execution via the backend ExecService
