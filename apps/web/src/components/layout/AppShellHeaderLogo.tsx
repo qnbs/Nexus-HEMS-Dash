@@ -2,12 +2,16 @@ import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
+/** Props for {@link AppShellHeaderLogo}. */
+export interface AppShellHeaderLogoProps {
+  /** Whether the backend WebSocket is connected. */
+  connected: boolean;
+}
+
 /**
  * Mobile header logo with a live connection status indicator.
- *
- * @param props.connected - Whether the backend WebSocket is connected.
  */
-export function AppShellHeaderLogo({ connected }: { connected: boolean }) {
+export function AppShellHeaderLogo({ connected }: AppShellHeaderLogoProps) {
   const { t } = useTranslation();
 
   return (

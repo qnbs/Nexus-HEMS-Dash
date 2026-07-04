@@ -1,11 +1,28 @@
-import { BatteryMedium, Sun, Zap } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { SelfSufficiencyRing } from './SelfSufficiencyRing';
+import {
+  AppShellHeaderBatteryPill,
+  AppShellHeaderGridPill,
+  AppShellHeaderPricePill,
+  AppShellHeaderPvPill,
+  AppShellHeaderSelfSufficiencyPill,
+} from './AppShellHeaderTickerPills';
+
+/** Props for {@link AppShellHeaderTicker}. */
+export interface AppShellHeaderTickerProps {
+  /** Current electricity price in €/kWh. */
+  priceCurrent: number;
+  /** PV production in watts. */
+  pvPower: number;
+  /** Battery state of charge (0–100). */
+  batterySoC: number;
+  /** Grid power in watts (positive = import, negative = export). */
+  gridPower: number;
+  /** Self-sufficiency ratio in the range 0–100. */
+  selfSufficiencyPercent: number;
+}
 
 /**
  * Mobile/tablet live KPI ticker below the main header row.
- *
- * @param props - Live KPI values rendered in the compact header strip.
  */
 export function AppShellHeaderTicker({
   priceCurrent,
@@ -13,13 +30,7 @@ export function AppShellHeaderTicker({
   batterySoC,
   gridPower,
   selfSufficiencyPercent,
-}: {
-  priceCurrent: number;
-  pvPower: number;
-  batterySoC: number;
-  gridPower: number;
-  selfSufficiencyPercent: number;
-}) {
+}: AppShellHeaderTickerProps) {
   const { t } = useTranslation();
 
   return (
@@ -29,67 +40,11 @@ export function AppShellHeaderTicker({
       aria-label={t('header.liveStatus')}
       aria-live="polite"
     >
-      <div
-        className="inline-flex shrink-0 items-center gap-1 rounded-full bg-(--color-surface)/60 px-2 py-0.5 font-medium text-xs"
-        title={t('header.pvPower')}
-      >
-        <Sun className="h-3 w-3 text-amber-400" aria-hidden="true" />
-        <span className="text-(--color-text)">
-          {pvPower >= 1000 ? `${(pvPower / 1000).toFixed(1)} kW` : `${Math.round(pvPower)} W`}
-        </span>
-      </div>
-
-      <div
-        className="inline-flex shrink-0 items-center gap-1 rounded-full bg-(--color-surface)/60 px-2 py-0.5 font-medium text-xs"
-        title={t('header.batterySoC')}
-      >
-        <BatteryMedium
-          className={`h-3 w-3 ${
-            batterySoC > 50
-              ? 'text-(--color-neon-green)'
-              : batterySoC > 20
-                ? 'text-amber-400'
-                : 'text-red-400'
-          }`}
-          aria-hidden="true"
-        />
-        <span className="text-(--color-text)">{Math.round(batterySoC)}%</span>
-      </div>
-
-      <div
-        className="inline-flex shrink-0 items-center gap-1 rounded-full bg-(--color-surface)/60 px-2 py-0.5 font-medium text-xs"
-        title={gridPower >= 0 ? t('header.gridImport') : t('header.gridExport')}
-      >
-        <Zap
-          className={`h-3 w-3 ${gridPower >= 0 ? 'text-red-400' : 'text-(--color-neon-green)'}`}
-          aria-hidden="true"
-        />
-        <span className="text-(--color-text)">
-          {Math.abs(gridPower) >= 1000
-            ? `${(Math.abs(gridPower) / 1000).toFixed(1)} kW`
-            : `${Math.round(Math.abs(gridPower))} W`}
-        </span>
-        <span
-          className={`text-[10px] ${gridPower >= 0 ? 'text-red-400' : 'text-(--color-neon-green)'}`}
-        >
-          {gridPower >= 0 ? '↓' : '↑'}
-        </span>
-      </div>
-
-      <div
-        className="inline-flex shrink-0 items-center gap-1 rounded-full bg-(--color-surface)/60 px-2 py-0.5 font-medium text-xs md:hidden"
-        title={t('dashboard.currentPrice')}
-      >
-        <span className="text-(--color-primary)">{priceCurrent.toFixed(2)} ct</span>
-      </div>
-
-      <div
-        className="inline-flex shrink-0 items-center gap-1 rounded-full bg-(--color-surface)/60 px-2 py-0.5 font-medium text-xs"
-        title={t('header.selfSufficiency')}
-      >
-        <SelfSufficiencyRing percentage={selfSufficiencyPercent} />
-        <span className="text-(--color-text)">{selfSufficiencyPercent}%</span>
-      </div>
+      <AppShellHeaderPvPill pvPower={pvPower} />
+      <AppShellHeaderBatteryPill batterySoC={batterySoC} />
+      <AppShellHeaderGridPill gridPower={gridPower} />
+      <AppShellHeaderPricePill priceCurrent={priceCurrent} />
+      <AppShellHeaderSelfSufficiencyPill selfSufficiencyPercent={selfSufficiencyPercent} />
     </div>
   );
 }

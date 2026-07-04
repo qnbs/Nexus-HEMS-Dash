@@ -1,19 +1,21 @@
 import { AlertTriangle, Lock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
+/** Props for {@link AppShellHeaderSafetyBanners}. */
+export interface AppShellHeaderSafetyBannersProps {
+  /** Whether live adapter mode is active. */
+  isLive: boolean;
+  /** Whether the backend enforces read-only mode. */
+  isReadOnly: boolean;
+}
+
 /**
  * Live-hardware and read-only safety banners shown above the header row.
- *
- * @param props.isLive - Whether live adapter mode is active.
- * @param props.isReadOnly - Whether the backend enforces read-only mode.
  */
 export function AppShellHeaderSafetyBanners({
   isLive,
   isReadOnly,
-}: {
-  isLive: boolean;
-  isReadOnly: boolean;
-}) {
+}: AppShellHeaderSafetyBannersProps) {
   const { t } = useTranslation();
 
   return (

@@ -1,9 +1,13 @@
+/** Props for {@link SelfSufficiencyRing}. */
+export interface SelfSufficiencyRingProps {
+  /** Self-sufficiency ratio in the range 0–100. */
+  percentage: number;
+}
+
 /**
  * Tiny SVG ring showing self-sufficiency percentage.
- *
- * @param props.percentage - Self-sufficiency ratio in the range 0–100.
  */
-export function SelfSufficiencyRing({ percentage }: { percentage: number }) {
+export function SelfSufficiencyRing({ percentage }: SelfSufficiencyRingProps) {
   const ringRadius = 5;
   const circumference = 2 * Math.PI * ringRadius;
   const offset = circumference - (percentage / 100) * circumference;

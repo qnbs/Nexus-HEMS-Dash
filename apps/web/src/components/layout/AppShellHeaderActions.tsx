@@ -9,25 +9,27 @@ import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { NavLink } from 'react-router-dom';
 
+/** Props for {@link AppShellHeaderActions}. */
+export interface AppShellHeaderActionsProps {
+  /** Whether live adapter mode is active (hides simulation badge). */
+  isLive: boolean;
+  /** Whether any enabled adapter is degraded. */
+  hasDegradedAdapter: boolean;
+  /** Current electricity price in €/kWh. */
+  priceCurrent: number;
+  /** Opens the global command palette. */
+  onOpenCommandPalette: () => void;
+}
+
 /**
  * Header quick actions: mode badges, price pill, command palette, help, and settings.
- *
- * @param props.isLive - Whether live adapter mode is active (hides simulation badge).
- * @param props.hasDegradedAdapter - Whether any enabled adapter is degraded.
- * @param props.priceCurrent - Current electricity price in €/kWh.
- * @param props.onOpenCommandPalette - Opens the global command palette.
  */
 export function AppShellHeaderActions({
   isLive,
   hasDegradedAdapter,
   priceCurrent,
   onOpenCommandPalette,
-}: {
-  isLive: boolean;
-  hasDegradedAdapter: boolean;
-  priceCurrent: number;
-  onOpenCommandPalette: () => void;
-}) {
+}: AppShellHeaderActionsProps) {
   const { t } = useTranslation();
 
   return (

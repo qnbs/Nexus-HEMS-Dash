@@ -3,15 +3,24 @@ import { AppShellHeaderLogo } from './AppShellHeaderLogo';
 import { AppShellHeaderSafetyBanners } from './AppShellHeaderSafetyBanners';
 import { MobilePageTitle } from './MobilePageTitle';
 
+/** Props for {@link AppShellHeaderBar}. */
+export interface AppShellHeaderBarProps {
+  /** Whether live adapter mode is active. */
+  isLive: boolean;
+  /** Whether the backend enforces read-only mode. */
+  isReadOnly: boolean;
+  /** Whether the backend WebSocket is connected. */
+  connected: boolean;
+  /** Whether any enabled adapter is degraded. */
+  hasDegradedAdapter: boolean;
+  /** Current electricity price in €/kWh. */
+  priceCurrent: number;
+  /** Opens the global command palette. */
+  onOpenCommandPalette: () => void;
+}
+
 /**
  * Primary header row: logo, page title, safety badges, and quick actions.
- *
- * @param props.isLive - Whether live adapter mode is active.
- * @param props.isReadOnly - Whether the backend enforces read-only mode.
- * @param props.connected - Whether the backend WebSocket is connected.
- * @param props.hasDegradedAdapter - Whether any enabled adapter is degraded.
- * @param props.priceCurrent - Current electricity price in €/kWh.
- * @param props.onOpenCommandPalette - Opens the global command palette.
  */
 export function AppShellHeaderBar({
   isLive,
@@ -20,14 +29,7 @@ export function AppShellHeaderBar({
   hasDegradedAdapter,
   priceCurrent,
   onOpenCommandPalette,
-}: {
-  isLive: boolean;
-  isReadOnly: boolean;
-  connected: boolean;
-  hasDegradedAdapter: boolean;
-  priceCurrent: number;
-  onOpenCommandPalette: () => void;
-}) {
+}: AppShellHeaderBarProps) {
   return (
     <>
       <AppShellHeaderSafetyBanners isLive={isLive} isReadOnly={isReadOnly} />

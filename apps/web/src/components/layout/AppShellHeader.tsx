@@ -3,10 +3,36 @@ import type { RefObject } from 'react';
 import { AppShellHeaderBar } from './AppShellHeaderBar';
 import { AppShellHeaderTicker } from './AppShellHeaderTicker';
 
+/** Props for {@link AppShellHeader}. */
+export interface AppShellHeaderProps {
+  /** Ref attached to the fixed header element for height measurement. */
+  headerRef: RefObject<HTMLElement | null>;
+  /** Whether the page has scrolled past the header threshold. */
+  scrolled: boolean;
+  /** Whether live adapter mode is active. */
+  isLive: boolean;
+  /** Whether the backend enforces read-only mode. */
+  isReadOnly: boolean;
+  /** Whether the backend WebSocket is connected. */
+  connected: boolean;
+  /** Whether any enabled adapter is degraded. */
+  hasDegradedAdapter: boolean;
+  /** Current electricity price in €/kWh. */
+  priceCurrent: number;
+  /** PV production in watts. */
+  pvPower: number;
+  /** Battery state of charge (0–100). */
+  batterySoC: number;
+  /** Grid power in watts (positive = import, negative = export). */
+  gridPower: number;
+  /** House load in watts. */
+  houseLoad: number;
+  /** Opens the global command palette. */
+  onOpenCommandPalette: () => void;
+}
+
 /**
  * Fixed app header: safety banners, navigation actions, and live KPI ticker.
- *
- * @param props - Header layout state wired from {@link AppShell}.
  */
 export function AppShellHeader({
   headerRef,
@@ -21,20 +47,7 @@ export function AppShellHeader({
   gridPower,
   houseLoad,
   onOpenCommandPalette,
-}: {
-  headerRef: RefObject<HTMLElement | null>;
-  scrolled: boolean;
-  isLive: boolean;
-  isReadOnly: boolean;
-  connected: boolean;
-  hasDegradedAdapter: boolean;
-  priceCurrent: number;
-  pvPower: number;
-  batterySoC: number;
-  gridPower: number;
-  houseLoad: number;
-  onOpenCommandPalette: () => void;
-}) {
+}: AppShellHeaderProps) {
   const selfSufficiencyPercent =
     houseLoad > 0
       ? Math.min(100, Math.round(((houseLoad - Math.max(0, gridPower)) / houseLoad) * 100))
