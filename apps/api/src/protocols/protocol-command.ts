@@ -28,6 +28,15 @@ export const BatteryModeValueSchema = z.union([z.literal('charge'), z.literal('d
 export const GridLimitValueSchema = z.number().finite().min(0).max(25);
 /** SG Ready mode 1–4 (aligns with frontend command-safety). */
 export const HeatPumpModeValueSchema = z.number().finite().min(1).max(4);
+/** HA entity id for SG Ready writes — must not be climate (hvac_mode is string-based). */
+export const HeatPumpModeEntityIdSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .refine((entityId) => {
+    const domain = entityId.split('.')[0];
+    return domain === 'number' || domain === 'input_number' || domain === 'select';
+  }, 'HA_HEAT_PUMP_MODE_ENTITY must be a number, input_number, or select entity for SG Ready modes 1–4');
 /** Mains voltage for SET_EV_POWER→amps conversion (typical EU: 230 V). */
 export const MainsVoltageSchema = z.coerce.number().finite().positive();
 

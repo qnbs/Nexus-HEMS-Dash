@@ -45,7 +45,7 @@ import type {
   ProtocolCommandRequest,
   ProtocolCommandResult,
 } from '../protocol-command.js';
-import { parseOptionalMainsVoltageEnv } from '../protocol-command.js';
+import { HeatPumpModeEntityIdSchema, parseOptionalMainsVoltageEnv } from '../protocol-command.js';
 import { writeToProtocolDLQ } from '../protocol-dlq.js';
 import {
   haMqttSupportsCommand,
@@ -424,6 +424,15 @@ export function createHomeAssistantMqttAdapterFromEnv(
 
   const mappings = entityMappings ?? loadHAEntityMappings(mapPath);
   const mainsVoltage = parseOptionalMainsVoltageEnv(env.HA_WALLBOX_MAINS_VOLTAGE);
+  const heatPumpModeRaw = env.HA_HEAT_PUMP_MODE_ENTITY?.trim();
+  const heatPumpModeEntity = heatPumpModeRaw
+    ? HeatPumpModeEntityIdSchema.safeParse(heatPumpModeRaw)
+    : null;
+  if (heatPumpModeRaw && heatPumpModeEntity && !heatPumpModeEntity.success) {
+    console.warn(
+      `[HomeAssistantMqttProtocolAdapter] ignoring invalid HA_HEAT_PUMP_MODE_ENTITY "${heatPumpModeRaw}": ${heatPumpModeEntity.error.issues[0]?.message}`,
+    );
+  }
 
   return new HomeAssistantMqttProtocolAdapter({
     id: env.HA_MQTT_ADAPTER_ID?.trim() || 'ha-mqtt-01',
@@ -437,9 +446,7 @@ export function createHomeAssistantMqttAdapterFromEnv(
     ...(env.HA_WALLBOX_SWITCH_ENTITY?.trim()
       ? { wallboxSwitchEntityId: env.HA_WALLBOX_SWITCH_ENTITY.trim() }
       : {}),
-    ...(env.HA_HEAT_PUMP_MODE_ENTITY?.trim()
-      ? { heatPumpModeEntityId: env.HA_HEAT_PUMP_MODE_ENTITY.trim() }
-      : {}),
+    ...(heatPumpModeEntity?.success ? { heatPumpModeEntityId: heatPumpModeEntity.data } : {}),
     ...(mainsVoltage !== undefined ? { mainsVoltage } : {}),
   });
 }

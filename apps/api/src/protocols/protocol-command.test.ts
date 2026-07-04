@@ -3,6 +3,7 @@ import {
   BatteryModeValueSchema,
   BatteryPowerValueSchema,
   GridLimitValueSchema,
+  HeatPumpModeEntityIdSchema,
   HeatPumpModeValueSchema,
   isProtocolCommandHandler,
   MainsVoltageSchema,
@@ -112,6 +113,8 @@ describe('validateProtocolCommandRequest', () => {
     expect(BatteryModeValueSchema.safeParse('charge').success).toBe(true);
     expect(GridLimitValueSchema.safeParse(25).success).toBe(true);
     expect(HeatPumpModeValueSchema.safeParse(4).success).toBe(true);
+    expect(HeatPumpModeEntityIdSchema.safeParse('number.hp_sg_ready').success).toBe(true);
+    expect(HeatPumpModeEntityIdSchema.safeParse('climate.heat_pump').success).toBe(false);
     expect(MainsVoltageSchema.safeParse('230').success).toBe(true);
     expect(MainsVoltageSchema.safeParse('invalid').success).toBe(false);
     expect(parseOptionalMainsVoltageEnv('400')).toBe(400);

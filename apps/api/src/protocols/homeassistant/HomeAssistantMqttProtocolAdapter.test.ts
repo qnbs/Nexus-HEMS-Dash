@@ -256,6 +256,35 @@ describe('HomeAssistantMqttProtocolAdapter', () => {
     await cmdAdapter.disconnect();
   });
 
+  it('rejects SET_HEAT_PUMP_MODE via adapter when climate entity is configured', async () => {
+    const cmdAdapter = new HomeAssistantMqttProtocolAdapter({
+      ...testConfig,
+      heatPumpModeEntityId: 'climate.heat_pump',
+    });
+    await cmdAdapter.connect();
+
+    const result = await cmdAdapter.sendCommand({ type: 'SET_HEAT_PUMP_MODE', value: 2 });
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('domain "climate" is unsupported');
+    expect(mockClientInstance.publish).not.toHaveBeenCalledWith(
+      'homeassistant/climate/set_hvac_mode',
+      expect.any(String),
+      expect.anything(),
+      expect.any(Function),
+    );
+
+    await cmdAdapter.disconnect();
+  });
+
+  it('createHomeAssistantMqttAdapterFromEnv ignores invalid heat pump entity domain', () => {
+    const adapter = createHomeAssistantMqttAdapterFromEnv({
+      HA_MQTT_BROKER_URL: 'mqtt://localhost:1883',
+      HA_HEAT_PUMP_MODE_ENTITY: 'climate.heat_pump',
+    });
+    expect(adapter).not.toBeNull();
+    expect(adapter?.supportsCommand('SET_HEAT_PUMP_MODE')).toBe(true);
+  });
+
   it('createHomeAssistantMqttAdapterFromEnv passes wallbox and heat-pump env vars', () => {
     const adapter = createHomeAssistantMqttAdapterFromEnv({
       HA_MQTT_BROKER_URL: 'mqtt://localhost:1883',
