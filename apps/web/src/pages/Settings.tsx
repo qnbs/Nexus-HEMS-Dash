@@ -1,20 +1,4 @@
-import {
-  Bell,
-  Cable,
-  Check,
-  Cpu,
-  Database,
-  Download,
-  FileKey,
-  Gauge,
-  Palette,
-  Server,
-  Settings as SettingsIcon,
-  Shield,
-  Sparkles,
-  Upload,
-  Zap,
-} from 'lucide-react';
+import { Check, Download, Settings as SettingsIcon, Upload } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -22,10 +6,11 @@ import { useSearchParams } from 'react-router-dom';
 import { ConfirmDialog, useConfirmDialog } from '../components/ConfirmDialog';
 import { ReadOnlySettingsBanner } from '../components/settings/ReadOnlySettingsBanner';
 import { type SettingsTab, SettingsTabPanels } from '../components/settings/SettingsTabPanels';
+import { buildSettingsTabs } from '../components/settings/settings-tab-definitions';
 import { triggerSettingsExport, triggerSettingsImport } from '../lib/settings-transfer';
 import { useAppStoreShallow } from '../store';
 
-export function Settings() {
+export const Settings = () => {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const confirm = useConfirmDialog();
@@ -72,39 +57,7 @@ export function Settings() {
     setSearchParams(tab === 'appearance' ? {} : { tab }, { replace: true });
   };
 
-  const tabs: { key: SettingsTab; icon: React.ReactNode; label: string }[] = [
-    {
-      key: 'appearance',
-      icon: <Palette size={18} />,
-      label: t('settings.appearance', 'Appearance'),
-    },
-    { key: 'system', icon: <Server size={18} />, label: t('settings.system') },
-    { key: 'energy', icon: <Zap size={18} />, label: t('settings.energyShort', 'Energy') },
-    {
-      key: 'controllers',
-      icon: <Cpu size={18} />,
-      label: t('settings.controllersTab', 'Controllers'),
-    },
-    {
-      key: 'adapters',
-      icon: <Cable size={18} />,
-      label: t('adapterConfig.tabLabel', 'Adapters'),
-    },
-    { key: 'security', icon: <Shield size={18} />, label: t('settings.security') },
-    {
-      key: 'certificates',
-      icon: <FileKey size={18} />,
-      label: t('settings.certificatesTab', 'EEBUS Certs'),
-    },
-    { key: 'storage', icon: <Database size={18} />, label: t('settings.storageShort', 'Storage') },
-    {
-      key: 'notifications',
-      icon: <Bell size={18} />,
-      label: t('settings.notifications', 'Notifications'),
-    },
-    { key: 'advanced', icon: <Gauge size={18} />, label: t('settings.advanced', 'Advanced') },
-    { key: 'ai', icon: <Sparkles size={18} />, label: t('settings.aiTab', 'AI Providers') },
-  ];
+  const tabs = buildSettingsTabs(t);
 
   return (
     <motion.div
@@ -224,4 +177,4 @@ export function Settings() {
       <ConfirmDialog {...confirm.dialogProps} />
     </motion.div>
   );
-}
+};

@@ -46,15 +46,10 @@ import { PageHeader } from '../components/layout/PageHeader';
 import { PredictiveForecast } from '../components/PredictiveForecast';
 import { ChoiceCardGroup } from '../components/ui/ChoiceCardGroup';
 import { PageCrossLinks } from '../components/ui/PageCrossLinks';
-import {
-  generateEnergyBalance,
-  generateMonthlyComparison,
-  isPeakElectricityHour,
-  isSolarPeakHour,
-} from '../lib/analytics-chart-data';
+import { generateEnergyBalance, generateMonthlyComparison } from '../lib/analytics-chart-data';
+import { computeAnalyticsDashboardMetrics } from '../lib/analytics-derived-metrics';
 import { getUbaFactor } from '../lib/co2-report';
 import type { EnergySnapshot } from '../lib/db';
-import { calculateCo2Savings } from '../lib/format';
 import type { ForecastResult } from '../lib/ml-forecast';
 import { getForecastableMetrics, runForecast } from '../lib/ml-forecast';
 import { useAppStoreShallow } from '../store';
@@ -67,76 +62,33 @@ import { useAppStoreShallow } from '../store';
  *   so this page suppresses its own to avoid a duplicate <h1> and duplicate
  *   "related sections" panels. Defaults to false for standalone use.
  */
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: multi-section analytics dashboard with derived KPIs
 function AnalyticsPageComponent({ embedded = false }: { embedded?: boolean }) {
   const { t } = useTranslation();
   const energyData = useAppStoreShallow((s) => s.energyData);
+  const metrics = computeAnalyticsDashboardMetrics(energyData, t);
+  const currentYear = new Date().getFullYear();
+  const ubaFactor = getUbaFactor(currentYear);
+  const {
+    selfRate,
+    autarky,
+    co2Total,
+    savingsToday,
+    feedInRevenue,
+    gridCost,
+    netCost,
+    costAllocation,
+    monthlyCo2,
+    isPeakHour,
+    isSolarPeak,
+    systemEfficiency,
+    inverterEfficiency,
+    batteryRoundTrip,
+  } = metrics;
 
   // ─── ML Forecast state ──────────────────────────────────────────────
   const [selectedMetric, setSelectedMetric] = useState<string>('pvPower');
   const [forecastResult, setForecastResult] = useState<ForecastResult | null>(null);
   const [forecastLoading, setForecastLoading] = useState(false);
-
-  // ─── CO₂ Report state ──────────────────────────────────────────────
-  const currentYear = new Date().getFullYear();
-  const ubaFactor = getUbaFactor(currentYear);
-
-  // ─── Computed metrics ──────────────────────────────────────────────
-  const selfConsumed = Math.min(
-    energyData.pvPower,
-    energyData.houseLoad + energyData.heatPumpPower + energyData.evPower,
-  );
-  const selfRate = energyData.pvPower > 0 ? (selfConsumed / energyData.pvPower) * 100 : 0;
-  const autarky =
-    energyData.houseLoad > 0 ? Math.min(100, (selfConsumed / energyData.houseLoad) * 100) : 0;
-  const co2Total = calculateCo2Savings(energyData.pvYieldToday);
-  const savingsToday = energyData.pvYieldToday * energyData.priceCurrent;
-  const gridImport = Math.max(0, energyData.gridPower);
-  const gridExport = Math.max(0, -energyData.gridPower);
-  const feedInRevenue = (gridExport / 1000) * 0.0811;
-  const gridCost = (gridImport / 1000) * energyData.priceCurrent;
-  const netCost = gridCost - feedInRevenue;
-
-  // ─── Cost allocation donut ──────────────────────────────────────────
-  const costAllocation = (() => {
-    const selfSavings = (selfConsumed / 1000) * energyData.priceCurrent;
-    return [
-      {
-        name: t('analytics.selfConsumptionSavings'),
-        value: Math.round(selfSavings * 100),
-        color: 'var(--chart-1)',
-      },
-      {
-        name: t('analytics.gridCostLabel'),
-        value: Math.round(gridCost * 100),
-        color: 'var(--chart-3)',
-      },
-      {
-        name: t('analytics.feedInRevenue'),
-        value: Math.round(feedInRevenue * 100),
-        color: 'var(--chart-6)',
-      },
-    ].filter((d) => d.value > 0);
-  })();
-
-  // ─── Energy balance chart data ──────────────────────────────────────
-  const balanceData = generateEnergyBalance(energyData.pvPower, energyData.houseLoad);
-
-  // ─── Monthly comparison data ────────────────────────────────────────
-  const monthlyData = generateMonthlyComparison(energyData.pvYieldToday);
-
-  // ─── Peak / off-peak hours ──────────────────────────────────────────
-  const hour = new Date().getHours();
-  const isPeakHour = isPeakElectricityHour(hour);
-  const isSolarPeak = isSolarPeakHour(hour);
-
-  // ─── Efficiency metrics ─────────────────────────────────────────────
-  const systemEfficiency =
-    energyData.pvPower > 0
-      ? Math.min(99, ((selfConsumed + gridExport) / energyData.pvPower) * 100)
-      : 0;
-  const inverterEfficiency = energyData.pvPower > 0 ? 96.2 + (energyData.pvPower % 100) / 100 : 0;
-  const batteryRoundTrip = energyData.batterySoC > 10 ? 92.5 + (energyData.batterySoC % 10) / 5 : 0;
 
   // ─── ML Forecast runner ──────────────────────────────────────────────
   const handleRunForecast = () => {
@@ -167,31 +119,8 @@ function AnalyticsPageComponent({ embedded = false }: { embedded?: boolean }) {
     setForecastLoading(false);
   };
 
-  // ─── Monthly CO₂ balance (demo) ─────────────────────────────────────
-  const monthlyCo2 = (() => {
-    const pvKwh = energyData.pvYieldToday * 30; // extrapolate
-    const selfConsumedKwh = pvKwh * (selfRate / 100);
-    const exportedKwh = pvKwh - selfConsumedKwh;
-    const importedKwh = (gridImport / 1000) * 24 * 30;
-    const factorKg = ubaFactor / 1000;
-
-    const gridEmissions = importedKwh * factorKg;
-    const selfSavings = selfConsumedKwh * factorKg;
-    const feedInSavings = exportedKwh * factorKg;
-    const netBalance = gridEmissions - selfSavings - feedInSavings;
-    const totalSaved = selfSavings + feedInSavings;
-
-    return {
-      gridEmissions,
-      selfSavings,
-      feedInSavings,
-      netBalance,
-      totalSaved,
-      treesEquiv: totalSaved / (22 / 12),
-      carKmEquiv: totalSaved / 0.12,
-      flightsEquiv: totalSaved / 250,
-    };
-  })();
+  const balanceData = generateEnergyBalance(energyData.pvPower, energyData.houseLoad);
+  const monthlyData = generateMonthlyComparison(energyData.pvYieldToday);
 
   // ─── 8 KPI stat cards ──────────────────────────────────────────────
   const kpiCards = [

@@ -7,11 +7,13 @@ import type { HAConnectionMode } from '../../core/adapters/contrib/homeassistant
 import { saveHomeAssistantSettings } from '../../core/homeassistant-settings-save';
 import { useEnergyStore } from '../../core/useEnergyStore';
 import { isReadOnlyModeActive } from '../../lib/adapter-mode';
+import { ignorePromiseRejection } from '../../lib/ignore-promise-rejection';
 import { useAppStoreShallow } from '../../store';
 import { ChoiceCardGroup } from '../ui/ChoiceCardGroup';
+import { HaWsApiFields, MqttBrokerFields } from './HaConnectionFields';
 import { ToggleSwitch } from './ToggleSwitch';
 
-export function HomeAssistantSettingsSection() {
+export const HomeAssistantSettingsSection = () => {
   const { t } = useTranslation();
   const isReadOnly = isReadOnlyModeActive();
   const haEnabled = useEnergyStore((s) => s.adapters['homeassistant-mqtt']?.enabled ?? false);
@@ -30,9 +32,6 @@ export function HomeAssistantSettingsSection() {
   const [mqttPassword, setMqttPassword] = useState('');
   const [enabled, setEnabled] = useState(haEnabled);
   const [saving, setSaving] = useState(false);
-
-  const inputClass =
-    'w-full rounded-xl border border-(--color-border) bg-(--color-surface) px-4 py-2.5 text-(--color-text) focus:border-(--color-primary)/70 focus:outline-none focus:ring-2 focus:ring-(--color-primary)/20';
 
   const sectionClass = 'glass-panel-strong space-y-6 rounded-2xl p-6';
   const sectionHeaderClass =
@@ -99,95 +98,27 @@ export function HomeAssistantSettingsSection() {
       />
 
       {haMode === 'ha-ws-api' ? (
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-          <div className="space-y-2 md:col-span-2">
-            <label htmlFor="settings-ha-base-url" className="font-medium text-sm">
-              {t('settings.haBaseUrl')}
-            </label>
-            <input
-              id="settings-ha-base-url"
-              type="url"
-              value={haBaseUrl}
-              onChange={(e) => setHaBaseUrl(e.target.value)}
-              className={inputClass}
-              placeholder="http://homeassistant.local:8123"
-              disabled={isReadOnly}
-            />
-          </div>
-          <div className="space-y-2 md:col-span-2">
-            <label htmlFor="settings-ha-token" className="font-medium text-sm">
-              {t('settings.haToken')}
-            </label>
-            <input
-              id="settings-ha-token"
-              type="password"
-              value={haToken}
-              onChange={(e) => setHaToken(e.target.value)}
-              className={inputClass}
-              autoComplete="off"
-              disabled={isReadOnly}
-            />
-            <p className="text-(--color-muted) text-xs">{t('settings.haTokenHint')}</p>
-          </div>
-        </div>
+        <HaWsApiFields
+          haBaseUrl={haBaseUrl}
+          haToken={haToken}
+          isReadOnly={isReadOnly}
+          onBaseUrlChange={setHaBaseUrl}
+          onTokenChange={setHaToken}
+          t={t}
+        />
       ) : (
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-          <div className="space-y-2">
-            <label htmlFor="settings-mqtt-broker-host" className="font-medium text-sm">
-              {t('mqtt.brokerUrl')}
-            </label>
-            <input
-              id="settings-mqtt-broker-host"
-              type="text"
-              value={mqttHost}
-              onChange={(e) => setMqttHost(e.target.value)}
-              className={inputClass}
-              placeholder="192.168.1.50"
-              disabled={isReadOnly}
-            />
-          </div>
-          <div className="space-y-2">
-            <label htmlFor="settings-mqtt-broker-port" className="font-medium text-sm">
-              {t('mqtt.port')}
-            </label>
-            <input
-              id="settings-mqtt-broker-port"
-              type="number"
-              value={mqttPort}
-              onChange={(e) => setMqttPort(Number(e.target.value))}
-              className={inputClass}
-              min={1}
-              max={65535}
-              disabled={isReadOnly}
-            />
-          </div>
-          <div className="space-y-2">
-            <label htmlFor="settings-mqtt-username" className="font-medium text-sm">
-              {t('mqtt.username')}
-            </label>
-            <input
-              id="settings-mqtt-username"
-              type="text"
-              value={mqttUser}
-              onChange={(e) => setMqttUser(e.target.value)}
-              className={inputClass}
-              disabled={isReadOnly}
-            />
-          </div>
-          <div className="space-y-2">
-            <label htmlFor="settings-mqtt-password" className="font-medium text-sm">
-              {t('mqtt.password')}
-            </label>
-            <input
-              id="settings-mqtt-password"
-              type="password"
-              value={mqttPassword}
-              onChange={(e) => setMqttPassword(e.target.value)}
-              className={inputClass}
-              disabled={isReadOnly}
-            />
-          </div>
-        </div>
+        <MqttBrokerFields
+          mqttHost={mqttHost}
+          mqttPort={mqttPort}
+          mqttUser={mqttUser}
+          mqttPassword={mqttPassword}
+          isReadOnly={isReadOnly}
+          onHostChange={setMqttHost}
+          onPortChange={setMqttPort}
+          onUserChange={setMqttUser}
+          onPasswordChange={setMqttPassword}
+          t={t}
+        />
       )}
 
       <div className="flex flex-wrap items-center justify-between gap-4 border-(--color-border) border-t pt-4">
@@ -208,7 +139,7 @@ export function HomeAssistantSettingsSection() {
         <motion.button
           type="button"
           onClick={() => {
-            handleSave().catch(() => {});
+            handleSave().catch(ignorePromiseRejection);
           }}
           disabled={isReadOnly || saving}
           className="focus-ring flex items-center gap-2 rounded-xl bg-(--color-text) px-4 py-2 font-medium text-(--color-background) text-sm disabled:cursor-not-allowed disabled:opacity-50"
@@ -221,4 +152,4 @@ export function HomeAssistantSettingsSection() {
       </div>
     </section>
   );
-}
+};

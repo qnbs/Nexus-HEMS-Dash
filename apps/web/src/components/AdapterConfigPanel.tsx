@@ -39,6 +39,7 @@ import { toast } from 'sonner';
 import { saveAdapterPanelEntry } from '../core/adapter-config-panel-save';
 import { listRegisteredAdapters, loadAllContribAdapters } from '../core/adapters/adapter-registry';
 import { isReadOnlyModeActive } from '../lib/adapter-mode';
+import { ignorePromiseRejection } from '../lib/ignore-promise-rejection';
 import { ReadOnlySettingsBanner } from './settings/ReadOnlySettingsBanner';
 import { Disclosure } from './ui/Disclosure';
 import { SelectField } from './ui/SelectField';
@@ -1339,7 +1340,7 @@ export function AdapterConfigPanel() {
                     <motion.button
                       type="button"
                       onClick={() => {
-                        handleSave(adapter.id).catch(() => {});
+                        handleSave(adapter.id).catch(ignorePromiseRejection);
                       }}
                       disabled={isReadOnly || savingId === adapter.id}
                       className="flex items-center gap-2 rounded-xl bg-(--color-text) px-4 py-2 font-medium text-(--color-background) text-sm transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"

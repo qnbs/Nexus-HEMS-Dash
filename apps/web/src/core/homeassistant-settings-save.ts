@@ -3,6 +3,7 @@
  */
 
 import { canConnectHardwareAdapter } from '../lib/adapter-mode';
+import { ignorePromiseRejection } from '../lib/ignore-promise-rejection';
 import { saveAdapterCredentials } from '../lib/secure-store';
 import { useAppStore } from '../store';
 import { loadContribAdapter } from './adapters/adapter-registry';
@@ -145,7 +146,7 @@ export async function saveHomeAssistantSettings(
   if (input.enabled && canConnectHardwareAdapter(true)) {
     const entry = useEnergyStoreBase.getState().adapters[HA_ADAPTER_ID];
     if (entry?.adapter) {
-      entry.adapter.connect().catch(() => {});
+      entry.adapter.connect().catch(ignorePromiseRejection);
     }
   }
 

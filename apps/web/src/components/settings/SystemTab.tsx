@@ -3,12 +3,14 @@ import { useTranslation } from 'react-i18next';
 import { useShallow } from 'zustand/react/shallow';
 import { useEnergyStore } from '../../core/useEnergyStore';
 import { useAppStoreShallow } from '../../store';
+import { ConnectionStatusCards } from './ConnectionStatusCards';
+import { GatewayTypeSelector } from './GatewayTypeSelector';
 import { HomeAssistantSettingsSection } from './HomeAssistantSettingsSection';
 import { SettingsFeatureBar } from './SettingsFeatureBar';
 import { inputClass, sectionClass, sectionHeaderClass } from './styles';
 
 /** Settings → System tab: gateway type, device IPs/ports, connection status, MQTT. */
-export function SystemTab() {
+export const SystemTab = () => {
   const { t } = useTranslation();
   const { settings, updateSettings, wsConnected } = useAppStoreShallow((s) => ({
     settings: s.settings,
@@ -37,44 +39,10 @@ export function SystemTab() {
           {t('settings.system')}
         </h2>
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-          {/* Gateway Type Selector */}
-          <div className="space-y-2 md:col-span-2">
-            <p className="font-medium text-sm">{t('settings.gatewayType')}</p>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-              {[
-                {
-                  value: 'cerbo-gx' as const,
-                  label: 'Cerbo GX',
-                  desc: t('settings.gatewayTypeCerboHint'),
-                },
-                {
-                  value: 'cerbo-gx-mk2' as const,
-                  label: 'Cerbo GX MK2',
-                  desc: t('settings.gatewayTypeMk2Hint'),
-                },
-                {
-                  value: 'raspberry-pi' as const,
-                  label: 'Raspberry Pi',
-                  desc: t('settings.gatewayTypeRpiHint'),
-                },
-              ].map((gw) => (
-                <button
-                  key={gw.value}
-                  type="button"
-                  onClick={() => updateSettings({ gatewayType: gw.value })}
-                  className={`rounded-xl border-2 p-3 text-left transition-all ${
-                    settings.gatewayType === gw.value
-                      ? 'border-(--color-primary) bg-(--color-primary)/10'
-                      : 'border-(--color-border) bg-(--color-surface) hover:border-(--color-primary)/40'
-                  }`}
-                  aria-pressed={settings.gatewayType === gw.value}
-                >
-                  <span className="font-medium text-sm">{gw.label}</span>
-                  <p className="mt-1 text-(--color-muted) text-xs">{gw.desc}</p>
-                </button>
-              ))}
-            </div>
-          </div>
+          <GatewayTypeSelector
+            value={settings.gatewayType}
+            onChange={(gatewayType) => updateSettings({ gatewayType })}
+          />
 
           <div className="space-y-2">
             <label htmlFor="settings-victron-ip" className="font-medium text-sm">
@@ -146,34 +114,15 @@ export function SystemTab() {
         </div>
       </section>
 
-      {/* Connection Status */}
       <section className={sectionClass}>
         <h2 className={sectionHeaderClass}>
           <Wifi size={20} className="text-emerald-400" />
           {t('settings.connectionStatus', 'Connection Status')}
         </h2>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          {connectionDevices.map((device) => (
-            <div
-              key={device.name}
-              className="flex items-center gap-3 rounded-xl border border-(--color-border) bg-(--color-surface) p-3"
-            >
-              <span
-                className={`h-2.5 w-2.5 rounded-full ${device.status ? 'bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.6)]' : 'bg-rose-400'}`}
-              />
-              <div>
-                <p className="font-medium text-sm">{device.name}</p>
-                <p className="text-(--color-muted) text-xs">
-                  {device.status ? t('common.connected') : t('common.disconnected')}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
+        <ConnectionStatusCards devices={connectionDevices} />
       </section>
 
-      {/* Home Assistant / MQTT */}
       <HomeAssistantSettingsSection />
     </>
   );
-}
+};

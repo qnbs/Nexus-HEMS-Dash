@@ -1,16 +1,17 @@
-import { Database, Eye, EyeOff, HardDrive, Trash2 } from 'lucide-react';
-import { motion } from 'motion/react';
+import { Database } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { clearAllData, getLocalStorageStats } from '../../lib/db';
+import { ignorePromiseRejection } from '../../lib/ignore-promise-rejection';
 import { useAppStoreShallow } from '../../store';
 import { ConfirmDialog, useConfirmDialog } from '../ConfirmDialog';
+import { InfluxTokenField } from './InfluxTokenField';
+import { LocalStorageSection } from './LocalStorageSection';
 import { SettingsFeatureBar } from './SettingsFeatureBar';
-import { StorageStatsCards } from './StorageStatsCards';
 import { inputClass, sectionClass, sectionHeaderClass } from './styles';
 
 /** Settings → Storage tab: InfluxDB connection, retention and local-storage info. */
-export function StorageTab() {
+export const StorageTab = () => {
   const { t } = useTranslation();
   const confirm = useConfirmDialog();
   const { settings, updateSettings } = useAppStoreShallow((s) => ({
@@ -31,7 +32,7 @@ export function StorageTab() {
           setSnapshots(stats.snapshots);
         }
       })
-      .catch(() => {});
+      .catch(ignorePromiseRejection);
     return () => {
       cancelled = true;
     };
@@ -74,28 +75,12 @@ export function StorageTab() {
               className={inputClass}
             />
           </div>
-          <div className="space-y-2">
-            <label htmlFor="settings-influx-token" className="font-medium text-sm">
-              {t('settings.influxToken')}
-            </label>
-            <div className="relative">
-              <input
-                id="settings-influx-token"
-                type={showInfluxToken ? 'text' : 'password'}
-                value={settings.influxToken}
-                onChange={(e) => updateSettings({ influxToken: e.target.value })}
-                className={`${inputClass} pr-10`}
-              />
-              <button
-                type="button"
-                onClick={() => setShowInfluxToken((v) => !v)}
-                className="absolute top-1/2 right-3 -translate-y-1/2 p-1 text-(--color-muted) hover:text-(--color-text)"
-                aria-label={showInfluxToken ? t('settings.hideToken') : t('settings.showToken')}
-              >
-                {showInfluxToken ? <EyeOff size={16} /> : <Eye size={16} />}
-              </button>
-            </div>
-          </div>
+          <InfluxTokenField
+            value={settings.influxToken}
+            showToken={showInfluxToken}
+            onToggleShow={() => setShowInfluxToken((v) => !v)}
+            onChange={(value) => updateSettings({ influxToken: value })}
+          />
           <div className="space-y-2">
             <label htmlFor="settings-history-days" className="font-medium text-sm">
               {t('settings.historyDays')}
@@ -114,28 +99,14 @@ export function StorageTab() {
         </div>
       </section>
 
-      <section className={sectionClass}>
-        <h2 className={sectionHeaderClass}>
-          <HardDrive size={20} className="text-cyan-400" />
-          {t('settings.localStorage', 'Local Storage')}
-        </h2>
-        <StorageStatsCards
-          usageMb={usageMb}
-          snapshots={snapshots}
-          historyDays={settings.historyDays}
-        />
-        <motion.button
-          type="button"
-          onClick={handleClearCache}
-          className="flex items-center gap-2 text-rose-400 text-sm transition-colors hover:text-rose-300"
-          whileHover={{ x: 4 }}
-        >
-          <Trash2 size={16} />
-          {t('settings.clearCache', 'Clear local cache')}
-        </motion.button>
-      </section>
+      <LocalStorageSection
+        usageMb={usageMb}
+        snapshots={snapshots}
+        historyDays={settings.historyDays}
+        onClearCache={handleClearCache}
+      />
 
       <ConfirmDialog {...confirm.dialogProps} />
     </>
   );
-}
+};

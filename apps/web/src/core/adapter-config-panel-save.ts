@@ -2,6 +2,7 @@
 
 import type { z } from 'zod';
 import { canConnectHardwareAdapter } from '../lib/adapter-mode';
+import { ignorePromiseRejection } from '../lib/ignore-promise-rejection';
 import {
   type AdapterCredentialId,
   type AdapterCredentials,
@@ -224,7 +225,7 @@ export async function saveAdapterPanelEntry(
   if (entry.enabled && canConnectHardwareAdapter(true)) {
     const updated = useEnergyStoreBase.getState().adapters[registryId];
     if (updated?.adapter) {
-      updated.adapter.connect().catch(() => {});
+      updated.adapter.connect().catch(ignorePromiseRejection);
     }
   }
 

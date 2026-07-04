@@ -2,28 +2,22 @@ import {
   Activity,
   BarChart3,
   Battery,
-  BookOpen,
-  Cable,
   Car,
   CheckCircle2,
   Clock,
   Cpu,
   Download,
   ExternalLink,
-  FileText,
   Gauge,
   Globe,
   HardDrive,
   HelpCircle,
   Home,
   Info,
-  Keyboard,
   Lightbulb,
   Map as MapIcon,
-  MessageCircleQuestion,
   Monitor,
   Network,
-  RefreshCw,
   Search,
   Server,
   Shield,
@@ -40,28 +34,14 @@ import { Link, useSearchParams } from 'react-router-dom';
 import packageJson from '../../package.json';
 import { BrandGithubIcon } from '../components/icons/BrandGithubIcon';
 import { Disclosure } from '../components/ui/Disclosure';
+import {
+  buildHelpSearchEntries,
+  filterHelpSearchResults,
+  type HelpTab,
+  VALID_HELP_TABS,
+} from '../lib/help-search-entries';
+import { buildHelpTabs } from '../lib/help-tab-definitions';
 import { createHelpTabKeyHandler } from '../lib/help-tab-keyboard';
-
-type HelpTab =
-  | 'getting-started'
-  | 'integration'
-  | 'features'
-  | 'lexicon'
-  | 'faq'
-  | 'shortcuts'
-  | 'troubleshooting'
-  | 'about';
-
-const VALID_HELP_TABS: HelpTab[] = [
-  'getting-started',
-  'integration',
-  'features',
-  'lexicon',
-  'faq',
-  'shortcuts',
-  'troubleshooting',
-  'about',
-];
 
 function FeatureCard({
   icon,
@@ -114,7 +94,7 @@ function FeatureCard({
  *   title block to avoid a duplicate <h1>. Defaults to false so the standalone
  *   /help route keeps its header.
  */
-export function Help({ embedded = false }: { embedded?: boolean } = {}) {
+export const Help = ({ embedded = false }: { embedded?: boolean } = {}) => {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const appVersion = packageJson.version;
@@ -123,16 +103,7 @@ export function Help({ embedded = false }: { embedded?: boolean } = {}) {
     tabParam && VALID_HELP_TABS.includes(tabParam) ? tabParam : 'getting-started';
   const [searchQuery, setSearchQuery] = useState('');
 
-  const tabs: { key: HelpTab; icon: React.ReactNode; label: string }[] = [
-    { key: 'getting-started', icon: <BookOpen size={18} />, label: t('help.gettingStarted') },
-    { key: 'integration', icon: <Cable size={18} />, label: t('help.integrationGuide') },
-    { key: 'features', icon: <Lightbulb size={18} />, label: t('help.features') },
-    { key: 'lexicon', icon: <FileText size={18} />, label: t('help.glossaryTitle') },
-    { key: 'faq', icon: <MessageCircleQuestion size={18} />, label: t('help.faq') },
-    { key: 'shortcuts', icon: <Keyboard size={18} />, label: t('help.shortcuts') },
-    { key: 'troubleshooting', icon: <RefreshCw size={18} />, label: t('help.troubleshooting') },
-    { key: 'about', icon: <Info size={18} />, label: t('help.about') },
-  ];
+  const tabs = buildHelpTabs(t);
 
   const selectTab = (tab: HelpTab) => {
     setSearchParams(tab === 'getting-started' ? {} : { tab }, { replace: true });
@@ -142,46 +113,10 @@ export function Help({ embedded = false }: { embedded?: boolean } = {}) {
 
   const normalizedQuery = searchQuery.trim().toLowerCase();
 
-  const searchResults = useMemo(() => {
-    if (normalizedQuery.length < 2) return [];
-    const entries: { tab: HelpTab; title: string; body: string }[] = [
-      { tab: 'getting-started', title: t('help.quickStart'), body: t('help.welcomeIntro') },
-      { tab: 'getting-started', title: t('help.step1Title'), body: t('help.step1Desc') },
-      { tab: 'faq', title: t('help.faqWhatIs'), body: t('help.faqWhatIsAnswer') },
-      { tab: 'faq', title: t('help.faqMockMode'), body: t('help.faqMockModeAnswer') },
-      { tab: 'faq', title: t('help.faqReadOnly'), body: t('help.faqReadOnlyAnswer') },
-      { tab: 'faq', title: t('help.faqApi'), body: t('help.faqApiAnswer') },
-      { tab: 'troubleshooting', title: t('help.troubleConnection'), body: t('help.troubleConn1') },
-      {
-        tab: 'troubleshooting',
-        title: t('help.troubleReadOnly'),
-        body: t('help.troubleReadOnly1'),
-      },
-      {
-        tab: 'features',
-        title: t('help.featureHardwareRegistry'),
-        body: t('help.featureHardwareRegistryDesc'),
-      },
-      {
-        tab: 'features',
-        title: t('help.featureMonitoring'),
-        body: t('help.featureMonitoringDesc'),
-      },
-      {
-        tab: 'integration',
-        title: t('help.integrationGuideTitle'),
-        body: t('help.integrationGuideIntro'),
-      },
-      { tab: 'about', title: t('help.aboutTitle'), body: t('help.aboutDesc') },
-    ];
-    return entries
-      .filter(
-        (e) =>
-          e.title.toLowerCase().includes(normalizedQuery) ||
-          e.body.toLowerCase().includes(normalizedQuery),
-      )
-      .slice(0, 8);
-  }, [normalizedQuery, t]);
+  const searchResults = useMemo(
+    () => filterHelpSearchResults(buildHelpSearchEntries(t), normalizedQuery),
+    [normalizedQuery, t],
+  );
 
   return (
     <motion.div
@@ -1439,4 +1374,4 @@ export function Help({ embedded = false }: { embedded?: boolean } = {}) {
       </div>
     </motion.div>
   );
-}
+};
