@@ -5,7 +5,12 @@
  * reject invalid inputs (type safety at runtime boundary) and accept valid ones.
  */
 
-import { type EnergyData, EnergyDataSchema, WSCommandSchema } from '@nexus-hems/shared-types';
+import {
+  type EnergyData,
+  EnergyDataSchema,
+  SET_EV_POWER_ERROR,
+  WSCommandSchema,
+} from '@nexus-hems/shared-types';
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 
@@ -200,6 +205,23 @@ describe('WSCommandSchema — property-based', () => {
 
   it('rejects SET_EV_CURRENT above 80 A', () => {
     expect(WSCommandSchema.safeParse({ type: 'SET_EV_CURRENT', value: 81 }).success).toBe(false);
+  });
+
+  it('rejects SET_EV_POWER above 22 kW', () => {
+    const result = WSCommandSchema.safeParse({ type: 'SET_EV_POWER', value: 22_001 });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues.some((issue) => issue.message === SET_EV_POWER_ERROR)).toBe(true);
+    }
+  });
+
+  it('rejects NaN for actuator numeric commands', () => {
+    expect(
+      WSCommandSchema.safeParse({ type: 'SET_BATTERY_POWER', value: Number.NaN }).success,
+    ).toBe(false);
+    expect(
+      WSCommandSchema.safeParse({ type: 'KNX_SET_TEMPERATURE', value: Number.NaN }).success,
+    ).toBe(false);
   });
 
   it('rejects missing type field', () => {

@@ -252,7 +252,7 @@ function validateNonNegativePower(
   maxW: number,
   reject: WsRejectFn,
 ): void {
-  if (typeof value !== 'number') {
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
     reject(`${label} requires a numeric value`);
     return;
   }
@@ -268,6 +268,10 @@ function refineWsCommandValue(
 ): void {
   switch (type) {
     case 'SET_EV_POWER':
+      if (!EvPowerValueSchema.safeParse(value).success) {
+        reject(SET_EV_POWER_ERROR);
+      }
+      return;
     case 'SET_V2X_DISCHARGE':
     case 'SET_GRID_LIMIT':
       validateNonNegativePower(type, value, MAX_POWER_W, reject);
@@ -281,7 +285,7 @@ function refineWsCommandValue(
       validateNonNegativePower('SET_HEAT_PUMP_POWER', value, MAX_HP_POWER_W, reject);
       return;
     case 'SET_BATTERY_POWER':
-      if (typeof value !== 'number') {
+      if (typeof value !== 'number' || !Number.isFinite(value)) {
         reject('SET_BATTERY_POWER requires a numeric value');
         return;
       }
@@ -300,7 +304,7 @@ function refineWsCommandValue(
       }
       return;
     case 'KNX_SET_TEMPERATURE':
-      if (typeof value !== 'number' || value < 5 || value > 35) {
+      if (typeof value !== 'number' || !Number.isFinite(value) || value < 5 || value > 35) {
         reject('KNX_SET_TEMPERATURE requires a temperature between 5 and 35');
       }
       return;

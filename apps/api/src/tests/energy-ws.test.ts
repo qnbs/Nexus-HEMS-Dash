@@ -49,6 +49,16 @@ describe('validateWSCommand', () => {
     expect(result.valid).toBe(false);
   });
 
+  it('rejects SET_EV_POWER above 22 kW', () => {
+    const result = validateWSCommand({ type: 'SET_EV_POWER', value: 22_001 });
+    expect(result.valid).toBe(false);
+  });
+
+  it('rejects NaN SET_BATTERY_POWER and KNX_SET_TEMPERATURE', () => {
+    expect(validateWSCommand({ type: 'SET_BATTERY_POWER', value: Number.NaN }).valid).toBe(false);
+    expect(validateWSCommand({ type: 'KNX_SET_TEMPERATURE', value: Number.NaN }).valid).toBe(false);
+  });
+
   it('rejects commands with invalid shape', () => {
     const result = validateWSCommand({ type: 123, value: 'nope' });
     expect(result.valid).toBe(false);

@@ -7,11 +7,22 @@ KEEP="${1:-10}"
 ENV="${2:-github-pages}"
 REPO="${REPO:?REPO env var required (owner/repo)}"
 
-mapfile -t ids < <(
+ids_output=""
+if ! ids_output="$(
   gh api --paginate \
     "repos/${REPO}/deployments?environment=${ENV}&per_page=100" \
     --jq '.[].id' | sort -rn
-)
+)"; then
+  echo "::error::Failed to list '${ENV}' deployments for ${REPO}" >&2
+  exit 1
+fi
+
+if [ -z "$ids_output" ]; then
+  ids=()
+else
+  mapfile -t ids <<< "$ids_output"
+fi
+
 echo "Found ${#ids[@]} '${ENV}' deployments; keeping newest ${KEEP}."
 if [ "${#ids[@]}" -le "${KEEP}" ]; then
   echo "Nothing to prune."
