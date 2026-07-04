@@ -1,5 +1,41 @@
 import type { Page } from '@playwright/test';
 
+/** Default `/api/health` payload for Playwright route mocks. */
+export const MOCK_HEALTH_BODY = {
+  status: 'healthy',
+  mode: 'mock' as const,
+  readOnly: false,
+  adapters: [] as string[],
+};
+
+/**
+ * Mock `GET /api/health` for safety/mode E2E scenarios.
+ *
+ * @returns Promise that resolves when the route handler is registered.
+ */
+export async function mockBackendHealth(
+  page: Page,
+  overrides: Partial<typeof MOCK_HEALTH_BODY> = {},
+): Promise<void> {
+  const body = { ...MOCK_HEALTH_BODY, ...overrides };
+  await page.route('**/api/health', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(body),
+    });
+  });
+}
+
+/**
+ * Navigate and wait until the health poll has completed.
+ */
+export async function gotoAndWaitForHealth(page: Page, path = './'): Promise<void> {
+  const healthResponse = page.waitForResponse((res) => res.url().includes('/api/health'));
+  await page.goto(path, { waitUntil: 'domcontentloaded' });
+  await healthResponse;
+}
+
 /**
  * Shared E2E setup: seed the persisted store in localStorage.
  * Call this inside addInitScript() in every test's beforeEach.

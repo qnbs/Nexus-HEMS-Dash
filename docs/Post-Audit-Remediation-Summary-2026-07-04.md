@@ -30,7 +30,7 @@ The project is in **strong shape** for a safety-conscious HEMS dashboard: mock-b
 
 | Adapter | Frontend | Backend `IProtocolAdapter` | Status |
 |---------|----------|------------------------------|--------|
-| Home Assistant MQTT | ✅ contrib | ❌ missing | ⏳ **Planned** — largest parity gap |
+| Home Assistant MQTT | ✅ contrib | ⚠️ **Phase 1 MVP** (`HomeAssistantProtocolAdapter`) | ha-ws-api read-only telemetry shipped; Zigbee2MQTT/Matter still ⏳ |
 | Zigbee2MQTT | ✅ contrib | ❌ missing | ⏳ |
 | Matter/Thread | ✅ contrib | ❌ missing | ⏳ |
 | OpenEMS | ✅ | ⚠️ telemetry-only (6 channels, no writes) | Partial |
@@ -49,9 +49,9 @@ The project is in **strong shape** for a safety-conscious HEMS dashboard: mock-b
 
 **Missing (per FEATURE_STATUS + audit):** auth flows, command-safety rejection paths, adapter live/mock switching, WebSocket handling, read-only enforcement.
 
-**Remediation started:** `apps/web/tests/e2e/safety-indicators.spec.ts` — mocks `/api/health` for live/mock/read-only banners.
+**Remediation (phase 2, post-PR #261):** `read-only-commands.spec.ts`, `adapter-mode-indicators.spec.ts`, `auth-jwt.spec.ts`.
 
-**Plan:** Add `command-safety.spec.ts`, `auth-scopes.spec.ts`, `adapter-mode.spec.ts` in next sprint.
+**Plan:** Add WebSocket live-integration spec; Zigbee2MQTT backend bridge in next phase.
 
 ---
 
