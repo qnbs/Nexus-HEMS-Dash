@@ -713,6 +713,14 @@ Scope table said "not fully integrated"; P3 section said "Fully Implemented". Co
 
 ---
 
+### LOW-11 — ESS Controller Uses Hardcoded Battery Power Limits
+**File:** `apps/web/src/core/energy-controllers.ts` (line ~107)
+**Status:** ⏳ Open
+
+`maxChargePower` / `maxDischargePower` are fixed at 10 kW with a `TODO: from device registry`. Should read per-device limits from the hardware registry once MED-19 wiring exposes them to controllers.
+
+---
+
 ## July 2026 Audit Delta — New Items (2026-07-02)
 
 New items from the 2026-07-02 audit delta (`docs/Audit-Report-2026-07-02.md`). These correct a

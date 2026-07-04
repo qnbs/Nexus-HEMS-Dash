@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import { createElement } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -23,7 +23,9 @@ describe('Query Client Module', () => {
 
   it('QueryProvider renders children', async () => {
     const { QueryProvider } = await import('../lib/query-client');
-    render(createElement(QueryProvider, null, createElement('span', null, 'query-child')));
+    await act(async () => {
+      render(createElement(QueryProvider, null, createElement('span', null, 'query-child')));
+    });
     expect(screen.getByText('query-child')).toBeInTheDocument();
   });
 });
