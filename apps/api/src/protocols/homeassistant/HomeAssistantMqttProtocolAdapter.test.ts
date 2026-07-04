@@ -264,25 +264,51 @@ describe('HomeAssistantMqttProtocolAdapter', () => {
     await cmdAdapter.connect();
 
     const result = await cmdAdapter.sendCommand({ type: 'SET_HEAT_PUMP_MODE', value: 2 });
-    expect(result.success).toBe(false);
-    expect(result.error).toContain('domain "climate" is unsupported');
-    expect(mockClientInstance.publish).not.toHaveBeenCalledWith(
-      'homeassistant/climate/set_hvac_mode',
-      expect.any(String),
-      expect.anything(),
-      expect.any(Function),
-    );
+    expect(result).toMatchObject({
+      handled: true,
+      success: false,
+      error: expect.stringContaining('full domain.entity_id'),
+    });
+    expect(mockClientInstance.publish).not.toHaveBeenCalled();
 
     await cmdAdapter.disconnect();
   });
 
-  it('createHomeAssistantMqttAdapterFromEnv ignores invalid heat pump entity domain', () => {
+  it('rejects SET_HEAT_PUMP_MODE via adapter for bare domain without object_id', async () => {
+    const cmdAdapter = new HomeAssistantMqttProtocolAdapter({
+      ...testConfig,
+      heatPumpModeEntityId: 'number',
+    });
+    await cmdAdapter.connect();
+
+    const result = await cmdAdapter.sendCommand({ type: 'SET_HEAT_PUMP_MODE', value: 2 });
+    expect(result).toMatchObject({
+      handled: true,
+      success: false,
+      error: expect.stringContaining('full domain.entity_id'),
+    });
+    expect(mockClientInstance.publish).not.toHaveBeenCalled();
+
+    await cmdAdapter.disconnect();
+  });
+
+  it('createHomeAssistantMqttAdapterFromEnv ignores invalid heat pump entity domain', async () => {
     const adapter = createHomeAssistantMqttAdapterFromEnv({
       HA_MQTT_BROKER_URL: 'mqtt://localhost:1883',
       HA_HEAT_PUMP_MODE_ENTITY: 'climate.heat_pump',
     });
     expect(adapter).not.toBeNull();
     expect(adapter?.supportsCommand('SET_HEAT_PUMP_MODE')).toBe(true);
+
+    await adapter!.connect();
+    const result = await adapter!.sendCommand({ type: 'SET_HEAT_PUMP_MODE', value: 2 });
+    expect(result).toMatchObject({
+      handled: true,
+      success: false,
+      error: 'HA_HEAT_PUMP_MODE_ENTITY not configured',
+    });
+    expect(mockClientInstance.publish).not.toHaveBeenCalled();
+    await adapter!.disconnect();
   });
 
   it('createHomeAssistantMqttAdapterFromEnv passes wallbox and heat-pump env vars', () => {
