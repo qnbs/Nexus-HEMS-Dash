@@ -107,7 +107,7 @@ describe('ProtocolCommandRouter', () => {
     expect(result).toEqual({ handled: true, success: true, adapterId: 'ocpp' });
   });
 
-  it('returns handled failure when sendCommand throws', async () => {
+  it('returns handled failure when the only handler throws', async () => {
     registerProtocolCommandHandler({
       supportsCommand: () => true,
       sendCommand: async () => {
@@ -117,6 +117,37 @@ describe('ProtocolCommandRouter', () => {
 
     const result = await dispatchProtocolCommand({ type: 'SET_EV_POWER', value: 1 });
     expect(result).toEqual({ handled: true, success: false, error: 'transport down' });
+  });
+
+  it('falls through to the next handler when sendCommand throws', async () => {
+    registerProtocolCommandHandler({
+      supportsCommand: () => true,
+      sendCommand: async () => {
+        throw new Error('boom');
+      },
+    });
+    registerProtocolCommandHandler(stubHandler('fallback', ['SET_EV_POWER'], { success: true }));
+
+    const result = await dispatchProtocolCommand({ type: 'SET_EV_POWER', value: 5000 });
+    expect(result).toEqual({ handled: true, success: true, adapterId: 'fallback' });
+  });
+
+  it('returns the last handler error when all supporting handlers throw', async () => {
+    registerProtocolCommandHandler({
+      supportsCommand: () => true,
+      sendCommand: async () => {
+        throw new Error('first');
+      },
+    });
+    registerProtocolCommandHandler({
+      supportsCommand: () => true,
+      sendCommand: async () => {
+        throw new Error('last');
+      },
+    });
+
+    const result = await dispatchProtocolCommand({ type: 'SET_EV_POWER', value: 1 });
+    expect(result).toEqual({ handled: true, success: false, error: 'last' });
   });
 
   it('rejects invalid command payloads before dispatching', async () => {

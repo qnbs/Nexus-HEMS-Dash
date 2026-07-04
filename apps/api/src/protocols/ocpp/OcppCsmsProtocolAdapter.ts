@@ -26,6 +26,7 @@ import {
   type UnifiedEnergyDatapoint,
 } from '@nexus-hems/shared-types';
 import { WebSocket, WebSocketServer } from 'ws';
+import { z } from 'zod';
 import { recordAdapterDlq, recordAdapterError } from '../../middleware/adapter-metrics.js';
 import { API_RUNTIME_DIR, DEAD_LETTER_QUEUE_PATH } from '../../runtime-paths.js';
 import type {
@@ -33,6 +34,7 @@ import type {
   ProtocolCommandRequest,
   ProtocolCommandResult,
 } from '../protocol-command.js';
+import { EvCurrentValueSchema, EvPowerValueSchema } from '../protocol-command.js';
 
 const OCPP_CALL = 2;
 const OCPP_CALLRESULT = 3;
@@ -50,8 +52,49 @@ interface OutboundPending {
 
 type OcppInboundMessage =
   | [typeof OCPP_CALL, string, string, Record<string, unknown>]
-  | [typeof OCPP_CALLRESULT, string, Record<string, unknown>]
-  | [typeof OCPP_CALLERROR, string, string, string, Record<string, unknown>];
+  | [typeof OCPP_CALLRESULT, string, Record<string, unknown>?]
+  | [typeof OCPP_CALLERROR, string, string, string, Record<string, unknown>?];
+
+const OcppCallResultSchema = z.tuple([
+  z.literal(OCPP_CALLRESULT),
+  z.string(),
+  z.record(z.string(), z.unknown()).optional(),
+]);
+
+const OcppCallErrorSchema = z.tuple([
+  z.literal(OCPP_CALLERROR),
+  z.string(),
+  z.string(),
+  z.string(),
+  z.record(z.string(), z.unknown()).optional(),
+]);
+
+const OcppCallSchema = z.tuple([
+  z.literal(OCPP_CALL),
+  z.string(),
+  z.string(),
+  z.record(z.string(), z.unknown()),
+]);
+
+const OcppInboundMessageSchema = z.union([
+  OcppCallResultSchema,
+  OcppCallErrorSchema,
+  OcppCallSchema,
+]);
+
+const CallResultPayloadSchema = z
+  .object({
+    status: z.string().optional(),
+  })
+  .passthrough();
+
+const TransactionInfoSchema = z.object({
+  transactionId: z.string().min(1).optional(),
+});
+
+const ChargingStationSchema = z.object({
+  serialNumber: z.string().min(1).optional(),
+});
 
 interface ChargePointSession {
   chargePointId: string;
@@ -145,8 +188,21 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
           try {
             const raw =
               typeof data === 'string' ? data : Buffer.from(data as Buffer).toString('utf8');
-            const msg = JSON.parse(raw) as OcppInboundMessage;
-            this.handleMessage(ws, msg);
+            const json: unknown = JSON.parse(raw);
+            const parsed = OcppInboundMessageSchema.safeParse(json);
+            if (!parsed.success) {
+              recordAdapterError(this.id, this.protocol, 'parse');
+              writeToDLQ({
+                ts: Date.now(),
+                source: 'ocpp-csms-ws',
+                rawPayload: raw.slice(0, 512),
+                error: 'Invalid OCPP message shape',
+                protocol: this.protocol,
+              });
+              recordAdapterDlq(this.id, this.protocol);
+              return;
+            }
+            this.handleMessage(ws, parsed.data as OcppInboundMessage);
           } catch (err) {
             recordAdapterError(this.id, this.protocol, 'parse');
             writeToDLQ({
@@ -256,13 +312,18 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
 
   private handleMessage(ws: WebSocket, msg: OcppInboundMessage): void {
     if (msg[0] === OCPP_CALLRESULT) {
-      if (!this.outboundPending.has(msg[1])) return;
-      const payload = msg[2] as { status?: string };
-      this.resolveOutboundPending(msg[1], payload.status === 'Accepted');
+      const messageId = msg[1];
+      if (!this.outboundPending.has(messageId)) return;
+      const payload = CallResultPayloadSchema.safeParse(msg[2] ?? {});
+      const accepted = payload.success && payload.data.status === 'Accepted';
+      this.resolveOutboundPending(messageId, accepted);
       return;
     }
     if (msg[0] === OCPP_CALLERROR) {
-      this.resolveOutboundPending(msg[1], false);
+      const messageId = msg[1];
+      if (typeof messageId === 'string' && this.outboundPending.has(messageId)) {
+        this.resolveOutboundPending(messageId, false);
+      }
       return;
     }
     if (msg[0] !== OCPP_CALL) return;
@@ -275,9 +336,9 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
 
     switch (action) {
       case 'BootNotification': {
-        const station = payload.chargingStation as { serialNumber?: string } | undefined;
-        if (station?.serialNumber) {
-          session.chargePointId = station.serialNumber;
+        const station = ChargingStationSchema.safeParse(payload.chargingStation);
+        if (station.success && station.data.serialNumber) {
+          session.chargePointId = station.data.serialNumber;
         }
         this.sendCallResult(ws, messageId, {
           currentTime: new Date().toISOString(),
@@ -322,9 +383,9 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
     session: ChargePointSession,
     payload: Record<string, unknown>,
   ): void {
-    const transactionInfo = payload.transactionInfo as { transactionId?: string } | undefined;
-    if (transactionInfo?.transactionId) {
-      session.transactionId = transactionInfo.transactionId;
+    const transactionInfo = TransactionInfoSchema.safeParse(payload.transactionInfo);
+    if (transactionInfo.success && transactionInfo.data.transactionId) {
+      session.transactionId = transactionInfo.data.transactionId;
     }
 
     const meterValue = payload.meterValue as
@@ -349,13 +410,21 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
       return { handled: false, success: false };
     }
 
-    const active = this.pickActiveSession();
+    const active = this.pickActiveSession(command.chargePointId);
     if (active.kind === 'none') {
       return {
         handled: true,
         success: false,
         adapterId: this.id,
         error: 'No charge point connected',
+      };
+    }
+    if (active.kind === 'not_found') {
+      return {
+        handled: true,
+        success: false,
+        adapterId: this.id,
+        error: `Charge point not found: ${active.chargePointId}`,
       };
     }
     if (active.kind === 'ambiguous') {
@@ -372,35 +441,29 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
 
     switch (command.type) {
       case 'SET_EV_POWER': {
-        if (
-          typeof command.value !== 'number' ||
-          !Number.isFinite(command.value) ||
-          command.value < 0
-        ) {
+        const power = EvPowerValueSchema.safeParse(command.value);
+        if (!power.success) {
           return {
             handled: true,
             success: false,
             adapterId: this.id,
-            error: 'SET_EV_POWER requires a non-negative number',
+            error: 'SET_EV_POWER requires a finite wattage between 0 and 22000',
           };
         }
-        acknowledged = await this.sendSetChargingProfileW(ws, command.value);
+        acknowledged = await this.sendSetChargingProfileW(ws, power.data);
         break;
       }
       case 'SET_EV_CURRENT': {
-        if (
-          typeof command.value !== 'number' ||
-          !Number.isFinite(command.value) ||
-          command.value < 0
-        ) {
+        const current = EvCurrentValueSchema.safeParse(command.value);
+        if (!current.success) {
           return {
             handled: true,
             success: false,
             adapterId: this.id,
-            error: 'SET_EV_CURRENT requires a non-negative number',
+            error: 'SET_EV_CURRENT requires a finite amp value between 0 and 32',
           };
         }
-        acknowledged = await this.sendSetChargingProfileA(ws, command.value);
+        acknowledged = await this.sendSetChargingProfileA(ws, current.data);
         break;
       }
       case 'START_CHARGING':
@@ -431,9 +494,12 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
         };
   }
 
-  private pickActiveSession():
+  private pickActiveSession(
+    chargePointId?: string,
+  ):
     | { kind: 'single'; ws: WebSocket; session: ChargePointSession }
     | { kind: 'none' }
+    | { kind: 'not_found'; chargePointId: string }
     | { kind: 'ambiguous' } {
     const open: Array<{ ws: WebSocket; session: ChargePointSession }> = [];
     for (const [ws, session] of this.sessions) {
@@ -442,6 +508,14 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
       }
     }
     if (open.length === 0) return { kind: 'none' };
+
+    if (chargePointId) {
+      const match = open.find((entry) => entry.session.chargePointId === chargePointId);
+      return match
+        ? { kind: 'single', ws: match.ws, session: match.session }
+        : { kind: 'not_found', chargePointId };
+    }
+
     if (open.length > 1) return { kind: 'ambiguous' };
     return { kind: 'single', ws: open[0]!.ws, session: open[0]!.session };
   }

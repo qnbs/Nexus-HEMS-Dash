@@ -301,6 +301,57 @@ describe('OcppCsmsProtocolAdapter', () => {
     client.close();
   });
 
+  it('targets chargePointId when multiple charge points are connected', async () => {
+    const clientA = await connectChargePoint(boundPort, 'CP-TARGET-A');
+    const clientB = await connectChargePoint(boundPort, 'CP-TARGET-B');
+
+    const outbound = new Promise<unknown>((resolve) => {
+      clientB.once('message', (data) => resolve(JSON.parse(String(data))));
+    });
+
+    const result = await adapter.sendCommand({
+      type: 'SET_EV_POWER',
+      value: 5000,
+      chargePointId: 'CP-TARGET-B',
+    });
+    expect(result.success).toBe(true);
+
+    const msg = (await outbound) as [number, string, string, Record<string, unknown>];
+    expect(msg[2]).toBe('SetChargingProfile');
+
+    clientA.close();
+    clientB.close();
+  });
+
+  it('returns error when chargePointId is not found', async () => {
+    const client = await connectChargePoint(boundPort, 'CP-ONLY');
+
+    const result = await adapter.sendCommand({
+      type: 'SET_EV_POWER',
+      value: 5000,
+      chargePointId: 'missing-cp',
+    });
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('not found');
+
+    client.close();
+  });
+
+  it('ignores malformed inbound OCPP frames without crashing', async () => {
+    const client = new WebSocket(`ws://127.0.0.1:${boundPort}/CP-BADFRAME`, 'ocpp2.0.1');
+    await new Promise<void>((resolve, reject) => {
+      client.once('open', () => resolve());
+      client.once('error', reject);
+    });
+
+    client.send(JSON.stringify([3, 'bad-callresult', 'not-an-object']));
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    const health = await adapter.healthCheck();
+    expect(health.status).toBe('healthy');
+    client.close();
+  });
+
   it('rejects commands when multiple charge points are connected', async () => {
     const clientA = await connectChargePoint(boundPort, 'CP-MULTI-A');
     const clientB = await connectChargePoint(boundPort, 'CP-MULTI-B');

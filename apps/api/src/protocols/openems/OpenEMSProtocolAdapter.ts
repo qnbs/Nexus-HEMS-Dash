@@ -38,6 +38,7 @@ import type {
   ProtocolCommandRequest,
   ProtocolCommandResult,
 } from '../protocol-command.js';
+import { EvCurrentValueSchema, EvPowerValueSchema } from '../protocol-command.js';
 import { isSafeComponentId, sanitizeWritableProperties } from './openems-writable-rules.js';
 
 const OPENEMS_EV_COMMANDS = new Set<WSCommandType>([
@@ -430,39 +431,33 @@ export class OpenEMSProtocolAdapter implements IProtocolAdapter, IProtocolComman
 
     switch (command.type) {
       case 'SET_EV_POWER': {
-        if (
-          typeof command.value !== 'number' ||
-          !Number.isFinite(command.value) ||
-          command.value < 0
-        ) {
+        const power = EvPowerValueSchema.safeParse(command.value);
+        if (!power.success) {
           return {
             handled: true,
             success: false,
             adapterId: this.id,
-            error: 'SET_EV_POWER requires a non-negative number',
+            error: 'SET_EV_POWER requires a finite wattage between 0 and 22000',
           };
         }
         ok = await this.updateSafeComponentConfig(this.evcsComponentId, [
-          { name: 'setChargePowerLimit', value: command.value },
+          { name: 'setChargePowerLimit', value: power.data },
         ]);
         break;
       }
       case 'SET_EV_CURRENT': {
-        if (
-          typeof command.value !== 'number' ||
-          !Number.isFinite(command.value) ||
-          command.value < 0
-        ) {
+        const current = EvCurrentValueSchema.safeParse(command.value);
+        if (!current.success) {
           return {
             handled: true,
             success: false,
             adapterId: this.id,
-            error: 'SET_EV_CURRENT requires a non-negative number',
+            error: 'SET_EV_CURRENT requires a finite amp value between 0 and 32',
           };
         }
-        const power = command.value * 230 * 3;
+        const derivedPower = current.data * 230 * 3;
         ok = await this.updateSafeComponentConfig(this.evcsComponentId, [
-          { name: 'setChargePowerLimit', value: power },
+          { name: 'setChargePowerLimit', value: derivedPower },
         ]);
         break;
       }

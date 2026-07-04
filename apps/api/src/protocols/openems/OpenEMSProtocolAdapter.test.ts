@@ -256,6 +256,20 @@ describe('OpenEMSProtocolAdapter', () => {
     expect(result.success).toBe(false);
   });
 
+  it('rejects SET_EV_POWER above 22 kW before RPC', async () => {
+    await adapter.connect();
+    const result = await adapter.sendCommand({ type: 'SET_EV_POWER', value: 25_000 });
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('22000');
+  });
+
+  it('rejects SET_EV_CURRENT above 32 A before RPC', async () => {
+    await adapter.connect();
+    const result = await adapter.sendCommand({ type: 'SET_EV_CURRENT', value: 40 });
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('32');
+  });
+
   it('rejects invalid SET_EV_POWER values before RPC', async () => {
     await adapter.connect();
     const result = await adapter.sendCommand({
@@ -263,7 +277,7 @@ describe('OpenEMSProtocolAdapter', () => {
       value: 'bad' as unknown as number,
     });
     expect(result.success).toBe(false);
-    expect(result.error).toContain('non-negative number');
+    expect(result.error).toContain('22000');
   });
 
   it('rejects invalid SET_EV_CURRENT values before RPC', async () => {
@@ -273,6 +287,6 @@ describe('OpenEMSProtocolAdapter', () => {
       value: Number.NaN,
     });
     expect(result.success).toBe(false);
-    expect(result.error).toContain('non-negative number');
+    expect(result.error).toContain('32');
   });
 });

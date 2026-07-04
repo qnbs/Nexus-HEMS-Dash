@@ -6,14 +6,41 @@
  * remains deferred.
  */
 
-import { type WSCommand, WSCommandSchema, type WSCommandType } from '@nexus-hems/shared-types';
+import { WSCommandSchema, type WSCommandType } from '@nexus-hems/shared-types';
+import { z } from 'zod';
 
-export const ProtocolCommandRequestSchema = WSCommandSchema;
-export type ValidatedProtocolCommandRequest = WSCommand;
+/** Residential EVCS ceiling — aligns with WSCommand 25 kW safety cap. */
+export const MAX_EV_POWER_W = 22_000;
+export const MAX_EV_CURRENT_A = 32;
+
+export const EvPowerValueSchema = z.number().finite().min(0).max(MAX_EV_POWER_W);
+export const EvCurrentValueSchema = z.number().finite().min(0).max(MAX_EV_CURRENT_A);
+
+export const ProtocolCommandRequestSchema = WSCommandSchema.and(
+  z.object({
+    chargePointId: z.string().trim().min(1).max(128).optional(),
+  }),
+).superRefine((cmd, ctx) => {
+  if (cmd.type === 'SET_EV_POWER' && !EvPowerValueSchema.safeParse(cmd.value).success) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'SET_EV_POWER requires a finite wattage between 0 and 22000',
+    });
+  }
+  if (cmd.type === 'SET_EV_CURRENT' && !EvCurrentValueSchema.safeParse(cmd.value).success) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'SET_EV_CURRENT requires a finite amp value between 0 and 32',
+    });
+  }
+});
+export type ValidatedProtocolCommandRequest = z.infer<typeof ProtocolCommandRequestSchema>;
 
 export interface ProtocolCommandRequest {
   type: WSCommandType;
   value: number | string | boolean;
+  /** OCPP CSMS: target charge point id when multiple sessions are connected. */
+  chargePointId?: string;
 }
 
 export function validateProtocolCommandRequest(

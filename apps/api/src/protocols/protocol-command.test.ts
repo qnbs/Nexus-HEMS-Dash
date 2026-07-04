@@ -26,6 +26,28 @@ describe('validateProtocolCommandRequest', () => {
     expect(result.valid).toBe(false);
   });
 
+  it('rejects SET_EV_POWER above 22 kW', () => {
+    const result = validateProtocolCommandRequest({ type: 'SET_EV_POWER', value: 22_001 });
+    expect(result.valid).toBe(false);
+  });
+
+  it('rejects SET_EV_CURRENT above 32 A', () => {
+    const result = validateProtocolCommandRequest({ type: 'SET_EV_CURRENT', value: 33 });
+    expect(result.valid).toBe(false);
+  });
+
+  it('accepts optional chargePointId', () => {
+    const result = validateProtocolCommandRequest({
+      type: 'SET_EV_POWER',
+      value: 5000,
+      chargePointId: 'cp-1',
+    });
+    expect(result.valid).toBe(true);
+    if (result.valid) {
+      expect(result.command.chargePointId).toBe('cp-1');
+    }
+  });
+
   it('accepts boolean charging commands', () => {
     const result = validateProtocolCommandRequest({ type: 'START_CHARGING', value: true });
     expect(result.valid).toBe(true);

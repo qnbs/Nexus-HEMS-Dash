@@ -137,6 +137,9 @@ query { repository(owner:"qnbs", name:"Nexus-HEMS-Dash") {
 # Issue comments (bot summaries)
 GH_PAGER=cat PAGER=cat gh api repos/qnbs/Nexus-HEMS-Dash/issues/<num>/comments \
   --jq '.[] | {user: .user.login, updated: .updated_at}'
+
+# CodeRabbit outside-diff (NOT in reviewThreads — review bodies only)
+./scripts/fetch-coderabbit-outside-diff.sh <num>
 ```
 
 **Do not use** `gh run watch` in agent shells (TTY/control-sequence noise). Poll with
@@ -185,13 +188,33 @@ Order: blocking CI first, then DeepSource major/critical, then AI reviewers.
 
 ### 6.1 CodeRabbit
 
-- **Read:** summary comment + inline `coderabbitai` threads.
+- **Read:** summary comment + inline `coderabbitai` threads **and** outside-diff comments
+  (see below).
 - **Fix:** apply when correct and safe; never auto-apply on
   `apps/api/src/protocols/**`, `command-safety`, auth, or rate limits without human
   review.
 - **Decline:** reply with technical rationale, resolve thread.
 - **Re-trigger:** push fix commit (auto) or `@coderabbitai review`.
 - **Runbook:** [coderabbit-integration.md](coderabbit-integration.md)
+
+#### Outside-diff comments (platform limitation)
+
+CodeRabbit may post: *"Some comments are outside the diff and can't be posted
+inline."* Those findings live only in **review bodies**, not in GraphQL
+`reviewThreads`. Agents must fetch them explicitly or they are silently missed.
+
+```bash
+# All outside-diff sections for a PR (maintainer/agent)
+./scripts/fetch-coderabbit-outside-diff.sh <pr-number>
+
+# Equivalent one-liner
+GH_PAGER=cat PAGER=cat gh api "repos/qnbs/Nexus-HEMS-Dash/pulls/<num>/reviews?per_page=100" \
+  --jq '.[].body' | rg -n "Outside diff|⚠️ Outside" -A 20
+```
+
+**Workflow:** after inline threads are clear, run the script above, fix each
+outside-diff item in code (or decline with rationale in a PR comment), push, and
+re-request `@coderabbitai review`.
 
 ### 6.2 CodeAnt.ai
 
@@ -233,7 +256,7 @@ Order: blocking CI first, then DeepSource major/critical, then AI reviewers.
 
 - [ ] All **required** GitHub checks green on the **latest** commit.
 - [ ] CodeRabbit review **complete** (not "in progress") and all actionable threads
-      resolved.
+      resolved **including outside-diff review-body comments**.
 - [ ] CodeAnt review complete (or confirmed unavailable) and threads resolved.
 - [ ] DeepSource: no unaddressed `critical`/`major` inline issues (or documented
       suppressions).
@@ -264,6 +287,7 @@ If a bot suggests such a change, **decline the thread** and cite
 [ ] Push latest commit
 [ ] Poll CI — all required jobs green on latest SHA?
 [ ] CodeRabbit finished? (not "review in progress")
+[ ] CodeRabbit outside-diff comments fetched and addressed?
 [ ] CodeAnt finished?
 [ ] DeepSource / Codecov summaries read?
 [ ] All inline threads: fixed OR declined + resolved?

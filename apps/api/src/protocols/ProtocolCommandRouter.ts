@@ -56,17 +56,28 @@ export async function dispatchProtocolCommand(
 
   const validated = validation.command;
 
+  let lastError: string | undefined;
+
+  const dispatchPayload: ProtocolCommandRequest = validated.chargePointId
+    ? {
+        type: validated.type,
+        value: validated.value,
+        chargePointId: validated.chargePointId,
+      }
+    : { type: validated.type, value: validated.value };
+
   for (const handler of handlers) {
     if (!handler.supportsCommand(validated.type)) continue;
 
     try {
-      const result = await handler.sendCommand(validated);
+      const result = await handler.sendCommand(dispatchPayload);
       if (result.handled) return result;
     } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      return { handled: true, success: false, error: message };
+      lastError = err instanceof Error ? err.message : String(err);
     }
   }
 
-  return { handled: false, success: false };
+  return lastError
+    ? { handled: true, success: false, error: lastError }
+    : { handled: false, success: false };
 }
