@@ -1,9 +1,4 @@
-/**
- * AdapterConfigPanel save pipeline — validate, vault, persist, registry activation.
- *
- * Wired from AdapterConfigPanel.handleSave (audit C2 / M6). Mock builds always
- * persist safely; live connect only when `canConnectHardwareAdapter` allows it.
- */
+/** AdapterConfigPanel save: validate, vault, persist, registry activation. */
 
 import type { z } from 'zod';
 import { canConnectHardwareAdapter } from '../lib/adapter-mode';
@@ -229,7 +224,7 @@ export async function saveAdapterPanelEntry(
   if (entry.enabled && canConnectHardwareAdapter(true)) {
     const updated = useEnergyStoreBase.getState().adapters[registryId];
     if (updated?.adapter) {
-      void updated.adapter.connect();
+      updated.adapter.connect().catch(() => {});
     }
   }
 

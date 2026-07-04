@@ -22,14 +22,33 @@ import { useSearchParams } from 'react-router-dom';
 import { ConfirmDialog, useConfirmDialog } from '../components/ConfirmDialog';
 import { ReadOnlySettingsBanner } from '../components/settings/ReadOnlySettingsBanner';
 import { type SettingsTab, SettingsTabPanels } from '../components/settings/SettingsTabPanels';
-import { parseStoredSettingsImport } from '../core/stored-settings-schema';
+import { triggerSettingsExport, triggerSettingsImport } from '../lib/settings-transfer';
 import { useAppStoreShallow } from '../store';
 
 export function Settings() {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
+  const confirm = useConfirmDialog();
   const [importSuccess, setImportSuccess] = useState(false);
   const [exportSuccess, setExportSuccess] = useState(false);
+  const { settings, updateSettings } = useAppStoreShallow((s) => ({
+    settings: s.settings,
+    updateSettings: s.updateSettings,
+  }));
+
+  const handleExportSettings = () => {
+    triggerSettingsExport(settings, confirm, t, () => {
+      setExportSuccess(true);
+      setTimeout(() => setExportSuccess(false), 4000);
+    });
+  };
+
+  const handleImportSettings = () => {
+    triggerSettingsImport(updateSettings, confirm, t, () => {
+      setImportSuccess(true);
+      setTimeout(() => setImportSuccess(false), 4000);
+    });
+  };
 
   const validTabs: SettingsTab[] = [
     'appearance',
@@ -51,92 +70,6 @@ export function Settings() {
   const handleTabChange = (tab: SettingsTab) => {
     setActiveTab(tab);
     setSearchParams(tab === 'appearance' ? {} : { tab }, { replace: true });
-  };
-
-  const confirm = useConfirmDialog();
-
-  const { settings, updateSettings } = useAppStoreShallow((s) => ({
-    settings: s.settings,
-    updateSettings: s.updateSettings,
-  }));
-
-  const handleExportSettings = () => {
-    confirm.openDialog({
-      title: t('settings.confirmExportTitle', 'Export Settings'),
-      message: t(
-        'settings.confirmExportMessage',
-        'Your current settings will be exported as a JSON file.',
-      ),
-      confirmText: t('settings.confirmExportAction', 'Export'),
-      variant: 'info',
-      onConfirm: () => {
-        const data = JSON.stringify(settings, null, 2);
-        const blob = new Blob([data], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'nexus-hems-settings.json';
-        a.click();
-        URL.revokeObjectURL(url);
-        setExportSuccess(true);
-        setTimeout(() => setExportSuccess(false), 4000);
-      },
-    });
-  };
-
-  const handleImportSettings = () => {
-    confirm.openDialog({
-      title: t('settings.confirmImportTitle', 'Import Settings'),
-      message: t(
-        'settings.confirmImportMessage',
-        'Importing settings will overwrite all current configurations.',
-      ),
-      confirmText: t('settings.confirmImportAction', 'Choose File'),
-      variant: 'warning',
-      onConfirm: () => {
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = '.json';
-        input.onchange = async (e) => {
-          const file = (e.target as HTMLInputElement).files?.[0];
-          if (!file) return;
-          const maxSize = 1024 * 1024; // 1 MB
-          if (file.size > maxSize) {
-            confirm.openDialog({
-              title: t('common.error'),
-              message: t('settings.importFileTooLarge', 'File too large (max 1 MB).'),
-              confirmText: t('common.dismiss'),
-              variant: 'danger',
-              onConfirm: () => {},
-            });
-            return;
-          }
-          const text = await file.text();
-          try {
-            const data = JSON.parse(text);
-            if (typeof data !== 'object' || data === null || Array.isArray(data)) {
-              throw new Error('invalid');
-            }
-            const parsed = parseStoredSettingsImport(data);
-            if (!parsed) {
-              throw new Error('invalid');
-            }
-            updateSettings(parsed);
-            setImportSuccess(true);
-            setTimeout(() => setImportSuccess(false), 4000);
-          } catch {
-            confirm.openDialog({
-              title: t('common.error'),
-              message: t('common.importError'),
-              confirmText: t('common.dismiss'),
-              variant: 'danger',
-              onConfirm: () => {},
-            });
-          }
-        };
-        input.click();
-      },
-    });
   };
 
   const tabs: { key: SettingsTab; icon: React.ReactNode; label: string }[] = [
@@ -180,7 +113,6 @@ export function Settings() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      {/* Page Header */}
       <motion.div
         className="mb-8 flex flex-col justify-between gap-3 sm:flex-row sm:items-center"
         initial={{ opacity: 0, x: -20 }}
@@ -226,7 +158,6 @@ export function Settings() {
         </div>
       </motion.div>
 
-      {/* Success Banners */}
       <AnimatePresence>
         {importSuccess && (
           <motion.div
@@ -257,7 +188,6 @@ export function Settings() {
       <ReadOnlySettingsBanner />
 
       <div className="flex flex-col gap-6 lg:flex-row">
-        {/* Sidebar Navigation */}
         <nav className="w-full shrink-0 lg:w-56">
           <div
             className="scrollbar-hide flex gap-1 overflow-x-auto pb-2 lg:flex-col lg:overflow-visible lg:pb-0"
@@ -286,7 +216,6 @@ export function Settings() {
           </div>
         </nav>
 
-        {/* Content Area */}
         <div className="min-w-0 flex-1">
           <SettingsTabPanels activeTab={activeTab} />
         </div>

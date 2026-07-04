@@ -145,7 +145,7 @@ export async function saveHomeAssistantSettings(
   if (input.enabled && canConnectHardwareAdapter(true)) {
     const entry = useEnergyStoreBase.getState().adapters[HA_ADAPTER_ID];
     if (entry?.adapter) {
-      void entry.adapter.connect();
+      entry.adapter.connect().catch(() => {});
     }
   }
 

@@ -1018,6 +1018,30 @@ export const de = {
     featureHistoricalDesc:
       'Langzeit-Energiedatenanalyse mit Trendvergleich, Kostenverfolgung und Leistungskennzahlen über Wochen und Monate.',
     protocols: 'Unterstützte Protokolle & Standards',
+    protocolVictron: 'Victron MQTT',
+    protocolModbus: 'Modbus TCP / SunSpec',
+    protocolKnx: 'KNX/IP',
+    protocolOcpp: 'OCPP 2.1',
+    protocolEebus: 'EEBUS SPINE/SHIP',
+    protocolEvcc: 'evcc',
+    protocolOpenEms: 'OpenEMS',
+    protocolHa: 'Home Assistant',
+    protocolMatter: 'Matter/Thread',
+    protocolZigbee: 'Zigbee2MQTT',
+    protocolShelly: 'Shelly REST',
+    protocolOpenAdr: 'OpenADR 3.1',
+    protocolExec: 'ExecAdapter',
+    protocolMqttWs: 'MQTT / WebSocket',
+    protocolSgReady: 'SG Ready',
+    protocolTariffs: 'Tibber / aWATTar / Octopus / Nordpool',
+    creditVictron: 'Victron Energy — Cerbo GX, VE.Bus, Venus OS',
+    creditKnx: 'KNX Association — KNX/IP Gebäudeautomations-Standard',
+    creditTariffs: 'Tibber & aWATTar — Dynamische Stromtarif-APIs',
+    creditD3: 'D3.js — Datengetriebene Visualisierungsbibliothek',
+    creditGoogle: 'Google — Gemini 2.5 Pro KI-Modell (Prototyping in AI Studio)',
+    creditEmhass: 'EMHASS — MPC/LP-Optimierungskonzepte',
+    creditOpenEms: 'OpenEMS — OSGi-Controller-Architektur als Inspiration',
+    creditContrib: 'Zigbee2MQTT & Shelly — Contrib Smart-Device-Integrationen',
 
     // Glossar erweitert
     glossMppt: 'MPPT (Maximum Power Point Tracking)',
@@ -1089,6 +1113,9 @@ export const de = {
     faqMockMode: 'Wie funktionieren Mock- vs. Live-Modus?',
     faqMockModeAnswer:
       'Standardmäßig läuft das Dashboard im Mock-Modus mit simulierten Energiedaten — keine Hardware nötig. Live-Modus erfordert ADAPTER_MODE=live + ALLOW_LIVE_HARDWARE=true auf der API, passende Vite-Build-Flags und pro-Adapter-Aktivierung in den Einstellungen. Ein Banner in der Kopfzeile zeigt den aktiven Modus.',
+    faqReadOnly: 'Was ist der Nur-Lese-Modus?',
+    faqReadOnlyAnswer:
+      'Der Nur-Lese-Modus (READ_ONLY_MODE) blockiert alle Hardware-Steuerbefehle in API und Browser — nützlich für Zertifizierung, Inbetriebnahme und Incident-Review. Einstellungen, die Adapter ändern oder Befehle senden, sind deaktiviert; ein Banner erklärt die Einschränkung.',
     faqCerboVsRpi: 'Cerbo GX oder Raspberry Pi — was ist besser?',
     faqCerboVsRpiAnswer:
       'Der Cerbo GX ist die empfohlene Produktionslösung — er enthält VE.Bus/VE.Can-Schnittstellen, industrielle Zuverlässigkeit und offiziellen Victron-Support. Ein Raspberry Pi mit Venus OS ist eine hervorragende Entwicklungs-/Testplattform und eignet sich gut für Nicht-Victron-Systeme oder enge Budgets. Beide laufen mit Venus OS und unterstützen die gleiche D-Bus/MQTT-Schnittstelle.',
@@ -1143,6 +1170,13 @@ export const de = {
     troubleAi2: 'Überprüfen Sie, ob Ihr API-Schlüssel ausreichend Kontingent hat',
     troubleAi3: 'AI-Funktionen erfordern eine Internetverbindung',
     troubleAi4: 'Versuchen Sie, Ihren API-Schlüssel im Dashboard des Anbieters neu zu generieren',
+    troubleReadOnly: 'Steuerung im Nur-Lese-Modus deaktiviert',
+    troubleReadOnly1:
+      'READ_ONLY_MODE ist aktiv — Adapter-Speichern und Hardware-Befehle sind blockiert, bis die API-Flag entfernt wird',
+    troubleReadOnly2:
+      'Für UI-Tests Mock-Modus nutzen; Live-Inbetriebnahme erfordert deaktivierten Nur-Lese-Modus',
+    troubleReadOnly3:
+      'Siehe Einstellungen → Erweitert für den Adapter-Modus-Badge und Monitoring für Adapter-Gesundheit',
     perfTips: 'Performance-Tipps',
     perf1: 'Nutzen Sie die PWA-Installation für bessere Performance und Offline-Caching',
     perf2:
@@ -1182,6 +1216,7 @@ export const de = {
       'Rapid Prototyping im Google AI Studio Apps-Bereich, initiale Architektur, Energieoptimierung, MPC-Solver-Design',
     aiClaudeDesc:
       'Hauptentwicklung in GitHub Codespaces — Architektur, React-Compiler-Compliance, a11y-Audit, E2E-Tests, Design-System, UI/UX-Transformation',
+    aiClaudeName: 'Claude Sonnet',
     aiGrokDesc:
       'Beratung, Code-Review, Debugging, Protokoll-Adapter-Recherche, Architekturentscheidungen',
 

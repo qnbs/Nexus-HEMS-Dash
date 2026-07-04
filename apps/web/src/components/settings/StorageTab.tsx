@@ -24,12 +24,14 @@ export function StorageTab() {
 
   useEffect(() => {
     let cancelled = false;
-    void getLocalStorageStats().then((stats) => {
-      if (!cancelled) {
-        setUsageMb(stats.usageMb);
-        setSnapshots(stats.snapshots);
-      }
-    });
+    getLocalStorageStats()
+      .then((stats) => {
+        if (!cancelled) {
+          setUsageMb(stats.usageMb);
+          setSnapshots(stats.snapshots);
+        }
+      })
+      .catch(() => {});
     return () => {
       cancelled = true;
     };

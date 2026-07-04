@@ -1338,7 +1338,9 @@ export function AdapterConfigPanel() {
                     </motion.button>
                     <motion.button
                       type="button"
-                      onClick={() => void handleSave(adapter.id)}
+                      onClick={() => {
+                        handleSave(adapter.id).catch(() => {});
+                      }}
                       disabled={isReadOnly || savingId === adapter.id}
                       className="flex items-center gap-2 rounded-xl bg-(--color-text) px-4 py-2 font-medium text-(--color-background) text-sm transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                       whileHover={{ scale: 1.02, y: -1 }}

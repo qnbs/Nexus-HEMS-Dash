@@ -10,8 +10,10 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
+const mockReadOnly = vi.fn().mockReturnValue(false);
+
 vi.mock('../lib/adapter-mode', () => ({
-  isReadOnlyModeActive: () => false,
+  isReadOnlyModeActive: () => mockReadOnly(),
 }));
 
 const mockSave = vi.fn().mockResolvedValue({ ok: true, registryId: 'victron-mqtt' });
@@ -51,5 +53,25 @@ describe('AdapterConfigPanel', () => {
         }),
       );
     });
+  });
+
+  it('reports save failures from the pipeline', async () => {
+    mockSave.mockResolvedValue({ ok: false, error: 'validation failed' });
+    render(<AdapterConfigPanel />);
+    const addButtons = screen.getAllByRole('button', { name: /adapterConfig\.type_victron/i });
+    fireEvent.click(addButtons[0]);
+    fireEvent.click(screen.getByText('common.save'));
+    await vi.waitFor(() => {
+      expect(mockSave).toHaveBeenCalled();
+    });
+  });
+
+  it('blocks save in read-only mode', async () => {
+    mockReadOnly.mockReturnValue(true);
+    render(<AdapterConfigPanel />);
+    const addButtons = screen.getAllByRole('button', { name: /adapterConfig\.type_victron/i });
+    fireEvent.click(addButtons[0]);
+    fireEvent.click(screen.getByText('common.save'));
+    expect(mockSave).not.toHaveBeenCalled();
   });
 });

@@ -40,6 +40,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import packageJson from '../../package.json';
 import { BrandGithubIcon } from '../components/icons/BrandGithubIcon';
 import { Disclosure } from '../components/ui/Disclosure';
+import { createHelpTabKeyHandler } from '../lib/help-tab-keyboard';
 
 type HelpTab =
   | 'getting-started'
@@ -137,27 +138,7 @@ export function Help({ embedded = false }: { embedded?: boolean } = {}) {
     setSearchParams(tab === 'getting-started' ? {} : { tab }, { replace: true });
   };
 
-  const handleTabKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
-    const currentIndex = tabs.findIndex((tab) => tab.key === activeTab);
-    if (currentIndex < 0) return;
-
-    let nextIndex = currentIndex;
-    if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
-      nextIndex = (currentIndex + 1) % tabs.length;
-    } else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
-      nextIndex = (currentIndex - 1 + tabs.length) % tabs.length;
-    } else if (event.key === 'Home') {
-      nextIndex = 0;
-    } else if (event.key === 'End') {
-      nextIndex = tabs.length - 1;
-    } else {
-      return;
-    }
-
-    event.preventDefault();
-    selectTab(tabs[nextIndex].key);
-    document.getElementById(`help-tab-${tabs[nextIndex].key}`)?.focus();
-  };
+  const handleTabKeyDown = createHelpTabKeyHandler(tabs, activeTab, selectTab);
 
   const normalizedQuery = searchQuery.trim().toLowerCase();
 
@@ -168,8 +149,14 @@ export function Help({ embedded = false }: { embedded?: boolean } = {}) {
       { tab: 'getting-started', title: t('help.step1Title'), body: t('help.step1Desc') },
       { tab: 'faq', title: t('help.faqWhatIs'), body: t('help.faqWhatIsAnswer') },
       { tab: 'faq', title: t('help.faqMockMode'), body: t('help.faqMockModeAnswer') },
+      { tab: 'faq', title: t('help.faqReadOnly'), body: t('help.faqReadOnlyAnswer') },
       { tab: 'faq', title: t('help.faqApi'), body: t('help.faqApiAnswer') },
       { tab: 'troubleshooting', title: t('help.troubleConnection'), body: t('help.troubleConn1') },
+      {
+        tab: 'troubleshooting',
+        title: t('help.troubleReadOnly'),
+        body: t('help.troubleReadOnly1'),
+      },
       {
         tab: 'features',
         title: t('help.featureHardwareRegistry'),
@@ -932,29 +919,31 @@ export function Help({ embedded = false }: { embedded?: boolean } = {}) {
                 <div className="glass-panel-strong rounded-2xl p-6">
                   <h3 className="mb-4 font-medium text-lg">{t('help.protocols')}</h3>
                   <div className="flex flex-wrap gap-2">
-                    {[
-                      'Victron MQTT',
-                      'Modbus TCP / SunSpec',
-                      'KNX/IP',
-                      'OCPP 2.1',
-                      'EEBUS SPINE/SHIP',
-                      'evcc',
-                      'OpenEMS',
-                      'Home Assistant',
-                      'Matter/Thread',
-                      'Zigbee2MQTT',
-                      'Shelly REST',
-                      'OpenADR 3.1',
-                      'ExecAdapter',
-                      'MQTT / WebSocket',
-                      'SG Ready',
-                      'Tibber / aWATTar / Octopus / Nordpool',
-                    ].map((proto) => (
+                    {(
+                      [
+                        'help.protocolVictron',
+                        'help.protocolModbus',
+                        'help.protocolKnx',
+                        'help.protocolOcpp',
+                        'help.protocolEebus',
+                        'help.protocolEvcc',
+                        'help.protocolOpenEms',
+                        'help.protocolHa',
+                        'help.protocolMatter',
+                        'help.protocolZigbee',
+                        'help.protocolShelly',
+                        'help.protocolOpenAdr',
+                        'help.protocolExec',
+                        'help.protocolMqttWs',
+                        'help.protocolSgReady',
+                        'help.protocolTariffs',
+                      ] as const
+                    ).map((key) => (
                       <span
-                        key={proto}
+                        key={key}
                         className="rounded-full border border-(--color-border) bg-(--color-surface) px-3 py-1.5 font-medium text-xs"
                       >
-                        {proto}
+                        {t(key)}
                       </span>
                     ))}
                   </div>
@@ -1073,6 +1062,9 @@ export function Help({ embedded = false }: { embedded?: boolean } = {}) {
                     </Disclosure>
                     <Disclosure title={t('help.faqDataStorage')}>
                       {t('help.faqDataStorageAnswer')}
+                    </Disclosure>
+                    <Disclosure title={t('help.faqReadOnly')}>
+                      {t('help.faqReadOnlyAnswer')}
                     </Disclosure>
                   </div>
 
@@ -1227,6 +1219,13 @@ export function Help({ embedded = false }: { embedded?: boolean } = {}) {
                         <li>• {t('help.troubleKnx4')}</li>
                       </ul>
                     </Disclosure>
+                    <Disclosure title={t('help.troubleReadOnly')}>
+                      <ul className="space-y-2">
+                        <li>• {t('help.troubleReadOnly1')}</li>
+                        <li>• {t('help.troubleReadOnly2')}</li>
+                        <li>• {t('help.troubleReadOnly3')}</li>
+                      </ul>
+                    </Disclosure>
                     <Disclosure title={t('help.troubleAi')}>
                       <ul className="space-y-2">
                         <li>• {t('help.troubleAi1')}</li>
@@ -1379,14 +1378,14 @@ export function Help({ embedded = false }: { embedded?: boolean } = {}) {
                   <div className="mt-6 border-(--color-border) border-t pt-6">
                     <h3 className="mb-3 font-medium">{t('help.credits')}</h3>
                     <div className="space-y-1 text-(--color-muted) text-sm">
-                      <p>• Victron Energy — Cerbo GX, VE.Bus, Venus OS</p>
-                      <p>• KNX Association — KNX/IP building automation standard</p>
-                      <p>• Tibber & aWATTar — Dynamic electricity tariff APIs</p>
-                      <p>• D3.js — Data-driven visualization library</p>
-                      <p>• Google — Gemini 2.5 Pro AI model (Prototyping in AI Studio)</p>
-                      <p>• EMHASS — MPC/LP optimization concepts</p>
-                      <p>• OpenEMS — OSGi controller architecture inspiration</p>
-                      <p>• Zigbee2MQTT & Shelly — Contrib smart-device integrations</p>
+                      <p>• {t('help.creditVictron')}</p>
+                      <p>• {t('help.creditKnx')}</p>
+                      <p>• {t('help.creditTariffs')}</p>
+                      <p>• {t('help.creditD3')}</p>
+                      <p>• {t('help.creditGoogle')}</p>
+                      <p>• {t('help.creditEmhass')}</p>
+                      <p>• {t('help.creditOpenEms')}</p>
+                      <p>• {t('help.creditContrib')}</p>
                     </div>
                   </div>
 
@@ -1405,7 +1404,7 @@ export function Help({ embedded = false }: { embedded?: boolean } = {}) {
                           color: '#4285F4',
                         },
                         {
-                          name: 'Claude Opus 4',
+                          name: t('help.aiClaudeName'),
                           provider: 'GitHub Copilot',
                           desc: t('help.aiClaudeDesc'),
                           color: '#D97706',

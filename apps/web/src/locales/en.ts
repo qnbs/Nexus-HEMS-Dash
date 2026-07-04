@@ -1009,6 +1009,30 @@ export const en = {
     featureHistoricalDesc:
       'Long-term energy data analysis with trend comparison, cost tracking, and performance metrics over weeks and months.',
     protocols: 'Supported Protocols & Standards',
+    protocolVictron: 'Victron MQTT',
+    protocolModbus: 'Modbus TCP / SunSpec',
+    protocolKnx: 'KNX/IP',
+    protocolOcpp: 'OCPP 2.1',
+    protocolEebus: 'EEBUS SPINE/SHIP',
+    protocolEvcc: 'evcc',
+    protocolOpenEms: 'OpenEMS',
+    protocolHa: 'Home Assistant',
+    protocolMatter: 'Matter/Thread',
+    protocolZigbee: 'Zigbee2MQTT',
+    protocolShelly: 'Shelly REST',
+    protocolOpenAdr: 'OpenADR 3.1',
+    protocolExec: 'ExecAdapter',
+    protocolMqttWs: 'MQTT / WebSocket',
+    protocolSgReady: 'SG Ready',
+    protocolTariffs: 'Tibber / aWATTar / Octopus / Nordpool',
+    creditVictron: 'Victron Energy — Cerbo GX, VE.Bus, Venus OS',
+    creditKnx: 'KNX Association — KNX/IP building automation standard',
+    creditTariffs: 'Tibber & aWATTar — Dynamic electricity tariff APIs',
+    creditD3: 'D3.js — Data-driven visualization library',
+    creditGoogle: 'Google — Gemini 2.5 Pro AI model (Prototyping in AI Studio)',
+    creditEmhass: 'EMHASS — MPC/LP optimization concepts',
+    creditOpenEms: 'OpenEMS — OSGi controller architecture inspiration',
+    creditContrib: 'Zigbee2MQTT & Shelly — Contrib smart-device integrations',
 
     // Glossary extended
     glossMppt: 'MPPT (Maximum Power Point Tracking)',
@@ -1080,6 +1104,9 @@ export const en = {
     faqMockMode: 'How does mock vs live mode work?',
     faqMockModeAnswer:
       'By default the dashboard runs in mock mode with simulated energy data — no hardware required. Live mode needs ADAPTER_MODE=live + ALLOW_LIVE_HARDWARE=true on the API, matching Vite build flags, and per-adapter enablement in Settings. A banner in the header shows the active mode.',
+    faqReadOnly: 'What is read-only mode?',
+    faqReadOnlyAnswer:
+      'Read-only mode (READ_ONLY_MODE) blocks every hardware control command at the API and in the browser — useful for certification, commissioning, and incident review. Settings inputs that change adapters or send commands are disabled and a banner explains the restriction.',
     faqCerboVsRpi: 'Cerbo GX or Raspberry Pi — which is better?',
     faqCerboVsRpiAnswer:
       'The Cerbo GX is the recommended production solution — it includes VE.Bus/VE.Can interfaces, industrial-grade reliability, and official Victron support. A Raspberry Pi with Venus OS is an excellent development/testing platform and works well for non-Victron-centric systems or tight budgets. Both run Venus OS and support the same D-Bus/MQTT interface.',
@@ -1133,6 +1160,13 @@ export const en = {
     troubleAi2: 'Verify your API key has sufficient quota',
     troubleAi3: 'AI features require an internet connection',
     troubleAi4: "Try regenerating your API key in the provider's dashboard",
+    troubleReadOnly: 'Controls disabled in read-only mode',
+    troubleReadOnly1:
+      'READ_ONLY_MODE is active — adapter saves and hardware commands are blocked until the flag is cleared on the API',
+    troubleReadOnly2:
+      'Use mock mode for UI testing; live commissioning requires read-only to be off',
+    troubleReadOnly3:
+      'See Settings → Advanced for the adapter-mode badge and Monitoring for adapter health',
     perfTips: 'Performance Tips',
     perf1: 'Use the PWA installation for better performance and offline caching',
     perf2:
@@ -1170,6 +1204,7 @@ export const en = {
       'Rapid prototyping in Google AI Studio Apps, initial architecture, energy optimization, MPC solver design',
     aiClaudeDesc:
       'Main development in GitHub Codespaces — architecture, React Compiler compliance, a11y audit, E2E tests, design system, UI/UX transformation',
+    aiClaudeName: 'Claude Sonnet',
     aiGrokDesc:
       'Advisory, code review, debugging, protocol adapter research, architecture decisions',
 

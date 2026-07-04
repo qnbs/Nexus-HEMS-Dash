@@ -23,4 +23,22 @@ describe('stored-settings-schema', () => {
   it('rejects invalid field types', () => {
     expect(parseStoredSettingsImport({ wsPort: 'not-a-number' })).toBeNull();
   });
+
+  it('accepts partial settings with multiple known keys', () => {
+    expect(
+      parseStoredSettingsImport({
+        victronIp: '10.0.0.5',
+        knxIp: '10.0.0.6',
+        mqttAutoDiscovery: false,
+      }),
+    ).toEqual({
+      victronIp: '10.0.0.5',
+      knxIp: '10.0.0.6',
+      mqttAutoDiscovery: false,
+    });
+  });
+
+  it('rejects null imports', () => {
+    expect(parseStoredSettingsImport(null)).toBeNull();
+  });
 });

@@ -207,7 +207,9 @@ export function HomeAssistantSettingsSection() {
         </div>
         <motion.button
           type="button"
-          onClick={() => void handleSave()}
+          onClick={() => {
+            handleSave().catch(() => {});
+          }}
           disabled={isReadOnly || saving}
           className="focus-ring flex items-center gap-2 rounded-xl bg-(--color-text) px-4 py-2 font-medium text-(--color-background) text-sm disabled:cursor-not-allowed disabled:opacity-50"
           whileHover={{ scale: 1.02 }}
