@@ -41,10 +41,10 @@ const ENTITY_ID_KEYWORDS: { keywords: string[]; role: EnergyRole; metric: Metric
   { keywords: ['solar', 'pv'], role: 'pv', metric: 'POWER_W' },
   { keywords: ['battery', 'bat'], role: 'battery', metric: 'POWER_W' },
   { keywords: ['soc'], role: 'battery', metric: 'SOC_PERCENT' },
-  { keywords: ['grid', 'net', 'import', 'export'], role: 'grid', metric: 'POWER_W' },
+  { keywords: ['house', 'home', 'total', 'consumption'], role: 'load', metric: 'POWER_W' },
+  { keywords: ['grid', 'net'], role: 'grid', metric: 'POWER_W' },
   { keywords: ['wallbox', 'ev', 'charger'], role: 'ev', metric: 'POWER_W' },
   { keywords: ['heat', 'pump', 'hvac'], role: 'heatpump', metric: 'POWER_W' },
-  { keywords: ['house', 'home', 'total', 'consumption'], role: 'load', metric: 'POWER_W' },
 ];
 
 /**
@@ -88,12 +88,11 @@ export function parseHANumericState(
   const parsed = Number.parseFloat(state);
   if (!Number.isFinite(parsed)) return null;
 
-  let value = parsed * scale;
   if (unit === 'kW' && metric === 'POWER_W') {
-    value = parsed * 1000;
+    return parsed * 1000 * scale;
   }
   if (unit === 'kWh' && metric === 'ENERGY_KWH') {
-    value = parsed;
+    return parsed * scale;
   }
-  return value;
+  return parsed * scale;
 }

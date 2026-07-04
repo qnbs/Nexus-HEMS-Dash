@@ -15,24 +15,23 @@ const mockWsHolder = vi.hoisted(() => ({
 }));
 
 vi.mock('ws', () => {
-  const listeners = new Map<string, Set<(...args: unknown[]) => void>>();
-
   class MockWebSocket {
+    private readonly listeners = new Map<string, Set<(...args: unknown[]) => void>>();
     send = vi.fn();
     close = vi.fn();
-    removeAllListeners = vi.fn(() => listeners.clear());
+    removeAllListeners = vi.fn(() => this.listeners.clear());
 
     constructor(_url: string) {
       mockWsHolder.current = this;
     }
 
     on(event: string, cb: (...args: unknown[]) => void): void {
-      if (!listeners.has(event)) listeners.set(event, new Set());
-      listeners.get(event)?.add(cb);
+      if (!this.listeners.has(event)) this.listeners.set(event, new Set());
+      this.listeners.get(event)?.add(cb);
     }
 
     emit(event: string, ...args: unknown[]): void {
-      for (const cb of listeners.get(event) ?? []) {
+      for (const cb of this.listeners.get(event) ?? []) {
         cb(...args);
       }
     }

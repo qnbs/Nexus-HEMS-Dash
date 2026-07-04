@@ -191,6 +191,12 @@ export class HomeAssistantProtocolAdapter implements IProtocolAdapter {
   }
 
   private openWebSocket(): Promise<void> {
+    if (this.ws) {
+      this.ws.removeAllListeners();
+      this.ws.close();
+      this.ws = null;
+    }
+
     const protocol = this.config.tls ? 'wss' : 'ws';
     const url = `${protocol}://${this.config.host}:${this.config.port}/api/websocket`;
 
@@ -357,7 +363,8 @@ export function loadHAEntityMappings(path: string): HAEntityMapping[] {
   try {
     const raw = readFileSync(path, 'utf8');
     return JSON.parse(raw) as HAEntityMapping[];
-  } catch {
+  } catch (err) {
+    console.warn('[HomeAssistantProtocolAdapter] ha-entity-map.json not found or invalid:', err);
     return [];
   }
 }
@@ -374,6 +381,13 @@ export function createHomeAssistantAdapterFromEnv(
     env.HA_ENTITY_MAP_PATH?.trim() ||
     join(dirname(fileURLToPath(import.meta.url)), '../../data/ha-entity-map.json');
 
+  const entityMappingsResolved = entityMappings ?? loadHAEntityMappings(mapPath);
+  if (entityMappingsResolved.length === 0) {
+    console.warn(
+      '[Adapters] HA_HOST/HA_TOKEN set but ha-entity-map.json is empty — copy ha-entity-map.example.json',
+    );
+  }
+
   return new HomeAssistantProtocolAdapter({
     id: env.HA_ADAPTER_ID?.trim() || 'homeassistant-01',
     host,
@@ -381,17 +395,19 @@ export function createHomeAssistantAdapterFromEnv(
     tls: env.HA_TLS === 'true',
     token,
     deviceId: env.HA_DEVICE_ID?.trim() || 'ha-site',
-    entityMappings: entityMappings ?? loadHAEntityMappings(mapPath),
+    entityMappings: entityMappingsResolved,
   });
 }
 
 function writeToDLQ(entry: DLQEntry): void {
   if (dlqLineCount >= MAX_DLQ_LINES) return;
-  try {
-    mkdirSync(API_RUNTIME_DIR, { recursive: true });
-    appendFileSync(DEAD_LETTER_QUEUE_PATH, `${JSON.stringify(entry)}\n`, 'utf8');
-    dlqLineCount++;
-  } catch {
-    /* best-effort */
-  }
+  setImmediate(() => {
+    try {
+      mkdirSync(API_RUNTIME_DIR, { recursive: true });
+      appendFileSync(DEAD_LETTER_QUEUE_PATH, `${JSON.stringify(entry)}\n`, 'utf8');
+      dlqLineCount++;
+    } catch {
+      /* best-effort */
+    }
+  });
 }

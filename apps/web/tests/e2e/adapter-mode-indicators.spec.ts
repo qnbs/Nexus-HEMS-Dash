@@ -40,4 +40,17 @@ test.describe('Adapter mode indicators', () => {
       page.getByText(/controlling real equipment|echte geräte werden gesteuert/i),
     ).toBeVisible();
   });
+
+  test('advanced settings card shows simulation mode for mock backend', async ({ page }) => {
+    await mockBackendHealth(page, { mode: 'mock', readOnly: false });
+    await gotoAndWaitForHealth(page, './settings?tab=advanced');
+
+    await expect(page.getByText(/adapter mode|adapter-modus/i)).toBeVisible();
+    await expect(page.getByText(/simulation|simuliert/i).first()).toBeVisible();
+    await expect(
+      page.getByText(
+        /no real hardware|no hardware is controlled|keine echte hardware|keine hardware-steuerung/i,
+      ),
+    ).toBeVisible();
+  });
 });
