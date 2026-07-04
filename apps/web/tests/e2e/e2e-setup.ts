@@ -47,37 +47,61 @@ export async function gotoAndWaitForHealth(page: Page, path = './'): Promise<voi
  * Requires `VITE_BACKEND_WS=true` at build time.
  */
 export function setupMockBackendWebSocket(): void {
-  class MockWebSocket {
+  class MockWebSocket implements WebSocket {
     static readonly CONNECTING = 0;
     static readonly OPEN = 1;
     static readonly CLOSING = 2;
     static readonly CLOSED = 3;
-    readyState = MockWebSocket.CONNECTING;
-    onopen: (() => void) | null = null;
-    onmessage: ((event: { data: string }) => void) | null = null;
-    onerror: (() => void) | null = null;
-    onclose: (() => void) | null = null;
 
-    constructor(_url: string, _protocols?: string | string[]) {
-      (window as { __mockBackendWs?: MockWebSocket }).__mockBackendWs = this;
+    readonly CONNECTING = MockWebSocket.CONNECTING;
+    readonly OPEN = MockWebSocket.OPEN;
+    readonly CLOSING = MockWebSocket.CLOSING;
+    readonly CLOSED = MockWebSocket.CLOSED;
+
+    binaryType: BinaryType = 'blob';
+    bufferedAmount = 0;
+    extensions = '';
+    protocol = '';
+    url: string;
+    readyState = MockWebSocket.CONNECTING;
+
+    onopen: ((this: WebSocket, ev: Event) => unknown) | null = null;
+    onmessage: ((this: WebSocket, ev: MessageEvent) => unknown) | null = null;
+    onerror: ((this: WebSocket, ev: Event) => unknown) | null = null;
+    onclose: ((this: WebSocket, ev: CloseEvent) => unknown) | null = null;
+
+    constructor(url: string | URL, _protocols?: string | string[]) {
+      this.url = typeof url === 'string' ? url : url.href;
+      (window as Window & { __mockBackendWs?: MockWebSocket }).__mockBackendWs = this;
       setTimeout(() => {
         this.readyState = MockWebSocket.OPEN;
-        this.onopen?.();
+        this.onopen?.call(this, new Event('open'));
       }, 0);
     }
 
-    close(): void {
+    close(_code?: number, _reason?: string): void {
       this.readyState = MockWebSocket.CLOSED;
-      this.onclose?.();
+      this.onclose?.call(this, new CloseEvent('close'));
     }
 
-    send(): void {
+    send(_data: string | ArrayBufferLike | Blob | ArrayBufferView): void {
       /* consumer is receive-only for ENERGY_UPDATE */
+    }
+
+    addEventListener(): void {
+      /* E2E mock — handlers wired via on* properties */
+    }
+
+    removeEventListener(): void {
+      /* E2E mock */
+    }
+
+    dispatchEvent(): boolean {
+      return true;
     }
   }
 
-  (window as { WebSocket: typeof MockWebSocket }).WebSocket =
-    MockWebSocket as unknown as typeof WebSocket;
+  window.WebSocket = MockWebSocket as unknown as typeof WebSocket;
 }
 
 /**
