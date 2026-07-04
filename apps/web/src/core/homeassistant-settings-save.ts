@@ -27,7 +27,7 @@ export interface HomeAssistantSaveInput {
 
 export type HomeAssistantSaveResult = { ok: true } | { ok: false; error: string };
 
-function parseBaseUrl(url: string): { host: string; port: number; tls: boolean } | null {
+const parseBaseUrl = (url: string): { host: string; port: number; tls: boolean } | null => {
   const trimmed = url.trim();
   if (!trimmed) return null;
   try {
@@ -47,9 +47,9 @@ function parseBaseUrl(url: string): { host: string; port: number; tls: boolean }
   } catch {
     return null;
   }
-}
+};
 
-function validateInput(input: HomeAssistantSaveInput): HomeAssistantSaveResult {
+const validateInput = (input: HomeAssistantSaveInput): HomeAssistantSaveResult => {
   if (input.haMode === 'ha-ws-api') {
     if (!input.haToken.trim()) {
       return { ok: false, error: 'HA access token is required' };
@@ -68,11 +68,11 @@ function validateInput(input: HomeAssistantSaveInput): HomeAssistantSaveResult {
     return { ok: false, error: 'MQTT port must be between 1 and 65535' };
   }
   return { ok: true };
-}
+};
 
-function buildHaConfig(
+const buildHaConfig = (
   input: HomeAssistantSaveInput,
-): AdapterConnectionConfig & Record<string, unknown> {
+): AdapterConnectionConfig & Record<string, unknown> => {
   if (input.haMode === 'ha-ws-api') {
     const parsed = parseBaseUrl(input.haBaseUrl);
     if (!parsed) {
@@ -100,11 +100,11 @@ function buildHaConfig(
     mqttUser: input.mqttUser.trim() || undefined,
     mqttPassword: input.mqttPassword.trim() || undefined,
   };
-}
+};
 
-export async function saveHomeAssistantSettings(
+export const saveHomeAssistantSettings = async (
   input: HomeAssistantSaveInput,
-): Promise<HomeAssistantSaveResult> {
+): Promise<HomeAssistantSaveResult> => {
   const validation = validateInput(input);
   if (!validation.ok) return validation;
 
@@ -151,4 +151,4 @@ export async function saveHomeAssistantSettings(
   }
 
   return { ok: true };
-}
+};

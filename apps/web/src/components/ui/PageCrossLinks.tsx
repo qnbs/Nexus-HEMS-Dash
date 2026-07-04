@@ -17,19 +17,19 @@ import { PAGE_REGISTRY, PAGE_RELATIONS, type PageId, SETUP_STEPS } from '../../l
 import { useAppStoreShallow } from '../../store';
 
 // ─── Path → PageId resolver ────────────────────────────────────────────────
-function pathToPageId(pathname: string): PageId | null {
+const pathToPageId = (pathname: string): PageId | null => {
   const clean = pathname.replace(/\/$/, '') || '/';
   for (const [id, meta] of Object.entries(PAGE_REGISTRY)) {
     if (meta.path === clean) return id as PageId;
   }
   return null;
-}
+};
 
 // ─── Setup Progress Ring ────────────────────────────────────────────────────
-function SetupProgress({ completed, total }: { completed: number; total: number }) {
+const SetupProgress = ({ completed, total }: { completed: number; total: number }) => {
   const pct = total > 0 ? (completed / total) * 100 : 0;
-  const r = 18;
-  const circ = 2 * Math.PI * r;
+  const radius = 18;
+  const circ = 2 * Math.PI * radius;
   const offset = circ - (pct / 100) * circ;
 
   return (
@@ -40,7 +40,7 @@ function SetupProgress({ completed, total }: { completed: number; total: number 
       <circle
         cx="22"
         cy="22"
-        r={r}
+        r={radius}
         fill="none"
         stroke="var(--color-border)"
         strokeWidth="3"
@@ -49,7 +49,7 @@ function SetupProgress({ completed, total }: { completed: number; total: number 
       <motion.circle
         cx="22"
         cy="22"
-        r={r}
+        r={radius}
         fill="none"
         stroke={pct >= 100 ? '#22ff88' : '#00f0ff'}
         strokeWidth="3"
@@ -71,10 +71,10 @@ function SetupProgress({ completed, total }: { completed: number; total: number 
       </text>
     </svg>
   );
-}
+};
 
 // ─── Main Component ─────────────────────────────────────────────────────────
-export function PageCrossLinks() {
+export const PageCrossLinks = () => {
   const { t } = useTranslation();
   const { pathname } = useLocation();
   const settings = useAppStoreShallow((s) => s.settings);
@@ -284,4 +284,4 @@ export function PageCrossLinks() {
       </div>
     </motion.div>
   );
-}
+};

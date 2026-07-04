@@ -63,19 +63,19 @@ const SCHEMA_BY_TYPE: Record<AdapterPanelType, z.ZodType> = {
   eebus: eebusConfigSchema,
 };
 
-function mapGatewayType(gw?: AdapterPanelSaveInput['gatewayType']): VictronGatewayType {
+const mapGatewayType = (gw?: AdapterPanelSaveInput['gatewayType']): VictronGatewayType => {
   if (gw === 'venus-gx') return 'cerbo-gx-mk2';
   if (gw === 'rpi-victron') return 'raspberry-pi';
   return 'cerbo-gx';
-}
+};
 
-function mapGatewayToStored(gw?: AdapterPanelSaveInput['gatewayType']): GatewayType {
+const mapGatewayToStored = (gw?: AdapterPanelSaveInput['gatewayType']): GatewayType => {
   if (gw === 'venus-gx') return 'cerbo-gx-mk2';
   if (gw === 'rpi-victron') return 'raspberry-pi';
   return 'cerbo-gx';
-}
+};
 
-function buildValidationPayload(entry: AdapterPanelSaveInput): Record<string, unknown> {
+const buildValidationPayload = (entry: AdapterPanelSaveInput): Record<string, unknown> => {
   const base = {
     name: entry.name.trim(),
     host: entry.host.trim(),
@@ -105,11 +105,11 @@ function buildValidationPayload(entry: AdapterPanelSaveInput): Record<string, un
     default:
       return base;
   }
-}
+};
 
-export function validateAdapterPanelEntry(
+export const validateAdapterPanelEntry = (
   entry: AdapterPanelSaveInput,
-): { ok: true } | { ok: false; error: string } {
+): { ok: true } | { ok: false; error: string } => {
   const schema = SCHEMA_BY_TYPE[entry.type];
   const parsed = schema.safeParse(buildValidationPayload(entry));
   if (!parsed.success) {
@@ -125,9 +125,9 @@ export function validateAdapterPanelEntry(
   }
 
   return { ok: true };
-}
+};
 
-function buildCredentials(entry: AdapterPanelSaveInput): AdapterCredentials {
+const buildCredentials = (entry: AdapterPanelSaveInput): AdapterCredentials => {
   const creds: AdapterCredentials = {};
   const token = entry.authToken.trim();
   if (token) creds.authToken = token;
@@ -141,11 +141,11 @@ function buildCredentials(entry: AdapterPanelSaveInput): AdapterCredentials {
     creds.ocppSecurityProfile = entry.securityProfile;
   }
   return creds;
-}
+};
 
-function buildAdapterConfig(
+const buildAdapterConfig = (
   entry: AdapterPanelSaveInput,
-): AdapterConnectionConfig & Record<string, unknown> {
+): AdapterConnectionConfig & Record<string, unknown> => {
   const config: AdapterConnectionConfig & Record<string, unknown> = {
     name: entry.name.trim(),
     host: entry.host.trim(),
@@ -174,9 +174,9 @@ function buildAdapterConfig(
   }
 
   return config;
-}
+};
 
-function buildSettingsPatch(entry: AdapterPanelSaveInput): Partial<StoredSettings> {
+const buildSettingsPatch = (entry: AdapterPanelSaveInput): Partial<StoredSettings> => {
   if (entry.type === 'victron') {
     return {
       victronIp: entry.host.trim(),
@@ -188,14 +188,14 @@ function buildSettingsPatch(entry: AdapterPanelSaveInput): Partial<StoredSetting
     return { knxIp: entry.host.trim() };
   }
   return {};
-}
+};
 
 /**
  * Validate, persist credentials + settings, reconfigure registry slot, optional connect.
  */
-export async function saveAdapterPanelEntry(
+export const saveAdapterPanelEntry = async (
   entry: AdapterPanelSaveInput,
-): Promise<SaveAdapterPanelResult> {
+): Promise<SaveAdapterPanelResult> => {
   const validation = validateAdapterPanelEntry(entry);
   if (!validation.ok) {
     return validation;
@@ -230,8 +230,8 @@ export async function saveAdapterPanelEntry(
   }
 
   return { ok: true, registryId };
-}
+};
 
-export function panelTypeToRegistryId(type: AdapterPanelType): AdapterId {
+export const panelTypeToRegistryId = (type: AdapterPanelType): AdapterId => {
   return PANEL_TO_REGISTRY[type] as AdapterId;
-}
+};

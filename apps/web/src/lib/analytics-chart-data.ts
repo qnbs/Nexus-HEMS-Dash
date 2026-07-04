@@ -1,6 +1,6 @@
 /** Deterministic analytics chart series derived from live KPI inputs. */
 
-export function generateEnergyBalance(pvPower: number, houseLoad: number, now = new Date()) {
+export const generateEnergyBalance = (pvPower: number, houseLoad: number, now = new Date()) => {
   const currentHour = now.getHours();
   return Array.from({ length: 24 }, (_, i) => {
     const h = i;
@@ -21,9 +21,9 @@ export function generateEnergyBalance(pvPower: number, houseLoad: number, now = 
       isFuture: h > currentHour,
     };
   });
-}
+};
 
-export function generateMonthlyComparison(pvYieldToday: number) {
+export const generateMonthlyComparison = (pvYieldToday: number) => {
   const months = [
     'Jan',
     'Feb',
@@ -45,12 +45,12 @@ export function generateMonthlyComparison(pvYieldToday: number) {
     const cons = Math.round(280 + (i < 3 || i > 9 ? 120 : -40) + (i % 3) * 15);
     return { month: m, production: prod, consumption: cons, savings: Math.round(prod * 0.28) };
   });
-}
+};
 
-export function isPeakElectricityHour(hour: number): boolean {
+export const isPeakElectricityHour = (hour: number): boolean => {
   return hour >= 17 && hour <= 21;
-}
+};
 
-export function isSolarPeakHour(hour: number): boolean {
+export const isSolarPeakHour = (hour: number): boolean => {
   return hour >= 10 && hour <= 14;
-}
+};
