@@ -184,7 +184,7 @@ describe('ha-mqtt-command-mapper', () => {
       entities,
     );
     expect(result).toEqual({
-      error: 'SET_HEAT_PUMP_MODE requires a finite SG Ready mode between 1 and 4',
+      error: 'SET_HEAT_PUMP_MODE requires an integer SG Ready mode between 1 and 4',
     });
   });
 
@@ -194,7 +194,7 @@ describe('ha-mqtt-command-mapper', () => {
       entities,
     );
     expect(result).toEqual({
-      error: 'SET_HEAT_PUMP_MODE requires a finite SG Ready mode between 1 and 4',
+      error: 'SET_HEAT_PUMP_MODE requires an integer SG Ready mode between 1 and 4',
     });
   });
 

@@ -6,13 +6,17 @@
  * shipped in Phase 6.
  */
 
-import { WSCommandSchema, type WSCommandType } from '@nexus-hems/shared-types';
+import {
+  HEAT_PUMP_MODE_ERROR,
+  MAX_EV_CURRENT_A,
+  WSCommandSchema,
+  type WSCommandType,
+} from '@nexus-hems/shared-types';
 import { z } from 'zod';
 
 /** Residential EVCS ceiling — aligns with WSCommand 25 kW safety cap. */
 export const MAX_EV_POWER_W = 22_000;
-/** IEC 61851 residential ceiling — aligns with WSCommandSchema / frontend command-safety (80 A). */
-export const MAX_EV_CURRENT_A = 80;
+export { HEAT_PUMP_MODE_ERROR, MAX_EV_CURRENT_A };
 /** Bidirectional ESS power cap (matches WSCommandSchema 25 kW safety limit). */
 export const MAX_BATTERY_POWER_W = 25_000;
 
@@ -106,7 +110,7 @@ export const ProtocolCommandRequestSchema = WSCommandSchema.and(
   if (cmd.type === 'SET_HEAT_PUMP_MODE' && !HeatPumpModeValueSchema.safeParse(cmd.value).success) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: 'SET_HEAT_PUMP_MODE requires a finite SG Ready mode between 1 and 4',
+      message: HEAT_PUMP_MODE_ERROR,
     });
   }
 });

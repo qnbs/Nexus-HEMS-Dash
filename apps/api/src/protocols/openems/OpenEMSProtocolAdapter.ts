@@ -49,6 +49,7 @@ import {
   EvCurrentValueSchema,
   EvPowerValueSchema,
   GridLimitValueSchema,
+  HEAT_PUMP_MODE_ERROR,
   HeatPumpModeValueSchema,
   MAX_EV_CURRENT_A,
 } from '../protocol-command.js';
@@ -570,7 +571,7 @@ export class OpenEMSProtocolAdapter implements IProtocolAdapter, IProtocolComman
             handled: true,
             success: false,
             adapterId: this.id,
-            error: 'SET_HEAT_PUMP_MODE requires a finite SG Ready mode between 1 and 4',
+            error: HEAT_PUMP_MODE_ERROR,
           };
         }
         ok = await this.updateSafeComponentConfig(this.hpSgReadyControllerId, [

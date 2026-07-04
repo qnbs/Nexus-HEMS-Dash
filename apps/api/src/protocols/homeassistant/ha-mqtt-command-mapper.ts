@@ -10,6 +10,7 @@ import type { ProtocolCommandRequest } from '../protocol-command.js';
 import {
   EvCurrentValueSchema,
   EvPowerValueSchema,
+  HEAT_PUMP_MODE_ERROR,
   HeatPumpModeEntityIdSchema,
   HeatPumpModeValueSchema,
   MAX_EV_CURRENT_A,
@@ -133,7 +134,7 @@ export function mapProtocolCommandToMqttService(
     case 'SET_HEAT_PUMP_MODE': {
       const mode = HeatPumpModeValueSchema.safeParse(command.value);
       if (!mode.success) {
-        return { error: 'SET_HEAT_PUMP_MODE requires a finite SG Ready mode between 1 and 4' };
+        return { error: HEAT_PUMP_MODE_ERROR };
       }
       if (!entities.heatPumpModeEntityId) {
         return { error: 'HA_HEAT_PUMP_MODE_ENTITY not configured' };

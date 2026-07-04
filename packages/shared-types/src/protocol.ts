@@ -196,7 +196,12 @@ export type WSCommandType = z.infer<typeof WSCommandTypeSchema>;
 /** MED-08 residential power cap — aligns with frontend command-safety.ts */
 const MAX_POWER_W = 25_000;
 const MAX_HP_POWER_W = 15_000;
-const MAX_EV_CURRENT_A = 80;
+/** IEC 61851 residential ceiling — single source for WS + API protocol validation. */
+export const MAX_EV_CURRENT_A = 80;
+
+/** Shared validation copy for SG Ready integer modes 1–4. */
+export const HEAT_PUMP_MODE_ERROR =
+  'SET_HEAT_PUMP_MODE requires an integer SG Ready mode between 1 and 4';
 
 const BatteryModeWsValueSchema = z.union([
   z.literal('charge'),
@@ -254,7 +259,7 @@ function refineWsCommandValue(
       return;
     case 'SET_HEAT_PUMP_MODE':
       if (typeof value !== 'number' || !Number.isInteger(value) || value < 1 || value > 4) {
-        reject('SET_HEAT_PUMP_MODE requires a finite SG Ready mode between 1 and 4');
+        reject(HEAT_PUMP_MODE_ERROR);
       }
       return;
     case 'SET_BATTERY_MODE':
@@ -279,8 +284,10 @@ function refineWsCommandValue(
         reject(`${type} requires a boolean or numeric value`);
       }
       return;
-    default:
-      break;
+    default: {
+      const _exhaustive: never = type;
+      void _exhaustive;
+    }
   }
 }
 
