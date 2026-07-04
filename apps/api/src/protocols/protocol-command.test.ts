@@ -91,10 +91,26 @@ describe('validateProtocolCommandRequest', () => {
     ).toBe(false);
   });
 
-  it('validates SET_GRID_LIMIT in kW', () => {
+  it('validates SET_GRID_LIMIT in kW and OCPP watts', () => {
     expect(validateProtocolCommandRequest({ type: 'SET_GRID_LIMIT', value: 4.2 }).valid).toBe(true);
+    expect(validateProtocolCommandRequest({ type: 'SET_GRID_LIMIT', value: 4200 }).valid).toBe(
+      true,
+    );
     expect(validateProtocolCommandRequest({ type: 'SET_GRID_LIMIT', value: -1 }).valid).toBe(false);
     expect(validateProtocolCommandRequest({ type: 'SET_GRID_LIMIT', value: 26 }).valid).toBe(false);
+    expect(validateProtocolCommandRequest({ type: 'SET_GRID_LIMIT', value: 50 }).valid).toBe(false);
+  });
+
+  it('validates SET_V2X_DISCHARGE wattage', () => {
+    expect(validateProtocolCommandRequest({ type: 'SET_V2X_DISCHARGE', value: 5000 }).valid).toBe(
+      true,
+    );
+    expect(validateProtocolCommandRequest({ type: 'SET_V2X_DISCHARGE', value: -1 }).valid).toBe(
+      false,
+    );
+    expect(validateProtocolCommandRequest({ type: 'SET_V2X_DISCHARGE', value: 25_001 }).valid).toBe(
+      false,
+    );
   });
 
   it('validates SET_HEAT_PUMP_MODE SG Ready range', () => {

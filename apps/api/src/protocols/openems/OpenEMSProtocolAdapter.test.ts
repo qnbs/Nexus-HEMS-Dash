@@ -405,11 +405,17 @@ describe('OpenEMSProtocolAdapter', () => {
     expect(request.params.properties[0]?.value).toBe(4200);
   });
 
-  it('rejects invalid SET_GRID_LIMIT values', async () => {
+  it('passes through SET_GRID_LIMIT values outside kW range', async () => {
     await adapter.connect();
     const result = await adapter.sendCommand({ type: 'SET_GRID_LIMIT', value: -1 });
+    expect(result.handled).toBe(false);
     expect(result.success).toBe(false);
-    expect(result.error).toContain('kW value between 0 and 25');
+  });
+
+  it('passes through OCPP-watt SET_GRID_LIMIT when disconnected', async () => {
+    const result = await adapter.sendCommand({ type: 'SET_GRID_LIMIT', value: 4200 });
+    expect(result.handled).toBe(false);
+    expect(result.success).toBe(false);
   });
 
   it('rejects invalid SET_BATTERY_MODE values', async () => {

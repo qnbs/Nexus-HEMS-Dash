@@ -34,7 +34,22 @@ import type {
   ProtocolCommandRequest,
   ProtocolCommandResult,
 } from '../protocol-command.js';
-import { EvCurrentValueSchema, EvPowerValueSchema } from '../protocol-command.js';
+import {
+  EvCurrentValueSchema,
+  EvDischargeValueSchema,
+  EvPowerValueSchema,
+  OcppGridLimitWattsSchema,
+} from '../protocol-command.js';
+
+/** SOC guardrail — blocks V2G discharge below this threshold (ISO 15118-20 §9.8). */
+const V2G_MIN_SOC_PERCENT = 15;
+/** Default mains voltage when no Voltage meter value is available (EU single-phase). */
+const DEFAULT_MAINS_VOLTAGE_V = 230;
+/** Plausible EVSE mains voltage range (single/three-phase). */
+const MIN_MAINS_VOLTAGE_V = 100;
+const MAX_MAINS_VOLTAGE_V = 500;
+/** Valid SoC percent range from MeterValues telemetry. */
+const MAX_SOC_PERCENT = 100;
 
 const OCPP_CALL = 2;
 const OCPP_CALLRESULT = 3;
@@ -92,6 +107,18 @@ const TransactionInfoSchema = z.object({
   transactionId: z.string().min(1).optional(),
 });
 
+const OcppSampledValueSchema = z.object({
+  value: z.union([z.number(), z.string()]),
+  measurand: z.string().optional(),
+  unit: z.string().optional(),
+});
+
+const OcppMeterValueEntrySchema = z.object({
+  sampledValue: z.array(OcppSampledValueSchema),
+});
+
+const OcppMeterValueSchema = z.array(OcppMeterValueEntrySchema);
+
 const ChargingStationSchema = z.object({
   serialNumber: z.string().min(1).optional(),
 });
@@ -101,6 +128,7 @@ interface ChargePointSession {
   lastPowerW: number;
   lastEnergyKWh: number;
   lastSocPercent: number | undefined;
+  lastVoltageV: number;
   lastSeenMs: number;
   transactionId: string | undefined;
 }
@@ -125,6 +153,8 @@ const OCPP_EV_COMMANDS = new Set<WSCommandType>([
   'SET_EV_CURRENT',
   'START_CHARGING',
   'STOP_CHARGING',
+  'SET_V2X_DISCHARGE',
+  'SET_GRID_LIMIT',
 ]);
 
 export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolCommandHandler {
@@ -180,6 +210,7 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
           lastPowerW: 0,
           lastEnergyKWh: 0,
           lastSocPercent: undefined,
+          lastVoltageV: DEFAULT_MAINS_VOLTAGE_V,
           lastSeenMs: Date.now(),
           transactionId: undefined,
         });
@@ -372,11 +403,8 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
   }
 
   private ingestMeterPayload(session: ChargePointSession, payload: Record<string, unknown>): void {
-    const meterValue = payload.meterValue as
-      | { sampledValue: { value: number | string; measurand?: string; unit?: string }[] }[]
-      | undefined;
-    if (!meterValue) return;
-    this.applySampledValues(session, meterValue);
+    if (payload.meterValue === undefined) return;
+    this.applySampledValues(session, payload.meterValue);
   }
 
   private ingestTransactionPayload(
@@ -388,11 +416,8 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
       session.transactionId = transactionInfo.data.transactionId;
     }
 
-    const meterValue = payload.meterValue as
-      | { sampledValue: { value: number | string; measurand?: string; unit?: string }[] }[]
-      | undefined;
-    if (meterValue) {
-      this.applySampledValues(session, meterValue);
+    if (payload.meterValue !== undefined) {
+      this.applySampledValues(session, payload.meterValue);
     }
     if (payload.eventType === 'Ended') {
       session.transactionId = undefined;
@@ -480,6 +505,45 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
         }
         acknowledged = await this.sendRequestStopTransaction(ws, session.transactionId);
         break;
+      case 'SET_V2X_DISCHARGE': {
+        const discharge = EvDischargeValueSchema.safeParse(command.value);
+        if (!discharge.success) {
+          return {
+            handled: true,
+            success: false,
+            adapterId: this.id,
+            error: 'SET_V2X_DISCHARGE requires a finite wattage between 0 and 25000',
+          };
+        }
+        if (
+          !(session.lastSocPercent !== undefined && session.lastSocPercent >= V2G_MIN_SOC_PERCENT)
+        ) {
+          return {
+            handled: true,
+            success: false,
+            adapterId: this.id,
+            error: `V2G blocked: EV SOC below minimum ${V2G_MIN_SOC_PERCENT}%`,
+          };
+        }
+        if (!session.transactionId) {
+          return {
+            handled: true,
+            success: false,
+            adapterId: this.id,
+            error: 'No active transaction for V2G discharge',
+          };
+        }
+        acknowledged = await this.sendV2XDischarge(ws, session, discharge.data);
+        break;
+      }
+      case 'SET_GRID_LIMIT': {
+        const limitW = OcppGridLimitWattsSchema.safeParse(command.value);
+        if (!limitW.success) {
+          return { handled: false, success: false };
+        }
+        acknowledged = await this.sendGridCurtailment(ws, limitW.data);
+        break;
+      }
       default:
         return { handled: false, success: false };
     }
@@ -569,6 +633,35 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
     });
   }
 
+  /** V2X discharge via negative TxProfile amp limit (vehicle-to-grid). */
+  private sendV2XDischarge(
+    ws: WebSocket,
+    session: ChargePointSession,
+    dischargePowerW: number,
+  ): Promise<boolean> {
+    const negativeA = -Math.round(dischargePowerW / session.lastVoltageV);
+    return this.sendSetChargingProfile(
+      ws,
+      1,
+      2,
+      1,
+      'TxProfile',
+      {
+        chargingRateUnit: 'A',
+        chargingSchedulePeriod: [{ startPeriod: 0, limit: negativeA }],
+      },
+      { transactionId: session.transactionId },
+    );
+  }
+
+  /** §14a EnWG grid limit via ChargingStationMaxProfile in watts (OCPP 2.1 B12). */
+  private sendGridCurtailment(ws: WebSocket, maxPowerW: number): Promise<boolean> {
+    return this.sendSetChargingProfile(ws, 0, 100, 10, 'ChargingStationMaxProfile', {
+      chargingRateUnit: 'W',
+      chargingSchedulePeriod: [{ startPeriod: 0, limit: maxPowerW }],
+    });
+  }
+
   private sendSetChargingProfile(
     ws: WebSocket,
     evseId: number,
@@ -606,11 +699,11 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
     return this.sendOutboundCall(ws, 'RequestStopTransaction', { transactionId });
   }
 
-  private applySampledValues(
-    session: ChargePointSession,
-    meterValue: { sampledValue: { value: number | string; measurand?: string; unit?: string }[] }[],
-  ): void {
-    for (const mv of meterValue) {
+  private applySampledValues(session: ChargePointSession, meterValue: unknown): void {
+    const parsed = OcppMeterValueSchema.safeParse(meterValue);
+    if (!parsed.success) return;
+
+    for (const mv of parsed.data) {
       for (const sv of mv.sampledValue) {
         const value = Number(sv.value);
         if (!Number.isFinite(value)) continue;
@@ -627,8 +720,15 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
             break;
           }
           case 'SoC':
-            session.lastSocPercent = value;
-            this.emitMetric(session, 'SOC_PERCENT', value);
+            if (value >= 0 && value <= MAX_SOC_PERCENT) {
+              session.lastSocPercent = value;
+              this.emitMetric(session, 'SOC_PERCENT', value);
+            }
+            break;
+          case 'Voltage':
+            if (value >= MIN_MAINS_VOLTAGE_V && value <= MAX_MAINS_VOLTAGE_V) {
+              session.lastVoltageV = value;
+            }
             break;
           default:
             break;
