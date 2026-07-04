@@ -102,8 +102,8 @@ export class Zigbee2MQTTProtocolAdapter implements IProtocolAdapter {
     this.staticMap = new Map(
       (config.deviceMappings ?? []).map((entry) => [entry.friendlyName, entry]),
     );
-    this.heatPumpHints = config.heatPumpHints;
-    this.evHints = config.evHints;
+    if (config.heatPumpHints) this.heatPumpHints = config.heatPumpHints;
+    if (config.evHints) this.evHints = config.evHints;
     this.energyDevices = new Set(config.energyDevices ?? []);
   }
 
