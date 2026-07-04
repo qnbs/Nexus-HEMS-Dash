@@ -26,7 +26,7 @@ JSON_ONLY=false
 
 # ── Parse args ───────────────────────────────────────────────────────────────
 for arg in "$@"; do
-  [[ "$arg" == "--json-only" ]] && JSON_ONLY=true
+  [[ "$arg" = "--json-only" ]] && JSON_ONLY=true
 done
 
 # ── Detect GNU time ───────────────────────────────────────────────────────────
@@ -47,8 +47,7 @@ mkdir -p "$PERF_DIR"
 
 # ── Helper: run + measure ─────────────────────────────────────────────────────
 measure() {
-  local label="$1"
-  shift
+  shift # $1 is a caller-side label, unused inside this helper
   local cmd=("$@")
 
   if [[ -n "$TIME_CMD" ]]; then
@@ -78,7 +77,7 @@ measure() {
 }
 
 # ── Print header ──────────────────────────────────────────────────────────────
-if [[ "$JSON_ONLY" == false ]]; then
+if [[ "$JSON_ONLY" = false ]]; then
   echo ""
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
   echo "  Nexus-HEMS-Dash — Toolchain Performance Benchmark"
@@ -88,7 +87,7 @@ if [[ "$JSON_ONLY" == false ]]; then
 fi
 
 # ── Run measurements ──────────────────────────────────────────────────────────
-[[ "$JSON_ONLY" == false ]] && echo "1/4  Biome check (lint + format check)..."
+[[ "$JSON_ONLY" = false ]] && echo "1/4  Biome check (lint + format check)..."
 read -r BIOME_WALL BIOME_RSS < <(
   measure "biome" npx biome check --write=false 2>/dev/null || true
   printf "%s %s\n" "0" "0"
@@ -100,29 +99,29 @@ npx biome check --write=false >/dev/null 2>&1 || true
 BIOME_END=$(date +%s%N)
 BIOME_WALL=$(( (BIOME_END - BIOME_START) / 1000000 ))
 
-[[ "$JSON_ONLY" == false ]] && echo "   → ${BIOME_WALL}ms"
+[[ "$JSON_ONLY" = false ]] && echo "   → ${BIOME_WALL}ms"
 
-[[ "$JSON_ONLY" == false ]] && echo "2/4  ESLint (React-only slim config)..."
+[[ "$JSON_ONLY" = false ]] && echo "2/4  ESLint (React-only slim config)..."
 ESLINT_START=$(date +%s%N)
 npx eslint src/ --max-warnings 0 >/dev/null 2>&1 || true
 ESLINT_END=$(date +%s%N)
 ESLINT_WALL=$(( (ESLINT_END - ESLINT_START) / 1000000 ))
-[[ "$JSON_ONLY" == false ]] && echo "   → ${ESLINT_WALL}ms"
+[[ "$JSON_ONLY" = false ]] && echo "   → ${ESLINT_WALL}ms"
 
-[[ "$JSON_ONLY" == false ]] && echo "3/4  TypeScript type-check (tsc --noEmit)..."
+[[ "$JSON_ONLY" = false ]] && echo "3/4  TypeScript type-check (tsc --noEmit)..."
 TSC_START=$(date +%s%N)
 npx tsc --noEmit >/dev/null 2>&1 || true
 TSC_END=$(date +%s%N)
 TSC_WALL=$(( (TSC_END - TSC_START) / 1000000 ))
-[[ "$JSON_ONLY" == false ]] && echo "   → ${TSC_WALL}ms"
+[[ "$JSON_ONLY" = false ]] && echo "   → ${TSC_WALL}ms"
 
-[[ "$JSON_ONLY" == false ]] && echo "4/4  Combined (biome + slim eslint = pnpm lint)..."
+[[ "$JSON_ONLY" = false ]] && echo "4/4  Combined (biome + slim eslint = pnpm lint)..."
 COMBINED_START=$(date +%s%N)
 npx biome check --write=false >/dev/null 2>&1 || true
 npx eslint src/ --max-warnings 0 >/dev/null 2>&1 || true
 COMBINED_END=$(date +%s%N)
 COMBINED_WALL=$(( (COMBINED_END - COMBINED_START) / 1000000 ))
-[[ "$JSON_ONLY" == false ]] && echo "   → ${COMBINED_WALL}ms"
+[[ "$JSON_ONLY" = false ]] && echo "   → ${COMBINED_WALL}ms"
 
 # ── Collect file counts ───────────────────────────────────────────────────────
 TS_FILE_COUNT=$(find src -name "*.ts" -o -name "*.tsx" 2>/dev/null | wc -l | tr -d ' ')
@@ -175,7 +174,7 @@ cat > "$OUTPUT_FILE" <<JSON
 JSON
 
 # ── Print summary ─────────────────────────────────────────────────────────────
-if [[ "$JSON_ONLY" == false ]]; then
+if [[ "$JSON_ONLY" = false ]]; then
   echo ""
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
   echo "  RESULTS"
