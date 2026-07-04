@@ -130,6 +130,8 @@ const mockSettings = {
 
 vi.mock('../store', () => ({
   defaultSettings: {},
+  useAppStore: (selector: (s: Record<string, unknown>) => unknown) =>
+    selector({ backendReadOnly: false }),
   useAppStoreShallow: (selector: (s: Record<string, unknown>) => unknown) =>
     selector({
       settings: mockSettings,

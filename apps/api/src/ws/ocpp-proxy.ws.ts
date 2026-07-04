@@ -21,6 +21,7 @@ function hasWriteScope(auth: AuthenticatedClient): boolean {
   return SCOPE_ORDER[auth.scope] >= SCOPE_ORDER.readwrite;
 }
 
+/** Returns true when the request targets the OCPP mTLS proxy WebSocket path. */
 export function isOcppProxyPath(req: IncomingMessage): boolean {
   try {
     const url = new URL(req.url || '', `http://${req.headers.host || 'localhost'}`);

@@ -21,6 +21,7 @@ function hasWriteScope(auth: AuthenticatedClient): boolean {
   return SCOPE_ORDER[auth.scope] >= SCOPE_ORDER.readwrite;
 }
 
+/** Returns true when the request targets the EEBUS mTLS proxy WebSocket path. */
 export function isEebusProxyPath(req: IncomingMessage): boolean {
   try {
     const url = new URL(req.url || '', `http://${req.headers.host || 'localhost'}`);

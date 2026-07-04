@@ -10,7 +10,7 @@ vi.mock('react-i18next', () => ({
 
 const mockReadOnly = vi.fn().mockReturnValue(false);
 
-vi.mock('../lib/adapter-mode', () => ({
+vi.mock('../lib/use-read-only-mode', () => ({
   useReadOnlyModeActive: () => mockReadOnly(),
 }));
 

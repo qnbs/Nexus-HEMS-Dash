@@ -5,7 +5,7 @@ import type { HAConnectionMode } from '../core/adapters/contrib/homeassistant-mq
 import { saveHomeAssistantSettings } from '../core/homeassistant-settings-save';
 import { useEnergyStore } from '../core/useEnergyStore';
 import { useAppStoreShallow } from '../store';
-import { useReadOnlyModeActive } from './adapter-mode';
+import { useReadOnlyModeActive } from './use-read-only-mode';
 
 export const useHomeAssistantSettingsForm = () => {
   const { t } = useTranslation();

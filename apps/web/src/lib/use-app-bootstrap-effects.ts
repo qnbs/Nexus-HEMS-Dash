@@ -47,37 +47,45 @@ export const useAppBootstrapEffects = ({
     if (metaThemeColor) {
       metaThemeColor.setAttribute('content', themeDefinition.colors.background);
     }
+    return undefined;
   }, [locale, theme, themeDefinition.colors.background]);
 
   useEffect(() => {
     const scale = fontScale ?? 1.0;
     document.documentElement.style.fontSize = `${scale * 100}%`;
+    return undefined;
   }, [fontScale]);
 
   useEffect(() => {
     document.documentElement.classList.toggle('reduced-motion', reducedMotion ?? false);
+    return undefined;
   }, [reducedMotion]);
 
   useEffect(() => {
     document.documentElement.classList.toggle('high-contrast', highContrast ?? false);
+    return undefined;
   }, [highContrast]);
 
   useEffect(() => {
     document.documentElement.classList.toggle('compact-mode', compactMode ?? false);
+    return undefined;
   }, [compactMode]);
 
   useEffect(() => {
     document.documentElement.classList.toggle('no-glow', !(glowEffects ?? true));
+    return undefined;
   }, [glowEffects]);
 
   useEffect(() => {
     document.documentElement.classList.toggle('no-animations', !(animations ?? true));
+    return undefined;
   }, [animations]);
 
   useEffect(() => {
     if (i18n.resolvedLanguage !== locale) {
       i18n.changeLanguage(locale).catch(ignorePromiseRejection);
     }
+    return undefined;
   }, [i18n, locale]);
 
   const themeInitRef = useRef(false);

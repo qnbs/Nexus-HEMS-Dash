@@ -12,7 +12,7 @@ import { useNotifications } from './lib/useNotifications';
 import { useAppStoreShallow } from './store';
 
 /** Nexus-HEMS root application shell and route provider. */
-const App = () => {
+export default function App() {
   const { i18n, t } = useTranslation();
   const {
     theme,
@@ -71,6 +71,4 @@ const App = () => {
       </ErrorBoundary>
     </MotionConfig>
   );
-};
-
-export default App;
+}

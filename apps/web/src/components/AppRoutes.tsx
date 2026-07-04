@@ -40,6 +40,7 @@ const HardwareRegistryPage = lazy(() => import('../pages/HardwareRegistryPage'))
 
 /** Primary SPA route table (7 sections + legacy redirects). */
 export const AppRoutes = () => (
+  // skipcq: JS-0415 — flat route table; depth is structural, not nested UI logic
   <Suspense fallback={<PageSkeleton />}>
     <Routes>
       <Route element={<CommandHubLayout />}>
