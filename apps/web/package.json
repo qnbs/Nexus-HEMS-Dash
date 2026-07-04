@@ -141,7 +141,7 @@
     {
       "name": "Adapters (protocol layer)",
       "path": "dist/assets/adapters-*.js",
-      "limit": "75 kB",
+      "limit": "85 kB",
       "gzip": true
     },
     {

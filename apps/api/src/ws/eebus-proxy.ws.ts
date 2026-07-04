@@ -8,6 +8,7 @@
 import type { IncomingMessage } from 'http';
 import type { WebSocket } from 'ws';
 import { isPrivateHost } from '../config/private-host.js';
+import { isReadOnlyMode } from '../config/read-only-mode.js';
 import { type AuthenticatedClient, authenticateWS } from '../middleware/auth.js';
 import { getDevice } from '../services/EEBusTrustStore.js';
 import { attachClientRelay } from '../services/ShipHandshakeService.js';
@@ -46,6 +47,11 @@ export async function handleEebusProxyConnection(
   const authResult = await authenticateWS(req, wsTicketStore);
   if (requireAuth && (!authResult || !hasWriteScope(authResult))) {
     clientWs.close(4003, 'readwrite scope required');
+    return;
+  }
+
+  if (isReadOnlyMode()) {
+    clientWs.close(4403, 'System is in read-only mode — control commands are disabled');
     return;
   }
 

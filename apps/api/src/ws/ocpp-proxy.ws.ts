@@ -8,6 +8,7 @@
 import type { IncomingMessage } from 'http';
 import type { WebSocket } from 'ws';
 import { isPrivateHost } from '../config/private-host.js';
+import { isReadOnlyMode } from '../config/read-only-mode.js';
 import { type AuthenticatedClient, authenticateWS } from '../middleware/auth.js';
 import { attachOcppProxyRelay } from '../services/OcppProxyRelay.js';
 import { ocppSessionStore } from '../services/ocpp-session-store.js';
@@ -46,6 +47,11 @@ export async function handleOcppProxyConnection(
   const authResult = await authenticateWS(req, wsTicketStore);
   if (requireAuth && (!authResult || !hasWriteScope(authResult))) {
     clientWs.close(4003, 'readwrite scope required');
+    return;
+  }
+
+  if (isReadOnlyMode()) {
+    clientWs.close(4403, 'System is in read-only mode — control commands are disabled');
     return;
   }
 

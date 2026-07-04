@@ -12,11 +12,12 @@ import { PageSkeleton } from './components/ui/Skeleton';
 import { EnergyProvider } from './core/EnergyContext';
 import { useAdapterBridge, useServerWebSocket } from './core/useEnergyStore';
 import { themeDefinitions } from './design-tokens';
-import { fetchBackendHealthStatus, isBackendWsEnabled } from './lib/adapter-mode';
+import { isBackendWsEnabled } from './lib/adapter-mode';
 import { backgroundSyncService } from './lib/background-sync';
 import { logError } from './lib/db';
 import { monitorOfflineStorageQuota } from './lib/offline-cache';
 import { resolveTheme, watchSystemTheme } from './lib/theme';
+import { useBackendHealthPoll } from './lib/use-backend-health-poll';
 import { useNotifications } from './lib/useNotifications';
 import { useAppStoreShallow } from './store';
 
@@ -91,7 +92,6 @@ export default function App() {
     glowEffects,
     animations,
     setAdapterMode,
-    setBackendReadOnly,
   } = useAppStoreShallow((s) => ({
     theme: s.theme,
     locale: s.locale,
@@ -104,8 +104,9 @@ export default function App() {
     glowEffects: s.settings.glowEffects,
     animations: s.settings.animations,
     setAdapterMode: s.setAdapterMode,
-    setBackendReadOnly: s.setBackendReadOnly,
   }));
+
+  useBackendHealthPoll(setAdapterMode);
 
   // Adapter bridge replaces the old useWebSocket hook
   useAdapterBridge();
@@ -183,17 +184,6 @@ export default function App() {
 
     return unwatch;
   }, [themePreference, setTheme]);
-
-  // Resolve backend safety flags (mode + read-only) for global indicators.
-  // Failures (e.g. static deploy with no backend) leave mode 'unknown'.
-  useEffect(() => {
-    const controller = new AbortController();
-    void fetchBackendHealthStatus(controller.signal).then(({ mode, readOnly }) => {
-      setAdapterMode(mode);
-      setBackendReadOnly(readOnly);
-    });
-    return () => controller.abort();
-  }, [setAdapterMode, setBackendReadOnly]);
 
   // Initialize background sync service
   useEffect(() => {

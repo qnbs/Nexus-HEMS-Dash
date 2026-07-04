@@ -8,8 +8,8 @@ import {
   isLiveSafetyMode,
   isReadOnlyModeActive,
   resolveFrontendAdapterMode,
+  setRuntimeBackendReadOnly,
 } from '../lib/adapter-mode';
-import { useAppStore } from '../store';
 
 describe('adapter-mode (frontend)', () => {
   it('defaults to mock when VITE_ADAPTER_MODE is unset', () => {
@@ -36,7 +36,7 @@ describe('isLiveSafetyMode', () => {
 describe('fetchBackendHealthStatus', () => {
   afterEach(() => {
     vi.restoreAllMocks();
-    useAppStore.getState().setBackendReadOnly(false);
+    setRuntimeBackendReadOnly(false);
   });
 
   function mockFetch(value: { ok: boolean; body: unknown } | Error): void {
@@ -119,7 +119,7 @@ describe('fetchBackendAdapterMode', () => {
 
 describe('isReadOnlyModeActive', () => {
   afterEach(() => {
-    useAppStore.getState().setBackendReadOnly(false);
+    setRuntimeBackendReadOnly(false);
   });
 
   it('returns false in test environment (VITE_READ_ONLY_MODE not set)', () => {
@@ -127,7 +127,7 @@ describe('isReadOnlyModeActive', () => {
   });
 
   it('returns true when backend health reports readOnly', () => {
-    useAppStore.getState().setBackendReadOnly(true);
+    setRuntimeBackendReadOnly(true);
     expect(isReadOnlyModeActive()).toBe(true);
   });
 });
