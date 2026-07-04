@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { useShallow } from 'zustand/react/shallow';
+import type { CommandPalettePreferences } from './core/commands/types';
 import type { ThemeName } from './design-tokens';
 import { persistSettings } from './lib/db';
 import type { ThemePreference } from './lib/theme';
@@ -28,6 +29,7 @@ interface AppState {
   adapterMode: BackendAdapterMode;
   /** Runtime read-only flag from `GET /api/health` (not persisted). */
   backendReadOnly: boolean;
+  commandPalette: CommandPalettePreferences;
   setEnergyData: (data: Partial<EnergyData>) => void;
   setConnected: (status: boolean) => void;
   setAdapterMode: (mode: BackendAdapterMode) => void;
@@ -37,6 +39,8 @@ interface AppState {
   setThemePreference: (preference: ThemePreference) => void;
   updateFloorplan: (data: Partial<FloorplanState>) => void;
   updateSettings: (data: Partial<StoredSettings>) => void;
+  recordCommandUsage: (commandId: string) => void;
+  toggleCommandFavorite: (commandId: string) => void;
 }
 
 const defaultEnergyData: EnergyData = {
@@ -115,13 +119,19 @@ export const defaultSettings: StoredSettings = {
   keyboardShortcuts: true,
 };
 
+const defaultCommandPalette: CommandPalettePreferences = {
+  recent: [],
+  favorites: [],
+};
+
 type PersistedKey =
   | 'locale'
   | 'theme'
   | 'themePreference'
   | 'themeTransitionKey'
   | 'floorplan'
-  | 'settings';
+  | 'settings'
+  | 'commandPalette';
 
 export const useAppStore = create<AppState>()(
   persist(
@@ -141,6 +151,7 @@ export const useAppStore = create<AppState>()(
       settings: defaultSettings,
       adapterMode: 'unknown' as BackendAdapterMode,
       backendReadOnly: false,
+      commandPalette: { ...defaultCommandPalette },
       setEnergyData: (data) =>
         set((state) => {
           // Skip update if all incoming values match current state
@@ -183,6 +194,20 @@ export const useAppStore = create<AppState>()(
         set({ settings: nextSettings });
         void persistSettings(nextSettings);
       },
+      recordCommandUsage: (commandId) =>
+        set((state) => {
+          const now = Date.now();
+          const filtered = state.commandPalette.recent.filter((r) => r.id !== commandId);
+          const recent = [{ id: commandId, ts: now }, ...filtered].slice(0, 8);
+          return { commandPalette: { ...state.commandPalette, recent } };
+        }),
+      toggleCommandFavorite: (commandId) =>
+        set((state) => {
+          const favs = new Set(state.commandPalette.favorites);
+          if (favs.has(commandId)) favs.delete(commandId);
+          else favs.add(commandId);
+          return { commandPalette: { ...state.commandPalette, favorites: [...favs] } };
+        }),
     }),
     {
       name: 'nexus-hems-store',
@@ -204,6 +229,7 @@ export const useAppStore = create<AppState>()(
           themeTransitionKey: state.themeTransitionKey,
           floorplan: state.floorplan,
           settings: safeSettings as StoredSettings,
+          commandPalette: state.commandPalette,
         };
       },
       // Deep-merge persisted settings with defaults so newly added keys
@@ -216,6 +242,7 @@ export const useAppStore = create<AppState>()(
           ...p,
           settings: { ...defaultSettings, ...(p.settings ?? {}) },
           floorplan: { ...current.floorplan, ...(p.floorplan ?? {}) },
+          commandPalette: { ...defaultCommandPalette, ...(p.commandPalette ?? {}) },
         };
       },
     },
