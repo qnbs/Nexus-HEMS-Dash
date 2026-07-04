@@ -55,7 +55,7 @@ const PANEL_CONTENT: Record<SettingsTab, ReactNode> = {
   ),
 };
 
-export function SettingsTabPanels({ activeTab }: { activeTab: SettingsTab }) {
+export const SettingsTabPanels = ({ activeTab }: { activeTab: SettingsTab }) => {
   const panelClass = activeTab === 'adapters' || activeTab === 'ai' ? undefined : 'space-y-6';
 
   return (
@@ -75,4 +75,4 @@ export function SettingsTabPanels({ activeTab }: { activeTab: SettingsTab }) {
       </motion.div>
     </AnimatePresence>
   );
-}
+};

@@ -1,14 +1,12 @@
-import { Database } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { clearAllData, getLocalStorageStats } from '../../lib/db';
 import { ignorePromiseRejection } from '../../lib/ignore-promise-rejection';
 import { useAppStoreShallow } from '../../store';
 import { ConfirmDialog, useConfirmDialog } from '../ConfirmDialog';
-import { InfluxTokenField } from './InfluxTokenField';
+import { InfluxDbSettingsSection } from './InfluxDbSettingsSection';
 import { LocalStorageSection } from './LocalStorageSection';
 import { SettingsFeatureBar } from './SettingsFeatureBar';
-import { inputClass, sectionClass, sectionHeaderClass } from './styles';
 
 /** Settings → Storage tab: InfluxDB connection, retention and local-storage info. */
 export const StorageTab = () => {
@@ -57,55 +55,22 @@ export const StorageTab = () => {
   return (
     <>
       <SettingsFeatureBar tabId="storage" />
-      <section className={sectionClass}>
-        <h2 className={sectionHeaderClass}>
-          <Database size={20} className="text-purple-400" />
-          {t('settings.storage')}
-        </h2>
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-          <div className="space-y-2">
-            <label htmlFor="settings-influx-url" className="font-medium text-sm">
-              {t('settings.influxUrl')}
-            </label>
-            <input
-              id="settings-influx-url"
-              type="text"
-              value={settings.influxUrl}
-              onChange={(e) => updateSettings({ influxUrl: e.target.value })}
-              className={inputClass}
-            />
-          </div>
-          <InfluxTokenField
-            value={settings.influxToken}
-            showToken={showInfluxToken}
-            onToggleShow={() => setShowInfluxToken((v) => !v)}
-            onChange={(value) => updateSettings({ influxToken: value })}
-          />
-          <div className="space-y-2">
-            <label htmlFor="settings-history-days" className="font-medium text-sm">
-              {t('settings.historyDays')}
-            </label>
-            <input
-              id="settings-history-days"
-              type="number"
-              value={settings.historyDays}
-              onChange={(e) => updateSettings({ historyDays: Number(e.target.value) })}
-              className={inputClass}
-              min={1}
-              max={365}
-            />
-            <p className="text-(--color-muted) text-xs">{t('settings.historyHint')}</p>
-          </div>
-        </div>
-      </section>
-
+      <InfluxDbSettingsSection
+        influxUrl={settings.influxUrl}
+        influxToken={settings.influxToken}
+        historyDays={settings.historyDays}
+        showInfluxToken={showInfluxToken}
+        onInfluxUrlChange={(value) => updateSettings({ influxUrl: value })}
+        onInfluxTokenChange={(value) => updateSettings({ influxToken: value })}
+        onHistoryDaysChange={(value) => updateSettings({ historyDays: value })}
+        onToggleShowToken={() => setShowInfluxToken((v) => !v)}
+      />
       <LocalStorageSection
         usageMb={usageMb}
         snapshots={snapshots}
         historyDays={settings.historyDays}
         onClearCache={handleClearCache}
       />
-
       <ConfirmDialog {...confirm.dialogProps} />
     </>
   );

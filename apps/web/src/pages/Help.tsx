@@ -32,6 +32,7 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useSearchParams } from 'react-router-dom';
 import packageJson from '../../package.json';
+import { HelpFeatureCard } from '../components/help/HelpFeatureCard';
 import { BrandGithubIcon } from '../components/icons/BrandGithubIcon';
 import { Disclosure } from '../components/ui/Disclosure';
 import {
@@ -42,52 +43,6 @@ import {
 } from '../lib/help-search-entries';
 import { buildHelpTabs } from '../lib/help-tab-definitions';
 import { createHelpTabKeyHandler } from '../lib/help-tab-keyboard';
-
-function FeatureCard({
-  icon,
-  title,
-  description,
-  color,
-  link,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-  color: string;
-  link?: string;
-}) {
-  const { t } = useTranslation();
-
-  const content = (
-    <motion.div
-      className={`glass-panel rounded-xl border border-(--color-border) p-5 transition-all hover:border-(--color-primary)/30 ${link ? 'cursor-pointer' : ''}`}
-      whileHover={{ y: -2, scale: 1.01 }}
-      transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-    >
-      <div className={`mb-3 inline-flex h-10 w-10 items-center justify-center rounded-xl ${color}`}>
-        {icon}
-      </div>
-      <h3 className="mb-1 font-semibold text-sm">{title}</h3>
-      <p className="text-(--color-muted) text-xs leading-relaxed">{description}</p>
-      {link && (
-        <span className="mt-2 inline-flex items-center gap-1 font-medium text-(--color-primary) text-[10px]">
-          <ExternalLink size={10} aria-hidden="true" />
-          {t('help.openLink')}
-        </span>
-      )}
-    </motion.div>
-  );
-
-  if (link) {
-    return (
-      <Link to={link} className="focus-ring block rounded-xl">
-        {content}
-      </Link>
-    );
-  }
-  return content;
-}
-
 /**
  * @param embedded When rendered as the "help" section inside SettingsUnified,
  *   that wrapper already supplies the page header; this page suppresses its own
@@ -737,110 +692,110 @@ export const Help = ({ embedded = false }: { embedded?: boolean } = {}) => {
                 <div className="glass-panel-strong rounded-2xl p-6">
                   <h2 className="mb-6 font-semibold text-xl">{t('help.allFeatures')}</h2>
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <FeatureCard
+                    <HelpFeatureCard
                       icon={<Activity size={20} className="text-emerald-400" />}
                       title={t('help.featureSankey')}
                       description={t('help.featureSankeyDesc')}
                       color="bg-emerald-500/15"
                       link="/energy-flow"
                     />
-                    <FeatureCard
+                    <HelpFeatureCard
                       icon={<MapIcon size={20} className="text-blue-400" />}
                       title={t('help.featureFloorplan')}
                       description={t('help.featureFloorplanDesc')}
                       color="bg-blue-500/15"
                       link="/devices"
                     />
-                    <FeatureCard
+                    <HelpFeatureCard
                       icon={<Sparkles size={20} className="text-purple-400" />}
                       title={t('help.featureAI')}
                       description={t('help.featureAIDesc')}
                       color="bg-purple-500/15"
                       link="/optimization-ai"
                     />
-                    <FeatureCard
+                    <HelpFeatureCard
                       icon={<Car size={20} className="text-amber-400" />}
                       title={t('help.featureEV')}
                       description={t('help.featureEVDesc')}
                       color="bg-amber-500/15"
                       link="/devices"
                     />
-                    <FeatureCard
+                    <HelpFeatureCard
                       icon={<TrendingUp size={20} className="text-rose-400" />}
                       title={t('help.featureTariffs')}
                       description={t('help.featureTariffsDesc')}
                       color="bg-rose-500/15"
                       link="/tariffs"
                     />
-                    <FeatureCard
+                    <HelpFeatureCard
                       icon={<Sun size={20} className="text-yellow-400" />}
                       title={t('help.featureForecast')}
                       description={t('help.featureForecastDesc')}
                       color="bg-yellow-500/15"
                       link="/energy-flow"
                     />
-                    <FeatureCard
+                    <HelpFeatureCard
                       icon={<Battery size={20} className="text-green-400" />}
                       title={t('help.featureBattery')}
                       description={t('help.featureBatteryDesc')}
                       color="bg-green-500/15"
                       link="/energy-flow"
                     />
-                    <FeatureCard
+                    <HelpFeatureCard
                       icon={<BarChart3 size={20} className="text-indigo-400" />}
                       title={t('help.featureAnalytics')}
                       description={t('help.featureAnalyticsDesc')}
                       color="bg-indigo-500/15"
                       link="/analytics"
                     />
-                    <FeatureCard
+                    <HelpFeatureCard
                       icon={<Home size={20} className="text-teal-400" />}
                       title={t('help.featureHA')}
                       description={t('help.featureHADesc')}
                       color="bg-teal-500/15"
                       link="/plugins"
                     />
-                    <FeatureCard
+                    <HelpFeatureCard
                       icon={<Gauge size={20} className="text-slate-400" />}
                       title={t('help.featureMonitoring')}
                       description={t('help.featureMonitoringDesc')}
                       color="bg-slate-500/15"
                       link="/monitoring"
                     />
-                    <FeatureCard
+                    <HelpFeatureCard
                       icon={<WifiOff size={20} className="text-orange-400" />}
                       title={t('help.featureOffline')}
                       description={t('help.featureOfflineDesc')}
                       color="bg-orange-500/15"
                     />
-                    <FeatureCard
+                    <HelpFeatureCard
                       icon={<Shield size={20} className="text-red-400" />}
                       title={t('help.featureSecurity')}
                       description={t('help.featureSecurityDesc')}
                       color="bg-red-500/15"
                     />
-                    <FeatureCard
+                    <HelpFeatureCard
                       icon={<Cpu size={20} className="text-cyan-400" />}
                       title={t('help.featureControllers')}
                       description={t('help.featureControllersDesc')}
                       color="bg-cyan-500/15"
                       link="/devices"
                     />
-                    <FeatureCard
+                    <HelpFeatureCard
                       icon={<Network size={20} className="text-violet-400" />}
                       title={t('help.featurePlugins')}
                       description={t('help.featurePluginsDesc')}
                       color="bg-violet-500/15"
                       link="/plugins"
                     />
-                    <FeatureCard
+                    <HelpFeatureCard
                       icon={<HardDrive size={20} className="text-lime-400" />}
                       title={t('help.featureHardwareRegistry')}
                       description={t('help.featureHardwareRegistryDesc')}
                       color="bg-lime-500/15"
                       link="/settings/hardware"
                     />
-                    <FeatureCard
+                    <HelpFeatureCard
                       icon={<Clock size={20} className="text-sky-400" />}
                       title={t('help.featureHistorical')}
                       description={t('help.featureHistoricalDesc')}

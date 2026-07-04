@@ -6,7 +6,7 @@ interface StorageStatsCardsProps {
   historyDays: number;
 }
 
-export function StorageStatsCards({ usageMb, snapshots, historyDays }: StorageStatsCardsProps) {
+export const StorageStatsCards = ({ usageMb, snapshots, historyDays }: StorageStatsCardsProps) => {
   const { t } = useTranslation();
 
   return (
@@ -27,4 +27,4 @@ export function StorageStatsCards({ usageMb, snapshots, historyDays }: StorageSt
       </div>
     </div>
   );
-}
+};

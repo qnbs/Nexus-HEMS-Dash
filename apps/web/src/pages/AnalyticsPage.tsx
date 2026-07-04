@@ -3,22 +3,17 @@ import {
   ArrowDownRight,
   ArrowUpRight,
   BarChart3,
-  Battery,
   BrainCircuit,
   CalendarDays,
   Car,
   ChevronRight,
   Clock,
-  DollarSign,
   Gauge,
-  Leaf,
   PieChart as PieIcon,
   Plane,
   Shield,
   Sun,
   TreePine,
-  TrendingDown,
-  TrendingUp,
   Zap,
 } from 'lucide-react';
 import { motion } from 'motion/react';
@@ -48,10 +43,11 @@ import { ChoiceCardGroup } from '../components/ui/ChoiceCardGroup';
 import { PageCrossLinks } from '../components/ui/PageCrossLinks';
 import { generateEnergyBalance, generateMonthlyComparison } from '../lib/analytics-chart-data';
 import { computeAnalyticsDashboardMetrics } from '../lib/analytics-derived-metrics';
+import { runDemoForecast } from '../lib/analytics-forecast-demo';
+import { buildAnalyticsKpiCards } from '../lib/analytics-kpi-cards';
 import { getUbaFactor } from '../lib/co2-report';
-import type { EnergySnapshot } from '../lib/db';
 import type { ForecastResult } from '../lib/ml-forecast';
-import { getForecastableMetrics, runForecast } from '../lib/ml-forecast';
+import { getForecastableMetrics } from '../lib/ml-forecast';
 import { useAppStoreShallow } from '../store';
 
 // ─── Deterministic data generators live in lib/analytics-chart-data.ts ─
@@ -71,8 +67,6 @@ function AnalyticsPageComponent({ embedded = false }: { embedded?: boolean }) {
   const {
     selfRate,
     autarky,
-    co2Total,
-    savingsToday,
     feedInRevenue,
     gridCost,
     netCost,
@@ -80,7 +74,6 @@ function AnalyticsPageComponent({ embedded = false }: { embedded?: boolean }) {
     monthlyCo2,
     isPeakHour,
     isSolarPeak,
-    systemEfficiency,
     inverterEfficiency,
     batteryRoundTrip,
   } = metrics;
@@ -93,110 +86,13 @@ function AnalyticsPageComponent({ embedded = false }: { embedded?: boolean }) {
   // ─── ML Forecast runner ──────────────────────────────────────────────
   const handleRunForecast = () => {
     setForecastLoading(true);
-    // Generate synthetic historical data for demo forecast
-    const now = Date.now();
-    const syntheticSnapshots: EnergySnapshot[] = Array.from({ length: 72 }, (_, i) => {
-      const hour = new Date(now - (72 - i) * 3_600_000).getHours();
-      const sunFactor = hour >= 6 && hour <= 20 ? Math.sin(((hour - 6) / 14) * Math.PI) : 0;
-      return {
-        timestamp: now - (72 - i) * 3_600_000,
-        gridPower: 500 + Math.sin(i / 4) * 300 + Math.sin(i * 0.7) * 100,
-        pvPower: Math.round(energyData.pvPower * sunFactor * (0.5 + Math.sin(i * 0.3) * 0.3)),
-        batteryPower: Math.sin(i / 6) * 1500,
-        houseLoad: 800 + Math.sin(i / 3) * 400 + (hour >= 17 && hour <= 21 ? 600 : 0),
-        batterySoC: 40 + Math.sin(i / 12) * 30,
-        heatPumpPower: hour >= 6 && hour <= 22 ? 800 + Math.sin(i / 5) * 400 : 200,
-        evPower: hour >= 22 || hour <= 6 ? 3500 : 0,
-        gridVoltage: 230 + Math.sin(i / 8) * 3,
-        batteryVoltage: 51.2 + Math.sin(i / 10) * 1.5,
-        pvYieldToday: energyData.pvYieldToday,
-        priceCurrent: 0.25 + Math.sin(i / 6) * 0.08,
-      };
-    });
-
-    const result = runForecast(syntheticSnapshots, selectedMetric as keyof typeof energyData, 24);
-    setForecastResult(result);
+    setForecastResult(runDemoForecast(energyData, selectedMetric));
     setForecastLoading(false);
   };
 
   const balanceData = generateEnergyBalance(energyData.pvPower, energyData.houseLoad);
   const monthlyData = generateMonthlyComparison(energyData.pvYieldToday);
-
-  // ─── 8 KPI stat cards ──────────────────────────────────────────────
-  const kpiCards = [
-    {
-      label: t('analytics.savingsToday'),
-      value: `€${savingsToday.toFixed(2)}`,
-      icon: <DollarSign size={16} />,
-      color: 'text-emerald-400',
-      bg: 'bg-emerald-500/10',
-      trend: savingsToday > 1 ? '+12%' : '–',
-      trendUp: true,
-    },
-    {
-      label: t('forecast.co2Saved'),
-      value: `${co2Total.toFixed(1)} kg`,
-      icon: <Leaf size={16} />,
-      color: 'text-green-400',
-      bg: 'bg-green-500/10',
-      trend: '-380g/kWh',
-      trendUp: true,
-    },
-    {
-      label: t('analytics.selfConsumptionRate'),
-      value: `${selfRate.toFixed(0)}%`,
-      icon: <Sun size={16} />,
-      color: 'text-yellow-400',
-      bg: 'bg-yellow-500/10',
-      trend: selfRate > 60 ? t('analytics.excellent') : t('analytics.moderate'),
-      trendUp: selfRate > 50,
-    },
-    {
-      label: t('analytics.autarky'),
-      value: `${autarky.toFixed(0)}%`,
-      icon: <Shield size={16} />,
-      color: 'text-purple-400',
-      bg: 'bg-purple-500/10',
-      trend: autarky > 70 ? t('analytics.excellent') : t('analytics.needsImprovement'),
-      trendUp: autarky > 50,
-    },
-    {
-      label: t('analytics.gridImportCost'),
-      value: `€${gridCost.toFixed(2)}`,
-      icon: <TrendingDown size={16} />,
-      color: 'text-orange-400',
-      bg: 'bg-orange-500/10',
-      trend: `${(energyData.priceCurrent * 100).toFixed(1)} ct/kWh`,
-      trendUp: false,
-    },
-    {
-      label: t('analytics.feedInRevenueLabel'),
-      value: `€${feedInRevenue.toFixed(2)}`,
-      icon: <TrendingUp size={16} />,
-      color: 'text-cyan-400',
-      bg: 'bg-cyan-500/10',
-      trend: '8,11 ct/kWh',
-      trendUp: true,
-    },
-    {
-      label: t('analytics.batteryEfficiency'),
-      value: `${batteryRoundTrip.toFixed(1)}%`,
-      icon: <Battery size={16} />,
-      color: 'text-blue-400',
-      bg: 'bg-blue-500/10',
-      trend: t('analytics.roundTrip'),
-      trendUp: batteryRoundTrip > 90,
-    },
-    {
-      label: t('analytics.systemEfficiency'),
-      value: `${systemEfficiency.toFixed(0)}%`,
-      icon: <Gauge size={16} />,
-      color: 'text-pink-400',
-      bg: 'bg-pink-500/10',
-      trend: `η ${inverterEfficiency.toFixed(1)}%`,
-      trendUp: systemEfficiency > 85,
-    },
-  ];
+  const kpiCards = buildAnalyticsKpiCards(metrics, energyData, t);
 
   return (
     <div className="space-y-6">
