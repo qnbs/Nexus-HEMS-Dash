@@ -38,8 +38,8 @@ import {
   EvCurrentValueSchema,
   EvDischargeValueSchema,
   EvPowerValueSchema,
-  MAX_EV_CURRENT_A,
   OcppGridLimitWattsSchema,
+  SET_EV_CURRENT_ERROR,
 } from '../protocol-command.js';
 
 /** SOC guardrail — blocks V2G discharge below this threshold (ISO 15118-20 §9.8). */
@@ -486,7 +486,7 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
             handled: true,
             success: false,
             adapterId: this.id,
-            error: `SET_EV_CURRENT requires a finite amp value between 0 and ${MAX_EV_CURRENT_A}`,
+            error: SET_EV_CURRENT_ERROR,
           };
         }
         acknowledged = await this.sendSetChargingProfileA(ws, current.data);

@@ -1,5 +1,11 @@
+import {
+  HEAT_PUMP_MODE_ERROR,
+  MAX_EV_CURRENT_A,
+  SET_EV_CURRENT_ERROR,
+} from '@nexus-hems/shared-types';
 import { describe, expect, it } from 'vitest';
 import {
+  MAX_EV_CURRENT_A as apiMaxEvCurrentA,
   BatteryModeValueSchema,
   BatteryPowerValueSchema,
   GridLimitValueSchema,
@@ -27,7 +33,7 @@ describe('validateProtocolCommandRequest', () => {
     });
     expect(result.valid).toBe(false);
     if (!result.valid) {
-      expect(result.error).toContain('numeric');
+      expect(result.error).toBe(SET_EV_CURRENT_ERROR);
     }
   });
 
@@ -123,9 +129,28 @@ describe('validateProtocolCommandRequest', () => {
     expect(validateProtocolCommandRequest({ type: 'SET_HEAT_PUMP_MODE', value: 5 }).valid).toBe(
       false,
     );
-    expect(validateProtocolCommandRequest({ type: 'SET_HEAT_PUMP_MODE', value: 2.5 }).valid).toBe(
-      false,
-    );
+    const fractional = validateProtocolCommandRequest({ type: 'SET_HEAT_PUMP_MODE', value: 2.5 });
+    expect(fractional.valid).toBe(false);
+    if (!fractional.valid) {
+      expect(fractional.error).toBe(HEAT_PUMP_MODE_ERROR);
+    }
+  });
+
+  it('keeps safety caps aligned with shared-types exports', () => {
+    expect(apiMaxEvCurrentA).toBe(MAX_EV_CURRENT_A);
+    expect(MAX_EV_CURRENT_A).toBe(80);
+
+    const overCurrent = validateProtocolCommandRequest({ type: 'SET_EV_CURRENT', value: 81 });
+    expect(overCurrent.valid).toBe(false);
+    if (!overCurrent.valid) {
+      expect(overCurrent.error).toBe(SET_EV_CURRENT_ERROR);
+    }
+
+    const hpSchema = HeatPumpModeValueSchema.safeParse(2.5);
+    expect(hpSchema.success).toBe(false);
+    if (!hpSchema.success) {
+      expect(hpSchema.error.issues[0]?.message).toBe(HEAT_PUMP_MODE_ERROR);
+    }
   });
 
   it('exports value schemas for adapter reuse', () => {

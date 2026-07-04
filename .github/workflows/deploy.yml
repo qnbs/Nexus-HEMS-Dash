@@ -25,6 +25,7 @@ concurrency:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  GITHUB_PAGES_DEPLOYMENTS_KEEP: '10'
 
 jobs:
   build:
@@ -95,7 +96,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
-        run: bash .github/scripts/prune-github-pages-deployments.sh 10 github-pages
+        run: bash .github/scripts/prune-github-pages-deployments.sh "${GITHUB_PAGES_DEPLOYMENTS_KEEP}" github-pages
 
   deploy:
     # Auto-deploy on push to main; manual dispatch keeps the explicit DEPLOY gate.
@@ -200,4 +201,4 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
-        run: bash .github/scripts/prune-github-pages-deployments.sh 10 github-pages
+        run: bash .github/scripts/prune-github-pages-deployments.sh "${GITHUB_PAGES_DEPLOYMENTS_KEEP}" github-pages

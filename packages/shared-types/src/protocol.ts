@@ -199,9 +199,26 @@ const MAX_HP_POWER_W = 15_000;
 /** IEC 61851 residential ceiling — single source for WS + API protocol validation. */
 export const MAX_EV_CURRENT_A = 80;
 
+/** Shared validation copy — keep WS, API protocol, and adapter errors in sync. */
+export const SET_EV_CURRENT_ERROR = `SET_EV_CURRENT requires a finite amp value between 0 and ${MAX_EV_CURRENT_A}`;
+
 /** Shared validation copy for SG Ready integer modes 1–4. */
 export const HEAT_PUMP_MODE_ERROR =
   'SET_HEAT_PUMP_MODE requires an integer SG Ready mode between 1 and 4';
+
+/** EV charging current (amps) — protocol + adapter boundary. */
+export const EvCurrentValueSchema = z
+  .number({ error: SET_EV_CURRENT_ERROR })
+  .finite({ error: SET_EV_CURRENT_ERROR })
+  .min(0, { error: SET_EV_CURRENT_ERROR })
+  .max(MAX_EV_CURRENT_A, { error: SET_EV_CURRENT_ERROR });
+
+/** SG Ready discrete mode 1–4 — rejects fractional values at schema boundary. */
+export const HeatPumpModeValueSchema = z
+  .number({ error: HEAT_PUMP_MODE_ERROR })
+  .int({ error: HEAT_PUMP_MODE_ERROR })
+  .min(1, { error: HEAT_PUMP_MODE_ERROR })
+  .max(4, { error: HEAT_PUMP_MODE_ERROR });
 
 const BatteryModeWsValueSchema = z.union([
   z.literal('charge'),
@@ -243,7 +260,14 @@ function refineWsCommandValue(
       validateNonNegativePower(type, value, MAX_POWER_W, reject);
       return;
     case 'SET_EV_CURRENT':
-      validateNonNegativePower('SET_EV_CURRENT', value, MAX_EV_CURRENT_A, reject);
+      if (
+        typeof value !== 'number' ||
+        !Number.isFinite(value) ||
+        value < 0 ||
+        value > MAX_EV_CURRENT_A
+      ) {
+        reject(SET_EV_CURRENT_ERROR);
+      }
       return;
     case 'SET_HEAT_PUMP_POWER':
       validateNonNegativePower('SET_HEAT_PUMP_POWER', value, MAX_HP_POWER_W, reject);

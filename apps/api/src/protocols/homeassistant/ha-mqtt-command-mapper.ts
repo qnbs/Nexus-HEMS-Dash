@@ -5,15 +5,18 @@
  * Payload: JSON service_data fields (entity_id, value, hvac_mode, …).
  */
 
-import type { WSCommandType } from '@nexus-hems/shared-types';
+import {
+  HEAT_PUMP_MODE_ERROR,
+  HeatPumpModeValueSchema,
+  MAX_EV_CURRENT_A,
+  SET_EV_CURRENT_ERROR,
+  type WSCommandType,
+} from '@nexus-hems/shared-types';
 import type { ProtocolCommandRequest } from '../protocol-command.js';
 import {
   EvCurrentValueSchema,
   EvPowerValueSchema,
-  HEAT_PUMP_MODE_ERROR,
   HeatPumpModeEntityIdSchema,
-  HeatPumpModeValueSchema,
-  MAX_EV_CURRENT_A,
 } from '../protocol-command.js';
 
 export interface HAMqttServiceCall {
@@ -85,7 +88,7 @@ export function mapProtocolCommandToMqttService(
       const current = EvCurrentValueSchema.safeParse(command.value);
       if (!current.success) {
         return {
-          error: `SET_EV_CURRENT requires a finite amp value between 0 and ${MAX_EV_CURRENT_A}`,
+          error: SET_EV_CURRENT_ERROR,
         };
       }
       if (!entities.wallboxCurrentEntityId) {

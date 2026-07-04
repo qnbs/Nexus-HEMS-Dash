@@ -1,3 +1,4 @@
+import { SET_EV_CURRENT_ERROR } from '@nexus-hems/shared-types';
 import { describe, expect, it } from 'vitest';
 import {
   haMqttSupportsCommand,
@@ -35,7 +36,7 @@ describe('ha-mqtt-command-mapper', () => {
   it('rejects invalid SET_EV_CURRENT values', () => {
     const result = mapProtocolCommandToMqttService({ type: 'SET_EV_CURRENT', value: 81 }, entities);
     expect(result).toEqual({
-      error: 'SET_EV_CURRENT requires a finite amp value between 0 and 80',
+      error: SET_EV_CURRENT_ERROR,
     });
   });
 
