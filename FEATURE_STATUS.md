@@ -1,7 +1,7 @@
 # Feature Status — Nexus-HEMS-Dash
 
 **Version:** 1.9.0 shipped (2026-07-02)  
-**Last updated:** 2026-07-04 (post-audit phase 2 — E2E depth + HA backend MVP)  
+**Last updated:** 2026-07-04 (post-audit phase 3 — Zigbee2MQTT + Matter backend MVP)  
 **Purpose:** Single source of truth for what is actually implemented, partial, or planned. Use this file to keep README/marketing claims synchronized with the codebase.
 
 > **Rule:** Any PR that changes a feature's implementation status must update this file and the relevant docs before merging.
@@ -33,8 +33,8 @@
 | OpenEMS Edge (JSON-RPC) | ✅ | ✅ | Browser `OpenEMSAdapter` + backend `OpenEMSProtocolAdapter` (`apps/api/src/protocols/openems/`). Configurable `additionalWritableProperties` per component (LOW-02). |
 | Home Assistant MQTT | ✅ (contrib, dual-mode) | ⚠️ | Frontend: ha-ws-api + MQTT discovery, commands. Backend **Phase 1 MVP** (`HomeAssistantProtocolAdapter`): read-only ha-ws-api telemetry via `HA_HOST` + `HA_TOKEN`, static `ha-entity-map.json`, EventBus role-tagged emits. MQTT-broker mode + service commands deferred. |
 | ExecAdapter (Custom Scripts) | ✅ (contrib, new) | ✅ (new) | Safe shell script integration: whitelisted scripts only (`EXEC_SCRIPTS_CONFIG`), argv-array execution (no shell), 30s timeout, 64 KB output cap, `READ_ONLY_MODE` compliance. Frontend `ExecAdapter`, backend `ExecService` + `/api/exec/*` routes. |
-| Matter/Thread | ✅ (contrib) | ⏳ | Frontend contrib adapter only. |
-| Zigbee2MQTT | ✅ (contrib, P1 enhanced) | ⏳ | MQTT credentials forwarded; full device classification (grid/load/heatpump/ev by name hints); per-device availability tracking; SET_EV_CURRENT, SET_HEAT_PUMP_POWER commands; bridge version + `trackedDeviceCount`. |
+| Matter/Thread | ✅ (contrib) | ⚠️ | Frontend contrib adapter. Backend **Phase 1 MVP** (`MatterProtocolAdapter`): read-only WS telemetry via `MATTER_BRIDGE_HOST`, static `matter-node-map.json`, EPM/EEM/ElectricalMeasurement clusters. |
+| Zigbee2MQTT | ✅ (contrib, P1 enhanced) | ⚠️ | Frontend: role classification, EV/heat-pump plugs, availability tracking. Backend **Phase 1 MVP** (`Zigbee2MQTTProtocolAdapter`): read-only mqtt.js bridge via `Z2M_BROKER_URL`, auto-discovery + `z2m-device-map.json`. |
 | Shelly REST (Gen1/2/3) | ✅ (contrib, P1 enhanced) | ✅ (webhook route) | Gen1 support (GET /status); auto-detect generation; SET_RELAY command; pv capability; 3-phase phases[] disaggregation; /api/shelly/webhook push receiver (ShellyWebhookBus). |
 | OpenADR 3.1 VEN | ✅ (contrib) | ⚠️ | Frontend contrib adapter + backend OAuth2 proxy (`routes/openadr.routes.ts`). Full VTN integration and event handling is partial. |
 | Example template | ✅ (contrib) | ⏳ | Template for custom adapters — not counted in the shipped 13-adapter inventory. |

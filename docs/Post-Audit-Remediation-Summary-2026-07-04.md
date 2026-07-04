@@ -30,16 +30,16 @@ The project is in **strong shape** for a safety-conscious HEMS dashboard: mock-b
 
 | Adapter | Frontend | Backend `IProtocolAdapter` | Status |
 |---------|----------|------------------------------|--------|
-| Home Assistant MQTT | ✅ contrib | ⚠️ **Phase 1 MVP** (`HomeAssistantProtocolAdapter`) | ha-ws-api read-only telemetry shipped; Zigbee2MQTT/Matter still ⏳ |
-| Zigbee2MQTT | ✅ contrib | ❌ missing | ⏳ |
-| Matter/Thread | ✅ contrib | ❌ missing | ⏳ |
+| Home Assistant MQTT | ✅ contrib | ⚠️ **Phase 1 MVP** (`HomeAssistantProtocolAdapter`) | ha-ws-api read-only telemetry shipped; Zigbee2MQTT/Matter **Phase 1 MVP** shipped; HA MQTT-broker mode + service commands deferred. |
+| Zigbee2MQTT | ✅ contrib | ⚠️ **Phase 1 MVP** (`Zigbee2MQTTProtocolAdapter`) | mqtt.js read-only telemetry + bridge auto-discovery. |
+| Matter/Thread | ✅ contrib | ⚠️ **Phase 1 MVP** (`MatterProtocolAdapter`) | WS controller read-only telemetry (EPM/EEM/ElectricalMeasurement). |
 | OpenEMS | ✅ | ⚠️ telemetry-only (6 channels, no writes) | Partial |
 | OCPP CSMS gateway | ✅ | ⚠️ SP0 inbound only; no outbound smart charging | Partial |
 | OCPP SP3 mTLS proxy | ✅ browser | ✅ `/api/ocpp/proxy-session` + `/ws/ocpp` | Shipped; CRL/OCSP stored but not enforced in relay |
 
 **Evidence:** `apps/api/src/protocols/index.ts` registers 8 adapters; no `homeassistant` under `apps/api/src/protocols/`.
 
-**Plan:** Phase 1 — `HomeAssistantProtocolAdapter` (WS API + MQTT discovery). Phase 2 — Zigbee2MQTT generic MQTT bridge. Phase 3 — deepen OpenEMS/OCPP CSMS command paths.
+**Plan:** Phase 1 — `HomeAssistantProtocolAdapter` (shipped). Phase 2 — `Zigbee2MQTTProtocolAdapter` + `MatterProtocolAdapter` (shipped). Phase 3 — HA MQTT-broker mode, WebSocket live E2E, deepen OpenEMS/OCPP command paths.
 
 ---
 
@@ -51,7 +51,9 @@ The project is in **strong shape** for a safety-conscious HEMS dashboard: mock-b
 
 **Remediation (phase 2, post-PR #261):** `read-only-commands.spec.ts`, `adapter-mode-indicators.spec.ts`, `auth-jwt.spec.ts`.
 
-**Plan:** Add WebSocket live-integration spec; Zigbee2MQTT backend bridge in next phase.
+**Remediation (phase 3, post-PR #262):** `Zigbee2MQTTProtocolAdapter`, `MatterProtocolAdapter` backend MVP.
+
+**Plan:** Add WebSocket live-integration spec; HA MQTT-broker mode in next phase.
 
 ---
 

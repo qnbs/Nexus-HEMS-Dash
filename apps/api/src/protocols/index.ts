@@ -30,10 +30,12 @@ import { EvccAdapter } from './evcc/EvccAdapter.js';
 import { createHeatPumpAdapterFromEnv } from './heatpump/HeatPumpAdapter.js';
 import { createHomeAssistantAdapterFromEnv } from './homeassistant/HomeAssistantProtocolAdapter.js';
 import { KnxAdapter, type KnxGaMapping } from './knx/KnxAdapter.js';
+import { createMatterAdapterFromEnv } from './matter/MatterProtocolAdapter.js';
 import { type DeviceConfig, ModbusAdapter } from './modbus/ModbusAdapter.js';
 import { MqttAdapter } from './mqtt/MqttAdapter.js';
 import { createOcppCsmsAdapterFromEnv } from './ocpp/OcppCsmsProtocolAdapter.js';
 import { createOpenEMSAdapterFromEnv } from './openems/OpenEMSProtocolAdapter.js';
+import { createZigbee2MQTTAdapterFromEnv } from './zigbee2mqtt/Zigbee2MQTTProtocolAdapter.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DEVICE_MAP_PATH = join(__dirname, '../data/device-map.json');
@@ -376,6 +378,54 @@ export async function startProtocolAdapters(eventBus: EventBus): Promise<void> {
         const message = err instanceof Error ? err.message : String(err);
         setState(homeAssistantAdapter.id, homeAssistantAdapter.protocol, 'failed', message);
         console.error('[Adapters] Failed to start HomeAssistantProtocolAdapter:', err);
+      });
+  }
+
+  // -------------------------------------------------------------------------
+  // Zigbee2MQTT (MQTT bridge — read-only telemetry)
+  // Enable via env: Z2M_BROKER_URL=mqtt://mosquitto:1883
+  // -------------------------------------------------------------------------
+  const zigbee2MqttAdapter = createZigbee2MQTTAdapterFromEnv();
+  if (zigbee2MqttAdapter) {
+    activeAdapters.push(zigbee2MqttAdapter);
+    activeAdapterRefs.set(zigbee2MqttAdapter.id, zigbee2MqttAdapter);
+    recordAdapterRegistration(zigbee2MqttAdapter.id, zigbee2MqttAdapter.protocol);
+    setState(zigbee2MqttAdapter.id, zigbee2MqttAdapter.protocol, 'starting');
+
+    zigbee2MqttAdapter
+      .connect()
+      .then(() => {
+        setState(zigbee2MqttAdapter.id, zigbee2MqttAdapter.protocol, 'healthy');
+        pipeAdapterToEventBus(zigbee2MqttAdapter, eventBus);
+      })
+      .catch((err: unknown) => {
+        const message = err instanceof Error ? err.message : String(err);
+        setState(zigbee2MqttAdapter.id, zigbee2MqttAdapter.protocol, 'failed', message);
+        console.error('[Adapters] Failed to start Zigbee2MQTTProtocolAdapter:', err);
+      });
+  }
+
+  // -------------------------------------------------------------------------
+  // Matter/Thread (WebSocket controller — read-only telemetry)
+  // Enable via env: MATTER_BRIDGE_HOST=matter.local
+  // -------------------------------------------------------------------------
+  const matterAdapter = createMatterAdapterFromEnv();
+  if (matterAdapter) {
+    activeAdapters.push(matterAdapter);
+    activeAdapterRefs.set(matterAdapter.id, matterAdapter);
+    recordAdapterRegistration(matterAdapter.id, matterAdapter.protocol);
+    setState(matterAdapter.id, matterAdapter.protocol, 'starting');
+
+    matterAdapter
+      .connect()
+      .then(() => {
+        setState(matterAdapter.id, matterAdapter.protocol, 'healthy');
+        pipeAdapterToEventBus(matterAdapter, eventBus);
+      })
+      .catch((err: unknown) => {
+        const message = err instanceof Error ? err.message : String(err);
+        setState(matterAdapter.id, matterAdapter.protocol, 'failed', message);
+        console.error('[Adapters] Failed to start MatterProtocolAdapter:', err);
       });
   }
 
