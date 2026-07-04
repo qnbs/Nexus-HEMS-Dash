@@ -1,7 +1,7 @@
 # Feature Status — Nexus-HEMS-Dash
 
 **Version:** 1.9.0 shipped (2026-07-02)  
-**Last updated:** 2026-07-03  
+**Last updated:** 2026-07-04 (post-audit remediation + PR #260 merge)  
 **Purpose:** Single source of truth for what is actually implemented, partial, or planned. Use this file to keep README/marketing claims synchronized with the codebase.
 
 > **Rule:** Any PR that changes a feature's implementation status must update this file and the relevant docs before merging.
@@ -71,7 +71,7 @@
 | PDF reports + QR sharing | ✅ | `apps/web/src/components/ExportAndSharing.tsx`, `lib/sharing.ts` |
 | Prometheus monitoring | ✅ | `apps/api/src/middleware/metrics.ts`, `routes/metrics.routes.ts`; per-backend-adapter series via `adapter-metrics.ts` (MED-18) |
 | Adapter health endpoint | ✅ | `GET /api/health` returns mode, overall status, and per-adapter state (`apps/api/src/routes/health.routes.ts`) |
-| Live/Mock mode safety indicator | ✅ | Header banner (live) + simulation badge + persistent read-only banner (`mode.readOnlyBannerWarning`), Settings status, and live-hardware warning in the command-confirmation dialog — driven by `/api/health` mode (`apps/web/src/lib/adapter-mode.ts`, `AppShell.tsx`, `useSafeCommand.tsx`) |
+| Live/Mock mode safety indicator | ✅ | Header banner (live) + simulation badge + persistent read-only banner (`mode.readOnlyBannerWarning`), Settings status, and live-hardware warning in the command-confirmation dialog — driven by `/api/health` `mode` + `readOnly` (`apps/web/src/lib/adapter-mode.ts`, `AppShell.tsx`, `useSafeCommand.tsx`) |
 | Opt-in backend WebSocket consumer | ✅ | `VITE_BACKEND_WS` flag mounts `useServerWebSocket` (ADR-025); maps server `EnergyData` → `UnifiedEnergyModel`; Monitoring shows `serverWsConnected` pill |
 | Built-in adapters disabled by default | ✅ | `isBuiltinAdapterEnabledByDefault()` returns `false`; user enables adapters in Settings (`apps/web/src/lib/adapter-mode.ts`) |
 | Demo data without hardware | ✅ | Mock/simulated energy data when effective adapter mode is `mock` (`apps/api/src/data/mock-data.ts`, `EnergyContext`) |
@@ -112,7 +112,7 @@
 | :------ | :----- | :--------------- |
 | Unit tests (web) | ✅ | 55+ test files; v1.3.x campaign added `settings-tabs` (21), `adapter-worker-target` (12), `hardware-registry` (11), `use-safe-command` (3); #194 added contrib-adapter tests |
 | Unit tests (api) | ✅ | 10+ test files |
-| E2E tests (Playwright) | ⚠️ | 6 spec files; missing auth, command-safety, backend-integration coverage |
+| E2E tests (Playwright) | ⚠️ | 9 spec files (incl. `safety-indicators` for live/mock/read-only banners); auth, command-safety, WS integration still partial |
 | Fuzz/property tests | ✅ | `apps/web/src/tests/security-fuzz.test.ts` |
 | i18n parity test | ✅ | `apps/web/src/tests/i18n-sync.test.ts` |
 | Coverage gates | ✅ | Web vitest + PRF-03 baseline: **78/72/70/80** (statements/branches/functions/lines). API: **55/46/62/55**. See `apps/web/coverage-baseline.json`, `vitest.config.ts`. |

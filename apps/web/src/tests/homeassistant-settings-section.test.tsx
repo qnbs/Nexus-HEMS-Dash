@@ -12,8 +12,8 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
-vi.mock('../lib/adapter-mode', () => ({
-  isReadOnlyModeActive: () => mockReadOnly(),
+vi.mock('../lib/use-read-only-mode', () => ({
+  useReadOnlyModeActive: () => mockReadOnly(),
 }));
 
 vi.mock('../core/useEnergyStore', () => ({

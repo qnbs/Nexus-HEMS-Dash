@@ -96,6 +96,21 @@ describe('handleOcppProxyConnection', () => {
     expect(ws.closeCode).toBe(4403);
   });
 
+  it('rejects when READ_ONLY_MODE is active', async () => {
+    const originalReadOnly = process.env.READ_ONLY_MODE;
+    process.env.READ_ONLY_MODE = 'true';
+    try {
+      const { handleOcppProxyConnection } = await import('../ws/ocpp-proxy.ws.js');
+      const ws = mockWs();
+      await handleOcppProxyConnection(ws, mockReq('/ws/ocpp?session=s1'), false);
+      expect(ws.closeCode).toBe(4403);
+      expect(attachOcppProxyRelay).not.toHaveBeenCalled();
+    } finally {
+      if (originalReadOnly === undefined) delete process.env.READ_ONLY_MODE;
+      else process.env.READ_ONLY_MODE = originalReadOnly;
+    }
+  });
+
   it('attaches relay for valid private session', async () => {
     consume.mockResolvedValueOnce({
       host: '192.168.1.50',

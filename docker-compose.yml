@@ -72,8 +72,10 @@ services:
     secrets:
       - jwt_secret
     networks:
-      - backend
-      - adapters
+      backend:
+        aliases:
+          - api
+      adapters: {}
     healthcheck:
       test: ['CMD', 'wget', '-qO-', 'http://localhost:3000/api/health']
       interval: 15s

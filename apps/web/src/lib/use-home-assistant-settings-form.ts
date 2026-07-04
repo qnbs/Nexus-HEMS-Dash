@@ -5,11 +5,11 @@ import type { HAConnectionMode } from '../core/adapters/contrib/homeassistant-mq
 import { saveHomeAssistantSettings } from '../core/homeassistant-settings-save';
 import { useEnergyStore } from '../core/useEnergyStore';
 import { useAppStoreShallow } from '../store';
-import { isReadOnlyModeActive } from './adapter-mode';
+import { useReadOnlyModeActive } from './use-read-only-mode';
 
 export const useHomeAssistantSettingsForm = () => {
   const { t } = useTranslation();
-  const isReadOnly = isReadOnlyModeActive();
+  const isReadOnly = useReadOnlyModeActive();
   const haEnabled = useEnergyStore((s) => s.adapters['homeassistant-mqtt']?.enabled ?? false);
   const { settings, updateSettings } = useAppStoreShallow((s) => ({
     settings: s.settings,

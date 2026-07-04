@@ -10,8 +10,8 @@ vi.mock('react-i18next', () => ({
 
 const mockReadOnly = vi.fn().mockReturnValue(false);
 
-vi.mock('../lib/adapter-mode', () => ({
-  isReadOnlyModeActive: () => mockReadOnly(),
+vi.mock('../lib/use-read-only-mode', () => ({
+  useReadOnlyModeActive: () => mockReadOnly(),
 }));
 
 describe('ReadOnlySettingsBanner', () => {

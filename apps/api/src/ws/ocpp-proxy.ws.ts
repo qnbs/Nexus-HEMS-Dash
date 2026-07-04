@@ -12,6 +12,7 @@ import { type AuthenticatedClient, authenticateWS } from '../middleware/auth.js'
 import { attachOcppProxyRelay } from '../services/OcppProxyRelay.js';
 import { ocppSessionStore } from '../services/ocpp-session-store.js';
 import { wsTicketStore } from '../services/ws-ticket-store.js';
+import { rejectProxyIfReadOnly } from './proxy-readonly-guard.js';
 import { getWSClientIP, releaseConnection, tryAcquireConnection } from './ws-conn-limit.js';
 
 const SCOPE_ORDER = { read: 0, readwrite: 1, admin: 2 } as const;
@@ -20,6 +21,7 @@ function hasWriteScope(auth: AuthenticatedClient): boolean {
   return SCOPE_ORDER[auth.scope] >= SCOPE_ORDER.readwrite;
 }
 
+/** Returns true when the request targets the OCPP mTLS proxy WebSocket path. */
 export function isOcppProxyPath(req: IncomingMessage): boolean {
   try {
     const url = new URL(req.url || '', `http://${req.headers.host || 'localhost'}`);
@@ -29,6 +31,7 @@ export function isOcppProxyPath(req: IncomingMessage): boolean {
   }
 }
 
+/** Handle a browser OCPP mTLS proxy WebSocket upgrade (`/ws/ocpp`). */
 export async function handleOcppProxyConnection(
   clientWs: WebSocket,
   req: IncomingMessage,
@@ -48,6 +51,8 @@ export async function handleOcppProxyConnection(
     clientWs.close(4003, 'readwrite scope required');
     return;
   }
+
+  if (rejectProxyIfReadOnly(clientWs)) return;
 
   const url = new URL(req.url || '', `http://${req.headers.host || 'localhost'}`);
   const sessionId = url.searchParams.get('session')?.trim();

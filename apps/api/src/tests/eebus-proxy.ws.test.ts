@@ -75,6 +75,25 @@ describe('handleEebusProxyConnection', () => {
     expect(ws.closeCode).toBe(4403);
   });
 
+  it('rejects when READ_ONLY_MODE is active', async () => {
+    const originalReadOnly = process.env.READ_ONLY_MODE;
+    process.env.READ_ONLY_MODE = 'true';
+    try {
+      const { handleEebusProxyConnection } = await import('../ws/eebus-proxy.ws.js');
+      const ws = mockWs();
+      await handleEebusProxyConnection(
+        ws,
+        mockReq(`/ws/eebus?ski=${'a'.repeat(40)}&host=192.168.1.5`),
+        false,
+      );
+      expect(ws.closeCode).toBe(4403);
+      expect(attachClientRelay).not.toHaveBeenCalled();
+    } finally {
+      if (originalReadOnly === undefined) delete process.env.READ_ONLY_MODE;
+      else process.env.READ_ONLY_MODE = originalReadOnly;
+    }
+  });
+
   it('resolves host from trust store and attaches relay', async () => {
     getDevice.mockResolvedValueOnce({
       ski: 'a'.repeat(40),

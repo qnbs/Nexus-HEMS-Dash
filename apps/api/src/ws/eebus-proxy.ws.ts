@@ -12,6 +12,7 @@ import { type AuthenticatedClient, authenticateWS } from '../middleware/auth.js'
 import { getDevice } from '../services/EEBusTrustStore.js';
 import { attachClientRelay } from '../services/ShipHandshakeService.js';
 import { wsTicketStore } from '../services/ws-ticket-store.js';
+import { rejectProxyIfReadOnly } from './proxy-readonly-guard.js';
 import { getWSClientIP, releaseConnection, tryAcquireConnection } from './ws-conn-limit.js';
 
 const SCOPE_ORDER = { read: 0, readwrite: 1, admin: 2 } as const;
@@ -20,6 +21,7 @@ function hasWriteScope(auth: AuthenticatedClient): boolean {
   return SCOPE_ORDER[auth.scope] >= SCOPE_ORDER.readwrite;
 }
 
+/** Returns true when the request targets the EEBUS mTLS proxy WebSocket path. */
 export function isEebusProxyPath(req: IncomingMessage): boolean {
   try {
     const url = new URL(req.url || '', `http://${req.headers.host || 'localhost'}`);
@@ -29,6 +31,7 @@ export function isEebusProxyPath(req: IncomingMessage): boolean {
   }
 }
 
+/** Handle a browser EEBUS SHIP mTLS proxy WebSocket upgrade (`/ws/eebus`). */
 export async function handleEebusProxyConnection(
   clientWs: WebSocket,
   req: IncomingMessage,
@@ -48,6 +51,8 @@ export async function handleEebusProxyConnection(
     clientWs.close(4003, 'readwrite scope required');
     return;
   }
+
+  if (rejectProxyIfReadOnly(clientWs)) return;
 
   const url = new URL(req.url || '', `http://${req.headers.host || 'localhost'}`);
   const ski = url.searchParams.get('ski')?.trim();
