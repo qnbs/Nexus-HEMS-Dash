@@ -124,6 +124,91 @@ describe('Zigbee2MQTTProtocolAdapter', () => {
     expect(result.value?.value).toBe(800);
   });
 
+  it('auto-discovers multiple energy devices from one bridge/devices payload', async () => {
+    const stream = adapter.getDataStream();
+    const firstPromise = stream.next();
+    const secondPromise = stream.next();
+
+    mockClientInstance.emit(
+      'message',
+      'zigbee2mqtt/bridge/devices',
+      Buffer.from(
+        JSON.stringify([
+          {
+            friendly_name: 'heat_pump_plug',
+            type: 'EndDevice',
+            definition: {
+              exposes: [
+                { type: 'switch', name: 'state' },
+                { type: 'numeric', name: 'power' },
+              ],
+            },
+          },
+          {
+            friendly_name: 'grid_meter',
+            type: 'EndDevice',
+            definition: {
+              description: 'Energy meter',
+              exposes: [
+                { type: 'numeric', name: 'power' },
+                { type: 'numeric', name: 'energy' },
+              ],
+            },
+          },
+        ]),
+      ),
+      { retain: false },
+    );
+
+    mockClientInstance.emit(
+      'message',
+      'zigbee2mqtt/heat_pump_plug',
+      Buffer.from(JSON.stringify({ power: 800 })),
+      { retain: false },
+    );
+    mockClientInstance.emit(
+      'message',
+      'zigbee2mqtt/grid_meter',
+      Buffer.from(JSON.stringify({ power: 1500 })),
+      { retain: false },
+    );
+
+    const first = await firstPromise;
+    const second = await secondPromise;
+    await adapter.disconnect();
+
+    const roles = [first.value?.role, second.value?.role].sort();
+    expect(roles).toEqual(['grid', 'heatpump']);
+  });
+
+  it('skips offline devices after availability topic reports offline', async () => {
+    const stream = adapter.getDataStream();
+    const collectPromise = (async () => {
+      const values = [];
+      for await (const dp of stream) {
+        values.push(dp);
+      }
+      return values;
+    })();
+
+    mockClientInstance.emit(
+      'message',
+      'zigbee2mqtt/grid_meter/availability',
+      Buffer.from('offline'),
+      { retain: false },
+    );
+    mockClientInstance.emit(
+      'message',
+      'zigbee2mqtt/grid_meter',
+      Buffer.from(JSON.stringify({ power: 1250 })),
+      { retain: false },
+    );
+
+    await adapter.disconnect();
+    const values = await collectPromise;
+    expect(values).toHaveLength(0);
+  });
+
   it('createZigbee2MQTTAdapterFromEnv returns null without broker URL', () => {
     expect(createZigbee2MQTTAdapterFromEnv({})).toBeNull();
     expect(

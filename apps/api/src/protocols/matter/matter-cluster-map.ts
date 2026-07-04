@@ -62,7 +62,7 @@ export function resolveMatterAttribute(
     return { metric: 'ENERGY_KWH', role, scale };
   }
   if (update.cluster === MATTER_CLUSTER.EEM && update.attribute === 'cumulativeEnergyImported') {
-    return { metric: 'ENERGY_KWH', role, scale: scale / 1000 };
+    return { metric: 'ENERGY_KWH', role, scale: scale / 1_000_000 };
   }
 
   return null;

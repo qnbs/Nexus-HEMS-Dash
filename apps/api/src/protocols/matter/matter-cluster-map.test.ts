@@ -23,6 +23,20 @@ describe('matter-cluster-map', () => {
     expect(parseMatterNumericValue(2_500_000, resolution!)).toBe(2500);
   });
 
+  it('maps EEM cumulativeEnergyImported from milliwatt-hours to kWh', () => {
+    const resolution = resolveMatterAttribute(
+      {
+        nodeId: 42,
+        cluster: MATTER_CLUSTER.EEM,
+        attribute: 'cumulativeEnergyImported',
+        value: 5_000_000,
+      },
+      staticMap,
+    );
+    expect(resolution?.metric).toBe('ENERGY_KWH');
+    expect(parseMatterNumericValue(5_000_000, resolution!)).toBe(5);
+  });
+
   it('maps legacy electrical measurement activePower directly', () => {
     const resolution = resolveMatterAttribute(
       {
