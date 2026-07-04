@@ -21,10 +21,9 @@ test.describe('Read-only command rejection', () => {
       .first()
       .click();
 
-    await expect(page.getByText(/command rejected|befehl abgelehnt/i)).toBeVisible({
-      timeout: 10_000,
-    });
-    await expect(page.getByText(/read-only|nur-lese/i)).toBeVisible();
+    const rejectionToast = page.getByText(/command rejected|befehl abgelehnt/i);
+    await expect(rejectionToast).toBeVisible({ timeout: 10_000 });
+    await expect(rejectionToast).toContainText(/read-only|nur-lese/i);
   });
 
   test('shows read-only banner on settings adapters tab', async ({ page }) => {
