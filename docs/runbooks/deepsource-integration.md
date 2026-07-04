@@ -69,6 +69,37 @@ Do **not** use bare `// skipcq` because it silences every rule on that line.
 
 For repository-wide suppressions, update `.deepsource.toml` or use the DeepSource dashboard ignore rules, and document the rationale in the PR.
 
+### Muting a whole rule (repo-scoped, dashboard)
+
+For rule-fit noise — a rule that structurally does not apply to this codebase, where
+per-line `skipcq` would be needed on hundreds of lines — mute the rule for the
+repository from the dashboard:
+
+1. Open the [repository dashboard](https://deepsource.io/gh/qnbs/Nexus-HEMS-Dash).
+2. Go to the issue (e.g. from the **Issues** tab or a PR annotation) and open the
+   issue-code page (e.g. `JS-0067`).
+3. Use **Ignore issue → Ignore for the repository** (repo-scoped; available on all
+   account tiers). Add the rationale in the note field.
+
+> **API note:** the GraphQL `suppressIssueForTeam` mutation (team-default policy that
+> silences a rule across *every* repo under the account) returns
+> `Operation not allowed on this account type` on the current (non-paid) tier — it is
+> a paid feature. Use the repo-scoped dashboard path above instead. Per-occurrence
+> muting (`suppressIssueOccurrence`) is available but does not scale to rule-fit noise.
+
+**Currently recommended repo-scoped mutes (rule-fit noise, not real defects):**
+
+| Rule | Count | Why it is noise here |
+|---|---|---|
+| `JS-0067` (no global scope) | ~213 | Fires on top-level statements in ES modules; every file in an ESM/Vite codebase has module-scope code by design. |
+| `JS-0833` | ~7 | Idiom mismatch; the flagged pattern is intentional and Biome-clean. |
+
+Mute both **for the repository** (not team-wide) with the rationale above. Everything
+else in the DeepSource backlog is either a real fix (landed in the code) or an accepted
+strict-mode idiom (`JS-0339` non-null under `noUncheckedIndexedAccess`, `JS-0116`,
+`JS-0437` already `biome-ignore`d, `JS-0002` dev-guarded) — do **not** add codebase
+suppressions for those.
+
 ---
 
 ## Autofix Policy
