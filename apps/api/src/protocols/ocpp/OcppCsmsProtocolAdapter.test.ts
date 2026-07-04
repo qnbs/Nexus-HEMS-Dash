@@ -18,7 +18,7 @@ async function connectChargePoint(port: number, cpId: string): Promise<WebSocket
   client.on('message', (data) => {
     const msg = JSON.parse(String(data)) as [number, string, ...unknown[]];
     if (msg[0] === 2) {
-      client.send(JSON.stringify([3, msg[1], {}]));
+      client.send(JSON.stringify([3, msg[1], { status: 'Accepted' }]));
     }
   });
   return client;
@@ -215,7 +215,7 @@ describe('OcppCsmsProtocolAdapter', () => {
     client.on('message', (data) => {
       const msg = JSON.parse(String(data)) as [number, string, ...unknown[]];
       if (msg[0] === 2) {
-        client.send(JSON.stringify([3, msg[1], {}]));
+        client.send(JSON.stringify([3, msg[1], { status: 'Accepted' }]));
       }
     });
 
@@ -281,5 +281,35 @@ describe('OcppCsmsProtocolAdapter', () => {
     const result = await adapter.sendCommand({ type: 'SET_EV_POWER', value: 5000 });
     expect(result.success).toBe(false);
     client.close();
+  });
+
+  it('fails when charge point responds without Accepted status', async () => {
+    const client = new WebSocket(`ws://127.0.0.1:${boundPort}/CP-NOSTATUS`, 'ocpp2.0.1');
+    await new Promise<void>((resolve, reject) => {
+      client.once('open', () => resolve());
+      client.once('error', reject);
+    });
+    client.on('message', (data) => {
+      const msg = JSON.parse(String(data)) as [number, string, ...unknown[]];
+      if (msg[0] === 2) {
+        client.send(JSON.stringify([3, msg[1], {}]));
+      }
+    });
+
+    const result = await adapter.sendCommand({ type: 'SET_EV_POWER', value: 5000 });
+    expect(result.success).toBe(false);
+    client.close();
+  });
+
+  it('rejects commands when multiple charge points are connected', async () => {
+    const clientA = await connectChargePoint(boundPort, 'CP-MULTI-A');
+    const clientB = await connectChargePoint(boundPort, 'CP-MULTI-B');
+
+    const result = await adapter.sendCommand({ type: 'SET_EV_POWER', value: 5000 });
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('Multiple charge points');
+
+    clientA.close();
+    clientB.close();
   });
 });

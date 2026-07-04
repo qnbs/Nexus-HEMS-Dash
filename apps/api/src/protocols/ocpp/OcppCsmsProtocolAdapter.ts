@@ -60,8 +60,6 @@ interface ChargePointSession {
   lastSocPercent: number | undefined;
   lastSeenMs: number;
   transactionId: string | undefined;
-  maxCurrentA: number;
-  voltageV: number;
 }
 
 export interface OcppCsmsProtocolAdapterConfig {
@@ -141,8 +139,6 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
           lastSocPercent: undefined,
           lastSeenMs: Date.now(),
           transactionId: undefined,
-          maxCurrentA: 32,
-          voltageV: 230,
         });
 
         ws.on('message', (data) => {
@@ -260,9 +256,9 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
 
   private handleMessage(ws: WebSocket, msg: OcppInboundMessage): void {
     if (msg[0] === OCPP_CALLRESULT) {
+      if (!this.outboundPending.has(msg[1])) return;
       const payload = msg[2] as { status?: string };
-      const accepted = payload.status === undefined || payload.status === 'Accepted';
-      this.resolveOutboundPending(msg[1], accepted);
+      this.resolveOutboundPending(msg[1], payload.status === 'Accepted');
       return;
     }
     if (msg[0] === OCPP_CALLERROR) {
@@ -354,12 +350,20 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
     }
 
     const active = this.pickActiveSession();
-    if (!active) {
+    if (active.kind === 'none') {
       return {
         handled: true,
         success: false,
         adapterId: this.id,
         error: 'No charge point connected',
+      };
+    }
+    if (active.kind === 'ambiguous') {
+      return {
+        handled: true,
+        success: false,
+        adapterId: this.id,
+        error: 'Multiple charge points connected',
       };
     }
 
@@ -396,7 +400,6 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
             error: 'SET_EV_CURRENT requires a non-negative number',
           };
         }
-        session.maxCurrentA = command.value;
         acknowledged = await this.sendSetChargingProfileA(ws, command.value);
         break;
       }
@@ -428,13 +431,19 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
         };
   }
 
-  private pickActiveSession(): { ws: WebSocket; session: ChargePointSession } | null {
+  private pickActiveSession():
+    | { kind: 'single'; ws: WebSocket; session: ChargePointSession }
+    | { kind: 'none' }
+    | { kind: 'ambiguous' } {
+    const open: Array<{ ws: WebSocket; session: ChargePointSession }> = [];
     for (const [ws, session] of this.sessions) {
       if (ws.readyState === WebSocket.OPEN) {
-        return { ws, session };
+        open.push({ ws, session });
       }
     }
-    return null;
+    if (open.length === 0) return { kind: 'none' };
+    if (open.length > 1) return { kind: 'ambiguous' };
+    return { kind: 'single', ws: open[0]!.ws, session: open[0]!.session };
   }
 
   private resolveOutboundPending(messageId: string, success: boolean): void {
