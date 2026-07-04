@@ -22,6 +22,8 @@ Triggered automatically when a **GitHub Release is published**, or manually:
 3. Version: current root `package.json` version (without leading `v`, e.g. `1.10.0`)
 4. Wait for linux + macos + windows matrix jobs
 
+**macOS signing:** CI defaults to **ad-hoc signing** (unsigned `.app`/`.dmg`) so builds succeed without Apple Developer secrets. For signed + notarized macOS artifacts, set repository variable `MACOS_CODESIGN_ENABLED=true` and configure `APPLE_CERTIFICATE`, `APPLE_CERTIFICATE_PASSWORD`, `APPLE_SIGNING_IDENTITY`, `APPLE_ID`, `APPLE_PASSWORD`, `APPLE_TEAM_ID` secrets.
+
 ## Deploy (GitHub Pages)
 
 Auto-deploys on every push to `main` (post-green-CI). If deploy fails transiently (`Deployment failed, try again later.`):

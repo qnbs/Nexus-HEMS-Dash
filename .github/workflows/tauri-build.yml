@@ -19,6 +19,7 @@ concurrency:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  CI: true
 
 jobs:
   build-tauri:
@@ -82,11 +83,35 @@ jobs:
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
           echo "Resolved Tauri release version: ${VERSION}"
 
-      - name: Build Tauri app
+      # Default CI path: ad-hoc sign macOS bundles ("-") so broken/missing Apple
+      # secrets do not fail the matrix. Enable signed+notarized builds only when
+      # repository variable MACOS_CODESIGN_ENABLED=true and Apple secrets are valid.
+      - name: Configure macOS ad-hoc signing (default CI)
+        if: matrix.target == 'macos' && vars.MACOS_CODESIGN_ENABLED != 'true'
+        run: |
+          jq '.bundle.macOS.signingIdentity = "-"' apps/web/src-tauri/tauri.conf.json > /tmp/tauri.conf.json
+          mv /tmp/tauri.conf.json apps/web/src-tauri/tauri.conf.json
+          echo "::notice::macOS ad-hoc signing (unsigned .app/.dmg). Set repository variable MACOS_CODESIGN_ENABLED=true with valid Apple secrets for notarized releases."
+
+      - name: Build Tauri app (Linux / Windows / macOS ad-hoc)
+        if: matrix.target != 'macos' || vars.MACOS_CODESIGN_ENABLED != 'true'
         uses: tauri-apps/tauri-action@84b9d35b5fc46c1e45415bdb6144030364f7ebc5 # action-v0.6.2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # macOS code signing + notarization
+        with:
+          projectPath: apps/web/src-tauri
+          tagName: v${{ steps.release-version.outputs.version }}
+          releaseName: 'Nexus HEMS Dashboard v${{ steps.release-version.outputs.version }}'
+          releaseBody: 'Desktop builds for Nexus HEMS Dashboard v${{ steps.release-version.outputs.version }}.'
+          releaseDraft: true
+          prerelease: false
+          retryAttempts: 3
+
+      - name: Build Tauri app (macOS signed + notarized)
+        if: matrix.target == 'macos' && vars.MACOS_CODESIGN_ENABLED == 'true'
+        uses: tauri-apps/tauri-action@84b9d35b5fc46c1e45415bdb6144030364f7ebc5 # action-v0.6.2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
           APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
           APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
@@ -100,3 +125,4 @@ jobs:
           releaseBody: 'Desktop builds for Nexus HEMS Dashboard v${{ steps.release-version.outputs.version }}.'
           releaseDraft: true
           prerelease: false
+          retryAttempts: 3
