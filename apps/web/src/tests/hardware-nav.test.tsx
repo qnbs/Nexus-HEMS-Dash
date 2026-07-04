@@ -28,7 +28,10 @@ import { useAppStore } from '../store';
 
 beforeEach(() => {
   mockNavigate.mockClear();
-  useAppStore.setState({ connected: false });
+  useAppStore.setState((state) => ({
+    connected: false,
+    settings: { ...state.settings, keyboardShortcuts: true },
+  }));
 });
 
 describe('Sidebar navigation', () => {
@@ -128,7 +131,6 @@ describe('CommandPalette navigation', () => {
     'nav-hardware': '/settings/hardware',
     'nav-plugins': '/plugins',
     'nav-help': '/help',
-    'device-grid': '/energy-flow',
   };
 
   it('routes every navigation command to its target path', async () => {

@@ -118,5 +118,5 @@ export const MAX_RECENT_COMMANDS = 8;
 export interface CommandProvider {
   id: string;
   priority: number;
-  getCommands: (ctx: CommandContext) => CommandDefinition[] | Promise<CommandDefinition[]>;
+  getCommands: (ctx: CommandContext) => CommandDefinition[];
 }

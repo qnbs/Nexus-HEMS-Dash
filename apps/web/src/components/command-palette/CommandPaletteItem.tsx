@@ -74,6 +74,7 @@ export function CommandPaletteItem({
       onClick={onSelect}
       onMouseEnter={onHover}
       role="option"
+      tabIndex={-1}
       aria-selected={isSelected}
       aria-disabled={cmd.disabled}
       disabled={cmd.disabled}
@@ -88,8 +89,9 @@ export function CommandPaletteItem({
         <CommandPaletteItemSubtitle cmd={cmd} categoryLabel={categoryLabel} t={t} />
       </div>
       {cmd.isFavorite ? (
-        <span className="text-(--color-primary) text-xs" aria-hidden="true">
-          ★
+        <span className="text-(--color-primary) text-xs">
+          <span aria-hidden="true">★</span>
+          <span className="sr-only">{t('command.favorite')}</span>
         </span>
       ) : null}
       {isSelected ? (

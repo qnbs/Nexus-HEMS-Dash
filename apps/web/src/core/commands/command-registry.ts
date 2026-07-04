@@ -96,7 +96,12 @@ export function collectCommandDefinitions(ctx: CommandContext): CommandDefinitio
   const merged: CommandDefinition[] = [];
 
   const add = (cmd: CommandDefinition) => {
-    if (seen.has(cmd.id)) return;
+    if (seen.has(cmd.id)) {
+      if (import.meta.env.DEV) {
+        console.warn('[CommandRegistry] Duplicate command id skipped:', cmd.id);
+      }
+      return;
+    }
     if (!isVisible(cmd, ctx)) return;
     seen.add(cmd.id);
     merged.push(cmd);
@@ -108,12 +113,7 @@ export function collectCommandDefinitions(ctx: CommandContext): CommandDefinitio
 
   for (const provider of providers) {
     try {
-      const cmds = provider.getCommands(ctx);
-      const resolved = cmds instanceof Promise ? [] : cmds;
-      if (cmds instanceof Promise && import.meta.env.DEV) {
-        console.warn('[CommandRegistry] Sync provider expected, got Promise:', provider.id);
-      }
-      for (const cmd of resolved) add(cmd);
+      for (const cmd of provider.getCommands(ctx)) add(cmd);
     } catch (err) {
       if (import.meta.env.DEV) {
         console.warn('[CommandRegistry] Provider failed:', provider.id, err);
@@ -196,8 +196,12 @@ export function resolveCommands(
   const filtered = options.query.trim().length > 0 ? resolved.filter((c) => c.score > 0) : resolved;
 
   filtered.sort((a, b) => {
-    const sa = SECTION_SORT_ORDER.indexOf(a.section);
-    const sb = SECTION_SORT_ORDER.indexOf(b.section);
+    const rank = (section: ResolvedCommand['section']) => {
+      const index = SECTION_SORT_ORDER.indexOf(section);
+      return index === -1 ? SECTION_SORT_ORDER.length : index;
+    };
+    const sa = rank(a.section);
+    const sb = rank(b.section);
     if (sa !== sb) return sa - sb;
     return b.score - a.score || a.label.localeCompare(b.label);
   });

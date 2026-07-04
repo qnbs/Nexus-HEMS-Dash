@@ -13,6 +13,7 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import type { CommandDefinition } from '../types';
+import { navigateAndClose } from './provider-utils';
 
 function nav(
   id: string,
@@ -29,10 +30,7 @@ function nav(
     risk: 'safe',
     keywords,
     source: 'core',
-    execute: (ctx) => {
-      ctx.navigate(path);
-      ctx.actions.closePalette();
-    },
+    execute: (ctx) => navigateAndClose(ctx, path),
   };
 }
 
@@ -162,18 +160,5 @@ export function createNavigationCommands(): CommandDefinition[] {
       'design',
       'darstellung',
     ]),
-    {
-      id: 'device-grid',
-      labelKey: 'command.viewGrid',
-      icon: Activity,
-      category: 'device',
-      risk: 'safe',
-      keywords: ['import', 'export', 'netzbezug', 'grid'],
-      source: 'core',
-      execute: (ctx) => {
-        ctx.navigate('/energy-flow');
-        ctx.actions.closePalette();
-      },
-    },
   ];
 }

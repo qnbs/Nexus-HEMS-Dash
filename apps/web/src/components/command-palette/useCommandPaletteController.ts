@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import '../../core/commands/providers';
 import {
   executeResolvedCommand,
@@ -10,7 +10,7 @@ import {
 } from '../../core/commands';
 import type { CommandPreview } from '../../core/commands/types';
 import { useFocusTrap } from '../../lib/useFocusTrap';
-import { useAppStore } from '../../store';
+import { useAppStoreShallow } from '../../store';
 import {
   getPaletteMotionProps,
   handlePaletteKeyDown,
@@ -38,21 +38,18 @@ export function useCommandPaletteController({
   const inputRef = useRef<HTMLInputElement>(null);
   const containerFocusRef = useRef<HTMLDivElement>(null);
 
-  const commandPalette = useAppStore((s) => s.commandPalette);
-  const reducedMotion = useAppStore((s) => s.settings.reducedMotion);
-  const recordCommandUsage = useAppStore((s) => s.recordCommandUsage);
-  const toggleCommandFavorite = useAppStore((s) => s.toggleCommandFavorite);
-
-  const recordUsage = useCallback((id: string) => recordCommandUsage(id), [recordCommandUsage]);
-  const toggleFavorite = useCallback(
-    (id: string) => toggleCommandFavorite(id),
-    [toggleCommandFavorite],
-  );
+  const { commandPalette, reducedMotion, recordCommandUsage, toggleCommandFavorite } =
+    useAppStoreShallow((s) => ({
+      commandPalette: s.commandPalette,
+      reducedMotion: s.settings.reducedMotion,
+      recordCommandUsage: s.recordCommandUsage,
+      toggleCommandFavorite: s.toggleCommandFavorite,
+    }));
 
   const ctx = useCommandContext({
     closePalette: onClose,
-    recordUsage,
-    toggleFavorite,
+    recordUsage: recordCommandUsage,
+    toggleFavorite: toggleCommandFavorite,
     ...(onOptimize !== undefined ? { onOptimize } : {}),
     ...(onExportReport !== undefined ? { onExportReport } : {}),
   });
@@ -91,34 +88,37 @@ export function useCommandPaletteController({
 
   const clampedIndex = commands.length === 0 ? 0 : Math.min(selectedIndex, commands.length - 1);
 
-  const runCommand = useCallback(
-    async (index: number) => {
-      const cmd = commands[index];
-      if (!cmd) return;
-      await executeResolvedCommand(cmd, ctx);
-      if (!cmd.disabled) onClose();
-    },
-    [commands, ctx, onClose],
-  );
+  const runCommand = async (index: number) => {
+    const cmd = commands[index];
+    if (!cmd) return;
+    const result = await executeResolvedCommand(cmd, ctx);
+    if (result.ok) onClose();
+  };
 
-  const onSelectCommand = useCallback(
-    (index: number) => invokeAsyncCommand(runCommand, index),
-    [runCommand],
-  );
+  const onSelectCommand = (index: number) => invokeAsyncCommand(runCommand, index);
+
+  const keyDownStateRef = useRef({
+    isOpen,
+    commandCount: commands.length,
+    clampedIndex,
+    setSelectedIndex,
+    runCommand,
+  });
+  keyDownStateRef.current = {
+    isOpen,
+    commandCount: commands.length,
+    clampedIndex,
+    setSelectedIndex,
+    runCommand,
+  };
 
   useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) =>
-      handlePaletteKeyDown(e, {
-        isOpen,
-        commandCount: commands.length,
-        clampedIndex,
-        setSelectedIndex,
-        runCommand,
-      });
+    if (!isOpen) return undefined;
 
+    const onKeyDown = (e: KeyboardEvent) => handlePaletteKeyDown(e, keyDownStateRef.current);
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [isOpen, clampedIndex, commands.length, runCommand]);
+  }, [isOpen]);
 
   const selectedCommand = commands[clampedIndex] ?? null;
   const previewData: CommandPreview | null = useMemo(() => {
@@ -128,6 +128,7 @@ export function useCommandPaletteController({
 
   const activeDescendant = selectedCommand ? `cmd-${selectedCommand.id}` : undefined;
   const motionProps = getPaletteMotionProps(reducedMotion);
+  const hasListbox = commands.length > 0;
 
   return {
     search,
@@ -141,6 +142,7 @@ export function useCommandPaletteController({
     selectedCommand,
     previewData,
     activeDescendant,
+    hasListbox,
     motionProps,
     onSelectCommand,
   };

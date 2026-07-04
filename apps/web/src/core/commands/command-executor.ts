@@ -6,6 +6,15 @@ export interface ExecuteResult {
   reason?: 'readonly' | 'scope' | 'disabled' | 'error';
 }
 
+function resolveDisabledReason(
+  cmd: ResolvedCommand,
+  ctx: CommandContext,
+): NonNullable<ExecuteResult['reason']> {
+  if (cmd.blockedInReadOnly && ctx.isReadOnly) return 'readonly';
+  if (cmd.disabledReasonKey === 'command.insufficientScope') return 'scope';
+  return 'disabled';
+}
+
 /**
  * Execute a resolved palette command with safety gates and usage tracking.
  */
@@ -17,16 +26,17 @@ export async function executeResolvedCommand(
     if (cmd.disabledReasonKey) {
       toast.error(ctx.t(cmd.disabledReasonKey));
     }
-    return { ok: false, reason: cmd.blockedInReadOnly && ctx.isReadOnly ? 'readonly' : 'disabled' };
+    return { ok: false, reason: resolveDisabledReason(cmd, ctx) };
   }
 
   try {
     await cmd.execute(ctx);
-    ctx.actions.recordUsage(cmd.id);
-    return { ok: true };
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Command failed';
+    const message = err instanceof Error ? err.message : ctx.t('command.executeFailed');
     toast.error(message);
     return { ok: false, reason: 'error' };
   }
+
+  ctx.actions.recordUsage(cmd.id);
+  return { ok: true };
 }

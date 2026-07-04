@@ -1,5 +1,6 @@
 import { Keyboard, Star } from 'lucide-react';
 import type { CommandDefinition } from '../types';
+import { navigateAndClose } from './provider-utils';
 
 export function createSystemCommands(): CommandDefinition[] {
   return [
@@ -11,10 +12,7 @@ export function createSystemCommands(): CommandDefinition[] {
       risk: 'safe',
       keywords: ['keyboard', 'shortcuts', 'help', 'tastatur'],
       source: 'core',
-      execute: (ctx) => {
-        ctx.navigate('/help?tab=shortcuts');
-        ctx.actions.closePalette();
-      },
+      execute: (ctx) => navigateAndClose(ctx, '/help?tab=shortcuts'),
     },
     {
       id: 'system.toggleFavorite',

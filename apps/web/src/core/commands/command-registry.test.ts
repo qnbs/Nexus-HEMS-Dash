@@ -262,12 +262,29 @@ describe('command providers', () => {
     expect(favorite?.section).toBe('favorites');
   });
 
-  it('ignores async provider results', () => {
+  it('warns when provider returns a duplicate command id', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    registerCommand({
+      id: 'provider.dup',
+      labelKey: 'x',
+      category: 'system' as const,
+      risk: 'safe' as const,
+      source: 'core' as const,
+      execute: () => {},
+    });
     registerCommandProvider({
-      id: 'async-provider',
+      id: 'dup-provider',
       priority: 50,
-      getCommands: () => Promise.resolve([]),
+      getCommands: () => [
+        {
+          id: 'provider.dup',
+          labelKey: 'y',
+          category: 'system',
+          risk: 'safe',
+          source: 'adapter',
+          execute: () => {},
+        },
+      ],
     });
     const ctx = mockContext();
     collectCommandDefinitions(ctx);

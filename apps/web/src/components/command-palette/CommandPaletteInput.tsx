@@ -5,6 +5,7 @@ interface CommandPaletteInputProps {
   value: string;
   onChange: (value: string) => void;
   inputRef: React.RefObject<HTMLInputElement | null>;
+  hasListbox: boolean;
   activeDescendant?: string;
 }
 
@@ -12,6 +13,7 @@ export function CommandPaletteInput({
   value,
   onChange,
   inputRef,
+  hasListbox,
   activeDescendant,
 }: CommandPaletteInputProps) {
   const { t } = useTranslation();
@@ -27,8 +29,8 @@ export function CommandPaletteInput({
         placeholder={t('command.searchPlaceholder')}
         className="min-h-11 flex-1 bg-transparent text-(--color-text) outline-none placeholder:text-(--color-muted)"
         role="combobox"
-        aria-expanded="true"
-        aria-controls="command-listbox"
+        aria-expanded={hasListbox}
+        {...(hasListbox ? { 'aria-controls': 'command-listbox' } : {})}
         aria-activedescendant={activeDescendant}
         aria-autocomplete="list"
         aria-label={t('accessibility.searchCommands')}

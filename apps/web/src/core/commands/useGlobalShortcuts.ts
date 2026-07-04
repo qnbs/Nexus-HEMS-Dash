@@ -17,7 +17,7 @@ export function useGlobalShortcuts(handlers: CommandPaletteShortcutHandlers): vo
 
     const handleKeyDown = (e: KeyboardEvent) => {
       const mod = e.metaKey || e.ctrlKey;
-      if (!mod) return;
+      if (!mod || e.repeat) return;
 
       if (e.key === 'k') {
         e.preventDefault();

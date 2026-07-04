@@ -74,6 +74,18 @@ describe('executeResolvedCommand', () => {
     expect(cmd.execute).not.toHaveBeenCalled();
   });
 
+  it('returns scope when command lacks permissions', async () => {
+    const ctx = mockContext();
+    const cmd = mockCommand({
+      disabled: true,
+      disabledReasonKey: 'command.insufficientScope',
+    });
+
+    const result = await executeResolvedCommand(cmd, ctx);
+
+    expect(result).toEqual({ ok: false, reason: 'scope' });
+  });
+
   it('records usage after successful execution', async () => {
     const ctx = mockContext();
     const cmd = mockCommand();

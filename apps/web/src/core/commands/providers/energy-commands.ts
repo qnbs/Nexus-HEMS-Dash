@@ -1,5 +1,6 @@
 import { Battery, Sparkles, TrendingUp, Zap } from 'lucide-react';
 import type { CommandDefinition } from '../types';
+import { navigateAndClose } from './provider-utils';
 
 export function createEnergyCommands(): CommandDefinition[] {
   return [
@@ -20,10 +21,7 @@ export function createEnergyCommands(): CommandDefinition[] {
           { labelKey: 'command.preview.load', value: `${ctx.energy.houseLoad.toFixed(1)} kW` },
         ],
       }),
-      execute: (ctx) => {
-        ctx.navigate('/optimization-ai');
-        ctx.actions.closePalette();
-      },
+      execute: (ctx) => navigateAndClose(ctx, '/optimization-ai'),
     },
     {
       id: 'energy.viewBattery',
@@ -41,10 +39,7 @@ export function createEnergyCommands(): CommandDefinition[] {
           { labelKey: 'command.preview.soc', value: `${ctx.energy.batterySoC.toFixed(0)}%` },
         ],
       }),
-      execute: (ctx) => {
-        ctx.navigate('/energy-flow');
-        ctx.actions.closePalette();
-      },
+      execute: (ctx) => navigateAndClose(ctx, '/energy-flow'),
     },
     {
       id: 'energy.viewTariffs',
@@ -65,10 +60,7 @@ export function createEnergyCommands(): CommandDefinition[] {
           },
         ],
       }),
-      execute: (ctx) => {
-        ctx.navigate('/tariffs');
-        ctx.actions.closePalette();
-      },
+      execute: (ctx) => navigateAndClose(ctx, '/tariffs'),
     },
     {
       id: 'energy.viewGrid',
@@ -76,19 +68,15 @@ export function createEnergyCommands(): CommandDefinition[] {
       icon: Zap,
       category: 'energy',
       risk: 'safe',
-      keywords: ['grid', 'import', 'export', 'netz'],
+      keywords: ['grid', 'import', 'export', 'netz', 'netzbezug'],
       source: 'core',
-      when: (ctx) => Math.abs(ctx.energy.gridPower) > 2,
       preview: (ctx) => ({
         titleKey: 'command.preview.gridFlow',
         metrics: [
           { labelKey: 'command.preview.gridPower', value: `${ctx.energy.gridPower.toFixed(1)} kW` },
         ],
       }),
-      execute: (ctx) => {
-        ctx.navigate('/energy-flow');
-        ctx.actions.closePalette();
-      },
+      execute: (ctx) => navigateAndClose(ctx, '/energy-flow'),
     },
   ];
 }
