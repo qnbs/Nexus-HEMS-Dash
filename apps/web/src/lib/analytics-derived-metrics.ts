@@ -4,6 +4,7 @@ import { isPeakElectricityHour, isSolarPeakHour } from './analytics-chart-data';
 import { getUbaFactor } from './co2-report';
 import { calculateCo2Savings } from './format';
 
+/** Derived KPI and efficiency metrics for the Analytics dashboard. */
 export interface AnalyticsDashboardMetrics {
   selfConsumed: number;
   selfRate: number;
@@ -33,6 +34,7 @@ export interface AnalyticsDashboardMetrics {
   };
 }
 
+/** Compute dashboard KPIs, cost allocation, and CO₂ figures from live energy data. */
 export const computeAnalyticsDashboardMetrics = (
   energyData: EnergyData,
   t: TFunction,

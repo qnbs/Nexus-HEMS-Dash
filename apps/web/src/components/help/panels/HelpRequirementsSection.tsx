@@ -1,6 +1,8 @@
 import { Globe, Monitor } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { HelpHardwareRequirementsList } from './HelpHardwareRequirementsList';
 import { HelpRequirementCard } from './HelpRequirementCard';
+import { HelpSoftwareRequirementsList } from './HelpSoftwareRequirementsList';
 
 /** Hardware and software requirement cards on the getting-started tab. */
 export const HelpRequirementsSection = () => {
@@ -14,26 +16,13 @@ export const HelpRequirementsSection = () => {
           icon={<Monitor size={16} className="text-blue-400" aria-hidden="true" />}
           title={t('help.hardware')}
         >
-          <ul className="space-y-1.5 text-(--color-muted) text-xs">
-            <li>• Victron Cerbo GX / MK2 / Venus OS</li>
-            <li>• Raspberry Pi 4/5 ({t('help.optional')})</li>
-            <li>• KNX IP Router ({t('help.optional')})</li>
-            <li>• Node-RED {t('help.onCerbo')}</li>
-            <li>• WiFi / Ethernet</li>
-          </ul>
+          <HelpHardwareRequirementsList />
         </HelpRequirementCard>
         <HelpRequirementCard
           icon={<Globe size={16} className="text-cyan-400" aria-hidden="true" />}
           title={t('help.software')}
         >
-          <ul className="space-y-1.5 text-(--color-muted) text-xs">
-            <li>• {t('help.modernBrowser')}</li>
-            <li>• {t('help.pwaSupport')}</li>
-            <li>
-              • Tibber / aWATTar {t('help.account')} ({t('help.optional')})
-            </li>
-            <li>• AI API Key ({t('help.optional')})</li>
-          </ul>
+          <HelpSoftwareRequirementsList />
         </HelpRequirementCard>
       </div>
     </div>

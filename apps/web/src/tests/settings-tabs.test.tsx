@@ -154,7 +154,7 @@ beforeEach(() => {
 // ─── ToggleSwitch (shared atom) ──────────────────────────────────────
 describe('ToggleSwitch', () => {
   it('reflects the checked state', () => {
-    render(<ToggleSwitch id="t1" checked={true} onChange={vi.fn()} label="Toggle" />);
+    render(<ToggleSwitch id="t1" checked onChange={vi.fn()} label="Toggle" />);
     expect(screen.getByRole('checkbox')).toBeChecked();
   });
 

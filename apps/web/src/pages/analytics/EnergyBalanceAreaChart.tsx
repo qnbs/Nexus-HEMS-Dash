@@ -9,35 +9,22 @@ import {
   YAxis,
 } from 'recharts';
 import type { generateEnergyBalance } from '../../lib/analytics-chart-data';
+import { EnergyBalanceChartGradients } from './EnergyBalanceChartGradients';
 
 type BalanceDataPoint = ReturnType<typeof generateEnergyBalance>[number];
 
+/** Props for the energy balance area chart section. */
 export interface EnergyBalanceAreaChartProps {
   t: TFunction;
   balanceData: BalanceDataPoint[];
 }
 
 /** 24-hour PV vs consumption area chart for the Analytics balance section. */
-// skipcq: JS-0415 - Recharts gradient defs exceed JSX depth 4 by design
 export const EnergyBalanceAreaChart = ({ t, balanceData }: EnergyBalanceAreaChartProps) => (
   <div className="h-[260px]" role="img" aria-label={t('analytics.balanceChartAria')}>
     <ResponsiveContainer width="100%" height="100%">
-      {/* skipcq: JS-0415 - Recharts gradient defs exceed JSX depth 4 by design */}
       <AreaChart data={balanceData}>
-        <defs>
-          <linearGradient id="gradPv" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="var(--chart-7)" stopOpacity={0.7} />
-            <stop offset="95%" stopColor="var(--chart-7)" stopOpacity={0.05} />
-          </linearGradient>
-          <linearGradient id="gradCons" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="var(--chart-2)" stopOpacity={0.5} />
-            <stop offset="95%" stopColor="var(--chart-2)" stopOpacity={0.05} />
-          </linearGradient>
-          <linearGradient id="gradSurplus" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="var(--chart-1)" stopOpacity={0.6} />
-            <stop offset="95%" stopColor="var(--chart-1)" stopOpacity={0.02} />
-          </linearGradient>
-        </defs>
+        <EnergyBalanceChartGradients />
         <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" opacity={0.3} />
         <XAxis
           dataKey="hour"

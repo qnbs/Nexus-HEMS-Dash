@@ -26,7 +26,7 @@ vi.mock('../components/settings/SettingsFeatureBar', () => ({
 
 vi.mock('../lib/db', () => ({
   getLocalStorageStats: vi.fn().mockResolvedValue({ usageMb: 1.2, snapshots: 3 }),
-  clearAllData: vi.fn().mockResolvedValue(undefined),
+  clearAllData: vi.fn().mockResolvedValue(null),
 }));
 
 vi.mock('../store', () => ({
