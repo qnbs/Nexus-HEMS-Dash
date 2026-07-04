@@ -1,5 +1,8 @@
-/** Tiny SVG ring showing self-sufficiency percentage */
-// skipcq: JS-0067 — colocated layout helper in ESM module
+/**
+ * Tiny SVG ring showing self-sufficiency percentage.
+ *
+ * @param props.percentage - Self-sufficiency ratio in the range 0–100.
+ */
 export function SelfSufficiencyRing({ percentage }: { percentage: number }) {
   const ringRadius = 5;
   const circumference = 2 * Math.PI * ringRadius;

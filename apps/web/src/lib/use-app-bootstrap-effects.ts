@@ -9,7 +9,11 @@ import { monitorOfflineStorageQuota } from './offline-cache';
 import type { ThemePreference } from './theme';
 import { resolveTheme, watchSystemTheme } from './theme';
 
-/** DOM + theme preference side effects for the root app shell. */
+/**
+ * DOM + theme preference side effects for the root app shell.
+ *
+ * @param options - Theme, locale, accessibility toggles, and i18n instances.
+ */
 export const useAppBootstrapEffects = ({
   theme,
   locale,

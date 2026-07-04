@@ -1,7 +1,11 @@
 import { useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 
-/** Scrolls to top and moves focus to main content on SPA route changes. */
+/**
+ * Scrolls to top and moves focus to main content on SPA route changes.
+ *
+ * Skips the focus move on the initial render so the first paint is not disrupted.
+ */
 export const ScrollToTop = () => {
   const { pathname } = useLocation();
   const initialRender = useRef(true);

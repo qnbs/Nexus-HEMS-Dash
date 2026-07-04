@@ -3,7 +3,11 @@ import { useAppStore } from '../store';
 import { fetchBackendHealthStatus, setRuntimeBackendReadOnly } from './adapter-mode';
 import { ignorePromiseRejection } from './ignore-promise-rejection';
 
-/** Poll `/api/health` once on mount for global safety indicators (mode + read-only). */
+/**
+ * Poll `/api/health` once on mount for global safety indicators (mode + read-only).
+ *
+ * Writes adapter mode and read-only state into Zustand for reactive UI consumers.
+ */
 export const useBackendHealthPoll = (): void => {
   const setAdapterMode = useAppStore((s) => s.setAdapterMode);
   const setBackendReadOnly = useAppStore((s) => s.setBackendReadOnly);

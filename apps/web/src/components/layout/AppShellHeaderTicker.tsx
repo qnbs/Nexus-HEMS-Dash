@@ -2,8 +2,11 @@ import { BatteryMedium, Sun, Zap } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { SelfSufficiencyRing } from './SelfSufficiencyRing';
 
-/** Mobile/tablet live KPI ticker below the main header row. */
-// skipcq: JS-0067 — colocated layout helper in ESM module
+/**
+ * Mobile/tablet live KPI ticker below the main header row.
+ *
+ * @param props - Live KPI values rendered in the compact header strip.
+ */
 export function AppShellHeaderTicker({
   priceCurrent,
   pvPower,

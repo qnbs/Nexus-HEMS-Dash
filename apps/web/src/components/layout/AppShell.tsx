@@ -15,8 +15,11 @@ interface AppShellProps {
   children: ReactNode;
 }
 
-/** Application chrome: sidebar, fixed header, routed page content, and mobile nav. */
-// skipcq: JS-0067 — colocated layout shell in ESM module
+/**
+ * Application chrome: sidebar, fixed header, routed page content, and mobile nav.
+ *
+ * @param props.children - Active route page content.
+ */
 export function AppShell({ children }: AppShellProps) {
   const { t } = useTranslation();
   const { isOpen: isCommandPaletteOpen, setIsOpen: setCommandPaletteOpen } = useCommandPalette();

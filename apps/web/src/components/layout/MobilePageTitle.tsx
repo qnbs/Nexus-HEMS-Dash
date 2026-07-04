@@ -2,7 +2,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
 
-/** Route → i18n label map for the mobile page title */
+/** Route pathname → i18n label key for the mobile page title. */
 const headerRouteLabels: Record<string, string> = {
   '/': 'nav.home',
   '/energy-flow': 'nav.energyFlow',
@@ -17,8 +17,11 @@ const headerRouteLabels: Record<string, string> = {
   '/help': 'nav.help',
 };
 
-/** Displays the current page name in the mobile header */
-// skipcq: JS-0067 — colocated layout helper in ESM module
+/**
+ * Displays the current page name in the mobile header.
+ *
+ * Reads the active route from React Router and maps it to an i18n label.
+ */
 export function MobilePageTitle() {
   const { t } = useTranslation();
   const { pathname } = useLocation();

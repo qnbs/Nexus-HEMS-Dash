@@ -3,8 +3,11 @@ import type { RefObject } from 'react';
 import { AppShellHeaderBar } from './AppShellHeaderBar';
 import { AppShellHeaderTicker } from './AppShellHeaderTicker';
 
-/** Fixed app header: safety banners, navigation actions, and live KPI ticker. */
-// skipcq: JS-0067 — colocated layout helper in ESM module
+/**
+ * Fixed app header: safety banners, navigation actions, and live KPI ticker.
+ *
+ * @param props - Header layout state wired from {@link AppShell}.
+ */
 export function AppShellHeader({
   headerRef,
   scrolled,

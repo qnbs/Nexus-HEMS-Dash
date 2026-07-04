@@ -10,7 +10,11 @@ import { PWAInstallPrompt } from './PWAInstallPrompt';
 import { PWAUpdateNotification } from './PWAUpdateNotification';
 import { ScrollToTop } from './ScrollToTop';
 
-/** Router-scoped shell: PWA chrome, energy provider, and routed page content. */
+/**
+ * Router-scoped shell: PWA chrome, energy provider, and routed page content.
+ *
+ * @param props.theme - Active theme used for toast styling.
+ */
 export const AppRouterTree = ({ theme }: { theme: ThemeName }) => (
   <>
     <ScrollToTop />
