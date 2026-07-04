@@ -2,6 +2,26 @@ import { Eye, EyeOff } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { inputClass } from './styles';
 
+const InfluxTokenToggle = ({
+  showToken,
+  onToggle,
+}: {
+  showToken: boolean;
+  onToggle: () => void;
+}) => {
+  const { t } = useTranslation();
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      className="absolute top-1/2 right-3 -translate-y-1/2 p-1 text-(--color-muted) hover:text-(--color-text)"
+      aria-label={showToken ? t('settings.hideToken') : t('settings.showToken')}
+    >
+      {showToken ? <EyeOff size={16} /> : <Eye size={16} />}
+    </button>
+  );
+};
+
 export const InfluxTokenField = ({
   value,
   showToken,
@@ -28,14 +48,7 @@ export const InfluxTokenField = ({
           onChange={(e) => onChange(e.target.value)}
           className={`${inputClass} pr-10`}
         />
-        <button
-          type="button"
-          onClick={onToggleShow}
-          className="absolute top-1/2 right-3 -translate-y-1/2 p-1 text-(--color-muted) hover:text-(--color-text)"
-          aria-label={showToken ? t('settings.hideToken') : t('settings.showToken')}
-        >
-          {showToken ? <EyeOff size={16} /> : <Eye size={16} />}
-        </button>
+        <InfluxTokenToggle showToken={showToken} onToggle={onToggleShow} />
       </div>
     </div>
   );

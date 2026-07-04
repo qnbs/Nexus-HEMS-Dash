@@ -58,7 +58,8 @@ import { useAppStoreShallow } from '../store';
  *   so this page suppresses its own to avoid a duplicate <h1> and duplicate
  *   "related sections" panels. Defaults to false for standalone use.
  */
-function AnalyticsPageComponent({ embedded = false }: { embedded?: boolean }) {
+// skipcq: JS-0046 — multi-section analytics dashboard; KPI/forecast math extracted to lib modules
+const AnalyticsPageComponent = ({ embedded = false }: { embedded?: boolean }) => {
   const { t } = useTranslation();
   const energyData = useAppStoreShallow((s) => s.energyData);
   const metrics = computeAnalyticsDashboardMetrics(energyData, t);
@@ -896,6 +897,6 @@ function AnalyticsPageComponent({ embedded = false }: { embedded?: boolean }) {
       {!embedded && <PageCrossLinks />}
     </div>
   );
-}
+};
 
 export default AnalyticsPageComponent;

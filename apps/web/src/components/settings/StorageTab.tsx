@@ -3,10 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { clearAllData, getLocalStorageStats } from '../../lib/db';
 import { ignorePromiseRejection } from '../../lib/ignore-promise-rejection';
 import { useAppStoreShallow } from '../../store';
-import { ConfirmDialog, useConfirmDialog } from '../ConfirmDialog';
-import { InfluxDbSettingsSection } from './InfluxDbSettingsSection';
-import { LocalStorageSection } from './LocalStorageSection';
-import { SettingsFeatureBar } from './SettingsFeatureBar';
+import { useConfirmDialog } from '../ConfirmDialog';
+import { StorageTabLayout } from './StorageTabLayout';
 
 /** Settings → Storage tab: InfluxDB connection, retention and local-storage info. */
 export const StorageTab = () => {
@@ -53,25 +51,17 @@ export const StorageTab = () => {
   };
 
   return (
-    <>
-      <SettingsFeatureBar tabId="storage" />
-      <InfluxDbSettingsSection
-        influxUrl={settings.influxUrl}
-        influxToken={settings.influxToken}
-        historyDays={settings.historyDays}
-        showInfluxToken={showInfluxToken}
-        onInfluxUrlChange={(value) => updateSettings({ influxUrl: value })}
-        onInfluxTokenChange={(value) => updateSettings({ influxToken: value })}
-        onHistoryDaysChange={(value) => updateSettings({ historyDays: value })}
-        onToggleShowToken={() => setShowInfluxToken((v) => !v)}
-      />
-      <LocalStorageSection
-        usageMb={usageMb}
-        snapshots={snapshots}
-        historyDays={settings.historyDays}
-        onClearCache={handleClearCache}
-      />
-      <ConfirmDialog {...confirm.dialogProps} />
-    </>
+    <StorageTabLayout
+      settings={settings}
+      showInfluxToken={showInfluxToken}
+      usageMb={usageMb}
+      snapshots={snapshots}
+      onInfluxUrlChange={(value) => updateSettings({ influxUrl: value })}
+      onInfluxTokenChange={(value) => updateSettings({ influxToken: value })}
+      onHistoryDaysChange={(value) => updateSettings({ historyDays: value })}
+      onToggleShowToken={() => setShowInfluxToken((v) => !v)}
+      onClearCache={handleClearCache}
+      confirm={confirm}
+    />
   );
 };

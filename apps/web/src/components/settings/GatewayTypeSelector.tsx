@@ -8,6 +8,32 @@ const GATEWAY_OPTIONS: { value: GatewayType; label: string; hintKey: string }[] 
   { value: 'raspberry-pi', label: 'Raspberry Pi', hintKey: 'settings.gatewayTypeRpiHint' },
 ];
 
+const GatewayOptionCard = ({
+  label,
+  hint,
+  selected,
+  onSelect,
+}: {
+  label: string;
+  hint: string;
+  selected: boolean;
+  onSelect: () => void;
+}) => (
+  <button
+    type="button"
+    onClick={onSelect}
+    className={`rounded-xl border-2 p-3 text-left transition-all ${
+      selected
+        ? 'border-(--color-primary) bg-(--color-primary)/10'
+        : 'border-(--color-border) bg-(--color-surface) hover:border-(--color-primary)/40'
+    }`}
+    aria-pressed={selected}
+  >
+    <span className="font-medium text-sm">{label}</span>
+    <span className="mt-1 block text-(--color-muted) text-xs">{hint}</span>
+  </button>
+);
+
 export const GatewayTypeSelector = ({
   value,
   onChange,
@@ -22,20 +48,13 @@ export const GatewayTypeSelector = ({
       <p className="font-medium text-sm">{t('settings.gatewayType')}</p>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         {GATEWAY_OPTIONS.map((gw) => (
-          <button
+          <GatewayOptionCard
             key={gw.value}
-            type="button"
-            onClick={() => onChange(gw.value)}
-            className={`rounded-xl border-2 p-3 text-left transition-all ${
-              value === gw.value
-                ? 'border-(--color-primary) bg-(--color-primary)/10'
-                : 'border-(--color-border) bg-(--color-surface) hover:border-(--color-primary)/40'
-            }`}
-            aria-pressed={value === gw.value}
-          >
-            <span className="font-medium text-sm">{gw.label}</span>
-            <p className="mt-1 text-(--color-muted) text-xs">{t(gw.hintKey)}</p>
-          </button>
+            label={gw.label}
+            hint={t(gw.hintKey)}
+            selected={value === gw.value}
+            onSelect={() => onChange(gw.value)}
+          />
         ))}
       </div>
     </div>
