@@ -1,56 +1,22 @@
-import {
-  Activity,
-  ArrowDownRight,
-  ArrowUpRight,
-  BarChart3,
-  BrainCircuit,
-  CalendarDays,
-  Car,
-  ChevronRight,
-  Clock,
-  Gauge,
-  PieChart as PieIcon,
-  Plane,
-  Shield,
-  Sun,
-  TreePine,
-  Zap,
-} from 'lucide-react';
-import { motion } from 'motion/react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  Area,
-  AreaChart,
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
-  Legend,
-  Line,
-  LineChart,
-  Pie,
-  PieChart as RechartsPie,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
-import { ExportAndSharing } from '../components/ExportAndSharing';
-import { PageHeader } from '../components/layout/PageHeader';
-import { PredictiveForecast } from '../components/PredictiveForecast';
-import { ChoiceCardGroup } from '../components/ui/ChoiceCardGroup';
-import { PageCrossLinks } from '../components/ui/PageCrossLinks';
 import { generateEnergyBalance, generateMonthlyComparison } from '../lib/analytics-chart-data';
 import { computeAnalyticsDashboardMetrics } from '../lib/analytics-derived-metrics';
 import { runDemoForecast } from '../lib/analytics-forecast-demo';
 import { buildAnalyticsKpiCards } from '../lib/analytics-kpi-cards';
 import { getUbaFactor } from '../lib/co2-report';
 import type { ForecastResult } from '../lib/ml-forecast';
-import { getForecastableMetrics } from '../lib/ml-forecast';
 import { useAppStoreShallow } from '../store';
-
-// ─── Deterministic data generators live in lib/analytics-chart-data.ts ─
+import { AnalyticsBalanceCostSection } from './analytics/AnalyticsBalanceCostSection';
+import { AnalyticsCo2ReportSection } from './analytics/AnalyticsCo2ReportSection';
+import { AnalyticsCrossLinksSection } from './analytics/AnalyticsCrossLinksSection';
+import { AnalyticsEfficiencySection } from './analytics/AnalyticsEfficiencySection';
+import { AnalyticsExportSharingSection } from './analytics/AnalyticsExportSharingSection';
+import { AnalyticsKpiGridSection } from './analytics/AnalyticsKpiGridSection';
+import { AnalyticsMlForecastSection } from './analytics/AnalyticsMlForecastSection';
+import { AnalyticsMonthlyComparisonSection } from './analytics/AnalyticsMonthlyComparisonSection';
+import { AnalyticsPageHeaderSection } from './analytics/AnalyticsPageHeaderSection';
+import { AnalyticsPredictiveForecastSection } from './analytics/AnalyticsPredictiveForecastSection';
 
 /**
  * @param embedded When rendered inside the unified Analytics wrapper (as a tab
@@ -58,7 +24,6 @@ import { useAppStoreShallow } from '../store';
  *   so this page suppresses its own to avoid a duplicate <h1> and duplicate
  *   "related sections" panels. Defaults to false for standalone use.
  */
-// skipcq: JS-0046 — multi-section analytics dashboard; KPI/forecast math extracted to lib modules
 const AnalyticsPageComponent = ({ embedded = false }: { embedded?: boolean }) => {
   const { t } = useTranslation();
   const energyData = useAppStoreShallow((s) => s.energyData);
@@ -79,12 +44,10 @@ const AnalyticsPageComponent = ({ embedded = false }: { embedded?: boolean }) =>
     batteryRoundTrip,
   } = metrics;
 
-  // ─── ML Forecast state ──────────────────────────────────────────────
   const [selectedMetric, setSelectedMetric] = useState<string>('pvPower');
   const [forecastResult, setForecastResult] = useState<ForecastResult | null>(null);
   const [forecastLoading, setForecastLoading] = useState(false);
 
-  // ─── ML Forecast runner ──────────────────────────────────────────────
   const handleRunForecast = () => {
     setForecastLoading(true);
     setForecastResult(runDemoForecast(energyData, selectedMetric));
@@ -98,803 +61,52 @@ const AnalyticsPageComponent = ({ embedded = false }: { embedded?: boolean }) =>
   return (
     <div className="space-y-6">
       {!embedded && (
-        <PageHeader
-          title={t('nav.analytics', 'Analytics')}
-          subtitle={t('analytics.subtitle')}
-          icon={<BarChart3 size={22} aria-hidden="true" />}
-          actions={
-            <div className="flex flex-wrap items-center gap-2">
-              {isPeakHour && (
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-orange-500/15 px-3 py-1.5 font-semibold text-[10px] text-orange-400 uppercase tracking-wider">
-                  <Zap size={10} className="energy-pulse" aria-hidden="true" />
-                  {t('analytics.peakHours')}
-                </span>
-              )}
-              {isSolarPeak && (
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-yellow-500/15 px-3 py-1.5 font-semibold text-[10px] text-yellow-400 uppercase tracking-wider">
-                  <Sun size={10} aria-hidden="true" />
-                  {t('analytics.solarPeak')}
-                </span>
-              )}
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-3 py-1.5 font-semibold text-[10px] text-emerald-400 uppercase tracking-wider">
-                <Activity size={10} className="energy-pulse" aria-hidden="true" />
-                {t('common.live')}
-              </span>
-            </div>
-          }
-        />
+        <AnalyticsPageHeaderSection t={t} isPeakHour={isPeakHour} isSolarPeak={isSolarPeak} />
       )}
 
-      {/* ─── 8 KPI Cards ──────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-8">
-        {kpiCards.map((card, i) => (
-          <motion.div
-            key={card.label}
-            className="group metric-card hover-lift rounded-2xl"
-            initial={{ opacity: 0, scale: 0.92 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.35, delay: 0.05 + i * 0.04 }}
-          >
-            <div className="mb-2 flex items-center justify-between">
-              <span
-                className={`flex h-7 w-7 items-center justify-center rounded-lg ${card.bg} ${card.color}`}
-              >
-                {card.icon}
-              </span>
-              <ChevronRight
-                size={12}
-                className="text-(--color-muted) opacity-0 transition-opacity group-hover:opacity-100"
-                aria-hidden="true"
-              />
-            </div>
-            <p className={`truncate font-light text-xl ${card.color}`}>{card.value}</p>
-            <p className="mt-0.5 truncate text-(--color-muted) text-[10px] leading-tight">
-              {card.label}
-            </p>
-            <div className="mt-1.5 flex items-center gap-1 text-[9px]">
-              {card.trendUp ? (
-                <ArrowUpRight size={10} className="text-emerald-400" aria-hidden="true" />
-              ) : (
-                <ArrowDownRight size={10} className="text-orange-400" aria-hidden="true" />
-              )}
-              <span className={card.trendUp ? 'text-emerald-400' : 'text-orange-400'}>
-                {card.trend}
-              </span>
-            </div>
-          </motion.div>
-        ))}
-      </div>
+      <AnalyticsKpiGridSection kpiCards={kpiCards} />
 
-      {/* ─── Energy Balance + Cost Allocation ─────────────────────── */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* 24h Energy Balance Chart */}
-        <motion.section
-          className="glass-panel-strong hover-lift p-6 lg:col-span-2"
-          aria-labelledby="balance-chart-title"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.35 }}
-        >
-          <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <h2
-              id="balance-chart-title"
-              className="fluid-text-lg flex items-center gap-2 font-medium"
-            >
-              <Clock size={20} className="text-(--color-secondary)" aria-hidden="true" />
-              {t('analytics.energyBalance24h')}
-            </h2>
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px]">
-              <span className="flex items-center gap-1">
-                <span className="inline-block h-2.5 w-2.5 rounded-full bg-yellow-400" />
-                {t('analytics.pvProduction')}
-              </span>
-              <span className="flex items-center gap-1">
-                <span className="inline-block h-2.5 w-2.5 rounded-full bg-blue-400" />
-                {t('analytics.consumptionLabel')}
-              </span>
-              <span className="flex items-center gap-1">
-                <span className="inline-block h-2.5 w-2.5 rounded-full bg-emerald-400" />
-                {t('analytics.surplus')}
-              </span>
-            </div>
-          </div>
-          <div className="h-[260px]" role="img" aria-label={t('analytics.balanceChartAria')}>
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={balanceData}>
-                <defs>
-                  <linearGradient id="gradPv" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="var(--chart-7)" stopOpacity={0.7} />
-                    <stop offset="95%" stopColor="var(--chart-7)" stopOpacity={0.05} />
-                  </linearGradient>
-                  <linearGradient id="gradCons" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="var(--chart-2)" stopOpacity={0.5} />
-                    <stop offset="95%" stopColor="var(--chart-2)" stopOpacity={0.05} />
-                  </linearGradient>
-                  <linearGradient id="gradSurplus" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="var(--chart-1)" stopOpacity={0.6} />
-                    <stop offset="95%" stopColor="var(--chart-1)" stopOpacity={0.02} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" opacity={0.3} />
-                <XAxis
-                  dataKey="hour"
-                  stroke="var(--color-muted)"
-                  tick={{ fill: 'var(--color-muted)', fontSize: 10 }}
-                  interval={2}
-                />
-                <YAxis
-                  stroke="var(--color-muted)"
-                  tick={{ fill: 'var(--color-muted)', fontSize: 10 }}
-                  label={{
-                    value: 'W',
-                    angle: -90,
-                    position: 'insideLeft',
-                    fill: 'var(--color-muted)',
-                    fontSize: 10,
-                  }}
-                />
-                <Tooltip
-                  contentStyle={{
-                    background: 'var(--color-surface-strong)',
-                    border: '1px solid var(--color-border)',
-                    borderRadius: '12px',
-                    fontSize: '11px',
-                    color: 'var(--color-text)',
-                  }}
-                  formatter={(value) => [`${value} W`]}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="pv"
-                  stroke="var(--chart-7)"
-                  fill="url(#gradPv)"
-                  strokeWidth={2}
-                  name="PV"
-                />
-                <Area
-                  type="monotone"
-                  dataKey="consumption"
-                  stroke="var(--chart-2)"
-                  fill="url(#gradCons)"
-                  strokeWidth={2}
-                  name={t('analytics.consumptionLabel')}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="surplus"
-                  stroke="var(--chart-1)"
-                  fill="url(#gradSurplus)"
-                  strokeWidth={1.5}
-                  strokeDasharray="4 2"
-                  name={t('analytics.surplus')}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-          {/* Balance summary strip */}
-          <div className="mt-4 grid grid-cols-3 gap-3">
-            <div className="rounded-xl bg-white/5 p-2.5 text-center">
-              <p className="text-(--color-muted) text-[10px]">{t('analytics.totalProduction')}</p>
-              <p className="font-medium text-sm text-yellow-400">
-                {(balanceData.reduce((a, d) => a + d.pv, 0) / 1000).toFixed(1)} kWh
-              </p>
-            </div>
-            <div className="rounded-xl bg-white/5 p-2.5 text-center">
-              <p className="text-(--color-muted) text-[10px]">{t('analytics.totalConsumption')}</p>
-              <p className="font-medium text-blue-400 text-sm">
-                {(balanceData.reduce((a, d) => a + d.consumption, 0) / 1000).toFixed(1)} kWh
-              </p>
-            </div>
-            <div className="rounded-xl bg-white/5 p-2.5 text-center">
-              <p className="text-(--color-muted) text-[10px]">{t('analytics.netBalance')}</p>
-              {(() => {
-                const net = balanceData.reduce((a, d) => a + d.pv - d.consumption, 0) / 1000;
-                return (
-                  <p
-                    className={`font-medium text-sm ${net >= 0 ? 'text-emerald-400' : 'text-red-400'}`}
-                  >
-                    {net >= 0 ? '+' : ''}
-                    {net.toFixed(1)} kWh
-                  </p>
-                );
-              })()}
-            </div>
-          </div>
-        </motion.section>
+      <AnalyticsBalanceCostSection
+        t={t}
+        balanceData={balanceData}
+        costAllocation={costAllocation}
+        netCost={netCost}
+        gridCost={gridCost}
+        feedInRevenue={feedInRevenue}
+      />
 
-        {/* Cost Allocation Donut */}
-        <motion.section
-          className="glass-panel-strong hover-lift p-6"
-          aria-labelledby="cost-donut-title"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.38 }}
-        >
-          <h2
-            id="cost-donut-title"
-            className="fluid-text-lg mb-4 flex items-center gap-2 font-medium"
-          >
-            <PieIcon size={20} className="text-(--color-secondary)" aria-hidden="true" />
-            {t('analytics.costAllocation')}
-          </h2>
-          <div className="h-[200px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <RechartsPie>
-                <Pie
-                  data={costAllocation}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={50}
-                  outerRadius={75}
-                  paddingAngle={3}
-                  dataKey="value"
-                  strokeWidth={0}
-                >
-                  {costAllocation.map((entry) => (
-                    <Cell key={entry.name} fill={entry.color} opacity={0.85} />
-                  ))}
-                </Pie>
-                <Tooltip
-                  contentStyle={{
-                    background: 'var(--color-surface-strong)',
-                    border: '1px solid var(--color-border)',
-                    borderRadius: '12px',
-                    fontSize: '11px',
-                    color: 'var(--color-text)',
-                  }}
-                  formatter={(value) => [`€${(Number(value) / 100).toFixed(2)}`]}
-                />
-                <Legend
-                  verticalAlign="bottom"
-                  iconType="circle"
-                  iconSize={8}
-                  wrapperStyle={{ fontSize: '10px', color: 'var(--color-muted)' }}
-                />
-              </RechartsPie>
-            </ResponsiveContainer>
-          </div>
-          {/* Net cost strip */}
-          <div className="mt-3 rounded-xl bg-white/5 p-3">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-(--color-muted)">{t('analytics.netCostToday')}</span>
-              <span
-                className={`font-medium ${netCost <= 0 ? 'text-emerald-400' : 'text-orange-400'}`}
-              >
-                {netCost <= 0 ? '–' : ''}€{Math.abs(netCost).toFixed(2)}
-              </span>
-            </div>
-            <div className="mt-1 flex flex-wrap items-center justify-between gap-1 text-(--color-muted) text-[10px]">
-              <span className="truncate">
-                {t('analytics.gridCostLabel')}: €{gridCost.toFixed(2)}
-              </span>
-              <span className="truncate">
-                {t('analytics.feedInRevenue')}: €{feedInRevenue.toFixed(2)}
-              </span>
-            </div>
-          </div>
-        </motion.section>
-      </div>
+      <AnalyticsMonthlyComparisonSection t={t} monthlyData={monthlyData} />
 
-      {/* ─── Monthly Comparison Bar Chart ─────────────────────────── */}
-      <motion.section
-        className="glass-panel-strong hover-lift cv-auto p-6"
-        aria-labelledby="monthly-chart-title"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.4 }}
-      >
-        <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <h2
-            id="monthly-chart-title"
-            className="fluid-text-lg flex items-center gap-2 font-medium"
-          >
-            <CalendarDays size={20} className="text-(--color-secondary)" aria-hidden="true" />
-            {t('analytics.monthlyComparison')}
-          </h2>
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px]">
-            <span className="flex items-center gap-1">
-              <span className="inline-block h-2.5 w-2.5 rounded bg-yellow-400" />
-              {t('analytics.productionKwh')}
-            </span>
-            <span className="flex items-center gap-1">
-              <span className="inline-block h-2.5 w-2.5 rounded bg-blue-400" />
-              {t('analytics.consumptionKwh')}
-            </span>
-            <span className="flex items-center gap-1">
-              <span className="inline-block h-2.5 w-2.5 rounded bg-emerald-400" />
-              {t('analytics.savingsEur')}
-            </span>
-          </div>
-        </div>
-        <div className="h-[240px]" role="img" aria-label={t('analytics.monthlyChartAria')}>
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={monthlyData} barGap={2}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" opacity={0.3} />
-              <XAxis
-                dataKey="month"
-                stroke="var(--color-muted)"
-                tick={{ fill: 'var(--color-muted)', fontSize: 10 }}
-              />
-              <YAxis
-                stroke="var(--color-muted)"
-                tick={{ fill: 'var(--color-muted)', fontSize: 10 }}
-                label={{
-                  value: 'kWh',
-                  angle: -90,
-                  position: 'insideLeft',
-                  fill: 'var(--color-muted)',
-                  fontSize: 10,
-                }}
-              />
-              <Tooltip
-                contentStyle={{
-                  background: 'var(--color-surface-strong)',
-                  border: '1px solid var(--color-border)',
-                  borderRadius: '12px',
-                  fontSize: '11px',
-                  color: 'var(--color-text)',
-                }}
-              />
-              <Bar
-                dataKey="production"
-                fill="var(--chart-7)"
-                radius={[4, 4, 0, 0]}
-                name={t('analytics.productionKwh')}
-              />
-              <Bar
-                dataKey="consumption"
-                fill="var(--chart-2)"
-                radius={[4, 4, 0, 0]}
-                name={t('analytics.consumptionKwh')}
-              />
-              <Bar
-                dataKey="savings"
-                fill="var(--chart-1)"
-                radius={[4, 4, 0, 0]}
-                name={t('analytics.savingsEur')}
-              />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-        {/* Annual summary */}
-        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {(() => {
-            const totalProd = monthlyData.reduce((a, d) => a + d.production, 0);
-            const totalCons = monthlyData.reduce((a, d) => a + d.consumption, 0);
-            const totalSav = monthlyData.reduce((a, d) => a + d.savings, 0);
-            const yearlyAutarky = totalProd > 0 ? Math.min(100, (totalProd / totalCons) * 100) : 0;
-            return [
-              {
-                label: t('analytics.yearlyProduction'),
-                value: `${(totalProd / 1000).toFixed(1)} MWh`,
-                color: 'text-yellow-400',
-              },
-              {
-                label: t('analytics.yearlyConsumption'),
-                value: `${(totalCons / 1000).toFixed(1)} MWh`,
-                color: 'text-blue-400',
-              },
-              {
-                label: t('analytics.yearlySavings'),
-                value: `€${totalSav.toFixed(0)}`,
-                color: 'text-emerald-400',
-              },
-              {
-                label: t('analytics.yearlyAutarky'),
-                value: `${yearlyAutarky.toFixed(0)}%`,
-                color: 'text-purple-400',
-              },
-            ].map((s) => (
-              <div key={s.label} className="rounded-xl bg-white/5 p-2.5 text-center">
-                <p className="text-(--color-muted) text-[10px]">{s.label}</p>
-                <p className={`font-medium text-sm ${s.color}`}>{s.value}</p>
-              </div>
-            ));
-          })()}
-        </div>
-      </motion.section>
+      <AnalyticsEfficiencySection
+        t={t}
+        energyData={energyData}
+        selfRate={selfRate}
+        autarky={autarky}
+        inverterEfficiency={inverterEfficiency}
+        batteryRoundTrip={batteryRoundTrip}
+      />
 
-      {/* ─── Efficiency + Data Quality ────────────────────────────── */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {/* System Efficiency Panel */}
-        <motion.section
-          className="glass-panel-strong hover-lift cv-auto-sm p-6"
-          aria-labelledby="efficiency-title"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.42 }}
-        >
-          <h2
-            id="efficiency-title"
-            className="fluid-text-lg mb-4 flex items-center gap-2 font-medium"
-          >
-            <Gauge size={20} className="text-(--color-secondary)" aria-hidden="true" />
-            {t('analytics.efficiencyMetrics')}
-          </h2>
-          <div className="space-y-3">
-            {[
-              {
-                label: t('analytics.inverterEfficiency'),
-                value: inverterEfficiency,
-                max: 100,
-                suffix: '%',
-                color: inverterEfficiency > 95 ? 'bg-emerald-500/70' : 'bg-yellow-500/70',
-              },
-              {
-                label: t('analytics.batteryRoundTrip'),
-                value: batteryRoundTrip,
-                max: 100,
-                suffix: '%',
-                color: batteryRoundTrip > 90 ? 'bg-emerald-500/70' : 'bg-yellow-500/70',
-              },
-              {
-                label: t('analytics.selfConsumptionRate'),
-                value: selfRate,
-                max: 100,
-                suffix: '%',
-                color:
-                  selfRate > 60
-                    ? 'bg-emerald-500/70'
-                    : selfRate > 30
-                      ? 'bg-yellow-500/70'
-                      : 'bg-red-500/70',
-              },
-              {
-                label: t('analytics.autarky'),
-                value: autarky,
-                max: 100,
-                suffix: '%',
-                color:
-                  autarky > 70
-                    ? 'bg-emerald-500/70'
-                    : autarky > 40
-                      ? 'bg-yellow-500/70'
-                      : 'bg-red-500/70',
-              },
-            ].map((metric) => (
-              <div key={metric.label}>
-                <div className="mb-1 flex items-center justify-between text-xs">
-                  <span className="text-(--color-muted)">{metric.label}</span>
-                  <span className="font-medium text-(--color-text)">
-                    {metric.value.toFixed(1)}
-                    {metric.suffix}
-                  </span>
-                </div>
-                <div className="h-2 overflow-hidden rounded-full bg-(--color-surface)">
-                  <motion.div
-                    className={`h-full rounded-full ${metric.color}`}
-                    initial={{ width: 0 }}
-                    animate={{ width: `${Math.min(100, (metric.value / metric.max) * 100)}%` }}
-                    transition={{ duration: 1, ease: 'easeOut' }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-          {/* Tip */}
-          <div className="mt-4 rounded-xl border border-(--color-primary)/20 bg-(--color-primary)/5 p-3 text-(--color-muted) text-xs">
-            <span className="font-medium text-(--color-primary)">💡 </span>
-            {t('analytics.efficiencyTip')}
-          </div>
-        </motion.section>
+      <AnalyticsMlForecastSection
+        t={t}
+        selectedMetric={selectedMetric}
+        onSelectedMetricChange={setSelectedMetric}
+        forecastResult={forecastResult}
+        forecastLoading={forecastLoading}
+        onRunForecast={handleRunForecast}
+      />
 
-        {/* Data Quality & System Health */}
-        <motion.section
-          className="glass-panel-strong hover-lift cv-auto-sm p-6"
-          aria-labelledby="data-quality-title"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.44 }}
-        >
-          <h2
-            id="data-quality-title"
-            className="fluid-text-lg mb-4 flex items-center gap-2 font-medium"
-          >
-            <Shield size={20} className="text-(--color-secondary)" aria-hidden="true" />
-            {t('analytics.dataQuality')}
-          </h2>
-          <div className="space-y-3">
-            {[
-              {
-                label: t('analytics.dataCompleteness'),
-                value: 98.7,
-                desc: t('analytics.dataCompletenessDesc'),
-                status: 'ok' as const,
-              },
-              {
-                label: t('analytics.sensorAccuracy'),
-                value: 99.2,
-                desc: t('analytics.sensorAccuracyDesc'),
-                status: 'ok' as const,
-              },
-              {
-                label: t('analytics.updateFrequency'),
-                value: 100,
-                desc: t('analytics.updateFrequencyDesc'),
-                status: 'ok' as const,
-              },
-              {
-                label: t('analytics.dataRetention'),
-                value: 85,
-                desc: t('analytics.dataRetentionDesc'),
-                status: 'warn' as const,
-              },
-            ].map((item) => (
-              <div
-                key={item.label}
-                className="flex items-center gap-3 rounded-xl bg-white/5 px-3 py-2.5"
-              >
-                <span
-                  className={`flex h-8 w-8 items-center justify-center rounded-lg font-bold text-xs ${
-                    item.status === 'ok'
-                      ? 'bg-emerald-500/20 text-emerald-400'
-                      : 'bg-yellow-500/20 text-yellow-400'
-                  }`}
-                >
-                  {item.value.toFixed(0)}%
-                </span>
-                <div className="flex-1">
-                  <p className="font-medium text-(--color-text) text-xs">{item.label}</p>
-                  <p className="text-(--color-muted) text-[10px]">{item.desc}</p>
-                </div>
-                <span
-                  className={`h-2 w-2 rounded-full ${
-                    item.status === 'ok' ? 'bg-emerald-400' : 'energy-pulse bg-yellow-400'
-                  }`}
-                />
-              </div>
-            ))}
-          </div>
-          {/* Real-time indicator */}
-          <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-white/5 px-3 py-2.5 text-xs">
-            <span className="flex items-center gap-1.5 text-(--color-muted)">
-              <Activity size={12} className="energy-pulse text-emerald-400" aria-hidden="true" />
-              {t('analytics.liveDataStream')}
-            </span>
-            <span className="truncate font-mono text-emerald-400">
-              {energyData.gridVoltage.toFixed(0)}V · {energyData.priceCurrent.toFixed(4)} €/kWh
-            </span>
-          </div>
-        </motion.section>
-      </div>
+      <AnalyticsCo2ReportSection
+        t={t}
+        currentYear={currentYear}
+        ubaFactor={ubaFactor}
+        monthlyCo2={monthlyCo2}
+      />
 
-      {/* ─── ML Forecast ─────────────────────────────────────────── */}
-      <motion.section
-        className="glass-panel space-y-4 rounded-2xl p-5"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.44 }}
-      >
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <BrainCircuit size={20} className="text-purple-400" aria-hidden="true" />
-            <div>
-              <h3 className="fluid-text-base font-semibold text-(--color-text)">
-                {t('analytics.mlForecastTitle')}
-              </h3>
-              <p className="text-(--color-muted) text-xs">{t('analytics.mlForecastSubtitle')}</p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={handleRunForecast}
-            disabled={forecastLoading}
-            className="focus-ring flex items-center gap-1.5 rounded-lg bg-purple-500/20 px-3 py-1.5 font-medium text-purple-300 text-xs transition hover:bg-purple-500/30 disabled:opacity-50"
-          >
-            <BrainCircuit size={14} aria-hidden="true" />
-            {forecastLoading ? '…' : t('analytics.mlForecastRun')}
-          </button>
-        </div>
+      <AnalyticsPredictiveForecastSection />
 
-        <ChoiceCardGroup
-          key={selectedMetric}
-          name="ml-forecast-metric"
-          value={selectedMetric}
-          onChange={setSelectedMetric}
-          aria-label={t('analytics.mlForecastSelectMetric')}
-          layout="grid"
-          size="compact"
-          options={getForecastableMetrics().map((m) => ({
-            value: m.key,
-            label: m.label,
-            meta: m.unit,
-            tone: 'primary' as const,
-          }))}
-        />
+      <AnalyticsExportSharingSection />
 
-        {forecastResult && (
-          <div className="space-y-3">
-            {/* Accuracy badges */}
-            <div className="flex flex-wrap gap-2">
-              <span className="rounded-full bg-purple-500/15 px-2.5 py-1 font-medium text-[10px] text-purple-300">
-                {t('analytics.mlForecastModel')}: {forecastResult.model}
-              </span>
-              <span className="rounded-full bg-emerald-500/15 px-2.5 py-1 font-medium text-[10px] text-emerald-300">
-                R² {(forecastResult.accuracy.r2 * 100).toFixed(1)}%
-              </span>
-              <span className="rounded-full bg-blue-400/15 px-2.5 py-1 font-medium text-[10px] text-blue-300">
-                MAPE {forecastResult.accuracy.mape.toFixed(1)}%
-              </span>
-              <span className="rounded-full bg-yellow-400/15 px-2.5 py-1 font-medium text-[10px] text-yellow-300">
-                RMSE {forecastResult.accuracy.rmse.toFixed(0)} {forecastResult.unit}
-              </span>
-            </div>
-
-            {/* Forecast chart */}
-            <div className="h-48">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart
-                  data={forecastResult.points.map((p) => ({
-                    time: `${new Date(p.timestamp).getHours()}:00`,
-                    value: Math.round(p.value),
-                    lower: Math.round(p.lower),
-                    upper: Math.round(p.upper),
-                  }))}
-                >
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-                  <XAxis dataKey="time" tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 10 }} />
-                  <YAxis tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 10 }} />
-                  <Tooltip
-                    contentStyle={{
-                      background: 'rgba(0,0,0,0.8)',
-                      border: '1px solid rgba(255,255,255,0.1)',
-                      borderRadius: 8,
-                      fontSize: 11,
-                    }}
-                  />
-                  <Area dataKey="upper" stroke="none" fill="rgba(168,85,247,0.1)" />
-                  <Area dataKey="lower" stroke="none" fill="rgba(168,85,247,0.0)" />
-                  <Line
-                    type="monotone"
-                    dataKey="value"
-                    stroke="var(--chart-4)"
-                    strokeWidth={2}
-                    dot={false}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="upper"
-                    stroke="rgba(168,85,247,0.3)"
-                    strokeWidth={1}
-                    strokeDasharray="3 3"
-                    dot={false}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="lower"
-                    stroke="rgba(168,85,247,0.3)"
-                    strokeWidth={1}
-                    strokeDasharray="3 3"
-                    dot={false}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-            <p className="text-center text-(--color-muted) text-[10px]">
-              {t('analytics.mlForecastConfidence')} · {forecastResult.training.samplesUsed}{' '}
-              {t('analytics.mlForecastDataPoints')}
-            </p>
-          </div>
-        )}
-
-        {!forecastResult && (
-          <div className="flex flex-col items-center justify-center gap-2 py-8 text-center text-(--color-muted)">
-            <BrainCircuit size={32} className="opacity-30" aria-hidden="true" />
-            <p className="text-xs">{t('analytics.mlForecastNoData')}</p>
-          </div>
-        )}
-      </motion.section>
-
-      {/* ─── CO₂ Report ───────────────────────────────────────────── */}
-      <motion.section
-        className="glass-panel space-y-4 rounded-2xl p-5"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.45 }}
-      >
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <TreePine size={20} className="text-emerald-400" aria-hidden="true" />
-            <div>
-              <h3 className="fluid-text-base font-semibold text-(--color-text)">
-                {t('analytics.co2ReportTitle')}
-              </h3>
-              <p className="text-(--color-muted) text-xs">{t('analytics.co2ReportSubtitle')}</p>
-            </div>
-          </div>
-          <span className="rounded-full bg-emerald-500/15 px-3 py-1 font-medium text-emerald-300 text-xs">
-            UBA {currentYear}: {ubaFactor} g CO₂/kWh
-          </span>
-        </div>
-
-        {/* CO₂ KPI cards */}
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {[
-            {
-              label: t('analytics.co2GridEmissions'),
-              value: monthlyCo2.gridEmissions,
-              color: 'text-red-400',
-              icon: '⚡',
-            },
-            {
-              label: t('analytics.co2SelfSavings'),
-              value: monthlyCo2.selfSavings,
-              color: 'text-emerald-400',
-              icon: '☀',
-            },
-            {
-              label: t('analytics.co2FeedInSavings'),
-              value: monthlyCo2.feedInSavings,
-              color: 'text-blue-400',
-              icon: '🔌',
-            },
-            {
-              label: t('analytics.co2NetBalance'),
-              value: monthlyCo2.netBalance,
-              color: monthlyCo2.netBalance <= 0 ? 'text-emerald-400' : 'text-red-400',
-              icon: monthlyCo2.netBalance <= 0 ? '✅' : '⚠',
-            },
-          ].map((item) => (
-            <div key={item.label} className="rounded-xl bg-white/5 p-3 text-center">
-              <span className="text-lg">{item.icon}</span>
-              <p className={`fluid-text-lg font-bold ${item.color}`}>
-                {Math.abs(item.value).toFixed(1)} kg
-              </p>
-              <p className="text-(--color-muted) text-[10px]">{item.label}</p>
-            </div>
-          ))}
-        </div>
-
-        {/* Equivalences */}
-        {monthlyCo2.totalSaved > 0 && (
-          <div className="flex flex-wrap items-center justify-center gap-4 rounded-xl bg-emerald-500/5 px-4 py-3">
-            <div className="flex items-center gap-1.5">
-              <TreePine size={16} className="text-emerald-400" aria-hidden="true" />
-              <span className="text-(--color-text) text-xs">
-                <strong>{monthlyCo2.treesEquiv.toFixed(1)}</strong> {t('analytics.co2Trees')}
-              </span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <Car size={16} className="text-blue-400" aria-hidden="true" />
-              <span className="text-(--color-text) text-xs">
-                <strong>{monthlyCo2.carKmEquiv.toFixed(0)}</strong> {t('analytics.co2CarKm')}
-              </span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <Plane size={16} className="text-yellow-400" aria-hidden="true" />
-              <span className="text-(--color-text) text-xs">
-                <strong>{monthlyCo2.flightsEquiv.toFixed(2)}</strong> {t('analytics.co2Flights')}
-              </span>
-            </div>
-          </div>
-        )}
-
-        <p className="text-center text-(--color-muted) text-[10px]">
-          {monthlyCo2.netBalance <= 0 ? t('analytics.co2NetSaver') : t('analytics.co2NetEmitter')} ·{' '}
-          {t('analytics.co2ReportMonthly')}
-        </p>
-      </motion.section>
-
-      {/* ─── Predictive Forecast ──────────────────────────────────── */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.46 }}
-      >
-        <PredictiveForecast />
-      </motion.div>
-
-      {/* ─── Export & Sharing ─────────────────────────────────────── */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.48 }}
-      >
-        <ExportAndSharing />
-      </motion.div>
-
-      {/* ─── Cross-Links & Navigation ─────────────────────────── */}
-      {!embedded && <PageCrossLinks />}
+      {!embedded && <AnalyticsCrossLinksSection />}
     </div>
   );
 };
