@@ -2,6 +2,8 @@ import type { TFunction } from 'i18next';
 import { Car, Plane, TreePine } from 'lucide-react';
 import { motion } from 'motion/react';
 import type { AnalyticsDashboardMetrics } from '../../lib/analytics-derived-metrics';
+import { Co2KpiTile } from './Co2KpiTile';
+import { Co2ReportHeader } from './Co2ReportHeader';
 
 export interface AnalyticsCo2ReportSectionProps {
   t: TFunction;
@@ -50,34 +52,15 @@ export const AnalyticsCo2ReportSection = ({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.45 }}
     >
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <TreePine size={20} className="text-emerald-400" aria-hidden="true" />
-          <div>
-            <h3 className="fluid-text-base font-semibold text-(--color-text)">
-              {t('analytics.co2ReportTitle')}
-            </h3>
-            <p className="text-(--color-muted) text-xs">{t('analytics.co2ReportSubtitle')}</p>
-          </div>
-        </div>
-        <span className="rounded-full bg-emerald-500/15 px-3 py-1 font-medium text-emerald-300 text-xs">
-          UBA {currentYear}: {ubaFactor} g CO₂/kWh
-        </span>
-      </div>
+      <Co2ReportHeader t={t} currentYear={currentYear} ubaFactor={ubaFactor} />
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {co2KpiCards.map((item) => (
-          <div key={item.label} className="rounded-xl bg-white/5 p-3 text-center">
-            <span className="text-lg">{item.icon}</span>
-            <p className={`fluid-text-lg font-bold ${item.color}`}>
-              {Math.abs(item.value).toFixed(1)} kg
-            </p>
-            <p className="text-(--color-muted) text-[10px]">{item.label}</p>
-          </div>
+          <Co2KpiTile key={item.label} {...item} />
         ))}
       </div>
 
-      {monthlyCo2.totalSaved > 0 && (
+      {monthlyCo2.totalSaved > 0 ? (
         <div className="flex flex-wrap items-center justify-center gap-4 rounded-xl bg-emerald-500/5 px-4 py-3">
           <div className="flex items-center gap-1.5">
             <TreePine size={16} className="text-emerald-400" aria-hidden="true" />
@@ -98,7 +81,7 @@ export const AnalyticsCo2ReportSection = ({
             </span>
           </div>
         </div>
-      )}
+      ) : null}
 
       <p className="text-center text-(--color-muted) text-[10px]">
         {monthlyCo2.netBalance <= 0 ? t('analytics.co2NetSaver') : t('analytics.co2NetEmitter')} ·{' '}

@@ -55,7 +55,7 @@ export const PageCrossLinks = () => {
           completedSteps={completedSteps}
           totalSteps={totalSteps}
           settingsObj={settingsObj}
-          helpTab={relations.helpTab}
+          {...(relations.helpTab ? { helpTab: relations.helpTab } : {})}
         />
       </div>
     </motion.div>

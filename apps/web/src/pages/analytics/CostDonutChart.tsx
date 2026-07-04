@@ -9,6 +9,7 @@ export interface CostDonutChartProps {
 export const CostDonutChart = ({ costAllocation }: CostDonutChartProps) => (
   <div className="h-[200px]">
     <ResponsiveContainer width="100%" height="100%">
+      {/* skipcq: JS-0415 - Recharts pie/cell mapping exceeds JSX depth 4 by design */}
       <RechartsPie>
         <Pie
           data={costAllocation}

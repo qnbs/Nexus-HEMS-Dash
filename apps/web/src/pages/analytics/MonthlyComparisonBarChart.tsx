@@ -13,6 +13,7 @@ export interface MonthlyComparisonBarChartProps {
 export const MonthlyComparisonBarChart = ({ t, monthlyData }: MonthlyComparisonBarChartProps) => (
   <div className="h-[240px]" role="img" aria-label={t('analytics.monthlyChartAria')}>
     <ResponsiveContainer width="100%" height="100%">
+      {/* skipcq: JS-0415 - Recharts bar chart exceeds JSX depth 4 by design */}
       <BarChart data={monthlyData} barGap={2}>
         <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" opacity={0.3} />
         <XAxis

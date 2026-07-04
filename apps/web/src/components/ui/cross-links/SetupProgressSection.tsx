@@ -1,8 +1,9 @@
-import { ArrowRight, CheckCircle2, Circle, HelpCircle } from 'lucide-react';
+import { ArrowRight, CheckCircle2, HelpCircle } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { SETUP_STEPS } from '../../../lib/page-relations';
+import { SetupStepLink } from './SetupStepLink';
 
 const SetupProgressRing = ({ completed, total }: { completed: number; total: number }) => {
   const pct = total > 0 ? (completed / total) * 100 : 0;
@@ -55,7 +56,7 @@ export interface SetupProgressSectionProps {
   completedSteps: number;
   totalSteps: number;
   settingsObj: Record<string, unknown>;
-  helpTab?: string | undefined;
+  helpTab?: string;
 }
 
 /** Setup checklist ring, compact step list, and contextual help link. */
@@ -91,27 +92,9 @@ export const SetupProgressSection = ({
       </div>
 
       <div className="mb-4 space-y-1.5">
-        {SETUP_STEPS.slice(0, 4).map((step) => {
-          const done = step.checkFn(settingsObj);
-          const StepIcon = step.icon;
-          return (
-            <Link
-              key={step.id}
-              to={`/settings?tab=${step.settingsTab}`}
-              className="focus-ring flex items-center gap-2.5 rounded-lg p-1.5 text-xs transition-colors hover:bg-white/5"
-            >
-              {done ? (
-                <CheckCircle2 size={13} className="shrink-0 text-emerald-400" aria-hidden="true" />
-              ) : (
-                <Circle size={13} className="shrink-0 text-(--color-muted)" aria-hidden="true" />
-              )}
-              <StepIcon size={12} className="shrink-0 text-(--color-muted)" aria-hidden="true" />
-              <span className={done ? 'text-(--color-muted) line-through' : 'text-(--color-text)'}>
-                {t(step.i18nKey)}
-              </span>
-            </Link>
-          );
-        })}
+        {SETUP_STEPS.slice(0, 4).map((step) => (
+          <SetupStepLink key={step.id} step={step} done={step.checkFn(settingsObj)} />
+        ))}
       </div>
 
       {helpTab ? (

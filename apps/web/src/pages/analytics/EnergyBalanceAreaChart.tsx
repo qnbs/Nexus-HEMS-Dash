@@ -21,6 +21,7 @@ export interface EnergyBalanceAreaChartProps {
 export const EnergyBalanceAreaChart = ({ t, balanceData }: EnergyBalanceAreaChartProps) => (
   <div className="h-[260px]" role="img" aria-label={t('analytics.balanceChartAria')}>
     <ResponsiveContainer width="100%" height="100%">
+      {/* skipcq: JS-0415 - Recharts gradient defs exceed JSX depth 4 by design */}
       <AreaChart data={balanceData}>
         <defs>
           <linearGradient id="gradPv" x1="0" y1="0" x2="0" y2="1">

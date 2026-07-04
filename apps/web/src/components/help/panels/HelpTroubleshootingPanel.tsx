@@ -2,6 +2,9 @@ import { Gauge } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Disclosure } from '../../ui/Disclosure';
 import { HelpTabPanelShell } from '../HelpTabPanelShell';
+import { HelpPerfTip } from './HelpPerfTip';
+
+const PERF_TIP_KEYS = ['help.perf1', 'help.perf2', 'help.perf3', 'help.perf4'] as const;
 
 export const HelpTroubleshootingPanel = () => {
   const { t } = useTranslation();
@@ -61,29 +64,15 @@ export const HelpTroubleshootingPanel = () => {
         </div>
       </div>
 
-      {/* Performance Tips */}
       <div className="glass-panel-strong rounded-2xl p-6">
         <h3 className="mb-4 flex items-center gap-2 font-medium text-lg">
           <Gauge size={20} className="text-indigo-400" />
           {t('help.perfTips')}
         </h3>
         <div className="space-y-3 text-(--color-muted) text-sm">
-          <div className="flex items-start gap-3">
-            <span className="mt-0.5 text-(--color-primary)">•</span>
-            <p>{t('help.perf1')}</p>
-          </div>
-          <div className="flex items-start gap-3">
-            <span className="mt-0.5 text-(--color-primary)">•</span>
-            <p>{t('help.perf2')}</p>
-          </div>
-          <div className="flex items-start gap-3">
-            <span className="mt-0.5 text-(--color-primary)">•</span>
-            <p>{t('help.perf3')}</p>
-          </div>
-          <div className="flex items-start gap-3">
-            <span className="mt-0.5 text-(--color-primary)">•</span>
-            <p>{t('help.perf4')}</p>
-          </div>
+          {PERF_TIP_KEYS.map((key) => (
+            <HelpPerfTip key={key} text={t(key)} />
+          ))}
         </div>
       </div>
     </HelpTabPanelShell>

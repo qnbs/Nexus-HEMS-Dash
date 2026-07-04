@@ -18,6 +18,7 @@ export interface MlForecastLineChartProps {
 export const MlForecastLineChart = ({ forecastResult }: MlForecastLineChartProps) => (
   <div className="h-48">
     <ResponsiveContainer width="100%" height="100%">
+      {/* skipcq: JS-0415 - Recharts line/area chart exceeds JSX depth 4 by design */}
       <LineChart
         data={forecastResult.points.map((p) => ({
           time: `${new Date(p.timestamp).getHours()}:00`,

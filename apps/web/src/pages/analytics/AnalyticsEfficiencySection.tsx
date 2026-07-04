@@ -2,6 +2,8 @@ import type { EnergyData } from '@nexus-hems/shared-types';
 import type { TFunction } from 'i18next';
 import { Activity, Gauge, Shield } from 'lucide-react';
 import { motion } from 'motion/react';
+import { DataQualityRow } from './DataQualityRow';
+import { EfficiencyMetricBar } from './EfficiencyMetricBar';
 
 export interface AnalyticsEfficiencySectionProps {
   t: TFunction;
@@ -99,23 +101,7 @@ export const AnalyticsEfficiencySection = ({
         </h2>
         <div className="space-y-3">
           {efficiencyMetrics.map((metric) => (
-            <div key={metric.label}>
-              <div className="mb-1 flex items-center justify-between text-xs">
-                <span className="text-(--color-muted)">{metric.label}</span>
-                <span className="font-medium text-(--color-text)">
-                  {metric.value.toFixed(1)}
-                  {metric.suffix}
-                </span>
-              </div>
-              <div className="h-2 overflow-hidden rounded-full bg-(--color-surface)">
-                <motion.div
-                  className={`h-full rounded-full ${metric.color}`}
-                  initial={{ width: 0 }}
-                  animate={{ width: `${Math.min(100, (metric.value / metric.max) * 100)}%` }}
-                  transition={{ duration: 1, ease: 'easeOut' }}
-                />
-              </div>
-            </div>
+            <EfficiencyMetricBar key={metric.label} {...metric} />
           ))}
         </div>
         <div className="mt-4 rounded-xl border border-(--color-primary)/20 bg-(--color-primary)/5 p-3 text-(--color-muted) text-xs">
@@ -140,29 +126,7 @@ export const AnalyticsEfficiencySection = ({
         </h2>
         <div className="space-y-3">
           {dataQualityItems.map((item) => (
-            <div
-              key={item.label}
-              className="flex items-center gap-3 rounded-xl bg-white/5 px-3 py-2.5"
-            >
-              <span
-                className={`flex h-8 w-8 items-center justify-center rounded-lg font-bold text-xs ${
-                  item.status === 'ok'
-                    ? 'bg-emerald-500/20 text-emerald-400'
-                    : 'bg-yellow-500/20 text-yellow-400'
-                }`}
-              >
-                {item.value.toFixed(0)}%
-              </span>
-              <div className="flex-1">
-                <p className="font-medium text-(--color-text) text-xs">{item.label}</p>
-                <p className="text-(--color-muted) text-[10px]">{item.desc}</p>
-              </div>
-              <span
-                className={`h-2 w-2 rounded-full ${
-                  item.status === 'ok' ? 'bg-emerald-400' : 'energy-pulse bg-yellow-400'
-                }`}
-              />
-            </div>
+            <DataQualityRow key={item.label} {...item} />
           ))}
         </div>
         <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-white/5 px-3 py-2.5 text-xs">
