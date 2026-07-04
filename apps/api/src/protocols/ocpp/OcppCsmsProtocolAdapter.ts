@@ -16,6 +16,7 @@
 
 import EventEmitter from 'node:events';
 import { appendFileSync, mkdirSync } from 'node:fs';
+import type { WSCommandType } from '@nexus-hems/shared-types';
 import {
   type AdapterHealth,
   energyDatapointSchema,
@@ -27,6 +28,11 @@ import {
 import { WebSocket, WebSocketServer } from 'ws';
 import { recordAdapterDlq, recordAdapterError } from '../../middleware/adapter-metrics.js';
 import { API_RUNTIME_DIR, DEAD_LETTER_QUEUE_PATH } from '../../runtime-paths.js';
+import type {
+  IProtocolCommandHandler,
+  ProtocolCommandRequest,
+  ProtocolCommandResult,
+} from '../protocol-command.js';
 
 const OCPP_CALL = 2;
 const OCPP_CALLRESULT = 3;
@@ -47,6 +53,9 @@ interface ChargePointSession {
   lastEnergyKWh: number;
   lastSocPercent: number | undefined;
   lastSeenMs: number;
+  transactionId: string | undefined;
+  maxCurrentA: number;
+  voltageV: number;
 }
 
 export interface OcppCsmsProtocolAdapterConfig {
@@ -64,7 +73,14 @@ interface DLQEntry {
   protocol: ProtocolType;
 }
 
-export class OcppCsmsProtocolAdapter implements IProtocolAdapter {
+const OCPP_EV_COMMANDS = new Set<WSCommandType>([
+  'SET_EV_POWER',
+  'SET_EV_CURRENT',
+  'START_CHARGING',
+  'STOP_CHARGING',
+]);
+
+export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolCommandHandler {
   readonly id: string;
   readonly protocol: ProtocolType = 'ocpp';
 
@@ -76,6 +92,7 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter {
   private consecutiveErrors = 0;
   private readonly sessions = new Map<WebSocket, ChargePointSession>();
   private readonly emitter = new EventEmitter();
+  private outboundMessageId = 0;
 
   constructor(config: OcppCsmsProtocolAdapterConfig) {
     this.config = {
@@ -116,6 +133,9 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter {
           lastEnergyKWh: 0,
           lastSocPercent: undefined,
           lastSeenMs: Date.now(),
+          transactionId: undefined,
+          maxCurrentA: 32,
+          voltageV: 230,
         });
 
         ws.on('message', (data) => {
@@ -283,6 +303,11 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter {
     session: ChargePointSession,
     payload: Record<string, unknown>,
   ): void {
+    const transactionInfo = payload.transactionInfo as { transactionId?: string } | undefined;
+    if (transactionInfo?.transactionId) {
+      session.transactionId = transactionInfo.transactionId;
+    }
+
     const meterValue = payload.meterValue as
       | { sampledValue: { value: number | string; measurand?: string; unit?: string }[] }[]
       | undefined;
@@ -290,9 +315,159 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter {
       this.applySampledValues(session, meterValue);
     }
     if (payload.eventType === 'Ended') {
+      session.transactionId = undefined;
       session.lastPowerW = 0;
       this.emitMetric(session, 'POWER_W', 0);
     }
+  }
+
+  supportsCommand(type: WSCommandType): boolean {
+    return OCPP_EV_COMMANDS.has(type);
+  }
+
+  async sendCommand(command: ProtocolCommandRequest): Promise<ProtocolCommandResult> {
+    if (!this.supportsCommand(command.type)) {
+      return { handled: false, success: false };
+    }
+
+    const active = this.pickActiveSession();
+    if (!active) {
+      return {
+        handled: true,
+        success: false,
+        adapterId: this.id,
+        error: 'No charge point connected',
+      };
+    }
+
+    const { ws, session } = active;
+    let sent = false;
+
+    switch (command.type) {
+      case 'SET_EV_POWER': {
+        const powerW = Number(command.value);
+        if (!Number.isFinite(powerW) || powerW < 0) {
+          return {
+            handled: true,
+            success: false,
+            adapterId: this.id,
+            error: 'SET_EV_POWER requires a non-negative number',
+          };
+        }
+        sent = this.sendSetChargingProfileW(ws, powerW);
+        break;
+      }
+      case 'SET_EV_CURRENT': {
+        const currentA = Number(command.value);
+        if (!Number.isFinite(currentA) || currentA < 0) {
+          return {
+            handled: true,
+            success: false,
+            adapterId: this.id,
+            error: 'SET_EV_CURRENT requires a non-negative number',
+          };
+        }
+        session.maxCurrentA = currentA;
+        sent = this.sendSetChargingProfileA(ws, currentA);
+        break;
+      }
+      case 'START_CHARGING':
+        sent = this.sendRequestStartTransaction(ws);
+        break;
+      case 'STOP_CHARGING':
+        if (!session.transactionId) {
+          return {
+            handled: true,
+            success: false,
+            adapterId: this.id,
+            error: 'No active transaction to stop',
+          };
+        }
+        sent = this.sendRequestStopTransaction(ws, session.transactionId);
+        break;
+      default:
+        return { handled: false, success: false };
+    }
+
+    return sent
+      ? { handled: true, success: true, adapterId: this.id }
+      : {
+          handled: true,
+          success: false,
+          adapterId: this.id,
+          error: 'Failed to send OCPP command',
+        };
+  }
+
+  private pickActiveSession(): { ws: WebSocket; session: ChargePointSession } | null {
+    for (const [ws, session] of this.sessions) {
+      if (ws.readyState === WebSocket.OPEN) {
+        return { ws, session };
+      }
+    }
+    return null;
+  }
+
+  private sendOutboundCall(
+    ws: WebSocket,
+    action: string,
+    payload: Record<string, unknown>,
+  ): boolean {
+    if (ws.readyState !== WebSocket.OPEN) return false;
+    const messageId = `csms-${++this.outboundMessageId}`;
+    ws.send(JSON.stringify([OCPP_CALL, messageId, action, payload]));
+    return true;
+  }
+
+  private sendSetChargingProfileA(ws: WebSocket, maxCurrentA: number): boolean {
+    return this.sendSetChargingProfile(ws, 1, 1, 0, 'TxDefaultProfile', {
+      chargingRateUnit: 'A',
+      chargingSchedulePeriod: [{ startPeriod: 0, limit: maxCurrentA }],
+    });
+  }
+
+  private sendSetChargingProfileW(ws: WebSocket, powerW: number): boolean {
+    return this.sendSetChargingProfile(ws, 1, 1, 0, 'TxDefaultProfile', {
+      chargingRateUnit: 'W',
+      chargingSchedulePeriod: [{ startPeriod: 0, limit: powerW }],
+    });
+  }
+
+  private sendSetChargingProfile(
+    ws: WebSocket,
+    evseId: number,
+    id: number,
+    stackLevel: number,
+    purpose: string,
+    schedule: Record<string, unknown>,
+    profileExtra?: Record<string, unknown>,
+  ): boolean {
+    return this.sendOutboundCall(ws, 'SetChargingProfile', {
+      evseId,
+      chargingProfile: {
+        id,
+        stackLevel,
+        chargingProfilePurpose: purpose,
+        chargingProfileKind: 'Absolute',
+        chargingSchedule: [{ id, ...schedule }],
+        ...profileExtra,
+      },
+    });
+  }
+
+  private sendRequestStartTransaction(ws: WebSocket): boolean {
+    return this.sendOutboundCall(ws, 'RequestStartTransaction', {
+      evseId: 1,
+      remoteStartId: Date.now(),
+      idToken: {
+        idToken: 'nexus-hems',
+        type: 'Central',
+      },
+    });
+  }
+
+  private sendRequestStopTransaction(ws: WebSocket, transactionId: string): boolean {
+    return this.sendOutboundCall(ws, 'RequestStopTransaction', { transactionId });
   }
 
   private applySampledValues(

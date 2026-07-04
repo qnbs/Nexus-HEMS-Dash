@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { WebSocket, WebSocketServer } from 'ws';
 import { isReadOnlyMode } from '../config/read-only-mode.js';
 import type { AuthenticatedClient } from '../middleware/auth.js';
@@ -11,6 +11,12 @@ import {
   sanitizeOutgoingWsPayload,
   validateWSCommand,
 } from '../ws/energy.ws.js';
+
+vi.mock('../protocols/ProtocolCommandRouter.js', () => ({
+  dispatchProtocolCommand: vi.fn(),
+}));
+
+import { dispatchProtocolCommand } from '../protocols/ProtocolCommandRouter.js';
 
 describe('validateWSCommand', () => {
   it('accepts a valid hardware command', () => {
@@ -178,6 +184,8 @@ describe('checkScopeAuthorization', () => {
 
 describe('handleWsCommand', () => {
   const originalReadOnly = process.env.READ_ONLY_MODE;
+  const originalAdapterMode = process.env.ADAPTER_MODE;
+  const mockedDispatch = vi.mocked(dispatchProtocolCommand);
 
   function mockWs(): WebSocket & { sent: unknown[] } {
     return {
@@ -191,6 +199,9 @@ describe('handleWsCommand', () => {
   afterEach(() => {
     if (originalReadOnly === undefined) delete process.env.READ_ONLY_MODE;
     else process.env.READ_ONLY_MODE = originalReadOnly;
+    if (originalAdapterMode === undefined) delete process.env.ADAPTER_MODE;
+    else process.env.ADAPTER_MODE = originalAdapterMode;
+    mockedDispatch.mockReset();
   });
 
   it('routes invalid commands to SUBSCRIBE handler when applicable', () => {
@@ -226,6 +237,32 @@ describe('handleWsCommand', () => {
 
     handleWsCommand(ws, { type: 'SET_BATTERY_POWER', value: -500 }, new WeakMap(), auth, wss);
     expect(peer.sent.some((msg) => (msg as { type: string }).type === 'ENERGY_UPDATE')).toBe(true);
+  });
+
+  it('dispatches EV commands to live protocol adapters in live mode', async () => {
+    delete process.env.READ_ONLY_MODE;
+    process.env.ADAPTER_MODE = 'live';
+    process.env.ALLOW_LIVE_HARDWARE = 'true';
+    mockedDispatch.mockResolvedValue({ handled: true, success: true, adapterId: 'ocpp-csms-01' });
+
+    const ws = mockWs();
+    const peer = mockWs();
+    const auth = new WeakMap<WebSocket, AuthenticatedClient>();
+    auth.set(ws, { clientId: 'writer', scope: 'readwrite' });
+    const wss = { clients: new Set<WebSocket>([ws, peer]) } as WebSocketServer;
+    Object.defineProperty(ws, 'readyState', { value: 1 });
+    Object.defineProperty(peer, 'readyState', { value: 1 });
+
+    handleWsCommand(ws, { type: 'SET_EV_POWER', value: 7200 }, new WeakMap(), auth, wss);
+
+    await vi.waitFor(() => {
+      expect(mockedDispatch).toHaveBeenCalledWith({ type: 'SET_EV_POWER', value: 7200 });
+    });
+    await vi.waitFor(() => {
+      expect(peer.sent.some((msg) => (msg as { type: string }).type === 'ENERGY_UPDATE')).toBe(
+        true,
+      );
+    });
   });
 });
 

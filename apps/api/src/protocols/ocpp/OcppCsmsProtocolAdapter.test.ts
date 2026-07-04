@@ -113,4 +113,38 @@ describe('OcppCsmsProtocolAdapter', () => {
     expect(a?.id).toBe('csms-edge');
     expect(a?.protocol).toBe('ocpp');
   });
+
+  it('supports EV command types', () => {
+    expect(adapter.supportsCommand('SET_EV_POWER')).toBe(true);
+    expect(adapter.supportsCommand('SET_BATTERY_POWER')).toBe(false);
+  });
+
+  it('sends SetChargingProfile on SET_EV_POWER when a charge point is connected', async () => {
+    const client = new WebSocket(`ws://127.0.0.1:${boundPort}/CP-CMD-01`, 'ocpp2.0.1');
+    await new Promise<void>((resolve, reject) => {
+      client.once('open', () => resolve());
+      client.once('error', reject);
+    });
+
+    const outbound = new Promise<unknown>((resolve) => {
+      client.once('message', (data) => resolve(JSON.parse(String(data))));
+    });
+
+    const result = await adapter.sendCommand({ type: 'SET_EV_POWER', value: 7200 });
+    expect(result).toEqual({ handled: true, success: true, adapterId: 'test-csms' });
+
+    const msg = (await outbound) as [number, string, string, Record<string, unknown>];
+    expect(msg[0]).toBe(2);
+    expect(msg[2]).toBe('SetChargingProfile');
+    expect(msg[3].evseId).toBe(1);
+
+    client.close();
+  });
+
+  it('returns error when no charge point is connected', async () => {
+    const result = await adapter.sendCommand({ type: 'START_CHARGING', value: true });
+    expect(result.handled).toBe(true);
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('No charge point');
+  });
 });

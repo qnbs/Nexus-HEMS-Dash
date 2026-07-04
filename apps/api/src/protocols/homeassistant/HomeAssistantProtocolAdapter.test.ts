@@ -55,7 +55,11 @@ const testConfig: HomeAssistantProtocolAdapterConfig = {
   entityMappings: [
     { entityId: 'sensor.solar_power', metric: 'POWER_W', role: 'pv' },
     { entityId: 'sensor.battery_soc', metric: 'SOC_PERCENT', role: 'battery' },
+    { entityId: 'number.wallbox_max_current', metric: 'POWER_W', role: 'ev' },
+    { entityId: 'switch.wallbox_charging', metric: 'POWER_W', role: 'ev' },
   ],
+  wallboxCurrentEntityId: 'number.wallbox_max_current',
+  wallboxSwitchEntityId: 'switch.wallbox_charging',
 };
 
 describe('HomeAssistantProtocolAdapter', () => {
@@ -137,5 +141,36 @@ describe('HomeAssistantProtocolAdapter', () => {
     expect(
       createHomeAssistantAdapterFromEnv({ HA_HOST: 'ha.local', HA_TOKEN: 'secret' }),
     ).not.toBeNull();
+  });
+
+  it('sends call_service for START_CHARGING when connected', async () => {
+    const connectPromise = adapter.connect();
+
+    await vi.waitFor(() => {
+      expect(mockWsHolder.current).not.toBeNull();
+    });
+
+    const ws = mockWsHolder.current;
+    ws?.emit('message', JSON.stringify({ type: 'auth_required' }));
+    ws?.emit('message', JSON.stringify({ type: 'auth_ok' }));
+    await connectPromise;
+
+    const result = await adapter.sendCommand({ type: 'START_CHARGING', value: true });
+    expect(result).toEqual({ handled: true, success: true, adapterId: 'test-ha-01' });
+
+    const serviceCall = ws?.send.mock.calls.find((call) => {
+      const payload = JSON.parse(String(call[0])) as { type: string };
+      return payload.type === 'call_service';
+    });
+    expect(serviceCall).toBeDefined();
+    const payload = JSON.parse(String(serviceCall?.[0])) as {
+      type: string;
+      domain: string;
+      service: string;
+      target: { entity_id: string };
+    };
+    expect(payload.domain).toBe('switch');
+    expect(payload.service).toBe('turn_on');
+    expect(payload.target.entity_id).toBe('switch.wallbox_charging');
   });
 });

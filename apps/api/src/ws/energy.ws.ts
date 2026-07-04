@@ -3,6 +3,7 @@ import {
   EnergyDataSchema,
   sanitizeObjectStrings,
   WSCommandSchema,
+  type WSCommandType,
 } from '@nexus-hems/shared-types';
 import type { IncomingMessage } from 'http';
 import type { WebSocket, WebSocketServer } from 'ws';
@@ -13,6 +14,7 @@ import { type CommandOutcome, writeCommandAuditEntry } from '../data/command-aud
 import { mockData, updateMockData } from '../data/mock-data.js';
 import { type AuthenticatedClient, authenticateWS, type JWTScope } from '../middleware/auth.js';
 import { setMetric, updateServerMetrics, wsMessageCount } from '../middleware/metrics.js';
+import { dispatchProtocolCommand } from '../protocols/ProtocolCommandRouter.js';
 import type { LiveEnergyAggregator } from '../services/LiveEnergyAggregator.js';
 import { wsTicketStore } from '../services/ws-ticket-store.js';
 import { handleEebusProxyConnection, isEebusProxyPath } from './eebus-proxy.ws.js';
@@ -366,6 +368,36 @@ export function handleWsCommand(
     return;
   }
 
+  const commandValue = cmd.value ?? 0;
+  const mode = getEffectiveAdapterMode();
+
+  if (mode === 'live') {
+    void dispatchLiveCommand(
+      ws,
+      { type: cmd.type as WSCommandType, value: commandValue },
+      wsAuthMap,
+      wss,
+      liveAggregator,
+    );
+    return;
+  }
+
+  applyMockCommandMutation(cmd);
+  auditCommand(wsAuthMap, ws, cmd.type, commandValue, 'accepted');
+
+  mockData.gridPower =
+    mockData.houseLoad +
+    mockData.batteryPower +
+    mockData.evPower +
+    mockData.heatPumpPower -
+    mockData.pvPower;
+  const broadcastData = resolveBroadcastData(liveAggregator);
+  wss.clients.forEach((c) => {
+    if (c.readyState === 1) safeSend(c, { type: 'ENERGY_UPDATE', data: broadcastData });
+  });
+}
+
+function applyMockCommandMutation(cmd: { type: string; value?: number }): void {
   if (cmd.type === 'SET_EV_POWER') {
     mockData.evPower = cmd.value ?? mockData.evPower;
   } else if (cmd.type === 'SET_HEAT_PUMP_POWER') {
@@ -373,16 +405,45 @@ export function handleWsCommand(
   } else if (cmd.type === 'SET_BATTERY_POWER') {
     mockData.batteryPower = cmd.value ?? mockData.batteryPower;
   }
+}
 
-  auditCommand(wsAuthMap, ws, cmd.type, cmd.value ?? null, 'accepted');
+async function dispatchLiveCommand(
+  ws: WebSocket,
+  command: { type: WSCommandType; value: number | string | boolean },
+  wsAuthMap: WeakMap<WebSocket, AuthenticatedClient>,
+  wss: WebSocketServer,
+  liveAggregator?: LiveEnergyAggregator,
+): Promise<void> {
+  const result = await dispatchProtocolCommand(command);
 
-  // Broadcast update immediately
-  mockData.gridPower =
-    mockData.houseLoad +
-    mockData.batteryPower +
-    mockData.evPower +
-    mockData.heatPumpPower -
-    mockData.pvPower;
+  if (!result.handled) {
+    auditCommand(
+      wsAuthMap,
+      ws,
+      command.type,
+      command.value,
+      'rejected_validation',
+      'No live adapter handles this command',
+    );
+    safeSend(ws, { type: 'ERROR', error: 'No live adapter handles this command' });
+    return;
+  }
+
+  if (!result.success) {
+    auditCommand(
+      wsAuthMap,
+      ws,
+      command.type,
+      command.value,
+      'rejected_validation',
+      result.error ?? 'Command failed',
+    );
+    safeSend(ws, { type: 'ERROR', error: result.error ?? 'Command failed' });
+    return;
+  }
+
+  auditCommand(wsAuthMap, ws, command.type, command.value, 'accepted');
+
   const broadcastData = resolveBroadcastData(liveAggregator);
   wss.clients.forEach((c) => {
     if (c.readyState === 1) safeSend(c, { type: 'ENERGY_UPDATE', data: broadcastData });

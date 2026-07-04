@@ -38,6 +38,11 @@ vi.mock('ws', () => {
           () => this.emit('message', JSON.stringify({ jsonrpc: '2.0', id: req.id, result: {} })),
           0,
         );
+      } else if (req.method === 'updateComponentConfig') {
+        setTimeout(
+          () => this.emit('message', JSON.stringify({ jsonrpc: '2.0', id: req.id, result: {} })),
+          0,
+        );
       }
     });
     close = vi.fn();
@@ -79,6 +84,8 @@ const testConfig: OpenEMSProtocolAdapterConfig = {
   authToken: 'user',
   deviceId: 'openems-home',
   pollIntervalMs: 60_000,
+  evcsComponentId: 'evcs0',
+  evcsControllerId: 'ctrlEvcs0',
 };
 
 describe('OpenEMSProtocolAdapter', () => {
@@ -171,8 +178,29 @@ describe('OpenEMSProtocolAdapter', () => {
       OPENEMS_HOST: 'edge.local',
       OPENEMS_PORT: '9090',
       OPENEMS_DEVICE_ID: 'site-a',
+      OPENEMS_EVCS_COMPONENT_ID: 'evcs1',
+      OPENEMS_EVCS_CTRL_ID: 'ctrlEvcs1',
     });
     expect(a?.id).toBe('openems-01');
     expect(a?.protocol).toBe('openems');
+  });
+
+  it('sends updateComponentConfig for SET_EV_POWER when connected', async () => {
+    await adapter.connect();
+
+    const result = await adapter.sendCommand({ type: 'SET_EV_POWER', value: 11000 });
+    expect(result).toEqual({ handled: true, success: true, adapterId: 'test-openems-01' });
+
+    const updateCall = mockWsHolder.current?.send.mock.calls.find((call) => {
+      const payload = JSON.parse(String(call[0])) as { method: string };
+      return payload.method === 'updateComponentConfig';
+    });
+    expect(updateCall).toBeDefined();
+    const request = JSON.parse(String(updateCall?.[0])) as {
+      method: string;
+      params: { componentId: string; properties: { name: string; value: number }[] };
+    };
+    expect(request.params.componentId).toBe('evcs0');
+    expect(request.params.properties[0]).toEqual({ name: 'setChargePowerLimit', value: 11000 });
   });
 });
