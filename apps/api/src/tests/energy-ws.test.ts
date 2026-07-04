@@ -34,6 +34,11 @@ describe('validateWSCommand', () => {
     expect(result.valid).toBe(false);
   });
 
+  it('rejects fractional SET_HEAT_PUMP_MODE', () => {
+    const result = validateWSCommand({ type: 'SET_HEAT_PUMP_MODE', value: 2.5 });
+    expect(result.valid).toBe(false);
+  });
+
   it('rejects KNX_SET_TEMPERATURE outside 5–35 °C', () => {
     const result = validateWSCommand({ type: 'KNX_SET_TEMPERATURE', value: 2 });
     expect(result.valid).toBe(false);

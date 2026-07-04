@@ -263,11 +263,11 @@ describe('OpenEMSProtocolAdapter', () => {
     expect(result.error).toContain('22000');
   });
 
-  it('rejects SET_EV_CURRENT above 32 A before RPC', async () => {
+  it('rejects SET_EV_CURRENT above 80 A before RPC', async () => {
     await adapter.connect();
-    const result = await adapter.sendCommand({ type: 'SET_EV_CURRENT', value: 40 });
+    const result = await adapter.sendCommand({ type: 'SET_EV_CURRENT', value: 81 });
     expect(result.success).toBe(false);
-    expect(result.error).toContain('32');
+    expect(result.error).toContain('80');
   });
 
   it('rejects invalid SET_EV_POWER values before RPC', async () => {
@@ -287,7 +287,7 @@ describe('OpenEMSProtocolAdapter', () => {
       value: Number.NaN,
     });
     expect(result.success).toBe(false);
-    expect(result.error).toContain('32');
+    expect(result.error).toContain('80');
   });
 
   it('supports battery and heat-pump command types', () => {

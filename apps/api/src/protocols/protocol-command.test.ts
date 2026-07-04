@@ -41,8 +41,8 @@ describe('validateProtocolCommandRequest', () => {
     expect(result.valid).toBe(false);
   });
 
-  it('rejects SET_EV_CURRENT above 32 A', () => {
-    const result = validateProtocolCommandRequest({ type: 'SET_EV_CURRENT', value: 33 });
+  it('rejects SET_EV_CURRENT above 80 A', () => {
+    const result = validateProtocolCommandRequest({ type: 'SET_EV_CURRENT', value: 81 });
     expect(result.valid).toBe(false);
   });
 
@@ -121,6 +121,9 @@ describe('validateProtocolCommandRequest', () => {
       false,
     );
     expect(validateProtocolCommandRequest({ type: 'SET_HEAT_PUMP_MODE', value: 5 }).valid).toBe(
+      false,
+    );
+    expect(validateProtocolCommandRequest({ type: 'SET_HEAT_PUMP_MODE', value: 2.5 }).valid).toBe(
       false,
     );
   });

@@ -253,7 +253,7 @@ function refineWsCommandValue(
       }
       return;
     case 'SET_HEAT_PUMP_MODE':
-      if (typeof value !== 'number' || value < 1 || value > 4) {
+      if (typeof value !== 'number' || !Number.isInteger(value) || value < 1 || value > 4) {
         reject('SET_HEAT_PUMP_MODE requires a finite SG Ready mode between 1 and 4');
       }
       return;

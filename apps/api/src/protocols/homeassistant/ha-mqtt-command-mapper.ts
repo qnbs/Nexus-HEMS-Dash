@@ -83,7 +83,9 @@ export function mapProtocolCommandToMqttService(
     case 'SET_EV_CURRENT': {
       const current = EvCurrentValueSchema.safeParse(command.value);
       if (!current.success) {
-        return { error: 'SET_EV_CURRENT requires a finite amp value between 0 and 32' };
+        return {
+          error: `SET_EV_CURRENT requires a finite amp value between 0 and ${MAX_EV_CURRENT_A}`,
+        };
       }
       if (!entities.wallboxCurrentEntityId) {
         return { error: 'HA_WALLBOX_CURRENT_ENTITY not configured' };

@@ -11,7 +11,8 @@ import { z } from 'zod';
 
 /** Residential EVCS ceiling — aligns with WSCommand 25 kW safety cap. */
 export const MAX_EV_POWER_W = 22_000;
-export const MAX_EV_CURRENT_A = 32;
+/** IEC 61851 residential ceiling — aligns with WSCommandSchema / frontend command-safety (80 A). */
+export const MAX_EV_CURRENT_A = 80;
 /** Bidirectional ESS power cap (matches WSCommandSchema 25 kW safety limit). */
 export const MAX_BATTERY_POWER_W = 25_000;
 
@@ -31,7 +32,7 @@ export const BatteryModeValueSchema = z.union([z.literal('charge'), z.literal('d
 /** Peak-shaving limit in kW (OpenEMS maps ×1000 → watts). */
 export const GridLimitValueSchema = z.number().finite().min(0).max(25);
 /** SG Ready mode 1–4 (aligns with frontend command-safety). */
-export const HeatPumpModeValueSchema = z.number().finite().min(1).max(4);
+export const HeatPumpModeValueSchema = z.number().int().min(1).max(4);
 /** HA entity id for SG Ready writes — must not be climate (hvac_mode is string-based). */
 export const HeatPumpModeEntityIdSchema = z
   .string()
@@ -71,7 +72,7 @@ export const ProtocolCommandRequestSchema = WSCommandSchema.and(
   if (cmd.type === 'SET_EV_CURRENT' && !EvCurrentValueSchema.safeParse(cmd.value).success) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: 'SET_EV_CURRENT requires a finite amp value between 0 and 32',
+      message: `SET_EV_CURRENT requires a finite amp value between 0 and ${MAX_EV_CURRENT_A}`,
     });
   }
   if (cmd.type === 'SET_BATTERY_POWER' && !BatteryPowerValueSchema.safeParse(cmd.value).success) {

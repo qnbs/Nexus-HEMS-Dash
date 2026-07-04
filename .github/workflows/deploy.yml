@@ -77,6 +77,9 @@ jobs:
 
   prune-before-deploy:
     # Prune *before* publish so GitHub Pages API is not wedged by 100+ stale deployments.
+    if: >-
+      github.event_name == 'push' ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.approveDeploy == 'DEPLOY')
     runs-on: ubuntu-latest
     permissions:
       deployments: write
@@ -144,6 +147,7 @@ jobs:
       - name: Retry Pages deploy (1/2)
         if: steps.deployment.outcome == 'failure'
         id: deployment_retry
+        continue-on-error: true
         uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
         with:
           timeout: 600000

@@ -50,6 +50,7 @@ import {
   EvPowerValueSchema,
   GridLimitValueSchema,
   HeatPumpModeValueSchema,
+  MAX_EV_CURRENT_A,
 } from '../protocol-command.js';
 import { isSafeComponentId, sanitizeWritableProperties } from './openems-writable-rules.js';
 
@@ -494,7 +495,7 @@ export class OpenEMSProtocolAdapter implements IProtocolAdapter, IProtocolComman
             handled: true,
             success: false,
             adapterId: this.id,
-            error: 'SET_EV_CURRENT requires a finite amp value between 0 and 32',
+            error: `SET_EV_CURRENT requires a finite amp value between 0 and ${MAX_EV_CURRENT_A}`,
           };
         }
         const derivedPower = current.data * 230 * 3;

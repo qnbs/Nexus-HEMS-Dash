@@ -38,6 +38,7 @@ import {
   EvCurrentValueSchema,
   EvDischargeValueSchema,
   EvPowerValueSchema,
+  MAX_EV_CURRENT_A,
   OcppGridLimitWattsSchema,
 } from '../protocol-command.js';
 
@@ -485,7 +486,7 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
             handled: true,
             success: false,
             adapterId: this.id,
-            error: 'SET_EV_CURRENT requires a finite amp value between 0 and 32',
+            error: `SET_EV_CURRENT requires a finite amp value between 0 and ${MAX_EV_CURRENT_A}`,
           };
         }
         acknowledged = await this.sendSetChargingProfileA(ws, current.data);

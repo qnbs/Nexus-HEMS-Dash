@@ -7,7 +7,7 @@
 
 import { type EnergyData, EnergyDataSchema, WSCommandSchema } from '@nexus-hems/shared-types';
 import fc from 'fast-check';
-import { describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -166,6 +166,15 @@ describe('WSCommandSchema — property-based', () => {
             ),
           }),
           fc.record({
+            type: fc.constant('SET_HEAT_PUMP_MODE' as const),
+            value: fc.integer({ min: 1, max: 4 }),
+          }),
+          fc.record({
+            type: fc.constant('SET_EV_CURRENT' as const),
+            value: fc.integer({ min: 0, max: 80 }),
+          }),
+          // START/STOP accept boolean or any finite number — no upper cap in WSCommandSchema
+          fc.record({
             type: fc.constant('START_CHARGING' as const),
             value: fc.oneof(fc.boolean(), fc.integer()),
           }),
@@ -181,6 +190,16 @@ describe('WSCommandSchema — property-based', () => {
       ),
       { numRuns: 200 },
     );
+  });
+
+  it('rejects fractional SET_HEAT_PUMP_MODE', () => {
+    expect(WSCommandSchema.safeParse({ type: 'SET_HEAT_PUMP_MODE', value: 2.5 }).success).toBe(
+      false,
+    );
+  });
+
+  it('rejects SET_EV_CURRENT above 80 A', () => {
+    expect(WSCommandSchema.safeParse({ type: 'SET_EV_CURRENT', value: 81 }).success).toBe(false);
   });
 
   it('rejects missing type field', () => {

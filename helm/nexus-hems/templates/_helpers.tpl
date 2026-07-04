@@ -76,7 +76,9 @@ Defaults to wss://<ingress.host> when frontend.wsOrigins is empty.
 {{- define "nexus-hems.frontendWsOrigins" -}}
 {{- if .Values.frontend.wsOrigins -}}
 {{- .Values.frontend.wsOrigins -}}
-{{- else -}}
+{{- else if .Values.ingress.host -}}
 {{- printf "wss://%s" .Values.ingress.host -}}
+{{- else -}}
+{{- fail "frontend.wsOrigins is empty and ingress.host is not set; provide one of them" -}}
 {{- end -}}
 {{- end }}
