@@ -11,6 +11,11 @@
  *   OPENEMS_AUTH_TOKEN    — authenticateWithPassword password (default: user)
  *   OPENEMS_DEVICE_ID     — deviceId prefix for datapoints (default: openems-edge)
  *   OPENEMS_POLL_MS       — subscribe refresh interval (default: 5000)
+ *   OPENEMS_EVCS_COMPONENT_ID — EVCS component id (default: evcs0)
+ *   OPENEMS_EVCS_CTRL_ID      — EVCS controller id (default: ctrlEvcs0)
+ *   OPENEMS_ESS_CTRL_ID         — ESS controller (default: ctrlEssFixActivePower0)
+ *   OPENEMS_PEAK_SHAVING_CTRL_ID — peak shaving controller (default: ctrlPeakShaving0)
+ *   OPENEMS_HP_SGREADY_CTRL_ID   — SG Ready heat pump IO (default: ctrlIoHeatPumpSgReady0)
  */
 
 import EventEmitter from 'node:events';
@@ -38,7 +43,11 @@ import type {
   ProtocolCommandRequest,
   ProtocolCommandResult,
 } from '../protocol-command.js';
-import { EvCurrentValueSchema, EvPowerValueSchema } from '../protocol-command.js';
+import {
+  BatteryPowerValueSchema,
+  EvCurrentValueSchema,
+  EvPowerValueSchema,
+} from '../protocol-command.js';
 import { isSafeComponentId, sanitizeWritableProperties } from './openems-writable-rules.js';
 
 const OPENEMS_EV_COMMANDS = new Set<WSCommandType>([
@@ -46,6 +55,18 @@ const OPENEMS_EV_COMMANDS = new Set<WSCommandType>([
   'SET_EV_CURRENT',
   'START_CHARGING',
   'STOP_CHARGING',
+]);
+
+const OPENEMS_STORAGE_COMMANDS = new Set<WSCommandType>([
+  'SET_BATTERY_POWER',
+  'SET_BATTERY_MODE',
+  'SET_GRID_LIMIT',
+  'SET_HEAT_PUMP_MODE',
+]);
+
+const OPENEMS_COMMANDS = new Set<WSCommandType>([
+  ...OPENEMS_EV_COMMANDS,
+  ...OPENEMS_STORAGE_COMMANDS,
 ]);
 const DEFAULT_POLL_INTERVAL_MS = 5000;
 const CONNECT_TIMEOUT_MS = 15_000;
@@ -94,6 +115,9 @@ export interface OpenEMSProtocolAdapterConfig {
   pollIntervalMs?: number;
   evcsComponentId?: string;
   evcsControllerId?: string;
+  essControllerId?: string;
+  peakShavingControllerId?: string;
+  hpSgReadyControllerId?: string;
 }
 
 interface DLQEntry {
@@ -115,6 +139,9 @@ export class OpenEMSProtocolAdapter implements IProtocolAdapter, IProtocolComman
   private readonly deviceId: string;
   private readonly evcsComponentId: string;
   private readonly evcsControllerId: string;
+  private readonly essControllerId: string;
+  private readonly peakShavingControllerId: string;
+  private readonly hpSgReadyControllerId: string;
   private ws: WebSocket | null = null;
   private sessionToken: string | null = null;
   private rpcId = 0;
@@ -141,6 +168,9 @@ export class OpenEMSProtocolAdapter implements IProtocolAdapter, IProtocolComman
     this.deviceId = config.deviceId ?? 'openems-edge';
     this.evcsComponentId = config.evcsComponentId ?? 'evcs0';
     this.evcsControllerId = config.evcsControllerId ?? 'ctrlEvcs0';
+    this.essControllerId = config.essControllerId ?? 'ctrlEssFixActivePower0';
+    this.peakShavingControllerId = config.peakShavingControllerId ?? 'ctrlPeakShaving0';
+    this.hpSgReadyControllerId = config.hpSgReadyControllerId ?? 'ctrlIoHeatPumpSgReady0';
   }
 
   async connect(): Promise<void> {
@@ -410,7 +440,7 @@ export class OpenEMSProtocolAdapter implements IProtocolAdapter, IProtocolComman
   }
 
   supportsCommand(type: WSCommandType): boolean {
-    return OPENEMS_EV_COMMANDS.has(type);
+    return OPENEMS_COMMANDS.has(type);
   }
 
   async sendCommand(command: ProtocolCommandRequest): Promise<ProtocolCommandResult> {
@@ -471,6 +501,70 @@ export class OpenEMSProtocolAdapter implements IProtocolAdapter, IProtocolComman
           { name: 'enabledCharging', value: false },
         ]);
         break;
+      case 'SET_BATTERY_POWER': {
+        const power = BatteryPowerValueSchema.safeParse(command.value);
+        if (!power.success) {
+          return {
+            handled: true,
+            success: false,
+            adapterId: this.id,
+            error: 'SET_BATTERY_POWER requires a finite wattage between -25000 and 25000',
+          };
+        }
+        ok = await this.updateSafeComponentConfig(this.essControllerId, [
+          { name: 'power', value: power.data },
+          {
+            name: 'mode',
+            value: power.data >= 0 ? 'CHARGE_GRID' : 'DISCHARGE_TO_GRID',
+          },
+        ]);
+        break;
+      }
+      case 'SET_BATTERY_MODE': {
+        const mode = String(command.value);
+        const mappedMode =
+          mode === 'charge'
+            ? 'CHARGE_GRID'
+            : mode === 'discharge'
+              ? 'DISCHARGE_TO_GRID'
+              : command.value;
+        ok = await this.updateSafeComponentConfig(this.essControllerId, [
+          { name: 'mode', value: mappedMode },
+        ]);
+        break;
+      }
+      case 'SET_GRID_LIMIT': {
+        if (
+          typeof command.value !== 'number' ||
+          !Number.isFinite(command.value) ||
+          command.value < 0
+        ) {
+          return {
+            handled: true,
+            success: false,
+            adapterId: this.id,
+            error: 'SET_GRID_LIMIT requires a non-negative number (kW)',
+          };
+        }
+        ok = await this.updateSafeComponentConfig(this.peakShavingControllerId, [
+          { name: 'peakShavingPower', value: command.value * 1000 },
+        ]);
+        break;
+      }
+      case 'SET_HEAT_PUMP_MODE': {
+        if (typeof command.value !== 'number' || !Number.isFinite(command.value)) {
+          return {
+            handled: true,
+            success: false,
+            adapterId: this.id,
+            error: 'SET_HEAT_PUMP_MODE requires a numeric value',
+          };
+        }
+        ok = await this.updateSafeComponentConfig(this.hpSgReadyControllerId, [
+          { name: 'mode', value: command.value },
+        ]);
+        break;
+      }
       default:
         return { handled: false, success: false };
     }
@@ -523,6 +617,9 @@ export function createOpenEMSAdapterFromEnv(
     deviceId: env.OPENEMS_DEVICE_ID?.trim() || 'openems-edge',
     evcsComponentId: env.OPENEMS_EVCS_COMPONENT_ID?.trim() || 'evcs0',
     evcsControllerId: env.OPENEMS_EVCS_CTRL_ID?.trim() || 'ctrlEvcs0',
+    essControllerId: env.OPENEMS_ESS_CTRL_ID?.trim() || 'ctrlEssFixActivePower0',
+    peakShavingControllerId: env.OPENEMS_PEAK_SHAVING_CTRL_ID?.trim() || 'ctrlPeakShaving0',
+    hpSgReadyControllerId: env.OPENEMS_HP_SGREADY_CTRL_ID?.trim() || 'ctrlIoHeatPumpSgReady0',
     ...(pollMs !== undefined && Number.isFinite(pollMs) ? { pollIntervalMs: pollMs } : {}),
   });
 }

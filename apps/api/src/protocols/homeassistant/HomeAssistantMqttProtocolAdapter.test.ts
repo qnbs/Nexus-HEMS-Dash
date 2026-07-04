@@ -6,11 +6,19 @@ import EventEmitter from 'node:events';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 class MockMqttClient extends EventEmitter {
+  connected = true;
+  publish = vi.fn(
+    (_topic: string, _payload: string, _opts: unknown, cb?: (err: Error | null) => void) => {
+      cb?.(null);
+      return this;
+    },
+  );
   subscribe = vi.fn((_topic: string, _opts: unknown, cb?: (err: Error | null) => void) => {
     cb?.(null);
     return this;
   });
   end = vi.fn((_force: boolean, _opts: unknown, cb?: () => void) => {
+    this.connected = false;
     cb?.();
     return this;
   });
@@ -135,5 +143,30 @@ describe('HomeAssistantMqttProtocolAdapter', () => {
     expect(recordAdapterError).toHaveBeenCalledTimes(2);
     const health = await adapter.healthCheck();
     expect(health.consecutiveErrors).toBe(2);
+  });
+
+  it('publishes MQTT service call for START_CHARGING when entities configured', async () => {
+    const cmdAdapter = new HomeAssistantMqttProtocolAdapter({
+      ...testConfig,
+      wallboxSwitchEntityId: 'switch.wallbox_charging',
+    });
+    await cmdAdapter.connect();
+
+    const result = await cmdAdapter.sendCommand({ type: 'START_CHARGING', value: true });
+    expect(result).toEqual({ handled: true, success: true, adapterId: 'test-ha-mqtt-01' });
+    expect(mockClientInstance.publish).toHaveBeenCalledWith(
+      'homeassistant/switch/turn_on',
+      JSON.stringify({ entity_id: 'switch.wallbox_charging' }),
+      { qos: 1 },
+      expect.any(Function),
+    );
+
+    await cmdAdapter.disconnect();
+  });
+
+  it('returns configuration error when wallbox entities are missing', async () => {
+    const result = await adapter.sendCommand({ type: 'SET_EV_CURRENT', value: 16 });
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('HA_WALLBOX_CURRENT_ENTITY');
   });
 });

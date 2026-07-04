@@ -3,7 +3,7 @@
  *
  * Phase 1 (MVP): native mqtt.js transport, HA MQTT Discovery config topics,
  * static entity map + device_class heuristics (shared ha-role-resolver).
- * Read-only telemetry (no service publishes).
+ * Phase 6: EV + heat-pump commands via MQTT service publish.
  *
  * Env vars (live mode only):
  *   HA_MQTT_BROKER_URL     — MQTT broker URL (required to enable)
@@ -11,6 +11,10 @@
  *   HA_MQTT_ADAPTER_ID     — adapter instance id (default: ha-mqtt-01)
  *   HA_DEVICE_ID           — deviceId prefix (default: ha-site)
  *   HA_ENTITY_MAP_PATH     — override path to entity map JSON
+ *   HA_WALLBOX_CURRENT_ENTITY — number entity for max current (optional)
+ *   HA_WALLBOX_SWITCH_ENTITY  — switch entity for start/stop (optional)
+ *   HA_WALLBOX_MAINS_VOLTAGE  — mains voltage for SET_EV_POWER→amps (default: 230)
+ *   HA_HEAT_PUMP_MODE_ENTITY    — climate entity for SET_HEAT_PUMP_MODE (optional)
  */
 
 import EventEmitter from 'node:events';
@@ -22,6 +26,7 @@ import {
   type IProtocolAdapter,
   type ProtocolType,
   type UnifiedEnergyDatapoint,
+  type WSCommandType,
 } from '@nexus-hems/shared-types';
 import mqtt, { type IClientOptions, type MqttClient } from 'mqtt';
 import {
@@ -35,7 +40,17 @@ import {
   parseHANumericState,
   resolveHAEntityRole,
 } from '../homeassistant/ha-role-resolver.js';
+import type {
+  IProtocolCommandHandler,
+  ProtocolCommandRequest,
+  ProtocolCommandResult,
+} from '../protocol-command.js';
 import { writeToProtocolDLQ } from '../protocol-dlq.js';
+import {
+  haMqttSupportsCommand,
+  mapProtocolCommandToMqttService,
+  mqttServiceTopic,
+} from './ha-mqtt-command-mapper.js';
 
 interface HAMqttDiscoveryConfig {
   unique_id?: string;
@@ -58,9 +73,13 @@ export interface HomeAssistantMqttProtocolAdapterConfig {
   deviceId?: string;
   entityMappings?: HAEntityMapping[];
   clientOptions?: IClientOptions;
+  wallboxCurrentEntityId?: string;
+  wallboxSwitchEntityId?: string;
+  heatPumpModeEntityId?: string;
+  mainsVoltage?: number;
 }
 
-export class HomeAssistantMqttProtocolAdapter implements IProtocolAdapter {
+export class HomeAssistantMqttProtocolAdapter implements IProtocolAdapter, IProtocolCommandHandler {
   readonly id: string;
   readonly protocol: ProtocolType = 'homeassistant-mqtt';
 
@@ -70,6 +89,10 @@ export class HomeAssistantMqttProtocolAdapter implements IProtocolAdapter {
     HomeAssistantMqttProtocolAdapterConfig;
   private readonly deviceIdPrefix: string;
   private readonly staticMap: Map<string, HAEntityMapping>;
+  private readonly wallboxCurrentEntityId: string | undefined;
+  private readonly wallboxSwitchEntityId: string | undefined;
+  private readonly heatPumpModeEntityId: string | undefined;
+  private readonly mainsVoltage: number;
   private readonly stateTopicToEntity = new Map<string, TrackedEntity>();
   private client: MqttClient | null = null;
   private connected = false;
@@ -85,6 +108,10 @@ export class HomeAssistantMqttProtocolAdapter implements IProtocolAdapter {
     };
     this.id = config.id;
     this.deviceIdPrefix = config.deviceId ?? 'ha-site';
+    this.wallboxCurrentEntityId = config.wallboxCurrentEntityId;
+    this.wallboxSwitchEntityId = config.wallboxSwitchEntityId;
+    this.heatPumpModeEntityId = config.heatPumpModeEntityId;
+    this.mainsVoltage = config.mainsVoltage ?? 230;
     this.staticMap = new Map((config.entityMappings ?? []).map((entry) => [entry.entityId, entry]));
     // Populate stateTopicToEntity only — client is null; subscribeCoreTopics() subscribes on connect.
     for (const mapping of config.entityMappings ?? []) {
@@ -326,6 +353,61 @@ export class HomeAssistantMqttProtocolAdapter implements IProtocolAdapter {
 
     this.trackEntity(entityId, config.state_topic, deviceClass, unit);
   }
+
+  supportsCommand(type: WSCommandType): boolean {
+    return haMqttSupportsCommand(type);
+  }
+
+  async sendCommand(command: ProtocolCommandRequest): Promise<ProtocolCommandResult> {
+    if (!this.supportsCommand(command.type)) {
+      return { handled: false, success: false };
+    }
+
+    if (!this.connected || !this.client?.connected) {
+      return {
+        handled: true,
+        success: false,
+        adapterId: this.id,
+        error: 'HA MQTT client not connected',
+      };
+    }
+
+    const mapped = mapProtocolCommandToMqttService(command, {
+      mainsVoltage: this.mainsVoltage,
+      ...(this.wallboxCurrentEntityId
+        ? { wallboxCurrentEntityId: this.wallboxCurrentEntityId }
+        : {}),
+      ...(this.wallboxSwitchEntityId ? { wallboxSwitchEntityId: this.wallboxSwitchEntityId } : {}),
+      ...(this.heatPumpModeEntityId ? { heatPumpModeEntityId: this.heatPumpModeEntityId } : {}),
+    });
+
+    if ('error' in mapped) {
+      return {
+        handled: true,
+        success: false,
+        adapterId: this.id,
+        error: mapped.error,
+      };
+    }
+
+    const topic = mqttServiceTopic(this.config.topicPrefix, mapped);
+    const payload = JSON.stringify(mapped.payload);
+
+    return new Promise<ProtocolCommandResult>((resolve) => {
+      this.client?.publish(topic, payload, { qos: 1 }, (err) => {
+        resolve(
+          err
+            ? {
+                handled: true,
+                success: false,
+                adapterId: this.id,
+                error: err.message,
+              }
+            : { handled: true, success: true, adapterId: this.id },
+        );
+      });
+    });
+  }
 }
 
 export function createHomeAssistantMqttAdapterFromEnv(
@@ -347,5 +429,17 @@ export function createHomeAssistantMqttAdapterFromEnv(
     topicPrefix: env.HA_MQTT_TOPIC_PREFIX?.trim() || 'homeassistant',
     deviceId: env.HA_DEVICE_ID?.trim() || 'ha-site',
     entityMappings: mappings,
+    ...(env.HA_WALLBOX_CURRENT_ENTITY?.trim()
+      ? { wallboxCurrentEntityId: env.HA_WALLBOX_CURRENT_ENTITY.trim() }
+      : {}),
+    ...(env.HA_WALLBOX_SWITCH_ENTITY?.trim()
+      ? { wallboxSwitchEntityId: env.HA_WALLBOX_SWITCH_ENTITY.trim() }
+      : {}),
+    ...(env.HA_HEAT_PUMP_MODE_ENTITY?.trim()
+      ? { heatPumpModeEntityId: env.HA_HEAT_PUMP_MODE_ENTITY.trim() }
+      : {}),
+    ...(env.HA_WALLBOX_MAINS_VOLTAGE?.trim()
+      ? { mainsVoltage: Number(env.HA_WALLBOX_MAINS_VOLTAGE.trim()) }
+      : {}),
   });
 }

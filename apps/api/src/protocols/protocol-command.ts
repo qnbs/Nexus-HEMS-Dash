@@ -2,8 +2,8 @@
  * Backend protocol command dispatch — shared types for live hardware control.
  *
  * Phase 5: bridges validated WS commands to command-capable IProtocolAdapter
- * instances (OCPP CSMS, OpenEMS, Home Assistant WS). HA MQTT service publish
- * remains deferred.
+ * instances (OCPP CSMS, OpenEMS, Home Assistant WS/MQTT). HA MQTT service publish
+ * shipped in Phase 6.
  */
 
 import { WSCommandSchema, type WSCommandType } from '@nexus-hems/shared-types';
@@ -12,9 +12,16 @@ import { z } from 'zod';
 /** Residential EVCS ceiling — aligns with WSCommand 25 kW safety cap. */
 export const MAX_EV_POWER_W = 22_000;
 export const MAX_EV_CURRENT_A = 32;
+/** Bidirectional ESS power cap (matches WSCommandSchema 25 kW safety limit). */
+export const MAX_BATTERY_POWER_W = 25_000;
 
 export const EvPowerValueSchema = z.number().finite().min(0).max(MAX_EV_POWER_W);
 export const EvCurrentValueSchema = z.number().finite().min(0).max(MAX_EV_CURRENT_A);
+export const BatteryPowerValueSchema = z
+  .number()
+  .finite()
+  .min(-MAX_BATTERY_POWER_W)
+  .max(MAX_BATTERY_POWER_W);
 
 export const ProtocolCommandRequestSchema = WSCommandSchema.and(
   z.object({

@@ -1,0 +1,109 @@
+/**
+ * Maps ProtocolCommandRequest values to Home Assistant MQTT service publishes.
+ *
+ * Topic format (HA MQTT integration): `{topicPrefix}/{domain}/{service}`
+ * Payload: JSON service_data fields (entity_id, value, hvac_mode, …).
+ */
+
+import type { WSCommandType } from '@nexus-hems/shared-types';
+import type { ProtocolCommandRequest } from '../protocol-command.js';
+import { EvCurrentValueSchema, EvPowerValueSchema } from '../protocol-command.js';
+
+export interface HAMqttServiceCall {
+  domain: string;
+  service: string;
+  payload: Record<string, unknown>;
+}
+
+export interface HAMqttCommandEntities {
+  wallboxCurrentEntityId?: string;
+  wallboxSwitchEntityId?: string;
+  heatPumpModeEntityId?: string;
+  mainsVoltage: number;
+}
+
+const HA_MQTT_EV_COMMANDS = new Set<WSCommandType>([
+  'SET_EV_POWER',
+  'SET_EV_CURRENT',
+  'START_CHARGING',
+  'STOP_CHARGING',
+  'SET_HEAT_PUMP_MODE',
+]);
+
+export function haMqttSupportsCommand(type: WSCommandType): boolean {
+  return HA_MQTT_EV_COMMANDS.has(type);
+}
+
+export function mapProtocolCommandToMqttService(
+  command: ProtocolCommandRequest,
+  entities: HAMqttCommandEntities,
+): HAMqttServiceCall | { error: string } {
+  switch (command.type) {
+    case 'SET_EV_CURRENT': {
+      const current = EvCurrentValueSchema.safeParse(command.value);
+      if (!current.success) {
+        return { error: 'SET_EV_CURRENT requires a finite amp value between 0 and 32' };
+      }
+      if (!entities.wallboxCurrentEntityId) {
+        return { error: 'HA_WALLBOX_CURRENT_ENTITY not configured' };
+      }
+      return {
+        domain: 'number',
+        service: 'set_value',
+        payload: { entity_id: entities.wallboxCurrentEntityId, value: current.data },
+      };
+    }
+    case 'SET_EV_POWER': {
+      const power = EvPowerValueSchema.safeParse(command.value);
+      if (!power.success) {
+        return { error: 'SET_EV_POWER requires a finite wattage between 0 and 22000' };
+      }
+      if (!entities.wallboxCurrentEntityId) {
+        return { error: 'HA_WALLBOX_CURRENT_ENTITY not configured' };
+      }
+      const currentA = Math.round((power.data / entities.mainsVoltage) * 10) / 10;
+      return {
+        domain: 'number',
+        service: 'set_value',
+        payload: { entity_id: entities.wallboxCurrentEntityId, value: currentA },
+      };
+    }
+    case 'START_CHARGING':
+      if (!entities.wallboxSwitchEntityId) {
+        return { error: 'HA_WALLBOX_SWITCH_ENTITY not configured' };
+      }
+      return {
+        domain: 'switch',
+        service: 'turn_on',
+        payload: { entity_id: entities.wallboxSwitchEntityId },
+      };
+    case 'STOP_CHARGING':
+      if (!entities.wallboxSwitchEntityId) {
+        return { error: 'HA_WALLBOX_SWITCH_ENTITY not configured' };
+      }
+      return {
+        domain: 'switch',
+        service: 'turn_off',
+        payload: { entity_id: entities.wallboxSwitchEntityId },
+      };
+    case 'SET_HEAT_PUMP_MODE': {
+      if (typeof command.value !== 'number' || !Number.isFinite(command.value)) {
+        return { error: 'SET_HEAT_PUMP_MODE requires a numeric value' };
+      }
+      if (!entities.heatPumpModeEntityId) {
+        return { error: 'HA_HEAT_PUMP_MODE_ENTITY not configured' };
+      }
+      return {
+        domain: 'climate',
+        service: 'set_hvac_mode',
+        payload: { entity_id: entities.heatPumpModeEntityId, hvac_mode: command.value },
+      };
+    }
+    default:
+      return { error: `Unsupported command type: ${command.type}` };
+  }
+}
+
+export function mqttServiceTopic(topicPrefix: string, call: HAMqttServiceCall): string {
+  return `${topicPrefix}/${call.domain}/${call.service}`;
+}

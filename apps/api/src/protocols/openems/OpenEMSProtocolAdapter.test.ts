@@ -289,4 +289,56 @@ describe('OpenEMSProtocolAdapter', () => {
     expect(result.success).toBe(false);
     expect(result.error).toContain('32');
   });
+
+  it('supports battery and heat-pump command types', () => {
+    expect(adapter.supportsCommand('SET_BATTERY_POWER')).toBe(true);
+    expect(adapter.supportsCommand('SET_HEAT_PUMP_MODE')).toBe(true);
+    expect(adapter.supportsCommand('SET_GRID_LIMIT')).toBe(true);
+  });
+
+  it('writes ESS power and mode for SET_BATTERY_POWER', async () => {
+    await adapter.connect();
+    const result = await adapter.sendCommand({ type: 'SET_BATTERY_POWER', value: -3000 });
+    expect(result.success).toBe(true);
+
+    const updateCall = mockWsHolder.current?.send.mock.calls.find((call) => {
+      const payload = JSON.parse(String(call[0])) as { method: string };
+      return payload.method === 'updateComponentConfig';
+    });
+    const request = JSON.parse(String(updateCall?.[0])) as {
+      params: { componentId: string; properties: { name: string; value: unknown }[] };
+    };
+    expect(request.params.componentId).toBe('ctrlEssFixActivePower0');
+    expect(request.params.properties).toEqual(
+      expect.arrayContaining([
+        { name: 'power', value: -3000 },
+        { name: 'mode', value: 'DISCHARGE_TO_GRID' },
+      ]),
+    );
+  });
+
+  it('writes SG Ready mode for SET_HEAT_PUMP_MODE', async () => {
+    await adapter.connect();
+    const result = await adapter.sendCommand({ type: 'SET_HEAT_PUMP_MODE', value: 2 });
+    expect(result.success).toBe(true);
+
+    const updateCall = mockWsHolder.current?.send.mock.calls.find((call) => {
+      const payload = JSON.parse(String(call[0])) as {
+        method: string;
+        params: { componentId: string };
+      };
+      return (
+        payload.method === 'updateComponentConfig' &&
+        payload.params.componentId === 'ctrlIoHeatPumpSgReady0'
+      );
+    });
+    expect(updateCall).toBeDefined();
+  });
+
+  it('rejects out-of-range SET_BATTERY_POWER values', async () => {
+    await adapter.connect();
+    const result = await adapter.sendCommand({ type: 'SET_BATTERY_POWER', value: 30_000 });
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('25000');
+  });
 });
