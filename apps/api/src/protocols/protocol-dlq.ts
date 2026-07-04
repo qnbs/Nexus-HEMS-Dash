@@ -21,11 +21,11 @@ export interface ProtocolDlqEntry {
 
 export function writeToProtocolDLQ(entry: ProtocolDlqEntry): void {
   if (protocolDlqLineCount >= MAX_PROTOCOL_DLQ_LINES) return;
+  protocolDlqLineCount++;
   setImmediate(() => {
     try {
       mkdirSync(API_RUNTIME_DIR, { recursive: true });
       appendFileSync(DEAD_LETTER_QUEUE_PATH, `${JSON.stringify(entry)}\n`, 'utf8');
-      protocolDlqLineCount++;
     } catch {
       /* best-effort */
     }
