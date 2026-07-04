@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
+/** Feature highlight card used on the Help features tab. */
 export const HelpFeatureCard = ({
   icon,
   title,

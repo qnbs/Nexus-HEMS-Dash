@@ -9,21 +9,7 @@
  *   - EEBUS SPINE/SHIP (host, port, SKI, mTLS)
  */
 
-import {
-  Check,
-  Circle,
-  CircleAlert,
-  CircleCheck,
-  CircleMinus,
-  Download,
-  Gauge,
-  Package,
-  Plus,
-  Radio,
-  Server,
-  ShieldCheck,
-  Wifi,
-} from 'lucide-react';
+import { Check, Download, Gauge, Package, Plus, Radio, Server, Wifi } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -32,6 +18,7 @@ import { saveAdapterPanelEntry } from '../core/adapter-config-panel-save';
 import { listRegisteredAdapters, loadAllContribAdapters } from '../core/adapters/adapter-registry';
 import { isReadOnlyModeActive } from '../lib/adapter-mode';
 import { ignorePromiseRejection } from '../lib/ignore-promise-rejection';
+import { ComplianceChecklist } from './AdapterComplianceChecklist';
 import { AdapterConfigEntrySection } from './AdapterConfigEntrySection';
 import { AdapterHelpItem } from './adapter-config-shared';
 import {
@@ -46,111 +33,6 @@ import { Disclosure } from './ui/Disclosure';
 
 export { AdapterHelpItem, GAMappingPanel, ToggleSwitch } from './adapter-config-shared';
 export type { AdapterEntry, AdapterType, GAMappingEntry };
-
-// ─── Compliance Matrix Data ──────────────────────────────────────────
-
-type ComplianceStatus = 'compliant' | 'partial' | 'na';
-
-interface ComplianceItem {
-  key: string;
-  descKey: string;
-  adapters: Record<AdapterType, ComplianceStatus>;
-}
-
-const COMPLIANCE_MATRIX: ComplianceItem[] = [
-  // §14a EnWG
-  {
-    key: 'c14a_gridCurtailment',
-    descKey: 'c14a_gridCurtailmentDesc',
-    adapters: {
-      victron: 'compliant',
-      modbus: 'compliant',
-      knx: 'na',
-      ocpp: 'compliant',
-      eebus: 'compliant',
-    },
-  },
-  {
-    key: 'c14a_smartMeterGateway',
-    descKey: 'c14a_smartMeterGatewayDesc',
-    adapters: {
-      victron: 'partial',
-      modbus: 'partial',
-      knx: 'na',
-      ocpp: 'partial',
-      eebus: 'compliant',
-    },
-  },
-  {
-    key: 'c14a_loadManagement',
-    descKey: 'c14a_loadManagementDesc',
-    adapters: {
-      victron: 'compliant',
-      modbus: 'compliant',
-      knx: 'partial',
-      ocpp: 'compliant',
-      eebus: 'compliant',
-    },
-  },
-  {
-    key: 'c14a_reducedTariff',
-    descKey: 'c14a_reducedTariffDesc',
-    adapters: {
-      victron: 'partial',
-      modbus: 'partial',
-      knx: 'na',
-      ocpp: 'compliant',
-      eebus: 'compliant',
-    },
-  },
-  // VDE-AR-N 4105
-  {
-    key: 'vde_activePowerCurtail',
-    descKey: 'vde_activePowerCurtailDesc',
-    adapters: {
-      victron: 'compliant',
-      modbus: 'compliant',
-      knx: 'na',
-      ocpp: 'na',
-      eebus: 'partial',
-    },
-  },
-  {
-    key: 'vde_reactivePowerControl',
-    descKey: 'vde_reactivePowerControlDesc',
-    adapters: {
-      victron: 'compliant',
-      modbus: 'compliant',
-      knx: 'na',
-      ocpp: 'na',
-      eebus: 'partial',
-    },
-  },
-  {
-    key: 'vde_frequencyProtection',
-    descKey: 'vde_frequencyProtectionDesc',
-    adapters: { victron: 'compliant', modbus: 'compliant', knx: 'na', ocpp: 'na', eebus: 'na' },
-  },
-  {
-    key: 'vde_voltageProtection',
-    descKey: 'vde_voltageProtectionDesc',
-    adapters: { victron: 'compliant', modbus: 'compliant', knx: 'na', ocpp: 'na', eebus: 'na' },
-  },
-  {
-    key: 'vde_gridCodeCompliant',
-    descKey: 'vde_gridCodeCompliantDesc',
-    adapters: { victron: 'compliant', modbus: 'partial', knx: 'na', ocpp: 'na', eebus: 'na' },
-  },
-];
-
-const STATUS_CONFIG: Record<
-  ComplianceStatus,
-  { icon: typeof CircleCheck; color: string; labelKey: string }
-> = {
-  compliant: { icon: CircleCheck, color: 'text-emerald-400', labelKey: 'adapterConfig.compliant' },
-  partial: { icon: CircleAlert, color: 'text-amber-400', labelKey: 'adapterConfig.partial' },
-  na: { icon: CircleMinus, color: 'text-(--color-muted)', labelKey: 'adapterConfig.notApplicable' },
-};
 
 // ─── Contrib Adapter Section ─────────────────────────────────────────
 
@@ -361,118 +243,6 @@ const ContribAdapterSection = () => {
       <div className="rounded-lg border border-(--color-primary)/20 bg-(--color-primary)/5 p-3 text-(--color-muted) text-xs">
         <span className="font-medium text-(--color-primary)">💡 </span>
         {t('monitoring.pluginDynamicLoad')} · {t('monitoring.pluginNpmFormat')}
-      </div>
-    </section>
-  );
-};
-
-// ─── ComplianceChecklist ─────────────────────────────────────────────
-
-const ComplianceChecklist = ({ activeAdapters }: { activeAdapters: AdapterType[] }) => {
-  const { t } = useTranslation();
-  const displayAdapters: AdapterType[] =
-    activeAdapters.length > 0
-      ? activeAdapters
-      : (['victron', 'modbus', 'knx', 'ocpp', 'eebus'] as AdapterType[]);
-
-  return (
-    <section className="glass-panel-strong space-y-5 rounded-2xl p-6">
-      <h2 className="fluid-text-lg flex items-center gap-2 border-(--color-border) border-b pb-4 font-medium text-lg">
-        <ShieldCheck size={20} className="text-emerald-400" />
-        {t('adapterConfig.complianceTitle')}
-      </h2>
-      <p className="text-(--color-muted) text-sm">{t('adapterConfig.complianceDescription')}</p>
-
-      <div className="-mx-2 overflow-x-auto px-2">
-        <table className="w-full text-xs">
-          <thead>
-            <tr className="border-(--color-border) border-b">
-              <th className="py-2 pr-4 text-left font-medium text-(--color-muted)">
-                {t('adapterConfig.complianceTitle')}
-              </th>
-              {displayAdapters.map((type) => {
-                const meta = ADAPTER_META[type];
-                const Icon = meta.icon;
-                return (
-                  <th key={type} className="px-2 py-2 text-center font-medium">
-                    <div className="flex flex-col items-center gap-1">
-                      <Icon size={14} className={meta.color} />
-                      <span className="text-[10px]">{t(`adapterConfig.type_${type}`)}</span>
-                    </div>
-                  </th>
-                );
-              })}
-            </tr>
-          </thead>
-          <tbody>
-            {COMPLIANCE_MATRIX.map((item) => (
-              <tr
-                key={item.key}
-                className="border-(--color-border)/50 border-b transition-colors hover:bg-(--color-surface)/50"
-              >
-                <td className="py-2.5 pr-4">
-                  <p className="font-medium text-(--color-text)">
-                    {t(`adapterConfig.${item.key}`)}
-                  </p>
-                  <p className="mt-0.5 text-(--color-muted) text-[10px]">
-                    {t(`adapterConfig.${item.descKey}`)}
-                  </p>
-                </td>
-                {displayAdapters.map((type) => {
-                  const status = item.adapters[type];
-                  const cfg = STATUS_CONFIG[status];
-                  const StatusIcon = cfg.icon;
-                  return (
-                    <td key={type} className="px-2 py-2.5 text-center">
-                      <div className="flex flex-col items-center gap-0.5">
-                        <StatusIcon size={16} className={cfg.color} />
-                        <span className={`text-[9px] ${cfg.color}`}>{t(cfg.labelKey)}</span>
-                      </div>
-                    </td>
-                  );
-                })}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Summary counts */}
-      <div className="flex flex-wrap gap-4 pt-2">
-        {displayAdapters.map((type) => {
-          const meta = ADAPTER_META[type];
-          const Icon = meta.icon;
-          const counts = COMPLIANCE_MATRIX.reduce(
-            (acc, item) => {
-              acc[item.adapters[type]]++;
-              return acc;
-            },
-            { compliant: 0, partial: 0, na: 0 } as Record<ComplianceStatus, number>,
-          );
-          return (
-            <div
-              key={type}
-              className="flex items-center gap-2 rounded-lg border border-(--color-border) bg-(--color-surface)/50 px-3 py-2"
-            >
-              <Icon size={14} className={meta.color} />
-              <span className="font-medium text-xs">{t(`adapterConfig.type_${type}`)}</span>
-              <div className="ml-1 flex items-center gap-1.5">
-                <span className="flex items-center gap-0.5 text-emerald-400">
-                  <Circle size={6} fill="currentColor" />
-                  {counts.compliant}
-                </span>
-                <span className="flex items-center gap-0.5 text-amber-400">
-                  <Circle size={6} fill="currentColor" />
-                  {counts.partial}
-                </span>
-                <span className="flex items-center gap-0.5 text-(--color-muted)">
-                  <Circle size={6} fill="currentColor" />
-                  {counts.na}
-                </span>
-              </div>
-            </div>
-          );
-        })}
       </div>
     </section>
   );

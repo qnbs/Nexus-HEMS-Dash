@@ -12,6 +12,7 @@ export interface AnalyticsEfficiencySectionProps {
   batteryRoundTrip: number;
 }
 
+/** Inverter, battery, self-consumption, and data-quality metrics for Analytics. */
 export const AnalyticsEfficiencySection = ({
   t,
   energyData,

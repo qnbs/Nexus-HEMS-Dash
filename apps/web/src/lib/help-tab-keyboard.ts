@@ -1,10 +1,13 @@
 import type { KeyboardEvent } from 'react';
 
-export function createHelpTabKeyHandler<T extends string>(
+/**
+ * Returns a roving-tab keyboard handler for horizontal/vertical Help tab lists.
+ */
+export const createHelpTabKeyHandler = <T extends string>(
   tabs: { key: T }[],
   activeTab: T,
   selectTab: (tab: T) => void,
-) {
+) => {
   return (event: KeyboardEvent<HTMLDivElement>) => {
     const currentIndex = tabs.findIndex((tab) => tab.key === activeTab);
     if (currentIndex < 0) return;
@@ -26,4 +29,4 @@ export function createHelpTabKeyHandler<T extends string>(
     selectTab(tabs[nextIndex].key);
     document.getElementById(`help-tab-${tabs[nextIndex].key}`)?.focus();
   };
-}
+};

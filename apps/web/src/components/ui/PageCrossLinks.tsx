@@ -1,22 +1,15 @@
 // ─── PageCrossLinks — Contextual navigation footer for every feature page ───
 // Shows: related pages, settings shortcuts, setup progress, and help links.
 
-import {
-  ArrowRight,
-  CheckCircle2,
-  ChevronRight,
-  Circle,
-  ExternalLink,
-  HelpCircle,
-  Lightbulb,
-} from 'lucide-react';
 import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
-import { Link, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { PAGE_REGISTRY, PAGE_RELATIONS, type PageId, SETUP_STEPS } from '../../lib/page-relations';
 import { useAppStoreShallow } from '../../store';
+import { QuickSettingsSection } from './cross-links/QuickSettingsSection';
+import { RelatedPagesSection } from './cross-links/RelatedPagesSection';
+import { SetupProgressSection } from './cross-links/SetupProgressSection';
 
-// ─── Path → PageId resolver ────────────────────────────────────────────────
 const pathToPageId = (pathname: string): PageId | null => {
   const clean = pathname.replace(/\/$/, '') || '/';
   for (const [id, meta] of Object.entries(PAGE_REGISTRY)) {
@@ -25,55 +18,7 @@ const pathToPageId = (pathname: string): PageId | null => {
   return null;
 };
 
-// ─── Setup Progress Ring ────────────────────────────────────────────────────
-const SetupProgress = ({ completed, total }: { completed: number; total: number }) => {
-  const pct = total > 0 ? (completed / total) * 100 : 0;
-  const radius = 18;
-  const circ = 2 * Math.PI * radius;
-  const offset = circ - (pct / 100) * circ;
-
-  return (
-    <svg width="44" height="44" viewBox="0 0 44 44" className="shrink-0">
-      <title>
-        Setup progress: {completed}/{total}
-      </title>
-      <circle
-        cx="22"
-        cy="22"
-        r={radius}
-        fill="none"
-        stroke="var(--color-border)"
-        strokeWidth="3"
-        opacity={0.3}
-      />
-      <motion.circle
-        cx="22"
-        cy="22"
-        r={radius}
-        fill="none"
-        stroke={pct >= 100 ? '#22ff88' : '#00f0ff'}
-        strokeWidth="3"
-        strokeLinecap="round"
-        strokeDasharray={circ}
-        initial={{ strokeDashoffset: circ }}
-        animate={{ strokeDashoffset: offset }}
-        transition={{ duration: 1, ease: 'easeOut' }}
-        transform="rotate(-90 22 22)"
-      />
-      <text
-        x="22"
-        y="22"
-        textAnchor="middle"
-        dominantBaseline="central"
-        className="fill-(--color-text) font-semibold text-[11px]"
-      >
-        {completed}/{total}
-      </text>
-    </svg>
-  );
-};
-
-// ─── Main Component ─────────────────────────────────────────────────────────
+/** Contextual related pages, settings shortcuts, and setup progress footer. */
 export const PageCrossLinks = () => {
   const { t } = useTranslation();
   const { pathname } = useLocation();
@@ -84,16 +29,10 @@ export const PageCrossLinks = () => {
 
   const relations = PAGE_RELATIONS[pageId];
   const relatedPages = relations.related.map((id) => PAGE_REGISTRY[id]).filter(Boolean);
-  const settingsLinks = relations.settingsLinks;
-  const setupReqs = relations.setupRequirements;
-  const helpTab = relations.helpTab;
-
-  // Calculate setup progress
   const settingsObj = settings as unknown as Record<string, unknown>;
   const completedSteps = SETUP_STEPS.filter((step) => step.checkFn(settingsObj)).length;
   const totalSteps = SETUP_STEPS.length;
 
-  // Don't render for settings/help/ai-settings (they are the targets)
   if (pageId === 'settings' || pageId === 'help' || pageId === 'ai-settings') return null;
 
   return (
@@ -105,182 +44,19 @@ export const PageCrossLinks = () => {
       role="complementary"
       aria-label={t('crossLinks.sectionLabel')}
     >
-      {/* ─── Related Pages ─────────────────────────────────────────── */}
-      {relatedPages.length > 0 && (
-        <section className="glass-panel-strong rounded-2xl p-5">
-          <div className="mb-4 flex items-center gap-2">
-            <Lightbulb size={16} className="text-(--color-primary)" aria-hidden="true" />
-            <h3 className="font-semibold text-(--color-text) text-sm">
-              {t('crossLinks.relatedTitle')}
-            </h3>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-            {relatedPages.map((page) => {
-              const Icon = page.icon;
-              return (
-                <Link
-                  key={page.id}
-                  to={page.path}
-                  className="focus-ring group flex items-center gap-3 rounded-xl border border-(--color-border)/30 bg-white/5 p-3 transition-all hover:border-(--color-primary)/40 hover:bg-white/10"
-                >
-                  <div className="rounded-lg border border-(--color-border)/20 bg-white/5 p-2">
-                    <Icon
-                      size={16}
-                      className="text-(--color-primary) transition-transform group-hover:scale-110"
-                      aria-hidden="true"
-                    />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate font-medium text-(--color-text) text-sm">
-                      {t(page.i18nKey)}
-                    </p>
-                    <p className="truncate text-(--color-muted) text-[10px]">
-                      {t(`crossLinks.desc.${page.id}`)}
-                    </p>
-                  </div>
-                  <ChevronRight
-                    size={14}
-                    className="shrink-0 text-(--color-muted) opacity-0 transition-opacity group-hover:opacity-100"
-                    aria-hidden="true"
-                  />
-                </Link>
-              );
-            })}
-          </div>
-        </section>
-      )}
+      <RelatedPagesSection relatedPages={relatedPages} />
 
-      {/* ─── Quick Settings & Setup ────────────────────────────────── */}
       <div className="grid gap-4 md:grid-cols-2">
-        {/* Settings Shortcuts */}
-        {(settingsLinks.length > 0 || setupReqs.length > 0) && (
-          <section className="rounded-2xl border border-(--color-border) bg-(--color-surface)/50 p-5">
-            <div className="mb-3 flex items-center gap-2">
-              <ExternalLink size={14} className="text-(--color-muted)" aria-hidden="true" />
-              <h3 className="font-semibold text-(--color-text) text-sm">
-                {t('crossLinks.quickSettings')}
-              </h3>
-            </div>
-            <div className="space-y-2">
-              {settingsLinks.map((link) => {
-                const Icon = link.icon;
-                return (
-                  <Link
-                    key={link.tab}
-                    to={`/settings?tab=${link.tab}`}
-                    className="focus-ring flex items-center gap-3 rounded-lg border border-(--color-border)/20 bg-white/3 p-2.5 text-sm transition-colors hover:bg-white/8"
-                  >
-                    <Icon
-                      size={14}
-                      className="shrink-0 text-(--color-primary)"
-                      aria-hidden="true"
-                    />
-                    <span className="flex-1 text-(--color-text)">{t(link.i18nKey)}</span>
-                    <ArrowRight
-                      size={12}
-                      className="shrink-0 text-(--color-muted)"
-                      aria-hidden="true"
-                    />
-                  </Link>
-                );
-              })}
-              {setupReqs.map((req) => (
-                <Link
-                  key={req.settingsTab + req.i18nKey}
-                  to={`/settings?tab=${req.settingsTab}`}
-                  className="focus-ring flex items-center gap-3 rounded-lg border border-amber-500/20 bg-amber-500/5 p-2.5 text-sm transition-colors hover:bg-amber-500/10"
-                >
-                  <Circle size={12} className="shrink-0 text-amber-400" aria-hidden="true" />
-                  <span className="flex-1 text-amber-300/80">{t(req.i18nKey)}</span>
-                  <ArrowRight size={12} className="shrink-0 text-amber-400/60" aria-hidden="true" />
-                </Link>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Setup Progress + Help */}
-        <section className="rounded-2xl border border-(--color-border) bg-(--color-surface)/50 p-5">
-          <div className="mb-3 flex items-center gap-2">
-            <CheckCircle2 size={14} className="text-emerald-400" aria-hidden="true" />
-            <h3 className="font-semibold text-(--color-text) text-sm">
-              {t('crossLinks.setupProgress')}
-            </h3>
-          </div>
-
-          {/* Progress Overview */}
-          <div className="mb-4 flex items-center gap-4">
-            <SetupProgress completed={completedSteps} total={totalSteps} />
-            <div>
-              <p className="font-medium text-(--color-text) text-sm">
-                {t('crossLinks.stepsCompleted', {
-                  count: completedSteps,
-                  total: totalSteps,
-                })}
-              </p>
-              <p className="text-(--color-muted) text-[11px]">
-                {completedSteps >= totalSteps
-                  ? t('crossLinks.setupComplete')
-                  : t('crossLinks.setupIncomplete')}
-              </p>
-            </div>
-          </div>
-
-          {/* Setup Checklist (compact) */}
-          <div className="mb-4 space-y-1.5">
-            {SETUP_STEPS.slice(0, 4).map((step) => {
-              const done = step.checkFn(settingsObj);
-              const StepIcon = step.icon;
-              return (
-                <Link
-                  key={step.id}
-                  to={`/settings?tab=${step.settingsTab}`}
-                  className="focus-ring flex items-center gap-2.5 rounded-lg p-1.5 text-xs transition-colors hover:bg-white/5"
-                >
-                  {done ? (
-                    <CheckCircle2
-                      size={13}
-                      className="shrink-0 text-emerald-400"
-                      aria-hidden="true"
-                    />
-                  ) : (
-                    <Circle
-                      size={13}
-                      className="shrink-0 text-(--color-muted)"
-                      aria-hidden="true"
-                    />
-                  )}
-                  <StepIcon
-                    size={12}
-                    className="shrink-0 text-(--color-muted)"
-                    aria-hidden="true"
-                  />
-                  <span
-                    className={done ? 'text-(--color-muted) line-through' : 'text-(--color-text)'}
-                  >
-                    {t(step.i18nKey)}
-                  </span>
-                </Link>
-              );
-            })}
-          </div>
-
-          {/* Help Link */}
-          {helpTab && (
-            <Link
-              to={`/help?tab=${helpTab}`}
-              className="focus-ring mt-2 flex items-center gap-2 rounded-lg border border-(--color-border)/20 bg-white/3 p-2.5 text-sm transition-colors hover:bg-white/8"
-            >
-              <HelpCircle
-                size={14}
-                className="shrink-0 text-(--color-primary)"
-                aria-hidden="true"
-              />
-              <span className="flex-1 text-(--color-text)">{t('crossLinks.viewHelp')}</span>
-              <ArrowRight size={12} className="shrink-0 text-(--color-muted)" aria-hidden="true" />
-            </Link>
-          )}
-        </section>
+        <QuickSettingsSection
+          settingsLinks={relations.settingsLinks}
+          setupReqs={relations.setupRequirements}
+        />
+        <SetupProgressSection
+          completedSteps={completedSteps}
+          totalSteps={totalSteps}
+          settingsObj={settingsObj}
+          helpTab={relations.helpTab}
+        />
       </div>
     </motion.div>
   );
