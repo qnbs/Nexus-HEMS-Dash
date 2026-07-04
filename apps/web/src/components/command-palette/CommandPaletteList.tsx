@@ -2,8 +2,8 @@ import { SearchX } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { ResolvedCommand } from '../../core/commands/types';
 import { EmptyState } from '../ui/EmptyState';
-import { CommandPaletteItem } from './CommandPaletteItem';
-import { buildFlatRows, getSectionLabelKey } from './command-palette-list-utils';
+import { CommandPaletteListRow } from './CommandPaletteListRow';
+import { buildFlatRows } from './command-palette-list-utils';
 
 interface CommandPaletteListProps {
   commands: ResolvedCommand[];
@@ -35,32 +35,15 @@ export function CommandPaletteList({
   return (
     <div className="max-h-96 overflow-y-auto p-2">
       <div role="listbox" id="command-listbox" className="space-y-1">
-        {rows.map((row) => {
-          if (row.type === 'header' && row.section) {
-            const key = getSectionLabelKey(row.section);
-            return (
-              <div
-                key={`header-${row.section}`}
-                className="px-4 py-2 font-semibold text-(--color-muted) text-xs uppercase tracking-wide"
-              >
-                {key ? t(key) : ''}
-              </div>
-            );
-          }
-          const cmd = row.command;
-          const cmdIndex = row.commandIndex ?? 0;
-          if (!cmd) return null;
-          return (
-            <CommandPaletteItem
-              key={cmd.id}
-              cmd={cmd}
-              index={cmdIndex}
-              isSelected={cmdIndex === selectedIndex}
-              onSelect={() => onSelect(cmdIndex)}
-              onHover={() => onHover(cmdIndex)}
-            />
-          );
-        })}
+        {rows.map((row, rowIndex) => (
+          <CommandPaletteListRow
+            key={row.type === 'header' ? `header-${row.section}` : (row.command?.id ?? rowIndex)}
+            row={row}
+            selectedIndex={selectedIndex}
+            onSelect={onSelect}
+            onHover={onHover}
+          />
+        ))}
       </div>
     </div>
   );

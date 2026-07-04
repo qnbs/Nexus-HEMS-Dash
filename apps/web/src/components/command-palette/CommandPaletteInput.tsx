@@ -5,7 +5,7 @@ interface CommandPaletteInputProps {
   value: string;
   onChange: (value: string) => void;
   inputRef: React.RefObject<HTMLInputElement | null>;
-  activeDescendant?: string | undefined;
+  activeDescendant?: string;
 }
 
 export function CommandPaletteInput({

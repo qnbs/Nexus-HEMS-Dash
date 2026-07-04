@@ -1,6 +1,10 @@
 import type { LucideIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { ResolvedCommand } from '../../core/commands/types';
+import {
+  getCommandItemButtonClass,
+  getCommandItemIconWrapClass,
+} from './command-palette-item-styles';
 import { getSectionLabelKey } from './command-palette-list-utils';
 
 const CATEGORY_KEYS: Record<ResolvedCommand['category'], string> = {
@@ -22,6 +26,36 @@ interface CommandPaletteItemProps {
   onHover: () => void;
 }
 
+function CommandPaletteItemIcon({ icon, isSelected }: { icon?: LucideIcon; isSelected: boolean }) {
+  if (!icon) return null;
+  const Icon = icon;
+  return (
+    <div className={getCommandItemIconWrapClass(isSelected)} aria-hidden="true">
+      <Icon className="h-5 w-5" />
+    </div>
+  );
+}
+
+function CommandPaletteItemSubtitle({
+  cmd,
+  categoryLabel,
+  t,
+}: {
+  cmd: ResolvedCommand;
+  categoryLabel: string;
+  t: (key: string) => string;
+}) {
+  const sectionKey = getSectionLabelKey(cmd.section);
+  const sectionLabel = sectionKey ? t(sectionKey) : categoryLabel;
+  const descriptionSuffix = cmd.description ? ` · ${cmd.description}` : '';
+  return (
+    <p className="truncate text-(--color-muted) text-xs">
+      {sectionLabel}
+      {descriptionSuffix}
+    </p>
+  );
+}
+
 export function CommandPaletteItem({
   cmd,
   index,
@@ -30,9 +64,7 @@ export function CommandPaletteItem({
   onHover,
 }: CommandPaletteItemProps) {
   const { t } = useTranslation();
-  const Icon: LucideIcon | undefined = cmd.icon;
   const categoryLabel = t(CATEGORY_KEYS[cmd.category]);
-  const sectionKey = getSectionLabelKey(cmd.section);
 
   return (
     <button
@@ -45,26 +77,15 @@ export function CommandPaletteItem({
       aria-selected={isSelected}
       aria-disabled={cmd.disabled}
       disabled={cmd.disabled}
-      className={`flex min-h-11 w-full items-center gap-3 rounded-xl px-4 py-3 text-left transition-colors ${
-        isSelected
-          ? 'bg-(--color-primary)/20 text-(--color-text)'
-          : 'text-(--color-muted) hover:bg-(--color-surface-strong)'
-      } ${cmd.disabled ? 'cursor-not-allowed opacity-50' : ''}`}
+      className={getCommandItemButtonClass(isSelected, cmd.disabled)}
     >
-      <div
-        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${
-          isSelected ? 'bg-(--color-primary)/30' : 'bg-(--color-surface)'
-        }`}
-        aria-hidden="true"
-      >
-        {Icon ? <Icon className="h-5 w-5" /> : null}
-      </div>
+      <CommandPaletteItemIcon
+        {...(cmd.icon !== undefined ? { icon: cmd.icon } : {})}
+        isSelected={isSelected}
+      />
       <div className="min-w-0 flex-1">
         <p className="truncate font-medium">{cmd.label}</p>
-        <p className="truncate text-(--color-muted) text-xs">
-          {sectionKey ? t(sectionKey) : categoryLabel}
-          {cmd.description ? ` · ${cmd.description}` : ''}
-        </p>
+        <CommandPaletteItemSubtitle cmd={cmd} categoryLabel={categoryLabel} t={t} />
       </div>
       {cmd.isFavorite ? (
         <span className="text-(--color-primary) text-xs" aria-hidden="true">

@@ -1,5 +1,5 @@
-import { useTranslation } from 'react-i18next';
 import type { CommandPreview, ResolvedCommand } from '../../core/commands/types';
+import { CommandPalettePreviewBody } from './CommandPalettePreviewBody';
 
 interface CommandPalettePreviewPaneProps {
   command: ResolvedCommand | null;
@@ -10,8 +10,6 @@ export function CommandPalettePreviewPane({
   command,
   previewData,
 }: CommandPalettePreviewPaneProps) {
-  const { t } = useTranslation();
-
   if (!command || !previewData) return null;
 
   return (
@@ -19,23 +17,7 @@ export function CommandPalettePreviewPane({
       className="hidden border-(--color-border) border-l bg-(--color-surface-strong)/50 p-4 lg:block lg:w-64"
       aria-live="polite"
     >
-      <h3 className="font-medium text-sm">{t(previewData.titleKey)}</h3>
-      {previewData.bodyKey ? (
-        <p className="mt-1 text-(--color-muted) text-xs">{t(previewData.bodyKey)}</p>
-      ) : null}
-      {previewData.metrics?.length ? (
-        <dl className="mt-3 space-y-2">
-          {previewData.metrics.map((m) => (
-            <div key={m.labelKey} className="flex justify-between gap-2 text-xs">
-              <dt className="text-(--color-muted)">{t(m.labelKey)}</dt>
-              <dd className="font-mono">{m.value}</dd>
-            </div>
-          ))}
-        </dl>
-      ) : null}
-      {previewData.impactKey ? (
-        <p className="mt-3 text-amber-400 text-xs">{t(previewData.impactKey)}</p>
-      ) : null}
+      <CommandPalettePreviewBody previewData={previewData} />
     </aside>
   );
 }

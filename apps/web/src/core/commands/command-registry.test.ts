@@ -1,12 +1,16 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { useAppStore } from '../../store';
 import {
   clearCommandRegistryForTests,
   collectCommandDefinitions,
   registerCommand,
+  registerCommandProvider,
   resolveCommands,
 } from './command-registry';
-import { scoreCommand } from './command-search';
+import { buildSearchTokens, scoreCommand } from './command-search';
 import { registerCoreCommands } from './providers';
+import { createSettingsCommands } from './providers/settings-commands';
+import { createSystemCommands } from './providers/system-commands';
 import type { CommandContext } from './types';
 
 function mockContext(overrides: Partial<CommandContext> = {}): CommandContext {
@@ -139,5 +143,135 @@ describe('command-search', () => {
     expect(
       scoreCommand(cmd, 'Home', 'zzzzz', { recent: false, favorite: false, contextual: false }),
     ).toBe(0);
+  });
+
+  it('applies empty-query boosts', () => {
+    const cmd = {
+      id: 'x',
+      labelKey: 'y',
+      category: 'navigation' as const,
+      risk: 'safe' as const,
+      source: 'core' as const,
+      execute: () => {},
+    };
+    const base = scoreCommand(cmd, 'Home', '', {
+      recent: false,
+      favorite: false,
+      contextual: false,
+    });
+    const boosted = scoreCommand(cmd, 'Home', '', {
+      recent: true,
+      favorite: true,
+      contextual: true,
+    });
+    expect(boosted).toBeGreaterThan(base);
+  });
+
+  it('scores exact and keyword matches', () => {
+    const cmd = {
+      id: 'nav.help',
+      labelKey: 'y',
+      category: 'navigation' as const,
+      risk: 'safe' as const,
+      source: 'core' as const,
+      execute: () => {},
+      keywords: ['hilfe'],
+    };
+    expect(
+      scoreCommand(cmd, 'Hilfe', 'hilfe', { recent: false, favorite: false, contextual: false }),
+    ).toBeGreaterThan(0);
+    expect(buildSearchTokens('Hello World', ['foo-bar'])).toContain('hello');
+  });
+});
+
+describe('settings and system commands', () => {
+  beforeEach(() => {
+    clearCommandRegistryForTests();
+  });
+
+  it('cycles theme and locale from settings commands', () => {
+    const closePalette = vi.fn();
+    const ctx = mockContext({
+      theme: 'ocean-dark',
+      locale: 'de',
+      actions: {
+        closePalette,
+        recordUsage: vi.fn(),
+        toggleFavorite: vi.fn(),
+      },
+    });
+
+    const [themeCmd, localeCmd] = createSettingsCommands();
+    themeCmd.execute(ctx);
+    expect(useAppStore.getState().theme).not.toBe('ocean-dark');
+    expect(closePalette).toHaveBeenCalled();
+
+    localeCmd.execute(ctx);
+    expect(useAppStore.getState().locale).toBe('en');
+  });
+
+  it('navigates to shortcuts help from system command', () => {
+    const navigate = vi.fn();
+    const closePalette = vi.fn();
+    const ctx = mockContext({
+      navigate,
+      actions: { closePalette, recordUsage: vi.fn(), toggleFavorite: vi.fn() },
+    });
+
+    const [shortcutsCmd] = createSystemCommands();
+    shortcutsCmd.execute(ctx);
+    expect(navigate).toHaveBeenCalledWith('/help?tab=shortcuts');
+    expect(closePalette).toHaveBeenCalled();
+  });
+});
+
+describe('command providers', () => {
+  beforeEach(() => {
+    clearCommandRegistryForTests();
+  });
+
+  it('skips duplicate command registration in dev', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const cmd = {
+      id: 'dup.test',
+      labelKey: 'x',
+      category: 'system' as const,
+      risk: 'safe' as const,
+      source: 'core' as const,
+      execute: () => {},
+    };
+    registerCommand(cmd);
+    registerCommand(cmd);
+    expect(warn).toHaveBeenCalled();
+    warn.mockRestore();
+  });
+
+  it('resolves recent and favorite sections when query is empty', () => {
+    registerCoreCommands();
+    const ctx = mockContext();
+    const resolved = resolveCommands(ctx, {
+      query: '',
+      recentIds: ['nav-dashboard'],
+      favoriteIds: ['nav-settings'],
+      contextualIds: [],
+      scoreFn: scoreCommand,
+    });
+    const recent = resolved.find((c) => c.id === 'nav-dashboard');
+    const favorite = resolved.find((c) => c.id === 'nav-settings');
+    expect(recent?.section).toBe('recent');
+    expect(favorite?.section).toBe('favorites');
+  });
+
+  it('ignores async provider results', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    registerCommandProvider({
+      id: 'async-provider',
+      priority: 50,
+      getCommands: () => Promise.resolve([]),
+    });
+    const ctx = mockContext();
+    collectCommandDefinitions(ctx);
+    expect(warn).toHaveBeenCalled();
+    warn.mockRestore();
   });
 });

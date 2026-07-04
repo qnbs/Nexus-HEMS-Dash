@@ -134,10 +134,9 @@ export function getContextualCommandIds(ctx: CommandContext): string[] {
     ids.push('energy.viewTariffs');
   }
   if (ctx.adapterStatuses.size > 0) {
-    for (const [id, status] of ctx.adapterStatuses) {
+    for (const [, status] of ctx.adapterStatuses) {
       if (status === 'error') {
         ids.push('nav-monitoring');
-        void id;
         break;
       }
     }
