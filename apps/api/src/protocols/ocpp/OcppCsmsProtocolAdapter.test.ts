@@ -24,6 +24,31 @@ async function connectChargePoint(port: number, cpId: string): Promise<WebSocket
   return client;
 }
 
+async function seedSoc(client: WebSocket, socPercent: number, voltageV = 230): Promise<void> {
+  client.send(
+    JSON.stringify([
+      2,
+      `soc-${Date.now()}`,
+      'TransactionEvent',
+      {
+        eventType: 'Updated',
+        meterValue: [
+          {
+            timestamp: new Date().toISOString(),
+            sampledValue: [
+              { measurand: 'SoC', value: socPercent, unit: 'Percent' },
+              { measurand: 'Voltage', value: voltageV, unit: 'V' },
+            ],
+          },
+        ],
+      },
+    ]),
+  );
+  await new Promise<void>((resolve) => {
+    client.once('message', () => resolve());
+  });
+}
+
 describe('OcppCsmsProtocolAdapter', () => {
   let adapter: OcppCsmsProtocolAdapter;
   let boundPort: number;
@@ -131,6 +156,8 @@ describe('OcppCsmsProtocolAdapter', () => {
 
   it('supports EV command types', () => {
     expect(adapter.supportsCommand('SET_EV_POWER')).toBe(true);
+    expect(adapter.supportsCommand('SET_V2X_DISCHARGE')).toBe(true);
+    expect(adapter.supportsCommand('SET_GRID_LIMIT')).toBe(true);
     expect(adapter.supportsCommand('SET_BATTERY_POWER')).toBe(false);
   });
 
@@ -362,5 +389,84 @@ describe('OcppCsmsProtocolAdapter', () => {
 
     clientA.close();
     clientB.close();
+  });
+
+  it('sends negative TxProfile on SET_V2X_DISCHARGE when SOC is sufficient', async () => {
+    const client = await connectChargePoint(boundPort, 'CP-V2G');
+    await seedSoc(client, 50, 230);
+
+    const outbound = new Promise<unknown>((resolve) => {
+      client.once('message', (data) => resolve(JSON.parse(String(data))));
+    });
+
+    const result = await adapter.sendCommand({ type: 'SET_V2X_DISCHARGE', value: 4600 });
+    expect(result).toEqual({ handled: true, success: true, adapterId: 'test-csms' });
+
+    const msg = (await outbound) as [number, string, string, Record<string, unknown>];
+    expect(msg[2]).toBe('SetChargingProfile');
+    const profile = msg[3].chargingProfile as {
+      chargingProfilePurpose: string;
+      chargingSchedule: { chargingRateUnit: string; chargingSchedulePeriod: { limit: number }[] }[];
+    };
+    expect(profile.chargingProfilePurpose).toBe('TxProfile');
+    expect(profile.chargingSchedule[0]?.chargingRateUnit).toBe('A');
+    expect(profile.chargingSchedule[0]?.chargingSchedulePeriod[0]?.limit).toBe(-20);
+
+    client.close();
+  });
+
+  it('blocks SET_V2X_DISCHARGE when SOC is below guardrail', async () => {
+    const client = await connectChargePoint(boundPort, 'CP-V2G-LOW');
+    await seedSoc(client, 10);
+
+    const result = await adapter.sendCommand({ type: 'SET_V2X_DISCHARGE', value: 3000 });
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('SOC below minimum');
+
+    client.close();
+  });
+
+  it('blocks SET_V2X_DISCHARGE when SOC is unknown', async () => {
+    const client = await connectChargePoint(boundPort, 'CP-V2G-UNK');
+
+    const result = await adapter.sendCommand({ type: 'SET_V2X_DISCHARGE', value: 3000 });
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('SOC below minimum');
+
+    client.close();
+  });
+
+  it('sends ChargingStationMaxProfile on SET_GRID_LIMIT in watts', async () => {
+    const client = await connectChargePoint(boundPort, 'CP-GRID');
+
+    const outbound = new Promise<unknown>((resolve) => {
+      client.once('message', (data) => resolve(JSON.parse(String(data))));
+    });
+
+    const result = await adapter.sendCommand({ type: 'SET_GRID_LIMIT', value: 4200 });
+    expect(result.success).toBe(true);
+
+    const msg = (await outbound) as [number, string, string, Record<string, unknown>];
+    expect(msg[2]).toBe('SetChargingProfile');
+    expect(msg[3].evseId).toBe(0);
+    const profile = msg[3].chargingProfile as {
+      chargingProfilePurpose: string;
+      chargingSchedule: { chargingRateUnit: string; chargingSchedulePeriod: { limit: number }[] }[];
+    };
+    expect(profile.chargingProfilePurpose).toBe('ChargingStationMaxProfile');
+    expect(profile.chargingSchedule[0]?.chargingRateUnit).toBe('W');
+    expect(profile.chargingSchedule[0]?.chargingSchedulePeriod[0]?.limit).toBe(4200);
+
+    client.close();
+  });
+
+  it('passes through SET_GRID_LIMIT values in kW range for OpenEMS', async () => {
+    const client = await connectChargePoint(boundPort, 'CP-GRID-KW');
+
+    const result = await adapter.sendCommand({ type: 'SET_GRID_LIMIT', value: 4.2 });
+    expect(result.handled).toBe(false);
+    expect(result.success).toBe(false);
+
+    client.close();
   });
 });

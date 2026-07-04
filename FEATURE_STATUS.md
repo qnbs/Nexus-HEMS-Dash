@@ -1,7 +1,7 @@
 # Feature Status — Nexus-HEMS-Dash
 
 **Version:** 1.9.0 shipped (2026-07-02)  
-**Last updated:** 2026-07-04 (post-audit phase 6 — HA MQTT service publish + OpenEMS battery/heat-pump writes)  
+**Last updated:** 2026-07-04 (post-audit phase 7 — OCPP CSMS V2G discharge + §14a grid limit)  
 **Purpose:** Single source of truth for what is actually implemented, partial, or planned. Use this file to keep README/marketing claims synchronized with the codebase.
 
 > **Rule:** Any PR that changes a feature's implementation status must update this file and the relevant docs before merging.
@@ -27,7 +27,7 @@
 | Victron MQTT (Cerbo GX / Venus OS) | ✅ | ✅ | Browser adapter supports direct MQTT-over-WebSocket. Backend `MqttAdapter` (`apps/api/src/protocols/mqtt/MqttAdapter.ts`) subscribes role-tagged Victron Venus OS topic patterns and emits Zod-validated datapoints to the EventBus; in live mode these reach the UI via the `LiveEnergyAggregator` WebSocket bridge (HIGH-17). |
 | Modbus/SunSpec (103/124/201) | ✅ | ✅ | `GET /api/modbus/sunspec` + `POST /api/modbus/write` REST proxy (`routes/modbus.routes.ts`) serves the in-browser `ModbusSunSpecAdapter` a mock SunSpec gateway (validated, audited writes; live register writes via an external bridge). The backend `ModbusAdapter` polls `device-map.json` into the EventBus; role-tagged registers reach the UI in live mode via the `LiveEnergyAggregator` bridge (HIGH-17). |
 | KNX/IP floorplan | ✅ | ✅ | Browser adapter for floorplan/room control. Backend `KnxAdapter` (`apps/api/src/protocols/knx/KnxAdapter.ts`) connects to a knxd/custom WebSocket JSON bridge, maps group addresses from `knx-ga-map.json`, and emits Zod-validated datapoints to the EventBus (MED-20). Enable with `KNX_BRIDGE_WS_URL` + live mode. |
-| OCPP 2.1 V2X (ISO 15118) | ✅ (P1 enhanced) | ✅ | Frontend adapter + backend `OcppCsmsProtocolAdapter` CSMS gateway (SP0) with outbound EV commands (`SetChargingProfile`, `RequestStart/StopTransaction`) via `ProtocolCommandRouter`. SP3 mTLS via `/ws/ocpp` API proxy (HIGH-12). |
+| OCPP 2.1 V2X (ISO 15118) | ✅ (P1 enhanced) | ✅ | Frontend adapter + backend `OcppCsmsProtocolAdapter` CSMS gateway (SP0) with outbound EV commands (`SetChargingProfile`, `RequestStart/StopTransaction`, `SET_V2X_DISCHARGE`, `SET_GRID_LIMIT`) via `ProtocolCommandRouter` (Phase 7). SP3 mTLS via `/ws/ocpp` API proxy (HIGH-12). |
 | EEBUS SPINE/SHIP | ✅ | ✅ | Full backend `IProtocolAdapter` (`apps/api/src/protocols/eebus/EebusProtocolAdapter.ts`) connects to all trusted devices in the trust store, maintains persistent SHIP sessions, parses SPINE `measurementListData` + `loadControlLimitListData` datagrams, and emits role-tagged `UnifiedEnergyDatapoint` to the EventBus. Registered in `protocols/index.ts`. Frontend `CertificateManagement.tsx` wired into Settings → EEBUS Certs tab. Supported use cases: MPC, MGCP, LPC (§14a EnWG), EV charging, heat pump. Trust-store polling for newly paired devices. Unit tests: `EebusProtocolAdapter.test.ts` (17 cases). |
 | evcc backend | ✅ | ✅ | Browser adapter for direct REST+WS. Backend `EvccAdapter` (`apps/api/src/protocols/evcc/EvccAdapter.ts`) polls `/api/state` and subscribes to `/ws`, emitting role-tagged datapoints to the EventBus (MED-20). Enable with `EVCC_BASE_URL` in live mode. |
 | OpenEMS Edge (JSON-RPC) | ✅ | ✅ | Browser `OpenEMSAdapter` + backend `OpenEMSProtocolAdapter` with EV + battery/heat-pump/grid writes via `ProtocolCommandRouter` (Phase 5–6). Configurable `OPENEMS_*_CTRL_ID` env vars. |
@@ -65,7 +65,7 @@
 | 8 real-time controllers | ✅ | `apps/web/src/core/energy-controllers.ts` |
 | 24h/7d predictive forecast | ✅ | `apps/web/src/components/PredictiveForecast.tsx`, `lib/ml-forecast.ts` |
 | Live tariff widget (Tibber/aWATTar/Octopus/Nordpool) | ✅ | `apps/web/src/lib/tariff-providers.ts` |
-| Smart EV charging (§14a EnWG) | ✅ | Frontend OCPP P1 + backend CSMS gateway with outbound smart-charging commands (Phase 5); SP3 mTLS via API proxy |
+| Smart EV charging (§14a EnWG) | ✅ | Frontend OCPP P1 + backend CSMS gateway with outbound smart-charging + V2G/grid-limit commands (Phase 5–7); SP3 mTLS via API proxy |
 | SG Ready heat pump control | ⚠️ | Frontend commands + P2 `HeatPumpAdapter` backend (6 manufacturers); full closed-loop ⏳ |
 | Hardware registry (190 devices, ~50 brands) | ✅ | Catalog browser at `/settings/hardware` (`HardwareRegistryPage.tsx`) with search + category/manufacturer/protocol filters and add-adapter wizard (`AddAdapterWizard.tsx`, `hardware-adapter-map.ts`) — connection test + enable flow (MED-19). |
 | PDF reports + QR sharing | ✅ | `apps/web/src/components/ExportAndSharing.tsx`, `lib/sharing.ts` |

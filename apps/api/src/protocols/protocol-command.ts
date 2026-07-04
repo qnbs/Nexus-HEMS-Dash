@@ -17,6 +17,10 @@ export const MAX_BATTERY_POWER_W = 25_000;
 
 export const EvPowerValueSchema = z.number().finite().min(0).max(MAX_EV_POWER_W);
 export const EvCurrentValueSchema = z.number().finite().min(0).max(MAX_EV_CURRENT_A);
+/** V2X discharge power in watts (aligns with frontend command-safety 25 kW cap). */
+export const EvDischargeValueSchema = z.number().finite().min(0).max(MAX_BATTERY_POWER_W);
+/** OCPP §14a grid limit in watts (frontend OCPP21Adapter uses W; min 100 W avoids kW ambiguity). */
+export const OcppGridLimitWattsSchema = z.number().finite().min(100).max(MAX_BATTERY_POWER_W);
 export const BatteryPowerValueSchema = z
   .number()
   .finite()
@@ -82,10 +86,20 @@ export const ProtocolCommandRequestSchema = WSCommandSchema.and(
       message: 'SET_BATTERY_MODE requires charge or discharge',
     });
   }
-  if (cmd.type === 'SET_GRID_LIMIT' && !GridLimitValueSchema.safeParse(cmd.value).success) {
+  if (cmd.type === 'SET_GRID_LIMIT') {
+    const kWOk = GridLimitValueSchema.safeParse(cmd.value).success;
+    const wattsOk = OcppGridLimitWattsSchema.safeParse(cmd.value).success;
+    if (!kWOk && !wattsOk) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'SET_GRID_LIMIT requires 0–25 kW (OpenEMS) or 100–25000 W (OCPP §14a)',
+      });
+    }
+  }
+  if (cmd.type === 'SET_V2X_DISCHARGE' && !EvDischargeValueSchema.safeParse(cmd.value).success) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: 'SET_GRID_LIMIT requires a finite kW value between 0 and 25',
+      message: 'SET_V2X_DISCHARGE requires a finite wattage between 0 and 25000',
     });
   }
   if (cmd.type === 'SET_HEAT_PUMP_MODE' && !HeatPumpModeValueSchema.safeParse(cmd.value).success) {

@@ -34,7 +34,17 @@ import type {
   ProtocolCommandRequest,
   ProtocolCommandResult,
 } from '../protocol-command.js';
-import { EvCurrentValueSchema, EvPowerValueSchema } from '../protocol-command.js';
+import {
+  EvCurrentValueSchema,
+  EvDischargeValueSchema,
+  EvPowerValueSchema,
+  OcppGridLimitWattsSchema,
+} from '../protocol-command.js';
+
+/** SOC guardrail — blocks V2G discharge below this threshold (ISO 15118-20 §9.8). */
+const V2G_MIN_SOC_PERCENT = 15;
+/** Default mains voltage when no Voltage meter value is available (EU single-phase). */
+const DEFAULT_MAINS_VOLTAGE_V = 230;
 
 const OCPP_CALL = 2;
 const OCPP_CALLRESULT = 3;
@@ -101,6 +111,7 @@ interface ChargePointSession {
   lastPowerW: number;
   lastEnergyKWh: number;
   lastSocPercent: number | undefined;
+  lastVoltageV: number;
   lastSeenMs: number;
   transactionId: string | undefined;
 }
@@ -125,6 +136,8 @@ const OCPP_EV_COMMANDS = new Set<WSCommandType>([
   'SET_EV_CURRENT',
   'START_CHARGING',
   'STOP_CHARGING',
+  'SET_V2X_DISCHARGE',
+  'SET_GRID_LIMIT',
 ]);
 
 export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolCommandHandler {
@@ -180,6 +193,7 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
           lastPowerW: 0,
           lastEnergyKWh: 0,
           lastSocPercent: undefined,
+          lastVoltageV: DEFAULT_MAINS_VOLTAGE_V,
           lastSeenMs: Date.now(),
           transactionId: undefined,
         });
@@ -480,6 +494,37 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
         }
         acknowledged = await this.sendRequestStopTransaction(ws, session.transactionId);
         break;
+      case 'SET_V2X_DISCHARGE': {
+        const discharge = EvDischargeValueSchema.safeParse(command.value);
+        if (!discharge.success) {
+          return {
+            handled: true,
+            success: false,
+            adapterId: this.id,
+            error: 'SET_V2X_DISCHARGE requires a finite wattage between 0 and 25000',
+          };
+        }
+        if (
+          !(session.lastSocPercent !== undefined && session.lastSocPercent >= V2G_MIN_SOC_PERCENT)
+        ) {
+          return {
+            handled: true,
+            success: false,
+            adapterId: this.id,
+            error: `V2G blocked: EV SOC below minimum ${V2G_MIN_SOC_PERCENT}%`,
+          };
+        }
+        acknowledged = await this.sendV2XDischarge(ws, session, discharge.data);
+        break;
+      }
+      case 'SET_GRID_LIMIT': {
+        const limitW = OcppGridLimitWattsSchema.safeParse(command.value);
+        if (!limitW.success) {
+          return { handled: false, success: false };
+        }
+        acknowledged = await this.sendGridCurtailment(ws, limitW.data);
+        break;
+      }
       default:
         return { handled: false, success: false };
     }
@@ -569,6 +614,27 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
     });
   }
 
+  /** V2X discharge via negative TxProfile amp limit (vehicle-to-grid). */
+  private sendV2XDischarge(
+    ws: WebSocket,
+    session: ChargePointSession,
+    dischargePowerW: number,
+  ): Promise<boolean> {
+    const negativeA = -Math.round(dischargePowerW / session.lastVoltageV);
+    return this.sendSetChargingProfile(ws, 1, 2, 1, 'TxProfile', {
+      chargingRateUnit: 'A',
+      chargingSchedulePeriod: [{ startPeriod: 0, limit: negativeA }],
+    });
+  }
+
+  /** §14a EnWG grid limit via ChargingStationMaxProfile in watts (OCPP 2.1 B12). */
+  private sendGridCurtailment(ws: WebSocket, maxPowerW: number): Promise<boolean> {
+    return this.sendSetChargingProfile(ws, 0, 100, 10, 'ChargingStationMaxProfile', {
+      chargingRateUnit: 'W',
+      chargingSchedulePeriod: [{ startPeriod: 0, limit: maxPowerW }],
+    });
+  }
+
   private sendSetChargingProfile(
     ws: WebSocket,
     evseId: number,
@@ -629,6 +695,11 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
           case 'SoC':
             session.lastSocPercent = value;
             this.emitMetric(session, 'SOC_PERCENT', value);
+            break;
+          case 'Voltage':
+            if (value > 0) {
+              session.lastVoltageV = value;
+            }
             break;
           default:
             break;

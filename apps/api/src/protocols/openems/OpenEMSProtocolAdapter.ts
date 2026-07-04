@@ -542,12 +542,7 @@ export class OpenEMSProtocolAdapter implements IProtocolAdapter, IProtocolComman
       case 'SET_GRID_LIMIT': {
         const limit = GridLimitValueSchema.safeParse(command.value);
         if (!limit.success) {
-          return {
-            handled: true,
-            success: false,
-            adapterId: this.id,
-            error: 'SET_GRID_LIMIT requires a finite kW value between 0 and 25',
-          };
+          return { handled: false, success: false };
         }
         ok = await this.updateSafeComponentConfig(this.peakShavingControllerId, [
           { name: 'peakShavingPower', value: limit.data * 1000 },
