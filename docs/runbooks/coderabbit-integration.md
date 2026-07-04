@@ -66,6 +66,18 @@ domain (energy/safety) risk.
 4. If incorrect or unsafe, reply explaining why and resolve the thread.
 5. Use `@coderabbitai` chat for follow-up questions or to request a re-review.
 
+### Outside-diff comments
+
+Some findings cannot be posted inline (*"outside the diff range"*). They appear only
+in PR **review bodies** under `⚠️ Outside diff range comments`. Fetch them with:
+
+```bash
+./scripts/fetch-coderabbit-outside-diff.sh <pr-number>
+```
+
+Treat them with the same fix-or-decline discipline as inline threads. Full workflow:
+[pr-review-correction-loop.md](pr-review-correction-loop.md) §6.1.
+
 ---
 
 ## Safety Rules
@@ -93,6 +105,7 @@ If CodeRabbit becomes noisy:
 
 ## Related
 
+- [pr-review-correction-loop.md](pr-review-correction-loop.md) — mandatory correction-loop checklist
 - [codeant-ai-integration.md](codeant-ai-integration.md)
 - [deepsource-integration.md](deepsource-integration.md)
 - [working-with-coverage.md](working-with-coverage.md)

@@ -65,10 +65,17 @@ describe('command-audit NDJSON store', () => {
     writeCommandAuditEntry(
       makeEntry({ outcome: 'rejected_ratelimit', commandType: 'unknown', value: null }),
     );
+    writeCommandAuditEntry(
+      makeEntry({ outcome: 'rejected_dispatch', reason: 'adapter rejected command' }),
+    );
 
     const recent = readRecentCommandAudit();
-    expect(recent.map((e) => e.outcome)).toEqual(['rejected_ratelimit', 'rejected_scope']);
-    expect(recent[1]?.reason).toBe('insufficient scope');
+    expect(recent.map((e) => e.outcome)).toEqual([
+      'rejected_dispatch',
+      'rejected_ratelimit',
+      'rejected_scope',
+    ]);
+    expect(recent[2]?.reason).toBe('insufficient scope');
   });
 
   it('tolerates a corrupt line without throwing', () => {

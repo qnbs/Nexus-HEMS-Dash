@@ -38,6 +38,11 @@ vi.mock('ws', () => {
           () => this.emit('message', JSON.stringify({ jsonrpc: '2.0', id: req.id, result: {} })),
           0,
         );
+      } else if (req.method === 'updateComponentConfig') {
+        setTimeout(
+          () => this.emit('message', JSON.stringify({ jsonrpc: '2.0', id: req.id, result: {} })),
+          0,
+        );
       }
     });
     close = vi.fn();
@@ -79,6 +84,8 @@ const testConfig: OpenEMSProtocolAdapterConfig = {
   authToken: 'user',
   deviceId: 'openems-home',
   pollIntervalMs: 60_000,
+  evcsComponentId: 'evcs0',
+  evcsControllerId: 'ctrlEvcs0',
 };
 
 describe('OpenEMSProtocolAdapter', () => {
@@ -171,8 +178,115 @@ describe('OpenEMSProtocolAdapter', () => {
       OPENEMS_HOST: 'edge.local',
       OPENEMS_PORT: '9090',
       OPENEMS_DEVICE_ID: 'site-a',
+      OPENEMS_EVCS_COMPONENT_ID: 'evcs1',
+      OPENEMS_EVCS_CTRL_ID: 'ctrlEvcs1',
     });
     expect(a?.id).toBe('openems-01');
     expect(a?.protocol).toBe('openems');
+  });
+
+  it('sends updateComponentConfig for SET_EV_POWER when connected', async () => {
+    await adapter.connect();
+
+    const result = await adapter.sendCommand({ type: 'SET_EV_POWER', value: 11000 });
+    expect(result).toEqual({ handled: true, success: true, adapterId: 'test-openems-01' });
+
+    const updateCall = mockWsHolder.current?.send.mock.calls.find((call) => {
+      const payload = JSON.parse(String(call[0])) as { method: string };
+      return payload.method === 'updateComponentConfig';
+    });
+    expect(updateCall).toBeDefined();
+    const request = JSON.parse(String(updateCall?.[0])) as {
+      method: string;
+      params: { componentId: string; properties: { name: string; value: number }[] };
+    };
+    expect(request.params.componentId).toBe('evcs0');
+    expect(request.params.properties[0]).toEqual({ name: 'setChargePowerLimit', value: 11000 });
+  });
+
+  it('writes enabledCharging for START_CHARGING and STOP_CHARGING', async () => {
+    await adapter.connect();
+
+    await adapter.sendCommand({ type: 'START_CHARGING', value: true });
+    await adapter.sendCommand({ type: 'STOP_CHARGING', value: false });
+
+    const methods = mockWsHolder.current?.send.mock.calls.map(
+      (call) => JSON.parse(String(call[0])).method as string,
+    );
+    expect(methods?.filter((method) => method === 'updateComponentConfig').length).toBe(2);
+  });
+
+  it('converts SET_EV_CURRENT into charge power watts', async () => {
+    await adapter.connect();
+    await adapter.sendCommand({ type: 'SET_EV_CURRENT', value: 16 });
+
+    const updateCall = mockWsHolder.current?.send.mock.calls.find((call) => {
+      const payload = JSON.parse(String(call[0])) as { method: string };
+      return payload.method === 'updateComponentConfig';
+    });
+    const request = JSON.parse(String(updateCall?.[0])) as {
+      params: { properties: { value: number }[] };
+    };
+    expect(request.params.properties[0]?.value).toBe(16 * 230 * 3);
+  });
+
+  it('returns not-connected error when websocket is down', async () => {
+    const result = await adapter.sendCommand({ type: 'SET_EV_POWER', value: 5000 });
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('not connected');
+  });
+
+  it('returns false when updateComponentConfig RPC fails', async () => {
+    await adapter.connect();
+    mockWsHolder.current!.send = vi.fn((payload: string) => {
+      const req = JSON.parse(payload) as { id: string; method: string };
+      if (req.method === 'updateComponentConfig') {
+        setTimeout(
+          () =>
+            mockWsHolder.current?.emit(
+              'message',
+              JSON.stringify({ jsonrpc: '2.0', id: req.id, error: { message: 'denied' } }),
+            ),
+          0,
+        );
+      }
+    });
+
+    const result = await adapter.sendCommand({ type: 'SET_EV_POWER', value: 1000 });
+    expect(result.success).toBe(false);
+  });
+
+  it('rejects SET_EV_POWER above 22 kW before RPC', async () => {
+    await adapter.connect();
+    const result = await adapter.sendCommand({ type: 'SET_EV_POWER', value: 25_000 });
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('22000');
+  });
+
+  it('rejects SET_EV_CURRENT above 32 A before RPC', async () => {
+    await adapter.connect();
+    const result = await adapter.sendCommand({ type: 'SET_EV_CURRENT', value: 40 });
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('32');
+  });
+
+  it('rejects invalid SET_EV_POWER values before RPC', async () => {
+    await adapter.connect();
+    const result = await adapter.sendCommand({
+      type: 'SET_EV_POWER',
+      value: 'bad' as unknown as number,
+    });
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('22000');
+  });
+
+  it('rejects invalid SET_EV_CURRENT values before RPC', async () => {
+    await adapter.connect();
+    const result = await adapter.sendCommand({
+      type: 'SET_EV_CURRENT',
+      value: Number.NaN,
+    });
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('32');
   });
 });

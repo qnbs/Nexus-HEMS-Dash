@@ -36,6 +36,11 @@ import { type DeviceConfig, ModbusAdapter } from './modbus/ModbusAdapter.js';
 import { MqttAdapter } from './mqtt/MqttAdapter.js';
 import { createOcppCsmsAdapterFromEnv } from './ocpp/OcppCsmsProtocolAdapter.js';
 import { createOpenEMSAdapterFromEnv } from './openems/OpenEMSProtocolAdapter.js';
+import {
+  clearProtocolCommandHandlers,
+  registerCommandCapableAdapter,
+  unregisterCommandCapableAdapter,
+} from './ProtocolCommandRouter.js';
 import { createZigbee2MQTTAdapterFromEnv } from './zigbee2mqtt/Zigbee2MQTTProtocolAdapter.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -348,10 +353,12 @@ export async function startProtocolAdapters(eventBus: EventBus): Promise<void> {
     openEmsAdapter
       .connect()
       .then(() => {
+        registerCommandCapableAdapter(openEmsAdapter);
         setState(openEmsAdapter.id, openEmsAdapter.protocol, 'healthy');
         pipeAdapterToEventBus(openEmsAdapter, eventBus);
       })
       .catch((err: unknown) => {
+        unregisterCommandCapableAdapter(openEmsAdapter);
         const message = err instanceof Error ? err.message : String(err);
         setState(openEmsAdapter.id, openEmsAdapter.protocol, 'failed', message);
         console.error('[Adapters] Failed to start OpenEMSProtocolAdapter:', err);
@@ -372,10 +379,12 @@ export async function startProtocolAdapters(eventBus: EventBus): Promise<void> {
     homeAssistantAdapter
       .connect()
       .then(() => {
+        registerCommandCapableAdapter(homeAssistantAdapter);
         setState(homeAssistantAdapter.id, homeAssistantAdapter.protocol, 'healthy');
         pipeAdapterToEventBus(homeAssistantAdapter, eventBus);
       })
       .catch((err: unknown) => {
+        unregisterCommandCapableAdapter(homeAssistantAdapter);
         const message = err instanceof Error ? err.message : String(err);
         setState(homeAssistantAdapter.id, homeAssistantAdapter.protocol, 'failed', message);
         console.error('[Adapters] Failed to start HomeAssistantProtocolAdapter:', err);
@@ -468,10 +477,12 @@ export async function startProtocolAdapters(eventBus: EventBus): Promise<void> {
     ocppCsmsAdapter
       .connect()
       .then(() => {
+        registerCommandCapableAdapter(ocppCsmsAdapter);
         setState(ocppCsmsAdapter.id, ocppCsmsAdapter.protocol, 'healthy');
         pipeAdapterToEventBus(ocppCsmsAdapter, eventBus);
       })
       .catch((err: unknown) => {
+        unregisterCommandCapableAdapter(ocppCsmsAdapter);
         const message = err instanceof Error ? err.message : String(err);
         setState(ocppCsmsAdapter.id, ocppCsmsAdapter.protocol, 'failed', message);
         console.error('[Adapters] Failed to start OcppCsmsProtocolAdapter:', err);
@@ -526,6 +537,10 @@ function stopAdapterMetricsRefresh(): void {
  */
 export async function stopProtocolAdapters(): Promise<void> {
   stopAdapterMetricsRefresh();
+  for (const adapter of activeAdapters) {
+    unregisterCommandCapableAdapter(adapter);
+  }
+  clearProtocolCommandHandlers();
   await Promise.allSettled(activeAdapters.map((a) => a.disconnect()));
   for (const adapter of activeAdapters) {
     setState(adapter.id, adapter.protocol, 'stopped');

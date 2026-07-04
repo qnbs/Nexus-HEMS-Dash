@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { WebSocket, WebSocketServer } from 'ws';
 import { isReadOnlyMode } from '../config/read-only-mode.js';
 import type { AuthenticatedClient } from '../middleware/auth.js';
@@ -11,6 +11,12 @@ import {
   sanitizeOutgoingWsPayload,
   validateWSCommand,
 } from '../ws/energy.ws.js';
+
+vi.mock('../protocols/ProtocolCommandRouter.js', () => ({
+  dispatchProtocolCommand: vi.fn(),
+}));
+
+import { dispatchProtocolCommand } from '../protocols/ProtocolCommandRouter.js';
 
 describe('validateWSCommand', () => {
   it('accepts a valid hardware command', () => {
@@ -178,6 +184,9 @@ describe('checkScopeAuthorization', () => {
 
 describe('handleWsCommand', () => {
   const originalReadOnly = process.env.READ_ONLY_MODE;
+  const originalAdapterMode = process.env.ADAPTER_MODE;
+  const originalAllowLive = process.env.ALLOW_LIVE_HARDWARE;
+  const mockedDispatch = vi.mocked(dispatchProtocolCommand);
 
   function mockWs(): WebSocket & { sent: unknown[] } {
     return {
@@ -191,6 +200,11 @@ describe('handleWsCommand', () => {
   afterEach(() => {
     if (originalReadOnly === undefined) delete process.env.READ_ONLY_MODE;
     else process.env.READ_ONLY_MODE = originalReadOnly;
+    if (originalAdapterMode === undefined) delete process.env.ADAPTER_MODE;
+    else process.env.ADAPTER_MODE = originalAdapterMode;
+    if (originalAllowLive === undefined) delete process.env.ALLOW_LIVE_HARDWARE;
+    else process.env.ALLOW_LIVE_HARDWARE = originalAllowLive;
+    mockedDispatch.mockReset();
   });
 
   it('routes invalid commands to SUBSCRIBE handler when applicable', () => {
@@ -225,6 +239,89 @@ describe('handleWsCommand', () => {
     Object.defineProperty(peer, 'readyState', { value: 1 });
 
     handleWsCommand(ws, { type: 'SET_BATTERY_POWER', value: -500 }, new WeakMap(), auth, wss);
+    expect(peer.sent.some((msg) => (msg as { type: string }).type === 'ENERGY_UPDATE')).toBe(true);
+  });
+
+  it('dispatches EV commands to live protocol adapters in live mode', async () => {
+    delete process.env.READ_ONLY_MODE;
+    process.env.ADAPTER_MODE = 'live';
+    process.env.ALLOW_LIVE_HARDWARE = 'true';
+    mockedDispatch.mockResolvedValue({ handled: true, success: true, adapterId: 'ocpp-csms-01' });
+
+    const ws = mockWs();
+    const peer = mockWs();
+    const auth = new WeakMap<WebSocket, AuthenticatedClient>();
+    auth.set(ws, { clientId: 'writer', scope: 'readwrite' });
+    const wss = { clients: new Set<WebSocket>([ws, peer]) } as WebSocketServer;
+    Object.defineProperty(ws, 'readyState', { value: 1 });
+    Object.defineProperty(peer, 'readyState', { value: 1 });
+
+    handleWsCommand(ws, { type: 'SET_EV_POWER', value: 7200 }, new WeakMap(), auth, wss);
+
+    await vi.waitFor(() => {
+      expect(mockedDispatch).toHaveBeenCalledWith({ type: 'SET_EV_POWER', value: 7200 });
+    });
+    await vi.waitFor(() => {
+      expect(peer.sent.some((msg) => (msg as { type: string }).type === 'ENERGY_UPDATE')).toBe(
+        true,
+      );
+    });
+  });
+
+  it('returns ERROR in live mode when no adapter handles the command', async () => {
+    delete process.env.READ_ONLY_MODE;
+    process.env.ADAPTER_MODE = 'live';
+    process.env.ALLOW_LIVE_HARDWARE = 'true';
+    mockedDispatch.mockResolvedValue({ handled: false, success: false });
+
+    const ws = mockWs();
+    const auth = new WeakMap<WebSocket, AuthenticatedClient>();
+    auth.set(ws, { clientId: 'writer', scope: 'readwrite' });
+    const wss = { clients: new Set<WebSocket>() } as WebSocketServer;
+
+    handleWsCommand(ws, { type: 'SET_EV_POWER', value: 7200 }, new WeakMap(), auth, wss);
+
+    await vi.waitFor(() => {
+      expect((ws.sent[0] as { error: string }).error).toContain('No live adapter');
+    });
+  });
+
+  it('records rejected_dispatch outcome when protocol dispatch fails', async () => {
+    delete process.env.READ_ONLY_MODE;
+    process.env.ADAPTER_MODE = 'live';
+    process.env.ALLOW_LIVE_HARDWARE = 'true';
+    mockedDispatch.mockResolvedValue({
+      handled: true,
+      success: false,
+      error: 'No charge point connected',
+    });
+
+    const ws = mockWs();
+    const auth = new WeakMap<WebSocket, AuthenticatedClient>();
+    auth.set(ws, { clientId: 'writer', scope: 'readwrite' });
+    const wss = { clients: new Set<WebSocket>() } as WebSocketServer;
+
+    handleWsCommand(ws, { type: 'START_CHARGING', value: true }, new WeakMap(), auth, wss);
+
+    await vi.waitFor(() => {
+      expect((ws.sent[0] as { error: string }).error).toContain('No charge point');
+    });
+  });
+
+  it('applies mock EV and heat-pump mutations in mock mode', () => {
+    delete process.env.READ_ONLY_MODE;
+    delete process.env.ADAPTER_MODE;
+
+    const ws = mockWs();
+    const peer = mockWs();
+    const auth = new WeakMap<WebSocket, AuthenticatedClient>();
+    auth.set(ws, { clientId: 'writer', scope: 'readwrite' });
+    const wss = { clients: new Set<WebSocket>([ws, peer]) } as WebSocketServer;
+    Object.defineProperty(peer, 'readyState', { value: 1 });
+
+    handleWsCommand(ws, { type: 'SET_EV_POWER', value: 4200 }, new WeakMap(), auth, wss);
+    handleWsCommand(ws, { type: 'SET_HEAT_PUMP_POWER', value: 900 }, new WeakMap(), auth, wss);
+
     expect(peer.sent.some((msg) => (msg as { type: string }).type === 'ENERGY_UPDATE')).toBe(true);
   });
 });

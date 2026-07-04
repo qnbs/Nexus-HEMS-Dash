@@ -23,6 +23,7 @@ import {
   type MetricType,
   type ProtocolType,
   type UnifiedEnergyDatapoint,
+  type WSCommandType,
 } from '@nexus-hems/shared-types';
 import { WebSocket } from 'ws';
 import {
@@ -32,7 +33,20 @@ import {
   recordAdapterReconnect,
 } from '../../middleware/adapter-metrics.js';
 import { API_RUNTIME_DIR, DEAD_LETTER_QUEUE_PATH } from '../../runtime-paths.js';
+import type {
+  IProtocolCommandHandler,
+  ProtocolCommandRequest,
+  ProtocolCommandResult,
+} from '../protocol-command.js';
+import { EvCurrentValueSchema, EvPowerValueSchema } from '../protocol-command.js';
+import { isSafeComponentId, sanitizeWritableProperties } from './openems-writable-rules.js';
 
+const OPENEMS_EV_COMMANDS = new Set<WSCommandType>([
+  'SET_EV_POWER',
+  'SET_EV_CURRENT',
+  'START_CHARGING',
+  'STOP_CHARGING',
+]);
 const DEFAULT_POLL_INTERVAL_MS = 5000;
 const CONNECT_TIMEOUT_MS = 15_000;
 const RPC_TIMEOUT_MS = 10_000;
@@ -78,6 +92,8 @@ export interface OpenEMSProtocolAdapterConfig {
   authToken?: string;
   deviceId?: string;
   pollIntervalMs?: number;
+  evcsComponentId?: string;
+  evcsControllerId?: string;
 }
 
 interface DLQEntry {
@@ -88,7 +104,7 @@ interface DLQEntry {
   protocol: ProtocolType;
 }
 
-export class OpenEMSProtocolAdapter implements IProtocolAdapter {
+export class OpenEMSProtocolAdapter implements IProtocolAdapter, IProtocolCommandHandler {
   readonly id: string;
   readonly protocol: ProtocolType = 'openems';
 
@@ -97,6 +113,8 @@ export class OpenEMSProtocolAdapter implements IProtocolAdapter {
   > &
     OpenEMSProtocolAdapterConfig;
   private readonly deviceId: string;
+  private readonly evcsComponentId: string;
+  private readonly evcsControllerId: string;
   private ws: WebSocket | null = null;
   private sessionToken: string | null = null;
   private rpcId = 0;
@@ -121,6 +139,8 @@ export class OpenEMSProtocolAdapter implements IProtocolAdapter {
     };
     this.id = config.id;
     this.deviceId = config.deviceId ?? 'openems-edge';
+    this.evcsComponentId = config.evcsComponentId ?? 'evcs0';
+    this.evcsControllerId = config.evcsControllerId ?? 'ctrlEvcs0';
   }
 
   async connect(): Promise<void> {
@@ -388,6 +408,102 @@ export class OpenEMSProtocolAdapter implements IProtocolAdapter {
       this.ws.send(JSON.stringify(request));
     });
   }
+
+  supportsCommand(type: WSCommandType): boolean {
+    return OPENEMS_EV_COMMANDS.has(type);
+  }
+
+  async sendCommand(command: ProtocolCommandRequest): Promise<ProtocolCommandResult> {
+    if (!this.supportsCommand(command.type)) {
+      return { handled: false, success: false };
+    }
+
+    if (!this.connected || !this.ws || this.ws.readyState !== WebSocket.OPEN) {
+      return {
+        handled: true,
+        success: false,
+        adapterId: this.id,
+        error: 'OpenEMS WebSocket not connected',
+      };
+    }
+
+    let ok = false;
+
+    switch (command.type) {
+      case 'SET_EV_POWER': {
+        const power = EvPowerValueSchema.safeParse(command.value);
+        if (!power.success) {
+          return {
+            handled: true,
+            success: false,
+            adapterId: this.id,
+            error: 'SET_EV_POWER requires a finite wattage between 0 and 22000',
+          };
+        }
+        ok = await this.updateSafeComponentConfig(this.evcsComponentId, [
+          { name: 'setChargePowerLimit', value: power.data },
+        ]);
+        break;
+      }
+      case 'SET_EV_CURRENT': {
+        const current = EvCurrentValueSchema.safeParse(command.value);
+        if (!current.success) {
+          return {
+            handled: true,
+            success: false,
+            adapterId: this.id,
+            error: 'SET_EV_CURRENT requires a finite amp value between 0 and 32',
+          };
+        }
+        const derivedPower = current.data * 230 * 3;
+        ok = await this.updateSafeComponentConfig(this.evcsComponentId, [
+          { name: 'setChargePowerLimit', value: derivedPower },
+        ]);
+        break;
+      }
+      case 'START_CHARGING':
+        ok = await this.updateSafeComponentConfig(this.evcsControllerId, [
+          { name: 'enabledCharging', value: true },
+        ]);
+        break;
+      case 'STOP_CHARGING':
+        ok = await this.updateSafeComponentConfig(this.evcsControllerId, [
+          { name: 'enabledCharging', value: false },
+        ]);
+        break;
+      default:
+        return { handled: false, success: false };
+    }
+
+    return ok
+      ? { handled: true, success: true, adapterId: this.id }
+      : {
+          handled: true,
+          success: false,
+          adapterId: this.id,
+          error: 'OpenEMS updateComponentConfig rejected or blocked',
+        };
+  }
+
+  private async updateSafeComponentConfig(
+    componentId: string,
+    properties: Array<{ name: string; value: unknown }>,
+  ): Promise<boolean> {
+    if (!isSafeComponentId(componentId)) return false;
+
+    const safeProperties = sanitizeWritableProperties(componentId, properties);
+    if (safeProperties.length === 0) return false;
+
+    try {
+      await this.rpcCall('updateComponentConfig', {
+        componentId,
+        properties: safeProperties,
+      });
+      return true;
+    } catch {
+      return false;
+    }
+  }
 }
 
 export function createOpenEMSAdapterFromEnv(
@@ -405,6 +521,8 @@ export function createOpenEMSAdapterFromEnv(
     tls: env.OPENEMS_TLS === 'true',
     authToken: env.OPENEMS_AUTH_TOKEN?.trim() || 'user',
     deviceId: env.OPENEMS_DEVICE_ID?.trim() || 'openems-edge',
+    evcsComponentId: env.OPENEMS_EVCS_COMPONENT_ID?.trim() || 'evcs0',
+    evcsControllerId: env.OPENEMS_EVCS_CTRL_ID?.trim() || 'ctrlEvcs0',
     ...(pollMs !== undefined && Number.isFinite(pollMs) ? { pollIntervalMs: pollMs } : {}),
   });
 }

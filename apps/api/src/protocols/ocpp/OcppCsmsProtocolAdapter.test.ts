@@ -9,6 +9,21 @@ import {
   OcppCsmsProtocolAdapter,
 } from './OcppCsmsProtocolAdapter.js';
 
+async function connectChargePoint(port: number, cpId: string): Promise<WebSocket> {
+  const client = new WebSocket(`ws://127.0.0.1:${port}/${cpId}`, 'ocpp2.0.1');
+  await new Promise<void>((resolve, reject) => {
+    client.once('open', () => resolve());
+    client.once('error', reject);
+  });
+  client.on('message', (data) => {
+    const msg = JSON.parse(String(data)) as [number, string, ...unknown[]];
+    if (msg[0] === 2) {
+      client.send(JSON.stringify([3, msg[1], { status: 'Accepted' }]));
+    }
+  });
+  return client;
+}
+
 describe('OcppCsmsProtocolAdapter', () => {
   let adapter: OcppCsmsProtocolAdapter;
   let boundPort: number;
@@ -112,5 +127,240 @@ describe('OcppCsmsProtocolAdapter', () => {
     });
     expect(a?.id).toBe('csms-edge');
     expect(a?.protocol).toBe('ocpp');
+  });
+
+  it('supports EV command types', () => {
+    expect(adapter.supportsCommand('SET_EV_POWER')).toBe(true);
+    expect(adapter.supportsCommand('SET_BATTERY_POWER')).toBe(false);
+  });
+
+  it('sends SetChargingProfile on SET_EV_POWER when a charge point is connected', async () => {
+    const client = await connectChargePoint(boundPort, 'CP-CMD-01');
+
+    const outbound = new Promise<unknown>((resolve) => {
+      client.once('message', (data) => resolve(JSON.parse(String(data))));
+    });
+
+    const result = await adapter.sendCommand({ type: 'SET_EV_POWER', value: 7200 });
+    expect(result).toEqual({ handled: true, success: true, adapterId: 'test-csms' });
+
+    const msg = (await outbound) as [number, string, string, Record<string, unknown>];
+    expect(msg[0]).toBe(2);
+    expect(msg[2]).toBe('SetChargingProfile');
+    expect(msg[3].evseId).toBe(1);
+
+    client.close();
+  });
+
+  it('returns error when no charge point is connected', async () => {
+    const result = await adapter.sendCommand({ type: 'START_CHARGING', value: true });
+    expect(result.handled).toBe(true);
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('No charge point');
+  });
+
+  it('sends RequestStartTransaction on START_CHARGING', async () => {
+    const client = await connectChargePoint(boundPort, 'CP-START');
+
+    const outbound = new Promise<unknown>((resolve) => {
+      client.once('message', (data) => resolve(JSON.parse(String(data))));
+    });
+
+    const result = await adapter.sendCommand({ type: 'START_CHARGING', value: true });
+    expect(result.success).toBe(true);
+
+    const msg = (await outbound) as [number, string, string, Record<string, unknown>];
+    expect(msg[2]).toBe('RequestStartTransaction');
+    client.close();
+  });
+
+  it('sends SetChargingProfile with amps on SET_EV_CURRENT', async () => {
+    const client = await connectChargePoint(boundPort, 'CP-AMP');
+
+    const outbound = new Promise<unknown>((resolve) => {
+      client.once('message', (data) => resolve(JSON.parse(String(data))));
+    });
+
+    const result = await adapter.sendCommand({ type: 'SET_EV_CURRENT', value: 16 });
+    expect(result.success).toBe(true);
+
+    const msg = (await outbound) as [number, string, string, Record<string, unknown>];
+    expect(msg[2]).toBe('SetChargingProfile');
+    const schedule = (
+      msg[3].chargingProfile as { chargingSchedule: { chargingRateUnit: string }[] }
+    ).chargingSchedule[0];
+    expect(schedule?.chargingRateUnit).toBe('A');
+    client.close();
+  });
+
+  it('sends RequestStopTransaction when a transaction is active', async () => {
+    const client = new WebSocket(`ws://127.0.0.1:${boundPort}/CP-STOP`, 'ocpp2.0.1');
+    await new Promise<void>((resolve, reject) => {
+      client.once('open', () => resolve());
+      client.once('error', reject);
+    });
+
+    client.send(
+      JSON.stringify([
+        2,
+        'tx-open',
+        'TransactionEvent',
+        { eventType: 'Started', transactionInfo: { transactionId: 'tx-42' } },
+      ]),
+    );
+    await new Promise<void>((resolve) => {
+      client.once('message', () => resolve());
+    });
+
+    client.on('message', (data) => {
+      const msg = JSON.parse(String(data)) as [number, string, ...unknown[]];
+      if (msg[0] === 2) {
+        client.send(JSON.stringify([3, msg[1], { status: 'Accepted' }]));
+      }
+    });
+
+    const outbound = new Promise<unknown>((resolve) => {
+      client.once('message', (data) => {
+        const parsed = JSON.parse(String(data)) as [number, string, ...unknown[]];
+        if (parsed[0] === 2) resolve(parsed);
+      });
+    });
+
+    const result = await adapter.sendCommand({ type: 'STOP_CHARGING', value: true });
+    expect(result.success).toBe(true);
+
+    const msg = (await outbound) as [number, string, string, Record<string, unknown>];
+    expect(msg[2]).toBe('RequestStopTransaction');
+    expect(msg[3].transactionId).toBe('tx-42');
+    client.close();
+  });
+
+  it('rejects invalid SET_EV_POWER values', async () => {
+    const client = await connectChargePoint(boundPort, 'CP-INVALID');
+
+    const result = await adapter.sendCommand({
+      type: 'SET_EV_POWER',
+      value: '7200' as unknown as number,
+    });
+    expect(result.success).toBe(false);
+    client.close();
+  });
+
+  it('fails when charge point responds with CallError', async () => {
+    const client = new WebSocket(`ws://127.0.0.1:${boundPort}/CP-ERR`, 'ocpp2.0.1');
+    await new Promise<void>((resolve, reject) => {
+      client.once('open', () => resolve());
+      client.once('error', reject);
+    });
+    client.on('message', (data) => {
+      const msg = JSON.parse(String(data)) as [number, string, ...unknown[]];
+      if (msg[0] === 2) {
+        client.send(JSON.stringify([4, msg[1], 'InternalError', 'rejected', {}]));
+      }
+    });
+
+    const result = await adapter.sendCommand({ type: 'SET_EV_POWER', value: 5000 });
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('rejected or timed out');
+    client.close();
+  });
+
+  it('fails when charge point responds with Rejected status', async () => {
+    const client = new WebSocket(`ws://127.0.0.1:${boundPort}/CP-REJ`, 'ocpp2.0.1');
+    await new Promise<void>((resolve, reject) => {
+      client.once('open', () => resolve());
+      client.once('error', reject);
+    });
+    client.on('message', (data) => {
+      const msg = JSON.parse(String(data)) as [number, string, ...unknown[]];
+      if (msg[0] === 2) {
+        client.send(JSON.stringify([3, msg[1], { status: 'Rejected' }]));
+      }
+    });
+
+    const result = await adapter.sendCommand({ type: 'SET_EV_POWER', value: 5000 });
+    expect(result.success).toBe(false);
+    client.close();
+  });
+
+  it('fails when charge point responds without Accepted status', async () => {
+    const client = new WebSocket(`ws://127.0.0.1:${boundPort}/CP-NOSTATUS`, 'ocpp2.0.1');
+    await new Promise<void>((resolve, reject) => {
+      client.once('open', () => resolve());
+      client.once('error', reject);
+    });
+    client.on('message', (data) => {
+      const msg = JSON.parse(String(data)) as [number, string, ...unknown[]];
+      if (msg[0] === 2) {
+        client.send(JSON.stringify([3, msg[1], {}]));
+      }
+    });
+
+    const result = await adapter.sendCommand({ type: 'SET_EV_POWER', value: 5000 });
+    expect(result.success).toBe(false);
+    client.close();
+  });
+
+  it('targets chargePointId when multiple charge points are connected', async () => {
+    const clientA = await connectChargePoint(boundPort, 'CP-TARGET-A');
+    const clientB = await connectChargePoint(boundPort, 'CP-TARGET-B');
+
+    const outbound = new Promise<unknown>((resolve) => {
+      clientB.once('message', (data) => resolve(JSON.parse(String(data))));
+    });
+
+    const result = await adapter.sendCommand({
+      type: 'SET_EV_POWER',
+      value: 5000,
+      chargePointId: 'CP-TARGET-B',
+    });
+    expect(result.success).toBe(true);
+
+    const msg = (await outbound) as [number, string, string, Record<string, unknown>];
+    expect(msg[2]).toBe('SetChargingProfile');
+
+    clientA.close();
+    clientB.close();
+  });
+
+  it('returns error when chargePointId is not found', async () => {
+    const client = await connectChargePoint(boundPort, 'CP-ONLY');
+
+    const result = await adapter.sendCommand({
+      type: 'SET_EV_POWER',
+      value: 5000,
+      chargePointId: 'missing-cp',
+    });
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('not found');
+
+    client.close();
+  });
+
+  it('ignores malformed inbound OCPP frames without crashing', async () => {
+    const client = new WebSocket(`ws://127.0.0.1:${boundPort}/CP-BADFRAME`, 'ocpp2.0.1');
+    await new Promise<void>((resolve, reject) => {
+      client.once('open', () => resolve());
+      client.once('error', reject);
+    });
+
+    client.send(JSON.stringify([3, 'bad-callresult', 'not-an-object']));
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    const health = await adapter.healthCheck();
+    expect(health.status).toBe('healthy');
+    client.close();
+  });
+
+  it('rejects commands when multiple charge points are connected', async () => {
+    const clientA = await connectChargePoint(boundPort, 'CP-MULTI-A');
+    const clientB = await connectChargePoint(boundPort, 'CP-MULTI-B');
+
+    const result = await adapter.sendCommand({ type: 'SET_EV_POWER', value: 5000 });
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('Multiple charge points');
+
+    clientA.close();
+    clientB.close();
   });
 });

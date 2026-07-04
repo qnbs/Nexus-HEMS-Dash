@@ -3,7 +3,7 @@
  *
  * Phase 1 (MVP): ha-ws-api transport — WebSocket API at `/api/websocket`,
  * Long-Lived Access Token auth, `state_changed` subscription, static entity map
- * + device_class heuristics. Read-only telemetry (no service calls).
+ * + device_class heuristics. Phase 5: EV wallbox commands via `call_service`.
  *
  * Env vars (live mode only):
  *   HA_HOST              — HA hostname (required to enable)
@@ -13,6 +13,9 @@
  *   HA_ADAPTER_ID        — adapter instance id (default: homeassistant-01)
  *   HA_DEVICE_ID         — deviceId prefix for datapoints (default: ha-site)
  *   HA_ENTITY_MAP_PATH   — override path to entity map JSON
+ *   HA_WALLBOX_CURRENT_ENTITY — number entity for max current (optional)
+ *   HA_WALLBOX_SWITCH_ENTITY  — switch entity for start/stop (optional)
+ *   HA_WALLBOX_MAINS_VOLTAGE  — mains voltage for SET_EV_POWER→amps (default: 230)
  */
 
 import EventEmitter from 'node:events';
@@ -25,6 +28,7 @@ import {
   type IProtocolAdapter,
   type ProtocolType,
   type UnifiedEnergyDatapoint,
+  type WSCommandType,
 } from '@nexus-hems/shared-types';
 import { WebSocket } from 'ws';
 import {
@@ -33,15 +37,33 @@ import {
   recordAdapterReconnect,
 } from '../../middleware/adapter-metrics.js';
 import { API_RUNTIME_DIR, DEAD_LETTER_QUEUE_PATH } from '../../runtime-paths.js';
+import type {
+  IProtocolCommandHandler,
+  ProtocolCommandRequest,
+  ProtocolCommandResult,
+} from '../protocol-command.js';
 import {
   type HAEntityMapping,
   parseHANumericState,
   resolveHAEntityRole,
 } from './ha-role-resolver.js';
 
+const HA_EV_COMMANDS = new Set<WSCommandType>([
+  'SET_EV_POWER',
+  'SET_EV_CURRENT',
+  'START_CHARGING',
+  'STOP_CHARGING',
+]);
 const CONNECT_TIMEOUT_MS = 15_000;
+const CALL_SERVICE_TIMEOUT_MS = 10_000;
+const DEFAULT_MAINS_VOLTAGE = 230;
 const MAX_DLQ_LINES = 10_000;
 let dlqLineCount = 0;
+
+interface PendingServiceCall {
+  resolve: (success: boolean, error?: string) => void;
+  timer: ReturnType<typeof setTimeout>;
+}
 
 interface HAStateChangedEvent {
   event_type: 'state_changed';
@@ -66,6 +88,10 @@ interface HAWSMessage {
   event?: HAStateChangedEvent;
   success?: boolean;
   error?: { code: string; message: string };
+  domain?: string;
+  service?: string;
+  target?: { entity_id: string };
+  service_data?: Record<string, unknown>;
 }
 
 export interface HomeAssistantProtocolAdapterConfig {
@@ -76,6 +102,9 @@ export interface HomeAssistantProtocolAdapterConfig {
   token: string;
   deviceId?: string;
   entityMappings?: HAEntityMapping[];
+  wallboxCurrentEntityId?: string;
+  wallboxSwitchEntityId?: string;
+  mainsVoltage?: number;
 }
 
 interface DLQEntry {
@@ -86,7 +115,7 @@ interface DLQEntry {
   protocol: ProtocolType;
 }
 
-export class HomeAssistantProtocolAdapter implements IProtocolAdapter {
+export class HomeAssistantProtocolAdapter implements IProtocolAdapter, IProtocolCommandHandler {
   readonly id: string;
   readonly protocol: ProtocolType = 'homeassistant-mqtt';
 
@@ -96,8 +125,12 @@ export class HomeAssistantProtocolAdapter implements IProtocolAdapter {
     HomeAssistantProtocolAdapterConfig;
   private readonly deviceId: string;
   private readonly entityMap: Map<string, HAEntityMapping>;
+  private readonly wallboxCurrentEntityId: string | undefined;
+  private readonly wallboxSwitchEntityId: string | undefined;
+  private readonly mainsVoltage: number;
   private ws: WebSocket | null = null;
   private wsMsgId = 1;
+  private readonly pendingServiceCalls = new Map<number, PendingServiceCall>();
   private connected = false;
   private destroyed = false;
   private lastSuccessMs: number | undefined;
@@ -115,6 +148,16 @@ export class HomeAssistantProtocolAdapter implements IProtocolAdapter {
     this.id = config.id;
     this.deviceId = config.deviceId ?? 'ha-site';
     this.entityMap = new Map((config.entityMappings ?? []).map((entry) => [entry.entityId, entry]));
+    this.wallboxCurrentEntityId =
+      config.wallboxCurrentEntityId ?? resolveWallboxCurrentEntity(this.entityMap);
+    this.wallboxSwitchEntityId =
+      config.wallboxSwitchEntityId ?? resolveWallboxSwitchEntity(this.entityMap);
+    this.mainsVoltage =
+      config.mainsVoltage !== undefined &&
+      Number.isFinite(config.mainsVoltage) &&
+      config.mainsVoltage > 0
+        ? config.mainsVoltage
+        : DEFAULT_MAINS_VOLTAGE;
   }
 
   async connect(): Promise<void> {
@@ -124,6 +167,11 @@ export class HomeAssistantProtocolAdapter implements IProtocolAdapter {
 
   async disconnect(): Promise<void> {
     this.destroyed = true;
+    for (const pending of this.pendingServiceCalls.values()) {
+      clearTimeout(pending.timer);
+      pending.resolve(false, 'Disconnected');
+    }
+    this.pendingServiceCalls.clear();
     if (this.reconnectTimer) {
       clearTimeout(this.reconnectTimer);
       this.reconnectTimer = null;
@@ -279,6 +327,11 @@ export class HomeAssistantProtocolAdapter implements IProtocolAdapter {
           this.handleStateChanged(msg.event);
         }
         break;
+      case 'result':
+        if (msg.id !== undefined) {
+          this.resolvePendingServiceCall(msg.id, msg.success !== false, msg.error?.message);
+        }
+        break;
       default:
         break;
     }
@@ -345,6 +398,154 @@ export class HomeAssistantProtocolAdapter implements IProtocolAdapter {
     this.ws?.send(JSON.stringify(payload));
   }
 
+  supportsCommand(type: WSCommandType): boolean {
+    return HA_EV_COMMANDS.has(type);
+  }
+
+  async sendCommand(command: ProtocolCommandRequest): Promise<ProtocolCommandResult> {
+    if (!this.supportsCommand(command.type)) {
+      return { handled: false, success: false };
+    }
+
+    if (!this.connected || !this.ws || this.ws.readyState !== WebSocket.OPEN) {
+      return {
+        handled: true,
+        success: false,
+        adapterId: this.id,
+        error: 'HA WebSocket not connected',
+      };
+    }
+
+    const serviceCall = this.mapCommandToHAService(command);
+    if (!serviceCall) {
+      const needsNumeric = command.type === 'SET_EV_POWER' || command.type === 'SET_EV_CURRENT';
+      if (
+        needsNumeric &&
+        (typeof command.value !== 'number' || !Number.isFinite(command.value) || command.value < 0)
+      ) {
+        return {
+          handled: true,
+          success: false,
+          adapterId: this.id,
+          error: `${command.type} requires a non-negative number`,
+        };
+      }
+      return {
+        handled: true,
+        success: false,
+        adapterId: this.id,
+        error: 'Wallbox entities not configured for HA commands',
+      };
+    }
+
+    const msgId = this.wsMsgId++;
+
+    return new Promise<ProtocolCommandResult>((resolve) => {
+      const timer = setTimeout(() => {
+        this.pendingServiceCalls.delete(msgId);
+        resolve({
+          handled: true,
+          success: false,
+          adapterId: this.id,
+          error: 'HA call_service timeout',
+        });
+      }, CALL_SERVICE_TIMEOUT_MS);
+
+      this.pendingServiceCalls.set(msgId, {
+        resolve: (success, error) => {
+          clearTimeout(timer);
+          this.pendingServiceCalls.delete(msgId);
+          resolve(
+            success
+              ? { handled: true, success: true, adapterId: this.id }
+              : {
+                  handled: true,
+                  success: false,
+                  adapterId: this.id,
+                  error: error ?? 'HA call_service failed',
+                },
+          );
+        },
+        timer,
+      });
+
+      this.sendWs({
+        id: msgId,
+        type: 'call_service',
+        domain: serviceCall.domain,
+        service: serviceCall.service,
+        ...(serviceCall.target ? { target: serviceCall.target } : {}),
+        ...(serviceCall.serviceData ? { service_data: serviceCall.serviceData } : {}),
+      });
+    });
+  }
+
+  private resolvePendingServiceCall(msgId: number, success: boolean, error?: string): void {
+    const pending = this.pendingServiceCalls.get(msgId);
+    if (!pending) return;
+    clearTimeout(pending.timer);
+    this.pendingServiceCalls.delete(msgId);
+    pending.resolve(success, error);
+  }
+
+  private mapCommandToHAService(command: ProtocolCommandRequest): {
+    domain: string;
+    service: string;
+    target?: { entity_id: string };
+    serviceData?: Record<string, unknown>;
+  } | null {
+    switch (command.type) {
+      case 'SET_EV_CURRENT':
+        if (
+          typeof command.value !== 'number' ||
+          !Number.isFinite(command.value) ||
+          command.value < 0
+        ) {
+          return null;
+        }
+        if (!this.wallboxCurrentEntityId) return null;
+        return {
+          domain: 'number',
+          service: 'set_value',
+          target: { entity_id: this.wallboxCurrentEntityId },
+          serviceData: { value: command.value },
+        };
+      case 'SET_EV_POWER': {
+        if (
+          typeof command.value !== 'number' ||
+          !Number.isFinite(command.value) ||
+          command.value < 0
+        ) {
+          return null;
+        }
+        if (!this.wallboxCurrentEntityId) return null;
+        const currentA = Math.round((command.value / this.mainsVoltage) * 10) / 10;
+        return {
+          domain: 'number',
+          service: 'set_value',
+          target: { entity_id: this.wallboxCurrentEntityId },
+          serviceData: { value: currentA },
+        };
+      }
+      case 'START_CHARGING':
+        if (!this.wallboxSwitchEntityId) return null;
+        return {
+          domain: 'switch',
+          service: 'turn_on',
+          target: { entity_id: this.wallboxSwitchEntityId },
+        };
+      case 'STOP_CHARGING':
+        if (!this.wallboxSwitchEntityId) return null;
+        return {
+          domain: 'switch',
+          service: 'turn_off',
+          target: { entity_id: this.wallboxSwitchEntityId },
+        };
+      default:
+        return null;
+    }
+  }
+
   private scheduleReconnect(): void {
     if (this.destroyed || this.reconnectTimer) return;
     const delay = Math.min(60_000, 1000 * 2 ** this.reconnectAttempt);
@@ -396,7 +597,32 @@ export function createHomeAssistantAdapterFromEnv(
     token,
     deviceId: env.HA_DEVICE_ID?.trim() || 'ha-site',
     entityMappings: entityMappingsResolved,
+    ...(env.HA_WALLBOX_CURRENT_ENTITY?.trim()
+      ? { wallboxCurrentEntityId: env.HA_WALLBOX_CURRENT_ENTITY.trim() }
+      : {}),
+    ...(env.HA_WALLBOX_SWITCH_ENTITY?.trim()
+      ? { wallboxSwitchEntityId: env.HA_WALLBOX_SWITCH_ENTITY.trim() }
+      : {}),
+    ...(env.HA_WALLBOX_MAINS_VOLTAGE?.trim()
+      ? { mainsVoltage: Number(env.HA_WALLBOX_MAINS_VOLTAGE.trim()) }
+      : {}),
   });
+}
+
+function resolveWallboxCurrentEntity(entityMap: Map<string, HAEntityMapping>): string | undefined {
+  for (const [entityId, mapping] of entityMap) {
+    if (mapping.role !== 'ev') continue;
+    if (entityId.startsWith('number.')) return entityId;
+  }
+  return undefined;
+}
+
+function resolveWallboxSwitchEntity(entityMap: Map<string, HAEntityMapping>): string | undefined {
+  for (const [entityId, mapping] of entityMap) {
+    if (mapping.role !== 'ev') continue;
+    if (entityId.startsWith('switch.')) return entityId;
+  }
+  return undefined;
 }
 
 function writeToDLQ(entry: DLQEntry): void {

@@ -16,6 +16,7 @@
 
 import EventEmitter from 'node:events';
 import { appendFileSync, mkdirSync } from 'node:fs';
+import type { WSCommandType } from '@nexus-hems/shared-types';
 import {
   type AdapterHealth,
   energyDatapointSchema,
@@ -25,21 +26,75 @@ import {
   type UnifiedEnergyDatapoint,
 } from '@nexus-hems/shared-types';
 import { WebSocket, WebSocketServer } from 'ws';
+import { z } from 'zod';
 import { recordAdapterDlq, recordAdapterError } from '../../middleware/adapter-metrics.js';
 import { API_RUNTIME_DIR, DEAD_LETTER_QUEUE_PATH } from '../../runtime-paths.js';
+import type {
+  IProtocolCommandHandler,
+  ProtocolCommandRequest,
+  ProtocolCommandResult,
+} from '../protocol-command.js';
+import { EvCurrentValueSchema, EvPowerValueSchema } from '../protocol-command.js';
 
 const OCPP_CALL = 2;
 const OCPP_CALLRESULT = 3;
 const OCPP_CALLERROR = 4;
 
 const HEARTBEAT_INTERVAL_S = 300;
+const OUTBOUND_TIMEOUT_MS = 10_000;
 const MAX_DLQ_LINES = 10_000;
 let dlqLineCount = 0;
 
+interface OutboundPending {
+  resolve: (success: boolean) => void;
+  timer: ReturnType<typeof setTimeout>;
+}
+
 type OcppInboundMessage =
   | [typeof OCPP_CALL, string, string, Record<string, unknown>]
-  | [typeof OCPP_CALLRESULT, string, Record<string, unknown>]
-  | [typeof OCPP_CALLERROR, string, string, string, Record<string, unknown>];
+  | [typeof OCPP_CALLRESULT, string, Record<string, unknown>?]
+  | [typeof OCPP_CALLERROR, string, string, string, Record<string, unknown>?];
+
+const OcppCallResultSchema = z.tuple([
+  z.literal(OCPP_CALLRESULT),
+  z.string(),
+  z.record(z.string(), z.unknown()).optional(),
+]);
+
+const OcppCallErrorSchema = z.tuple([
+  z.literal(OCPP_CALLERROR),
+  z.string(),
+  z.string(),
+  z.string(),
+  z.record(z.string(), z.unknown()).optional(),
+]);
+
+const OcppCallSchema = z.tuple([
+  z.literal(OCPP_CALL),
+  z.string(),
+  z.string(),
+  z.record(z.string(), z.unknown()),
+]);
+
+const OcppInboundMessageSchema = z.union([
+  OcppCallResultSchema,
+  OcppCallErrorSchema,
+  OcppCallSchema,
+]);
+
+const CallResultPayloadSchema = z
+  .object({
+    status: z.string().optional(),
+  })
+  .passthrough();
+
+const TransactionInfoSchema = z.object({
+  transactionId: z.string().min(1).optional(),
+});
+
+const ChargingStationSchema = z.object({
+  serialNumber: z.string().min(1).optional(),
+});
 
 interface ChargePointSession {
   chargePointId: string;
@@ -47,6 +102,7 @@ interface ChargePointSession {
   lastEnergyKWh: number;
   lastSocPercent: number | undefined;
   lastSeenMs: number;
+  transactionId: string | undefined;
 }
 
 export interface OcppCsmsProtocolAdapterConfig {
@@ -64,7 +120,14 @@ interface DLQEntry {
   protocol: ProtocolType;
 }
 
-export class OcppCsmsProtocolAdapter implements IProtocolAdapter {
+const OCPP_EV_COMMANDS = new Set<WSCommandType>([
+  'SET_EV_POWER',
+  'SET_EV_CURRENT',
+  'START_CHARGING',
+  'STOP_CHARGING',
+]);
+
+export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolCommandHandler {
   readonly id: string;
   readonly protocol: ProtocolType = 'ocpp';
 
@@ -76,6 +139,8 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter {
   private consecutiveErrors = 0;
   private readonly sessions = new Map<WebSocket, ChargePointSession>();
   private readonly emitter = new EventEmitter();
+  private readonly outboundPending = new Map<string, OutboundPending>();
+  private outboundMessageId = 0;
 
   constructor(config: OcppCsmsProtocolAdapterConfig) {
     this.config = {
@@ -116,14 +181,28 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter {
           lastEnergyKWh: 0,
           lastSocPercent: undefined,
           lastSeenMs: Date.now(),
+          transactionId: undefined,
         });
 
         ws.on('message', (data) => {
           try {
             const raw =
               typeof data === 'string' ? data : Buffer.from(data as Buffer).toString('utf8');
-            const msg = JSON.parse(raw) as OcppInboundMessage;
-            this.handleMessage(ws, msg);
+            const json: unknown = JSON.parse(raw);
+            const parsed = OcppInboundMessageSchema.safeParse(json);
+            if (!parsed.success) {
+              recordAdapterError(this.id, this.protocol, 'parse');
+              writeToDLQ({
+                ts: Date.now(),
+                source: 'ocpp-csms-ws',
+                rawPayload: raw.slice(0, 512),
+                error: 'Invalid OCPP message shape',
+                protocol: this.protocol,
+              });
+              recordAdapterDlq(this.id, this.protocol);
+              return;
+            }
+            this.handleMessage(ws, parsed.data as OcppInboundMessage);
           } catch (err) {
             recordAdapterError(this.id, this.protocol, 'parse');
             writeToDLQ({
@@ -153,6 +232,12 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter {
   async disconnect(): Promise<void> {
     this.emitter.emit('destroy');
     this.emitter.removeAllListeners();
+
+    for (const pending of this.outboundPending.values()) {
+      clearTimeout(pending.timer);
+      pending.resolve(false);
+    }
+    this.outboundPending.clear();
 
     for (const ws of this.sessions.keys()) {
       ws.close(1000, 'csms shutdown');
@@ -226,6 +311,21 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter {
   }
 
   private handleMessage(ws: WebSocket, msg: OcppInboundMessage): void {
+    if (msg[0] === OCPP_CALLRESULT) {
+      const messageId = msg[1];
+      if (!this.outboundPending.has(messageId)) return;
+      const payload = CallResultPayloadSchema.safeParse(msg[2] ?? {});
+      const accepted = payload.success && payload.data.status === 'Accepted';
+      this.resolveOutboundPending(messageId, accepted);
+      return;
+    }
+    if (msg[0] === OCPP_CALLERROR) {
+      const messageId = msg[1];
+      if (typeof messageId === 'string' && this.outboundPending.has(messageId)) {
+        this.resolveOutboundPending(messageId, false);
+      }
+      return;
+    }
     if (msg[0] !== OCPP_CALL) return;
 
     const [, messageId, action, payload] = msg;
@@ -236,9 +336,9 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter {
 
     switch (action) {
       case 'BootNotification': {
-        const station = payload.chargingStation as { serialNumber?: string } | undefined;
-        if (station?.serialNumber) {
-          session.chargePointId = station.serialNumber;
+        const station = ChargingStationSchema.safeParse(payload.chargingStation);
+        if (station.success && station.data.serialNumber) {
+          session.chargePointId = station.data.serialNumber;
         }
         this.sendCallResult(ws, messageId, {
           currentTime: new Date().toISOString(),
@@ -283,6 +383,11 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter {
     session: ChargePointSession,
     payload: Record<string, unknown>,
   ): void {
+    const transactionInfo = TransactionInfoSchema.safeParse(payload.transactionInfo);
+    if (transactionInfo.success && transactionInfo.data.transactionId) {
+      session.transactionId = transactionInfo.data.transactionId;
+    }
+
     const meterValue = payload.meterValue as
       | { sampledValue: { value: number | string; measurand?: string; unit?: string }[] }[]
       | undefined;
@@ -290,9 +395,215 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter {
       this.applySampledValues(session, meterValue);
     }
     if (payload.eventType === 'Ended') {
+      session.transactionId = undefined;
       session.lastPowerW = 0;
       this.emitMetric(session, 'POWER_W', 0);
     }
+  }
+
+  supportsCommand(type: WSCommandType): boolean {
+    return OCPP_EV_COMMANDS.has(type);
+  }
+
+  async sendCommand(command: ProtocolCommandRequest): Promise<ProtocolCommandResult> {
+    if (!this.supportsCommand(command.type)) {
+      return { handled: false, success: false };
+    }
+
+    const active = this.pickActiveSession(command.chargePointId);
+    if (active.kind === 'none') {
+      return {
+        handled: true,
+        success: false,
+        adapterId: this.id,
+        error: 'No charge point connected',
+      };
+    }
+    if (active.kind === 'not_found') {
+      return {
+        handled: true,
+        success: false,
+        adapterId: this.id,
+        error: `Charge point not found: ${active.chargePointId}`,
+      };
+    }
+    if (active.kind === 'ambiguous') {
+      return {
+        handled: true,
+        success: false,
+        adapterId: this.id,
+        error: 'Multiple charge points connected',
+      };
+    }
+
+    const { ws, session } = active;
+    let acknowledged = false;
+
+    switch (command.type) {
+      case 'SET_EV_POWER': {
+        const power = EvPowerValueSchema.safeParse(command.value);
+        if (!power.success) {
+          return {
+            handled: true,
+            success: false,
+            adapterId: this.id,
+            error: 'SET_EV_POWER requires a finite wattage between 0 and 22000',
+          };
+        }
+        acknowledged = await this.sendSetChargingProfileW(ws, power.data);
+        break;
+      }
+      case 'SET_EV_CURRENT': {
+        const current = EvCurrentValueSchema.safeParse(command.value);
+        if (!current.success) {
+          return {
+            handled: true,
+            success: false,
+            adapterId: this.id,
+            error: 'SET_EV_CURRENT requires a finite amp value between 0 and 32',
+          };
+        }
+        acknowledged = await this.sendSetChargingProfileA(ws, current.data);
+        break;
+      }
+      case 'START_CHARGING':
+        acknowledged = await this.sendRequestStartTransaction(ws);
+        break;
+      case 'STOP_CHARGING':
+        if (!session.transactionId) {
+          return {
+            handled: true,
+            success: false,
+            adapterId: this.id,
+            error: 'No active transaction to stop',
+          };
+        }
+        acknowledged = await this.sendRequestStopTransaction(ws, session.transactionId);
+        break;
+      default:
+        return { handled: false, success: false };
+    }
+
+    return acknowledged
+      ? { handled: true, success: true, adapterId: this.id }
+      : {
+          handled: true,
+          success: false,
+          adapterId: this.id,
+          error: 'Charge point rejected or timed out on OCPP command',
+        };
+  }
+
+  private pickActiveSession(
+    chargePointId?: string,
+  ):
+    | { kind: 'single'; ws: WebSocket; session: ChargePointSession }
+    | { kind: 'none' }
+    | { kind: 'not_found'; chargePointId: string }
+    | { kind: 'ambiguous' } {
+    const open: Array<{ ws: WebSocket; session: ChargePointSession }> = [];
+    for (const [ws, session] of this.sessions) {
+      if (ws.readyState === WebSocket.OPEN) {
+        open.push({ ws, session });
+      }
+    }
+    if (open.length === 0) return { kind: 'none' };
+
+    if (chargePointId) {
+      const match = open.find((entry) => entry.session.chargePointId === chargePointId);
+      return match
+        ? { kind: 'single', ws: match.ws, session: match.session }
+        : { kind: 'not_found', chargePointId };
+    }
+
+    if (open.length > 1) return { kind: 'ambiguous' };
+    return { kind: 'single', ws: open[0]!.ws, session: open[0]!.session };
+  }
+
+  private resolveOutboundPending(messageId: string, success: boolean): void {
+    const pending = this.outboundPending.get(messageId);
+    if (!pending) return;
+    clearTimeout(pending.timer);
+    this.outboundPending.delete(messageId);
+    pending.resolve(success);
+  }
+
+  private sendOutboundCall(
+    ws: WebSocket,
+    action: string,
+    payload: Record<string, unknown>,
+  ): Promise<boolean> {
+    if (ws.readyState !== WebSocket.OPEN) return Promise.resolve(false);
+    const messageId = `csms-${++this.outboundMessageId}`;
+
+    return new Promise<boolean>((resolve) => {
+      const timer = setTimeout(() => {
+        this.outboundPending.delete(messageId);
+        resolve(false);
+      }, OUTBOUND_TIMEOUT_MS);
+
+      this.outboundPending.set(messageId, {
+        resolve: (success) => {
+          clearTimeout(timer);
+          this.outboundPending.delete(messageId);
+          resolve(success);
+        },
+        timer,
+      });
+
+      ws.send(JSON.stringify([OCPP_CALL, messageId, action, payload]));
+    });
+  }
+
+  private sendSetChargingProfileA(ws: WebSocket, maxCurrentA: number): Promise<boolean> {
+    return this.sendSetChargingProfile(ws, 1, 1, 0, 'TxDefaultProfile', {
+      chargingRateUnit: 'A',
+      chargingSchedulePeriod: [{ startPeriod: 0, limit: maxCurrentA }],
+    });
+  }
+
+  private sendSetChargingProfileW(ws: WebSocket, powerW: number): Promise<boolean> {
+    return this.sendSetChargingProfile(ws, 1, 1, 0, 'TxDefaultProfile', {
+      chargingRateUnit: 'W',
+      chargingSchedulePeriod: [{ startPeriod: 0, limit: powerW }],
+    });
+  }
+
+  private sendSetChargingProfile(
+    ws: WebSocket,
+    evseId: number,
+    id: number,
+    stackLevel: number,
+    purpose: string,
+    schedule: Record<string, unknown>,
+    profileExtra?: Record<string, unknown>,
+  ): Promise<boolean> {
+    return this.sendOutboundCall(ws, 'SetChargingProfile', {
+      evseId,
+      chargingProfile: {
+        id,
+        stackLevel,
+        chargingProfilePurpose: purpose,
+        chargingProfileKind: 'Absolute',
+        chargingSchedule: [{ id, ...schedule }],
+        ...profileExtra,
+      },
+    });
+  }
+
+  private sendRequestStartTransaction(ws: WebSocket): Promise<boolean> {
+    return this.sendOutboundCall(ws, 'RequestStartTransaction', {
+      evseId: 1,
+      remoteStartId: Date.now(),
+      idToken: {
+        idToken: 'nexus-hems',
+        type: 'Central',
+      },
+    });
+  }
+
+  private sendRequestStopTransaction(ws: WebSocket, transactionId: string): Promise<boolean> {
+    return this.sendOutboundCall(ws, 'RequestStopTransaction', { transactionId });
   }
 
   private applySampledValues(

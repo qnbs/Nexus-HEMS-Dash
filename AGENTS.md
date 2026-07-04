@@ -52,4 +52,5 @@ low-RAM workstation; in the cloud VM it is fine to run `pnpm type-check`,
 | Backend protocol adapters | `docs/Protocol-Adapter-Guide-Backend.md` |
 | Safety before live hardware | `docs/Safety-Certification-Notice.md` |
 | CI / required checks | `.github/CI-AUDIT.md` |
+| PR review correction loops | `docs/runbooks/pr-review-correction-loop.md` |
 | CI/CD & quality-platform layering | `DEVOPS.md` (DeepSource/Codecov/CodeRabbit/CodeAnt roles, `docs/adr/ADR-027`) |
