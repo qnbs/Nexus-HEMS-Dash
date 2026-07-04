@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useEnergyStoreBase } from '../../core/useEnergyStore';
 import { themeDefinitions } from '../../design-tokens';
 import { isLiveSafetyMode } from '../../lib/adapter-mode';
-import { useReadOnlyModeActive } from '../../lib/use-read-only-mode';
+import { resolveReadOnlyModeActive } from '../../lib/use-read-only-mode';
 import { useAppStoreShallow } from '../../store';
 import { CommandPalette, useCommandPalette } from '../ui/CommandPalette';
 import { MobileNavigation } from '../ui/MobileNavigation';
@@ -24,20 +24,30 @@ export function AppShell({ children }: AppShellProps) {
   const { t } = useTranslation();
   const { isOpen: isCommandPaletteOpen, setIsOpen: setCommandPaletteOpen } = useCommandPalette();
 
-  const { priceCurrent, pvPower, batterySoC, gridPower, houseLoad, connected, theme, adapterMode } =
-    useAppStoreShallow((s) => ({
-      priceCurrent: s.energyData.priceCurrent,
-      pvPower: s.energyData.pvPower,
-      batterySoC: s.energyData.batterySoC,
-      gridPower: s.energyData.gridPower,
-      houseLoad: s.energyData.houseLoad,
-      connected: s.connected,
-      theme: s.theme,
-      adapterMode: s.adapterMode,
-    }));
+  const {
+    priceCurrent,
+    pvPower,
+    batterySoC,
+    gridPower,
+    houseLoad,
+    connected,
+    theme,
+    adapterMode,
+    backendReadOnly,
+  } = useAppStoreShallow((s) => ({
+    priceCurrent: s.energyData.priceCurrent,
+    pvPower: s.energyData.pvPower,
+    batterySoC: s.energyData.batterySoC,
+    gridPower: s.energyData.gridPower,
+    houseLoad: s.energyData.houseLoad,
+    connected: s.connected,
+    theme: s.theme,
+    adapterMode: s.adapterMode,
+    backendReadOnly: s.backendReadOnly,
+  }));
 
   const isLive = isLiveSafetyMode(adapterMode);
-  const isReadOnly = useReadOnlyModeActive();
+  const isReadOnly = resolveReadOnlyModeActive(backendReadOnly);
 
   const hasDegradedAdapter = useEnergyStoreBase((s) =>
     Object.values(s.adapters).some(
