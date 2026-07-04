@@ -38,6 +38,7 @@ for id in "${ids[@]:${KEEP}}"; do
     echo "::warning::could not delete deployment ${id}"
     failures=$((failures + 1))
   fi
+  sleep 1
 done
 
 if [ "${failures}" -gt 0 ]; then
