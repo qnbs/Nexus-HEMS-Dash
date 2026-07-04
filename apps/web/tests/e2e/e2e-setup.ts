@@ -1,21 +1,27 @@
 import type { Page } from '@playwright/test';
 
+/** Shape of `/api/health` used by Playwright route mocks. */
+export interface MockHealthBody {
+  status: string;
+  mode: 'mock' | 'live';
+  readOnly: boolean;
+  adapters: string[];
+}
+
 /** Default `/api/health` payload for Playwright route mocks. */
-export const MOCK_HEALTH_BODY = {
+export const MOCK_HEALTH_BODY: MockHealthBody = {
   status: 'healthy',
-  mode: 'mock' as const,
+  mode: 'mock',
   readOnly: false,
-  adapters: [] as string[],
+  adapters: [],
 };
 
 /**
  * Mock `GET /api/health` for safety/mode E2E scenarios.
- *
- * @returns Promise that resolves when the route handler is registered.
  */
 export async function mockBackendHealth(
   page: Page,
-  overrides: Partial<typeof MOCK_HEALTH_BODY> = {},
+  overrides: Partial<MockHealthBody> = {},
 ): Promise<void> {
   const body = { ...MOCK_HEALTH_BODY, ...overrides };
   await page.route('**/api/health', async (route) => {
