@@ -107,6 +107,18 @@ const TransactionInfoSchema = z.object({
   transactionId: z.string().min(1).optional(),
 });
 
+const OcppSampledValueSchema = z.object({
+  value: z.union([z.number(), z.string()]),
+  measurand: z.string().optional(),
+  unit: z.string().optional(),
+});
+
+const OcppMeterValueEntrySchema = z.object({
+  sampledValue: z.array(OcppSampledValueSchema),
+});
+
+const OcppMeterValueSchema = z.array(OcppMeterValueEntrySchema);
+
 const ChargingStationSchema = z.object({
   serialNumber: z.string().min(1).optional(),
 });
@@ -391,11 +403,8 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
   }
 
   private ingestMeterPayload(session: ChargePointSession, payload: Record<string, unknown>): void {
-    const meterValue = payload.meterValue as
-      | { sampledValue: { value: number | string; measurand?: string; unit?: string }[] }[]
-      | undefined;
-    if (!meterValue) return;
-    this.applySampledValues(session, meterValue);
+    if (payload.meterValue === undefined) return;
+    this.applySampledValues(session, payload.meterValue);
   }
 
   private ingestTransactionPayload(
@@ -407,11 +416,8 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
       session.transactionId = transactionInfo.data.transactionId;
     }
 
-    const meterValue = payload.meterValue as
-      | { sampledValue: { value: number | string; measurand?: string; unit?: string }[] }[]
-      | undefined;
-    if (meterValue) {
-      this.applySampledValues(session, meterValue);
+    if (payload.meterValue !== undefined) {
+      this.applySampledValues(session, payload.meterValue);
     }
     if (payload.eventType === 'Ended') {
       session.transactionId = undefined;
@@ -693,11 +699,11 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
     return this.sendOutboundCall(ws, 'RequestStopTransaction', { transactionId });
   }
 
-  private applySampledValues(
-    session: ChargePointSession,
-    meterValue: { sampledValue: { value: number | string; measurand?: string; unit?: string }[] }[],
-  ): void {
-    for (const mv of meterValue) {
+  private applySampledValues(session: ChargePointSession, meterValue: unknown): void {
+    const parsed = OcppMeterValueSchema.safeParse(meterValue);
+    if (!parsed.success) return;
+
+    for (const mv of parsed.data) {
       for (const sv of mv.sampledValue) {
         const value = Number(sv.value);
         if (!Number.isFinite(value)) continue;

@@ -549,8 +549,16 @@ export class OpenEMSProtocolAdapter implements IProtocolAdapter, IProtocolComman
         break;
       }
       case 'SET_GRID_LIMIT': {
+        if (gridLimitKw === undefined) {
+          return {
+            handled: true,
+            success: false,
+            adapterId: this.id,
+            error: 'Internal error: grid limit not validated',
+          };
+        }
         ok = await this.updateSafeComponentConfig(this.peakShavingControllerId, [
-          { name: 'peakShavingPower', value: (gridLimitKw ?? 0) * 1000 },
+          { name: 'peakShavingPower', value: gridLimitKw * 1000 },
         ]);
         break;
       }

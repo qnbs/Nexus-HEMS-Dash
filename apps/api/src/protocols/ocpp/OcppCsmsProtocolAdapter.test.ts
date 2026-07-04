@@ -9,6 +9,43 @@ import {
   OcppCsmsProtocolAdapter,
 } from './OcppCsmsProtocolAdapter.js';
 
+type OcppOutboundCall = [2, string, string, Record<string, unknown>];
+
+interface OcppChargingProfilePayload {
+  chargingProfilePurpose: string;
+  transactionId?: string;
+  chargingSchedule: Array<{
+    chargingRateUnit: string;
+    chargingSchedulePeriod: Array<{ limit: number }>;
+  }>;
+}
+
+function parseOutboundCall(data: WebSocket.RawData): OcppOutboundCall {
+  return JSON.parse(String(data)) as OcppOutboundCall;
+}
+
+function chargingProfileFromCall(msg: OcppOutboundCall): OcppChargingProfilePayload {
+  return msg[3].chargingProfile as OcppChargingProfilePayload;
+}
+
+async function expectNoSetChargingProfile(
+  client: WebSocket,
+  action: () => Promise<void>,
+): Promise<void> {
+  const outboundActions: string[] = [];
+  const listener = (data: WebSocket.RawData) => {
+    const msg = parseOutboundCall(data);
+    if (msg[0] === 2 && msg[2] === 'SetChargingProfile') {
+      outboundActions.push(msg[2]);
+    }
+  };
+  client.on('message', listener);
+  await action();
+  await new Promise((resolve) => setTimeout(resolve, 20));
+  client.off('message', listener);
+  expect(outboundActions).toHaveLength(0);
+}
+
 async function connectChargePoint(port: number, cpId: string): Promise<WebSocket> {
   const client = new WebSocket(`ws://127.0.0.1:${port}/${cpId}`, 'ocpp2.0.1');
   await new Promise<void>((resolve, reject) => {
@@ -221,11 +258,9 @@ describe('OcppCsmsProtocolAdapter', () => {
     const result = await adapter.sendCommand({ type: 'SET_EV_CURRENT', value: 16 });
     expect(result.success).toBe(true);
 
-    const msg = (await outbound) as [number, string, string, Record<string, unknown>];
+    const msg = (await outbound) as OcppOutboundCall;
     expect(msg[2]).toBe('SetChargingProfile');
-    const schedule = (
-      msg[3].chargingProfile as { chargingSchedule: { chargingRateUnit: string }[] }
-    ).chargingSchedule[0];
+    const schedule = chargingProfileFromCall(msg).chargingSchedule[0];
     expect(schedule?.chargingRateUnit).toBe('A');
     client.close();
   });
@@ -389,6 +424,31 @@ describe('OcppCsmsProtocolAdapter', () => {
     client.close();
   });
 
+  it('ignores malformed meterValue payloads without breaking TransactionEvent ACK', async () => {
+    const client = await connectChargePoint(boundPort, 'CP-BADMETER');
+    const callId = 'bad-meter-1';
+    client.send(
+      JSON.stringify([
+        2,
+        callId,
+        'TransactionEvent',
+        {
+          eventType: 'Updated',
+          meterValue: [{ sampledValue: 'not-an-array' }, null],
+        },
+      ]),
+    );
+
+    const ack = await new Promise<unknown>((resolve) => {
+      client.once('message', (data) => resolve(JSON.parse(String(data))));
+    });
+    expect(ack).toEqual([3, callId, {}]);
+
+    const health = await adapter.healthCheck();
+    expect(health.status).toBe('healthy');
+    client.close();
+  });
+
   it('rejects commands when multiple charge points are connected', async () => {
     const clientA = await connectChargePoint(boundPort, 'CP-MULTI-A');
     const clientB = await connectChargePoint(boundPort, 'CP-MULTI-B');
@@ -412,13 +472,9 @@ describe('OcppCsmsProtocolAdapter', () => {
     const result = await adapter.sendCommand({ type: 'SET_V2X_DISCHARGE', value: 4600 });
     expect(result).toEqual({ handled: true, success: true, adapterId: 'test-csms' });
 
-    const msg = (await outbound) as [number, string, string, Record<string, unknown>];
+    const msg = (await outbound) as OcppOutboundCall;
     expect(msg[2]).toBe('SetChargingProfile');
-    const profile = msg[3].chargingProfile as {
-      chargingProfilePurpose: string;
-      transactionId: string;
-      chargingSchedule: { chargingRateUnit: string; chargingSchedulePeriod: { limit: number }[] }[];
-    };
+    const profile = chargingProfileFromCall(msg);
     expect(profile.chargingProfilePurpose).toBe('TxProfile');
     expect(profile.transactionId).toBe('tx-v2g-1');
     expect(profile.chargingSchedule[0]?.chargingRateUnit).toBe('A');
@@ -431,9 +487,11 @@ describe('OcppCsmsProtocolAdapter', () => {
     const client = await connectChargePoint(boundPort, 'CP-V2G-NOTX');
     await seedSoc(client, 50);
 
-    const result = await adapter.sendCommand({ type: 'SET_V2X_DISCHARGE', value: 3000 });
-    expect(result.success).toBe(false);
-    expect(result.error).toContain('No active transaction');
+    await expectNoSetChargingProfile(client, async () => {
+      const result = await adapter.sendCommand({ type: 'SET_V2X_DISCHARGE', value: 3000 });
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('No active transaction');
+    });
 
     client.close();
   });
@@ -442,9 +500,11 @@ describe('OcppCsmsProtocolAdapter', () => {
     const client = await connectChargePoint(boundPort, 'CP-V2G-BAD');
     await seedSoc(client, 150, 230, { transactionId: 'tx-bad-soc' });
 
-    const result = await adapter.sendCommand({ type: 'SET_V2X_DISCHARGE', value: 3000 });
-    expect(result.success).toBe(false);
-    expect(result.error).toContain('SOC below minimum');
+    await expectNoSetChargingProfile(client, async () => {
+      const result = await adapter.sendCommand({ type: 'SET_V2X_DISCHARGE', value: 3000 });
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('SOC below minimum');
+    });
 
     client.close();
   });
@@ -453,9 +513,11 @@ describe('OcppCsmsProtocolAdapter', () => {
     const client = await connectChargePoint(boundPort, 'CP-V2G-LOW');
     await seedSoc(client, 10);
 
-    const result = await adapter.sendCommand({ type: 'SET_V2X_DISCHARGE', value: 3000 });
-    expect(result.success).toBe(false);
-    expect(result.error).toContain('SOC below minimum');
+    await expectNoSetChargingProfile(client, async () => {
+      const result = await adapter.sendCommand({ type: 'SET_V2X_DISCHARGE', value: 3000 });
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('SOC below minimum');
+    });
 
     client.close();
   });
@@ -463,9 +525,11 @@ describe('OcppCsmsProtocolAdapter', () => {
   it('blocks SET_V2X_DISCHARGE when SOC is unknown', async () => {
     const client = await connectChargePoint(boundPort, 'CP-V2G-UNK');
 
-    const result = await adapter.sendCommand({ type: 'SET_V2X_DISCHARGE', value: 3000 });
-    expect(result.success).toBe(false);
-    expect(result.error).toContain('SOC below minimum');
+    await expectNoSetChargingProfile(client, async () => {
+      const result = await adapter.sendCommand({ type: 'SET_V2X_DISCHARGE', value: 3000 });
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('SOC below minimum');
+    });
 
     client.close();
   });
@@ -480,13 +544,10 @@ describe('OcppCsmsProtocolAdapter', () => {
     const result = await adapter.sendCommand({ type: 'SET_GRID_LIMIT', value: 4200 });
     expect(result.success).toBe(true);
 
-    const msg = (await outbound) as [number, string, string, Record<string, unknown>];
+    const msg = (await outbound) as OcppOutboundCall;
     expect(msg[2]).toBe('SetChargingProfile');
     expect(msg[3].evseId).toBe(0);
-    const profile = msg[3].chargingProfile as {
-      chargingProfilePurpose: string;
-      chargingSchedule: { chargingRateUnit: string; chargingSchedulePeriod: { limit: number }[] }[];
-    };
+    const profile = chargingProfileFromCall(msg);
     expect(profile.chargingProfilePurpose).toBe('ChargingStationMaxProfile');
     expect(profile.chargingSchedule[0]?.chargingRateUnit).toBe('W');
     expect(profile.chargingSchedule[0]?.chargingSchedulePeriod[0]?.limit).toBe(4200);
