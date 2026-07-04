@@ -54,6 +54,13 @@ ingress:
   tls:
     secretName: nexus-hems-tls
 
+# ─── Frontend (nginx) ────────────────────────────────────────────────
+frontend:
+  # CSP connect-src WebSocket origins (space-separated ws:// or wss:// URLs).
+  # Validated at container start by docker-entrypoint.sh (MED-03).
+  # When empty, defaults to wss://<ingress.host> at render time.
+  wsOrigins: ''
+
 # ─── Resources ───────────────────────────────────────────────────────
 resources:
   frontend:

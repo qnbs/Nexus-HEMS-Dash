@@ -53,6 +53,24 @@
         }
       },
       "required": ["trustedRegistries", "frontend", "server"]
+    },
+    "frontend": {
+      "type": "object",
+      "properties": {
+        "wsOrigins": {
+          "type": "string",
+          "description": "Space-separated ws:// or wss:// origins for CSP connect-src. Empty defaults to wss://ingress.host."
+        }
+      }
+    },
+    "ingress": {
+      "type": "object",
+      "properties": {
+        "host": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
     }
   }
 }

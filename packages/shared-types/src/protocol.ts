@@ -193,9 +193,100 @@ export const WSCommandTypeSchema = z.enum([
 
 export type WSCommandType = z.infer<typeof WSCommandTypeSchema>;
 
+/** MED-08 residential power cap — aligns with frontend command-safety.ts */
+const MAX_POWER_W = 25_000;
+const MAX_HP_POWER_W = 15_000;
+const MAX_EV_CURRENT_A = 80;
+
+const BatteryModeWsValueSchema = z.union([
+  z.literal('charge'),
+  z.literal('discharge'),
+  z.literal('self-consumption'),
+  z.literal('force-charge'),
+  z.literal('time-of-use'),
+  z.literal('auto'),
+  z.number().finite(),
+]);
+
+type WsCommandValue = number | string | boolean;
+type WsRejectFn = (message: string) => void;
+
+function validateNonNegativePower(
+  label: string,
+  value: WsCommandValue,
+  maxW: number,
+  reject: WsRejectFn,
+): void {
+  if (typeof value !== 'number') {
+    reject(`${label} requires a numeric value`);
+    return;
+  }
+  if (value < 0 || value > maxW) {
+    reject(`${label} requires a value between 0 and ${maxW}`);
+  }
+}
+
+function refineWsCommandValue(
+  type: WSCommandType,
+  value: WsCommandValue,
+  reject: WsRejectFn,
+): void {
+  switch (type) {
+    case 'SET_EV_POWER':
+    case 'SET_V2X_DISCHARGE':
+    case 'SET_GRID_LIMIT':
+      validateNonNegativePower(type, value, MAX_POWER_W, reject);
+      return;
+    case 'SET_EV_CURRENT':
+      validateNonNegativePower('SET_EV_CURRENT', value, MAX_EV_CURRENT_A, reject);
+      return;
+    case 'SET_HEAT_PUMP_POWER':
+      validateNonNegativePower('SET_HEAT_PUMP_POWER', value, MAX_HP_POWER_W, reject);
+      return;
+    case 'SET_BATTERY_POWER':
+      if (typeof value !== 'number') {
+        reject('SET_BATTERY_POWER requires a numeric value');
+        return;
+      }
+      if (value < -MAX_POWER_W || value > MAX_POWER_W) {
+        reject(`SET_BATTERY_POWER requires a value between -${MAX_POWER_W} and ${MAX_POWER_W}`);
+      }
+      return;
+    case 'SET_HEAT_PUMP_MODE':
+      if (typeof value !== 'number' || value < 1 || value > 4) {
+        reject('SET_HEAT_PUMP_MODE requires a finite SG Ready mode between 1 and 4');
+      }
+      return;
+    case 'SET_BATTERY_MODE':
+      if (!BatteryModeWsValueSchema.safeParse(value).success) {
+        reject('SET_BATTERY_MODE requires a supported mode string or number');
+      }
+      return;
+    case 'KNX_SET_TEMPERATURE':
+      if (typeof value !== 'number' || value < 5 || value > 35) {
+        reject('KNX_SET_TEMPERATURE requires a temperature between 5 and 35');
+      }
+      return;
+    case 'KNX_TOGGLE_LIGHTS':
+    case 'KNX_TOGGLE_WINDOW':
+      if (typeof value !== 'boolean') {
+        reject(`${type} requires a boolean value`);
+      }
+      return;
+    case 'START_CHARGING':
+    case 'STOP_CHARGING':
+      if (typeof value !== 'boolean' && typeof value !== 'number') {
+        reject(`${type} requires a boolean or numeric value`);
+      }
+      return;
+    default:
+      break;
+  }
+}
+
 /**
  * Base WS command schema. All commands must have a `type` and `value`.
- * Value constraints are checked per-type after initial parsing.
+ * Per-type caps align with frontend `commandSchemas` (C5 post-audit).
  */
 export const WSCommandSchema = z
   .object({
@@ -203,51 +294,9 @@ export const WSCommandSchema = z
     value: z.union([z.number().finite(), z.string(), z.boolean()]),
   })
   .superRefine((cmd, ctx) => {
-    const v = cmd.value;
-
-    // Power-setting commands require a number
-    const powerTypes = new Set([
-      'SET_EV_POWER',
-      'SET_HEAT_PUMP_POWER',
-      'SET_EV_CURRENT',
-      'SET_V2X_DISCHARGE',
-      'SET_GRID_LIMIT',
-    ]);
-
-    if (powerTypes.has(cmd.type)) {
-      if (typeof v !== 'number') {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: `${cmd.type} requires a numeric value`,
-        });
-        return;
-      }
-      if (v < 0) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: `Negative value not allowed for ${cmd.type}`,
-        });
-        return;
-      }
-    }
-
-    // Battery power is bidirectional but capped
-    if (cmd.type === 'SET_BATTERY_POWER') {
-      if (typeof v !== 'number') {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: 'SET_BATTERY_POWER requires a numeric value',
-        });
-        return;
-      }
-    }
-
-    // MED-08: Safety cap reduced to 25 kW — aligns with §14a EnWG 4.2kW grid limit
-    // and realistic residential system sizes (10kW PV + 5kW battery + 11kW wallbox).
-    // A 50kW cap was unreachable for any certified residential hardware.
-    if (typeof v === 'number' && Math.abs(v) > 25_000) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Value exceeds safety limit (25 kW)' });
-    }
+    refineWsCommandValue(cmd.type, cmd.value, (message) => {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message });
+    });
   });
 
 export type WSCommand = z.infer<typeof WSCommandSchema>;

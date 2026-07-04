@@ -149,24 +149,31 @@ describe('EnergyDataSchema — property-based', () => {
 });
 
 describe('WSCommandSchema — property-based', () => {
-  // Valid SCREAM_CASE command types from WSCommandTypeSchema
-  const knownTypes = [
-    'KNX_TOGGLE_LIGHTS',
-    'KNX_SET_TEMPERATURE',
-    'KNX_TOGGLE_WINDOW',
-    'SET_BATTERY_MODE',
-    'START_CHARGING',
-    'STOP_CHARGING',
-  ] as const;
-
-  // Non-power commands that accept any boolean/string value
+  // Non-power commands with type-appropriate values
   it('accepts valid ws commands', () => {
     fc.assert(
       fc.property(
-        fc.record({
-          type: fc.constantFrom(...knownTypes),
-          value: fc.oneof(fc.boolean(), fc.constant('auto'), fc.constant('self-consumption')),
-        }),
+        fc.oneof(
+          fc.record({ type: fc.constant('KNX_TOGGLE_LIGHTS' as const), value: fc.boolean() }),
+          fc.record({ type: fc.constant('KNX_TOGGLE_WINDOW' as const), value: fc.boolean() }),
+          fc.record({
+            type: fc.constant('SET_BATTERY_MODE' as const),
+            value: fc.oneof(
+              fc.constant('auto'),
+              fc.constant('self-consumption'),
+              fc.constant('charge'),
+              fc.constant('discharge'),
+            ),
+          }),
+          fc.record({
+            type: fc.constant('START_CHARGING' as const),
+            value: fc.oneof(fc.boolean(), fc.integer()),
+          }),
+          fc.record({
+            type: fc.constant('STOP_CHARGING' as const),
+            value: fc.oneof(fc.boolean(), fc.integer()),
+          }),
+        ),
         (cmd) => {
           const result = WSCommandSchema.safeParse(cmd);
           return result.success;

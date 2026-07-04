@@ -1,7 +1,7 @@
 # Feature Status — Nexus-HEMS-Dash
 
 **Version:** 1.9.0 shipped (2026-07-02)  
-**Last updated:** 2026-07-04 (post-audit phase 7 — OCPP CSMS V2G discharge + §14a grid limit)  
+**Last updated:** 2026-07-04 (post-audit phase 8 — Helm WS_ORIGINS + WSCommandSchema hardening)  
 **Purpose:** Single source of truth for what is actually implemented, partial, or planned. Use this file to keep README/marketing claims synchronized with the codebase.
 
 > **Rule:** Any PR that changes a feature's implementation status must update this file and the relevant docs before merging.
@@ -112,7 +112,7 @@
 | :------ | :----- | :--------------- |
 | Unit tests (web) | ✅ | 55+ test files; v1.3.x campaign added `settings-tabs` (21), `adapter-worker-target` (12), `hardware-registry` (11), `use-safe-command` (3); #194 added contrib-adapter tests |
 | Unit tests (api) | ✅ | 10+ test files |
-| E2E tests (Playwright) | ⚠️ | 13 spec files: includes `backend-websocket-live` (+ existing 12). WS consumer gated by `VITE_BACKEND_WS` build flag. |
+| E2E tests (Playwright) | ✅ | 13 spec files including `auth-jwt`, `read-only-commands`, `adapter-mode-indicators`, `backend-websocket-live`, `safety-indicators` (post-audit C2) |
 | Fuzz/property tests | ✅ | `apps/web/src/tests/security-fuzz.test.ts` |
 | i18n parity test | ✅ | `apps/web/src/tests/i18n-sync.test.ts` |
 | Coverage gates | ✅ | Web vitest + PRF-03 baseline: **78/72/70/80** (statements/branches/functions/lines). API: **55/46/62/55**. See `apps/web/coverage-baseline.json`, `vitest.config.ts`. |
@@ -127,7 +127,7 @@
 | :------ | :----- | :--------------- |
 | Docker frontend image | ✅ | `Dockerfile` |
 | Docker server image | ✅ | `Dockerfile.server` |
-| Helm chart | ✅ | `helm/nexus-hems/` |
+| Helm chart | ✅ | `helm/nexus-hems/` — frontend `WS_ORIGINS` via `frontend.wsOrigins` (defaults to `wss://<ingress.host>`, Phase 8) |
 | GitHub Pages deploy | ✅ | `.github/workflows/deploy.yml` |
 | Automated container registry push | ✅ | `container-publish.yml` — GHCR push + Grype gate + cosign sign on tag/main |
 | Automated Helm chart lint in CI | ✅ | `ci.yml` `helm-chart` job — `helm lint` + `helm template` smoke |

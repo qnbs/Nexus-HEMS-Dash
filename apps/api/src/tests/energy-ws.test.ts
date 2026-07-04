@@ -24,6 +24,26 @@ describe('validateWSCommand', () => {
     expect(result.valid).toBe(true);
   });
 
+  it('rejects SET_EV_CURRENT above 80 A', () => {
+    const result = validateWSCommand({ type: 'SET_EV_CURRENT', value: 81 });
+    expect(result.valid).toBe(false);
+  });
+
+  it('rejects SET_HEAT_PUMP_MODE outside SG Ready 1–4', () => {
+    const result = validateWSCommand({ type: 'SET_HEAT_PUMP_MODE', value: 0 });
+    expect(result.valid).toBe(false);
+  });
+
+  it('rejects KNX_SET_TEMPERATURE outside 5–35 °C', () => {
+    const result = validateWSCommand({ type: 'KNX_SET_TEMPERATURE', value: 2 });
+    expect(result.valid).toBe(false);
+  });
+
+  it('rejects non-boolean KNX_TOGGLE_LIGHTS', () => {
+    const result = validateWSCommand({ type: 'KNX_TOGGLE_LIGHTS', value: 'on' });
+    expect(result.valid).toBe(false);
+  });
+
   it('rejects commands with invalid shape', () => {
     const result = validateWSCommand({ type: 123, value: 'nope' });
     expect(result.valid).toBe(false);

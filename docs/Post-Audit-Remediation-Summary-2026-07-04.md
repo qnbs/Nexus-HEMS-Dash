@@ -39,25 +39,15 @@ The project is in **strong shape** for a safety-conscious HEMS dashboard: mock-b
 
 **Evidence:** `apps/api/src/protocols/index.ts` registers backend adapters including Home Assistant under `apps/api/src/protocols/homeassistant/`.
 
-**Plan:** Phase 1 — `HomeAssistantProtocolAdapter` (shipped). Phase 2 — `Zigbee2MQTTProtocolAdapter` + `MatterProtocolAdapter` (shipped). Phase 3 — HA MQTT-broker mode (shipped). Phase 4 — WebSocket live E2E (shipped). Phase 5 — `ProtocolCommandRouter` + OCPP/OpenEMS/HA WS EV commands (shipped). Phase 6 — HA MQTT service publish + OpenEMS battery/heat-pump/grid writes (shipped). Phase 7 — OCPP `SET_V2X_DISCHARGE` + `SET_GRID_LIMIT` (shipped). Full ISO 15118 BPT negotiation deferred.
+**Plan:** Phase 1–7 shipped (see C1). Phase 8 — Helm `WS_ORIGINS`, `WSCommandSchema` hardening, doc sync (shipped). E2E gaps closed (13 Playwright specs). Capacitor CSP sync deferred.
 
 ---
 
 ### C2 — E2E test coverage gaps
 
-**Current:** 8 Playwright specs (`accessibility`, `command-hub-energy-flow`, `eebus-pairing`, `header-fixed`, `ocpp-charging-sankey`, `pwa-offline`, `settings-navigation`, `user-flow`).
+**Current:** 13 Playwright specs (`accessibility`, `auth-jwt`, `adapter-mode-indicators`, `backend-websocket-live`, `command-hub-energy-flow`, `eebus-pairing`, `header-fixed`, `ocpp-charging-sankey`, `pwa-offline`, `read-only-commands`, `safety-indicators`, `settings-navigation`, `user-flow`).
 
-**Missing (per FEATURE_STATUS + audit):** auth flows, command-safety rejection paths, adapter live/mock switching, WebSocket handling, read-only enforcement.
-
-**Remediation (phase 2, post-PR #261):** `read-only-commands.spec.ts`, `adapter-mode-indicators.spec.ts`, `auth-jwt.spec.ts`.
-
-**Remediation (phase 3, post-PR #262):** `Zigbee2MQTTProtocolAdapter`, `MatterProtocolAdapter` backend MVP.
-
-**Remediation (phase 4, post-PR #263):** `HomeAssistantMqttProtocolAdapter`, `backend-websocket-live.spec.ts` (+ `VITE_BACKEND_WS` CI build flag).
-
-**Remediation (phase 5, post-PR #264):** `ProtocolCommandRouter`, OCPP CSMS outbound EV commands, OpenEMS `updateComponentConfig` EV writes, HA WS `call_service` wallbox commands; `energy.ws.ts` live-mode dispatch.
-
-**Plan:** HA MQTT service publish (shipped Phase 6); OpenEMS battery/heat-pump writes (shipped Phase 6); OCPP V2G/grid-limit profiles (shipped Phase 7).
+**Status:** ✅ Shipped — post-audit specs cover auth, read-only enforcement, adapter mode indicators, and backend WS consumer.
 
 ---
 
@@ -65,12 +55,10 @@ The project is in **strong shape** for a safety-conscious HEMS dashboard: mock-b
 
 | Doc | Drift risk | Action |
 |-----|-----------|--------|
-| `FEATURE_STATUS.md` | Last updated 2026-07-03; PR #260 landed 2026-07-04 | Update dates + settings/help remediation notes |
-| `Technical-Debt-Registry.md` | Helmet fallback description stale | Fix DOC-03 row (fail-closed, not unsafe-inline fallback) |
-| `README.md` protocol matrix | Mostly accurate | Cross-check contrib backend ⏳ rows quarterly |
+| `FEATURE_STATUS.md` | Updated Phase 8 | ✅ |
+| `Technical-Debt-Registry.md` | AUD-02 Helmet fallback | ✅ Fixed (fail-closed, not unsafe-inline) |
+| `README.md` protocol matrix | Mostly accurate | Cross-check quarterly |
 | `CHANGELOG.md` | Manual release | Next release entry when tagging |
-
-**Rule enforced:** PRs changing feature status must update `FEATURE_STATUS.md` (already documented in file header).
 
 ---
 
@@ -82,33 +70,21 @@ The project is in **strong shape** for a safety-conscious HEMS dashboard: mock-b
 | Express Helmet | ✅ | Fail-closed without nonce (`csp-nonce.ts`) |
 | Docker `Dockerfile` (frontend) | ✅ | `docker-entrypoint.sh` extracts nonce + validates `WS_ORIGINS` |
 | Tauri | ✅ | `sync-tauri-csp.ts` + `tauri-csp.test.ts` |
-| `docker-compose.prod.yml` | ✅ **Fixed this audit** | Now builds hardened `Dockerfile` instead of raw `nginx.conf` mount |
-| nginx API proxy | ✅ **Added** | `/api/`, `/ws`, `/metrics` → `api:3000` for full-stack compose |
-| Helm frontend | ⚠️ | No `WS_ORIGINS` in chart values — uses image default |
-| Capacitor | ⚠️ | Meta CSP only; no platform-specific sync |
+| `docker-compose.prod.yml` | ✅ | Hardened `Dockerfile` |
+| nginx API proxy | ✅ | `/api/`, `/ws`, `/metrics` → `api:3000` |
+| Helm frontend | ✅ | `frontend.wsOrigins` env → `WS_ORIGINS` (Phase 8); defaults to `wss://<ingress.host>` |
+| Capacitor | ⚠️ | Meta CSP only; platform-specific sync deferred |
 
 ---
 
 ### C5 — Command path safety (scope, rate limit, audit, read-only)
 
-**Strong paths:**
-
-- Frontend: `command-safety.ts` → `BaseAdapter.sendCommand` (Zod, 30/min, IndexedDB audit)
-- Backend WS: `energy.ws.ts` — rate → schema → scope → read-only → NDJSON audit
-- Exec: `ExecService` respects `READ_ONLY_MODE`
-
-**Gaps closed this audit:**
-
-1. ✅ `POST /api/modbus/write` now rejects when `READ_ONLY_MODE=true`
-2. ✅ `/api/health` exposes `readOnly: boolean`
-3. ✅ Frontend polls `readOnly` at runtime (no longer build-time only)
-
 **Remaining gaps:**
 
 - ~~OCPP/EEBUS proxy relays lack `isReadOnlyMode()` guard~~ (shipped: `proxy-readonly-guard.ts`)
-- `WSCommandSchema` weaker than frontend `commandSchemas` (caps, enums)
-- Split audit trails (IndexedDB vs NDJSON) — no unified view
-- Dev mode disables JWT scope on REST (`auth.ts`)
+- ~~`WSCommandSchema` weaker than frontend `commandSchemas`~~ (shipped Phase 8 — per-type caps in `protocol.ts`)
+- Split audit trails (IndexedDB vs NDJSON) — deferred (no unified view)
+- Dev mode disables JWT scope on REST (`auth.ts`) — documented; deferred
 
 ---
 
@@ -168,7 +144,7 @@ pnpm --filter @nexus-hems/web exec playwright test tests/e2e/safety-indicators.s
 |-----------|--------|
 | Critical items completed or documented with plan | ✅ This document + partial fixes |
 | Documentation in sync with code | ✅ Complete — FEATURE_STATUS updated in this branch |
-| Test coverage improved on critical paths | 🔄 Started (read-only + E2E safety) |
+| Test coverage improved on critical paths | ✅ E2E + WSCommandSchema hardening (Phase 8) |
 | Security scans green | ✅ |
 | Production-ready with hardware safeguards | ✅ Mock default; read-only hardened |
 | Maintainable, documented codebase | ✅ Strong; debt registry maintained |

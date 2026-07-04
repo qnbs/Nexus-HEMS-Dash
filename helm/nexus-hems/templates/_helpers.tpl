@@ -68,3 +68,15 @@ Build a validated image reference.
 {{- printf "%s:%s" $image.repository ($image.tag | default .chartAppVersion) -}}
 {{- end -}}
 {{- end }}
+
+{{/*
+Frontend CSP connect-src WebSocket origins for docker-entrypoint.sh / nginx envsubst.
+Defaults to wss://<ingress.host> when frontend.wsOrigins is empty.
+*/}}
+{{- define "nexus-hems.frontendWsOrigins" -}}
+{{- if .Values.frontend.wsOrigins -}}
+{{- .Values.frontend.wsOrigins -}}
+{{- else -}}
+{{- printf "wss://%s" .Values.ingress.host -}}
+{{- end -}}
+{{- end }}

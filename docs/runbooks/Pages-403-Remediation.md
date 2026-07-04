@@ -81,8 +81,9 @@ GH_PAGER=cat PAGER=cat gh api --paginate "repos/${REPO}/deployments?environment=
 - Builds `apps/web/dist` with `pnpm build` (`NODE_ENV=production`)
 - Uploads via `actions/upload-pages-artifact@v5`
 - Deploys with `actions/deploy-pages@v4` to environment `github-pages`
-- Retries once after 45 s on failure
-- Prunes old deployments (keeps newest 10)
+- Prunes stale deployments **before** publish (keeps newest 10)
+- Retries up to **two** times (45 s + 90 s backoff) on transient Pages API failures
+- Prunes again after deploy (keeps newest 10)
 - Job-level `permissions: pages: write, id-token: write`
 
 No change to `vite.config.ts` `base` is needed when only the root 403s — the Vite base path is already `/Nexus-HEMS-Dash/`.
