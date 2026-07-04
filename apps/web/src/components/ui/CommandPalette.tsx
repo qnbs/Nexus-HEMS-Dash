@@ -76,7 +76,7 @@ export function CommandPalette({
   // instead — the keyboard then appears only when the user taps the field.
   // Desktop (≥ lg) keeps input autofocus so Cmd/Ctrl+K → type works immediately.
   const autoFocusInput =
-    typeof window !== 'undefined' && window.matchMedia?.('(min-width: 1024px)').matches === true;
+    typeof window !== 'undefined' && !!window.matchMedia?.('(min-width: 1024px)').matches;
 
   // WCAG 2.1.2 / 2.4.3: trap Tab within the dialog, move focus in on open,
   // restore focus to the trigger on close, and close on Escape.
