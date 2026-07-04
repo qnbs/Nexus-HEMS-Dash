@@ -148,6 +148,7 @@ jobs:
         run: pnpm build
         env:
           VITE_E2E_TESTING: 'true'
+          VITE_BACKEND_WS: 'true'
           TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
           TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
 
@@ -183,6 +184,7 @@ jobs:
         run: pnpm size
         env:
           VITE_E2E_TESTING: 'true'
+          VITE_BACKEND_WS: 'true'
 
       # Production-build smoke test: loads the just-built dist/ in headless
       # Chromium and fails if React does not mount or a runtime error fires.
@@ -194,6 +196,7 @@ jobs:
         env:
           CI: 'true'
           VITE_E2E_TESTING: 'true'
+          VITE_BACKEND_WS: 'true'
 
       # SLSA Level 3 build-provenance: cryptographic attestation of every JS
       # asset produced from `main`. Verify with `gh attestation verify`.
@@ -248,7 +251,10 @@ jobs:
         run: pnpm --filter @nexus-hems/web exec playwright install-deps chromium
 
       - name: Run Playwright tests
-        run: pnpm test:e2e -- --project=chromium
+        # Invoke Playwright directly — dist/ is downloaded from the build job.
+        # Do not use `pnpm test:e2e` (turbo depends on `build` and can rebuild
+        # without VITE_BACKEND_WS, stripping the WS consumer from the preview bundle).
+        run: pnpm --filter @nexus-hems/web exec playwright test --project=chromium
         env:
           VITE_E2E_TESTING: 'true'
 

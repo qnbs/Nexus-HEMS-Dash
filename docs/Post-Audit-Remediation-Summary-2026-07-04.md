@@ -53,7 +53,9 @@ The project is in **strong shape** for a safety-conscious HEMS dashboard: mock-b
 
 **Remediation (phase 3, post-PR #262):** `Zigbee2MQTTProtocolAdapter`, `MatterProtocolAdapter` backend MVP.
 
-**Plan:** Add WebSocket live-integration spec; HA MQTT-broker mode in next phase.
+**Remediation (phase 4, post-PR #263):** `HomeAssistantMqttProtocolAdapter`, `backend-websocket-live.spec.ts` (+ `VITE_BACKEND_WS` CI build flag).
+
+**Plan:** HA service commands; deepen OpenEMS/OCPP CSMS command paths.
 
 ---
 

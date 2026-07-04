@@ -43,6 +43,68 @@ export async function gotoAndWaitForHealth(page: Page, path = './'): Promise<voi
 }
 
 /**
+ * Replace WebSocket with a controllable mock for backend WS consumer E2E tests.
+ * Requires `VITE_BACKEND_WS=true` at build time.
+ */
+export function setupMockBackendWebSocket(): void {
+  class MockWebSocket implements WebSocket {
+    static readonly CONNECTING = 0;
+    static readonly OPEN = 1;
+    static readonly CLOSING = 2;
+    static readonly CLOSED = 3;
+
+    readonly CONNECTING = MockWebSocket.CONNECTING;
+    readonly OPEN = MockWebSocket.OPEN;
+    readonly CLOSING = MockWebSocket.CLOSING;
+    readonly CLOSED = MockWebSocket.CLOSED;
+
+    binaryType: BinaryType = 'blob';
+    bufferedAmount = 0;
+    extensions = '';
+    protocol = '';
+    url: string;
+    readyState = MockWebSocket.CONNECTING;
+
+    onopen: ((this: WebSocket, ev: Event) => unknown) | null = null;
+    onmessage: ((this: WebSocket, ev: MessageEvent) => unknown) | null = null;
+    onerror: ((this: WebSocket, ev: Event) => unknown) | null = null;
+    onclose: ((this: WebSocket, ev: CloseEvent) => unknown) | null = null;
+
+    constructor(url: string | URL, _protocols?: string | string[]) {
+      this.url = typeof url === 'string' ? url : url.href;
+      (window as Window & { __mockBackendWs?: MockWebSocket }).__mockBackendWs = this;
+      setTimeout(() => {
+        this.readyState = MockWebSocket.OPEN;
+        this.onopen?.call(this, new Event('open'));
+      }, 0);
+    }
+
+    close(_code?: number, _reason?: string): void {
+      this.readyState = MockWebSocket.CLOSED;
+      this.onclose?.call(this, new CloseEvent('close'));
+    }
+
+    send(_data: string | ArrayBufferLike | Blob | ArrayBufferView): void {
+      /* consumer is receive-only for ENERGY_UPDATE */
+    }
+
+    addEventListener(): void {
+      /* E2E mock — handlers wired via on* properties */
+    }
+
+    removeEventListener(): void {
+      /* E2E mock */
+    }
+
+    dispatchEvent(): boolean {
+      return true;
+    }
+  }
+
+  window.WebSocket = MockWebSocket as unknown as typeof WebSocket;
+}
+
+/**
  * Shared E2E setup: seed the persisted store in localStorage.
  * Call this inside addInitScript() in every test's beforeEach.
  */

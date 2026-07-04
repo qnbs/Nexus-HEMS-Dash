@@ -394,15 +394,17 @@ export function createMatterAdapterFromEnv(
     .map((entry) => Number.parseInt(entry.trim(), 10))
     .filter((entry) => Number.isFinite(entry));
 
-  return new MatterProtocolAdapter({
+  const adapterConfig: MatterProtocolAdapterConfig = {
     id: env.MATTER_ADAPTER_ID?.trim() || 'matter-01',
     host,
     port: env.MATTER_BRIDGE_PORT ? Number(env.MATTER_BRIDGE_PORT) : 5580,
     tls: env.MATTER_BRIDGE_TLS === 'true',
     deviceId: env.MATTER_DEVICE_ID?.trim() || 'matter-site',
     nodeMappings: mappings,
-    ...(nodeIds && nodeIds.length > 0 ? { nodeIds } : {}),
-  });
+  };
+  if (nodeIds && nodeIds.length > 0) adapterConfig.nodeIds = nodeIds;
+
+  return new MatterProtocolAdapter(adapterConfig);
 }
 
 function writeToDLQ(entry: DLQEntry): void {

@@ -83,7 +83,7 @@ export class Zigbee2MQTTProtocolAdapter implements IProtocolAdapter {
   private readonly staticMap: Map<string, Z2mDeviceMapping>;
   private readonly heatPumpHints?: string[];
   private readonly evHints?: string[];
-  private readonly energyDevices: Set<string>;
+  private readonly configuredEnergyDevices: Set<string>;
   private readonly deviceState = new Map<string, DeviceRuntimeState>();
   private client: MqttClient | null = null;
   private connected = false;
@@ -104,7 +104,7 @@ export class Zigbee2MQTTProtocolAdapter implements IProtocolAdapter {
     );
     if (config.heatPumpHints) this.heatPumpHints = config.heatPumpHints;
     if (config.evHints) this.evHints = config.evHints;
-    this.energyDevices = new Set(config.energyDevices ?? []);
+    this.configuredEnergyDevices = new Set(config.energyDevices ?? []);
   }
 
   async connect(): Promise<void> {
@@ -231,11 +231,11 @@ export class Zigbee2MQTTProtocolAdapter implements IProtocolAdapter {
     this.client?.subscribe(`${base}/bridge/state`, { qos: 1 });
     this.client?.subscribe(`${base}/bridge/info`, { qos: 1 });
 
-    for (const device of this.energyDevices) {
+    for (const device of this.configuredEnergyDevices) {
       this.subscribeDevice(device);
     }
 
-    if (this.energyDevices.size === 0) {
+    if (this.configuredEnergyDevices.size === 0) {
       this.client?.subscribe(`${base}/+`, { qos: 1 });
       this.client?.subscribe(`${base}/+/availability`, { qos: 1 });
     }
@@ -247,7 +247,7 @@ export class Zigbee2MQTTProtocolAdapter implements IProtocolAdapter {
     this.client?.subscribe(`${base}/${friendlyName}/availability`, { qos: 1 });
   }
 
-  private handleMessage(topic: string, payload: Buffer, retained: boolean): void {
+  private handleMessage(topic: string, payload: Buffer, _retained: boolean): void {
     const base = this.config.baseTopic;
     const text = payload.toString('utf8');
 
@@ -270,7 +270,7 @@ export class Zigbee2MQTTProtocolAdapter implements IProtocolAdapter {
     const friendlyName = relative.split('/')[0];
     if (!friendlyName) return;
 
-    if (retained && !this.energyDevices.has(friendlyName) && this.energyDevices.size > 0) {
+    if (this.configuredEnergyDevices.size > 0 && !this.configuredEnergyDevices.has(friendlyName)) {
       return;
     }
 
@@ -289,7 +289,12 @@ export class Zigbee2MQTTProtocolAdapter implements IProtocolAdapter {
 
     for (const device of devices) {
       if (device.type === 'Coordinator') continue;
-      if (this.energyDevices.size > 0 && !this.energyDevices.has(device.friendly_name)) continue;
+      if (
+        this.configuredEnergyDevices.size > 0 &&
+        !this.configuredEnergyDevices.has(device.friendly_name)
+      ) {
+        continue;
+      }
       if (!hasZ2mEnergyExpose(device)) continue;
 
       const role = resolveZ2mDeviceRole(
@@ -306,7 +311,6 @@ export class Zigbee2MQTTProtocolAdapter implements IProtocolAdapter {
         role,
         device,
       });
-      this.energyDevices.add(device.friendly_name);
       this.subscribeDevice(device.friendly_name);
     }
   }
