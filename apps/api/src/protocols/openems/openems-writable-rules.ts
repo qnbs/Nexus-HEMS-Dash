@@ -34,7 +34,7 @@ export const OPENEMS_WRITABLE_COMPONENT_RULES: readonly OpenEMSWritableComponent
     allowedProperties: ['enabledCharging'],
   },
   {
-    idPattern: /^ctrl[A-Za-z0-9._-]+$/,
+    idPattern: /^ctrlIoHeatPumpSgReady\d+$/,
     factoryId: 'Controller.Io.HeatPump.SgReady',
     allowedProperties: ['mode'],
   },
@@ -60,10 +60,6 @@ export function sanitizePropertyValue(value: unknown): number | string | boolean
 export function getWritablePropertyAllowlist(componentId: string): Set<string> | null {
   for (const rule of OPENEMS_WRITABLE_COMPONENT_RULES) {
     if (!rule.idPattern.test(componentId)) continue;
-    if (rule.factoryId) {
-      // Backend MVP has no live component discovery — factoryId rules apply by id pattern only.
-      if (!componentId.startsWith('ctrl')) continue;
-    }
     return new Set(rule.allowedProperties);
   }
   return null;

@@ -185,6 +185,7 @@ describe('checkScopeAuthorization', () => {
 describe('handleWsCommand', () => {
   const originalReadOnly = process.env.READ_ONLY_MODE;
   const originalAdapterMode = process.env.ADAPTER_MODE;
+  const originalAllowLive = process.env.ALLOW_LIVE_HARDWARE;
   const mockedDispatch = vi.mocked(dispatchProtocolCommand);
 
   function mockWs(): WebSocket & { sent: unknown[] } {
@@ -201,6 +202,8 @@ describe('handleWsCommand', () => {
     else process.env.READ_ONLY_MODE = originalReadOnly;
     if (originalAdapterMode === undefined) delete process.env.ADAPTER_MODE;
     else process.env.ADAPTER_MODE = originalAdapterMode;
+    if (originalAllowLive === undefined) delete process.env.ALLOW_LIVE_HARDWARE;
+    else process.env.ALLOW_LIVE_HARDWARE = originalAllowLive;
     mockedDispatch.mockReset();
   });
 
@@ -283,7 +286,7 @@ describe('handleWsCommand', () => {
     });
   });
 
-  it('returns ERROR in live mode when protocol dispatch fails', async () => {
+  it('records rejected_dispatch outcome when protocol dispatch fails', async () => {
     delete process.env.READ_ONLY_MODE;
     process.env.ADAPTER_MODE = 'live';
     process.env.ALLOW_LIVE_HARDWARE = 'true';

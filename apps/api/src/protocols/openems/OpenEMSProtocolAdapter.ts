@@ -429,13 +429,38 @@ export class OpenEMSProtocolAdapter implements IProtocolAdapter, IProtocolComman
     let ok = false;
 
     switch (command.type) {
-      case 'SET_EV_POWER':
+      case 'SET_EV_POWER': {
+        if (
+          typeof command.value !== 'number' ||
+          !Number.isFinite(command.value) ||
+          command.value < 0
+        ) {
+          return {
+            handled: true,
+            success: false,
+            adapterId: this.id,
+            error: 'SET_EV_POWER requires a non-negative number',
+          };
+        }
         ok = await this.updateSafeComponentConfig(this.evcsComponentId, [
-          { name: 'setChargePowerLimit', value: Number(command.value) },
+          { name: 'setChargePowerLimit', value: command.value },
         ]);
         break;
+      }
       case 'SET_EV_CURRENT': {
-        const power = Number(command.value) * 230 * 3;
+        if (
+          typeof command.value !== 'number' ||
+          !Number.isFinite(command.value) ||
+          command.value < 0
+        ) {
+          return {
+            handled: true,
+            success: false,
+            adapterId: this.id,
+            error: 'SET_EV_CURRENT requires a non-negative number',
+          };
+        }
+        const power = command.value * 230 * 3;
         ok = await this.updateSafeComponentConfig(this.evcsComponentId, [
           { name: 'setChargePowerLimit', value: power },
         ]);

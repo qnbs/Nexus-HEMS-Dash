@@ -255,4 +255,24 @@ describe('OpenEMSProtocolAdapter', () => {
     const result = await adapter.sendCommand({ type: 'SET_EV_POWER', value: 1000 });
     expect(result.success).toBe(false);
   });
+
+  it('rejects invalid SET_EV_POWER values before RPC', async () => {
+    await adapter.connect();
+    const result = await adapter.sendCommand({
+      type: 'SET_EV_POWER',
+      value: 'bad' as unknown as number,
+    });
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('non-negative number');
+  });
+
+  it('rejects invalid SET_EV_CURRENT values before RPC', async () => {
+    await adapter.connect();
+    const result = await adapter.sendCommand({
+      type: 'SET_EV_CURRENT',
+      value: Number.NaN,
+    });
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('non-negative number');
+  });
 });

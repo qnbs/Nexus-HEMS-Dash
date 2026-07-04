@@ -36,4 +36,10 @@ describe('openems-writable-rules', () => {
     ]);
     expect(safe).toEqual([{ name: 'setChargePowerLimit', value: 11000 }]);
   });
+
+  it('allows only ctrlIoHeatPumpSgReady components for SgReady writes', () => {
+    expect(getWritablePropertyAllowlist('ctrlIoHeatPumpSgReady0')?.has('mode')).toBe(true);
+    expect(getWritablePropertyAllowlist('ctrlEssFixActivePower0')).not.toBeNull();
+    expect(getWritablePropertyAllowlist('ctrlHeatPump0')).toBeNull();
+  });
 });

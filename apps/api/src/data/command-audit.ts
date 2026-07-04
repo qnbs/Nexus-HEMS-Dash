@@ -26,6 +26,7 @@ const MAX_BYTES = 10 * 1024 * 1024; // 10 MB
 export type CommandOutcome =
   | 'accepted'
   | 'rejected_validation'
+  | 'rejected_dispatch'
   | 'rejected_scope'
   | 'rejected_ratelimit'
   | 'rejected_readonly';

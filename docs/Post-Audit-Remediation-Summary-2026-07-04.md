@@ -33,11 +33,11 @@ The project is in **strong shape** for a safety-conscious HEMS dashboard: mock-b
 | Home Assistant MQTT | ✅ contrib | ⚠️ **Phase 1 MVP** (`HomeAssistantProtocolAdapter`) | ha-ws-api read-only telemetry shipped; Zigbee2MQTT/Matter **Phase 1 MVP** shipped; HA MQTT-broker mode + service commands deferred. |
 | Zigbee2MQTT | ✅ contrib | ⚠️ **Phase 1 MVP** (`Zigbee2MQTTProtocolAdapter`) | mqtt.js read-only telemetry + bridge auto-discovery. |
 | Matter/Thread | ✅ contrib | ⚠️ **Phase 1 MVP** (`MatterProtocolAdapter`) | WS controller read-only telemetry (EPM/EEM/ElectricalMeasurement). |
-| OpenEMS | ✅ | ⚠️ EV writes shipped (Phase 5); battery/heat-pump writes deferred |
-| OCPP CSMS gateway | ✅ | ⚠️ SP0 inbound + outbound EV commands (Phase 5); V2G/BPT deferred |
+| OpenEMS | ✅ | ⚠️ | EV writes shipped (Phase 5); battery/heat-pump writes deferred |
+| OCPP CSMS gateway | ✅ | ⚠️ | SP0 inbound + outbound EV commands (Phase 5); V2G/BPT deferred |
 | OCPP SP3 mTLS proxy | ✅ browser | ✅ `/api/ocpp/proxy-session` + `/ws/ocpp` | Shipped; CRL/OCSP stored but not enforced in relay |
 
-**Evidence:** `apps/api/src/protocols/index.ts` registers 8 adapters; no `homeassistant` under `apps/api/src/protocols/`.
+**Evidence:** `apps/api/src/protocols/index.ts` registers backend adapters including Home Assistant under `apps/api/src/protocols/homeassistant/`.
 
 **Plan:** Phase 1 — `HomeAssistantProtocolAdapter` (shipped). Phase 2 — `Zigbee2MQTTProtocolAdapter` + `MatterProtocolAdapter` (shipped). Phase 3 — HA MQTT-broker mode (shipped). Phase 4 — WebSocket live E2E (shipped). Phase 5 — `ProtocolCommandRouter` + OCPP/OpenEMS/HA WS EV commands (shipped). HA MQTT service publish + OpenEMS battery/heat-pump writes deferred.
 

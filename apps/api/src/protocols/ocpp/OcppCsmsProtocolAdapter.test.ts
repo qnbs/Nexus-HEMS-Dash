@@ -9,6 +9,21 @@ import {
   OcppCsmsProtocolAdapter,
 } from './OcppCsmsProtocolAdapter.js';
 
+async function connectChargePoint(port: number, cpId: string): Promise<WebSocket> {
+  const client = new WebSocket(`ws://127.0.0.1:${port}/${cpId}`, 'ocpp2.0.1');
+  await new Promise<void>((resolve, reject) => {
+    client.once('open', () => resolve());
+    client.once('error', reject);
+  });
+  client.on('message', (data) => {
+    const msg = JSON.parse(String(data)) as [number, string, ...unknown[]];
+    if (msg[0] === 2) {
+      client.send(JSON.stringify([3, msg[1], {}]));
+    }
+  });
+  return client;
+}
+
 describe('OcppCsmsProtocolAdapter', () => {
   let adapter: OcppCsmsProtocolAdapter;
   let boundPort: number;
@@ -120,11 +135,7 @@ describe('OcppCsmsProtocolAdapter', () => {
   });
 
   it('sends SetChargingProfile on SET_EV_POWER when a charge point is connected', async () => {
-    const client = new WebSocket(`ws://127.0.0.1:${boundPort}/CP-CMD-01`, 'ocpp2.0.1');
-    await new Promise<void>((resolve, reject) => {
-      client.once('open', () => resolve());
-      client.once('error', reject);
-    });
+    const client = await connectChargePoint(boundPort, 'CP-CMD-01');
 
     const outbound = new Promise<unknown>((resolve) => {
       client.once('message', (data) => resolve(JSON.parse(String(data))));
@@ -149,11 +160,7 @@ describe('OcppCsmsProtocolAdapter', () => {
   });
 
   it('sends RequestStartTransaction on START_CHARGING', async () => {
-    const client = new WebSocket(`ws://127.0.0.1:${boundPort}/CP-START`, 'ocpp2.0.1');
-    await new Promise<void>((resolve, reject) => {
-      client.once('open', () => resolve());
-      client.once('error', reject);
-    });
+    const client = await connectChargePoint(boundPort, 'CP-START');
 
     const outbound = new Promise<unknown>((resolve) => {
       client.once('message', (data) => resolve(JSON.parse(String(data))));
@@ -168,11 +175,7 @@ describe('OcppCsmsProtocolAdapter', () => {
   });
 
   it('sends SetChargingProfile with amps on SET_EV_CURRENT', async () => {
-    const client = new WebSocket(`ws://127.0.0.1:${boundPort}/CP-AMP`, 'ocpp2.0.1');
-    await new Promise<void>((resolve, reject) => {
-      client.once('open', () => resolve());
-      client.once('error', reject);
-    });
+    const client = await connectChargePoint(boundPort, 'CP-AMP');
 
     const outbound = new Promise<unknown>((resolve) => {
       client.once('message', (data) => resolve(JSON.parse(String(data))));
@@ -209,8 +212,18 @@ describe('OcppCsmsProtocolAdapter', () => {
       client.once('message', () => resolve());
     });
 
+    client.on('message', (data) => {
+      const msg = JSON.parse(String(data)) as [number, string, ...unknown[]];
+      if (msg[0] === 2) {
+        client.send(JSON.stringify([3, msg[1], {}]));
+      }
+    });
+
     const outbound = new Promise<unknown>((resolve) => {
-      client.once('message', (data) => resolve(JSON.parse(String(data))));
+      client.once('message', (data) => {
+        const parsed = JSON.parse(String(data)) as [number, string, ...unknown[]];
+        if (parsed[0] === 2) resolve(parsed);
+      });
     });
 
     const result = await adapter.sendCommand({ type: 'STOP_CHARGING', value: true });
@@ -223,14 +236,32 @@ describe('OcppCsmsProtocolAdapter', () => {
   });
 
   it('rejects invalid SET_EV_POWER values', async () => {
-    const client = new WebSocket(`ws://127.0.0.1:${boundPort}/CP-INVALID`, 'ocpp2.0.1');
+    const client = await connectChargePoint(boundPort, 'CP-INVALID');
+
+    const result = await adapter.sendCommand({
+      type: 'SET_EV_POWER',
+      value: '7200' as unknown as number,
+    });
+    expect(result.success).toBe(false);
+    client.close();
+  });
+
+  it('fails when charge point responds with CallError', async () => {
+    const client = new WebSocket(`ws://127.0.0.1:${boundPort}/CP-ERR`, 'ocpp2.0.1');
     await new Promise<void>((resolve, reject) => {
       client.once('open', () => resolve());
       client.once('error', reject);
     });
+    client.on('message', (data) => {
+      const msg = JSON.parse(String(data)) as [number, string, ...unknown[]];
+      if (msg[0] === 2) {
+        client.send(JSON.stringify([4, msg[1], 'InternalError', 'rejected', {}]));
+      }
+    });
 
-    const result = await adapter.sendCommand({ type: 'SET_EV_POWER', value: Number.NaN });
+    const result = await adapter.sendCommand({ type: 'SET_EV_POWER', value: 5000 });
     expect(result.success).toBe(false);
+    expect(result.error).toContain('rejected or timed out');
     client.close();
   });
 });

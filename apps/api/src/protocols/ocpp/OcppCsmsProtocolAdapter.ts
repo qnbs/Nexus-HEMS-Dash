@@ -39,8 +39,14 @@ const OCPP_CALLRESULT = 3;
 const OCPP_CALLERROR = 4;
 
 const HEARTBEAT_INTERVAL_S = 300;
+const OUTBOUND_TIMEOUT_MS = 10_000;
 const MAX_DLQ_LINES = 10_000;
 let dlqLineCount = 0;
+
+interface OutboundPending {
+  resolve: (success: boolean) => void;
+  timer: ReturnType<typeof setTimeout>;
+}
 
 type OcppInboundMessage =
   | [typeof OCPP_CALL, string, string, Record<string, unknown>]
@@ -92,6 +98,7 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
   private consecutiveErrors = 0;
   private readonly sessions = new Map<WebSocket, ChargePointSession>();
   private readonly emitter = new EventEmitter();
+  private readonly outboundPending = new Map<string, OutboundPending>();
   private outboundMessageId = 0;
 
   constructor(config: OcppCsmsProtocolAdapterConfig) {
@@ -174,6 +181,12 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
     this.emitter.emit('destroy');
     this.emitter.removeAllListeners();
 
+    for (const pending of this.outboundPending.values()) {
+      clearTimeout(pending.timer);
+      pending.resolve(false);
+    }
+    this.outboundPending.clear();
+
     for (const ws of this.sessions.keys()) {
       ws.close(1000, 'csms shutdown');
     }
@@ -246,6 +259,14 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
   }
 
   private handleMessage(ws: WebSocket, msg: OcppInboundMessage): void {
+    if (msg[0] === OCPP_CALLRESULT) {
+      this.resolveOutboundPending(msg[1], true);
+      return;
+    }
+    if (msg[0] === OCPP_CALLERROR) {
+      this.resolveOutboundPending(msg[1], false);
+      return;
+    }
     if (msg[0] !== OCPP_CALL) return;
 
     const [, messageId, action, payload] = msg;
@@ -341,12 +362,15 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
     }
 
     const { ws, session } = active;
-    let sent = false;
+    let acknowledged = false;
 
     switch (command.type) {
       case 'SET_EV_POWER': {
-        const powerW = Number(command.value);
-        if (!Number.isFinite(powerW) || powerW < 0) {
+        if (
+          typeof command.value !== 'number' ||
+          !Number.isFinite(command.value) ||
+          command.value < 0
+        ) {
           return {
             handled: true,
             success: false,
@@ -354,12 +378,15 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
             error: 'SET_EV_POWER requires a non-negative number',
           };
         }
-        sent = this.sendSetChargingProfileW(ws, powerW);
+        acknowledged = await this.sendSetChargingProfileW(ws, command.value);
         break;
       }
       case 'SET_EV_CURRENT': {
-        const currentA = Number(command.value);
-        if (!Number.isFinite(currentA) || currentA < 0) {
+        if (
+          typeof command.value !== 'number' ||
+          !Number.isFinite(command.value) ||
+          command.value < 0
+        ) {
           return {
             handled: true,
             success: false,
@@ -367,12 +394,12 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
             error: 'SET_EV_CURRENT requires a non-negative number',
           };
         }
-        session.maxCurrentA = currentA;
-        sent = this.sendSetChargingProfileA(ws, currentA);
+        session.maxCurrentA = command.value;
+        acknowledged = await this.sendSetChargingProfileA(ws, command.value);
         break;
       }
       case 'START_CHARGING':
-        sent = this.sendRequestStartTransaction(ws);
+        acknowledged = await this.sendRequestStartTransaction(ws);
         break;
       case 'STOP_CHARGING':
         if (!session.transactionId) {
@@ -383,19 +410,19 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
             error: 'No active transaction to stop',
           };
         }
-        sent = this.sendRequestStopTransaction(ws, session.transactionId);
+        acknowledged = await this.sendRequestStopTransaction(ws, session.transactionId);
         break;
       default:
         return { handled: false, success: false };
     }
 
-    return sent
+    return acknowledged
       ? { handled: true, success: true, adapterId: this.id }
       : {
           handled: true,
           success: false,
           adapterId: this.id,
-          error: 'Failed to send OCPP command',
+          error: 'Charge point rejected or timed out on OCPP command',
         };
   }
 
@@ -408,25 +435,49 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
     return null;
   }
 
+  private resolveOutboundPending(messageId: string, success: boolean): void {
+    const pending = this.outboundPending.get(messageId);
+    if (!pending) return;
+    clearTimeout(pending.timer);
+    this.outboundPending.delete(messageId);
+    pending.resolve(success);
+  }
+
   private sendOutboundCall(
     ws: WebSocket,
     action: string,
     payload: Record<string, unknown>,
-  ): boolean {
-    if (ws.readyState !== WebSocket.OPEN) return false;
+  ): Promise<boolean> {
+    if (ws.readyState !== WebSocket.OPEN) return Promise.resolve(false);
     const messageId = `csms-${++this.outboundMessageId}`;
-    ws.send(JSON.stringify([OCPP_CALL, messageId, action, payload]));
-    return true;
+
+    return new Promise<boolean>((resolve) => {
+      const timer = setTimeout(() => {
+        this.outboundPending.delete(messageId);
+        resolve(false);
+      }, OUTBOUND_TIMEOUT_MS);
+
+      this.outboundPending.set(messageId, {
+        resolve: (success) => {
+          clearTimeout(timer);
+          this.outboundPending.delete(messageId);
+          resolve(success);
+        },
+        timer,
+      });
+
+      ws.send(JSON.stringify([OCPP_CALL, messageId, action, payload]));
+    });
   }
 
-  private sendSetChargingProfileA(ws: WebSocket, maxCurrentA: number): boolean {
+  private sendSetChargingProfileA(ws: WebSocket, maxCurrentA: number): Promise<boolean> {
     return this.sendSetChargingProfile(ws, 1, 1, 0, 'TxDefaultProfile', {
       chargingRateUnit: 'A',
       chargingSchedulePeriod: [{ startPeriod: 0, limit: maxCurrentA }],
     });
   }
 
-  private sendSetChargingProfileW(ws: WebSocket, powerW: number): boolean {
+  private sendSetChargingProfileW(ws: WebSocket, powerW: number): Promise<boolean> {
     return this.sendSetChargingProfile(ws, 1, 1, 0, 'TxDefaultProfile', {
       chargingRateUnit: 'W',
       chargingSchedulePeriod: [{ startPeriod: 0, limit: powerW }],
@@ -441,7 +492,7 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
     purpose: string,
     schedule: Record<string, unknown>,
     profileExtra?: Record<string, unknown>,
-  ): boolean {
+  ): Promise<boolean> {
     return this.sendOutboundCall(ws, 'SetChargingProfile', {
       evseId,
       chargingProfile: {
@@ -455,7 +506,7 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
     });
   }
 
-  private sendRequestStartTransaction(ws: WebSocket): boolean {
+  private sendRequestStartTransaction(ws: WebSocket): Promise<boolean> {
     return this.sendOutboundCall(ws, 'RequestStartTransaction', {
       evseId: 1,
       remoteStartId: Date.now(),
@@ -466,7 +517,7 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
     });
   }
 
-  private sendRequestStopTransaction(ws: WebSocket, transactionId: string): boolean {
+  private sendRequestStopTransaction(ws: WebSocket, transactionId: string): Promise<boolean> {
     return this.sendOutboundCall(ws, 'RequestStopTransaction', { transactionId });
   }
 

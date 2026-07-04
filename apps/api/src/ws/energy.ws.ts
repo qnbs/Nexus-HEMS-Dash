@@ -435,7 +435,7 @@ async function dispatchLiveCommand(
       ws,
       command.type,
       command.value,
-      'rejected_validation',
+      'rejected_dispatch',
       result.error ?? 'Command failed',
     );
     safeSend(ws, { type: 'ERROR', error: result.error ?? 'Command failed' });
