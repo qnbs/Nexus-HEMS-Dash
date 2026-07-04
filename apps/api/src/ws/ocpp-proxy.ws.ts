@@ -30,6 +30,7 @@ export function isOcppProxyPath(req: IncomingMessage): boolean {
   }
 }
 
+/** Handle a browser OCPP mTLS proxy WebSocket upgrade (`/ws/ocpp`). */
 export async function handleOcppProxyConnection(
   clientWs: WebSocket,
   req: IncomingMessage,

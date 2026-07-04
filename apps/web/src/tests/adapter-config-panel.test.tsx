@@ -13,7 +13,7 @@ vi.mock('react-i18next', () => ({
 const mockReadOnly = vi.fn().mockReturnValue(false);
 
 vi.mock('../lib/adapter-mode', () => ({
-  isReadOnlyModeActive: () => mockReadOnly(),
+  useReadOnlyModeActive: () => mockReadOnly(),
 }));
 
 const mockSave = vi.fn().mockResolvedValue({ ok: true, registryId: 'victron-mqtt' });

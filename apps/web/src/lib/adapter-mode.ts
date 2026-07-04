@@ -1,3 +1,5 @@
+import { useAppStore } from '../store';
+
 /** Runtime read-only flag from backend `GET /api/health` (not persisted). */
 let runtimeBackendReadOnly = false;
 
@@ -115,6 +117,15 @@ export function isReadOnlyModeActive(): boolean {
     return true;
   }
   return runtimeBackendReadOnly;
+}
+
+/** React hook — re-renders when the backend health poll updates read-only state. */
+export function useReadOnlyModeActive(): boolean {
+  const backendReadOnly = useAppStore((s) => s.backendReadOnly);
+  if (import.meta.env.VITE_READ_ONLY_MODE?.trim().toLowerCase() === LIVE_HARDWARE_ACK) {
+    return true;
+  }
+  return backendReadOnly;
 }
 
 /**

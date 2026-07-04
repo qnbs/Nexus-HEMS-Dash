@@ -161,7 +161,7 @@ pnpm --filter @nexus-hems/web exec playwright test tests/e2e/safety-indicators.s
 | Criterion | Status |
 |-----------|--------|
 | Critical items completed or documented with plan | ✅ This document + partial fixes |
-| Documentation in sync with code | 🔄 Ongoing — FEATURE_STATUS update pending |
+| Documentation in sync with code | ✅ Complete — FEATURE_STATUS updated in this branch |
 | Test coverage improved on critical paths | 🔄 Started (read-only + E2E safety) |
 | Security scans green | ✅ |
 | Production-ready with hardware safeguards | ✅ Mock default; read-only hardened |

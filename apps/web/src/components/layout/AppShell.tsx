@@ -15,7 +15,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { useEnergyStoreBase } from '../../core/useEnergyStore';
 import { themeDefinitions } from '../../design-tokens';
-import { isLiveSafetyMode, isReadOnlyModeActive } from '../../lib/adapter-mode';
+import { isLiveSafetyMode, useReadOnlyModeActive } from '../../lib/adapter-mode';
 import { useAppStoreShallow } from '../../store';
 import { CommandPalette, useCommandPalette } from '../ui/CommandPalette';
 import { MobileNavigation } from '../ui/MobileNavigation';
@@ -116,7 +116,7 @@ export function AppShell({ children }: AppShellProps) {
   const isLive = isLiveSafetyMode(adapterMode);
   // READ-ONLY (SAF-05) blocks all control commands; surface it persistently so
   // an operator is never surprised by silently-rejected commands.
-  const isReadOnly = isReadOnlyModeActive();
+  const isReadOnly = useReadOnlyModeActive();
 
   const hasDegradedAdapter = useEnergyStoreBase((s) =>
     Object.values(s.adapters).some(

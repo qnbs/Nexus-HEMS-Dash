@@ -26,9 +26,12 @@ interface AppState {
   settings: StoredSettings;
   /** Effective backend hardware mode (runtime-only, never persisted). */
   adapterMode: BackendAdapterMode;
+  /** Runtime read-only flag from `GET /api/health` (not persisted). */
+  backendReadOnly: boolean;
   setEnergyData: (data: Partial<EnergyData>) => void;
   setConnected: (status: boolean) => void;
   setAdapterMode: (mode: BackendAdapterMode) => void;
+  setBackendReadOnly: (readOnly: boolean) => void;
   setLocale: (locale: LocaleCode) => void;
   setTheme: (theme: ThemeName) => void;
   setThemePreference: (preference: ThemePreference) => void;
@@ -137,6 +140,7 @@ export const useAppStore = create<AppState>()(
       },
       settings: defaultSettings,
       adapterMode: 'unknown' as BackendAdapterMode,
+      backendReadOnly: false,
       setEnergyData: (data) =>
         set((state) => {
           // Skip update if all incoming values match current state
@@ -152,6 +156,10 @@ export const useAppStore = create<AppState>()(
         set((state) => (state.connected === status ? state : { connected: status })),
       setAdapterMode: (mode) =>
         set((state) => (state.adapterMode === mode ? state : { adapterMode: mode })),
+      setBackendReadOnly: (readOnly) =>
+        set((state) =>
+          state.backendReadOnly === readOnly ? state : { backendReadOnly: readOnly },
+        ),
       setLocale: (locale) => set({ locale }),
       setTheme: (theme) =>
         set((state) => ({ theme, themeTransitionKey: state.themeTransitionKey + 1 })),

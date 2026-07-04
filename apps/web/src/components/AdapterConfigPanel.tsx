@@ -16,7 +16,7 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { saveAdapterPanelEntry } from '../core/adapter-config-panel-save';
 import { listRegisteredAdapters, loadAllContribAdapters } from '../core/adapters/adapter-registry';
-import { isReadOnlyModeActive } from '../lib/adapter-mode';
+import { useReadOnlyModeActive } from '../lib/adapter-mode';
 import { ignorePromiseRejection } from '../lib/ignore-promise-rejection';
 import { ComplianceChecklist } from './AdapterComplianceChecklist';
 import { AdapterConfigEntrySection } from './AdapterConfigEntrySection';
@@ -252,7 +252,7 @@ const ContribAdapterSection = () => {
 
 export const AdapterConfigPanel = () => {
   const { t } = useTranslation();
-  const isReadOnly = isReadOnlyModeActive();
+  const isReadOnly = useReadOnlyModeActive();
   const [adapters, setAdapters] = useState<AdapterEntry[]>([]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showTokens, setShowTokens] = useState<Record<string, boolean>>({});

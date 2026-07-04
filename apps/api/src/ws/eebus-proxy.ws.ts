@@ -30,6 +30,7 @@ export function isEebusProxyPath(req: IncomingMessage): boolean {
   }
 }
 
+/** Handle a browser EEBUS SHIP mTLS proxy WebSocket upgrade (`/ws/eebus`). */
 export async function handleEebusProxyConnection(
   clientWs: WebSocket,
   req: IncomingMessage,

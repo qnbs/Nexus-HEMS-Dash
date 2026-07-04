@@ -1,84 +1,18 @@
 import { MotionConfig } from 'motion/react';
-import { lazy, Suspense, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Navigate, Route, BrowserRouter as Router, Routes, useLocation } from 'react-router-dom';
-import { Toaster, toast } from 'sonner';
+import { BrowserRouter as Router } from 'react-router-dom';
+import { AppRouterTree } from './components/AppRouterTree';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import { AppShell } from './components/layout/AppShell';
-import { OfflineBanner } from './components/OfflineBanner';
-import { PWAInstallPrompt } from './components/PWAInstallPrompt';
-import { PWAUpdateNotification } from './components/PWAUpdateNotification';
-import { PageSkeleton } from './components/ui/Skeleton';
-import { EnergyProvider } from './core/EnergyContext';
 import { useAdapterBridge, useServerWebSocket } from './core/useEnergyStore';
-import { themeDefinitions } from './design-tokens';
 import { isBackendWsEnabled } from './lib/adapter-mode';
-import { backgroundSyncService } from './lib/background-sync';
 import { logError } from './lib/db';
-import { monitorOfflineStorageQuota } from './lib/offline-cache';
-import { resolveTheme, watchSystemTheme } from './lib/theme';
+import { useAppBootstrapEffects } from './lib/use-app-bootstrap-effects';
 import { useBackendHealthPoll } from './lib/use-backend-health-poll';
 import { useNotifications } from './lib/useNotifications';
 import { useAppStoreShallow } from './store';
 
-// ─── Lazy-loaded section layouts (7 groups) ──────────────────────────
-const CommandHubLayout = lazy(() =>
-  import('./components/layout/SectionLayouts').then((m) => ({ default: m.CommandHubLayout })),
-);
-const LiveEnergyLayout = lazy(() =>
-  import('./components/layout/SectionLayouts').then((m) => ({ default: m.LiveEnergyLayout })),
-);
-const DevicesLayout = lazy(() =>
-  import('./components/layout/SectionLayouts').then((m) => ({ default: m.DevicesLayout })),
-);
-const OptimizationLayout = lazy(() =>
-  import('./components/layout/SectionLayouts').then((m) => ({ default: m.OptimizationLayout })),
-);
-const AnalyticsLayout = lazy(() =>
-  import('./components/layout/SectionLayouts').then((m) => ({ default: m.AnalyticsLayout })),
-);
-const MonitoringLayout = lazy(() =>
-  import('./components/layout/SectionLayouts').then((m) => ({ default: m.MonitoringLayout })),
-);
-const SettingsLayout = lazy(() =>
-  import('./components/layout/SectionLayouts').then((m) => ({ default: m.SettingsLayout })),
-);
-
-// ─── Lazy-loaded pages ───────────────────────────────────────────────
-const CommandHub = lazy(() => import('./pages/CommandHub'));
-const LiveEnergyFlow = lazy(() => import('./pages/LiveEnergyFlow'));
-
-const DevicesAutomation = lazy(() => import('./pages/DevicesAutomation'));
-
-const OptimizationAI = lazy(() => import('./pages/OptimizationAI'));
-const TariffsPage = lazy(() => import('./pages/TariffsPage'));
-const AnalyticsUnified = lazy(() => import('./pages/Analytics'));
-const Help = lazy(() => import('./pages/Help').then((m) => ({ default: m.Help })));
-const SettingsUnified = lazy(() => import('./pages/SettingsUnified'));
-const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
-const AISettingsPage = lazy(() => import('./pages/AISettingsPage'));
-const MonitoringUnified = lazy(() => import('./pages/Monitoring'));
-const PluginsPage = lazy(() => import('./pages/PluginsPage'));
-const HardwareRegistryPage = lazy(() => import('./pages/HardwareRegistryPage'));
-
-/** Scrolls to top and moves focus to main content on SPA route changes.
- * Skips focus management on initial render so the skip-to-content link
- * remains the first Tab stop on fresh page load (WCAG 2.4.1). */
-function ScrollToTop(): null {
-  const { pathname } = useLocation();
-  const initialRender = useRef(true);
-  useEffect(() => {
-    window.scrollTo(0, 0);
-    if (initialRender.current) {
-      initialRender.current = false;
-      return;
-    }
-    document.getElementById('main-content')?.focus({ preventScroll: true });
-  }, [pathname]);
-  return null;
-}
-
-export default function App() {
+/** Nexus-HEMS root application shell and route provider. */
+const App = () => {
   const { i18n, t } = useTranslation();
   const {
     theme,
@@ -91,7 +25,6 @@ export default function App() {
     compactMode,
     glowEffects,
     animations,
-    setAdapterMode,
   } = useAppStoreShallow((s) => ({
     theme: s.theme,
     locale: s.locale,
@@ -103,116 +36,27 @@ export default function App() {
     compactMode: s.settings.compactMode,
     glowEffects: s.settings.glowEffects,
     animations: s.settings.animations,
-    setAdapterMode: s.setAdapterMode,
   }));
 
-  useBackendHealthPoll(setAdapterMode);
-
-  // Adapter bridge replaces the old useWebSocket hook
+  useBackendHealthPoll();
   useAdapterBridge();
-
-  // Opt-in backend WebSocket consumer (HIGH-17 / ADR-025). Default OFF: only
-  // full-stack deployments that set VITE_BACKEND_WS=true open this socket; the
-  // static gh-pages demo keeps running the client-side adapters above.
   useServerWebSocket(isBackendWsEnabled());
-
-  // Push notifications for energy events (EV ready, tariff spike, battery low, etc.)
   useNotifications();
 
-  const themeDefinition = themeDefinitions[theme];
-
-  useEffect(() => {
-    document.documentElement.dataset.theme = theme;
-    document.documentElement.lang = locale;
-    document.documentElement.style.colorScheme = themeDefinitions[theme].isDark ? 'dark' : 'light';
-    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
-    if (metaThemeColor) {
-      metaThemeColor.setAttribute('content', themeDefinition.colors.background);
-    }
-  }, [locale, theme, themeDefinition.colors.background]);
-
-  useEffect(() => {
-    const scale = fontScale ?? 1.0;
-    document.documentElement.style.fontSize = `${scale * 100}%`;
-  }, [fontScale]);
-
-  useEffect(() => {
-    document.documentElement.classList.toggle('reduced-motion', reducedMotion ?? false);
-  }, [reducedMotion]);
-
-  useEffect(() => {
-    document.documentElement.classList.toggle('high-contrast', highContrast ?? false);
-  }, [highContrast]);
-
-  useEffect(() => {
-    document.documentElement.classList.toggle('compact-mode', compactMode ?? false);
-  }, [compactMode]);
-
-  useEffect(() => {
-    document.documentElement.classList.toggle('no-glow', !(glowEffects ?? true));
-  }, [glowEffects]);
-
-  useEffect(() => {
-    document.documentElement.classList.toggle('no-animations', !(animations ?? true));
-  }, [animations]);
-
-  useEffect(() => {
-    if (i18n.resolvedLanguage !== locale) {
-      void i18n.changeLanguage(locale);
-    }
-  }, [i18n, locale]);
-
-  // Initialize theme from preference on mount
-  const themeInitRef = useRef(false);
-  useEffect(() => {
-    if (themeInitRef.current) return;
-    themeInitRef.current = true;
-    if (themePreference === 'system') {
-      const resolvedTheme = resolveTheme('system');
-      setTheme(resolvedTheme);
-    }
-  }, [themePreference, setTheme]);
-
-  // Watch system theme preference
-  useEffect(() => {
-    if (themePreference !== 'system') return;
-
-    const unwatch = watchSystemTheme(() => {
-      const resolvedTheme = resolveTheme('system');
-      setTheme(resolvedTheme);
-    });
-
-    return unwatch;
-  }, [themePreference, setTheme]);
-
-  // Initialize background sync service
-  useEffect(() => {
-    // Disabled during E2E testing to avoid periodic IndexedDB/timer work that
-    // can keep Playwright waiting and obscure real test failures.
-    if (import.meta.env.VITE_E2E_TESTING === 'true') return;
-    backgroundSyncService.init();
-    return () => {
-      backgroundSyncService.destroy();
-    };
-  }, []);
-
-  // LOW-05: warn before browser storage quota is exhausted; evict oldest cache rows
-  useEffect(() => {
-    if (import.meta.env.VITE_E2E_TESTING === 'true') return;
-
-    return monitorOfflineStorageQuota({
-      checkIntervalMs: 60_000,
-      onWarning: (usage) => {
-        toast.warning(
-          t('offline.storageQuotaWarning', { percent: Math.round(usage.ratio * 100) }),
-          {
-            description: t('offline.storageQuotaWarningDesc'),
-            duration: 8000,
-          },
-        );
-      },
-    });
-  }, [t]);
+  useAppBootstrapEffects({
+    theme,
+    locale,
+    themePreference,
+    fontScale,
+    reducedMotion,
+    highContrast,
+    compactMode,
+    glowEffects,
+    animations,
+    setTheme,
+    i18n,
+    t,
+  });
 
   return (
     <MotionConfig reducedMotion="user">
@@ -222,96 +66,11 @@ export default function App() {
         }}
       >
         <Router basename={import.meta.env.BASE_URL}>
-          <ScrollToTop />
-          {/* SW-dependent notifications are suppressed in E2E — serviceWorkers:'block'
-            causes onRegisterError, which renders a Dismiss button before AppShell's
-            skip link, breaking the skip-to-content Tab order test. */}
-          {!import.meta.env.VITE_E2E_TESTING && <PWAUpdateNotification />}
-
-          <OfflineBanner />
-          {!import.meta.env.VITE_E2E_TESTING && <PWAInstallPrompt />}
-          <Toaster
-            position="bottom-right"
-            theme={themeDefinitions[theme].isDark ? 'dark' : 'light'}
-            richColors
-            closeButton
-            duration={5000}
-          />
-
-          <EnergyProvider>
-            <AppShell>
-              <ErrorBoundary>
-                <Suspense fallback={<PageSkeleton />}>
-                  <Routes>
-                    {/* ── Section 1: Command Hub ── */}
-                    <Route element={<CommandHubLayout />}>
-                      <Route path="/" element={<CommandHub />} />
-                    </Route>
-
-                    {/* ── Section 2: Live Energy ── */}
-                    <Route element={<LiveEnergyLayout />}>
-                      <Route path="/energy-flow" element={<LiveEnergyFlow />} />
-                    </Route>
-
-                    {/* ── Section 3: Devices & Automation ── */}
-                    <Route element={<DevicesLayout />}>
-                      <Route path="/devices" element={<DevicesAutomation />} />
-                    </Route>
-
-                    {/* ── Section 4: Optimization & AI ── */}
-                    <Route element={<OptimizationLayout />}>
-                      <Route path="/optimization-ai" element={<OptimizationAI />} />
-                      <Route path="/tariffs" element={<TariffsPage />} />
-                    </Route>
-
-                    {/* ── Section 5: Analytics & Reports ── */}
-                    <Route element={<AnalyticsLayout />}>
-                      <Route path="/analytics" element={<AnalyticsUnified />} />
-                    </Route>
-
-                    {/* ── Section 6: Monitoring & Health ── */}
-                    <Route element={<MonitoringLayout />}>
-                      <Route path="/monitoring" element={<MonitoringUnified />} />
-                    </Route>
-
-                    {/* ── Section 7: Settings & Plugins ── */}
-                    <Route element={<SettingsLayout />}>
-                      <Route path="/settings" element={<SettingsUnified />} />
-                      <Route path="/settings/ai" element={<AISettingsPage />} />
-                      <Route path="/settings/hardware" element={<HardwareRegistryPage />} />
-                      <Route path="/plugins" element={<PluginsPage />} />
-                      <Route path="/help" element={<Help />} />
-                    </Route>
-
-                    {/* ── Legacy Redirects ── */}
-                    <Route path="/production" element={<Navigate to="/energy-flow" replace />} />
-                    <Route path="/storage" element={<Navigate to="/energy-flow" replace />} />
-                    <Route path="/consumption" element={<Navigate to="/energy-flow" replace />} />
-                    <Route path="/ev" element={<Navigate to="/devices" replace />} />
-                    <Route path="/floorplan" element={<Navigate to="/devices" replace />} />
-                    <Route path="/controllers" element={<Navigate to="/settings" replace />} />
-                    <Route
-                      path="/hardware"
-                      element={<Navigate to="/settings/hardware" replace />}
-                    />
-                    <Route
-                      path="/historical-analytics"
-                      element={<Navigate to="/analytics" replace />}
-                    />
-                    <Route
-                      path="/ai-optimizer"
-                      element={<Navigate to="/optimization-ai" replace />}
-                    />
-
-                    {/* Catch-all */}
-                    <Route path="*" element={<NotFoundPage />} />
-                  </Routes>
-                </Suspense>
-              </ErrorBoundary>
-            </AppShell>
-          </EnergyProvider>
+          <AppRouterTree theme={theme} />
         </Router>
       </ErrorBoundary>
     </MotionConfig>
   );
-}
+};
+
+export default App;

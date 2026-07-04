@@ -21,7 +21,9 @@ test.describe('Safety indicators', () => {
       });
     });
 
+    const healthResponse = page.waitForResponse((res) => res.url().includes('/api/health'));
     await page.goto('./', { waitUntil: 'domcontentloaded' });
+    await healthResponse;
     await expect(page.getByText(/read-only|Nur-Lese/i)).toBeVisible({ timeout: 15_000 });
   });
 

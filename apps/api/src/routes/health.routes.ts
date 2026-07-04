@@ -10,6 +10,7 @@ import { Router } from 'express';
 import { isReadOnlyMode } from '../config/read-only-mode.js';
 import { getAdapterHealthSummary } from '../protocols/index.js';
 
+/** Factory for unauthenticated `/api/health` routes. */
 export function createHealthRoutes(): Router {
   const router = Router();
 

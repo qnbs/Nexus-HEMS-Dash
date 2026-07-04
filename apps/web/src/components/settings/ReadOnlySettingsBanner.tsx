@@ -1,10 +1,10 @@
 import { ShieldAlert } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { isReadOnlyModeActive } from '../../lib/adapter-mode';
+import { useReadOnlyModeActive } from '../../lib/adapter-mode';
 
 export const ReadOnlySettingsBanner = () => {
   const { t } = useTranslation();
-  if (!isReadOnlyModeActive()) return null;
+  if (!useReadOnlyModeActive()) return null;
 
   return (
     <div
