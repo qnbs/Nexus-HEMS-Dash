@@ -36,7 +36,8 @@ import {
 import { AnimatePresence, motion } from 'motion/react';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
+import packageJson from '../../package.json';
 import { BrandGithubIcon } from '../components/icons/BrandGithubIcon';
 import { Disclosure } from '../components/ui/Disclosure';
 
@@ -49,6 +50,17 @@ type HelpTab =
   | 'shortcuts'
   | 'troubleshooting'
   | 'about';
+
+const VALID_HELP_TABS: HelpTab[] = [
+  'getting-started',
+  'integration',
+  'features',
+  'lexicon',
+  'faq',
+  'shortcuts',
+  'troubleshooting',
+  'about',
+];
 
 function FeatureCard({
   icon,
@@ -103,7 +115,11 @@ function FeatureCard({
  */
 export function Help({ embedded = false }: { embedded?: boolean } = {}) {
   const { t } = useTranslation();
-  const [activeTab, setActiveTab] = useState<HelpTab>('getting-started');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const appVersion = packageJson.version;
+  const tabParam = searchParams.get('tab') as HelpTab | null;
+  const activeTab: HelpTab =
+    tabParam && VALID_HELP_TABS.includes(tabParam) ? tabParam : 'getting-started';
   const [searchQuery, setSearchQuery] = useState('');
 
   const tabs: { key: HelpTab; icon: React.ReactNode; label: string }[] = [
@@ -116,6 +132,32 @@ export function Help({ embedded = false }: { embedded?: boolean } = {}) {
     { key: 'troubleshooting', icon: <RefreshCw size={18} />, label: t('help.troubleshooting') },
     { key: 'about', icon: <Info size={18} />, label: t('help.about') },
   ];
+
+  const selectTab = (tab: HelpTab) => {
+    setSearchParams(tab === 'getting-started' ? {} : { tab }, { replace: true });
+  };
+
+  const handleTabKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    const currentIndex = tabs.findIndex((tab) => tab.key === activeTab);
+    if (currentIndex < 0) return;
+
+    let nextIndex = currentIndex;
+    if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
+      nextIndex = (currentIndex + 1) % tabs.length;
+    } else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
+      nextIndex = (currentIndex - 1 + tabs.length) % tabs.length;
+    } else if (event.key === 'Home') {
+      nextIndex = 0;
+    } else if (event.key === 'End') {
+      nextIndex = tabs.length - 1;
+    } else {
+      return;
+    }
+
+    event.preventDefault();
+    selectTab(tabs[nextIndex].key);
+    document.getElementById(`help-tab-${tabs[nextIndex].key}`)?.focus();
+  };
 
   const normalizedQuery = searchQuery.trim().toLowerCase();
 
@@ -203,7 +245,7 @@ export function Help({ embedded = false }: { embedded?: boolean } = {}) {
                     <button
                       type="button"
                       onClick={() => {
-                        setActiveTab(hit.tab);
+                        selectTab(hit.tab);
                         setSearchQuery('');
                       }}
                       className="focus-ring w-full rounded-lg px-3 py-2 text-left transition-colors hover:bg-white/5"
@@ -226,16 +268,18 @@ export function Help({ embedded = false }: { embedded?: boolean } = {}) {
             className="scrollbar-hide flex gap-1 overflow-x-auto pb-2 lg:flex-col lg:overflow-visible lg:pb-0"
             role="tablist"
             aria-label={t('help.title')}
+            onKeyDown={handleTabKeyDown}
           >
             {tabs.map((tab) => (
               <button
                 key={tab.key}
                 type="button"
-                onClick={() => setActiveTab(tab.key)}
+                onClick={() => selectTab(tab.key)}
                 role="tab"
                 aria-selected={activeTab === tab.key}
                 aria-controls={`help-tabpanel-${tab.key}`}
                 id={`help-tab-${tab.key}`}
+                tabIndex={activeTab === tab.key ? 0 : -1}
                 className={`flex items-center gap-2.5 whitespace-nowrap rounded-xl px-4 py-2.5 font-medium text-sm transition-all duration-200 active:scale-[0.97] ${
                   activeTab === tab.key
                     ? 'bg-(--color-primary)/15 text-(--color-primary) shadow-[inset_0_0_0_1px_var(--color-primary)/20]'
@@ -1242,11 +1286,15 @@ export function Help({ embedded = false }: { embedded?: boolean } = {}) {
                     </div>
                     <div>
                       <h2 className="font-semibold text-xl">{t('common.appName')}</h2>
-                      <p className="text-(--color-muted) text-sm">{t('help.versionFull')}</p>
+                      <p className="text-(--color-muted) text-sm">
+                        {t('help.versionFull', { version: appVersion })}
+                      </p>
                     </div>
                   </div>
 
-                  <p className="mb-6 text-(--color-muted) leading-relaxed">{t('help.aboutDesc')}</p>
+                  <p className="mb-6 text-(--color-muted) leading-relaxed">
+                    {t('help.aboutDesc', { version: appVersion })}
+                  </p>
 
                   {/* GitHub Repository */}
                   <a

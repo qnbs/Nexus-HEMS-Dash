@@ -85,5 +85,6 @@ export const storedSettingsImportSchema = z
 export function parseStoredSettingsImport(data: unknown): Partial<StoredSettings> | null {
   const result = storedSettingsImportSchema.safeParse(data);
   if (!result.success) return null;
+  // skipcq: JS-0339 — Zod strict schema output is a safe Partial<StoredSettings> subset
   return result.data as unknown as Partial<StoredSettings>;
 }

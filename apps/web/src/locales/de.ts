@@ -663,6 +663,24 @@ export const de = {
     connectionStatus: 'Verbindungsstatus',
     mqttConfig: 'MQTT / Home Assistant',
     mqttAutoHint: 'Home Assistant Geräte automatisch erkennen',
+    readOnlyHint:
+      'Hardware-Steuerungseingaben sind deaktiviert. Steuerbefehle sind blockiert, bis der Nur-Lese-Modus ausgeschaltet wird.',
+    haTitle: 'Home-Assistant-Integration',
+    haDescription:
+      'Verbindung über die HA-WebSocket-API (empfohlen) oder MQTT-Broker-Discovery. Die Konfiguration wird validiert und im verschlüsselten Tresor gespeichert.',
+    haConnectionMode: 'Verbindungsmodus',
+    haModeWsApi: 'HA-WebSocket-API',
+    haModeWsApiDesc:
+      'Direkte Verbindung mit Long-Lived Access Token — kein MQTT-Broker erforderlich.',
+    haModeMqtt: 'MQTT-Broker',
+    haModeMqttDesc: 'MQTT-over-WebSocket mit Home-Assistant-MQTT-Discovery.',
+    haBaseUrl: 'Home-Assistant-URL',
+    haToken: 'Long-Lived Access Token',
+    haTokenHint:
+      'Erstellen unter Profil → Sicherheit → Long-Lived Access Tokens in Home Assistant.',
+    haEnableAdapter: 'Home-Assistant-Adapter aktivieren',
+    haSaveSuccess: 'Home-Assistant-Einstellungen gespeichert',
+    haSaveFailed: 'Home-Assistant-Einstellungen konnten nicht gespeichert werden: {{error}}',
     maxGridHint: '§14a EnWG Grenze: 4,2 kW für steuerbare Verbraucher',
     pvSystem: 'PV-Anlage',
     pvPeakPower: 'Spitzenleistung (kWp)',
@@ -880,7 +898,7 @@ export const de = {
     faqTitle: 'Häufig gestellte Fragen (FAQ)',
     about: 'Über die App',
     aboutTitle: 'Über die App',
-    version: 'Version 1.6.1',
+    version: 'Version {{version}}',
     hems: 'Home Energy Management System',
     hemsDesc:
       'Ein System zur Überwachung, Steuerung und Optimierung des Energieverbrauchs in einem Gebäude.',
@@ -907,7 +925,7 @@ export const de = {
     faqSecurityAnswer:
       'Ja. Das System verwendet eine lokale Public Key Infrastructure (PKI) mit mTLS. Die Kommunikation zwischen Dashboard und Backend ist verschlüsselt. Historische Daten werden primär lokal in Ihrem Browser (IndexedDB) gespeichert.',
     aboutDesc:
-      'Nexus-HEMS Dash v1.6.1 ist eine produktionsreife Visualisierungs- und Steuerungsschicht für integriertes Energiemanagement. Es vereint 13 Protokolladapter, Echtzeit-Sankey-Flüsse, MPC-Optimierung und KI-Prognosen — und macht Sektorenkopplung (Strom, Wärme, Mobilität) beherrschbar.',
+      'Nexus-HEMS Dash v{{version}} ist eine produktionsreife Visualisierungs- und Steuerungsschicht für integriertes Energiemanagement. Es vereint 14 Protokolladapter, Echtzeit-Sankey-Flüsse, MPC-Optimierung und KI-Prognosen — und macht Sektorenkopplung (Strom, Wärme, Mobilität) beherrschbar.',
     techStack: 'Technologie-Stack',
     techFrontend: 'Frontend: React 19, Tailwind CSS, Lucide Icons',
     techState: 'State Management: Zustand',
@@ -1043,7 +1061,7 @@ export const de = {
     faqGeneral: 'Allgemein',
     faqWhatIs: 'Was ist Nexus HEMS?',
     faqWhatIsAnswer:
-      'Nexus HEMS ist ein produktionsreifes Home-Energy-Management-Dashboard (v1.6.1). Es vereint 13 Protokolladapter (7 Core + 6 Contrib), Echtzeit-Sankey-Energiefluss, MPC-Optimierung, dynamische Tarife, KNX-Grundriss, OCPP-2.1-EV-Laden und KI-Prognosen — deploybar als PWA, Docker, Helm, Tauri oder Capacitor-App.',
+      'Nexus HEMS ist ein produktionsreifes Home-Energy-Management-Dashboard (v{{version}}). Es vereint 14 Protokolladapter (7 Core + 7 Contrib), Echtzeit-Sankey-Energiefluss, MPC-Optimierung, dynamische Tarife, KNX-Grundriss, OCPP-2.1-EV-Laden, EEBUS, Home Assistant und KI-Prognosen — deploybar als PWA, Docker, Helm, Tauri oder Capacitor-App.',
     faqOffline: 'Funktioniert die App offline?',
     faqOfflineAnswer:
       'Ja. Als PWA speichert die App alle Assets und aktuellen Daten lokal. Sie können den letzten Energiestatus einsehen, Einstellungen durchsuchen und Steuerbefehle in eine Warteschlange stellen, die bei Wiederherstellung der Verbindung synchronisiert werden.',
@@ -1135,7 +1153,7 @@ export const de = {
       'Leeren Sie regelmäßig den lokalen Cache in Einstellungen → Speicher, um IndexedDB-Speicherplatz freizugeben',
 
     // Über
-    versionFull: 'Version 1.6.1 — veröffentlicht Juli 2026',
+    versionFull: 'Version {{version}} — veröffentlicht Juli 2026',
     visualization: 'Visualisierung',
     testing: 'Tests',
     githubRepo: 'GitHub-Repository',
@@ -2348,6 +2366,8 @@ export const de = {
     tlsHint: 'Verschlüsselte Verbindung (wss:// / mqtts://)',
     noAdapters: 'Keine Adapter konfiguriert',
     noAdaptersHint: 'Fügen Sie einen Adapter hinzu, um Ihr Energiesystem zu verbinden.',
+    saveSuccess: 'Adapter-Konfiguration gespeichert',
+    saveFailed: 'Adapter konnte nicht gespeichert werden: {{error}}',
     remove: 'Adapter entfernen',
     // Adapter types
     type_victron: 'Victron MQTT',

@@ -35,7 +35,11 @@ import {
 import { AnimatePresence, motion } from 'motion/react';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
+import { saveAdapterPanelEntry } from '../core/adapter-config-panel-save';
 import { listRegisteredAdapters, loadAllContribAdapters } from '../core/adapters/adapter-registry';
+import { isReadOnlyModeActive } from '../lib/adapter-mode';
+import { ReadOnlySettingsBanner } from './settings/ReadOnlySettingsBanner';
 import { Disclosure } from './ui/Disclosure';
 import { SelectField } from './ui/SelectField';
 
@@ -711,10 +715,12 @@ function GAMappingPanel({
 
 export function AdapterConfigPanel() {
   const { t } = useTranslation();
+  const isReadOnly = isReadOnlyModeActive();
   const [adapters, setAdapters] = useState<AdapterEntry[]>([]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showTokens, setShowTokens] = useState<Record<string, boolean>>({});
   const [savedId, setSavedId] = useState<string | null>(null);
+  const [savingId, setSavingId] = useState<string | null>(null);
   const adapterCounter = useRef(0);
 
   const inputClass =
@@ -749,9 +755,30 @@ export function AdapterConfigPanel() {
     setAdapters((prev) => prev.map((a) => (a.id === id ? { ...a, ...patch } : a)));
   };
 
-  const handleSave = (id: string) => {
-    setSavedId(id);
-    setTimeout(() => setSavedId(null), 2000);
+  const handleSave = async (id: string) => {
+    if (isReadOnly) {
+      toast.error(t('mode.readOnlyBlocked'));
+      return;
+    }
+
+    const entry = adapters.find((a) => a.id === id);
+    if (!entry) return;
+
+    setSavingId(id);
+    try {
+      const result = await saveAdapterPanelEntry(entry);
+      if (!result.ok) {
+        toast.error(t('adapterConfig.saveFailed', { error: result.error }));
+        return;
+      }
+      setSavedId(id);
+      toast.success(t('adapterConfig.saveSuccess'));
+      setTimeout(() => setSavedId(null), 2000);
+    } catch {
+      toast.error(t('adapterConfig.saveFailed', { error: t('common.error') }));
+    } finally {
+      setSavingId(null);
+    }
   };
 
   const toggleToken = (id: string) => {
@@ -764,6 +791,7 @@ export function AdapterConfigPanel() {
 
   return (
     <div className="space-y-6">
+      <ReadOnlySettingsBanner />
       {/* Header */}
       <section className={sectionClass}>
         <h2 className={sectionHeaderClass}>
@@ -1310,13 +1338,18 @@ export function AdapterConfigPanel() {
                     </motion.button>
                     <motion.button
                       type="button"
-                      onClick={() => handleSave(adapter.id)}
-                      className="flex items-center gap-2 rounded-xl bg-(--color-text) px-4 py-2 font-medium text-(--color-background) text-sm transition-opacity hover:opacity-90"
+                      onClick={() => void handleSave(adapter.id)}
+                      disabled={isReadOnly || savingId === adapter.id}
+                      className="flex items-center gap-2 rounded-xl bg-(--color-text) px-4 py-2 font-medium text-(--color-background) text-sm transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                       whileHover={{ scale: 1.02, y: -1 }}
                       whileTap={{ scale: 0.98 }}
                     >
                       {savedId === adapter.id ? <Check size={16} /> : <Server size={16} />}
-                      {savedId === adapter.id ? t('common.saved') : t('common.save')}
+                      {savedId === adapter.id
+                        ? t('common.saved')
+                        : savingId === adapter.id
+                          ? t('common.saving')
+                          : t('common.save')}
                     </motion.button>
                   </div>
                 </div>

@@ -41,7 +41,7 @@ vi.mock('../components/EmergencyStop', () => ({
 }));
 vi.mock('../lib/db', () => ({
   getLocalStorageStats: vi.fn().mockResolvedValue({ usageMb: 2.4, snapshots: 847 }),
-  clearAllData: vi.fn().mockResolvedValue(undefined),
+  clearAllData: vi.fn().mockImplementation(() => Promise.resolve()),
 }));
 vi.mock('../core/useEnergyStore', () => ({
   useEnergyStore: (selector: (s: Record<string, unknown>) => unknown) =>

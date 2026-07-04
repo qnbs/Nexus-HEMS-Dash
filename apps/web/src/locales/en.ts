@@ -659,6 +659,22 @@ export const en = {
     connectionStatus: 'Connection Status',
     mqttConfig: 'MQTT / Home Assistant',
     mqttAutoHint: 'Automatically discover Home Assistant devices',
+    readOnlyHint:
+      'Hardware control inputs are disabled. Control commands are blocked until read-only mode is turned off.',
+    haTitle: 'Home Assistant Integration',
+    haDescription:
+      'Connect via the HA WebSocket API (recommended) or MQTT broker discovery. Configuration is validated and stored in the encrypted vault.',
+    haConnectionMode: 'Connection mode',
+    haModeWsApi: 'HA WebSocket API',
+    haModeWsApiDesc: 'Direct connection with a long-lived access token — no MQTT broker required.',
+    haModeMqtt: 'MQTT broker',
+    haModeMqttDesc: 'MQTT-over-WebSocket with Home Assistant MQTT discovery.',
+    haBaseUrl: 'Home Assistant URL',
+    haToken: 'Long-lived access token',
+    haTokenHint: 'Create under Profile → Security → Long-lived access tokens in Home Assistant.',
+    haEnableAdapter: 'Enable Home Assistant adapter',
+    haSaveSuccess: 'Home Assistant settings saved',
+    haSaveFailed: 'Could not save Home Assistant settings: {{error}}',
     maxGridHint: '§14a EnWG limit: 4.2 kW for controllable consumers',
     pvSystem: 'PV System',
     pvPeakPower: 'Peak power (kWp)',
@@ -873,7 +889,7 @@ export const en = {
     faqTitle: 'Frequently Asked Questions (FAQ)',
     about: 'About',
     aboutTitle: 'About the App',
-    version: 'Version 1.6.1',
+    version: 'Version {{version}}',
     hems: 'Home Energy Management System',
     hemsDesc:
       'A system for monitoring, controlling, and optimizing energy consumption in a building.',
@@ -900,7 +916,7 @@ export const en = {
     faqSecurityAnswer:
       'Yes. The system uses a local Public Key Infrastructure (PKI) with mTLS. Communication between dashboard and backend is encrypted. Historical data is primarily stored locally in your browser (IndexedDB).',
     aboutDesc:
-      'Nexus-HEMS Dash v1.6.1 is a production-grade visualization and control layer for integrated energy management. It unifies 13 protocol adapters, real-time Sankey flows, MPC optimization, and AI-assisted forecasting — making sector coupling (electricity, heat, mobility) manageable.',
+      'Nexus-HEMS Dash v{{version}} is a production-grade visualization and control layer for integrated energy management. It unifies 14 protocol adapters, real-time Sankey flows, MPC optimization, and AI-assisted forecasting — making sector coupling (electricity, heat, mobility) manageable.',
     techStack: 'Technology Stack',
     techFrontend: 'Frontend: React 19, Tailwind CSS, Lucide Icons',
     techState: 'State Management: Zustand',
@@ -1036,7 +1052,7 @@ export const en = {
     faqGeneral: 'General',
     faqWhatIs: 'What is Nexus HEMS?',
     faqWhatIsAnswer:
-      'Nexus HEMS is a production-grade Home Energy Management System dashboard (v1.6.1). It unifies 13 protocol adapters (7 core + 6 contrib), real-time Sankey energy flow, MPC optimization, dynamic tariffs, KNX floorplan, OCPP 2.1 EV charging, and AI-assisted forecasting — deployable as PWA, Docker, Helm, Tauri, or Capacitor app.',
+      'Nexus HEMS is a production-grade Home Energy Management System dashboard (v{{version}}). It unifies 14 protocol adapters (7 core + 7 contrib), real-time Sankey energy flow, MPC optimization, dynamic tariffs, KNX floorplan, OCPP 2.1 EV charging, EEBUS, Home Assistant, and AI-assisted forecasting — deployable as PWA, Docker, Helm, Tauri, or Capacitor app.',
     faqOffline: 'Does the app work offline?',
     faqOfflineAnswer:
       'Yes. As a PWA, the app caches all assets and recent data locally. You can view the last known energy state, browse settings, and queue control commands that will be synced when connectivity is restored.',
@@ -1125,7 +1141,7 @@ export const en = {
     perf4: 'Periodically clear the local cache in Settings → Storage to free up IndexedDB space',
 
     // About
-    versionFull: 'Version 1.6.1 — shipped July 2026',
+    versionFull: 'Version {{version}} — shipped July 2026',
     visualization: 'Visualization',
     testing: 'Testing',
     githubRepo: 'GitHub Repository',
@@ -2335,6 +2351,8 @@ export const en = {
     tlsHint: 'Encrypted connection (wss:// / mqtts://)',
     noAdapters: 'No adapters configured',
     noAdaptersHint: 'Add an adapter to connect your energy system.',
+    saveSuccess: 'Adapter configuration saved',
+    saveFailed: 'Could not save adapter: {{error}}',
     remove: 'Remove adapter',
     // Adapter types
     type_victron: 'Victron MQTT',

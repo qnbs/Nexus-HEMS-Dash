@@ -8,7 +8,6 @@ import {
   FileKey,
   Gauge,
   Palette,
-  RefreshCw,
   Server,
   Settings as SettingsIcon,
   Shield,
@@ -17,38 +16,14 @@ import {
   Zap,
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
-import { lazy, Suspense, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
-import { AdapterConfigPanel } from '../components/AdapterConfigPanel';
-import { CertificateManagement } from '../components/CertificateManagement';
 import { ConfirmDialog, useConfirmDialog } from '../components/ConfirmDialog';
-import { AdvancedTab } from '../components/settings/AdvancedTab';
-import { AppearanceTab } from '../components/settings/AppearanceTab';
-import { ControllersTab } from '../components/settings/ControllersTab';
-import { EnergyTab } from '../components/settings/EnergyTab';
-import { NotificationsTab } from '../components/settings/NotificationsTab';
-import { SecurityTab } from '../components/settings/SecurityTab';
-import { SettingsFeatureBar } from '../components/settings/SettingsFeatureBar';
-import { StorageTab } from '../components/settings/StorageTab';
-import { SystemTab } from '../components/settings/SystemTab';
+import { ReadOnlySettingsBanner } from '../components/settings/ReadOnlySettingsBanner';
+import { type SettingsTab, SettingsTabPanels } from '../components/settings/SettingsTabPanels';
 import { parseStoredSettingsImport } from '../core/stored-settings-schema';
 import { useAppStoreShallow } from '../store';
-
-const AISettingsPage = lazy(() => import('./AISettingsPage'));
-
-type SettingsTab =
-  | 'appearance'
-  | 'system'
-  | 'energy'
-  | 'controllers'
-  | 'adapters'
-  | 'security'
-  | 'certificates'
-  | 'storage'
-  | 'notifications'
-  | 'advanced'
-  | 'ai';
 
 export function Settings() {
   const { t } = useTranslation();
@@ -279,6 +254,8 @@ export function Settings() {
         )}
       </AnimatePresence>
 
+      <ReadOnlySettingsBanner />
+
       <div className="flex flex-col gap-6 lg:flex-row">
         {/* Sidebar Navigation */}
         <nav className="w-full shrink-0 lg:w-56">
@@ -311,202 +288,7 @@ export function Settings() {
 
         {/* Content Area */}
         <div className="min-w-0 flex-1">
-          <div>
-            <AnimatePresence mode="wait">
-              {/* === APPEARANCE === */}
-              {activeTab === 'appearance' && (
-                <motion.div
-                  key="appearance"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.3 }}
-                  className="space-y-6"
-                  role="tabpanel"
-                  id="tabpanel-appearance"
-                  aria-labelledby="tab-appearance"
-                >
-                  <AppearanceTab />
-                </motion.div>
-              )}
-
-              {/* === SYSTEM CONFIGURATION === */}
-              {activeTab === 'system' && (
-                <motion.div
-                  key="system"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.3 }}
-                  className="space-y-6"
-                  role="tabpanel"
-                  id="tabpanel-system"
-                  aria-labelledby="tab-system"
-                >
-                  <SystemTab />
-                </motion.div>
-              )}
-
-              {/* === ENERGY MANAGEMENT === */}
-              {activeTab === 'energy' && (
-                <motion.div
-                  key="energy"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.3 }}
-                  className="space-y-6"
-                  role="tabpanel"
-                  id="tabpanel-energy"
-                  aria-labelledby="tab-energy"
-                >
-                  <EnergyTab />
-                </motion.div>
-              )}
-
-              {/* === CONTROLLERS & MPC OPTIMIZER === */}
-              {activeTab === 'controllers' && (
-                <motion.div
-                  key="controllers"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.3 }}
-                  className="space-y-6"
-                  role="tabpanel"
-                  id="tabpanel-controllers"
-                  aria-labelledby="tab-controllers"
-                >
-                  <ControllersTab />
-                </motion.div>
-              )}
-
-              {/* === ADAPTER CONFIGURATION === */}
-              {activeTab === 'adapters' && (
-                <motion.div
-                  key="adapters"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.3 }}
-                  role="tabpanel"
-                  id="tabpanel-adapters"
-                  aria-labelledby="tab-adapters"
-                >
-                  <AdapterConfigPanel />
-                </motion.div>
-              )}
-
-              {/* === SECURITY & PRIVACY === */}
-              {activeTab === 'security' && (
-                <motion.div
-                  key="security"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.3 }}
-                  className="space-y-6"
-                  role="tabpanel"
-                  id="tabpanel-security"
-                  aria-labelledby="tab-security"
-                >
-                  <SecurityTab />
-                </motion.div>
-              )}
-
-              {/* === EEBUS CERTIFICATES & PAIRING === */}
-              {activeTab === 'certificates' && (
-                <motion.div
-                  key="certificates"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.3 }}
-                  className="space-y-6"
-                  role="tabpanel"
-                  id="tabpanel-certificates"
-                  aria-labelledby="tab-certificates"
-                >
-                  <CertificateManagement />
-                </motion.div>
-              )}
-
-              {/* === DATABASE & STORAGE === */}
-              {activeTab === 'storage' && (
-                <motion.div
-                  key="storage"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.3 }}
-                  className="space-y-6"
-                  role="tabpanel"
-                  id="tabpanel-storage"
-                  aria-labelledby="tab-storage"
-                >
-                  <StorageTab />
-                </motion.div>
-              )}
-
-              {/* === NOTIFICATIONS === */}
-              {activeTab === 'notifications' && (
-                <motion.div
-                  key="notifications"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.3 }}
-                  className="space-y-6"
-                  role="tabpanel"
-                  id="tabpanel-notifications"
-                  aria-labelledby="tab-notifications"
-                >
-                  <NotificationsTab />
-                </motion.div>
-              )}
-
-              {/* === ADVANCED === */}
-              {activeTab === 'advanced' && (
-                <motion.div
-                  key="advanced"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.3 }}
-                  className="space-y-6"
-                  role="tabpanel"
-                  id="tabpanel-advanced"
-                  aria-labelledby="tab-advanced"
-                >
-                  <AdvancedTab />
-                </motion.div>
-              )}
-
-              {activeTab === 'ai' && (
-                <motion.div
-                  key="ai"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.3 }}
-                  role="tabpanel"
-                  id="tabpanel-ai"
-                  aria-labelledby="tab-ai"
-                >
-                  <SettingsFeatureBar tabId="ai" />
-                  <Suspense
-                    fallback={
-                      <div className="flex items-center justify-center py-12">
-                        <RefreshCw className="h-6 w-6 animate-spin text-(--color-primary)" />
-                      </div>
-                    }
-                  >
-                    <AISettingsPage />
-                  </Suspense>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+          <SettingsTabPanels activeTab={activeTab} />
         </div>
       </div>
 

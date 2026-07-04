@@ -90,6 +90,12 @@ export interface EnergyStoreState {
   setServerWsConnected: (connected: boolean) => void;
   setAdapterStatus: (adapterId: AdapterId, status: AdapterStatus, error?: string) => void;
   enableAdapter: (adapterId: AdapterId, enabled: boolean) => void;
+  /** Replace a built-in adapter instance with a new config (e.g. after Settings save). */
+  reconfigureAdapter: (
+    adapterId: AdapterId,
+    config: Partial<AdapterConnectionConfig> & Record<string, unknown>,
+    enabled: boolean,
+  ) => void;
   /** Add a dynamically loaded contrib/npm adapter to the store */
   addContribAdapter: (id: string, config?: Partial<AdapterConnectionConfig>) => boolean;
   /** Remove a contrib adapter from the store */
@@ -263,6 +269,34 @@ export const useEnergyStoreBase = create<EnergyStoreState>()((set) => ({
         },
       };
     });
+  },
+
+  reconfigureAdapter: (adapterId, config, enabled) => {
+    const state = useEnergyStoreBase.getState();
+    const entry = state.adapters[adapterId];
+    if (!entry) return;
+
+    entry.adapter.destroy();
+
+    const connectionConfig: AdapterConnectionConfig = {
+      name: typeof config.name === 'string' ? config.name : adapterId,
+      host: typeof config.host === 'string' ? config.host : 'localhost',
+      port: typeof config.port === 'number' ? config.port : 80,
+      ...config,
+    };
+
+    const adapter = createAdapterInstance(adapterId, connectionConfig);
+    set((s) => ({
+      adapters: {
+        ...s.adapters,
+        [adapterId]: {
+          adapter,
+          enabled,
+          status: 'disconnected' as AdapterStatus,
+          circuitState: 'closed' as CircuitState,
+        },
+      },
+    }));
   },
 
   addContribAdapter: (id, config) => {
@@ -447,6 +481,75 @@ export async function sendAdapterCommand(command: AdapterCommand): Promise<boole
   return results.some((accepted) => accepted);
 }
 
+// ─── Per-adapter listener wiring (bridge + post-save reconfigure) ────
+
+export interface AttachAdapterEntryOptions {
+  sunspecAdapter?: ModbusSunSpecAdapter | null;
+  startSunSpecPolling?: (
+    adapterId: AdapterId,
+    target: ReturnType<ModbusSunSpecAdapter['getWorkerPollConfig']>,
+  ) => void;
+}
+
+/**
+ * Wire circuit-breaker, data, and status callbacks for one adapter entry.
+ * Used by useAdapterBridge on mount and after AdapterConfigPanel save.
+ */
+export function attachAdapterEntry(adapterId: AdapterId, opts?: AttachAdapterEntryOptions): void {
+  const entry = useEnergyStoreBase.getState().adapters[adapterId];
+  if (!entry) return;
+
+  const { mergeData, setAdapterStatus } = useEnergyStoreBase.getState();
+  const baseAdapter = entry.adapter as BaseAdapter;
+
+  baseAdapter.circuitBreaker.onStateChange((circuitState) => {
+    useEnergyStoreBase.setState((state) => {
+      const existing = state.adapters[adapterId];
+      if (!existing) return state;
+      return {
+        adapters: {
+          ...state.adapters,
+          [adapterId]: { ...existing, circuitState },
+        },
+      };
+    });
+
+    if (circuitState === 'open') {
+      toast.error(`Adapter "${adapterId}" circuit breaker OPEN — too many errors`, {
+        id: `cb-open-${adapterId}`,
+        duration: 10000,
+      });
+    } else if (circuitState === 'closed') {
+      toast.dismiss(`cb-open-${adapterId}`);
+      toast.success(`Adapter "${adapterId}" reconnected`, { duration: 4000 });
+    }
+  });
+
+  entry.adapter.onData((data) => {
+    mergeData(adapterId, data);
+  });
+
+  entry.adapter.onStatus((status, error) => {
+    setAdapterStatus(adapterId, status, error);
+
+    const currentAdapters = useEnergyStoreBase.getState().adapters;
+    const anyConn = Object.values(currentAdapters).some(
+      (a) => a.enabled && a.status === 'connected',
+    );
+    useAppStore.getState().setConnected(anyConn);
+  });
+
+  if (opts?.sunspecAdapter && opts.startSunSpecPolling) {
+    setAdapterStatus(adapterId, 'connecting');
+    opts.startSunSpecPolling(adapterId, opts.sunspecAdapter.getWorkerPollConfig());
+    return;
+  }
+
+  if (canConnectHardwareAdapter(entry.enabled) && baseAdapter.circuitBreaker.canExecute()) {
+    void entry.adapter.connect();
+  }
+}
+
 // ─── Bridge hook: syncs adapters ↔ old store ─────────────────────────
 
 /**
@@ -467,14 +570,13 @@ export function useAdapterBridge() {
   // Zustand actions are stable — no hook subscriptions needed.
   // Retrieve via getState() inside callbacks to avoid stale closures.
   useEffect(() => {
-    const { adapters, mergeData, setAdapterStatus } = useEnergyStoreBase.getState();
+    const { adapters } = useEnergyStoreBase.getState();
     const entries = Object.entries(adapters) as [AdapterId, AdapterEntry][];
     const workerEnabled = isAdapterWorkerEnabled();
 
     for (const [id, entry] of entries) {
       if (!canConnectHardwareAdapter(entry.enabled)) continue;
 
-      const baseAdapter = entry.adapter as BaseAdapter;
       const sunspecAdapter =
         workerEnabled && entry.adapter instanceof ModbusSunSpecAdapter ? entry.adapter : null;
 
@@ -483,57 +585,10 @@ export function useAdapterBridge() {
         workerAdapterIdsRef.current.push(id);
       }
 
-      // Wire circuit breaker state changes into the store and surface toasts
-      baseAdapter.circuitBreaker.onStateChange((circuitState) => {
-        useEnergyStoreBase.setState((state) => {
-          const existing = state.adapters[id];
-          if (!existing) return state;
-          return {
-            adapters: {
-              ...state.adapters,
-              [id]: { ...existing, circuitState },
-            },
-          };
-        });
-
-        if (circuitState === 'open') {
-          toast.error(`Adapter "${id}" circuit breaker OPEN — too many errors`, {
-            id: `cb-open-${id}`,
-            duration: 10000,
-          });
-        } else if (circuitState === 'closed') {
-          toast.dismiss(`cb-open-${id}`);
-          toast.success(`Adapter "${id}" reconnected`, { duration: 4000 });
-        }
+      attachAdapterEntry(id, {
+        sunspecAdapter,
+        startSunSpecPolling,
       });
-
-      // Subscribe to data — mergeData accumulates; bridge side effects flush at 250 ms
-      entry.adapter.onData((data) => {
-        mergeData(id, data);
-      });
-
-      // Subscribe to status
-      entry.adapter.onStatus((status, error) => {
-        setAdapterStatus(id, status, error);
-
-        // Bridge connection status (connected if any adapter is connected)
-        const currentAdapters = useEnergyStoreBase.getState().adapters;
-        const anyConn = Object.values(currentAdapters).some(
-          (a) => a.enabled && a.status === 'connected',
-        );
-        useAppStore.getState().setConnected(anyConn);
-      });
-
-      if (sunspecAdapter) {
-        setAdapterStatus(id, 'connecting');
-        startSunSpecPolling(id, sunspecAdapter.getWorkerPollConfig());
-        continue;
-      }
-
-      // Connect (only if circuit breaker allows)
-      if (baseAdapter.circuitBreaker.canExecute()) {
-        void entry.adapter.connect();
-      }
     }
 
     return () => {

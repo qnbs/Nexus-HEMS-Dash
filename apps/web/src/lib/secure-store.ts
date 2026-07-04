@@ -35,6 +35,7 @@ export type AdapterCredentialId =
   | 'knx'
   | 'ocpp-21'
   | 'eebus'
+  | 'homeassistant-mqtt'
   | 'influxdb';
 
 export interface AdapterCredentials {

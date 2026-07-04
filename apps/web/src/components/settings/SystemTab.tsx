@@ -1,15 +1,11 @@
-import { RefreshCw, Server, Wifi } from 'lucide-react';
+import { Server, Wifi } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useShallow } from 'zustand/react/shallow';
 import { useEnergyStore } from '../../core/useEnergyStore';
 import { useAppStoreShallow } from '../../store';
+import { HomeAssistantSettingsSection } from './HomeAssistantSettingsSection';
 import { SettingsFeatureBar } from './SettingsFeatureBar';
 import { inputClass, sectionClass, sectionHeaderClass } from './styles';
-import { ToggleSwitch } from './ToggleSwitch';
-
-function isAdapterConnected(status: string | undefined): boolean {
-  return status === 'connected';
-}
 
 /** Settings → System tab: gateway type, device IPs/ports, connection status, MQTT. */
 export function SystemTab() {
@@ -27,8 +23,8 @@ export function SystemTab() {
   );
 
   const connectionDevices = [
-    { name: t('devices.cerboGx'), status: isAdapterConnected(victronStatus) },
-    { name: t('devices.knxRouter'), status: isAdapterConnected(knxStatus) },
+    { name: t('devices.cerboGx'), status: victronStatus === 'connected' },
+    { name: t('devices.knxRouter'), status: knxStatus === 'connected' },
     { name: 'Node-RED', status: wsConnected },
   ];
 
@@ -176,73 +172,8 @@ export function SystemTab() {
         </div>
       </section>
 
-      {/* MQTT Configuration */}
-      <section className={sectionClass}>
-        <h2 className={sectionHeaderClass}>
-          <RefreshCw size={20} className="text-orange-400" />
-          {t('settings.mqttConfig', 'MQTT / Home Assistant')}
-        </h2>
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-          <div className="space-y-2">
-            <label htmlFor="settings-mqtt-broker-url" className="font-medium text-sm">
-              {t('mqtt.brokerUrl')}
-            </label>
-            <input
-              id="settings-mqtt-broker-url"
-              type="text"
-              className={inputClass}
-              placeholder="mqtt://192.168.1.50"
-            />
-          </div>
-          <div className="space-y-2">
-            <label htmlFor="settings-mqtt-port" className="font-medium text-sm">
-              {t('mqtt.port')}
-            </label>
-            <input
-              id="settings-mqtt-port"
-              type="number"
-              defaultValue={1883}
-              className={inputClass}
-            />
-          </div>
-          <div className="space-y-2">
-            <label htmlFor="settings-mqtt-username" className="font-medium text-sm">
-              {t('mqtt.username')}
-            </label>
-            <input
-              id="settings-mqtt-username"
-              type="text"
-              className={inputClass}
-              placeholder="mqtt_user"
-            />
-          </div>
-          <div className="space-y-2">
-            <label htmlFor="settings-mqtt-password" className="font-medium text-sm">
-              {t('mqtt.password')}
-            </label>
-            <input
-              id="settings-mqtt-password"
-              type="password"
-              className={inputClass}
-              placeholder="••••••••"
-            />
-          </div>
-        </div>
-        <div className="flex items-center justify-between pt-2">
-          <div>
-            <p className="font-medium text-sm">{t('mqtt.autoDiscovery')}</p>
-            <p className="text-(--color-muted) text-xs">
-              {t('settings.mqttAutoHint', 'Automatically discover Home Assistant devices')}
-            </p>
-          </div>
-          <ToggleSwitch
-            id="mqtt-auto"
-            checked={settings.mqttAutoDiscovery ?? true}
-            onChange={(v) => updateSettings({ mqttAutoDiscovery: v })}
-            label={t('mqtt.autoDiscovery')}
-          />
-        </div>
-      </section>
+      {/* Home Assistant / MQTT */}
+      <HomeAssistantSettingsSection />
     </>
   );
 }

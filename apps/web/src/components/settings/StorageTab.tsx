@@ -6,11 +6,8 @@ import { clearAllData, getLocalStorageStats } from '../../lib/db';
 import { useAppStoreShallow } from '../../store';
 import { ConfirmDialog, useConfirmDialog } from '../ConfirmDialog';
 import { SettingsFeatureBar } from './SettingsFeatureBar';
+import { StorageStatsCards } from './StorageStatsCards';
 import { inputClass, sectionClass, sectionHeaderClass } from './styles';
-
-async function readStorageStats(): Promise<{ usageMb: number; snapshots: number }> {
-  return getLocalStorageStats();
-}
 
 /** Settings → Storage tab: InfluxDB connection, retention and local-storage info. */
 export function StorageTab() {
@@ -27,7 +24,7 @@ export function StorageTab() {
 
   useEffect(() => {
     let cancelled = false;
-    void readStorageStats().then((stats) => {
+    void getLocalStorageStats().then((stats) => {
       if (!cancelled) {
         setUsageMb(stats.usageMb);
         setSnapshots(stats.snapshots);
@@ -120,22 +117,11 @@ export function StorageTab() {
           <HardDrive size={20} className="text-cyan-400" />
           {t('settings.localStorage', 'Local Storage')}
         </h2>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <div className="rounded-xl border border-(--color-border) bg-(--color-surface) p-4 text-center">
-            <p className="font-bold text-(--color-primary) text-2xl">{usageMb.toFixed(1)}</p>
-            <p className="text-(--color-muted) text-xs">MB IndexedDB</p>
-          </div>
-          <div className="rounded-xl border border-(--color-border) bg-(--color-surface) p-4 text-center">
-            <p className="font-bold text-(--color-secondary) text-2xl">{snapshots}</p>
-            <p className="text-(--color-muted) text-xs">{t('settings.snapshots', 'Snapshots')}</p>
-          </div>
-          <div className="rounded-xl border border-(--color-border) bg-(--color-surface) p-4 text-center">
-            <p className="font-bold text-2xl text-amber-400">{settings.historyDays}</p>
-            <p className="text-(--color-muted) text-xs">
-              {t('settings.daysRetention', 'Days retention')}
-            </p>
-          </div>
-        </div>
+        <StorageStatsCards
+          usageMb={usageMb}
+          snapshots={snapshots}
+          historyDays={settings.historyDays}
+        />
         <motion.button
           type="button"
           onClick={handleClearCache}
