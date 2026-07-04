@@ -16,6 +16,7 @@ interface AppShellProps {
 }
 
 /** Application chrome: sidebar, fixed header, routed page content, and mobile nav. */
+// skipcq: JS-0067 — colocated layout shell in ESM module
 export function AppShell({ children }: AppShellProps) {
   const { t } = useTranslation();
   const { isOpen: isCommandPaletteOpen, setIsOpen: setCommandPaletteOpen } = useCommandPalette();

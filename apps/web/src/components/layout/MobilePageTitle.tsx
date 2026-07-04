@@ -18,6 +18,7 @@ const headerRouteLabels: Record<string, string> = {
 };
 
 /** Displays the current page name in the mobile header */
+// skipcq: JS-0067 — colocated layout helper in ESM module
 export function MobilePageTitle() {
   const { t } = useTranslation();
   const { pathname } = useLocation();
