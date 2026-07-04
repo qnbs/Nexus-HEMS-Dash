@@ -32,8 +32,7 @@ describe('command-safety', () => {
     it('rejects fractional SET_HEAT_PUMP_MODE (SG Ready requires integer 1–4)', () => {
       const result = validateCommand({ type: 'SET_HEAT_PUMP_MODE', value: 2.5 });
       expect(result.valid).toBe(false);
-      expect(result.error).toMatch(/Invalid value/);
-      expect(HEAT_PUMP_MODE_ERROR).toContain('integer');
+      expect(result.error).toContain(HEAT_PUMP_MODE_ERROR);
     });
 
     it('rejects a command with an out-of-range value', () => {

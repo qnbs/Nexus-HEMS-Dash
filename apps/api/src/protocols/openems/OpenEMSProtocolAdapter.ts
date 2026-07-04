@@ -52,6 +52,7 @@ import {
   HEAT_PUMP_MODE_ERROR,
   HeatPumpModeValueSchema,
   SET_EV_CURRENT_ERROR,
+  SET_EV_POWER_ERROR,
 } from '../protocol-command.js';
 import { isSafeComponentId, sanitizeWritableProperties } from './openems-writable-rules.js';
 
@@ -481,7 +482,7 @@ export class OpenEMSProtocolAdapter implements IProtocolAdapter, IProtocolComman
             handled: true,
             success: false,
             adapterId: this.id,
-            error: 'SET_EV_POWER requires a finite wattage between 0 and 22000',
+            error: SET_EV_POWER_ERROR,
           };
         }
         ok = await this.updateSafeComponentConfig(this.evcsComponentId, [

@@ -8,28 +8,31 @@
 
 import {
   EvCurrentValueSchema,
+  EvPowerValueSchema,
   HEAT_PUMP_MODE_ERROR,
   HeatPumpModeValueSchema,
   MAX_EV_CURRENT_A,
+  MAX_EV_POWER_W,
   SET_EV_CURRENT_ERROR,
+  SET_EV_POWER_ERROR,
   WSCommandSchema,
   type WSCommandType,
 } from '@nexus-hems/shared-types';
 import { z } from 'zod';
 
-/** Residential EVCS ceiling — aligns with WSCommand 25 kW safety cap. */
-export const MAX_EV_POWER_W = 22_000;
 export {
   EvCurrentValueSchema,
+  EvPowerValueSchema,
   HEAT_PUMP_MODE_ERROR,
   HeatPumpModeValueSchema,
   MAX_EV_CURRENT_A,
+  MAX_EV_POWER_W,
   SET_EV_CURRENT_ERROR,
+  SET_EV_POWER_ERROR,
 };
 /** Bidirectional ESS power cap (matches WSCommandSchema 25 kW safety limit). */
 export const MAX_BATTERY_POWER_W = 25_000;
 
-export const EvPowerValueSchema = z.number().finite().min(0).max(MAX_EV_POWER_W);
 /** V2X discharge power in watts (aligns with frontend command-safety 25 kW cap). */
 export const EvDischargeValueSchema = z.number().finite().min(0).max(MAX_BATTERY_POWER_W);
 /** OCPP §14a grid limit in watts (frontend OCPP21Adapter uses W; min 100 W avoids kW ambiguity). */
@@ -76,7 +79,7 @@ export const ProtocolCommandRequestSchema = WSCommandSchema.and(
   if (cmd.type === 'SET_EV_POWER' && !EvPowerValueSchema.safeParse(cmd.value).success) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: 'SET_EV_POWER requires a finite wattage between 0 and 22000',
+      message: SET_EV_POWER_ERROR,
     });
   }
   if (cmd.type === 'SET_EV_CURRENT' && !EvCurrentValueSchema.safeParse(cmd.value).success) {

@@ -202,9 +202,22 @@ export const MAX_EV_CURRENT_A = 80;
 /** Shared validation copy — keep WS, API protocol, and adapter errors in sync. */
 export const SET_EV_CURRENT_ERROR = `SET_EV_CURRENT requires a finite amp value between 0 and ${MAX_EV_CURRENT_A}`;
 
+/** Residential EVCS power ceiling at protocol-adapter boundary (22 kW). */
+export const MAX_EV_POWER_W = 22_000;
+
+/** Shared validation copy for EV charging power at the protocol boundary. */
+export const SET_EV_POWER_ERROR = `SET_EV_POWER requires a finite wattage between 0 and ${MAX_EV_POWER_W}`;
+
 /** Shared validation copy for SG Ready integer modes 1–4. */
 export const HEAT_PUMP_MODE_ERROR =
   'SET_HEAT_PUMP_MODE requires an integer SG Ready mode between 1 and 4';
+
+/** EV charging power (watts) — protocol + adapter boundary. */
+export const EvPowerValueSchema = z
+  .number({ error: SET_EV_POWER_ERROR })
+  .finite({ error: SET_EV_POWER_ERROR })
+  .min(0, { error: SET_EV_POWER_ERROR })
+  .max(MAX_EV_POWER_W, { error: SET_EV_POWER_ERROR });
 
 /** EV charging current (amps) — protocol + adapter boundary. */
 export const EvCurrentValueSchema = z
@@ -260,12 +273,7 @@ function refineWsCommandValue(
       validateNonNegativePower(type, value, MAX_POWER_W, reject);
       return;
     case 'SET_EV_CURRENT':
-      if (
-        typeof value !== 'number' ||
-        !Number.isFinite(value) ||
-        value < 0 ||
-        value > MAX_EV_CURRENT_A
-      ) {
+      if (!EvCurrentValueSchema.safeParse(value).success) {
         reject(SET_EV_CURRENT_ERROR);
       }
       return;
@@ -282,7 +290,7 @@ function refineWsCommandValue(
       }
       return;
     case 'SET_HEAT_PUMP_MODE':
-      if (typeof value !== 'number' || !Number.isInteger(value) || value < 1 || value > 4) {
+      if (!HeatPumpModeValueSchema.safeParse(value).success) {
         reject(HEAT_PUMP_MODE_ERROR);
       }
       return;

@@ -40,6 +40,7 @@ import {
   EvPowerValueSchema,
   OcppGridLimitWattsSchema,
   SET_EV_CURRENT_ERROR,
+  SET_EV_POWER_ERROR,
 } from '../protocol-command.js';
 
 /** SOC guardrail — blocks V2G discharge below this threshold (ISO 15118-20 §9.8). */
@@ -473,7 +474,7 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
             handled: true,
             success: false,
             adapterId: this.id,
-            error: 'SET_EV_POWER requires a finite wattage between 0 and 22000',
+            error: SET_EV_POWER_ERROR,
           };
         }
         acknowledged = await this.sendSetChargingProfileW(ws, power.data);

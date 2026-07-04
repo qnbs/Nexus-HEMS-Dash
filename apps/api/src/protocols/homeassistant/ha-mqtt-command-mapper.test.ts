@@ -1,4 +1,4 @@
-import { SET_EV_CURRENT_ERROR } from '@nexus-hems/shared-types';
+import { SET_EV_CURRENT_ERROR, SET_EV_POWER_ERROR } from '@nexus-hems/shared-types';
 import { describe, expect, it } from 'vitest';
 import {
   haMqttSupportsCommand,
@@ -75,7 +75,7 @@ describe('ha-mqtt-command-mapper', () => {
       entities,
     );
     expect(result).toEqual({
-      error: 'SET_EV_POWER requires a finite wattage between 0 and 22000',
+      error: SET_EV_POWER_ERROR,
     });
   });
 

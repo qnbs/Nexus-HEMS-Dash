@@ -10,6 +10,7 @@ import {
   HeatPumpModeValueSchema,
   MAX_EV_CURRENT_A,
   SET_EV_CURRENT_ERROR,
+  SET_EV_POWER_ERROR,
   type WSCommandType,
 } from '@nexus-hems/shared-types';
 import type { ProtocolCommandRequest } from '../protocol-command.js';
@@ -103,7 +104,7 @@ export function mapProtocolCommandToMqttService(
     case 'SET_EV_POWER': {
       const power = EvPowerValueSchema.safeParse(command.value);
       if (!power.success) {
-        return { error: 'SET_EV_POWER requires a finite wattage between 0 and 22000' };
+        return { error: SET_EV_POWER_ERROR };
       }
       if (!entities.wallboxCurrentEntityId) {
         return { error: 'HA_WALLBOX_CURRENT_ENTITY not configured' };

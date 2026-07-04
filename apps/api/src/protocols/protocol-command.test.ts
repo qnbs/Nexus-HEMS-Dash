@@ -2,6 +2,7 @@ import {
   HEAT_PUMP_MODE_ERROR,
   MAX_EV_CURRENT_A,
   SET_EV_CURRENT_ERROR,
+  SET_EV_POWER_ERROR,
 } from '@nexus-hems/shared-types';
 import { describe, expect, it } from 'vitest';
 import {
@@ -144,6 +145,12 @@ describe('validateProtocolCommandRequest', () => {
     expect(overCurrent.valid).toBe(false);
     if (!overCurrent.valid) {
       expect(overCurrent.error).toBe(SET_EV_CURRENT_ERROR);
+    }
+
+    const overPower = validateProtocolCommandRequest({ type: 'SET_EV_POWER', value: 22_001 });
+    expect(overPower.valid).toBe(false);
+    if (!overPower.valid) {
+      expect(overPower.error).toBe(SET_EV_POWER_ERROR);
     }
 
     const hpSchema = HeatPumpModeValueSchema.safeParse(2.5);
