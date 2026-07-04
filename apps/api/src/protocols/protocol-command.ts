@@ -6,32 +6,44 @@
  * shipped in Phase 6.
  */
 
-import { WSCommandSchema, type WSCommandType } from '@nexus-hems/shared-types';
+import {
+  BatteryPowerValueSchema,
+  EvCurrentValueSchema,
+  EvPowerValueSchema,
+  HEAT_PUMP_MODE_ERROR,
+  HeatPumpModeValueSchema,
+  MAX_BATTERY_POWER_W,
+  MAX_EV_CURRENT_A,
+  MAX_EV_POWER_W,
+  SET_BATTERY_POWER_ERROR,
+  SET_EV_CURRENT_ERROR,
+  SET_EV_POWER_ERROR,
+  WSCommandSchema,
+  type WSCommandType,
+} from '@nexus-hems/shared-types';
 import { z } from 'zod';
 
-/** Residential EVCS ceiling — aligns with WSCommand 25 kW safety cap. */
-export const MAX_EV_POWER_W = 22_000;
-export const MAX_EV_CURRENT_A = 32;
-/** Bidirectional ESS power cap (matches WSCommandSchema 25 kW safety limit). */
-export const MAX_BATTERY_POWER_W = 25_000;
-
-export const EvPowerValueSchema = z.number().finite().min(0).max(MAX_EV_POWER_W);
-export const EvCurrentValueSchema = z.number().finite().min(0).max(MAX_EV_CURRENT_A);
+export {
+  BatteryPowerValueSchema,
+  EvCurrentValueSchema,
+  EvPowerValueSchema,
+  HEAT_PUMP_MODE_ERROR,
+  HeatPumpModeValueSchema,
+  MAX_BATTERY_POWER_W,
+  MAX_EV_CURRENT_A,
+  MAX_EV_POWER_W,
+  SET_BATTERY_POWER_ERROR,
+  SET_EV_CURRENT_ERROR,
+  SET_EV_POWER_ERROR,
+};
 /** V2X discharge power in watts (aligns with frontend command-safety 25 kW cap). */
 export const EvDischargeValueSchema = z.number().finite().min(0).max(MAX_BATTERY_POWER_W);
 /** OCPP §14a grid limit in watts (frontend OCPP21Adapter uses W; min 100 W avoids kW ambiguity). */
 export const OcppGridLimitWattsSchema = z.number().finite().min(100).max(MAX_BATTERY_POWER_W);
-export const BatteryPowerValueSchema = z
-  .number()
-  .finite()
-  .min(-MAX_BATTERY_POWER_W)
-  .max(MAX_BATTERY_POWER_W);
 /** OpenEMS ESS mode aliases accepted at the protocol boundary. */
 export const BatteryModeValueSchema = z.union([z.literal('charge'), z.literal('discharge')]);
 /** Peak-shaving limit in kW (OpenEMS maps ×1000 → watts). */
 export const GridLimitValueSchema = z.number().finite().min(0).max(25);
-/** SG Ready mode 1–4 (aligns with frontend command-safety). */
-export const HeatPumpModeValueSchema = z.number().finite().min(1).max(4);
 /** HA entity id for SG Ready writes — must not be climate (hvac_mode is string-based). */
 export const HeatPumpModeEntityIdSchema = z
   .string()
@@ -65,19 +77,19 @@ export const ProtocolCommandRequestSchema = WSCommandSchema.and(
   if (cmd.type === 'SET_EV_POWER' && !EvPowerValueSchema.safeParse(cmd.value).success) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: 'SET_EV_POWER requires a finite wattage between 0 and 22000',
+      message: SET_EV_POWER_ERROR,
     });
   }
   if (cmd.type === 'SET_EV_CURRENT' && !EvCurrentValueSchema.safeParse(cmd.value).success) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: 'SET_EV_CURRENT requires a finite amp value between 0 and 32',
+      message: SET_EV_CURRENT_ERROR,
     });
   }
   if (cmd.type === 'SET_BATTERY_POWER' && !BatteryPowerValueSchema.safeParse(cmd.value).success) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: 'SET_BATTERY_POWER requires a finite wattage between -25000 and 25000',
+      message: SET_BATTERY_POWER_ERROR,
     });
   }
   if (cmd.type === 'SET_BATTERY_MODE' && !BatteryModeValueSchema.safeParse(cmd.value).success) {
@@ -105,7 +117,7 @@ export const ProtocolCommandRequestSchema = WSCommandSchema.and(
   if (cmd.type === 'SET_HEAT_PUMP_MODE' && !HeatPumpModeValueSchema.safeParse(cmd.value).success) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: 'SET_HEAT_PUMP_MODE requires a finite SG Ready mode between 1 and 4',
+      message: HEAT_PUMP_MODE_ERROR,
     });
   }
 });

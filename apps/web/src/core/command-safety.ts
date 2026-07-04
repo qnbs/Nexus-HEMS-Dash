@@ -10,6 +10,7 @@
  * This module is the ONLY path to send commands to adapters.
  */
 
+import { HeatPumpModeValueSchema, MAX_EV_CURRENT_A } from '@nexus-hems/shared-types';
 import { z } from 'zod';
 import { isReadOnlyModeActive } from '../lib/adapter-mode';
 import { nexusDb } from '../lib/db';
@@ -22,7 +23,7 @@ import type { AdapterCommand, AdapterCommandType } from './adapters/EnergyAdapte
 type CommandValue = number | string | boolean;
 
 const positiveNumber = z.number().nonnegative();
-const currentAmps = z.number().min(0).max(80); // IEC 61851 max 80A
+const currentAmps = z.number().min(0).max(MAX_EV_CURRENT_A);
 const powerWatts = z.number().min(0).max(25_000); // MED-08: 25 kW safety cap (§14a EnWG residential)
 const batteryPowerWatts = z.number().min(-25_000).max(25_000); // Bidirectional
 const temperatureSetpoint = z.number().min(5).max(35); // °C sane range
@@ -33,7 +34,7 @@ export const commandSchemas: Record<AdapterCommandType, z.ZodType<CommandValue>>
   START_CHARGING: z.union([z.boolean(), z.number()]),
   STOP_CHARGING: z.union([z.boolean(), z.number()]),
   SET_V2X_DISCHARGE: powerWatts,
-  SET_HEAT_PUMP_MODE: z.number().min(1).max(4), // SG Ready 1–4
+  SET_HEAT_PUMP_MODE: HeatPumpModeValueSchema,
   SET_HEAT_PUMP_POWER: positiveNumber.max(15_000), // 15 kW heat pump cap
   SET_BATTERY_POWER: batteryPowerWatts,
   SET_BATTERY_MODE: z.union([

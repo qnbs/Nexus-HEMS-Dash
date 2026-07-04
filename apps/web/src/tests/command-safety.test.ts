@@ -1,3 +1,4 @@
+import { HEAT_PUMP_MODE_ERROR } from '@nexus-hems/shared-types';
 import 'fake-indexeddb/auto';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
@@ -26,6 +27,12 @@ describe('command-safety', () => {
       const result = validateCommand({ type: 'SET_BATTERY_POWER', value: 2500 });
       expect(result.valid).toBe(true);
       expect(result.error).toBeUndefined();
+    });
+
+    it('rejects fractional SET_HEAT_PUMP_MODE (SG Ready requires integer 1–4)', () => {
+      const result = validateCommand({ type: 'SET_HEAT_PUMP_MODE', value: 2.5 });
+      expect(result.valid).toBe(false);
+      expect(result.error).toContain(HEAT_PUMP_MODE_ERROR);
     });
 
     it('rejects a command with an out-of-range value', () => {

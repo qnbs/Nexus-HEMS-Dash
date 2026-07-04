@@ -5,9 +5,14 @@
  * reject invalid inputs (type safety at runtime boundary) and accept valid ones.
  */
 
-import { type EnergyData, EnergyDataSchema, WSCommandSchema } from '@nexus-hems/shared-types';
+import {
+  type EnergyData,
+  EnergyDataSchema,
+  SET_EV_POWER_ERROR,
+  WSCommandSchema,
+} from '@nexus-hems/shared-types';
 import fc from 'fast-check';
-import { describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -149,24 +154,40 @@ describe('EnergyDataSchema — property-based', () => {
 });
 
 describe('WSCommandSchema — property-based', () => {
-  // Valid SCREAM_CASE command types from WSCommandTypeSchema
-  const knownTypes = [
-    'KNX_TOGGLE_LIGHTS',
-    'KNX_SET_TEMPERATURE',
-    'KNX_TOGGLE_WINDOW',
-    'SET_BATTERY_MODE',
-    'START_CHARGING',
-    'STOP_CHARGING',
-  ] as const;
-
-  // Non-power commands that accept any boolean/string value
+  // Non-power commands with type-appropriate values
   it('accepts valid ws commands', () => {
     fc.assert(
       fc.property(
-        fc.record({
-          type: fc.constantFrom(...knownTypes),
-          value: fc.oneof(fc.boolean(), fc.constant('auto'), fc.constant('self-consumption')),
-        }),
+        fc.oneof(
+          fc.record({ type: fc.constant('KNX_TOGGLE_LIGHTS' as const), value: fc.boolean() }),
+          fc.record({ type: fc.constant('KNX_TOGGLE_WINDOW' as const), value: fc.boolean() }),
+          fc.record({
+            type: fc.constant('SET_BATTERY_MODE' as const),
+            value: fc.oneof(
+              fc.constant('auto'),
+              fc.constant('self-consumption'),
+              fc.constant('charge'),
+              fc.constant('discharge'),
+            ),
+          }),
+          fc.record({
+            type: fc.constant('SET_HEAT_PUMP_MODE' as const),
+            value: fc.integer({ min: 1, max: 4 }),
+          }),
+          fc.record({
+            type: fc.constant('SET_EV_CURRENT' as const),
+            value: fc.integer({ min: 0, max: 80 }),
+          }),
+          // START/STOP accept boolean or any finite number — no upper cap in WSCommandSchema
+          fc.record({
+            type: fc.constant('START_CHARGING' as const),
+            value: fc.oneof(fc.boolean(), fc.integer()),
+          }),
+          fc.record({
+            type: fc.constant('STOP_CHARGING' as const),
+            value: fc.oneof(fc.boolean(), fc.integer()),
+          }),
+        ),
         (cmd) => {
           const result = WSCommandSchema.safeParse(cmd);
           return result.success;
@@ -174,6 +195,33 @@ describe('WSCommandSchema — property-based', () => {
       ),
       { numRuns: 200 },
     );
+  });
+
+  it('rejects fractional SET_HEAT_PUMP_MODE', () => {
+    expect(WSCommandSchema.safeParse({ type: 'SET_HEAT_PUMP_MODE', value: 2.5 }).success).toBe(
+      false,
+    );
+  });
+
+  it('rejects SET_EV_CURRENT above 80 A', () => {
+    expect(WSCommandSchema.safeParse({ type: 'SET_EV_CURRENT', value: 81 }).success).toBe(false);
+  });
+
+  it('rejects SET_EV_POWER above 22 kW', () => {
+    const result = WSCommandSchema.safeParse({ type: 'SET_EV_POWER', value: 22_001 });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues.some((issue) => issue.message === SET_EV_POWER_ERROR)).toBe(true);
+    }
+  });
+
+  it('rejects NaN for actuator numeric commands', () => {
+    expect(
+      WSCommandSchema.safeParse({ type: 'SET_BATTERY_POWER', value: Number.NaN }).success,
+    ).toBe(false);
+    expect(
+      WSCommandSchema.safeParse({ type: 'KNX_SET_TEMPERATURE', value: Number.NaN }).success,
+    ).toBe(false);
   });
 
   it('rejects missing type field', () => {

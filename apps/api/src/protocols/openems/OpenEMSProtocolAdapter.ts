@@ -49,7 +49,11 @@ import {
   EvCurrentValueSchema,
   EvPowerValueSchema,
   GridLimitValueSchema,
+  HEAT_PUMP_MODE_ERROR,
   HeatPumpModeValueSchema,
+  SET_BATTERY_POWER_ERROR,
+  SET_EV_CURRENT_ERROR,
+  SET_EV_POWER_ERROR,
 } from '../protocol-command.js';
 import { isSafeComponentId, sanitizeWritableProperties } from './openems-writable-rules.js';
 
@@ -479,7 +483,7 @@ export class OpenEMSProtocolAdapter implements IProtocolAdapter, IProtocolComman
             handled: true,
             success: false,
             adapterId: this.id,
-            error: 'SET_EV_POWER requires a finite wattage between 0 and 22000',
+            error: SET_EV_POWER_ERROR,
           };
         }
         ok = await this.updateSafeComponentConfig(this.evcsComponentId, [
@@ -494,7 +498,7 @@ export class OpenEMSProtocolAdapter implements IProtocolAdapter, IProtocolComman
             handled: true,
             success: false,
             adapterId: this.id,
-            error: 'SET_EV_CURRENT requires a finite amp value between 0 and 32',
+            error: SET_EV_CURRENT_ERROR,
           };
         }
         const derivedPower = current.data * 230 * 3;
@@ -520,7 +524,7 @@ export class OpenEMSProtocolAdapter implements IProtocolAdapter, IProtocolComman
             handled: true,
             success: false,
             adapterId: this.id,
-            error: 'SET_BATTERY_POWER requires a finite wattage between -25000 and 25000',
+            error: SET_BATTERY_POWER_ERROR,
           };
         }
         ok = await this.updateSafeComponentConfig(this.essControllerId, [
@@ -569,7 +573,7 @@ export class OpenEMSProtocolAdapter implements IProtocolAdapter, IProtocolComman
             handled: true,
             success: false,
             adapterId: this.id,
-            error: 'SET_HEAT_PUMP_MODE requires a finite SG Ready mode between 1 and 4',
+            error: HEAT_PUMP_MODE_ERROR,
           };
         }
         ok = await this.updateSafeComponentConfig(this.hpSgReadyControllerId, [

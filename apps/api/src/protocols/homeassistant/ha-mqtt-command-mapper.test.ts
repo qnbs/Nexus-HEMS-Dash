@@ -1,3 +1,4 @@
+import { SET_EV_CURRENT_ERROR, SET_EV_POWER_ERROR } from '@nexus-hems/shared-types';
 import { describe, expect, it } from 'vitest';
 import {
   haMqttSupportsCommand,
@@ -33,9 +34,9 @@ describe('ha-mqtt-command-mapper', () => {
   });
 
   it('rejects invalid SET_EV_CURRENT values', () => {
-    const result = mapProtocolCommandToMqttService({ type: 'SET_EV_CURRENT', value: 40 }, entities);
+    const result = mapProtocolCommandToMqttService({ type: 'SET_EV_CURRENT', value: 81 }, entities);
     expect(result).toEqual({
-      error: 'SET_EV_CURRENT requires a finite amp value between 0 and 32',
+      error: SET_EV_CURRENT_ERROR,
     });
   });
 
@@ -47,7 +48,7 @@ describe('ha-mqtt-command-mapper', () => {
     expect(result).toEqual({ error: 'HA_WALLBOX_CURRENT_ENTITY not configured' });
   });
 
-  it('clamps SET_EV_POWER derived amps to 32 A ceiling', () => {
+  it('clamps SET_EV_POWER derived amps to 80 A ceiling', () => {
     const result = mapProtocolCommandToMqttService(
       { type: 'SET_EV_POWER', value: 22_000 },
       entities,
@@ -55,7 +56,7 @@ describe('ha-mqtt-command-mapper', () => {
     expect(result).toMatchObject({
       domain: 'number',
       service: 'set_value',
-      payload: { entity_id: 'number.wallbox_max_current', value: 32 },
+      payload: { entity_id: 'number.wallbox_max_current', value: 80 },
     });
   });
 
@@ -74,7 +75,7 @@ describe('ha-mqtt-command-mapper', () => {
       entities,
     );
     expect(result).toEqual({
-      error: 'SET_EV_POWER requires a finite wattage between 0 and 22000',
+      error: SET_EV_POWER_ERROR,
     });
   });
 
@@ -184,7 +185,7 @@ describe('ha-mqtt-command-mapper', () => {
       entities,
     );
     expect(result).toEqual({
-      error: 'SET_HEAT_PUMP_MODE requires a finite SG Ready mode between 1 and 4',
+      error: 'SET_HEAT_PUMP_MODE requires an integer SG Ready mode between 1 and 4',
     });
   });
 
@@ -194,7 +195,7 @@ describe('ha-mqtt-command-mapper', () => {
       entities,
     );
     expect(result).toEqual({
-      error: 'SET_HEAT_PUMP_MODE requires a finite SG Ready mode between 1 and 4',
+      error: 'SET_HEAT_PUMP_MODE requires an integer SG Ready mode between 1 and 4',
     });
   });
 

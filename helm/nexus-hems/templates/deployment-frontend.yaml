@@ -50,6 +50,9 @@ spec:
             {{- toYaml .Values.resources.frontend | nindent 12 }}
           securityContext:
             {{- toYaml .Values.containerSecurityContext | nindent 12 }}
+          env:
+            - name: WS_ORIGINS
+              value: {{ include "nexus-hems.frontendWsOrigins" . | quote }}
           volumeMounts:
             - name: tmp
               mountPath: /tmp

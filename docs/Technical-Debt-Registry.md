@@ -416,7 +416,7 @@ The static meta CSP (effective policy for GitHub Pages, no Express in front) shi
 | Surface | `style-src` today | Notes |
 |---|---|---|
 | GitHub Pages / Vite `index.html` meta CSP | `'self' 'nonce-__CSP_NONCE__'` | Build-time nonce via `cspNoncePlugin`; `smoke-prod-build.mjs` asserts no `unsafe-inline` |
-| API Helmet prod (`security.ts`) | `'self' 'nonce-{build}'` when `buildNonce` extracted from `index.html` | AUD-02 phase 1 — drops `unsafe-inline` when nonce present; fallback retains `unsafe-inline` if HTML unreadable |
+| API Helmet prod (`security.ts`) | `'self' 'nonce-{build}'` when `buildNonce` extracted from `index.html`; `'self'` only when nonce missing | AUD-02 phase 1 — fail-closed (no `unsafe-inline` fallback); `helmet-csp.test.ts` guards both paths |
 | Docker/nginx (`nginx.conf`) | `'self' 'nonce-${CSP_NONCE}'` | `docker-entrypoint.sh` extracts nonce from baked `index.html`; removed Google Fonts origins (self-hosted) |
 | Tauri desktop prod (`tauri.conf.json`) | `'self' 'nonce-{build}'` + `style-src-attr 'unsafe-inline'` | AUD-02 phase 2 — `sync-tauri-csp.ts` patches CSP after Vite build; Radix/motion positioning attrs only |
 

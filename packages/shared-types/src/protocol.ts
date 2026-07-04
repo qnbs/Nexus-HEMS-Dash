@@ -193,9 +193,163 @@ export const WSCommandTypeSchema = z.enum([
 
 export type WSCommandType = z.infer<typeof WSCommandTypeSchema>;
 
+/** MED-08 residential power cap — aligns with frontend command-safety.ts */
+export const MAX_BATTERY_POWER_W = 25_000;
+const MAX_POWER_W = MAX_BATTERY_POWER_W;
+const MAX_HP_POWER_W = 15_000;
+/** IEC 61851 residential ceiling — single source for WS + API protocol validation. */
+export const MAX_EV_CURRENT_A = 80;
+
+/** Shared validation copy — keep WS, API protocol, and adapter errors in sync. */
+export const SET_EV_CURRENT_ERROR = `SET_EV_CURRENT requires a finite amp value between 0 and ${MAX_EV_CURRENT_A}`;
+
+/** Residential EVCS power ceiling at protocol-adapter boundary (22 kW). */
+export const MAX_EV_POWER_W = 22_000;
+
+/** Shared validation copy for EV charging power at the protocol boundary. */
+export const SET_EV_POWER_ERROR = `SET_EV_POWER requires a finite wattage between 0 and ${MAX_EV_POWER_W}`;
+
+/** Shared validation copy for SG Ready integer modes 1–4. */
+export const HEAT_PUMP_MODE_ERROR =
+  'SET_HEAT_PUMP_MODE requires an integer SG Ready mode between 1 and 4';
+
+/** EV charging power (watts) — protocol + adapter boundary. */
+export const EvPowerValueSchema = z
+  .number({ error: SET_EV_POWER_ERROR })
+  .finite({ error: SET_EV_POWER_ERROR })
+  .min(0, { error: SET_EV_POWER_ERROR })
+  .max(MAX_EV_POWER_W, { error: SET_EV_POWER_ERROR });
+
+/** EV charging current (amps) — protocol + adapter boundary. */
+export const EvCurrentValueSchema = z
+  .number({ error: SET_EV_CURRENT_ERROR })
+  .finite({ error: SET_EV_CURRENT_ERROR })
+  .min(0, { error: SET_EV_CURRENT_ERROR })
+  .max(MAX_EV_CURRENT_A, { error: SET_EV_CURRENT_ERROR });
+
+/** SG Ready discrete mode 1–4 — rejects fractional values at schema boundary. */
+export const HeatPumpModeValueSchema = z
+  .number({ error: HEAT_PUMP_MODE_ERROR })
+  .int({ error: HEAT_PUMP_MODE_ERROR })
+  .min(1, { error: HEAT_PUMP_MODE_ERROR })
+  .max(4, { error: HEAT_PUMP_MODE_ERROR });
+
+/** Shared validation copy for bidirectional ESS power at the WS boundary. */
+export const SET_BATTERY_POWER_ERROR = `SET_BATTERY_POWER requires a finite wattage between -${MAX_BATTERY_POWER_W} and ${MAX_BATTERY_POWER_W}`;
+
+/** Bidirectional ESS power (watts) — WS + protocol boundary. */
+export const BatteryPowerValueSchema = z
+  .number({ error: SET_BATTERY_POWER_ERROR })
+  .finite({ error: SET_BATTERY_POWER_ERROR })
+  .min(-MAX_BATTERY_POWER_W, { error: SET_BATTERY_POWER_ERROR })
+  .max(MAX_BATTERY_POWER_W, { error: SET_BATTERY_POWER_ERROR });
+
+/** Shared validation copy for battery mode strings/numbers at the WS boundary. */
+export const SET_BATTERY_MODE_ERROR = 'SET_BATTERY_MODE requires a supported mode string or number';
+
+/** Shared validation copy for KNX room temperature setpoints. */
+export const KNX_TEMPERATURE_ERROR = 'KNX_SET_TEMPERATURE requires a temperature between 5 and 35';
+
+/** KNX room temperature setpoint (°C) — WS boundary. */
+export const KnxTemperatureValueSchema = z
+  .number({ error: KNX_TEMPERATURE_ERROR })
+  .finite({ error: KNX_TEMPERATURE_ERROR })
+  .min(5, { error: KNX_TEMPERATURE_ERROR })
+  .max(35, { error: KNX_TEMPERATURE_ERROR });
+
+const BatteryModeWsValueSchema = z.union([
+  z.literal('charge'),
+  z.literal('discharge'),
+  z.literal('self-consumption'),
+  z.literal('force-charge'),
+  z.literal('time-of-use'),
+  z.literal('auto'),
+  z.number().finite(),
+]);
+
+type WsCommandValue = number | string | boolean;
+type WsRejectFn = (message: string) => void;
+
+function validateNonNegativePower(
+  label: string,
+  value: WsCommandValue,
+  maxW: number,
+  reject: WsRejectFn,
+): void {
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    reject(`${label} requires a numeric value`);
+    return;
+  }
+  if (value < 0 || value > maxW) {
+    reject(`${label} requires a value between 0 and ${maxW}`);
+  }
+}
+
+function refineWsCommandValue(
+  type: WSCommandType,
+  value: WsCommandValue,
+  reject: WsRejectFn,
+): void {
+  switch (type) {
+    case 'SET_EV_POWER':
+      if (!EvPowerValueSchema.safeParse(value).success) {
+        reject(SET_EV_POWER_ERROR);
+      }
+      return;
+    case 'SET_V2X_DISCHARGE':
+    case 'SET_GRID_LIMIT':
+      validateNonNegativePower(type, value, MAX_POWER_W, reject);
+      return;
+    case 'SET_EV_CURRENT':
+      if (!EvCurrentValueSchema.safeParse(value).success) {
+        reject(SET_EV_CURRENT_ERROR);
+      }
+      return;
+    case 'SET_HEAT_PUMP_POWER':
+      validateNonNegativePower('SET_HEAT_PUMP_POWER', value, MAX_HP_POWER_W, reject);
+      return;
+    case 'SET_BATTERY_POWER':
+      if (!BatteryPowerValueSchema.safeParse(value).success) {
+        reject(SET_BATTERY_POWER_ERROR);
+      }
+      return;
+    case 'SET_HEAT_PUMP_MODE':
+      if (!HeatPumpModeValueSchema.safeParse(value).success) {
+        reject(HEAT_PUMP_MODE_ERROR);
+      }
+      return;
+    case 'SET_BATTERY_MODE':
+      if (!BatteryModeWsValueSchema.safeParse(value).success) {
+        reject(SET_BATTERY_MODE_ERROR);
+      }
+      return;
+    case 'KNX_SET_TEMPERATURE':
+      if (!KnxTemperatureValueSchema.safeParse(value).success) {
+        reject(KNX_TEMPERATURE_ERROR);
+      }
+      return;
+    case 'KNX_TOGGLE_LIGHTS':
+    case 'KNX_TOGGLE_WINDOW':
+      if (typeof value !== 'boolean') {
+        reject(`${type} requires a boolean value`);
+      }
+      return;
+    case 'START_CHARGING':
+    case 'STOP_CHARGING':
+      if (typeof value !== 'boolean' && typeof value !== 'number') {
+        reject(`${type} requires a boolean or numeric value`);
+      }
+      return;
+    default: {
+      const _exhaustive: never = type;
+      void _exhaustive;
+    }
+  }
+}
+
 /**
  * Base WS command schema. All commands must have a `type` and `value`.
- * Value constraints are checked per-type after initial parsing.
+ * Per-type caps align with frontend `commandSchemas` (C5 post-audit).
  */
 export const WSCommandSchema = z
   .object({
@@ -203,51 +357,9 @@ export const WSCommandSchema = z
     value: z.union([z.number().finite(), z.string(), z.boolean()]),
   })
   .superRefine((cmd, ctx) => {
-    const v = cmd.value;
-
-    // Power-setting commands require a number
-    const powerTypes = new Set([
-      'SET_EV_POWER',
-      'SET_HEAT_PUMP_POWER',
-      'SET_EV_CURRENT',
-      'SET_V2X_DISCHARGE',
-      'SET_GRID_LIMIT',
-    ]);
-
-    if (powerTypes.has(cmd.type)) {
-      if (typeof v !== 'number') {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: `${cmd.type} requires a numeric value`,
-        });
-        return;
-      }
-      if (v < 0) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: `Negative value not allowed for ${cmd.type}`,
-        });
-        return;
-      }
-    }
-
-    // Battery power is bidirectional but capped
-    if (cmd.type === 'SET_BATTERY_POWER') {
-      if (typeof v !== 'number') {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: 'SET_BATTERY_POWER requires a numeric value',
-        });
-        return;
-      }
-    }
-
-    // MED-08: Safety cap reduced to 25 kW — aligns with §14a EnWG 4.2kW grid limit
-    // and realistic residential system sizes (10kW PV + 5kW battery + 11kW wallbox).
-    // A 50kW cap was unreachable for any certified residential hardware.
-    if (typeof v === 'number' && Math.abs(v) > 25_000) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Value exceeds safety limit (25 kW)' });
-    }
+    refineWsCommandValue(cmd.type, cmd.value, (message) => {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message });
+    });
   });
 
 export type WSCommand = z.infer<typeof WSCommandSchema>;

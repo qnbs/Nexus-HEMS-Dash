@@ -5,14 +5,19 @@
  * Payload: JSON service_data fields (entity_id, value, hvac_mode, …).
  */
 
-import type { WSCommandType } from '@nexus-hems/shared-types';
+import {
+  HEAT_PUMP_MODE_ERROR,
+  HeatPumpModeValueSchema,
+  MAX_EV_CURRENT_A,
+  SET_EV_CURRENT_ERROR,
+  SET_EV_POWER_ERROR,
+  type WSCommandType,
+} from '@nexus-hems/shared-types';
 import type { ProtocolCommandRequest } from '../protocol-command.js';
 import {
   EvCurrentValueSchema,
   EvPowerValueSchema,
   HeatPumpModeEntityIdSchema,
-  HeatPumpModeValueSchema,
-  MAX_EV_CURRENT_A,
 } from '../protocol-command.js';
 
 export interface HAMqttServiceCall {
@@ -83,7 +88,9 @@ export function mapProtocolCommandToMqttService(
     case 'SET_EV_CURRENT': {
       const current = EvCurrentValueSchema.safeParse(command.value);
       if (!current.success) {
-        return { error: 'SET_EV_CURRENT requires a finite amp value between 0 and 32' };
+        return {
+          error: SET_EV_CURRENT_ERROR,
+        };
       }
       if (!entities.wallboxCurrentEntityId) {
         return { error: 'HA_WALLBOX_CURRENT_ENTITY not configured' };
@@ -97,7 +104,7 @@ export function mapProtocolCommandToMqttService(
     case 'SET_EV_POWER': {
       const power = EvPowerValueSchema.safeParse(command.value);
       if (!power.success) {
-        return { error: 'SET_EV_POWER requires a finite wattage between 0 and 22000' };
+        return { error: SET_EV_POWER_ERROR };
       }
       if (!entities.wallboxCurrentEntityId) {
         return { error: 'HA_WALLBOX_CURRENT_ENTITY not configured' };
@@ -131,7 +138,7 @@ export function mapProtocolCommandToMqttService(
     case 'SET_HEAT_PUMP_MODE': {
       const mode = HeatPumpModeValueSchema.safeParse(command.value);
       if (!mode.success) {
-        return { error: 'SET_HEAT_PUMP_MODE requires a finite SG Ready mode between 1 and 4' };
+        return { error: HEAT_PUMP_MODE_ERROR };
       }
       if (!entities.heatPumpModeEntityId) {
         return { error: 'HA_HEAT_PUMP_MODE_ENTITY not configured' };
