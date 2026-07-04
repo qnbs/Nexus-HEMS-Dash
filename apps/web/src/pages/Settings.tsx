@@ -9,7 +9,6 @@ import {
   Gauge,
   Palette,
   RefreshCw,
-  Save,
   Server,
   Settings as SettingsIcon,
   Shield,
@@ -18,7 +17,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
-import { type FormEvent, lazy, Suspense, useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { AdapterConfigPanel } from '../components/AdapterConfigPanel';
@@ -33,6 +32,7 @@ import { SecurityTab } from '../components/settings/SecurityTab';
 import { SettingsFeatureBar } from '../components/settings/SettingsFeatureBar';
 import { StorageTab } from '../components/settings/StorageTab';
 import { SystemTab } from '../components/settings/SystemTab';
+import { parseStoredSettingsImport } from '../core/stored-settings-schema';
 import { useAppStoreShallow } from '../store';
 
 const AISettingsPage = lazy(() => import('./AISettingsPage'));
@@ -53,7 +53,6 @@ type SettingsTab =
 export function Settings() {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [saved, setSaved] = useState(false);
   const [importSuccess, setImportSuccess] = useState(false);
   const [exportSuccess, setExportSuccess] = useState(false);
 
@@ -85,12 +84,6 @@ export function Settings() {
     settings: s.settings,
     updateSettings: s.updateSettings,
   }));
-
-  const handleSave = (e: FormEvent) => {
-    e.preventDefault();
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
-  };
 
   const handleExportSettings = () => {
     confirm.openDialog({
@@ -149,7 +142,11 @@ export function Settings() {
             if (typeof data !== 'object' || data === null || Array.isArray(data)) {
               throw new Error('invalid');
             }
-            updateSettings(data);
+            const parsed = parseStoredSettingsImport(data);
+            if (!parsed) {
+              throw new Error('invalid');
+            }
+            updateSettings(parsed);
             setImportSuccess(true);
             setTimeout(() => setImportSuccess(false), 4000);
           } catch {
@@ -314,7 +311,7 @@ export function Settings() {
 
         {/* Content Area */}
         <div className="min-w-0 flex-1">
-          <form onSubmit={handleSave}>
+          <div>
             <AnimatePresence mode="wait">
               {/* === APPEARANCE === */}
               {activeTab === 'appearance' && (
@@ -509,26 +506,7 @@ export function Settings() {
                 </motion.div>
               )}
             </AnimatePresence>
-
-            {/* Save Button - always visible */}
-            <motion.div
-              className="flex justify-end pt-6"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-            >
-              <motion.button
-                type="submit"
-                className="btn-primary flex items-center gap-2 px-8 py-3"
-                whileHover={{ scale: 1.03, y: -2 }}
-                whileTap={{ scale: 0.97 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-              >
-                {saved ? <Check size={20} className="animate-bounce-slow" /> : <Save size={20} />}
-                {saved ? t('common.saved') : t('common.save')}
-              </motion.button>
-            </motion.div>
-          </form>
+          </div>
         </div>
       </div>
 

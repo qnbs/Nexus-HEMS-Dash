@@ -685,6 +685,10 @@ export const en = {
     snapshots: 'Snapshots',
     daysRetention: 'Days retention',
     clearCache: 'Clear local cache',
+    clearCacheConfirmTitle: 'Clear local cache',
+    clearCacheConfirmMessage:
+      'This removes cached snapshots and offline data from this device. Settings are kept.',
+    clearCacheConfirmAction: 'Clear cache',
     pushNotifications: 'Push notifications',
     pushHint: 'Receive alerts for important system events',
     priceAlerts: 'Price alerts',

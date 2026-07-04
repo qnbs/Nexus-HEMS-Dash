@@ -1,19 +1,58 @@
 import { Database, Eye, EyeOff, HardDrive, Trash2 } from 'lucide-react';
 import { motion } from 'motion/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { clearAllData, getLocalStorageStats } from '../../lib/db';
 import { useAppStoreShallow } from '../../store';
+import { ConfirmDialog, useConfirmDialog } from '../ConfirmDialog';
 import { SettingsFeatureBar } from './SettingsFeatureBar';
 import { inputClass, sectionClass, sectionHeaderClass } from './styles';
+
+async function readStorageStats(): Promise<{ usageMb: number; snapshots: number }> {
+  return getLocalStorageStats();
+}
 
 /** Settings → Storage tab: InfluxDB connection, retention and local-storage info. */
 export function StorageTab() {
   const { t } = useTranslation();
+  const confirm = useConfirmDialog();
   const { settings, updateSettings } = useAppStoreShallow((s) => ({
     settings: s.settings,
     updateSettings: s.updateSettings,
   }));
   const [showInfluxToken, setShowInfluxToken] = useState(false);
+  const [usageMb, setUsageMb] = useState(0);
+  const [snapshots, setSnapshots] = useState(0);
+  const [statsTick, setStatsTick] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    void readStorageStats().then((stats) => {
+      if (!cancelled) {
+        setUsageMb(stats.usageMb);
+        setSnapshots(stats.snapshots);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [statsTick]);
+
+  const handleClearCache = () => {
+    confirm.openDialog({
+      title: t('settings.clearCacheConfirmTitle', 'Clear local cache'),
+      message: t(
+        'settings.clearCacheConfirmMessage',
+        'This removes cached snapshots and offline data from this device. Settings are kept.',
+      ),
+      confirmText: t('settings.clearCacheConfirmAction', 'Clear cache'),
+      variant: 'warning',
+      onConfirm: async () => {
+        await clearAllData();
+        setStatsTick((n) => n + 1);
+      },
+    });
+  };
 
   return (
     <>
@@ -76,7 +115,6 @@ export function StorageTab() {
         </div>
       </section>
 
-      {/* Local Storage Info */}
       <section className={sectionClass}>
         <h2 className={sectionHeaderClass}>
           <HardDrive size={20} className="text-cyan-400" />
@@ -84,15 +122,15 @@ export function StorageTab() {
         </h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div className="rounded-xl border border-(--color-border) bg-(--color-surface) p-4 text-center">
-            <p className="font-bold text-(--color-primary) text-2xl">~2.4</p>
+            <p className="font-bold text-(--color-primary) text-2xl">{usageMb.toFixed(1)}</p>
             <p className="text-(--color-muted) text-xs">MB IndexedDB</p>
           </div>
           <div className="rounded-xl border border-(--color-border) bg-(--color-surface) p-4 text-center">
-            <p className="font-bold text-(--color-secondary) text-2xl">847</p>
+            <p className="font-bold text-(--color-secondary) text-2xl">{snapshots}</p>
             <p className="text-(--color-muted) text-xs">{t('settings.snapshots', 'Snapshots')}</p>
           </div>
           <div className="rounded-xl border border-(--color-border) bg-(--color-surface) p-4 text-center">
-            <p className="font-bold text-2xl text-amber-400">30</p>
+            <p className="font-bold text-2xl text-amber-400">{settings.historyDays}</p>
             <p className="text-(--color-muted) text-xs">
               {t('settings.daysRetention', 'Days retention')}
             </p>
@@ -100,6 +138,7 @@ export function StorageTab() {
         </div>
         <motion.button
           type="button"
+          onClick={handleClearCache}
           className="flex items-center gap-2 text-rose-400 text-sm transition-colors hover:text-rose-300"
           whileHover={{ x: 4 }}
         >
@@ -107,6 +146,8 @@ export function StorageTab() {
           {t('settings.clearCache', 'Clear local cache')}
         </motion.button>
       </section>
+
+      <ConfirmDialog {...confirm.dialogProps} />
     </>
   );
 }

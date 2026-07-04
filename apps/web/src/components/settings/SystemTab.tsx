@@ -1,17 +1,36 @@
 import { RefreshCw, Server, Wifi } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useShallow } from 'zustand/react/shallow';
+import { useEnergyStore } from '../../core/useEnergyStore';
 import { useAppStoreShallow } from '../../store';
 import { SettingsFeatureBar } from './SettingsFeatureBar';
 import { inputClass, sectionClass, sectionHeaderClass } from './styles';
 import { ToggleSwitch } from './ToggleSwitch';
 
+function isAdapterConnected(status: string | undefined): boolean {
+  return status === 'connected';
+}
+
 /** Settings → System tab: gateway type, device IPs/ports, connection status, MQTT. */
 export function SystemTab() {
   const { t } = useTranslation();
-  const { settings, updateSettings } = useAppStoreShallow((s) => ({
+  const { settings, updateSettings, wsConnected } = useAppStoreShallow((s) => ({
     settings: s.settings,
     updateSettings: s.updateSettings,
+    wsConnected: s.connected,
   }));
+  const { victronStatus, knxStatus } = useEnergyStore(
+    useShallow((s) => ({
+      victronStatus: s.adapters['victron-mqtt']?.status,
+      knxStatus: s.adapters.knx?.status,
+    })),
+  );
+
+  const connectionDevices = [
+    { name: t('devices.cerboGx'), status: isAdapterConnected(victronStatus) },
+    { name: t('devices.knxRouter'), status: isAdapterConnected(knxStatus) },
+    { name: 'Node-RED', status: wsConnected },
+  ];
 
   return (
     <>
@@ -138,11 +157,7 @@ export function SystemTab() {
           {t('settings.connectionStatus', 'Connection Status')}
         </h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          {[
-            { name: t('devices.cerboGx'), status: true },
-            { name: t('devices.knxRouter'), status: false },
-            { name: 'Node-RED', status: true },
-          ].map((device) => (
+          {connectionDevices.map((device) => (
             <div
               key={device.name}
               className="flex items-center gap-3 rounded-xl border border-(--color-border) bg-(--color-surface) p-3"

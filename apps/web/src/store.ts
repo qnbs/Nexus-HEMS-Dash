@@ -69,7 +69,7 @@ export const defaultSettings: StoredSettings = {
   telemetryDisabled: true,
   twoFactor: true,
   influxUrl: 'http://192.168.1.102:8086',
-  influxToken: '••••••••••••••••',
+  influxToken: '',
   historyDays: 30,
   location: { lat: 53.5511, lon: 9.9937 },
   gridPriceAvg: 0.25,

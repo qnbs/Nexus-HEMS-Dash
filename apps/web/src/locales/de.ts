@@ -689,6 +689,10 @@ export const de = {
     snapshots: 'Snapshots',
     daysRetention: 'Tage Aufbewahrung',
     clearCache: 'Lokalen Cache löschen',
+    clearCacheConfirmTitle: 'Lokalen Cache löschen',
+    clearCacheConfirmMessage:
+      'Entfernt zwischengespeicherte Snapshots und Offline-Daten auf diesem Gerät. Einstellungen bleiben erhalten.',
+    clearCacheConfirmAction: 'Cache löschen',
     pushNotifications: 'Push-Benachrichtigungen',
     pushHint: 'Benachrichtigungen für wichtige Systemereignisse erhalten',
     priceAlerts: 'Preisalarme',
