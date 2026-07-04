@@ -9,31 +9,64 @@ Release notes are maintained here and published via [semantic-release](https://g
 
 ## [Unreleased]
 
+## [1.10.0] - 2026-07-04
+
+Consolidates **33 commits** since `v1.9.0` (PRs [#236](https://github.com/qnbs/Nexus-HEMS-Dash/pull/236)–[#268](https://github.com/qnbs/Nexus-HEMS-Dash/pull/268)): security hardening, DevOps quality platforms, post-audit backend parity (phases 1–8), and production deploy/Helm edge fixes.
+
+### Post-Audit Remediation (Phases 1–8)
+
+- **Phase 1–4 (#260)** — Settings import/save fixes, HA adapter UI, Help truth-sync, adapter-specific setup guides.
+- **Read-only & safety E2E (#261)** — `READ_ONLY_MODE` sync across API/WebSocket/frontend; production CSP fail-closed; Playwright read-only + safety-indicator specs.
+- **Phase 2 — E2E depth + HA backend MVP (#262)** — Backend `HomeAssistantProtocolAdapter` (ha-ws-api telemetry); expanded Playwright coverage (auth, adapter mode, backend WS).
+- **Phase 3 — Zigbee2MQTT + Matter backend MVP (#263)** — `Zigbee2MQTTProtocolAdapter` + `MatterProtocolAdapter` read-only telemetry on EventBus.
+- **Phase 4 — HA MQTT + WS live E2E (#264)** — `HomeAssistantMqttProtocolAdapter`; live WebSocket consumer E2E; protocol registration tests.
+- **Phase 5 — Backend command dispatch (#265)** — `ProtocolCommandRouter` bridges validated WS commands to OCPP CSMS, OpenEMS, HA MQTT handlers.
+- **Phase 6 — HA MQTT commands + OpenEMS storage (#266)** — Service publish for HA MQTT; OpenEMS ESS/EVCS/heat-pump/grid writes with allowlists.
+- **Phase 7 — OCPP V2G + §14a grid limit (#267)** — `SET_V2X_DISCHARGE`, `SET_GRID_LIMIT` at CSMS protocol boundary; adapter + API tests.
+- **Phase 8 — WS schema hardening + deploy (#268)** — Centralized `MAX_EV_CURRENT_A` (80 A), `MAX_EV_POWER_W` (22 kW), `HeatPumpModeValueSchema`; Helm `frontend.wsOrigins` → `WS_ORIGINS`; shared Pages deployment prune script with retry/backoff; `deploy.yml` gate + 35 min timeout.
+
 ### Security
 
-- **JWT secret enforcement is production-fatal (CRIT-03)** — `checkSecretEntropy` now aborts boot in production when `JWT_SECRET`/`JWT_SECRET_NEW` matches a known-weak pattern or has estimated entropy `< 128` bits (previously warn-only; the registry's "fixed in v1.1.1" claim was stale). A secret shorter than the recommended 64 chars stays a non-fatal warning; dev/test remain warn-only. Thrown messages never leak the secret, its length, or the entropy value.
-- **CSP style-src reduction (AUD-02 phase 2)** — Tauri production `tauri build` syncs nonce-aligned CSP via `sync-tauri-csp.ts`; drops `style-src 'unsafe-inline'`; `style-src-attr 'unsafe-inline'` for Radix/motion positioning; dev `tauri dev` keeps HMR exception.
-- **CSP style-src reduction (AUD-02 phase 1)** — production API Helmet drops `style-src 'unsafe-inline'` when Vite build nonce is present; Docker/nginx CSP uses `nonce-${CSP_NONCE}` extracted from `index.html` at container start; removed stale Google Fonts CSP origins; `smoke-prod-build.mjs` asserts meta CSP has no `unsafe-inline`.
+- **JWT secret enforcement is production-fatal (CRIT-03, #244)** — `checkSecretEntropy` aborts boot in production on weak/low-entropy secrets; dev/test remain warn-only; messages never leak secret metadata.
+- **CSP style-src reduction (AUD-02, #240–#241)** — Production Helmet + Docker/nginx drop `style-src 'unsafe-inline'` when Vite nonce is present; Tauri production CSP synced via `sync-tauri-csp.ts`; `style-src-attr 'unsafe-inline'` retained for Radix/motion.
+- **Backend hardening (#248)** — CSWSH origin checks, CSP fail-closed paths, SSRF URL pinning, least-privilege refinements.
+- **BYOK vault hardening (ADR-026, #251)** — AI provider keys stored with non-extractable `CryptoKey` (AES-GCM) in IndexedDB.
+- **OCPP Security Profile 3 mTLS API proxy (HIGH-12, #238)** — `POST /api/ocpp/proxy-session` + `/ws/ocpp` relay; browser never holds CSMS client certificates.
+- **Safety command-path (#246)** — Single rate-limit token spend, awaited audit trail, SOC fail-safe on battery commands.
+- **Command validation boundary (#268)** — Shared Zod schemas for EV current/power, heat-pump integer modes, battery power, KNX temperature; `never` exhaustiveness guard on WS command switch.
 
 ### Added
 
-- **Branded ComboBox dropdown (WS-8)** — `SelectField` now routes long option lists (manufacturers, protocols, timezones, adapters) to a themed listbox popover with type-to-filter and full keyboard support, replacing the dated native OS `<select>` fallback. `ChoiceCardGroup` still serves short lists; native `<select>` is kept only for `multiple`. The **Total JS** size budget rises 1120 → 1130 kB to accommodate the new component (~2.6 kB gzipped); the app was already at the prior ceiling.
-- **Storybook coverage (LOW-08)** — stories for `SankeyDiagram`, `Floorplan`, and `AdapterConfigPanel` (visual regression baseline for high-complexity components).
-- **Adapter worker activation (MED-12)** — `useAdapterBridge` offloads Modbus SunSpec REST polling to `adapter-worker` when `VITE_ADAPTER_WORKER=true` (requires live hardware ack); shared `mergeSunSpecRegistersToUnified()`; `sunspecPoll` worker message.
-- **SunSpec transform parity module (MED-12)** — shared `sunspec-transforms.ts` used by `ModbusSunSpecAdapter` and `adapter-worker`; golden parity tests before worker activation.
-- **OCPP Security Profile 3 mTLS API proxy (HIGH-12)** — `POST /api/ocpp/proxy-session` stores short-lived mTLS credentials server-side; browser connects via `/ws/ocpp?ticket=&session=` relay (mirrors EEBUS `/ws/eebus` pattern). `OCPP21Adapter` uses proxy automatically for SP3 in browser.
+- **Branded ComboBox dropdown (WS-8, #244/#249)** — `SelectField` listbox with type-to-filter for long option lists; Total JS budget 1120 → 1130 kB gzipped.
+- **Storybook coverage (LOW-08, #243)** — Stories for `SankeyDiagram`, `Floorplan`, `AdapterConfigPanel`.
+- **SunSpec worker activation (MED-12, #239–#242)** — Shared `sunspec-transforms.ts` + parity tests; `adapter-worker` polling when `VITE_ADAPTER_WORKER=true`.
+- **Backend protocol adapters (post-audit)** — HA WS, Zigbee2MQTT, Matter, HA MQTT, OpenEMS command writes, OCPP CSMS outbound commands (see phases above).
+- **Helm chart CI gate (#237)** — `helm lint` + `helm template` smoke in `ci.yml`.
+- **DevOps quality platforms (#252)** — Codecov/CodeRabbit/CodeAnt/DeepSource layering (ADR-027); advisory vs blocking gates documented in `DEVOPS.md`.
 
 ### Changed
 
-- **API reference** — documented `POST /api/ocpp/proxy-session`, `/ws/ocpp`, and `/ws/eebus` WebSocket proxy paths.
+- **Release workflow manual-only (ADR-015, #236)** — `release.yml` dispatch-only; duplicate `tauri-release` job removed; `docs/Release-History.md` curated.
+- **API reference** — Documented `POST /api/ocpp/proxy-session`, `/ws/ocpp`, `/ws/eebus` proxy paths.
+- **OpenEMS writable allowlist (LOW-02)** — Per-component `additionalWritableProperties` in adapter config.
+- **Helm frontend `WS_ORIGINS` (#268)** — `values.schema.json` validation; `_helpers.tpl` fallback `wss://<ingress.host>` with fail on empty config.
+- **GitHub Pages deploy (#268)** — Pre-deploy pruning (`prune-github-pages-deployments.sh`), gated retries, deployment backlog management.
+- **Tauri desktop CI (#236)** — Generated `src-tauri/icons/*`; mobile-only plugins gated to Android/iOS targets.
+- **Dependabot/github-actions** — cosign-installer 4.1.2, cache/restore 6.1.0, docker/login-action 4.4.0, stale 10.3.0, attest-build-provenance 4.1.1 (#253–#257).
 
-- **Release workflow manual-only (ADR-015)** — `release.yml` no longer runs on `main` push; dispatch with `approveRelease=RELEASE`. Removed duplicate `tauri-release` job; desktop builds remain on `tauri-build.yml`.
-- **Version sync** — workspace `package.json`, `tauri.conf.json`, and `Cargo.toml` aligned to **1.9.0**; `.releaserc.json` git assets extended.
-- **Tauri desktop CI** — generated `src-tauri/icons/*`; mobile-only plugins (`haptics`, `barcode_scanner`) gated to Android/iOS targets.
-- **OpenEMS writable allowlist (LOW-02)** — `additionalWritableProperties` per component ID in adapter config.
-- **Helm chart CI gate** — `ci.yml` runs `helm lint` + `helm template` smoke; `Chart.yaml` `appVersion` synced to **1.9.0**.
-- **Tauri workflow default** — `tauri-build.yml` dispatch default version `1.9.0`.
-- **Docs** — debt registry release roadmap, `FEATURE_STATUS` Helm/Tauri rows, `CONTRIBUTING` scope + coverage tables (LOW-06).
+### Fixed
+
+- **UI** — Breadcrumb label + de-duplicated embedded page chrome (#247); ComboBox portal z-index (#249).
+- **DeepSource shell portability (SH-3014/SH-2034, #258)** — Script portability + rule-muting docs.
+- **Docs truth-sync (#250)** — Coverage thresholds, safety notice, audit-delta items aligned with enforced baselines.
+
+### Documentation
+
+- **Settings & Help audit (#259)** — `docs/Settings-Help-Audit-2026-07-04.md`.
+- **Post-audit remediation summary** — `docs/Post-Audit-Remediation-Summary-2026-07-04.md`; `FEATURE_STATUS.md` phase 8 rows.
+- **Debt registry + perfection roadmap** — Phase 8 items closed; release line updated.
+
+[1.10.0]: https://github.com/qnbs/Nexus-HEMS-Dash/compare/v1.9.0...v1.10.0
 
 ## [1.9.0] - 2026-07-02
 

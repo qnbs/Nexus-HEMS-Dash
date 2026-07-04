@@ -3,7 +3,7 @@
 > **Status:** Active living document  
 > **Created:** 2026-06-29  
 > **Source audit:** `docs/Audit-Report-2026-06-29.md`  
-> **Baseline:** v1.9.0 shipped (2026-07-03)  
+> **Baseline:** v1.10.0 shipped (2026-07-04)  
 > **Owner:** @qnbs + contributors
 
 This roadmap translates the June 2026 deep audit into **phased, measurable milestones** with success metrics and rollback strategies. It supersedes tactical items in `docs/Master-Improvement-Roadmap.md` where they conflict; the Master Roadmap remains the historical v1.1→1.2 record.

@@ -30,7 +30,7 @@
 
 Nexus-HEMS is a **unified Command Center** that consolidates **13 protocol adapters** (7 core + 6 contrib) into **8 primary routes across 7 navigation sections** — orchestrating photovoltaic generation, battery storage, heat pumps, EV charging, and building automation with dynamic electricity tariffs. Instead of 18+ separate pages, every feature is accessible from a **single streamlined interface** with contextual in-context help and a new-user landing on the Command Hub.
 
-The current shipped release line is **1.9.0**. See [CHANGELOG.md](CHANGELOG.md) and [docs/Release-History.md](docs/Release-History.md) for release curation notes.
+The current shipped release line is **1.10.0**. See [CHANGELOG.md](CHANGELOG.md) and [docs/Release-History.md](docs/Release-History.md) for release curation notes.
 
 > **Safety notice:** Nexus-HEMS controls safety-critical electrical infrastructure. No regulatory certification (VDE, IEC, CE) has been obtained. Read [docs/Safety-Certification-Notice.md](docs/Safety-Certification-Notice.md) before connecting to live hardware.
 
