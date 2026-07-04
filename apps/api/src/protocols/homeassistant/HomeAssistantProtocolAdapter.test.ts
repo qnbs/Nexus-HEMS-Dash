@@ -173,4 +173,73 @@ describe('HomeAssistantProtocolAdapter', () => {
     expect(payload.service).toBe('turn_on');
     expect(payload.target.entity_id).toBe('switch.wallbox_charging');
   });
+
+  it('sends number.set_value for SET_EV_CURRENT and converts SET_EV_POWER to amps', async () => {
+    const connectPromise = adapter.connect();
+    await vi.waitFor(() => expect(mockWsHolder.current).not.toBeNull());
+    const ws = mockWsHolder.current;
+    ws?.emit('message', JSON.stringify({ type: 'auth_required' }));
+    ws?.emit('message', JSON.stringify({ type: 'auth_ok' }));
+    await connectPromise;
+
+    await adapter.sendCommand({ type: 'SET_EV_CURRENT', value: 16 });
+    await adapter.sendCommand({ type: 'SET_EV_POWER', value: 2300 });
+
+    const currentCall = ws?.send.mock.calls
+      .map(
+        (call) =>
+          JSON.parse(String(call[0])) as { service: string; service_data?: { value: number } },
+      )
+      .find((payload) => payload.service === 'set_value' && payload.service_data?.value === 16);
+    expect(currentCall).toBeDefined();
+
+    const powerCall = ws?.send.mock.calls
+      .map((call) => JSON.parse(String(call[0])) as { service_data?: { value: number } })
+      .find((payload) => payload.service_data?.value === 10);
+    expect(powerCall).toBeDefined();
+  });
+
+  it('sends switch.turn_off for STOP_CHARGING', async () => {
+    const connectPromise = adapter.connect();
+    await vi.waitFor(() => expect(mockWsHolder.current).not.toBeNull());
+    const ws = mockWsHolder.current;
+    ws?.emit('message', JSON.stringify({ type: 'auth_required' }));
+    ws?.emit('message', JSON.stringify({ type: 'auth_ok' }));
+    await connectPromise;
+
+    const result = await adapter.sendCommand({ type: 'STOP_CHARGING', value: true });
+    expect(result.success).toBe(true);
+
+    const payload = ws?.send.mock.calls
+      .map((call) => JSON.parse(String(call[0])) as { service: string })
+      .find((entry) => entry.service === 'turn_off');
+    expect(payload).toBeDefined();
+  });
+
+  it('returns not-connected error before auth completes', async () => {
+    const result = await adapter.sendCommand({ type: 'START_CHARGING', value: true });
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('not connected');
+  });
+
+  it('fails when wallbox entities are not configured', async () => {
+    const bare = new HomeAssistantProtocolAdapter({
+      id: 'bare-ha',
+      host: 'ha.local',
+      token: 'token',
+      deviceId: 'ha-home',
+      entityMappings: [{ entityId: 'sensor.solar_power', metric: 'POWER_W', role: 'pv' }],
+    });
+
+    const connectPromise = bare.connect();
+    await vi.waitFor(() => expect(mockWsHolder.current).not.toBeNull());
+    mockWsHolder.current?.emit('message', JSON.stringify({ type: 'auth_required' }));
+    mockWsHolder.current?.emit('message', JSON.stringify({ type: 'auth_ok' }));
+    await connectPromise;
+
+    const result = await bare.sendCommand({ type: 'SET_EV_CURRENT', value: 16 });
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('not configured');
+    await bare.disconnect();
+  });
 });

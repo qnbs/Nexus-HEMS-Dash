@@ -203,4 +203,56 @@ describe('OpenEMSProtocolAdapter', () => {
     expect(request.params.componentId).toBe('evcs0');
     expect(request.params.properties[0]).toEqual({ name: 'setChargePowerLimit', value: 11000 });
   });
+
+  it('writes enabledCharging for START_CHARGING and STOP_CHARGING', async () => {
+    await adapter.connect();
+
+    await adapter.sendCommand({ type: 'START_CHARGING', value: true });
+    await adapter.sendCommand({ type: 'STOP_CHARGING', value: false });
+
+    const methods = mockWsHolder.current?.send.mock.calls.map(
+      (call) => JSON.parse(String(call[0])).method as string,
+    );
+    expect(methods?.filter((method) => method === 'updateComponentConfig').length).toBe(2);
+  });
+
+  it('converts SET_EV_CURRENT into charge power watts', async () => {
+    await adapter.connect();
+    await adapter.sendCommand({ type: 'SET_EV_CURRENT', value: 16 });
+
+    const updateCall = mockWsHolder.current?.send.mock.calls.find((call) => {
+      const payload = JSON.parse(String(call[0])) as { method: string };
+      return payload.method === 'updateComponentConfig';
+    });
+    const request = JSON.parse(String(updateCall?.[0])) as {
+      params: { properties: { value: number }[] };
+    };
+    expect(request.params.properties[0]?.value).toBe(16 * 230 * 3);
+  });
+
+  it('returns not-connected error when websocket is down', async () => {
+    const result = await adapter.sendCommand({ type: 'SET_EV_POWER', value: 5000 });
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('not connected');
+  });
+
+  it('returns false when updateComponentConfig RPC fails', async () => {
+    await adapter.connect();
+    mockWsHolder.current!.send = vi.fn((payload: string) => {
+      const req = JSON.parse(payload) as { id: string; method: string };
+      if (req.method === 'updateComponentConfig') {
+        setTimeout(
+          () =>
+            mockWsHolder.current?.emit(
+              'message',
+              JSON.stringify({ jsonrpc: '2.0', id: req.id, error: { message: 'denied' } }),
+            ),
+          0,
+        );
+      }
+    });
+
+    const result = await adapter.sendCommand({ type: 'SET_EV_POWER', value: 1000 });
+    expect(result.success).toBe(false);
+  });
 });

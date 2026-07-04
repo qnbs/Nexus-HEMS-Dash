@@ -206,11 +206,21 @@ Order: blocking CI first, then DeepSource major/critical, then AI reviewers.
 
 ### 6.4 Codecov
 
-- Advisory only — does not block merge.
-- If patch coverage is low, add targeted tests for new branches (especially adapters,
-  WS command paths, safety guards).
+- **Proactive correction loop (mandatory):** when Codecov reports patch coverage gaps,
+  add or extend unit/integration tests in the same PR until the patch report is green
+  or only uncovered lines are genuinely unreachable (document why in the PR).
+- Prioritize tests for new branches in safety-critical paths: protocol adapters, WS
+  command dispatch, allowlists, read-only guards, and error paths.
+- Advisory merge gate — does not block merge by itself.
 - Blocking floor remains `scripts/check-coverage-baseline.mjs` in CI.
 - **Runbook:** [working-with-coverage.md](working-with-coverage.md)
+
+**Agent workflow when Codecov comments `Patch coverage is X%`:**
+
+1. Open the Codecov PR report → **Files with missing lines**.
+2. For each file in the diff, add targeted tests (happy path + failure path).
+3. Run `pnpm --filter @nexus-hems/api exec vitest run <test-file>` locally.
+4. Push; wait for Codecov to refresh; repeat until patch coverage is acceptable.
 
 ### 6.5 Human reviewers
 

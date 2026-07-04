@@ -3,9 +3,13 @@ import {
   clearProtocolCommandHandlers,
   dispatchProtocolCommand,
   getProtocolCommandHandlerCount,
+  registerCommandCapableAdapter,
   registerProtocolCommandHandler,
+  unregisterCommandCapableAdapter,
+  unregisterProtocolCommandHandler,
 } from './ProtocolCommandRouter.js';
 import type { IProtocolCommandHandler, ProtocolCommandRequest } from './protocol-command.js';
+import { isProtocolCommandHandler } from './protocol-command.js';
 
 function stubHandler(
   id: string,
@@ -60,5 +64,58 @@ describe('ProtocolCommandRouter', () => {
     expect(result.handled).toBe(true);
     expect(result.success).toBe(false);
     expect(result.error).toBe('No active transaction');
+  });
+
+  it('ignores duplicate handler registration', () => {
+    const handler = stubHandler('dup', ['SET_EV_POWER'], { success: true });
+    registerProtocolCommandHandler(handler);
+    registerProtocolCommandHandler(handler);
+    expect(getProtocolCommandHandlerCount()).toBe(1);
+  });
+
+  it('unregisters handlers explicitly', async () => {
+    const handler = stubHandler('ocpp', ['SET_EV_POWER'], { success: true });
+    registerProtocolCommandHandler(handler);
+    unregisterProtocolCommandHandler(handler);
+    const result = await dispatchProtocolCommand({ type: 'SET_EV_POWER', value: 1 });
+    expect(result).toEqual({ handled: false, success: false });
+  });
+
+  it('registers only command-capable adapters', async () => {
+    const capable = stubHandler('ocpp', ['SET_EV_POWER'], { success: true });
+    registerCommandCapableAdapter(capable);
+    registerCommandCapableAdapter({ id: 'telemetry-only' });
+    expect(getProtocolCommandHandlerCount()).toBe(1);
+    expect(isProtocolCommandHandler(capable)).toBe(true);
+
+    const result = await dispatchProtocolCommand({ type: 'SET_EV_POWER', value: 5000 });
+    expect(result.success).toBe(true);
+
+    unregisterCommandCapableAdapter(capable);
+    expect(getProtocolCommandHandlerCount()).toBe(0);
+  });
+
+  it('continues when a handler returns handled:false', async () => {
+    const passthrough: IProtocolCommandHandler = {
+      supportsCommand: () => true,
+      sendCommand: async () => ({ handled: false, success: false }),
+    };
+    registerProtocolCommandHandler(passthrough);
+    registerProtocolCommandHandler(stubHandler('ocpp', ['SET_EV_POWER'], { success: true }));
+
+    const result = await dispatchProtocolCommand({ type: 'SET_EV_POWER', value: 3000 });
+    expect(result).toEqual({ handled: true, success: true, adapterId: 'ocpp' });
+  });
+
+  it('returns handled failure when sendCommand throws', async () => {
+    registerProtocolCommandHandler({
+      supportsCommand: () => true,
+      sendCommand: async () => {
+        throw new Error('transport down');
+      },
+    });
+
+    const result = await dispatchProtocolCommand({ type: 'SET_EV_POWER', value: 1 });
+    expect(result).toEqual({ handled: true, success: false, error: 'transport down' });
   });
 });

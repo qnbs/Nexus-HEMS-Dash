@@ -38,10 +38,9 @@ import { createOcppCsmsAdapterFromEnv } from './ocpp/OcppCsmsProtocolAdapter.js'
 import { createOpenEMSAdapterFromEnv } from './openems/OpenEMSProtocolAdapter.js';
 import {
   clearProtocolCommandHandlers,
-  registerProtocolCommandHandler,
-  unregisterProtocolCommandHandler,
+  registerCommandCapableAdapter,
+  unregisterCommandCapableAdapter,
 } from './ProtocolCommandRouter.js';
-import { isProtocolCommandHandler } from './protocol-command.js';
 import { createZigbee2MQTTAdapterFromEnv } from './zigbee2mqtt/Zigbee2MQTTProtocolAdapter.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -65,18 +64,6 @@ export function warnIfLiveDeviceMapActive(
 }
 
 const activeAdapters: IProtocolAdapter[] = [];
-
-function trackCommandCapableAdapter(adapter: IProtocolAdapter): void {
-  if (isProtocolCommandHandler(adapter)) {
-    registerProtocolCommandHandler(adapter);
-  }
-}
-
-function untrackCommandCapableAdapter(adapter: IProtocolAdapter): void {
-  if (isProtocolCommandHandler(adapter)) {
-    unregisterProtocolCommandHandler(adapter);
-  }
-}
 
 export type AdapterStatus = 'starting' | 'healthy' | 'unhealthy' | 'failed' | 'stopped';
 
@@ -360,7 +347,7 @@ export async function startProtocolAdapters(eventBus: EventBus): Promise<void> {
   if (openEmsAdapter) {
     activeAdapters.push(openEmsAdapter);
     activeAdapterRefs.set(openEmsAdapter.id, openEmsAdapter);
-    trackCommandCapableAdapter(openEmsAdapter);
+    registerCommandCapableAdapter(openEmsAdapter);
     recordAdapterRegistration(openEmsAdapter.id, openEmsAdapter.protocol);
     setState(openEmsAdapter.id, openEmsAdapter.protocol, 'starting');
 
@@ -385,7 +372,7 @@ export async function startProtocolAdapters(eventBus: EventBus): Promise<void> {
   if (homeAssistantAdapter) {
     activeAdapters.push(homeAssistantAdapter);
     activeAdapterRefs.set(homeAssistantAdapter.id, homeAssistantAdapter);
-    trackCommandCapableAdapter(homeAssistantAdapter);
+    registerCommandCapableAdapter(homeAssistantAdapter);
     recordAdapterRegistration(homeAssistantAdapter.id, homeAssistantAdapter.protocol);
     setState(homeAssistantAdapter.id, homeAssistantAdapter.protocol, 'starting');
 
@@ -482,7 +469,7 @@ export async function startProtocolAdapters(eventBus: EventBus): Promise<void> {
   if (ocppCsmsAdapter) {
     activeAdapters.push(ocppCsmsAdapter);
     activeAdapterRefs.set(ocppCsmsAdapter.id, ocppCsmsAdapter);
-    trackCommandCapableAdapter(ocppCsmsAdapter);
+    registerCommandCapableAdapter(ocppCsmsAdapter);
     recordAdapterRegistration(ocppCsmsAdapter.id, ocppCsmsAdapter.protocol);
     setState(ocppCsmsAdapter.id, ocppCsmsAdapter.protocol, 'starting');
 
@@ -548,7 +535,7 @@ function stopAdapterMetricsRefresh(): void {
 export async function stopProtocolAdapters(): Promise<void> {
   stopAdapterMetricsRefresh();
   for (const adapter of activeAdapters) {
-    untrackCommandCapableAdapter(adapter);
+    unregisterCommandCapableAdapter(adapter);
   }
   clearProtocolCommandHandlers();
   await Promise.allSettled(activeAdapters.map((a) => a.disconnect()));

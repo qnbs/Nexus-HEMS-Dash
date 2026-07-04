@@ -147,4 +147,90 @@ describe('OcppCsmsProtocolAdapter', () => {
     expect(result.success).toBe(false);
     expect(result.error).toContain('No charge point');
   });
+
+  it('sends RequestStartTransaction on START_CHARGING', async () => {
+    const client = new WebSocket(`ws://127.0.0.1:${boundPort}/CP-START`, 'ocpp2.0.1');
+    await new Promise<void>((resolve, reject) => {
+      client.once('open', () => resolve());
+      client.once('error', reject);
+    });
+
+    const outbound = new Promise<unknown>((resolve) => {
+      client.once('message', (data) => resolve(JSON.parse(String(data))));
+    });
+
+    const result = await adapter.sendCommand({ type: 'START_CHARGING', value: true });
+    expect(result.success).toBe(true);
+
+    const msg = (await outbound) as [number, string, string, Record<string, unknown>];
+    expect(msg[2]).toBe('RequestStartTransaction');
+    client.close();
+  });
+
+  it('sends SetChargingProfile with amps on SET_EV_CURRENT', async () => {
+    const client = new WebSocket(`ws://127.0.0.1:${boundPort}/CP-AMP`, 'ocpp2.0.1');
+    await new Promise<void>((resolve, reject) => {
+      client.once('open', () => resolve());
+      client.once('error', reject);
+    });
+
+    const outbound = new Promise<unknown>((resolve) => {
+      client.once('message', (data) => resolve(JSON.parse(String(data))));
+    });
+
+    const result = await adapter.sendCommand({ type: 'SET_EV_CURRENT', value: 16 });
+    expect(result.success).toBe(true);
+
+    const msg = (await outbound) as [number, string, string, Record<string, unknown>];
+    expect(msg[2]).toBe('SetChargingProfile');
+    const schedule = (
+      msg[3].chargingProfile as { chargingSchedule: { chargingRateUnit: string }[] }
+    ).chargingSchedule[0];
+    expect(schedule?.chargingRateUnit).toBe('A');
+    client.close();
+  });
+
+  it('sends RequestStopTransaction when a transaction is active', async () => {
+    const client = new WebSocket(`ws://127.0.0.1:${boundPort}/CP-STOP`, 'ocpp2.0.1');
+    await new Promise<void>((resolve, reject) => {
+      client.once('open', () => resolve());
+      client.once('error', reject);
+    });
+
+    client.send(
+      JSON.stringify([
+        2,
+        'tx-open',
+        'TransactionEvent',
+        { eventType: 'Started', transactionInfo: { transactionId: 'tx-42' } },
+      ]),
+    );
+    await new Promise<void>((resolve) => {
+      client.once('message', () => resolve());
+    });
+
+    const outbound = new Promise<unknown>((resolve) => {
+      client.once('message', (data) => resolve(JSON.parse(String(data))));
+    });
+
+    const result = await adapter.sendCommand({ type: 'STOP_CHARGING', value: true });
+    expect(result.success).toBe(true);
+
+    const msg = (await outbound) as [number, string, string, Record<string, unknown>];
+    expect(msg[2]).toBe('RequestStopTransaction');
+    expect(msg[3].transactionId).toBe('tx-42');
+    client.close();
+  });
+
+  it('rejects invalid SET_EV_POWER values', async () => {
+    const client = new WebSocket(`ws://127.0.0.1:${boundPort}/CP-INVALID`, 'ocpp2.0.1');
+    await new Promise<void>((resolve, reject) => {
+      client.once('open', () => resolve());
+      client.once('error', reject);
+    });
+
+    const result = await adapter.sendCommand({ type: 'SET_EV_POWER', value: Number.NaN });
+    expect(result.success).toBe(false);
+    client.close();
+  });
 });

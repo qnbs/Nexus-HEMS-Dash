@@ -7,12 +7,25 @@ import type {
   ProtocolCommandRequest,
   ProtocolCommandResult,
 } from './protocol-command.js';
+import { isProtocolCommandHandler } from './protocol-command.js';
 
 const handlers: IProtocolCommandHandler[] = [];
 
 export function registerProtocolCommandHandler(handler: IProtocolCommandHandler): void {
   if (handlers.includes(handler)) return;
   handlers.push(handler);
+}
+
+export function registerCommandCapableAdapter(adapter: unknown): void {
+  if (isProtocolCommandHandler(adapter)) {
+    registerProtocolCommandHandler(adapter);
+  }
+}
+
+export function unregisterCommandCapableAdapter(adapter: unknown): void {
+  if (isProtocolCommandHandler(adapter)) {
+    unregisterProtocolCommandHandler(adapter);
+  }
 }
 
 export function unregisterProtocolCommandHandler(handler: IProtocolCommandHandler): void {

@@ -264,6 +264,63 @@ describe('handleWsCommand', () => {
       );
     });
   });
+
+  it('returns ERROR in live mode when no adapter handles the command', async () => {
+    delete process.env.READ_ONLY_MODE;
+    process.env.ADAPTER_MODE = 'live';
+    process.env.ALLOW_LIVE_HARDWARE = 'true';
+    mockedDispatch.mockResolvedValue({ handled: false, success: false });
+
+    const ws = mockWs();
+    const auth = new WeakMap<WebSocket, AuthenticatedClient>();
+    auth.set(ws, { clientId: 'writer', scope: 'readwrite' });
+    const wss = { clients: new Set<WebSocket>() } as WebSocketServer;
+
+    handleWsCommand(ws, { type: 'SET_EV_POWER', value: 7200 }, new WeakMap(), auth, wss);
+
+    await vi.waitFor(() => {
+      expect((ws.sent[0] as { error: string }).error).toContain('No live adapter');
+    });
+  });
+
+  it('returns ERROR in live mode when protocol dispatch fails', async () => {
+    delete process.env.READ_ONLY_MODE;
+    process.env.ADAPTER_MODE = 'live';
+    process.env.ALLOW_LIVE_HARDWARE = 'true';
+    mockedDispatch.mockResolvedValue({
+      handled: true,
+      success: false,
+      error: 'No charge point connected',
+    });
+
+    const ws = mockWs();
+    const auth = new WeakMap<WebSocket, AuthenticatedClient>();
+    auth.set(ws, { clientId: 'writer', scope: 'readwrite' });
+    const wss = { clients: new Set<WebSocket>() } as WebSocketServer;
+
+    handleWsCommand(ws, { type: 'START_CHARGING', value: true }, new WeakMap(), auth, wss);
+
+    await vi.waitFor(() => {
+      expect((ws.sent[0] as { error: string }).error).toContain('No charge point');
+    });
+  });
+
+  it('applies mock EV and heat-pump mutations in mock mode', () => {
+    delete process.env.READ_ONLY_MODE;
+    delete process.env.ADAPTER_MODE;
+
+    const ws = mockWs();
+    const peer = mockWs();
+    const auth = new WeakMap<WebSocket, AuthenticatedClient>();
+    auth.set(ws, { clientId: 'writer', scope: 'readwrite' });
+    const wss = { clients: new Set<WebSocket>([ws, peer]) } as WebSocketServer;
+    Object.defineProperty(peer, 'readyState', { value: 1 });
+
+    handleWsCommand(ws, { type: 'SET_EV_POWER', value: 4200 }, new WeakMap(), auth, wss);
+    handleWsCommand(ws, { type: 'SET_HEAT_PUMP_POWER', value: 900 }, new WeakMap(), auth, wss);
+
+    expect(peer.sent.some((msg) => (msg as { type: string }).type === 'ENERGY_UPDATE')).toBe(true);
+  });
 });
 
 describe('isReadOnlyMode', () => {
