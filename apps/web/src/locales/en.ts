@@ -357,7 +357,7 @@ export const en = {
     title: 'Settings & Plugins',
     subtitle: 'Adapters, energy, security, plugins & help — unified control center',
     configSection: 'Configuration',
-    configSectionDesc: 'Theme, 14 adapters, tariffs, EEBUS certs, storage',
+    configSectionDesc: 'Theme, 13 adapters, tariffs, EEBUS certs, storage',
     pluginsSection: 'Plugins',
     pluginsSectionDesc: 'Contrib adapter lifecycle & hot-loading marketplace',
     marketplace: 'Marketplace',
@@ -896,7 +896,7 @@ export const en = {
     faqSecurityAnswer:
       'Yes. The system uses a local Public Key Infrastructure (PKI) with mTLS. Communication between dashboard and backend is encrypted. Historical data is primarily stored locally in your browser (IndexedDB).',
     aboutDesc:
-      'Nexus-HEMS Dash v1.6.1 is a production-grade visualization and control layer for integrated energy management. It unifies 14 protocol adapters, real-time Sankey flows, MPC optimization, and AI-assisted forecasting — making sector coupling (electricity, heat, mobility) manageable.',
+      'Nexus-HEMS Dash v1.6.1 is a production-grade visualization and control layer for integrated energy management. It unifies 13 protocol adapters, real-time Sankey flows, MPC optimization, and AI-assisted forecasting — making sector coupling (electricity, heat, mobility) manageable.',
     techStack: 'Technology Stack',
     techFrontend: 'Frontend: React 19, Tailwind CSS, Lucide Icons',
     techState: 'State Management: Zustand',
@@ -1032,7 +1032,7 @@ export const en = {
     faqGeneral: 'General',
     faqWhatIs: 'What is Nexus HEMS?',
     faqWhatIsAnswer:
-      'Nexus HEMS is a production-grade Home Energy Management System dashboard (v1.6.1). It unifies 14 protocol adapters (7 core + 7 contrib), real-time Sankey energy flow, MPC optimization, dynamic tariffs, KNX floorplan, OCPP 2.1 EV charging, and AI-assisted forecasting — deployable as PWA, Docker, Helm, Tauri, or Capacitor app.',
+      'Nexus HEMS is a production-grade Home Energy Management System dashboard (v1.6.1). It unifies 13 protocol adapters (7 core + 6 contrib), real-time Sankey energy flow, MPC optimization, dynamic tariffs, KNX floorplan, OCPP 2.1 EV charging, and AI-assisted forecasting — deployable as PWA, Docker, Helm, Tauri, or Capacitor app.',
     faqOffline: 'Does the app work offline?',
     faqOfflineAnswer:
       'Yes. As a PWA, the app caches all assets and recent data locally. You can view the last known energy state, browse settings, and queue control commands that will be synced when connectivity is restored.',
@@ -1056,7 +1056,7 @@ export const en = {
       'Nexus HEMS is a Progressive Web App (PWA). You can install it from your browser to your home screen for a native app-like experience. It works on both iOS and Android with responsive layouts optimized for all screen sizes.',
     faqApi: 'Can I integrate custom APIs?',
     faqApiAnswer:
-      'Yes. The adapter registry supports 14 protocols: Victron MQTT, Modbus/SunSpec, KNX, OCPP 2.1, EEBUS, evcc, OpenEMS, plus contrib adapters (Home Assistant, Matter/Thread, Zigbee2MQTT, Shelly REST, OpenADR 3.1, ExecAdapter, Example). Enable adapters under Settings → Adapters or install contrib plugins from Settings → Plugins.',
+      'Yes. The adapter registry supports 13 protocols (7 core + 6 contrib): Victron MQTT, Modbus/SunSpec, KNX, OCPP 2.1, EEBUS, evcc, OpenEMS, plus contrib adapters (Home Assistant, Matter/Thread, Zigbee2MQTT, Shelly REST, OpenADR 3.1, ExecAdapter). Enable adapters under Settings → Adapters or install contrib plugins from Settings → Plugins.',
     faqMockMode: 'How does mock vs live mode work?',
     faqMockModeAnswer:
       'By default the dashboard runs in mock mode with simulated energy data — no hardware required. Live mode needs ADAPTER_MODE=live + ALLOW_LIVE_HARDWARE=true on the API, matching Vite build flags, and per-adapter enablement in Settings. A banner in the header shows the active mode.',
@@ -1137,7 +1137,7 @@ export const en = {
     aboutTechPwa: 'PWA',
     aboutTechPwaItems: 'Workbox, Service Worker, Background Sync',
     aboutTechProtocolsItems:
-      '14 adapters: MQTT, Modbus, KNX, OCPP, EEBUS, evcc, HA, Zigbee2MQTT, Shelly, Exec…',
+      '13 adapters: MQTT, Modbus, KNX, OCPP, EEBUS, evcc, HA, Zigbee2MQTT, Shelly, Exec…',
     aboutTechTestingItems: 'Vitest, Playwright, axe-core (a11y)',
     a11yTitle: 'Accessibility',
     a11yDesc:

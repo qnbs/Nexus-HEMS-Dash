@@ -359,7 +359,7 @@ export const de = {
     title: 'Einstellungen & Plugins',
     subtitle: 'Adapter, Energie, Sicherheit, Plugins & Hilfe — zentrale Steuerung',
     configSection: 'Konfiguration',
-    configSectionDesc: 'Theme, 14 Adapter, Tarife, EEBUS-Zertifikate, Speicher',
+    configSectionDesc: 'Theme, 13 Adapter, Tarife, EEBUS-Zertifikate, Speicher',
     pluginsSection: 'Plugins',
     pluginsSectionDesc: 'Contrib-Adapter-Lifecycle & Hot-Loading-Marketplace',
     marketplace: 'Marketplace',
@@ -903,7 +903,7 @@ export const de = {
     faqSecurityAnswer:
       'Ja. Das System verwendet eine lokale Public Key Infrastructure (PKI) mit mTLS. Die Kommunikation zwischen Dashboard und Backend ist verschlüsselt. Historische Daten werden primär lokal in Ihrem Browser (IndexedDB) gespeichert.',
     aboutDesc:
-      'Nexus-HEMS Dash v1.6.1 ist eine produktionsreife Visualisierungs- und Steuerungsschicht für integriertes Energiemanagement. Es vereint 14 Protokolladapter, Echtzeit-Sankey-Flüsse, MPC-Optimierung und KI-Prognosen — und macht Sektorenkopplung (Strom, Wärme, Mobilität) beherrschbar.',
+      'Nexus-HEMS Dash v1.6.1 ist eine produktionsreife Visualisierungs- und Steuerungsschicht für integriertes Energiemanagement. Es vereint 13 Protokolladapter, Echtzeit-Sankey-Flüsse, MPC-Optimierung und KI-Prognosen — und macht Sektorenkopplung (Strom, Wärme, Mobilität) beherrschbar.',
     techStack: 'Technologie-Stack',
     techFrontend: 'Frontend: React 19, Tailwind CSS, Lucide Icons',
     techState: 'State Management: Zustand',
@@ -1039,7 +1039,7 @@ export const de = {
     faqGeneral: 'Allgemein',
     faqWhatIs: 'Was ist Nexus HEMS?',
     faqWhatIsAnswer:
-      'Nexus HEMS ist ein produktionsreifes Home-Energy-Management-Dashboard (v1.6.1). Es vereint 14 Protokolladapter (7 Core + 7 Contrib), Echtzeit-Sankey-Energiefluss, MPC-Optimierung, dynamische Tarife, KNX-Grundriss, OCPP-2.1-EV-Laden und KI-Prognosen — deploybar als PWA, Docker, Helm, Tauri oder Capacitor-App.',
+      'Nexus HEMS ist ein produktionsreifes Home-Energy-Management-Dashboard (v1.6.1). Es vereint 13 Protokolladapter (7 Core + 6 Contrib), Echtzeit-Sankey-Energiefluss, MPC-Optimierung, dynamische Tarife, KNX-Grundriss, OCPP-2.1-EV-Laden und KI-Prognosen — deploybar als PWA, Docker, Helm, Tauri oder Capacitor-App.',
     faqOffline: 'Funktioniert die App offline?',
     faqOfflineAnswer:
       'Ja. Als PWA speichert die App alle Assets und aktuellen Daten lokal. Sie können den letzten Energiestatus einsehen, Einstellungen durchsuchen und Steuerbefehle in eine Warteschlange stellen, die bei Wiederherstellung der Verbindung synchronisiert werden.',
@@ -1063,7 +1063,7 @@ export const de = {
       'Nexus HEMS ist eine Progressive Web App (PWA). Sie können sie über Ihren Browser auf dem Homescreen installieren für ein natives App-Erlebnis. Sie funktioniert auf iOS und Android mit responsiven Layouts für alle Bildschirmgrößen.',
     faqApi: 'Kann ich eigene APIs integrieren?',
     faqApiAnswer:
-      'Ja. Die Adapter-Registry unterstützt 14 Protokolle: Victron MQTT, Modbus/SunSpec, KNX, OCPP 2.1, EEBUS, evcc, OpenEMS sowie Contrib-Adapter (Home Assistant, Matter/Thread, Zigbee2MQTT, Shelly REST, OpenADR 3.1, ExecAdapter, Example). Aktivierung unter Einstellungen → Adapter oder Contrib-Plugins unter Einstellungen → Plugins.',
+      'Ja. Die Adapter-Registry unterstützt 13 Protokolle (7 Core + 6 Contrib): Victron MQTT, Modbus/SunSpec, KNX, OCPP 2.1, EEBUS, evcc, OpenEMS sowie Contrib-Adapter (Home Assistant, Matter/Thread, Zigbee2MQTT, Shelly REST, OpenADR 3.1, ExecAdapter). Aktivierung unter Einstellungen → Adapter oder Contrib-Plugins unter Einstellungen → Plugins.',
     faqMockMode: 'Wie funktionieren Mock- vs. Live-Modus?',
     faqMockModeAnswer:
       'Standardmäßig läuft das Dashboard im Mock-Modus mit simulierten Energiedaten — keine Hardware nötig. Live-Modus erfordert ADAPTER_MODE=live + ALLOW_LIVE_HARDWARE=true auf der API, passende Vite-Build-Flags und pro-Adapter-Aktivierung in den Einstellungen. Ein Banner in der Kopfzeile zeigt den aktiven Modus.',
@@ -1147,7 +1147,7 @@ export const de = {
     aboutTechPwa: 'PWA',
     aboutTechPwaItems: 'Workbox, Service Worker, Background Sync',
     aboutTechProtocolsItems:
-      '14 Adapter: MQTT, Modbus, KNX, OCPP, EEBUS, evcc, HA, Zigbee2MQTT, Shelly, Exec…',
+      '13 Adapter: MQTT, Modbus, KNX, OCPP, EEBUS, evcc, HA, Zigbee2MQTT, Shelly, Exec…',
     aboutTechTestingItems: 'Vitest, Playwright, axe-core (a11y)',
     a11yTitle: 'Barrierefreiheit',
     a11yDesc:
