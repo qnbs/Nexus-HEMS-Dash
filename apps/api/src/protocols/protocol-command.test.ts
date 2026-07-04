@@ -5,6 +5,8 @@ import {
   GridLimitValueSchema,
   HeatPumpModeValueSchema,
   isProtocolCommandHandler,
+  MainsVoltageSchema,
+  parseOptionalMainsVoltageEnv,
   validateProtocolCommandRequest,
 } from './protocol-command.js';
 
@@ -110,6 +112,11 @@ describe('validateProtocolCommandRequest', () => {
     expect(BatteryModeValueSchema.safeParse('charge').success).toBe(true);
     expect(GridLimitValueSchema.safeParse(25).success).toBe(true);
     expect(HeatPumpModeValueSchema.safeParse(4).success).toBe(true);
+    expect(MainsVoltageSchema.safeParse('230').success).toBe(true);
+    expect(MainsVoltageSchema.safeParse('invalid').success).toBe(false);
+    expect(parseOptionalMainsVoltageEnv('400')).toBe(400);
+    expect(parseOptionalMainsVoltageEnv('not-a-number')).toBeUndefined();
+    expect(parseOptionalMainsVoltageEnv(undefined)).toBeUndefined();
   });
 });
 

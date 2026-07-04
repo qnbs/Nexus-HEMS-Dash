@@ -39,6 +39,33 @@ export function haMqttSupportsCommand(type: WSCommandType): boolean {
   return HA_MQTT_EV_COMMANDS.has(type);
 }
 
+/** Route SG Ready 1–4 to the HA MQTT service matching the configured entity domain. */
+export function resolveHeatPumpModeServiceCall(
+  entityId: string,
+  mode: number,
+): HAMqttServiceCall | { error: string } {
+  const domain = entityId.split('.')[0];
+  switch (domain) {
+    case 'number':
+    case 'input_number':
+      return {
+        domain,
+        service: 'set_value',
+        payload: { entity_id: entityId, value: mode },
+      };
+    case 'select':
+      return {
+        domain: 'select',
+        service: 'select_option',
+        payload: { entity_id: entityId, option: String(mode) },
+      };
+    default:
+      return {
+        error: `HA_HEAT_PUMP_MODE_ENTITY domain "${domain}" is unsupported for SG Ready modes 1–4; use number, input_number, or select`,
+      };
+  }
+}
+
 export function mapProtocolCommandToMqttService(
   command: ProtocolCommandRequest,
   entities: HAMqttCommandEntities,
@@ -100,11 +127,7 @@ export function mapProtocolCommandToMqttService(
       if (!entities.heatPumpModeEntityId) {
         return { error: 'HA_HEAT_PUMP_MODE_ENTITY not configured' };
       }
-      return {
-        domain: 'climate',
-        service: 'set_hvac_mode',
-        payload: { entity_id: entities.heatPumpModeEntityId, hvac_mode: mode.data },
-      };
+      return resolveHeatPumpModeServiceCall(entities.heatPumpModeEntityId, mode.data);
     }
     default:
       return { error: `Unsupported command type: ${command.type}` };

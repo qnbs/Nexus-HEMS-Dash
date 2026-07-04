@@ -174,6 +174,60 @@ describe('HomeAssistantProtocolAdapter', () => {
     ).not.toBeNull();
   });
 
+  it('createHomeAssistantAdapterFromEnv parses HA_WALLBOX_MAINS_VOLTAGE via Zod', async () => {
+    const envAdapter = createHomeAssistantAdapterFromEnv({
+      HA_HOST: 'ha.local',
+      HA_TOKEN: 'secret',
+      HA_WALLBOX_CURRENT_ENTITY: 'number.wallbox_max_current',
+      HA_WALLBOX_MAINS_VOLTAGE: '400',
+    });
+    expect(envAdapter).not.toBeNull();
+
+    const ws = await connectAdapter(envAdapter!);
+    const powerPromise = envAdapter!.sendCommand({ type: 'SET_EV_POWER', value: 8000 });
+    resolveLastServiceCall(ws);
+    await powerPromise;
+
+    const powerCall = ws.send.mock.calls
+      .map(
+        (call) =>
+          JSON.parse(String(call[0])) as {
+            type: string;
+            service_data?: { value: number };
+          },
+      )
+      .findLast((payload) => payload.type === 'call_service' && payload.service_data?.value !== 16);
+    expect(powerCall?.service_data?.value).toBe(20);
+    await envAdapter!.disconnect();
+  });
+
+  it('createHomeAssistantAdapterFromEnv ignores invalid HA_WALLBOX_MAINS_VOLTAGE', async () => {
+    const envAdapter = createHomeAssistantAdapterFromEnv({
+      HA_HOST: 'ha.local',
+      HA_TOKEN: 'secret',
+      HA_WALLBOX_CURRENT_ENTITY: 'number.wallbox_max_current',
+      HA_WALLBOX_MAINS_VOLTAGE: 'not-a-number',
+    });
+    expect(envAdapter).not.toBeNull();
+
+    const ws = await connectAdapter(envAdapter!);
+    const powerPromise = envAdapter!.sendCommand({ type: 'SET_EV_POWER', value: 2300 });
+    resolveLastServiceCall(ws);
+    await powerPromise;
+
+    const powerCall = ws.send.mock.calls
+      .map(
+        (call) =>
+          JSON.parse(String(call[0])) as {
+            type: string;
+            service_data?: { value: number };
+          },
+      )
+      .findLast((payload) => payload.type === 'call_service');
+    expect(powerCall?.service_data?.value).toBe(10);
+    await envAdapter!.disconnect();
+  });
+
   it('sends call_service for START_CHARGING when connected', async () => {
     const ws = await connectAdapter(adapter);
 

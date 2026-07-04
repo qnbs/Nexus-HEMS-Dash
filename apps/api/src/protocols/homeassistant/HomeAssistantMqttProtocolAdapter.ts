@@ -14,7 +14,7 @@
  *   HA_WALLBOX_CURRENT_ENTITY — number entity for max current (optional)
  *   HA_WALLBOX_SWITCH_ENTITY  — switch entity for start/stop (optional)
  *   HA_WALLBOX_MAINS_VOLTAGE  — mains voltage for SET_EV_POWER→amps (default: 230)
- *   HA_HEAT_PUMP_MODE_ENTITY    — climate entity for SET_HEAT_PUMP_MODE (optional)
+ *   HA_HEAT_PUMP_MODE_ENTITY    — number/select entity for SET_HEAT_PUMP_MODE SG Ready 1–4 (optional)
  */
 
 import EventEmitter from 'node:events';
@@ -45,6 +45,7 @@ import type {
   ProtocolCommandRequest,
   ProtocolCommandResult,
 } from '../protocol-command.js';
+import { parseOptionalMainsVoltageEnv } from '../protocol-command.js';
 import { writeToProtocolDLQ } from '../protocol-dlq.js';
 import {
   haMqttSupportsCommand,
@@ -422,6 +423,7 @@ export function createHomeAssistantMqttAdapterFromEnv(
     join(dirname(fileURLToPath(import.meta.url)), '../../data/ha-entity-map.json');
 
   const mappings = entityMappings ?? loadHAEntityMappings(mapPath);
+  const mainsVoltage = parseOptionalMainsVoltageEnv(env.HA_WALLBOX_MAINS_VOLTAGE);
 
   return new HomeAssistantMqttProtocolAdapter({
     id: env.HA_MQTT_ADAPTER_ID?.trim() || 'ha-mqtt-01',
@@ -438,11 +440,6 @@ export function createHomeAssistantMqttAdapterFromEnv(
     ...(env.HA_HEAT_PUMP_MODE_ENTITY?.trim()
       ? { heatPumpModeEntityId: env.HA_HEAT_PUMP_MODE_ENTITY.trim() }
       : {}),
-    ...(env.HA_WALLBOX_MAINS_VOLTAGE?.trim()
-      ? (() => {
-          const parsed = Number(env.HA_WALLBOX_MAINS_VOLTAGE.trim());
-          return Number.isFinite(parsed) && parsed > 0 ? { mainsVoltage: parsed } : {};
-        })()
-      : {}),
+    ...(mainsVoltage !== undefined ? { mainsVoltage } : {}),
   });
 }

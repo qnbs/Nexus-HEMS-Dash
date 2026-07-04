@@ -28,6 +28,15 @@ export const BatteryModeValueSchema = z.union([z.literal('charge'), z.literal('d
 export const GridLimitValueSchema = z.number().finite().min(0).max(25);
 /** SG Ready mode 1–4 (aligns with frontend command-safety). */
 export const HeatPumpModeValueSchema = z.number().finite().min(1).max(4);
+/** Mains voltage for SET_EV_POWER→amps conversion (typical EU: 230 V). */
+export const MainsVoltageSchema = z.coerce.number().finite().positive();
+
+/** Parse HA_WALLBOX_MAINS_VOLTAGE; returns undefined when unset or invalid. */
+export function parseOptionalMainsVoltageEnv(raw: string | undefined): number | undefined {
+  if (!raw?.trim()) return undefined;
+  const parsed = MainsVoltageSchema.safeParse(raw.trim());
+  return parsed.success ? parsed.data : undefined;
+}
 
 export const ProtocolCommandRequestSchema = WSCommandSchema.and(
   z.object({

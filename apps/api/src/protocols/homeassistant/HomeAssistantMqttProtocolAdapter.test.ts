@@ -209,18 +209,18 @@ describe('HomeAssistantMqttProtocolAdapter', () => {
     await cmdAdapter.disconnect();
   });
 
-  it('publishes SET_HEAT_PUMP_MODE when climate entity is configured', async () => {
+  it('publishes SET_HEAT_PUMP_MODE when SG Ready number entity is configured', async () => {
     const cmdAdapter = new HomeAssistantMqttProtocolAdapter({
       ...testConfig,
-      heatPumpModeEntityId: 'climate.heat_pump',
+      heatPumpModeEntityId: 'number.heat_pump_sg_ready',
     });
     await cmdAdapter.connect();
 
     const result = await cmdAdapter.sendCommand({ type: 'SET_HEAT_PUMP_MODE', value: 2 });
     expect(result.success).toBe(true);
     expect(mockClientInstance.publish).toHaveBeenCalledWith(
-      'homeassistant/climate/set_hvac_mode',
-      JSON.stringify({ entity_id: 'climate.heat_pump', hvac_mode: 2 }),
+      'homeassistant/number/set_value',
+      JSON.stringify({ entity_id: 'number.heat_pump_sg_ready', value: 2 }),
       { qos: 1 },
       expect.any(Function),
     );
@@ -261,7 +261,7 @@ describe('HomeAssistantMqttProtocolAdapter', () => {
       HA_MQTT_BROKER_URL: 'mqtt://localhost:1883',
       HA_WALLBOX_CURRENT_ENTITY: 'number.ev_amps',
       HA_WALLBOX_SWITCH_ENTITY: 'switch.ev_charge',
-      HA_HEAT_PUMP_MODE_ENTITY: 'climate.hp',
+      HA_HEAT_PUMP_MODE_ENTITY: 'number.hp_sg_ready',
       HA_WALLBOX_MAINS_VOLTAGE: '400',
     });
     expect(adapter).not.toBeNull();

@@ -3,12 +3,13 @@ import {
   haMqttSupportsCommand,
   mapProtocolCommandToMqttService,
   mqttServiceTopic,
+  resolveHeatPumpModeServiceCall,
 } from './ha-mqtt-command-mapper.js';
 
 const entities = {
   wallboxCurrentEntityId: 'number.wallbox_max_current',
   wallboxSwitchEntityId: 'switch.wallbox_charging',
-  heatPumpModeEntityId: 'climate.heat_pump',
+  heatPumpModeEntityId: 'number.heat_pump_sg_ready',
   mainsVoltage: 230,
 };
 
@@ -125,15 +126,46 @@ describe('ha-mqtt-command-mapper', () => {
     expect(result).toEqual({ error: 'HA_WALLBOX_SWITCH_ENTITY not configured' });
   });
 
-  it('maps SET_HEAT_PUMP_MODE to climate/set_hvac_mode', () => {
+  it('maps SET_HEAT_PUMP_MODE to number/set_value for SG Ready modes', () => {
     const result = mapProtocolCommandToMqttService(
       { type: 'SET_HEAT_PUMP_MODE', value: 2 },
       entities,
     );
     expect(result).toEqual({
-      domain: 'climate',
-      service: 'set_hvac_mode',
-      payload: { entity_id: 'climate.heat_pump', hvac_mode: 2 },
+      domain: 'number',
+      service: 'set_value',
+      payload: { entity_id: 'number.heat_pump_sg_ready', value: 2 },
+    });
+  });
+
+  it('maps SET_HEAT_PUMP_MODE to select/select_option when entity is a select', () => {
+    const result = mapProtocolCommandToMqttService(
+      { type: 'SET_HEAT_PUMP_MODE', value: 3 },
+      { ...entities, heatPumpModeEntityId: 'select.hp_sg_ready' },
+    );
+    expect(result).toEqual({
+      domain: 'select',
+      service: 'select_option',
+      payload: { entity_id: 'select.hp_sg_ready', option: '3' },
+    });
+  });
+
+  it('rejects climate entities for SET_HEAT_PUMP_MODE', () => {
+    const result = mapProtocolCommandToMqttService(
+      { type: 'SET_HEAT_PUMP_MODE', value: 2 },
+      { ...entities, heatPumpModeEntityId: 'climate.heat_pump' },
+    );
+    expect(result).toEqual({
+      error:
+        'HA_HEAT_PUMP_MODE_ENTITY domain "climate" is unsupported for SG Ready modes 1–4; use number, input_number, or select',
+    });
+  });
+
+  it('resolveHeatPumpModeServiceCall supports input_number entities', () => {
+    expect(resolveHeatPumpModeServiceCall('input_number.hp_mode', 4)).toEqual({
+      domain: 'input_number',
+      service: 'set_value',
+      payload: { entity_id: 'input_number.hp_mode', value: 4 },
     });
   });
 
