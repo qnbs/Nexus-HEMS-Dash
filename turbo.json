@@ -14,7 +14,12 @@
     },
     "@nexus-hems/web#build": {
       "dependsOn": ["@nexus-hems/shared-types#build"],
-      "env": ["VITE_E2E_TESTING", "VITE_ADAPTER_MODE", "VITE_ALLOW_LIVE_HARDWARE"],
+      "env": [
+        "VITE_E2E_TESTING",
+        "VITE_BACKEND_WS",
+        "VITE_ADAPTER_MODE",
+        "VITE_ALLOW_LIVE_HARDWARE"
+      ],
       "inputs": [
         "src/**",
         "public/**",

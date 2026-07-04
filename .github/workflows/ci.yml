@@ -184,6 +184,7 @@ jobs:
         run: pnpm size
         env:
           VITE_E2E_TESTING: 'true'
+          VITE_BACKEND_WS: 'true'
 
       # Production-build smoke test: loads the just-built dist/ in headless
       # Chromium and fails if React does not mount or a runtime error fires.
@@ -195,6 +196,7 @@ jobs:
         env:
           CI: 'true'
           VITE_E2E_TESTING: 'true'
+          VITE_BACKEND_WS: 'true'
 
       # SLSA Level 3 build-provenance: cryptographic attestation of every JS
       # asset produced from `main`. Verify with `gh attestation verify`.

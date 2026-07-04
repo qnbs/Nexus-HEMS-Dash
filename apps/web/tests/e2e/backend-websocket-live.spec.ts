@@ -59,6 +59,9 @@ test.describe('Backend WebSocket live integration', () => {
     // mergeData is throttled to 250 ms before bridging to the app store
     await page.waitForTimeout(400);
 
-    await expect(page.getByText(/3\.4\s*kW/i).first()).toBeVisible({ timeout: 15_000 });
+    const pvMetric = page
+      .locator('#main-content')
+      .getByRole('link', { name: /pv generation|pv-erzeugung/i });
+    await expect(pvMetric).toContainText(/3\.4\d*\s*kW/i, { timeout: 15_000 });
   });
 });
