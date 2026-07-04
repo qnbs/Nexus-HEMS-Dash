@@ -94,16 +94,16 @@ Push **before** heavy local verification when cloud CI is the source of truth
 
 ### Manual triggers (when a bot did not run or review is stale)
 
-**Preferred:** push a commit — `.github/workflows/coderabbit-rereview.yml` posts
-`@coderabbitai review` automatically when the head SHA has no CodeRabbit review yet.
+**Preferred (agents + maintainers):** push a commit — `.github/workflows/coderabbit-rereview.yml`
+posts `@coderabbitai review` automatically when the head SHA has no CodeRabbit review yet.
 
-Post these as **PR comments** only from a maintainer `gh` session (agents get 403):
+**Maintainer-only** (agents get `403` on `gh pr comment`):
 
 | Platform | Command / action | When to use |
 |----------|------------------|-------------|
-| **CodeRabbit** | `@coderabbitai review` | No summary after ~10 min, or after large rebase |
-| **CodeRabbit** | `gh workflow run coderabbit-rereview.yml -f pr_number=<num>` | Agent/maintainer without comment scope |
-| **CodeRabbit** | `./scripts/request-coderabbit-review.sh <num>` | Local maintainer helper (falls back to workflow) |
+| **CodeRabbit** | `@coderabbitai review` (PR comment) | No summary after ~10 min, or after large rebase |
+| **CodeRabbit** | `gh workflow run coderabbit-rereview.yml -f pr_number=<num>` | Manual re-trigger without a new commit |
+| **CodeRabbit** | `./scripts/request-coderabbit-review.sh <num>` | Local helper (falls back to workflow dispatch) |
 | **CodeRabbit** | `@coderabbitai full review` | Request full re-review of entire diff |
 | **CodeRabbit** | `@coderabbitai help` | List available commands |
 | **DeepSource AI** | `@deepsourcebot review` | DeepSource report card says AI review not run |

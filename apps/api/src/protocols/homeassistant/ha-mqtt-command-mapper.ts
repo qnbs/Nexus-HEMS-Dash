@@ -10,6 +10,7 @@ import type { ProtocolCommandRequest } from '../protocol-command.js';
 import {
   EvCurrentValueSchema,
   EvPowerValueSchema,
+  HeatPumpModeEntityIdSchema,
   HeatPumpModeValueSchema,
   MAX_EV_CURRENT_A,
 } from '../protocol-command.js';
@@ -44,20 +45,28 @@ export function resolveHeatPumpModeServiceCall(
   entityId: string,
   mode: number,
 ): HAMqttServiceCall | { error: string } {
-  const domain = entityId.split('.')[0];
+  const entity = HeatPumpModeEntityIdSchema.safeParse(entityId);
+  if (!entity.success) {
+    return {
+      error:
+        entity.error.issues[0]?.message ??
+        'HA_HEAT_PUMP_MODE_ENTITY must be a full domain.entity_id for SG Ready modes 1–4',
+    };
+  }
+  const domain = entity.data.split('.')[0];
   switch (domain) {
     case 'number':
     case 'input_number':
       return {
         domain,
         service: 'set_value',
-        payload: { entity_id: entityId, value: mode },
+        payload: { entity_id: entity.data, value: mode },
       };
     case 'select':
       return {
         domain: 'select',
         service: 'select_option',
-        payload: { entity_id: entityId, option: String(mode) },
+        payload: { entity_id: entity.data, option: String(mode) },
       };
     default:
       return {

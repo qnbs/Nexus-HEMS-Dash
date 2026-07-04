@@ -34,9 +34,15 @@ export const HeatPumpModeEntityIdSchema = z
   .trim()
   .min(1)
   .refine((entityId) => {
-    const domain = entityId.split('.')[0];
-    return domain === 'number' || domain === 'input_number' || domain === 'select';
-  }, 'HA_HEAT_PUMP_MODE_ENTITY must be a number, input_number, or select entity for SG Ready modes 1–4');
+    const dot = entityId.indexOf('.');
+    if (dot <= 0 || dot >= entityId.length - 1) return false;
+    const domain = entityId.slice(0, dot);
+    const objectId = entityId.slice(dot + 1);
+    return (
+      objectId.length > 0 &&
+      (domain === 'number' || domain === 'input_number' || domain === 'select')
+    );
+  }, 'HA_HEAT_PUMP_MODE_ENTITY must be a full domain.entity_id (number, input_number, or select) for SG Ready modes 1–4');
 /** Mains voltage for SET_EV_POWER→amps conversion (typical EU: 230 V). */
 export const MainsVoltageSchema = z.coerce.number().finite().positive();
 

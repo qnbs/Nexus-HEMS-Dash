@@ -150,14 +150,23 @@ describe('ha-mqtt-command-mapper', () => {
     });
   });
 
+  it('rejects bare domain names without object_id', () => {
+    const result = mapProtocolCommandToMqttService(
+      { type: 'SET_HEAT_PUMP_MODE', value: 2 },
+      { ...entities, heatPumpModeEntityId: 'number' },
+    );
+    expect(result).toMatchObject({
+      error: expect.stringContaining('full domain.entity_id'),
+    });
+  });
+
   it('rejects climate entities for SET_HEAT_PUMP_MODE', () => {
     const result = mapProtocolCommandToMqttService(
       { type: 'SET_HEAT_PUMP_MODE', value: 2 },
       { ...entities, heatPumpModeEntityId: 'climate.heat_pump' },
     );
-    expect(result).toEqual({
-      error:
-        'HA_HEAT_PUMP_MODE_ENTITY domain "climate" is unsupported for SG Ready modes 1–4; use number, input_number, or select',
+    expect(result).toMatchObject({
+      error: expect.stringContaining('full domain.entity_id'),
     });
   });
 
