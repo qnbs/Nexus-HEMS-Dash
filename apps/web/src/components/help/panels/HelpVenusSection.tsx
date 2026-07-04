@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { HelpMonoBlocks } from './HelpMonoBlocks';
 import { HelpNumberedSteps } from './HelpNumberedSteps';
 import { HelpSectionShell } from './HelpSectionShell';
+import { VenusFlowList } from './VenusFlowList';
 
 const VENUS_ARCH = ['venusArch1', 'venusArch2', 'venusArch3', 'venusArch4', 'venusArch5'] as const;
 const VENUS_DBUS = [
@@ -14,9 +15,9 @@ const VENUS_DBUS = [
   'venusDbus6',
   'venusDbus7',
 ] as const;
-const VENUS_FLOWS = ['venusFlow1', 'venusFlow2', 'venusFlow3', 'venusFlow4', 'venusFlow5'] as const;
 const VENUS_MQTT = ['venusMqtt1', 'venusMqtt2', 'venusMqtt3', 'venusMqtt4', 'venusMqtt5'] as const;
 
+/** Venus OS and Node-RED integration section in the Help guide. */
 export const HelpVenusSection = () => {
   const { t } = useTranslation();
 
@@ -42,17 +43,5 @@ export const HelpVenusSection = () => {
       <h4 className="mb-2 font-medium text-sm">{t('help.venusMqttTopics')}</h4>
       <HelpMonoBlocks keys={[...VENUS_MQTT]} />
     </HelpSectionShell>
-  );
-};
-
-const VenusFlowList = () => {
-  const { t } = useTranslation();
-
-  return (
-    <ul className="mb-4 ml-4 space-y-1.5 text-(--color-muted) text-xs">
-      {VENUS_FLOWS.map((k) => (
-        <li key={k}>• {t(`help.${k}`)}</li>
-      ))}
-    </ul>
   );
 };

@@ -16,6 +16,7 @@ export interface AnalyticsKpiGridSectionProps {
   kpiCards: AnalyticsKpiCard[];
 }
 
+/** KPI card grid at the top of the Analytics page. */
 export const AnalyticsKpiGridSection = ({ kpiCards }: AnalyticsKpiGridSectionProps) => (
   <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-8">
     {kpiCards.map((card, i) => (

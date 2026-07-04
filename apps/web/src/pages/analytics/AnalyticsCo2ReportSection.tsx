@@ -12,6 +12,7 @@ export interface AnalyticsCo2ReportSectionProps {
   monthlyCo2: AnalyticsDashboardMetrics['monthlyCo2'];
 }
 
+/** CO₂ savings report section with KPI tiles and export actions. */
 export const AnalyticsCo2ReportSection = ({
   t,
   currentYear,

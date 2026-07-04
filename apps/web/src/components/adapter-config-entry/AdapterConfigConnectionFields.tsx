@@ -1,5 +1,6 @@
 import { Wifi } from 'lucide-react';
 import { AdapterConfigLabeledField } from './AdapterConfigLabeledField';
+import { AdapterConfigPollIntervalField } from './AdapterConfigPollIntervalField';
 import type { AdapterConfigFieldProps } from './adapter-config-field-types';
 
 /** Connection settings block (name, host, port, poll interval) for one adapter entry. */
@@ -48,24 +49,12 @@ export const AdapterConfigConnectionFields = ({
           max={65535}
         />
       </AdapterConfigLabeledField>
-      <AdapterConfigLabeledField
-        id={`adapter-poll-${adapter.id}`}
-        label={t('adapterConfig.pollInterval')}
-      >
-        <div className="flex items-center gap-2">
-          <input
-            id={`adapter-poll-${adapter.id}`}
-            type="number"
-            value={adapter.pollIntervalMs}
-            onChange={(e) => onUpdate({ pollIntervalMs: Number(e.target.value) })}
-            className={inputClass}
-            min={500}
-            max={60000}
-            step={500}
-          />
-          <span className="whitespace-nowrap text-(--color-muted) text-xs">ms</span>
-        </div>
-      </AdapterConfigLabeledField>
+      <AdapterConfigPollIntervalField
+        adapter={adapter}
+        onUpdate={onUpdate}
+        inputClass={inputClass}
+        t={t}
+      />
     </div>
   </div>
 );

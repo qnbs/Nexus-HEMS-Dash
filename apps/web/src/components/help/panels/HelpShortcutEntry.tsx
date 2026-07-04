@@ -3,6 +3,7 @@ interface HelpShortcutEntryProps {
   keys: string[];
 }
 
+/** Single keyboard shortcut row with one or more key badges. */
 export const HelpShortcutEntry = ({ description, keys }: HelpShortcutEntryProps) => (
   <div className="flex items-center justify-between rounded-lg border border-(--color-border) bg-(--color-surface) p-3">
     <span className="text-sm">{description}</span>

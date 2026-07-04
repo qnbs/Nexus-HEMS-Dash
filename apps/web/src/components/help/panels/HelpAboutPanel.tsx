@@ -1,12 +1,12 @@
-import { ExternalLink } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import packageJson from '../../../../package.json';
-import { BrandGithubIcon } from '../../icons/BrandGithubIcon';
 import { HelpTabPanelShell } from '../HelpTabPanelShell';
+import { HelpAboutGithubLink } from './HelpAboutGithubLink';
 import { HelpAboutHero } from './HelpAboutHero';
+import { HelpAboutTechStackGrid } from './HelpAboutTechStackGrid';
 import { HelpAiProviderCard } from './HelpAiProviderCard';
-import { HelpTechStackCard } from './HelpTechStackCard';
 
+/** About tab: version, tech stack, license, credits, and AI acknowledgments. */
 export const HelpAboutPanel = () => {
   const appVersion = packageJson.version;
   const { t } = useTranslation();
@@ -52,25 +52,9 @@ export const HelpAboutPanel = () => {
           {t('help.aboutDesc', { version: appVersion })}
         </p>
 
-        <a
-          href="https://github.com/qnbs/Nexus-HEMS-Dash"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="focus-ring mb-6 inline-flex items-center gap-2 rounded-xl border border-(--color-border) bg-(--color-surface) px-4 py-2.5 font-medium text-sm transition-all duration-200 hover:border-(--color-primary)/40 hover:bg-(--color-primary)/10 hover:text-(--color-primary)"
-        >
-          <BrandGithubIcon size={18} aria-hidden="true" />
-          <span>{t('help.githubRepo')}</span>
-          <ExternalLink size={14} className="text-(--color-muted)" aria-hidden="true" />
-        </a>
+        <HelpAboutGithubLink />
 
-        <div className="border-(--color-border) border-t pt-6">
-          <h3 className="mb-4 font-medium">{t('help.techStack')}</h3>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            {techStack.map((tech) => (
-              <HelpTechStackCard key={tech.category} {...tech} />
-            ))}
-          </div>
-        </div>
+        <HelpAboutTechStackGrid techStack={techStack} />
 
         <div className="mt-6 border-(--color-border) border-t pt-6">
           <h3 className="mb-3 font-medium">{t('help.a11yTitle')}</h3>

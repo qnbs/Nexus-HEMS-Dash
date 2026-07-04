@@ -1,5 +1,6 @@
 import { Info, Server } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { CerboInterfaceGrid } from './CerboInterfaceGrid';
 import { HelpChecklist } from './HelpChecklist';
 import { HelpNumberedSteps } from './HelpNumberedSteps';
 import { HelpSectionShell } from './HelpSectionShell';
@@ -13,15 +14,6 @@ const CERBO_SPECS = [
   'cerboGxSpec6',
 ] as const;
 
-const CERBO_INTERFACES = [
-  'cerboGxInt1',
-  'cerboGxInt2',
-  'cerboGxInt3',
-  'cerboGxInt4',
-  'cerboGxInt5',
-  'cerboGxInt6',
-] as const;
-
 const CERBO_SETUP = [
   'cerboGxSetup1',
   'cerboGxSetup2',
@@ -32,6 +24,7 @@ const CERBO_SETUP = [
   'cerboGxSetup7',
 ] as const;
 
+/** Cerbo GX / MK2 integration section in the Help integration guide. */
 export const HelpCerboGxSection = () => {
   const { t } = useTranslation();
 
@@ -56,22 +49,5 @@ export const HelpCerboGxSection = () => {
         <p className="text-(--color-muted) text-xs">{t('help.cerboGxNote')}</p>
       </div>
     </HelpSectionShell>
-  );
-};
-
-const CerboInterfaceGrid = () => {
-  const { t } = useTranslation();
-
-  return (
-    <div className="mb-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
-      {CERBO_INTERFACES.map((k) => (
-        <div
-          key={k}
-          className="rounded-lg border border-(--color-border) bg-(--color-surface) p-2.5 text-(--color-muted) text-xs"
-        >
-          {t(`help.${k}`)}
-        </div>
-      ))}
-    </div>
   );
 };

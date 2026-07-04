@@ -8,6 +8,7 @@ export interface AnalyticsPageHeaderSectionProps {
   isSolarPeak: boolean;
 }
 
+/** Page header with period selector for the Analytics route. */
 export const AnalyticsPageHeaderSection = ({
   t,
   isPeakHour,

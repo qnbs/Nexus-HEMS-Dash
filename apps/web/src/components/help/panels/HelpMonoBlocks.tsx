@@ -4,6 +4,7 @@ interface HelpMonoBlocksProps {
   keys: string[];
 }
 
+/** Monospace code/path blocks for integration guide sections. */
 export const HelpMonoBlocks = ({ keys }: HelpMonoBlocksProps) => {
   const { t } = useTranslation();
 

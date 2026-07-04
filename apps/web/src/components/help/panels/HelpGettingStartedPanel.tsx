@@ -4,6 +4,7 @@ import { HelpTabPanelShell } from '../HelpTabPanelShell';
 import { HelpQuickStartStep } from './HelpQuickStartStep';
 import { HelpRequirementCard } from './HelpRequirementCard';
 
+/** Getting started quick-start steps and system requirements. */
 export const HelpGettingStartedPanel = () => {
   const { t } = useTranslation();
 

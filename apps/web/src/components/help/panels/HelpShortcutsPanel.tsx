@@ -1,7 +1,7 @@
 import { Info } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { HelpTabPanelShell } from '../HelpTabPanelShell';
-import { HelpShortcutEntry } from './HelpShortcutEntry';
+import { HelpShortcutGroup } from './HelpShortcutGroup';
 
 const NAV_SHORTCUTS = [
   { keys: ['⌘', 'K'], descKey: 'help.shortcutCmdK' },
@@ -15,6 +15,7 @@ const ACTION_SHORTCUTS = [
   { keys: ['⌘', 'L'], descKey: 'help.shortcutLang' },
 ] as const;
 
+/** Keyboard shortcuts reference panel on the Help page. */
 export const HelpShortcutsPanel = () => {
   const { t } = useTranslation();
 
@@ -34,24 +35,3 @@ export const HelpShortcutsPanel = () => {
     </HelpTabPanelShell>
   );
 };
-
-const HelpShortcutGroup = ({
-  title,
-  shortcuts,
-  t,
-}: {
-  title: string;
-  shortcuts: ReadonlyArray<{ keys: readonly string[]; descKey: string }>;
-  t: (key: string) => string;
-}) => (
-  <div>
-    <h3 className="mb-3 font-semibold text-(--color-muted) text-sm uppercase tracking-widest">
-      {title}
-    </h3>
-    <div className="space-y-2">
-      {shortcuts.map((s) => (
-        <HelpShortcutEntry key={s.descKey} description={t(s.descKey)} keys={[...s.keys]} />
-      ))}
-    </div>
-  </div>
-);

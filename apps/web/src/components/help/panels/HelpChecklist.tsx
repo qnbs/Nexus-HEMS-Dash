@@ -6,6 +6,7 @@ interface HelpChecklistProps {
   iconClassName?: string;
 }
 
+/** Checklist with optional icon color for integration guide sections. */
 export const HelpChecklist = ({ keys, iconClassName = 'text-emerald-400' }: HelpChecklistProps) => {
   const { t } = useTranslation();
 

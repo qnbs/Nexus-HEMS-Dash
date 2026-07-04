@@ -5,6 +5,7 @@ interface HelpNumberedStepsProps {
   badgeClassName: string;
 }
 
+/** Numbered setup/architecture steps for integration guide sections. */
 export const HelpNumberedSteps = ({ keys, badgeClassName }: HelpNumberedStepsProps) => {
   const { t } = useTranslation();
 

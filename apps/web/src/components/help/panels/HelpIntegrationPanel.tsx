@@ -6,6 +6,7 @@ import { HelpKnxSection } from './HelpKnxSection';
 import { HelpRpiSection } from './HelpRpiSection';
 import { HelpVenusSection } from './HelpVenusSection';
 
+/** Hardware integration guide (Cerbo, RPi, Venus, KNX, high-end). */
 export const HelpIntegrationPanel = () => {
   const { t } = useTranslation();
 
