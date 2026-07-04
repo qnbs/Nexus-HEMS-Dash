@@ -100,6 +100,22 @@ describe('Modbus SunSpec proxy API', () => {
       .expect(403);
   });
 
+  it('rejects a write when READ_ONLY_MODE is active (403)', async () => {
+    const originalReadOnly = process.env.READ_ONLY_MODE;
+    process.env.READ_ONLY_MODE = 'true';
+    try {
+      const bearer = await signToken({ sub: 'writer', scope: 'readwrite' }, '1h');
+      await buildApp()
+        .post('/api/modbus/write')
+        .set('Authorization', `Bearer ${bearer}`)
+        .send({ register: 'WChaMax', value: 2000 })
+        .expect(403);
+    } finally {
+      if (originalReadOnly === undefined) delete process.env.READ_ONLY_MODE;
+      else process.env.READ_ONLY_MODE = originalReadOnly;
+    }
+  });
+
   it('rejects an unknown register with 400', async () => {
     const bearer = await signToken({ sub: 'writer', scope: 'readwrite' }, '1h');
     await buildApp()

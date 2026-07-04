@@ -23,6 +23,7 @@
 import { type Request, type Response, Router } from 'express';
 import { z } from 'zod';
 import { getEffectiveAdapterMode } from '../config/adapter-mode.js';
+import { isReadOnlyMode } from '../config/read-only-mode.js';
 import { writeCommandAuditEntry } from '../data/command-audit.js';
 import { mockData } from '../data/mock-data.js';
 import { type JWTScope, requireJWT, requireScope } from '../middleware/auth.js';
@@ -97,7 +98,7 @@ function audit(
   res: Response,
   commandType: string,
   value: number | null,
-  outcome: 'accepted' | 'rejected_validation' | 'rejected_scope',
+  outcome: 'accepted' | 'rejected_validation' | 'rejected_scope' | 'rejected_readonly',
   reason?: string,
 ): void {
   const payload = res.locals.jwtPayload as { sub?: string; scope?: string } | undefined;
@@ -140,6 +141,21 @@ export function createModbusRoutes(): Router {
       }
 
       const { register, value } = parsed.data;
+
+      if (isReadOnlyMode()) {
+        audit(
+          res,
+          `MODBUS_WRITE:${register}`,
+          value,
+          'rejected_readonly',
+          'READ_ONLY_MODE=true blocks all control commands',
+        );
+        res.status(403).json({
+          error: 'System is in read-only mode — control commands are disabled',
+        });
+        return;
+      }
+
       const bounds = WRITE_BOUNDS[register];
       if (value < bounds.min || value > bounds.max) {
         audit(res, `MODBUS_WRITE:${register}`, value, 'rejected_validation', 'value out of range');

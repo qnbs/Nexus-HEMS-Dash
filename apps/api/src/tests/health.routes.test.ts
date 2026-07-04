@@ -15,15 +15,32 @@ describe('GET /api/health', () => {
 
   it('returns 200 healthy in mock mode', async () => {
     const originalMode = process.env.ADAPTER_MODE;
+    const originalReadOnly = process.env.READ_ONLY_MODE;
     process.env.ADAPTER_MODE = 'mock';
+    delete process.env.READ_ONLY_MODE;
     try {
       const res = await supertest(app).get('/api/health').expect(200);
       expect(res.body.status).toBe('healthy');
       expect(res.body.mode).toBe('mock');
+      expect(res.body.readOnly).toBe(false);
       expect(res.body.adapters).toEqual([]);
     } finally {
       if (originalMode === undefined) delete process.env.ADAPTER_MODE;
       else process.env.ADAPTER_MODE = originalMode;
+      if (originalReadOnly === undefined) delete process.env.READ_ONLY_MODE;
+      else process.env.READ_ONLY_MODE = originalReadOnly;
+    }
+  });
+
+  it('exposes readOnly=true when READ_ONLY_MODE is set', async () => {
+    const originalReadOnly = process.env.READ_ONLY_MODE;
+    process.env.READ_ONLY_MODE = 'true';
+    try {
+      const res = await supertest(app).get('/api/health').expect(200);
+      expect(res.body.readOnly).toBe(true);
+    } finally {
+      if (originalReadOnly === undefined) delete process.env.READ_ONLY_MODE;
+      else process.env.READ_ONLY_MODE = originalReadOnly;
     }
   });
 

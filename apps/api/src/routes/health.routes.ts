@@ -7,6 +7,7 @@
  */
 
 import { Router } from 'express';
+import { isReadOnlyMode } from '../config/read-only-mode.js';
 import { getAdapterHealthSummary } from '../protocols/index.js';
 
 export function createHealthRoutes(): Router {
@@ -19,6 +20,7 @@ export function createHealthRoutes(): Router {
     res.status(statusCode).json({
       status: health.overall,
       mode: health.mode,
+      readOnly: isReadOnlyMode(),
       timestamp: new Date().toISOString(),
       adapters: health.adapters,
     });

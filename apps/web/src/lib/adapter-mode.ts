@@ -1,3 +1,5 @@
+import { useAppStore } from '../store';
+
 /**
  * Frontend adapter mode — mirrors backend safety defaults.
  *
@@ -51,26 +53,40 @@ export function canConnectHardwareAdapter(adapterEnabled: boolean): boolean {
 
 export type BackendAdapterMode = 'mock' | 'live' | 'unknown';
 
+/** Parsed fields from `GET /api/health` used for global safety indicators. */
+export interface BackendHealthStatus {
+  mode: BackendAdapterMode;
+  readOnly: boolean;
+}
+
 /**
- * Fetch the effective backend hardware mode from `GET /api/health`.
+ * Fetch backend health status from `GET /api/health`.
  *
- * Parses the `mode` field regardless of HTTP status — a live backend with no
- * adapters configured returns 503 but is still `live`. Network/parse failures
- * (e.g. static deploys with no backend) resolve to `unknown`.
+ * Parses body regardless of HTTP status — a live backend with no adapters
+ * configured returns 503 but is still `live`. Network/parse failures resolve
+ * to `{ mode: 'unknown', readOnly: false }`.
  */
-export async function fetchBackendAdapterMode(signal?: AbortSignal): Promise<BackendAdapterMode> {
+export async function fetchBackendHealthStatus(signal?: AbortSignal): Promise<BackendHealthStatus> {
   try {
     const res = await fetch('/api/health', {
       signal: signal ?? null,
       headers: { Accept: 'application/json' },
     });
-    const data = (await res.json().catch(() => null)) as { mode?: unknown } | null;
-    if (data?.mode === 'live') return 'live';
-    if (data?.mode === 'mock') return 'mock';
-    return 'unknown';
+    const data = (await res.json().catch(() => null)) as {
+      mode?: unknown;
+      readOnly?: unknown;
+    } | null;
+    const mode: BackendAdapterMode =
+      data?.mode === 'live' ? 'live' : data?.mode === 'mock' ? 'mock' : 'unknown';
+    return { mode, readOnly: data?.readOnly === true };
   } catch {
-    return 'unknown';
+    return { mode: 'unknown', readOnly: false };
   }
+}
+
+/** @deprecated Prefer {@link fetchBackendHealthStatus} — mode slice only. */
+export async function fetchBackendAdapterMode(signal?: AbortSignal): Promise<BackendAdapterMode> {
+  return (await fetchBackendHealthStatus(signal)).mode;
 }
 
 /**
@@ -84,10 +100,15 @@ export function isLiveSafetyMode(backendMode: BackendAdapterMode): boolean {
 
 /**
  * Check if read-only mode is active (blocks all control commands).
- * Mirrors backend READ_ONLY_MODE environment variable.
+ *
+ * True when either the build sets `VITE_READ_ONLY_MODE=true` or the backend
+ * reports `readOnly: true` on `/api/health` (runtime `READ_ONLY_MODE`).
  */
 export function isReadOnlyModeActive(): boolean {
-  return import.meta.env.VITE_READ_ONLY_MODE?.trim().toLowerCase() === LIVE_HARDWARE_ACK;
+  if (import.meta.env.VITE_READ_ONLY_MODE?.trim().toLowerCase() === LIVE_HARDWARE_ACK) {
+    return true;
+  }
+  return useAppStore.getState().backendReadOnly;
 }
 
 /**
