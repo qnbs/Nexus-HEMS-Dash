@@ -16,6 +16,7 @@ import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
 import { z } from 'zod';
 import { requireJWT, requireScope } from '../middleware/auth.js';
+import { requireNotReadOnly } from '../middleware/require-not-read-only.js';
 import { listAvailableScripts, runCommandScript, runScript } from '../services/ExecService.js';
 
 // ─── Validation Schemas ───────────────────────────────────────────────
@@ -115,29 +116,35 @@ export function createExecRoutes(): Router {
    * POST /api/exec/command
    * Send a command to a script. Blocked in READ_ONLY_MODE.
    */
-  router.post('/api/exec/command', requireJWT, requireScope('readwrite'), async (req, res) => {
-    const parsed = commandBodySchema.safeParse(req.body);
-    if (!parsed.success) {
-      res.status(400).json({ error: 'Invalid request', details: parsed.error.flatten() });
-      return;
-    }
+  router.post(
+    '/api/exec/command',
+    requireJWT,
+    requireScope('readwrite'),
+    requireNotReadOnly,
+    async (req, res) => {
+      const parsed = commandBodySchema.safeParse(req.body);
+      if (!parsed.success) {
+        res.status(400).json({ error: 'Invalid request', details: parsed.error.flatten() });
+        return;
+      }
 
-    try {
-      const { scriptId, commandType, value, targetDeviceId, args } = parsed.data;
-      const result = await runCommandScript({
-        scriptId,
-        commandType,
-        ...(value !== undefined ? { value } : {}),
-        ...(targetDeviceId !== undefined ? { targetDeviceId } : {}),
-        args: args ?? {},
-      });
-      res.json(result);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Command execution failed';
-      const status = message.includes('whitelist') || message.includes('not allowed') ? 403 : 500;
-      res.status(status).json({ error: message });
-    }
-  });
+      try {
+        const { scriptId, commandType, value, targetDeviceId, args } = parsed.data;
+        const result = await runCommandScript({
+          scriptId,
+          commandType,
+          ...(value !== undefined ? { value } : {}),
+          ...(targetDeviceId !== undefined ? { targetDeviceId } : {}),
+          args: args ?? {},
+        });
+        res.json(result);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Command execution failed';
+        const status = message.includes('whitelist') || message.includes('not allowed') ? 403 : 500;
+        res.status(status).json({ error: message });
+      }
+    },
+  );
 
   return router;
 }

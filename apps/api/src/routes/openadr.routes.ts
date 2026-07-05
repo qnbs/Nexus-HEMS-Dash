@@ -29,6 +29,7 @@ import https from 'https';
 import { URL } from 'url';
 import { logger } from '../core/logger.js';
 import { requireJWT } from '../middleware/auth.js';
+import { requireNotReadOnly } from '../middleware/require-not-read-only.js';
 
 // ─── VTN Configuration ────────────────────────────────────────────────
 
@@ -265,6 +266,7 @@ export function createOpenADRRoutes(): Router {
   router.post(
     '/api/openadr/events/:eventId/acknowledge',
     requireJWT,
+    requireNotReadOnly,
     async (req: Request, res: Response) => {
       const vtnUrl = getVTNBaseUrl();
       // req.params values are always strings for named route parameters
@@ -321,42 +323,49 @@ export function createOpenADRRoutes(): Router {
    * POST /api/openadr/reports
    * Proxies a telemetry report from the VEN to the VTN.
    */
-  router.post('/api/openadr/reports', requireJWT, async (req: Request, res: Response) => {
-    const vtnUrl = getVTNBaseUrl();
+  router.post(
+    '/api/openadr/reports',
+    requireJWT,
+    requireNotReadOnly,
+    async (req: Request, res: Response) => {
+      const vtnUrl = getVTNBaseUrl();
 
-    if (!vtnUrl) {
-      res.json({ id: 'demo-report-001', note: 'demo-mode' });
-      return;
-    }
-
-    try {
-      const token = await fetchVTNToken(vtnUrl);
-      const reportsUrl = new URL('/openadr3/reports', vtnUrl);
-      const body = JSON.stringify(req.body);
-
-      const result = await nodeFetch(reportsUrl, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-          'Content-Length': String(Buffer.byteLength(body)),
-        },
-        body,
-      });
-
-      if (result.status < 300) {
-        res.status(201).json(JSON.parse(result.body) as unknown);
-      } else {
-        res.status(result.status).json({ error: `VTN report submission failed: ${result.status}` });
+      if (!vtnUrl) {
+        res.json({ id: 'demo-report-001', note: 'demo-mode' });
+        return;
       }
-    } catch (err) {
-      logger.error('OpenADR report error', {
-        requestId: req.requestId,
-        error: err instanceof Error ? err.message : String(err),
-      });
-      res.status(502).json({ error: 'VTN report submission failed' });
-    }
-  });
+
+      try {
+        const token = await fetchVTNToken(vtnUrl);
+        const reportsUrl = new URL('/openadr3/reports', vtnUrl);
+        const body = JSON.stringify(req.body);
+
+        const result = await nodeFetch(reportsUrl, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'Content-Length': String(Buffer.byteLength(body)),
+          },
+          body,
+        });
+
+        if (result.status < 300) {
+          res.status(201).json(JSON.parse(result.body) as unknown);
+        } else {
+          res
+            .status(result.status)
+            .json({ error: `VTN report submission failed: ${result.status}` });
+        }
+      } catch (err) {
+        logger.error('OpenADR report error', {
+          requestId: req.requestId,
+          error: err instanceof Error ? err.message : String(err),
+        });
+        res.status(502).json({ error: 'VTN report submission failed' });
+      }
+    },
+  );
 
   return router;
 }

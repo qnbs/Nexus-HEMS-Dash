@@ -104,5 +104,21 @@ describe('OCPP API routes', () => {
       const res = await buildApp().post('/api/ocpp/proxy-session').send(body);
       expect(res.status).toBe(401);
     });
+
+    it('rejects when READ_ONLY_MODE is active', async () => {
+      const originalReadOnly = process.env.READ_ONLY_MODE;
+      process.env.READ_ONLY_MODE = 'true';
+      try {
+        const res = await buildApp()
+          .post('/api/ocpp/proxy-session')
+          .set('Authorization', `Bearer ${readwriteToken}`)
+          .send(body);
+        expect(res.status).toBe(403);
+        expect(res.body.error).toMatch(/READ_ONLY_MODE/i);
+      } finally {
+        if (originalReadOnly === undefined) delete process.env.READ_ONLY_MODE;
+        else process.env.READ_ONLY_MODE = originalReadOnly;
+      }
+    });
   });
 });

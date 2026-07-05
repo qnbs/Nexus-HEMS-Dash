@@ -275,4 +275,77 @@ describe('EEBUS API routes', () => {
       .expect(200);
     expect(putRes.body.mode).toBe('crl');
   });
+
+  describe('READ_ONLY_MODE blocks mutating routes', () => {
+    let originalReadOnly: string | undefined;
+
+    beforeEach(() => {
+      originalReadOnly = process.env.READ_ONLY_MODE;
+      process.env.READ_ONLY_MODE = 'true';
+    });
+
+    afterEach(() => {
+      if (originalReadOnly === undefined) delete process.env.READ_ONLY_MODE;
+      else process.env.READ_ONLY_MODE = originalReadOnly;
+    });
+
+    it('blocks pair', async () => {
+      const bearer = await adminToken();
+      const res = await api()
+        .post('/api/eebus/pair')
+        .set('Authorization', `Bearer ${bearer}`)
+        .send({ ski: SKI })
+        .expect(403);
+      expect(res.body.error).toMatch(/READ_ONLY_MODE/i);
+    });
+
+    it('blocks pair/pin', async () => {
+      const bearer = await adminToken();
+      const res = await api()
+        .post('/api/eebus/pair/pin')
+        .set('Authorization', `Bearer ${bearer}`)
+        .send({ ski: SKI, pin: '12345' })
+        .expect(403);
+      expect(res.body.error).toMatch(/READ_ONLY_MODE/i);
+    });
+
+    it('blocks discover/register', async () => {
+      const bearer = await adminToken();
+      const res = await api()
+        .post('/api/eebus/discover/register')
+        .set('Authorization', `Bearer ${bearer}`)
+        .send({ ski: SKI, host: '192.168.1.50' })
+        .expect(403);
+      expect(res.body.error).toMatch(/READ_ONLY_MODE/i);
+    });
+
+    it('blocks trust removal', async () => {
+      const bearer = await adminToken();
+      const res = await api()
+        .delete(`/api/eebus/trust/${SKI}`)
+        .set('Authorization', `Bearer ${bearer}`)
+        .expect(403);
+      expect(res.body.error).toMatch(/READ_ONLY_MODE/i);
+    });
+
+    it('blocks TLS revocation update', async () => {
+      const bearer = await adminToken();
+      const res = await api()
+        .put('/api/eebus/tls/revocation')
+        .set('Authorization', `Bearer ${bearer}`)
+        .send({ mode: 'crl', crlUrl: 'https://example.test/crl.pem' })
+        .expect(403);
+      expect(res.body.error).toMatch(/READ_ONLY_MODE/i);
+    });
+  });
+
+  it('rejects discover/register with an invalid body', async () => {
+    const bearer = await adminToken();
+    const res = await api()
+      .post('/api/eebus/discover/register')
+      .set('Authorization', `Bearer ${bearer}`)
+      .send({ ski: 'short', host: '192.168.1.50', port: 80_000 })
+      .expect(400);
+    expect(res.body.errors).toBeInstanceOf(Array);
+  });
 });
