@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+import { BATTERY_FORCE_CHARGE_W } from '../../../lib/battery-control';
 import type { CommandContext } from '../types';
 import { createDeviceCommands } from './device-commands';
 
@@ -66,7 +67,10 @@ describe('createDeviceCommands', () => {
   it('maps hardware commands for EV and battery actions', () => {
     expect(startCmd?.hardwareCommand).toEqual({ type: 'START_CHARGING', value: true });
     expect(stopCmd?.hardwareCommand).toEqual({ type: 'STOP_CHARGING', value: true });
-    expect(forceChargeCmd?.hardwareCommand).toEqual({ type: 'SET_BATTERY_POWER', value: 3000 });
+    expect(forceChargeCmd?.hardwareCommand).toEqual({
+      type: 'SET_BATTERY_POWER',
+      value: BATTERY_FORCE_CHARGE_W,
+    });
     expect(stopBatteryCmd?.hardwareCommand).toEqual({ type: 'SET_BATTERY_POWER', value: 0 });
   });
 

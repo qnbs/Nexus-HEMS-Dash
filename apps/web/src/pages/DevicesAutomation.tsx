@@ -32,6 +32,7 @@ import { LiveMetric } from '../components/ui/LiveMetric';
 import { SgReadyModeSelector } from '../components/ui/SgReadyModeSelector';
 import { useEnergyContext } from '../core/EnergyContext';
 import { useLegacySendCommand } from '../core/useLegacySendCommand';
+import { BATTERY_FORCE_CHARGE_W } from '../lib/battery-control';
 import { hapticClick, hapticModeChange, hapticSuccess } from '../lib/haptics';
 import { SG_READY_POWER_W } from '../lib/sg-ready';
 import { useAppStoreShallow } from '../store';
@@ -649,7 +650,7 @@ function BatteryQuickAction({
       type="button"
       onClick={() => {
         hapticModeChange();
-        sendCommand('SET_BATTERY_POWER', isCharging ? 0 : 3000);
+        sendCommand('SET_BATTERY_POWER', isCharging ? 0 : BATTERY_FORCE_CHARGE_W);
         hapticSuccess();
       }}
       className="focus-ring flex items-center gap-1.5 rounded-lg bg-(--color-primary)/10 px-3 py-1.5 font-medium text-(--color-primary) text-xs transition-colors hover:bg-(--color-primary)/20"
@@ -926,7 +927,7 @@ function StorageDetail({
             type="button"
             onClick={() => {
               hapticModeChange();
-              sendCommand('SET_BATTERY_POWER', 3000);
+              sendCommand('SET_BATTERY_POWER', BATTERY_FORCE_CHARGE_W);
               hapticSuccess();
             }}
             className="btn-primary focus-ring flex-1 text-sm"

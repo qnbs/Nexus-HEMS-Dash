@@ -1,6 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { attachAdapterEntry, useEnergyStoreBase } from '../core/useEnergyStore';
 
+vi.mock('../lib/logger', () => ({
+  logger: {
+    warn: vi.fn(),
+    error: vi.fn(),
+    info: vi.fn(),
+    debug: vi.fn(),
+  },
+}));
+
 const unregisterCommandProvider = vi.fn();
 
 vi.mock('../core/commands/command-registry', () => ({
@@ -164,6 +173,36 @@ describe('useEnergyStore reconfigureAdapter', () => {
     expect(removed).toBe(false);
     expect(useEnergyStoreBase.getState().adapters).toEqual(before);
     expect(unregisterCommandProvider).not.toHaveBeenCalled();
+  });
+
+  it('still removes adapter state when destroy throws', async () => {
+    const destroy = vi.fn().mockImplementation(() => {
+      throw new Error('teardown failed');
+    });
+    const { logger } = await import('../lib/logger');
+    useEnergyStoreBase.setState({
+      adapters: {
+        'plugin-demo': {
+          adapter: {
+            destroy,
+            connect: vi.fn(),
+            onData: vi.fn(),
+            onStatus: vi.fn(),
+            circuitBreaker: { onStateChange: vi.fn(), canExecute: vi.fn() },
+          },
+          enabled: true,
+          status: 'connected',
+          circuitState: 'closed',
+        },
+      },
+    } as never);
+
+    const removed = useEnergyStoreBase.getState().removeContribAdapter('plugin-demo');
+    expect(removed).toBe(true);
+    expect(destroy).toHaveBeenCalled();
+    expect(logger.warn).toHaveBeenCalled();
+    expect(unregisterCommandProvider).toHaveBeenCalledWith('plugin-demo');
+    expect(useEnergyStoreBase.getState().adapters['plugin-demo']).toBeUndefined();
   });
 });
 

@@ -337,7 +337,14 @@ export const useEnergyStoreBase = create<EnergyStoreState>()((set) => ({
     const entry = state.adapters[id];
     if (!entry) return false;
 
-    entry.adapter.destroy();
+    try {
+      entry.adapter.destroy();
+    } catch (err) {
+      logger.warn('Adapter destroy failed during contrib removal; continuing cleanup', {
+        adapterId: id,
+        error: err instanceof Error ? err.message : String(err),
+      });
+    }
     unregisterCommandProvider(id);
     set((s) => {
       const newAdapters = { ...s.adapters };
