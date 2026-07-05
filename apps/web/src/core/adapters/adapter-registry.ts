@@ -260,17 +260,19 @@ export async function loadAllContribAdapters(): Promise<string[]> {
 
 import type { EEBUSAdapterConfig } from './EEBUSAdapter';
 import { EEBUSAdapter } from './EEBUSAdapter';
+import { EvccAdapter } from './EvccAdapter';
 import type { KNXAdapterConfig } from './KNXAdapter';
 import { KNXAdapter } from './KNXAdapter';
 import { ModbusSunSpecAdapter } from './ModbusSunSpecAdapter';
 import type { OCPPAdapterConfig } from './OCPP21Adapter';
 import { OCPP21Adapter } from './OCPP21Adapter';
+import { OpenEMSAdapter } from './OpenEMSAdapter';
 import type { VictronAdapterConfig } from './VictronMQTTAdapter';
 import { VictronMQTTAdapter } from './VictronMQTTAdapter';
 
 /**
  * Register all built-in adapters. Called once during store initialization.
- * This hooks the 5 core adapters into the registry so the factory can be unified.
+ * This hooks the 7 core adapters into the registry so the factory can be unified.
  */
 export function registerBuiltinAdapters(): void {
   registerAdapter(
@@ -308,6 +310,18 @@ export function registerBuiltinAdapters(): void {
   registerAdapter('eebus', (config) => new EEBUSAdapter(config as EEBUSAdapterConfig | undefined), {
     displayName: 'EEBUS',
     description: 'SPINE/SHIP, TLS 1.3 mTLS, VDE-AR-E 2829-6',
+    source: 'builtin',
+  });
+
+  registerAdapter('evcc', (config) => new EvccAdapter(config), {
+    displayName: 'evcc Backend',
+    description: 'evcc.io backend integration via REST + WebSocket',
+    source: 'builtin',
+  });
+
+  registerAdapter('openems', (config) => new OpenEMSAdapter(config), {
+    displayName: 'OpenEMS Edge',
+    description: 'OpenEMS Edge JSON-RPC over WebSocket',
     source: 'builtin',
   });
 }

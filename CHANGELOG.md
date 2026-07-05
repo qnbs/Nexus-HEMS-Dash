@@ -28,6 +28,11 @@ Release notes are maintained here and published via [semantic-release](https://g
 - Upgrade Biome to `2.5.2`, Turborepo to `^2.10.3`, Vitest to `^4.1.9`, Tailwind CSS to `^4.3.2`, and React catalog to `^19.2.7`.
 - Keep Playwright at `^1.60.0`; 1.61.x deferred pending Ubuntu 20.04 browser-binary verification.
 
+### Fixed
+
+- Register `EvccAdapter` and `OpenEMSAdapter` in the frontend adapter registry so they appear as selectable options in the Add Adapter Wizard (previously only the backend protocols were wired; the frontend classes existed but were never registered).
+- Unify `POST /api/modbus/write` read-only guard on the shared `requireNotReadOnly` middleware (consistent with EEBUS, OCPP, OpenADR, and Exec routes). Read-only rejections now return the same `{ error, readOnly }` body shape; accepted/validation rejection audits retain register/value context.
+
 ### Settings & Help perfection (Phases 1–5)
 
 - **#276** — Settings URL sync (`useSearchParams`), persist merge validation, read-only gating foundations.

@@ -105,11 +105,15 @@ describe('Modbus SunSpec proxy API', () => {
     process.env.READ_ONLY_MODE = 'true';
     try {
       const bearer = await signToken({ sub: 'writer', scope: 'readwrite' }, '1h');
-      await buildApp()
+      const res = await buildApp()
         .post('/api/modbus/write')
         .set('Authorization', `Bearer ${bearer}`)
         .send({ register: 'WChaMax', value: 2000 })
         .expect(403);
+      expect(res.body).toEqual({
+        error: 'READ_ONLY_MODE=true blocks all hardware control commands',
+        readOnly: true,
+      });
     } finally {
       if (originalReadOnly === undefined) delete process.env.READ_ONLY_MODE;
       else process.env.READ_ONLY_MODE = originalReadOnly;
