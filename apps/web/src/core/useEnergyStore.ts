@@ -340,10 +340,14 @@ export const useEnergyStoreBase = create<EnergyStoreState>()((set) => ({
     try {
       entry.adapter.destroy();
     } catch (err) {
-      logger.warn('Adapter destroy failed during contrib removal; continuing cleanup', {
-        adapterId: id,
-        error: err instanceof Error ? err.message : String(err),
-      });
+      logger.warn(
+        'Adapter destroy failed during contrib removal; continuing cleanup',
+        'useEnergyStore',
+        {
+          adapterId: id,
+          error: err instanceof Error ? err.message : String(err),
+        },
+      );
     }
     unregisterCommandProvider(id);
     set((s) => {
