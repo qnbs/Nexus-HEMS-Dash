@@ -73,4 +73,14 @@ describe('createTariffCommands', () => {
     expect(updateSettings).toHaveBeenCalledWith({ tariffProvider: 'awattar' });
     expect(ctx.actions.closePalette).toHaveBeenCalled();
   });
+
+  it('can switch to octopus and none providers', () => {
+    const ctx = mockContext({ tariffProvider: 'awattar' });
+    const octopus = commands.find((cmd) => cmd.id === 'settings.tariff.octopus');
+    const none = commands.find((cmd) => cmd.id === 'settings.tariff.none');
+    octopus?.execute(ctx);
+    none?.execute(ctx);
+    expect(updateSettings).toHaveBeenCalledWith({ tariffProvider: 'octopus' });
+    expect(updateSettings).toHaveBeenCalledWith({ tariffProvider: 'none' });
+  });
 });

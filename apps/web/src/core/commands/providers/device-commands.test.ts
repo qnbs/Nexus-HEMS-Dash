@@ -86,7 +86,46 @@ describe('createDeviceCommands', () => {
     expect(forceChargeCmd?.when?.(ctx)).toBe(false);
   });
 
-  it('closes palette on hardware execute paths and navigates on view execute', () => {
+  it('formats start-charging preview and closes palette on execute', () => {
+    const ctx = mockContext({ energy: { ...mockContext().energy, evPower: 0 } });
+    const preview = startCmd?.preview?.(ctx);
+    expect(preview?.titleKey).toBe('command.preview.startCharging');
+    expect(preview?.impactKey).toBe('command.preview.startChargingImpact');
+    startCmd?.execute(ctx);
+    expect(ctx.actions.closePalette).toHaveBeenCalled();
+  });
+
+  it('formats battery force-charge preview and closes palette on execute', () => {
+    const ctx = mockContext({
+      energy: { ...mockContext().energy, batterySoC: 40, batteryPower: 0 },
+    });
+    const preview = forceChargeCmd?.preview?.(ctx);
+    expect(preview?.titleKey).toBe('command.preview.forceCharge');
+    expect(preview?.metrics?.[0]?.value).toBe('40%');
+    expect(preview?.metrics?.[1]?.value).toMatch(/3 kW/);
+    forceChargeCmd?.execute(ctx);
+    expect(ctx.actions.closePalette).toHaveBeenCalled();
+  });
+
+  it('formats battery stop-charge preview and closes palette on execute', () => {
+    const ctx = mockContext({
+      energy: { ...mockContext().energy, batteryPower: 2500 },
+    });
+    const preview = stopBatteryCmd?.preview?.(ctx);
+    expect(preview?.titleKey).toBe('command.preview.stopBatteryCharge');
+    expect(preview?.metrics?.[0]?.value).toMatch(/2,5 kW|2\.5 kW/);
+    stopBatteryCmd?.execute(ctx);
+    expect(ctx.actions.closePalette).toHaveBeenCalled();
+  });
+
+  it('hides battery force charge when SoC is already high', () => {
+    const ctx = mockContext({
+      energy: { ...mockContext().energy, batterySoC: 95, batteryPower: 0 },
+    });
+    expect(forceChargeCmd?.when?.(ctx)).toBe(false);
+  });
+
+  it('closes palette on stop execute and navigates on view execute', () => {
     const ctx = mockContext();
     stopCmd?.execute(ctx);
     expect(ctx.actions.closePalette).toHaveBeenCalled();
