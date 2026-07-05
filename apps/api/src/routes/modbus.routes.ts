@@ -20,9 +20,10 @@
  * command audit trail (`data/command-audit.ts`).
  */
 
-import { type Request, type Response, Router } from 'express';
+import { type NextFunction, type Request, type Response, Router } from 'express';
 import { z } from 'zod';
 import { getEffectiveAdapterMode } from '../config/adapter-mode.js';
+import { isReadOnlyMode } from '../config/read-only-mode.js';
 import { writeCommandAuditEntry } from '../data/command-audit.js';
 import { mockData } from '../data/mock-data.js';
 import { type JWTScope, requireJWT, requireScope } from '../middleware/auth.js';
@@ -127,12 +128,36 @@ export function createModbusRoutes(): Router {
     res.status(200).json(buildSunSpecModel(parsed.data.model));
   });
 
+  // Preserve the per-register audit context while still using the shared middleware response.
+  function requireNotReadOnlyWithModbusAudit(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): void {
+    if (isReadOnlyMode()) {
+      const parsed = WriteBodySchema.safeParse(req.body);
+      if (parsed.success) {
+        const { register, value } = parsed.data;
+        audit(
+          res,
+          `MODBUS_WRITE:${register}`,
+          value,
+          'rejected_readonly',
+          'READ_ONLY_MODE=true blocks all control commands',
+        );
+      } else {
+        audit(res, 'MODBUS_WRITE', null, 'rejected_readonly', 'invalid body in read-only mode');
+      }
+    }
+    requireNotReadOnly(req, res, next);
+  }
+
   // Write a SunSpec register — hardware-affecting, so readwrite scope + validation + audit.
   router.post(
     '/api/modbus/write',
     requireJWT,
     requireScope('readwrite'),
-    requireNotReadOnly,
+    requireNotReadOnlyWithModbusAudit,
     (req: Request, res: Response) => {
       const parsed = WriteBodySchema.safeParse(req.body);
       if (!parsed.success) {
