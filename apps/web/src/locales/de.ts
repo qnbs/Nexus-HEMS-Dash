@@ -896,6 +896,8 @@ export const de = {
     searchPlaceholder: 'Dokumentation durchsuchen...',
     searchNoResults:
       'Keine Treffer — anderes Stichwort versuchen oder die Register unten durchsuchen.',
+    searchResultsCount: '{{count}} Treffer',
+    searchResultsLabel: 'Hilfe-Suchergebnisse',
     openLink: 'Öffnen',
     usage: 'Benutzung',
     usageTitle: 'Benutzungs-Informationen',

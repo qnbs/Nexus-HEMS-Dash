@@ -886,6 +886,8 @@ export const en = {
     subtitle: 'Everything you need to know about Nexus HEMS',
     searchPlaceholder: 'Search documentation...',
     searchNoResults: 'No matching topics — try another keyword or browse the tabs below.',
+    searchResultsCount: '{{count}} matching topics',
+    searchResultsLabel: 'Help search results',
     openLink: 'Open',
     usage: 'Usage',
     usageTitle: 'Usage Information',

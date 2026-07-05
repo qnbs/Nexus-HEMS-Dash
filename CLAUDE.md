@@ -219,7 +219,7 @@ Use `pnpm.overrides` (never top-level `"overrides"`) for dependency overrides. K
 - **Never introduce** Redux, MobX, or alternative state libraries.
 - **Never use** Tailwind v3 syntax (`@apply` in arbitrary selectors, `tailwind.config.js` as sole config) — use Tailwind v4 `@theme` / `@import 'tailwindcss'` syntax.
 - **Never store** API keys in env vars or unencrypted.
-- **Never skip i18n** — every user-visible string uses `t()`. Update both `apps/web/src/locales/en.ts` and `apps/web/src/locales/de.ts` (German is fallback).
+- **Never skip i18n** — every user-visible string uses `t()`. Author English copy in `en.ts` first, then `de.ts` (German is the runtime fallback locale). No inline German/English `t('key', 'fallback')` strings in components — keys only.
 - **Never remove** accessibility features. WCAG 2.2 AA mandatory. `type="button"` on all non-submit buttons; `aria-hidden` on decorative icons.
 - All lazy-loaded pages use `React.lazy` + `Suspense`.
 
