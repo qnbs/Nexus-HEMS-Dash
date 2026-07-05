@@ -153,7 +153,7 @@ export function AdvancedTab() {
               onChange={(e) => updateSettings({ dashboardRefreshSec: Number(e.target.value) })}
               className="w-full accent-(--color-primary)"
               aria-label={t('settings.dashboardRefreshSec', 'Auto-refresh interval')}
-              aria-valuetext={`${settings.dashboardRefreshSec ?? 5} ${t('common.seconds', 'seconds')}`}
+              aria-valuetext={t('common.seconds', { count: settings.dashboardRefreshSec ?? 5 })}
             />
           </div>
           <div className="flex items-center justify-between">

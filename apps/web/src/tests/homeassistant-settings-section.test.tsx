@@ -88,8 +88,7 @@ describe('HomeAssistantSettingsSection', () => {
   });
 
   it('blocks save actions in read-only mode', () => {
-    mockReadOnly.mockReturnValue(true);
-    render(<HomeAssistantSettingsSection {...sectionProps} />);
+    render(<HomeAssistantSettingsSection {...sectionProps} isReadOnly />);
     fireEvent.click(screen.getByText('common.save'));
     expect(mockSave).not.toHaveBeenCalled();
   });

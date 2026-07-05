@@ -3,8 +3,8 @@ import type { AdapterSettingsSectionProps } from '../../core/adapters/settings-s
 import { useHomeAssistantSettingsForm } from '../../lib/use-home-assistant-settings-form';
 import { HaSettingsPanelBody } from './HaSettingsPanelBody';
 
-export const HomeAssistantSettingsSection = (_props: AdapterSettingsSectionProps) => {
-  const form = useHomeAssistantSettingsForm();
+export const HomeAssistantSettingsSection = ({ isReadOnly }: AdapterSettingsSectionProps) => {
+  const form = useHomeAssistantSettingsForm({ isReadOnly });
   const sectionClass = 'glass-panel-strong space-y-6 rounded-2xl p-6';
   const sectionHeaderClass =
     'flex items-center gap-2 border-b border-(--color-border) pb-4 text-lg font-medium fluid-text-lg';

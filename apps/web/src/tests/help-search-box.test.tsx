@@ -7,7 +7,7 @@ vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string, opts?: { count?: number }) => {
       if (key === 'help.searchResultsCount' && opts?.count !== undefined) {
-        return `${opts.count} matching topics`;
+        return opts.count === 1 ? '1 matching topic' : `${opts.count} matching topics`;
       }
       return key;
     },
@@ -82,5 +82,100 @@ describe('HelpSearchBox', () => {
     const noResults = screen.getByRole('note');
     expect(screen.getByRole('status')).toHaveTextContent('help.searchNoResults');
     expect(combobox).toHaveAttribute('aria-controls', noResults.id);
+  });
+
+  it('announces singular result count via the live region', () => {
+    render(
+      <HelpSearchBox
+        searchQuery="eebus"
+        onSearchQueryChange={vi.fn()}
+        normalizedQuery="eebus"
+        searchResults={[{ tab: 'lexicon', title: 'EEBUS', body: 'European energy interface' }]}
+        onSelectResult={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByRole('status')).toHaveTextContent('1 matching topic');
+  });
+
+  it('navigates results with arrow keys and selects on Enter', async () => {
+    const user = userEvent.setup();
+    const onSelectResult = vi.fn();
+
+    render(
+      <HelpSearchBox
+        searchQuery="eebus"
+        onSearchQueryChange={vi.fn()}
+        normalizedQuery="eebus"
+        searchResults={[
+          { tab: 'lexicon', title: 'EEBUS', body: 'European energy interface' },
+          { tab: 'integration', title: 'EEBUS setup', body: 'Certificate pairing' },
+        ]}
+        onSelectResult={onSelectResult}
+      />,
+    );
+
+    const combobox = screen.getByRole('combobox');
+    const options = screen.getAllByRole('option');
+
+    expect(options[0]).toHaveAttribute('aria-selected', 'true');
+    expect(combobox).toHaveAttribute('aria-activedescendant', options[0].id);
+
+    await user.click(combobox);
+    await user.keyboard('{ArrowDown}');
+    expect(options[1]).toHaveAttribute('aria-selected', 'true');
+    expect(combobox).toHaveAttribute('aria-activedescendant', options[1].id);
+
+    await user.keyboard('{Enter}');
+    expect(onSelectResult).toHaveBeenCalledWith('integration');
+  });
+
+  it('dismisses the listbox on Escape without clearing the query', async () => {
+    const user = userEvent.setup();
+    const onSearchQueryChange = vi.fn();
+
+    render(
+      <HelpSearchBox
+        searchQuery="eebus"
+        onSearchQueryChange={onSearchQueryChange}
+        normalizedQuery="eebus"
+        searchResults={[{ tab: 'lexicon', title: 'EEBUS', body: 'European energy interface' }]}
+        onSelectResult={vi.fn()}
+      />,
+    );
+
+    const combobox = screen.getByRole('combobox');
+    expect(screen.getByRole('listbox')).toBeInTheDocument();
+
+    await user.click(combobox);
+    await user.keyboard('{Escape}');
+
+    expect(combobox).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+    expect(onSearchQueryChange).not.toHaveBeenCalled();
+    expect(combobox).toHaveValue('eebus');
+  });
+
+  it('dismisses the empty-state popup on Escape', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <HelpSearchBox
+        searchQuery="xyz"
+        onSearchQueryChange={vi.fn()}
+        normalizedQuery="xyz"
+        searchResults={[]}
+        onSelectResult={vi.fn()}
+      />,
+    );
+
+    const combobox = screen.getByRole('combobox');
+    expect(screen.getByRole('note')).toBeInTheDocument();
+
+    await user.click(combobox);
+    await user.keyboard('{Escape}');
+
+    expect(combobox).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByRole('note')).not.toBeInTheDocument();
   });
 });

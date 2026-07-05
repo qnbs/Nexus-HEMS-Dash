@@ -13,8 +13,3 @@ export function registerBuiltinAdapterSettingsSections(): void {
     Component: HomeAssistantSettingsSection,
   });
 }
-
-/** Reset registration guard — test helper only. */
-export function resetBuiltinAdapterSettingsRegistration(): void {
-  registered = false;
-}

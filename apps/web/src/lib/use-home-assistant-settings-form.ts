@@ -19,9 +19,10 @@ const toEntityRoleRows = (
   roles: { entityId: string; role: HAEntityRoleRow['role'] }[],
 ): HAEntityRoleRow[] => roles.map((role) => ({ ...role, rowId: crypto.randomUUID() }));
 
-export const useHomeAssistantSettingsForm = () => {
+export const useHomeAssistantSettingsForm = (options?: { isReadOnly?: boolean }) => {
   const { t } = useTranslation();
-  const isReadOnly = useReadOnlyModeActive();
+  const readOnlyFromHook = useReadOnlyModeActive();
+  const isReadOnly = options?.isReadOnly ?? readOnlyFromHook;
   const haEntry = useEnergyStore((s) => s.adapters[HA_ADAPTER_ID]);
   const haEnabled = haEntry?.enabled ?? false;
   const { settings, updateSettings } = useAppStoreShallow((s) => ({

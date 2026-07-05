@@ -1,7 +1,12 @@
 import { Search } from 'lucide-react';
-import { useId } from 'react';
+import { useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { HelpTab } from '../../lib/help-search-entries';
+import {
+  buildHelpSearchActiveOptionId,
+  handleHelpSearchKeyDown,
+  resolveHelpSearchActiveIndex,
+} from '../../lib/help-search-keyboard';
 import { resolveHelpSearchStatusMessage } from '../../lib/help-search-status';
 import { HelpSearchResultsPanel } from './HelpSearchResultsPanel';
 
@@ -30,8 +35,22 @@ export const HelpSearchBox = ({
   const { t } = useTranslation();
   const listboxId = useId();
   const statusId = useId();
-  const isOpen = normalizedQuery.length >= 2;
+  const [dismissedQuery, setDismissedQuery] = useState<string | null>(null);
+  const isOpen = normalizedQuery.length >= 2 && dismissedQuery !== normalizedQuery;
+  const [selectionState, setSelectionState] = useState({
+    normalizedQuery: '',
+    activeIndex: -1,
+  });
+  const activeIndex = resolveHelpSearchActiveIndex(searchResults, normalizedQuery, selectionState);
+  const setActiveIndex = (index: number) => {
+    setSelectionState({ normalizedQuery, activeIndex: index });
+  };
   const statusMessage = resolveHelpSearchStatusMessage(isOpen, searchResults.length, t);
+  const activeOptionId = buildHelpSearchActiveOptionId(
+    listboxId,
+    activeIndex,
+    searchResults.length,
+  );
 
   return (
     <div className="relative mb-6">
@@ -43,10 +62,22 @@ export const HelpSearchBox = ({
         type="search"
         value={searchQuery}
         onChange={(e) => onSearchQueryChange(e.target.value)}
+        onKeyDown={(event) =>
+          handleHelpSearchKeyDown(
+            event,
+            searchResults,
+            activeIndex,
+            setActiveIndex,
+            onSelectResult,
+            () => setDismissedQuery(normalizedQuery),
+            isOpen,
+          )
+        }
         placeholder={t('help.searchPlaceholder')}
         role="combobox"
         aria-expanded={isOpen}
         aria-controls={isOpen ? listboxId : undefined}
+        aria-activedescendant={isOpen ? activeOptionId : undefined}
         aria-autocomplete="list"
         aria-haspopup="listbox"
         aria-describedby={statusId}
@@ -60,6 +91,7 @@ export const HelpSearchBox = ({
           <HelpSearchResultsPanel
             listboxId={listboxId}
             searchResults={searchResults}
+            activeIndex={activeIndex}
             onSelectResult={onSelectResult}
           />
         </div>
