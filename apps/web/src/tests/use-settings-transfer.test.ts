@@ -90,7 +90,7 @@ describe('settings-transfer', () => {
 
     await input.onchange?.({
       target: {
-        files: [{ size: 20, text: async () => JSON.stringify({ unknownKey: true }) }],
+        files: [{ size: 20, text: async () => JSON.stringify({ wsPort: 'not-a-number' }) }],
       },
     } as unknown as Event);
 

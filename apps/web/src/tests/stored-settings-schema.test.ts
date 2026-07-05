@@ -16,8 +16,10 @@ describe('stored-settings-schema', () => {
     });
   });
 
-  it('rejects unknown top-level keys', () => {
-    expect(parseStoredSettingsImport({ evil: true, victronIp: '10.0.0.1' })).toBeNull();
+  it('strips unknown top-level keys', () => {
+    expect(parseStoredSettingsImport({ evil: true, victronIp: '10.0.0.1' })).toEqual({
+      victronIp: '10.0.0.1',
+    });
   });
 
   it('rejects invalid field types', () => {
