@@ -28,7 +28,10 @@ import { useAppStore } from '../store';
 
 beforeEach(() => {
   mockNavigate.mockClear();
-  useAppStore.setState({ connected: false });
+  useAppStore.setState((state) => ({
+    connected: false,
+    settings: { ...state.settings, keyboardShortcuts: true },
+  }));
 });
 
 describe('Sidebar navigation', () => {
@@ -128,7 +131,6 @@ describe('CommandPalette navigation', () => {
     'nav-hardware': '/settings/hardware',
     'nav-plugins': '/plugins',
     'nav-help': '/help',
-    'device-grid': '/energy-flow',
   };
 
   it('routes every navigation command to its target path', async () => {
@@ -139,6 +141,10 @@ describe('CommandPalette navigation', () => {
         <CommandPalette isOpen onClose={onClose} />
       </MemoryRouter>,
     );
+
+    await waitFor(() => {
+      expect(container.querySelector('#cmd-nav-dashboard')).toBeTruthy();
+    });
 
     for (const [id, path] of Object.entries(navPaths)) {
       const btn = container.querySelector(`#cmd-${id}`) as HTMLButtonElement | null;
@@ -164,20 +170,26 @@ describe('CommandPalette navigation', () => {
       </MemoryRouter>,
     );
 
+    await waitFor(() => {
+      expect(container.querySelector('#cmd-optimize')).toBeTruthy();
+    });
+
     await user.click(container.querySelector('#cmd-optimize') as HTMLButtonElement);
     await user.click(container.querySelector('#cmd-export-report') as HTMLButtonElement);
     expect(onOptimize).toHaveBeenCalled();
     expect(onExportReport).toHaveBeenCalled();
   });
 
-  it('supports arrow-key selection and Enter activation', () => {
+  it('supports arrow-key selection and Enter activation', async () => {
     const onOptimize = vi.fn();
     render(
       <MemoryRouter>
         <CommandPalette isOpen onClose={vi.fn()} onOptimize={onOptimize} />
       </MemoryRouter>,
     );
-    // Start at index 0 (optimize); Down then Up returns to it; Enter activates.
+    await waitFor(() => {
+      expect(screen.getByRole('option', { name: /ai\.optimizeNow/i })).toBeInTheDocument();
+    });
     fireEvent.keyDown(window, { key: 'ArrowDown' });
     fireEvent.keyDown(window, { key: 'ArrowUp' });
     fireEvent.keyDown(window, { key: 'Enter' });
@@ -192,7 +204,9 @@ describe('CommandPalette navigation', () => {
       </MemoryRouter>,
     );
     await user.type(screen.getByRole('combobox'), 'zzzz-no-command-zzzz');
-    expect(screen.getByText('command.noResults')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('command.noResults')).toBeInTheDocument();
+    });
   });
 
   it('closes on Escape', () => {
@@ -214,10 +228,13 @@ describe('CommandPalette navigation', () => {
         <CommandPalette isOpen onClose={onClose} />
       </MemoryRouter>,
     );
+    await waitFor(() => {
+      expect(screen.getByRole('combobox')).toBeInTheDocument();
+    });
     await user.type(screen.getByRole('combobox'), 'netzbezug');
-    const gridBtn = screen.getByRole('option', { name: /command\.viewGrid/i });
+    const gridBtn = await screen.findByRole('option', { name: /command\.viewGrid/i });
     expect(gridBtn).toBeInTheDocument();
-    fireEvent.keyDown(window, { key: 'Enter' });
+    await user.click(gridBtn);
     expect(mockNavigate).toHaveBeenCalledWith('/energy-flow');
     expect(onClose).toHaveBeenCalled();
   });
@@ -229,6 +246,9 @@ describe('CommandPalette navigation', () => {
         <CommandPalette isOpen onClose={vi.fn()} />
       </MemoryRouter>,
     );
+    await waitFor(() => {
+      expect(container.querySelector('#cmd-export-report')).toBeTruthy();
+    });
     const exportBtn = container.querySelector('#cmd-export-report') as HTMLButtonElement;
     await user.hover(exportBtn);
     expect(exportBtn).toHaveAttribute('aria-selected', 'true');
@@ -277,8 +297,12 @@ describe('CommandPalette navigation', () => {
         <CommandPalette isOpen onClose={onClose} />
       </MemoryRouter>,
     );
+    await waitFor(() => {
+      expect(container.querySelector('#cmd-optimize')).toBeTruthy();
+    });
     await user.click(container.querySelector('#cmd-optimize') as HTMLButtonElement);
     expect(onClose).toHaveBeenCalled();
+    expect(mockNavigate).toHaveBeenCalledWith('/optimization-ai');
   });
 
   it('does not render when closed', () => {
@@ -308,7 +332,10 @@ describe('CommandPalette navigation', () => {
 });
 
 describe('useCommandPalette', () => {
-  it('toggles open state on Cmd/Ctrl+K', () => {
+  it('toggles open state on Cmd/Ctrl+K when keyboard shortcuts enabled', () => {
+    useAppStore.setState({
+      settings: { ...useAppStore.getState().settings, keyboardShortcuts: true },
+    });
     const { result } = renderHook(() => useCommandPalette());
     expect(result.current.isOpen).toBe(false);
     act(() => {
@@ -317,6 +344,17 @@ describe('useCommandPalette', () => {
     expect(result.current.isOpen).toBe(true);
     act(() => {
       fireEvent.keyDown(window, { key: 'k', ctrlKey: true });
+    });
+    expect(result.current.isOpen).toBe(false);
+  });
+
+  it('does not toggle when keyboard shortcuts disabled', () => {
+    useAppStore.setState({
+      settings: { ...useAppStore.getState().settings, keyboardShortcuts: false },
+    });
+    const { result } = renderHook(() => useCommandPalette());
+    act(() => {
+      fireEvent.keyDown(window, { key: 'k', metaKey: true });
     });
     expect(result.current.isOpen).toBe(false);
   });
