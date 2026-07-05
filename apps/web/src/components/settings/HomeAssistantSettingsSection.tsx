@@ -1,8 +1,9 @@
 import { Home } from 'lucide-react';
+import type { AdapterSettingsSectionProps } from '../../core/adapters/settings-section-registry';
 import { useHomeAssistantSettingsForm } from '../../lib/use-home-assistant-settings-form';
 import { HaSettingsPanelBody } from './HaSettingsPanelBody';
 
-export const HomeAssistantSettingsSection = () => {
+export const HomeAssistantSettingsSection = (_props: AdapterSettingsSectionProps) => {
   const form = useHomeAssistantSettingsForm();
   const sectionClass = 'glass-panel-strong space-y-6 rounded-2xl p-6';
   const sectionHeaderClass =

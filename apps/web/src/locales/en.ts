@@ -886,6 +886,8 @@ export const en = {
     subtitle: 'Everything you need to know about Nexus HEMS',
     searchPlaceholder: 'Search documentation...',
     searchNoResults: 'No matching topics — try another keyword or browse the tabs below.',
+    searchResultsCount: '{{count}} matching topics',
+    searchResultsLabel: 'Help search results',
     openLink: 'Open',
     usage: 'Usage',
     usageTitle: 'Usage Information',
@@ -1245,7 +1247,7 @@ export const en = {
     aiGeminiName: 'Gemini 2.5 Pro',
     aiGeminiProvider: 'Google AI Studio',
     aiClaudeDesc:
-      'Main development in GitHub Codespaces — architecture, React Compiler compliance, a11y audit, E2E tests, design system, UI/UX transformation',
+      'Main development in GitHub Copilot — architecture, React Compiler compliance, a11y audit, E2E tests, design system, UI/UX transformation',
     aiClaudeName: 'Claude Sonnet',
     aiClaudeProvider: 'GitHub Copilot',
     aiGrokDesc:

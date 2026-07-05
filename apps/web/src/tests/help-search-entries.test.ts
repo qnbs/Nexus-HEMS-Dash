@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { HELP_GLOSSARY_ENTRIES } from '../lib/help-content-manifest';
 import { buildHelpSearchEntries, filterHelpSearchResults } from '../lib/help-search-entries';
 
 describe('help-search-entries', () => {
@@ -46,5 +47,19 @@ describe('help-search-entries', () => {
       opts?.version ? `v${opts.version}` : key) as never);
     const faq = entries.find((e) => e.title === 'help.faqWhatIs');
     expect(faq?.body).toMatch(/^v\d+\.\d+\.\d+$/);
+  });
+
+  it('interpolates app version in about search entry', () => {
+    const entries = buildHelpSearchEntries(((key: string, opts?: { version?: string }) =>
+      opts?.version ? `v${opts.version}` : key) as never);
+    const about = entries.find((e) => e.title === 'help.aboutTitle');
+    expect(about?.body).toMatch(/^v\d+\.\d+\.\d+$/);
+  });
+
+  it('indexes all manifest glossary terms for lexicon search', () => {
+    const entries = buildHelpSearchEntries(((key: string) => key) as never);
+    for (const { termKey } of HELP_GLOSSARY_ENTRIES) {
+      expect(entries.some((e) => e.title === termKey)).toBe(true);
+    }
   });
 });

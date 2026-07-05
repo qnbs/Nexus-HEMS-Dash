@@ -35,6 +35,8 @@ vi.mock('../core/homeassistant-settings-save', () => ({
 }));
 
 describe('HomeAssistantSettingsSection', () => {
+  const sectionProps = { adapterId: 'homeassistant-mqtt', isReadOnly: false };
+
   beforeEach(() => {
     vi.clearAllMocks();
     mockReadOnly.mockReturnValue(false);
@@ -42,7 +44,7 @@ describe('HomeAssistantSettingsSection', () => {
   });
 
   it('saves HA WS API settings', async () => {
-    render(<HomeAssistantSettingsSection />);
+    render(<HomeAssistantSettingsSection {...sectionProps} />);
     fireEvent.change(screen.getByLabelText('settings.haToken'), {
       target: { value: 'token-value' },
     });
@@ -59,7 +61,7 @@ describe('HomeAssistantSettingsSection', () => {
   });
 
   it('saves MQTT broker settings after switching mode', async () => {
-    render(<HomeAssistantSettingsSection />);
+    render(<HomeAssistantSettingsSection {...sectionProps} />);
     fireEvent.click(screen.getByText('settings.haModeMqtt'));
     fireEvent.change(screen.getByLabelText('mqtt.brokerUrl'), {
       target: { value: '192.168.1.44' },
@@ -78,7 +80,7 @@ describe('HomeAssistantSettingsSection', () => {
 
   it('surfaces save failures', async () => {
     mockSave.mockResolvedValue({ ok: false, error: 'boom' });
-    render(<HomeAssistantSettingsSection />);
+    render(<HomeAssistantSettingsSection {...sectionProps} />);
     fireEvent.click(screen.getByText('common.save'));
     await vi.waitFor(() => {
       expect(mockSave).toHaveBeenCalled();
@@ -87,7 +89,7 @@ describe('HomeAssistantSettingsSection', () => {
 
   it('blocks save actions in read-only mode', () => {
     mockReadOnly.mockReturnValue(true);
-    render(<HomeAssistantSettingsSection />);
+    render(<HomeAssistantSettingsSection {...sectionProps} />);
     fireEvent.click(screen.getByText('common.save'));
     expect(mockSave).not.toHaveBeenCalled();
   });
