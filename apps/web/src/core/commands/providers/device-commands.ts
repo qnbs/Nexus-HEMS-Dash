@@ -1,14 +1,9 @@
 import { Battery, BatteryCharging, CarFront, Zap } from 'lucide-react';
 import { BATTERY_FORCE_CHARGE_W } from '../../../lib/battery-control';
 import { formatPower } from '../../../lib/format';
+import { BATTERY_CHARGING_POWER_W, EV_ACTIVE_POWER_W } from '../device-command-thresholds';
 import type { CommandDefinition } from '../types';
 import { navigateAndClose } from './provider-utils';
-
-/** Minimum EV draw (W) to treat the wallbox as actively charging */
-const EV_ACTIVE_POWER_W = 100;
-
-/** Minimum battery charge power (W) to treat the pack as actively charging */
-const BATTERY_CHARGING_POWER_W = 100;
 
 export function createDeviceCommands(): CommandDefinition[] {
   return [

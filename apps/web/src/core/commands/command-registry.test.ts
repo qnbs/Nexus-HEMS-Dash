@@ -269,6 +269,53 @@ describe('command providers', () => {
     expect(favorite?.section).toBe('favorites');
   });
 
+  it('includes AI suggestions when experimental features are enabled', () => {
+    registerCoreCommands();
+    useAppStore.setState({
+      settings: { ...useAppStore.getState().settings, experimentalFeatures: true },
+    });
+    const ctx = mockContext({
+      energy: {
+        pvPower: 8,
+        batterySoC: 40,
+        batteryPower: 0,
+        gridPower: 0,
+        houseLoad: 2,
+        priceCurrent: 0.1,
+        evPower: 0,
+      },
+      chargeThreshold: 0.15,
+    });
+    const defs = collectCommandDefinitions(ctx);
+    const aiCmd = defs.find((c) => c.id === 'ai.suggest.optimizeSurplus');
+    expect(aiCmd?.source).toBe('ai');
+    expect(aiCmd?.labelKey).toBe('command.optimizeSurplus');
+    const batteryAi = defs.find((c) => c.id === 'ai.suggest.batteryForceCharge');
+    expect(batteryAi?.source).toBe('ai');
+    expect(batteryAi?.hardwareCommand).toBeTruthy();
+  });
+
+  it('skips AI EV mirror when the source device command is unavailable', () => {
+    registerCoreCommands();
+    useAppStore.setState({
+      settings: { ...useAppStore.getState().settings, experimentalFeatures: true },
+    });
+    const ctx = mockContext({
+      energy: {
+        pvPower: 8,
+        batterySoC: 50,
+        batteryPower: 0,
+        gridPower: 0,
+        houseLoad: 2,
+        priceCurrent: 0.2,
+        evPower: 3500,
+      },
+    });
+    const defs = collectCommandDefinitions(ctx);
+    expect(defs.some((c) => c.id === 'ai.suggest.startEvCharging')).toBe(false);
+    expect(defs.some((c) => c.id === 'device.startEvCharging')).toBe(false);
+  });
+
   it('removes a registered command provider by id', () => {
     registerCommandProvider({
       id: 'temp-provider',

@@ -77,6 +77,25 @@ reconnect commands. Register additional providers with `registerCommandProvider`
 hardware catalog commands (EV start/stop, battery force charge), and lifecycle cleanup in
 `removeContribAdapter`.
 
+## AI suggestions (Phase 4)
+
+Rule-based suggestions — **not** LLM calls. Enable **Settings → Advanced → Experimental
+features** (`settings.experimentalFeatures`) to surface the `ai` section in the palette.
+
+```typescript
+import { collectCommandDefinitions } from '@/core/commands';
+import { useAppStore } from '@/store';
+
+const experimental = useAppStore.getState().settings.experimentalFeatures;
+const commands = collectCommandDefinitions(ctx); // AI mirrors when experimental is true
+```
+
+- Mirrors are injected in `collectCommandDefinitions` when
+  `useAppStore.getState().settings.experimentalFeatures` is true (Settings → Advanced).
+- Commands use `source: 'ai'`, `category: 'ai'`; labels/previews reuse mirrored core commands.
+- Hardware mirrors (`startEvCharging`, `batteryForceCharge`) keep `hardwareCommand` from the device catalog.
+- Add section title via existing `command.categoryAi` in locale files.
+
 ## Architecture
 
 See `docs/adr/ADR-028-command-palette-registry.md`.
