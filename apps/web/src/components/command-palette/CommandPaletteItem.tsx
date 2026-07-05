@@ -94,6 +94,9 @@ export function CommandPaletteItem({
           <span className="sr-only">{t('command.favorite')}</span>
         </span>
       ) : null}
+      {cmd.disabled && cmd.disabledReasonKey ? (
+        <span className="sr-only">{t(cmd.disabledReasonKey)}</span>
+      ) : null}
       {isSelected ? (
         <kbd className="hidden shrink-0 rounded bg-(--color-surface-strong) px-2 py-1 text-(--color-muted) text-xs sm:inline">
           ↵

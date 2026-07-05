@@ -144,4 +144,36 @@ describe('auth-token', () => {
     vi.mocked(fetch).mockRejectedValueOnce(new Error('offline'));
     await expect(fetchWsTicket()).resolves.toBeNull();
   });
+
+  describe('getTokenScope', () => {
+    function makeToken(payload: Record<string, unknown>): string {
+      const json = JSON.stringify(payload);
+      const base64 = btoa(json).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+      return `header.${base64}.signature`;
+    }
+
+    it('returns scope claim from a valid token', async () => {
+      const { getTokenScope } = await import('../lib/auth-token');
+      expect(getTokenScope(makeToken({ scope: 'admin' }))).toBe('admin');
+      expect(getTokenScope(makeToken({ scope: 'read' }))).toBe('read');
+    });
+
+    it('returns null when token is missing', async () => {
+      const { getTokenScope } = await import('../lib/auth-token');
+      expect(getTokenScope(null)).toBeNull();
+      expect(getTokenScope(undefined)).toBeNull();
+    });
+
+    it('returns null for malformed tokens', async () => {
+      const { getTokenScope } = await import('../lib/auth-token');
+      expect(getTokenScope('not-a-jwt')).toBeNull();
+      expect(getTokenScope('only.two')).toBeNull();
+    });
+
+    it('returns null when scope claim is absent or non-string', async () => {
+      const { getTokenScope } = await import('../lib/auth-token');
+      expect(getTokenScope(makeToken({ sub: 'user' }))).toBeNull();
+      expect(getTokenScope(makeToken({ scope: 123 }))).toBeNull();
+    });
+  });
 });

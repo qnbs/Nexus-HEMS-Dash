@@ -27,6 +27,7 @@ Release notes are maintained here and published via [semantic-release](https://g
 - **#279** — Help phase 3+4: `help-content-manifest`, combobox search a11y, `AdapterSettingsSection` registry, HA settings plugin template.
 - **#278** — Help search `isOpen` keyboard guard after Escape dismiss, stable list keys, regression tests.
 - **#280** — Command palette contextual Help tab shortcuts (`/help?tab=…`).
+- **#285** — Command palette hardening: auth-scope resolution from stored JWT (`getTokenScope`), Home/End/PgUp/PgDn navigation, Ctrl/Cmd+D favorite toggle, disabled-reason tooltips, and i18n keys for insufficient scope.
 
 ## [1.10.0] - 2026-07-04
 

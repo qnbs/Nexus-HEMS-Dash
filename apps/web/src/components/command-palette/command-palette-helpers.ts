@@ -25,9 +25,14 @@ export interface PaletteKeyDownOptions {
   isOpen: boolean;
   commandCount: number;
   clampedIndex: number;
+  selectedCommandId?: string;
   setSelectedIndex: Dispatch<SetStateAction<number>>;
   runCommand: (index: number) => Promise<void>;
+  onToggleFavorite?: (commandId: string) => void;
 }
+
+/** Number of rows to jump on PageUp/PageDown in the command palette list. */
+const PAGE_JUMP_SIZE = 8;
 
 export function handlePaletteKeyDown(e: KeyboardEvent, options: PaletteKeyDownOptions): void {
   const { isOpen, commandCount, clampedIndex, setSelectedIndex, runCommand } = options;
@@ -43,9 +48,39 @@ export function handlePaletteKeyDown(e: KeyboardEvent, options: PaletteKeyDownOp
     setSelectedIndex((prev) => (prev - 1 + commandCount) % commandCount);
     return;
   }
+  if (e.key === 'Home') {
+    e.preventDefault();
+    setSelectedIndex(0);
+    return;
+  }
+  if (e.key === 'End') {
+    e.preventDefault();
+    setSelectedIndex(commandCount - 1);
+    return;
+  }
+  if (e.key === 'PageDown') {
+    e.preventDefault();
+    setSelectedIndex((prev) => Math.min(prev + PAGE_JUMP_SIZE, commandCount - 1));
+    return;
+  }
+  if (e.key === 'PageUp') {
+    e.preventDefault();
+    setSelectedIndex((prev) => Math.max(prev - PAGE_JUMP_SIZE, 0));
+    return;
+  }
   if (e.key === 'Enter') {
     e.preventDefault();
     invokeAsyncCommand(runCommand, clampedIndex);
+    return;
+  }
+  if (
+    (e.key === 'd' || e.key === 'D') &&
+    (e.metaKey || e.ctrlKey) &&
+    options.onToggleFavorite &&
+    options.selectedCommandId
+  ) {
+    e.preventDefault();
+    options.onToggleFavorite(options.selectedCommandId);
   }
 }
 
