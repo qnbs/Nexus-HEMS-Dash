@@ -27,6 +27,7 @@ function mockContext(overrides: Partial<CommandContext> = {}): CommandContext {
       evPower: 0,
     },
     adapterStatuses: new Map(),
+    adapterEntries: new Map(),
     tariffProvider: 'tibber',
     chargeThreshold: 0.15,
     isReadOnly: false,

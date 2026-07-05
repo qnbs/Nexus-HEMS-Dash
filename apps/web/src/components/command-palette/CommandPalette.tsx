@@ -1,15 +1,17 @@
 import { AnimatePresence, motion } from 'motion/react';
+import type { AdapterCommand } from '../../core/adapters/EnergyAdapter';
 import { CommandPaletteFooter } from './CommandPaletteFooter';
 import { CommandPaletteInput } from './CommandPaletteInput';
 import { CommandPaletteList } from './CommandPaletteList';
 import { CommandPalettePreviewPane } from './CommandPalettePreview';
 import { useCommandPaletteController } from './useCommandPaletteController';
 
-interface CommandPaletteProps {
+export interface CommandPaletteProps {
   isOpen: boolean;
   onClose: () => void;
   onOptimize?: () => void;
   onExportReport?: () => void;
+  executeHardwareCommand?: (command: AdapterCommand) => void;
 }
 
 export function CommandPalette({
@@ -17,6 +19,7 @@ export function CommandPalette({
   onClose,
   onOptimize,
   onExportReport,
+  executeHardwareCommand,
 }: CommandPaletteProps) {
   const {
     search,
@@ -38,6 +41,7 @@ export function CommandPalette({
     onClose,
     ...(onOptimize !== undefined ? { onOptimize } : {}),
     ...(onExportReport !== undefined ? { onExportReport } : {}),
+    ...(executeHardwareCommand !== undefined ? { executeHardwareCommand } : {}),
   });
 
   return (
