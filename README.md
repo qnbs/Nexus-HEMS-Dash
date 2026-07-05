@@ -499,11 +499,11 @@ MIT — see [LICENSE](LICENSE).
 
 </div>
 
-**Nexus-HEMS Dashboard** ist ein produktionsreifes Echtzeit-Home-Energy-Management-System — **ein einziges Command Center** für die dezentrale Energiewende. Es vereint **14 Protokolladapter** (7 Core + 7 Contrib) in **7 fokussierten Sektionen** zur Orchestrierung von PV, Batteriespeicher, Wärmepumpen und E-Mobilität — optimiert für dynamische Stromtarife (Tibber/aWATTar/Octopus/Nordpool).
+**Nexus-HEMS Dashboard** ist ein produktionsreifes Echtzeit-Home-Energy-Management-System — **ein einziges Command Center** für die dezentrale Energiewende. Es vereint **13 Protokolladapter** (7 Core + 6 Contrib) in **8 primären Routen über 7 Navigationssektionen** zur Orchestrierung von PV, Batteriespeicher, Wärmepumpen und E-Mobilität — optimiert für dynamische Stromtarife (Tibber/aWATTar/Octopus/Nordpool).
 
 - ⚡ Echtzeit D3.js Sankey-Energiefluss mit KI-Optimierung (Gemini 2.5 Pro)
 - 🎯 Unified Command Center: 7 Sektionen statt 18+ Einzelseiten
-- 🔌 14 Adapter (7 Core + 7 Contrib): Victron MQTT, Modbus/SunSpec, KNX/IP, OCPP 2.1, EEBUS SPINE/SHIP, evcc, OpenEMS · Home Assistant, Matter/Thread, Zigbee2MQTT, Shelly, OpenADR 3.1, ExecAdapter, Example-Template
+- 🔌 13 Adapter (7 Core + 6 Contrib): Victron MQTT, Modbus/SunSpec, KNX/IP, OCPP 2.1, EEBUS SPINE/SHIP, evcc, OpenEMS · Home Assistant, Matter/Thread, Zigbee2MQTT, Shelly REST, OpenADR 3.1 VEN · `example-contrib.ts` ist ein Entwicklungs-Template, kein ausgelieferter Adapter (siehe EN-Hinweis oben)
 - 🧩 Plugin-System: Adapter-Registry mit dynamischem Laden, npm-Paket-Format, BaseAdapter-Klasse
 - 🎛️ 8 Echtzeit-Energieregler: ESS, Peak Shaving, Netz-optimiert, Eigenverbrauch, Notstrom, SG Ready, EV Smart, EV V2G Entladung
 - 📐 MPC-Optimierer: EMHASS-inspirierter LP Day-Ahead-Scheduler mit Tariferkennung
