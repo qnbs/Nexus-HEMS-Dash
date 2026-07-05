@@ -18,6 +18,13 @@ export function getSectionLabelKey(section: ResolvedCommand['section']): string 
   return SECTION_KEYS[section];
 }
 
+/** Virtual rows need a measurable scrollport; jsdom/Vitest has none — keep the flat list there. */
+export function shouldVirtualizeCommandList(rowCount: number): boolean {
+  if (rowCount <= 20) return false;
+  if (import.meta.env.VITEST) return false;
+  return true;
+}
+
 export interface FlatListRow {
   type: 'header' | 'command';
   section?: ResolvedCommand['section'];

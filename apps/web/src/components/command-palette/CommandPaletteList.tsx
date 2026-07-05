@@ -5,9 +5,12 @@ import { useTranslation } from 'react-i18next';
 import type { ResolvedCommand } from '../../core/commands/types';
 import { EmptyState } from '../ui/EmptyState';
 import { CommandPaletteListRow } from './CommandPaletteListRow';
-import { buildFlatRows, type FlatListRow } from './command-palette-list-utils';
+import {
+  buildFlatRows,
+  type FlatListRow,
+  shouldVirtualizeCommandList,
+} from './command-palette-list-utils';
 
-const VIRTUAL_LIST_THRESHOLD = 20;
 const COMMAND_ROW_HEIGHT = 48;
 const HEADER_ROW_HEIGHT = 36;
 
@@ -109,7 +112,7 @@ export function CommandPaletteList({
     );
   }
 
-  if (rows.length > VIRTUAL_LIST_THRESHOLD) {
+  if (shouldVirtualizeCommandList(rows.length)) {
     return (
       <CommandPaletteVirtualList
         rows={rows}
