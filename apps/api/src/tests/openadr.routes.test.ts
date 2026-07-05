@@ -4,7 +4,7 @@
 
 import express from 'express';
 import supertest from 'supertest';
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const SECRET = 'nexus-hems-ci-fixture-jwt-signing-key-not-a-real-credential';
 
@@ -109,5 +109,37 @@ describe('OpenADR API routes (demo mode)', () => {
 
     expect(res.body.id).toBe('demo-report-001');
     expect(res.body.note).toBe('demo-mode');
+  });
+
+  describe('READ_ONLY_MODE blocks mutating routes', () => {
+    let originalReadOnly: string | undefined;
+
+    beforeEach(() => {
+      originalReadOnly = process.env.READ_ONLY_MODE;
+      process.env.READ_ONLY_MODE = 'true';
+    });
+
+    afterEach(() => {
+      if (originalReadOnly === undefined) delete process.env.READ_ONLY_MODE;
+      else process.env.READ_ONLY_MODE = originalReadOnly;
+    });
+
+    it('blocks event acknowledge', async () => {
+      const res = await supertest(buildApp())
+        .post('/api/openadr/events/demo-event-001/acknowledge')
+        .set('Authorization', `Bearer ${await bearer('readwrite')}`)
+        .send({ optType: 'optIn' })
+        .expect(403);
+      expect(res.body.error).toMatch(/READ_ONLY_MODE/i);
+    });
+
+    it('blocks report submission', async () => {
+      const res = await supertest(buildApp())
+        .post('/api/openadr/reports')
+        .set('Authorization', `Bearer ${await bearer('readwrite')}`)
+        .send({ reportName: 'battery-flex', values: [{ ts: Date.now(), watts: 1200 }] })
+        .expect(403);
+      expect(res.body.error).toMatch(/READ_ONLY_MODE/i);
+    });
   });
 });

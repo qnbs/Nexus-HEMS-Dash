@@ -12,6 +12,7 @@ import crypto from 'crypto';
 import { Router } from 'express';
 import { isPrivateHost } from '../config/private-host.js';
 import { requireJWT, requireScope } from '../middleware/auth.js';
+import { requireNotReadOnly } from '../middleware/require-not-read-only.js';
 import { ocppSessionStore } from '../services/ocpp-session-store.js';
 
 const PEM_BEGIN = '-----BEGIN ';
@@ -29,6 +30,7 @@ export function createOcppRoutes(): Router {
     '/api/ocpp/proxy-session',
     requireJWT,
     requireScope('readwrite'),
+    requireNotReadOnly,
     async (req, res) => {
       const parsed = OcppProxySessionRequestSchema.safeParse(req.body);
       if (!parsed.success) {

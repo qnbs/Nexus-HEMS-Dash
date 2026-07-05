@@ -147,6 +147,29 @@ export function requireScope(minScope: JWTScope) {
   };
 }
 
+/**
+ * Warn when auth/scope/rate-limit bypass is active in a production-shaped
+ * environment. This catches the common foot-gun of running with NODE_ENV
+ * unset or set to "development" while real production secrets are present.
+ */
+export function warnIfProductionBypass(): void {
+  if (!isDev) return;
+
+  const hasJwtSecret = Boolean(process.env.JWT_SECRET?.trim());
+  const hasApiKeys = Boolean(process.env.API_KEYS?.trim());
+  const hasWsOrigins = Boolean(process.env.WS_ORIGINS?.trim());
+  const hasCorsOrigins = Boolean(process.env.CORS_ORIGINS?.trim());
+
+  if (hasJwtSecret || hasApiKeys || hasWsOrigins || hasCorsOrigins) {
+    console.warn(
+      '[Auth] SECURITY WARNING: JWT/scope/rate-limit bypass is active because ' +
+        'NODE_ENV is not "production", but production-shaped secrets ' +
+        '(JWT_SECRET, API_KEYS, WS_ORIGINS, or CORS_ORIGINS) are present. ' +
+        'Set NODE_ENV=production before exposing this server to any network.',
+    );
+  }
+}
+
 // ─── WebSocket Authentication ───────────────────────────────────────
 
 // CRIT-02 fix: AuthenticatedClient now carries scope for per-command authorization

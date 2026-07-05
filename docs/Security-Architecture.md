@@ -217,6 +217,33 @@ Each adapter uses `apps/web/src/core/circuit-breaker.ts`:
 - **Audit trail** — every command logged with timestamp, user, adapter, result
 - **Emergency stop** — immediate disconnect of all adapters
 
+### Read-Only Mode
+
+`READ_ONLY_MODE=true` is a global, environment-level safety switch that blocks **all** hardware-affecting mutations at the API boundary, regardless of JWT scope or adapter configuration. It is implemented by `apps/api/src/config/read-only-mode.ts` and enforced via:
+
+- `apps/api/src/middleware/require-not-read-only.ts` — reusable Express middleware for REST routes
+- `apps/api/src/ws/energy.ws.ts` — WebSocket command gateway rejection
+- `apps/api/src/ws/proxy-readonly-guard.ts` — proxy WebSocket closure
+- `apps/api/src/routes/modbus.routes.ts` — SunSpec register writes
+- `apps/web/src/core/command-safety.ts` — frontend command dispatch gate
+
+Enforced routes include:
+
+| Route | Operation blocked in read-only mode |
+|-------|-------------------------------------|
+| WebSocket `/ws` control commands | All `SET_*`, `RESET_*`, emergency stop |
+| `POST /api/modbus/write` | Modbus register writes |
+| `POST /api/eebus/pair` | EEBUS SHIP handshake initiation |
+| `POST /api/eebus/pair/pin` | EEBUS PIN submission |
+| `POST /api/eebus/discover/register` | EEBUS device registration |
+| `DELETE /api/eebus/trust/:ski` | EEBUS trust-store removal |
+| `PUT /api/eebus/tls/revocation` | EEBUS revocation policy update |
+| `POST /api/ocpp/proxy-session` | OCPP mTLS proxy session issuance |
+| `POST /api/openadr/events/:eventId/acknowledge` | OpenADR event opt-in/opt-out |
+| `POST /api/openadr/reports` | OpenADR telemetry report submission |
+
+Use `READ_ONLY_MODE=true` for commissioning, incident investigation, certification-grade deployments, and maintenance windows. The setting is reported in `GET /api/health` as `readOnly` and surfaced in the UI via `useReadOnlyModeActive()`.
+
 ### Reconnect Strategy
 
 `apps/web/src/core/useReconnect.ts`:

@@ -12,6 +12,7 @@ import { isAllowedWsOrigin, parseWsOrigins, validateWsOrigins } from './config/w
 import { eventBus } from './core/EventBus.js';
 import { logger } from './core/logger.js';
 import { initKeys } from './jwt-utils.js';
+import { warnIfProductionBypass } from './middleware/auth.js';
 import {
   configureCors,
   configureHelmet,
@@ -47,6 +48,7 @@ export async function startServer(): Promise<void> {
   initKeys();
   logAdapterModeStartup();
   logReadOnlyModeStartup();
+  warnIfProductionBypass();
 
   // ─── Security Middleware ──────────────────────────────────────────
   configureCors(app);
