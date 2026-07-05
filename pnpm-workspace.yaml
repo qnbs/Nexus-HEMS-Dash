@@ -6,8 +6,8 @@ packages:
 # Catalog: single source of truth for shared dependency versions.
 # Update here → all packages pick up the change after `pnpm install`.
 catalog:
-  react: ^19.2.6
-  react-dom: ^19.2.6
+  react: ^19.2.7
+  react-dom: ^19.2.7
   zod: ^4.4.3
   typescript: ~5.8.2
   jose: ^6.2.3
