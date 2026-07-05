@@ -1,5 +1,6 @@
 import { useAppStore } from '../../store';
 import { getContextualCommandIds } from './command-context';
+import { BATTERY_CHARGING_POWER_W, EV_ACTIVE_POWER_W } from './device-command-thresholds';
 import type {
   CommandContext,
   CommandDefinition,
@@ -100,8 +101,7 @@ export function isCoreProvidersBootstrapped(): boolean {
 }
 
 function cloneAiSuggestionCommand(mirrored: CommandDefinition, id: string): CommandDefinition {
-  const { when: _when, ...rest } = mirrored;
-  return { ...rest, id, category: 'ai', source: 'ai' };
+  return { ...mirrored, id, category: 'ai', source: 'ai' };
 }
 
 /** Collect all command definitions visible in the current context. */
@@ -138,7 +138,7 @@ export function collectCommandDefinitions(ctx: CommandContext): CommandDefinitio
   if (useAppStore.getState().settings.experimentalFeatures) {
     const pushAiMirror = (mirrorId: string, id: string) => {
       const mirrored = registry.get(mirrorId);
-      if (!mirrored) return;
+      if (!mirrored || !isVisible(mirrored, ctx)) return;
       add(cloneAiSuggestionCommand(mirrored, id));
     };
 
@@ -148,12 +148,16 @@ export function collectCommandDefinitions(ctx: CommandContext): CommandDefinitio
     }
 
     const { energy, chargeThreshold } = ctx;
-    if (energy.evPower < 100 && energy.pvPower > energy.houseLoad * 1.1 && energy.pvPower > 0.5) {
+    if (
+      energy.evPower < EV_ACTIVE_POWER_W &&
+      energy.pvPower > energy.houseLoad * 1.1 &&
+      energy.pvPower > 0.5
+    ) {
       pushAiMirror('device.startEvCharging', 'ai.suggest.startEvCharging');
     }
     if (
       energy.batterySoC < 90 &&
-      energy.batteryPower < 100 &&
+      energy.batteryPower < BATTERY_CHARGING_POWER_W &&
       energy.priceCurrent < chargeThreshold
     ) {
       pushAiMirror('device.batteryForceCharge', 'ai.suggest.batteryForceCharge');

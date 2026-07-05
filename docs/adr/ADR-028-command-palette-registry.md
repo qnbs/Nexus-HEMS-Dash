@@ -1,7 +1,7 @@
 # ADR-028: Command Palette Registry & Extensibility
 
-- **Status:** Accepted (Phase 0+1 shipped; Phase 2 shipped; Phase 3 shipped; Phase 4 in progress)
-- **Date:** 2026-07-04 (updated 2026-07-05)
+- **Status:** Accepted (Phase 0+1 shipped; Phase 2 shipped; Phase 3 shipped; Phase 4 shipped)
+- **Date:** 2026-07-04 (updated 2026-07-05 — Phase 4 shipped)
 - **Deciders:** Maintainer
 - **Related:** ADR-002 (Zustand dual-store), ADR-019 (adapter registry), `apps/web/src/core/command-safety.ts`, `docs/UI-UX-Audit-2026.md` (C1)
 
@@ -33,7 +33,7 @@ power-user workflows.
 | **0+1** | #271 | Registry, providers, search scorer, context hook, navigation/settings/energy/system commands, recency/favorites, `CommandPalette` split | Shipped |
 | **2** | #272 | `CommandPaletteWithSafety` + `useSafeCommand` bridge; `adapterCommandsProvider`; list virtualization; `hardwareCommand` on device actions | Shipped |
 | **3** | #273 | Tariff-provider shortcuts; EV/battery hardware catalog; `batteryPower` in context; `unregisterCommandProvider` on contrib unload; resilient adapter `destroy()` | Shipped |
-| **4** | (open) | Rule-based **AI suggestions** (`source: 'ai'`, category `ai`); gated by `settings.experimentalFeatures`; registry mirror injection; dedicated palette section | In progress |
+| **4** | #274 | Rule-based **AI suggestions** (`source: 'ai'`, category `ai`); gated by `settings.experimentalFeatures`; registry mirror injection; dedicated palette section | Shipped |
 | **4+** | — | Natural-language / voice input; LLM-ranked suggestions | Planned |
 
 ### Phase 4 — AI suggestions (rule-based)

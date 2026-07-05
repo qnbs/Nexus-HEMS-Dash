@@ -84,9 +84,14 @@ features** (`settings.experimentalFeatures`) to surface the `ai` section in the 
 
 ```typescript
 import { collectCommandDefinitions } from '@/core/commands';
+import { useAppStore } from '@/store';
+
+const experimental = useAppStore.getState().settings.experimentalFeatures;
+const commands = collectCommandDefinitions(ctx); // AI mirrors when experimental is true
 ```
 
-- Mirrors are injected in `collectCommandDefinitions` when `ctx.experimentalFeatures` is true.
+- Mirrors are injected in `collectCommandDefinitions` when
+  `useAppStore.getState().settings.experimentalFeatures` is true (Settings → Advanced).
 - Commands use `source: 'ai'`, `category: 'ai'`; labels/previews reuse mirrored core commands.
 - Hardware mirrors (`startEvCharging`, `batteryForceCharge`) keep `hardwareCommand` from the device catalog.
 - Add section title via existing `command.categoryAi` in locale files.
