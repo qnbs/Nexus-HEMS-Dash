@@ -7,12 +7,33 @@ ENV="${1:-github-pages}"
 MIN_COOLDOWN_SEC="${2:-180}"
 MAX_WAIT_SEC="${3:-900}"
 POLL_SEC="${4:-20}"
+STALE_IN_PROGRESS_SEC="${5:-600}"
 REPO="${REPO:?REPO env var required (owner/repo)}"
 
 deadline=$((SECONDS + MAX_WAIT_SEC))
 ACTIVE_STATES='^(queued|waiting|pending|in_progress)$'
 
-echo "Waiting for '${ENV}' to be idle (cooldown=${MIN_COOLDOWN_SEC}s, max=${MAX_WAIT_SEC}s)."
+latest_status_state() {
+  local deployment_id="$1"
+  gh api "repos/${REPO}/deployments/${deployment_id}/statuses?per_page=20" \
+    --jq 'sort_by(.created_at) | last | .state // "unknown"'
+}
+
+latest_status_updated() {
+  local deployment_id="$1"
+  gh api "repos/${REPO}/deployments/${deployment_id}/statuses?per_page=20" \
+    --jq 'sort_by(.created_at) | last | .updated_at // empty'
+}
+
+status_age_sec() {
+  local updated_at="$1"
+  local updated_epoch now_epoch
+  updated_epoch="$(date -u -d "$updated_at" +%s)"
+  now_epoch="$(date -u +%s)"
+  echo $((now_epoch - updated_epoch))
+}
+
+echo "Waiting for '${ENV}' to be idle (cooldown=${MIN_COOLDOWN_SEC}s, max=${MAX_WAIT_SEC}s, stale=${STALE_IN_PROGRESS_SEC}s)."
 
 while [ "$SECONDS" -lt "$deadline" ]; do
   latest_id="$(gh api "repos/${REPO}/deployments?environment=${ENV}&per_page=1" --jq '.[0].id // empty' 2>/dev/null || true)"
@@ -21,20 +42,25 @@ while [ "$SECONDS" -lt "$deadline" ]; do
     exit 0
   fi
 
-  latest_state="$(gh api "repos/${REPO}/deployments/${latest_id}/statuses?per_page=1" --jq '.[0].state // "unknown"')"
-  latest_updated="$(gh api "repos/${REPO}/deployments/${latest_id}/statuses?per_page=1" --jq '.[0].updated_at // empty')"
+  latest_state="$(latest_status_state "$latest_id")"
+  latest_updated="$(latest_status_updated "$latest_id")"
   echo "Latest deployment ${latest_id}: state=${latest_state}, updated=${latest_updated:-n/a}"
 
   if [[ "$latest_state" =~ $ACTIVE_STATES ]]; then
+    if [ -n "$latest_updated" ]; then
+      age="$(status_age_sec "$latest_updated")"
+      if [ "$age" -ge "$STALE_IN_PROGRESS_SEC" ]; then
+        echo "::warning::Deployment ${latest_id} stuck in ${latest_state} for ${age}s; proceeding anyway."
+        break
+      fi
+    fi
     echo "Deployment still active; sleeping ${POLL_SEC}s..."
     sleep "$POLL_SEC"
     continue
   fi
 
   if [ "$latest_state" = "success" ] && [ -n "$latest_updated" ]; then
-    updated_epoch="$(date -u -d "$latest_updated" +%s)"
-    now_epoch="$(date -u +%s)"
-    age=$((now_epoch - updated_epoch))
+    age="$(status_age_sec "$latest_updated")"
     if [ "$age" -lt "$MIN_COOLDOWN_SEC" ]; then
       wait_for=$((MIN_COOLDOWN_SEC - age))
       echo "Last successful publish ${age}s ago; sleeping ${wait_for}s for cooldown."
@@ -46,5 +72,10 @@ while [ "$SECONDS" -lt "$deadline" ]; do
   exit 0
 done
 
-echo "::error::Timed out after ${MAX_WAIT_SEC}s waiting for '${ENV}' to become idle." >&2
-exit 1
+if [ "$SECONDS" -ge "$deadline" ]; then
+  echo "::error::Timed out after ${MAX_WAIT_SEC}s waiting for '${ENV}' to become idle." >&2
+  exit 1
+fi
+
+echo "Environment '${ENV}' is idle (stale active deployment ignored); proceeding."
+exit 0
