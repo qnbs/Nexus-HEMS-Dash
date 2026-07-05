@@ -393,6 +393,7 @@ Quality signals are layered (see `DEVOPS.md` and `docs/adr/ADR-027-layered-quali
 ### PR review automation (CodeRabbit)
 
 - Agent tokens cannot post PR comments (`403 Resource not accessible by integration`). Do not rely on `gh pr comment … @coderabbitai review`.
+- Prefer `gh pr create`, `gh issue create`, etc. over GitHub MCP tools (e.g. `create_pull_request`); the local `gh` CLI is authenticated via keyring, whereas MCP calls may return `Authentication Failed`.
 - On every non-draft PR push, `.github/workflows/coderabbit-rereview.yml` posts `@coderabbitai review` when the head commit has no CodeRabbit review yet (deduped per SHA).
 - Push fix commits — the workflow requests re-review automatically.
 

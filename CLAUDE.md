@@ -282,6 +282,8 @@ Conventional Commits enforced by commitlint. Types: `feat, fix, docs, style, ref
 
 When CI is the source of truth, push focused commits and monitor GitHub Actions with non-interactive `gh` commands (`GH_PAGER=cat PAGER=cat gh run view ...`). Avoid terminal UI commands such as `gh run watch` in this workspace because they can leave control sequences in the shell.
 
+**GitHub operations:** Prefer the authenticated `gh` CLI over GitHub MCP tools (e.g. `create_pull_request`) when creating PRs, issues, or comments. The MCP integration can fail with authentication errors in this environment, while `gh` uses the local keyring token.
+
 ## Key Docs
 
 - `AGENTS.md` — Cursor Cloud agent VM specifics (complements this file)
