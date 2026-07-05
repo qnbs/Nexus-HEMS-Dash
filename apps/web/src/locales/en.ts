@@ -970,6 +970,11 @@ export const en = {
     software: 'Software',
     optional: 'optional',
     onCerbo: 'on Cerbo GX or separate',
+    hardwareReqVictron: 'Victron Cerbo GX / MK2 / Venus OS',
+    hardwareReqRpi: 'Raspberry Pi 4/5 (optional)',
+    hardwareReqKnx: 'KNX IP Router (optional)',
+    hardwareReqNodeRed: 'Node-RED on Cerbo GX or separate',
+    hardwareReqNetwork: 'WiFi / Ethernet',
     modernBrowser: 'Modern browser (Chrome, Firefox, Safari, Edge)',
     pwaSupport: 'PWA support for offline mode',
     account: 'account',
@@ -1237,17 +1242,42 @@ export const en = {
       'This project was built with cutting-edge AI tools. Prototyping was done in Google AI Studio, main development with Claude in GitHub Copilot, and advisory support from Grok.',
     aiGeminiDesc:
       'Rapid prototyping in Google AI Studio Apps, initial architecture, energy optimization, MPC solver design',
+    aiGeminiName: 'Gemini 2.5 Pro',
+    aiGeminiProvider: 'Google AI Studio',
     aiClaudeDesc:
       'Main development in GitHub Codespaces — architecture, React Compiler compliance, a11y audit, E2E tests, design system, UI/UX transformation',
     aiClaudeName: 'Claude Sonnet',
+    aiClaudeProvider: 'GitHub Copilot',
     aiGrokDesc:
       'Advisory, code review, debugging, protocol adapter research, architecture decisions',
+    aiGrokName: 'Grok',
+    aiGrokProvider: 'xAI',
 
     // Integration Guide tab
     integrationGuide: 'Integration Guide',
     integrationGuideTitle: 'System Integration Guide',
     integrationGuideIntro:
       'Nexus HEMS supports multiple hardware platforms and protocols. This guide covers the recommended configurations for production and development environments.',
+
+    contribProtocolsTitle: 'Contrib & Smart-Home Protocols',
+    contribProtocolsIntro:
+      'Beyond Victron-centric setups, enable contrib adapters under Settings → Adapters or install plugins from Settings → Plugins. Each adapter validates config, vaults credentials, and respects read-only mode.',
+    contribSetupHa:
+      'Home Assistant: Settings → Home Assistant — WebSocket API with entity role overrides, or direct MQTT broker credentials.',
+    contribSetupEebus:
+      'EEBUS: Settings → Adapters → EEBUS — mTLS certificates, SHIP pairing, and SPINE device roles for heat pumps and EVSE.',
+    contribSetupEvcc:
+      'evcc: Settings → Adapters — REST/WebSocket URL to your evcc instance; supports tariff-aware EV schedules and V2X.',
+    contribSetupOpenEms:
+      'OpenEMS: Settings → Adapters — JSON-RPC WebSocket to OpenEMS Edge; map channels to PV, battery, grid, and load.',
+    contribSetupOpenAdr:
+      'OpenADR 3.1: Contrib plugin — VEN client for demand-response events; pairs with VPP aggregation (UC 2.6.2).',
+    contribSetupMatter:
+      'Matter/Thread: Contrib plugin — commission Thread border router; DEM cluster commands for demand response.',
+    contribSetupZigbee:
+      'Zigbee2MQTT: Contrib plugin — MQTT broker host and topic prefix; auto-map Zigbee energy devices.',
+    contribSetupShelly:
+      'Shelly REST: Contrib plugin — per-device HTTP credentials for Gen2/Gen3 meters and relays.',
 
     // Cerbo GX section
     cerboGxTitle: 'Victron Cerbo GX & Cerbo GX MK2',

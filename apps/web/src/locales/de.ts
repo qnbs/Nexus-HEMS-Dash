@@ -980,6 +980,11 @@ export const de = {
     software: 'Software',
     optional: 'optional',
     onCerbo: 'auf Cerbo GX oder separat',
+    hardwareReqVictron: 'Victron Cerbo GX / MK2 / Venus OS',
+    hardwareReqRpi: 'Raspberry Pi 4/5 (optional)',
+    hardwareReqKnx: 'KNX-IP-Router (optional)',
+    hardwareReqNodeRed: 'Node-RED auf Cerbo GX oder separat',
+    hardwareReqNetwork: 'WLAN / Ethernet',
     modernBrowser: 'Moderner Browser (Chrome, Firefox, Safari, Edge)',
     pwaSupport: 'PWA-Unterstützung für Offline-Modus',
     account: 'Konto',
@@ -1250,17 +1255,42 @@ export const de = {
       'Dieses Projekt wurde mit Unterstützung modernster KI-Tools entwickelt. Prototyping erfolgte in Google AI Studio, die Hauptentwicklung mit Claude in GitHub Copilot, beratende Unterstützung durch Grok.',
     aiGeminiDesc:
       'Rapid Prototyping im Google AI Studio Apps-Bereich, initiale Architektur, Energieoptimierung, MPC-Solver-Design',
+    aiGeminiName: 'Gemini 2.5 Pro',
+    aiGeminiProvider: 'Google AI Studio',
     aiClaudeDesc:
       'Hauptentwicklung in GitHub Codespaces — Architektur, React-Compiler-Compliance, a11y-Audit, E2E-Tests, Design-System, UI/UX-Transformation',
     aiClaudeName: 'Claude Sonnet',
+    aiClaudeProvider: 'GitHub Copilot',
     aiGrokDesc:
       'Beratung, Code-Review, Debugging, Protokoll-Adapter-Recherche, Architekturentscheidungen',
+    aiGrokName: 'Grok',
+    aiGrokProvider: 'xAI',
 
     // Integrationsanleitung
     integrationGuide: 'Integrationsanleitung',
     integrationGuideTitle: 'System-Integrationsanleitung',
     integrationGuideIntro:
       'Nexus HEMS unterstützt mehrere Hardware-Plattformen und Protokolle. Diese Anleitung behandelt die empfohlenen Konfigurationen für Produktions- und Entwicklungsumgebungen.',
+
+    contribProtocolsTitle: 'Contrib- & Smart-Home-Protokolle',
+    contribProtocolsIntro:
+      'Neben Victron-zentrierten Anlagen Contrib-Adapter unter Einstellungen → Adapter aktivieren oder Plugins unter Einstellungen → Plugins installieren. Jeder Adapter validiert die Konfiguration, speichert Zugangsdaten im Vault und respektiert den Nur-Lesen-Modus.',
+    contribSetupHa:
+      'Home Assistant: Einstellungen → Home Assistant — WebSocket-API mit Entity-Rollen-Overrides oder direkte MQTT-Broker-Zugangsdaten.',
+    contribSetupEebus:
+      'EEBUS: Einstellungen → Adapter → EEBUS — mTLS-Zertifikate, SHIP-Pairing und SPINE-Geräterollen für Wärmepumpen und Wallboxen.',
+    contribSetupEvcc:
+      'evcc: Einstellungen → Adapter — REST/WebSocket-URL zur evcc-Instanz; tarifbewusste Ladepläne und V2X.',
+    contribSetupOpenEms:
+      'OpenEMS: Einstellungen → Adapter — JSON-RPC-WebSocket zur OpenEMS Edge; Kanäle auf PV, Batterie, Netz und Last mappen.',
+    contribSetupOpenAdr:
+      'OpenADR 3.1: Contrib-Plugin — VEN-Client für Demand-Response-Events; kombinierbar mit VPP-Aggregation (UC 2.6.2).',
+    contribSetupMatter:
+      'Matter/Thread: Contrib-Plugin — Thread-Border-Router einbinden; DEM-Cluster-Befehle für Demand Response.',
+    contribSetupZigbee:
+      'Zigbee2MQTT: Contrib-Plugin — MQTT-Broker-Host und Topic-Präfix; Zigbee-Energiegeräte automatisch zuordnen.',
+    contribSetupShelly:
+      'Shelly REST: Contrib-Plugin — HTTP-Zugangsdaten pro Gerät für Gen2/Gen3-Zähler und Relais.',
 
     // Cerbo GX Abschnitt
     cerboGxTitle: 'Victron Cerbo GX & Cerbo GX MK2',

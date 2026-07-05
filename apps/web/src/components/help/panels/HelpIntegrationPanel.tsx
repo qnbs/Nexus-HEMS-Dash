@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { HelpTabPanelShell } from '../HelpTabPanelShell';
 import { HelpCerboGxSection } from './HelpCerboGxSection';
+import { HelpContribProtocolsSection } from './HelpContribProtocolsSection';
 import { HelpHighEndSection } from './HelpHighEndSection';
 import { HelpKnxSection } from './HelpKnxSection';
 import { HelpRpiSection } from './HelpRpiSection';
@@ -22,6 +23,7 @@ export const HelpIntegrationPanel = () => {
       <HelpRpiSection />
       <HelpVenusSection />
       <HelpKnxSection />
+      <HelpContribProtocolsSection />
       <HelpHighEndSection />
     </HelpTabPanelShell>
   );
