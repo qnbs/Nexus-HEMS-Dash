@@ -47,6 +47,7 @@ describe('createDeviceCommands', () => {
   it('hides EV commands when evPower is idle', () => {
     const ctx = mockContext({ energy: { ...mockContext().energy, evPower: 0 } });
     expect(stopCmd?.when?.(ctx)).toBe(false);
+    expect(viewCmd?.when?.(ctx)).toBe(false);
   });
 
   it('formats stop-charging preview with locale-aware power', () => {

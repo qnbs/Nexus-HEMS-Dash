@@ -18,11 +18,18 @@ export function getSectionLabelKey(section: ResolvedCommand['section']): string 
   return SECTION_KEYS[section];
 }
 
+const VIRTUAL_LIST_THRESHOLD = 20;
+
+/** Testable virtualization gate — production passes `import.meta.env.VITEST`. */
+export function shouldVirtualizeCommandListForEnv(rowCount: number, isVitest: boolean): boolean {
+  if (rowCount <= VIRTUAL_LIST_THRESHOLD) return false;
+  if (isVitest) return false;
+  return true;
+}
+
 /** Virtual rows need a measurable scrollport; jsdom/Vitest has none — keep the flat list there. */
 export function shouldVirtualizeCommandList(rowCount: number): boolean {
-  if (rowCount <= 20) return false;
-  if (import.meta.env.VITEST) return false;
-  return true;
+  return shouldVirtualizeCommandListForEnv(rowCount, import.meta.env.VITEST);
 }
 
 /** Matches CommandPaletteItem: min-h-11 + py-3 around h-10 icon row (~64px). */

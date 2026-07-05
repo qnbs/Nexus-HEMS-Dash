@@ -168,6 +168,7 @@ describe('executeResolvedCommand', () => {
 
     expect(result).toEqual({ ok: true });
     expect(executeHardwareCommand).toHaveBeenCalledWith({ type: 'SET_BATTERY_POWER', value: 1000 });
+    expect(ctx.actions.recordUsage).toHaveBeenCalledWith('test.cmd');
   });
 
   it('resolves dynamic hardwareCommand functions before bridging', async () => {
@@ -189,5 +190,6 @@ describe('executeResolvedCommand', () => {
 
     expect(result).toEqual({ ok: true });
     expect(executeHardwareCommand).toHaveBeenCalledWith({ type: 'STOP_CHARGING', value: true });
+    expect(ctx.actions.recordUsage).toHaveBeenCalledWith('test.cmd');
   });
 });
