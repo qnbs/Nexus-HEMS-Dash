@@ -10,6 +10,7 @@ import {
 } from './command-registry';
 import { buildSearchTokens, scoreCommand } from './command-search';
 import { registerCoreCommands } from './providers';
+import { createHelpCommands } from './providers/help-commands';
 import { createSettingsCommands } from './providers/settings-commands';
 import { createSystemCommands } from './providers/system-commands';
 import type { CommandContext } from './types';
@@ -228,6 +229,21 @@ describe('settings and system commands', () => {
     const [shortcutsCmd] = createSystemCommands();
     shortcutsCmd.execute(ctx);
     expect(navigate).toHaveBeenCalledWith('/help?tab=shortcuts');
+    expect(closePalette).toHaveBeenCalled();
+  });
+
+  it('navigates to contextual help tabs from help commands', () => {
+    const navigate = vi.fn();
+    const closePalette = vi.fn();
+    const ctx = mockContext({
+      navigate,
+      actions: { closePalette, recordUsage: vi.fn(), toggleFavorite: vi.fn() },
+    });
+
+    const faqCmd = createHelpCommands().find((cmd) => cmd.id === 'nav-help-faq');
+    expect(faqCmd).toBeDefined();
+    faqCmd?.execute(ctx);
+    expect(navigate).toHaveBeenCalledWith('/help?tab=faq');
     expect(closePalette).toHaveBeenCalled();
   });
 });

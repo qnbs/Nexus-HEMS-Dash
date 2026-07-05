@@ -37,8 +37,8 @@ Legend: ✅ Fixed · ⚠️ Partial · ❌ Open · ➖ Deferred (unchanged)
 
 | ID | Finding | Status | Evidence / notes |
 |----|---------|--------|------------------|
-| **C1** | Settings import unvalidated | ⚠️ Partial | `settings-transfer.ts` + `stored-settings-schema.ts` Zod `.strict()` on import ✅; `store.ts` `persist.merge` still deep-merges localStorage without re-validation ❌ |
-| **C2** | AdapterConfigPanel Save no-op | ⚠️ Partial | `adapter-config-panel-save.ts` validates, vaults, reconfigures, gated connect ✅; panel `useState` list not hydrated from registry on mount ❌ |
+| **C1** | Settings import unvalidated | ✅ Fixed | `settings-transfer.ts` + `stored-settings-schema.ts` Zod `.strict()` on import ✅; `store.ts` `persist.merge` uses `sanitizePersistedSettings()` (#276) ✅ |
+| **C2** | AdapterConfigPanel Save no-op | ✅ Fixed | Save pipeline + panel hydration from registry/credentials (#276); `adapter-config-panel-hydrate.test.ts` ✅ |
 | **C3** | SystemTab MQTT dead inputs | ✅ Fixed | MQTT moved to `HomeAssistantSettingsSection` / `HaConnectionFields.tsx`; `SystemTab` shows live connection status only |
 
 ### 2.2 High (P0/P1)
@@ -50,19 +50,19 @@ Legend: ✅ Fixed · ⚠️ Partial · ❌ Open · ➖ Deferred (unchanged)
 | **H3** | Hardcoded connection statuses | ✅ Fixed | `SystemTab.tsx` reads `useEnergyStore` adapter status + `wsConnected` |
 | **H4** | `influxToken` masked default | ✅ Fixed | Default `''`; password field + session Dexie persist |
 | **H5** | No Read-Only Mode in Settings | ⚠️ Partial | `ReadOnlySettingsBanner` + HA/adapter **save** blocked ✅; Controllers, Energy, EmergencyStop, adapter field inputs not disabled ❌ |
-| **H6** | Stale Help content | ⚠️ Partial | Version from `package.json` ✅; read-only FAQ/troubleshooting ✅; glossary/integration depth for EEBUS/HA/Matter/evcc/OpenEMS/OpenADR ❌; `faqWhatIsAnswer` missing `{ version }` interpolation ❌ |
-| **H7** | Tab/section URL desync | ⚠️ Partial | Standalone `/help?tab=` uses `useSearchParams` ✅; `Settings.tsx:52-54` + `SettingsUnified.tsx:48` mount-only `useState` ❌; embedded Help drops `section=help` on tab change ❌ |
+| **H6** | Stale Help content | ✅ Fixed | Version from `package.json` ✅; contrib glossary + integration in `help-content-manifest.ts` (#277/#279) ✅; FAQ `{ version }` in `HelpFaqPanel.tsx` ✅ |
+| **H7** | Tab/section URL desync | ✅ Fixed | `Settings.tsx` + `SettingsUnified.tsx` use `useSearchParams` (#276) ✅; embedded Help preserves `section=help` via `applyHelpTabParam` ✅ |
 
 ### 2.3 Medium (P1/P2)
 
 | ID | Finding | Status | Evidence / notes |
 |----|---------|--------|------------------|
-| **M1** | No HA discovery UI | ⚠️ Partial | `HomeAssistantSettingsSection` with WS/MQTT modes + save pipeline ✅; no `entityRoles[]` editor ❌; form not hydrated from saved config ❌ |
+| **M1** | No HA discovery UI | ✅ Fixed | `HomeAssistantSettingsSection` + `HaEntityRolesEditor` + hydration (`homeassistant-settings-hydrate.ts`) (#277) ✅ |
 | **M2** | `helpTab` deep-linking dead | ✅ Fixed | `PageCrossLinks` → `SetupProgressSection` → `/help?tab=…`; `Help.tsx` reads param |
 | **M3** | Hardcoded Help strings | ⚠️ Partial | Protocol pills i18n ✅; `HelpHardwareRequirementsList` product names + `HelpAboutPanel` AI provider names still EN-hardcoded ❌ |
-| **M4** | Manual search index subset | ❌ Open | `help-search-entries.ts` — 12 hand entries; lexicon/shortcuts/integration mostly unindexed |
+| **M4** | Manual search index subset | ✅ Fixed | `help-content-manifest.ts` drives search via `help-search-entries.ts` (#279) ✅ |
 | **M5** | Help tab keyboard a11y | ✅ Fixed | `help-tab-keyboard.ts` + roving tabindex in `HelpTabNav.tsx` |
-| **M6** | Adapter panel 5 types only | ⚠️ Partial | Core save wired ✅; contrib adapters lack per-instance config surface (HA excepted) ❌ |
+| **M6** | Adapter panel 5 types only | ⚠️ Partial | `settings-section-registry.ts` + HA template (#279) ✅; other contrib adapters lack per-instance config surface ❌ |
 | **M7** | Missing component tests | ⚠️ Partial | `adapter-config-panel.test.tsx`, `adapter-config-panel-save.test.ts`, HA tests ✅; `CertificateManagement` still thin ❌ |
 | **M8** | Mixed-language AdvancedTab fallbacks | ❌ Open | German inline defaults on EN keys |
 
@@ -71,8 +71,8 @@ Legend: ✅ Fixed · ⚠️ Partial · ❌ Open · ➖ Deferred (unchanged)
 | ID | Finding | Status |
 |----|---------|--------|
 | **L1** | E2E gaps (theme persist, adapter activation, Help FAQ) | ❌ Open |
-| **L2** | Help bespoke header vs `PageHeader` | ❌ Open |
-| **L3** | Search `listbox` / `aria-live` | ❌ Open |
+| **L2** | Help bespoke header vs `PageHeader` | ✅ Fixed | `HelpPageHeader` delegates to `PageHeader` (#279) |
+| **L3** | Search `listbox` / `aria-live` | ✅ Fixed | `HelpSearchBox` combobox + `HelpSearchResultsPanel` + `isOpen` keyboard guard (#278/#279) |
 | **L4** | EEBUS config split adapters vs certificates | ❌ Open (UX consolidation) |
 
 **Deferred (unchanged):** Settings search across 11 tabs.
@@ -81,9 +81,9 @@ Legend: ✅ Fixed · ⚠️ Partial · ❌ Open · ➖ Deferred (unchanged)
 
 | ID | Finding | Severity | Notes |
 |----|---------|----------|-------|
-| **N1** | Embedded Help clobbers `section=help` | Medium | `Help.tsx` `selectTab` → `setSearchParams({ tab })` without merging `section` |
-| **N2** | `faqWhatIsAnswer` renders `v{{version}}` literally | Low | `HelpFaqPanel.tsx` does not pass `version` to `t()` |
-| **N3** | Command Palette covers settings nav but not contextual help | Low | `navigation-commands.ts` has settings tabs; no `help?tab=` contextual commands |
+| **N1** | Embedded Help clobbers `section=help` | ✅ Fixed | `applyHelpTabParam(..., { embedded: true })` preserves `section=help` (#276) |
+| **N2** | `faqWhatIsAnswer` renders `v{{version}}` literally | ✅ Fixed | `HelpFaqPanel.tsx` passes `{ version: appVersion }` (#277) |
+| **N3** | Command Palette covers settings nav but not contextual help | ⚠️ Partial | `help-commands.ts` adds per-tab `/help?tab=` shortcuts (Phase 5a, in progress) |
 | **N4** | `HardwareRegistryPage` vs Settings adapters overlap | Low | Two adapter entry points — document when to use which |
 
 ---

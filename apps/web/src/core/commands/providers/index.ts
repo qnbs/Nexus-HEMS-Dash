@@ -7,6 +7,7 @@ import {
 import { adapterCommandsProvider } from './adapter-commands-provider';
 import { createDeviceCommands } from './device-commands';
 import { createEnergyCommands } from './energy-commands';
+import { createHelpCommands } from './help-commands';
 import { createNavigationCommands } from './navigation-commands';
 import { createSettingsCommands } from './settings-commands';
 import { createSystemCommands } from './system-commands';
@@ -18,6 +19,7 @@ export function registerCoreCommands(): void {
 
   const all = [
     ...createNavigationCommands(),
+    ...createHelpCommands(),
     ...createSettingsCommands(),
     ...createTariffCommands(),
     ...createEnergyCommands(),
