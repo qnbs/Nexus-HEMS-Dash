@@ -101,19 +101,25 @@ export function useCommandPaletteController({
 
   const onSelectCommand = (index: number) => invokeAsyncCommand(runCommand, index);
 
+  const selectedCommand = commands[clampedIndex] ?? null;
+
   const keyDownStateRef = useRef({
     isOpen,
     commandCount: commands.length,
     clampedIndex,
+    selectedCommandId: selectedCommand?.id,
     setSelectedIndex,
     runCommand,
+    onToggleFavorite: toggleCommandFavorite,
   });
   keyDownStateRef.current = {
     isOpen,
     commandCount: commands.length,
     clampedIndex,
+    selectedCommandId: selectedCommand?.id,
     setSelectedIndex,
     runCommand,
+    onToggleFavorite: toggleCommandFavorite,
   };
 
   useEffect(() => {
@@ -123,8 +129,6 @@ export function useCommandPaletteController({
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [isOpen]);
-
-  const selectedCommand = commands[clampedIndex] ?? null;
   const previewData: CommandPreview | null = useMemo(() => {
     if (!selectedCommand?.preview) return null;
     return selectedCommand.preview(ctx);

@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { isLiveSafetyMode } from '../../lib/adapter-mode';
+import { getAuthToken, getTokenScope } from '../../lib/auth-token';
 import { resolveReadOnlyModeActive } from '../../lib/use-read-only-mode';
 import { useAppStoreShallow } from '../../store';
 import { useEnergyStoreBase } from '../useEnergyStore';
@@ -16,8 +17,16 @@ export interface UseCommandContextOptions {
   executeHardwareCommand?: (command: import('../adapters/EnergyAdapter').AdapterCommand) => void;
 }
 
-/** Default scope in dev/anonymous mode — full palette navigation is read-safe. */
+/**
+ * Resolve the effective JWT scope for command palette authorization.
+ * Reads the persisted auth token and returns its scope claim.
+ * Falls back to 'readwrite' in dev/anonymous mode so navigation works.
+ */
 function resolveAuthScope(): AuthScope {
+  const rawScope = getTokenScope(getAuthToken());
+  if (rawScope === 'read' || rawScope === 'readwrite' || rawScope === 'admin') {
+    return rawScope;
+  }
   return 'readwrite';
 }
 

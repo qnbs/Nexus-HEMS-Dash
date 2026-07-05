@@ -1,7 +1,7 @@
 # Settings & Help — Perfection Plan (Post-Audit Delta)
 
 **Date:** 2026-07-05  
-**Baseline:** `main` @ v1.10.0 (`e1ecd19`) — Command Palette Phase 4 merged  
+**Baseline:** `main` @ v1.10.0 (`4748342`) — Command Palette Phase 5a merged  
 **Prior audit:** `docs/Settings-Help-Audit-2026-07-04.md`  
 **Remediation shipped:** CHANGELOG Phase 1–4 (#260) — import validation, HA UI, Help refactor, adapter save wire-up
 
@@ -83,7 +83,7 @@ Legend: ✅ Fixed · ⚠️ Partial · ❌ Open · ➖ Deferred (unchanged)
 |----|---------|----------|-------|
 | **N1** | Embedded Help clobbers `section=help` | ✅ Fixed | `applyHelpTabParam(..., { embedded: true })` preserves `section=help` (#276) |
 | **N2** | `faqWhatIsAnswer` renders `v{{version}}` literally | ✅ Fixed | `HelpFaqPanel.tsx` passes `{ version: appVersion }` (#277) |
-| **N3** | Command Palette covers settings nav but not contextual help | ⚠️ Partial | `help-commands.ts` adds per-tab `/help?tab=` shortcuts (Phase 5a, in progress) |
+| **N3** | Command Palette covers settings nav but not contextual help | ✅ Fixed | `help-commands.ts` adds per-tab `/help?tab=` shortcuts (Phase 5a, #280) |
 | **N4** | `HardwareRegistryPage` vs Settings adapters overlap | Low | Two adapter entry points — document when to use which |
 
 ---
