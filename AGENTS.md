@@ -4,6 +4,23 @@ General development guidance for this repository lives in `CLAUDE.md` (commands,
 architecture, toolchain rules, constraints). Read it first. This file only adds
 context specific to running the project inside a Cursor Cloud agent VM.
 
+## Language policy (mandatory)
+
+**English only** for all repository output, regardless of the language the human uses
+in chat or issue prompts:
+
+| Surface | Rule |
+|---------|------|
+| User-facing UI copy | `t()` keys in `en.ts` / `de.ts` — **author `en.ts` first**; German is the i18n fallback locale, not the authoring language |
+| Commit messages | English, [Conventional Commits](https://www.conventionalcommits.org/) |
+| PR titles & bodies | English |
+| Code comments & JSDoc | English |
+| New docs & ADRs | English (unless an existing doc is explicitly DE-only) |
+| Agent summaries to the user | English |
+
+Do **not** embed German (or other) inline `t('key', 'fallback')` strings in components.
+Do **not** write German commit messages because the prompt was in German.
+
 ## Cursor Cloud specific instructions
 
 ### Services & how to run them

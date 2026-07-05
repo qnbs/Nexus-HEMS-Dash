@@ -896,6 +896,9 @@ export const de = {
     searchPlaceholder: 'Dokumentation durchsuchen...',
     searchNoResults:
       'Keine Treffer — anderes Stichwort versuchen oder die Register unten durchsuchen.',
+    searchResultsCount_one: '1 Treffer',
+    searchResultsCount_other: '{{count}} Treffer',
+    searchResultsLabel: 'Hilfe-Suchergebnisse',
     openLink: 'Öffnen',
     usage: 'Benutzung',
     usageTitle: 'Benutzungs-Informationen',
@@ -1258,7 +1261,7 @@ export const de = {
     aiGeminiName: 'Gemini 2.5 Pro',
     aiGeminiProvider: 'Google AI Studio',
     aiClaudeDesc:
-      'Hauptentwicklung in GitHub Codespaces — Architektur, React-Compiler-Compliance, a11y-Audit, E2E-Tests, Design-System, UI/UX-Transformation',
+      'Hauptentwicklung in GitHub Copilot — Architektur, React-Compiler-Compliance, a11y-Audit, E2E-Tests, Design-System, UI/UX-Transformation',
     aiClaudeName: 'Claude Sonnet',
     aiClaudeProvider: 'GitHub Copilot',
     aiGrokDesc:

@@ -1,17 +1,7 @@
 import { Plug } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { HELP_CONTRIB_PROTOCOL_KEYS } from '../../../lib/help-content-manifest';
 import { HelpSectionShell } from './HelpSectionShell';
-
-const CONTRIB_PROTOCOLS = [
-  { titleKey: 'help.protocolHa', setupKey: 'help.contribSetupHa' },
-  { titleKey: 'help.protocolEebus', setupKey: 'help.contribSetupEebus' },
-  { titleKey: 'help.protocolEvcc', setupKey: 'help.contribSetupEvcc' },
-  { titleKey: 'help.protocolOpenEms', setupKey: 'help.contribSetupOpenEms' },
-  { titleKey: 'help.protocolOpenAdr', setupKey: 'help.contribSetupOpenAdr' },
-  { titleKey: 'help.protocolMatter', setupKey: 'help.contribSetupMatter' },
-  { titleKey: 'help.protocolZigbee', setupKey: 'help.contribSetupZigbee' },
-  { titleKey: 'help.protocolShelly', setupKey: 'help.contribSetupShelly' },
-] as const;
 
 /** Contrib protocol integration section in the Help integration guide. */
 export const HelpContribProtocolsSection = () => {
@@ -27,7 +17,7 @@ export const HelpContribProtocolsSection = () => {
         {t('help.contribProtocolsIntro')}
       </p>
       <ul className="space-y-4">
-        {CONTRIB_PROTOCOLS.map((protocol) => (
+        {HELP_CONTRIB_PROTOCOL_KEYS.map((protocol) => (
           <li
             key={protocol.titleKey}
             className="border-(--color-border) border-b pb-4 last:border-0"

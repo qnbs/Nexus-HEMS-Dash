@@ -1,11 +1,14 @@
 import { Server, Wifi } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { registerBuiltinAdapterSettingsSections } from '../../core/adapters/register-builtin-settings-sections';
 import { ConnectionStatusCards } from './ConnectionStatusCards';
 import { GatewayTypeSelector } from './GatewayTypeSelector';
-import { HomeAssistantSettingsSection } from './HomeAssistantSettingsSection';
+import { RegisteredAdapterSettingsSection } from './RegisteredAdapterSettingsSection';
 import { SettingsFeatureBar } from './SettingsFeatureBar';
 import { SystemNetworkFields } from './SystemNetworkFields';
 import { sectionClass, sectionHeaderClass } from './styles';
+
+registerBuiltinAdapterSettingsSections();
 
 export const SystemTabLayout = ({
   gatewayType,
@@ -65,7 +68,7 @@ export const SystemTabLayout = ({
         <ConnectionStatusCards devices={connectionDevices} />
       </section>
 
-      <HomeAssistantSettingsSection />
+      <RegisteredAdapterSettingsSection adapterId="homeassistant-mqtt" />
     </>
   );
 };
