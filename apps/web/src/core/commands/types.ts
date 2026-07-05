@@ -67,7 +67,7 @@ export interface CommandContext {
     closePalette: () => void;
     recordUsage: (commandId: string) => void;
     toggleFavorite: (commandId: string) => void;
-    /** Routes danger/moderate hardware commands through useSafeCommand (Phase 2+) */
+    /** Routes danger/moderate/admin hardware commands through useSafeCommand (Phase 2+) */
     executeHardwareCommand?: (command: AdapterCommand) => void;
   };
 }
@@ -88,7 +88,7 @@ export interface CommandDefinition {
   blockedInReadOnly?: boolean;
   when?: (ctx: CommandContext) => boolean;
   preview?: (ctx: CommandContext) => CommandPreview | null;
-  /** When set, palette routes danger/moderate commands through command-safety */
+  /** When set, palette routes danger/moderate/admin commands through command-safety */
   hardwareCommand?: AdapterCommand | ((ctx: CommandContext) => AdapterCommand);
   execute: (ctx: CommandContext) => void | Promise<void>;
   schemaVersion?: 1;

@@ -1,5 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
-import { getContextualCommandIds, getRecentCommandIds } from './command-context';
+import {
+  buildAdapterStoreSnapshotKey,
+  getContextualCommandIds,
+  getRecentCommandIds,
+} from './command-context';
 import type { CommandContext } from './types';
 
 function mockContext(overrides: Partial<CommandContext> = {}): CommandContext {
@@ -32,6 +36,18 @@ function mockContext(overrides: Partial<CommandContext> = {}): CommandContext {
     ...overrides,
   };
 }
+
+describe('buildAdapterStoreSnapshotKey', () => {
+  it('includes enabled flag so palette refreshes on adapter toggle', () => {
+    const connected = buildAdapterStoreSnapshotKey({
+      victron: { status: 'connected', enabled: true },
+    });
+    const disabled = buildAdapterStoreSnapshotKey({
+      victron: { status: 'connected', enabled: false },
+    });
+    expect(connected).not.toBe(disabled);
+  });
+});
 
 describe('getRecentCommandIds', () => {
   it('sorts recent commands by timestamp descending', () => {

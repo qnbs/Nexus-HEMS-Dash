@@ -7,12 +7,11 @@ import { EmptyState } from '../ui/EmptyState';
 import { CommandPaletteListRow } from './CommandPaletteListRow';
 import {
   buildFlatRows,
+  COMMAND_PALETTE_HEADER_HEIGHT,
+  COMMAND_PALETTE_ROW_HEIGHT,
   type FlatListRow,
   shouldVirtualizeCommandList,
 } from './command-palette-list-utils';
-
-const COMMAND_ROW_HEIGHT = 48;
-const HEADER_ROW_HEIGHT = 36;
 
 interface CommandPaletteListProps {
   commands: ResolvedCommand[];
@@ -23,7 +22,7 @@ interface CommandPaletteListProps {
 }
 
 function estimateRowHeight(row: FlatListRow | undefined): number {
-  return row?.type === 'header' ? HEADER_ROW_HEIGHT : COMMAND_ROW_HEIGHT;
+  return row?.type === 'header' ? COMMAND_PALETTE_HEADER_HEIGHT : COMMAND_PALETTE_ROW_HEIGHT;
 }
 
 function findRowIndexForCommand(rows: FlatListRow[], commandIndex: number): number {
@@ -42,6 +41,8 @@ function CommandPaletteVirtualList({
   onHover: (index: number) => void;
 }) {
   const parentRef = useRef<HTMLDivElement>(null);
+  const rowsRef = useRef(rows);
+  rowsRef.current = rows;
   // eslint-disable-next-line react-hooks/incompatible-library
   const virtualizer = useVirtualizer({
     count: rows.length,
@@ -51,11 +52,11 @@ function CommandPaletteVirtualList({
   });
 
   useEffect(() => {
-    const rowIndex = findRowIndexForCommand(rows, selectedIndex);
+    const rowIndex = findRowIndexForCommand(rowsRef.current, selectedIndex);
     if (rowIndex >= 0) {
       virtualizer.scrollToIndex(rowIndex, { align: 'auto' });
     }
-  }, [rows, selectedIndex, virtualizer]);
+  }, [selectedIndex, virtualizer]);
 
   return (
     <div ref={parentRef} className="max-h-96 overflow-y-auto p-2">
@@ -71,6 +72,8 @@ function CommandPaletteVirtualList({
           return (
             <div
               key={virtualRow.key}
+              data-index={virtualRow.index}
+              ref={virtualizer.measureElement}
               style={{
                 position: 'absolute',
                 top: 0,

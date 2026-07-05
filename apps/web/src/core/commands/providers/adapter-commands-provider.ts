@@ -1,5 +1,5 @@
 import { PlugZap, Settings2 } from 'lucide-react';
-import { type AdapterId, attachAdapterEntry, useEnergyStoreBase } from '../../useEnergyStore';
+import { type AdapterId, useEnergyStoreBase } from '../../useEnergyStore';
 import type { CommandDefinition, CommandProvider } from '../types';
 import { navigateAndClose } from './provider-utils';
 
@@ -37,7 +37,6 @@ function createAdapterReconnectCommand(adapterId: string, name: string): Command
       const id = adapterId as AdapterId;
       const entry = useEnergyStoreBase.getState().adapters[id];
       if (!entry) return;
-      attachAdapterEntry(id);
       void entry.adapter.connect();
       ctx.actions.closePalette();
     },

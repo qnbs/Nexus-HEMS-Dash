@@ -1,4 +1,5 @@
 import { CarFront, Zap } from 'lucide-react';
+import { formatPower } from '../../../lib/format';
 import type { CommandDefinition } from '../types';
 import { navigateAndClose } from './provider-utils';
 
@@ -18,7 +19,10 @@ export function createDeviceCommands(): CommandDefinition[] {
       preview: (ctx) => ({
         titleKey: 'command.preview.stopCharging',
         metrics: [
-          { labelKey: 'command.preview.evPower', value: `${ctx.energy.evPower.toFixed(1)} kW` },
+          {
+            labelKey: 'command.preview.evPower',
+            value: formatPower(ctx.energy.evPower, ctx.locale),
+          },
         ],
         impactKey: 'command.preview.stopChargingImpact',
       }),

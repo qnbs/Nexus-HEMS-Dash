@@ -25,6 +25,10 @@ export function shouldVirtualizeCommandList(rowCount: number): boolean {
   return true;
 }
 
+/** Matches CommandPaletteItem: min-h-11 + py-3 around h-10 icon row (~64px). */
+export const COMMAND_PALETTE_ROW_HEIGHT = 64;
+export const COMMAND_PALETTE_HEADER_HEIGHT = 36;
+
 export interface FlatListRow {
   type: 'header' | 'command';
   section?: ResolvedCommand['section'];

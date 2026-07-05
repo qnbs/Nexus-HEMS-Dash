@@ -21,6 +21,16 @@ function resolveAuthScope(): AuthScope {
   return 'readwrite';
 }
 
+/** Stable store fingerprint for adapter status + enabled toggles (command palette). */
+export function buildAdapterStoreSnapshotKey(
+  adapters: Readonly<Record<string, { status: string; enabled: boolean }>>,
+): string {
+  return Object.entries(adapters)
+    .map(([id, entry]) => `${id}:${entry.status}:${entry.enabled ? 1 : 0}`)
+    .sort()
+    .join('|');
+}
+
 /**
  * Build the read-only command context snapshot for registry providers.
  */
@@ -57,12 +67,7 @@ export function useCommandContext(options: UseCommandContextOptions): CommandCon
     chargeThreshold: s.settings.chargeThreshold,
   }));
 
-  const adapterStatusKey = useEnergyStoreBase((s) =>
-    Object.entries(s.adapters)
-      .map(([id, entry]) => `${id}:${entry.status}`)
-      .sort()
-      .join('|'),
-  );
+  const adapterStatusKey = useEnergyStoreBase((s) => buildAdapterStoreSnapshotKey(s.adapters));
 
   const adapterStatuses = useMemo(() => {
     const state = useEnergyStoreBase.getState();
