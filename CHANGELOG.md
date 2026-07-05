@@ -11,7 +11,15 @@ Release notes are maintained here and published via [semantic-release](https://g
 
 ### CI / Deploy
 
-- Harden GitHub Pages deploy: `wait-for-github-pages-idle.sh`, 4 publish attempts with idle-wait between retries, and `deploy-recovery.yml` auto-rerun on transient failures.
+- Harden GitHub Pages deploy: `wait-for-github-pages-idle.sh`, 4 publish attempts with idle-wait between retries, and `deploy-recovery.yml` auto-rerun on transient failures (#281).
+
+### Settings & Help perfection (Phases 1–5)
+
+- **#276** — Settings URL sync (`useSearchParams`), persist merge validation, read-only gating foundations.
+- **#277** — Help phase 2: contrib integration guide, manifest-backed search index, FAQ version interpolation.
+- **#279** — Help phase 3+4: `help-content-manifest`, combobox search a11y, `AdapterSettingsSection` registry, HA settings plugin template.
+- **#278** — Help search `isOpen` keyboard guard after Escape dismiss, stable list keys, regression tests.
+- **#280** — Command palette contextual Help tab shortcuts (`/help?tab=…`).
 
 ## [1.10.0] - 2026-07-04
 
