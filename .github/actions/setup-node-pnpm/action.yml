@@ -9,7 +9,7 @@ inputs:
   pnpm-version:
     description: pnpm major.minor.patch (keep in sync with package.json packageManager)
     required: false
-    default: '10.33.0'
+    default: '10.34.4'
   install:
     description: When true, run pnpm install --frozen-lockfile
     required: false
