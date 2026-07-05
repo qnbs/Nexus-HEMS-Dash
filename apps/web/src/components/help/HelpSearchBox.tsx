@@ -61,7 +61,10 @@ export const HelpSearchBox = ({
       <input
         type="search"
         value={searchQuery}
-        onChange={(e) => onSearchQueryChange(e.target.value)}
+        onChange={(e) => {
+          setDismissedQuery(null);
+          onSearchQueryChange(e.target.value);
+        }}
         onKeyDown={(event) =>
           handleHelpSearchKeyDown(
             event,

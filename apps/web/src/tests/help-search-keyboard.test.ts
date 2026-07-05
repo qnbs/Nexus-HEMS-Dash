@@ -127,4 +127,30 @@ describe('help-search-keyboard', () => {
 
     expect(setActiveIndex).not.toHaveBeenCalled();
   });
+
+  it('jumps to the first and last options with Home and End', () => {
+    const setActiveIndex = vi.fn();
+
+    handleHelpSearchKeyDown(
+      makeKeyEvent('End'),
+      searchResults,
+      0,
+      setActiveIndex,
+      vi.fn(),
+      vi.fn(),
+      true,
+    );
+    handleHelpSearchKeyDown(
+      makeKeyEvent('Home'),
+      searchResults,
+      1,
+      setActiveIndex,
+      vi.fn(),
+      vi.fn(),
+      true,
+    );
+
+    expect(setActiveIndex).toHaveBeenNthCalledWith(1, 1);
+    expect(setActiveIndex).toHaveBeenNthCalledWith(2, 0);
+  });
 });

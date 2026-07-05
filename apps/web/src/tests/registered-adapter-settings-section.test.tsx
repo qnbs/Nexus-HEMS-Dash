@@ -28,15 +28,15 @@ describe('RegisteredAdapterSettingsSection', () => {
   });
 
   it('warns in dev mode when no section is registered', () => {
-    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(vi.fn());
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(function suppressConsoleWarn() {
+      return undefined;
+    });
 
     const { container } = render(<RegisteredAdapterSettingsSection adapterId="missing-adapter" />);
 
     expect(container).toBeEmptyDOMElement();
-    if (import.meta.env.DEV) {
-      expect(warnSpy).toHaveBeenCalledWith(
-        'No settings section registered for adapterId "missing-adapter"',
-      );
-    }
+    expect(warnSpy).toHaveBeenCalledWith(
+      'No settings section registered for adapterId "missing-adapter"',
+    );
   });
 });

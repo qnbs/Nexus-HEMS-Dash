@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { HelpSearchBox } from '../components/help/HelpSearchBox';
 
@@ -177,5 +178,36 @@ describe('HelpSearchBox', () => {
 
     expect(combobox).toHaveAttribute('aria-expanded', 'false');
     expect(screen.queryByRole('note')).not.toBeInTheDocument();
+  });
+
+  it('reopens the listbox after Escape when the query is edited back to the dismissed value', async () => {
+    const user = userEvent.setup();
+
+    const StatefulHelpSearch = () => {
+      const [query, setQuery] = useState('eebus');
+      return (
+        <HelpSearchBox
+          searchQuery={query}
+          onSearchQueryChange={setQuery}
+          normalizedQuery={query.trim().toLowerCase()}
+          searchResults={[{ tab: 'lexicon', title: 'EEBUS', body: 'European energy interface' }]}
+          onSelectResult={vi.fn()}
+        />
+      );
+    };
+
+    render(<StatefulHelpSearch />);
+
+    const combobox = screen.getByRole('combobox');
+    await user.click(combobox);
+    await user.keyboard('{Escape}');
+    expect(combobox).toHaveAttribute('aria-expanded', 'false');
+
+    await user.type(combobox, 'x');
+    expect(combobox).toHaveAttribute('aria-expanded', 'true');
+
+    await user.keyboard('{Backspace}');
+    expect(combobox).toHaveAttribute('aria-expanded', 'true');
+    expect(combobox).toHaveValue('eebus');
   });
 });

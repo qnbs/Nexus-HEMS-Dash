@@ -58,6 +58,14 @@ export function handleHelpSearchKeyDown(
       event.preventDefault();
       setActiveIndex(Math.max(activeIndex - 1, 0));
       break;
+    case 'Home':
+      event.preventDefault();
+      setActiveIndex(0);
+      break;
+    case 'End':
+      event.preventDefault();
+      setActiveIndex(searchResults.length - 1);
+      break;
     case 'Enter': {
       const hit = searchResults[activeIndex];
       if (hit) {
