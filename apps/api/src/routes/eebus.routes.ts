@@ -15,6 +15,7 @@
 
 import {
   type EEBUSDeviceInfo,
+  EEBUSDiscoverRegisterSchema,
   EEBUSPairRequestSchema,
   EEBUSPinSubmitSchema,
   EEBUSRevocationConfigSchema,
@@ -265,36 +266,31 @@ export function createEebusRoutes(): Router {
     requireScope('admin'),
     requireNotReadOnly,
     (req, res) => {
-      const body = req.body as {
-        ski?: string;
-        host?: string;
-        port?: number;
-        brand?: string;
-        model?: string;
-        deviceType?: string;
-      };
-      if (!body.ski || !body.host) {
-        res.status(400).json({ error: 'ski and host are required' });
+      const parsed = EEBUSDiscoverRegisterSchema.safeParse(req.body);
+      if (!parsed.success) {
+        res.status(400).json({ errors: parsed.error.issues });
         return;
       }
-      eebusDeviceCache.set(body.ski, {
-        ski: body.ski,
-        host: body.host,
-        port: body.port ?? 4712,
-        brand: body.brand ?? '',
-        model: body.model ?? '',
-        deviceType: body.deviceType ?? '',
+
+      const { ski, host, port, brand, model, deviceType } = parsed.data;
+      eebusDeviceCache.set(ski, {
+        ski,
+        host,
+        port: port ?? 4712,
+        brand: brand ?? '',
+        model: model ?? '',
+        deviceType: deviceType ?? '',
         path: '/ship/',
         register: true,
       });
       // Upsert trust store entry (pending, not yet paired)
       upsertDevice({
-        ski: body.ski,
-        hostname: body.host,
-        port: body.port ?? 4712,
-        ...(body.brand !== undefined ? { brand: body.brand } : {}),
-        ...(body.model !== undefined ? { model: body.model } : {}),
-        ...(body.deviceType !== undefined ? { deviceType: body.deviceType } : {}),
+        ski,
+        hostname: host,
+        port: port ?? 4712,
+        ...(brand !== undefined ? { brand } : {}),
+        ...(model !== undefined ? { model } : {}),
+        ...(deviceType !== undefined ? { deviceType } : {}),
         status: 'pending',
         trustedAt: 0,
       }).catch(() => {});

@@ -416,6 +416,18 @@ export const EEBUSPairRequestSchema = z.object({
 
 export type EEBUSPairRequest = z.infer<typeof EEBUSPairRequestSchema>;
 
+/** POST /api/eebus/discover/register */
+export const EEBUSDiscoverRegisterSchema = z.object({
+  ski: z.string().trim().min(4).max(128),
+  host: z.string().trim().min(1).max(253),
+  port: z.number().int().min(1).max(65535).optional(),
+  brand: z.string().trim().max(64).optional(),
+  model: z.string().trim().max(64).optional(),
+  deviceType: z.string().trim().max(64).optional(),
+});
+
+export type EEBUSDiscoverRegisterRequest = z.infer<typeof EEBUSDiscoverRegisterSchema>;
+
 // ─── EEBUS SHIP v1.0.1 / VDE-AR-E 2829-6 schemas ──────────────────
 
 /** Full device info record stored in the SHIP trust store */

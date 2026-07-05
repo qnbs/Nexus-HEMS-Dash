@@ -55,6 +55,13 @@ describe('warnIfProductionBypass', () => {
     expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('SECURITY WARNING'));
   });
 
+  it('warns when CORS_ORIGINS is set in development', async () => {
+    process.env.CORS_ORIGINS = 'https://example.com';
+    const warnIfProductionBypass = await loadWarnIfProductionBypass();
+    warnIfProductionBypass();
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('SECURITY WARNING'));
+  });
+
   it('does not warn in production', async () => {
     process.env.NODE_ENV = 'production';
     process.env.JWT_SECRET = 'super-secret';

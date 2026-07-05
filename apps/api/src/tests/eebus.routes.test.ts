@@ -338,4 +338,14 @@ describe('EEBUS API routes', () => {
       expect(res.body.error).toMatch(/READ_ONLY_MODE/i);
     });
   });
+
+  it('rejects discover/register with an invalid body', async () => {
+    const bearer = await adminToken();
+    const res = await api()
+      .post('/api/eebus/discover/register')
+      .set('Authorization', `Bearer ${bearer}`)
+      .send({ ski: 'short', host: '192.168.1.50', port: 80_000 })
+      .expect(400);
+    expect(res.body.errors).toBeInstanceOf(Array);
+  });
 });

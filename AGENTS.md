@@ -296,7 +296,7 @@ Two Zustand stores, deliberately separated:
 ### Authentication & authorization
 
 - Dev: anonymous / auto-accept API keys.
-- Production: `API_KEYS` and `WS_ORIGINS` are required; `API_KEY_SCOPES` binds keys to `read` / `readwrite` / `admin`.
+- Production: `JWT_SECRET`, `API_KEYS`, and `WS_ORIGINS` are required; `API_KEY_SCOPES` binds keys to `read` / `readwrite` / `admin`.
 - JWTs are HS256 via `jose`, with `iss`/`aud`, `jti`, `kid`, and optional dual-key rotation (`JWT_SECRET` + `JWT_SECRET_NEW`).
 - WebSocket auth uses JWT or single-use `?ticket=` tokens; origin allowlist enforced via `WS_ORIGINS`.
 

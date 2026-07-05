@@ -241,6 +241,7 @@ Enforced routes include:
 | `POST /api/ocpp/proxy-session` | OCPP mTLS proxy session issuance |
 | `POST /api/openadr/events/:eventId/acknowledge` | OpenADR event opt-in/opt-out |
 | `POST /api/openadr/reports` | OpenADR telemetry report submission |
+| `POST /api/exec/command` | ExecAdapter command dispatch |
 
 Use `READ_ONLY_MODE=true` for commissioning, incident investigation, certification-grade deployments, and maintenance windows. The setting is reported in `GET /api/health` as `readOnly` and surfaced in the UI via `useReadOnlyModeActive()`.
 

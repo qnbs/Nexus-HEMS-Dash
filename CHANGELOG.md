@@ -11,7 +11,7 @@ Release notes are maintained here and published via [semantic-release](https://g
 
 ### Security
 
-- Add `READ_ONLY_MODE` enforcement to previously unguarded mutating routes: EEBUS pairing/trust/revocation, OCPP proxy-session issuance, and OpenADR event acknowledge/report submission. Adds `requireNotReadOnly` middleware and unit tests.
+- Add `READ_ONLY_MODE` enforcement to previously unguarded mutating routes: EEBUS pairing/trust/revocation, OCPP proxy-session issuance, OpenADR event acknowledge/report submission, and ExecAdapter command dispatch. Adds `requireNotReadOnly` middleware and unit tests.
 - Add startup warning when auth/scope/rate-limit bypass is active in a production-shaped environment (dev `NODE_ENV` with `JWT_SECRET`, `API_KEYS`, `WS_ORIGINS`, or `CORS_ORIGINS` present).
 
 ### CI / Deploy

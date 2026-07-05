@@ -4,7 +4,7 @@
 
 import express from 'express';
 import supertest from 'supertest';
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const SECRET = 'nexus-hems-ci-fixture-jwt-signing-key-not-a-real-credential';
 
@@ -90,5 +90,29 @@ describe('Exec API routes', () => {
       .set('Authorization', `Bearer ${bearer}`)
       .send({ scriptId: 'read_meter', commandType: 'SET_RELAY', value: 1 })
       .expect(403);
+  });
+
+  describe('READ_ONLY_MODE blocks command POST', () => {
+    let originalReadOnly: string | undefined;
+
+    beforeEach(() => {
+      originalReadOnly = process.env.READ_ONLY_MODE;
+      process.env.READ_ONLY_MODE = 'true';
+    });
+
+    afterEach(() => {
+      if (originalReadOnly === undefined) delete process.env.READ_ONLY_MODE;
+      else process.env.READ_ONLY_MODE = originalReadOnly;
+    });
+
+    it('blocks command POST in read-only mode', async () => {
+      const bearer = await signToken({ sub: 'admin', scope: 'readwrite' }, '1h');
+      const res = await buildApp()
+        .post('/api/exec/command')
+        .set('Authorization', `Bearer ${bearer}`)
+        .send({ scriptId: 'read_meter', commandType: 'SET_RELAY', value: 1 })
+        .expect(403);
+      expect(res.body.error).toMatch(/READ_ONLY_MODE/i);
+    });
   });
 });
