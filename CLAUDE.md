@@ -110,7 +110,7 @@ In dev: `apps/web` (Vite, port 5173) proxies `/api/*`, `/metrics`, `/ws` → `ap
 
 ### Stack
 
-React 19 · TypeScript ~5.8 (strict) · Vite 8 (Rolldown) · Tailwind CSS v4 · Zustand 5 · TanStack Query v5 · React Router DOM v7 · Dexie.js v4 · Express 5 · Zod · jose · MQTT · D3 + d3-sankey · Recharts · motion (Framer Motion successor) · Radix UI · Lucide React
+React 19 · TypeScript ~5.8.3 (strict) · Vite 8.1 (Rolldown) · Tailwind CSS v4 · Zustand 5 · TanStack Query v5 · React Router DOM v7 · Dexie.js v4 · Express 5 · Zod · jose · MQTT · D3 + d3-sankey · Recharts · motion (Framer Motion successor) · Radix UI · Lucide React
 
 ### Dual Zustand Store Pattern (critical)
 
@@ -198,7 +198,7 @@ Auto-memoization via `babel-plugin-react-compiler`. Never add manual `useCallbac
 
 ## Toolchain Rules
 
-**Biome 2.5.1 is the primary linter and formatter.** ESLint is retained only for React plugins Biome cannot replace: `react-compiler/react-compiler`, `react-hooks/rules-of-hooks`, `react-hooks/exhaustive-deps`, `react-refresh/only-export-components`.
+**Biome 2.5.2 is the primary linter and formatter.** ESLint is retained only for React plugins Biome cannot replace: `react-compiler/react-compiler`, `react-hooks/rules-of-hooks`, `react-hooks/exhaustive-deps`, `react-refresh/only-export-components`.
 
 **Do NOT re-add:** `prettier`, `prettier-plugin-tailwindcss`, `eslint-plugin-prettier`, `eslint-config-prettier`, `@eslint/js`, `typescript-eslint`, `@typescript-eslint/*`, `globals`, `eslint-plugin-react`.
 
@@ -209,7 +209,7 @@ Current enforced coverage thresholds are package-specific:
 - `apps/api/vitest.config.ts`: 47 statements / 38 branches / 55 functions / 48 lines (P1-05 staged raise from v1.3.0 33% baseline; statements target 55%)
 - `docs/Testing-Coverage-Strategy.md` contains the higher staged roadmap targets; do not assume those targets are already enforced in config.
 
-Biome 2.5 note: use `biome format apps/ packages/` for the read-only `format:check` script. Do not use `biome format --write=false`; this version rejects that flag/value combination.
+Biome 2.5.2 note: use `biome format apps/ packages/` for the read-only `format:check` script. Do not use `biome format --write=false`; this version rejects that flag/value combination.
 
 Use `pnpm.overrides` (never top-level `"overrides"`) for dependency overrides. Keep `pnpm.onlyBuiltDependencies` in sync with approved native/postinstall packages (`@google/genai`, `esbuild`, `better-sqlite3`, serialport bindings, `core-js`, `protobufjs`, and all `@rolldown/binding-*` platform packages).
 
