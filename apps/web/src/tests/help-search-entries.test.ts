@@ -31,5 +31,20 @@ describe('help-search-entries', () => {
     const tabs = new Set(entries.map((entry) => entry.tab));
     expect(tabs.has('integration')).toBe(true);
     expect(tabs.has('about')).toBe(true);
+    expect(tabs.has('lexicon')).toBe(true);
+  });
+
+  it('indexes glossary terms for lexicon search', () => {
+    const entries = buildHelpSearchEntries(((key: string) => key) as never);
+    const eebus = entries.find((e) => e.title === 'help.glossEebus');
+    expect(eebus?.tab).toBe('lexicon');
+    expect(eebus?.body).toBe('help.glossEebusDesc');
+  });
+
+  it('interpolates app version in FAQ search entry', () => {
+    const entries = buildHelpSearchEntries(((key: string, opts?: { version?: string }) =>
+      opts?.version ? `v${opts.version}` : key) as never);
+    const faq = entries.find((e) => e.title === 'help.faqWhatIs');
+    expect(faq?.body).toMatch(/^v\d+\.\d+\.\d+$/);
   });
 });

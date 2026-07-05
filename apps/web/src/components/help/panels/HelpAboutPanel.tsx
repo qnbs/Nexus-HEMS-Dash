@@ -24,20 +24,20 @@ export const HelpAboutPanel = () => {
 
   const aiProviders = [
     {
-      name: 'Gemini 2.5 Pro',
-      provider: 'Google AI Studio',
+      name: t('help.aiGeminiName'),
+      provider: t('help.aiGeminiProvider'),
       desc: t('help.aiGeminiDesc'),
       color: '#4285F4',
     },
     {
       name: t('help.aiClaudeName'),
-      provider: 'GitHub Copilot',
+      provider: t('help.aiClaudeProvider'),
       desc: t('help.aiClaudeDesc'),
       color: '#D97706',
     },
     {
-      name: 'Grok',
-      provider: 'xAI',
+      name: t('help.aiGrokName'),
+      provider: t('help.aiGrokProvider'),
       desc: t('help.aiGrokDesc'),
       color: '#10B981',
     },
