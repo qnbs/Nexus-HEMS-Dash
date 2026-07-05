@@ -29,6 +29,20 @@ vi.mock('../components/settings/ReadOnlySettingsBanner', () => ({
 vi.mock('../core/adapters/adapter-registry', () => ({
   listRegisteredAdapters: () => [],
   loadAllContribAdapters: vi.fn().mockResolvedValue([]),
+  registerBuiltinAdapters: vi.fn(),
+}));
+
+vi.mock('../core/useEnergyStore', () => ({
+  useEnergyStore: (selector: (s: Record<string, unknown>) => unknown) => selector({ adapters: {} }),
+}));
+
+vi.mock('../store', () => ({
+  useAppStore: (selector: (s: Record<string, unknown>) => unknown) =>
+    selector({ settings: { victronIp: '', knxIp: '', wsPort: 1880, gatewayType: 'cerbo-gx' } }),
+}));
+
+vi.mock('../lib/secure-store', () => ({
+  getAdapterCredentials: vi.fn().mockResolvedValue(null),
 }));
 
 describe('AdapterConfigPanel', () => {
@@ -66,12 +80,13 @@ describe('AdapterConfigPanel', () => {
     });
   });
 
-  it('blocks save in read-only mode', () => {
+  it('blocks adapter changes in read-only mode', () => {
     mockReadOnly.mockReturnValue(true);
     render(<AdapterConfigPanel />);
     const addButtons = screen.getAllByRole('button', { name: /adapterConfig\.type_victron/i });
+    expect(addButtons[0]).toBeDisabled();
     fireEvent.click(addButtons[0]);
-    fireEvent.click(screen.getByText('common.save'));
+    expect(screen.queryByText('common.save')).not.toBeInTheDocument();
     expect(mockSave).not.toHaveBeenCalled();
   });
 });

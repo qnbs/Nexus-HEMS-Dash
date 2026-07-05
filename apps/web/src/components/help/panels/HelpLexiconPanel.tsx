@@ -28,6 +28,12 @@ export const HelpLexiconPanel = () => {
             { term: t('help.glossNodeRed'), desc: t('help.glossNodeRedDesc') },
             { term: t('help.glossCerboGx'), desc: t('help.glossCerboGxDesc') },
             { term: t('help.glossV2x'), desc: t('help.glossV2xDesc') },
+            { term: t('help.glossEebus'), desc: t('help.glossEebusDesc') },
+            { term: t('help.glossHomeAssistant'), desc: t('help.glossHomeAssistantDesc') },
+            { term: t('help.glossMatter'), desc: t('help.glossMatterDesc') },
+            { term: t('help.glossEvcc'), desc: t('help.glossEvccDesc') },
+            { term: t('help.glossOpenEms'), desc: t('help.glossOpenEmsDesc') },
+            { term: t('help.glossOpenAdr'), desc: t('help.glossOpenAdrDesc') },
           ].map((item) => (
             <div key={item.term} className="border-(--color-border) border-b pb-4 last:border-0">
               <dt className="font-medium text-(--color-primary) text-sm">{item.term}</dt>

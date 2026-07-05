@@ -675,6 +675,23 @@ export const en = {
     haEnableAdapter: 'Enable Home Assistant adapter',
     haSaveSuccess: 'Home Assistant settings saved',
     haSaveFailed: 'Could not save Home Assistant settings: {{error}}',
+    haEntityRolesTitle: 'Entity role overrides',
+    haEntityRolesHint: 'Optional manual mapping when auto-discovery cannot classify an entity.',
+    haEntityRolesEmpty: 'No overrides configured.',
+    haEntityId: 'Entity ID',
+    haEntityRole: 'Energy role',
+    haEntityRoleAdd: 'Add override',
+    haEntityRoleRemove: 'Remove entity role override',
+    haRole_pvPower: 'PV power',
+    haRole_pvEnergyToday: 'PV energy today',
+    haRole_batteryPower: 'Battery power',
+    haRole_batterySoc: 'Battery SoC',
+    haRole_gridPower: 'Grid power',
+    haRole_housePower: 'House load',
+    haRole_heatPumpPower: 'Heat pump power',
+    haRole_evPower: 'EV charge power',
+    haRole_evSoc: 'EV SoC',
+    haRole_evStatus: 'EV status',
     maxGridHint: '§14a EnWG limit: 4.2 kW for controllable consumers',
     pvSystem: 'PV System',
     pvPeakPower: 'Peak power (kWp)',
@@ -1071,6 +1088,24 @@ export const en = {
     glossV2x: 'V2X (Vehicle-to-Everything)',
     glossV2xDesc:
       'Bidirectional EV charging technology: V2G (Vehicle-to-Grid) feeds power back to the grid, V2H (Vehicle-to-Home) supplies the household.',
+    glossEebus: 'EEBUS SPINE/SHIP',
+    glossEebusDesc:
+      'European energy interface standard for interoperable device communication (heat pumps, EV chargers, inverters) with mTLS and use-case profiles.',
+    glossHomeAssistant: 'Home Assistant',
+    glossHomeAssistantDesc:
+      'Open-source home automation platform. Nexus integrates via WebSocket API or MQTT discovery for PV, battery, grid, and load entities.',
+    glossMatter: 'Matter / Thread',
+    glossMatterDesc:
+      'IPv6-based smart-home connectivity (Thread radio + Matter application layer) for secure, vendor-neutral device commissioning and control.',
+    glossEvcc: 'evcc',
+    glossEvccDesc:
+      'Open-source EV charging controller with broad hardware support. Nexus reads charge power, SoC, and tariff-aware schedules via REST/WebSocket.',
+    glossOpenEms: 'OpenEMS',
+    glossOpenEmsDesc:
+      'Modular open-source energy management edge stack using JSON-RPC over WebSocket for real-time channels, controllers, and schedules.',
+    glossOpenAdr: 'OpenADR 3.1',
+    glossOpenAdrDesc:
+      'Automated demand-response protocol for grid operators and aggregators to signal price and load-shed events to customer energy systems.',
 
     // FAQ extended
     faqGeneral: 'General',

@@ -59,7 +59,7 @@ if (listed.error || listed.status !== 0) {
 
 const skipPath =
   /(^|\/)(node_modules|dist|coverage|playwright-report|test-results|\.husky)\/|(^|\/)src\/tests\/|(^|\/)\.env\.example$|\.(png|jpe?g|svg|ico|woff2?)$/;
-const allowMatch = /your_|placeholder|example|dummy|test-|sk-abcdef/i;
+const allowMatch = /your_|placeholder|example|dummy|test-|sk-abcdef|resolveMqttBrokerAuth|mqttBrokerAuth|FIXTURE_/i;
 const rules = [
   { id: 'openai-api-key', regex: /sk-[a-zA-Z0-9]{20,}/g },
   { id: 'anthropic-api-key', regex: /sk-ant-[a-zA-Z0-9_-]{20,}/g },

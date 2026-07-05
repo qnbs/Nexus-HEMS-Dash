@@ -10,6 +10,7 @@ import {
 import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { isLiveSafetyMode } from '../../lib/adapter-mode';
+import { useReadOnlyModeActive } from '../../lib/use-read-only-mode';
 import { defaultSettings, useAppStoreShallow } from '../../store';
 import { ConfirmDialog, useConfirmDialog } from '../ConfirmDialog';
 import { EmergencyStop } from '../EmergencyStop';
@@ -27,6 +28,7 @@ export function AdvancedTab() {
     adapterMode: s.adapterMode,
   }));
   const isLiveMode = isLiveSafetyMode(adapterMode);
+  const isReadOnly = useReadOnlyModeActive();
   const confirm = useConfirmDialog();
 
   return (
@@ -364,7 +366,7 @@ export function AdvancedTab() {
                 </p>
               </div>
             </div>
-            <EmergencyStop />
+            <EmergencyStop disabled={isReadOnly} />
           </div>
         </div>
 
@@ -380,6 +382,7 @@ export function AdvancedTab() {
             </div>
             <motion.button
               type="button"
+              disabled={isReadOnly}
               onClick={() =>
                 confirm.openDialog({
                   title: t('settings.confirmResetTitle', 'Reset All Settings'),
@@ -394,7 +397,7 @@ export function AdvancedTab() {
                   },
                 })
               }
-              className="flex w-full shrink-0 items-center justify-center gap-2 rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-2 text-rose-400 text-sm transition-colors hover:bg-rose-500/20 sm:w-auto"
+              className="flex w-full shrink-0 items-center justify-center gap-2 rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-2 text-rose-400 text-sm transition-colors hover:bg-rose-500/20 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >

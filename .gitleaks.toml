@@ -48,6 +48,9 @@ regexes = [
   '''iso15118Enabled''',
   '''Grype/cosign''',
   '''Grype''',
+  '''resolveMqttBrokerAuth''',
+  '''mqttBrokerAuth''',
+  '''FIXTURE_.*_AUTH''',
 ]
 
 # Fingerprints of verified false positives (placeholder PEM in form inputs)

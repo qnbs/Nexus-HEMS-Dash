@@ -9,6 +9,7 @@ export const AdapterConfigConnectionFields = ({
   onUpdate,
   inputClass,
   t,
+  isReadOnly = false,
 }: AdapterConfigFieldProps) => (
   <div>
     <h3 className="mb-3 flex items-center gap-2 font-medium text-sm">
@@ -26,6 +27,7 @@ export const AdapterConfigConnectionFields = ({
           value={adapter.name}
           onChange={(e) => onUpdate({ name: e.target.value })}
           className={inputClass}
+          disabled={isReadOnly}
         />
       </AdapterConfigLabeledField>
       <AdapterConfigLabeledField id={`adapter-host-${adapter.id}`} label={t('adapterConfig.host')}>
@@ -36,6 +38,7 @@ export const AdapterConfigConnectionFields = ({
           onChange={(e) => onUpdate({ host: e.target.value })}
           className={inputClass}
           placeholder="192.168.1.100"
+          disabled={isReadOnly}
         />
       </AdapterConfigLabeledField>
       <AdapterConfigLabeledField id={`adapter-port-${adapter.id}`} label={t('adapterConfig.port')}>
@@ -47,6 +50,7 @@ export const AdapterConfigConnectionFields = ({
           className={inputClass}
           min={1}
           max={65535}
+          disabled={isReadOnly}
         />
       </AdapterConfigLabeledField>
       <AdapterConfigPollIntervalField
@@ -54,6 +58,7 @@ export const AdapterConfigConnectionFields = ({
         onUpdate={onUpdate}
         inputClass={inputClass}
         t={t}
+        isReadOnly={isReadOnly}
       />
     </div>
   </div>

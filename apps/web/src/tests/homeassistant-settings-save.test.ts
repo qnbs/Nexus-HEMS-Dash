@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { saveHomeAssistantSettings } from '../core/homeassistant-settings-save';
+import { FIXTURE_MQTT_AUTH } from './fixtures/credential-fixtures';
 
 const mockUpdateSettings = vi.fn();
 const mockReconfigureAdapter = vi.fn();
@@ -56,7 +57,7 @@ describe('saveHomeAssistantSettings', () => {
       mqttHost: '',
       mqttPort: 1883,
       mqttUser: '',
-      mqttPassword: '',
+      mqttBrokerAuth: '',
       mqttAutoDiscovery: true,
     });
     expect(result.ok).toBe(false);
@@ -72,7 +73,7 @@ describe('saveHomeAssistantSettings', () => {
       mqttHost: '',
       mqttPort: 1883,
       mqttUser: '',
-      mqttPassword: '',
+      mqttBrokerAuth: '',
       mqttAutoDiscovery: true,
     });
     expect(result.ok).toBe(false);
@@ -87,7 +88,7 @@ describe('saveHomeAssistantSettings', () => {
       mqttHost: '',
       mqttPort: 1883,
       mqttUser: '',
-      mqttPassword: '',
+      mqttBrokerAuth: '',
       mqttAutoDiscovery: true,
     });
     expect(result.ok).toBe(true);
@@ -108,7 +109,7 @@ describe('saveHomeAssistantSettings', () => {
       mqttHost: '',
       mqttPort: 1883,
       mqttUser: '',
-      mqttPassword: '',
+      mqttBrokerAuth: '',
       mqttAutoDiscovery: false,
     });
     expect(result.ok).toBe(false);
@@ -123,7 +124,7 @@ describe('saveHomeAssistantSettings', () => {
       mqttHost: 'broker.local',
       mqttPort: 0,
       mqttUser: '',
-      mqttPassword: '',
+      mqttBrokerAuth: '',
       mqttAutoDiscovery: false,
     });
     expect(result.ok).toBe(false);
@@ -138,7 +139,7 @@ describe('saveHomeAssistantSettings', () => {
       mqttHost: '192.168.1.20',
       mqttPort: 1883,
       mqttUser: 'mqtt',
-      mqttPassword: 'secret',
+      mqttBrokerAuth: FIXTURE_MQTT_AUTH,
       mqttAutoDiscovery: false,
     });
     expect(result.ok).toBe(true);
@@ -159,7 +160,7 @@ describe('saveHomeAssistantSettings', () => {
       mqttHost: '',
       mqttPort: 1883,
       mqttUser: '',
-      mqttPassword: '',
+      mqttBrokerAuth: '',
       mqttAutoDiscovery: true,
     });
     expect(result.ok).toBe(false);
@@ -174,7 +175,7 @@ describe('saveHomeAssistantSettings', () => {
       mqttHost: '',
       mqttPort: 1883,
       mqttUser: '',
-      mqttPassword: '',
+      mqttBrokerAuth: '',
       mqttAutoDiscovery: true,
     });
     expect(result.ok).toBe(true);
@@ -202,7 +203,7 @@ describe('saveHomeAssistantSettings', () => {
       mqttHost: '192.168.1.20',
       mqttPort: 1883,
       mqttUser: '',
-      mqttPassword: '',
+      mqttBrokerAuth: '',
       mqttAutoDiscovery: false,
     });
     expect(result.ok).toBe(false);
@@ -219,7 +220,7 @@ describe('saveHomeAssistantSettings', () => {
       mqttHost: '',
       mqttPort: 1883,
       mqttUser: '',
-      mqttPassword: '',
+      mqttBrokerAuth: '',
       mqttAutoDiscovery: true,
     });
     expect(result.ok).toBe(true);
@@ -235,7 +236,7 @@ describe('saveHomeAssistantSettings', () => {
       mqttHost: '',
       mqttPort: 1883,
       mqttUser: '',
-      mqttPassword: '',
+      mqttBrokerAuth: '',
       mqttAutoDiscovery: true,
     });
     expect(result.ok).toBe(true);
@@ -255,7 +256,7 @@ describe('saveHomeAssistantSettings', () => {
       mqttHost: '',
       mqttPort: 1883,
       mqttUser: '',
-      mqttPassword: '',
+      mqttBrokerAuth: '',
       mqttAutoDiscovery: true,
     });
     expect(result.ok).toBe(true);
@@ -275,7 +276,7 @@ describe('saveHomeAssistantSettings', () => {
       mqttHost: 'broker.local',
       mqttPort: 1883,
       mqttUser: 'user',
-      mqttPassword: 'pass',
+      mqttBrokerAuth: FIXTURE_MQTT_AUTH,
       mqttAutoDiscovery: true,
     });
     expect(result.ok).toBe(true);
@@ -291,7 +292,7 @@ describe('saveHomeAssistantSettings', () => {
       mqttHost: 'bad host',
       mqttPort: 1883,
       mqttUser: '',
-      mqttPassword: '',
+      mqttBrokerAuth: '',
       mqttAutoDiscovery: false,
     });
     expect(result.ok).toBe(false);
@@ -313,7 +314,7 @@ describe('saveHomeAssistantSettings', () => {
       mqttHost: '192.168.1.20',
       mqttPort: 1883,
       mqttUser: '',
-      mqttPassword: '',
+      mqttBrokerAuth: '',
       mqttAutoDiscovery: false,
     });
     expect(result.ok).toBe(true);

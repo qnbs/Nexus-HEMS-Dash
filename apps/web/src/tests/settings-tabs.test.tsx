@@ -53,6 +53,12 @@ vi.mock('../core/useEnergyStore', () => ({
     }),
 }));
 
+const mockReadOnly = vi.fn().mockReturnValue(false);
+
+vi.mock('../lib/use-read-only-mode', () => ({
+  useReadOnlyModeActive: () => mockReadOnly(),
+}));
+
 const mockUpdateSettings = vi.fn();
 const mockSetThemePreference = vi.fn();
 const mockSetTheme = vi.fn();
@@ -65,7 +71,7 @@ const mockSettings = {
   currency: 'eur',
   fontScale: 1.0,
   influxUrl: 'http://localhost:8086',
-  influxToken: 'secret-token',
+  influxToken: 'fixture-influx-token-7c2b',
   historyDays: 30,
   gatewayType: 'cerbo-gx',
   victronIp: '192.168.1.100',
@@ -151,6 +157,7 @@ const renderTab = (ui: ReactElement) => render(<MemoryRouter>{ui}</MemoryRouter>
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mockReadOnly.mockReturnValue(false);
 });
 
 // ─── ToggleSwitch (shared atom) ──────────────────────────────────────
@@ -264,6 +271,13 @@ describe('EnergyTab', () => {
     renderTab(<EnergyTab />);
     fireEvent.click(screen.getByRole('radio', { name: 'settings.tibber' }));
     expect(mockUpdateSettings).toHaveBeenCalledWith({ tariffProvider: 'tibber' });
+  });
+
+  it('blocks store updates when read-only mode is active', () => {
+    mockReadOnly.mockReturnValue(true);
+    renderTab(<EnergyTab />);
+    fireEvent.click(screen.getByRole('radio', { name: 'settings.tibber' }));
+    expect(mockUpdateSettings).not.toHaveBeenCalled();
   });
 });
 

@@ -10,6 +10,7 @@ export const AdapterConfigTokenField = ({
   onUpdate,
   inputClass,
   t,
+  isReadOnly = false,
 }: {
   adapter: AdapterEntry;
   showToken: boolean;
@@ -17,6 +18,7 @@ export const AdapterConfigTokenField = ({
   onUpdate: (patch: Partial<AdapterEntry>) => void;
   inputClass: string;
   t: TFunction;
+  isReadOnly?: boolean;
 }) => (
   <div className="relative">
     <input
@@ -26,10 +28,12 @@ export const AdapterConfigTokenField = ({
       onChange={(e) => onUpdate({ authToken: e.target.value })}
       className={`${inputClass} pr-10`}
       placeholder="••••••••"
+      disabled={isReadOnly}
     />
     <button
       type="button"
       onClick={onToggleToken}
+      disabled={isReadOnly}
       className="absolute top-1/2 right-3 -translate-y-1/2 p-1 text-(--color-muted) hover:text-(--color-text)"
       aria-label={showToken ? t('common.hideKey') : t('common.showKey')}
     >

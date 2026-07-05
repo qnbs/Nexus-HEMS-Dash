@@ -288,6 +288,9 @@ export interface EnergyAdapter {
   /** Get the latest known snapshot (for offline fallback) */
   getSnapshot(): Partial<UnifiedEnergyModel>;
 
+  /** Read-only connection config snapshot (settings UI hydration). */
+  getConnectionConfig?(): Readonly<AdapterConnectionConfig>;
+
   /** Cleanup all listeners and timers */
   destroy(): void;
 }

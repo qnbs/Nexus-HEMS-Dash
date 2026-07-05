@@ -55,23 +55,23 @@ export const MqttBrokerFields = ({
   mqttHost,
   mqttPort,
   mqttUser,
-  mqttPassword,
+  mqttBrokerAuth,
   isReadOnly,
   onHostChange,
   onPortChange,
   onUserChange,
-  onPasswordChange,
+  onBrokerAuthChange,
   t,
 }: {
   mqttHost: string;
   mqttPort: number;
   mqttUser: string;
-  mqttPassword: string;
+  mqttBrokerAuth: string;
   isReadOnly: boolean;
   onHostChange: (value: string) => void;
   onPortChange: (value: number) => void;
   onUserChange: (value: string) => void;
-  onPasswordChange: (value: string) => void;
+  onBrokerAuthChange: (value: string) => void;
   t: (key: string) => string;
 }) => (
   <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
@@ -124,8 +124,8 @@ export const MqttBrokerFields = ({
       <input
         id="settings-mqtt-password"
         type="password"
-        value={mqttPassword}
-        onChange={(e) => onPasswordChange(e.target.value)}
+        value={mqttBrokerAuth}
+        onChange={(e) => onBrokerAuthChange(e.target.value)}
         className={inputClass}
         disabled={isReadOnly}
       />

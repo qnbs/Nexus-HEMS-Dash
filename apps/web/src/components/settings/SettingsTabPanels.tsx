@@ -1,6 +1,7 @@
 import { RefreshCw } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { lazy, type ReactNode, Suspense } from 'react';
+import type { SettingsTab } from '../../lib/settings-tab-types';
 import { AdapterConfigPanel } from '../AdapterConfigPanel';
 import { CertificateManagement } from '../CertificateManagement';
 import { AdvancedTab } from './AdvancedTab';
@@ -13,20 +14,9 @@ import { SettingsFeatureBar } from './SettingsFeatureBar';
 import { StorageTab } from './StorageTab';
 import { SystemTab } from './SystemTab';
 
-const AISettingsPage = lazy(() => import('../../pages/AISettingsPage'));
+export type { SettingsTab } from '../../lib/settings-tab-types';
 
-export type SettingsTab =
-  | 'appearance'
-  | 'system'
-  | 'energy'
-  | 'controllers'
-  | 'adapters'
-  | 'security'
-  | 'certificates'
-  | 'storage'
-  | 'notifications'
-  | 'advanced'
-  | 'ai';
+const AISettingsPage = lazy(() => import('../../pages/AISettingsPage'));
 
 const PANEL_CONTENT: Record<SettingsTab, ReactNode> = {
   appearance: <AppearanceTab />,

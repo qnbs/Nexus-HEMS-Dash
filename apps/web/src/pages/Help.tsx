@@ -10,10 +10,10 @@ import {
   buildHelpSearchEntries,
   filterHelpSearchResults,
   type HelpTab,
-  VALID_HELP_TABS,
 } from '../lib/help-search-entries';
 import { buildHelpTabs } from '../lib/help-tab-definitions';
 import { createHelpTabKeyHandler } from '../lib/help-tab-keyboard';
+import { applyHelpTabParam, resolveHelpTab } from '../lib/help-tab-url';
 
 export interface HelpProps {
   /** When true, suppresses the page header (embedded in SettingsUnified). */
@@ -30,15 +30,14 @@ export interface HelpProps {
 export const Help = ({ embedded = false }: HelpProps = {}) => {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
-  const tabParam = searchParams.get('tab') as HelpTab | null;
-  const activeTab: HelpTab =
-    tabParam && VALID_HELP_TABS.includes(tabParam) ? tabParam : 'getting-started';
+  const tabParam = searchParams.get('tab');
+  const activeTab: HelpTab = resolveHelpTab(tabParam);
   const [searchQuery, setSearchQuery] = useState('');
 
   const tabs = buildHelpTabs(t);
 
   const selectTab = (tab: HelpTab) => {
-    setSearchParams(tab === 'getting-started' ? {} : { tab }, { replace: true });
+    setSearchParams(applyHelpTabParam(searchParams, tab, { embedded }), { replace: true });
   };
 
   const handleTabKeyDown = createHelpTabKeyHandler(tabs, activeTab, selectTab);
