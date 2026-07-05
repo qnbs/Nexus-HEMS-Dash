@@ -98,7 +98,11 @@ describe('CommandPaletteList', () => {
     );
     expect(mockScrollToIndex).toHaveBeenCalled();
 
-    fireEvent.click(screen.getAllByRole('option')[0]!);
+    const [firstOption] = screen.getAllByRole('option');
+    if (!firstOption) {
+      throw new Error('expected at least one command option');
+    }
+    fireEvent.click(firstOption);
     expect(onSelect).toHaveBeenCalled();
   });
 });
