@@ -42,6 +42,7 @@ export interface CommandContext {
   energy: {
     pvPower: number;
     batterySoC: number;
+    batteryPower: number;
     gridPower: number;
     houseLoad: number;
     priceCurrent: number;

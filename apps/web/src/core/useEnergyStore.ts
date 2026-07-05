@@ -44,6 +44,7 @@ import type {
 } from './adapters/EnergyAdapter';
 import { ModbusSunSpecAdapter } from './adapters/ModbusSunSpecAdapter';
 import type { CircuitState } from './circuit-breaker';
+import { unregisterCommandProvider } from './commands/command-registry';
 import { mapServerEnergyDataToUnified } from './server-energy-mapping';
 import { useAdapterWorker } from './useAdapterWorker';
 
@@ -337,6 +338,7 @@ export const useEnergyStoreBase = create<EnergyStoreState>()((set) => ({
     if (!entry) return false;
 
     entry.adapter.destroy();
+    unregisterCommandProvider(id);
     set((s) => {
       const newAdapters = { ...s.adapters };
       delete newAdapters[id];
