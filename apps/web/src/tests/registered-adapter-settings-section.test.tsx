@@ -28,7 +28,7 @@ describe('RegisteredAdapterSettingsSection', () => {
   });
 
   it('warns in dev mode when no section is registered', () => {
-    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(vi.fn());
 
     const { container } = render(<RegisteredAdapterSettingsSection adapterId="missing-adapter" />);
 
