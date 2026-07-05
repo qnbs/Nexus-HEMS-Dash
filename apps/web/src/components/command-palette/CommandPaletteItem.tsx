@@ -56,6 +56,35 @@ function CommandPaletteItemSubtitle({
   );
 }
 
+function CommandPaletteItemActions({
+  cmd,
+  isSelected,
+  t,
+}: {
+  cmd: ResolvedCommand;
+  isSelected: boolean;
+  t: (key: string) => string;
+}) {
+  return (
+    <>
+      {cmd.isFavorite ? (
+        <span className="text-(--color-primary) text-xs">
+          <span aria-hidden="true">★</span>
+          <span className="sr-only">{t('command.favorite')}</span>
+        </span>
+      ) : null}
+      {cmd.disabled ? (
+        <span className="sr-only">{t(cmd.disabledReasonKey ?? 'command.executeFailed')}</span>
+      ) : null}
+      {isSelected ? (
+        <kbd className="hidden shrink-0 rounded bg-(--color-surface-strong) px-2 py-1 text-(--color-muted) text-xs sm:inline">
+          ↵
+        </kbd>
+      ) : null}
+    </>
+  );
+}
+
 export function CommandPaletteItem({
   cmd,
   index,
@@ -78,6 +107,7 @@ export function CommandPaletteItem({
       aria-selected={isSelected}
       aria-disabled={cmd.disabled}
       disabled={cmd.disabled}
+      title={cmd.disabled ? t(cmd.disabledReasonKey ?? 'command.executeFailed') : undefined}
       className={getCommandItemButtonClass(isSelected, cmd.disabled)}
     >
       <CommandPaletteItemIcon
@@ -88,20 +118,7 @@ export function CommandPaletteItem({
         <p className="truncate font-medium">{cmd.label}</p>
         <CommandPaletteItemSubtitle cmd={cmd} categoryLabel={categoryLabel} t={t} />
       </div>
-      {cmd.isFavorite ? (
-        <span className="text-(--color-primary) text-xs">
-          <span aria-hidden="true">★</span>
-          <span className="sr-only">{t('command.favorite')}</span>
-        </span>
-      ) : null}
-      {cmd.disabled && cmd.disabledReasonKey ? (
-        <span className="sr-only">{t(cmd.disabledReasonKey)}</span>
-      ) : null}
-      {isSelected ? (
-        <kbd className="hidden shrink-0 rounded bg-(--color-surface-strong) px-2 py-1 text-(--color-muted) text-xs sm:inline">
-          ↵
-        </kbd>
-      ) : null}
+      <CommandPaletteItemActions cmd={cmd} isSelected={isSelected} t={t} />
     </button>
   );
 }

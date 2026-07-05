@@ -1670,7 +1670,7 @@ export const de = {
     showShortcuts: 'Tastaturkürzel',
     favorite: 'Favorit',
     favorites: 'Favoriten',
-    favoriteHint: 'Favorit umschalten',
+    favoriteHint: 'Favorit umschalten (Strg+Shift+Y)',
     contextualSuggestions: 'Vorschläge für Sie',
     insufficientScope: 'Unzureichende Berechtigung für diesen Befehl',
     executeFailed: 'Befehl fehlgeschlagen',

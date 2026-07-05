@@ -85,13 +85,14 @@ describe('command-palette-helpers', () => {
     expect(updater(5)).toBe(0);
   });
 
-  it('toggles favorite on Ctrl/Cmd+D', () => {
+  it('toggles favorite on Ctrl/Cmd+Shift+Y', () => {
     const setSelectedIndex = vi.fn();
     const runCommand = vi.fn().mockResolvedValue(undefined);
     const onToggleFavorite = vi.fn();
+    const preventDefault = vi.fn();
 
     handlePaletteKeyDown(
-      { key: 'd', ctrlKey: true, preventDefault: vi.fn() } as unknown as KeyboardEvent,
+      { key: 'y', ctrlKey: true, shiftKey: true, preventDefault } as unknown as KeyboardEvent,
       {
         isOpen: true,
         commandCount: 3,
@@ -102,7 +103,56 @@ describe('command-palette-helpers', () => {
         onToggleFavorite,
       },
     );
+    expect(preventDefault).toHaveBeenCalled();
     expect(onToggleFavorite).toHaveBeenCalledWith('cmd-1');
+  });
+
+  it('does not toggle favorite when shortcut guards are not met', () => {
+    const onToggleFavorite = vi.fn();
+    const base = {
+      isOpen: true,
+      commandCount: 3,
+      clampedIndex: 0,
+      selectedCommandId: 'cmd-1',
+      setSelectedIndex: vi.fn(),
+      runCommand: vi.fn(),
+      onToggleFavorite,
+    };
+
+    // Missing shift modifier
+    handlePaletteKeyDown(
+      {
+        key: 'y',
+        ctrlKey: true,
+        shiftKey: false,
+        preventDefault: vi.fn(),
+      } as unknown as KeyboardEvent,
+      base,
+    );
+    // Missing selectedCommandId
+    const withoutSelectedId = (({ selectedCommandId: _ignored, ...rest }) => rest)(base);
+    handlePaletteKeyDown(
+      {
+        key: 'y',
+        ctrlKey: true,
+        shiftKey: true,
+        preventDefault: vi.fn(),
+      } as unknown as KeyboardEvent,
+      withoutSelectedId,
+    );
+    // Missing onToggleFavorite
+    const withoutToggle = (({ onToggleFavorite: _ignored, ...rest }) => rest)(base);
+    handlePaletteKeyDown(
+      {
+        key: 'y',
+        ctrlKey: true,
+        shiftKey: true,
+        preventDefault: vi.fn(),
+      } as unknown as KeyboardEvent,
+      withoutToggle,
+    );
+
+    expect(onToggleFavorite).not.toHaveBeenCalled();
   });
 
   it('ignores keys when palette is closed', () => {

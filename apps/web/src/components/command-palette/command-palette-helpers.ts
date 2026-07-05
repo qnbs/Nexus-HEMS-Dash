@@ -74,7 +74,8 @@ export function handlePaletteKeyDown(e: KeyboardEvent, options: PaletteKeyDownOp
     return;
   }
   if (
-    (e.key === 'd' || e.key === 'D') &&
+    (e.key === 'y' || e.key === 'Y') &&
+    e.shiftKey &&
     (e.metaKey || e.ctrlKey) &&
     options.onToggleFavorite &&
     options.selectedCommandId

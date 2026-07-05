@@ -1654,7 +1654,7 @@ export const en = {
     showShortcuts: 'Keyboard Shortcuts',
     favorite: 'Favorite',
     favorites: 'Favorites',
-    favoriteHint: 'Toggle favorite',
+    favoriteHint: 'Toggle favorite (Ctrl+Shift+Y)',
     contextualSuggestions: 'Suggested for you',
     insufficientScope: 'Insufficient permissions for this command',
     executeFailed: 'Command failed',
