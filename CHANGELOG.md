@@ -12,6 +12,7 @@ Release notes are maintained here and published via [semantic-release](https://g
 ### CI / Deploy
 
 - Harden GitHub Pages deploy: `wait-for-github-pages-idle.sh`, 4 publish attempts with idle-wait between retries, and `deploy-recovery.yml` auto-rerun on transient failures (#281).
+- Fix Pages idle-wait: treat stale `in_progress` deployments (>10 min) as non-blocking (#282).
 
 ### Settings & Help perfection (Phases 1–5)
 
