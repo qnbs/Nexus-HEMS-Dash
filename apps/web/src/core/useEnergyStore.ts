@@ -43,7 +43,6 @@ import type {
   UnifiedEnergyModel,
 } from './adapters/EnergyAdapter';
 import { ModbusSunSpecAdapter } from './adapters/ModbusSunSpecAdapter';
-import { registerBuiltinAdapterSettingsSections } from './adapters/register-builtin-settings-sections';
 import type { CircuitState } from './circuit-breaker';
 import { unregisterCommandProvider } from './commands/command-registry';
 import { mapServerEnergyDataToUnified } from './server-energy-mapping';
@@ -118,7 +117,6 @@ const emptyModel: UnifiedEnergyModel = {
 
 // Ensure built-in adapters are registered in the global registry
 registerBuiltinAdapters();
-registerBuiltinAdapterSettingsSections();
 
 function createAdapterInstance(
   id: AdapterId,

@@ -14,7 +14,7 @@ export const HelpSearchResultsPanel = ({
 
   if (searchResults.length === 0) {
     return (
-      <p className="text-(--color-muted) text-xs" role="note">
+      <p id={listboxId} className="text-(--color-muted) text-xs" role="note">
         {t('help.searchNoResults')}
       </p>
     );

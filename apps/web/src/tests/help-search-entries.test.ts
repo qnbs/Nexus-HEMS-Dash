@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { HELP_GLOSSARY_ENTRIES } from '../lib/help-content-manifest';
+import { HELP_CONTRIB_PROTOCOL_KEYS, HELP_GLOSSARY_ENTRIES } from '../lib/help-content-manifest';
 import { buildHelpSearchEntries, filterHelpSearchResults } from '../lib/help-search-entries';
 
 describe('help-search-entries', () => {
@@ -60,6 +60,13 @@ describe('help-search-entries', () => {
     const entries = buildHelpSearchEntries(((key: string) => key) as never);
     for (const { termKey } of HELP_GLOSSARY_ENTRIES) {
       expect(entries.some((e) => e.title === termKey)).toBe(true);
+    }
+  });
+
+  it('indexes all manifest contrib protocol titles for integration search', () => {
+    const entries = buildHelpSearchEntries(((key: string) => key) as never);
+    for (const { titleKey } of HELP_CONTRIB_PROTOCOL_KEYS) {
+      expect(entries.some((e) => e.title === titleKey)).toBe(true);
     }
   });
 });

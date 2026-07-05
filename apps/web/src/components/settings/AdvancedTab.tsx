@@ -37,25 +37,29 @@ export function AdvancedTab() {
       <section className={sectionClass}>
         <h2 className={sectionHeaderClass}>
           <Gauge size={20} className="text-indigo-400" />
-          {t('settings.advanced')}
+          {t('settings.advanced', 'Advanced')}
         </h2>
         <div className="space-y-5">
           <div className="flex items-center justify-between rounded-xl border border-(--color-border) bg-(--color-surface) p-4">
             <div>
-              <p className="font-medium text-sm">{t('settings.debugMode')}</p>
-              <p className="text-(--color-muted) text-xs">{t('settings.debugHint')}</p>
+              <p className="font-medium text-sm">{t('settings.debugMode', 'Debug mode')}</p>
+              <p className="text-(--color-muted) text-xs">
+                {t('settings.debugHint', 'Show detailed logs and developer tools')}
+              </p>
             </div>
             <ToggleSwitch
               id="debug"
               checked={settings.debugMode ?? false}
               onChange={(v) => updateSettings({ debugMode: v })}
-              label={t('settings.debugMode')}
+              label={t('settings.debugMode', 'Debug mode')}
             />
           </div>
           <div className="flex items-center justify-between rounded-xl border border-(--color-border) bg-(--color-surface) p-4">
             <div>
-              <p className="font-medium text-sm">{t('settings.i18nInspector')}</p>
-              <p className="text-(--color-muted) text-xs">{t('settings.i18nInspectorHint')}</p>
+              <p className="font-medium text-sm">{t('settings.i18nInspector', 'i18n Inspector')}</p>
+              <p className="text-(--color-muted) text-xs">
+                {t('settings.i18nInspectorHint', 'Show translation keys instead of values')}
+              </p>
             </div>
             <button
               type="button"
@@ -71,32 +75,43 @@ export function AdvancedTab() {
               }}
             >
               {localStorage.getItem('i18n-inspector') === 'true'
-                ? t('settings.i18nInspectorDeactivate')
-                : t('settings.i18nInspectorActivate')}
+                ? t('settings.i18nInspectorDeactivate', 'Deactivate Inspector')
+                : t('settings.i18nInspectorActivate', 'Activate Inspector')}
             </button>
           </div>
           <div className="flex items-center justify-between rounded-xl border border-(--color-border) bg-(--color-surface) p-4">
             <div>
-              <p className="font-medium text-sm">{t('settings.experimentalFeatures')}</p>
-              <p className="text-(--color-muted) text-xs">{t('settings.experimentalHint')}</p>
+              <p className="font-medium text-sm">
+                {t('settings.experimentalFeatures', 'Experimental features')}
+              </p>
+              <p className="text-(--color-muted) text-xs">
+                {t('settings.experimentalHint', 'Enable beta features that may be unstable')}
+              </p>
             </div>
             <ToggleSwitch
               id="experimental"
               checked={settings.experimentalFeatures ?? false}
               onChange={(v) => updateSettings({ experimentalFeatures: v })}
-              label={t('settings.experimentalFeatures')}
+              label={t('settings.experimentalFeatures', 'Experimental features')}
             />
           </div>
           <div className="flex items-center justify-between rounded-xl border border-(--color-border) bg-(--color-surface) p-4">
             <div>
-              <p className="font-medium text-sm">{t('settings.performanceMode')}</p>
-              <p className="text-(--color-muted) text-xs">{t('settings.performanceHint')}</p>
+              <p className="font-medium text-sm">
+                {t('settings.performanceMode', 'Performance mode')}
+              </p>
+              <p className="text-(--color-muted) text-xs">
+                {t(
+                  'settings.performanceHint',
+                  'Reduce animations and effects for better performance',
+                )}
+              </p>
             </div>
             <ToggleSwitch
               id="performance"
               checked={settings.performanceMode ?? false}
               onChange={(v) => updateSettings({ performanceMode: v })}
-              label={t('settings.performanceMode')}
+              label={t('settings.performanceMode', 'Performance mode')}
             />
           </div>
         </div>
@@ -109,14 +124,21 @@ export function AdvancedTab() {
       <section className={sectionClass}>
         <h2 className={sectionHeaderClass}>
           <Monitor size={20} className="text-cyan-400" />
-          {t('settings.dashboardPrefs')}
+          {t('settings.dashboardPrefs', 'Dashboard Preferences')}
         </h2>
         <div className="space-y-5">
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium text-sm">{t('settings.dashboardRefreshSec')}</p>
-                <p className="text-(--color-muted) text-xs">{t('settings.dashboardRefreshHint')}</p>
+                <p className="font-medium text-sm">
+                  {t('settings.dashboardRefreshSec', 'Auto-refresh interval')}
+                </p>
+                <p className="text-(--color-muted) text-xs">
+                  {t(
+                    'settings.dashboardRefreshHint',
+                    'How often the dashboard data refreshes automatically',
+                  )}
+                </p>
               </div>
               <span className="font-mono text-(--color-primary) text-sm tabular-nums">
                 {settings.dashboardRefreshSec ?? 5}s
@@ -130,14 +152,21 @@ export function AdvancedTab() {
               value={settings.dashboardRefreshSec ?? 5}
               onChange={(e) => updateSettings({ dashboardRefreshSec: Number(e.target.value) })}
               className="w-full accent-(--color-primary)"
-              aria-label={t('settings.dashboardRefreshSec')}
-              aria-valuetext={`${settings.dashboardRefreshSec ?? 5} ${t('common.seconds')}`}
+              aria-label={t('settings.dashboardRefreshSec', 'Auto-refresh interval')}
+              aria-valuetext={`${settings.dashboardRefreshSec ?? 5} ${t('common.seconds', 'seconds')}`}
             />
           </div>
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-medium text-sm">{t('settings.sidebarPosition')}</p>
-              <p className="text-(--color-muted) text-xs">{t('settings.sidebarPositionHint')}</p>
+              <p className="font-medium text-sm">
+                {t('settings.sidebarPosition', 'Sidebar position')}
+              </p>
+              <p className="text-(--color-muted) text-xs">
+                {t(
+                  'settings.sidebarPositionHint',
+                  'Place the navigation sidebar on the left or right side',
+                )}
+              </p>
             </div>
             <div className="flex items-center gap-1 rounded-xl border border-(--color-border) bg-(--color-surface) p-1">
               {(['left', 'right'] as const).map((pos) => (
@@ -152,36 +181,45 @@ export function AdvancedTab() {
                   }`}
                   aria-pressed={(settings.sidebarPosition ?? 'left') === pos}
                 >
-                  {pos === 'left' ? t('settings.sidebarLeft') : t('settings.sidebarRight')}
+                  {pos === 'left'
+                    ? t('settings.sidebarLeft', 'Left')
+                    : t('settings.sidebarRight', 'Right')}
                 </button>
               ))}
             </div>
           </div>
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-medium text-sm">{t('settings.autoBackup')}</p>
-              <p className="text-(--color-muted) text-xs">{t('settings.autoBackupHint')}</p>
+              <p className="font-medium text-sm">{t('settings.autoBackup', 'Automatic backup')}</p>
+              <p className="text-(--color-muted) text-xs">
+                {t('settings.autoBackupHint', 'Periodically save settings to local storage')}
+              </p>
             </div>
             <ToggleSwitch
               id="auto-backup"
               checked={settings.autoBackup ?? false}
               onChange={(v) => updateSettings({ autoBackup: v })}
-              label={t('settings.autoBackup')}
+              label={t('settings.autoBackup', 'Automatic backup')}
             />
           </div>
           <div className="flex items-center justify-between">
             <div>
               <p className="flex items-center gap-2 font-medium text-sm">
                 <Keyboard size={14} className="text-(--color-muted)" />
-                {t('settings.keyboardShortcuts')}
+                {t('settings.keyboardShortcuts', 'Keyboard shortcuts')}
               </p>
-              <p className="text-(--color-muted) text-xs">{t('settings.keyboardShortcutsHint')}</p>
+              <p className="text-(--color-muted) text-xs">
+                {t(
+                  'settings.keyboardShortcutsHint',
+                  'Enable Cmd+K command palette and other keyboard shortcuts',
+                )}
+              </p>
             </div>
             <ToggleSwitch
               id="keyboard-shortcuts"
               checked={settings.keyboardShortcuts ?? true}
               onChange={(v) => updateSettings({ keyboardShortcuts: v })}
-              label={t('settings.keyboardShortcuts')}
+              label={t('settings.keyboardShortcuts', 'Keyboard shortcuts')}
             />
           </div>
 
@@ -190,18 +228,27 @@ export function AdvancedTab() {
             <div className="mt-4 rounded-xl border border-(--color-border) bg-(--color-surface)/40 p-4">
               <h3 className="mb-3 flex items-center gap-2 font-semibold text-(--color-text) text-sm">
                 <Keyboard size={16} className="text-(--color-primary)" />
-                {t('settings.shortcutsReference')}
+                {t('settings.shortcutsReference', 'Tastaturkürzel-Referenz')}
               </h3>
               <div className="space-y-3">
                 <div>
                   <p className="mb-1.5 font-medium text-(--color-muted) text-xs uppercase tracking-wider">
-                    {t('help.shortcutNav')}
+                    {t('help.shortcutNav', 'Navigation')}
                   </p>
                   <div className="space-y-1">
                     {[
-                      { key: '⌘ K', label: t('help.shortcutCmdK') },
-                      { key: '⌘ /', label: t('help.shortcutSearch') },
-                      { key: 'Esc', label: t('help.shortcutClose') },
+                      {
+                        key: '⌘ K',
+                        label: t('help.shortcutCmdK', 'Befehlspalette öffnen'),
+                      },
+                      {
+                        key: '⌘ /',
+                        label: t('help.shortcutSearch', 'Suche fokussieren'),
+                      },
+                      {
+                        key: 'Esc',
+                        label: t('help.shortcutClose', 'Dialog schließen / zurück'),
+                      },
                     ].map((s) => (
                       <div key={s.key} className="flex items-center justify-between text-xs">
                         <span className="text-(--color-muted)">{s.label}</span>
@@ -215,13 +262,22 @@ export function AdvancedTab() {
                 <div className="section-divider" />
                 <div>
                   <p className="mb-1.5 font-medium text-(--color-muted) text-xs uppercase tracking-wider">
-                    {t('help.shortcutActions')}
+                    {t('help.shortcutActions', 'Aktionen')}
                   </p>
                   <div className="space-y-1">
                     {[
-                      { key: '⌘ S', label: t('help.shortcutSave') },
-                      { key: '⌘ E', label: t('help.shortcutExport') },
-                      { key: '⌘ L', label: t('help.shortcutLang') },
+                      {
+                        key: '⌘ S',
+                        label: t('help.shortcutSave', 'Einstellungen speichern'),
+                      },
+                      {
+                        key: '⌘ E',
+                        label: t('help.shortcutExport', 'Bericht exportieren'),
+                      },
+                      {
+                        key: '⌘ L',
+                        label: t('help.shortcutLang', 'Sprache umschalten'),
+                      },
                     ].map((s) => (
                       <div key={s.key} className="flex items-center justify-between text-xs">
                         <span className="text-(--color-muted)">{s.label}</span>
@@ -234,7 +290,7 @@ export function AdvancedTab() {
                 </div>
               </div>
               <p className="mt-3 text-(--color-muted) text-[10px] leading-relaxed">
-                {t('help.shortcutNote')}
+                {t('help.shortcutNote', 'Auf macOS wird ⌘ verwendet, auf Windows/Linux Strg.')}
               </p>
             </div>
           )}
@@ -245,7 +301,7 @@ export function AdvancedTab() {
       <section className={sectionClass}>
         <h2 className={sectionHeaderClass}>
           <AlertTriangle size={20} className="text-rose-400" />
-          {t('settings.dangerZone')}
+          {t('settings.dangerZone', 'Danger Zone')}
         </h2>
 
         {/* Adapter mode indicator */}
@@ -273,15 +329,20 @@ export function AdvancedTab() {
                 isLiveMode ? 'text-red-400' : 'text-(--color-text)'
               }`}
             >
-              {t('mode.settingsLabel')}:{' '}
-              {isLiveMode ? t('mode.liveBadge') : t('mode.simulationBadge')}
+              {t('mode.settingsLabel', 'Adapter mode')}:{' '}
+              {isLiveMode
+                ? t('mode.liveBadge', 'Live hardware')
+                : t('mode.simulationBadge', 'Simulation')}
             </p>
             <p className="mt-1 text-(--color-muted) text-xs">
               {isLiveMode
-                ? t('mode.settingsLive')
+                ? t('mode.settingsLive', 'Live hardware — controlling real equipment')
                 : adapterMode === 'unknown'
-                  ? t('mode.settingsUnknown')
-                  : t('mode.settingsSimulation')}
+                  ? t('mode.settingsUnknown', 'Unknown — backend health endpoint not reachable')
+                  : t(
+                      'mode.settingsSimulation',
+                      'Simulation (mock data) — safe, no hardware is controlled',
+                    )}
             </p>
           </div>
         </div>
@@ -294,9 +355,14 @@ export function AdvancedTab() {
                 <OctagonX size={20} className="text-red-400" />
               </div>
               <div className="min-w-0">
-                <p className="font-medium text-red-400 text-sm">{t('safety.emergencyStop')}</p>
+                <p className="font-medium text-red-400 text-sm">
+                  {t('safety.emergencyStop', 'Notaus – Alle Geräte sofort abschalten')}
+                </p>
                 <p className="mt-1 text-(--color-muted) text-xs">
-                  {t('safety.emergencyStopSettingsHint')}
+                  {t(
+                    'safety.emergencyStopSettingsHint',
+                    'Instantly disconnects all adapters and opens all circuit breakers. §14a EnWG compliant.',
+                  )}
                 </p>
               </div>
             </div>
@@ -307,17 +373,24 @@ export function AdvancedTab() {
         <div className="rounded-xl border border-rose-500/30 bg-rose-500/5 p-4">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
             <div className="min-w-0 flex-1">
-              <p className="font-medium text-rose-400 text-sm">{t('settings.resetAll')}</p>
-              <p className="text-(--color-muted) text-xs">{t('settings.resetHint')}</p>
+              <p className="font-medium text-rose-400 text-sm">
+                {t('settings.resetAll', 'Reset all settings')}
+              </p>
+              <p className="text-(--color-muted) text-xs">
+                {t('settings.resetHint', 'This will reset all settings to their default values')}
+              </p>
             </div>
             <motion.button
               type="button"
               disabled={isReadOnly}
               onClick={() =>
                 confirm.openDialog({
-                  title: t('settings.confirmResetTitle'),
-                  message: t('settings.confirmResetMessage'),
-                  confirmText: t('settings.confirmResetAction'),
+                  title: t('settings.confirmResetTitle', 'Reset All Settings'),
+                  message: t(
+                    'settings.confirmResetMessage',
+                    'This will permanently reset all settings to factory defaults.',
+                  ),
+                  confirmText: t('settings.confirmResetAction', 'Reset Everything'),
                   variant: 'danger',
                   onConfirm: () => {
                     updateSettings(defaultSettings);
@@ -329,7 +402,7 @@ export function AdvancedTab() {
               whileTap={{ scale: 0.98 }}
             >
               <RotateCcw size={16} />
-              {t('settings.reset')}
+              {t('settings.reset', 'Reset')}
             </motion.button>
           </div>
         </div>

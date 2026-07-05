@@ -6,28 +6,8 @@ import {
   HELP_SEARCH_MANIFEST,
 } from './help-content-manifest';
 
-/** Help center tab identifiers used for search and deep-linking. */
-export type HelpTab =
-  | 'getting-started'
-  | 'integration'
-  | 'features'
-  | 'lexicon'
-  | 'faq'
-  | 'shortcuts'
-  | 'troubleshooting'
-  | 'about';
-
-/** Canonical tab order for Help navigation and search indexing. */
-export const VALID_HELP_TABS: HelpTab[] = [
-  'getting-started',
-  'integration',
-  'features',
-  'lexicon',
-  'faq',
-  'shortcuts',
-  'troubleshooting',
-  'about',
-];
+export type { HelpTab } from './help-types';
+export { VALID_HELP_TABS } from './help-types';
 
 const mapManifestEntries = (t: TFunction, appVersion: string) =>
   HELP_SEARCH_MANIFEST.map((entry) => ({

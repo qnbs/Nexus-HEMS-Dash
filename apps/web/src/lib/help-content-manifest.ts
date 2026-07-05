@@ -1,4 +1,4 @@
-import type { HelpTab } from './help-search-entries';
+import type { HelpTab } from './help-types';
 
 /** Glossary term keys shared by HelpLexiconPanel and the help search index. */
 export const HELP_GLOSSARY_ENTRIES = [

@@ -78,6 +78,9 @@ describe('HelpSearchBox', () => {
       />,
     );
 
+    const combobox = screen.getByRole('combobox');
+    const noResults = screen.getByRole('note');
     expect(screen.getByRole('status')).toHaveTextContent('help.searchNoResults');
+    expect(combobox).toHaveAttribute('aria-controls', noResults.id);
   });
 });
