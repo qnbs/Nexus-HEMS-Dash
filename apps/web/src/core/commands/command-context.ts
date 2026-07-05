@@ -13,11 +13,22 @@ export interface UseCommandContextOptions {
   closePalette: () => void;
   recordUsage: (commandId: string) => void;
   toggleFavorite: (commandId: string) => void;
+  executeHardwareCommand?: (command: import('../adapters/EnergyAdapter').AdapterCommand) => void;
 }
 
 /** Default scope in dev/anonymous mode — full palette navigation is read-safe. */
 function resolveAuthScope(): AuthScope {
   return 'readwrite';
+}
+
+/** Stable store fingerprint for adapter status + enabled toggles (command palette). */
+export function buildAdapterStoreSnapshotKey(
+  adapters: Readonly<Record<string, { status: string; enabled: boolean }>>,
+): string {
+  return Object.entries(adapters)
+    .map(([id, entry]) => `${id}:${entry.status}:${entry.enabled ? 1 : 0}`)
+    .sort()
+    .join('|');
 }
 
 /**
@@ -56,18 +67,36 @@ export function useCommandContext(options: UseCommandContextOptions): CommandCon
     chargeThreshold: s.settings.chargeThreshold,
   }));
 
-  const adapterStatusKey = useEnergyStoreBase((s) =>
-    Object.entries(s.adapters)
-      .map(([id, entry]) => `${id}:${entry.status}`)
-      .sort()
-      .join('|'),
-  );
+  const adapterStatusKey = useEnergyStoreBase((s) => buildAdapterStoreSnapshotKey(s.adapters));
 
   const adapterStatuses = useMemo(() => {
     const state = useEnergyStoreBase.getState();
     const map = new Map<string, import('../adapters/EnergyAdapter').AdapterStatus>();
     for (const [id, entry] of Object.entries(state.adapters)) {
       map.set(id, entry.status);
+    }
+    return map;
+  }, [adapterStatusKey]);
+
+  const adapterEntries = useMemo(() => {
+    const state = useEnergyStoreBase.getState();
+    const map = new Map<
+      string,
+      {
+        id: string;
+        name: string;
+        status: import('../adapters/EnergyAdapter').AdapterStatus;
+        enabled: boolean;
+      }
+    >();
+    for (const [id, entry] of Object.entries(state.adapters)) {
+      if (!entry.enabled) continue;
+      map.set(id, {
+        id,
+        name: entry.adapter.name,
+        status: entry.status,
+        enabled: entry.enabled,
+      });
     }
     return map;
   }, [adapterStatusKey]);
@@ -86,6 +115,7 @@ export function useCommandContext(options: UseCommandContextOptions): CommandCon
         evPower,
       },
       adapterStatuses,
+      adapterEntries,
       tariffProvider,
       chargeThreshold,
       isReadOnly: resolveReadOnlyModeActive(backendReadOnly),
@@ -99,6 +129,9 @@ export function useCommandContext(options: UseCommandContextOptions): CommandCon
         toggleFavorite: options.toggleFavorite,
         ...(options.onOptimize !== undefined ? { onOptimize: options.onOptimize } : {}),
         ...(options.onExportReport !== undefined ? { onExportReport: options.onExportReport } : {}),
+        ...(options.executeHardwareCommand !== undefined
+          ? { executeHardwareCommand: options.executeHardwareCommand }
+          : {}),
       },
     }),
     [
@@ -113,6 +146,7 @@ export function useCommandContext(options: UseCommandContextOptions): CommandCon
       priceCurrent,
       evPower,
       adapterStatuses,
+      adapterEntries,
       tariffProvider,
       chargeThreshold,
       backendReadOnly,
@@ -124,6 +158,7 @@ export function useCommandContext(options: UseCommandContextOptions): CommandCon
       options.closePalette,
       options.recordUsage,
       options.toggleFavorite,
+      options.executeHardwareCommand,
     ],
   );
 }

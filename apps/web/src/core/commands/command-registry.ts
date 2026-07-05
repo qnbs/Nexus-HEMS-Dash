@@ -162,8 +162,13 @@ export function resolveCommands(
   const contextualSet = new Set(options.contextualIds);
 
   const resolved: ResolvedCommand[] = definitions.map((cmd) => {
-    const label = ctx.t(cmd.labelKey);
-    const description = cmd.descriptionKey ? ctx.t(cmd.descriptionKey) : undefined;
+    const labelParams = cmd.labelParams?.(ctx);
+    const label = labelParams ? ctx.t(cmd.labelKey, labelParams) : ctx.t(cmd.labelKey);
+    const description = cmd.descriptionKey
+      ? labelParams
+        ? ctx.t(cmd.descriptionKey, labelParams)
+        : ctx.t(cmd.descriptionKey)
+      : undefined;
     const { disabled, disabledReasonKey } = resolveDisabled(cmd, ctx);
     const isFavorite = favoriteSet.has(cmd.id);
     const isRecent = recentSet.has(cmd.id);

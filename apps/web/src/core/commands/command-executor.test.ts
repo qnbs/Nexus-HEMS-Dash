@@ -21,6 +21,7 @@ function mockContext(overrides: Partial<CommandContext> = {}): CommandContext {
       evPower: 0,
     },
     adapterStatuses: new Map(),
+    adapterEntries: new Map(),
     tariffProvider: 'tibber',
     chargeThreshold: 0.15,
     isReadOnly: false,
@@ -109,5 +110,86 @@ describe('executeResolvedCommand', () => {
 
     expect(result).toEqual({ ok: false, reason: 'error' });
     expect(toast.error).toHaveBeenCalledWith('boom');
+  });
+
+  it('routes danger hardware commands through executeHardwareCommand', async () => {
+    const executeHardwareCommand = vi.fn();
+    const ctx = mockContext({
+      actions: {
+        closePalette: vi.fn(),
+        recordUsage: vi.fn(),
+        toggleFavorite: vi.fn(),
+        executeHardwareCommand,
+      },
+    });
+    const cmd = mockCommand({
+      risk: 'danger',
+      hardwareCommand: { type: 'STOP_CHARGING', value: true },
+      execute: vi.fn(),
+    });
+
+    const result = await executeResolvedCommand(cmd, ctx);
+
+    expect(result).toEqual({ ok: true });
+    expect(executeHardwareCommand).toHaveBeenCalledWith({ type: 'STOP_CHARGING', value: true });
+    expect(cmd.execute).not.toHaveBeenCalled();
+    expect(ctx.actions.recordUsage).toHaveBeenCalledWith('test.cmd');
+  });
+
+  it('reports missing hardware bridge for danger commands', async () => {
+    const ctx = mockContext();
+    const cmd = mockCommand({
+      risk: 'danger',
+      hardwareCommand: { type: 'STOP_CHARGING', value: true },
+    });
+
+    const result = await executeResolvedCommand(cmd, ctx);
+
+    expect(result).toEqual({ ok: false, reason: 'error' });
+    expect(toast.error).toHaveBeenCalledWith('command.hardwareBridgeMissing');
+  });
+
+  it('routes moderate hardware commands through executeHardwareCommand', async () => {
+    const executeHardwareCommand = vi.fn();
+    const ctx = mockContext({
+      actions: {
+        closePalette: vi.fn(),
+        recordUsage: vi.fn(),
+        toggleFavorite: vi.fn(),
+        executeHardwareCommand,
+      },
+    });
+    const cmd = mockCommand({
+      risk: 'moderate',
+      hardwareCommand: { type: 'SET_BATTERY_POWER', value: 1000 },
+    });
+
+    const result = await executeResolvedCommand(cmd, ctx);
+
+    expect(result).toEqual({ ok: true });
+    expect(executeHardwareCommand).toHaveBeenCalledWith({ type: 'SET_BATTERY_POWER', value: 1000 });
+    expect(ctx.actions.recordUsage).toHaveBeenCalledWith('test.cmd');
+  });
+
+  it('resolves dynamic hardwareCommand functions before bridging', async () => {
+    const executeHardwareCommand = vi.fn();
+    const ctx = mockContext({
+      actions: {
+        closePalette: vi.fn(),
+        recordUsage: vi.fn(),
+        toggleFavorite: vi.fn(),
+        executeHardwareCommand,
+      },
+    });
+    const cmd = mockCommand({
+      risk: 'admin',
+      hardwareCommand: () => ({ type: 'STOP_CHARGING', value: true }),
+    });
+
+    const result = await executeResolvedCommand(cmd, ctx);
+
+    expect(result).toEqual({ ok: true });
+    expect(executeHardwareCommand).toHaveBeenCalledWith({ type: 'STOP_CHARGING', value: true });
+    expect(ctx.actions.recordUsage).toHaveBeenCalledWith('test.cmd');
   });
 });

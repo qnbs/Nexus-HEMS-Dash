@@ -2,7 +2,10 @@ import {
   isCoreProvidersBootstrapped,
   markCoreProvidersBootstrapped,
   registerCommand,
+  registerCommandProvider,
 } from '../command-registry';
+import { adapterCommandsProvider } from './adapter-commands-provider';
+import { createDeviceCommands } from './device-commands';
 import { createEnergyCommands } from './energy-commands';
 import { createNavigationCommands } from './navigation-commands';
 import { createSettingsCommands } from './settings-commands';
@@ -16,12 +19,15 @@ export function registerCoreCommands(): void {
     ...createNavigationCommands(),
     ...createSettingsCommands(),
     ...createEnergyCommands(),
+    ...createDeviceCommands(),
     ...createSystemCommands(),
   ];
 
   for (const cmd of all) {
     registerCommand(cmd);
   }
+
+  registerCommandProvider(adapterCommandsProvider);
 
   markCoreProvidersBootstrapped();
 }

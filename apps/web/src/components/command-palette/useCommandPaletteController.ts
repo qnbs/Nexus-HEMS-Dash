@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import '../../core/commands/providers';
+import type { AdapterCommand } from '../../core/adapters/EnergyAdapter';
 import {
   executeResolvedCommand,
   getContextualCommandIds,
@@ -24,6 +25,7 @@ export interface CommandPaletteControllerOptions {
   onClose: () => void;
   onOptimize?: () => void;
   onExportReport?: () => void;
+  executeHardwareCommand?: (command: AdapterCommand) => void;
 }
 
 export function useCommandPaletteController({
@@ -31,6 +33,7 @@ export function useCommandPaletteController({
   onClose,
   onOptimize,
   onExportReport,
+  executeHardwareCommand,
 }: CommandPaletteControllerOptions) {
   const [search, setSearch] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -52,6 +55,7 @@ export function useCommandPaletteController({
     toggleFavorite: toggleCommandFavorite,
     ...(onOptimize !== undefined ? { onOptimize } : {}),
     ...(onExportReport !== undefined ? { onExportReport } : {}),
+    ...(executeHardwareCommand !== undefined ? { executeHardwareCommand } : {}),
   });
 
   const autoFocusInput = isDesktopViewport();

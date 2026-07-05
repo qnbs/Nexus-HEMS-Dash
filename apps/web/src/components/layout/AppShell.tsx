@@ -5,7 +5,8 @@ import { themeDefinitions } from '../../design-tokens';
 import { isLiveSafetyMode } from '../../lib/adapter-mode';
 import { resolveReadOnlyModeActive } from '../../lib/use-read-only-mode';
 import { useAppStoreShallow } from '../../store';
-import { CommandPalette, useCommandPalette } from '../ui/CommandPalette';
+import { CommandPaletteWithSafety } from '../command-palette/CommandPaletteWithSafety';
+import { useCommandPalette } from '../ui/CommandPalette';
 import { MobileNavigation } from '../ui/MobileNavigation';
 import { AppShellHeader } from './AppShellHeader';
 import { Breadcrumbs } from './Breadcrumbs';
@@ -126,7 +127,7 @@ export function AppShell({ children }: AppShellProps) {
         </main>
       </div>
 
-      <CommandPalette
+      <CommandPaletteWithSafety
         isOpen={isCommandPaletteOpen}
         onClose={() => setCommandPaletteOpen(false)}
         onOptimize={() => {
