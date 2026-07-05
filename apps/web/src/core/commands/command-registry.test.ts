@@ -6,6 +6,7 @@ import {
   registerCommand,
   registerCommandProvider,
   resolveCommands,
+  unregisterCommandProvider,
 } from './command-registry';
 import { buildSearchTokens, scoreCommand } from './command-search';
 import { registerCoreCommands } from './providers';
@@ -21,6 +22,7 @@ function mockContext(overrides: Partial<CommandContext> = {}): CommandContext {
     energy: {
       pvPower: 5,
       batterySoC: 50,
+      batteryPower: 0,
       gridPower: 0,
       houseLoad: 2,
       priceCurrent: 0.2,
@@ -55,7 +57,9 @@ describe('command-registry', () => {
     const cmds = collectCommandDefinitions(ctx);
     expect(cmds.some((c) => c.id === 'nav-dashboard')).toBe(true);
     expect(cmds.some((c) => c.id === 'nav-settings-adapters')).toBe(true);
-    expect(cmds.length).toBeGreaterThanOrEqual(20);
+    expect(cmds.some((c) => c.id === 'settings.tariff.awattar')).toBe(true);
+    expect(cmds.some((c) => c.id === 'device.batteryForceCharge')).toBe(true);
+    expect(cmds.length).toBeGreaterThanOrEqual(25);
   });
 
   it('filters contextual energy commands by when()', () => {
@@ -63,6 +67,7 @@ describe('command-registry', () => {
       energy: {
         pvPower: 1,
         batterySoC: 50,
+        batteryPower: 0,
         gridPower: 0,
         houseLoad: 2,
         priceCurrent: 0.1,
@@ -73,6 +78,7 @@ describe('command-registry', () => {
       energy: {
         pvPower: 8,
         batterySoC: 50,
+        batteryPower: 0,
         gridPower: 0,
         houseLoad: 2,
         priceCurrent: 0.1,
@@ -261,6 +267,27 @@ describe('command providers', () => {
     const favorite = resolved.find((c) => c.id === 'nav-settings');
     expect(recent?.section).toBe('recent');
     expect(favorite?.section).toBe('favorites');
+  });
+
+  it('removes a registered command provider by id', () => {
+    registerCommandProvider({
+      id: 'temp-provider',
+      priority: 10,
+      getCommands: () => [
+        {
+          id: 'temp-provider.action',
+          labelKey: 'x',
+          category: 'system',
+          risk: 'safe',
+          source: 'adapter',
+          execute: () => {},
+        },
+      ],
+    });
+    const ctx = mockContext();
+    expect(collectCommandDefinitions(ctx).some((c) => c.id === 'temp-provider.action')).toBe(true);
+    unregisterCommandProvider('temp-provider');
+    expect(collectCommandDefinitions(ctx).some((c) => c.id === 'temp-provider.action')).toBe(false);
   });
 
   it('warns when provider returns a duplicate command id', () => {

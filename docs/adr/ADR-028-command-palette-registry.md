@@ -1,6 +1,6 @@
 # ADR-028: Command Palette Registry & Extensibility
 
-- **Status:** Accepted (Phase 0+1 shipped; Phase 2 in progress)
+- **Status:** Accepted (Phase 0+1 shipped; Phase 2 shipped; Phase 3 in progress)
 - **Date:** 2026-07-04
 - **Deciders:** Maintainer
 - **Related:** ADR-002 (Zustand dual-store), ADR-019 (adapter registry), `apps/web/src/core/command-safety.ts`, `docs/UI-UX-Audit-2026.md` (C1)

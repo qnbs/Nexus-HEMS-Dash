@@ -73,7 +73,9 @@ wires to `useSafeCommand` (confirmation dialog, validation, audit trail).
 
 `adapterCommandsProvider` reads `ctx.adapterEntries` and emits per-adapter settings +
 reconnect commands. Register additional providers with `registerCommandProvider` and
-`unregisterCommandProvider` on adapter unload.
+`unregisterCommandProvider` on adapter unload. Phase 3 adds tariff-provider shortcuts,
+hardware catalog commands (EV start/stop, battery force charge), and lifecycle cleanup in
+`removeContribAdapter`.
 
 ## Architecture
 

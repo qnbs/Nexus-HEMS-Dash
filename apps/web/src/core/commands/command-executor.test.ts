@@ -15,6 +15,7 @@ function mockContext(overrides: Partial<CommandContext> = {}): CommandContext {
     energy: {
       pvPower: 5,
       batterySoC: 50,
+      batteryPower: 0,
       gridPower: 0,
       houseLoad: 2,
       priceCurrent: 0.2,

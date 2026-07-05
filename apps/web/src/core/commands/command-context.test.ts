@@ -14,6 +14,7 @@ function mockContext(overrides: Partial<CommandContext> = {}): CommandContext {
     energy: {
       pvPower: 5,
       batterySoC: 50,
+      batteryPower: 0,
       gridPower: 0,
       houseLoad: 2,
       priceCurrent: 0.2,
@@ -69,6 +70,7 @@ describe('getContextualCommandIds', () => {
       energy: {
         pvPower: 8,
         batterySoC: 50,
+        batteryPower: 0,
         gridPower: 0,
         houseLoad: 2,
         priceCurrent: 0.1,
@@ -83,6 +85,7 @@ describe('getContextualCommandIds', () => {
       energy: {
         pvPower: 1,
         batterySoC: 10,
+        batteryPower: 0,
         gridPower: 0,
         houseLoad: 2,
         priceCurrent: 0.1,
@@ -97,6 +100,7 @@ describe('getContextualCommandIds', () => {
       energy: {
         pvPower: 1,
         batterySoC: 50,
+        batteryPower: 0,
         gridPower: 0,
         houseLoad: 2,
         priceCurrent: 0.5,
