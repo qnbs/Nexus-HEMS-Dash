@@ -153,4 +153,31 @@ describe('help-search-keyboard', () => {
     expect(setActiveIndex).toHaveBeenNthCalledWith(1, 1);
     expect(setActiveIndex).toHaveBeenNthCalledWith(2, 0);
   });
+
+  it('ignores navigation and Enter when the combobox is closed', () => {
+    const setActiveIndex = vi.fn();
+    const onSelectResult = vi.fn();
+
+    handleHelpSearchKeyDown(
+      makeKeyEvent('ArrowDown'),
+      searchResults,
+      0,
+      setActiveIndex,
+      onSelectResult,
+      vi.fn(),
+      false,
+    );
+    handleHelpSearchKeyDown(
+      makeKeyEvent('Enter'),
+      searchResults,
+      0,
+      setActiveIndex,
+      onSelectResult,
+      vi.fn(),
+      false,
+    );
+
+    expect(setActiveIndex).not.toHaveBeenCalled();
+    expect(onSelectResult).not.toHaveBeenCalled();
+  });
 });

@@ -180,6 +180,38 @@ describe('HelpSearchBox', () => {
     expect(screen.queryByRole('note')).not.toBeInTheDocument();
   });
 
+  it('ignores Enter and arrow keys after Escape dismisses a non-empty listbox', async () => {
+    const user = userEvent.setup();
+    const onSelectResult = vi.fn();
+
+    render(
+      <HelpSearchBox
+        searchQuery="eebus"
+        onSearchQueryChange={vi.fn()}
+        normalizedQuery="eebus"
+        searchResults={[
+          { tab: 'lexicon', title: 'EEBUS', body: 'European energy interface' },
+          { tab: 'integration', title: 'EEBUS setup', body: 'Certificate pairing' },
+        ]}
+        onSelectResult={onSelectResult}
+      />,
+    );
+
+    const combobox = screen.getByRole('combobox');
+    await user.click(combobox);
+    await user.keyboard('{Escape}');
+
+    expect(combobox).toHaveAttribute('aria-expanded', 'false');
+    expect(combobox).not.toHaveAttribute('aria-activedescendant');
+
+    await user.keyboard('{Enter}');
+    await user.keyboard('{ArrowDown}');
+
+    expect(onSelectResult).not.toHaveBeenCalled();
+    expect(combobox).not.toHaveAttribute('aria-activedescendant');
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+  });
+
   it('reopens the listbox after Escape when the query is edited back to the dismissed value', async () => {
     const user = userEvent.setup();
 
