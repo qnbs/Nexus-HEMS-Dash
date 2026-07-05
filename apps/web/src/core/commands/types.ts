@@ -58,8 +58,6 @@ export interface CommandContext {
   chargeThreshold: number;
   isReadOnly: boolean;
   isLiveMode: boolean;
-  /** Settings → Advanced → experimental features (gates AI palette suggestions) */
-  experimentalFeatures: boolean;
   authScope: AuthScope;
   navigate: NavigateFunction;
   t: TFunction;

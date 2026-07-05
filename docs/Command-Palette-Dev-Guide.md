@@ -83,19 +83,13 @@ Rule-based suggestions — **not** LLM calls. Enable **Settings → Advanced →
 features** (`settings.experimentalFeatures`) to surface the `ai` section in the palette.
 
 ```typescript
-import { getVisibleAiSuggestionSpecs } from '@/core/commands/ai-suggestions-engine';
-import { aiSuggestionsProvider } from '@/core/commands/providers/ai-suggestions-provider';
+import { collectCommandDefinitions } from '@/core/commands';
 ```
 
-- Provider id: `ai-suggestions`, priority `150`, registered in `providers/index.ts`.
-- Commands use `source: 'ai'`, `category: 'ai'`, Sparkles icon, static `preview` title/impact keys.
-- Hardware mirrors (`startEvCharging`, `batteryForceCharge`) set `hardwareCommand` and route through
-  `CommandPaletteWithSafety` like Phase 2 device commands.
-- Add label keys under `command.aiSuggest.*` in **both** locale files; section title:
-  `command.aiSuggestions`.
-
-To add a rule, extend `AI_SUGGESTION_SPECS` in `ai-suggestions-engine.ts` and the matching
-`switch` arm in `ai-suggestions-provider.ts`.
+- Mirrors are injected in `collectCommandDefinitions` when `ctx.experimentalFeatures` is true.
+- Commands use `source: 'ai'`, `category: 'ai'`; labels/previews reuse mirrored core commands.
+- Hardware mirrors (`startEvCharging`, `batteryForceCharge`) keep `hardwareCommand` from the device catalog.
+- Add section title via existing `command.categoryAi` in locale files.
 
 ## Architecture
 

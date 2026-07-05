@@ -1,3 +1,5 @@
+import { useAppStore } from '../../store';
+import { getContextualCommandIds } from './command-context';
 import type {
   CommandContext,
   CommandDefinition,
@@ -9,6 +11,13 @@ import type {
 const registry = new Map<string, CommandDefinition>();
 const providers: CommandProvider[] = [];
 let coreBootstrapped = false;
+
+const AI_CONTEXTUAL_MIRROR: Record<string, string> = {
+  'energy.optimizeSurplus': 'ai.suggest.optimizeSurplus',
+  'energy.viewBattery': 'ai.suggest.viewBattery',
+  'energy.viewTariffs': 'ai.suggest.viewTariffs',
+  'nav-monitoring': 'ai.suggest.checkMonitoring',
+};
 
 const SCOPE_RANK: Record<string, number> = { read: 0, readwrite: 1, admin: 2 };
 
@@ -90,6 +99,11 @@ export function isCoreProvidersBootstrapped(): boolean {
   return coreBootstrapped;
 }
 
+function cloneAiSuggestionCommand(mirrored: CommandDefinition, id: string): CommandDefinition {
+  const { when: _when, ...rest } = mirrored;
+  return { ...rest, id, category: 'ai', source: 'ai' };
+}
+
 /** Collect all command definitions visible in the current context. */
 export function collectCommandDefinitions(ctx: CommandContext): CommandDefinition[] {
   const seen = new Set<string>();
@@ -118,6 +132,31 @@ export function collectCommandDefinitions(ctx: CommandContext): CommandDefinitio
       if (import.meta.env.DEV) {
         console.warn('[CommandRegistry] Provider failed:', provider.id, err);
       }
+    }
+  }
+
+  if (useAppStore.getState().settings.experimentalFeatures) {
+    const pushAiMirror = (mirrorId: string, id: string) => {
+      const mirrored = registry.get(mirrorId);
+      if (!mirrored) return;
+      add(cloneAiSuggestionCommand(mirrored, id));
+    };
+
+    for (const mirrorId of getContextualCommandIds(ctx)) {
+      const id = AI_CONTEXTUAL_MIRROR[mirrorId];
+      if (id) pushAiMirror(mirrorId, id);
+    }
+
+    const { energy, chargeThreshold } = ctx;
+    if (energy.evPower < 100 && energy.pvPower > energy.houseLoad * 1.1 && energy.pvPower > 0.5) {
+      pushAiMirror('device.startEvCharging', 'ai.suggest.startEvCharging');
+    }
+    if (
+      energy.batterySoC < 90 &&
+      energy.batteryPower < 100 &&
+      energy.priceCurrent < chargeThreshold
+    ) {
+      pushAiMirror('device.batteryForceCharge', 'ai.suggest.batteryForceCharge');
     }
   }
 

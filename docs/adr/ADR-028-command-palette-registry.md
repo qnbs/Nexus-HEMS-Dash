@@ -33,15 +33,14 @@ power-user workflows.
 | **0+1** | #271 | Registry, providers, search scorer, context hook, navigation/settings/energy/system commands, recency/favorites, `CommandPalette` split | Shipped |
 | **2** | #272 | `CommandPaletteWithSafety` + `useSafeCommand` bridge; `adapterCommandsProvider`; list virtualization; `hardwareCommand` on device actions | Shipped |
 | **3** | #273 | Tariff-provider shortcuts; EV/battery hardware catalog; `batteryPower` in context; `unregisterCommandProvider` on contrib unload; resilient adapter `destroy()` | Shipped |
-| **4** | (open) | Rule-based **AI suggestions** provider (`source: 'ai'`, category `ai`); gated by `settings.experimentalFeatures`; search empty-query boost; dedicated palette section | In progress |
+| **4** | (open) | Rule-based **AI suggestions** (`source: 'ai'`, category `ai`); gated by `settings.experimentalFeatures`; registry mirror injection; dedicated palette section | In progress |
 | **4+** | — | Natural-language / voice input; LLM-ranked suggestions | Planned |
 
 ### Phase 4 — AI suggestions (rule-based)
 
-- **No LLM calls** in Phase 4. Suggestions are deterministic rules over `CommandContext`
-  (`ai-suggestions-engine.ts`), surfaced by `aiSuggestionsProvider` (priority 150).
-- **Gate:** `settings.experimentalFeatures` (Settings → Advanced). When off, the provider
-  returns an empty list — no palette noise for default users.
+- **No LLM calls** in Phase 4. Suggestions are deterministic rules in `collectCommandDefinitions`,
+  cloning registered core commands when `experimentalFeatures` is enabled.
+- **Gate:** `settings.experimentalFeatures` (Settings → Advanced). When off, no AI mirrors are injected.
 - **Six rules** (each mirrors an existing core command where applicable):
   1. PV surplus → optimize (`energy.optimizeSurplus`)
   2. PV surplus + idle EV → start charging (`device.startEvCharging`, moderate + hardware)
@@ -49,8 +48,7 @@ power-user workflows.
   4. High price → view tariffs (`energy.viewTariffs`)
   5. Low SoC → view battery (`energy.viewBattery`)
   6. Adapter error → monitoring (`nav-monitoring`)
-- **Presentation:** `source: 'ai'`, `category: 'ai'`, section header `command.aiSuggestions`;
-  empty-query scorer boost `SCORE_EMPTY_AI` (between contextual and favorites).
+- **Presentation:** `source: 'ai'`, `category: 'ai'`, section header `command.categoryAi`.
 - **Safety:** hardware suggestions reuse Phase 2 `hardwareCommand` + `CommandPaletteWithSafety`.
 
 ## Consequences

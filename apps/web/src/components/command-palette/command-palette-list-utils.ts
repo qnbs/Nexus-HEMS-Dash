@@ -4,7 +4,7 @@ const SECTION_KEYS: Record<ResolvedCommand['section'], string | null> = {
   recent: 'commandPalette.recentCommands',
   favorites: 'command.favorites',
   contextual: 'command.contextualSuggestions',
-  ai: 'command.aiSuggestions',
+  ai: 'command.categoryAi',
   navigation: null,
   action: null,
   device: null,

@@ -6,8 +6,8 @@ import {
 } from './command-palette-list-utils';
 
 describe('getSectionLabelKey', () => {
-  it('maps ai section to command.aiSuggestions', () => {
-    expect(getSectionLabelKey('ai')).toBe('command.aiSuggestions');
+  it('maps ai section to command.categoryAi', () => {
+    expect(getSectionLabelKey('ai')).toBe('command.categoryAi');
   });
 });
 
