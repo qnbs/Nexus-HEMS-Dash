@@ -47,7 +47,7 @@ export function handleHelpSearchKeyDown(
     return;
   }
 
-  if (searchResults.length === 0) return;
+  if (!isOpen || searchResults.length === 0) return;
 
   switch (event.key) {
     case 'ArrowDown':

@@ -32,7 +32,7 @@ export const HelpSearchResultsPanel = ({
       {searchResults.map((hit, index) => {
         const optionId = `${listboxId}-option-${index}`;
         return (
-          <div key={`${hit.tab}-${hit.title}`} role="presentation">
+          <div key={`${hit.tab}-${hit.title}-${hit.body}`} role="presentation">
             <button
               id={optionId}
               type="button"
