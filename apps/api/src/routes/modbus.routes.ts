@@ -23,10 +23,10 @@
 import { type Request, type Response, Router } from 'express';
 import { z } from 'zod';
 import { getEffectiveAdapterMode } from '../config/adapter-mode.js';
-import { isReadOnlyMode } from '../config/read-only-mode.js';
 import { writeCommandAuditEntry } from '../data/command-audit.js';
 import { mockData } from '../data/mock-data.js';
 import { type JWTScope, requireJWT, requireScope } from '../middleware/auth.js';
+import { requireNotReadOnly } from '../middleware/require-not-read-only.js';
 
 type ModelName = 'common' | 'inverter' | 'battery' | 'meter';
 
@@ -132,6 +132,7 @@ export function createModbusRoutes(): Router {
     '/api/modbus/write',
     requireJWT,
     requireScope('readwrite'),
+    requireNotReadOnly,
     (req: Request, res: Response) => {
       const parsed = WriteBodySchema.safeParse(req.body);
       if (!parsed.success) {
@@ -141,20 +142,6 @@ export function createModbusRoutes(): Router {
       }
 
       const { register, value } = parsed.data;
-
-      if (isReadOnlyMode()) {
-        audit(
-          res,
-          `MODBUS_WRITE:${register}`,
-          value,
-          'rejected_readonly',
-          'READ_ONLY_MODE=true blocks all control commands',
-        );
-        res.status(403).json({
-          error: 'System is in read-only mode — control commands are disabled',
-        });
-        return;
-      }
 
       const bounds = WRITE_BOUNDS[register];
       if (value < bounds.min || value > bounds.max) {
