@@ -1,8 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import {
+  getSectionLabelKey,
   shouldVirtualizeCommandList,
   shouldVirtualizeCommandListForEnv,
 } from './command-palette-list-utils';
+
+describe('getSectionLabelKey', () => {
+  it('maps ai section to command.aiSuggestions', () => {
+    expect(getSectionLabelKey('ai')).toBe('command.aiSuggestions');
+  });
+});
 
 describe('shouldVirtualizeCommandList', () => {
   it('skips virtualization in Vitest/jsdom', () => {

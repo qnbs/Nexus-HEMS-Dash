@@ -51,6 +51,7 @@ export function useCommandContext(options: UseCommandContextOptions): CommandCon
     evPower,
     adapterMode,
     backendReadOnly,
+    experimentalFeatures,
     tariffProvider,
     chargeThreshold,
   } = useAppStoreShallow((s) => ({
@@ -65,6 +66,7 @@ export function useCommandContext(options: UseCommandContextOptions): CommandCon
     evPower: s.energyData.evPower,
     adapterMode: s.adapterMode,
     backendReadOnly: s.backendReadOnly,
+    experimentalFeatures: s.settings.experimentalFeatures,
     tariffProvider: s.settings.tariffProvider,
     chargeThreshold: s.settings.chargeThreshold,
   }));
@@ -123,6 +125,7 @@ export function useCommandContext(options: UseCommandContextOptions): CommandCon
       chargeThreshold,
       isReadOnly: resolveReadOnlyModeActive(backendReadOnly),
       isLiveMode: isLiveSafetyMode(adapterMode),
+      experimentalFeatures,
       authScope: resolveAuthScope(),
       navigate,
       t,
@@ -155,6 +158,7 @@ export function useCommandContext(options: UseCommandContextOptions): CommandCon
       chargeThreshold,
       backendReadOnly,
       adapterMode,
+      experimentalFeatures,
       navigate,
       t,
       options.onOptimize,

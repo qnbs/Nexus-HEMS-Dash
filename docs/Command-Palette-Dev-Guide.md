@@ -77,6 +77,26 @@ reconnect commands. Register additional providers with `registerCommandProvider`
 hardware catalog commands (EV start/stop, battery force charge), and lifecycle cleanup in
 `removeContribAdapter`.
 
+## AI suggestions (Phase 4)
+
+Rule-based suggestions — **not** LLM calls. Enable **Settings → Advanced → Experimental
+features** (`settings.experimentalFeatures`) to surface the `ai` section in the palette.
+
+```typescript
+import { getVisibleAiSuggestionSpecs } from '@/core/commands/ai-suggestions-engine';
+import { aiSuggestionsProvider } from '@/core/commands/providers/ai-suggestions-provider';
+```
+
+- Provider id: `ai-suggestions`, priority `150`, registered in `providers/index.ts`.
+- Commands use `source: 'ai'`, `category: 'ai'`, Sparkles icon, static `preview` title/impact keys.
+- Hardware mirrors (`startEvCharging`, `batteryForceCharge`) set `hardwareCommand` and route through
+  `CommandPaletteWithSafety` like Phase 2 device commands.
+- Add label keys under `command.aiSuggest.*` in **both** locale files; section title:
+  `command.aiSuggestions`.
+
+To add a rule, extend `AI_SUGGESTION_SPECS` in `ai-suggestions-engine.ts` and the matching
+`switch` arm in `ai-suggestions-provider.ts`.
+
 ## Architecture
 
 See `docs/adr/ADR-028-command-palette-registry.md`.

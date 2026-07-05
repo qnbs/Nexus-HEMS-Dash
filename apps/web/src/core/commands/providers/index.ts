@@ -5,6 +5,7 @@ import {
   registerCommandProvider,
 } from '../command-registry';
 import { adapterCommandsProvider } from './adapter-commands-provider';
+import { aiSuggestionsProvider } from './ai-suggestions-provider';
 import { createDeviceCommands } from './device-commands';
 import { createEnergyCommands } from './energy-commands';
 import { createNavigationCommands } from './navigation-commands';
@@ -30,6 +31,7 @@ export function registerCoreCommands(): void {
   }
 
   registerCommandProvider(adapterCommandsProvider);
+  registerCommandProvider(aiSuggestionsProvider);
 
   markCoreProvidersBootstrapped();
 }

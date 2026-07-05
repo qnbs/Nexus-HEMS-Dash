@@ -26,6 +26,7 @@ function mockContext(overrides: Partial<CommandContext> = {}): CommandContext {
     chargeThreshold: 0.15,
     isReadOnly: false,
     isLiveMode: false,
+    experimentalFeatures: false,
     authScope: 'readwrite',
     navigate: vi.fn(),
     t: ((key: string) => key) as CommandContext['t'],

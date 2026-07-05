@@ -34,6 +34,7 @@ function mockContext(overrides: Partial<CommandContext> = {}): CommandContext {
     chargeThreshold: 0.15,
     isReadOnly: false,
     isLiveMode: false,
+    experimentalFeatures: false,
     authScope: 'readwrite',
     navigate: () => {},
     t: ((key: string) => key) as CommandContext['t'],
@@ -174,6 +175,29 @@ describe('command-search', () => {
     expect(boosted).toBeGreaterThan(base);
   });
 
+  it('boosts empty-query score for AI-sourced commands', () => {
+    const coreCmd = {
+      id: 'x',
+      labelKey: 'y',
+      category: 'navigation' as const,
+      risk: 'safe' as const,
+      source: 'core' as const,
+      execute: () => {},
+    };
+    const aiCmd = { ...coreCmd, source: 'ai' as const, category: 'ai' as const };
+    const coreScore = scoreCommand(coreCmd, 'Home', '', {
+      recent: false,
+      favorite: false,
+      contextual: false,
+    });
+    const aiScore = scoreCommand(aiCmd, 'Home', '', {
+      recent: false,
+      favorite: false,
+      contextual: false,
+    });
+    expect(aiScore).toBeGreaterThan(coreScore);
+  });
+
   it('scores exact and keyword matches', () => {
     const cmd = {
       id: 'nav.help',
@@ -267,6 +291,32 @@ describe('command providers', () => {
     const favorite = resolved.find((c) => c.id === 'nav-settings');
     expect(recent?.section).toBe('recent');
     expect(favorite?.section).toBe('favorites');
+  });
+
+  it('includes AI suggestions when experimental features are enabled', () => {
+    registerCoreCommands();
+    const ctx = mockContext({
+      experimentalFeatures: true,
+      energy: {
+        pvPower: 8,
+        batterySoC: 50,
+        batteryPower: 0,
+        gridPower: 0,
+        houseLoad: 2,
+        priceCurrent: 0.2,
+        evPower: 0,
+      },
+    });
+    const resolved = resolveCommands(ctx, {
+      query: '',
+      recentIds: [],
+      favoriteIds: [],
+      contextualIds: [],
+      scoreFn: scoreCommand,
+    });
+    const aiCmd = resolved.find((c) => c.id === 'ai.suggest.optimizeSurplus');
+    expect(aiCmd?.source).toBe('ai');
+    expect(aiCmd?.section).toBe('ai');
   });
 
   it('removes a registered command provider by id', () => {
