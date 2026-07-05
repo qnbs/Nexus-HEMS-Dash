@@ -20,6 +20,14 @@ Release notes are maintained here and published via [semantic-release](https://g
 - Fix Pages idle-wait: treat stale `in_progress` deployments (>10 min) as non-blocking (#282).
 - Fix Pages deploy deadlock: move pre-deploy idle-wait to a separate job (no `environment:` binding), skip wait when the active deployment matches `GITHUB_SHA`, shorten stale threshold to 3 min, and skip deploy-recovery when a newer Deploy run exists.
 
+### Toolchain
+
+- Upgrade pnpm to `10.34.4` (packageManager + CI setup action), staying within the pnpm 10.x line for Ubuntu 20.04 compatibility.
+- Upgrade TypeScript catalog to `~5.8.3` across all workspaces.
+- Upgrade Vite to `^8.1.0` and `@vitejs/plugin-react` to `^6.0.3` (Vite 8.1.0 verified on Ubuntu 20.04 via build + production smoke test).
+- Upgrade Biome to `2.5.2`, Turborepo to `^2.10.3`, Vitest to `^4.1.9`, Tailwind CSS to `^4.3.2`, and React catalog to `^19.2.7`.
+- Keep Playwright at `^1.60.0`; 1.61.x deferred pending Ubuntu 20.04 browser-binary verification.
+
 ### Settings & Help perfection (Phases 1–5)
 
 - **#276** — Settings URL sync (`useSearchParams`), persist merge validation, read-only gating foundations.

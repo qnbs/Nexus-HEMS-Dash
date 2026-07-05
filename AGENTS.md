@@ -43,11 +43,11 @@ Do not embed German (or other) inline `t('key', 'fallback')` strings in componen
 
 | File | Purpose |
 |---|---|
-| `package.json` | Root manifest; defines shared scripts, `packageManager: "pnpm@10.33.0"`, `pnpm.overrides`, `engines`. |
+| `package.json` | Root manifest; defines shared scripts, `packageManager: "pnpm@10.34.4"`, `pnpm.overrides`, `engines`. |
 | `pnpm-workspace.yaml` | Workspaces `apps/*` and `packages/*`; pnpm **catalog** for shared dependency versions (`react`, `react-dom`, `typescript`, `zod`, `jose`, `mqtt`, `tsx`, `@types/node`). |
 | `turbo.json` | Turborepo task graph (`build`, `dev`, `type-check`, `lint`, `test:run`, `test:e2e`, `size`, etc.). |
 | `tsconfig.base.json` | Ultra-strict base: `strict`, `exactOptionalPropertyTypes`, `noUncheckedIndexedAccess`, `noImplicitReturns`, `noUnusedLocals`, `declarationMap`, `sourceMap`. |
-| `biome.json` | Primary linter/formatter (Biome 2.5.1): line width 100, 2-space indent, LF, single quotes, trailing commas, semicolons always; a11y rules; `noExplicitAny: error`; sorted Tailwind classes. |
+| `biome.json` | Primary linter/formatter (Biome 2.5.2): line width 100, 2-space indent, LF, single quotes, trailing commas, semicolons always; a11y rules; `noExplicitAny: error`; sorted Tailwind classes. |
 | `eslint.config.js` | React-only supplemental rules (`react-compiler`, `react-hooks`, `react-refresh`) for `apps/web/src/**/*.tsx`. Biome handles everything else. |
 | `commitlint.config.js` | Conventional Commits with project types (`feat`, `fix`, `security`, `a11y`, `i18n`, …) and scopes (`sankey`, `floorplan`, `adapter`, `ocpp`, `eebus`, `ui`, …). |
 | `lint-staged.config.js` | Staged `biome check --write` for TS/TSX; ESLint --fix for web TSX; Biome format for JSON/CSS/YAML in `apps/` / `packages/`. |
@@ -69,10 +69,10 @@ Do not embed German (or other) inline `t('key', 'fallback')` strings in componen
 
 | Layer | Choices |
 |---|---|
-| Language | TypeScript ~5.8.2 (strict), ESM only (`"type": "module"`). |
+| Language | TypeScript ~5.8.3 (strict), ESM only (`"type": "module"`). |
 | Runtime | Node.js 24 LTS production baseline; minimum `>=22.22.1`. |
-| Package manager | pnpm 10.33.0 via Corepack. |
-| Frontend framework | React 19.2.6, React Router DOM v7, TanStack Query v5, Zustand 5. |
+| Package manager | pnpm 10.34.4 via Corepack. |
+| Frontend framework | React 19.2.7, React Router DOM v7, TanStack Query v5, Zustand 5. |
 | Build tool | Vite 8 (Rolldown), `vite-plugin-pwa`, React Compiler via `@rolldown/plugin-babel`. |
 | Styling | Tailwind CSS v4 (`@import 'tailwindcss'` in `apps/web/src/index.css`), design tokens in `apps/web/src/design-tokens.ts`. |
 | Charts / viz | D3 + `d3-sankey`, Recharts, Motion (Framer Motion successor). |
@@ -81,7 +81,7 @@ Do not embed German (or other) inline `t('key', 'fallback')` strings in componen
 | Backend | Express 5.2.1, `ws`, `jose`, `helmet`, `express-rate-limit`, `cors`, `zod`. |
 | Protocols | MQTT, Modbus TCP (`modbus-serial`), InfluxDB v2 client, Redis (`ioredis`). |
 | Testing | Vitest v4, `@vitest/coverage-v8`, Playwright, `@axe-core/playwright`, `fast-check`, `supertest`. |
-| Tooling | Biome 2.5.1, ESLint 9 (React-only), Husky, lint-staged, semantic-release. |
+| Tooling | Biome 2.5.2, ESLint 9 (React-only), Husky, lint-staged, semantic-release. |
 
 ---
 
@@ -393,6 +393,7 @@ Quality signals are layered (see `DEVOPS.md` and `docs/adr/ADR-027-layered-quali
 ### PR review automation (CodeRabbit)
 
 - Agent tokens cannot post PR comments (`403 Resource not accessible by integration`). Do not rely on `gh pr comment … @coderabbitai review`.
+- Prefer `gh pr create`, `gh issue create`, etc. over GitHub MCP tools (e.g. `create_pull_request`); the local `gh` CLI is authenticated via keyring, whereas MCP calls may return `Authentication Failed`.
 - On every non-draft PR push, `.github/workflows/coderabbit-rereview.yml` posts `@coderabbitai review` when the head commit has no CodeRabbit review yet (deduped per SHA).
 - Push fix commits — the workflow requests re-review automatically.
 
