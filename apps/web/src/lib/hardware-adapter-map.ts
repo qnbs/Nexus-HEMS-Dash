@@ -27,6 +27,8 @@ const DEFAULT_PORTS: Record<string, number> = {
   knx: 3671,
   'ocpp-21': 8080,
   eebus: 4712,
+  evcc: 7070,
+  openems: 8085,
   'homeassistant-mqtt': 1883,
   zigbee2mqtt: 1883,
   'shelly-rest': 80,

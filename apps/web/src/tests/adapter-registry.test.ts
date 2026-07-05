@@ -5,6 +5,7 @@ import {
   isAdapterRegistered,
   listRegisteredAdapters,
   registerAdapter,
+  registerBuiltinAdapters,
   unregisterAdapter,
 } from '../core/adapters/adapter-registry';
 
@@ -132,5 +133,16 @@ describe('Adapter Registry', () => {
     registerAdapter(id, createMockFactory());
     const adapter = getRegisteredAdapter(id);
     expect(adapter?.displayName).toBe(id);
+  });
+
+  it('registers all 7 built-in core adapters', () => {
+    registerBuiltinAdapters();
+    expect(isAdapterRegistered('victron-mqtt')).toBe(true);
+    expect(isAdapterRegistered('modbus-sunspec')).toBe(true);
+    expect(isAdapterRegistered('knx')).toBe(true);
+    expect(isAdapterRegistered('ocpp-21')).toBe(true);
+    expect(isAdapterRegistered('eebus')).toBe(true);
+    expect(isAdapterRegistered('evcc')).toBe(true);
+    expect(isAdapterRegistered('openems')).toBe(true);
   });
 });
