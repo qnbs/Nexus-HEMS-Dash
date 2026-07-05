@@ -1260,7 +1260,7 @@ export const de = {
     aiGeminiName: 'Gemini 2.5 Pro',
     aiGeminiProvider: 'Google AI Studio',
     aiClaudeDesc:
-      'Hauptentwicklung in GitHub Codespaces — Architektur, React-Compiler-Compliance, a11y-Audit, E2E-Tests, Design-System, UI/UX-Transformation',
+      'Hauptentwicklung in GitHub Copilot — Architektur, React-Compiler-Compliance, a11y-Audit, E2E-Tests, Design-System, UI/UX-Transformation',
     aiClaudeName: 'Claude Sonnet',
     aiClaudeProvider: 'GitHub Copilot',
     aiGrokDesc:

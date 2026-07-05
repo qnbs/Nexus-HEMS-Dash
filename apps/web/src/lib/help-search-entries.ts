@@ -1,5 +1,6 @@
 import type { TFunction } from 'i18next';
 import packageJson from '../../package.json';
+import { HELP_CONTRIB_PROTOCOL_KEYS } from './help-contrib-protocols';
 
 /** Help center tab identifiers used for search and deep-linking. */
 export type HelpTab =
@@ -34,26 +35,22 @@ const GLOSSARY_SEARCH_KEYS = [
   { term: 'help.soc', desc: 'help.socDesc' },
   { term: 'help.glossMppt', desc: 'help.glossMpptDesc' },
   { term: 'help.glossEms', desc: 'help.glossEmsDesc' },
+  { term: 'help.glossFeedIn', desc: 'help.glossFeedInDesc' },
+  { term: 'help.glossSector', desc: 'help.glossSectorDesc' },
   { term: 'help.glossModbus', desc: 'help.glossModbusDesc' },
   { term: 'help.glossOcpp', desc: 'help.glossOcppDesc' },
+  { term: 'help.glossPwa', desc: 'help.glossPwaDesc' },
+  { term: 'help.glossVenusOs', desc: 'help.glossVenusOsDesc' },
+  { term: 'help.glossDbus', desc: 'help.glossDbusDesc' },
+  { term: 'help.glossNodeRed', desc: 'help.glossNodeRedDesc' },
+  { term: 'help.glossCerboGx', desc: 'help.glossCerboGxDesc' },
+  { term: 'help.glossV2x', desc: 'help.glossV2xDesc' },
   { term: 'help.glossEebus', desc: 'help.glossEebusDesc' },
   { term: 'help.glossHomeAssistant', desc: 'help.glossHomeAssistantDesc' },
   { term: 'help.glossMatter', desc: 'help.glossMatterDesc' },
   { term: 'help.glossEvcc', desc: 'help.glossEvccDesc' },
   { term: 'help.glossOpenEms', desc: 'help.glossOpenEmsDesc' },
   { term: 'help.glossOpenAdr', desc: 'help.glossOpenAdrDesc' },
-] as const;
-
-/** Contrib protocol setup hints indexed for Help search. */
-const CONTRIB_INTEGRATION_KEYS = [
-  { title: 'help.protocolHa', body: 'help.contribSetupHa' },
-  { title: 'help.protocolEebus', body: 'help.contribSetupEebus' },
-  { title: 'help.protocolEvcc', body: 'help.contribSetupEvcc' },
-  { title: 'help.protocolOpenEms', body: 'help.contribSetupOpenEms' },
-  { title: 'help.protocolOpenAdr', body: 'help.contribSetupOpenAdr' },
-  { title: 'help.protocolMatter', body: 'help.contribSetupMatter' },
-  { title: 'help.protocolZigbee', body: 'help.contribSetupZigbee' },
-  { title: 'help.protocolShelly', body: 'help.contribSetupShelly' },
 ] as const;
 
 export const buildHelpSearchEntries = (t: TFunction) => {
@@ -99,17 +96,21 @@ export const buildHelpSearchEntries = (t: TFunction) => {
       title: t('help.contribProtocolsTitle'),
       body: t('help.contribProtocolsIntro'),
     },
-    ...CONTRIB_INTEGRATION_KEYS.map((entry) => ({
+    ...HELP_CONTRIB_PROTOCOL_KEYS.map((entry) => ({
       tab: 'integration' as const,
-      title: t(entry.title),
-      body: t(entry.body),
+      title: t(entry.titleKey),
+      body: t(entry.setupKey),
     })),
     ...GLOSSARY_SEARCH_KEYS.map((entry) => ({
       tab: 'lexicon' as const,
       title: t(entry.term),
       body: t(entry.desc),
     })),
-    { tab: 'about' as const, title: t('help.aboutTitle'), body: t('help.aboutDesc') },
+    {
+      tab: 'about' as const,
+      title: t('help.aboutTitle'),
+      body: t('help.aboutDesc', { version: appVersion }),
+    },
   ];
 };
 

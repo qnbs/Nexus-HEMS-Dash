@@ -47,4 +47,17 @@ describe('help-search-entries', () => {
     const faq = entries.find((e) => e.title === 'help.faqWhatIs');
     expect(faq?.body).toMatch(/^v\d+\.\d+\.\d+$/);
   });
+
+  it('interpolates app version in about search entry', () => {
+    const entries = buildHelpSearchEntries(((key: string, opts?: { version?: string }) =>
+      opts?.version ? `v${opts.version}` : key) as never);
+    const about = entries.find((e) => e.title === 'help.aboutTitle');
+    expect(about?.body).toMatch(/^v\d+\.\d+\.\d+$/);
+  });
+
+  it('indexes Victron glossary terms for lexicon search', () => {
+    const entries = buildHelpSearchEntries(((key: string) => key) as never);
+    expect(entries.some((e) => e.title === 'help.glossCerboGx')).toBe(true);
+    expect(entries.some((e) => e.title === 'help.glossV2x')).toBe(true);
+  });
 });

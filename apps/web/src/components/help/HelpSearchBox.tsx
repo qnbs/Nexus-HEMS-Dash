@@ -2,6 +2,8 @@ import { Search } from 'lucide-react';
 import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { HelpTab } from '../../lib/help-search-entries';
+import { resolveHelpSearchStatusMessage } from '../../lib/help-search-status';
+import { HelpSearchResultsPanel } from './HelpSearchResultsPanel';
 
 export interface HelpSearchResult {
   tab: HelpTab;
@@ -29,12 +31,7 @@ export const HelpSearchBox = ({
   const listboxId = useId();
   const statusId = useId();
   const isOpen = normalizedQuery.length >= 2;
-
-  const statusMessage = !isOpen
-    ? ''
-    : searchResults.length === 0
-      ? t('help.searchNoResults')
-      : t('help.searchResultsCount', { count: searchResults.length });
+  const statusMessage = resolveHelpSearchStatusMessage(isOpen, searchResults.length, t);
 
   return (
     <div className="relative mb-6">
@@ -60,32 +57,11 @@ export const HelpSearchBox = ({
       </p>
       {isOpen && (
         <div className="absolute top-full right-0 left-0 z-20 mt-2 rounded-xl border border-(--color-border) bg-(--color-surface-strong) p-3 shadow-lg">
-          {searchResults.length === 0 ? (
-            <p className="text-(--color-muted) text-xs" role="note">
-              {t('help.searchNoResults')}
-            </p>
-          ) : (
-            <div
-              id={listboxId}
-              role="listbox"
-              aria-label={t('help.searchResultsLabel')}
-              className="space-y-1"
-            >
-              {searchResults.map((hit) => (
-                <div key={`${hit.tab}-${hit.title}`} role="presentation">
-                  <button
-                    type="button"
-                    role="option"
-                    onClick={() => onSelectResult(hit.tab)}
-                    className="focus-ring w-full rounded-lg px-3 py-2 text-left transition-colors hover:bg-white/5"
-                  >
-                    <span className="block font-medium text-sm">{hit.title}</span>
-                    <span className="line-clamp-1 text-(--color-muted) text-xs">{hit.body}</span>
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
+          <HelpSearchResultsPanel
+            listboxId={listboxId}
+            searchResults={searchResults}
+            onSelectResult={onSelectResult}
+          />
         </div>
       )}
     </div>
