@@ -148,4 +148,46 @@ describe('executeResolvedCommand', () => {
     expect(result).toEqual({ ok: false, reason: 'error' });
     expect(toast.error).toHaveBeenCalledWith('command.hardwareBridgeMissing');
   });
+
+  it('routes moderate hardware commands through executeHardwareCommand', async () => {
+    const executeHardwareCommand = vi.fn();
+    const ctx = mockContext({
+      actions: {
+        closePalette: vi.fn(),
+        recordUsage: vi.fn(),
+        toggleFavorite: vi.fn(),
+        executeHardwareCommand,
+      },
+    });
+    const cmd = mockCommand({
+      risk: 'moderate',
+      hardwareCommand: { type: 'SET_BATTERY_POWER', value: 1000 },
+    });
+
+    const result = await executeResolvedCommand(cmd, ctx);
+
+    expect(result).toEqual({ ok: true });
+    expect(executeHardwareCommand).toHaveBeenCalledWith({ type: 'SET_BATTERY_POWER', value: 1000 });
+  });
+
+  it('resolves dynamic hardwareCommand functions before bridging', async () => {
+    const executeHardwareCommand = vi.fn();
+    const ctx = mockContext({
+      actions: {
+        closePalette: vi.fn(),
+        recordUsage: vi.fn(),
+        toggleFavorite: vi.fn(),
+        executeHardwareCommand,
+      },
+    });
+    const cmd = mockCommand({
+      risk: 'admin',
+      hardwareCommand: () => ({ type: 'STOP_CHARGING', value: true }),
+    });
+
+    const result = await executeResolvedCommand(cmd, ctx);
+
+    expect(result).toEqual({ ok: true });
+    expect(executeHardwareCommand).toHaveBeenCalledWith({ type: 'STOP_CHARGING', value: true });
+  });
 });

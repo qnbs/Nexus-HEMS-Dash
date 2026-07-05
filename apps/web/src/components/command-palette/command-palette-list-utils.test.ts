@@ -8,5 +8,6 @@ describe('shouldVirtualizeCommandList', () => {
 
   it('skips virtualization for short lists', () => {
     expect(shouldVirtualizeCommandList(10)).toBe(false);
+    expect(shouldVirtualizeCommandList(20)).toBe(false);
   });
 });
