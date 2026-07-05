@@ -13,6 +13,7 @@ Release notes are maintained here and published via [semantic-release](https://g
 
 - Harden GitHub Pages deploy: `wait-for-github-pages-idle.sh`, 4 publish attempts with idle-wait between retries, and `deploy-recovery.yml` auto-rerun on transient failures (#281).
 - Fix Pages idle-wait: treat stale `in_progress` deployments (>10 min) as non-blocking (#282).
+- Fix Pages deploy deadlock: move pre-deploy idle-wait to a separate job (no `environment:` binding), skip wait when the active deployment matches `GITHUB_SHA`, shorten stale threshold to 3 min, and skip deploy-recovery when a newer Deploy run exists.
 
 ### Settings & Help perfection (Phases 1–5)
 

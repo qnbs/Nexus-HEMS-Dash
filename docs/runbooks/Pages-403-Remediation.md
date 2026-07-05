@@ -82,9 +82,9 @@ GH_PAGER=cat PAGER=cat gh api --paginate "repos/${REPO}/deployments?environment=
 - Uploads via `actions/upload-pages-artifact@v5`
 - Deploys with `actions/deploy-pages@v4` to environment `github-pages`
 - Prunes stale deployments **before** publish (keeps newest 10)
-- **Waits for idle** `github-pages` environment + 180 s cooldown (`wait-for-github-pages-idle.sh`) before each publish attempt
+- **Waits for idle** in a dedicated `wait-for-pages-idle` job (no `environment:` — avoids self-deadlock) via `wait-for-github-pages-idle.sh`; skips when the active deployment is for the current `GITHUB_SHA`; 180 s cooldown + 3 min stale threshold
 - Retries up to **three** times with idle-wait between attempts (`reporting_interval: 15s`)
-- **`deploy-recovery.yml`** auto-reruns failed Deploy jobs once after a 10 min cooldown (`run_attempt < 2`)
+- **`deploy-recovery.yml`** auto-reruns failed Deploy jobs once after a 10 min cooldown when no newer Deploy run exists (`run_attempt < 2`)
 - Prunes again after deploy (keeps newest 10)
 - Job-level `permissions: pages: write, id-token: write, deployments: read`
 
