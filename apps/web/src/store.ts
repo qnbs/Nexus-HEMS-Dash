@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { useShallow } from 'zustand/react/shallow';
 import type { CommandPalettePreferences } from './core/commands/types';
+import { sanitizePersistedSettings } from './core/stored-settings-schema';
 import type { ThemeName } from './design-tokens';
 import { persistSettings } from './lib/db';
 import type { ThemePreference } from './lib/theme';
@@ -237,10 +238,11 @@ export const useAppStore = create<AppState>()(
       merge: (persisted, current) => {
         const p = persisted as Partial<AppState> | undefined;
         if (!p) return current;
+        const validatedSettings = p.settings ? sanitizePersistedSettings(p.settings) : {};
         return {
           ...current,
           ...p,
-          settings: { ...defaultSettings, ...(p.settings ?? {}) },
+          settings: { ...defaultSettings, ...current.settings, ...validatedSettings },
           floorplan: { ...current.floorplan, ...(p.floorplan ?? {}) },
           commandPalette: { ...defaultCommandPalette, ...(p.commandPalette ?? {}) },
         };

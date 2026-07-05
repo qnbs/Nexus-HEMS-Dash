@@ -98,6 +98,11 @@ export abstract class BaseAdapter implements EnergyAdapter {
   protected retryDelay: number;
   protected config: AdapterConnectionConfig;
 
+  /** Exposes connection config for settings hydration (no secrets beyond in-memory adapter state). */
+  getConnectionConfig(): Readonly<AdapterConnectionConfig> {
+    return this.config;
+  }
+
   /** Public circuit breaker — the store reads this for reactive UI state */
   readonly circuitBreaker: CircuitBreaker;
 

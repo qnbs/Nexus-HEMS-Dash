@@ -13,7 +13,7 @@ const systemConfigSchema = z
   .passthrough();
 
 /**
- * Validates settings JSON on import. All fields optional; unknown top-level keys rejected.
+ * Validates settings JSON on import. All fields optional; unknown top-level keys stripped.
  */
 export const storedSettingsImportSchema = z
   .object({
@@ -80,11 +80,16 @@ export const storedSettingsImportSchema = z
     autoBackup: z.boolean().optional(),
     keyboardShortcuts: z.boolean().optional(),
   })
-  .strict();
+  .strip();
 
 export function parseStoredSettingsImport(data: unknown): Partial<StoredSettings> | null {
   const result = storedSettingsImportSchema.safeParse(data);
   if (!result.success) return null;
   // skipcq: JS-0339 — Zod strict schema output is a safe Partial<StoredSettings> subset
   return result.data as unknown as Partial<StoredSettings>;
+}
+
+/** Strip unknown/invalid keys from persisted localStorage settings on hydration. */
+export function sanitizePersistedSettings(raw: unknown): Partial<StoredSettings> {
+  return parseStoredSettingsImport(raw) ?? {};
 }

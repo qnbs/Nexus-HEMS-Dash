@@ -681,6 +681,24 @@ export const de = {
     haEnableAdapter: 'Home-Assistant-Adapter aktivieren',
     haSaveSuccess: 'Home-Assistant-Einstellungen gespeichert',
     haSaveFailed: 'Home-Assistant-Einstellungen konnten nicht gespeichert werden: {{error}}',
+    haEntityRolesTitle: 'Entitäts-Rollen-Overrides',
+    haEntityRolesHint:
+      'Optionale manuelle Zuordnung, wenn die Auto-Discovery eine Entität nicht klassifizieren kann.',
+    haEntityRolesEmpty: 'Keine Overrides konfiguriert.',
+    haEntityId: 'Entitäts-ID',
+    haEntityRole: 'Energierolle',
+    haEntityRoleAdd: 'Override hinzufügen',
+    haEntityRoleRemove: 'Entitäts-Rollen-Override entfernen',
+    haRole_pvPower: 'PV-Leistung',
+    haRole_pvEnergyToday: 'PV-Energie heute',
+    haRole_batteryPower: 'Batterieleistung',
+    haRole_batterySoc: 'Batterie-SoC',
+    haRole_gridPower: 'Netzleistung',
+    haRole_housePower: 'Hauslast',
+    haRole_heatPumpPower: 'Wärmepumpenleistung',
+    haRole_evPower: 'EV-Ladeleistung',
+    haRole_evSoc: 'EV-SoC',
+    haRole_evStatus: 'EV-Status',
     maxGridHint: '§14a EnWG Grenze: 4,2 kW für steuerbare Verbraucher',
     pvSystem: 'PV-Anlage',
     pvPeakPower: 'Spitzenleistung (kWp)',
@@ -1080,6 +1098,24 @@ export const de = {
     glossV2x: 'V2X (Vehicle-to-Everything)',
     glossV2xDesc:
       'Bidirektionale E-Auto-Ladetechnologie: V2G (Vehicle-to-Grid) speist Strom ins Netz zurück, V2H (Vehicle-to-Home) versorgt den Haushalt.',
+    glossEebus: 'EEBUS SPINE/SHIP',
+    glossEebusDesc:
+      'Europäischer Energie-Schnittstellenstandard für interoperable Gerätekommunikation (Wärmepumpen, Wallboxen, Wechselrichter) mit mTLS und Use-Case-Profilen.',
+    glossHomeAssistant: 'Home Assistant',
+    glossHomeAssistantDesc:
+      'Open-Source-Smart-Home-Plattform. Nexus integriert per WebSocket-API oder MQTT-Discovery für PV-, Batterie-, Netz- und Verbraucher-Entitäten.',
+    glossMatter: 'Matter / Thread',
+    glossMatterDesc:
+      'IPv6-basierte Smart-Home-Konnektivität (Thread-Funk + Matter-Anwendungsschicht) für sichere, herstellerneutrale Geräte-Inbetriebnahme und Steuerung.',
+    glossEvcc: 'evcc',
+    glossEvccDesc:
+      'Open-Source-EV-Ladesteuerung mit breiter Hardware-Unterstützung. Nexus liest Ladeleistung, SoC und tarifoptimierte Zeitpläne via REST/WebSocket.',
+    glossOpenEms: 'OpenEMS',
+    glossOpenEmsDesc:
+      'Modularer Open-Source-Energiemanagement-Edge-Stack mit JSON-RPC über WebSocket für Echtzeitkanäle, Controller und Zeitpläne.',
+    glossOpenAdr: 'OpenADR 3.1',
+    glossOpenAdrDesc:
+      'Automatisiertes Demand-Response-Protokoll für Netzbetreiber und Aggregatoren zur Signalisierung von Preis- und Lastabwurf-Ereignissen.',
 
     // FAQ erweitert
     faqGeneral: 'Allgemein',

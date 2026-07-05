@@ -7,6 +7,7 @@ export const AdapterConfigPollIntervalField = ({
   onUpdate,
   inputClass,
   t,
+  isReadOnly = false,
 }: AdapterConfigFieldProps) => (
   <AdapterConfigLabeledField
     id={`adapter-poll-${adapter.id}`}
@@ -22,6 +23,7 @@ export const AdapterConfigPollIntervalField = ({
         min={500}
         max={60000}
         step={500}
+        disabled={isReadOnly}
       />
       <span className="whitespace-nowrap text-(--color-muted) text-xs">ms</span>
     </div>

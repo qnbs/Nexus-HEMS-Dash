@@ -65,7 +65,10 @@ export const AdapterConfigEntrySection = ({
   const meta = ADAPTER_META[adapter.type];
   const Icon = meta.icon;
   const TypeFields = TYPE_SPECIFIC_FIELDS[adapter.type];
-  const fieldProps = { adapter, onUpdate, inputClass, t };
+  const guardedUpdate = (patch: Partial<AdapterEntry>) => {
+    if (!isReadOnly) onUpdate(patch);
+  };
+  const fieldProps = { adapter, onUpdate: guardedUpdate, inputClass, t, isReadOnly };
 
   return (
     <motion.section
@@ -109,8 +112,9 @@ export const AdapterConfigEntrySection = ({
             <ToggleSwitch
               id={`enable-${adapter.id}`}
               checked={adapter.enabled}
-              onChange={(v) => onUpdate({ enabled: v })}
+              onChange={(v) => guardedUpdate({ enabled: v })}
               label={t('adapterConfig.enabled')}
+              disabled={isReadOnly}
             />
           </>
         }

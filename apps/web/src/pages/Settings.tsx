@@ -8,6 +8,7 @@ import { ReadOnlySettingsBanner } from '../components/settings/ReadOnlySettingsB
 import { SettingsPageHeader } from '../components/settings/SettingsPageHeader';
 import { type SettingsTab, SettingsTabPanels } from '../components/settings/SettingsTabPanels';
 import { buildSettingsTabs } from '../components/settings/settings-tab-definitions';
+import { applySettingsTabParam, resolveSettingsTab } from '../lib/settings-tab-url';
 import { triggerSettingsExport, triggerSettingsImport } from '../lib/settings-transfer';
 import { useAppStoreShallow } from '../store';
 
@@ -36,26 +37,11 @@ export const Settings = () => {
     });
   };
 
-  const validTabs: SettingsTab[] = [
-    'appearance',
-    'system',
-    'energy',
-    'controllers',
-    'adapters',
-    'security',
-    'certificates',
-    'storage',
-    'notifications',
-    'advanced',
-    'ai',
-  ];
-  const tabParam = searchParams.get('tab') as SettingsTab | null;
-  const initialTab = tabParam && validTabs.includes(tabParam) ? tabParam : 'appearance';
-  const [activeTab, setActiveTab] = useState<SettingsTab>(initialTab);
+  const tabParam = searchParams.get('tab');
+  const activeTab = resolveSettingsTab(tabParam);
 
   const handleTabChange = (tab: SettingsTab) => {
-    setActiveTab(tab);
-    setSearchParams(tab === 'appearance' ? {} : { tab }, { replace: true });
+    setSearchParams(applySettingsTabParam(searchParams, tab), { replace: true });
   };
 
   const tabs = buildSettingsTabs(t);

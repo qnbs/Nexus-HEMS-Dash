@@ -1,9 +1,11 @@
 import { useTranslation } from 'react-i18next';
+import packageJson from '../../../../package.json';
 import { Disclosure } from '../../ui/Disclosure';
 import { HelpTabPanelShell } from '../HelpTabPanelShell';
 
 export const HelpFaqPanel = () => {
   const { t } = useTranslation();
+  const appVersion = packageJson.version;
 
   return (
     <HelpTabPanelShell tabKey="faq">
@@ -16,7 +18,7 @@ export const HelpFaqPanel = () => {
         </h3>
         <div className="mb-6 space-y-3">
           <Disclosure title={t('help.faqWhatIs')} defaultOpen>
-            {t('help.faqWhatIsAnswer')}
+            {t('help.faqWhatIsAnswer', { version: appVersion })}
           </Disclosure>
           <Disclosure title={t('help.faqPowerOutage')}>{t('help.faqPowerOutageAnswer')}</Disclosure>
           <Disclosure title={t('help.faqOffline')}>{t('help.faqOfflineAnswer')}</Disclosure>

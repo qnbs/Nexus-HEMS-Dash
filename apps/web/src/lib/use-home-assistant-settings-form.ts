@@ -1,30 +1,87 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import type { HAConnectionMode } from '../core/adapters/contrib/homeassistant-mqtt';
+import type { HAEntityRoleRow } from '../components/settings/HaEntityRolesEditor';
+import type {
+  HAConnectionMode,
+  HomeAssistantMQTTConfig,
+} from '../core/adapters/contrib/homeassistant-mqtt';
 import { saveHomeAssistantSettings } from '../core/homeassistant-settings-save';
 import { useEnergyStore } from '../core/useEnergyStore';
 import { useAppStoreShallow } from '../store';
+import { hydrateHomeAssistantSettingsFromAdapter } from './homeassistant-settings-hydrate';
+import { getAdapterCredentials } from './secure-store';
 import { useReadOnlyModeActive } from './use-read-only-mode';
+
+const HA_ADAPTER_ID = 'homeassistant-mqtt';
+
+const toEntityRoleRows = (
+  roles: { entityId: string; role: HAEntityRoleRow['role'] }[],
+): HAEntityRoleRow[] => roles.map((role) => ({ ...role, rowId: crypto.randomUUID() }));
 
 export const useHomeAssistantSettingsForm = () => {
   const { t } = useTranslation();
   const isReadOnly = useReadOnlyModeActive();
-  const haEnabled = useEnergyStore((s) => s.adapters['homeassistant-mqtt']?.enabled ?? false);
+  const haEntry = useEnergyStore((s) => s.adapters[HA_ADAPTER_ID]);
+  const haEnabled = haEntry?.enabled ?? false;
   const { settings, updateSettings } = useAppStoreShallow((s) => ({
     settings: s.settings,
     updateSettings: s.updateSettings,
   }));
 
+  const haEntryRef = useRef(haEntry);
+  haEntryRef.current = haEntry;
+
+  const [hydrated, setHydrated] = useState(false);
   const [haMode, setHaMode] = useState<HAConnectionMode>('ha-ws-api');
   const [haBaseUrl, setHaBaseUrl] = useState('http://homeassistant.local:8123');
   const [haToken, setHaToken] = useState('');
   const [mqttHost, setMqttHost] = useState('');
   const [mqttPort, setMqttPort] = useState(1883);
   const [mqttUser, setMqttUser] = useState('');
-  const [mqttPassword, setMqttPassword] = useState('');
+  const [mqttBrokerAuth, setMqttBrokerAuth] = useState('');
+  const [entityRoles, setEntityRoles] = useState<HAEntityRoleRow[]>([]);
   const [enabled, setEnabled] = useState(haEnabled);
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (hydrated) return;
+
+    let cancelled = false;
+
+    void (async () => {
+      try {
+        const credentials = await getAdapterCredentials(HA_ADAPTER_ID);
+        if (cancelled) return;
+
+        const entry = haEntryRef.current;
+        const config = (entry?.adapter?.getConnectionConfig?.() ??
+          null) as HomeAssistantMQTTConfig | null;
+        const next = hydrateHomeAssistantSettingsFromAdapter(
+          config,
+          credentials,
+          entry?.enabled ?? false,
+        );
+        setHaMode(next.haMode);
+        setHaBaseUrl(next.haBaseUrl);
+        setHaToken(next.haToken);
+        setMqttHost(next.mqttHost);
+        setMqttPort(next.mqttPort);
+        setMqttUser(next.mqttUser);
+        setMqttBrokerAuth(next.mqttBrokerAuth);
+        setEntityRoles(toEntityRoleRows(next.entityRoles));
+        setEnabled(next.enabled);
+      } catch {
+        if (!cancelled) setEnabled(haEntryRef.current?.enabled ?? false);
+      } finally {
+        if (!cancelled) setHydrated(true);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [hydrated]);
 
   const handleSave = async () => {
     if (isReadOnly) {
@@ -42,8 +99,9 @@ export const useHomeAssistantSettingsForm = () => {
         mqttHost,
         mqttPort,
         mqttUser,
-        mqttPassword,
+        mqttBrokerAuth,
         mqttAutoDiscovery: settings.mqttAutoDiscovery ?? true,
+        entityRoles: entityRoles.map(({ entityId, role }) => ({ entityId, role })),
       });
       if (!result.ok) {
         toast.error(t('settings.haSaveFailed', { error: result.error }));
@@ -71,8 +129,10 @@ export const useHomeAssistantSettingsForm = () => {
     setMqttPort,
     mqttUser,
     setMqttUser,
-    mqttPassword,
-    setMqttPassword,
+    mqttBrokerAuth,
+    setMqttBrokerAuth,
+    entityRoles,
+    setEntityRoles,
     enabled,
     setEnabled,
     saving,

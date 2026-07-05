@@ -23,9 +23,10 @@ import { metricsCollector } from '../lib/metrics';
 
 interface EmergencyStopProps {
   circuitBreakers?: Map<string, { forceOpen: () => void }>;
+  disabled?: boolean;
 }
 
-export function EmergencyStop({ circuitBreakers }: EmergencyStopProps) {
+export function EmergencyStop({ circuitBreakers, disabled = false }: EmergencyStopProps) {
   const { t } = useTranslation();
   const [isActive, setIsActive] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -83,7 +84,8 @@ export function EmergencyStop({ circuitBreakers }: EmergencyStopProps) {
       {/* Emergency Stop Trigger Button */}
       <button
         onClick={() => setShowConfirm(true)}
-        className="focus-ring group flex items-center gap-2 rounded-xl border border-red-500/30 bg-red-600 px-4 py-2 font-bold text-sm text-white shadow-lg shadow-red-600/40 transition-all hover:scale-105 hover:bg-red-500 hover:shadow-red-500/50 hover:shadow-xl active:scale-95"
+        disabled={disabled}
+        className="focus-ring group flex items-center gap-2 rounded-xl border border-red-500/30 bg-red-600 px-4 py-2 font-bold text-sm text-white shadow-lg shadow-red-600/40 transition-all hover:scale-105 hover:bg-red-500 hover:shadow-red-500/50 hover:shadow-xl active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
         aria-label={t('safety.emergencyStop', 'Notaus – Alle Geräte sofort abschalten')}
         title={t('safety.emergencyStop', 'Notaus – Alle Geräte sofort abschalten')}
         type="button"

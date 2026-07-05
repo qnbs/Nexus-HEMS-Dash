@@ -16,8 +16,11 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { saveAdapterPanelEntry } from '../core/adapter-config-panel-save';
 import { listRegisteredAdapters, loadAllContribAdapters } from '../core/adapters/adapter-registry';
+import { useEnergyStore } from '../core/useEnergyStore';
 import { ignorePromiseRejection } from '../lib/ignore-promise-rejection';
+import { useAdapterPanelHydration } from '../lib/use-adapter-panel-hydration';
 import { useReadOnlyModeActive } from '../lib/use-read-only-mode';
+import { useAppStore } from '../store';
 import { ComplianceChecklist } from './AdapterComplianceChecklist';
 import { AdapterConfigEntrySection } from './AdapterConfigEntrySection';
 import { AdapterHelpItem } from './adapter-config-shared';
@@ -253,17 +256,34 @@ const ContribAdapterSection = () => {
 export const AdapterConfigPanel = () => {
   const { t } = useTranslation();
   const isReadOnly = useReadOnlyModeActive();
+  const settings = useAppStore((s) => s.settings);
+  const energyAdapters = useEnergyStore((s) => s.adapters);
   const [adapters, setAdapters] = useState<AdapterEntry[]>([]);
+  const [hydrated, setHydrated] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showTokens, setShowTokens] = useState<Record<string, boolean>>({});
   const [savedId, setSavedId] = useState<string | null>(null);
   const [savingId, setSavingId] = useState<string | null>(null);
   const adapterCounter = useRef(0);
 
+  useAdapterPanelHydration({
+    hydrated,
+    setHydrated,
+    setAdapters,
+    adapterCounter,
+    settings,
+    adapters: energyAdapters,
+    defaultName: (type) => t(`adapterConfig.defaultName_${type}`),
+  });
+
   const inputClass =
     'w-full bg-(--color-surface) border border-(--color-border) rounded-xl px-4 py-2.5 text-(--color-text) focus:outline-none focus:border-(--color-primary)/70 focus:ring-2 focus:ring-(--color-primary)/20 transition-all duration-300 placeholder:text-(--color-muted)';
 
   const addAdapter = (type: AdapterType) => {
+    if (isReadOnly) {
+      toast.error(t('mode.readOnlyBlocked'));
+      return;
+    }
     adapterCounter.current += 1;
     const id = `${type}-${adapterCounter.current}`;
     const defaults = ADAPTER_DEFAULTS[type];
@@ -284,6 +304,10 @@ export const AdapterConfigPanel = () => {
   };
 
   const removeAdapter = (id: string) => {
+    if (isReadOnly) {
+      toast.error(t('mode.readOnlyBlocked'));
+      return;
+    }
     setAdapters((prev) => prev.filter((a) => a.id !== id));
     if (expandedId === id) setExpandedId(null);
   };
@@ -347,7 +371,8 @@ export const AdapterConfigPanel = () => {
                 key={type}
                 type="button"
                 onClick={() => addAdapter(type)}
-                className="focus-ring flex items-center gap-2 rounded-xl border border-(--color-border) bg-(--color-surface-strong) px-3 py-2 text-sm transition-colors hover:border-(--color-primary)/30 hover:bg-(--color-primary)/5"
+                disabled={isReadOnly}
+                className="focus-ring flex items-center gap-2 rounded-xl border border-(--color-border) bg-(--color-surface-strong) px-3 py-2 text-sm transition-colors hover:border-(--color-primary)/30 hover:bg-(--color-primary)/5 disabled:cursor-not-allowed disabled:opacity-50"
                 whileHover={{ scale: 1.02, y: -1 }}
                 whileTap={{ scale: 0.98 }}
               >

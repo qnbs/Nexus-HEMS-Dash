@@ -12,6 +12,7 @@ export const AdapterConfigSecurityFields = ({
   onToggleToken,
   inputClass,
   t,
+  isReadOnly = false,
 }: AdapterConfigSecurityFieldProps) => (
   <div>
     <h3 className="mb-3 flex items-center gap-2 font-medium text-sm">
@@ -19,7 +20,7 @@ export const AdapterConfigSecurityFields = ({
       {t('adapterConfig.security')}
     </h3>
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-      <AdapterConfigTlsRow adapter={adapter} onUpdate={onUpdate} t={t} />
+      <AdapterConfigTlsRow adapter={adapter} onUpdate={onUpdate} t={t} isReadOnly={isReadOnly} />
       <AdapterConfigLabeledField
         id={`adapter-token-${adapter.id}`}
         label={t('adapterConfig.authToken')}
@@ -31,6 +32,7 @@ export const AdapterConfigSecurityFields = ({
           onUpdate={onUpdate}
           inputClass={inputClass}
           t={t}
+          isReadOnly={isReadOnly}
         />
       </AdapterConfigLabeledField>
     </div>

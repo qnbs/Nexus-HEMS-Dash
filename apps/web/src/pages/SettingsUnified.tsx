@@ -16,13 +16,19 @@ import {
   Zap,
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
-import { lazy, Suspense, useState } from 'react';
+import { lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PageHeader } from '../components/layout/PageHeader';
 import { HelpTooltip } from '../components/ui/HelpTooltip';
 import { PageCrossLinks } from '../components/ui/PageCrossLinks';
 import { TabSkeleton } from '../components/ui/Skeleton';
+import { applySettingsTabParam, resolveSettingsTab } from '../lib/settings-tab-url';
+import {
+  applySettingsSectionParam,
+  resolveSettingsSection,
+  type SettingsSection,
+} from '../lib/settings-unified-url';
 
 // ─── Lazy-load existing pages ────────────────────────────────────────
 const SettingsPage = lazy(() => import('./Settings').then((m) => ({ default: m.Settings })));
@@ -31,8 +37,6 @@ const HelpPage = lazy(() => import('./Help').then((m) => ({ default: m.Help })))
 
 // ─── Tab definitions ─────────────────────────────────────────────────
 
-type SettingsSection = 'settings' | 'plugins' | 'help';
-
 // ─── Unified Settings & Plugins Page ─────────────────────────────────
 
 function SettingsUnifiedComponent() {
@@ -40,21 +44,10 @@ function SettingsUnifiedComponent() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  // Derive initial section from URL
-  const sectionParam = searchParams.get('section') as SettingsSection | null;
-  const validSections: SettingsSection[] = ['settings', 'plugins', 'help'];
-  const initialSection =
-    sectionParam && validSections.includes(sectionParam) ? sectionParam : 'settings';
-  const [activeSection, setActiveSection] = useState<SettingsSection>(initialSection);
+  const activeSection = resolveSettingsSection(searchParams.get('section'));
 
   const handleSectionChange = (section: SettingsSection) => {
-    setActiveSection(section);
-    if (section === 'settings') {
-      // Remove section param, Settings uses its own ?tab= param
-      setSearchParams({}, { replace: true });
-    } else {
-      setSearchParams({ section }, { replace: true });
-    }
+    setSearchParams(applySettingsSectionParam(searchParams, section), { replace: true });
   };
 
   const sections: {
@@ -269,7 +262,10 @@ function SettingsUnifiedComponent() {
                           return;
                         }
                         handleSectionChange('settings');
-                        setSearchParams({ tab: tile.tab ?? 'appearance' }, { replace: true });
+                        setSearchParams(
+                          applySettingsTabParam(searchParams, resolveSettingsTab(tile.tab ?? null)),
+                          { replace: true },
+                        );
                       }}
                       className="focus-ring flex items-center gap-2 rounded-xl px-2.5 py-2 text-left text-xs transition-colors hover:bg-white/5"
                     >

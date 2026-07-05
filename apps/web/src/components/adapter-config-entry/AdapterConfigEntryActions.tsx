@@ -24,7 +24,8 @@ export const AdapterConfigEntryActions = ({
     <motion.button
       type="button"
       onClick={onRemove}
-      className="flex items-center gap-2 rounded-xl border border-rose-500/30 bg-rose-500/5 px-3 py-2 text-rose-400 text-xs transition-colors hover:bg-rose-500/10"
+      disabled={isReadOnly}
+      className="flex items-center gap-2 rounded-xl border border-rose-500/30 bg-rose-500/5 px-3 py-2 text-rose-400 text-xs transition-colors hover:bg-rose-500/10 disabled:cursor-not-allowed disabled:opacity-50"
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
     >

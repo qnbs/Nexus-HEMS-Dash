@@ -7,6 +7,7 @@ export interface AdapterConfigFieldProps {
   onUpdate: (patch: Partial<AdapterEntry>) => void;
   inputClass: string;
   t: TFunction;
+  isReadOnly?: boolean;
 }
 
 /** Props for the auth-token field group (password visibility toggle). */

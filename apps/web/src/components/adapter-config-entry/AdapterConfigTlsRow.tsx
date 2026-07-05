@@ -6,7 +6,8 @@ export const AdapterConfigTlsRow = ({
   adapter,
   onUpdate,
   t,
-}: Pick<AdapterConfigFieldProps, 'adapter' | 'onUpdate' | 't'>) => (
+  isReadOnly = false,
+}: Pick<AdapterConfigFieldProps, 'adapter' | 'onUpdate' | 't' | 'isReadOnly'>) => (
   <div className="flex items-center justify-between rounded-xl border border-(--color-border) bg-(--color-surface) p-3">
     <div>
       <p className="font-medium text-xs">TLS / SSL</p>
@@ -17,6 +18,7 @@ export const AdapterConfigTlsRow = ({
       checked={adapter.tls}
       onChange={(v) => onUpdate({ tls: v })}
       label="TLS"
+      disabled={isReadOnly}
     />
   </div>
 );

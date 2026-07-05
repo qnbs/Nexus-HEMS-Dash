@@ -4,10 +4,11 @@
 
 import { canConnectHardwareAdapter } from '../lib/adapter-mode';
 import { ignorePromiseRejection } from '../lib/ignore-promise-rejection';
+import { MQTT_BROKER_AUTH_FIELD } from '../lib/mqtt-credential-keys';
 import { saveAdapterCredentials } from '../lib/secure-store';
 import { useAppStore } from '../store';
 import { loadContribAdapter } from './adapters/adapter-registry';
-import type { HAConnectionMode } from './adapters/contrib/homeassistant-mqtt';
+import type { HAConnectionMode, HAEntityRoleConfig } from './adapters/contrib/homeassistant-mqtt';
 import type { AdapterConnectionConfig } from './adapters/EnergyAdapter';
 import { attachAdapterEntry, useEnergyStoreBase } from './useEnergyStore';
 
@@ -21,8 +22,9 @@ export interface HomeAssistantSaveInput {
   mqttHost: string;
   mqttPort: number;
   mqttUser: string;
-  mqttPassword: string;
+  mqttBrokerAuth: string;
   mqttAutoDiscovery: boolean;
+  entityRoles?: HAEntityRoleConfig[];
 }
 
 export type HomeAssistantSaveResult = { ok: true } | { ok: false; error: string };
@@ -87,6 +89,7 @@ const buildHaConfig = (
       haBaseUrl: input.haBaseUrl.trim(),
       haToken: input.haToken.trim(),
       haDiscovery: input.mqttAutoDiscovery,
+      entityRoles: (input.entityRoles ?? []).filter((row) => row.entityId.trim() !== ''),
     };
   }
 
@@ -98,7 +101,9 @@ const buildHaConfig = (
     haMode: 'mqtt-broker',
     haDiscovery: input.mqttAutoDiscovery,
     mqttUser: input.mqttUser.trim() || undefined,
-    mqttPassword: input.mqttPassword.trim() || undefined,
+    ...(input.mqttBrokerAuth.trim()
+      ? { [MQTT_BROKER_AUTH_FIELD]: input.mqttBrokerAuth.trim() }
+      : {}),
   };
 };
 
@@ -119,10 +124,11 @@ export const saveHomeAssistantSettings = async (
   }
   if (input.haMode === 'mqtt-broker') {
     const extra: Record<string, string> = {};
+    const brokerAuth = input.mqttBrokerAuth.trim();
     if (input.mqttUser.trim()) extra.mqttUser = input.mqttUser.trim();
-    if (input.mqttPassword.trim()) extra.mqttPassword = input.mqttPassword.trim();
+    if (brokerAuth) extra[MQTT_BROKER_AUTH_FIELD] = brokerAuth;
     if (Object.keys(extra).length > 0) credentials.extra = extra;
-    if (input.mqttPassword.trim()) credentials.authToken = input.mqttPassword.trim();
+    if (brokerAuth) credentials.authToken = brokerAuth;
   }
   if (Object.keys(credentials).length > 0) {
     await saveAdapterCredentials(HA_ADAPTER_ID, credentials);

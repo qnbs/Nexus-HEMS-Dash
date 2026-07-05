@@ -8,17 +8,23 @@ export const ToggleSwitch = ({
   onChange,
   label,
   id,
+  disabled = false,
 }: {
   checked: boolean;
   onChange: (v: boolean) => void;
   label: string;
   id: string;
+  disabled?: boolean;
 }) => (
-  <label htmlFor={id} className="relative inline-flex cursor-pointer items-center">
+  <label
+    htmlFor={id}
+    className={`relative inline-flex items-center ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
+  >
     <input
       id={id}
       type="checkbox"
       checked={checked}
+      disabled={disabled}
       onChange={(e) => onChange(e.target.checked)}
       className="peer sr-only"
     />
