@@ -87,9 +87,20 @@ describe('HomeAssistantSettingsSection', () => {
     });
   });
 
-  it('blocks save actions in read-only mode', () => {
+  it('blocks save actions when the isReadOnly prop is set', () => {
+    mockReadOnly.mockReturnValue(false);
     render(<HomeAssistantSettingsSection {...sectionProps} isReadOnly />);
     fireEvent.click(screen.getByText('common.save'));
     expect(mockSave).not.toHaveBeenCalled();
+  });
+
+  it('honors the isReadOnly prop over the read-only hook', async () => {
+    mockReadOnly.mockReturnValue(true);
+    render(<HomeAssistantSettingsSection {...sectionProps} isReadOnly={false} />);
+    fireEvent.click(screen.getByText('common.save'));
+
+    await vi.waitFor(() => {
+      expect(mockSave).toHaveBeenCalled();
+    });
   });
 });
