@@ -204,6 +204,37 @@ describe('useEnergyStore reconfigureAdapter', () => {
     expect(unregisterCommandProvider).toHaveBeenCalledWith('plugin-demo');
     expect(useEnergyStoreBase.getState().adapters['plugin-demo']).toBeUndefined();
   });
+
+  it('still removes adapter state when destroy throws a non-Error value', async () => {
+    const destroy = vi.fn().mockImplementation(() => {
+      throw 'teardown failed';
+    });
+    const { logger } = await import('../lib/logger');
+    useEnergyStoreBase.setState({
+      adapters: {
+        'plugin-demo': {
+          adapter: {
+            destroy,
+            connect: vi.fn(),
+            onData: vi.fn(),
+            onStatus: vi.fn(),
+            circuitBreaker: { onStateChange: vi.fn(), canExecute: vi.fn() },
+          },
+          enabled: true,
+          status: 'connected',
+          circuitState: 'closed',
+        },
+      },
+    } as never);
+
+    const removed = useEnergyStoreBase.getState().removeContribAdapter('plugin-demo');
+    expect(removed).toBe(true);
+    expect(logger.warn).toHaveBeenCalledWith(
+      'Adapter destroy failed during contrib removal; continuing cleanup',
+      'useEnergyStore',
+      { adapterId: 'plugin-demo', error: 'teardown failed' },
+    );
+  });
 });
 
 describe('attachAdapterEntry', () => {
