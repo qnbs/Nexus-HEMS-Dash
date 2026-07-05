@@ -82,9 +82,11 @@ GH_PAGER=cat PAGER=cat gh api --paginate "repos/${REPO}/deployments?environment=
 - Uploads via `actions/upload-pages-artifact@v5`
 - Deploys with `actions/deploy-pages@v4` to environment `github-pages`
 - Prunes stale deployments **before** publish (keeps newest 10)
-- Retries up to **two** times (45 s + 90 s backoff) on transient Pages API failures
+- **Waits for idle** `github-pages` environment + 180 s cooldown (`wait-for-github-pages-idle.sh`) before each publish attempt
+- Retries up to **three** times with idle-wait between attempts (`reporting_interval: 15s`)
+- **`deploy-recovery.yml`** auto-reruns failed Deploy jobs once after a 10 min cooldown (`run_attempt < 2`)
 - Prunes again after deploy (keeps newest 10)
-- Job-level `permissions: pages: write, id-token: write`
+- Job-level `permissions: pages: write, id-token: write, deployments: read`
 
 No change to `vite.config.ts` `base` is needed when only the root 403s — the Vite base path is already `/Nexus-HEMS-Dash/`.
 

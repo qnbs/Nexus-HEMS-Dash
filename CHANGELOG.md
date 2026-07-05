@@ -9,6 +9,10 @@ Release notes are maintained here and published via [semantic-release](https://g
 
 ## [Unreleased]
 
+### CI / Deploy
+
+- Harden GitHub Pages deploy: `wait-for-github-pages-idle.sh`, 4 publish attempts with idle-wait between retries, and `deploy-recovery.yml` auto-rerun on transient failures.
+
 ## [1.10.0] - 2026-07-04
 
 Consolidates **33 commits** since `v1.9.0` (PRs [#236](https://github.com/qnbs/Nexus-HEMS-Dash/pull/236)–[#268](https://github.com/qnbs/Nexus-HEMS-Dash/pull/268)): security hardening, DevOps quality platforms, post-audit backend parity (phases 1–8), and production deploy/Helm edge fixes.

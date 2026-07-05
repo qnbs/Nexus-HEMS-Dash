@@ -1,0 +1,41 @@
+name: Deploy Recovery
+
+on:
+  workflow_run:
+    workflows: [Deploy]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: pages-recovery
+  cancel-in-progress: false
+
+jobs:
+  rerun-failed-deploy:
+    if: >-
+      github.event.workflow_run.conclusion == 'failure' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.run_attempt < 2
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Harden the runner
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: audit
+
+      - name: Wait for GitHub Pages cooldown before rerun
+        run: sleep 600
+
+      - name: Rerun failed Deploy workflow jobs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          run_id="${{ github.event.workflow_run.id }}"
+          echo "Rerunning failed jobs for Deploy workflow run ${run_id}"
+          gh run rerun "${run_id}" --failed
