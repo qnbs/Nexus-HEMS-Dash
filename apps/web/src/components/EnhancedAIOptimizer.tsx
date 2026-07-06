@@ -370,14 +370,10 @@ function runInference({
 function isValidRecommendation(item: unknown): item is AIRecommendation {
   if (typeof item !== 'object' || item === null) return false;
   const rec = item as Record<string, unknown>;
+  const required = ['title', 'description', 'impact'] as const;
+  if (!required.every((key) => typeof rec[key] === 'string')) return false;
   const priority = rec.priority;
-  return (
-    typeof rec.title === 'string' &&
-    typeof rec.description === 'string' &&
-    typeof rec.impact === 'string' &&
-    typeof priority === 'string' &&
-    VALID_PRIORITIES.has(priority)
-  );
+  return typeof priority === 'string' && VALID_PRIORITIES.has(priority);
 }
 
 function parseRecommendations(text: string): AIRecommendation[] {

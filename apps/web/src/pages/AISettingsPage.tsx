@@ -64,13 +64,9 @@ export default function AISettingsPage() {
   };
 
   const saveKeyAndActivate = async (provider: AIProvider) => {
-    const needsBaseUrl = provider === 'custom' || provider === 'ollama';
-    await saveAIKey(
-      provider,
-      apiKeyInput.trim(),
-      modelInput || AI_PROVIDERS[provider].models[0] || '',
-      needsBaseUrl ? customUrlInput : undefined,
-    );
+    const baseUrl = provider === 'custom' || provider === 'ollama' ? customUrlInput : undefined;
+    const model = modelInput || AI_PROVIDERS[provider].models[0] || '';
+    await saveAIKey(provider, apiKeyInput.trim(), model, baseUrl);
     if (storedKeys.length === 0) {
       setActiveProvider(provider);
     }
