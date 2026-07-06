@@ -54,6 +54,30 @@ export function generateSystemLoadHistory(currentLoad: number) {
   });
 }
 
+function gridStatus(gridPower: number): Status {
+  if (gridPower > 4200) return 'crit';
+  if (gridPower > 3000) return 'warn';
+  return 'ok';
+}
+
+function batteryStatus(batterySoC: number): Status {
+  if (batterySoC < 10) return 'crit';
+  if (batterySoC < 20) return 'warn';
+  return 'ok';
+}
+
+function voltageStatus(voltage: number): Status {
+  if (voltage < 210 || voltage > 250) return 'crit';
+  if (voltage < 220 || voltage > 240) return 'warn';
+  return 'ok';
+}
+
+function priceStatus(price: number): Status {
+  if (price > 0.4) return 'crit';
+  if (price > 0.3) return 'warn';
+  return 'ok';
+}
+
 export function calculateStatuses(
   gridPower: number,
   batterySoC: number,
@@ -61,10 +85,9 @@ export function calculateStatuses(
   price: number,
 ): { gridStatus: Status; batteryStatus: Status; voltageStatus: Status; priceStatus: Status } {
   return {
-    gridStatus: gridPower > 4200 ? 'crit' : gridPower > 3000 ? 'warn' : 'ok',
-    batteryStatus: batterySoC < 10 ? 'crit' : batterySoC < 20 ? 'warn' : 'ok',
-    voltageStatus:
-      voltage < 210 || voltage > 250 ? 'crit' : voltage < 220 || voltage > 240 ? 'warn' : 'ok',
-    priceStatus: price > 0.4 ? 'crit' : price > 0.3 ? 'warn' : 'ok',
+    gridStatus: gridStatus(gridPower),
+    batteryStatus: batteryStatus(batterySoC),
+    voltageStatus: voltageStatus(voltage),
+    priceStatus: priceStatus(price),
   };
 }

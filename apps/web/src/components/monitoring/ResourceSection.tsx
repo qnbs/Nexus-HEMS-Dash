@@ -1,42 +1,9 @@
-import { Activity, Cpu, HardDrive, MemoryStick, Server } from 'lucide-react';
+import { Cpu, HardDrive, MemoryStick, Server } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
+import { NetworkIORow } from './NetworkIORow';
 import { ResourceGauge } from './ResourceGauge';
-
-function NetworkIORow({ networkIO }: { networkIO: number }) {
-  const { t } = useTranslation();
-  return (
-    <div className="rounded-xl bg-white/5 px-3 py-2.5">
-      <div className="flex items-center justify-between text-xs">
-        <span className="flex items-center gap-2 text-(--color-muted)">
-          <Activity size={14} className="text-emerald-400" aria-hidden="true" />
-          {t('monitoring.networkIO')}
-        </span>
-        <span className="font-medium text-(--color-text)">{networkIO} KB/s</span>
-      </div>
-    </div>
-  );
-}
-
-function SystemInfoRows() {
-  const { t } = useTranslation();
-  const rows = [
-    { label: t('monitoring.nodeJs'), value: t('monitoring.nodeJsVersion') },
-    { label: t('monitoring.runtime'), value: t('monitoring.runtimeVersion') },
-    { label: t('monitoring.os'), value: t('monitoring.osVersion') },
-  ];
-
-  return (
-    <div className="mt-4 space-y-1.5 text-(--color-muted) text-[10px]">
-      {rows.map(({ label, value }) => (
-        <div key={label} className="flex justify-between">
-          <span>{label}</span>
-          <span className="font-mono">{value}</span>
-        </div>
-      ))}
-    </div>
-  );
-}
+import { SystemInfoRows } from './SystemInfoRows';
 
 function cpuGaugeColor(cpuUsage: number): string {
   if (cpuUsage > 80) return 'bg-red-500/70';

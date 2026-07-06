@@ -343,22 +343,26 @@ type EnergyMetrics = {
   uptime: number;
 };
 
+function withFallback(value: number | null, fallback: number): number {
+  return value ?? fallback;
+}
+
 function extractEnergyMetrics(
   get: (name: string, labels?: Record<string, string>) => number | null,
   energyData: StoreEnergySlice,
   health: { uptime: number },
 ): EnergyMetrics {
   return {
-    pvPower: get('hems_pv_power_watts') ?? energyData.pvPower,
-    gridPower: get('hems_grid_power_watts') ?? energyData.gridPower,
-    batteryPower: get('hems_battery_power_watts') ?? energyData.batteryPower,
-    batterySoC: get('hems_battery_soc_percent') ?? energyData.batterySoC,
-    houseLoad: get('hems_house_load_watts') ?? energyData.houseLoad,
-    evPower: get('hems_ev_charger_power_watts') ?? energyData.evPower,
-    heatPump: get('hems_heat_pump_power_watts') ?? energyData.heatPumpPower,
-    voltage: get('hems_grid_voltage_volts') ?? energyData.gridVoltage,
-    price: get('hems_tariff_price_eur_per_kwh') ?? energyData.priceCurrent,
-    uptime: get('hems_uptime_seconds') ?? health.uptime,
+    pvPower: withFallback(get('hems_pv_power_watts'), energyData.pvPower),
+    gridPower: withFallback(get('hems_grid_power_watts'), energyData.gridPower),
+    batteryPower: withFallback(get('hems_battery_power_watts'), energyData.batteryPower),
+    batterySoC: withFallback(get('hems_battery_soc_percent'), energyData.batterySoC),
+    houseLoad: withFallback(get('hems_house_load_watts'), energyData.houseLoad),
+    evPower: withFallback(get('hems_ev_charger_power_watts'), energyData.evPower),
+    heatPump: withFallback(get('hems_heat_pump_power_watts'), energyData.heatPumpPower),
+    voltage: withFallback(get('hems_grid_voltage_volts'), energyData.gridVoltage),
+    price: withFallback(get('hems_tariff_price_eur_per_kwh'), energyData.priceCurrent),
+    uptime: withFallback(get('hems_uptime_seconds'), health.uptime),
   };
 }
 

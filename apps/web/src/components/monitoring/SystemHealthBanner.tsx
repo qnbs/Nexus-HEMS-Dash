@@ -1,40 +1,9 @@
-import { ShieldAlert, ShieldCheck } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
+import { EndpointCards } from './EndpointCards';
+import { HealthIconBlock } from './HealthIconBlock';
 import { StatusPill } from './StatusPill';
 import { formatUptime } from './utils';
-
-function HealthIconBlock({ error }: { error: string | null }) {
-  return error ? (
-    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-red-500/15">
-      <ShieldAlert size={24} className="text-red-400" />
-    </div>
-  ) : (
-    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/15">
-      <ShieldCheck size={24} className="text-emerald-400" />
-    </div>
-  );
-}
-
-function EndpointCards() {
-  const { t } = useTranslation();
-  const endpoints = [
-    { label: t('monitoring.prometheusScrape'), path: 'GET /metrics' },
-    { label: t('monitoring.jsonApi'), path: 'GET /api/metrics/json' },
-    { label: t('monitoring.healthCheck'), path: 'GET /health' },
-  ];
-
-  return (
-    <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
-      {endpoints.map(({ label, path }) => (
-        <div key={label} className="rounded-xl bg-white/5 px-3 py-2">
-          <p className="text-(--color-muted) text-[10px]">{label}</p>
-          <code className="truncate font-mono text-(--color-primary) text-xs">{path}</code>
-        </div>
-      ))}
-    </div>
-  );
-}
 
 export function SystemHealthBanner({
   error,

@@ -1,5 +1,6 @@
 import { Wifi, WifiOff } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+import { ContribBadge } from './ContribBadge';
+import { LatencyLabel } from './LatencyLabel';
 import type { AdapterItem } from './types';
 
 function adapterIconBackground(isConnected: boolean, contrib?: boolean | undefined): string {
@@ -38,7 +39,6 @@ export function AdapterRow({
   latencyMs: number;
   contrib?: boolean;
 }) {
-  const { t } = useTranslation();
   const iconBg = adapterIconBackground(isConnected, contrib);
 
   return (
@@ -52,20 +52,12 @@ export function AdapterRow({
           <span className="shrink-0 rounded bg-white/10 px-1.5 py-0.5 font-mono text-(--color-muted) text-[9px]">
             {adapter.protocol}
           </span>
-          {contrib && (
-            <span className="shrink-0 rounded bg-(--color-primary)/10 px-1.5 py-0.5 text-(--color-primary) text-[9px]">
-              {t('monitoring.contribBadge')}
-            </span>
-          )}
+          <ContribBadge contrib={contrib} />
         </div>
         <p className="truncate text-(--color-muted) text-[10px]">{adapter.desc}</p>
       </div>
       <div className="flex shrink-0 items-center gap-2">
-        {latencyMs > 0 && (
-          <span className="font-mono text-(--color-muted) text-[10px]">
-            {latencyMs.toFixed(0)}ms
-          </span>
-        )}
+        <LatencyLabel latencyMs={latencyMs} />
         <AdapterStatusIcon isConnected={isConnected} contrib={contrib} />
       </div>
     </div>
