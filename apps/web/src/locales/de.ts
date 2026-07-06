@@ -2327,6 +2327,29 @@ export const de = {
     remove: 'Schlüssel entfernen',
     setActive: 'Aktivieren',
     lastUsed: 'Zuletzt verwendet',
+    executionMode: 'Ausführungsmodus',
+    executionModeDesc:
+      'Wähle, wie AI-Anfragen geroutet werden. Lokaler und Eco-Modus laufen komplett in diesem Browser. Hybrid bevorzugt lokale Modelle und greift auf die Cloud zurück, wenn ein Schlüssel konfiguriert ist.',
+    modeHybrid: 'Hybrid — lokal zuerst, Cloud-Fallback',
+    modeHybridDesc:
+      'Bevorzugt lokale Inferenz und greift bei Bedarf auf einen konfigurierten Cloud-Provider zurück.',
+    modeLocal: 'Nur lokal — keine Daten verlassen das Gerät',
+    modeLocalDesc:
+      'Führt alle KI-Inferenzen lokal im Browser aus; keine Netzwerkanfragen an KI-Provider.',
+    modeCloud: 'Nur Cloud — konfigurierte Schlüssel verwenden',
+    modeCloudDesc:
+      'Sendet Anfragen an den konfigurierten Cloud-KI-Provider mit deinem verschlüsselten Schlüssel.',
+    modeEco: 'Eco — deterministische Heuristiken, kein Netzwerk',
+    modeEcoDesc:
+      'Verwendet schnelle, deterministische Heuristiken ohne Modell-Download oder Netzwerkaufruf.',
+    localModel: 'Lokales Modell',
+    localModelDesc: 'Wähle die lokale Inferenz-Engine für den lokalen, Eco- oder Hybrid-Modus.',
+    modelWebllm: 'WebLLM (WebGPU, größtes Modell)',
+    modelTransformers: 'Transformers.js (WebAssembly, klein)',
+    modelOnnx: 'ONNX Runtime (eigene Modelle)',
+    modelHeuristic: 'Nur Heuristik-Regeln',
+    modelLoading: 'Lokales Modell wird geladen…',
+    modelUnavailable: 'Lokale Modelle werden in diesem Browser nicht unterstützt.',
   },
   chart: {
     priceAriaLabel: 'Preisprognose-Diagramm für die nächsten 12 Stunden',

@@ -16,7 +16,7 @@ import { SYSTEM_PRESETS } from './types';
  */
 export type BackendAdapterMode = 'mock' | 'live' | 'unknown';
 
-interface AppState {
+export interface AppState {
   energyData: EnergyData;
   connected: boolean;
   lastUpdated: number | null;
