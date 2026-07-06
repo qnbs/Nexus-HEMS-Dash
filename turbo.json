@@ -40,7 +40,7 @@
       "persistent": true
     },
     "lint": {
-      "inputs": ["src/**", "tsconfig.json", "../../biome.json", "../../eslint.config.js"],
+      "inputs": ["src/**", "tsconfig.json", "../../biome.json", "../../eslint.config.mjs"],
       "outputs": []
     },
     "lint:fix": {
