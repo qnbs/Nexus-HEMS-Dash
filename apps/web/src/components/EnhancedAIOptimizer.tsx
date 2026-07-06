@@ -2,6 +2,8 @@
  * Enhanced AI Optimizer with BYOK multi-provider support
  */
 
+import type { AIProvider } from '@nexus-hems/ai-core';
+import type * as Comlink from 'comlink';
 import type { TFunction } from 'i18next';
 import { Key, Loader2, Sparkles } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
@@ -13,7 +15,7 @@ import { useAIWorker } from '../core/useAIWorker';
 import { useLLMWorker } from '../core/useLLMWorker';
 import { getActiveProvider } from '../lib/ai-keys';
 import { type AppState, useAppStoreShallow } from '../store';
-import type { OptimizerRecommendation } from '../workers/worker-types';
+import type { LLMWorkerAPI, OptimizerRecommendation } from '../workers/worker-types';
 
 interface AIRecommendation {
   title: string;
@@ -21,6 +23,8 @@ interface AIRecommendation {
   impact: string;
   priority: 'high' | 'medium' | 'low';
 }
+
+const VALID_PRIORITIES = new Set(['high', 'medium', 'low']);
 
 interface OptimizerState {
   energyData: AppState['energyData'];
@@ -47,7 +51,9 @@ export function EnhancedAIOptimizer() {
   }, []);
 
   const aiWorker = useAIWorker();
-  const llmWorker = useLLMWorker();
+  const mode = getAIMode();
+  const prefersLocal = mode === 'local' || mode === 'eco';
+  const llmWorker = useLLMWorker(prefersLocal);
   const [basicRecommendations, setBasicRecommendations] = useState<OptimizerRecommendation[]>([]);
 
   useEffect(() => {
@@ -74,8 +80,6 @@ export function EnhancedAIOptimizer() {
     setError(null);
 
     try {
-      const mode = getAIMode();
-      const prefersLocal = mode === 'local' || mode === 'eco';
       const prompt = buildOptimizerPrompt({ energyData, settings });
       const result = await runInference({
         mode,
@@ -97,6 +101,7 @@ export function EnhancedAIOptimizer() {
       <OptimizerHeader
         hasProvider={hasProvider}
         isOptimizing={isOptimizing}
+        prefersLocal={prefersLocal}
         onOptimize={handleOptimizeNow}
       />
 
@@ -115,15 +120,15 @@ export function EnhancedAIOptimizer() {
 function OptimizerHeader({
   hasProvider,
   isOptimizing,
+  prefersLocal,
   onOptimize,
 }: {
   hasProvider: boolean | null;
   isOptimizing: boolean;
+  prefersLocal: boolean;
   onOptimize: () => void;
 }) {
   const { t } = useTranslation();
-  const mode = getAIMode();
-  const prefersLocal = mode === 'local' || mode === 'eco';
 
   return (
     <div className="mb-4 flex flex-col gap-3 sm:mb-6 sm:flex-row sm:items-center sm:justify-between">
@@ -319,6 +324,21 @@ Return ONLY a valid JSON array with this structure:
 ]`;
 }
 
+type LocalAIProvider = 'webllm' | 'transformers' | 'onnx' | 'heuristic';
+
+const SUPPORTED_LOCAL_PROVIDERS = new Set<AIProvider>([
+  'webllm',
+  'transformers',
+  'onnx',
+  'heuristic',
+]);
+
+function resolveLocalProvider(mode: ReturnType<typeof getAIMode>): LocalAIProvider {
+  if (mode === 'eco') return 'heuristic';
+  const preferred = getPreferredLocalModel();
+  return SUPPORTED_LOCAL_PROVIDERS.has(preferred) ? (preferred as LocalAIProvider) : 'heuristic';
+}
+
 function runInference({
   mode,
   prefersLocal,
@@ -330,28 +350,41 @@ function runInference({
   prefersLocal: boolean;
   hasProvider: boolean | null;
   prompt: string;
-  llmWorker: ReturnType<typeof useLLMWorker>;
+  llmWorker: Comlink.Remote<LLMWorkerAPI> | null;
 }) {
   if (prefersLocal) {
+    if (!llmWorker) {
+      throw new Error('NO_PROVIDER');
+    }
     return llmWorker.generate({
       task: prompt,
-      provider: (mode === 'eco' ? 'heuristic' : getPreferredLocalModel()) as
-        | 'webllm'
-        | 'transformers'
-        | 'onnx'
-        | 'heuristic',
+      provider: resolveLocalProvider(mode),
     });
   }
-  if (!hasProvider) {
+  if (hasProvider === null || hasProvider === false) {
     throw new Error('NO_PROVIDER');
   }
   return callAI({ prompt });
 }
 
+function isValidRecommendation(item: unknown): item is AIRecommendation {
+  if (typeof item !== 'object' || item === null) return false;
+  const rec = item as Record<string, unknown>;
+  return (
+    typeof rec.title === 'string' &&
+    typeof rec.description === 'string' &&
+    typeof rec.impact === 'string' &&
+    typeof rec.priority === 'string' &&
+    VALID_PRIORITIES.has(rec.priority)
+  );
+}
+
 function parseRecommendations(text: string): AIRecommendation[] {
   try {
     const parsed = JSON.parse(text);
-    if (Array.isArray(parsed)) return parsed;
+    if (Array.isArray(parsed) && parsed.every(isValidRecommendation) && parsed.length > 0) {
+      return parsed;
+    }
   } catch {
     // fall through to single recommendation
   }

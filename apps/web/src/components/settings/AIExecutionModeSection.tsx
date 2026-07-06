@@ -19,19 +19,23 @@ const MODES: { value: AIExecutionMode; labelKey: string; descriptionKey: string 
   {
     value: 'hybrid',
     labelKey: 'aiSettings.modeHybrid',
-    descriptionKey: 'aiSettings.executionModeDesc',
+    descriptionKey: 'aiSettings.modeHybridDesc',
   },
   {
     value: 'local',
     labelKey: 'aiSettings.modeLocal',
-    descriptionKey: 'aiSettings.executionModeDesc',
+    descriptionKey: 'aiSettings.modeLocalDesc',
   },
   {
     value: 'cloud',
     labelKey: 'aiSettings.modeCloud',
-    descriptionKey: 'aiSettings.executionModeDesc',
+    descriptionKey: 'aiSettings.modeCloudDesc',
   },
-  { value: 'eco', labelKey: 'aiSettings.modeEco', descriptionKey: 'aiSettings.executionModeDesc' },
+  {
+    value: 'eco',
+    labelKey: 'aiSettings.modeEco',
+    descriptionKey: 'aiSettings.modeEcoDesc',
+  },
 ];
 
 const LOCAL_MODELS: { value: AIProvider; labelKey: string; requires?: 'webgpu' | 'wasm' }[] = [
@@ -41,25 +45,53 @@ const LOCAL_MODELS: { value: AIProvider; labelKey: string; requires?: 'webgpu' |
   { value: 'heuristic', labelKey: 'aiSettings.modelHeuristic' },
 ];
 
+function isModelAvailable(
+  model: (typeof LOCAL_MODELS)[number],
+  capability: { webgpu: boolean; wasm: boolean },
+) {
+  if (model.requires === 'webgpu') return capability.webgpu;
+  if (model.requires === 'wasm') return capability.wasm;
+  return true;
+}
+
+function resolvePreferredModel(preferred: AIProvider, available: AIProvider[]): AIProvider {
+  if (available.includes(preferred)) return preferred;
+  return available[0] ?? 'heuristic';
+}
+
 export function AIExecutionModeSection() {
   const { t } = useTranslation();
   const [mode, setMode] = useState<AIExecutionMode>(getAIMode());
-  const [localModel, setLocalModel] = useState<AIProvider>(() => {
-    return getPreferredLocalModel();
-  });
+  const [localModel, setLocalModel] = useState<AIProvider>(() => getPreferredLocalModel());
+  const [isDetecting, setIsDetecting] = useState(true);
   const [capability, setCapability] = useState<{ webgpu: boolean; wasm: boolean }>({
     webgpu: false,
     wasm: false,
   });
 
   useEffect(() => {
+    let mounted = true;
+    const preferred = getPreferredLocalModel();
     const detect = async () => {
       const caps = await detectCapabilities();
-      setCapability({ webgpu: caps.webgpu, wasm: caps.webAssembly });
+      if (!mounted) return;
+      const nextCapability = { webgpu: caps.webgpu, wasm: caps.webAssembly };
+      setCapability(nextCapability);
+      const available = LOCAL_MODELS.filter((m) => isModelAvailable(m, nextCapability)).map(
+        (m) => m.value,
+      );
+      const reconciled = resolvePreferredModel(preferred, available);
+      setLocalModel(reconciled);
+      setPreferredLocalModel(reconciled);
+      setIsDetecting(false);
     };
     detect().catch((err) => {
       console.error('Failed to detect AI capabilities', err);
+      setIsDetecting(false);
     });
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const handleModeChange = (value: string) => {
@@ -74,16 +106,12 @@ export function AIExecutionModeSection() {
     setPreferredLocalModel(next);
   };
 
-  const availableLocalModels = LOCAL_MODELS.filter((m) => {
-    if (m.requires === 'webgpu') return capability.webgpu;
-    if (m.requires === 'wasm') return capability.wasm;
-    return true;
-  });
+  const availableLocalModels = LOCAL_MODELS.filter((m) => isModelAvailable(m, capability));
 
   return (
     <section className="glass-panel-strong mb-6 p-6">
       <h2 className="fluid-text-lg mb-4 flex items-center gap-2 font-medium">
-        <Cpu className="h-5 w-5 text-(--color-secondary)" />
+        <Cpu className="h-5 w-5 text-(--color-secondary)" aria-hidden="true" />
         {t('aiSettings.executionMode')}
       </h2>
 
@@ -107,10 +135,8 @@ export function AIExecutionModeSection() {
           <h3 className="mb-2 font-medium text-(--color-text)">{t('aiSettings.localModel')}</h3>
           <p className="mb-3 text-(--color-muted) text-sm">{t('aiSettings.localModelDesc')}</p>
 
-          {availableLocalModels.length === 0 ? (
-            <p className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-amber-400 text-sm">
-              {t('aiSettings.modelUnavailable')}
-            </p>
+          {isDetecting ? (
+            <p className="text-(--color-muted) text-sm">{t('aiSettings.modelLoading')}</p>
           ) : (
             <ChoiceCardGroup
               name="ai-local-model"

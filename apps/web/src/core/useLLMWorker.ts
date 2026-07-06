@@ -24,7 +24,9 @@ function getProxy(): Comlink.Remote<LLMWorkerAPI> {
 /**
  * Returns a Comlink proxy to the LLM Worker.
  * The worker is lazily created on first call and reused across components.
+ * Pass `enabled=false` to avoid spawning the worker when local inference is not
+ * needed (e.g. cloud-only users).
  */
-export function useLLMWorker(): Comlink.Remote<LLMWorkerAPI> {
-  return getProxy();
+export function useLLMWorker(enabled: boolean): Comlink.Remote<LLMWorkerAPI> | null {
+  return enabled ? getProxy() : null;
 }

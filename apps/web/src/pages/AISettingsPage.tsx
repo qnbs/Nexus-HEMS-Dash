@@ -64,15 +64,16 @@ export default function AISettingsPage() {
   };
 
   const saveKeyAndActivate = async () => {
-    if (!addingProvider) return;
+    const provider = addingProvider!;
+    const needsBaseUrl = provider === 'custom' || provider === 'ollama';
     await saveAIKey(
-      addingProvider,
+      provider,
       apiKeyInput.trim(),
-      modelInput || AI_PROVIDERS[addingProvider].models[0] || '',
-      addingProvider === 'custom' ? customUrlInput : undefined,
+      modelInput || AI_PROVIDERS[provider].models[0] || '',
+      needsBaseUrl ? customUrlInput : undefined,
     );
     if (storedKeys.length === 0) {
-      setActiveProvider(addingProvider);
+      setActiveProvider(provider);
     }
   };
 

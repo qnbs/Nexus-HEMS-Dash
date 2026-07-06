@@ -44,7 +44,8 @@ export class DexieVaultKeyStore implements VaultKeyStore {
       const apiKey = await decryptWithKey(record.encryptedKey, vaultKey);
       await nexusDb.aiKeys.update(provider, { lastUsed: Date.now() });
       return { apiKey, model: record.model, baseUrl: record.baseUrl };
-    } catch {
+    } catch (error) {
+      console.warn(`[AI] Failed to decrypt key for provider ${provider}:`, error);
       return undefined;
     }
   }

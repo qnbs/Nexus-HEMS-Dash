@@ -2317,9 +2317,16 @@ export const en = {
     executionModeDesc:
       'Choose how AI requests are routed. Local and Eco modes run entirely in this browser. Hybrid prefers local models and falls back to cloud when a key is configured.',
     modeHybrid: 'Hybrid — local first, cloud fallback',
+    modeHybridDesc:
+      'Prefers local inference and falls back to a configured cloud provider when needed.',
     modeLocal: 'Local only — no data leaves this device',
+    modeLocalDesc:
+      'Runs all AI inference locally in this browser; no network requests to AI providers.',
     modeCloud: 'Cloud only — use configured provider keys',
+    modeCloudDesc:
+      'Sends requests to the configured cloud AI provider using your own encrypted key.',
     modeEco: 'Eco — deterministic heuristics, no network',
+    modeEcoDesc: 'Uses fast, deterministic heuristics without any model download or network call.',
     localModel: 'Local Model',
     localModelDesc: 'Select the local inference engine used in Local, Eco, or Hybrid mode.',
     modelWebllm: 'WebLLM (WebGPU, largest)',
