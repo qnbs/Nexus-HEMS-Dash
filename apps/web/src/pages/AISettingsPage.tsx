@@ -42,6 +42,15 @@ function isModelRequired(provider: AIProvider): boolean {
   return AI_PROVIDERS[provider].models.length === 0;
 }
 
+function isSaveDisabled(
+  provider: AIProvider,
+  apiKeyInput: string,
+  modelInput: string,
+  saving: boolean,
+): boolean {
+  return saving || !apiKeyInput.trim() || (isModelRequired(provider) && !modelInput.trim());
+}
+
 export default function AISettingsPage() {
   const { t } = useTranslation();
   const [storedKeys, setStoredKeys] = useState<StoredKeyInfo[]>([]);
@@ -506,9 +515,7 @@ function KeyInputForm({
       <button
         type="button"
         onClick={onSave}
-        disabled={
-          saving || !apiKeyInput.trim() || (isModelRequired(provider) && !modelInput.trim())
-        }
+        disabled={isSaveDisabled(provider, apiKeyInput, modelInput, saving)}
         className="btn-primary focus-ring flex items-center gap-2"
       >
         {saving ? (
