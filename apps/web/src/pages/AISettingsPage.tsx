@@ -38,6 +38,23 @@ interface StoredKeyInfo {
   lastUsed: number;
 }
 
+function isModelRequired(provider: AIProvider): boolean {
+  return AI_PROVIDERS[provider].models.length === 0;
+}
+
+function isModelMissing(provider: AIProvider, model: string): boolean {
+  return isModelRequired(provider) && !model.trim();
+}
+
+function isSaveDisabled(
+  provider: AIProvider,
+  apiKeyInput: string,
+  modelInput: string,
+  saving: boolean,
+): boolean {
+  return saving || !apiKeyInput.trim() || isModelMissing(provider, modelInput);
+}
+
 export default function AISettingsPage() {
   const { t } = useTranslation();
   const [storedKeys, setStoredKeys] = useState<StoredKeyInfo[]>([]);
@@ -64,7 +81,7 @@ export default function AISettingsPage() {
   };
 
   const saveKeyAndActivate = async (provider: AIProvider, baseUrl: string | undefined) => {
-    const model = modelInput || AI_PROVIDERS[provider].models[0] || '';
+    const model = modelInput.trim() || AI_PROVIDERS[provider].models[0] || '';
     await saveAIKey(provider, apiKeyInput.trim(), model, baseUrl);
     if (storedKeys.length === 0) setActiveProvider(provider);
   };
@@ -97,8 +114,17 @@ export default function AISettingsPage() {
     await refreshKeys();
   };
 
+  const canSaveProvider = (provider: AIProvider): boolean => {
+    if (!apiKeyInput.trim()) return false;
+    if (isModelMissing(provider, modelInput)) {
+      toast.error(t('aiSettings.modelRequired'));
+      return false;
+    }
+    return true;
+  };
+
   const handleSave = async () => {
-    if (!addingProvider || !apiKeyInput.trim()) return;
+    if (!addingProvider || !canSaveProvider(addingProvider)) return;
     setSaving(true);
 
     try {
@@ -493,7 +519,7 @@ function KeyInputForm({
       <button
         type="button"
         onClick={onSave}
-        disabled={saving || !apiKeyInput.trim()}
+        disabled={isSaveDisabled(provider, apiKeyInput, modelInput, saving)}
         className="btn-primary focus-ring flex items-center gap-2"
       >
         {saving ? (
