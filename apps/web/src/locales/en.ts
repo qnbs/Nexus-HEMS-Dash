@@ -2335,6 +2335,7 @@ export const en = {
     modelHeuristic: 'Heuristic rules only',
     modelLoading: 'Loading local model…',
     modelUnavailable: 'Local models are not supported in this browser.',
+    modelRequired: 'A model name is required for this provider.',
   },
   chart: {
     priceAriaLabel: 'Price forecast chart for the next 12 hours',

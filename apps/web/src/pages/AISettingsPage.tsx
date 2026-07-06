@@ -64,7 +64,7 @@ export default function AISettingsPage() {
   };
 
   const saveKeyAndActivate = async (provider: AIProvider, baseUrl: string | undefined) => {
-    const model = modelInput || AI_PROVIDERS[provider].models[0] || '';
+    const model = modelInput.trim() || AI_PROVIDERS[provider].models[0] || '';
     await saveAIKey(provider, apiKeyInput.trim(), model, baseUrl);
     if (storedKeys.length === 0) setActiveProvider(provider);
   };
@@ -99,6 +99,11 @@ export default function AISettingsPage() {
 
   const handleSave = async () => {
     if (!addingProvider || !apiKeyInput.trim()) return;
+    const providerModels = AI_PROVIDERS[addingProvider].models;
+    if (providerModels.length === 0 && !modelInput.trim()) {
+      toast.error(t('aiSettings.modelRequired', 'A model name is required for this provider'));
+      return;
+    }
     setSaving(true);
 
     try {

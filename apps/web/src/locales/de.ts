@@ -2350,6 +2350,7 @@ export const de = {
     modelHeuristic: 'Nur Heuristik-Regeln',
     modelLoading: 'Lokales Modell wird geladen…',
     modelUnavailable: 'Lokale Modelle werden in diesem Browser nicht unterstützt.',
+    modelRequired: 'Ein Modellname ist für diesen Anbieter erforderlich.',
   },
   chart: {
     priceAriaLabel: 'Preisprognose-Diagramm für die nächsten 12 Stunden',
