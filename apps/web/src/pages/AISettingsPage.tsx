@@ -97,13 +97,17 @@ export default function AISettingsPage() {
     await refreshKeys();
   };
 
-  const handleSave = async () => {
-    if (!addingProvider || !apiKeyInput.trim()) return;
-    const providerModels = AI_PROVIDERS[addingProvider].models;
-    if (providerModels.length === 0 && !modelInput.trim()) {
+  const canSaveProvider = (provider: AIProvider): boolean => {
+    if (!apiKeyInput.trim()) return false;
+    if (AI_PROVIDERS[provider].models.length === 0 && !modelInput.trim()) {
       toast.error(t('aiSettings.modelRequired', 'A model name is required for this provider'));
-      return;
+      return false;
     }
+    return true;
+  };
+
+  const handleSave = async () => {
+    if (!addingProvider || !canSaveProvider(addingProvider)) return;
     setSaving(true);
 
     try {
