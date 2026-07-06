@@ -63,8 +63,7 @@ export default function AISettingsPage() {
     setActive(active);
   };
 
-  const saveKeyAndActivate = async () => {
-    const provider = addingProvider!;
+  const saveKeyAndActivate = async (provider: AIProvider) => {
     const needsBaseUrl = provider === 'custom' || provider === 'ollama';
     await saveAIKey(
       provider,
@@ -100,7 +99,7 @@ export default function AISettingsPage() {
     setSaving(true);
 
     try {
-      await saveKeyAndActivate();
+      await saveKeyAndActivate(addingProvider);
       resetForm();
       toast.success(t('aiSettings.saved', 'Key encrypted & saved'));
       await refreshKeys();

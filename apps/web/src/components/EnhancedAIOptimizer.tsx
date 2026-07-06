@@ -3,7 +3,7 @@
  */
 
 import type { AIProvider } from '@nexus-hems/ai-core';
-import type * as Comlink from 'comlink';
+import type { Remote } from 'comlink';
 import type { TFunction } from 'i18next';
 import { Key, Loader2, Sparkles } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
@@ -24,7 +24,7 @@ interface AIRecommendation {
   priority: 'high' | 'medium' | 'low';
 }
 
-const VALID_PRIORITIES = new Set(['high', 'medium', 'low']);
+const VALID_PRIORITIES = new Set<string>(['high', 'medium', 'low']);
 
 interface OptimizerState {
   energyData: AppState['energyData'];
@@ -350,7 +350,7 @@ function runInference({
   prefersLocal: boolean;
   hasProvider: boolean | null;
   prompt: string;
-  llmWorker: Comlink.Remote<LLMWorkerAPI> | null;
+  llmWorker: Remote<LLMWorkerAPI> | null;
 }) {
   if (prefersLocal) {
     if (!llmWorker) {
@@ -370,12 +370,13 @@ function runInference({
 function isValidRecommendation(item: unknown): item is AIRecommendation {
   if (typeof item !== 'object' || item === null) return false;
   const rec = item as Record<string, unknown>;
+  const priority = rec.priority;
   return (
     typeof rec.title === 'string' &&
     typeof rec.description === 'string' &&
     typeof rec.impact === 'string' &&
-    typeof rec.priority === 'string' &&
-    VALID_PRIORITIES.has(rec.priority)
+    typeof priority === 'string' &&
+    VALID_PRIORITIES.has(priority)
   );
 }
 
