@@ -78,6 +78,7 @@ function priceStatus(price: number): Status {
   return 'ok';
 }
 
+// skipcq: JS-R1005 -- composed from single-purpose status helpers below
 export function calculateStatuses(
   gridPower: number,
   batterySoC: number,

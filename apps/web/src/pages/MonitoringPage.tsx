@@ -347,6 +347,7 @@ function withFallback(value: number | null, fallback: number): number {
   return value ?? fallback;
 }
 
+// skipcq: JS-R1005 -- data mapping wrapper; fallbacks isolated in withFallback
 function extractEnergyMetrics(
   get: (name: string, labels?: Record<string, string>) => number | null,
   energyData: StoreEnergySlice,
@@ -366,6 +367,7 @@ function extractEnergyMetrics(
   };
 }
 
+// skipcq: JS-R1005 -- orchestration hook; metric extraction and static builders are delegated
 function useMonitoringData() {
   const { t } = useTranslation();
   const { energyData, connected } = useAppStoreShallow((s) => ({

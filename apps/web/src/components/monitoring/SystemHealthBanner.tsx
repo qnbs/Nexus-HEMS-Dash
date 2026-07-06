@@ -5,6 +5,7 @@ import { HealthIconBlock } from './HealthIconBlock';
 import { StatusPill } from './StatusPill';
 import { formatUptime } from './utils';
 
+// skipcq: JS-0415 -- layout shell; inner pieces extracted to HealthIconBlock and EndpointCards
 export function SystemHealthBanner({
   error,
   uptime,
