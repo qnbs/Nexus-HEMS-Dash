@@ -63,13 +63,10 @@ export default function AISettingsPage() {
     setActive(active);
   };
 
-  const saveKeyAndActivate = async (provider: AIProvider) => {
-    const baseUrl = provider === 'custom' || provider === 'ollama' ? customUrlInput : undefined;
+  const saveKeyAndActivate = async (provider: AIProvider, baseUrl: string | undefined) => {
     const model = modelInput || AI_PROVIDERS[provider].models[0] || '';
     await saveAIKey(provider, apiKeyInput.trim(), model, baseUrl);
-    if (storedKeys.length === 0) {
-      setActiveProvider(provider);
-    }
+    if (storedKeys.length === 0) setActiveProvider(provider);
   };
 
   useEffect(() => {
@@ -95,7 +92,9 @@ export default function AISettingsPage() {
     setSaving(true);
 
     try {
-      await saveKeyAndActivate(addingProvider);
+      const baseUrl =
+        addingProvider === 'custom' || addingProvider === 'ollama' ? customUrlInput : undefined;
+      await saveKeyAndActivate(addingProvider, baseUrl);
       resetForm();
       toast.success(t('aiSettings.saved', 'Key encrypted & saved'));
       await refreshKeys();
