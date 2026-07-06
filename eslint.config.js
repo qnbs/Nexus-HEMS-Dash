@@ -25,7 +25,10 @@ export default [
       'react-refresh': reactRefresh,
     },
     rules: {
-      ...reactHooks.configs.recommended.rules,
+      // Keep the two stable React Hooks rules; the rest of the v7 recommended
+      // rules are experimental and add several minutes to each lint run.
+      'react-hooks/rules-of-hooks': 'error',
+      'react-hooks/exhaustive-deps': 'warn',
       'react-compiler/react-compiler': 'error',
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
     },

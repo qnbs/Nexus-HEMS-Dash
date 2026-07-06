@@ -43,7 +43,6 @@ function CommandPaletteVirtualList({
   const parentRef = useRef<HTMLDivElement>(null);
   const rowsRef = useRef(rows);
   rowsRef.current = rows;
-  // eslint-disable-next-line react-hooks/incompatible-library
   const virtualizer = useVirtualizer({
     count: rows.length,
     getScrollElement: () => parentRef.current,

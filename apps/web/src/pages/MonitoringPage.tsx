@@ -73,7 +73,6 @@ type EventLogEntry = {
 
 function VirtualEventLog({ events }: { events: EventLogEntry[] }) {
   const parentRef = useRef<HTMLDivElement>(null);
-  // eslint-disable-next-line react-hooks/incompatible-library
   const virtualizer = useVirtualizer({
     count: events.length,
     getScrollElement: () => parentRef.current,

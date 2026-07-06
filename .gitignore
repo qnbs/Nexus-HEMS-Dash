@@ -34,3 +34,7 @@ graphify-out/
 
 # Runtime audit logs (append-only NDJSON written by the API at runtime)
 apps/api/data/*.ndjson
+
+# TypeScript / ESLint incremental caches
+*.tsbuildinfo
+.eslintcache
