@@ -87,17 +87,22 @@ export default function AISettingsPage() {
     };
   }, []);
 
+  const commitSave = async () => {
+    const provider = addingProvider;
+    if (!provider) return;
+    const baseUrl = provider === 'custom' || provider === 'ollama' ? customUrlInput : undefined;
+    await saveKeyAndActivate(provider, baseUrl);
+    resetForm();
+    toast.success(t('aiSettings.saved', 'Key encrypted & saved'));
+    await refreshKeys();
+  };
+
   const handleSave = async () => {
     if (!addingProvider || !apiKeyInput.trim()) return;
     setSaving(true);
 
     try {
-      const baseUrl =
-        addingProvider === 'custom' || addingProvider === 'ollama' ? customUrlInput : undefined;
-      await saveKeyAndActivate(addingProvider, baseUrl);
-      resetForm();
-      toast.success(t('aiSettings.saved', 'Key encrypted & saved'));
-      await refreshKeys();
+      await commitSave();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t('common.error'));
     } finally {
