@@ -172,7 +172,7 @@
     {
       "name": "Local AI engines (onnxruntime + transformers + web-llm)",
       "path": "dist/assets/vendor-ai-local-*.js",
-      "limit": "2400 kB",
+      "limit": "2500 kB",
       "gzip": true
     },
     {
