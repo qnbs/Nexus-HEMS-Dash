@@ -42,13 +42,17 @@ function isModelRequired(provider: AIProvider): boolean {
   return AI_PROVIDERS[provider].models.length === 0;
 }
 
+function isModelMissing(provider: AIProvider, model: string): boolean {
+  return isModelRequired(provider) && !model.trim();
+}
+
 function isSaveDisabled(
   provider: AIProvider,
   apiKeyInput: string,
   modelInput: string,
   saving: boolean,
 ): boolean {
-  return saving || !apiKeyInput.trim() || (isModelRequired(provider) && !modelInput.trim());
+  return saving || !apiKeyInput.trim() || isModelMissing(provider, modelInput);
 }
 
 export default function AISettingsPage() {
@@ -112,7 +116,7 @@ export default function AISettingsPage() {
 
   const canSaveProvider = (provider: AIProvider): boolean => {
     if (!apiKeyInput.trim()) return false;
-    if (isModelRequired(provider) && !modelInput.trim()) {
+    if (isModelMissing(provider, modelInput)) {
       toast.error(t('aiSettings.modelRequired'));
       return false;
     }
