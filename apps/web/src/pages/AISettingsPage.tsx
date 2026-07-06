@@ -49,11 +49,31 @@ export default function AISettingsPage() {
   const [showKey, setShowKey] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  const resetForm = () => {
+    setApiKeyInput('');
+    setModelInput('');
+    setCustomUrlInput('');
+    setAddingProvider(null);
+  };
+
   const refreshKeys = async () => {
     const keys = await listAIKeys();
     setStoredKeys(keys);
     const active = await getActiveProvider();
     setActive(active);
+  };
+
+  const saveKeyAndActivate = async () => {
+    if (!addingProvider) return;
+    await saveAIKey(
+      addingProvider,
+      apiKeyInput.trim(),
+      modelInput || AI_PROVIDERS[addingProvider].models[0] || '',
+      addingProvider === 'custom' ? customUrlInput : undefined,
+    );
+    if (storedKeys.length === 0) {
+      setActiveProvider(addingProvider);
+    }
   };
 
   useEffect(() => {
@@ -66,7 +86,9 @@ export default function AISettingsPage() {
       if (!mounted) return;
       setActive(active);
     };
-    load().catch(() => {});
+    load().catch((err) => {
+      console.error('Failed to load AI keys', err);
+    });
     return () => {
       mounted = false;
     };
@@ -77,17 +99,7 @@ export default function AISettingsPage() {
     setSaving(true);
 
     try {
-      await saveAIKey(
-        addingProvider,
-        apiKeyInput.trim(),
-        modelInput || AI_PROVIDERS[addingProvider].models[0] || '',
-        addingProvider === 'custom' ? customUrlInput : undefined,
-      );
-
-      if (storedKeys.length === 0) {
-        setActiveProvider(addingProvider);
-      }
-
+      await saveKeyAndActivate();
       resetForm();
       toast.success(t('aiSettings.saved', 'Key encrypted & saved'));
       await refreshKeys();
@@ -96,13 +108,6 @@ export default function AISettingsPage() {
     } finally {
       setSaving(false);
     }
-  };
-
-  const resetForm = () => {
-    setApiKeyInput('');
-    setModelInput('');
-    setCustomUrlInput('');
-    setAddingProvider(null);
   };
 
   const handleRemove = async (provider: AIProvider) => {

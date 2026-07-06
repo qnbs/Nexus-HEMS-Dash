@@ -38,10 +38,12 @@ export function EnhancedAIOptimizer() {
 
   useEffect(() => {
     const checkProvider = async () => {
-      const p = await getActiveProvider();
-      setHasProvider(p !== null);
+      const provider = await getActiveProvider();
+      setHasProvider(provider !== null);
     };
-    checkProvider().catch(() => setHasProvider(false));
+    checkProvider().catch(() => {
+      setHasProvider(false);
+    });
   }, []);
 
   const aiWorker = useAIWorker();
@@ -58,7 +60,10 @@ export function EnhancedAIOptimizer() {
       .then((recs) => {
         if (!cancelled) setBasicRecommendations(recs);
       })
-      .catch(() => {});
+      .catch((err) => {
+        // Worker recommendation failures are non-fatal; basic recs stay empty.
+        console.error('Basic recommendations failed', err);
+      });
     return () => {
       cancelled = true;
     };
@@ -314,7 +319,7 @@ Return ONLY a valid JSON array with this structure:
 ]`;
 }
 
-async function runInference({
+function runInference({
   mode,
   prefersLocal,
   hasProvider,
