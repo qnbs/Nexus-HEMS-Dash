@@ -9,6 +9,7 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/api/package.json ./apps/api/
 COPY apps/web/package.json ./apps/web/
 COPY packages/shared-types/package.json ./packages/shared-types/
+COPY packages/ai-core/package.json ./packages/ai-core/
 RUN corepack enable && pnpm install --frozen-lockfile --ignore-scripts
 
 # Copy source & build
