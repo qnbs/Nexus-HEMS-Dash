@@ -4,17 +4,21 @@
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { mockGetActiveProvider, mockGetAIKey } = vi.hoisted(() => ({
-  mockGetActiveProvider: vi.fn(),
-  mockGetAIKey: vi.fn(),
+const { mockVaultList, mockVaultGet } = vi.hoisted(() => ({
+  mockVaultList: vi.fn(),
+  mockVaultGet: vi.fn(),
 }));
 
-vi.mock('../lib/ai-keys', () => ({
-  getActiveProvider: mockGetActiveProvider,
-  getAIKey: mockGetAIKey,
+vi.mock('../lib/ai-vault', () => ({
+  DexieVaultKeyStore: class {
+    list = mockVaultList;
+    get = mockVaultGet;
+    set = vi.fn();
+    remove = vi.fn();
+  },
 }));
 
-import { callAI, filterAIOutput, sanitizeForPrompt } from '../core/aiClient';
+import { callAI, filterAIOutput, sanitizeForPrompt, setAIMode } from '../core/aiClient';
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -127,9 +131,13 @@ describe('filterAIOutput', () => {
 });
 
 describe('callAI sanitization boundary', () => {
+  beforeEach(() => {
+    setAIMode('cloud');
+  });
+
   it('sanitizes the outbound prompt and filters the returned model text', async () => {
-    mockGetActiveProvider.mockResolvedValue('openai');
-    mockGetAIKey.mockResolvedValue({
+    mockVaultList.mockResolvedValue(['openai']);
+    mockVaultGet.mockResolvedValue({
       apiKey: 'test-key',
       model: 'gpt-test',
       baseUrl: 'https://api.example.test',

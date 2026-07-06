@@ -133,3 +133,26 @@ export interface AIWorkerAPI {
 
   computePredictive(input: PredictiveInput): PredictiveResult;
 }
+
+// ─── LLM Worker ──────────────────────────────────────────────────────
+
+export interface LLMWorkerRequest {
+  task: string;
+  systemPrompt?: string;
+  messages?: Array<{ role: 'system' | 'user' | 'assistant'; content: string }>;
+  temperature?: number;
+  maxTokens?: number;
+  /** Prefer a specific local provider; undefined lets the worker decide. */
+  provider?: 'webllm' | 'transformers' | 'onnx' | 'heuristic';
+}
+
+export interface LLMWorkerResponse {
+  text: string;
+  provider: string;
+  model: string;
+  latencyMs: number;
+}
+
+export interface LLMWorkerAPI {
+  generate(request: LLMWorkerRequest): Promise<LLMWorkerResponse>;
+}
