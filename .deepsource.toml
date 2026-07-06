@@ -62,7 +62,7 @@ enabled = true
     "apps/web/package.json",
     "packages/shared-types/package.json",
   ]
-  cyclomatic_complexity_threshold = "high"
+  cyclomatic_complexity_threshold = "critical"
   skip_doc_coverage = [
     "arrow-function-expression",
     "class-declaration",

@@ -14,7 +14,8 @@
     "noEmit": false,
     "outDir": "dist",
     "rootDir": ".",
-    "noUncheckedIndexedAccess": false
+    "noUncheckedIndexedAccess": false,
+    "tsBuildInfoFile": ".tsbuildinfo"
   },
   "include": ["index.ts", "src/**/*.ts"],
   "exclude": ["node_modules", "dist", "**/*.test.ts"]
