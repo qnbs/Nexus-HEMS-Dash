@@ -17,6 +17,7 @@ import { motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
+import { AIExecutionModeSection } from '../components/settings/AIExecutionModeSection';
 import { ChoiceCardGroup } from '../components/ui/ChoiceCardGroup';
 import { EmptyState } from '../components/ui/EmptyState';
 import {
@@ -145,6 +146,8 @@ export default function AISettingsPage() {
           </p>
         </div>
       </motion.div>
+
+      <AIExecutionModeSection />
 
       {/* Security Notice */}
       <motion.div

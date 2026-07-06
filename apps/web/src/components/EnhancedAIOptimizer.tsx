@@ -7,8 +7,9 @@ import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { callAI } from '../core/aiClient';
+import { callAI, getAIMode, getPreferredLocalModel } from '../core/aiClient';
 import { useAIWorker } from '../core/useAIWorker';
+import { useLLMWorker } from '../core/useLLMWorker';
 import { getActiveProvider } from '../lib/ai-keys';
 import { useAppStoreShallow } from '../store';
 import type { OptimizerRecommendation } from '../workers/worker-types';
@@ -36,6 +37,7 @@ export function EnhancedAIOptimizer() {
 
   // Get basic recommendations via AI Worker (off main thread)
   const aiWorker = useAIWorker();
+  const llmWorker = useLLMWorker();
   const [basicRecommendations, setBasicRecommendations] = useState<OptimizerRecommendation[]>([]);
 
   useEffect(() => {
@@ -52,6 +54,9 @@ export function EnhancedAIOptimizer() {
       cancelled = true;
     };
   }, [aiWorker, energyData, settings.chargeThreshold, settings.maxGridImportKw]);
+
+  const mode = getAIMode();
+  const prefersLocal = mode === 'local' || mode === 'eco';
 
   const handleOptimizeNow = async () => {
     setIsOptimizing(true);
@@ -92,7 +97,22 @@ Return ONLY a valid JSON array with this structure:
   }
 ]`;
 
-      const result = await callAI({ prompt });
+      let result: { text: string };
+      if (prefersLocal) {
+        result = await llmWorker.generate({
+          task: prompt,
+          provider: (mode === 'eco' ? 'heuristic' : getPreferredLocalModel()) as
+            | 'webllm'
+            | 'transformers'
+            | 'onnx'
+            | 'heuristic',
+        });
+      } else {
+        if (!hasProvider) {
+          throw new Error('NO_PROVIDER');
+        }
+        result = await callAI({ prompt });
+      }
 
       try {
         const recommendations = JSON.parse(result.text);
@@ -152,7 +172,7 @@ Return ONLY a valid JSON array with this structure:
           <button
             type="button"
             onClick={handleOptimizeNow}
-            disabled={isOptimizing || hasProvider === false}
+            disabled={isOptimizing || (hasProvider === false && !prefersLocal)}
             className="btn-primary focus-ring flex items-center gap-2 text-sm"
             aria-label={
               isOptimizing
