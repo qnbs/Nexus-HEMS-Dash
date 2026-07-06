@@ -38,6 +38,10 @@ interface StoredKeyInfo {
   lastUsed: number;
 }
 
+function isModelRequired(provider: AIProvider): boolean {
+  return AI_PROVIDERS[provider].models.length === 0;
+}
+
 export default function AISettingsPage() {
   const { t } = useTranslation();
   const [storedKeys, setStoredKeys] = useState<StoredKeyInfo[]>([]);
@@ -99,8 +103,8 @@ export default function AISettingsPage() {
 
   const canSaveProvider = (provider: AIProvider): boolean => {
     if (!apiKeyInput.trim()) return false;
-    if (AI_PROVIDERS[provider].models.length === 0 && !modelInput.trim()) {
-      toast.error(t('aiSettings.modelRequired', 'A model name is required for this provider'));
+    if (isModelRequired(provider) && !modelInput.trim()) {
+      toast.error(t('aiSettings.modelRequired'));
       return false;
     }
     return true;
@@ -502,7 +506,9 @@ function KeyInputForm({
       <button
         type="button"
         onClick={onSave}
-        disabled={saving || !apiKeyInput.trim()}
+        disabled={
+          saving || !apiKeyInput.trim() || (isModelRequired(provider) && !modelInput.trim())
+        }
         className="btn-primary focus-ring flex items-center gap-2"
       >
         {saving ? (
