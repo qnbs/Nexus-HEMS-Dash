@@ -2,7 +2,18 @@ export { detectCapabilities } from './capabilities.ts';
 export { buildStrategy, resolveEffectiveMode } from './modes.ts';
 export { DEFAULT_PREFERENCES, UnifiedAIOrchestrator } from './orchestrator.ts';
 export { AnthropicEngine, GeminiEngine, OpenAICompatibleEngine } from './providers/cloud/index.ts';
-export { NoopLocalEngine } from './providers/local/noop.ts';
+export type {
+  OnnxEngineConfig,
+  TransformersEngineConfig,
+  WebLLMEngineConfig,
+} from './providers/local/index.ts';
+export {
+  HeuristicEngine,
+  NoopLocalEngine,
+  OnnxEngine,
+  TransformersEngine,
+  WebLLMEngine,
+} from './providers/local/index.ts';
 export { AIProviderRegistry } from './providers/registry.ts';
 export {
   buildSafetySystemPrompt,
