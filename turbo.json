@@ -12,8 +12,12 @@
       "inputs": ["src/**", "tsconfig.json", "package.json"],
       "outputs": []
     },
+    "@nexus-hems/ai-core#build": {
+      "inputs": ["src/**", "tsconfig.json", "package.json"],
+      "outputs": []
+    },
     "@nexus-hems/web#build": {
-      "dependsOn": ["@nexus-hems/shared-types#build"],
+      "dependsOn": ["@nexus-hems/shared-types#build", "@nexus-hems/ai-core#build"],
       "env": [
         "VITE_E2E_TESTING",
         "VITE_BACKEND_WS",
