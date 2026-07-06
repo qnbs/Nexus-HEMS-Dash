@@ -334,18 +334,20 @@ function calculateStatuses(
 
 function useMonitoringData() {
   const { t } = useTranslation();
-  const energyData = useAppStoreShallow((s) => ({
-    pvPower: s.energyData.pvPower,
-    gridPower: s.energyData.gridPower,
-    batteryPower: s.energyData.batteryPower,
-    batterySoC: s.energyData.batterySoC,
-    houseLoad: s.energyData.houseLoad,
-    evPower: s.energyData.evPower,
-    heatPumpPower: s.energyData.heatPumpPower,
-    gridVoltage: s.energyData.gridVoltage,
-    priceCurrent: s.energyData.priceCurrent,
+  const { energyData, connected } = useAppStoreShallow((s) => ({
+    energyData: {
+      pvPower: s.energyData.pvPower,
+      gridPower: s.energyData.gridPower,
+      batteryPower: s.energyData.batteryPower,
+      batterySoC: s.energyData.batterySoC,
+      houseLoad: s.energyData.houseLoad,
+      evPower: s.energyData.evPower,
+      heatPumpPower: s.energyData.heatPumpPower,
+      gridVoltage: s.energyData.gridVoltage,
+      priceCurrent: s.energyData.priceCurrent,
+    },
+    connected: s.connected,
   }));
-  const connected = useAppStoreShallow((s) => s.connected);
   const { families, health, lastUpdated, error } = useMetrics(5000);
 
   const get = (name: string, labels?: Record<string, string>) =>

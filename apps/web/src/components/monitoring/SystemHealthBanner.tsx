@@ -59,17 +59,17 @@ export function SystemHealthBanner({
       {/* Scrape Endpoints */}
       <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
         <div className="rounded-xl bg-white/5 px-3 py-2">
-          <p className="text-(--color-muted) text-[10px]">Prometheus Scrape</p>
+          <p className="text-(--color-muted) text-[10px]">{t('monitoring.prometheusScrape')}</p>
           <code className="truncate font-mono text-(--color-primary) text-xs">GET /metrics</code>
         </div>
         <div className="rounded-xl bg-white/5 px-3 py-2">
-          <p className="text-(--color-muted) text-[10px]">JSON API</p>
+          <p className="text-(--color-muted) text-[10px]">{t('monitoring.jsonApi')}</p>
           <code className="truncate font-mono text-(--color-primary) text-xs">
             GET /api/metrics/json
           </code>
         </div>
         <div className="rounded-xl bg-white/5 px-3 py-2">
-          <p className="text-(--color-muted) text-[10px]">Health Check</p>
+          <p className="text-(--color-muted) text-[10px]">{t('monitoring.healthCheck')}</p>
           <code className="truncate font-mono text-(--color-primary) text-xs">GET /health</code>
         </div>
       </div>

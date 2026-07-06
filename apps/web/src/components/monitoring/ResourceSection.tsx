@@ -29,8 +29,8 @@ export function ResourceSection({
       </h2>
       <div className="space-y-4">
         <ResourceGauge
-          icon={<Cpu size={16} className="text-purple-400" />}
-          label="CPU"
+          icon={<Cpu size={16} className="text-purple-400" aria-hidden="true" />}
+          label={t('monitoring.cpu')}
           value={cpuUsage}
           color={
             cpuUsage > 80
@@ -41,15 +41,15 @@ export function ResourceSection({
           }
         />
         <ResourceGauge
-          icon={<MemoryStick size={16} className="text-blue-400" />}
-          label="RAM"
+          icon={<MemoryStick size={16} className="text-blue-400" aria-hidden="true" />}
+          label={t('monitoring.ram')}
           value={memUsage}
           color={
             memUsage > 85 ? 'bg-red-500/70' : memUsage > 70 ? 'bg-yellow-500/70' : 'bg-blue-500/70'
           }
         />
         <ResourceGauge
-          icon={<HardDrive size={16} className="text-cyan-400" />}
+          icon={<HardDrive size={16} className="text-cyan-400" aria-hidden="true" />}
           label={t('monitoring.disk')}
           value={diskUsage}
           color="bg-cyan-500/70"
@@ -57,7 +57,7 @@ export function ResourceSection({
         <div className="rounded-xl bg-white/5 px-3 py-2.5">
           <div className="flex items-center justify-between text-xs">
             <span className="flex items-center gap-2 text-(--color-muted)">
-              <Activity size={14} className="text-emerald-400" />
+              <Activity size={14} className="text-emerald-400" aria-hidden="true" />
               {t('monitoring.networkIO')}
             </span>
             <span className="font-medium text-(--color-text)">{networkIO} KB/s</span>
@@ -67,16 +67,16 @@ export function ResourceSection({
       {/* System info */}
       <div className="mt-4 space-y-1.5 text-(--color-muted) text-[10px]">
         <div className="flex justify-between">
-          <span>Node.js</span>
-          <span className="font-mono">v22.14.0</span>
+          <span>{t('monitoring.nodeJs')}</span>
+          <span className="font-mono">{t('monitoring.nodeJsVersion')}</span>
         </div>
         <div className="flex justify-between">
-          <span>Runtime</span>
-          <span className="font-mono">Vite 6.2 + Express</span>
+          <span>{t('monitoring.runtime')}</span>
+          <span className="font-mono">{t('monitoring.runtimeVersion')}</span>
         </div>
         <div className="flex justify-between">
-          <span>OS</span>
-          <span className="font-mono">Linux 6.1 ARM64</span>
+          <span>{t('monitoring.os')}</span>
+          <span className="font-mono">{t('monitoring.osVersion')}</span>
         </div>
       </div>
     </motion.section>

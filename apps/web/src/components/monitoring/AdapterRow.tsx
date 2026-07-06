@@ -1,4 +1,5 @@
 import { Wifi, WifiOff } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import type { AdapterItem } from './types';
 
 export function AdapterRow({
@@ -12,6 +13,7 @@ export function AdapterRow({
   latencyMs: number;
   contrib?: boolean;
 }) {
+  const { t } = useTranslation();
   const iconBg = contrib
     ? isConnected
       ? 'bg-emerald-500/15 text-emerald-400'
@@ -20,9 +22,13 @@ export function AdapterRow({
       ? 'bg-emerald-500/15 text-emerald-400'
       : 'bg-red-500/15 text-red-400';
   const statusIcon = isConnected ? (
-    <Wifi size={14} className="text-emerald-400" />
+    <Wifi size={14} className="text-emerald-400" aria-hidden="true" />
   ) : (
-    <WifiOff size={14} className={contrib ? 'text-(--color-muted)' : 'text-red-400'} />
+    <WifiOff
+      size={14}
+      className={contrib ? 'text-(--color-muted)' : 'text-red-400'}
+      aria-hidden="true"
+    />
   );
 
   return (
@@ -38,7 +44,7 @@ export function AdapterRow({
           </span>
           {contrib && (
             <span className="shrink-0 rounded bg-(--color-primary)/10 px-1.5 py-0.5 text-(--color-primary) text-[9px]">
-              contrib
+              {t('monitoring.contribBadge')}
             </span>
           )}
         </div>

@@ -38,11 +38,11 @@ export function LoadChartSection({
           </span>
           <span className="flex items-center gap-1">
             <span className="inline-block h-2.5 w-2.5 rounded-full bg-purple-400" />
-            CPU %
+            {t('monitoring.cpuPercent')}
           </span>
           <span className="flex items-center gap-1">
             <span className="inline-block h-2.5 w-2.5 rounded-full bg-blue-400" />
-            RAM %
+            {t('monitoring.ramPercent')}
           </span>
         </div>
       </div>
@@ -97,7 +97,7 @@ export function LoadChartSection({
               stroke="var(--chart-4)"
               fill="url(#gradCpu)"
               strokeWidth={1.5}
-              name="CPU %"
+              name={t('monitoring.cpuPercent')}
             />
             <Area
               type="monotone"
@@ -105,7 +105,7 @@ export function LoadChartSection({
               stroke="var(--chart-2)"
               fill="url(#gradMem)"
               strokeWidth={1.5}
-              name="RAM %"
+              name={t('monitoring.ramPercent')}
             />
           </AreaChart>
         </ResponsiveContainer>

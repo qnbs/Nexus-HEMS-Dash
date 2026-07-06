@@ -44,11 +44,11 @@ export function VirtualEventLog({ events }: { events: EventLogEntry[] }) {
                   }`}
                 >
                   {event.level === 'error' ? (
-                    <XCircle size={10} />
+                    <XCircle size={10} aria-hidden="true" />
                   ) : event.level === 'warn' ? (
-                    <AlertTriangle size={10} />
+                    <AlertTriangle size={10} aria-hidden="true" />
                   ) : (
-                    <CheckCircle2 size={10} />
+                    <CheckCircle2 size={10} aria-hidden="true" />
                   )}
                 </span>
                 <span className="shrink-0 rounded bg-white/10 px-1.5 py-0.5 font-mono text-(--color-muted) text-[9px]">
