@@ -227,6 +227,9 @@ importers:
       '@google/genai':
         specifier: ^2.0.1
         version: 2.0.1
+      '@nexus-hems/ai-core':
+        specifier: workspace:*
+        version: link:../../packages/ai-core
       '@nexus-hems/shared-types':
         specifier: workspace:*
         version: link:../../packages/shared-types
