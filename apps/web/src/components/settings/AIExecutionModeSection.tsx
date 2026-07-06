@@ -53,9 +53,11 @@ export function AIExecutionModeSection() {
   });
 
   useEffect(() => {
-    void detectCapabilities().then((caps) => {
+    const detect = async () => {
+      const caps = await detectCapabilities();
       setCapability({ webgpu: caps.webgpu, wasm: caps.webAssembly });
-    });
+    };
+    detect().catch(() => {});
   }, []);
 
   const handleModeChange = (value: string) => {
