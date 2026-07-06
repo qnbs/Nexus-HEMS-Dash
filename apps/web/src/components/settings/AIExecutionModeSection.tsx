@@ -57,7 +57,9 @@ export function AIExecutionModeSection() {
       const caps = await detectCapabilities();
       setCapability({ webgpu: caps.webgpu, wasm: caps.webAssembly });
     };
-    detect().catch(() => {});
+    detect().catch((err) => {
+      console.error('Failed to detect AI capabilities', err);
+    });
   }, []);
 
   const handleModeChange = (value: string) => {
