@@ -1,13 +1,17 @@
 /**
  * Provider registry: maps provider IDs to AIEngine implementations.
- * Phase 1 registers cloud providers and a no-op local placeholder.
+ * Phase 2a registers cloud providers plus local/heuristic engines.
  */
 
 import type { AIEngine, AIProvider } from '../types.ts';
 import { AnthropicEngine } from './cloud/anthropic.ts';
 import { GeminiEngine } from './cloud/gemini.ts';
 import { OpenAICompatibleEngine } from './cloud/openai-compatible.ts';
+import { HeuristicEngine } from './local/heuristic-engine.ts';
 import { NoopLocalEngine } from './local/noop.ts';
+import { OnnxEngine } from './local/onnx-engine.ts';
+import { TransformersEngine } from './local/transformers-engine.ts';
+import { WebLLMEngine } from './local/webllm-engine.ts';
 
 export class AIProviderRegistry {
   private readonly engines = new Map<AIProvider, AIEngine>();
@@ -18,6 +22,10 @@ export class AIProviderRegistry {
     this.register(new OpenAICompatibleEngine('groq', 'Groq', 'https://api.groq.com/openai/v1'));
     this.register(new AnthropicEngine());
     this.register(new GeminiEngine());
+    this.register(new WebLLMEngine());
+    this.register(new TransformersEngine());
+    this.register(new OnnxEngine());
+    this.register(new HeuristicEngine());
     this.register(new NoopLocalEngine());
   }
 
