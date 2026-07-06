@@ -3,6 +3,53 @@ import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { ResourceGauge } from './ResourceGauge';
 
+function NetworkIORow({ networkIO }: { networkIO: number }) {
+  const { t } = useTranslation();
+  return (
+    <div className="rounded-xl bg-white/5 px-3 py-2.5">
+      <div className="flex items-center justify-between text-xs">
+        <span className="flex items-center gap-2 text-(--color-muted)">
+          <Activity size={14} className="text-emerald-400" aria-hidden="true" />
+          {t('monitoring.networkIO')}
+        </span>
+        <span className="font-medium text-(--color-text)">{networkIO} KB/s</span>
+      </div>
+    </div>
+  );
+}
+
+function SystemInfoRows() {
+  const { t } = useTranslation();
+  const rows = [
+    { label: t('monitoring.nodeJs'), value: t('monitoring.nodeJsVersion') },
+    { label: t('monitoring.runtime'), value: t('monitoring.runtimeVersion') },
+    { label: t('monitoring.os'), value: t('monitoring.osVersion') },
+  ];
+
+  return (
+    <div className="mt-4 space-y-1.5 text-(--color-muted) text-[10px]">
+      {rows.map(({ label, value }) => (
+        <div key={label} className="flex justify-between">
+          <span>{label}</span>
+          <span className="font-mono">{value}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function cpuGaugeColor(cpuUsage: number): string {
+  if (cpuUsage > 80) return 'bg-red-500/70';
+  if (cpuUsage > 60) return 'bg-yellow-500/70';
+  return 'bg-emerald-500/70';
+}
+
+function ramGaugeColor(memUsage: number): string {
+  if (memUsage > 85) return 'bg-red-500/70';
+  if (memUsage > 70) return 'bg-yellow-500/70';
+  return 'bg-blue-500/70';
+}
+
 export function ResourceSection({
   cpuUsage,
   memUsage,
@@ -32,21 +79,13 @@ export function ResourceSection({
           icon={<Cpu size={16} className="text-purple-400" aria-hidden="true" />}
           label={t('monitoring.cpu')}
           value={cpuUsage}
-          color={
-            cpuUsage > 80
-              ? 'bg-red-500/70'
-              : cpuUsage > 60
-                ? 'bg-yellow-500/70'
-                : 'bg-emerald-500/70'
-          }
+          color={cpuGaugeColor(cpuUsage)}
         />
         <ResourceGauge
           icon={<MemoryStick size={16} className="text-blue-400" aria-hidden="true" />}
           label={t('monitoring.ram')}
           value={memUsage}
-          color={
-            memUsage > 85 ? 'bg-red-500/70' : memUsage > 70 ? 'bg-yellow-500/70' : 'bg-blue-500/70'
-          }
+          color={ramGaugeColor(memUsage)}
         />
         <ResourceGauge
           icon={<HardDrive size={16} className="text-cyan-400" aria-hidden="true" />}
@@ -54,31 +93,9 @@ export function ResourceSection({
           value={diskUsage}
           color="bg-cyan-500/70"
         />
-        <div className="rounded-xl bg-white/5 px-3 py-2.5">
-          <div className="flex items-center justify-between text-xs">
-            <span className="flex items-center gap-2 text-(--color-muted)">
-              <Activity size={14} className="text-emerald-400" aria-hidden="true" />
-              {t('monitoring.networkIO')}
-            </span>
-            <span className="font-medium text-(--color-text)">{networkIO} KB/s</span>
-          </div>
-        </div>
+        <NetworkIORow networkIO={networkIO} />
       </div>
-      {/* System info */}
-      <div className="mt-4 space-y-1.5 text-(--color-muted) text-[10px]">
-        <div className="flex justify-between">
-          <span>{t('monitoring.nodeJs')}</span>
-          <span className="font-mono">{t('monitoring.nodeJsVersion')}</span>
-        </div>
-        <div className="flex justify-between">
-          <span>{t('monitoring.runtime')}</span>
-          <span className="font-mono">{t('monitoring.runtimeVersion')}</span>
-        </div>
-        <div className="flex justify-between">
-          <span>{t('monitoring.os')}</span>
-          <span className="font-mono">{t('monitoring.osVersion')}</span>
-        </div>
-      </div>
+      <SystemInfoRows />
     </motion.section>
   );
 }

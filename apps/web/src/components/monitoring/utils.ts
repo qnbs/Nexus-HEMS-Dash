@@ -53,3 +53,18 @@ export function generateSystemLoadHistory(currentLoad: number) {
     };
   });
 }
+
+export function calculateStatuses(
+  gridPower: number,
+  batterySoC: number,
+  voltage: number,
+  price: number,
+): { gridStatus: Status; batteryStatus: Status; voltageStatus: Status; priceStatus: Status } {
+  return {
+    gridStatus: gridPower > 4200 ? 'crit' : gridPower > 3000 ? 'warn' : 'ok',
+    batteryStatus: batterySoC < 10 ? 'crit' : batterySoC < 20 ? 'warn' : 'ok',
+    voltageStatus:
+      voltage < 210 || voltage > 250 ? 'crit' : voltage < 220 || voltage > 240 ? 'warn' : 'ok',
+    priceStatus: price > 0.4 ? 'crit' : price > 0.3 ? 'warn' : 'ok',
+  };
+}

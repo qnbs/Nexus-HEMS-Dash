@@ -12,6 +12,7 @@ export { StatusPill } from './StatusPill';
 export { SystemHealthBanner } from './SystemHealthBanner';
 export type { AdapterItem, AlertRule, EventLogEntry, MetricCardItem, Status } from './types';
 export {
+  calculateStatuses,
   formatUptime,
   generateSystemLoadHistory,
   severityClasses,

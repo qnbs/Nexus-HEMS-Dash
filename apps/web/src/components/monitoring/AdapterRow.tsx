@@ -2,6 +2,31 @@ import { Wifi, WifiOff } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { AdapterItem } from './types';
 
+function adapterIconBackground(isConnected: boolean, contrib?: boolean | undefined): string {
+  if (isConnected) return 'bg-emerald-500/15 text-emerald-400';
+  if (contrib) return 'bg-white/5 text-(--color-muted)';
+  return 'bg-red-500/15 text-red-400';
+}
+
+function AdapterStatusIcon({
+  isConnected,
+  contrib,
+}: {
+  isConnected: boolean;
+  contrib?: boolean | undefined;
+}) {
+  if (isConnected) {
+    return <Wifi size={14} className="text-emerald-400" aria-hidden="true" />;
+  }
+  return (
+    <WifiOff
+      size={14}
+      className={contrib ? 'text-(--color-muted)' : 'text-red-400'}
+      aria-hidden="true"
+    />
+  );
+}
+
 export function AdapterRow({
   adapter,
   isConnected,
@@ -14,22 +39,7 @@ export function AdapterRow({
   contrib?: boolean;
 }) {
   const { t } = useTranslation();
-  const iconBg = contrib
-    ? isConnected
-      ? 'bg-emerald-500/15 text-emerald-400'
-      : 'bg-white/5 text-(--color-muted)'
-    : isConnected
-      ? 'bg-emerald-500/15 text-emerald-400'
-      : 'bg-red-500/15 text-red-400';
-  const statusIcon = isConnected ? (
-    <Wifi size={14} className="text-emerald-400" aria-hidden="true" />
-  ) : (
-    <WifiOff
-      size={14}
-      className={contrib ? 'text-(--color-muted)' : 'text-red-400'}
-      aria-hidden="true"
-    />
-  );
+  const iconBg = adapterIconBackground(isConnected, contrib);
 
   return (
     <div className="group flex items-center gap-3 rounded-xl bg-white/5 px-3 py-2.5 transition-colors hover:bg-white/10">
@@ -56,7 +66,7 @@ export function AdapterRow({
             {latencyMs.toFixed(0)}ms
           </span>
         )}
-        {statusIcon}
+        <AdapterStatusIcon isConnected={isConnected} contrib={contrib} />
       </div>
     </div>
   );

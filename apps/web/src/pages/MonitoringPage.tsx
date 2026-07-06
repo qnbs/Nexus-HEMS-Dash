@@ -16,6 +16,7 @@ import {
   AdapterHealthSection,
   type AlertRule,
   AlertRulesSection,
+  calculateStatuses,
   EventLogSection,
   GrafanaSection,
   generateSystemLoadHistory,
@@ -317,18 +318,47 @@ function buildAlertRules(
   ];
 }
 
-function calculateStatuses(
-  gridPower: number,
-  batterySoC: number,
-  voltage: number,
-  price: number,
-): { gridStatus: Status; batteryStatus: Status; voltageStatus: Status; priceStatus: Status } {
+type StoreEnergySlice = {
+  pvPower: number;
+  gridPower: number;
+  batteryPower: number;
+  batterySoC: number;
+  houseLoad: number;
+  evPower: number;
+  heatPumpPower: number;
+  gridVoltage: number;
+  priceCurrent: number;
+};
+
+type EnergyMetrics = {
+  pvPower: number;
+  gridPower: number;
+  batteryPower: number;
+  batterySoC: number;
+  houseLoad: number;
+  evPower: number;
+  heatPump: number;
+  voltage: number;
+  price: number;
+  uptime: number;
+};
+
+function extractEnergyMetrics(
+  get: (name: string, labels?: Record<string, string>) => number | null,
+  energyData: StoreEnergySlice,
+  health: { uptime: number },
+): EnergyMetrics {
   return {
-    gridStatus: gridPower > 4200 ? 'crit' : gridPower > 3000 ? 'warn' : 'ok',
-    batteryStatus: batterySoC < 10 ? 'crit' : batterySoC < 20 ? 'warn' : 'ok',
-    voltageStatus:
-      voltage < 210 || voltage > 250 ? 'crit' : voltage < 220 || voltage > 240 ? 'warn' : 'ok',
-    priceStatus: price > 0.4 ? 'crit' : price > 0.3 ? 'warn' : 'ok',
+    pvPower: get('hems_pv_power_watts') ?? energyData.pvPower,
+    gridPower: get('hems_grid_power_watts') ?? energyData.gridPower,
+    batteryPower: get('hems_battery_power_watts') ?? energyData.batteryPower,
+    batterySoC: get('hems_battery_soc_percent') ?? energyData.batterySoC,
+    houseLoad: get('hems_house_load_watts') ?? energyData.houseLoad,
+    evPower: get('hems_ev_charger_power_watts') ?? energyData.evPower,
+    heatPump: get('hems_heat_pump_power_watts') ?? energyData.heatPumpPower,
+    voltage: get('hems_grid_voltage_volts') ?? energyData.gridVoltage,
+    price: get('hems_tariff_price_eur_per_kwh') ?? energyData.priceCurrent,
+    uptime: get('hems_uptime_seconds') ?? health.uptime,
   };
 }
 
@@ -353,58 +383,53 @@ function useMonitoringData() {
   const get = (name: string, labels?: Record<string, string>) =>
     getMetricFromSnapshot(families, name, labels);
 
-  const pvPower = get('hems_pv_power_watts') ?? energyData.pvPower;
-  const gridPower = get('hems_grid_power_watts') ?? energyData.gridPower;
-  const batteryPower = get('hems_battery_power_watts') ?? energyData.batteryPower;
-  const batterySoC = get('hems_battery_soc_percent') ?? energyData.batterySoC;
-  const houseLoad = get('hems_house_load_watts') ?? energyData.houseLoad;
-  const evPower = get('hems_ev_charger_power_watts') ?? energyData.evPower;
-  const heatPump = get('hems_heat_pump_power_watts') ?? energyData.heatPumpPower;
-  const voltage = get('hems_grid_voltage_volts') ?? energyData.gridVoltage;
-  const price = get('hems_tariff_price_eur_per_kwh') ?? energyData.priceCurrent;
-  const uptime = get('hems_uptime_seconds') ?? health.uptime;
-
-  const statuses = calculateStatuses(gridPower, batterySoC, voltage, price);
+  const metrics = extractEnergyMetrics(get, energyData, health);
+  const statuses = calculateStatuses(
+    metrics.gridPower,
+    metrics.batterySoC,
+    metrics.voltage,
+    metrics.price,
+  );
   const adapters = buildCoreAdapters(t);
   const contribAdapters = buildContribAdapters(t);
   const metricCards = buildMetricCards(
     t,
     {
-      pvPower,
-      gridPower,
-      batteryPower,
-      batterySoC,
-      houseLoad,
-      evPower,
-      heatPump,
-      voltage,
-      price,
+      pvPower: metrics.pvPower,
+      gridPower: metrics.gridPower,
+      batteryPower: metrics.batteryPower,
+      batterySoC: metrics.batterySoC,
+      houseLoad: metrics.houseLoad,
+      evPower: metrics.evPower,
+      heatPump: metrics.heatPump,
+      voltage: metrics.voltage,
+      price: metrics.price,
       connections: health.connections,
     },
     statuses,
   );
   const alertRules = buildAlertRules(t, {
-    gridPower,
-    batterySoC,
+    gridPower: metrics.gridPower,
+    batterySoC: metrics.batterySoC,
     connected,
-    price,
-    voltage,
-    pvPower,
+    price: metrics.price,
+    voltage: metrics.voltage,
+    pvPower: metrics.pvPower,
   });
 
   return {
     t,
     error,
-    uptime,
+    uptime: metrics.uptime,
     lastUpdated,
     connected,
     activeAlerts: alertRules.filter((rule) => rule.active).length,
     metricCards,
-    loadHistory: generateSystemLoadHistory(houseLoad),
-    cpuUsage: 18 + (houseLoad % 30),
-    memUsage: 52 + (pvPower % 15),
+    loadHistory: generateSystemLoadHistory(metrics.houseLoad),
+    cpuUsage: 18 + (metrics.houseLoad % 30),
+    memUsage: 52 + (metrics.pvPower % 15),
     diskUsage: 34,
-    networkIO: Math.round(pvPower / 100 + gridPower / 200),
+    networkIO: Math.round(metrics.pvPower / 100 + metrics.gridPower / 200),
     adapters,
     contribAdapters,
     get,
