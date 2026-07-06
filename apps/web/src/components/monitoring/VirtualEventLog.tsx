@@ -3,7 +3,7 @@ import { useRef } from 'react';
 import type { EventLogEntry } from './types';
 import { VirtualEventRow } from './VirtualEventRow';
 
-// skipcq: JS-R1005 -- virtual list wrapper; row rendering delegated to VirtualEventRow
+// skipcq: JS-R1005
 export function VirtualEventLog({ events }: { events: EventLogEntry[] }) {
   const parentRef = useRef<HTMLDivElement>(null);
   const virtualizer = useVirtualizer({

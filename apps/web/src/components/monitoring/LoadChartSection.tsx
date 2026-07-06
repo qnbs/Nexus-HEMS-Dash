@@ -24,7 +24,7 @@ function LoadChartLegend() {
   );
 }
 
-// skipcq: JS-0415 -- chart layout composed from shallow LoadChartLegend and LoadAreaChart
+// skipcq: JS-0415
 export function LoadChartSection({
   loadHistory,
 }: {

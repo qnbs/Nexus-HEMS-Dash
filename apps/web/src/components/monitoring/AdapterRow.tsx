@@ -28,7 +28,7 @@ function AdapterStatusIcon({
   );
 }
 
-// skipcq: JS-R1005 -- presentational row; logic already split into ContribBadge, LatencyLabel and AdapterStatusIcon
+// skipcq: JS-R1005
 export function AdapterRow({
   adapter,
   isConnected,

@@ -17,7 +17,7 @@ function ramGaugeColor(memUsage: number): string {
   return 'bg-blue-500/70';
 }
 
-// skipcq: JS-0415 -- layout shell; inner rows extracted to NetworkIORow and SystemInfoRows
+// skipcq: JS-0415
 export function ResourceSection({
   cpuUsage,
   memUsage,
