@@ -179,10 +179,10 @@ function SystemStatusBanner({
         <SystemStatusHeadline connected={connected} />
 
         <div className="flex flex-wrap gap-2">
-          <StatusPill label="MQTT" ok={connected} />
-          <StatusPill label="KNX/IP" ok />
-          <StatusPill label="OCPP" ok />
-          <StatusPill label="EEBUS" ok />
+          <StatusPill label={t('monitoringUnified.protocolMqtt')} ok={connected} />
+          <StatusPill label={t('monitoringUnified.protocolKnx')} ok />
+          <StatusPill label={t('monitoringUnified.protocolOcpp')} ok />
+          <StatusPill label={t('monitoringUnified.protocolEebus')} ok />
           {isBackendWsEnabled() && (
             <StatusPill label={t('monitoringUnified.backendWs')} ok={serverWsConnected} />
           )}
