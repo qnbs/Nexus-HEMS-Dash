@@ -1,5 +1,10 @@
 import { expect, test } from '@playwright/test';
-import { gotoAndWaitForHealth, mockBackendHealth, setupLocalStorage } from './e2e-setup';
+import {
+  attachReactErrorWatcher,
+  gotoAndWaitForHealth,
+  mockBackendHealth,
+  setupLocalStorage,
+} from './e2e-setup';
 
 /**
  * Animation crash sweep — exposes latent animation-gated render loops (e.g. a
@@ -35,23 +40,10 @@ test.describe('Animation crash sweep', () => {
 
   for (const route of ROUTES) {
     test(`${route} loads and reveals panels without crashing`, async ({ page }) => {
-      const pageErrors: string[] = [];
-      page.on('pageerror', (error) => {
-        pageErrors.push(`${error.message}\n${error.stack ?? '(no stack)'}`);
-      });
-
-      // React error boundaries SWALLOW the error (no pageerror fires), so a
-      // contained crash — like a recharts #185 loop caught by a section
-      // boundary — is invisible unless we also watch console.error. React and
-      // our ErrorBoundary both log there; this detector is locale-independent.
-      const reactErrors: string[] = [];
-      page.on('console', (msg) => {
-        if (msg.type() !== 'error') return;
-        const text = msg.text();
-        if (/Minified React error #\d+|Maximum update depth|\[ErrorBoundary\]/.test(text)) {
-          reactErrors.push(text);
-        }
-      });
+      // Watches uncaught page errors AND React render errors — the latter are
+      // swallowed by error boundaries (no pageerror), so a contained #185 loop
+      // caught by a section boundary is only visible via console.error.
+      const { pageErrors, reactErrors } = attachReactErrorWatcher(page);
 
       const wentWrong = page.getByRole('heading', { name: /went wrong/i });
 
@@ -71,14 +63,13 @@ test.describe('Animation crash sweep', () => {
       }
 
       // Flip visible unchecked toggles (e.g. Monitoring power-user mode) that
-      // reveal lazily-mounted, animated panels.
-      const checkboxes = page.locator('input[type="checkbox"]:not(:checked)');
-      const checkboxCount = await checkboxes.count();
-      for (let i = 0; i < checkboxCount; i++) {
-        await checkboxes
-          .nth(i)
-          .check({ force: true })
-          .catch(() => {});
+      // reveal lazily-mounted, animated panels. Always check the FIRST remaining
+      // unchecked box: checking one removes it from the `:not(:checked)` set, so
+      // an index-based walk would skip the shrinking set. Capped for safety.
+      for (let i = 0; i < 30; i++) {
+        const nextCheckbox = page.locator('input[type="checkbox"]:not(:checked)').first();
+        if (!(await nextCheckbox.isVisible().catch(() => false))) break;
+        await nextCheckbox.check({ force: true }).catch(() => {});
         await page.waitForTimeout(200);
         if (await wentWrong.isVisible().catch(() => false)) break;
       }

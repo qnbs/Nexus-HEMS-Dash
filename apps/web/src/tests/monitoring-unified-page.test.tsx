@@ -31,8 +31,13 @@ vi.mock('../components/ui/EmptyState', () => ({
   EmptyState: () => <div data-testid="empty-state" />,
 }));
 
+const panelControl = vi.hoisted(() => ({ shouldThrow: false }));
+
 vi.mock('../pages/MonitoringPage', () => ({
-  default: () => <div data-testid="monitoring-detail-panel" />,
+  default: () => {
+    if (panelControl.shouldThrow) throw new Error('boom');
+    return <div data-testid="monitoring-detail-panel" />;
+  },
 }));
 
 const storeState = vi.hoisted(() => ({
@@ -61,6 +66,7 @@ describe('Monitoring unified page', () => {
     storeState.connected = true;
     storeState.debugMode = false;
     storeState.updateSettings.mockClear();
+    panelControl.shouldThrow = false;
   });
 
   it('renders connected status and cross-links', () => {
@@ -108,5 +114,24 @@ describe('Monitoring unified page', () => {
     expect(screen.queryByText('monitoringUnified.adaptersOnline')).not.toBeInTheDocument();
     // Lazy-loaded panel resolves after a microtask.
     expect(await screen.findByTestId('monitoring-detail-panel')).toBeInTheDocument();
+  });
+
+  it('shows the panel fallback and recovers via "back to summary" when the panel throws', async () => {
+    // Guards the crash-fix wiring: if the ErrorBoundary or fallback is removed,
+    // a throwing panel would tear down the whole route instead of degrading.
+    panelControl.shouldThrow = true;
+    storeState.debugMode = true;
+    const user = userEvent.setup();
+    render(<MonitoringUnified />);
+
+    // ErrorBoundary catches the throw and renders the panel-sized fallback.
+    const fallback = await screen.findByRole('alert');
+    expect(fallback).toBeInTheDocument();
+    expect(screen.getByText('monitoringUnified.panelErrorTitle')).toBeInTheDocument();
+    expect(screen.queryByTestId('monitoring-detail-panel')).not.toBeInTheDocument();
+
+    // "Back to summary" turns power-user mode off via the store (single source of truth).
+    await user.click(screen.getByText('monitoringUnified.panelErrorSummary'));
+    expect(storeState.updateSettings).toHaveBeenCalledWith({ debugMode: false });
   });
 });

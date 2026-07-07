@@ -46,145 +46,14 @@ function MonitoringUnifiedComponent() {
         title={t('monitoringUnified.title')}
         subtitle={t('monitoringUnified.subtitle')}
         icon={<Eye size={22} aria-hidden="true" />}
-        actions={
-          <div className="flex items-center gap-3">
-            {/* Connection status */}
-            <span
-              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 font-semibold text-[10px] uppercase tracking-wider ${
-                connected
-                  ? 'bg-(--state-success-bg)/15 text-(--state-success-fg)'
-                  : 'bg-(--state-danger-bg)/15 text-(--state-danger-fg)'
-              }`}
-            >
-              <span
-                className={`energy-pulse h-1.5 w-1.5 rounded-full ${connected ? 'bg-(--state-success-fg)' : 'bg-(--state-danger-fg)'}`}
-              />
-              {connected ? t('common.connected') : t('common.disconnected')}
-            </span>
-          </div>
-        }
+        actions={<HeaderConnectionStatus connected={connected} />}
       />
 
-      {/* ─── Quick System Status Banner ──────────────────────────── */}
-      <motion.section
-        className="glass-panel-strong hover-lift p-5"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-      >
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-3">
-            {connected ? (
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-(--state-success-bg)/15">
-                <ShieldCheck size={24} className="text-(--state-success-fg)" />
-              </div>
-            ) : (
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-(--state-danger-bg)/15">
-                <ShieldAlert size={24} className="text-(--state-danger-fg)" />
-              </div>
-            )}
-            <div>
-              <h2 className="font-medium text-(--color-text) text-lg">
-                {connected
-                  ? t('monitoringUnified.systemHealthy')
-                  : t('monitoringUnified.systemDegraded')}
-              </h2>
-              <p className="text-(--color-muted) text-xs">{t('monitoringUnified.statusHint')}</p>
-            </div>
-          </div>
+      <SystemStatusBanner connected={connected} serverWsConnected={serverWsConnected} />
 
-          {/* Quick status pills */}
-          <div className="flex flex-wrap gap-2">
-            <StatusPill label="MQTT" ok={connected} />
-            <StatusPill label="KNX/IP" ok={true} />
-            <StatusPill label="OCPP" ok={true} />
-            <StatusPill label="EEBUS" ok={true} />
-            {isBackendWsEnabled() && (
-              <StatusPill label={t('monitoringUnified.backendWs')} ok={serverWsConnected} />
-            )}
-          </div>
-        </div>
-      </motion.section>
+      <PowerUserToggle powerUserMode={powerUserMode} onChange={setPowerUserMode} />
 
-      {/* ─── Power User Toggle ─────────────────────────────────────── */}
-      <motion.div
-        className="glass-panel rounded-2xl p-4"
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3, delay: 0.1 }}
-      >
-        <Disclosure
-          variant="nested"
-          className="border-0 bg-transparent shadow-none"
-          title={t('monitoringUnified.powerUserMode')}
-          subtitle={t('monitoringUnified.powerUserModeHint')}
-          icon={
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-(--color-primary)/10">
-              <Server size={20} className="text-(--color-primary)" />
-            </div>
-          }
-          actions={
-            <label
-              htmlFor="power-user-toggle"
-              className="relative inline-flex cursor-pointer items-center"
-            >
-              <input
-                id="power-user-toggle"
-                type="checkbox"
-                checked={powerUserMode}
-                onChange={(e) => setPowerUserMode(e.target.checked)}
-                className="peer sr-only"
-              />
-              <span className="sr-only">{t('monitoringUnified.powerUserMode')}</span>
-              <div className="h-6 w-11 rounded-full border border-(--color-border) bg-(--color-surface) transition-colors duration-300 after:absolute after:top-[2px] after:left-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow-sm after:transition-transform after:duration-300 peer-checked:bg-(--color-primary) peer-checked:after:translate-x-5 peer-focus:ring-(--color-primary)/30 peer-focus:ring-2" />
-            </label>
-          }
-        >
-          {!powerUserMode && (
-            <div className="rounded-xl border border-(--color-primary)/20 bg-(--color-primary)/5 p-3 text-(--color-muted) text-xs">
-              <span className="font-medium text-(--color-primary)" aria-hidden="true">
-                💡{' '}
-              </span>
-              {t('monitoringUnified.powerUserHint')}
-            </div>
-          )}
-        </Disclosure>
-      </motion.div>
-
-      {/* ─── Summary Cards (always visible) ────────────────────────── */}
-      {!powerUserMode && (
-        <motion.div
-          className="grid grid-cols-2 gap-3 sm:grid-cols-4"
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.15 }}
-        >
-          <SummaryCard
-            icon={<Wifi size={18} className="text-(--state-success-fg)" />}
-            label={t('monitoringUnified.adaptersOnline')}
-            value={connected ? '5/5' : '0/5'}
-            status={connected ? 'ok' : 'crit'}
-          />
-          <SummaryCard
-            icon={<Activity size={18} className="text-blue-400" />}
-            label={t('monitoringUnified.prometheusStatus')}
-            value={t('common.active')}
-            status="ok"
-          />
-          <SummaryCard
-            icon={<Server size={18} className="text-purple-400" />}
-            label={t('monitoringUnified.systemLoad')}
-            value="23%"
-            status="ok"
-          />
-          <SummaryCard
-            icon={<Lock size={18} className="text-cyan-400" />}
-            label={t('monitoringUnified.security')}
-            value={t('monitoringUnified.securityOk')}
-            status="ok"
-          />
-        </motion.div>
-      )}
+      {!powerUserMode && <SummaryCards connected={connected} />}
 
       {/* ─── Full Monitoring Panel (power user mode) ───────────────── */}
       <AnimatePresence>
@@ -197,13 +66,11 @@ function MonitoringUnifiedComponent() {
             transition={{ duration: 0.3 }}
           >
             {/*
-              Do NOT animate height:0 → auto around this panel. It lazy-mounts a
-              recharts <ResponsiveContainer>; measuring it inside a collapsing
-              zero-height container triggers a resize→setState loop → React #185
-              ("Maximum update depth exceeded") that tears down the whole route.
-              The animation-skip in CI builds (VITE_E2E_TESTING) previously masked it.
-              The ErrorBoundary is defense-in-depth: any panel error degrades to a
-              recoverable fallback instead of nuking /monitoring.
+              The ErrorBoundary is defense-in-depth. The panel's actual crash was
+              a Zustand useShallow loop (React #185), fixed in MonitoringPage by
+              selecting the stable store ref. Any future panel error should still
+              degrade to a recoverable fallback rather than tear down the whole
+              /monitoring route (the router-level boundary would blank everything).
             */}
             <ErrorBoundary
               fallback={<MonitoringPanelFallback t={t} onSummary={() => setPowerUserMode(false)} />}
@@ -244,6 +111,188 @@ function MonitoringUnifiedComponent() {
 }
 
 // ─── Sub-components ──────────────────────────────────────────────────
+
+function HeaderConnectionStatus({ connected }: { connected: boolean }) {
+  const { t } = useTranslation();
+  return (
+    <div className="flex items-center gap-3">
+      <span
+        className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 font-semibold text-[10px] uppercase tracking-wider ${
+          connected
+            ? 'bg-(--state-success-bg)/15 text-(--state-success-fg)'
+            : 'bg-(--state-danger-bg)/15 text-(--state-danger-fg)'
+        }`}
+      >
+        <span
+          className={`energy-pulse h-1.5 w-1.5 rounded-full ${connected ? 'bg-(--state-success-fg)' : 'bg-(--state-danger-fg)'}`}
+        />
+        {connected ? t('common.connected') : t('common.disconnected')}
+      </span>
+    </div>
+  );
+}
+
+function StatusBadgeIcon({ connected }: { connected: boolean }) {
+  const wrapper = 'flex h-12 w-12 items-center justify-center rounded-2xl';
+  return connected ? (
+    <div className={`${wrapper} bg-(--state-success-bg)/15`}>
+      <ShieldCheck size={24} className="text-(--state-success-fg)" />
+    </div>
+  ) : (
+    <div className={`${wrapper} bg-(--state-danger-bg)/15`}>
+      <ShieldAlert size={24} className="text-(--state-danger-fg)" />
+    </div>
+  );
+}
+
+function SystemStatusBanner({
+  connected,
+  serverWsConnected,
+}: {
+  connected: boolean;
+  serverWsConnected: boolean;
+}) {
+  const { t } = useTranslation();
+  return (
+    <motion.section
+      className="glass-panel-strong hover-lift p-5"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+    >
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-3">
+          <StatusBadgeIcon connected={connected} />
+          <div>
+            <h2 className="font-medium text-(--color-text) text-lg">
+              {connected
+                ? t('monitoringUnified.systemHealthy')
+                : t('monitoringUnified.systemDegraded')}
+            </h2>
+            <p className="text-(--color-muted) text-xs">{t('monitoringUnified.statusHint')}</p>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          <StatusPill label="MQTT" ok={connected} />
+          <StatusPill label="KNX/IP" ok={true} />
+          <StatusPill label="OCPP" ok={true} />
+          <StatusPill label="EEBUS" ok={true} />
+          {isBackendWsEnabled() && (
+            <StatusPill label={t('monitoringUnified.backendWs')} ok={serverWsConnected} />
+          )}
+        </div>
+      </div>
+    </motion.section>
+  );
+}
+
+function PowerUserSwitch({
+  checked,
+  onChange,
+  label,
+}: {
+  checked: boolean;
+  onChange: (enabled: boolean) => void;
+  label: string;
+}) {
+  return (
+    <label htmlFor="power-user-toggle" className="relative inline-flex cursor-pointer items-center">
+      <input
+        id="power-user-toggle"
+        type="checkbox"
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+        className="peer sr-only"
+      />
+      <span className="sr-only">{label}</span>
+      <div className="h-6 w-11 rounded-full border border-(--color-border) bg-(--color-surface) transition-colors duration-300 after:absolute after:top-[2px] after:left-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow-sm after:transition-transform after:duration-300 peer-checked:bg-(--color-primary) peer-checked:after:translate-x-5 peer-focus:ring-(--color-primary)/30 peer-focus:ring-2" />
+    </label>
+  );
+}
+
+function PowerUserToggle({
+  powerUserMode,
+  onChange,
+}: {
+  powerUserMode: boolean;
+  onChange: (enabled: boolean) => void;
+}) {
+  const { t } = useTranslation();
+  return (
+    <motion.div
+      className="glass-panel rounded-2xl p-4"
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, delay: 0.1 }}
+    >
+      <Disclosure
+        variant="nested"
+        className="border-0 bg-transparent shadow-none"
+        title={t('monitoringUnified.powerUserMode')}
+        subtitle={t('monitoringUnified.powerUserModeHint')}
+        icon={
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-(--color-primary)/10">
+            <Server size={20} className="text-(--color-primary)" />
+          </div>
+        }
+        actions={
+          <PowerUserSwitch
+            checked={powerUserMode}
+            onChange={onChange}
+            label={t('monitoringUnified.powerUserMode')}
+          />
+        }
+      >
+        {!powerUserMode && (
+          <div className="rounded-xl border border-(--color-primary)/20 bg-(--color-primary)/5 p-3 text-(--color-muted) text-xs">
+            <span className="font-medium text-(--color-primary)" aria-hidden="true">
+              💡{' '}
+            </span>
+            {t('monitoringUnified.powerUserHint')}
+          </div>
+        )}
+      </Disclosure>
+    </motion.div>
+  );
+}
+
+function SummaryCards({ connected }: { connected: boolean }) {
+  const { t } = useTranslation();
+  return (
+    <motion.div
+      className="grid grid-cols-2 gap-3 sm:grid-cols-4"
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, delay: 0.15 }}
+    >
+      <SummaryCard
+        icon={<Wifi size={18} className="text-(--state-success-fg)" />}
+        label={t('monitoringUnified.adaptersOnline')}
+        value={connected ? '5/5' : '0/5'}
+        status={connected ? 'ok' : 'crit'}
+      />
+      <SummaryCard
+        icon={<Activity size={18} className="text-blue-400" />}
+        label={t('monitoringUnified.prometheusStatus')}
+        value={t('common.active')}
+        status="ok"
+      />
+      <SummaryCard
+        icon={<Server size={18} className="text-purple-400" />}
+        label={t('monitoringUnified.systemLoad')}
+        value="23%"
+        status="ok"
+      />
+      <SummaryCard
+        icon={<Lock size={18} className="text-cyan-400" />}
+        label={t('monitoringUnified.security')}
+        value={t('monitoringUnified.securityOk')}
+        status="ok"
+      />
+    </motion.div>
+  );
+}
 
 function StatusPill({ label, ok }: { label: string; ok: boolean }) {
   return (
@@ -302,6 +351,33 @@ function SummaryCard({
  * intact and offers a recoverable path (back to summary, or reload for a stale
  * chunk after a deploy).
  */
+function MonitoringPanelFallbackActions({
+  t,
+  onSummary,
+}: {
+  t: (key: string) => string;
+  onSummary: () => void;
+}) {
+  return (
+    <div className="mt-4 flex flex-wrap gap-3">
+      <button
+        type="button"
+        onClick={onSummary}
+        className="focus-ring rounded-xl bg-(--color-primary)/15 px-4 py-2 font-medium text-(--color-primary) text-sm transition-colors hover:bg-(--color-primary)/25"
+      >
+        {t('monitoringUnified.panelErrorSummary')}
+      </button>
+      <button
+        type="button"
+        onClick={() => window.location.reload()}
+        className="focus-ring rounded-xl border border-(--color-border) px-4 py-2 font-medium text-(--color-text) text-sm transition-colors hover:bg-(--color-surface)"
+      >
+        {t('monitoringUnified.panelErrorReload')}
+      </button>
+    </div>
+  );
+}
+
 function MonitoringPanelFallback({
   t,
   onSummary,
@@ -310,35 +386,20 @@ function MonitoringPanelFallback({
   onSummary: () => void;
 }) {
   return (
-    <section className="glass-panel-strong p-6" role="alert" aria-live="assertive">
-      <div className="flex items-start gap-3">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-(--state-danger-bg)/15">
-          <AlertTriangle size={20} className="text-(--state-danger-fg)" aria-hidden="true" />
-        </span>
-        <div className="flex-1">
-          <h2 className="font-medium text-(--color-text) text-lg">
-            {t('monitoringUnified.panelErrorTitle')}
-          </h2>
-          <p className="mt-1 text-(--color-muted) text-sm">
-            {t('monitoringUnified.panelErrorDesc')}
-          </p>
-          <div className="mt-4 flex flex-wrap gap-3">
-            <button
-              type="button"
-              onClick={onSummary}
-              className="focus-ring rounded-xl bg-(--color-primary)/15 px-4 py-2 font-medium text-(--color-primary) text-sm transition-colors hover:bg-(--color-primary)/25"
-            >
-              {t('monitoringUnified.panelErrorSummary')}
-            </button>
-            <button
-              type="button"
-              onClick={() => window.location.reload()}
-              className="focus-ring rounded-xl border border-(--color-border) px-4 py-2 font-medium text-(--color-text) text-sm transition-colors hover:bg-(--color-surface)"
-            >
-              {t('monitoringUnified.panelErrorReload')}
-            </button>
-          </div>
-        </div>
+    <section
+      className="glass-panel-strong flex items-start gap-3 p-6"
+      role="alert"
+      aria-live="assertive"
+    >
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-(--state-danger-bg)/15">
+        <AlertTriangle size={20} className="text-(--state-danger-fg)" aria-hidden="true" />
+      </span>
+      <div className="flex-1">
+        <h2 className="font-medium text-(--color-text) text-lg">
+          {t('monitoringUnified.panelErrorTitle')}
+        </h2>
+        <p className="mt-1 text-(--color-muted) text-sm">{t('monitoringUnified.panelErrorDesc')}</p>
+        <MonitoringPanelFallbackActions t={t} onSummary={onSummary} />
       </div>
     </section>
   );

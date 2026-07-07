@@ -1,10 +1,16 @@
 import { expect, test } from '@playwright/test';
-import { gotoAndWaitForHealth, mockBackendHealth, setupLocalStorage } from './e2e-setup';
+import {
+  attachReactErrorWatcher,
+  gotoAndWaitForHealth,
+  mockBackendHealth,
+  setupLocalStorage,
+} from './e2e-setup';
 
 /**
  * Regression for the reported "Power User Mode" crash on /monitoring: enabling
- * it lazy-mounts the detail panel whose recharts chart looped to React #185
- * ("Maximum update depth exceeded"), tearing down the route.
+ * it lazy-mounts the detail panel, whose useMonitoringData selector returned a
+ * fresh nested object every call, defeating useShallow → useSyncExternalStore
+ * looped to React #185 ("Maximum update depth exceeded"), tearing down the route.
  *
  * This asserts the panel actually RENDERS (not just that it didn't hard-crash),
  * and — because React error boundaries swallow the error with no pageerror — it
@@ -18,18 +24,7 @@ test.describe('Monitoring — Power User Mode', () => {
   });
 
   test('enabling power user mode renders the detail panel without crashing', async ({ page }) => {
-    const pageErrors: string[] = [];
-    const reactErrors: string[] = [];
-    page.on('pageerror', (error) => {
-      pageErrors.push(`${error.name}: ${error.message}\n${error.stack ?? '(no stack)'}`);
-    });
-    page.on('console', (msg) => {
-      if (msg.type() !== 'error') return;
-      const text = msg.text();
-      if (/Minified React error #\d+|Maximum update depth|\[ErrorBoundary\]/.test(text)) {
-        reactErrors.push(text);
-      }
-    });
+    const { pageErrors, reactErrors } = attachReactErrorWatcher(page);
 
     await gotoAndWaitForHealth(page, './monitoring');
     await expect(page.locator('#main-content')).toBeVisible();
