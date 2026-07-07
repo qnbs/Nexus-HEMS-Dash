@@ -12,7 +12,7 @@ Several page components in `apps/web/src/pages/` have grown into monoliths that 
 | TariffsPage | `apps/web/src/pages/TariffsPage.tsx` | ~1,251 | 📋 Planned | [tariffs-page-modularization-plan.md](./tariffs-page-modularization-plan.md) |
 | DevicesAutomation | `apps/web/src/pages/DevicesAutomation.tsx` | ~1,167 | 📋 Planned | [devices-automation-modularization-plan.md](./devices-automation-modularization-plan.md) |
 | HistoricalAnalyticsPage | `apps/web/src/pages/HistoricalAnalyticsPage.tsx` | ~777 → 101 | ✅ Modularized (page 101 lines; largest module 184) | [historical-analytics-page-modularization-plan.md](./historical-analytics-page-modularization-plan.md) |
-| LiveEnergyFlow | `apps/web/src/pages/LiveEnergyFlow.tsx` | ~922 | 📋 Planned | [live-energy-flow-modularization-plan.md](./live-energy-flow-modularization-plan.md) |
+| LiveEnergyFlow | `apps/web/src/pages/LiveEnergyFlow.tsx` | ~922 → 72 | ✅ Modularized + mobile bottom-sheet layout (page 72 lines) | [live-energy-flow-modularization-plan.md](./live-energy-flow-modularization-plan.md) |
 
 ## Common approach
 
