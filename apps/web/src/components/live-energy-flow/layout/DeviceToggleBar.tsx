@@ -92,10 +92,12 @@ export function DeviceToggleBar({
                 : 'border-(--color-border) bg-(--color-surface)/50 text-(--color-muted) hover:border-(--color-primary)/30'
             }`}
             aria-pressed={isOpen}
-            aria-label={`${btn.label}: ${btn.value}`}
           >
             <Icon size={14} className={btn.color} aria-hidden="true" />
-            <span className="hidden sm:inline">{btn.label}</span>
+            {/* sr-only below sm keeps the device name in the accessible name
+                (so screen readers hear "EV Charging 0 W", not just "0 W")
+                without an aria-label that would break label-content-name-match. */}
+            <span className="sr-only sm:not-sr-only">{btn.label}</span>
             <span className="font-mono tabular-nums">{btn.value}</span>
           </button>
         );
