@@ -23,8 +23,10 @@ export function FloatingDevicePanel({
   const { t } = useTranslation();
   const { pos, onKeyDown, handlers } = useDraggable(initial);
 
+  // For right-anchored panels use `-pos.x` (clamped ≥ 0) so dragging is monotonic:
+  // `Math.abs` would reverse direction once a drag pushes pos.x across zero.
   const posStyle: MotionStyle = anchorRight
-    ? { right: Math.abs(pos.x), top: pos.y }
+    ? { right: Math.max(0, -pos.x), top: pos.y }
     : { left: pos.x, top: pos.y };
 
   return (

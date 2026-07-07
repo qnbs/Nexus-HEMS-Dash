@@ -92,6 +92,7 @@ export function DeviceToggleBar({
                 : 'border-(--color-border) bg-(--color-surface)/50 text-(--color-muted) hover:border-(--color-primary)/30'
             }`}
             aria-pressed={isOpen}
+            aria-label={`${btn.label}: ${btn.value}`}
           >
             <Icon size={14} className={btn.color} aria-hidden="true" />
             <span className="hidden sm:inline">{btn.label}</span>

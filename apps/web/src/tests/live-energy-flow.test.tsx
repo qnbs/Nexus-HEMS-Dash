@@ -104,4 +104,18 @@ describe('LiveEnergyFlow', () => {
     expect(within(sheet).getByText('control.hpTitle')).toBeInTheDocument();
     expect(within(sheet).getByText('liveEnergy.currentPower')).toBeInTheDocument();
   });
+
+  it('opens right-anchored panels (KNX, stats) on desktop', async () => {
+    const user = userEvent.setup();
+    render(<LiveEnergyFlow />);
+    const toolbar = screen.getByRole('toolbar', { name: 'liveEnergy.devicePanels' });
+    const buttons = within(toolbar).getAllByRole('button');
+
+    // KNX (4th) and stats (5th) are right-anchored floating panels.
+    await user.click(buttons[3] as HTMLElement);
+    await user.click(buttons[4] as HTMLElement);
+
+    expect(screen.getByText('liveEnergy.noKnxRooms')).toBeInTheDocument();
+    expect(screen.getByText('liveEnergy.overview')).toBeInTheDocument();
+  });
 });

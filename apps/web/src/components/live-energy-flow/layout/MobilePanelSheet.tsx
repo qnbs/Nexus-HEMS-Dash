@@ -1,4 +1,4 @@
-import { motion } from 'motion/react';
+import { AnimatePresence, motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { ControlPanel as ControlPanelUI } from '../../ui/ControlPanel';
 import { PanelTitle } from '../panels/PanelTitle';
@@ -19,43 +19,32 @@ export function MobilePanelSheet({
   const { t } = useTranslation();
   const openIds = PANEL_CONFIG.filter((c) => openPanels.has(c.id)).map((c) => c.id);
 
+  // AnimatePresence is required for the slide-down `exit` to play on unmount.
   return (
-    <AnimatedSheet visible={openIds.length > 0} label={t('liveEnergy.devicePanels')}>
-      {openIds.map((id) => (
-        <ControlPanelUI
-          key={id}
-          title={<PanelTitle id={id} />}
-          onClose={() => onClose(id)}
-          closeLabel={t('common.close')}
+    <AnimatePresence>
+      {openIds.length > 0 && (
+        <motion.div
+          key="mobile-panel-sheet"
+          className="fixed inset-x-0 bottom-0 z-20 max-h-[75dvh] space-y-3 overflow-y-auto rounded-t-2xl border-(--color-border) border-t bg-(--color-background)/95 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] shadow-2xl backdrop-blur-md"
+          initial={{ y: '100%' }}
+          animate={{ y: 0 }}
+          exit={{ y: '100%' }}
+          transition={{ duration: 0.25, ease: 'easeOut' }}
+          role="dialog"
+          aria-label={t('liveEnergy.devicePanels')}
         >
-          <DevicePanelContent id={id} props={panelProps} />
-        </ControlPanelUI>
-      ))}
-    </AnimatedSheet>
-  );
-}
-
-function AnimatedSheet({
-  visible,
-  label,
-  children,
-}: {
-  visible: boolean;
-  label: string;
-  children: React.ReactNode;
-}) {
-  if (!visible) return null;
-  return (
-    <motion.div
-      className="fixed inset-x-0 bottom-0 z-20 max-h-[75dvh] space-y-3 overflow-y-auto rounded-t-2xl border-(--color-border) border-t bg-(--color-background)/95 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] shadow-2xl backdrop-blur-md"
-      initial={{ y: '100%' }}
-      animate={{ y: 0 }}
-      exit={{ y: '100%' }}
-      transition={{ duration: 0.25, ease: 'easeOut' }}
-      role="dialog"
-      aria-label={label}
-    >
-      {children}
-    </motion.div>
+          {openIds.map((id) => (
+            <ControlPanelUI
+              key={id}
+              title={<PanelTitle id={id} />}
+              onClose={() => onClose(id)}
+              closeLabel={t('common.close')}
+            >
+              <DevicePanelContent id={id} props={panelProps} />
+            </ControlPanelUI>
+          ))}
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
