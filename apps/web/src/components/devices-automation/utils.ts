@@ -1,9 +1,11 @@
 import type { UnifiedEnergyModel } from '../../core/adapters/EnergyAdapter';
 import type { EnergyData } from '../../types';
 
+const MUTED = 'bg-(--color-muted)/15 text-(--color-muted)';
+
 const IDLE = {
   label: 'devicesAuto.statusIdle',
-  color: 'bg-(--color-muted)/15 text-(--color-muted)',
+  color: MUTED,
 };
 
 /** Derives a device's status pill (i18n key + colour) from live energy data. */
@@ -22,14 +24,11 @@ export function getDeviceStatus(
         ? { label: 'devicesAuto.statusCharging', color: 'bg-blue-500/15 text-blue-400' }
         : data.batteryPower < -10
           ? { label: 'devicesAuto.statusDischarging', color: 'bg-amber-500/15 text-amber-400' }
-          : {
-              label: 'devicesAuto.statusStandby',
-              color: 'bg-(--color-muted)/15 text-(--color-muted)',
-            };
+          : { label: 'devicesAuto.statusStandby', color: MUTED };
     case 'ev':
       return data.evPower > 50
         ? { label: 'devicesAuto.statusCharging', color: 'bg-purple-500/15 text-purple-400' }
-        : { label: 'devicesAuto.statusReady', color: 'bg-(--color-muted)/15 text-(--color-muted)' };
+        : { label: 'devicesAuto.statusReady', color: MUTED };
     case 'heatpump':
       return data.heatPumpPower > 50
         ? { label: 'devicesAuto.statusRunning', color: 'bg-orange-500/15 text-orange-400' }

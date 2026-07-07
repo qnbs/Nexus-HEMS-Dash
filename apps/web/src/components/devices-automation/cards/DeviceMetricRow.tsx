@@ -66,7 +66,7 @@ export function DeviceMetricRow({
         <div className="flex items-baseline justify-between gap-2">
           <LiveMetric value={data.heatPumpPower / 1000} unit="kW" format="power" size="sm" />
           <span className="flex items-center gap-1 text-(--color-muted) text-xs">
-            <Gauge size={12} /> SG Ready
+            <Gauge size={12} aria-hidden /> {t('devicesAuto.sgReady')}
           </span>
         </div>
       );

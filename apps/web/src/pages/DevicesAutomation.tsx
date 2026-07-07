@@ -14,8 +14,8 @@ import { PageHeader } from '../components/layout/PageHeader';
 
 export default function DevicesAutomation() {
   const { t } = useTranslation();
-  const d = useDevicesAutomation();
-  const { ConfirmationDialog } = d;
+  const devices = useDevicesAutomation();
+  const { ConfirmationDialog } = devices;
 
   return (
     <div className="space-y-6">
@@ -23,12 +23,12 @@ export default function DevicesAutomation() {
       <PageHeader
         title={t('devicesAuto.title')}
         subtitle={t('devicesAuto.subtitle')}
-        icon={<Zap size={22} />}
-        actions={<ViewToggle view={d.view} onChange={d.setView} />}
+        icon={<Zap size={22} aria-hidden />}
+        actions={<ViewToggle view={devices.view} onChange={devices.setView} />}
       />
 
       <AnimatePresence mode="wait">
-        {d.view === 'floorplan' ? (
+        {devices.view === 'floorplan' ? (
           <motion.div
             key="floorplan"
             initial={{ opacity: 0, x: 20 }}
@@ -48,31 +48,31 @@ export default function DevicesAutomation() {
             className="space-y-6"
           >
             <DevicesFilterBar
-              search={d.search}
-              onSearch={d.setSearch}
-              category={d.category}
-              onCategory={d.setCategory}
+              search={devices.search}
+              onSearch={devices.setSearch}
+              category={devices.category}
+              onCategory={devices.setCategory}
             />
             <DevicesGrid
-              devices={d.filtered}
-              data={d.data}
-              unified={d.unified}
-              settings={d.settings}
-              sendCommand={d.sendCommand}
-              onOpenDetail={d.setDetailDevice}
-              onReset={d.resetFilters}
+              devices={devices.filtered}
+              data={devices.data}
+              unified={devices.unified}
+              settings={devices.settings}
+              sendCommand={devices.sendCommand}
+              onOpenDetail={devices.setDetailDevice}
+              onReset={devices.resetFilters}
             />
           </motion.div>
         )}
       </AnimatePresence>
 
       <DeviceDetailDialog
-        deviceId={d.detailDevice}
-        onClose={() => d.setDetailDevice(null)}
-        data={d.data}
-        unified={d.unified}
-        settings={d.settings}
-        sendCommand={d.sendCommand}
+        deviceId={devices.detailDevice}
+        onClose={() => devices.setDetailDevice(null)}
+        data={devices.data}
+        unified={devices.unified}
+        settings={devices.settings}
+        sendCommand={devices.sendCommand}
       />
       <ConfirmationDialog />
     </div>

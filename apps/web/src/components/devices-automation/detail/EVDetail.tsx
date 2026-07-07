@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { useActionState } from 'react';
+import { useActionState, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { hapticClick, hapticModeChange, hapticSuccess } from '../../../lib/haptics';
 import type { EnergyData, EvMode, EvState, StoredSettings } from '../../../types';
@@ -36,6 +36,13 @@ export function EVDetail({
     { mode: 'off' as EvMode, power: 0, message: '' },
   );
 
+  // The radios are controlled, so they need local UI state to be selectable
+  // before the form is submitted; re-sync to the applied mode after each action.
+  const [selectedMode, setSelectedMode] = useState<EvMode>(evState.mode);
+  useEffect(() => {
+    setSelectedMode(evState.mode);
+  }, [evState.mode]);
+
   return (
     <div className="space-y-4">
       <MetricRow
@@ -62,7 +69,7 @@ export function EVDetail({
               <label
                 key={mode}
                 className={`cursor-pointer rounded-lg border px-2 py-2 text-center font-medium text-xs transition-all focus-within:ring-(--color-primary)/40 focus-within:ring-2 sm:text-sm ${
-                  evState.mode === mode
+                  selectedMode === mode
                     ? 'border-(--color-primary) bg-(--color-primary)/20 text-(--color-primary)'
                     : 'border-(--color-border) bg-(--color-surface) text-(--color-muted) hover:border-(--color-primary)/40'
                 }`}
@@ -72,8 +79,11 @@ export function EVDetail({
                   name="evMode"
                   value={mode}
                   className="sr-only"
-                  checked={evState.mode === mode}
-                  onChange={hapticClick}
+                  checked={selectedMode === mode}
+                  onChange={() => {
+                    setSelectedMode(mode);
+                    hapticClick();
+                  }}
                 />
                 {t(`control.ev${mode.charAt(0).toUpperCase() + mode.slice(1)}`)}
               </label>
