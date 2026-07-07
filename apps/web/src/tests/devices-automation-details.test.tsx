@@ -99,7 +99,7 @@ describe('devices-automation per-device components', () => {
 
     // peakKWp = 0 utilization branch + empty EV model fallback.
     for (const id of ['pv', 'ev', 'building']) {
-      const { unmount } = render(
+      const { unmount, container } = render(
         <DeviceInlineDetails
           deviceId={id}
           data={data}
@@ -108,6 +108,7 @@ describe('devices-automation per-device components', () => {
           onOpenDetail={vi.fn()}
         />,
       );
+      expect(container.textContent?.length ?? 0).toBeGreaterThan(0);
       unmount();
     }
     // PVDetail utilization=0, BuildingDetail with no rooms and with lights-off room.
@@ -120,6 +121,7 @@ describe('devices-automation per-device components', () => {
         sendCommand={vi.fn()}
       />,
     );
+    expect(pv.container.textContent).toContain('0%'); // utilization branch → 0
     pv.unmount();
     const empty = render(
       <DeviceDetailContent
@@ -130,6 +132,8 @@ describe('devices-automation per-device components', () => {
         sendCommand={vi.fn()}
       />,
     );
+    // Empty-rooms branch renders the "no KNX rooms" fallback copy.
+    expect(empty.container.textContent).toContain('devicesAuto.noKnxRooms');
     empty.unmount();
     const off = render(
       <DeviceDetailContent

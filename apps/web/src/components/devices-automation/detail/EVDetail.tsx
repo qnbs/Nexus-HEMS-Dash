@@ -68,7 +68,9 @@ export function EVDetail({
             {(['off', 'pv', 'fast'] as const).map((mode) => (
               <label
                 key={mode}
-                className={`cursor-pointer rounded-lg border px-2 py-2 text-center font-medium text-xs transition-all focus-within:ring-(--color-primary)/40 focus-within:ring-2 sm:text-sm ${
+                className={`rounded-lg border px-2 py-2 text-center font-medium text-xs transition-all focus-within:ring-(--color-primary)/40 focus-within:ring-2 sm:text-sm ${
+                  isEvPending ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'
+                } ${
                   selectedMode === mode
                     ? 'border-(--color-primary) bg-(--color-primary)/20 text-(--color-primary)'
                     : 'border-(--color-border) bg-(--color-surface) text-(--color-muted) hover:border-(--color-primary)/40'
@@ -80,6 +82,7 @@ export function EVDetail({
                   value={mode}
                   className="sr-only"
                   checked={selectedMode === mode}
+                  disabled={isEvPending}
                   onChange={() => {
                     setSelectedMode(mode);
                     hapticClick();
