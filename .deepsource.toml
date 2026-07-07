@@ -48,9 +48,27 @@ test_patterns = [
   "apps/web/tests/e2e/**",
 ]
 
+# JavaScript analyzer — DISABLED (2026-07-07).
+#
+# Why: on the free tier its default-branch check ("DeepSource: JavaScript")
+# stays red because of rule-fit false positives that cannot be muted from repo
+# files — dominated by JS-0067 ("no global scope", ~213×, fires on top-level
+# statements in every ESM file by design). Team-wide muting via the GraphQL
+# `suppressIssueForTeam` API is a paid feature ("Operation not allowed on this
+# account type"), and repo-scoped muting is dashboard-only. The check is NOT a
+# required merge gate, so this is pure red-X noise on every commit/PR.
+#
+# Coverage is preserved: Biome + ESLint own lint/style/hygiene (zero-warning
+# gate in ci.yml), and CodeRabbit + CodeAnt provide AI PR review. The secrets,
+# docker and test-coverage analyzers below stay enabled.
+#
+# Re-enable path: flip `enabled = true` once the dominant rule-fit rules
+# (JS-0067, JS-0833) are muted repo-scoped from the DeepSource dashboard, or the
+# team moves to a tier where API/team muting is available. See
+# docs/runbooks/deepsource-integration.md.
 [[analyzers]]
 name = "javascript"
-enabled = true
+enabled = false
 
   [analyzers.meta]
   dialect = "typescript"

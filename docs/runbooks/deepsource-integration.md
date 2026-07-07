@@ -2,7 +2,15 @@
 
 **Config file:** `.deepsource.toml`  
 **Dashboard:** https://deepsource.io/gh/qnbs/Nexus-HEMS-Dash  
-**Status checks:** `DeepSource: JavaScript`, `DeepSource: Secrets`, `DeepSource: Test coverage`
+**Status checks:** `DeepSource: Secrets`, `DeepSource: Test coverage` (the `DeepSource: JavaScript` analyzer is **disabled** — see below)
+
+> **⚠️ JavaScript analyzer disabled (2026-07-07).** Its default-branch check stayed
+> permanently red from rule-fit false positives (mainly `JS-0067`, ~213×) that can only be
+> muted from the dashboard — and team-wide muting is a paid feature on this tier. The check
+> was never a required merge gate, so it was pure red-X noise. Lint/style/hygiene are owned
+> by Biome + ESLint (zero-warning `ci.yml` gate); PR code review is covered by CodeRabbit +
+> CodeAnt. **Re-enable** by flipping `enabled = true` in `.deepsource.toml` once the dominant
+> rules are muted repo-scoped from the dashboard (or the team moves to a muting-capable tier).
 
 ---
 
@@ -16,7 +24,7 @@ DeepSource provides deterministic static analysis, secrets detection, Docker ana
 
 The repository uses `.deepsource.toml` with:
 
-- **JavaScript analyzer** — TypeScript/React dialect, ESM modules, Vitest environment.
+- **JavaScript analyzer** — **disabled** (see the note at the top). Its config block is retained (commented rationale + `enabled = false`) so re-enabling is a one-line flip.
 - **Secrets analyzer** — Detects committed credentials.
 - **Docker analyzer** — Scans Dockerfiles.
 - **Test-coverage analyzer** — Reads coverage reports and computes diff coverage.
@@ -31,10 +39,14 @@ Monorepo manifests are explicitly declared:
 
 ## Rollout Mode
 
-**Advisory-first.** DeepSource comments on PRs but is not a required merge gate initially. After 2–4 weeks of tuning and after existing HIGH-severity dependency advisories are remediated, the following checks will be made required:
+**Advisory-first.** DeepSource comments on PRs but is not a required merge gate. The
+`DeepSource: JavaScript` analyzer is now disabled (rule-fit noise, un-muteable on this
+tier — see the note at the top), so the only candidate to eventually make required is:
 
-- `DeepSource: JavaScript`
 - `DeepSource: Secrets`
+
+The JavaScript analyzer would only be reconsidered as a gate after it is re-enabled and its
+rule-fit false positives are muted repo-scoped from the dashboard.
 
 ---
 
