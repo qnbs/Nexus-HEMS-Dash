@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ReactNode } from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import MonitoringUnified from '../pages/Monitoring';
 
 vi.mock('react-i18next', () => ({
@@ -38,17 +38,32 @@ vi.mock('../pages/MonitoringPage', () => ({
 const storeState = vi.hoisted(() => ({
   connected: true,
   debugMode: false,
+  updateSettings: vi.fn<(data: { debugMode?: boolean }) => void>(),
 }));
 
 vi.mock('../store', () => ({
   useAppStoreShallow: (
-    selector: (state: { connected: boolean; settings: { debugMode: boolean } }) => unknown,
-  ) => selector({ connected: storeState.connected, settings: { debugMode: storeState.debugMode } }),
+    selector: (state: {
+      connected: boolean;
+      settings: { debugMode: boolean };
+      updateSettings: (data: { debugMode?: boolean }) => void;
+    }) => unknown,
+  ) =>
+    selector({
+      connected: storeState.connected,
+      settings: { debugMode: storeState.debugMode },
+      updateSettings: storeState.updateSettings,
+    }),
 }));
 
 describe('Monitoring unified page', () => {
-  it('renders connected status and cross-links', () => {
+  beforeEach(() => {
     storeState.connected = true;
+    storeState.debugMode = false;
+    storeState.updateSettings.mockClear();
+  });
+
+  it('renders connected status and cross-links', () => {
     render(<MonitoringUnified />);
 
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('monitoringUnified.title');
@@ -65,18 +80,33 @@ describe('Monitoring unified page', () => {
     expect(screen.getByText('monitoringUnified.systemDegraded')).toBeInTheDocument();
   });
 
-  it('shows summary cards and toggles power user mode', async () => {
-    storeState.connected = true;
-    const user = userEvent.setup();
+  it('shows summary cards while power user mode is off', () => {
     render(<MonitoringUnified />);
 
     expect(screen.getByText('monitoringUnified.adaptersOnline')).toBeInTheDocument();
     expect(screen.getByText('5/5')).toBeInTheDocument();
+    expect(screen.getByRole('checkbox')).not.toBeChecked();
+    expect(screen.queryByTestId('monitoring-detail-panel')).not.toBeInTheDocument();
+  });
 
-    const toggle = screen.getByRole('checkbox');
-    expect(toggle).not.toBeChecked();
-    await user.click(toggle);
-    expect(toggle).toBeChecked();
+  it('persists the power-user toggle to settings.debugMode (single source of truth)', async () => {
+    const user = userEvent.setup();
+    render(<MonitoringUnified />);
+
+    await user.click(screen.getByRole('checkbox'));
+
+    // The toggle no longer holds local state — it writes through to the store so
+    // it stays in sync with the Advanced settings tab and survives navigation.
+    expect(storeState.updateSettings).toHaveBeenCalledWith({ debugMode: true });
+  });
+
+  it('renders the detail panel when power user mode (debugMode) is on', async () => {
+    storeState.debugMode = true;
+    render(<MonitoringUnified />);
+
+    expect(screen.getByRole('checkbox')).toBeChecked();
     expect(screen.queryByText('monitoringUnified.adaptersOnline')).not.toBeInTheDocument();
+    // Lazy-loaded panel resolves after a microtask.
+    expect(await screen.findByTestId('monitoring-detail-panel')).toBeInTheDocument();
   });
 });

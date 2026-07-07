@@ -1,7 +1,17 @@
-import { Activity, Eye, Lock, Server, ShieldAlert, ShieldCheck, Wifi } from 'lucide-react';
+import {
+  Activity,
+  AlertTriangle,
+  Eye,
+  Lock,
+  Server,
+  ShieldAlert,
+  ShieldCheck,
+  Wifi,
+} from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
-import { lazy, Suspense, useState } from 'react';
+import { lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
+import { ErrorBoundary } from '../components/ErrorBoundary';
 import { PageHeader } from '../components/layout/PageHeader';
 import { Disclosure } from '../components/ui/Disclosure';
 import { EmptyState } from '../components/ui/EmptyState';
@@ -18,13 +28,17 @@ const MonitoringPage = lazy(() => import('./MonitoringPage'));
 
 function MonitoringUnifiedComponent() {
   const { t } = useTranslation();
-  const { connected, debugMode } = useAppStoreShallow((s) => ({
+  const { connected, debugMode, updateSettings } = useAppStoreShallow((s) => ({
     connected: s.connected,
     debugMode: s.settings.debugMode ?? false,
+    updateSettings: s.updateSettings,
   }));
   // Opt-in backend WebSocket link state (only meaningful when VITE_BACKEND_WS is on).
   const serverWsConnected = useEnergyStore((s) => s.serverWsConnected);
-  const [powerUserMode, setPowerUserMode] = useState(debugMode ?? false);
+  // Power User Mode is a single source of truth backed by settings.debugMode, so the
+  // toggle persists and stays in sync with the Advanced settings tab (no local desync).
+  const powerUserMode = debugMode;
+  const setPowerUserMode = (enabled: boolean) => updateSettings({ debugMode: enabled });
 
   return (
     <div className="space-y-6">
@@ -177,15 +191,27 @@ function MonitoringUnifiedComponent() {
         {powerUserMode && (
           <motion.div
             key="monitoring-full"
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="overflow-hidden"
           >
-            <Suspense fallback={<TabSkeleton />}>
-              <MonitoringPage embedded />
-            </Suspense>
+            {/*
+              Do NOT animate height:0 → auto around this panel. It lazy-mounts a
+              recharts <ResponsiveContainer>; measuring it inside a collapsing
+              zero-height container triggers a resize→setState loop → React #185
+              ("Maximum update depth exceeded") that tears down the whole route.
+              The animation-skip in CI builds (VITE_E2E_TESTING) previously masked it.
+              The ErrorBoundary is defense-in-depth: any panel error degrades to a
+              recoverable fallback instead of nuking /monitoring.
+            */}
+            <ErrorBoundary
+              fallback={<MonitoringPanelFallback t={t} onSummary={() => setPowerUserMode(false)} />}
+            >
+              <Suspense fallback={<TabSkeleton />}>
+                <MonitoringPage embedded />
+              </Suspense>
+            </ErrorBoundary>
           </motion.div>
         )}
       </AnimatePresence>
@@ -267,6 +293,54 @@ function SummaryCard({
       <p className="font-medium text-(--color-text) text-lg">{value}</p>
       <p className="mt-0.5 text-(--color-muted) text-[10px]">{label}</p>
     </div>
+  );
+}
+
+/**
+ * Panel-sized fallback shown if the lazy MonitoringPage subtree throws. Unlike
+ * the default full-screen ErrorBoundary UI, this keeps the summary + toggle
+ * intact and offers a recoverable path (back to summary, or reload for a stale
+ * chunk after a deploy).
+ */
+function MonitoringPanelFallback({
+  t,
+  onSummary,
+}: {
+  t: (key: string) => string;
+  onSummary: () => void;
+}) {
+  return (
+    <section className="glass-panel-strong p-6" role="alert" aria-live="assertive">
+      <div className="flex items-start gap-3">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-(--state-danger-bg)/15">
+          <AlertTriangle size={20} className="text-(--state-danger-fg)" aria-hidden="true" />
+        </span>
+        <div className="flex-1">
+          <h2 className="font-medium text-(--color-text) text-lg">
+            {t('monitoringUnified.panelErrorTitle')}
+          </h2>
+          <p className="mt-1 text-(--color-muted) text-sm">
+            {t('monitoringUnified.panelErrorDesc')}
+          </p>
+          <div className="mt-4 flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={onSummary}
+              className="focus-ring rounded-xl bg-(--color-primary)/15 px-4 py-2 font-medium text-(--color-primary) text-sm transition-colors hover:bg-(--color-primary)/25"
+            >
+              {t('monitoringUnified.panelErrorSummary')}
+            </button>
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className="focus-ring rounded-xl border border-(--color-border) px-4 py-2 font-medium text-(--color-text) text-sm transition-colors hover:bg-(--color-surface)"
+            >
+              {t('monitoringUnified.panelErrorReload')}
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
 

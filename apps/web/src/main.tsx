@@ -30,8 +30,19 @@ createRoot(document.getElementById('root')!).render(
           and trip transient color-contrast violations (spring animations are JS-driven
           and invisible to `document.getAnimations()`, so the test-side settle can't
           catch them). `skipAnimations` is framer's documented E2E switch; gated on
-          VITE_E2E_TESTING → zero production impact. */}
-      <MotionConfig skipAnimations={import.meta.env.VITE_E2E_TESTING === 'true'}>
+          VITE_E2E_TESTING → zero production impact.
+
+          Escape hatch: VITE_E2E_ANIMATIONS=true keeps E2E mode (SW-reload guard,
+          background-service opt-out) but runs animations, so animation-gated crashes
+          — e.g. a recharts ResponsiveContainer looping inside a height:0 → auto
+          reveal (React #185), which this flag previously MASKED in CI — are exposed.
+          Used by the animation-crash-sweep E2E job. */}
+      <MotionConfig
+        skipAnimations={
+          import.meta.env.VITE_E2E_TESTING === 'true' &&
+          import.meta.env.VITE_E2E_ANIMATIONS !== 'true'
+        }
+      >
         <App />
       </MotionConfig>
     </QueryProvider>
