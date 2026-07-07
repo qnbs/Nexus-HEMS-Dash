@@ -10,5 +10,5 @@ export function PanelTitle({ id }: { id: PanelId }) {
     knx: t('liveEnergy.knxRooms'),
     stats: t('liveEnergy.statistics'),
   };
-  return <>{titles[id]}</>;
+  return titles[id];
 }

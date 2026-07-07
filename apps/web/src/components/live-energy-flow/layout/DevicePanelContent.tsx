@@ -30,5 +30,7 @@ export function DevicePanelContent({ id, props }: { id: PanelId; props: DevicePa
           locale={props.locale}
         />
       );
+    default:
+      return null;
   }
 }
