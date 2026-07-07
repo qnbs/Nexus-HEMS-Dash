@@ -83,4 +83,64 @@ describe('devices-automation per-device components', () => {
       />
     ));
   });
+
+  it('covers edge branches: zero peak power, empty EV model, empty/off rooms', () => {
+    const edgeSettings = {
+      systemConfig: {
+        pv: { peakPowerKWp: 0, orientation: '', strings: 0, mpptCount: 0 },
+        evCharger: { maxPowerKW: 0, model: '' },
+        battery: { maxChargeRateKW: 0 },
+      },
+    } as unknown as StoredSettings;
+    const emptyUnified = { knx: { rooms: [] } } as unknown as UnifiedEnergyModel;
+    const roomsOff = {
+      knx: { rooms: [{ name: 'Hall', lightsOn: false, temperature: 19 }] },
+    } as unknown as UnifiedEnergyModel;
+
+    // peakKWp = 0 utilization branch + empty EV model fallback.
+    for (const id of ['pv', 'ev', 'building']) {
+      const { unmount } = render(
+        <DeviceInlineDetails
+          deviceId={id}
+          data={data}
+          unified={emptyUnified}
+          settings={edgeSettings}
+          onOpenDetail={vi.fn()}
+        />,
+      );
+      unmount();
+    }
+    // PVDetail utilization=0, BuildingDetail with no rooms and with lights-off room.
+    const pv = render(
+      <DeviceDetailContent
+        deviceId="pv"
+        data={data}
+        unified={emptyUnified}
+        settings={edgeSettings}
+        sendCommand={vi.fn()}
+      />,
+    );
+    pv.unmount();
+    const empty = render(
+      <DeviceDetailContent
+        deviceId="building"
+        data={data}
+        unified={emptyUnified}
+        settings={edgeSettings}
+        sendCommand={vi.fn()}
+      />,
+    );
+    empty.unmount();
+    const off = render(
+      <DeviceDetailContent
+        deviceId="building"
+        data={data}
+        unified={roomsOff}
+        settings={edgeSettings}
+        sendCommand={vi.fn()}
+      />,
+    );
+    expect(off.container.textContent?.length ?? 0).toBeGreaterThan(0);
+    off.unmount();
+  });
 });

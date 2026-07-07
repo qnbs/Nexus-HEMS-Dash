@@ -66,6 +66,16 @@ describe('DevicesAutomation', () => {
     await waitFor(() => expect(screen.queryByText('devicesAuto.pvTitle')).not.toBeInTheDocument());
   });
 
+  it('shows the empty state and resets filters when nothing matches', async () => {
+    const user = userEvent.setup();
+    render(<DevicesAutomation />);
+    await user.type(screen.getByRole('searchbox'), 'no-such-device-xyz');
+    expect(await screen.findByText('devicesAuto.noResults')).toBeInTheDocument();
+    // Reset via the empty-state action clears the search.
+    await user.click(screen.getByRole('button', { name: 'devicesAuto.filterAll' }));
+    await waitFor(() => expect(screen.getByText('devicesAuto.pvTitle')).toBeInTheDocument());
+  });
+
   it('switches to the floorplan view', async () => {
     const user = userEvent.setup();
     render(<DevicesAutomation />);
