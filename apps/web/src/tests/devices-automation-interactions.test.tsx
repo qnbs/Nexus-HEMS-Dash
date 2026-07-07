@@ -1,6 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
+import { DeviceInlineDetails } from '../components/devices-automation/cards/DeviceInlineDetails';
 import { BuildingDetail } from '../components/devices-automation/detail/BuildingDetail';
 import { EVDetail } from '../components/devices-automation/detail/EVDetail';
 import { HeatPumpDetail } from '../components/devices-automation/detail/HeatPumpDetail';
@@ -22,6 +23,7 @@ const data = {
 
 const settings = {
   systemConfig: {
+    pv: { peakPowerKWp: 10 },
     evCharger: { maxPowerKW: 11, model: 'Wallbox' },
   },
 } as unknown as StoredSettings;
@@ -71,6 +73,49 @@ describe('devices-automation detail interactions', () => {
     await waitFor(() => expect(sendCommand).toHaveBeenCalledWith('SET_EV_POWER', 1700), {
       timeout: 3000,
     });
+  });
+
+  it('EVDetail fast mode submits full charger power', async () => {
+    const user = userEvent.setup();
+    const sendCommand = vi.fn();
+    render(<EVDetail data={data} settings={settings} sendCommand={sendCommand} />);
+
+    await user.click(screen.getByRole('radio', { name: 'control.evFast' }));
+    await user.click(screen.getByRole('button', { name: 'common.apply' }));
+    // power = maxPowerKW * 1000 = 11 * 1000 = 11000
+    await waitFor(() => expect(sendCommand).toHaveBeenCalledWith('SET_EV_POWER', 11000), {
+      timeout: 3000,
+    });
+  });
+
+  it('EVDetail off mode (default) submits zero power', async () => {
+    const user = userEvent.setup();
+    const sendCommand = vi.fn();
+    render(<EVDetail data={data} settings={settings} sendCommand={sendCommand} />);
+
+    // No mode change → the default 'off' branch → power = 0.
+    await user.click(screen.getByRole('button', { name: 'common.apply' }));
+    await waitFor(() => expect(sendCommand).toHaveBeenCalledWith('SET_EV_POWER', 0), {
+      timeout: 3000,
+    });
+  });
+
+  it('DeviceInlineDetails full-details button stops propagation and opens the dialog', async () => {
+    const user = userEvent.setup();
+    const onOpenDetail = vi.fn();
+    const unified = { knx: { rooms: [] } } as unknown as UnifiedEnergyModel;
+    render(
+      <DeviceInlineDetails
+        deviceId="pv"
+        data={data}
+        unified={unified}
+        settings={settings}
+        onOpenDetail={onOpenDetail}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'devicesAuto.fullDetails' }));
+    expect(onOpenDetail).toHaveBeenCalledTimes(1);
   });
 
   it('HeatPumpDetail submits the selected SG-Ready power', async () => {
