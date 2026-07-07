@@ -100,7 +100,7 @@ describe('devices-automation detail interactions', () => {
     });
   });
 
-  it('DeviceInlineDetails full-details button stops propagation and opens the dialog', async () => {
+  it('DeviceInlineDetails full-details button invokes onOpenDetail exactly once', async () => {
     const user = userEvent.setup();
     const onOpenDetail = vi.fn();
     const unified = { knx: { rooms: [] } } as unknown as UnifiedEnergyModel;
@@ -114,19 +114,21 @@ describe('devices-automation detail interactions', () => {
       />,
     );
 
+    // Clicking runs the handler (including its e.stopPropagation()) and opens
+    // the detail dialog exactly once — the card-expand toggle is not re-fired.
     await user.click(screen.getByRole('button', { name: 'devicesAuto.fullDetails' }));
     expect(onOpenDetail).toHaveBeenCalledTimes(1);
   });
 
-  it('HeatPumpDetail submits the selected SG-Ready power', async () => {
+  it('HeatPumpDetail submits the default SG-Ready mode power exactly', async () => {
     const user = userEvent.setup();
     const sendCommand = vi.fn();
     render(<HeatPumpDetail data={data} sendCommand={sendCommand} />);
 
+    // Default SG-Ready mode is '2' → SG_READY_POWER_W['2'] = 800 W.
     await user.click(screen.getByRole('button', { name: 'common.apply' }));
-    await waitFor(
-      () => expect(sendCommand).toHaveBeenCalledWith('SET_HEAT_PUMP_POWER', expect.any(Number)),
-      { timeout: 3000 },
-    );
+    await waitFor(() => expect(sendCommand).toHaveBeenCalledWith('SET_HEAT_PUMP_POWER', 800), {
+      timeout: 3000,
+    });
   });
 });

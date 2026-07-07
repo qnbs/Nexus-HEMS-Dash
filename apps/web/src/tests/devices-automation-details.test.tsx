@@ -1,4 +1,4 @@
-import { render } from '@testing-library/react';
+import { render, within } from '@testing-library/react';
 import type { ReactElement } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { DeviceInlineDetails } from '../components/devices-automation/cards/DeviceInlineDetails';
@@ -121,7 +121,8 @@ describe('devices-automation per-device components', () => {
         sendCommand={vi.fn()}
       />,
     );
-    expect(pv.container.textContent).toContain('0%'); // utilization branch → 0
+    // Exact node match — a substring check would also pass on "10%"/"100%".
+    expect(within(pv.container).getByText('0%')).toBeInTheDocument();
     pv.unmount();
     const empty = render(
       <DeviceDetailContent

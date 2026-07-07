@@ -1,6 +1,6 @@
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import DevicesAutomation from '../pages/DevicesAutomation';
 
 const mockData = {
@@ -64,6 +64,10 @@ async function openDetail(user: ReturnType<typeof userEvent.setup>, cardTitle: s
 }
 
 describe('DevicesAutomation integration — detail dialogs and views', () => {
+  beforeEach(() => {
+    sendCommand.mockClear();
+  });
+
   it('opens the PV detail dialog with utilization from live data', async () => {
     const user = userEvent.setup();
     render(<DevicesAutomation />);
@@ -90,11 +94,18 @@ describe('DevicesAutomation integration — detail dialogs and views', () => {
     expect(sendCommand).toHaveBeenCalledWith('TOGGLE_KNX_LIGHTS', 0);
   });
 
-  it('opens the EV and heat-pump detail dialogs', async () => {
+  it('opens the EV detail dialog', async () => {
     const user = userEvent.setup();
     render(<DevicesAutomation />);
     const ev = await openDetail(user, 'devicesAuto.evTitle');
     expect(within(ev).getByText('control.evTitle')).toBeInTheDocument();
+  });
+
+  it('opens the heat-pump detail dialog', async () => {
+    const user = userEvent.setup();
+    render(<DevicesAutomation />);
+    const hp = await openDetail(user, 'devicesAuto.heatpumpTitle');
+    expect(within(hp).getByText('control.hpTitle')).toBeInTheDocument();
   });
 
   it('switches to the floorplan view and shows the lazy loader region', async () => {
