@@ -145,6 +145,21 @@ function StatusBadgeIcon({ connected }: { connected: boolean }) {
   );
 }
 
+function SystemStatusHeadline({ connected }: { connected: boolean }) {
+  const { t } = useTranslation();
+  return (
+    <div className="flex items-center gap-3">
+      <StatusBadgeIcon connected={connected} />
+      <div>
+        <h2 className="font-medium text-(--color-text) text-lg">
+          {connected ? t('monitoringUnified.systemHealthy') : t('monitoringUnified.systemDegraded')}
+        </h2>
+        <p className="text-(--color-muted) text-xs">{t('monitoringUnified.statusHint')}</p>
+      </div>
+    </div>
+  );
+}
+
 function SystemStatusBanner({
   connected,
   serverWsConnected,
@@ -161,23 +176,13 @@ function SystemStatusBanner({
       transition={{ duration: 0.4 }}
     >
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          <StatusBadgeIcon connected={connected} />
-          <div>
-            <h2 className="font-medium text-(--color-text) text-lg">
-              {connected
-                ? t('monitoringUnified.systemHealthy')
-                : t('monitoringUnified.systemDegraded')}
-            </h2>
-            <p className="text-(--color-muted) text-xs">{t('monitoringUnified.statusHint')}</p>
-          </div>
-        </div>
+        <SystemStatusHeadline connected={connected} />
 
         <div className="flex flex-wrap gap-2">
           <StatusPill label="MQTT" ok={connected} />
-          <StatusPill label="KNX/IP" ok={true} />
-          <StatusPill label="OCPP" ok={true} />
-          <StatusPill label="EEBUS" ok={true} />
+          <StatusPill label="KNX/IP" ok />
+          <StatusPill label="OCPP" ok />
+          <StatusPill label="EEBUS" ok />
           {isBackendWsEnabled() && (
             <StatusPill label={t('monitoringUnified.backendWs')} ok={serverWsConnected} />
           )}
