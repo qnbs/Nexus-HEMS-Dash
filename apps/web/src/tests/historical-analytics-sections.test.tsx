@@ -26,7 +26,7 @@ function makeForecast(id: number, r2: number, persisted: boolean): AIForecastRec
 
 describe('historical-analytics sections', () => {
   it('HistoricalHeader renders each InfluxDB status branch', () => {
-    const noop = () => {};
+    const noop = vi.fn();
     const { rerender } = render(
       <HistoricalHeader influxHealthy={true} timeRange="7d" onRangeChange={noop} />,
     );
@@ -82,7 +82,7 @@ describe('historical-analytics sections', () => {
         canSync
         syncing={false}
         syncResult={2}
-        onSync={() => {}}
+        onSync={vi.fn()}
       />,
     );
     expect(screen.getByText('historicalAnalytics.noForecasts')).toBeInTheDocument();

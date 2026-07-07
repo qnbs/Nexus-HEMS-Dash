@@ -10,8 +10,10 @@ describe('formatTimestamp', () => {
     expect(formatTimestamp(TS, '24h')).toMatch(/^\d{1,2}:\d{2}$/);
   });
 
-  it('formats 7d with an hour component', () => {
-    expect(formatTimestamp(TS, '7d')).toMatch(/\d{2}/);
+  it('formats 7d with a weekday and the hour', () => {
+    const out = formatTimestamp(TS, '7d');
+    expect(out).toMatch(/[A-Za-z]/); // short weekday
+    expect(out).toContain('14'); // 2-digit hour of the fixed 14:30 timestamp
   });
 
   it('formats 30d as DD.MM', () => {
