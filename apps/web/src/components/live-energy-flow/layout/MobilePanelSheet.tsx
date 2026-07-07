@@ -25,7 +25,10 @@ export function MobilePanelSheet({
       {openIds.length > 0 && (
         <motion.div
           key="mobile-panel-sheet"
-          className="fixed inset-x-0 bottom-0 z-20 max-h-[75dvh] space-y-3 overflow-y-auto rounded-t-2xl border-(--color-border) border-t bg-(--color-background)/95 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] shadow-2xl backdrop-blur-md"
+          // Sit ABOVE the fixed mobile bottom nav (3.5rem tall) so the sheet's
+          // lower edge / close buttons aren't hidden behind it. Matches the
+          // offset the mobile-nav's own popover uses.
+          className="fixed inset-x-0 bottom-[calc(3.5rem+env(safe-area-inset-bottom,0px))] z-20 max-h-[70dvh] space-y-3 overflow-y-auto rounded-t-2xl border-(--color-border) border-t bg-(--color-background)/95 p-3 shadow-2xl backdrop-blur-md"
           initial={{ y: '100%' }}
           animate={{ y: 0 }}
           exit={{ y: '100%' }}

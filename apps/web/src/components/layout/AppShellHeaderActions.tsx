@@ -41,7 +41,9 @@ export function AppShellHeaderActions({
           title={t('mode.simulationTitle')}
         >
           <FlaskConical size={12} aria-hidden="true" />
-          <span className="hidden sm:inline">{t('mode.simulationBadge')}</span>
+          {/* sr-only below sm so the status still has an accessible name when the
+              text is visually hidden (otherwise the flask icon looks functionless). */}
+          <span className="sr-only sm:not-sr-only">{t('mode.simulationBadge')}</span>
         </span>
       )}
 
