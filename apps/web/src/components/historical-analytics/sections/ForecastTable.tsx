@@ -9,6 +9,7 @@ function r2Color(r2: number): string {
 }
 
 function ForecastRow({ forecast }: { forecast: AIForecastRecord }) {
+  const { t } = useTranslation();
   return (
     <tr className="border-(--color-border)/50 border-b">
       <td className="px-3 py-2 text-(--color-text)">{forecast.metric}</td>
@@ -24,9 +25,19 @@ function ForecastRow({ forecast }: { forecast: AIForecastRecord }) {
       <td className="px-3 py-2 text-(--color-muted)">{forecast.accuracy.mape.toFixed(1)}%</td>
       <td className="px-3 py-2">
         {forecast.persistedToInflux ? (
-          <CheckCircle size={14} className="text-green-400" />
+          <CheckCircle
+            size={14}
+            className="text-green-400"
+            role="img"
+            aria-label={t('historicalAnalytics.forecastSyncedLabel')}
+          />
         ) : (
-          <Clock size={14} className="text-(--color-muted)" />
+          <Clock
+            size={14}
+            className="text-(--color-muted)"
+            role="img"
+            aria-label={t('historicalAnalytics.forecastPendingLabel')}
+          />
         )}
       </td>
     </tr>

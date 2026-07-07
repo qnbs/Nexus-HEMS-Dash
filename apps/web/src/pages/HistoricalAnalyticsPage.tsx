@@ -66,7 +66,7 @@ export default function HistoricalAnalyticsPage({ embedded = false }: { embedded
       <ChartCard
         titleKey="historicalAnalytics.energyOverview"
         ariaKey="historicalAnalytics.energyOverviewAria"
-        icon={<Activity size={20} className="text-(--color-primary)" />}
+        icon={<Activity size={20} className="text-(--color-primary)" aria-hidden="true" />}
         heightClass="h-72 sm:h-80"
         delay={0.1}
       >
@@ -76,7 +76,7 @@ export default function HistoricalAnalyticsPage({ embedded = false }: { embedded
       <ChartCard
         titleKey="historicalAnalytics.batterySoCHistory"
         ariaKey="historicalAnalytics.batterySoCAria"
-        icon={<Battery size={20} className="text-purple-400" />}
+        icon={<Battery size={20} className="text-purple-400" aria-hidden="true" />}
         heightClass="h-56 sm:h-64"
         delay={0.2}
       >

@@ -39,13 +39,14 @@ describe('historical-analytics sections', () => {
     expect(screen.getByText('historicalAnalytics.influxNotConfigured')).toBeInTheDocument();
   });
 
-  it('InfrastructureSection reflects healthy and unhealthy InfluxDB', () => {
+  it('InfrastructureSection reflects healthy and unhealthy InfluxDB via the status icon', () => {
+    // The service names render in both states — the branch difference is the
+    // accessible status icon, so assert that.
     const { rerender } = render(<InfrastructureSection influxHealthy={true} />);
-    expect(screen.getByText('InfluxDB')).toBeInTheDocument();
-    expect(screen.getByText('Grafana')).toBeInTheDocument();
+    expect(screen.getByLabelText('historicalAnalytics.serviceHealthyLabel')).toBeInTheDocument();
 
     rerender(<InfrastructureSection influxHealthy={false} />);
-    expect(screen.getByText('Prometheus')).toBeInTheDocument();
+    expect(screen.getByLabelText('historicalAnalytics.serviceUnhealthyLabel')).toBeInTheDocument();
   });
 
   it('SummaryCards toggles the loading placeholder', () => {
@@ -71,6 +72,9 @@ describe('historical-analytics sections', () => {
     expect(screen.getByText('90.0%')).toBeInTheDocument();
     expect(screen.getByText('60.0%')).toBeInTheDocument();
     expect(screen.getByText('30.0%')).toBeInTheDocument();
+    // Accessible sync-state icons (persisted true vs false).
+    expect(screen.getByLabelText('historicalAnalytics.forecastSyncedLabel')).toBeInTheDocument();
+    expect(screen.getAllByLabelText('historicalAnalytics.forecastPendingLabel').length).toBe(2);
   });
 
   it('ForecastHistorySection shows the empty state with sync controls', () => {

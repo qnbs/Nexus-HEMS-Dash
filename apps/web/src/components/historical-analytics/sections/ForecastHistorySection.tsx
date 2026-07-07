@@ -33,7 +33,7 @@ function SyncControls({
           disabled={syncing}
           className="focus-ring flex items-center gap-1.5 rounded-lg bg-(--color-primary)/10 px-3 py-1.5 font-medium text-(--color-primary) text-xs transition-colors hover:bg-(--color-primary)/20 disabled:opacity-50"
         >
-          <RefreshCw size={14} className={syncing ? 'animate-spin' : ''} />
+          <RefreshCw size={14} className={syncing ? 'animate-spin' : ''} aria-hidden="true" />
           {t('historicalAnalytics.syncToInflux', { count: unsyncedCount })}
         </button>
       )}
@@ -65,7 +65,7 @@ export function ForecastHistorySection({
     >
       <div className="mb-4 flex items-center justify-between">
         <h2 className="flex items-center gap-2 font-semibold text-(--color-text) text-lg">
-          <BrainCircuit size={20} className="text-(--color-neon-green)" />
+          <BrainCircuit size={20} className="text-(--color-neon-green)" aria-hidden="true" />
           {t('historicalAnalytics.aiForecastHistory')}
         </h2>
         <SyncControls

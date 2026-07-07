@@ -8,7 +8,7 @@ function InfluxStatus({ influxHealthy }: { influxHealthy: boolean | null }) {
   if (influxHealthy === true) {
     return (
       <span className="flex items-center gap-1.5 rounded-full bg-green-500/10 px-3 py-1 font-medium text-green-400 text-xs">
-        <CheckCircle size={14} />
+        <CheckCircle size={14} aria-hidden="true" />
         {t('historicalAnalytics.influxConnected')}
       </span>
     );
@@ -16,14 +16,14 @@ function InfluxStatus({ influxHealthy }: { influxHealthy: boolean | null }) {
   if (influxHealthy === false) {
     return (
       <span className="flex items-center gap-1.5 rounded-full bg-red-500/10 px-3 py-1 font-medium text-red-400 text-xs">
-        <AlertCircle size={14} />
+        <AlertCircle size={14} aria-hidden="true" />
         {t('historicalAnalytics.influxDisconnected')}
       </span>
     );
   }
   return (
     <span className="flex items-center gap-1.5 rounded-full bg-(--color-border)/30 px-3 py-1 font-medium text-(--color-muted) text-xs">
-      <Database size={14} />
+      <Database size={14} aria-hidden="true" />
       {t('historicalAnalytics.influxNotConfigured')}
     </span>
   );

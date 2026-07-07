@@ -2284,6 +2284,11 @@ export const de = {
     prometheusDesc: 'Metriken-Scraping & Alerting für HEMS-Server und Adapter',
     grafanaDesc: 'Visualisierung & Dashboards für Prometheus- und InfluxDB-Daten',
     open: 'Öffnen',
+    portLabel: 'Port',
+    forecastSyncedLabel: 'Mit InfluxDB synchronisiert',
+    forecastPendingLabel: 'Synchronisierung ausstehend',
+    serviceHealthyLabel: 'Dienst erreichbar',
+    serviceUnhealthyLabel: 'Dienst nicht erreichbar',
   },
   historicalChart: {
     title: 'Historische Energiedaten',

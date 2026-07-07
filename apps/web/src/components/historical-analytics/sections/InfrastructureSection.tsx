@@ -15,12 +15,26 @@ function ServiceCard({ svc }: { svc: ServiceInfo }) {
     <div className="rounded-lg border border-(--color-border) p-3">
       <div className="flex items-center justify-between">
         <span className="font-semibold text-(--color-text) text-sm">{svc.name}</span>
-        {svc.status === true && <CheckCircle size={14} className="text-green-400" />}
-        {svc.status === false && <AlertCircle size={14} className="text-red-400" />}
+        {svc.status === true && (
+          <CheckCircle
+            size={14}
+            className="text-green-400"
+            role="img"
+            aria-label={t('historicalAnalytics.serviceHealthyLabel')}
+          />
+        )}
+        {svc.status === false && (
+          <AlertCircle
+            size={14}
+            className="text-red-400"
+            role="img"
+            aria-label={t('historicalAnalytics.serviceUnhealthyLabel')}
+          />
+        )}
       </div>
       <p className="mt-1 text-(--color-muted) text-xs">{svc.desc}</p>
       <p className="mt-1 text-(--color-muted) text-xs">
-        Port: {svc.port}
+        {t('historicalAnalytics.portLabel')}: {svc.port}
         {svc.name === 'Grafana' && (
           <a
             href={`http://localhost:${svc.port}`}
@@ -28,7 +42,7 @@ function ServiceCard({ svc }: { svc: ServiceInfo }) {
             rel="noopener noreferrer"
             className="ml-2 inline-flex items-center gap-0.5 text-(--color-primary) hover:underline"
           >
-            <ExternalLink size={10} />
+            <ExternalLink size={10} aria-hidden="true" />
             {t('historicalAnalytics.open')}
           </a>
         )}
@@ -63,7 +77,7 @@ export function InfrastructureSection({ influxHealthy }: { influxHealthy: boolea
       transition={{ delay: 0.4 }}
     >
       <h2 className="mb-4 flex items-center gap-2 font-semibold text-(--color-text) text-lg">
-        <CloudSun size={20} className="text-(--color-electric-blue)" />
+        <CloudSun size={20} className="text-(--color-electric-blue)" aria-hidden="true" />
         {t('historicalAnalytics.infrastructure')}
       </h2>
       <div className="grid gap-3 sm:grid-cols-3">
