@@ -84,6 +84,14 @@ pnpm storybook:build   # Static build
 
 # Bundle size check (enforced in CI)
 pnpm size              # size-limit against gzipped bundles
+
+# Capacitor mobile (config: apps/web/capacitor.config.ts)
+pnpm --filter @nexus-hems/web cap:sync    # npx cap sync (sync web build → native shells)
+pnpm --filter @nexus-hems/web cap:build   # pnpm build && npx cap sync
+
+# Local prod-build smoke test + Vitest interactive UI (web only)
+pnpm --filter @nexus-hems/web smoke:prod  # scripts/smoke-prod-build.mjs
+pnpm --filter @nexus-hems/web test:ui     # vitest --ui
 ```
 
 **Local verification order:** `type-check` → `lint` → targeted unit tests. Do not run heavy checks in parallel on local hardware. Full E2E/Lighthouse/security scans are CI-first; only run locally when CI is unavailable or explicitly requested.
