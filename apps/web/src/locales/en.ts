@@ -276,6 +276,7 @@ export const en = {
     statusActive: 'Active',
     currentPower: 'Current Power',
     yieldToday: 'Yield today',
+    sgReady: 'SG Ready',
     peakPower: 'Peak Power',
     utilization: 'Utilization',
     orientation: 'Orientation',

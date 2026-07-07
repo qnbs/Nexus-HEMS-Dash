@@ -278,6 +278,7 @@ export const de = {
     statusActive: 'Aktiv',
     currentPower: 'Aktuelle Leistung',
     yieldToday: 'Ertrag heute',
+    sgReady: 'SG Ready',
     peakPower: 'Peak-Leistung',
     utilization: 'Auslastung',
     orientation: 'Ausrichtung',
