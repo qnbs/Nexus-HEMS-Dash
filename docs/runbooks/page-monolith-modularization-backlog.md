@@ -9,7 +9,7 @@ Several page components in `apps/web/src/pages/` have grown into monoliths that 
 | Page | File | Lines | Status | Runbook |
 |------|------|-------|--------|---------|
 | MonitoringPage | `apps/web/src/pages/MonitoringPage.tsx` | ~1,030 | ✅ Modularized in PR #297; tests pending | [monitoring-page-modularization-followup.md](./monitoring-page-modularization-followup.md) |
-| TariffsPage | `apps/web/src/pages/TariffsPage.tsx` | ~1,251 | 📋 Planned | [tariffs-page-modularization-plan.md](./tariffs-page-modularization-plan.md) |
+| TariffsPage | `apps/web/src/pages/TariffsPage.tsx` | ~1,251 → 106 | ✅ Modularized (page 106 lines; largest module 208) | [tariffs-page-modularization-plan.md](./tariffs-page-modularization-plan.md) |
 | DevicesAutomation | `apps/web/src/pages/DevicesAutomation.tsx` | ~1,167 → 80 | ✅ Modularized (page 80 lines; largest module 99) | [devices-automation-modularization-plan.md](./devices-automation-modularization-plan.md) |
 | HistoricalAnalyticsPage | `apps/web/src/pages/HistoricalAnalyticsPage.tsx` | ~777 → 101 | ✅ Modularized (page 101 lines; largest module 184) | [historical-analytics-page-modularization-plan.md](./historical-analytics-page-modularization-plan.md) |
 | LiveEnergyFlow | `apps/web/src/pages/LiveEnergyFlow.tsx` | ~922 → 72 | ✅ Modularized + mobile bottom-sheet layout (page 72 lines) | [live-energy-flow-modularization-plan.md](./live-energy-flow-modularization-plan.md) |
