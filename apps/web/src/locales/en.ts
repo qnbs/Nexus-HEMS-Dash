@@ -352,6 +352,15 @@ export const en = {
     securityOk: 'Protected',
     enableHint: 'Enable power user mode for detailed system monitoring.',
     enableButton: 'Enable Power User Mode',
+    panelErrorTitle: 'Advanced monitoring panel unavailable',
+    panelErrorDesc:
+      'The detailed monitoring panel ran into an error and could not be displayed. You can return to the summary view or reload the page.',
+    panelErrorSummary: 'Back to summary',
+    panelErrorReload: 'Reload page',
+    protocolMqtt: 'MQTT',
+    protocolKnx: 'KNX/IP',
+    protocolOcpp: 'OCPP',
+    protocolEebus: 'EEBUS',
   },
   settingsUnified: {
     title: 'Settings & Plugins',

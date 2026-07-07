@@ -119,6 +119,31 @@ const IGNORED_CONSOLE_ERRORS = [
 ];
 
 /**
+ * Attach listeners that collect uncaught page errors and React render errors
+ * (React #185 / boundary logs — which are swallowed by error boundaries and so
+ * never fire `pageerror`). Returns the live arrays for assertions. Shared by the
+ * monitoring + animation-crash-sweep specs so the capture regex stays in sync.
+ */
+export function attachReactErrorWatcher(page: Page): {
+  pageErrors: string[];
+  reactErrors: string[];
+} {
+  const pageErrors: string[] = [];
+  const reactErrors: string[] = [];
+  page.on('pageerror', (error) => {
+    pageErrors.push(`${error.name}: ${error.message}\n${error.stack ?? '(no stack)'}`);
+  });
+  page.on('console', (msg) => {
+    if (msg.type() !== 'error') return;
+    const text = msg.text();
+    if (/Minified React error #\d+|Maximum update depth|\[ErrorBoundary\]/.test(text)) {
+      reactErrors.push(text);
+    }
+  });
+  return { pageErrors, reactErrors };
+}
+
+/**
  * Attach page-error listeners that fail the current test on uncaught
  * exceptions. Console errors are logged only — strict CSP preview builds
  * emit benign style-src noise from third-party libs (axe, motion).

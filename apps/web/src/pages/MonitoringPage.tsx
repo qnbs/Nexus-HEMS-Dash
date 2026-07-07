@@ -370,18 +370,14 @@ function extractEnergyMetrics(
 // skipcq: JS-R1005
 function useMonitoringData() {
   const { t } = useTranslation();
+  // Select the STORE'S stable refs. Returning a fresh `{ energyData: {…} }`
+  // object here builds a new nested object on every call, which defeats
+  // useShallow (its shallow compare sees `energyData` change every time). That
+  // makes useSyncExternalStore's getSnapshot return a new value on every render
+  // → React #185 "Maximum update depth exceeded" the moment this panel mounts.
+  // This was the real cause of the Power User Mode crash.
   const { energyData, connected } = useAppStoreShallow((s) => ({
-    energyData: {
-      pvPower: s.energyData.pvPower,
-      gridPower: s.energyData.gridPower,
-      batteryPower: s.energyData.batteryPower,
-      batterySoC: s.energyData.batterySoC,
-      houseLoad: s.energyData.houseLoad,
-      evPower: s.energyData.evPower,
-      heatPumpPower: s.energyData.heatPumpPower,
-      gridVoltage: s.energyData.gridVoltage,
-      priceCurrent: s.energyData.priceCurrent,
-    },
+    energyData: s.energyData,
     connected: s.connected,
   }));
   const { families, health, lastUpdated, error } = useMetrics(5000);

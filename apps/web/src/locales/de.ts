@@ -354,6 +354,15 @@ export const de = {
     securityOk: 'Geschützt',
     enableHint: 'Aktivieren Sie den Power-User-Modus für detaillierte Systemüberwachung.',
     enableButton: 'Power-User-Modus aktivieren',
+    panelErrorTitle: 'Erweitertes Monitoring-Panel nicht verfügbar',
+    panelErrorDesc:
+      'Das detaillierte Monitoring-Panel ist auf einen Fehler gestoßen und konnte nicht angezeigt werden. Sie können zur Übersicht zurückkehren oder die Seite neu laden.',
+    panelErrorSummary: 'Zurück zur Übersicht',
+    panelErrorReload: 'Seite neu laden',
+    protocolMqtt: 'MQTT',
+    protocolKnx: 'KNX/IP',
+    protocolOcpp: 'OCPP',
+    protocolEebus: 'EEBUS',
   },
   settingsUnified: {
     title: 'Einstellungen & Plugins',
