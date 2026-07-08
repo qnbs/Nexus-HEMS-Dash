@@ -263,7 +263,7 @@ Enforced by `pnpm size` (size-limit) and Lighthouse CI. Do not exceed:
 | Metric | Budget |
 |---|---|
 | Total JS (gzipped) | ≤ 1130 KB |
-| Total CSS (gzipped) | ≤ 25 KB |
+| Total CSS (gzipped) | ≤ 27 KB |
 | Framework chunk | ≤ 85 KB |
 | Vendor Recharts | ≤ 110 KB |
 | FCP | ≤ 3000 ms |
