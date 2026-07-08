@@ -1,5 +1,15 @@
 import type { AlertRule } from '../types';
 
+/**
+ * Client-side daytime window (07:00–19:59 local) used to mirror the PromQL
+ * `hour()` guard in the `NoSolarGeneration` demo rule. Read once so the check
+ * cannot straddle an hour boundary between two `getHours()` calls.
+ */
+function isDaytime(): boolean {
+  const hour = new Date().getHours();
+  return hour >= 7 && hour < 20;
+}
+
 /** Build the Prometheus-style alert rules with live `active` evaluation. */
 export function buildAlertRules(
   t: (key: string) => string,
@@ -47,7 +57,7 @@ export function buildAlertRules(
     },
     {
       name: 'GridVoltageAnomaly',
-      expr: 'hems_grid_voltage < 210 OR > 250',
+      expr: 'hems_grid_voltage < 210 or hems_grid_voltage > 250',
       for: '1m',
       severity: 'critical',
       desc: t('monitoring.ruleVoltage'),
@@ -55,11 +65,11 @@ export function buildAlertRules(
     },
     {
       name: 'NoSolarGeneration',
-      expr: 'hems_pv_power_watts == 0 AND daytime',
+      expr: 'hems_pv_power_watts == 0 and hour() >= 7 and hour() < 20',
       for: '30m',
       severity: 'warning',
       desc: t('monitoring.ruleNoSolar'),
-      active: values.pvPower === 0 && new Date().getHours() >= 7 && new Date().getHours() <= 19,
+      active: values.pvPower === 0 && isDaytime(),
     },
   ];
 }

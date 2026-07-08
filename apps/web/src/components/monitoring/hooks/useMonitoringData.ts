@@ -1,23 +1,27 @@
 import { useTranslation } from 'react-i18next';
 import { getMetricFromSnapshot, useMetrics } from '../../../core/useMetrics';
 import { useAppStoreShallow } from '../../../store';
+import type { EnergyData } from '../../../types';
 import { buildContribAdapters, buildCoreAdapters } from '../data/adapters';
 import { buildAlertRules } from '../data/alertRules';
 import { buildEventLog } from '../data/eventLog';
 import { buildMetricCards } from '../data/metricCards';
 import { calculateStatuses, generateSystemLoadHistory } from '../utils';
 
-type StoreEnergySlice = {
-  pvPower: number;
-  gridPower: number;
-  batteryPower: number;
-  batterySoC: number;
-  houseLoad: number;
-  evPower: number;
-  heatPumpPower: number;
-  gridVoltage: number;
-  priceCurrent: number;
-};
+// Derive the slice directly from the store's `EnergyData` type so a rename or
+// removal of any field surfaces here as a type error rather than silent drift.
+type StoreEnergySlice = Pick<
+  EnergyData,
+  | 'pvPower'
+  | 'gridPower'
+  | 'batteryPower'
+  | 'batterySoC'
+  | 'houseLoad'
+  | 'evPower'
+  | 'heatPumpPower'
+  | 'gridVoltage'
+  | 'priceCurrent'
+>;
 
 type EnergyMetrics = {
   pvPower: number;
