@@ -12,6 +12,8 @@ export const de = {
     save: 'Einstellungen speichern',
     saved: 'Gespeichert',
     active: 'Aktiv',
+    waiting: 'Wartend',
+    inactive: 'Inaktiv',
     recommended: 'Empfohlen',
     offline: 'Offline-fähig',
     language: 'Sprache',

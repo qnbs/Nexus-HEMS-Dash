@@ -12,8 +12,15 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { usePWAInstall } from '../../lib/pwa-install';
 import { ConfirmDialog, useConfirmDialog } from '../ConfirmDialog';
+import {
+  installStatusDescriptionKey,
+  swBadgeClass,
+  swDotClass,
+  swStatusDescriptionKey,
+  swStatusLabelKey,
+  updateStatusDescriptionKey,
+} from './pwa-helpers';
 
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: PWA install and service worker state management
 export function PWASettingsSection() {
   const { t } = useTranslation();
   const { canInstall, isIOSDevice, isInstalled, install } = usePWAInstall();
@@ -115,6 +122,7 @@ export function PWASettingsSection() {
     'mb-5 flex items-center gap-3 text-lg fluid-text-lg font-semibold text-(--color-text)';
   const rowClass =
     'flex items-center justify-between p-4 rounded-xl border border-(--color-border) bg-(--color-surface)';
+  const updateDescriptionKey = updateStatusDescriptionKey(updateStatus);
 
   return (
     <>
@@ -131,19 +139,7 @@ export function PWASettingsSection() {
                 {t('settings_pwa.installStatus', 'Installation')}
               </p>
               <p className="text-(--color-muted) text-xs">
-                {isInstalled
-                  ? t('settings_pwa.installed', 'App is installed on this device')
-                  : isIOSDevice
-                    ? t(
-                        'settings_pwa.iosHint',
-                        'Use Safari Share → "Add to Home Screen" to install',
-                      )
-                    : canInstall
-                      ? t('settings_pwa.canInstall', 'App can be installed as native app')
-                      : t(
-                          'settings_pwa.notAvailable',
-                          'Install not available (already installed or unsupported browser)',
-                        )}
+                {t(installStatusDescriptionKey({ isInstalled, isIOSDevice, canInstall }))}
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -175,39 +171,17 @@ export function PWASettingsSection() {
               <p className="font-medium text-sm">
                 {t('settings_pwa.serviceWorker', 'Service Worker')}
               </p>
-              <p className="text-(--color-muted) text-xs">
-                {swStatus === 'active'
-                  ? t('settings_pwa.swActive', 'Active — offline mode enabled')
-                  : swStatus === 'waiting'
-                    ? t('settings_pwa.swWaiting', 'Update waiting — restart to apply')
-                    : t('settings_pwa.swNone', 'Not registered')}
-              </p>
+              <p className="text-(--color-muted) text-xs">{t(swStatusDescriptionKey(swStatus))}</p>
             </div>
             <div className="flex items-center gap-2">
               <span
-                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 font-medium text-xs ${
-                  swStatus === 'active'
-                    ? 'border border-emerald-500/30 bg-emerald-500/10 text-emerald-400'
-                    : swStatus === 'waiting'
-                      ? 'border border-amber-500/30 bg-amber-500/10 text-amber-400'
-                      : 'border border-(--color-border) bg-(--color-surface-strong) text-(--color-muted)'
-                }`}
+                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 font-medium text-xs ${swBadgeClass(swStatus)}`}
               >
                 <span
-                  className={`h-2 w-2 rounded-full ${
-                    swStatus === 'active'
-                      ? 'bg-emerald-400'
-                      : swStatus === 'waiting'
-                        ? 'bg-amber-400'
-                        : 'bg-(--color-muted)'
-                  }`}
+                  className={`h-2 w-2 rounded-full ${swDotClass(swStatus)}`}
                   aria-hidden="true"
                 />
-                {swStatus === 'active'
-                  ? t('common.active', 'Active')
-                  : swStatus === 'waiting'
-                    ? t('common.waiting', 'Waiting')
-                    : t('common.inactive', 'Inactive')}
+                {t(swStatusLabelKey(swStatus))}
               </span>
             </div>
           </div>
@@ -219,13 +193,9 @@ export function PWASettingsSection() {
                 {t('settings_pwa.forceUpdate', 'Check for Update')}
               </p>
               <p className="text-(--color-muted) text-xs">
-                {updateStatus === 'checking'
-                  ? t('settings_pwa.forceUpdateChecking', 'Checking…')
-                  : updateStatus === 'found'
-                    ? t('settings_pwa.forceUpdateFound', 'Update found — restarting…')
-                    : updateStatus === 'none'
-                      ? t('settings_pwa.forceUpdateNone', 'Already up to date')
-                      : `${t('settings_pwa.appVersion', 'App Version')} 4.6.0`}
+                {updateDescriptionKey
+                  ? t(updateDescriptionKey)
+                  : `${t('settings_pwa.appVersion')} 4.6.0`}
               </p>
             </div>
             <motion.button

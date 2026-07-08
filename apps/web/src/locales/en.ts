@@ -12,6 +12,8 @@ export const en = {
     save: 'Save settings',
     saved: 'Saved',
     active: 'Active',
+    waiting: 'Waiting',
+    inactive: 'Inactive',
     recommended: 'Recommended',
     offline: 'Offline-ready',
     language: 'Language',
