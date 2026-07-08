@@ -22,11 +22,19 @@
 set -uo pipefail
 
 input="$(cat 2>/dev/null || true)"
+
+# Fail closed if jq is missing: without it the guard cannot parse the tool input,
+# so surface the edit for review instead of silently allowing a Tier-1 change.
+if ! command -v jq >/dev/null 2>&1; then
+  printf '%s' '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"ask","permissionDecisionReason":"safety-guard: jq is not installed, so the guard cannot verify whether this edit targets a safety-critical or secret file. Install jq, or confirm this edit is intended before applying."}}'
+  exit 0
+fi
+
 f="$(printf '%s' "$input" | jq -r '.tool_input.file_path // empty' 2>/dev/null || true)"
 [ -z "$f" ] && exit 0
 
 # Tier 1 — control logic, auth, rate limits, read-only enforcement, secrets.
-if printf '%s' "$f" | grep -qE '(command-safety|circuit-breaker|jwt-utils|read-only-mode|energy\.ws)\.ts$|(^|/)\.env($|\.)|-lock\.(json|yaml)$|Cargo\.lock$'; then
+if printf '%s' "$f" | grep -qE '(^|/)(command-safety|circuit-breaker|jwt-utils|read-only-mode|energy\.ws)\.ts$|(^|/)\.env($|\.)|-lock\.(json|yaml)$|Cargo\.lock$'; then
   jq -cn --arg r "Safety-critical / secret file: ${f}. Per CLAUDE.md, never auto-apply fixes to control logic, auth, rate limits, or safety guardrails — confirm this edit is intended and surface it for human review before applying." \
     '{hookSpecificOutput:{hookEventName:"PreToolUse",permissionDecision:"ask",permissionDecisionReason:$r}}'
   exit 0
