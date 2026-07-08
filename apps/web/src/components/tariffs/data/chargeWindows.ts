@@ -19,18 +19,22 @@ export const CHARGE_WINDOWS: ChargeWindow[] = (() => {
     if (slot.price <= threshold && windowStart === -1) {
       windowStart = i;
     } else if ((slot.price > threshold || i === PRICE_TIMELINE.length - 1) && windowStart !== -1) {
-      const slice = PRICE_TIMELINE.slice(windowStart, i);
+      // Exclusive end index: when the current slot broke the window it is not
+      // part of it; when the window ran to the final slot (<= threshold) that
+      // last slot must be included, so extend the end by one.
+      const windowEnd = slot.price > threshold ? i : i + 1;
+      const slice = PRICE_TIMELINE.slice(windowStart, windowEnd);
       const avgPrice = slice.reduce((s, x) => s + x.price, 0) / slice.length;
       const avgRenewable = slice.reduce((s, x) => s + x.renewable, 0) / slice.length;
       const savingsVsAvg = (PRICE_AVG - avgPrice) * 20; // 20 kWh assumed
       const startSlot = PRICE_TIMELINE[windowStart];
-      const endSlot = PRICE_TIMELINE[Math.min(i, PRICE_TIMELINE.length - 1)];
+      const endSlot = PRICE_TIMELINE[windowEnd - 1];
       windows.push({
         start: startSlot?.time ?? '',
         end: endSlot?.time ?? '',
         avgPrice,
         savings: Math.max(0, savingsVsAvg),
-        duration: i - windowStart,
+        duration: windowEnd - windowStart,
         category: classify(avgPrice),
         renewable: Math.round(avgRenewable),
       });

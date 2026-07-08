@@ -63,6 +63,7 @@ export function MonthlyCostSection({
                       : 'var(--price-low)'
                 }
                 strokeWidth="3"
+                pathLength={100}
                 strokeDasharray={`${monthlyBudgetPct} ${100 - monthlyBudgetPct}`}
                 strokeLinecap="round"
               />

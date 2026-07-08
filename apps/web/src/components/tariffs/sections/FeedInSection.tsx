@@ -27,7 +27,8 @@ export function FeedInSection({
           <div>
             <p className="text-(--color-muted) text-sm">{t('tariffs.feedInRate')}</p>
             <p className="font-bold text-2xl text-amber-400">
-              {(feedInTariff * 100).toFixed(1)} <span className="font-normal text-sm">ct/kWh</span>
+              {(feedInTariff * 100).toFixed(1)}{' '}
+              <span className="font-normal text-sm">{t('units.ctPerKwh')}</span>
             </p>
           </div>
           <Sun className="h-10 w-10 text-amber-400/40" aria-hidden="true" />

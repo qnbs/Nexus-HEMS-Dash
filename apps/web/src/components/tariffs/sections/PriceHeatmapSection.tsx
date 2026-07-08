@@ -20,15 +20,21 @@ export function PriceHeatmapSection() {
       <p className="mb-4 text-(--color-muted) text-sm">{t('tariffs.heatmapDesc')}</p>
 
       <div className="overflow-x-auto">
-        <table className="block min-w-175" aria-label={t('tariffs.heatmapAria')}>
-          <thead className="block">
-            <tr className="mb-1 flex">
-              <th scope="col" className="w-16 shrink-0 font-normal" aria-label={t('tariffs.day')} />
+        {/* Native table display (no block/flex overrides) so the grid keeps its
+            semantics in the accessibility tree; table-fixed + border-spacing
+            reproduce the equal-width cell layout. */}
+        <table
+          className="min-w-175 table-fixed border-separate border-spacing-x-px border-spacing-y-0.5"
+          aria-label={t('tariffs.heatmapAria')}
+        >
+          <thead>
+            <tr>
+              <th scope="col" className="w-16 font-normal" aria-label={t('tariffs.day')} />
               {Array.from({ length: 24 }, (_, h) => h).map((h) => (
                 <th
                   key={`hour-label-${h}`}
                   scope="col"
-                  className="flex-1 text-center font-normal text-(--color-muted) text-[9px]"
+                  className="text-center font-normal text-(--color-muted) text-[9px]"
                   aria-label={`${String(h).padStart(2, '0')}:00`}
                 >
                   {h % 3 === 0 ? `${String(h).padStart(2, '0')}` : ''}
@@ -36,12 +42,12 @@ export function PriceHeatmapSection() {
               ))}
             </tr>
           </thead>
-          <tbody className="block">
+          <tbody>
             {HEATMAP_DATA.map((row) => (
-              <tr key={row.date} className="mb-0.5 flex items-center">
+              <tr key={row.date}>
                 <th
                   scope="row"
-                  className="w-16 shrink-0 pr-2 text-right font-normal text-(--color-muted) text-[10px]"
+                  className="w-16 pr-2 text-right align-middle font-normal text-(--color-muted) text-[10px]"
                 >
                   {row.day} {row.date}
                 </th>
@@ -50,9 +56,9 @@ export function PriceHeatmapSection() {
                   .map(({ price, h }) => (
                     <td
                       key={`${row.date}-${h}`}
-                      className="mx-px h-5 flex-1 rounded-sm transition-all hover:scale-110 hover:ring-1 hover:ring-white/30"
+                      className="h-5 rounded-sm transition-all hover:scale-110 hover:ring-1 hover:ring-white/30"
                       style={{ backgroundColor: getHeatmapBg(price) }}
-                      title={`${row.day} ${String(h).padStart(2, '0')}:00 — ${(price * 100).toFixed(1)} ct/kWh`}
+                      title={`${row.day} ${String(h).padStart(2, '0')}:00 — ${(price * 100).toFixed(1)} ${t('units.ctPerKwh')}`}
                     />
                   ))}
               </tr>

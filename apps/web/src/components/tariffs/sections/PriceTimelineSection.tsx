@@ -98,7 +98,7 @@ export function PriceTimelineSection({
                 tick={{ fill: 'var(--color-muted)', fontSize: 10 }}
                 tickFormatter={(v: number) => `${(v * 100).toFixed(0)}`}
                 label={{
-                  value: 'ct/kWh',
+                  value: t('units.ctPerKwh'),
                   angle: -90,
                   position: 'insideLeft',
                   fill: 'var(--color-muted)',
@@ -112,7 +112,9 @@ export function PriceTimelineSection({
                   borderRadius: '12px',
                   color: 'var(--color-text)',
                 }}
-                formatter={(value: unknown) => [`${(Number(value) * 100).toFixed(2)} ct/kWh`]}
+                formatter={(value: unknown) => [
+                  `${(Number(value) * 100).toFixed(2)} ${t('units.ctPerKwh')}`,
+                ]}
                 labelFormatter={(label: unknown) => `${label}`}
               />
               <ReferenceLine
@@ -156,7 +158,7 @@ export function PriceTimelineSection({
                 stroke="var(--color-muted)"
                 tick={{ fill: 'var(--color-muted)', fontSize: 10 }}
                 label={{
-                  value: '%',
+                  value: t('units.percent'),
                   angle: -90,
                   position: 'insideLeft',
                   fill: 'var(--color-muted)',
@@ -170,7 +172,9 @@ export function PriceTimelineSection({
                   borderRadius: '12px',
                   color: 'var(--color-text)',
                 }}
-                formatter={(value: unknown) => [`${Number(value).toFixed(0)} %`]}
+                formatter={(value: unknown) => [
+                  `${Number(value).toFixed(0)} ${t('units.percent')}`,
+                ]}
               />
               <Area
                 type="monotone"

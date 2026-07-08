@@ -62,7 +62,7 @@ export function ChargeWindowsSection({
               open={expandedWindow === i}
               onOpenChange={(open) => onExpandedWindow(open ? i : null)}
               title={`${win.start} – ${win.end}`}
-              subtitle={`Ø ${(win.avgPrice * 100).toFixed(1)} ct/kWh · ${win.duration}h`}
+              subtitle={`Ø ${(win.avgPrice * 100).toFixed(1)} ${t('units.ctPerKwh')} · ${win.duration}h`}
             >
               <div className="grid grid-cols-2 gap-2">
                 <div>

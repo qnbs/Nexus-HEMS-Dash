@@ -61,7 +61,7 @@ export function ProviderInfoSection({
           <div className="rounded-xl bg-(--color-surface) p-3">
             <p className="text-(--color-muted) text-[10px]">{t('tariffs.chargeThreshold')}</p>
             <p className="font-semibold text-emerald-400">
-              {(chargeThreshold * 100).toFixed(1)} ct
+              {(chargeThreshold * 100).toFixed(1)} {t('units.ct')}
             </p>
           </div>
         </div>
@@ -82,7 +82,7 @@ export function ProviderInfoSection({
           </span>
           {priceAlerts && (
             <span className="ml-auto font-medium text-xs">
-              &lt; {(priceAlertThreshold * 100).toFixed(0)} ct
+              &lt; {(priceAlertThreshold * 100).toFixed(0)} {t('units.ct')}
             </span>
           )}
         </div>

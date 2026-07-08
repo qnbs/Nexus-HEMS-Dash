@@ -40,7 +40,7 @@ export function DeviceScheduleSection() {
                 {t(`tariffs.device_${sched.device}`)}
               </p>
               <p className="text-(--color-muted) text-xs">
-                {sched.time} · {(sched.price * 100).toFixed(1)} ct/kWh
+                {sched.time} · {(sched.price * 100).toFixed(1)} {t('units.ctPerKwh')}
               </p>
             </div>
             <div className="text-right">

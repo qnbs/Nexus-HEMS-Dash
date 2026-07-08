@@ -17,7 +17,7 @@ export function TariffKpiCards({
     {
       label: t('tariffs.kpiCurrent'),
       value: `${currentPrice.toFixed(3)}`,
-      unit: '€/kWh',
+      unit: t('units.euroPerKwh'),
       icon: <Zap className="h-5 w-5" aria-hidden="true" />,
       color: isGoodPrice ? 'text-emerald-400' : 'text-orange-400',
       bg: isGoodPrice ? 'bg-emerald-500/10' : 'bg-orange-500/10',
@@ -25,7 +25,7 @@ export function TariffKpiCards({
     {
       label: t('tariffs.kpiAvg24h'),
       value: `${PRICE_AVG.toFixed(3)}`,
-      unit: '€/kWh',
+      unit: t('units.euroPerKwh'),
       icon: <BarChart3 className="h-5 w-5" aria-hidden="true" />,
       color: 'text-blue-400',
       bg: 'bg-blue-500/10',
@@ -33,7 +33,7 @@ export function TariffKpiCards({
     {
       label: t('tariffs.kpiLow'),
       value: `${PRICE_MIN.toFixed(3)}`,
-      unit: '€/kWh',
+      unit: t('units.euroPerKwh'),
       icon: <TrendingDown className="h-5 w-5" aria-hidden="true" />,
       color: 'text-emerald-400',
       bg: 'bg-emerald-500/10',
@@ -41,7 +41,7 @@ export function TariffKpiCards({
     {
       label: t('tariffs.kpiHigh'),
       value: `${PRICE_MAX.toFixed(3)}`,
-      unit: '€/kWh',
+      unit: t('units.euroPerKwh'),
       icon: <TrendingUp className="h-5 w-5" aria-hidden="true" />,
       color: 'text-red-400',
       bg: 'bg-red-500/10',
@@ -49,7 +49,7 @@ export function TariffKpiCards({
     {
       label: t('tariffs.kpiSpread'),
       value: `${(PRICE_SPREAD * 100).toFixed(1)}`,
-      unit: 'ct',
+      unit: t('units.ct'),
       icon: <Activity className="h-5 w-5" aria-hidden="true" />,
       color: 'text-purple-400',
       bg: 'bg-purple-500/10',
@@ -57,7 +57,7 @@ export function TariffKpiCards({
     {
       label: t('tariffs.kpiFeedIn'),
       value: `${feedInTariff.toFixed(3)}`,
-      unit: '€/kWh',
+      unit: t('units.euroPerKwh'),
       icon: <Sun className="h-5 w-5" aria-hidden="true" />,
       color: 'text-amber-400',
       bg: 'bg-amber-500/10',

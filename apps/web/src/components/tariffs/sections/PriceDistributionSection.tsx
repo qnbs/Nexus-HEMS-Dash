@@ -38,7 +38,7 @@ export function PriceDistributionSection() {
               stroke="var(--color-muted)"
               tick={{ fill: 'var(--color-muted)', fontSize: 9 }}
               label={{
-                value: 'ct/kWh',
+                value: t('units.ctPerKwh'),
                 position: 'insideBottom',
                 fill: 'var(--color-muted)',
                 fontSize: 10,
@@ -64,7 +64,7 @@ export function PriceDistributionSection() {
                 color: 'var(--color-text)',
               }}
               formatter={(value: unknown) => [`${value} ${t('tariffs.hours')}`]}
-              labelFormatter={(label: unknown) => `${label} ct/kWh`}
+              labelFormatter={(label: unknown) => `${label} ${t('units.ctPerKwh')}`}
             />
             <Bar dataKey="count" radius={[6, 6, 0, 0]}>
               {PRICE_BINS.map((entry) => (

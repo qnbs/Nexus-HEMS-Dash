@@ -158,6 +158,8 @@ export const de = {
     kilowattHour: 'kWh',
     percent: '%',
     euroPerKwh: '€/kWh',
+    ctPerKwh: 'ct/kWh',
+    ct: 'ct',
     soc: 'SoC',
   },
   dashboard: {
