@@ -2,7 +2,7 @@
 
 **Last audited:** 2026-07-03 (full status review — `docs/Audit-Report-2026-07-03.md`)
 **Version at audit:** 1.10.0 shipped (`main`, PRs #236–#268)
-**Last updated:** 2026-07-04 (release 1.10.0 — post-audit phases 1–8)
+**Last updated:** 2026-07-08 (docs-housekeeping truth-sync; prior: 2026-07-04 release 1.10.0 post-audit phases 1–8)
 **Release line:** v1.10.0 shipped; release dispatch manual-only (ADR-015 amended)
 **Auditor:** Cursor Cloud Agent (2026-06-29 full audit; 2026-07-02 delta; 2026-07-03 full review)
 
@@ -841,18 +841,48 @@ and Deployment guide so operators don't assume a single flag is sufficient.
 
 ## Dependency Override Rationale
 
-The following `pnpm.overrides` in root `package.json` exist for security reasons and must not be removed without re-auditing:
+The **authoritative, always-current** set of overrides lives in root `package.json`
+under `pnpm.overrides` — that file is the single source of truth. This table
+explains *why* each pin exists, grouped by purpose. After adding or changing an
+override, run `pnpm audit` and update this table. Do not hand-copy CVE numbers
+here (they drift and get mis-attributed); describe the fix class and check the
+advisory database for the specific IDs.
 
-| Package                 | Reason                                                       |
-| ----------------------- | ------------------------------------------------------------ |
-| `micromatch@^4.0.8`     | Prototype pollution via glob pattern (CVE-2024-4067)         |
-| `braces@^3.0.3`         | ReDoS via malformed pattern (CVE-2024-4068)                  |
-| `send@^1.1.0`           | Path traversal in static file serving (CVE-2024-43799)       |
-| `path-to-regexp@^8.2.0` | Backtracking ReDoS (CVE-2024-45296)                          |
-| `cross-spawn@^7.0.6`    | Shell injection via malformed env var (CVE-2024-21538)       |
-| `vite@^6.3.5`           | Arbitrary file read via crafted URL (CVE-2025-31125)         |
-| `esbuild@^0.25.0`       | Arbitrary request forwarding via dev server (CVE-2025-25193) |
-| `cookie@^0.7.0`         | Prototype pollution (CVE-2024-47764)                         |
+### Security hardening — force patched transitive versions
+
+| Override | Purpose |
+| -------- | ------- |
+| `serialize-javascript >=7.0.5` | Hardened serializer release (XSS in serialized output) |
+| `@xmldom/xmldom >=0.9.0` | XML mis-parsing / prototype-pollution fixes |
+| `basic-ftp >=5.3.1` | SSRF / connection-handling fixes |
+| `cross-spawn >=7.0.6` | ReDoS fix in argument parsing |
+| `protobufjs ^7.5.5` | Prototype-pollution fix |
+| `undici ^7.28.0` | HTTP client security + correctness fixes |
+| `ws @^7 → >=7.5.11` | DoS fix (header / per-message-deflate handling) |
+| `dompurify >=3.4.11` | mXSS sanitizer-bypass fix |
+| `qs >=6.15.2` | Prototype-pollution / resource-exhaustion fix |
+| `uuid >=11.1.1` | Consolidate on the hardened ESM-native line |
+| `form-data >=4.0.6` | Safe multipart boundary generation |
+| `tar >=7.5.16` | Path-traversal / symlink fixes |
+| `js-yaml >=4.2.0` | Safer default load behaviour |
+| `esbuild >=0.28.1` | Dev-server request-forwarding (SSRF) fix |
+| `brace-expansion @^1→1.1.14, @^2→2.1.0, @^5→5.0.7` | ReDoS fix across every range in the tree |
+| `picomatch @^2→2.3.2, @^4→4.0.4` | ReDoS fix across both major ranges |
+| `yaml @^1→1.10.3, @^2→2.8.3` | Parser hardening across both major ranges |
+| `tmp >=0.2.6` (via `@lhci/cli`, `external-editor`) | Arbitrary-write / symlink fix |
+
+### Build determinism & de-duplication (not CVE-driven)
+
+| Override | Purpose |
+| -------- | ------- |
+| `@rollup/plugin-terser >=0.4.5` | Align the terser plugin across the Rollup/Rolldown tree |
+| `flatted 3.4.2` | Force a single resolved version (de-dupe) |
+| `handlebars 4.7.9` | Force a single resolved version (de-dupe) |
+| `lodash 4.18.1`, `lodash-es 4.18.1` | Pin transitive lodash / lodash-es to one resolution |
+
+> Nested `parent>child` overrides (`npm>brace-expansion`, `npm>picomatch`,
+> `@lhci/cli>tmp`, `external-editor>tmp`) scope a pin to a specific dependency
+> path; see `package.json` for the exact form.
 
 ---
 
@@ -862,7 +892,7 @@ The following `pnpm.overrides` in root `package.json` exist for security reasons
 | ------- | ----- | ------ |
 | **v1.3.0–v1.7.0** | Perfection Roadmap Phase 0–1 — safety defaults, auth, supply chain, backend bridge, coverage | ✅ Shipped |
 | **v1.8.0–v1.9.0** | ADR-025 backend WS consumer, read-only banner, release curation (#236) | ✅ Shipped |
-| **v1.10.0+** | Phase 2–3 — CSP reduction (AUD-02), RBAC (ADR-009), API coverage ratchet (MED-01) | ⏳ Planned |
+| **v1.10.0+** | Phase 3 — RBAC (ADR-009), API coverage ratchet (MED-01); AUD-02 CSP reduction now shipped (see §AUD-02), only the by-design dev-HMR `style-src-attr` exception remains | ⏳ Planned |
 
 ---
 

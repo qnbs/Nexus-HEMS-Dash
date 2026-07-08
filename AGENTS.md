@@ -194,7 +194,7 @@ Heavy gates (full `test:run`, E2E, Lighthouse, image scans) are **cloud-first**;
 
 ### Linting and formatting
 
-- **Biome 2.5.1** is the single source of truth for formatting and most linting.
+- **Biome 2.5.2** is the single source of truth for formatting and most linting.
 - **ESLint** is kept only for React-specific rules (`react-compiler/react-compiler`, `react-hooks/*`, `react-refresh/only-export-components`).
 - Do **not** re-add Prettier, `typescript-eslint`, `@typescript-eslint/*`, `eslint-plugin-react`, etc.
 - Key Biome settings: line width 100, 2-space spaces, LF, single quotes, trailing commas, semicolons always; `noExplicitAny: error`; complexity cap 25; sorted Tailwind classes via `useSortedClasses`.
