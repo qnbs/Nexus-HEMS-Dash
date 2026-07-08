@@ -198,7 +198,7 @@ export function PWASettingsSection() {
               <p className="text-(--color-muted) text-xs">
                 {updateDescriptionKey
                   ? t(updateDescriptionKey)
-                  : `${t('settings_pwa.appVersion')} ${packageJson.version}`}
+                  : t('settings_pwa.appVersion', { version: packageJson.version })}
               </p>
             </div>
             <motion.button

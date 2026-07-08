@@ -106,7 +106,7 @@ export const de = {
     forceUpdateChecking: 'Prüfe…',
     forceUpdateFound: 'Update gefunden — Neustart…',
     forceUpdateNone: 'Bereits aktuell',
-    appVersion: 'App-Version',
+    appVersion: 'App-Version {{version}}',
     persistentStorage: 'Persistenter Speicher',
     persistentStorageGranted: 'Daten vor Browser-Bereinigung geschützt',
     persistentStorageRequest: 'Persistenten Speicher anfordern',

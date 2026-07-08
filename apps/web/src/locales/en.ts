@@ -104,7 +104,7 @@ export const en = {
     forceUpdateChecking: 'Checking…',
     forceUpdateFound: 'Update found — restarting…',
     forceUpdateNone: 'Already up to date',
-    appVersion: 'App Version',
+    appVersion: 'App Version {{version}}',
     persistentStorage: 'Persistent Storage',
     persistentStorageGranted: 'Data protected from browser cleanup',
     persistentStorageRequest: 'Request persistent storage',
