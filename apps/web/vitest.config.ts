@@ -21,14 +21,12 @@ export default defineConfig({
       exclude: ['node_modules/', 'src/tests/', '*.config.ts', 'dist/'],
       thresholds: {
         statements: 78,
-        // 71.2 (was 71.9): the page-monolith modularization (ADR page-split
-        // series) moved large presentational pages into many small section
-        // components. V8 counts JSX className ternaries / framework wrappers as
-        // branches that can't be exercised both ways, so the global branch
-        // ratio structurally dips even though statements/functions/lines stay
-        // high and every real logic branch is tested. See
-        // docs/Test-Coverage-TODO.md § "V8 branch artifact after page splits".
-        branches: 71.2,
+        // 72 restored (2026-07-08): the page-monolith split series had diluted
+        // the global V8 branch ratio to ~71.3% via phantom JSX ternaries. Rather
+        // than keep the gate lowered, we covered the real hole — the OCPP/EEBUS
+        // adapter config field groups were at 0% branches — lifting measured
+        // branches to ~72.7%. See docs/Test-Coverage-TODO.md.
+        branches: 72,
         functions: 70,
         lines: 80,
       },
