@@ -2,16 +2,15 @@
 
 This document captures the **Phase-2 CI hardening** rolled out across the
 GitHub Actions workflows on `main`. It complements the Phase-1 work
-([`ci-pipelines_stabilisieren_af1cc5a3`](../.cursor/plans/ci-pipelines_stabilisieren_af1cc5a3.plan.md))
-and the [`security-fixes_v1.3`](../.cursor/plans/security-fixes_v1.3_bcecf232.plan.md)
-plan, both already merged.
+(`ci-pipelines_stabilisieren_af1cc5a3`) and the `security-fixes_v1.3`
+plan — both were pre-merge Cursor planning artifacts (never committed to the repo) and are already merged.
 
 ## Goals
 
 1. **DRY**: every workflow that needs Node + pnpm uses the shared
    composite action `./.github/actions/setup-node-pnpm`.
 2. **Security single-gate**: one push/PR security gate
-   (`security-full.yml`), one weekly deep-scan (`security-scan.yml`),
+   (`security-full.yml`), one weekly deep-scan (folded into `security-full.yml` on the Mon 05:00 UTC schedule after the ADR-027 consolidation; originally `security-scan.yml`),
    one independent Scorecard schedule (`scorecard.yml`).
 3. **2026 best-practices**: SLSA-Level-3 build-provenance attestations,
    `step-security/harden-runner` on high-trust workflows, no mutable
