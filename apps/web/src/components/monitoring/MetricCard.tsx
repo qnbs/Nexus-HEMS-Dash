@@ -12,6 +12,7 @@ export function MetricCard({ card, index }: { card: MetricCardItem; index: numbe
     >
       <div className="mb-2 flex items-center justify-between">
         <span
+          aria-hidden="true"
           className={`flex h-7 w-7 items-center justify-center rounded-lg ${card.bg} ${card.color}`}
         >
           {card.icon}

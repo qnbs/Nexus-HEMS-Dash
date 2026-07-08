@@ -2,95 +2,46 @@ import {
   ArrowLeft,
   ArrowRight,
   BarChart3,
-  Battery,
   BrainCircuit,
-  Car,
   CheckCircle2,
-  Clock,
-  Flame,
-  Leaf,
-  Loader2,
   Sparkles,
-  Sun,
-  TrendingDown,
-  Zap,
 } from 'lucide-react';
 import { motion } from 'motion/react';
-import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import {
-  Area,
-  AreaChart,
-  Bar,
-  BarChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
 import { DemoBadge } from '../components/DemoBadge';
 import { PageHeader } from '../components/layout/PageHeader';
+import {
+  OptimizationAnalyseStep,
+  OptimizationConfirmStep,
+  OptimizationOverviewCards,
+  OptimizationSuggestionsStep,
+  useOptimizationWizard,
+} from '../components/optimization';
 import { EmptyState } from '../components/ui/EmptyState';
 import { FloatingActionBar } from '../components/ui/FloatingActionBar';
 import { HelpTooltip } from '../components/ui/HelpTooltip';
 import { PageCrossLinks } from '../components/ui/PageCrossLinks';
-import {
-  useWizard,
-  WizardContent,
-  type WizardStepDef,
-  WizardStepper,
-} from '../components/ui/WizardStepper';
-import { useEnergyContext } from '../core/EnergyContext';
-import { buildOptimizerRecommendations, runMpcOptimization } from '../lib/optimizer';
-import {
-  fetchTariffForecast,
-  generatePredictiveRecommendation,
-  type PredictiveRecommendation,
-  type TariffForecast,
-} from '../lib/predictive-ai';
-import { useAppStoreShallow } from '../store';
-import type { OptimizerRecommendation } from '../types';
-
-// ─── Severity styling helper ─────────────────────────────────────────
-
-const SEVERITY_STYLES: Record<
-  OptimizerRecommendation['severity'],
-  { bg: string; text: string; icon: typeof Zap }
-> = {
-  positive: { bg: 'bg-emerald-500/15', text: 'text-emerald-400', icon: CheckCircle2 },
-  warning: { bg: 'bg-amber-500/15', text: 'text-amber-400', icon: Clock },
-  critical: { bg: 'bg-red-500/15', text: 'text-red-400', icon: Zap },
-  neutral: { bg: 'bg-sky-500/15', text: 'text-sky-400', icon: BarChart3 },
-};
-
-const ACTION_ICONS: Record<string, typeof Zap> = {
-  charge_ev: Car,
-  charge_battery: Battery,
-  preheat: Flame,
-  wait: Clock,
-};
-
-// ─── Component ───────────────────────────────────────────────────────
+import { WizardContent, type WizardStepDef, WizardStepper } from '../components/ui/WizardStepper';
 
 export default function OptimizationAI() {
-  const { t } = useTranslation();
-  const { data: energyData, connected } = useEnergyContext();
-  const settings = useAppStoreShallow((s) => s.settings);
-  const isDemo = !connected;
-
-  // Wizard state
-  const [wizardOpen, setWizardOpen] = useState(false);
-  const [step, setStep] = useState(0);
-  const [loading, setLoading] = useState(false);
-
-  // Analysis results (populated in Step 1)
-  const [forecast, setForecast] = useState<TariffForecast[]>([]);
-  const [recommendations, setRecommendations] = useState<OptimizerRecommendation[]>([]);
-  const [aiRecommendation, setAiRecommendation] = useState<PredictiveRecommendation | null>(null);
-  const [applied, setApplied] = useState(false);
-
-  const wizard = useWizard(3);
+  const {
+    t,
+    energyData,
+    isDemo,
+    wizardOpen,
+    step,
+    setStep,
+    loading,
+    recommendations,
+    aiRecommendation,
+    applied,
+    wizard,
+    chartData,
+    hasData,
+    handleStart,
+    handleNext,
+    handleBack,
+    handleClose,
+  } = useOptimizationWizard();
 
   const steps: WizardStepDef[] = [
     { id: 'analyse', label: t('optimizationWizard.step1Title'), icon: <BarChart3 size={14} /> },
@@ -101,74 +52,6 @@ export default function OptimizationAI() {
     },
     { id: 'confirm', label: t('optimizationWizard.step3Title'), icon: <CheckCircle2 size={14} /> },
   ];
-
-  // ── Step 1: Run analysis ───────────────────────────────────────────
-  async function runAnalysis() {
-    setLoading(true);
-    setApplied(false);
-
-    try {
-      // Fetch tariff forecast
-      const tariffData = await fetchTariffForecast(
-        settings.tariffProvider,
-        '', // API key managed via encrypted Dexie store
-      );
-      setForecast(tariffData);
-
-      // Run MPC optimizer
-      runMpcOptimization(energyData, settings);
-
-      // Build rule-based + MPC recommendations
-      const recs = buildOptimizerRecommendations(energyData, settings);
-      setRecommendations(recs);
-
-      // Generate predictive AI recommendation
-      const aiRec = await generatePredictiveRecommendation(energyData, tariffData, settings);
-      setAiRecommendation(aiRec);
-    } catch {
-      // Use whatever recommendations we already have
-      const recs = buildOptimizerRecommendations(energyData, settings);
-      setRecommendations(recs);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  // ── Wizard navigation ──────────────────────────────────────────────
-  function handleStart() {
-    setWizardOpen(true);
-    setStep(0);
-    void runAnalysis();
-  }
-
-  function handleNext() {
-    if (wizard.isLastStep(step)) {
-      // Apply optimizations
-      setApplied(true);
-      // In production this would dispatch real commands via adapters
-      setTimeout(() => setWizardOpen(false), 1800);
-      return;
-    }
-    setStep((s) => Math.min(s + 1, 2));
-  }
-
-  function handleBack() {
-    setStep((s) => Math.max(s - 1, 0));
-  }
-
-  function handleClose() {
-    setWizardOpen(false);
-    setStep(0);
-  }
-
-  // ── Chart data from forecast ───────────────────────────────────────
-  const chartData = forecast.slice(0, 24).map((f) => ({
-    time: f.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    price: Number((f.pricePerKwh * 100).toFixed(1)),
-    renewable: Math.round(f.renewable),
-  }));
-
-  const hasData = energyData.pvPower > 0 || energyData.houseLoad > 0 || energyData.gridPower !== 0;
 
   return (
     <div className="flex flex-col gap-6">
@@ -194,45 +77,8 @@ export default function OptimizationAI() {
         />
       )}
 
-      {/* ── Overview cards ──────────────────────────────────────── */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        {[
-          {
-            icon: <Sun size={20} />,
-            label: t('optimizationWizard.currentPv'),
-            value: `${(energyData.pvPower / 1000).toFixed(1)} kW`,
-            color: 'text-amber-400',
-          },
-          {
-            icon: <Battery size={20} />,
-            label: t('optimizationWizard.batterySoC'),
-            value: `${Math.round(energyData.batterySoC)}%`,
-            color: 'text-emerald-400',
-          },
-          {
-            icon: <TrendingDown size={20} />,
-            label: t('optimizationWizard.currentPrice'),
-            value: `${energyData.priceCurrent.toFixed(3)} €/kWh`,
-            color: 'text-sky-400',
-          },
-        ].map((card) => (
-          <motion.div
-            key={card.label}
-            className="glass-panel flex items-center gap-4 rounded-2xl p-4"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-          >
-            <div className={`${card.color} rounded-xl bg-current/10 p-2.5`}>{card.icon}</div>
-            <div>
-              <p className="text-(--color-muted) text-xs">{card.label}</p>
-              <p className="fluid-text-lg font-semibold tabular-nums">{card.value}</p>
-            </div>
-          </motion.div>
-        ))}
-      </div>
+      <OptimizationOverviewCards energyData={energyData} />
 
-      {/* ── Wizard dialog ──────────────────────────────────────── */}
       {wizardOpen && (
         <motion.section
           className="glass-panel-strong rounded-3xl p-6"
@@ -241,7 +87,6 @@ export default function OptimizationAI() {
           transition={{ duration: 0.35 }}
           aria-label={t('optimizationWizard.pageTitle')}
         >
-          {/* Stepper */}
           <div className="mb-6">
             <WizardStepper
               steps={steps}
@@ -250,269 +95,19 @@ export default function OptimizationAI() {
             />
           </div>
 
-          {/* Step content */}
           <WizardContent currentStep={step}>
-            {/* ── Step 1: Analyse ── */}
-            <div className="flex flex-col gap-5">
-              <h2 className="fluid-text-xl font-semibold">
-                {t('optimizationWizard.analyseTitle')}
-              </h2>
-
-              {loading ? (
-                <div
-                  className="flex flex-col items-center justify-center gap-3 py-12"
-                  role="status"
-                >
-                  <Loader2
-                    size={28}
-                    className="animate-spin text-(--color-primary)"
-                    aria-hidden="true"
-                  />
-                  <p className="text-(--color-muted) text-sm">{t('ai.analyzing')}</p>
-                </div>
-              ) : (
-                <>
-                  {/* Tariff forecast chart */}
-                  {chartData.length > 0 && (
-                    <div className="glass-panel rounded-2xl p-4">
-                      <h3 className="mb-3 font-medium text-(--color-muted) text-sm">
-                        {t('forecast.tariffForecast')}
-                      </h3>
-                      <div role="img" aria-label={t('chart.tariffForecastAriaLabel')}>
-                        <ResponsiveContainer width="100%" height={180}>
-                          <AreaChart data={chartData}>
-                            <defs>
-                              <linearGradient id="priceGrad" x1="0" y1="0" x2="0" y2="1">
-                                <stop
-                                  offset="5%"
-                                  stopColor="var(--color-primary)"
-                                  stopOpacity={0.3}
-                                />
-                                <stop
-                                  offset="95%"
-                                  stopColor="var(--color-primary)"
-                                  stopOpacity={0}
-                                />
-                              </linearGradient>
-                            </defs>
-                            <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-                            <XAxis
-                              dataKey="time"
-                              tick={{ fontSize: 10, fill: 'var(--color-muted)' }}
-                            />
-                            <YAxis tick={{ fontSize: 10, fill: 'var(--color-muted)' }} />
-                            <Tooltip
-                              contentStyle={{
-                                background: 'var(--color-surface-strong)',
-                                border: '1px solid var(--color-border)',
-                                borderRadius: '0.75rem',
-                                fontSize: '0.75rem',
-                              }}
-                            />
-                            <Area
-                              type="monotone"
-                              dataKey="price"
-                              stroke="var(--color-primary)"
-                              fill="url(#priceGrad)"
-                              name={t('forecast.tariffPrice')}
-                            />
-                          </AreaChart>
-                        </ResponsiveContainer>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Renewable % bar chart */}
-                  {chartData.length > 0 && (
-                    <div className="glass-panel rounded-2xl p-4">
-                      <h3 className="mb-3 font-medium text-(--color-muted) text-sm">
-                        {t('optimizationWizard.renewableShare')}
-                      </h3>
-                      <div role="img" aria-label={t('chart.renewableShareAriaLabel')}>
-                        <ResponsiveContainer width="100%" height={120}>
-                          <BarChart data={chartData}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-                            <XAxis
-                              dataKey="time"
-                              tick={{ fontSize: 10, fill: 'var(--color-muted)' }}
-                            />
-                            <YAxis
-                              tick={{ fontSize: 10, fill: 'var(--color-muted)' }}
-                              domain={[0, 100]}
-                            />
-                            <Tooltip
-                              contentStyle={{
-                                background: 'var(--color-surface-strong)',
-                                border: '1px solid var(--color-border)',
-                                borderRadius: '0.75rem',
-                                fontSize: '0.75rem',
-                              }}
-                            />
-                            <Bar
-                              dataKey="renewable"
-                              fill="var(--color-accent)"
-                              radius={[4, 4, 0, 0]}
-                              name="%"
-                            />
-                          </BarChart>
-                        </ResponsiveContainer>
-                      </div>
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-
-            {/* ── Step 2: AI Suggestions ── */}
-            <div className="flex flex-col gap-5">
-              <h2 className="fluid-text-xl font-semibold">
-                {t('optimizationWizard.suggestionsTitle')}
-              </h2>
-
-              {/* Predictive AI recommendation */}
-              {aiRecommendation && (
-                <motion.div
-                  className="neon-border-blue glass-panel-strong flex flex-col gap-3 rounded-2xl p-5"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                >
-                  <div className="flex items-center gap-2">
-                    <Sparkles size={18} className="text-(--color-primary)" aria-hidden="true" />
-                    <span className="font-semibold text-(--color-primary) text-sm">
-                      {t('ai.aiPowered')}
-                    </span>
-                    <span className="ml-auto rounded-full bg-(--color-primary)/15 px-2.5 py-0.5 font-medium text-(--color-primary) text-xs">
-                      {Math.round(aiRecommendation.confidence * 100)}%
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    {(() => {
-                      const ActionIcon = ACTION_ICONS[aiRecommendation.action] ?? Zap;
-                      return (
-                        <ActionIcon
-                          size={22}
-                          className="text-(--color-accent)"
-                          aria-hidden="true"
-                        />
-                      );
-                    })()}
-                    <div>
-                      <p className="font-medium text-sm">
-                        {t(`optimizationWizard.action_${aiRecommendation.action}`)}
-                      </p>
-                      <p className="text-(--color-muted) text-xs">{aiRecommendation.reasoning}</p>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-4 pt-1 text-(--color-muted) text-xs">
-                    <span className="flex items-center gap-1">
-                      <Clock size={12} aria-hidden="true" />
-                      {aiRecommendation.optimalTimeSlot.start.toLocaleTimeString([], {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
-                      –
-                      {aiRecommendation.optimalTimeSlot.end.toLocaleTimeString([], {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Leaf size={12} aria-hidden="true" />
-                      {t('optimizationWizard.estSavings')}: €
-                      {aiRecommendation.estimatedSavings.toFixed(2)}
-                    </span>
-                  </div>
-                </motion.div>
-              )}
-
-              {/* MPC + rule-based recommendations */}
-              <div className="grid gap-3 sm:grid-cols-2">
-                {recommendations.map((rec, i) => {
-                  const style = SEVERITY_STYLES[rec.severity];
-                  const Icon = style.icon;
-                  return (
-                    <motion.div
-                      key={rec.id}
-                      className="glass-panel flex items-start gap-3 rounded-2xl p-4"
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.06 }}
-                    >
-                      <div className={`${style.bg} rounded-lg p-2`}>
-                        <Icon size={16} className={style.text} />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="font-medium text-sm">{t(rec.titleKey)}</p>
-                        <p className="text-(--color-muted) text-xs">{t(rec.descriptionKey)}</p>
-                        <span className="mt-1 inline-block rounded bg-(--color-primary)/10 px-2 py-0.5 font-semibold text-(--color-primary) text-xs tabular-nums">
-                          {rec.value}
-                        </span>
-                      </div>
-                    </motion.div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* ── Step 3: Confirm & Apply ── */}
-            <div className="flex flex-col gap-5">
-              <h2 className="fluid-text-xl font-semibold">
-                {t('optimizationWizard.confirmTitle')}
-              </h2>
-
-              {applied ? (
-                <motion.div
-                  className="flex flex-col items-center gap-3 py-10"
-                  initial={{ scale: 0.9, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                >
-                  <CheckCircle2 size={48} className="text-emerald-400" />
-                  <p className="fluid-text-lg font-semibold">{t('optimizationWizard.applied')}</p>
-                  <p className="text-(--color-muted) text-sm">
-                    {t('optimizationWizard.appliedDesc')}
-                  </p>
-                </motion.div>
-              ) : (
-                <>
-                  {/* Summary list */}
-                  <div className="glass-panel divide-y divide-(--color-border)/30 rounded-2xl">
-                    {aiRecommendation && (
-                      <div className="flex items-center justify-between px-5 py-3">
-                        <span className="text-sm">
-                          {t(`optimizationWizard.action_${aiRecommendation.action}`)}
-                        </span>
-                        <span className="rounded-full bg-emerald-500/15 px-2.5 py-0.5 font-medium text-emerald-400 text-xs">
-                          {Math.round(aiRecommendation.confidence * 100)}%{' '}
-                          {t('optimizationWizard.confidence')}
-                        </span>
-                      </div>
-                    )}
-                    {recommendations.slice(0, 4).map((rec) => (
-                      <div key={rec.id} className="flex items-center justify-between px-5 py-3">
-                        <span className="text-sm">{t(rec.titleKey)}</span>
-                        <span className="font-semibold text-(--color-primary) text-xs tabular-nums">
-                          {rec.value}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-
-                  {aiRecommendation && (
-                    <p className="text-center text-(--color-muted) text-xs">
-                      {t('optimizationWizard.estSavings')}:{' '}
-                      <strong className="text-(--color-primary)">
-                        €{aiRecommendation.estimatedSavings.toFixed(2)}
-                      </strong>
-                    </p>
-                  )}
-                </>
-              )}
-            </div>
+            <OptimizationAnalyseStep loading={loading} chartData={chartData} />
+            <OptimizationSuggestionsStep
+              aiRecommendation={aiRecommendation}
+              recommendations={recommendations}
+            />
+            <OptimizationConfirmStep
+              applied={applied}
+              aiRecommendation={aiRecommendation}
+              recommendations={recommendations}
+            />
           </WizardContent>
 
-          {/* Navigation buttons */}
           {!applied && (
             <div className="mt-6 flex items-center justify-between">
               <button
@@ -551,7 +146,6 @@ export default function OptimizationAI() {
 
       <PageCrossLinks />
 
-      {/* ── Floating "Optimize Now" button ────────────────────── */}
       <FloatingActionBar
         open={!wizardOpen}
         ariaLabel={t('optimizationWizard.pageTitle')}
