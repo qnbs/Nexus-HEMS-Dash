@@ -10,14 +10,17 @@ import {
 import { motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import packageJson from '../../../package.json';
 import { usePWAInstall } from '../../lib/pwa-install';
 import { ConfirmDialog, useConfirmDialog } from '../ConfirmDialog';
 import {
   installStatusDescriptionKey,
+  type SWStatus,
   swBadgeClass,
   swDotClass,
   swStatusDescriptionKey,
   swStatusLabelKey,
+  type UpdateStatus,
   updateStatusDescriptionKey,
 } from './pwa-helpers';
 
@@ -25,10 +28,10 @@ export function PWASettingsSection() {
   const { t } = useTranslation();
   const { canInstall, isIOSDevice, isInstalled, install } = usePWAInstall();
   const confirm = useConfirmDialog();
-  const [swStatus, setSWStatus] = useState<'active' | 'waiting' | 'none'>('none');
+  const [swStatus, setSWStatus] = useState<SWStatus>('none');
   const [cacheSize, setCacheSize] = useState<string | null>(null);
   const [installing, setInstalling] = useState(false);
-  const [updateStatus, setUpdateStatus] = useState<'idle' | 'checking' | 'found' | 'none'>('idle');
+  const [updateStatus, setUpdateStatus] = useState<UpdateStatus>('idle');
   const [persistedStorage, setPersistedStorage] = useState<boolean | null>(null);
 
   useEffect(() => {
@@ -195,7 +198,7 @@ export function PWASettingsSection() {
               <p className="text-(--color-muted) text-xs">
                 {updateDescriptionKey
                   ? t(updateDescriptionKey)
-                  : `${t('settings_pwa.appVersion')} 4.6.0`}
+                  : `${t('settings_pwa.appVersion')} ${packageJson.version}`}
               </p>
             </div>
             <motion.button
