@@ -86,7 +86,9 @@ export const useAppBootstrapEffects = ({
   }, [animations]);
 
   useEffect(() => {
-    if (i18n.resolvedLanguage !== locale) {
+    // Compare against `language` (the exact set code), not `resolvedLanguage`
+    // (region/fallback-resolved), which could drift and skip a needed switch.
+    if (i18n.language !== locale) {
       i18n.changeLanguage(locale).catch(ignorePromiseRejection);
     }
     return undefined;

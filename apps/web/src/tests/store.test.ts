@@ -1,11 +1,37 @@
 import { renderHook } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { defaultSettings, useAppStore, useAppStoreShallow } from '../store';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { defaultSettings, resolveInitialLocale, useAppStore, useAppStoreShallow } from '../store';
 
 // Mock persistSettings to avoid Dexie in unit tests
 vi.mock('../lib/db', () => ({
   persistSettings: vi.fn(),
 }));
+
+describe('resolveInitialLocale', () => {
+  afterEach(() => {
+    // Remove the per-test shadow so the jsdom prototype getter is restored.
+    Reflect.deleteProperty(navigator, 'languages');
+  });
+
+  function setBrowserLanguages(langs: string[]) {
+    Object.defineProperty(navigator, 'languages', { configurable: true, get: () => langs });
+  }
+
+  it('defaults to German when the browser prefers German', () => {
+    setBrowserLanguages(['de-DE', 'en-US']);
+    expect(resolveInitialLocale()).toBe('de');
+  });
+
+  it('defaults to English for a non-German browser', () => {
+    setBrowserLanguages(['fr-FR', 'en']);
+    expect(resolveInitialLocale()).toBe('en');
+  });
+
+  it('defaults to English when no German entry is present', () => {
+    setBrowserLanguages(['en-US']);
+    expect(resolveInitialLocale()).toBe('en');
+  });
+});
 
 describe('Zustand Store', () => {
   beforeEach(() => {

@@ -16,6 +16,17 @@ import { SYSTEM_PRESETS } from './types';
  */
 export type BackendAdapterMode = 'mock' | 'live' | 'unknown';
 
+/**
+ * Initial UI locale for a fresh install (no persisted store yet): English by
+ * default, German only when the browser prefers German. A persisted choice
+ * always wins on rehydration, so this affects the first-ever load only.
+ */
+export function resolveInitialLocale(): LocaleCode {
+  if (typeof navigator === 'undefined') return 'en';
+  const langs = navigator.languages?.length ? navigator.languages : [navigator.language];
+  return langs.some((l) => l?.toLowerCase().startsWith('de')) ? 'de' : 'en';
+}
+
 export interface AppState {
   energyData: EnergyData;
   connected: boolean;
@@ -140,7 +151,7 @@ export const useAppStore = create<AppState>()(
       energyData: defaultEnergyData,
       connected: false,
       lastUpdated: null as number | null,
-      locale: 'de',
+      locale: resolveInitialLocale(),
       theme: 'ocean-dark',
       themePreference: 'ocean-dark',
       themeTransitionKey: 0,
