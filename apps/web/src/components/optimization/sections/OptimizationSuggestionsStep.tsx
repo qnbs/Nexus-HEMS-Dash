@@ -108,7 +108,7 @@ export function OptimizationSuggestionsStep({
               transition={{ delay: i * 0.06 }}
             >
               <div className={`${style.bg} rounded-lg p-2`}>
-                <Icon size={16} className={style.text} />
+                <Icon size={16} className={style.text} aria-hidden="true" />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="font-medium text-sm">{t(rec.titleKey)}</p>

@@ -16,6 +16,13 @@ import type { OptimizerRecommendation } from '../../../types';
 export type ForecastPoint = { time: string; price: number; renewable: number };
 
 /**
+ * Number of wizard steps (Analyse → Suggestions → Confirm). Single source of
+ * truth for both the `useWizard` bounds and the next-step clamp so navigation
+ * limits can never drift apart.
+ */
+const WIZARD_STEP_COUNT = 3;
+
+/**
  * All state, side effects, and derived data for the OptimizationAI wizard.
  * The page component is a thin orchestrator that renders the values this hook
  * returns; keeping the logic here makes the analysis pipeline unit-testable and
@@ -36,7 +43,7 @@ export function useOptimizationWizard() {
   const [aiRecommendation, setAiRecommendation] = useState<PredictiveRecommendation | null>(null);
   const [applied, setApplied] = useState(false);
 
-  const wizard = useWizard(3);
+  const wizard = useWizard(WIZARD_STEP_COUNT);
 
   // ── Step 1: Run analysis ───────────────────────────────────────────
   async function runAnalysis() {
@@ -59,8 +66,10 @@ export function useOptimizationWizard() {
       const aiRec = await generatePredictiveRecommendation(energyData, tariffData, settings);
       setAiRecommendation(aiRec);
     } catch {
-      // Use whatever recommendations we already have
+      // Fall back to rule-based recommendations and clear any stale AI result
+      // from a prior run so the wizard never shows a mismatched recommendation.
       setRecommendations(buildOptimizerRecommendations(energyData, settings));
+      setAiRecommendation(null);
     } finally {
       setLoading(false);
     }
@@ -80,7 +89,7 @@ export function useOptimizationWizard() {
       setTimeout(() => setWizardOpen(false), 1800);
       return;
     }
-    setStep((s) => Math.min(s + 1, 2));
+    setStep((s) => Math.min(s + 1, WIZARD_STEP_COUNT - 1));
   }
 
   function handleBack() {

@@ -1,9 +1,10 @@
 import { Battery, Sun, TrendingDown } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
+import type { EnergyData } from '../../../types';
 
 interface OverviewCardsProps {
-  energyData: { pvPower: number; batterySoC: number; priceCurrent: number };
+  energyData: Pick<EnergyData, 'pvPower' | 'batterySoC' | 'priceCurrent'>;
 }
 
 /** The three at-a-glance PV / battery / price cards above the wizard. */
@@ -11,19 +12,19 @@ export function OptimizationOverviewCards({ energyData }: OverviewCardsProps) {
   const { t } = useTranslation();
   const cards = [
     {
-      icon: <Sun size={20} />,
+      icon: <Sun size={20} aria-hidden="true" />,
       label: t('optimizationWizard.currentPv'),
       value: `${(energyData.pvPower / 1000).toFixed(1)} kW`,
       color: 'text-amber-400',
     },
     {
-      icon: <Battery size={20} />,
+      icon: <Battery size={20} aria-hidden="true" />,
       label: t('optimizationWizard.batterySoC'),
       value: `${Math.round(energyData.batterySoC)}%`,
       color: 'text-emerald-400',
     },
     {
-      icon: <TrendingDown size={20} />,
+      icon: <TrendingDown size={20} aria-hidden="true" />,
       label: t('optimizationWizard.currentPrice'),
       value: `${energyData.priceCurrent.toFixed(3)} €/kWh`,
       color: 'text-sky-400',

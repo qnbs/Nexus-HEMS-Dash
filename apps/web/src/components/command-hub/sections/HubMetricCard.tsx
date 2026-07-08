@@ -16,7 +16,7 @@ interface HubMetricCardProps {
 export function HubMetricCard({ card, metrics }: HubMetricCardProps) {
   const { t } = useTranslation();
   return (
-    <Link to={card.link} className="focus-ring rounded-2xl">
+    <Link to={card.link} className="group focus-ring rounded-2xl">
       <EnergyCard
         variant={card.variant}
         details={

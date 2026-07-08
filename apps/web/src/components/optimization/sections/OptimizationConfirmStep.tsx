@@ -28,7 +28,7 @@ export function OptimizationConfirmStep({
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
         >
-          <CheckCircle2 size={48} className="text-emerald-400" />
+          <CheckCircle2 size={48} className="text-emerald-400" aria-hidden="true" />
           <p className="fluid-text-lg font-semibold">{t('optimizationWizard.applied')}</p>
           <p className="text-(--color-muted) text-sm">{t('optimizationWizard.appliedDesc')}</p>
         </motion.div>

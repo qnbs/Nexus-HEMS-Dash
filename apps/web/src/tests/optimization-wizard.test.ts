@@ -91,9 +91,12 @@ describe('useOptimizationWizard', () => {
     expect(result.current.step).toBe(1);
   });
 
-  it('handleClose resets the wizard', () => {
+  it('handleClose resets the wizard', async () => {
     const { result } = renderHook(() => useOptimizationWizard());
     act(() => result.current.handleStart());
+    // Flush the async runAnalysis promise fired by handleStart so it resolves
+    // inside act() rather than after the test (avoids act() warnings / bleed).
+    await act(async () => {});
     act(() => result.current.handleClose());
     expect(result.current.wizardOpen).toBe(false);
     expect(result.current.step).toBe(0);
