@@ -238,7 +238,7 @@ jobs:
             | Metric | Value | Budget |
             |--------|-------|--------|
             | **Total JS** (gzip) | ${totalJs} | ≤ 1050 kB |
-            | **Total CSS** (gzip) | ${totalCss} | ≤ 25 kB |
+            | **Total CSS** (gzip) | ${totalCss} | ≤ 27 kB |
             | **Build Time** | ${buildTime} | — |
 
             <details><summary>📦 size-limit budgets</summary>

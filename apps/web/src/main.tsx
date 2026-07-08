@@ -7,6 +7,12 @@ import { QueryProvider } from './lib/query-client.tsx';
 import { initSentry } from './lib/sentry';
 import './i18n';
 import './index.css';
+// Bundle sonner's stylesheet from 'self' so the toaster is styled/positioned
+// under the strict CSP (AUD-02). sonner injects its CSS via a runtime <style>
+// tag with no nonce, which style-src blocks — without the bundled copy the
+// toaster loses `position: fixed` and renders inline at the top of the tree,
+// shifting the whole page down on every toast until it auto-dismisses.
+import 'sonner/dist/styles.css';
 
 // Initialize Sentry before React renders (no-op without VITE_SENTRY_DSN)
 initSentry();
