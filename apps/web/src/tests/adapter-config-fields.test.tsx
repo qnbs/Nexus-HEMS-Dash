@@ -36,9 +36,10 @@ function makeAdapter(overrides: Partial<AdapterEntry> = {}): AdapterEntry {
 describe('AdapterConfigOcppFields', () => {
   it('renders empty defaults (nullish branches) and omits mTLS when profile is not 3', () => {
     const onUpdate = vi.fn();
+    // No securityProfile/stationId -> exercises the nullish-coalescing right side
     render(
       <AdapterConfigOcppFields
-        adapter={makeAdapter({ securityProfile: undefined, stationId: undefined })}
+        adapter={makeAdapter()}
         onUpdate={onUpdate}
         inputClass="input"
         t={t}
