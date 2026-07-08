@@ -1,6 +1,6 @@
 # Toolchain Architecture — Nexus-HEMS-Dash
 
-**Last updated:** 2026-05-11
+**Last updated:** 2026-07-08
 **Status:** Active (post-Biome-migration, post-monorepo-migration)
 
 ---
@@ -14,7 +14,7 @@ Source Files (*.ts, *.tsx, *.json, *.css, *.html, *.md, *.yml)
        │
        ▼
 ┌──────────────────────────────────────────────────────┐
-│  Biome 2.4.7  (Rust, single process)                 │
+│  Biome 2.5.2  (Rust, single process)                 │
 │  • Linter — TS/JS rules, security, style, nursery    │
 │  • Formatter — TS/JS/JSON/CSS/HTML/YAML/MD           │
 │  • Assist — organize imports                         │

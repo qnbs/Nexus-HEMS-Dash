@@ -7,7 +7,7 @@ You are an expert full-stack React 19 + TypeScript architect specialized in real
 
 Root files: `pnpm-workspace.yaml` · `turbo.json` · `tsconfig.base.json` (ultra-strict, inherited by all workspaces).
 
-The shipped baseline is **1.6.1** (2026-07-02). See `CHANGELOG.md` for the release chain (1.4.0 → 1.5.0 → 1.6.0 → 1.6.1). `docs/Technical-Debt-Registry.md` is authoritative for in-flight debt; `FEATURE_STATUS.md` for shipped-vs-planned matrix.
+The shipped baseline is **1.10.0** (2026-07-04). See `CHANGELOG.md` for the release chain (1.4.0 → 1.5.0 → 1.6.0 → 1.6.1 → 1.7.0 → 1.8.0 → 1.9.0 → 1.10.0). `docs/Technical-Debt-Registry.md` is authoritative for in-flight debt; `FEATURE_STATUS.md` for shipped-vs-planned matrix.
 
 ---
 
@@ -53,7 +53,7 @@ The `AdapterRegistry` (`adapter-registry.ts`) manages registration, lifecycle, a
 - **EvccAdapter** — evcc backend (95%+ hardware support) via REST + WebSocket
 - **OpenEMSAdapter** — OpenEMS Edge via JSON-RPC 2.0 over WebSocket
 
-**Contrib Adapters (7) — Plugin System:**
+**Contrib Adapters (6 shipped + Example template) — Plugin System:**
 
 - **HomeAssistantMQTTAdapter** — Home Assistant MQTT discovery / Mosquitto
 - **MatterThreadAdapter** — Matter 1.3 / Thread 1.3 smart home devices
@@ -162,7 +162,7 @@ Circuit Breaker (`apps/web/src/core/circuit-breaker.ts`): FSM with CLOSED → OP
 
 ### Quality & Tooling — Biome-First
 
-**Primary tool: Biome 2.4.7** (Rust-native, single process — ~10× faster than ESLint+Prettier)
+**Primary tool: Biome 2.5.2** (Rust-native, single process — ~10× faster than ESLint+Prettier)
 
 | Concern                       | Tool               | Config                               |
 | ----------------------------- | ------------------ | ------------------------------------ |
@@ -189,7 +189,7 @@ Circuit Breaker (`apps/web/src/core/circuit-breaker.ts`): FSM with CLOSED → OP
 | `pnpm lint`         | `turbo lint` → `biome check && eslint --max-warnings 0` | Biome lint+format check + React ES in each workspace |
 | `pnpm lint:fix`     | `turbo lint:fix` → `biome check --write && eslint --fix`            | Biome auto-fix + ESLint fix across workspaces |
 | `pnpm format`       | `turbo format` → `biome format --write apps/ packages/`             | Biome format all workspaces                  |
-| `pnpm format:check` | `biome format apps/ packages/`                                      | Biome format check (Biome 2.4 read-only)     |
+| `pnpm format:check` | `biome format apps/ packages/`                                      | Biome format check (Biome 2.5 read-only)     |
 | `pnpm type-check`   | `turbo type-check` → `tsc --noEmit` in each workspace               | TypeScript strict type check across all 3 packages |
 | `pnpm verify:basis` | `turbo type-check lint test:run`                                     | Full local verification loop                 |
 | `pnpm bench`        | `./scripts/bench-tooling.sh`                                         | Toolchain perf benchmark                     |
@@ -199,7 +199,7 @@ Circuit Breaker (`apps/web/src/core/circuit-breaker.ts`): FSM with CLOSED → OP
 **Toolchain docs:** `docs/Toolchain-Architecture.md`, `docs/Biome-Migration-Roadmap.md`.
 
 - **Husky** + **lint-staged** for pre-commit hooks
-- **Vitest v4** (jsdom, V8 coverage — currently enforced thresholds: web 70/70/68/70 (functions temporarily 68), api 33/30/38/33; roadmap target is higher) — unit tests in `apps/web/src/tests/`
+- **Vitest v4** (jsdom, V8 coverage — currently enforced thresholds statements/branches/functions/lines: web 78/72/70/80, api 55/46/62/55; roadmap targets in `docs/Testing-Coverage-Strategy.md` are higher) — unit tests in `apps/web/src/tests/`
 - **Playwright** — local E2E is Chromium-only; CI installs and runs Chromium + Firefox; WebKit/mobile projects are disabled for now
 - **Lighthouse CI** (Perf ≥ 85%, A11y ≥ 90%, Best Practices ≥ 90%; `errors-in-console` disabled for demo mode)
 - **Storybook 10** — component stories in `*.stories.tsx` co-located with components
@@ -261,7 +261,7 @@ Circuit Breaker (`apps/web/src/core/circuit-breaker.ts`): FSM with CLOSED → OP
 - Use a staged verification order: `type-check` → `lint` (Biome + slim ESLint) → targeted unit tests → build
 - Always run type-check as `time pnpm type-check` when local type checking is warranted so elapsed time is visible — `time` has no side effects and helps diagnose slow hardware
 - `pnpm lint` subsumes format checking — no separate `format:check` step needed
-- `pnpm format:check` is `biome format apps/ packages/`; do not add `--write=false` to `biome format` on Biome 2.4
+- `pnpm format:check` is `biome format apps/ packages/`; do not add `--write=false` to `biome format` on Biome 2.5
 - Treat full E2E/performance/security suites as CI-first gates; link outcomes to the corresponding workflow runs
 - Use non-interactive GitHub CLI status checks (`GH_PAGER=cat PAGER=cat gh run view ...`). Avoid `gh run watch` in this workspace because its terminal UI can leave control sequences in the shell.
 - For runtime-major changes (e.g., Express major), require at least:
@@ -440,7 +440,7 @@ Vite proxies `/api/*`, `/metrics`, and `/ws` to `http://localhost:3000` — brow
 - Use `pnpm.overrides` (inside the `"pnpm"` key), NOT top-level `"overrides"` (npm-only)
 - Nested overrides use `parent>child` syntax, e.g. `"@lhci/cli>tmp": "0.2.5"`
 - Run `pnpm audit` after any override change to verify resolution
-- Current active security overrides: `protobufjs>=7.5.5`, `undici>=7.0.0`, `cross-spawn>=7.0.6`, `@xmldom/xmldom>=0.9.0`, `basic-ftp>=5.3.0`, `serialize-javascript>=7.0.5`
+- The authoritative set of active security overrides lives in `package.json` `pnpm.overrides`; representative entries: `protobufjs^7.5.5`, `undici^7.28.0`, `cross-spawn>=7.0.6`, `@xmldom/xmldom>=0.9.0`, `basic-ftp>=5.3.1`, `serialize-javascript>=7.0.5`, `dompurify>=3.4.11`, `tar>=7.5.16`. See `docs/Technical-Debt-Registry.md` for rationale.
 - `pnpm.onlyBuiltDependencies`: include approved native/postinstall packages (`esbuild`, `better-sqlite3`, `@serialport/bindings-cpp`, `core-js`, `protobufjs`) plus all `@rolldown/binding-*` platform entries to suppress install warnings
 - `pnpm.peerDependencyRules.allowedVersions`: add `@storybook/react>react: ^19.0.0` etc. when Storybook lags behind React version
 
