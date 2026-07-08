@@ -53,14 +53,20 @@ export function PriceHeatmapSection() {
                 </th>
                 {row.hours
                   .map((price, h) => ({ price, h }))
-                  .map(({ price, h }) => (
-                    <td
-                      key={`${row.date}-${h}`}
-                      className="h-5 rounded-sm transition-all hover:scale-110 hover:ring-1 hover:ring-white/30"
-                      style={{ backgroundColor: getHeatmapBg(price) }}
-                      title={`${row.day} ${String(h).padStart(2, '0')}:00 — ${(price * 100).toFixed(1)} ${t('units.ctPerKwh')}`}
-                    />
-                  ))}
+                  .map(({ price, h }) => {
+                    const label = `${row.day} ${String(h).padStart(2, '0')}:00 — ${(price * 100).toFixed(1)} ${t('units.ctPerKwh')}`;
+                    return (
+                      <td
+                        key={`${row.date}-${h}`}
+                        className="h-5 rounded-sm transition-all hover:scale-110 hover:ring-1 hover:ring-white/30"
+                        style={{ backgroundColor: getHeatmapBg(price) }}
+                        // aria-label is announced by screen readers (title is not);
+                        // title is kept for the pointer hover tooltip.
+                        aria-label={label}
+                        title={label}
+                      />
+                    );
+                  })}
               </tr>
             ))}
           </tbody>

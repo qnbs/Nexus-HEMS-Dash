@@ -36,12 +36,12 @@ vi.mock('recharts', () => {
 });
 
 /** Render, run the assertion, and always unmount (even if the assertion throws). */
-function check(node: ReactElement, assertion: (r: RenderResult) => void) {
-  const r = render(node);
+function check(node: ReactElement, assertion: (result: RenderResult) => void) {
+  const result = render(node);
   try {
-    assertion(r);
+    assertion(result);
   } finally {
-    r.unmount();
+    result.unmount();
   }
 }
 
