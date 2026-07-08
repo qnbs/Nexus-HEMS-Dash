@@ -160,7 +160,7 @@ cross-workspace hoisting works correctly with native addons and binaries).
 | **Status** | ✅ Fixed |
 
 **Root cause:** The previous root `format:check` script used `biome format --write=false`,
-but Biome 2.4 rejects that flag/value combination with ``false` is not expected in
+but Biome 2.5 rejects that flag/value combination with ``false` is not expected in
 this context`. In this repo version, `biome format apps/ packages/` is the compatible
 read-only formatter invocation.
 

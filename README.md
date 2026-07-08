@@ -57,7 +57,7 @@ For verified roadmap status and completion boundaries, use these documents as th
 | **Security**            | BYOK AI vault (AES-GCM 256) · JWT WebSocket auth · Helmet CSP · Rate limiting · CORS · Zod schema validation                                                                                                                                                                                             |
 | **Desktop & Mobile**    | Tauri v2 (Windows/macOS/Linux) · Capacitor 8 (iOS/Android)                                                                                                                                                                                                                                             |
 
-> **Protocol support truth:** The dashboard ships 13 frontend adapter modules (7 core + 6 contrib). `example-contrib.ts` is a development template, not a shipped adapter. The backend protocol layer (`apps/api/src/protocols/`) ships Modbus/SunSpec, MQTT, KNX/IP, evcc, EEBUS SPINE/SHIP, HeatPump, and Exec adapters; in live mode their EventBus data reaches the UI via the `LiveEnergyAggregator` WebSocket bridge (HIGH-17, v1.4.0).
+> **Protocol support truth:** The dashboard ships 13 frontend adapter modules (7 core + 6 contrib). `example-contrib.ts` is a development template, not a shipped adapter. The backend protocol layer (`apps/api/src/protocols/`) ships Modbus/SunSpec, MQTT (Victron), KNX/IP, evcc, EEBUS SPINE/SHIP, HeatPump, OpenEMS, and OCPP CSMS adapters — plus contrib-tier Home Assistant (WS + MQTT), Matter, and Zigbee2MQTT adapters and the Exec script service; in live mode their EventBus data reaches the UI via the `LiveEnergyAggregator` WebSocket bridge (HIGH-17, v1.4.0).
 
 ### Protocol Support Matrix
 
@@ -66,13 +66,13 @@ For verified roadmap status and completion boundaries, use these documents as th
 | Victron MQTT (Cerbo GX / Venus OS) | ✅ | ✅ | Backend `MqttAdapter` subscribes role-tagged Venus OS topics → EventBus → UI via the HIGH-17 bridge |
 | Modbus/SunSpec (103/124/201) | ✅ | ✅ | Implemented |
 | KNX/IP floorplan | ✅ | ✅ | Backend `KnxAdapter` via knxd/WebSocket JSON bridge, `knx-ga-map.json` (MED-20) |
-| OCPP 2.1 V2X (ISO 15118) | ✅ | ❌ | Frontend-ready; backend CSMS gateway planned |
+| OCPP 2.1 V2X (ISO 15118) | ✅ | ✅ | Backend `OcppCsmsProtocolAdapter` CSMS gateway (env `OCPP_CSMS_PORT`, v1.7.0); Security Profile 3 mTLS via `/ws/ocpp` proxy (HIGH-12) |
 | EEBUS SPINE/SHIP (TLS 1.3 mTLS) | ✅ | ✅ | Backend `EebusProtocolAdapter` — SPINE measurements + §14a load control (MED-20) |
 | evcc backend | ✅ | ✅ | Backend `EvccAdapter` polls `/api/state` + subscribes `/ws` (MED-20) |
-| OpenEMS Edge (JSON-RPC) | ✅ | ❌ | Frontend-ready; backend adapter planned |
-| Home Assistant MQTT | ✅ (contrib) | ❌ | Frontend contrib adapter only |
-| Matter/Thread | ✅ (contrib) | ❌ | Frontend contrib adapter only |
-| Zigbee2MQTT | ✅ (contrib) | ❌ | Frontend contrib — role classification, EV/heat-pump plugs, availability tracking |
+| OpenEMS Edge (JSON-RPC) | ✅ | ✅ | Backend `OpenEMSProtocolAdapter` via JSON-RPC/WebSocket → EventBus (env `OPENEMS_HOST`, v1.7.0); ESS/EVCS/heat-pump/grid writes with allowlists |
+| Home Assistant MQTT | ✅ (contrib) | ✅ | Backend `HomeAssistantProtocolAdapter` (ha-ws-api) + `HomeAssistantMqttProtocolAdapter` on EventBus (v1.10.0, ADR-023) |
+| Matter/Thread | ✅ (contrib) | ✅ | Backend `MatterProtocolAdapter` read-only telemetry on EventBus (v1.10.0) |
+| Zigbee2MQTT | ✅ (contrib) | ✅ | Frontend contrib + backend `Zigbee2MQTTProtocolAdapter` telemetry on EventBus (v1.10.0); role classification, EV/heat-pump plugs, availability tracking |
 | Shelly REST (Gen1/2/3) | ✅ (contrib) | ⚠️ Webhook receiver | Frontend contrib + `/api/shelly/webhook` push receiver; Gen1/2/3 REST polling |
 | OpenADR 3.1 VEN | ✅ (contrib) | ⚠️ OAuth2 proxy only | Frontend contrib + API proxy; full VTN integration planned |
 
@@ -392,12 +392,41 @@ Brand colors: `neon-green` (#22ff88) · `electric-blue` (#00f0ff) · `power-oran
 | Q2 2026 | **pnpm/Turborepo Monorepo** — `apps/api` + `apps/web` + `packages/shared-types`; two-process dev; Turbo caching across all workspaces               | ✅ Shipped |
 | Q2 2026 | **v1.2.0 — Safety, Protocols, CI Hardening** — Safety-Certification-Notice, EEBUS SHIP handshake (CRIT-01), OpenADR 3.1 VEN, ISO 15118-20 BPT (V2G), VPP single-home node, PII sanitization pipeline, LTTB chart sampling, Biome 2.4.7 / Node 24 LTS toolchain, distroless backend image, syft SBOM + pnpm audit CI gates | ✅ Shipped |
 | Q2 2026 | **v1.3.0 — Read-only safety mode, EEBUS e2e security, Modbus REST proxy, design-system token foundation, PWA standalone polish, auto-deploy + deployment pruning, release-pipeline repair (ADR-015)** | ✅ Shipped |
-| Q3 2026 | Design-system A11y deep-dive (chart keyboard nav, form ARIA), data-viz palette, Historical analytics deep-dive, OpenAPI auto-generation, multi-user RBAC | 🔄 In&nbsp;flight |
-| Q4+     | Multi-tenant SaaS, contrib adapter marketplace, OCPP 2.1 Profile 3, GDPR formal DPIA                                                                | 🔜 Planned |
+| Q3 2026 | **v1.4.0–v1.10.0 — Live backend bridge (HIGH-17); 12 backend protocol adapters (KNX, evcc, EEBUS, HeatPump, OpenEMS, OCPP CSMS, HA ×2, Matter, Zigbee2MQTT); backend command dispatch; OCPP SP3 mTLS proxy (HIGH-12); CSP nonce hardening (AUD-02); read-only mode (SAF-05); DevOps quality platforms (ADR-027); manual-release pipeline (ADR-015)** | ✅ Shipped |
+| Q3 2026 | Design-system A11y deep-dive (chart keyboard nav, form ARIA), data-viz palette, Historical analytics deep-dive, OpenAPI auto-generation | 🔄 In&nbsp;flight |
+| Q4+     | Multi-tenant SaaS, contrib adapter marketplace, RBAC (ADR-009), GDPR formal DPIA                                                                | 🔜 Planned |
 
 ## Changelog
 
+> **Highlights only** — the full, per-release record lives in [CHANGELOG.md](CHANGELOG.md).
+
 <details open>
+<summary><b>v1.10.0</b> — Security Hardening, DevOps Platforms & Backend Parity</summary>
+
+- **Post-audit backend parity (phases 1–8):** backend `HomeAssistant` (WS + MQTT), `Zigbee2MQTT`, `Matter`, `OpenEMS`, and `OCPP CSMS` protocol adapters; `ProtocolCommandRouter` bridges validated WS commands to OCPP/OpenEMS/HA handlers; OCPP V2G + §14a grid-limit at the CSMS boundary
+- **Security:** production-fatal JWT secret entropy (CRIT-03); CSP `style-src` nonce hardening across Helmet/nginx/Tauri (AUD-02); OCPP Security Profile 3 mTLS API proxy (HIGH-12); non-extractable AES-GCM BYOK vault (ADR-026); CSWSH/SSRF hardening
+- **DevOps quality platforms (ADR-027):** Codecov + CodeRabbit + CodeAnt + DeepSource layering; advisory vs blocking gates documented in `DEVOPS.md`
+- **Release discipline:** manual-only release dispatch (ADR-015); Helm `WS_ORIGINS`; hardened GitHub Pages deploy with pruning + retries
+</details>
+
+<details>
+<summary><b>v1.7.0–v1.9.0</b> — OpenEMS/OCPP Backends, Backend WS Consumer, Read-Only Banner</summary>
+
+- **v1.9.0:** persistent read-only-mode banner; `ENERGY_UPDATE` Zod-validated on both wire ends; dead-code cleanup
+- **v1.8.0:** opt-in backend WebSocket consumer behind `VITE_BACKEND_WS` (ADR-025) with flat→nested projection and a liveness watchdog
+- **v1.7.0:** `OpenEMSProtocolAdapter` (JSON-RPC) + `OcppCsmsProtocolAdapter` gateway (MED-20); API coverage gates 55/46/62/55; web baseline 78/72/70/80; ADR-023 HA dual transport
+</details>
+
+<details>
+<summary><b>v1.4.0–v1.6.1</b> — Live Backend Bridge, Contrib Backend Adapters, Hardware Registry</summary>
+
+- **v1.6.1:** hardware registry +77 → 190 devices; `HeatPumpAdapter` (6 manufacturer profiles, SG Ready); ADR-022 Matter/Thread plan
+- **v1.6.0:** backend `MqttAdapter` TLS/QoS/LWT; enhanced Zigbee2MQTT + Shelly Gen1/3 + webhook receiver; OCPP V2X/§14a command surface
+- **v1.5.0:** `EebusProtocolAdapter` (SPINE/SHIP, §14a LPC); `ExecAdapter` + `ExecService` (ADR-021); HA native integration; Modbus device profiles
+- **v1.4.0:** live backend data reaches the UI via `LiveEnergyAggregator` (HIGH-17, ADR-018); per-adapter Prometheus metrics (MED-18); hardware-registry browser + add-adapter wizard (MED-19); KNX + evcc backend adapters; Settings.tsx decomposition (MED-16)
+</details>
+
+<details>
 <summary><b>v1.3.0</b> — Read-Only Safety Mode, Design System & Deploy Automation</summary>
 
 - **Read-Only Deployment Mode (SAF-05):** `READ_ONLY_MODE=true` blocks all hardware control commands at both API (WebSocket) and frontend (command-validation) levels — for certification-grade deployments, incident investigation, and commissioning

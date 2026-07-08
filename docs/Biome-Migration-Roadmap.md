@@ -71,7 +71,7 @@ lint-typecheck job (sequential):
 
 | Tool                         | Role                                                         |
 | ---------------------------- | ------------------------------------------------------------ |
-| **Biome 2.4.7**              | Primary linter + formatter for all TS/JS/TSX/JSON/CSS files  |
+| **Biome 2.5.2**              | Primary linter + formatter for all TS/JS/TSX/JSON/CSS files  |
 | **ESLint 9** (slim)          | React-only: `react-compiler`, `react-hooks`, `react-refresh` |
 | **tsc**                      | Type checking only (`--noEmit`)                              |
 | **anti-trojan-source** (CLI) | Pre-commit Unicode bidi security check                       |
@@ -112,7 +112,7 @@ lint-typecheck job (parallel with build + tests):
 - **Option B:** ESLint completely removed — rejected due to no Biome equivalent for `react-compiler/react-compiler`
 - **Option C:** Keep ESLint + Prettier, add Biome as optional CI gate — rejected (maintains dual overhead)
 
-**Rationale:** The `eslint-plugin-react-compiler` rule enforces React Compiler constraints at lint time. Violations would compile but silently produce incorrect runtime behaviour. This rule is safety-critical and must be enforced in CI. Biome has no equivalent as of v2.4.7.
+**Rationale:** The `eslint-plugin-react-compiler` rule enforces React Compiler constraints at lint time. Violations would compile but silently produce incorrect runtime behaviour. This rule is safety-critical and must be enforced in CI. Biome has no equivalent as of v2.5.2.
 
 **ESLint rules retained:**
 
@@ -190,7 +190,7 @@ eslint-plugin-anti-trojan-source   (pre-commit standalone CLI already covers thi
 ### Script Semantics
 
 - `pnpm lint` is the canonical CI-safe style gate. It delegates to each workspace and runs `biome check` plus the slim React-only ESLint pass where applicable.
-- `pnpm format:check` is intentionally read-only: `biome format apps/ packages/`. Biome 2.4 rejects `--write=false`, so the script relies on the default read-only formatter behavior.
+- `pnpm format:check` is intentionally read-only: `biome format apps/ packages/`. Biome 2.5 rejects `--write=false`, so the script relies on the default read-only formatter behavior.
 - `pnpm format` remains the write path via Turbo and should be used for local formatting fixes.
 
 ---

@@ -68,7 +68,7 @@ management, and non-energy automations.
 │  │  • Cameras      │  Topics │  • MPC Scheduler         │    │
 │  │  • Scenes       │         │  • Sankey Visualization  │    │
 │  │  • Zigbee/ZWave │         │  • §14a Compliance       │    │
-│  │                 │         │  • 10 Protocol Adapters  │    │
+│  │                 │         │  • 13 Protocol Adapters  │    │
 │  └─────────┬───────┘         └──────────────────────────┘    │
 │            │                                                  │
 │  ┌─────────┴─────────────────────────────────────────────┐   │

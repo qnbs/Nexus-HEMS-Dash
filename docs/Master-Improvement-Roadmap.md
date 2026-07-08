@@ -144,7 +144,7 @@ The following capabilities were fully confirmed during discovery. They must neve
 | Tariffs | §14a EnWG — 5 providers, off-peak/peak/dynamic fields | `apps/web/src/lib/tariff-providers.ts` |
 | i18n | 100% DE/EN parity — 260+ keys | `apps/web/src/locales/` |
 | AI Security | AES-GCM 256-bit encrypted AI key vault | `apps/web/src/lib/ai-keys.ts` |
-| Toolchain | Biome 2.4.7 + react-compiler (error level) | `biome.json`, `eslint.config.js` |
+| Toolchain | Biome 2.5.2 + react-compiler (error level) | `biome.json`, `eslint.config.js` |
 | Testing | 37 test files covering adapters, DB, store, UI | `apps/web/src/tests/` |
 | Storybook | v10 + a11y addon | `apps/web/.storybook/` |
 | Pages | 7 unified sections fully implemented | `apps/web/src/pages/` |
@@ -194,7 +194,7 @@ All detailed ADRs are in `docs/adr/`. This table provides a summary.
 
 | ADR | Title | Decision | Status |
 |-----|-------|----------|--------|
-| ADR-001 | Biome-First Toolchain | Biome 2.4.7 replaces Prettier + typescript-eslint | Accepted |
+| ADR-001 | Biome-First Toolchain | Biome 2.5.2 replaces Prettier + typescript-eslint | Accepted |
 | ADR-002 | Zustand Dual-Store Pattern | `useAppStore` (UI/persist) + `useEnergyStore` (real-time) | Accepted |
 | ADR-003 | JTI Revocation — Redis Fallback | Optional `ioredis` via `REDIS_URL` + graceful fallback on in-memory | Accepted |
 | ADR-004 | Distroless Docker Production | Production stage → distroless; dev/build stage remains Alpine | Accepted |
