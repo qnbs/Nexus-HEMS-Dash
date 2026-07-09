@@ -23,4 +23,13 @@ describe('syncI18nLanguage', () => {
     expect(changeLanguage).toHaveBeenNthCalledWith(1, 'en');
     expect(changeLanguage).toHaveBeenNthCalledWith(2, 'de');
   });
+
+  it('swallows a rejected changeLanguage call without throwing', async () => {
+    const changeLanguage = vi.fn(() => Promise.reject(new Error('boom')));
+    expect(() => syncI18nLanguage({ language: 'de', changeLanguage }, 'en')).not.toThrow();
+    // Flush the microtask queue so the .catch(ignorePromiseRejection) branch runs
+    // and no unhandled rejection escapes the test.
+    await Promise.resolve();
+    expect(changeLanguage).toHaveBeenCalledWith('en');
+  });
 });
