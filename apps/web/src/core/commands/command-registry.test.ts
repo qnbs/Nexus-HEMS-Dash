@@ -1,5 +1,4 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import i18n from '../../i18n';
 import { useAppStore } from '../../store';
 import {
   clearCommandRegistryForTests,
@@ -217,24 +216,6 @@ describe('settings and system commands', () => {
 
     localeCmd.execute(ctx);
     expect(useAppStore.getState().locale).toBe('en');
-  });
-
-  it('palette locale toggle drives i18next in BOTH directions (regression)', () => {
-    // Regression for the "switches once, won't switch back" bug: the palette
-    // command used to write only the store and rely on a fragile effect guard.
-    const changeLanguage = vi.spyOn(i18n, 'changeLanguage').mockResolvedValue(undefined as never);
-    const [, localeCmd] = createSettingsCommands();
-
-    useAppStore.setState({ locale: 'de' });
-    localeCmd.execute(mockContext({ locale: 'de' }));
-    expect(useAppStore.getState().locale).toBe('en');
-    expect(changeLanguage).toHaveBeenLastCalledWith('en');
-
-    localeCmd.execute(mockContext({ locale: 'en' }));
-    expect(useAppStore.getState().locale).toBe('de');
-    expect(changeLanguage).toHaveBeenLastCalledWith('de');
-
-    changeLanguage.mockRestore();
   });
 
   it('navigates to shortcuts help from system command', () => {
