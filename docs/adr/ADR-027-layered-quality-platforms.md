@@ -1,8 +1,8 @@
 # ADR-027: Layered Code-Quality Platforms & CI Consolidation
 
-**Status:** Accepted
-**Date:** 2026-07-03
-**Related:** ADR-001 (Biome-first toolchain), ADR-015 (release chain), PRF-01/PRF-02/PRF-03 (Technical Debt Registry), `DEVOPS.md`, `.deepsource.toml`, `.codecov.yml`, `.coderabbit.yaml`, `.codeant/`, `docs/runbooks/*`
+- **Status:** Accepted
+- **Date:** 2026-07-03
+- **Related:** ADR-001 (Biome-first toolchain), ADR-015 (release chain), PRF-01/PRF-02/PRF-03 (Technical Debt Registry), `DEVOPS.md`, `.deepsource.toml`, `.codecov.yml`, `.coderabbit.yaml`, `.codeant/`, `docs/runbooks/*`
 
 ---
 

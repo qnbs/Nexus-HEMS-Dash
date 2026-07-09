@@ -1,9 +1,9 @@
 # ADR-006: Ring-Buffer Per-Adapter Sizing
 
-**Status:** Accepted
-**Date:** 2026-04-25
-**Deciders:** @qnbs
-**Supersedes:** Fixed 1 000-item ring buffer (all adapters)
+- **Status:** Accepted
+- **Date:** 2026-04-25
+- **Deciders:** @qnbs
+- **Supersedes:** Fixed 1 000-item ring buffer (all adapters)
 
 ## Context
 

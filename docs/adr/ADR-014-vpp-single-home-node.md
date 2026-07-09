@@ -1,8 +1,8 @@
 # ADR-014: VPP als Single-Home-VPP-Node (kein Multi-HEMS v1.2.0)
 
-**Status:** Accepted
-**Datum:** 2026-04-25
-**Autoren:** Nexus-HEMS-Dash Architektur-Team
+- **Status:** Accepted
+- **Datum:** 2026-04-25
+- **Autoren:** Nexus-HEMS-Dash Architektur-Team
 
 ## Kontext
 

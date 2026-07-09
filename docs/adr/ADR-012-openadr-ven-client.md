@@ -1,9 +1,9 @@
 # ADR-012: OpenADR 3.1.0 VEN-Client als Frontend Contrib-Adapter
 
-**Status:** Accepted
-**Datum:** 2026-04-25
-**Autoren:** Nexus-HEMS-Dash Architektur-Team
-**Reviewers:** N/A (Single-Maintainer)
+- **Status:** Accepted
+- **Datum:** 2026-04-25
+- **Autoren:** Nexus-HEMS-Dash Architektur-Team
+- **Reviewers:** N/A (Single-Maintainer)
 
 ## Kontext
 

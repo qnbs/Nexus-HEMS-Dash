@@ -1,9 +1,9 @@
 # ADR-008: PII Sanitization & AI Output Filtering
 
-**Status:** Accepted
-**Date:** 2026-04-25
-**Deciders:** @qnbs
-**Supersedes:** Basic prompt injection sanitization only (pre-2026-04-25)
+- **Status:** Accepted
+- **Date:** 2026-04-25
+- **Deciders:** @qnbs
+- **Supersedes:** Basic prompt injection sanitization only (pre-2026-04-25)
 
 ## Context
 

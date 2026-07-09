@@ -1,9 +1,9 @@
 # ADR-011: OpenAPI Auto-Generation for Backend API
 
-**Status:** Proposed
-**Date:** 2026-04-25
-**Deciders:** Nexus-HEMS Core Team
-**Target release:** v1.3.0
+- **Status:** Proposed — not yet scheduled (verified unimplemented as of v1.10.0; no `openapi`/`swagger` tooling in `apps/api`)
+- **Date:** 2026-04-25
+- **Deciders:** Nexus-HEMS Core Team
+- **Target release:** TBD (originally v1.3.0; not implemented as of v1.10.0)
 
 ---
 
@@ -58,7 +58,7 @@ The Express 5 backend (`apps/api`) currently lacks a machine-readable API contra
 
 ## Decision
 
-**Adopt Option 3 (`@asteasolutions/zod-to-openapi`)** for v1.3.0 as a non-breaking additive change.
+**Adopt Option 3 (`@asteasolutions/zod-to-openapi`)** as a non-breaking additive change (originally targeted v1.3.0; not yet implemented as of v1.10.0).
 
 Implementation plan:
 

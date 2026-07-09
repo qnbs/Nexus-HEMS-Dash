@@ -1,9 +1,9 @@
 # ADR-009: Multi-User RBAC — Architecture Pre-Design (Deferred)
 
-**Status:** Deferred — v1.2.0
-**Date:** 2026-04-25
-**Deciders:** @qnbs
-**Implementation target:** v1.2.0
+- **Status:** Deferred — no target release (re-evaluated 2026-07-09; still open at v1.10.0, tracked as RBAC / ADR-009 in `docs/Technical-Debt-Registry.md`)
+- **Date:** 2026-04-25
+- **Deciders:** @qnbs
+- **Implementation target:** TBD (originally v1.2.0; deferred past v1.10.0)
 
 ## Context
 
@@ -32,7 +32,7 @@ with shared dashboards is needed.
 - Full control, no vendor
 - Trade-off: manual auth implementation (passwords, MFA, sessions)
 
-**Decision deferred** — options remain open until v1.2.0 planning sprint.
+**Decision deferred** — options remain open; originally slated for a v1.2.0 planning sprint (now past; still unscheduled at v1.10.0).
 
 ### Data Model
 
@@ -72,11 +72,11 @@ CREATE TABLE tenant_settings (
 ## Trigger Criteria for Implementation
 
 1. User demand (GitHub issue with ≥10 👍)
-2. Dedicated v1.2.0 planning sprint
+2. Dedicated planning sprint (originally targeted v1.2.0)
 3. Auth provider decision (Clerk vs. custom)
 4. Security review of tenant isolation
 
-## Not in Scope for v1.2.0
+## Not in Scope for the initial RBAC increment
 
 - Fine-grained device-level permissions
 - External identity providers (enterprise SSO, SAML)
@@ -92,4 +92,4 @@ CREATE TABLE tenant_settings (
 ## Draft Issue
 
 When ready to implement, open a GitHub issue with label `enhancement`, scope `auth`, with
-this ADR linked. Target milestone: `v1.2.0`.
+this ADR linked. Target milestone: TBD (originally `v1.2.0`; deferred past v1.10.0).

@@ -1,9 +1,8 @@
 # ADR-023: Home Assistant Dual Transport (ha-ws-api vs mqtt-broker)
 
-**Status:** Accepted  
-**Date:** 2026-07-02  
-**Supersedes:** Partially extends ADR-010 (MQTT-only decision)  
-**Related:** ADR-021 (HA/Exec adapter patterns), `HomeAssistantMQTTAdapter`, `docs/Home-Assistant-Integration-Guide.md`
+- **Status:** Accepted
+- **Date:** 2026-07-02
+- **Related:** ADR-010 (extends the MQTT-only decision), ADR-021 (HA/Exec adapter patterns), `HomeAssistantMQTTAdapter`, `docs/Home-Assistant-Integration-Guide.md`
 
 ---
 

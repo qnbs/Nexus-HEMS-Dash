@@ -1,9 +1,9 @@
 # ADR-007: Chromatic Visual Regression Gate
 
-**Status:** Accepted
-**Date:** 2026-04-25
-**Deciders:** @qnbs
-**Supersedes:** Chromatic without `failOnChanges` (unblocking, advisory only)
+- **Status:** Accepted
+- **Date:** 2026-04-25
+- **Deciders:** @qnbs
+- **Supersedes:** Chromatic without `failOnChanges` (unblocking, advisory only)
 
 ## Context
 
