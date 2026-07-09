@@ -1,9 +1,9 @@
 # ADR-020: EEBUS SPINE/SHIP Backend Protocol Adapter
 
-**Status:** Accepted  
-**Date:** 2026-07-02  
-**Deciders:** Core team  
-**Context:** MED-20 backlog item — parity between EEBUS frontend adapter and backend `IProtocolAdapter`
+- **Status:** Accepted
+- **Date:** 2026-07-02
+- **Deciders:** Core team
+- **Context:** MED-20 backlog item — parity between EEBUS frontend adapter and backend `IProtocolAdapter`
 
 ---
 

@@ -510,7 +510,9 @@ We are deeply grateful to these AI platforms for enabling a solo developer to bu
 
 ## Contributing
 
-Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md).
+Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md). The full
+documentation index lives in the **[docs hub](docs/README.md)** (grouped by task,
+with the canonical status legend and the [ADR log](docs/adr/README.md)).
 
 ```bash
 pnpm verify:basis

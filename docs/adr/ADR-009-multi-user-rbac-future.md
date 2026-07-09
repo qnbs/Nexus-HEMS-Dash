@@ -1,9 +1,9 @@
 # ADR-009: Multi-User RBAC — Architecture Pre-Design (Deferred)
 
-**Status:** Deferred — v1.2.0
-**Date:** 2026-04-25
-**Deciders:** @qnbs
-**Implementation target:** v1.2.0
+- **Status:** Deferred — no target release (re-evaluated 2026-07-09; still open at v1.10.0, tracked as RBAC / ADR-009 in `docs/Technical-Debt-Registry.md`)
+- **Date:** 2026-04-25
+- **Deciders:** @qnbs
+- **Implementation target:** TBD (originally v1.2.0; deferred past v1.10.0)
 
 ## Context
 

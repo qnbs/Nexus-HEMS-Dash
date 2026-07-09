@@ -1,8 +1,8 @@
 # ADR-025: Opt-In Backend WebSocket Consumer (`useServerWebSocket`)
 
-**Status:** Accepted  
-**Date:** 2026-07-03  
-**Related:** ADR-018 (backend-mediated protocol adapters / EventBus→WS bridge), HIGH-17, `useEnergyStore`, `energy.ws.ts`
+- **Status:** Accepted
+- **Date:** 2026-07-03
+- **Related:** ADR-018 (backend-mediated protocol adapters / EventBus→WS bridge), HIGH-17, `useEnergyStore`, `energy.ws.ts`
 
 ---
 

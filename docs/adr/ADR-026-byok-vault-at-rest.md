@@ -1,8 +1,8 @@
 # ADR-026: BYOK Vault At-Rest — Non-Extractable CryptoKey
 
-**Status:** Accepted  
-**Date:** 2026-07-03  
-**Related:** SEC-12 (Technical Debt Registry), `apps/web/src/lib/crypto.ts`, `apps/web/src/lib/secure-store.ts`, `apps/web/src/lib/ai-keys.ts`, HIGH-09 (superseded)
+- **Status:** Accepted
+- **Date:** 2026-07-03
+- **Related:** SEC-12 (Technical Debt Registry), `apps/web/src/lib/crypto.ts`, `apps/web/src/lib/secure-store.ts`, `apps/web/src/lib/ai-keys.ts`, HIGH-09 (superseded)
 
 ---
 

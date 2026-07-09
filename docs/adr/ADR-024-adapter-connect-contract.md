@@ -1,8 +1,8 @@
 # ADR-024: BaseAdapter `connect()` is Non-Throwing (Status-Based Failure Signalling)
 
-**Status:** Accepted  
-**Date:** 2026-07-02  
-**Related:** ADR-018 (backend-mediated protocol adapters), ADR-019 (adapter instance management), `BaseAdapter`, `AddAdapterWizard`, PR #226
+- **Status:** Accepted
+- **Date:** 2026-07-02
+- **Related:** ADR-018 (backend-mediated protocol adapters), ADR-019 (adapter instance management), `BaseAdapter`, `AddAdapterWizard`, PR #226
 
 ---
 

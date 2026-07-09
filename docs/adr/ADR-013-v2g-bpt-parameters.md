@@ -1,8 +1,8 @@
 # ADR-013: V2G BPT-Parameter in OCPP21Adapter und EnergyAdapter-Interface
 
-**Status:** Accepted
-**Datum:** 2026-04-25
-**Autoren:** Nexus-HEMS-Dash Architektur-Team
+- **Status:** Accepted
+- **Datum:** 2026-04-25
+- **Autoren:** Nexus-HEMS-Dash Architektur-Team
 
 ## Kontext
 

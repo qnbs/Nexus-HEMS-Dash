@@ -1,9 +1,9 @@
 # ADR-002: Zustand Dual-Store Pattern
 
-**Status:** Accepted
-**Date:** 2026-04-25
-**Deciders:** @qnbs
-**Supersedes:** Single-store pattern (pre-monorepo)
+- **Status:** Accepted
+- **Date:** 2026-04-25
+- **Deciders:** @qnbs
+- **Supersedes:** Single-store pattern (pre-monorepo)
 
 ## Context
 

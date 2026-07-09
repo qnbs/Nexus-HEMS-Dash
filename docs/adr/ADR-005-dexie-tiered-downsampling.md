@@ -1,9 +1,9 @@
 # ADR-005: Dexie Tiered Downsampling Strategy
 
-**Status:** Accepted
-**Date:** 2026-04-25
-**Deciders:** @qnbs
-**Supersedes:** On-demand downsampling (no auto-trigger)
+- **Status:** Accepted
+- **Date:** 2026-04-25
+- **Deciders:** @qnbs
+- **Supersedes:** On-demand downsampling (no auto-trigger)
 
 ## Context
 

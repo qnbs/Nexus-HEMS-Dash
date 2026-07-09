@@ -1,9 +1,9 @@
 # ADR-004: Distroless Docker Production Images
 
-**Status:** Accepted
-**Date:** 2026-04-25
-**Deciders:** @qnbs
-**Supersedes:** Alpine-based production stages (pre-2026-04-25)
+- **Status:** Accepted
+- **Date:** 2026-04-25
+- **Deciders:** @qnbs
+- **Supersedes:** Alpine-based production stages (pre-2026-04-25)
 
 ## Context
 

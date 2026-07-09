@@ -1,9 +1,9 @@
 # ADR-001: Biome-First Toolchain
 
-**Status:** Accepted
-**Date:** 2026-04-25
-**Deciders:** @qnbs
-**Supersedes:** —
+- **Status:** Accepted
+- **Date:** 2026-04-25
+- **Deciders:** @qnbs
+- **Supersedes:** —
 
 ## Context
 

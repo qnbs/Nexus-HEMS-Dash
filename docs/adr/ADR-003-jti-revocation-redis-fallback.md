@@ -1,9 +1,9 @@
 # ADR-003: JTI Revocation — Optional Redis Backend
 
-**Status:** Accepted
-**Date:** 2026-04-25
-**Deciders:** @qnbs
-**Supersedes:** In-memory-only revocation (pre-2026-04-25)
+- **Status:** Accepted
+- **Date:** 2026-04-25
+- **Deciders:** @qnbs
+- **Supersedes:** In-memory-only revocation (pre-2026-04-25)
 
 ## Context
 
