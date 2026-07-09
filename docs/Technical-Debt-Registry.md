@@ -775,6 +775,19 @@ Protocol→adapter mapping in `hardware-adapter-map.ts`.
 
 ---
 
+### MED-21 — Battery Power Limits Hardcoded in the PID Controller
+**Files:** `apps/web/src/core/energy-controllers.ts` (`maxChargePower` / `maxDischargePower`)
+**Status:** ⏳ Deferred — tracked (surfaced by the 2026-07-09 deep audit, F-07 TODO triage)
+
+The battery ESS PID controller constrains its output with a fixed ±10 kW
+(`maxChargePower = maxDischargePower = 10000`). These should come from the device
+registry / adapter-reported battery capabilities so the limits match the actual
+inverter/battery rather than a one-size default. Behaviour is unchanged until the
+registry wiring lands; the constants are documented in place and cited here rather
+than left as a bare `TODO`.
+
+---
+
 ## July 2026 Audit Delta II — New Items (2026-07-03)
 
 Surfaced by a code-first verification pass over `main`. The safety command-path and
