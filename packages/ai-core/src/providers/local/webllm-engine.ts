@@ -6,6 +6,7 @@
  */
 
 import type { AIEngine, AIProviderKey, AIRequest, AIResponse } from '../../types.ts';
+import { isLocalLlmEnabled } from './local-llm-flag.ts';
 
 export interface WebLLMEngineConfig {
   model?: string;
@@ -14,6 +15,19 @@ export interface WebLLMEngineConfig {
 }
 
 export const DEFAULT_WEBLLM_MODEL = 'Llama-3.2-1B-Instruct-q4f32_1-MLC';
+
+// Deferred peer package (F-03/ADR-029). Typed as `string` (not a literal) so the
+// bundler/type-checker do not require it to be installed; `@vite-ignore` keeps
+// Vite from analysing the specifier. Only imported when the build flag is set.
+const WEBLLM_MODULE: string = '@mlc-ai/web-llm';
+
+interface MLCModule {
+  CreateMLCEngine: (
+    model: string,
+    chatOpts: Record<string, unknown>,
+    appConfig: Record<string, unknown>,
+  ) => Promise<unknown>;
+}
 
 export class WebLLMEngine implements AIEngine {
   readonly provider = 'webllm' as const;
@@ -26,13 +40,14 @@ export class WebLLMEngine implements AIEngine {
   }
 
   async isAvailable(): Promise<boolean> {
+    if (!isLocalLlmEnabled()) return false;
     if (typeof navigator === 'undefined') return false;
     return 'gpu' in navigator && navigator.gpu != null;
   }
 
   async load(): Promise<void> {
     if (this.engine) return;
-    const { CreateMLCEngine } = await import('@mlc-ai/web-llm');
+    const { CreateMLCEngine } = (await import(/* @vite-ignore */ WEBLLM_MODULE)) as MLCModule;
     this.engine = await CreateMLCEngine(
       this.getModel(),
       this.config.chatOpts ?? {},

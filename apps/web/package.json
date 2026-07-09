@@ -171,17 +171,8 @@
       "gzip": true
     },
     {
-      "name": "Local AI engines (onnxruntime + transformers + web-llm)",
-      "path": "dist/assets/vendor-ai-local-*.js",
-      "limit": "2500 kB",
-      "gzip": true
-    },
-    {
       "name": "Total JS",
-      "path": [
-        "dist/assets/*.js",
-        "!dist/assets/vendor-ai-local-*.js"
-      ],
+      "path": "dist/assets/*.js",
       "limit": "1500 kB",
       "gzip": true
     },

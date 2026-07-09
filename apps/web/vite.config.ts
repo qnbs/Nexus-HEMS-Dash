@@ -53,7 +53,7 @@ export default defineConfig(({ mode }) => {
       manifest: false, // Use public/manifest.json
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
-        globIgnores: ['**/bundle-stats.html', '**/vendor-ai-local-*.js'],
+        globIgnores: ['**/bundle-stats.html'],
         maximumFileSizeToCacheInBytes: 8 * 1024 * 1024, // 8 MB
         sourcemap: false,
         navigateFallback: isProd ? '/Nexus-HEMS-Dash/index.html' : 'index.html',
@@ -305,11 +305,8 @@ export default defineConfig(({ mode }) => {
             // ── Google Gemini AI — only AI pages ──
             if (id.includes('/@google/genai/')) return 'vendor-ai';
 
-            // ── Local-first AI engines — heavy, only loaded on AI settings/optimizer ──
-            // @xenova/transformers + onnxruntime-web are >2 MB gzipped; keep them out of
-            // the initial precache and the common chunks.
-            if (/\/@mlc-ai\/web-llm\/|\/onnxruntime-web\/|\/@xenova\/transformers\//.test(id))
-              return 'vendor-ai-local';
+            // Local-first AI engines (web-llm / transformers / onnxruntime-web) are
+            // deferred (F-03/ADR-029): no longer bundled deps, so no manualChunk here.
 
             // ── Radix UI primitives ──
             if (id.includes('/@radix-ui/')) return 'vendor-radix';

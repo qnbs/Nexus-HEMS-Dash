@@ -22,9 +22,19 @@ describe('HeuristicEngine', () => {
 });
 
 describe('OnnxEngine', () => {
-  it('reports availability based on WebAssembly', async () => {
+  it('is unavailable by default (local-LLM engines deferred, F-03)', async () => {
     const engine = new OnnxEngine();
-    expect(await engine.isAvailable()).toBe(typeof WebAssembly !== 'undefined');
+    expect(await engine.isAvailable()).toBe(false);
+  });
+
+  it('reports WebAssembly-based availability when the build flag is enabled', async () => {
+    process.env.ENABLE_LOCAL_LLM = 'true';
+    try {
+      const engine = new OnnxEngine();
+      expect(await engine.isAvailable()).toBe(typeof WebAssembly !== 'undefined');
+    } finally {
+      delete process.env.ENABLE_LOCAL_LLM;
+    }
   });
 
   it('returns guidance when no model is configured', async () => {
@@ -36,9 +46,19 @@ describe('OnnxEngine', () => {
 });
 
 describe('TransformersEngine', () => {
-  it('is available when WebAssembly is present', async () => {
+  it('is unavailable by default (F-03)', async () => {
     const engine = new TransformersEngine();
-    expect(await engine.isAvailable()).toBe(typeof WebAssembly !== 'undefined');
+    expect(await engine.isAvailable()).toBe(false);
+  });
+
+  it('is available with WebAssembly when the build flag is enabled', async () => {
+    process.env.ENABLE_LOCAL_LLM = 'true';
+    try {
+      const engine = new TransformersEngine();
+      expect(await engine.isAvailable()).toBe(typeof WebAssembly !== 'undefined');
+    } finally {
+      delete process.env.ENABLE_LOCAL_LLM;
+    }
   });
 
   it('gracefully handles model load failure', async () => {
@@ -49,10 +69,20 @@ describe('TransformersEngine', () => {
 });
 
 describe('WebLLMEngine', () => {
-  it('is available only with WebGPU', async () => {
+  it('is unavailable by default (F-03)', async () => {
     const engine = new WebLLMEngine();
-    const hasWebGpu = typeof navigator !== 'undefined' && 'gpu' in navigator;
-    expect(await engine.isAvailable()).toBe(hasWebGpu);
+    expect(await engine.isAvailable()).toBe(false);
+  });
+
+  it('is available only with WebGPU when the build flag is enabled', async () => {
+    process.env.ENABLE_LOCAL_LLM = 'true';
+    try {
+      const engine = new WebLLMEngine();
+      const hasWebGpu = typeof navigator !== 'undefined' && 'gpu' in navigator;
+      expect(await engine.isAvailable()).toBe(hasWebGpu);
+    } finally {
+      delete process.env.ENABLE_LOCAL_LLM;
+    }
   });
 
   it('gracefully handles model load failure', async () => {

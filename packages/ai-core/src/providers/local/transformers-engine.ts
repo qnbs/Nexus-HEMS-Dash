@@ -7,6 +7,7 @@
  */
 
 import type { AIEngine, AIProviderKey, AIRequest, AIResponse } from '../../types.ts';
+import { isLocalLlmEnabled } from './local-llm-flag.ts';
 
 export interface TransformersEngineConfig {
   model?: string;
@@ -15,6 +16,13 @@ export interface TransformersEngineConfig {
 }
 
 export const DEFAULT_TRANSFORMERS_MODEL = 'Xenova/tiny-random-Llama-2';
+
+// Deferred peer package (F-03/ADR-029); see webllm-engine.ts for the rationale.
+const TRANSFORMERS_MODULE: string = '@xenova/transformers';
+
+interface TransformersModule {
+  pipeline: (task: string, model: string, options: Record<string, unknown>) => Promise<unknown>;
+}
 
 export class TransformersEngine implements AIEngine {
   readonly provider = 'transformers' as const;
@@ -27,12 +35,15 @@ export class TransformersEngine implements AIEngine {
   }
 
   async isAvailable(): Promise<boolean> {
+    if (!isLocalLlmEnabled()) return false;
     return typeof WebAssembly !== 'undefined';
   }
 
   async load(): Promise<void> {
     if (this.pipeline) return;
-    const { pipeline } = await import('@xenova/transformers');
+    const { pipeline } = (await import(
+      /* @vite-ignore */ TRANSFORMERS_MODULE
+    )) as TransformersModule;
     this.pipeline = await pipeline(this.config.task ?? 'text-generation', this.getModel(), {
       quantized: this.config.quantized ?? true,
     });

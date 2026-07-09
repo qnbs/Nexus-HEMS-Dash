@@ -1491,6 +1491,8 @@ export const de = {
     optimizing: 'Optimiere...',
     optimizerTitle: 'KI-Energieoptimierer',
     optimizerSubtitle: 'KI-gestützte Empfehlungen für optimales Energiemanagement',
+    generatedBy: 'Erstellt von',
+    providerHeuristic: 'Lokale Heuristik',
     analyzing: 'Analysiere Energiefluss...',
     recommendations: 'Empfehlungen',
     costSaving: 'Kostenersparnis',
