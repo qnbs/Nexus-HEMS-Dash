@@ -93,11 +93,11 @@ export class UnifiedAIOrchestrator {
    * Execute a request and return raw text.
    */
   async ask(request: AIRequest): Promise<AIResponse> {
-    const safeRequest = sanitizeRequest(request);
+    const { request: safeRequest, verdict } = sanitizeRequest(request);
     const strategy = await this.buildStrategy();
 
     for (const provider of strategy.fallbackChain) {
-      const result = await this.tryProvider(provider, safeRequest);
+      const result = await this.tryProvider(provider, safeRequest, verdict.injectionSuspected);
       if (result) return result;
     }
 
@@ -116,7 +116,11 @@ export class UnifiedAIOrchestrator {
     return parsed;
   }
 
-  private async tryProvider(provider: AIProvider, request: AIRequest): Promise<AIResponse | null> {
+  private async tryProvider(
+    provider: AIProvider,
+    request: AIRequest,
+    injectionSuspected = false,
+  ): Promise<AIResponse | null> {
     let engine: AIEngine;
     try {
       engine = this.registry.get(provider);
@@ -135,7 +139,7 @@ export class UnifiedAIOrchestrator {
 
     const safeRequest: AIRequest = {
       ...request,
-      systemPrompt: buildSafetySystemPrompt(request.systemPrompt),
+      systemPrompt: buildSafetySystemPrompt(request.systemPrompt, { injectionSuspected }),
     };
 
     try {
