@@ -13,6 +13,25 @@
  *   - `READ_ONLY_MODE=true` blocks all exec write operations at the API level.
  *   - Output validated via Zod schema before updating the energy model.
  *
+ * Threat model (why the above is sufficient):
+ *   - **Arbitrary command execution (RCE):** mitigated by the ID whitelist —
+ *     the client sends a `scriptId`, never a command line. Anything not in
+ *     `EXEC_SCRIPTS_CONFIG` is rejected server-side before spawning.
+ *   - **Argument injection:** only keys in the script's `allowedArgs` are
+ *     forwarded; values are passed as discrete argv entries (no shell), so
+ *     `; rm -rf /` in a value is an inert argument, not a new command.
+ *   - **Unauthorized control:** exec is a hardware-control surface. Every call
+ *     traverses the JWT-protected API and, in `READ_ONLY_MODE`, is rejected and
+ *     audited (`rejected_readonly`) regardless of adapter config — see
+ *     `apps/api/src/config/read-only-mode.ts` and the WS gateway guard.
+ *   - **Resource exhaustion:** each whitelisted script carries a `timeoutMs`;
+ *     runaway processes are killed server-side.
+ *   - **Data poisoning:** stdout is Zod-validated before it can touch the
+ *     energy model; malformed output is dropped, not trusted.
+ *   Residual risk lives entirely in the operator-authored whitelist: a script
+ *   the operator whitelists runs with the API process's privileges. Treat
+ *   `EXEC_SCRIPTS_CONFIG` as a trusted, least-privilege allowlist.
+ *
  * Script output contract (the script must output valid JSON to stdout):
  * ```json
  * {

@@ -116,6 +116,8 @@
     "test:fuzz": "turbo --filter=@nexus-hems/web test:fuzz",
     "test:coverage": "turbo --filter=@nexus-hems/web test:coverage",
     "check:coverage-baseline": "node scripts/check-coverage-baseline.mjs apps/web packages/ai-core",
+    "sync:adapters": "node scripts/sync-adapter-counts.mjs",
+    "check:adapters": "node scripts/sync-adapter-counts.mjs && git diff --exit-code README.md",
     "test:e2e": "turbo --filter=@nexus-hems/web test:e2e",
     "test:e2e:ui": "turbo --filter=@nexus-hems/web test:e2e:ui",
     "test:a11y": "turbo --filter=@nexus-hems/web test:a11y",
