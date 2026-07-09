@@ -1,6 +1,6 @@
 # ADR-NNN: Short Descriptive Title
 
-- **Status:** Proposed <!-- Proposed | Accepted | Deferred | Superseded by ADR-XXX | Rejected -->
+- **Status:** Proposed <!-- Proposed | Accepted | In Progress | Deferred | Superseded by ADR-XXX | Rejected -->
 - **Date:** YYYY-MM-DD
 - **Deciders:** Maintainer
 - **Supersedes:** — <!-- or ADR-XXX -->

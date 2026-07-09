@@ -2,8 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-07-02
-- **Supersedes:** Partially extends ADR-010 (MQTT-only decision)
-- **Related:** ADR-021 (HA/Exec adapter patterns), `HomeAssistantMQTTAdapter`, `docs/Home-Assistant-Integration-Guide.md`
+- **Related:** ADR-010 (extends the MQTT-only decision), ADR-021 (HA/Exec adapter patterns), `HomeAssistantMQTTAdapter`, `docs/Home-Assistant-Integration-Guide.md`
 
 ---
 

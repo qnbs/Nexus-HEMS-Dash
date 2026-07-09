@@ -58,7 +58,7 @@ The Express 5 backend (`apps/api`) currently lacks a machine-readable API contra
 
 ## Decision
 
-**Adopt Option 3 (`@asteasolutions/zod-to-openapi`)** for v1.3.0 as a non-breaking additive change.
+**Adopt Option 3 (`@asteasolutions/zod-to-openapi`)** as a non-breaking additive change (originally targeted v1.3.0; not yet implemented as of v1.10.0).
 
 Implementation plan:
 

@@ -3,7 +3,7 @@
 - **Status:** In Progress — Phase 1 MVP shipped v1.10.0 (`MatterProtocolAdapter`, read-only WS telemetry via `MATTER_BRIDGE_HOST`); full local-commissioner integration still deferred
 - **Date:** 2026-07-02
 - **Deciders:** Core team
-- **Context:** Ecosystem Expansion Roadmap v5.0 — Phase D (P2) items
+- **Related:** Ecosystem Expansion Roadmap v5.0 (Phase D / P2), ADR-010 (HA integration)
 
 ---
 

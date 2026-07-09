@@ -3,7 +3,7 @@
 - **Status:** Accepted
 - **Date:** 2026-07-02
 - **Deciders:** Core team
-- **Context:** MED-20 backlog item — parity between EEBUS frontend adapter and backend `IProtocolAdapter`
+- **Related:** MED-20 (Technical-Debt-Registry) — EEBUS frontend adapter ↔ backend `IProtocolAdapter` parity
 
 ---
 

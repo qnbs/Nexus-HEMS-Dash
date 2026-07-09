@@ -3,7 +3,7 @@
 - **Status:** Accepted
 - **Date:** 2026-07-02
 - **Deciders:** Core team
-- **Context:** Ecosystem Expansion Roadmap v5.0 — Phase B (P0) items
+- **Related:** Ecosystem Expansion Roadmap v5.0 (Phase B / P0), ADR-010 (HA integration)
 
 ---
 
