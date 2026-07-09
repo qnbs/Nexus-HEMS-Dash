@@ -102,7 +102,7 @@
     "@types/react-dom": "^19.2.3",
     "@types/trusted-types": "^2.0.7",
     "@vitejs/plugin-react": "^6.0.3",
-    "@vitest/coverage-v8": "^4.1.9",
+    "@vitest/coverage-v8": "catalog:",
     "@vitest/ui": "^4.1.9",
     "anti-trojan-source": "^1.11.0",
     "autoprefixer": "^10.5.0",
@@ -124,7 +124,7 @@
     "typescript": "catalog:",
     "vite": "^8.1.0",
     "vite-plugin-pwa": "^1.2.0",
-    "vitest": "^4.1.9",
+    "vitest": "catalog:",
     "workbox-window": "^7.4.1"
   },
   "size-limit": [

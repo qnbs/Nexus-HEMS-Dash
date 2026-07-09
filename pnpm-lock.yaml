@@ -9,6 +9,9 @@ catalogs:
     '@types/node':
       specifier: ^26.0.1
       version: 26.0.1
+    '@vitest/coverage-v8':
+      specifier: ^4.1.9
+      version: 4.1.9
     comlink:
       specifier: ^4.4.2
       version: 4.4.2
@@ -30,6 +33,9 @@ catalogs:
     typescript:
       specifier: ~5.8.3
       version: 5.8.3
+    vitest:
+      specifier: ^4.1.9
+      version: 4.1.9
     zod:
       specifier: ^4.4.3
       version: 4.4.3
@@ -189,7 +195,7 @@ importers:
         specifier: ^8.18.1
         version: 8.18.1
       '@vitest/coverage-v8':
-        specifier: ^4.1.9
+        specifier: 'catalog:'
         version: 4.1.9(vitest@4.1.9)
       supertest:
         specifier: ^7.2.2
@@ -198,7 +204,7 @@ importers:
         specifier: 'catalog:'
         version: 5.8.3
       vitest:
-        specifier: ^4.1.9
+        specifier: 'catalog:'
         version: 4.1.9(@types/node@26.0.1)(@vitest/coverage-v8@4.1.9)(@vitest/ui@4.1.9)(jsdom@29.1.1(@noble/hashes@1.8.0))(vite@8.1.0(@types/node@26.0.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.21.0)(yaml@2.8.3))
 
   apps/web:
@@ -412,7 +418,7 @@ importers:
         specifier: ^6.0.3
         version: 6.0.3(@rolldown/plugin-babel@0.2.3(@babel/core@7.29.7)(@babel/runtime@7.29.7)(rolldown@1.1.3)(vite@8.1.0(@types/node@26.0.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.21.0)(yaml@2.8.3)))(babel-plugin-react-compiler@1.0.0)(vite@8.1.0(@types/node@26.0.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.21.0)(yaml@2.8.3))
       '@vitest/coverage-v8':
-        specifier: ^4.1.9
+        specifier: 'catalog:'
         version: 4.1.9(vitest@4.1.9)
       '@vitest/ui':
         specifier: ^4.1.9
@@ -478,7 +484,7 @@ importers:
         specifier: ^1.2.0
         version: 1.2.0(vite@8.1.0(@types/node@26.0.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.21.0)(yaml@2.8.3))(workbox-build@7.4.0(@types/babel__core@7.20.5))(workbox-window@7.4.1)
       vitest:
-        specifier: ^4.1.9
+        specifier: 'catalog:'
         version: 4.1.9(@types/node@26.0.1)(@vitest/coverage-v8@4.1.9)(@vitest/ui@4.1.9)(jsdom@29.1.1(@noble/hashes@1.8.0))(vite@8.1.0(@types/node@26.0.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.21.0)(yaml@2.8.3))
       workbox-window:
         specifier: ^7.4.1
@@ -502,11 +508,14 @@ importers:
         specifier: 'catalog:'
         version: 4.4.3
     devDependencies:
+      '@vitest/coverage-v8':
+        specifier: 'catalog:'
+        version: 4.1.9(vitest@4.1.9)
       typescript:
         specifier: 'catalog:'
         version: 5.8.3
       vitest:
-        specifier: ^4.1.9
+        specifier: 'catalog:'
         version: 4.1.9(@types/node@26.0.1)(@vitest/coverage-v8@4.1.9)(@vitest/ui@4.1.9)(jsdom@29.1.1(@noble/hashes@1.8.0))(vite@8.1.0(@types/node@26.0.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.21.0)(yaml@2.8.3))
 
   packages/shared-types:
