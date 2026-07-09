@@ -37,6 +37,9 @@ jobs:
           TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
           TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
 
+      - name: Biome CI (whole-repo gate)
+        run: pnpm lint:all
+
       - name: Type Check
         run: pnpm type-check
         env:

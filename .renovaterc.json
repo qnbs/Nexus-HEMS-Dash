@@ -161,12 +161,7 @@
     {
       "description": "Group: D3 visualization",
       "groupName": "D3",
-      "matchPackageNames": [
-        "d3-sankey",
-        "d3-selection",
-        "@types/d3-sankey",
-        "@types/d3-selection"
-      ]
+      "matchPackageNames": ["d3-sankey", "d3-selection", "@types/d3-sankey", "@types/d3-selection"]
     },
     {
       "description": "Group: Express server stack",
@@ -201,12 +196,7 @@
     {
       "description": "Group: commitlint + husky",
       "groupName": "commit-tooling",
-      "matchPackageNames": [
-        "@commitlint/**",
-        "husky",
-        "lint-staged",
-        "anti-trojan-source"
-      ]
+      "matchPackageNames": ["@commitlint/**", "husky", "lint-staged", "anti-trojan-source"]
     },
     {
       "description": "Group: GitHub Actions (single PR for action bumps)",

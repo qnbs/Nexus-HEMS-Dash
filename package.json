@@ -104,6 +104,7 @@
     "preview": "turbo --filter=@nexus-hems/web preview",
     "clean": "turbo clean || true && rm -rf apps/*/dist packages/*/dist",
     "lint": "turbo lint",
+    "lint:all": "biome ci .",
     "lint:fix": "turbo lint:fix",
     "format": "turbo format",
     "format:check": "biome format apps/ packages/",
