@@ -126,7 +126,7 @@ export function AIExecutionModeSection() {
           value: m.value,
           label: t(m.labelKey),
           description: t(m.descriptionKey),
-          tone: m.value === 'hybrid' ? 'primary' : 'neutral',
+          tone: m.value === 'eco' ? 'primary' : 'neutral',
         }))}
       />
 

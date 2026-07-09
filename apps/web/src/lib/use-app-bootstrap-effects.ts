@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import type { ThemeName } from '../design-tokens';
 import { themeDefinitions } from '../design-tokens';
 import { backgroundSyncService } from './background-sync';
-import { ignorePromiseRejection } from './ignore-promise-rejection';
+import { syncI18nLanguage } from './i18n-language-sync';
 import { monitorOfflineStorageQuota } from './offline-cache';
 import type { ThemePreference } from './theme';
 import { resolveTheme, watchSystemTheme } from './theme';
@@ -86,9 +86,7 @@ export const useAppBootstrapEffects = ({
   }, [animations]);
 
   useEffect(() => {
-    if (i18n.resolvedLanguage !== locale) {
-      i18n.changeLanguage(locale).catch(ignorePromiseRejection);
-    }
+    syncI18nLanguage(i18n, locale);
     return undefined;
   }, [i18n, locale]);
 

@@ -113,7 +113,9 @@ export function getAIMode(): AIExecutionMode {
   if (stored && ['hybrid', 'local', 'cloud', 'eco'].includes(stored)) {
     return stored as AIExecutionMode;
   }
-  return 'hybrid';
+  // Privacy-first default: deterministic local heuristics, no network, no model
+  // download. Users opt into local ML models ('local') or cloud ('hybrid'/'cloud').
+  return 'eco';
 }
 
 export function setAIMode(mode: AIExecutionMode): void {
@@ -125,7 +127,7 @@ const LOCAL_MODEL_PREFERENCE_KEY = 'nexus-hems-ai-local-model';
 
 export function getPreferredLocalModel(): AIProvider {
   const stored = localStorage.getItem(LOCAL_MODEL_PREFERENCE_KEY);
-  return (stored as AIProvider) ?? 'webllm';
+  return (stored as AIProvider) ?? 'heuristic';
 }
 
 export function setPreferredLocalModel(model: AIProvider): void {
