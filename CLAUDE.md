@@ -38,6 +38,7 @@ The current shipped release line is **1.11.0**. Releases are **manual-only** (AD
 apps/api/        — @nexus-hems/api   — Express 5 backend (entry: apps/api/index.ts)
 apps/web/        — @nexus-hems/web   — React 19 Vite SPA  (entry: apps/web/src/main.tsx)
 packages/shared-types/ — @nexus-hems/shared-types — Zod schemas + inferred types
+packages/ai-core/      — @nexus-hems/ai-core      — AI orchestrator, prompt-sanitizer, providers
 ```
 
 ## Commands
@@ -51,10 +52,12 @@ pnpm preview           # Preview apps/web production build
 # Verification (staged; do not run heavyweight checks in parallel locally)
 pnpm verify:basis      # turbo type-check lint test:run (full local gate)
 pnpm type-check        # tsc --noEmit across all workspaces (strict mode)
-pnpm lint              # biome check + eslint --max-warnings 0 (read-only)
+pnpm lint              # turbo lint: per-package biome check (src/) + eslint --max-warnings 0
+pnpm lint:all          # biome ci . — WHOLE-REPO gate (config/test/scripts too); blocking in CI (F-02)
 pnpm lint:fix          # biome check --write + eslint --fix
 pnpm format            # biome format --write apps/ packages/
 pnpm format:check      # biome format apps/ packages/ (Biome 2.5 read-only)
+pnpm check:adapters    # regenerate + diff-check the README adapter count (F-04 drift guard; blocking in CI)
 
 # Testing
 pnpm test:run          # All unit tests, one-shot
@@ -111,8 +114,9 @@ pnpm --filter @nexus-hems/web test:ui     # vitest --ui
 | `apps/api` | `@nexus-hems/api` | Express 5 + WebSocket backend. Entry: `apps/api/index.ts` → `apps/api/src/index.ts` |
 | `apps/web` | `@nexus-hems/web` | React 19 Vite SPA. Entry: `apps/web/src/main.tsx` |
 | `packages/shared-types` | `@nexus-hems/shared-types` | Zod schemas + TS types shared between api and web |
+| `packages/ai-core` | `@nexus-hems/ai-core` | AI orchestration used by the web AI client — see **AI Core** below |
 
-**Key monorepo files:** `pnpm-workspace.yaml` · `turbo.json` · `tsconfig.base.json` (ultra-strict root)
+**Key monorepo files:** `pnpm-workspace.yaml` · `turbo.json` · `tsconfig.base.json` (ultra-strict root). Shared dependency versions are single-sourced in the pnpm **catalog** (`pnpm-workspace.yaml` `catalog:` — e.g. `react`, `zod`, `typescript`, `vitest`); reference them as `"vitest": "catalog:"`, don't hardcode versions in workspace `package.json`s.
 
 In dev: `apps/web` (Vite, port 5173) proxies `/api/*`, `/metrics`, `/ws` → `apps/api` (Express, port 3000).
 
@@ -155,13 +159,16 @@ const ids = await loadAllContribAdapters();                         // load all 
 
 Plugin lifecycle (OSGi-inspired): install → resolve → start → stop → uninstall. Hot-loading from Settings UI supported. Activation timeout: 10 s. External adapters should export `{ id, factory }` or register through the local adapter registry; do not document a non-existent `@nexus-hems/adapter-registry` package.
 
+**Adapter-count drift guard (F-04):** the README's "13 adapters (7 core + 6 contrib)" is generated between `<!-- ADAPTERS-EN/DE:START -->` markers from `registerBuiltinAdapters()` call sites + `contrib/*.ts` (minus `example-contrib`). After adding/removing an adapter, run `pnpm sync:adapters` and commit — CI's `pnpm check:adapters` fails on stale markers. Don't hand-edit the count.
+
 ### Key Infrastructure
 
 - **Circuit Breaker** (`apps/web/src/core/circuit-breaker.ts`): FSM CLOSED → OPEN → HALF_OPEN. Failure threshold 5, cooldown 30 s, half-open success threshold 2. Built into BaseAdapter.
 - **Command Safety** (`apps/web/src/core/command-safety.ts`): All hardware commands go through Zod schema validation, rate limiting (30 cmd/min), IndexedDB audit trail.
 - **Web Workers**: AI inference (`ai-worker.ts`), Sankey layout (`sankey-worker.ts`), REST polling (`adapter-worker.ts`, SSRF-hardened URL allowlist).
 - **MPC Optimizer** (`apps/web/src/lib/optimizer.ts`): EMHASS-inspired LP day-ahead scheduler with PV/load forecasting, battery constraints, tariff-aware cost minimization.
-- **AI Client** (`apps/web/src/core/aiClient.ts`): Multi-provider (OpenAI, Anthropic, Gemini, xAI, Groq, Ollama). API keys encrypted AES-GCM 256-bit in IndexedDB via `apps/web/src/lib/ai-keys.ts` — never in env vars or plain text.
+- **AI Client** (`apps/web/src/core/aiClient.ts`): thin web wrapper over **`@nexus-hems/ai-core`** (`packages/ai-core`). API keys encrypted AES-GCM 256-bit in IndexedDB via `apps/web/src/lib/ai-keys.ts` — never in env vars or plain text.
+- **AI Core** (`packages/ai-core`): the provider-agnostic AI layer — `UnifiedAIOrchestrator` (`orchestrator.ts`) with a fallback chain, cloud providers (OpenAI/Anthropic/Gemini/…), and the non-destructive `prompt-sanitizer.ts` (`sanitizeRequest` returns `{ request, verdict }`; PII redaction + injection **flagging**, fails closed on oversized `context`). **Local in-browser LLM engines (WebLLM/Transformers.js/ONNX) are deferred (ADR-029):** their `isAvailable()` returns `false` unless `VITE_ENABLE_LOCAL_LLM=true`, and their heavy runtime packages are intentionally NOT in `dependencies` — do not re-add them or wire a resolver without an ADR (would reopen the `unsafe-inline`-free CSP). Default AI path is the local heuristic engine.
 - **Shared Types** (`packages/shared-types/src/protocol.ts`): Zod schemas for `EnergyData`, `WSCommand`, `AuthToken`, `UnifiedEnergyModel`, etc. Import as `@nexus-hems/shared-types`.
 - **VPP Service** (`apps/web/src/core/vpp-service.ts`): Virtual Power Plant aggregation per UC 2.6.2 / VDE-AR-E 2829-6 — composes flex offers from battery/EV/heat-pump, submits via OpenADR 3.1 API proxy.
 - **UC26 Translator** (`apps/web/src/core/uc26-translator.ts`): Matter↔OpenADR 3.1 interworking (UC 2.6.1–2.6.3) — translates DR events to Matter DEM cluster commands.
@@ -215,7 +222,8 @@ Biome settings: line width 100, 2-space indent, LF, single quotes, trailing comm
 Current enforced coverage thresholds are package-specific:
 - `apps/web/vitest.config.ts`: 78 statements / 72 branches / 70 functions / 80 lines (PRF-03 baseline)
 - `apps/api/vitest.config.ts`: 55 statements / 46 branches / 62 functions / 55 lines (P1-05 staged raise from the v1.3.0 33% baseline)
-- `docs/Testing-Coverage-Strategy.md` contains the higher staged roadmap targets; do not assume those targets are already enforced in config.
+- `packages/ai-core/vitest.config.ts`: 73 statements / 51 branches / 77 functions / 73 lines (F-05a baseline)
+- The hard floor is `scripts/check-coverage-baseline.mjs <workspaceDir…>` (`pnpm check:coverage-baseline` guards **web + ai-core**, each with a committed `coverage-baseline.json`); Codecov never blocks. `docs/Testing-Coverage-Strategy.md` holds the higher staged roadmap targets — do not assume those are already enforced in config. Never lower a threshold to make a change pass.
 
 Biome 2.5.2 note: use `biome format apps/ packages/` for the read-only `format:check` script. Do not use `biome format --write=false`; this version rejects that flag/value combination.
 
