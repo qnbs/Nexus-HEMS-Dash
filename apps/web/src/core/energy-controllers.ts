@@ -67,6 +67,29 @@ export interface EnergyController {
 
 // ─── 1. ESS Symmetric Power Controller ──────────────────────────────
 
+/** Safe fallback when no per-device battery limit is configured (LOW-11). */
+const SAFE_DEFAULT_ESS_W = 10_000;
+/**
+ * Absolute upper bound for the controller's ESS clamp. Mirrors the
+ * `batteryPowerWatts` Zod bound in `command-safety.ts` (±25 kW, §14a EnWG) so a
+ * bad user-entered rate can never widen this advisory clamp beyond the hardware
+ * ceiling. Kept as a local constant on purpose — the command-safety schema stays
+ * the single source of truth for what actually reaches an adapter.
+ */
+const MAX_ESS_W = 25_000;
+
+/**
+ * Resolve an ESS power limit (W) from a configured battery rate (kW). Fails
+ * safe: a missing / non-positive / non-finite rate falls back to the
+ * `SAFE_DEFAULT_ESS_W` default, and any value is capped at `MAX_ESS_W`. The
+ * result therefore only ever *narrows* the clamp per device, never widens it.
+ */
+function essLimitW(rateKW?: number): number {
+  return Number.isFinite(rateKW) && (rateKW as number) > 0
+    ? Math.min((rateKW as number) * 1000, MAX_ESS_W)
+    : SAFE_DEFAULT_ESS_W;
+}
+
 export class ESSSymmetricController implements EnergyController {
   readonly id = 'ess-symmetric';
   readonly name = 'ESS Symmetric Power';
@@ -103,10 +126,12 @@ export class ESSSymmetricController implements EnergyController {
       // PID output
       const pidOutput = this.kp * error + this.ki * this.integralError + this.kd * derivative;
 
-      // Constrain to battery capabilities. Fixed ±10 kW default until these come
-      // from the device registry / adapter-reported limits (LOW-11).
-      const maxChargePower = 10000;
-      const maxDischargePower = 10000;
+      // Constrain to the configured battery's charge/discharge limits (LOW-11).
+      // Sourced from systemConfig.battery (kW → W); fails safe to ±10 kW when a
+      // limit is missing/invalid, and is hard-capped at the command-safety bound.
+      const battery = settings.systemConfig?.battery;
+      const maxChargePower = essLimitW(battery?.maxChargeRateKW);
+      const maxDischargePower = essLimitW(battery?.maxDischargeRateKW);
       const essPower = Math.max(-maxDischargePower, Math.min(maxChargePower, pidOutput));
 
       const soc = data.batterySoC ?? 0;

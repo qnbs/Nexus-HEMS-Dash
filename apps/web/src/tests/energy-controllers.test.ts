@@ -108,6 +108,59 @@ describe('Energy Controllers', () => {
       expect(state.id).toBe('ess-symmetric');
       expect(state.lastRun).toBeGreaterThan(0);
     });
+
+    // LOW-11 — clamp is sourced from the configured battery, fails safe.
+    const withBattery = (charge: number | undefined, discharge: number | undefined) =>
+      ({
+        ...baseSettings,
+        systemConfig: {
+          ...baseSettings.systemConfig,
+          battery: {
+            ...baseSettings.systemConfig.battery,
+            maxChargeRateKW: charge as number,
+            maxDischargeRateKW: discharge as number,
+          },
+        },
+      }) satisfies StoredSettings;
+    // gridPower ±50 kW drives the PID well past any clamp (kp+kd ≈ 0.6).
+    const saturate = 50_000;
+
+    it('clamps to the configured small-battery limit (3.55 kW)', () => {
+      const s = withBattery(3.55, 3.55);
+      const charge = new ESSSymmetricController().run({ ...baseEnergy, gridPower: saturate }, s);
+      const discharge = new ESSSymmetricController().run(
+        { ...baseEnergy, gridPower: -saturate },
+        s,
+      );
+      expect(charge.essPowerW).toBe(3550);
+      expect(discharge.essPowerW).toBe(-3550);
+    });
+
+    it('fails safe to ±10 kW when the battery limit is missing/zero/NaN', () => {
+      for (const bad of [0, -5, Number.NaN, undefined]) {
+        const s = withBattery(bad, bad);
+        const out = new ESSSymmetricController().run({ ...baseEnergy, gridPower: saturate }, s);
+        expect(out.essPowerW).toBe(10_000);
+      }
+    });
+
+    it('respects asymmetric charge/discharge limits', () => {
+      const s = withBattery(5, 3);
+      const charge = new ESSSymmetricController().run({ ...baseEnergy, gridPower: saturate }, s);
+      const discharge = new ESSSymmetricController().run(
+        { ...baseEnergy, gridPower: -saturate },
+        s,
+      );
+      expect(charge.essPowerW).toBe(5000);
+      expect(discharge.essPowerW).toBe(-3000);
+    });
+
+    it('never exceeds the 25 kW command-safety backstop even for an absurd rate', () => {
+      const s = withBattery(999, 999);
+      const out = new ESSSymmetricController().run({ ...baseEnergy, gridPower: saturate }, s);
+      expect(out.essPowerW).toBe(25_000);
+      expect(Math.abs(out.essPowerW ?? 0)).toBeLessThanOrEqual(25_000);
+    });
   });
 
   describe('PeakShavingController', () => {

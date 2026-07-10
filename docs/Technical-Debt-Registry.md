@@ -714,10 +714,17 @@ Scope table said "not fully integrated"; P3 section said "Fully Implemented". Co
 ---
 
 ### LOW-11 — ESS Controller Uses Hardcoded Battery Power Limits
-**File:** `apps/web/src/core/energy-controllers.ts` (line ~107)
-**Status:** ⏳ Open
+**File:** `apps/web/src/core/energy-controllers.ts` (`ESSSymmetricController`, `essLimitW`)
+**Status:** ✅ Resolved (2026-07-10)
 
-`maxChargePower` / `maxDischargePower` are fixed at 10 kW with a `TODO: from device registry`. Should read per-device limits from the hardware registry once MED-19 wiring exposes them to controllers.
+`ESSSymmetricController` now sources its clamp from the configured battery via
+`settings.systemConfig.battery.maxChargeRateKW` / `.maxDischargeRateKW` (kW→W) instead of a
+hardcoded ±10 kW. The `essLimitW()` helper **fails safe**: a missing / non-positive /
+non-finite rate falls back to the ±10 kW default, and every value is hard-capped at 25 kW
+(mirroring the `command-safety.ts` `batteryPowerWatts` bound), so the advisory clamp only ever
+narrows per device and never widens past the hardware ceiling. `command-safety.ts` and the
+READ_ONLY / rate-limit guards are untouched. Covered by 4 new cases in
+`energy-controllers.test.ts` (device-limited, fail-safe fallback, asymmetric, hard-cap).
 
 ---
 
