@@ -1,7 +1,7 @@
 # Release History — Nexus-HEMS-Dash
 
-**Last curated:** 2026-07-04  
-**Current release:** `v1.10.0`  
+**Last curated:** 2026-07-10  
+**Current release:** `v1.11.0`  
 **Policy:** Manual-only semantic-release (ADR-015 amended 2026-07-03)
 
 This document records the **canonical release timeline**, known anomalies from the automatic-release period, and how to cut future releases correctly.
@@ -12,6 +12,7 @@ This document records the **canonical release timeline**, known anomalies from t
 
 | Tag | Date (UTC) | Head commit | Highlights |
 |-----|------------|-------------|------------|
+| `v1.11.0` | 2026-07-10 | `—` | Command Palette registry (ADR-028), Settings/Help perfection, page modularization, deep-audit remediation (F-01–F-07, ADR-029 local-LLM deferral), toolchain + Pages-deploy hardening (#270–#313) |
 | `v1.10.0` | 2026-07-04 | `7469389` | Post-audit phases 1–8, WS schema hardening, Helm `WS_ORIGINS`, Pages deploy prune, security wave (#236–#268, #269) |
 | `v1.9.0` | 2026-07-02 | `4138235` | Read-only banner, `ControlPanel` removal, `ENERGY_UPDATE` Zod validation |
 | `v1.8.0` | 2026-07-02 | `1407ad5` | ADR-025 backend WS consumer (`VITE_BACKEND_WS`) |

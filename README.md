@@ -30,7 +30,7 @@
 
 Nexus-HEMS is a **unified Command Center** that consolidates <!-- ADAPTERS-EN:START -->**13 protocol adapters** (7 core + 6 contrib)<!-- ADAPTERS-EN:END --> into **8 primary routes across 7 navigation sections** — orchestrating photovoltaic generation, battery storage, heat pumps, EV charging, and building automation with dynamic electricity tariffs. Instead of 18+ separate pages, every feature is accessible from a **single streamlined interface** with contextual in-context help and a new-user landing on the Command Hub.
 
-The current shipped release line is **1.10.0**. See [CHANGELOG.md](CHANGELOG.md) and [docs/Release-History.md](docs/Release-History.md) for release curation notes.
+The current shipped release line is **1.11.0**. See [CHANGELOG.md](CHANGELOG.md) and [docs/Release-History.md](docs/Release-History.md) for release curation notes.
 
 > **Safety notice:** Nexus-HEMS controls safety-critical electrical infrastructure. No regulatory certification (VDE, IEC, CE) has been obtained. Read [docs/Safety-Certification-Notice.md](docs/Safety-Certification-Notice.md) before connecting to live hardware.
 
@@ -392,7 +392,7 @@ Brand colors: `neon-green` (#22ff88) · `electric-blue` (#00f0ff) · `power-oran
 | Q2 2026 | **pnpm/Turborepo Monorepo** — `apps/api` + `apps/web` + `packages/shared-types`; two-process dev; Turbo caching across all workspaces               | ✅ Shipped |
 | Q2 2026 | **v1.2.0 — Safety, Protocols, CI Hardening** — Safety-Certification-Notice, EEBUS SHIP handshake (CRIT-01), OpenADR 3.1 VEN, ISO 15118-20 BPT (V2G), VPP single-home node, PII sanitization pipeline, LTTB chart sampling, Biome 2.4.7 / Node 24 LTS toolchain, distroless backend image, syft SBOM + pnpm audit CI gates | ✅ Shipped |
 | Q2 2026 | **v1.3.0 — Read-only safety mode, EEBUS e2e security, Modbus REST proxy, design-system token foundation, PWA standalone polish, auto-deploy + deployment pruning, release-pipeline repair (ADR-015)** | ✅ Shipped |
-| Q3 2026 | **v1.4.0–v1.10.0 — Live backend bridge (HIGH-17); 10 new backend protocol adapters (KNX, evcc, EEBUS, HeatPump, OpenEMS, OCPP CSMS, HA ×2, Matter, Zigbee2MQTT); backend command dispatch; OCPP SP3 mTLS proxy (HIGH-12); CSP nonce hardening (AUD-02); read-only mode (SAF-05); DevOps quality platforms (ADR-027); manual-release pipeline (ADR-015)** | ✅ Shipped |
+| Q3 2026 | **v1.4.0–v1.11.0 — Live backend bridge (HIGH-17); 10 new backend protocol adapters (KNX, evcc, EEBUS, HeatPump, OpenEMS, OCPP CSMS, HA ×2, Matter, Zigbee2MQTT); backend command dispatch; OCPP SP3 mTLS proxy (HIGH-12); CSP nonce hardening (AUD-02); read-only mode (SAF-05); DevOps quality platforms (ADR-027); manual-release pipeline (ADR-015)** | ✅ Shipped |
 | Q3 2026 | Design-system A11y deep-dive (chart keyboard nav, form ARIA), data-viz palette, Historical analytics deep-dive, OpenAPI auto-generation | 🔄 In&nbsp;flight |
 | Q4+     | Multi-tenant SaaS, contrib adapter marketplace, RBAC (ADR-009), GDPR formal DPIA                                                                | 🔜 Planned |
 
@@ -401,6 +401,15 @@ Brand colors: `neon-green` (#22ff88) · `electric-blue` (#00f0ff) · `power-oran
 > **Highlights only** — the full, per-release record lives in [CHANGELOG.md](CHANGELOG.md).
 
 <details open>
+<summary><b>v1.11.0</b> — Command Palette, Settings/Help Perfection & Deep-Audit Remediation</summary>
+
+- **Command Palette (ADR-028):** registry-driven palette with safety-gated actions, adapter/tariff/hardware commands, AI suggestions, recency/favorites, and full keyboard navigation
+- **Settings & Help perfection:** URL-synced settings, manifest-backed Help search, contrib integration guide, command-palette contextual Help shortcuts
+- **Deep-audit remediation (F-01–F-07):** non-destructive, bypass-resistant AI prompt-sanitizer (fail-closed PII redaction); deferred in-browser LLM engines behind a build flag with the CSP intact (ADR-029, −2.5 MB deps); repaired Biome lint gate with a blocking whole-repo `biome ci .`; ai-core coverage gate; adapter-count drift guard
+- **Modularization & fixes:** thin-orchestrator refactor of the large pages (Analytics, LiveEnergyFlow, Devices, Tariffs, Monitoring, OptimizationAI, CommandHub); toolchain bumps (Biome 2.5.2, Vite 8.1, pnpm 10.34.4); hardened GitHub Pages deploy
+</details>
+
+<details>
 <summary><b>v1.10.0</b> — Security Hardening, DevOps Platforms & Backend Parity</summary>
 
 - **Post-audit backend parity (phases 1–8):** backend `HomeAssistant` (WS + MQTT), `Zigbee2MQTT`, `Matter`, `OpenEMS`, and `OCPP CSMS` protocol adapters; `ProtocolCommandRouter` bridges validated WS commands to OCPP/OpenEMS/HA handlers; OCPP V2G + §14a grid-limit at the CSMS boundary

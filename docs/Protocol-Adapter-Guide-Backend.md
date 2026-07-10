@@ -1,12 +1,12 @@
 # Protocol Adapter Guide — Backend (Server-Side)
 
-> **Status:** Active | **Last Updated:** 2026-07-08 | **Shipped release:** v1.10.0
+> **Status:** Active | **Last Updated:** 2026-07-08 | **Shipped release:** v1.11.0
 
 This guide explains how to implement **server-side** protocol adapters in `apps/api/src/protocols/`.
 Server-side adapters run in the Express backend and feed data into the central EventBus. In **live**
 mode, data reaches the browser UI via `LiveEnergyAggregator` → WebSocket gateway (HIGH-17, v1.4.0).
 
-## Shipped Backend Adapters (as of v1.10.0)
+## Shipped Backend Adapters (as of v1.11.0)
 
 | Adapter | File | Enable env | Since |
 |---------|------|------------|-------|
@@ -18,6 +18,10 @@ mode, data reaches the browser UI via `LiveEnergyAggregator` → WebSocket gatew
 | HeatPump | `heatpump/HeatPumpAdapter.ts` | `HEATPUMP_HOST` | v1.6.1 |
 | OpenEMS | `openems/OpenEMSProtocolAdapter.ts` | `OPENEMS_HOST` | v1.7.0 |
 | OCPP CSMS | `ocpp/OcppCsmsProtocolAdapter.ts` | `OCPP_CSMS_PORT` | v1.7.0 |
+| Home Assistant (WS) | `homeassistant/HomeAssistantProtocolAdapter.ts` | `HA_HOST` + `HA_TOKEN` | v1.10.0 |
+| Home Assistant (MQTT) | `homeassistant/HomeAssistantMqttProtocolAdapter.ts` | `HA_MQTT_BROKER_URL` | v1.10.0 |
+| Matter | `matter/MatterProtocolAdapter.ts` | `MATTER_BRIDGE_HOST` | v1.10.0 |
+| Zigbee2MQTT | `zigbee2mqtt/Zigbee2MQTTProtocolAdapter.ts` | `Z2M_BROKER_URL` | v1.10.0 |
 | Exec scripts | `services/ExecService.ts` | `EXEC_SCRIPTS_CONFIG` | v1.5.0 |
 
 **Shipped:** OCPP CSMS Security Profile 3 / mTLS browser proxy (`/ws/ocpp`, HIGH-12). Backend `OcppCsmsProtocolAdapter` remains SP0 gateway.

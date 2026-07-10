@@ -9,6 +9,10 @@ Release notes are maintained here and published via [semantic-release](https://g
 
 ## [Unreleased]
 
+## [1.11.0] - 2026-07-10
+
+Consolidates **45 commits** since [`v1.10.0`](https://github.com/qnbs/Nexus-HEMS-Dash/compare/v1.10.0...v1.11.0) (PRs [#270](https://github.com/qnbs/Nexus-HEMS-Dash/pull/270)–[#313](https://github.com/qnbs/Nexus-HEMS-Dash/pull/313)): the Command Palette registry (ADR-028), Settings & Help perfection, page modularization, deep-audit remediation (F-01–F-07, incl. a non-destructive prompt-sanitizer and deferred in-browser LLM engines per ADR-029), plus toolchain, CI/deploy and docs hardening.
+
 ### Security
 
 - Add `READ_ONLY_MODE` enforcement to previously unguarded mutating routes: EEBUS pairing/trust/revocation, OCPP proxy-session issuance, OpenADR event acknowledge/report submission, and ExecAdapter command dispatch. Adds `requireNotReadOnly` middleware and unit tests.
@@ -149,6 +153,7 @@ Consolidates **33 commits** since `v1.9.0` (PRs [#236](https://github.com/qnbs/N
 - **Post-audit remediation summary** — `docs/Post-Audit-Remediation-Summary-2026-07-04.md`; `FEATURE_STATUS.md` phase 8 rows.
 - **Debt registry + perfection roadmap** — Phase 8 items closed; release line updated.
 
+[1.11.0]: https://github.com/qnbs/Nexus-HEMS-Dash/compare/v1.10.0...v1.11.0
 [1.10.0]: https://github.com/qnbs/Nexus-HEMS-Dash/compare/v1.9.0...v1.10.0
 
 ## [1.9.0] - 2026-07-02
@@ -1013,6 +1018,6 @@ Consolidates **33 commits** since `v1.9.0` (PRs [#236](https://github.com/qnbs/N
 
 ---
 
-[Unreleased]: https://github.com/qnbs/Nexus-HEMS-Dash/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/qnbs/Nexus-HEMS-Dash/compare/v1.11.0...HEAD
 [1.1.0]: https://github.com/qnbs/Nexus-HEMS-Dash/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/qnbs/Nexus-HEMS-Dash/releases/tag/v1.0.0

@@ -2,8 +2,8 @@ apiVersion: v2
 name: nexus-hems
 description: Nexus HEMS Dashboard — Real-time Home Energy Management System
 type: application
-version: 1.10.0
-appVersion: '1.10.0'
+version: 1.11.0
+appVersion: '1.11.0'
 keywords:
   - hems
   - energy-management
