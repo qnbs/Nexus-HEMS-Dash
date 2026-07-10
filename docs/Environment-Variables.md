@@ -137,10 +137,12 @@ Example IP/port values in `.env.example` are illustrative, not defaults.
 | `SMOKE_DEBUG` | Build | Verbose output for `smoke:prod`. |
 | `CI` / `NO_COLOR` / `FORCE_COLOR` | CI | Standard CI/output toggles. |
 
-> Vite also exposes read-only built-ins `import.meta.env.DEV` / `PROD` / `MODE` /
-> `BASE_URL` and `VITEST` — these are set by the toolchain, not configured by you.
+> Vite exposes read-only built-ins `import.meta.env.DEV` / `PROD` / `MODE` /
+> `BASE_URL`, and Vitest adds `VITEST` — these are set by the toolchain, not
+> configured by you.
 
 ---
 
-_When you add a new `process.env` / `import.meta.env` read, add it here and to
+_When you add a new **project-configurable** `process.env` / `import.meta.env`
+read (i.e. not a toolchain built-in like `DEV` / `PROD` / `MODE` / `VITEST`), add it here and to
 [`.env.example`](../.env.example)._
