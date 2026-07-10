@@ -3,7 +3,7 @@
 **Last audited:** 2026-07-03 (full status review — `docs/Audit-Report-2026-07-03.md`)
 **Version at audit:** 1.10.0 shipped (`main`, PRs #236–#268)
 **Last updated:** 2026-07-08 (docs-housekeeping truth-sync; prior: 2026-07-04 release 1.10.0 post-audit phases 1–8)
-**Release line:** v1.10.0 shipped; release dispatch manual-only (ADR-015 amended)
+**Release line:** v1.11.0 shipped; release dispatch manual-only (ADR-015 amended)
 **Auditor:** Cursor Cloud Agent (2026-06-29 full audit; 2026-07-02 delta; 2026-07-03 full review)
 
 This file is the canonical issue tracker for known technical debt, security gaps, incomplete implementations, and quality issues. It is **not** a substitute for GitHub Issues — use it for context, rationale, and multi-sprint planning.

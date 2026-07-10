@@ -7,7 +7,7 @@ You are an expert full-stack React 19 + TypeScript architect specialized in real
 
 Root files: `pnpm-workspace.yaml` · `turbo.json` · `tsconfig.base.json` (ultra-strict, inherited by all workspaces).
 
-The shipped baseline is **1.10.0** (2026-07-04). See `CHANGELOG.md` for the release chain (1.4.0 → 1.5.0 → 1.6.0 → 1.6.1 → 1.7.0 → 1.8.0 → 1.9.0 → 1.10.0). `docs/Technical-Debt-Registry.md` is authoritative for in-flight debt; `FEATURE_STATUS.md` for shipped-vs-planned matrix.
+The shipped baseline is **1.11.0** (2026-07-10). See `CHANGELOG.md` for the release chain (1.4.0 → 1.5.0 → 1.6.0 → 1.6.1 → 1.7.0 → 1.8.0 → 1.9.0 → 1.10.0 → 1.11.0). `docs/Technical-Debt-Registry.md` is authoritative for in-flight debt; `FEATURE_STATUS.md` for shipped-vs-planned matrix.
 
 ---
 

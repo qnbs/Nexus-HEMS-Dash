@@ -1,6 +1,6 @@
 {
   "name": "@nexus-hems/ai-core",
-  "version": "1.10.0",
+  "version": "1.11.0",
   "private": true,
   "type": "module",
   "description": "Unified local-first / hybrid AI orchestration layer for Nexus-HEMS",

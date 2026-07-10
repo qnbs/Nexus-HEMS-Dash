@@ -7,7 +7,7 @@ For the full architectural rulebook, read [`CLAUDE.md`](CLAUDE.md) first; this f
 
 ## 1. Project overview
 
-**Nexus-HEMS Dashboard** (`v1.10.0`) is a production-oriented, real-time Home Energy Management System dashboard. It consolidates **13 protocol adapters** (7 core + 6 contrib) into a unified React 19 SPA served by an Express 5 backend.
+**Nexus-HEMS Dashboard** (`v1.11.0`) is a production-oriented, real-time Home Energy Management System dashboard. It consolidates **13 protocol adapters** (7 core + 6 contrib) into a unified React 19 SPA served by an Express 5 backend.
 
 It is a **pnpm + Turborepo monorepo** with three workspaces:
 
@@ -348,7 +348,7 @@ Browser ←── Vite dev server (5173) proxies /api, /metrics, /ws ──→ E
 | **Docker frontend** | `Dockerfile` → multi-stage build (Node 24 → `nginxinc/nginx-unprivileged:1.31-alpine-slim`), serves on port 8080. Entrypoint: `apps/web/docker-entrypoint.sh` validates `WS_ORIGINS` and extracts CSP nonce. |
 | **Docker backend** | `Dockerfile.server` → distroless Node 24 (`gcr.io/distroless/nodejs24-debian13:nonroot`), runs `node --import tsx index.ts` on port 3000. |
 | **Docker Compose** | `docker-compose.yml` (frontend + API + adapter-bridge + optional monitoring profile); `docker-compose.prod.yml` hardened production stack. |
-| **Helm / Kubernetes** | `helm/nexus-hems/` — Chart v1.10.0, frontend + server Deployments, ingress, HPA, NetworkPolicy, PDB, Pod Security Standards `restricted`, ServiceMonitor + PrometheusRule, cert-manager for EEBUS mTLS. |
+| **Helm / Kubernetes** | `helm/nexus-hems/` — Chart v1.11.0, frontend + server Deployments, ingress, HPA, NetworkPolicy, PDB, Pod Security Standards `restricted`, ServiceMonitor + PrometheusRule, cert-manager for EEBUS mTLS. |
 | **GitHub Pages** | Auto-deployed from `main` via `.github/workflows/deploy.yml`; base path `/Nexus-HEMS-Dash/`. |
 | **Tauri desktop** | `apps/web/src-tauri/tauri.conf.json` + `Cargo.toml` — Linux/macOS/Windows builds via `.github/workflows/tauri-build.yml`. |
 | **Capacitor mobile** | `apps/web/capacitor.config.ts` — iOS/Android wrappers. |
