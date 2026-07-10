@@ -34,7 +34,12 @@ export default defineConfig({
           use: {
             ...devices['Desktop Chrome'],
             launchOptions: {
-              args: ['--disable-dev-shm-usage', '--disable-gpu', '--no-zygote', '--disable-extensions'],
+              args: [
+                '--disable-dev-shm-usage',
+                '--disable-gpu',
+                '--no-zygote',
+                '--disable-extensions',
+              ],
             },
           },
         },

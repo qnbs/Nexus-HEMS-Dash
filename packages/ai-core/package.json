@@ -13,19 +13,19 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "type-check": "tsc --noEmit -p tsconfig.json",
-    "lint": "biome check src/",
+    "lint": "biome check --error-on-warnings src/",
     "test:run": "vitest run",
-    "test": "vitest"
+    "test": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
+  "comment:deferredEngines": "Local-LLM engines (WebLLM / Transformers.js / ONNX) are deferred and intentionally NOT shipped as dependencies (F-03 / ADR-029). To opt in, re-add the relevant package to dependencies here and set VITE_ENABLE_LOCAL_LLM. They are deliberately NOT declared as peerDependencies: this workspace runs auto-install-peers, which would reinstall the ~2.5 MB (38 packages) this PR removed.",
   "dependencies": {
-    "@mlc-ai/web-llm": "^0.2.84",
-    "@xenova/transformers": "^2.17.2",
     "comlink": "catalog:",
-    "onnxruntime-web": "^1.27.0",
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@vitest/coverage-v8": "catalog:",
     "typescript": "catalog:",
-    "vitest": "^4.1.9"
+    "vitest": "catalog:"
   }
 }

@@ -145,7 +145,7 @@ export async function callAI(request: AICompletionRequest): Promise<AICompletion
   );
   const userPrompt = sanitizeForPrompt(request.prompt, AI_USER_PROMPT_MAX_LENGTH);
 
-  const safeRequest = sanitizeRequest({
+  const { request: safeRequest } = sanitizeRequest({
     task: userPrompt,
     systemPrompt,
     temperature: request.temperature ?? 0.7,

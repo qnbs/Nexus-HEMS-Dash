@@ -15,6 +15,10 @@ export {
   WebLLMEngine,
 } from './providers/local/index.ts';
 export { AIProviderRegistry } from './providers/registry.ts';
+export type {
+  RequestSanitization,
+  SanitizationVerdict,
+} from './safety/prompt-sanitizer.ts';
 export {
   buildSafetySystemPrompt,
   sanitizePrompt,

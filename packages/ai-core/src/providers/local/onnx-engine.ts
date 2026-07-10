@@ -6,8 +6,19 @@
  * WebAssembly support and returns a guidance message.
  */
 
-import * as ort from 'onnxruntime-web';
 import type { AIEngine, AIProviderKey, AIRequest, AIResponse } from '../../types.ts';
+import { isLocalLlmEnabled } from './local-llm-flag.ts';
+
+// Deferred peer package (F-03/ADR-029); see webllm-engine.ts for the rationale.
+// Loaded dynamically (never as a top-level import) so the file evaluates fine
+// when onnxruntime-web is not installed.
+const ONNX_MODULE: string = 'onnxruntime-web';
+
+interface OnnxRuntimeModule {
+  InferenceSession: {
+    create: (modelUrl: string, options: Record<string, unknown>) => Promise<unknown>;
+  };
+}
 
 export interface OnnxEngineConfig {
   modelUrl?: string;
@@ -17,7 +28,7 @@ export interface OnnxEngineConfig {
 export class OnnxEngine implements AIEngine {
   readonly provider = 'onnx' as const;
   readonly local = true;
-  private session: ort.InferenceSession | undefined;
+  private session: unknown | undefined;
   private readonly config: OnnxEngineConfig;
 
   constructor(config: OnnxEngineConfig = {}) {
@@ -25,16 +36,21 @@ export class OnnxEngine implements AIEngine {
   }
 
   async isAvailable(): Promise<boolean> {
+    if (!isLocalLlmEnabled()) return false;
     return typeof WebAssembly !== 'undefined';
   }
 
   async load(): Promise<void> {
     if (this.session) return;
+    // Never touch the deferred peer package unless explicitly opted in — keeps
+    // disabled deployments from importing a dependency that is no longer shipped.
+    if (!isLocalLlmEnabled()) return;
     if (!this.config.modelUrl) {
       return;
     }
+    const ort = (await import(/* @vite-ignore */ ONNX_MODULE)) as OnnxRuntimeModule;
     this.session = await ort.InferenceSession.create(this.config.modelUrl, {
-      executionProviders: (this.config.executionProviders as string[]) ?? ['wasm'],
+      executionProviders: this.config.executionProviders ?? ['wasm'],
     });
   }
 

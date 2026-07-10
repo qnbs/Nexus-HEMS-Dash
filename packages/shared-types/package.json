@@ -13,7 +13,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "type-check": "tsc --noEmit -p tsconfig.json",
-    "lint": "biome check src/"
+    "lint": "biome check --error-on-warnings src/"
   },
   "dependencies": {
     "zod": "catalog:"

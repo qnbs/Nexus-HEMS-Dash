@@ -9,7 +9,7 @@
     "build": "tsc -p tsconfig.json",
     "start": "node dist/index.js",
     "type-check": "tsc --noEmit -p tsconfig.json",
-    "lint": "biome check src/ index.ts",
+    "lint": "biome check --error-on-warnings src/ index.ts",
     "lint:fix": "biome check --write src/ index.ts",
     "test": "vitest",
     "test:run": "vitest run",
@@ -39,7 +39,7 @@
     "@types/ws": "^8.18.1",
     "supertest": "^7.2.2",
     "typescript": "catalog:",
-    "@vitest/coverage-v8": "^4.1.9",
-    "vitest": "^4.1.9"
+    "@vitest/coverage-v8": "catalog:",
+    "vitest": "catalog:"
   }
 }

@@ -37,6 +37,12 @@ jobs:
           TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
           TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
 
+      - name: Biome CI (whole-repo gate)
+        run: pnpm lint:all
+
+      - name: Adapter-count drift guard (F-04)
+        run: pnpm check:adapters
+
       - name: Type Check
         run: pnpm type-check
         env:
@@ -95,7 +101,16 @@ jobs:
           TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
           TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
 
-      - name: Coverage baseline gate (PRF-03)
+      - name: AI-Core Unit Tests with Coverage
+        run: |
+          echo "::group::@nexus-hems/ai-core coverage"
+          pnpm --filter @nexus-hems/ai-core test:coverage
+          echo "::endgroup::"
+        env:
+          TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+          TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+
+      - name: Coverage baseline gate (PRF-03 + F-05a)
         run: pnpm check:coverage-baseline
 
       # Codecov is ADVISORY (informational status, see .codecov.yml). The blocking

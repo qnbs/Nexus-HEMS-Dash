@@ -42,6 +42,56 @@ Release notes are maintained here and published via [semantic-release](https://g
 - **#280** — Command palette contextual Help tab shortcuts (`/help?tab=…`).
 - **#285** — Command palette hardening: auth-scope resolution from stored JWT (`getTokenScope`), Home/End/PgUp/PgDn navigation, Ctrl/Cmd+D favorite toggle, disabled-reason tooltips, and i18n keys for insufficient scope.
 
+### Deep-audit remediation (2026-07-09)
+
+- **F-01 (Security)** — Rewrite the AI prompt-sanitizer to be non-destructive and bypass-resistant: word-boundary injection detection over a normalized view (homoglyph/zero-width/hyphen/whitespace folding), separate **idempotent** PII redaction (card, IBAN, MAC, IPv4, email with the `[A-Z|a-z]` class bug fixed, phone), recursive `context` sanitization under depth/node caps, and a structured verdict the orchestrator uses to harden the safety system prompt.
+- **F-02 (Toolchain)** — Repair the Biome lint gate: align `$schema` to 2.5.2, migrate to `preset: recommended`, add `--error-on-warnings` to api/ai-core/shared-types, and add a **blocking** whole-repo `biome ci .` CI job.
+- **F-03 / ADR-029 (Security)** — Defer the experimental in-browser local-LLM engines (WebLLM / Transformers.js / ONNX): gate `isAvailable()` behind a build flag, drop the three >2.5 MB runtime dependencies (38 transitive packages), and surface the real provider in the AI optimizer UI. No CSP change.
+- **F-04** — Add a README adapter-count drift guard (`sync-adapter-counts.mjs` + CI check); the count stays the correct 7 core + 6 contrib = 13.
+- **F-05a / F-06** — Add an `@nexus-hems/ai-core` coverage gate (thresholds + committed baseline, generalized `check-coverage-baseline.mjs`) and move the `vitest` pin into the pnpm catalog.
+- **F-07** — Expand the ExecAdapter threat model; suppression inventory held at 47 (≤ 50 baseline).
+
+### Command Palette (ADR-028)
+
+- **#271** — Command Palette Registry — Phase 0+1 foundation.
+- **#272** — Phase 2: safety bridge, adapter commands, list virtualization.
+- **#273** — Phase 3: tariff shortcuts, EV/battery hardware catalog, lifecycle cleanup.
+- **#274** — Phase 4: rule-based AI suggestions (gated by experimental features).
+
+### Refactor — page modularization
+
+- **#300** — Modularize `HistoricalAnalyticsPage` (777 → 101 lines).
+- **#302** — Modularize `LiveEnergyFlow` + fix mobile panel accessibility.
+- **#304** — Modularize `DevicesAutomation` (1167 → 80 lines).
+- **#305** — Modularize `TariffsPage` (1251 → 106 lines).
+- **#307** — Restore settings branch coverage via helper extraction + dead-code removal.
+- **#308** — Complete page modularization (Monitoring, OptimizationAI, CommandHub).
+
+### Fixed (post-1.10.0)
+
+- **#298** — Stop a Power User Mode crash caused by a Zustand selector loop (Monitoring).
+- **#303** — Lift the live-energy mobile sheet above the bottom nav; label the simulation badge.
+- **#306** — Bundle sonner toast styles so toasts don't shift layout under the strict CSP.
+- **#311** — Local-heuristic AI default, browser-aware locale, command-palette language toggle.
+
+### Performance / Tooling
+
+- **#297** — Speed up lint and type-check with caching and fewer slow rules.
+
+### CI / Deploy (post-1.10.0)
+
+- **#270** — Default macOS Tauri builds to ad-hoc signing.
+- **#283** — Break the Pages deploy idle-wait deadlock.
+- **#290–#294** — Dependabot GitHub Actions bumps: `checkout` v7, `deploy-pages` v5, `gitleaks-action` v3, `docker/metadata-action` v6, `codeql-action` 4.36.3.
+- **#299 / #301** — Quiet, then remove, the noisy DeepSource JavaScript analyzer.
+
+### Docs (post-1.10.0)
+
+- **#275** — Settings & Help perfection plan (post-audit delta).
+- **#309** — Truth-sync canonical/law docs to v1.10.0.
+- **#310** — Reconcile adapter counts, backend list & changelog with v1.10.0.
+- **#312** — Documentation hub, ADR index & canonical status legend.
+
 ## [1.10.0] - 2026-07-04
 
 Consolidates **33 commits** since `v1.9.0` (PRs [#236](https://github.com/qnbs/Nexus-HEMS-Dash/pull/236)–[#268](https://github.com/qnbs/Nexus-HEMS-Dash/pull/268)): security hardening, DevOps quality platforms, post-audit backend parity (phases 1–8), and production deploy/Helm edge fixes.

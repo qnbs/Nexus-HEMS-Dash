@@ -22,9 +22,19 @@ describe('HeuristicEngine', () => {
 });
 
 describe('OnnxEngine', () => {
-  it('reports availability based on WebAssembly', async () => {
+  it('is unavailable by default (local-LLM engines deferred, F-03)', async () => {
     const engine = new OnnxEngine();
-    expect(await engine.isAvailable()).toBe(typeof WebAssembly !== 'undefined');
+    expect(await engine.isAvailable()).toBe(false);
+  });
+
+  it('reports WebAssembly-based availability when the build flag is enabled', async () => {
+    process.env.ENABLE_LOCAL_LLM = 'true';
+    try {
+      const engine = new OnnxEngine();
+      expect(await engine.isAvailable()).toBe(typeof WebAssembly !== 'undefined');
+    } finally {
+      delete process.env.ENABLE_LOCAL_LLM;
+    }
   });
 
   it('returns guidance when no model is configured', async () => {
@@ -36,29 +46,59 @@ describe('OnnxEngine', () => {
 });
 
 describe('TransformersEngine', () => {
-  it('is available when WebAssembly is present', async () => {
+  it('is unavailable by default (F-03)', async () => {
     const engine = new TransformersEngine();
-    expect(await engine.isAvailable()).toBe(typeof WebAssembly !== 'undefined');
+    expect(await engine.isAvailable()).toBe(false);
   });
 
-  it('gracefully handles model load failure', async () => {
-    const engine = new TransformersEngine({ model: 'nonexistent-model' });
-    const response = await engine.generate({ task: 'hello' });
-    expect(response.text).toContain('could not be loaded');
+  it('is available with WebAssembly when the build flag is enabled', async () => {
+    process.env.ENABLE_LOCAL_LLM = 'true';
+    try {
+      const engine = new TransformersEngine();
+      expect(await engine.isAvailable()).toBe(typeof WebAssembly !== 'undefined');
+    } finally {
+      delete process.env.ENABLE_LOCAL_LLM;
+    }
+  });
+
+  it('gracefully handles model load failure when opted in', async () => {
+    process.env.ENABLE_LOCAL_LLM = 'true';
+    try {
+      const engine = new TransformersEngine({ model: 'nonexistent-model' });
+      const response = await engine.generate({ task: 'hello' });
+      expect(response.text).toContain('could not be loaded');
+    } finally {
+      delete process.env.ENABLE_LOCAL_LLM;
+    }
   });
 });
 
 describe('WebLLMEngine', () => {
-  it('is available only with WebGPU', async () => {
+  it('is unavailable by default (F-03)', async () => {
     const engine = new WebLLMEngine();
-    const hasWebGpu = typeof navigator !== 'undefined' && 'gpu' in navigator;
-    expect(await engine.isAvailable()).toBe(hasWebGpu);
+    expect(await engine.isAvailable()).toBe(false);
   });
 
-  it('gracefully handles model load failure', async () => {
-    const engine = new WebLLMEngine({ model: 'nonexistent-model' });
-    const response = await engine.generate({ task: 'hello' });
-    expect(response.text).toContain('could not be loaded');
+  it('is available only with WebGPU when the build flag is enabled', async () => {
+    process.env.ENABLE_LOCAL_LLM = 'true';
+    try {
+      const engine = new WebLLMEngine();
+      const hasWebGpu = typeof navigator !== 'undefined' && 'gpu' in navigator;
+      expect(await engine.isAvailable()).toBe(hasWebGpu);
+    } finally {
+      delete process.env.ENABLE_LOCAL_LLM;
+    }
+  });
+
+  it('gracefully handles model load failure when opted in', async () => {
+    process.env.ENABLE_LOCAL_LLM = 'true';
+    try {
+      const engine = new WebLLMEngine({ model: 'nonexistent-model' });
+      const response = await engine.generate({ task: 'hello' });
+      expect(response.text).toContain('could not be loaded');
+    } finally {
+      delete process.env.ENABLE_LOCAL_LLM;
+    }
   });
 });
 

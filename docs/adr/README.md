@@ -48,5 +48,6 @@ its consequences.
 | [026](ADR-026-byok-vault-at-rest.md) | BYOK Vault At-Rest — Non-Extractable CryptoKey | ✅ Accepted | 2026-07-03 | Supersedes HIGH-09; `ai-keys.ts` |
 | [027](ADR-027-layered-quality-platforms.md) | Layered Code-Quality Platforms & CI Consolidation | ✅ Accepted | 2026-07-04 | `DEVOPS.md` |
 | [028](ADR-028-command-palette-registry.md) | Command Palette Registry & Extensibility | ✅ Accepted | 2026-07-04 | ADR-002/019; `command-safety.ts` |
+| [029](ADR-029-local-llm-csp-deferral.md) | Defer In-Browser Local-LLM Engines (CSP + Bundle) | ✅ Accepted | 2026-07-09 | F-03; AUD-02 CSP; `ai-core/providers/local` |
 
 _Legend: ✅ Accepted/in effect · 🔄 In progress · ⏳ Proposed or Deferred (open). See the root [`docs/README.md`](../README.md) for the project-wide status legend._
