@@ -295,6 +295,8 @@ When CI is the source of truth, push focused commits and monitor GitHub Actions 
 ## Key Docs
 
 - [`docs/README.md`](docs/README.md) — **documentation hub**: index of all docs by task + the canonical status legend; start here
+- [`docs/Environment-Variables.md`](docs/Environment-Variables.md) — every env var (scope · default · required); pairs with `.env.example`
+- [`docs/Developer-Scripts-Reference.md`](docs/Developer-Scripts-Reference.md) — what each npm/pnpm script does
 - `AGENTS.md` — Cursor Cloud agent VM specifics (complements this file)
 - `FEATURE_STATUS.md` — shipped vs partial vs planned feature matrix
 - `docs/Technical-Debt-Registry.md` — canonical debt/backlog tracker

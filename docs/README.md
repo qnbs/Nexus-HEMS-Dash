@@ -41,6 +41,8 @@ within ~2 sprints) · `LOW` (backlog) · `DOC` (documentation-only).
 - [`../README.md`](../README.md) — project overview, feature matrix, quick start
 - [`../CLAUDE.md`](../CLAUDE.md) — engineering rules & architecture for contributors/agents
 - [`../AGENTS.md`](../AGENTS.md) — Cursor Cloud agent VM specifics
+- [`Environment-Variables.md`](Environment-Variables.md) — every env var (scope · default · required)
+- [`Developer-Scripts-Reference.md`](Developer-Scripts-Reference.md) — the npm/pnpm scripts and what each does
 - [`../DESIGN-SYSTEM.md`](../DESIGN-SYSTEM.md) — theme tokens & brand utilities
 - [`../DEVOPS.md`](../DEVOPS.md) — CI/CD layering & code-quality platforms (ADR-027)
 - [`Safety-Certification-Notice.md`](Safety-Certification-Notice.md) — **read before live hardware**
