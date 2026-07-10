@@ -18,6 +18,10 @@ mode, data reaches the browser UI via `LiveEnergyAggregator` → WebSocket gatew
 | HeatPump | `heatpump/HeatPumpAdapter.ts` | `HEATPUMP_HOST` | v1.6.1 |
 | OpenEMS | `openems/OpenEMSProtocolAdapter.ts` | `OPENEMS_HOST` | v1.7.0 |
 | OCPP CSMS | `ocpp/OcppCsmsProtocolAdapter.ts` | `OCPP_CSMS_PORT` | v1.7.0 |
+| Home Assistant (WS) | `homeassistant/HomeAssistantProtocolAdapter.ts` | `HA_HOST` + `HA_TOKEN` | v1.10.0 |
+| Home Assistant (MQTT) | `homeassistant/HomeAssistantMqttProtocolAdapter.ts` | `HA_MQTT_BROKER_URL` | v1.10.0 |
+| Matter | `matter/MatterProtocolAdapter.ts` | `MATTER_BRIDGE_HOST` | v1.10.0 |
+| Zigbee2MQTT | `zigbee2mqtt/Zigbee2MQTTProtocolAdapter.ts` | `Z2M_BROKER_URL` | v1.10.0 |
 | Exec scripts | `services/ExecService.ts` | `EXEC_SCRIPTS_CONFIG` | v1.5.0 |
 
 **Shipped:** OCPP CSMS Security Profile 3 / mTLS browser proxy (`/ws/ocpp`, HIGH-12). Backend `OcppCsmsProtocolAdapter` remains SP0 gateway.

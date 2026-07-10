@@ -66,6 +66,7 @@
           "apps/api/package.json",
           "apps/web/package.json",
           "packages/shared-types/package.json",
+          "packages/ai-core/package.json",
           "apps/web/src-tauri/tauri.conf.json",
           "apps/web/src-tauri/Cargo.toml",
           "helm/nexus-hems/Chart.yaml"
