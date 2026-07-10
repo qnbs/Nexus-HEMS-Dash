@@ -36,7 +36,7 @@ are stored AES-GCM-encrypted in the browser (BYOK, `/settings/ai`).
 | `JWT_SECRET_FILE` | `/run/secrets/jwt_secret` | — | File source for `JWT_SECRET` (preferred over env in Docker/K8s). |
 | `JWT_SECRET_NEW` / `JWT_SECRET_NEW_FILE` | — | — | Second key for zero-downtime rotation (HIGH-07); both keys verify, new key signs. |
 | `JWT_KID_PRIMARY` / `JWT_KID_NEW` | — | — | Key-IDs stamped in the JWT header during rotation. |
-| `API_KEYS` | `''` | ✅ | Comma-separated keys accepted by `POST /api/auth/token`. Dev allows anonymous; production requires ≥ 1 strong key. |
+| `API_KEYS` | `''` | ✅ (prod) | Comma-separated keys accepted by `POST /api/auth/token`. Dev allows anonymous; production requires ≥ 1 strong key. |
 | `API_KEY_SCOPES` | `''` | ✅ (prod) | Per-key max scope, e.g. `monitor:read,operator:readwrite,admin:admin`. |
 
 ## Network, CORS, WebSocket & Rate Limiting (API)
@@ -56,7 +56,7 @@ See `docs/Protocol-Adapter-Guide-Backend.md`.
 
 | Variable | Scope | Default | Required | Description |
 |----------|:-----:|---------|:--------:|-------------|
-| `ADAPTER_MODE` | API | `mock` | — | `mock` \| `live`. `live` also needs `ALLOW_LIVE_HARDWARE=true` or it stays mock. |
+| `ADAPTER_MODE` | API | `mock` | — | `mock` \| `live`. The resolved mode is `live`, but live hardware remains disabled unless `ALLOW_LIVE_HARDWARE=true` is also set (checked separately before startup). |
 | `ALLOW_LIVE_HARDWARE` | API | unset | ⚠️ live | Must be `true` alongside `ADAPTER_MODE=live` to start hardware adapters. |
 | `READ_ONLY_MODE` | API | `false` | — | `true` blocks **all** hardware commands at the WS gateway (SAF-05). |
 | `VITE_ADAPTER_MODE` | Web | `mock` | — | Frontend adapter mode (build-time). |
@@ -78,7 +78,8 @@ See `docs/Protocol-Adapter-Guide-Backend.md`.
 ## Backend Protocol Adapters (live mode only)
 
 Each backend adapter starts only when `ADAPTER_MODE=live` + `ALLOW_LIVE_HARDWARE=true`
-and its connection var is set. Verbose per-component/entity/command override vars
+and its required configuration is set (a connection var, or `device-map.json` for
+Modbus / `EXEC_SCRIPTS_CONFIG` for Exec). Verbose per-component/entity/command override vars
 (marked *"+ overrides"*) are listed compactly in [`.env.example`](../.env.example)
 and the adapter source under `apps/api/src/protocols/`.
 
