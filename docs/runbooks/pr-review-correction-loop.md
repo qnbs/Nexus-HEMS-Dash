@@ -202,11 +202,15 @@ Order: blocking CI first, then DeepSource major/critical, then AI reviewers.
 - **Re-trigger:** push fix commit (auto) or `@coderabbitai review`.
 - **Runbook:** [coderabbit-integration.md](coderabbit-integration.md)
 
-#### Outside-diff comments (platform limitation)
+#### Outside-diff comments (platform limitation) — MANDATORY every round
 
 CodeRabbit may post: *"Some comments are outside the diff and can't be posted
-inline."* Those findings live only in **review bodies**, not in GraphQL
-`reviewThreads`. Agents must fetch them explicitly or they are silently missed.
+inline."* Those findings live only in **review bodies** (the `⚠️ Outside diff
+range comments (N)` `<details>` block), **not** in GraphQL `reviewThreads`. They
+are invisible to a threads-only fetch, so **every** review round MUST run the
+outside-diff fetch below alongside the `reviewThreads` query — never treat a
+green `reviewThreads` sweep as "0 unresolved" until outside-diff is also empty.
+A round is not quiescent while any outside-diff item is unaddressed.
 
 ```bash
 # All outside-diff sections for a PR (maintainer/agent)
