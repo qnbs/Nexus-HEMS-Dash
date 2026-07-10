@@ -73,7 +73,7 @@ See `docs/Protocol-Adapter-Guide-Backend.md`.
 | `INFLUXDB_TOKEN` | `nexus-hems-influx-token` | ⚠️ live | InfluxDB API token (**change in production**). |
 | `INFLUXDB_ORG` | `nexus-hems` | — | InfluxDB org. |
 | `INFLUXDB_BUCKET` | `nexus-hems` | — | InfluxDB bucket. |
-| `REDIS_URL` | — | ⚠️ | Shared Redis for JTI revocation (ADR-003) and the EEBUS trust store (`EEBUS_TRUST_BACKEND=redis`). |
+| `REDIS_URL` | — | — | Optional. Shared Redis for JTI revocation (ADR-003) and the EEBUS trust store (`EEBUS_TRUST_BACKEND=redis`). Falls back to in-memory JTI revocation + the file trust store when unset. |
 
 ## Backend Protocol Adapters (live mode only)
 
@@ -131,7 +131,6 @@ Example IP/port values in `.env.example` are illustrative, not defaults.
 | `VITE_E2E_ANIMATIONS` | Web/CI | Toggle animations under E2E. |
 | `VITE_ENABLE_LOCAL_LLM` | Web build | `true` opts into the deferred in-browser LLM engines (WebLLM / Transformers.js / ONNX). Off by default — the engines are experimental and cannot load under the production CSP; see ADR-029. Also requires re-adding the peer package to `packages/ai-core`. |
 | `ENABLE_LOCAL_LLM` | API/Node | Node-side equivalent of the above (`isLocalLlmEnabled()` reads `VITE_ENABLE_LOCAL_LLM` first, then this). |
-| `BASE_URL` | Web | Vite base path (`/Nexus-HEMS-Dash/` on gh-pages). |
 | `GEMINI_API_KEY` | Build | Optional key used by build-analysis tooling only (never shipped). |
 | `DISABLE_HMR` | Web dev | Disable Vite HMR. |
 | `SMOKE_DEBUG` | Build | Verbose output for `smoke:prod`. |
