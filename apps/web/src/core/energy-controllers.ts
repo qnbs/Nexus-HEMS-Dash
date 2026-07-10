@@ -104,7 +104,7 @@ export class ESSSymmetricController implements EnergyController {
       const pidOutput = this.kp * error + this.ki * this.integralError + this.kd * derivative;
 
       // Constrain to battery capabilities. Fixed ±10 kW default until these come
-      // from the device registry / adapter-reported limits (MED-21).
+      // from the device registry / adapter-reported limits (LOW-11).
       const maxChargePower = 10000;
       const maxDischargePower = 10000;
       const essPower = Math.max(-maxDischargePower, Math.min(maxChargePower, pidOutput));
