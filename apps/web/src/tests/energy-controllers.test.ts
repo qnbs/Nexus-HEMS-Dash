@@ -139,8 +139,13 @@ describe('Energy Controllers', () => {
     it('fails safe to ±10 kW when the battery limit is missing/zero/NaN', () => {
       for (const bad of [0, -5, Number.NaN, undefined]) {
         const s = withBattery(bad, bad);
-        const out = new ESSSymmetricController().run({ ...baseEnergy, gridPower: saturate }, s);
-        expect(out.essPowerW).toBe(10_000);
+        const charge = new ESSSymmetricController().run({ ...baseEnergy, gridPower: saturate }, s);
+        const discharge = new ESSSymmetricController().run(
+          { ...baseEnergy, gridPower: -saturate },
+          s,
+        );
+        expect(charge.essPowerW).toBe(10_000);
+        expect(discharge.essPowerW).toBe(-10_000);
       }
     });
 
@@ -157,9 +162,15 @@ describe('Energy Controllers', () => {
 
     it('never exceeds the 25 kW command-safety backstop even for an absurd rate', () => {
       const s = withBattery(999, 999);
-      const out = new ESSSymmetricController().run({ ...baseEnergy, gridPower: saturate }, s);
-      expect(out.essPowerW).toBe(25_000);
-      expect(Math.abs(out.essPowerW ?? 0)).toBeLessThanOrEqual(25_000);
+      const charge = new ESSSymmetricController().run({ ...baseEnergy, gridPower: saturate }, s);
+      const discharge = new ESSSymmetricController().run(
+        { ...baseEnergy, gridPower: -saturate },
+        s,
+      );
+      expect(charge.essPowerW).toBe(25_000);
+      expect(discharge.essPowerW).toBe(-25_000);
+      expect(Math.abs(charge.essPowerW ?? 0)).toBeLessThanOrEqual(25_000);
+      expect(Math.abs(discharge.essPowerW ?? 0)).toBeLessThanOrEqual(25_000);
     });
   });
 
