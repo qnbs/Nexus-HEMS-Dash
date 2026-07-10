@@ -32,27 +32,22 @@ function countCoreAdapters() {
     throw new Error('registerBuiltinAdapters() not found in adapter-registry.ts');
   }
   const braceOpen = src.indexOf('{', fnStart);
-  let depth = 0;
-  let end = -1;
-  for (let i = braceOpen; i < src.length; i++) {
-    if (src[i] === '{') depth++;
-    else if (src[i] === '}') {
-      depth--;
-      if (depth === 0) {
-        end = i;
-        break;
-      }
-    }
-  }
-  if (end === -1) throw new Error('Could not find registerBuiltinAdapters() closing brace');
-  const body = src.slice(braceOpen, end);
+  // Biome formats top-level functions with their closing brace in column 0, so
+  // the function body ends at the first line-leading `}`. Slicing on that is
+  // robust to inner (indented) braces inside strings/comments/config objects —
+  // unlike naive brace-depth counting, which a `{` in a string could unbalance.
+  const closeIdx = src.indexOf('\n}', braceOpen);
+  if (closeIdx === -1) throw new Error('Could not find registerBuiltinAdapters() closing brace');
+  const body = src.slice(braceOpen, closeIdx);
   return (body.match(/registerAdapter\(/g) ?? []).length;
 }
 
 /** Count shipped contrib adapter modules (excluding the template + test/d.ts). */
 function countContribAdapters() {
-  return readdirSync(CONTRIB_DIR)
-    .filter((f) => f.endsWith('.ts') && !f.endsWith('.test.ts') && !f.endsWith('.d.ts'))
+  return readdirSync(CONTRIB_DIR, { withFileTypes: true })
+    .filter((d) => d.isFile() && d.name.endsWith('.ts'))
+    .map((d) => d.name)
+    .filter((f) => !f.endsWith('.test.ts') && !f.endsWith('.d.ts'))
     .map((f) => f.replace(/\.ts$/, ''))
     .filter((id) => !EXCLUDE_CONTRIB.has(id)).length;
 }

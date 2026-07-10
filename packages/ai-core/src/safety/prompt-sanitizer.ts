@@ -273,7 +273,11 @@ function sanitizeContext(
   depth: number,
 ): unknown {
   if (acc.nodes >= CONTEXT_MAX_NODES || depth > CONTEXT_MAX_DEPTH) {
-    return value;
+    // Fail closed: never return an unscanned subtree, or oversized/deep context
+    // payloads could smuggle PII past redaction. Drop the over-limit branch.
+    acc.piiRedacted = true;
+    acc.matchedRules.add('pii:context-truncated');
+    return '[REDACTED_UNSCANNED]';
   }
   acc.nodes += 1;
 

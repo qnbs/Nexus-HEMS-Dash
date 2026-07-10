@@ -199,6 +199,19 @@ describe('sanitizeRequest', () => {
     expect(verdict.injectionSuspected).toBe(true);
   });
 
+  it('fails closed: an over-depth context branch is dropped, not passed raw', () => {
+    // Nest deeper than CONTEXT_MAX_DEPTH (6) with an email at the bottom.
+    let deep: Record<string, unknown> = { email: 'buried@example.com' };
+    for (let i = 0; i < 10; i++) deep = { child: deep };
+    const { request, verdict } = sanitizeRequest({ task: 'summarize', context: deep });
+    const serialized = JSON.stringify(request.context);
+    // The buried PII must never survive the truncation boundary.
+    expect(serialized).not.toContain('buried@example.com');
+    expect(serialized).toContain('[REDACTED_UNSCANNED]');
+    expect(verdict.piiRedacted).toBe(true);
+    expect(verdict.matchedRules).toContain('pii:context-truncated');
+  });
+
   it('leaves a fully benign request unflagged', () => {
     const { request, verdict } = sanitizeRequest({ task: 'Show abundant solar output' });
     expect(request.task).toBe('Show abundant solar output');

@@ -61,10 +61,15 @@ describe('TransformersEngine', () => {
     }
   });
 
-  it('gracefully handles model load failure', async () => {
-    const engine = new TransformersEngine({ model: 'nonexistent-model' });
-    const response = await engine.generate({ task: 'hello' });
-    expect(response.text).toContain('could not be loaded');
+  it('gracefully handles model load failure when opted in', async () => {
+    process.env.ENABLE_LOCAL_LLM = 'true';
+    try {
+      const engine = new TransformersEngine({ model: 'nonexistent-model' });
+      const response = await engine.generate({ task: 'hello' });
+      expect(response.text).toContain('could not be loaded');
+    } finally {
+      delete process.env.ENABLE_LOCAL_LLM;
+    }
   });
 });
 
@@ -85,10 +90,15 @@ describe('WebLLMEngine', () => {
     }
   });
 
-  it('gracefully handles model load failure', async () => {
-    const engine = new WebLLMEngine({ model: 'nonexistent-model' });
-    const response = await engine.generate({ task: 'hello' });
-    expect(response.text).toContain('could not be loaded');
+  it('gracefully handles model load failure when opted in', async () => {
+    process.env.ENABLE_LOCAL_LLM = 'true';
+    try {
+      const engine = new WebLLMEngine({ model: 'nonexistent-model' });
+      const response = await engine.generate({ task: 'hello' });
+      expect(response.text).toContain('could not be loaded');
+    } finally {
+      delete process.env.ENABLE_LOCAL_LLM;
+    }
   });
 });
 

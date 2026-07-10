@@ -42,6 +42,9 @@ export class OnnxEngine implements AIEngine {
 
   async load(): Promise<void> {
     if (this.session) return;
+    // Never touch the deferred peer package unless explicitly opted in — keeps
+    // disabled deployments from importing a dependency that is no longer shipped.
+    if (!isLocalLlmEnabled()) return;
     if (!this.config.modelUrl) {
       return;
     }

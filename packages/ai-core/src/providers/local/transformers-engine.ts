@@ -41,6 +41,8 @@ export class TransformersEngine implements AIEngine {
 
   async load(): Promise<void> {
     if (this.pipeline) return;
+    // Deferred peer package: only import when explicitly opted in (F-03/ADR-029).
+    if (!isLocalLlmEnabled()) return;
     const { pipeline } = (await import(
       /* @vite-ignore */ TRANSFORMERS_MODULE
     )) as TransformersModule;

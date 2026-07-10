@@ -39,7 +39,13 @@ The deep audit (F-03) found three compounding problems:
    claimed LLM.
 3. **Keep the engine code as an opt-in reference.** The dynamic `import()`s use non-literal
    specifiers with `/* @vite-ignore */`, so neither the bundler nor `tsc` requires the packages
-   to be installed. An opt-in user installs the peer package themselves and flips the flag.
+   to be installed, and every engine's `load()` short-circuits on `isLocalLlmEnabled()` so a
+   disabled deployment never reaches the import. Re-enabling is deliberately a two-step,
+   developer-only action: **re-add the optional peer package to `packages/ai-core`
+   `dependencies`** (so the bundler resolves the specifier — the default build ships no import
+   map, by design) **and** set the flag. Installing the package without re-adding it to
+   `dependencies` is not sufficient for a browser build; the packages are declared under
+   `peerDependenciesMeta.optional` to document the requirement without shipping them.
 4. **Surface the real provider in the UI** (`meta.provider` already carries the truth), so a
    user always sees which engine produced a response.
 5. **No CSP change.** The `unsafe-inline`-free, nonce-based CSP stays intact.

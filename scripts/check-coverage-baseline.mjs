@@ -55,7 +55,14 @@ function checkWorkspace(dir) {
   }
 
   for (const metric of METRICS) {
-    const actual = pct(total[metric]?.pct ?? 0);
+    const raw = total[metric]?.pct;
+    if (typeof raw !== 'number' || Number.isNaN(raw)) {
+      // Fail loudly rather than treating a missing/renamed metric as 0% — a
+      // silent 0 could slip past a future baseline floor of 0.
+      failures.push(`${dir}: metric "${metric}" missing from coverage-summary.json`);
+      continue;
+    }
+    const actual = pct(raw);
     const floor = baseline[metric];
     if (floor == null) {
       failures.push(`${dir}: baseline missing metric "${metric}"`);

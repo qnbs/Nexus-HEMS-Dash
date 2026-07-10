@@ -18,6 +18,7 @@
     "test": "vitest",
     "test:coverage": "vitest run --coverage"
   },
+  "comment:deferredEngines": "Local-LLM engines (WebLLM / Transformers.js / ONNX) are deferred and intentionally NOT shipped as dependencies (F-03 / ADR-029). To opt in, re-add the relevant package to dependencies here and set VITE_ENABLE_LOCAL_LLM. They are deliberately NOT declared as peerDependencies: this workspace runs auto-install-peers, which would reinstall the ~2.5 MB (38 packages) this PR removed.",
   "dependencies": {
     "comlink": "catalog:",
     "zod": "catalog:"

@@ -776,6 +776,7 @@ Protocol→adapter mapping in `hardware-adapter-map.ts`.
 ---
 
 ### MED-21 — Battery Power Limits Hardcoded in the PID Controller
+
 **Files:** `apps/web/src/core/energy-controllers.ts` (`maxChargePower` / `maxDischargePower`)
 **Status:** ⏳ Deferred — tracked (surfaced by the 2026-07-09 deep audit, F-07 TODO triage)
 

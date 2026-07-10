@@ -47,6 +47,8 @@ export class WebLLMEngine implements AIEngine {
 
   async load(): Promise<void> {
     if (this.engine) return;
+    // Deferred peer package: only import when explicitly opted in (F-03/ADR-029).
+    if (!isLocalLlmEnabled()) return;
     const { CreateMLCEngine } = (await import(/* @vite-ignore */ WEBLLM_MODULE)) as MLCModule;
     this.engine = await CreateMLCEngine(
       this.getModel(),
