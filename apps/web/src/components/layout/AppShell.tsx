@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { useEnergyStoreBase } from '../../core/useEnergyStore';
 import { themeDefinitions } from '../../design-tokens';
 import { isLiveSafetyMode } from '../../lib/adapter-mode';
+import { getDisplayData } from '../../lib/demo-data';
+import { isPresentationDemoMode } from '../../lib/demo-presentation';
 import { resolveReadOnlyModeActive } from '../../lib/use-read-only-mode';
 import { useAppStoreShallow } from '../../store';
 import { CommandPaletteWithSafety } from '../command-palette/CommandPaletteWithSafety';
@@ -25,29 +27,21 @@ export function AppShell({ children }: AppShellProps) {
   const { t } = useTranslation();
   const { isOpen: isCommandPaletteOpen, setIsOpen: setCommandPaletteOpen } = useCommandPalette();
 
-  const {
-    priceCurrent,
-    pvPower,
-    batterySoC,
-    gridPower,
-    houseLoad,
-    connected,
-    theme,
-    adapterMode,
-    backendReadOnly,
-  } = useAppStoreShallow((s) => ({
-    priceCurrent: s.energyData.priceCurrent,
-    pvPower: s.energyData.pvPower,
-    batterySoC: s.energyData.batterySoC,
-    gridPower: s.energyData.gridPower,
-    houseLoad: s.energyData.houseLoad,
-    connected: s.connected,
-    theme: s.theme,
-    adapterMode: s.adapterMode,
-    backendReadOnly: s.backendReadOnly,
-  }));
+  const { energyData, connected, theme, adapterMode, backendReadOnly } = useAppStoreShallow(
+    (s) => ({
+      energyData: s.energyData,
+      connected: s.connected,
+      theme: s.theme,
+      adapterMode: s.adapterMode,
+      backendReadOnly: s.backendReadOnly,
+    }),
+  );
+
+  const displayData = getDisplayData(energyData, connected);
+  const { priceCurrent, pvPower, batterySoC, gridPower, houseLoad } = displayData;
 
   const isLive = isLiveSafetyMode(adapterMode);
+  const presentationDemo = isPresentationDemoMode(connected, adapterMode);
   const isReadOnly = resolveReadOnlyModeActive(backendReadOnly);
 
   const hasDegradedAdapter = useEnergyStoreBase((s) =>
@@ -108,6 +102,7 @@ export function AppShell({ children }: AppShellProps) {
           isLive={isLive}
           isReadOnly={isReadOnly}
           connected={connected}
+          presentationDemo={presentationDemo}
           hasDegradedAdapter={hasDegradedAdapter}
           priceCurrent={priceCurrent}
           pvPower={pvPower}

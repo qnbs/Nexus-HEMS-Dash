@@ -1,7 +1,6 @@
 import { Zap } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
-import { DemoBadge } from '../components/DemoBadge';
 import {
   DeviceDetailDialog,
   DevicesFilterBar,
@@ -19,7 +18,6 @@ export default function DevicesAutomation() {
 
   return (
     <div className="space-y-6">
-      <DemoBadge />
       <PageHeader
         title={t('devicesAuto.title')}
         subtitle={t('devicesAuto.subtitle')}

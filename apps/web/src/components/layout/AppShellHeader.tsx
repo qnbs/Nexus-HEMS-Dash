@@ -15,6 +15,8 @@ export interface AppShellHeaderProps {
   isReadOnly: boolean;
   /** Whether the backend WebSocket is connected. */
   connected: boolean;
+  /** Whether the UI is in intentional mock/simulation presentation (static demo). */
+  presentationDemo: boolean;
   /** Whether any enabled adapter is degraded. */
   hasDegradedAdapter: boolean;
   /** Current electricity price in €/kWh. */
@@ -40,6 +42,7 @@ export function AppShellHeader({
   isLive,
   isReadOnly,
   connected,
+  presentationDemo,
   hasDegradedAdapter,
   priceCurrent,
   pvPower,
@@ -66,6 +69,7 @@ export function AppShellHeader({
         isLive={isLive}
         isReadOnly={isReadOnly}
         connected={connected}
+        presentationDemo={presentationDemo}
         hasDegradedAdapter={hasDegradedAdapter}
         priceCurrent={priceCurrent}
         onOpenCommandPalette={onOpenCommandPalette}

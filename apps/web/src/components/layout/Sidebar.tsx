@@ -16,6 +16,7 @@ import { motion } from 'motion/react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { NavLink } from 'react-router-dom';
+import { isPresentationDemoMode } from '../../lib/demo-presentation';
 import { useAppStore } from '../../store';
 
 interface NavItem {
@@ -85,6 +86,8 @@ export const allNavItems: readonly NavItem[] = navSections.flatMap((s) => s.item
 function SidebarComponent() {
   const { t } = useTranslation();
   const connected = useAppStore((s) => s.connected);
+  const adapterMode = useAppStore((s) => s.adapterMode);
+  const presentationDemo = isPresentationDemoMode(connected, adapterMode);
   const [collapsed, setCollapsed] = useState(false);
 
   return (
@@ -118,11 +121,21 @@ function SidebarComponent() {
               aria-atomic="true"
             >
               <span
-                className={`h-2 w-2 rounded-full ${connected ? 'bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.6)]' : 'bg-rose-400 shadow-[0_0_6px_rgba(251,113,133,0.6)]'}`}
+                className={`h-2 w-2 rounded-full ${
+                  connected
+                    ? 'bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.6)]'
+                    : presentationDemo
+                      ? 'bg-amber-400 shadow-[0_0_6px_rgba(251,191,36,0.6)]'
+                      : 'bg-rose-400 shadow-[0_0_6px_rgba(251,113,133,0.6)]'
+                }`}
                 aria-hidden="true"
               />
               <span className="text-(--color-muted) text-xs">
-                {connected ? t('common.connected') : t('common.disconnected')}
+                {connected
+                  ? t('common.connected')
+                  : presentationDemo
+                    ? t('mode.simulationBadge')
+                    : t('common.disconnected')}
               </span>
             </div>
           </div>

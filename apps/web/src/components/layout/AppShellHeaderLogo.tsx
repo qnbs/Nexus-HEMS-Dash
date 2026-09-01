@@ -6,13 +6,21 @@ import { Link } from 'react-router-dom';
 export interface AppShellHeaderLogoProps {
   /** Whether the backend WebSocket is connected. */
   connected: boolean;
+  /** Whether the UI is in intentional mock/simulation presentation (static demo). */
+  presentationDemo: boolean;
 }
 
 /**
  * Mobile header logo with a live connection status indicator.
  */
-export function AppShellHeaderLogo({ connected }: AppShellHeaderLogoProps) {
+export function AppShellHeaderLogo({ connected, presentationDemo }: AppShellHeaderLogoProps) {
   const { t } = useTranslation();
+
+  const statusClass = connected
+    ? 'bg-(--color-neon-green) shadow-[0_0_6px_var(--color-neon-green)]'
+    : presentationDemo
+      ? 'bg-(--state-warning-fg) shadow-[0_0_6px_var(--state-warning-fg)]'
+      : 'bg-(--state-danger-bg) shadow-[0_0_6px_var(--state-danger-bg)]';
 
   return (
     <Link
@@ -29,11 +37,7 @@ export function AppShellHeaderLogo({ connected }: AppShellHeaderLogoProps) {
         transition={{ type: 'spring', stiffness: 400, damping: 17 }}
       />
       <span
-        className={`absolute -right-0.5 -bottom-0.5 h-2.5 w-2.5 rounded-full border-(--color-surface-strong) border-2 ${
-          connected
-            ? 'bg-(--color-neon-green) shadow-[0_0_6px_var(--color-neon-green)]'
-            : 'bg-(--state-danger-bg) shadow-[0_0_6px_var(--state-danger-bg)]'
-        }`}
+        className={`absolute -right-0.5 -bottom-0.5 h-2.5 w-2.5 rounded-full border-(--color-surface-strong) border-2 ${statusClass}`}
         aria-hidden="true"
       />
     </Link>

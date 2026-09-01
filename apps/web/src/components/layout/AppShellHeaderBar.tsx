@@ -11,6 +11,8 @@ export interface AppShellHeaderBarProps {
   isReadOnly: boolean;
   /** Whether the backend WebSocket is connected. */
   connected: boolean;
+  /** Whether the UI is in intentional mock/simulation presentation (static demo). */
+  presentationDemo: boolean;
   /** Whether any enabled adapter is degraded. */
   hasDegradedAdapter: boolean;
   /** Current electricity price in €/kWh. */
@@ -26,6 +28,7 @@ export function AppShellHeaderBar({
   isLive,
   isReadOnly,
   connected,
+  presentationDemo,
   hasDegradedAdapter,
   priceCurrent,
   onOpenCommandPalette,
@@ -35,7 +38,7 @@ export function AppShellHeaderBar({
       <AppShellHeaderSafetyBanners isLive={isLive} isReadOnly={isReadOnly} />
 
       <div className="flex items-center gap-2 sm:gap-3">
-        <AppShellHeaderLogo connected={connected} />
+        <AppShellHeaderLogo connected={connected} presentationDemo={presentationDemo} />
         <MobilePageTitle />
         <AppShellHeaderActions
           isLive={isLive}

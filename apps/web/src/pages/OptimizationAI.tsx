@@ -7,7 +7,6 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { motion } from 'motion/react';
-import { DemoBadge } from '../components/DemoBadge';
 import { PageHeader } from '../components/layout/PageHeader';
 import {
   OptimizationAnalyseStep,
@@ -26,7 +25,6 @@ export default function OptimizationAI() {
   const {
     t,
     energyData,
-    isDemo,
     wizardOpen,
     step,
     setStep,
@@ -60,12 +58,7 @@ export default function OptimizationAI() {
         title={t('optimizationWizard.pageTitle')}
         subtitle={t('optimizationWizard.pageSubtitle')}
         icon={<Sparkles size={22} />}
-        actions={
-          <>
-            {isDemo && <DemoBadge />}
-            <HelpTooltip content={t('tour.optimization.help')} />
-          </>
-        }
+        actions={<HelpTooltip content={t('tour.optimization.help')} />}
       />
 
       {!hasData && !wizardOpen && (
