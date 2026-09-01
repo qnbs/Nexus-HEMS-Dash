@@ -29,7 +29,7 @@ plan — both were pre-merge Cursor planning artifacts (never committed to the r
 | 5   | Renovate: `matchPackagePatterns` → `matchPackageNames` globs                        | `matchPackagePatterns` is deprecated as of Renovate 38+                                                                                                                                                              | `.renovaterc.json`                                                                                                                                                                        |
 | 6   | Renovate: add Biome / Storybook / React-Compiler / Sentry / TanStack / Radix groups | Single PR per ecosystem instead of per-package noise                                                                                                                                                                 | `.renovaterc.json`                                                                                                                                                                        |
 | 7   | Drop inline `MAX_KB=600` bundle-size check                                          | Inconsistent with `size-limit` (uncompressed vs gzipped, 600 KB vs 70 KB Entry budget). `size-limit` is now the only enforcer                                                                                        | `ci.yml`, `perf-optimized-ci.yml`                                                                                                                                                         |
-| 8   | SLSA Level-3 build-provenance attestation                                           | Cryptographic attestation of every JS asset shipped from `main`; verify with `gh attestation verify`                                                                                                                 | `ci.yml` (build job)                                                                                                                                                                      |
+| 8   | SLSA Level-3 build-provenance attestation                                           | Cryptographic attestation of every JS asset shipped from `main`; verify with `gh attestation verify`                                                                                                                 | `ci.yml` (`slsa-attest` job — separate from `build` since 2026-09-01)                                                                                                                     |
 | 9   | `step-security/harden-runner` on high-trust workflows                               | Audit egress traffic; can later be tightened to `block` mode after reviewing the audit log                                                                                                                           | `release.yml`, `deploy.yml`, `tauri-build.yml`, `security-full.yml`                                                                                                                       |
 | 10  | Concurrency groups for missing workflows                                            | Prevents stacked runs on rapid pushes / re-runs                                                                                                                                                                      | `fuzz.yml`, `security-full.yml`, `tauri-build.yml`, `release.yml`                                                                                                                         |
 | 11  | Replace mutable action tags with version SHAs + accurate comments                   | `chromaui/action # latest`, `anchore/sbom-action@v0`, `tauri-apps/tauri-action@fce9c61… # v0`                                                                                                                        | `chromatic.yml`, `sbom-scan.yml`, `tauri-build.yml`, `release.yml`                                                                                                                        |
@@ -51,6 +51,12 @@ plan — both were pre-merge Cursor planning artifacts (never committed to the r
 | 22  | Hardened security gates                                         | Gitleaks, Semgrep, production audit, SBOM image builds, and SBOM generation now fail on real errors                      | `.github/workflows/security-full.yml`, `.github/workflows/sbom-scan.yml`, `.github/workflows/security-scan.yml` |
 | 23  | Fixed Tauri release version resolution                          | Removes non-production `v__VERSION__` placeholder and requires manual version input                                      | `.github/workflows/tauri-build.yml`                                                                             |
 | 24  | Added portable local secret scan wrapper                        | Local agents no longer need a globally installed `gitleaks`; native/Docker are preferred, limited fallback is documented | `scripts/run-gitleaks.mjs`, `package.json`                                                                      |
+
+### Stabilization update — 2026-09-01
+
+| #   | Fix                                                             | Why                                                                                                                      | Files                                                                                                           |
+| --- | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------- |
+| 25  | Isolate SLSA attestation; PR/main parity; Scorecard env fix     | Main CI failed on transient GitHub attestations 403 while PR CI was green; E2E was skipped; Scorecard SARIF publish rejected workflow-level `env` | `ci.yml`, `scorecard.yml`, `docs/runbooks/ci-primary-gate.md`                                                   |
 
 ### Local verification snapshot
 
@@ -83,7 +89,7 @@ All commands below passed on this checkout. Because the local machine runs Node 
 
 | Workflow / App        | Trigger                              | Job(s) used as required                                                       | Notes                                                                                                                                               |
 | --------------------- | ------------------------------------ | ----------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ci.yml`              | push: `main`, `develop`; PR: `main`  | `lint-typecheck`, `unit-tests`, `build`, `e2e-tests`, `security`, `fuzz-tests`, `ci-passed` | `ci-passed` is the single rollup gate. API unit tests and Web coverage both run in `unit-tests`; `fuzz-tests` runs `pnpm test:fuzz`; build emits SLSA attestation on `push: main` only. |
+| `ci.yml`              | push: `main`, `develop`; PR: `main`  | `lint-typecheck`, `unit-tests`, `build`, `e2e-tests`, `security`, `fuzz-tests`, `ci-passed` | `ci-passed` is the single rollup gate. API unit tests and Web coverage both run in `unit-tests`; `fuzz-tests` runs `pnpm test:fuzz`. `slsa-attest` runs on main push **and** PRs to main (3 retries); E2E depends on `build` only. |
 | `security-full.yml`   | push/PR `main`, weekly Mon 05:00 UTC | `security-gate`                                                               | **Single CodeQL (`CodeQL`) + Semgrep (`Semgrep OSS`) source** (ADR-027). Aggregates CodeQL, Gitleaks, Semgrep, Anti-Trojan-Source, Dependency Audit, Branch Protection. Gitleaks/Semgrep/audit are hard gates. Also runs License Compliance + full dev-dep audit on schedule/dispatch.  |
 | `sbom-scan.yml`       | push: `main`, PR, manual             | dependency-audit, sbom-frontend, sbom-backend, sbom-source                  | Syft SBOM + Grype (critical, blocking, `.grype.yaml`) on frontend/backend images and source; `scripts/verify-grype-policy.sh` guardrail.              |
 | `container-publish.yml` | push: `main`, tags `v*`, manual    | `publish` (matrix: frontend + server)                                       | Build → Grype gate → push GHCR → cosign keyless sign + SLSA provenance. Not a PR gate; runs on main/tags only.                                      |
@@ -176,14 +182,27 @@ version. Recurring actions:
 ## How to verify the SLSA build-provenance attestation
 
 ```bash
-# Download the latest CI artifact for a specific commit
-gh run download <run-id> -n build
+# After a local production build
+gh attestation verify apps/web/dist/assets/index-*.js \
+  --repo qnbs/Nexus-HEMS-Dash
 
-# Verify the attestation
-gh attestation verify ./assets/index-*.js \
+# Or download the build artifact from a CI run
+gh run download <run-id> -n build
+gh attestation verify apps/web/dist/assets/index-*.js \
   --repo qnbs/Nexus-HEMS-Dash
 ```
 
 A passing verification confirms the bundle was produced by the
-`build` job in `ci.yml` from a tagged main-branch commit, signed by
+`build` job in `ci.yml` and attested by the `slsa-attest` job, signed by
 GitHub's Sigstore-backed key.
+
+### SLSA hardening (2026-09-01)
+
+| Change | Rationale |
+| --- | --- |
+| SLSA moved out of `build` into `slsa-attest` | Transient GitHub 403 on attestations API no longer fails build or skips E2E |
+| SLSA runs on PRs to `main` | PR/main parity — green PR CI exercises the same attestation path |
+| 3 attempts with backoff | Mitigates transient API failures without manual re-runs |
+| `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24` at job level in `ci.yml` | Workflow-level `env` breaks OpenSSF Scorecard SARIF publish (`scorecard.yml` restriction) |
+
+See `docs/runbooks/ci-primary-gate.md#slsa-attestation-failures` for operator runbook.
