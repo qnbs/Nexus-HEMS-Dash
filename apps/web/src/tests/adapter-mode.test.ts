@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   canConnectHardwareAdapter,
   fetchBackendAdapterMode,
@@ -119,6 +119,10 @@ describe('fetchBackendAdapterMode', () => {
 });
 
 describe('resolveConnectionPresentation', () => {
+  beforeEach(() => {
+    vi.stubEnv('VITE_BACKEND_WS', 'false');
+  });
+
   afterEach(() => {
     vi.unstubAllEnvs();
   });

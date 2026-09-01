@@ -57,12 +57,12 @@ describe('useLiveEnergyFlow', () => {
     energyStoreState.serverWsConnected = false;
     appStoreState.adapterMode = 'mock';
     vi.unstubAllEnvs();
+    vi.stubEnv('VITE_BACKEND_WS', 'false');
   });
 
-  it('marks isDemo when connection chrome is simulation', () => {
+  it('uses simulation presentation on static demo deployments', () => {
     const { result } = renderHook(() => useLiveEnergyFlow());
     expect(result.current.connectionPresentation).toBe('simulation');
-    expect(result.current.isDemo).toBe(true);
   });
 
   it('treats backend WebSocket link as connected presentation', () => {
@@ -72,6 +72,5 @@ describe('useLiveEnergyFlow', () => {
 
     const { result } = renderHook(() => useLiveEnergyFlow());
     expect(result.current.connectionPresentation).toBe('connected');
-    expect(result.current.isDemo).toBe(false);
   });
 });

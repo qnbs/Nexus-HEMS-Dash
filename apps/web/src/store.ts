@@ -4,17 +4,13 @@ import { useShallow } from 'zustand/react/shallow';
 import type { CommandPalettePreferences } from './core/commands/types';
 import { sanitizePersistedSettings } from './core/stored-settings-schema';
 import type { ThemeName } from './design-tokens';
+import type { BackendAdapterMode } from './lib/adapter-mode';
 import { persistSettings } from './lib/db';
 import type { ThemePreference } from './lib/theme';
 import type { EnergyData, FloorplanState, LocaleCode, StoredSettings } from './types';
 import { SYSTEM_PRESETS } from './types';
 
-/**
- * Backend adapter mode reported by GET /api/health.
- * 'unknown' until the first successful health fetch (e.g. static deploys with
- * no backend stay 'unknown').
- */
-export type BackendAdapterMode = 'mock' | 'live' | 'unknown';
+export type { BackendAdapterMode };
 
 /**
  * Initial UI locale for a fresh install (no persisted store yet): English by

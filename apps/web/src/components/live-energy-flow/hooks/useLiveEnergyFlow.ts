@@ -75,7 +75,6 @@ export function useLiveEnergyFlow() {
     energyData,
     connected,
     connectionPresentation,
-    isDemo: connectionPresentation === 'simulation',
     hasData,
     selfSufficiencyPercent,
     isExporting,
