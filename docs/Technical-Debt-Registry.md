@@ -1,25 +1,25 @@
 # Technical Debt Registry — Nexus-HEMS-Dash
 
-**Last audited:** 2026-09-01 (post-v1.11.0 freeze truth-sync campaign)  
-**Version at audit:** 1.11.0 shipped (`main` @ `b44915fa`, 2026-07-10)  
+**Last audited:** 2026-09-01 (Sep 2026 post-freeze campaign complete + housekeeping)  
+**Version at audit:** 1.11.0 shipped (`main` @ `0006a56`, 2026-09-01)  
 **Last updated:** 2026-09-01  
 **Release line:** v1.11.0 shipped; release dispatch manual-only (ADR-015 amended)  
-**Auditor:** Cursor Cloud Agent (2026-06-29 full audit; 2026-07-02 delta; 2026-07-03 full review; 2026-09-01 freeze sync)
+**Auditor:** Cursor Cloud Agent (2026-06-29 full audit; 2026-07-02 delta; 2026-07-03 full review; 2026-09-01 freeze + campaign closeout)
 
 This file is the canonical issue tracker for known technical debt, security gaps, incomplete implementations, and quality issues. It is **not** a substitute for GitHub Issues — use it for context, rationale, and multi-sprint planning.
 
 ## Truth-Sync Note (2026-09-01)
 
-Aligned to `main` @ `b44915fa` after a **53-day product freeze** (last product commit 2026-07-10). Confirmed in code:
+Aligned to `main` @ `0006a56` after a **53-day product freeze** (last product commit 2026-07-10) and the **Sep 2026 post-freeze campaign** (six PRs merged same day). Confirmed in code:
 
 - **LOW-11** — ESS clamp from `settings.systemConfig.battery` (#316) ✅
 - **F-01–F-07** — deep-audit remediation shipped in v1.11.0 (#313) ✅
 - **SEC-12 / ADR-026** — non-extractable `vault-key-v2` CryptoKey (`secure-store.ts`) ✅; XSS-on-origin residual remains accepted
-- **SEC-11** — fail-closed `NODE_ENV` handling (`runtime-env.ts`, `isDevRuntime()`) ✅ (this PR)
+- **SEC-11** — fail-closed `NODE_ENV` handling (`runtime-env.ts`, `isDevRuntime()`) ✅ (#333)
 - **PRF-01** — DeepSource advisory; JavaScript analyzer removed (#299/#301)
-- **OPS-FREEZE-01** — Sep 2026 campaign landed (#329–#335); close stale Dependabot pins #323–#327 manually
+- **OPS-FREEZE-01** — Sep 2026 campaign complete (#329–#336); stale Dependabot pins #323–#327 closed (superseded by #329)
 
-Campaign PRs (Sep 2026): merged #329 (CI pins), #332 (demo chrome), #334 (docs), #335 (E-STOP test); #333 (SEC-11) in flight.
+Campaign PRs (Sep 2026, all merged): #336 (deps/CVE), #329 (CI pins), #332 (demo chrome), #334 (docs), #335 (E-STOP test), #333 (SEC-11). Duplicate empty squash commit on `main` removed during housekeeping.
 
 ## Truth-Sync Note (2026-04-26, superseded header)
 
@@ -811,10 +811,10 @@ Unset `NODE_ENV` now defaults to **production-hardened** via `isDevRuntime()` (o
 `runtime-env.test.ts` and `auth-config.test.ts`.
 
 ### OPS-FREEZE-01 — Post-v1.11.0 operational rot
-**Files:** `.github/workflows/*`, open Dependabot PRs #323–#327
-**Status:** ⏳ Partially resolved (Sep 2026 campaign)
+**Files:** `.github/workflows/*`, Dependabot PRs #323–#327
+**Status:** ✅ Resolved (2026-09-01)
 
-Sep 2026 campaign merged supply-chain, CI pins, demo chrome, docs, and E-STOP test (#329–#335 except #333 in flight). Five stale Dependabot Action pin PRs (#323–#327) remain open — close manually (superseded by #329).
+Sep 2026 campaign merged supply-chain (#336), CI Action pins (#329), demo chrome honesty (#332), docs truth-sync (#334), E-STOP regression test (#335), and SEC-11 fail-closed auth (#333). Stale Dependabot Action pin PRs #323–#327 were closed (superseded by #329). `main` history deduplicated after an empty squash-merge artifact.
 
 ### SEC-12 — BYOK vault passphrase stored at-rest in IndexedDB
 **Files:** `apps/web/src/lib/secure-store.ts` (`vault-key-v2`), `apps/web/src/lib/crypto.ts`, `apps/web/src/lib/ai-keys.ts`

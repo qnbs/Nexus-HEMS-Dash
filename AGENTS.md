@@ -448,4 +448,4 @@ See `.env.example` for the full list, including per-adapter host/port settings.
 
 ---
 
-*Last updated: 2026-07-05. If you change tooling, scripts, deployment targets, or safety guardrails, update this file to keep it accurate.*
+*Last updated: 2026-09-01. If you change tooling, scripts, deployment targets, or safety guardrails, update this file to keep it accurate.*

@@ -1,10 +1,10 @@
 # Feature Status — Nexus-HEMS-Dash
 
-**Version:** 1.11.0 shipped (2026-07-10)  
-**Last updated:** 2026-09-01 (post-v1.11.0 freeze truth-sync — demo chrome honesty, operational status)  
+**Version:** 1.11.0 shipped (2026-07-10); post-freeze campaign landed 2026-09-01  
+**Last updated:** 2026-09-01 (Sep 2026 campaign closeout — demo chrome, SEC-11, ops housekeeping)  
 **Purpose:** Single source of truth for what is actually implemented, partial, or planned. Use this file to keep README/marketing claims synchronized with the codebase.
 
-> **Operational note (2026-09-01):** No product commits landed on `main` between **2026-07-10** (v1.11.0) and this update (~53-day freeze). Open Dependabot CI pin PRs (#323–#327) and campaign fixes (demo chrome, docs truth-sync) are tracked separately from the frozen release baseline.
+> **Operational note (2026-09-01):** After a **53-day product freeze** (last v1.11.0 commit 2026-07-10), six campaign PRs landed on `main` the same day (#329–#336): CI pins, demo chrome honesty (`resolveConnectionPresentation`), docs truth-sync, E-STOP test, SEC-11 `NODE_ENV` fail-closed, and high-severity dependency/CVE remediation. Stale Dependabot pin PRs #323–#327 are closed (superseded by #329). See `docs/Campaign-Handoff-2026-09.md`.
 >
 > **Rule:** Any PR that changes a feature's implementation status must update this file and the relevant docs before merging.
 
