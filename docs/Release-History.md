@@ -59,6 +59,8 @@ An audit observed `https://qnbs.github.io/Nexus-HEMS-Dash/` returning HTTP 403 (
 3. Verify: new tag, GitHub Release with non-empty body, workspace versions in sync.
 4. Downstream: `tauri-build.yml` + `container-publish.yml` trigger on the published release.
 
+> **Note (2026-09-01):** `v1.11.1` was cut via the fully manual tag procedure (`git tag` + `gh release create`) because Cloud Agent tokens cannot dispatch workflows (`403`) and semantic-release would not re-cut an already-bumped `1.11.1` manifest. Use workflow dispatch for the **next** patch when `[Unreleased]` warrants it, or bump to `1.11.2` manually first.
+
 ### Fallback — fully manual tags
 
 See **ADR-015 Option B** — bump versions, PR, tag, `gh release create`.

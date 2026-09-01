@@ -218,4 +218,31 @@ describe('auth-token', () => {
     vi.mocked(fetch).mockResolvedValueOnce(new Response(JSON.stringify({}), { status: 200 }));
     await expect(fetchWsTicket()).resolves.toBeNull();
   });
+
+  describe('isAuthTokenValid', () => {
+    function makeToken(payload: Record<string, unknown>): string {
+      const json = JSON.stringify(payload);
+      const base64 = btoa(json).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+      return `header.${base64}.signature`;
+    }
+
+    it('returns false when no token is stored', async () => {
+      const { isAuthTokenValid } = await import('../lib/auth-token');
+      expect(isAuthTokenValid()).toBe(false);
+    });
+
+    it('returns true when exp is in the future', async () => {
+      const { setAuthToken, isAuthTokenValid } = await import('../lib/auth-token');
+      const exp = Math.floor(Date.now() / 1000) + 3600;
+      setAuthToken(makeToken({ exp }));
+      expect(isAuthTokenValid()).toBe(true);
+    });
+
+    it('returns false when exp is in the past', async () => {
+      const { setAuthToken, isAuthTokenValid } = await import('../lib/auth-token');
+      const exp = Math.floor(Date.now() / 1000) - 60;
+      setAuthToken(makeToken({ exp }));
+      expect(isAuthTokenValid()).toBe(false);
+    });
+  });
 });

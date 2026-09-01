@@ -1,11 +1,19 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { getAuthHeader } = vi.hoisted(() => ({
+const { getAuthHeader, isAuthTokenValid } = vi.hoisted(() => ({
   getAuthHeader: vi.fn<() => Record<string, string> | null>(),
+  isAuthTokenValid: vi.fn(() => true),
 }));
 
 vi.mock('../lib/auth-token', () => ({
   getAuthHeader,
+  isAuthTokenValid,
+}));
+
+vi.mock('../lib/sync-client', () => ({
+  detectSyncConflict: vi.fn().mockResolvedValue(false),
+  fetchServerSyncVersion: vi.fn().mockResolvedValue(null),
+  recordServerSyncVersion: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock('../lib/db', () => ({
@@ -31,11 +39,18 @@ type PendingAction = {
 describe('BackgroundSyncService', () => {
   let onlineHandler: (() => void) | null = null;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     backgroundSyncService.destroy();
     vi.useFakeTimers({ shouldAdvanceTime: true });
     Object.defineProperty(navigator, 'onLine', { value: true, writable: true, configurable: true });
     getAuthHeader.mockReset();
+    isAuthTokenValid.mockReset();
+    isAuthTokenValid.mockReturnValue(true);
+    const { getPendingActions, updateActionStatus } = await import('../lib/db');
+    getPendingActions.mockReset();
+    getPendingActions.mockResolvedValue([]);
+    updateActionStatus.mockReset();
+    updateActionStatus.mockResolvedValue(undefined);
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{}', { status: 200 })));
     onlineHandler = null;
     vi.stubGlobal('window', {
@@ -292,5 +307,46 @@ describe('BackgroundSyncService', () => {
 
     expect(syncSpy).toHaveBeenCalled();
     syncSpy.mockRestore();
+  });
+
+  it('skips replay when the auth token is expired', async () => {
+    isAuthTokenValid.mockReturnValue(false);
+    const { getPendingActions, updateActionStatus } = await import('../lib/db');
+    (getPendingActions as ReturnType<typeof vi.fn>).mockResolvedValueOnce([
+      {
+        id: 20,
+        type: 'battery-control',
+        payload: { powerW: 500 },
+        timestamp: Date.now(),
+        retries: 0,
+        status: 'pending',
+      },
+    ]);
+
+    await backgroundSyncService.syncPendingActions();
+
+    expect(fetch).not.toHaveBeenCalled();
+    expect(updateActionStatus).not.toHaveBeenCalled();
+  });
+
+  it('expires stale hardware commands instead of replaying them', async () => {
+    getAuthHeader.mockReturnValue({ Authorization: 'Bearer sync-jwt' });
+    const { getPendingActions, updateActionStatus } = await import('../lib/db');
+    const { OFFLINE_HARDWARE_COMMAND_TTL_MS } = await import('../lib/background-sync');
+    (getPendingActions as ReturnType<typeof vi.fn>).mockResolvedValueOnce([
+      {
+        id: 21,
+        type: 'ev-control',
+        payload: { currentA: 16 },
+        timestamp: Date.now() - OFFLINE_HARDWARE_COMMAND_TTL_MS - 1,
+        retries: 0,
+        status: 'pending',
+      },
+    ]);
+
+    await backgroundSyncService.syncPendingActions();
+
+    expect(fetch).not.toHaveBeenCalled();
+    expect(updateActionStatus).toHaveBeenCalledWith(21, 'failed', 'Command expired (TTL exceeded)');
   });
 });

@@ -17,6 +17,10 @@ Release notes are maintained here and published via [semantic-release](https://g
 
 - Restore web branch-coverage floor (≥72%) with adapter-mode, header KPI, and Command Hub disclosure tests after #340 chrome simplification.
 
+### Security
+
+- **Offline command idempotency (slice 2)** — `GET /api/sync/version`, JWT liveness guard before offline replay, 5-minute hardware-command TTL expiry, client `sync-client` conflict probe.
+
 ## [1.11.1] - 2026-09-01
 
 Post-v1.11.0 freeze campaign: security hardening, demo chrome honesty, CI pins, and operational housekeeping after a 53-day product freeze (PRs #329–#337).

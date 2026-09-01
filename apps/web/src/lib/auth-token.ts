@@ -98,6 +98,29 @@ export function getAuthHeader(): Record<string, string> | null {
   return token ? { Authorization: `Bearer ${token}` } : null;
 }
 
+/**
+ * Returns true when a stored JWT exists and its `exp` claim is still in the future.
+ * Used by background sync to avoid replaying commands with an expired session.
+ */
+export function isAuthTokenValid(bufferMs = 30_000): boolean {
+  const token = getAuthToken();
+  if (!token) return false;
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return false;
+    const payloadPart = parts[1];
+    if (!payloadPart) return false;
+    const normalized = payloadPart.replace(/-/g, '+').replace(/_/g, '/');
+    const json = atob(
+      normalized.padEnd(normalized.length + ((4 - (normalized.length % 4)) % 4), '='),
+    );
+    const parsed = JSON.parse(json) as { exp?: unknown };
+    return typeof parsed.exp === 'number' && parsed.exp * 1000 > Date.now() + bufferMs;
+  } catch {
+    return false;
+  }
+}
+
 /** Obtain a single-use WebSocket ticket for `/ws`, `/ws/eebus`, or `/ws/ocpp` proxy connections. */
 export async function fetchWsTicket(): Promise<string | null> {
   const base = getApiBaseUrl();

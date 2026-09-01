@@ -1,6 +1,6 @@
 # Offline Sync Design — Nexus-HEMS-Dash
 
-> **Status:** Active design — **idempotency slice 1** (command replay dedupe) in progress; full offline sync (conflict UI, `lastSyncVersion`, TTL) remains **Planned** (post-v1.11.1)
+> **Status:** Active design — **idempotency slice 1** + **slice 2** (sync version endpoint, token/TTL guards) shipped; conflict UI + full reconciliation remain **Planned**
 > **Created:** 2026-04-25
 > **Owner:** @qnbs
 
@@ -30,6 +30,9 @@ and replay safety mechanisms for Nexus-HEMS-Dash.
 | No conflict detection | Optimistic updates may overwrite newer server state |
 | Failed actions never auto-recovered (marked `failed`, no escalation) | Manual UI intervention required |
 | No idempotency keys on commands | Duplicate execution possible on network retry | ✅ Slice 1 shipped (API `X-Idempotency-Key` + WS `idempotencyKey`, 5 min TTL) |
+| No command TTL on hardware replay | Stale offline commands may execute after reconnect | ✅ Slice 2 shipped (5 min TTL in `background-sync.ts`) |
+| No JWT liveness check before replay | Expired sessions may attempt sync | ✅ Slice 2 shipped (`isAuthTokenValid()` guard) |
+| No server sync version endpoint | Client cannot detect server-side drift | ✅ Slice 2 shipped (`GET /api/sync/version`) |
 | No server-wins reconciliation for config changes | Settings divergence after reconnect |
 
 ---
@@ -199,13 +202,13 @@ i18n keys needed:
 
 | Item | Phase | Effort | Status |
 |------|-------|--------|--------|
-| `SyncState` Dexie table (schema v4) | 2 | 1h | 🔲 Planned |
-| `idempotencyKey` on OfflineAction | 2 | 30min | 🔲 Planned |
-| `X-Idempotency-Key` header in `executeAction()` | 2 | 30min | 🔲 Planned |
-| `isTokenValid()` pre-replay check | 2 | 30min | 🔲 Planned |
-| Server `/api/sync/version` endpoint | 2 | 1h | 🔲 Planned |
+| `SyncState` Dexie table (schema v4) | 2 | 1h | ✅ Shipped (Dexie v12) |
+| `idempotencyKey` on OfflineAction | 2 | 30min | ✅ Shipped (Dexie v12) |
+| `X-Idempotency-Key` header in `executeAction()` | 2 | 30min | ✅ Shipped |
+| `isTokenValid()` pre-replay check | 2 | 30min | ✅ Shipped (`isAuthTokenValid`) |
+| Server `/api/sync/version` endpoint | 2 | 1h | ✅ Shipped |
+| Command TTL expiry (5min oneshot) | 2 | 1h | ✅ Shipped |
 | Conflict detection + reconciliation | 2 | 3h | 🔲 Planned |
-| Command TTL expiry (5min oneshot) | 2 | 1h | 🔲 Planned |
 | Conflict UI modal + i18n keys | 2 | 2h | 🔲 Planned |
 | Playwright E2E: offline conflict scenario | 2 | 2h | 🔲 Planned |
 | Vitest: reconciliation logic unit tests | 2 | 1h | 🔲 Planned |
