@@ -77,4 +77,5 @@ EXPOSE 3000
 # tsx handles TypeScript source natively at runtime via Node.js --import flag.
 # node_modules/.bin/tsx is a shell shebang script — NOT usable in distroless (no shell).
 # Use `node --import tsx` instead: tsx is loaded as a Node.js loader from node_modules.
-CMD ["node", "--import", "tsx", "index.ts"]
+# Distroless nodejs images set ENTRYPOINT to `node` — pass only Node args here.
+CMD ["--import", "tsx", "index.ts"]
