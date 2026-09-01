@@ -1,19 +1,18 @@
 # Technical Debt Registry — Nexus-HEMS-Dash
 
-**Last audited:** 2026-07-03 (full status review — `docs/Audit-Report-2026-07-03.md`)
-**Version at audit:** 1.10.0 shipped (`main`, PRs #236–#268)
-**Last updated:** 2026-07-08 (docs-housekeeping truth-sync; prior: 2026-07-04 release 1.10.0 post-audit phases 1–8)
+**Last audited:** 2026-09-01 (post-v1.11.0 freeze campaign — `main` @ b44915fa)
+**Version at audit:** 1.11.0 shipped (`main`, PRs through #317)
+**Last updated:** 2026-09-01 (freeze campaign truth-sync; prior: 2026-07-08 docs-housekeeping)
 **Release line:** v1.11.0 shipped; release dispatch manual-only (ADR-015 amended)
-**Auditor:** Cursor Cloud Agent (2026-06-29 full audit; 2026-07-02 delta; 2026-07-03 full review)
+**Auditor:** Cursor Cloud Agent (2026-06-29 full audit; 2026-07-02 delta; 2026-07-03 full review; 2026-09-01 freeze campaign)
 
 This file is the canonical issue tracker for known technical debt, security gaps, incomplete implementations, and quality issues. It is **not** a substitute for GitHub Issues — use it for context, rationale, and multi-sprint planning.
 
-## Truth-Sync Note (2026-04-26)
+## Truth-Sync Note (2026-09-01)
 
-The registry is aligned to the verified repository state. Items marked `✅` are implemented in the
-codebase already. Items marked `⏳` remain genuine follow-up work. Where documentation previously
-mixed roadmap intent with shipped status, this file now treats `1.1.0` as the shipped baseline and
-`v1.2.0` as in-flight scope only.
+Between v1.11.0 (2026-07-10) and this update, `main` had **~53 days without product commits**. Open Dependabot Action bumps (#323–#327) were consolidated in PR #328. Demo chrome honesty (header KPI divergence, stacked Demo badges) is fixed in PR #330. **SEC-11** (`NODE_ENV`-unset auth fail-open) remains tracked below until the fail-closed hardening PR merges.
+
+The GitHub repository **About** blurb may still say “5 industrial protocols” — the README body correctly states **13 adapters (7 core + 6 contrib)**. Update the GitHub UI description manually; do not hand-edit adapter-count markers (use `pnpm sync:adapters`).
 
 ---
 

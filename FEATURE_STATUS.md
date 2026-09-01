@@ -1,8 +1,10 @@
 # Feature Status — Nexus-HEMS-Dash
 
 **Version:** 1.11.0 shipped (2026-07-10)  
-**Last updated:** 2026-07-10 (release 1.11.0 — command palette, settings/help, page modularization, deep-audit remediation F-01–F-07)  
+**Last updated:** 2026-09-01 (post-v1.11.0 freeze campaign — truth-sync after ~53 days without product commits on `main`)  
 **Purpose:** Single source of truth for what is actually implemented, partial, or planned. Use this file to keep README/marketing claims synchronized with the codebase.
+
+> **Operational note (2026-09-01):** Between the v1.11.0 release (2026-07-10) and this update, `main` had no product commits — only stale Dependabot Action bumps (#323–#327, landed in PR #328). Demo chrome honesty fixes ship in PR #330. SEC-11 hardening tracks in a follow-up PR.
 
 > **Rule:** Any PR that changes a feature's implementation status must update this file and the relevant docs before merging.
 
@@ -72,6 +74,7 @@
 | Prometheus monitoring | ✅ | `apps/api/src/middleware/metrics.ts`, `routes/metrics.routes.ts`; per-backend-adapter series via `adapter-metrics.ts` (MED-18) |
 | Adapter health endpoint | ✅ | `GET /api/health` returns mode, overall status, and per-adapter state (`apps/api/src/routes/health.routes.ts`) |
 | Live/Mock mode safety indicator | ✅ | Header banner (live) + simulation badge + persistent read-only banner (`mode.readOnlyBannerWarning`), Settings status, and live-hardware warning in the command-confirmation dialog — driven by `/api/health` `mode` + `readOnly` (`apps/web/src/lib/adapter-mode.ts`, `AppShell.tsx`, `useSafeCommand.tsx`) |
+| GitHub Pages static demo chrome | ✅ | PR #330: header KPIs use `getDisplayData()` (matches Command Hub); sidebar shows Simulation (not red Disconnected) in mock presentation; single SIMULATION badge in header (no stacked Demo/DEMO pills) |
 | Opt-in backend WebSocket consumer | ✅ | `VITE_BACKEND_WS` flag mounts `useServerWebSocket` (ADR-025); maps server `EnergyData` → `UnifiedEnergyModel`; Monitoring shows `serverWsConnected` pill |
 | Built-in adapters disabled by default | ✅ | `isBuiltinAdapterEnabledByDefault()` returns `false`; user enables adapters in Settings (`apps/web/src/lib/adapter-mode.ts`) |
 | Demo data without hardware | ✅ | Mock/simulated energy data when effective adapter mode is `mock` (`apps/api/src/data/mock-data.ts`, `EnergyContext`) |
