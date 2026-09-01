@@ -98,6 +98,24 @@ describe('sync routes', () => {
     expect(typeof res.body.version).toBe('number');
   });
 
+  it('PUT /api/settings rejects an empty patch', async () => {
+    const bearer = await signToken({ sub: 'writer', scope: 'readwrite' }, '1h');
+    await buildApp()
+      .put('/api/settings')
+      .set('Authorization', `Bearer ${bearer}`)
+      .send({ updatedAt: 1 })
+      .expect(400);
+  });
+
+  it('GET /api/sync/diff rejects invalid since values', async () => {
+    const bearer = await signToken({ sub: 'reader', scope: 'read' }, '1h');
+    await buildApp()
+      .get('/api/sync/diff')
+      .query({ since: 'not-a-number' })
+      .set('Authorization', `Bearer ${bearer}`)
+      .expect(400);
+  });
+
   it('PUT /api/settings deduplicates via X-Idempotency-Key', async () => {
     const bearer = await signToken({ sub: 'writer', scope: 'readwrite' }, '1h');
     const agent = buildApp();

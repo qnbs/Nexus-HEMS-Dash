@@ -112,6 +112,50 @@ export function setupLocalStorage(): void {
   localStorage.setItem('nexus-hems-store', JSON.stringify({ state: {}, version: 0 }));
 }
 
+/** Minimal JWT-shaped token with a future `exp` for offline-sync E2E mocks. */
+export function seedE2eAuthToken(): void {
+  const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
+  const payload = btoa(
+    JSON.stringify({
+      sub: 'e2e-user',
+      scope: 'readwrite',
+      exp: Math.floor(Date.now() / 1000) + 3600,
+    }),
+  );
+  localStorage.setItem('nexus-hems-auth-token', `${header}.${payload}.e2e-signature`);
+}
+
+/**
+ * Seed a conflicted `syncState` row in Dexie after the app has opened IndexedDB.
+ * Dispatches the sync-conflict event so `OfflineSyncConflictBanner` refreshes.
+ */
+export async function seedSyncConflictState(): Promise<void> {
+  const db = await new Promise<IDBDatabase>((resolve, reject) => {
+    const req = indexedDB.open('nexus-hems-dash');
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error ?? new Error('indexedDB open failed'));
+  });
+
+  await new Promise<void>((resolve, reject) => {
+    const tx = db.transaction('syncState', 'readwrite');
+    tx.objectStore('syncState').put({
+      key: 'settings',
+      lastSyncedAt: Date.now() - 60_000,
+      serverVersion: '10',
+      localRevision: 0,
+      hasConflict: true,
+      updatedAt: Date.now(),
+    });
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error ?? new Error('syncState write failed'));
+  });
+
+  db.close();
+  window.dispatchEvent(
+    new CustomEvent('nexus-hems-sync-conflict', { detail: { domain: 'settings' } }),
+  );
+}
+
 /** Console errors that are benign in preview/E2E (meta-CSP limitations, etc.). */
 const IGNORED_CONSOLE_ERRORS = [
   "The Content Security Policy directive 'frame-ancestors' is ignored when delivered via a <meta> element.",

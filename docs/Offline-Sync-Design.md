@@ -213,8 +213,8 @@ i18n keys needed:
 | Conflict UI modal + i18n keys | 3 | 2h | ✅ Shipped |
 | Server `/api/sync/diff` + `PUT /api/settings` | 4 | 2h | ✅ Shipped |
 | Server-wins reconciliation via diff apply | 4 | 2h | ✅ Shipped |
-| Playwright E2E: offline conflict scenario | 4 | 2h | 🔲 Planned |
-| Vitest: full reconciliation integration tests | 4 | 1h | 🔲 Planned |
+| Playwright E2E: offline conflict scenario | 4 | 2h | ✅ Shipped |
+| Vitest: full reconciliation integration tests | 4 | 1h | ✅ Shipped (unit + E2E) |
 
 **Total estimated effort: ~12h** — can be parallelised across sync-backend (server-side) and
 sync-frontend (Dexie + background-sync) tracks.
