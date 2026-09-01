@@ -39,7 +39,8 @@ LABEL org.opencontainers.image.title="Nexus-HEMS Dashboard Frontend" \
 # Security: upgrade all OS packages to fix CVEs (libxml2, openssl, libpng, etc.)
 # Wrapped in '|| true': Alpine exit-99 ("Unable to open log") fires on both
 # 'apk update' and 'apk upgrade' in some BuildKit sandbox environments.
-RUN (apk update && apk upgrade --no-cache) || true \
+RUN (apk update && apk upgrade --no-cache libssl3 libcrypto3) || true \
+    && (apk update && apk upgrade --no-cache) || true \
     && rm -rf /var/cache/apk/*
 
 # Security: nginx-unprivileged already creates a non-root 'nginx' user (uid 101).
