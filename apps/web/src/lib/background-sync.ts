@@ -4,16 +4,40 @@
  * Features: exponential backoff, max retries, online/offline detection
  */
 
-import { getAuthHeader } from './auth-token';
+import { getAuthHeader, isAuthTokenValid } from './auth-token';
 import {
   cleanupCompletedActions,
   getPendingActions,
   type OfflineAction,
   updateActionStatus,
 } from './db';
+import { detectSyncConflict, fetchServerSyncVersion, recordServerSyncVersion } from './sync-client';
 
 const MAX_RETRIES = 5;
 const BASE_RETRY_DELAY_MS = 2000;
+/** Hardware control commands older than this are never replayed (offline-sync design §4.1). */
+export const OFFLINE_HARDWARE_COMMAND_TTL_MS = 5 * 60 * 1000;
+
+const HARDWARE_COMMAND_TYPES = new Set<OfflineAction['type']>([
+  'ev-control',
+  'hp-control',
+  'battery-control',
+]);
+
+function isHardwareCommand(type: OfflineAction['type']): boolean {
+  return HARDWARE_COMMAND_TYPES.has(type);
+}
+
+function isCommandExpired(action: OfflineAction): boolean {
+  return (
+    isHardwareCommand(action.type) &&
+    Date.now() - action.timestamp > OFFLINE_HARDWARE_COMMAND_TTL_MS
+  );
+}
+
+function getActionRetryCount(action: OfflineAction): number {
+  return (action as unknown as { retryCount?: number }).retryCount ?? 0;
+}
 
 class BackgroundSyncService {
   private isSyncing = false;
@@ -89,52 +113,91 @@ class BackgroundSyncService {
       const actions = await getPendingActions();
       if (actions.length === 0) return;
 
-      if (import.meta.env.DEV)
+      if (!this.ensureAuthForReplay()) return;
+
+      const hasConflict = await this.checkAndLogConflict();
+
+      if (import.meta.env.DEV) {
         console.log(`[BackgroundSync] Syncing ${actions.length} pending actions`);
+      }
 
       for (const action of actions) {
-        const retryCount = (action as unknown as { retryCount?: number }).retryCount ?? 0;
-        if (retryCount >= MAX_RETRIES) {
-          if (import.meta.env.DEV)
-            console.warn(
-              `[BackgroundSync] Action ${action.id} exceeded max retries, marking failed`,
-            );
-          await updateActionStatus(action.id!, 'failed', 'Max retries exceeded');
-          continue;
-        }
-
-        try {
-          await updateActionStatus(action.id!, 'syncing');
-          await this.executeAction(action);
-          await updateActionStatus(action.id!, 'completed');
-        } catch (error) {
-          const errMsg = error instanceof Error ? error.message : 'Unknown error';
-          console.error(
-            '[BackgroundSync] Action',
-            action.id,
-            'failed (attempt',
-            retryCount + 1,
-            '):',
-            errMsg,
-          );
-
-          // Exponential backoff retry with jitter to prevent thundering herd
-          const delay = BASE_RETRY_DELAY_MS * 2 ** retryCount + Math.floor(Math.random() * 1000);
-          await updateActionStatus(action.id!, 'failed', errMsg);
-
-          if (retryCount + 1 < MAX_RETRIES) {
-            const timeout = setTimeout(() => {
-              this.retryTimeouts.delete(action.id!);
-              this.syncPendingActions();
-            }, delay);
-            this.retryTimeouts.set(action.id!, timeout);
-          }
-        }
+        await this.processPendingAction(action);
       }
+
+      await this.recordLatestServerVersion(hasConflict);
     } catch (error) {
       console.error('[BackgroundSync] Sync failed:', error);
     } finally {
       this.isSyncing = false;
+    }
+  }
+
+  private ensureAuthForReplay(): boolean {
+    if (isAuthTokenValid()) return true;
+    if (import.meta.env.DEV) {
+      console.warn('[BackgroundSync] Auth token missing or expired — skipping replay');
+    }
+    return false;
+  }
+
+  private async checkAndLogConflict(): Promise<boolean> {
+    const hasConflict = await detectSyncConflict();
+    if (hasConflict && import.meta.env.DEV) {
+      console.warn(
+        '[BackgroundSync] Server sync version advanced — conflict reconciliation deferred',
+      );
+    }
+    return hasConflict;
+  }
+
+  private async recordLatestServerVersion(hasConflict: boolean): Promise<void> {
+    const serverVersion = await fetchServerSyncVersion();
+    if (serverVersion !== null) {
+      await recordServerSyncVersion(serverVersion, 'settings', hasConflict);
+    }
+  }
+
+  private async processPendingAction(action: OfflineAction): Promise<void> {
+    if (isCommandExpired(action)) {
+      await updateActionStatus(action.id!, 'failed', 'Command expired (TTL exceeded)');
+      return;
+    }
+
+    const retryCount = getActionRetryCount(action);
+    if (retryCount >= MAX_RETRIES) {
+      if (import.meta.env.DEV) {
+        console.warn(`[BackgroundSync] Action ${action.id} exceeded max retries, marking failed`);
+      }
+      await updateActionStatus(action.id!, 'failed', 'Max retries exceeded');
+      return;
+    }
+
+    try {
+      await updateActionStatus(action.id!, 'syncing');
+      await this.executeAction(action);
+      await updateActionStatus(action.id!, 'completed');
+    } catch (error) {
+      const errMsg = error instanceof Error ? error.message : 'Unknown error';
+      console.error(
+        '[BackgroundSync] Action',
+        action.id,
+        'failed (attempt',
+        retryCount + 1,
+        '):',
+        errMsg,
+      );
+
+      const delay = BASE_RETRY_DELAY_MS * 2 ** retryCount + Math.floor(Math.random() * 1000);
+      await updateActionStatus(action.id!, 'failed', errMsg);
+
+      if (retryCount + 1 < MAX_RETRIES) {
+        const timeout = setTimeout(() => {
+          this.retryTimeouts.delete(action.id!);
+          this.syncPendingActions();
+        }, delay);
+        this.retryTimeouts.set(action.id!, timeout);
+      }
     }
   }
 
@@ -230,6 +293,7 @@ class BackgroundSyncService {
    * Cleanup on destroy
    */
   destroy() {
+    this.isSyncing = false;
     if (this.syncInterval) {
       clearInterval(this.syncInterval);
     }

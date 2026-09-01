@@ -33,6 +33,7 @@ import { createOcppRoutes } from './routes/ocpp.routes.js';
 import { createOpenADRRoutes } from './routes/openadr.routes.js';
 import { createSharesRoutes } from './routes/shares.routes.js';
 import { createShellyWebhookRoutes } from './routes/shelly-webhook.routes.js';
+import { createSyncRoutes } from './routes/sync.routes.js';
 import { EnergyRouterService } from './services/EnergyRouterService.js';
 import { liveEnergyAggregator } from './services/LiveEnergyAggregator.js';
 import { TimeseriesService } from './services/TimeseriesService.js';
@@ -122,6 +123,7 @@ export async function startServer(): Promise<void> {
   app.use(createMetricsRoutes(wss));
   app.use(createGrafanaRoutes());
   app.use(createHealthRoutes());
+  app.use(createSyncRoutes());
   app.use(createModbusRoutes());
   app.use('/api/v1', createHistoryRoutes());
 
