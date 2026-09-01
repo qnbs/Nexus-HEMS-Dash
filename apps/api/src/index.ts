@@ -7,6 +7,7 @@ import { logAdapterModeStartup } from './config/adapter-mode.js';
 import { validateProductionAuthConfig } from './config/auth-config.js';
 import { extractCspNonceFromIndexHtml } from './config/csp-nonce.js';
 import { logReadOnlyModeStartup } from './config/read-only-mode.js';
+import { isDevRuntime, warnIfNodeEnvUnset } from './config/runtime-env.js';
 import { logTrustProxyWarning, resolveTrustProxy } from './config/trust-proxy.js';
 import { isAllowedWsOrigin, parseWsOrigins, validateWsOrigins } from './config/ws-origins.js';
 import { eventBus } from './core/EventBus.js';
@@ -40,7 +41,8 @@ import { setupWebSocket } from './ws/energy.ws.js';
 export async function startServer(): Promise<void> {
   const app = express();
   const PORT = Number(process.env.PORT) || 3000;
-  const isDev = process.env.NODE_ENV !== 'production';
+  const isDev = isDevRuntime();
+  warnIfNodeEnvUnset();
 
   // ─── JWT Key Initialization ───────────────────────────────────────
   validateProductionAuthConfig();

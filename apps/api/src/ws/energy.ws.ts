@@ -9,6 +9,7 @@ import type { IncomingMessage } from 'http';
 import type { WebSocket, WebSocketServer } from 'ws';
 import { getEffectiveAdapterMode } from '../config/adapter-mode.js';
 import { isReadOnlyMode } from '../config/read-only-mode.js';
+import { isProductionRuntime } from '../config/runtime-env.js';
 import { logger } from '../core/logger.js';
 import { type CommandOutcome, writeCommandAuditEntry } from '../data/command-audit.js';
 import { mockData, updateMockData } from '../data/mock-data.js';
@@ -96,7 +97,7 @@ export function resolveBroadcastData(liveAggregator?: LiveEnergyAggregator): Ene
 }
 
 export function setupWebSocket(wss: WebSocketServer, liveAggregator?: LiveEnergyAggregator): void {
-  const requireWSAuth = process.env.NODE_ENV === 'production';
+  const requireWSAuth = isProductionRuntime();
   const wsAuthMap = new WeakMap<WebSocket, AuthenticatedClient>();
   const wsRateLimits = new WeakMap<WebSocket, { count: number; resetAt: number }>();
   /** Per-client subscribed metric keys. Empty set = send all metrics (backward-compatible). */
