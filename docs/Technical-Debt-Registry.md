@@ -95,9 +95,9 @@ DeepSource is connected for secrets + Docker analysis. The JavaScript analyzer w
 ### PRF-02 — CodeAnt.ai AI Reviewer Integrated (Advisory Mode)
 
 **Files:** `.codeant/configuration.json`, `.codeant/instructions.json`, `docs/runbooks/codeant-ai-integration.md`
-**Status:** 🔄 In progress
+**Status:** 🔄 In progress (repo config ✅; GitHub App install pending)
 
-CodeAnt.ai is now configured via repo files (`.codeant/` — analyzer de-duplication + domain/safety instructions, ADR-027), not dashboard-only. The GitHub App installation must still be completed by a repository owner. It remains advisory to avoid replacing human judgment on control logic.
+CodeAnt.ai is configured via repo files (`.codeant/` — analyzer de-duplication + domain/safety instructions, ADR-027). As of 2026-09-01 the **`CodeAnt AI` status check does not appear** on open PRs (#344–#346) while CodeRabbit and Codecov do — the owner must install the CodeAnt GitHub App and grant repo access (runbook §Installation). It remains advisory to avoid replacing human judgment on control logic.
 
 ### PRF-03 — Coverage Diff Not Yet Enforced
 
@@ -122,9 +122,9 @@ Required checks documented in `pr-status-checks.md` including `ci-passed` rollup
 ### PRF-06 — Layered Quality Platforms & CI Consolidation
 
 **Files:** `.codecov.yml`, `.coderabbit.yaml`, `.codeant/`, `.deepsource.toml`, `.github/workflows/ci.yml`, `.github/workflows/security-full.yml`, `.github/dependabot.yml`, `DEVOPS.md`, `docs/adr/ADR-027-layered-quality-platforms.md`
-**Status:** 🔄 In progress (owner App installs pending)
+**Status:** 🔄 In progress (CodeAnt App install + `GH_TOKEN` rotation pending)
 
-Codecov wired (advisory, web+api flags) with `json-summary` added to `apps/api`; CodeRabbit added (`.coderabbit.yaml` + runbook); CodeAnt configured (`.codeant/`); Dependabot/Renovate reconciled (Renovate owns npm/docker/cargo, Dependabot owns github-actions); CodeQL/Semgrep/Scorecard consolidated to single sources (`security.yml` + `security-scan.yml` deleted). The `main` ruleset requires only `CI Passed`, `E2E Tests`, `lighthouse`, so the deleted `CodeQL Analysis`/`Semgrep SAST` checks were never required — no ruleset edit needed. **Owner actions pending:** install the Codecov/CodeRabbit/CodeAnt GitHub Apps and add `CODECOV_TOKEN`. See `DEVOPS.md`.
+Codecov wired and **active** (`codecov/patch` on PRs, uploads via `ci.yml`); CodeRabbit **active** (`.coderabbit.yaml` + `coderabbit-rereview.yml`); CodeAnt repo config committed but **App not yet reporting**; Dependabot/Renovate reconciled; CodeQL/Semgrep/Scorecard consolidated. Blocking gates remain Layer 1 only (`CI Passed`, `E2E Tests`, `lighthouse`). **Owner actions:** install CodeAnt GitHub App; rotate `GH_TOKEN` if `release.yml` push fails (2026-09-01 dispatch failed checkout when expired PAT was passed to checkout — fixed by using `GITHUB_TOKEN` for fetch). See `DEVOPS.md`.
 
 ---
 

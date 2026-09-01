@@ -63,10 +63,13 @@ Now:
 
 ## Owner setup checklist (one-time, requires repo-owner access)
 
-- [ ] Install GitHub Apps: **Codecov**, **CodeRabbit**, **CodeAnt.ai** (DeepSource already installed).
-- [ ] Add repo secret **`CODECOV_TOKEN`** (Settings → Secrets → Actions).
-- [ ] Update the `main` branch-protection ruleset per the consolidation note above.
-- [ ] Confirm **`RENOVATE_TOKEN`** is present (Renovate is now the sole dep bot for npm/docker/cargo).
+- [x] **Codecov** GitHub App — `codecov/patch` reports on open PRs (e.g. #344–#346); uploads work via `codecov/codecov-action` in `ci.yml`.
+- [x] **CodeRabbit** GitHub App — `.coderabbit.yaml` + `coderabbit-rereview.yml`; reviews queue on PR push.
+- [ ] **CodeAnt.ai** GitHub App — repo config in `.codeant/` is committed; **`CodeAnt AI` check does not yet appear on PRs** → install the app at https://codeant.ai and grant access to `qnbs/Nexus-HEMS-Dash` (see `docs/runbooks/codeant-ai-integration.md`).
+- [x] DeepSource — Docker/Rust/Shell analyzers report on PRs (advisory).
+- [ ] Rotate **`GH_TOKEN`** if release checkout/push fails — PAT used only by `release.yml` semantic-release push (see `docs/Release-GH_TOKEN-Setup.md`). Checkout uses `GITHUB_TOKEN`; an expired PAT must not block fetch after `release.yml` fix (2026-09-01).
+- [ ] Update the `main` branch-protection ruleset per the consolidation note above (if old `CodeQL Analysis` / `Semgrep SAST` names are still required).
+- [ ] Confirm **`RENOVATE_TOKEN`** is present (Renovate is the sole dep bot for npm/docker/cargo).
 - [ ] (Optional) In each AI dashboard, confirm advisory (non-blocking) posture.
 
 ## Runbooks

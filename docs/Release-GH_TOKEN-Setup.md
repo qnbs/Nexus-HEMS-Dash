@@ -19,8 +19,10 @@ semantic-release must push a `chore(release): … [skip ci]` commit **and** a ve
 
 5. Copy the token (shown once).
 6. Repository **qnbs/Nexus-HEMS-Dash** → **Settings** → **Secrets and variables** → **Actions** → **New repository secret**:
-   - **Name:** `GH_TOKEN` (exact spelling — `release.yml` uses `secrets.GH_TOKEN || secrets.GITHUB_TOKEN`)
+   - **Name:** `GH_TOKEN` (exact spelling — `release.yml` uses it only in the semantic-release step for push/tag)
    - **Value:** paste the PAT
+
+   > **Checkout vs push:** `release.yml` fetches the repo with the default `GITHUB_TOKEN`. If `GH_TOKEN` is expired or revoked, checkout still succeeds; only the semantic-release push step fails. Rotate or delete a bad `GH_TOKEN` secret if you see `could not read Username for 'https://github.com'` on an old workflow revision that passed `GH_TOKEN` into checkout.
 
 7. **Ruleset bypass (required if push still fails):**
    - Repo → **Settings** → **Rules** → **Rulesets** → open the `main` ruleset

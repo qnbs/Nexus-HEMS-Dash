@@ -50,6 +50,14 @@ An audit observed `https://qnbs.github.io/Nexus-HEMS-Dash/` returning HTTP 403 (
 
 ---
 
+## 2026-09-01 release dispatch failure (resolved in workflow)
+
+Manual **Release** dispatch (`workflow_dispatch`, run `33544392686`) failed at **Checkout** with `fatal: could not read Username for 'https://github.com'`. Root cause: `release.yml` passed `secrets.GH_TOKEN || secrets.GITHUB_TOKEN` into `actions/checkout` with `persist-credentials: false`; an **expired or revoked `GH_TOKEN` PAT** prevented the initial fetch even though read-only checkout only needs `GITHUB_TOKEN`.
+
+**Fix:** checkout uses the default `GITHUB_TOKEN`; `GH_TOKEN` is consumed only in the semantic-release push step. **Owner:** rotate or delete a bad `GH_TOKEN` secret, then re-dispatch **Actions → Release** with `approveRelease=RELEASE`. Commits on `main` since `v1.11.1` (`#342`, `#343`) are release-worthy once the workflow succeeds.
+
+---
+
 ## How to cut a release (going forward)
 
 ### Preferred — manual workflow dispatch
