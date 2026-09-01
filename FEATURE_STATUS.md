@@ -118,11 +118,7 @@
 | E2E tests (Playwright) | ✅ | 13 spec files including `auth-jwt`, `read-only-commands`, `adapter-mode-indicators`, `backend-websocket-live`, `safety-indicators` (post-audit C2) |
 | Fuzz/property tests | ✅ | `apps/web/src/tests/security-fuzz.test.ts` |
 | i18n parity test | ✅ | `apps/web/src/tests/i18n-sync.test.ts` |
-<<<<<<< Updated upstream
-| Coverage gates | ✅ | Web vitest + PRF-03 baseline: **78/72/70/80** (statements/branches/functions/lines). API: **55/46/62/55**. ai-core: **73/51/77/73** (F-05a). See `coverage-baseline.json`, `vitest.config.ts`, `pnpm check:coverage-baseline`. |
-=======
-| Coverage gates | ✅ | `check:coverage-baseline` enforces web (**78/72/70/80**) + ai-core baselines via `apps/web/coverage-baseline.json` and `packages/ai-core/coverage-baseline.json`. API thresholds live in `apps/api/vitest.config.ts` but are not part of the baseline checker. |
->>>>>>> Stashed changes
+| Coverage gates | ✅ | `check:coverage-baseline` enforces web (**78/72/70/80**) + ai-core (**73/51/77/73**, F-05a) via `apps/web/coverage-baseline.json` and `packages/ai-core/coverage-baseline.json`. API thresholds live in `apps/api/vitest.config.ts` but are not part of the baseline checker. |
 | Lighthouse CI | ✅ | `.github/workflows/lighthouse.yml` |
 | Chromatic visual regression | ✅ | `.github/workflows/chromatic.yml` |
 
