@@ -5,7 +5,7 @@ import { themeDefinitions } from '../../design-tokens';
 import { isLiveSafetyMode, resolveConnectionPresentation } from '../../lib/adapter-mode';
 import { getDisplayData } from '../../lib/demo-data';
 import { resolveReadOnlyModeActive } from '../../lib/use-read-only-mode';
-import { useAppStore, useAppStoreShallow } from '../../store';
+import { useAppStoreShallow } from '../../store';
 import { CommandPaletteWithSafety } from '../command-palette/CommandPaletteWithSafety';
 import { useCommandPalette } from '../ui/CommandPalette';
 import { MobileNavigation } from '../ui/MobileNavigation';
@@ -26,13 +26,15 @@ export function AppShell({ children }: AppShellProps) {
   const { t } = useTranslation();
   const { isOpen: isCommandPaletteOpen, setIsOpen: setCommandPaletteOpen } = useCommandPalette();
 
-  const energyData = useAppStore((s) => s.energyData);
-  const connected = useAppStore((s) => s.connected);
-  const adapterMode = useAppStore((s) => s.adapterMode);
-  const { theme, backendReadOnly } = useAppStoreShallow((s) => ({
-    theme: s.theme,
-    backendReadOnly: s.backendReadOnly,
-  }));
+  const { energyData, connected, adapterMode, theme, backendReadOnly } = useAppStoreShallow(
+    (s) => ({
+      energyData: s.energyData,
+      connected: s.connected,
+      adapterMode: s.adapterMode,
+      theme: s.theme,
+      backendReadOnly: s.backendReadOnly,
+    }),
+  );
 
   const connectionPresentation = resolveConnectionPresentation(connected, adapterMode);
   const displayEnergy =
