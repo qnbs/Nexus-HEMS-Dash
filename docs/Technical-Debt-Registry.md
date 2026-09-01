@@ -1,14 +1,27 @@
 # Technical Debt Registry — Nexus-HEMS-Dash
 
-**Last audited:** 2026-07-03 (full status review — `docs/Audit-Report-2026-07-03.md`)
-**Version at audit:** 1.10.0 shipped (`main`, PRs #236–#268)
-**Last updated:** 2026-07-08 (docs-housekeeping truth-sync; prior: 2026-07-04 release 1.10.0 post-audit phases 1–8)
-**Release line:** v1.11.0 shipped; release dispatch manual-only (ADR-015 amended)
-**Auditor:** Cursor Cloud Agent (2026-06-29 full audit; 2026-07-02 delta; 2026-07-03 full review)
+**Last audited:** 2026-09-01 (post-v1.11.0 freeze truth-sync campaign)  
+**Version at audit:** 1.11.0 shipped (`main` @ `b44915fa`, 2026-07-10)  
+**Last updated:** 2026-09-01  
+**Release line:** v1.11.0 shipped; release dispatch manual-only (ADR-015 amended)  
+**Auditor:** Cursor Cloud Agent (2026-06-29 full audit; 2026-07-02 delta; 2026-07-03 full review; 2026-09-01 freeze sync)
 
 This file is the canonical issue tracker for known technical debt, security gaps, incomplete implementations, and quality issues. It is **not** a substitute for GitHub Issues — use it for context, rationale, and multi-sprint planning.
 
-## Truth-Sync Note (2026-04-26)
+## Truth-Sync Note (2026-09-01)
+
+Aligned to `main` @ `b44915fa` after a **53-day product freeze** (last product commit 2026-07-10). Confirmed in code:
+
+- **LOW-11** — ESS clamp from `settings.systemConfig.battery` (#316) ✅
+- **F-01–F-07** — deep-audit remediation shipped in v1.11.0 (#313) ✅
+- **SEC-12 / ADR-026** — non-extractable `vault-key-v2` CryptoKey (`secure-store.ts`) ✅; XSS-on-origin residual remains accepted
+- **SEC-11** — fail-closed `NODE_ENV` handling: fix in PR #333 (`runtime-env.ts`, `isDevRuntime()`); pending merge
+- **PRF-01** — DeepSource advisory; JavaScript analyzer removed (#299/#301)
+- **OPS-FREEZE-01** — open Dependabot Action pin PRs #323–#327 pending merge (supply-chain hygiene)
+
+Campaign PRs (Sep 2026): CI pin consolidation (#329), Pages demo chrome honesty (#332), SEC-11 fail-closed runtime (#333), this docs truth-sync (#334, stacked on #332).
+
+## Truth-Sync Note (2026-04-26, superseded header)
 
 The registry is aligned to the verified repository state. Items marked `✅` are implemented in the
 codebase already. Items marked `⏳` remain genuine follow-up work. Where documentation previously
@@ -75,9 +88,9 @@ Items introduced by the 2026-06-28 PR-feedback improvement initiative.
 ### PRF-01 — DeepSource Integrated (Advisory Mode)
 
 **Files:** `.deepsource.toml`, `docs/runbooks/deepsource-integration.md`
-**Status:** 🔄 In progress
+**Status:** ✅ Advisory-only (JavaScript analyzer removed 2026-07-07, #299/#301)
 
-DeepSource is connected and configured for the monorepo. Quality gates are advisory until tuning and remediation of existing HIGH-severity dependency advisories are complete.
+DeepSource is connected for secrets + Docker analysis. The JavaScript analyzer was **removed** after JS-0067 noise made it non-actionable. DeepSource is **not** a merge gate; blocking quality remains Layer 1 (`ci.yml`, `security-full.yml`). Tuning of remaining analyzers is ongoing.
 
 ### PRF-02 — CodeAnt.ai AI Reviewer Integrated (Advisory Mode)
 
@@ -290,17 +303,18 @@ Changed to `process.env.JWT_SECRET_FILE ?? '/run/secrets/jwt_secret'`.
 
 ## MEDIUM
 
-### MED-01 — Test Coverage Below Industry Standard
+### MED-01 — Test Coverage Floors Enforced (Roadmap Stretch Remaining)
 
-**File:** `apps/web/vitest.config.ts:22-27`, `apps/web/coverage-baseline.json`, `apps/api/vitest.config.ts:18-23`
-**Status:** ⏳ In progress — **web PRF-03 baseline at 78/72/70/80** (measured 79.60/72.00/73.46/81.58, 2026-07-02); API gate raised to 55/46/62/55
+**File:** `apps/web/vitest.config.ts:22-27`, `apps/web/coverage-baseline.json`, `apps/api/vitest.config.ts:18-23`, `packages/ai-core/vitest.config.ts`
+**Status:** ✅ Enforced floors met — roadmap stretch targets remain in `docs/Testing-Coverage-Strategy.md`
 
-Current enforced thresholds (verified against the live vitest configs, 2026-07-03):
+Current enforced thresholds (verified 2026-09-01):
 
 - Web `apps/web/vitest.config.ts`: statements **78%**, branches **72%**, functions **70%**, lines **80%**
-- API `apps/api/vitest.config.ts`: statements **55%**, branches **46%**, functions **62%**, lines **55%** (P1-05 staged raise from the v1.3.0 33% baseline; statements target 55% reached)
+- API `apps/api/vitest.config.ts`: statements **55%**, branches **46%**, functions **62%**, lines **55%**
+- ai-core `packages/ai-core/vitest.config.ts`: statements **73%**, branches **51%**, functions **77%**, lines **73%** (F-05a; `pnpm check:coverage-baseline`)
 
-**Fix:** web branches stretch to 72% **done** (2026-07-02); API gate raised from the 33/30/38/33 v1.3.0 baseline to 55/46/62/55 **done**. Higher roadmap targets tracked in `docs/Testing-Coverage-Strategy.md`.
+**Follow-up:** raise toward roadmap targets via tested helper extraction (`docs/Test-Coverage-TODO.md`); do not lower floors to greenwash CI.
 
 ---
 
@@ -789,24 +803,26 @@ backend fail-open/SSRF findings were fixed in their own PRs; the items below are
 **deferred by design** and tracked here.
 
 ### SEC-11 — `NODE_ENV`-unset global auth fail-open
-**Files:** `apps/api/src/middleware/auth.ts` (`isDev = process.env.NODE_ENV !== 'production'`), `apps/api/src/middleware/security.ts`
-**Status:** ⏳ Deferred — documented; hardening pending maintainer sign-off
+**Files:** `apps/api/src/config/runtime-env.ts`, `apps/api/src/middleware/auth.ts`, `apps/api/src/middleware/security.ts`
+**Status:** 🔄 Fix in PR #333 — `isDevRuntime()` treats only explicit `development`/`test` as dev; unset `NODE_ENV` fails closed with startup warning
 
-When `NODE_ENV` is unset (not exactly `production`), `requireJWT`, `requireScope`, WS auth, and rate
-limiting all treat the process as dev and relax enforcement. Flipping the default to secure-by-default
-risks breaking dev/CI flows repo-wide, so the change is deferred. **Mitigation to add:** a loud startup
-warning when `NODE_ENV` is unset in a server context, plus an explicit `require production hardening`
-opt-in. Do not rely on the absence of `NODE_ENV` for any security property.
+When `NODE_ENV` is unset, auth, scope checks, WS auth, and rate limiting now use production-hardened paths via `isDevRuntime()` / `isProductionRuntime()`. **Merge gate:** PR #333 + targeted `runtime-env` tests. Do not rely on the absence of `NODE_ENV` for any security property.
+
+### OPS-FREEZE-01 — Post-v1.11.0 operational rot
+**Files:** `.github/workflows/*`, open Dependabot PRs #323–#327
+**Status:** ⏳ In progress (Sep 2026 campaign)
+
+No product commit on `main` between 2026-07-10 and 2026-09-01. Five Dependabot GitHub Actions pin bumps opened 2026-08-31; prior July Action bumps were closed without merge (#318–#322). Consolidated pin PR #329 addresses the open wave. Supply-chain claims (SLSA 3, weekly scans) rot if pins are not landed.
 
 ### SEC-12 — BYOK vault passphrase stored at-rest in IndexedDB
-**Files:** `apps/web/src/lib/secure-store.ts` (`vault-passphrase-v1`), `apps/web/src/lib/crypto.ts`, `apps/web/src/lib/ai-keys.ts`
-**Status:** ⏳ Tracked — redesign in ADR-026 (non-extractable `CryptoKey`)
+**Files:** `apps/web/src/lib/secure-store.ts` (`vault-key-v2`), `apps/web/src/lib/crypto.ts`, `apps/web/src/lib/ai-keys.ts`
+**Status:** ✅ Resolved (ADR-026) — non-extractable `CryptoKey` shipped
 
-The AES-GCM vault passphrase is 32 random bytes written **plaintext** into IndexedDB and used to derive
-the key for all AI keys + adapter credentials. The AEAD primitives are correct, but anything that can
-read IndexedDB (on-origin XSS, malicious extension, disk/profile access) recovers the passphrase
-(CWE-312/CWE-522). Redesign to a non-extractable `CryptoKey` handle is tracked in ADR-026. No existing
-users → no migration needed.
+**Was:** AES-GCM vault passphrase written plaintext to IndexedDB (`vault-passphrase-v1`).
+
+**Now:** A single non-extractable AES-GCM 256-bit master `CryptoKey` is persisted under `vault-key-v2` (`secure-store.ts`). Legacy `vault-passphrase-v1` entries are ignored.
+
+**Residual (accepted):** on-origin XSS can still invoke crypto operations in the browser session — CSP + dependency hygiene remain the real control; do not treat AES-GCM as a substitute for XSS defense.
 
 ### DOC-03 — READ_ONLY_MODE requires two flags (deployment footgun)
 **Files:** `apps/api/src/config/read-only-mode.ts`, `apps/web/src/lib/adapter-mode.ts`, `docs/Safety-Certification-Notice.md`, `docs/Deployment-Guide.md`
@@ -843,6 +859,9 @@ and Deployment guide so operators don't assume a single flag is sufficient.
 | ✅ HIGH-11   | WS `SCOPE_COMMAND_MAP` covers all command types; read scope blocked from writes          | v1.3.0   |
 | ✅ HIGH-13   | EvccAdapter unit tests + connected status on successful connect                            | v1.3.0   |
 | ✅ HIGH-14   | `logCommandAudit` 5000-entry cleanup covered in command-safety tests                       | v1.3.0   |
+| ✅ LOW-11    | ESS controller clamp from `settings.systemConfig.battery` with fail-safe + 25 kW hard cap  | v1.11.0  |
+| ✅ SEC-12    | BYOK vault non-extractable `CryptoKey` (`vault-key-v2`, ADR-026)                           | v1.10.0+ |
+| ✅ F-01–F-07 | Deep-audit remediation (sanitizer, lint gate, local-LLM deferral, adapter count, ai-core coverage, vitest catalog, Exec threat model) | v1.11.0  |
 
 ---
 
