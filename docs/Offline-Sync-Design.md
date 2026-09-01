@@ -1,6 +1,6 @@
 # Offline Sync Design — Nexus-HEMS-Dash
 
-> **Status:** Active design — **idempotency slice 1** + **slice 2** (sync version endpoint, token/TTL guards) shipped; conflict UI + full reconciliation remain **Planned**
+> **Status:** Active design — **slice 1–2** shipped (idempotency, sync version endpoint, JWT/TTL guards); **slice 3** (conflict UI + deferred replay) shipped; `/api/sync/diff` reconciliation remains planned.
 > **Created:** 2026-04-25
 > **Owner:** @qnbs
 

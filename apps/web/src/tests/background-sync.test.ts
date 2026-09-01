@@ -16,6 +16,14 @@ vi.mock('../lib/sync-client', () => ({
   recordServerSyncVersion: vi.fn().mockResolvedValue(undefined),
 }));
 
+const { markSyncConflict } = vi.hoisted(() => ({
+  markSyncConflict: vi.fn().mockResolvedValue(undefined),
+}));
+
+vi.mock('../lib/sync-conflict', () => ({
+  markSyncConflict,
+}));
+
 vi.mock('../lib/db', () => ({
   getPendingActions: vi.fn().mockResolvedValue([]),
   updateActionStatus: vi.fn().mockResolvedValue(undefined),
@@ -51,6 +59,9 @@ describe('BackgroundSyncService', () => {
     vi.mocked(getPendingActions).mockResolvedValue([]);
     vi.mocked(updateActionStatus).mockReset();
     vi.mocked(updateActionStatus).mockResolvedValue(undefined);
+    markSyncConflict.mockClear();
+    const { detectSyncConflict } = await import('../lib/sync-client');
+    vi.mocked(detectSyncConflict).mockResolvedValue(false);
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{}', { status: 200 })));
     onlineHandler = null;
     vi.stubGlobal('window', {
@@ -348,5 +359,32 @@ describe('BackgroundSyncService', () => {
 
     expect(fetch).not.toHaveBeenCalled();
     expect(updateActionStatus).toHaveBeenCalledWith(21, 'failed', 'Command expired (TTL exceeded)');
+  });
+
+  it('defers replay when a sync conflict is detected', async () => {
+    getAuthHeader.mockReturnValue({ Authorization: 'Bearer sync-jwt' });
+    const { getPendingActions, updateActionStatus } = await import('../lib/db');
+    const { detectSyncConflict, fetchServerSyncVersion, recordServerSyncVersion } = await import(
+      '../lib/sync-client'
+    );
+    vi.mocked(detectSyncConflict).mockResolvedValue(true);
+    vi.mocked(fetchServerSyncVersion).mockResolvedValue(42);
+    (getPendingActions as ReturnType<typeof vi.fn>).mockResolvedValueOnce([
+      {
+        id: 30,
+        type: 'settings',
+        payload: { theme: 'ocean-dark' },
+        timestamp: Date.now(),
+        retries: 0,
+        status: 'pending',
+      },
+    ]);
+
+    await backgroundSyncService.syncPendingActions();
+
+    expect(markSyncConflict).toHaveBeenCalledWith('settings');
+    expect(fetch).not.toHaveBeenCalled();
+    expect(updateActionStatus).not.toHaveBeenCalled();
+    expect(recordServerSyncVersion).toHaveBeenCalledWith(42, 'settings', true);
   });
 });

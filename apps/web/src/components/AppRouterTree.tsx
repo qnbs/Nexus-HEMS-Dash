@@ -6,6 +6,7 @@ import { AppRoutes } from './AppRoutes';
 import { ErrorBoundary } from './ErrorBoundary';
 import { AppShell } from './layout/AppShell';
 import { OfflineBanner } from './OfflineBanner';
+import { OfflineSyncConflictBanner } from './OfflineSyncConflictBanner';
 import { PWAInstallPrompt } from './PWAInstallPrompt';
 import { PWAUpdateNotification } from './PWAUpdateNotification';
 import { ScrollToTop } from './ScrollToTop';
@@ -20,6 +21,7 @@ export const AppRouterTree = ({ theme }: { theme: ThemeName }) => (
     <ScrollToTop />
     {!import.meta.env.VITE_E2E_TESTING && <PWAUpdateNotification />}
     <OfflineBanner />
+    <OfflineSyncConflictBanner />
     {!import.meta.env.VITE_E2E_TESTING && <PWAInstallPrompt />}
     <Toaster
       position="bottom-right"

@@ -12,6 +12,7 @@ import {
   updateActionStatus,
 } from './db';
 import { detectSyncConflict, fetchServerSyncVersion, recordServerSyncVersion } from './sync-client';
+import { markSyncConflict } from './sync-conflict';
 
 const MAX_RETRIES = 5;
 const BASE_RETRY_DELAY_MS = 2000;
@@ -67,6 +68,7 @@ class BackgroundSyncService {
     // Listen for online/offline events
     this.onlineHandler = () => {
       if (import.meta.env.DEV) console.log('[BackgroundSync] Network online, syncing...');
+      void this.probeSyncConflict();
       this.syncPendingActions();
     };
     window.addEventListener('online', this.onlineHandler);
@@ -81,7 +83,17 @@ class BackgroundSyncService {
 
     // Initial sync if online
     if (navigator.onLine) {
+      void this.probeSyncConflict();
       this.syncPendingActions();
+    }
+  }
+
+  /** Detect server-side version drift even when the offline queue is empty. */
+  private async probeSyncConflict(): Promise<void> {
+    if (!navigator.onLine || !isAuthTokenValid()) return;
+    const hasConflict = await detectSyncConflict();
+    if (hasConflict) {
+      await markSyncConflict('settings');
     }
   }
 
@@ -116,6 +128,10 @@ class BackgroundSyncService {
       if (!this.ensureAuthForReplay()) return;
 
       const hasConflict = await this.checkAndLogConflict();
+      if (hasConflict) {
+        await this.recordLatestServerVersion(true);
+        return;
+      }
 
       if (import.meta.env.DEV) {
         console.log(`[BackgroundSync] Syncing ${actions.length} pending actions`);
@@ -143,10 +159,13 @@ class BackgroundSyncService {
 
   private async checkAndLogConflict(): Promise<boolean> {
     const hasConflict = await detectSyncConflict();
-    if (hasConflict && import.meta.env.DEV) {
-      console.warn(
-        '[BackgroundSync] Server sync version advanced — conflict reconciliation deferred',
-      );
+    if (hasConflict) {
+      await markSyncConflict('settings');
+      if (import.meta.env.DEV) {
+        console.warn(
+          '[BackgroundSync] Server sync version advanced — conflict reconciliation deferred',
+        );
+      }
     }
     return hasConflict;
   }

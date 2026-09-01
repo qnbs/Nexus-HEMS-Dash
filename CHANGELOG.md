@@ -20,6 +20,7 @@ Release notes are maintained here and published via [semantic-release](https://g
 ### Security
 
 - **Offline command idempotency (slice 2)** — `GET /api/sync/version`, JWT liveness guard before offline replay, 5-minute hardware-command TTL expiry, client `sync-client` conflict probe.
+- **Offline sync conflict UI (slice 3)** — conflict banner, resolution modal (keep local / accept server), deferred replay until resolved.
 
 ## [1.11.1] - 2026-09-01
 
