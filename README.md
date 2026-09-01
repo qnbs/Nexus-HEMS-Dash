@@ -30,9 +30,9 @@
 
 Nexus-HEMS is a **unified Command Center** that consolidates <!-- ADAPTERS-EN:START -->**13 protocol adapters** (7 core + 6 contrib)<!-- ADAPTERS-EN:END --> into **8 primary routes across 7 navigation sections** — orchestrating photovoltaic generation, battery storage, heat pumps, EV charging, and building automation with dynamic electricity tariffs. Instead of 18+ separate pages, every feature is accessible from a **single streamlined interface** with contextual in-context help and a new-user landing on the Command Hub.
 
-The current shipped release line is **1.11.0** (cut 2026-07-10). See [CHANGELOG.md](CHANGELOG.md) and [docs/Release-History.md](docs/Release-History.md) for release curation notes.
+The current shipped release line is **1.11.1** (cut 2026-09-01). See [CHANGELOG.md](CHANGELOG.md) and [docs/Release-History.md](docs/Release-History.md) for release curation notes.
 
-> **Maintenance status (2026-09-01):** `main` had no product commits for ~53 days after v1.11.0. The [live GitHub Pages demo](https://qnbs.github.io/Nexus-HEMS-Dash/) is a **backendless static SPA** (`VITE_BACKEND_WS` off): it runs in **simulation** mode with demo plant data — not a disconnected production backend. See [FEATURE_STATUS.md](FEATURE_STATUS.md) for verified feature boundaries.
+> **Maintenance status (2026-09-01):** The Sep 2026 post-freeze campaign landed security, demo-chrome, and CI fixes on `main` as **v1.11.1**. The [live GitHub Pages demo](https://qnbs.github.io/Nexus-HEMS-Dash/) is a **backendless static SPA** (`VITE_BACKEND_WS` off): it runs in **simulation** mode with demo plant data — not a disconnected production backend. See [FEATURE_STATUS.md](FEATURE_STATUS.md) for verified feature boundaries.
 
 > **Safety notice:** Nexus-HEMS controls safety-critical electrical infrastructure. No regulatory certification (VDE, IEC, CE) has been obtained. Read [docs/Safety-Certification-Notice.md](docs/Safety-Certification-Notice.md) before connecting to live hardware.
 

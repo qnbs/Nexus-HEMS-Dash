@@ -9,6 +9,10 @@ Release notes are maintained here and published via [semantic-release](https://g
 
 ## [Unreleased]
 
+## [1.11.1] - 2026-09-01
+
+Post-v1.11.0 freeze campaign: security hardening, demo chrome honesty, CI pins, and operational housekeeping after a 53-day product freeze (PRs #329–#337).
+
 ### Security
 
 - **SEC-11** — Fail closed when `NODE_ENV` is unset: `runtime-env.ts` (`isDevRuntime()` / `isProductionRuntime()` / `warnIfNodeEnvUnset()`); auth bypass, JWT config, WS origins, trust-proxy, and CORS now require explicit `development` or `test` (#333).
@@ -176,6 +180,7 @@ Consolidates **33 commits** since `v1.9.0` (PRs [#236](https://github.com/qnbs/N
 - **Post-audit remediation summary** — `docs/Post-Audit-Remediation-Summary-2026-07-04.md`; `FEATURE_STATUS.md` phase 8 rows.
 - **Debt registry + perfection roadmap** — Phase 8 items closed; release line updated.
 
+[1.11.1]: https://github.com/qnbs/Nexus-HEMS-Dash/compare/v1.11.0...v1.11.1
 [1.11.0]: https://github.com/qnbs/Nexus-HEMS-Dash/compare/v1.10.0...v1.11.0
 [1.10.0]: https://github.com/qnbs/Nexus-HEMS-Dash/compare/v1.9.0...v1.10.0
 
@@ -1041,6 +1046,6 @@ Consolidates **33 commits** since `v1.9.0` (PRs [#236](https://github.com/qnbs/N
 
 ---
 
-[Unreleased]: https://github.com/qnbs/Nexus-HEMS-Dash/compare/v1.11.0...HEAD
+[Unreleased]: https://github.com/qnbs/Nexus-HEMS-Dash/compare/v1.11.1...HEAD
 [1.1.0]: https://github.com/qnbs/Nexus-HEMS-Dash/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/qnbs/Nexus-HEMS-Dash/releases/tag/v1.0.0

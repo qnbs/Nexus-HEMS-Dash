@@ -1,6 +1,6 @@
 # Feature Status — Nexus-HEMS-Dash
 
-**Version:** 1.11.0 shipped (2026-07-10); post-freeze campaign landed 2026-09-01  
+**Version:** 1.11.1 shipped (2026-09-01); v1.11.0 baseline (2026-07-10)  
 **Last updated:** 2026-09-01 (Sep 2026 campaign closeout — demo chrome, SEC-11, ops housekeeping)  
 **Purpose:** Single source of truth for what is actually implemented, partial, or planned. Use this file to keep README/marketing claims synchronized with the codebase.
 
