@@ -1,6 +1,6 @@
 # Offline Sync Design — Nexus-HEMS-Dash
 
-> **Status:** Active — Implementation roadmap through v1.2.0
+> **Status:** Active design — **idempotency slice 1** (command replay dedupe) in progress; full offline sync (conflict UI, `lastSyncVersion`, TTL) remains **Planned** (post-v1.11.1)
 > **Created:** 2026-04-25
 > **Owner:** @qnbs
 
