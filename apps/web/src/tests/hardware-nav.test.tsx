@@ -1,7 +1,7 @@
 import { act, fireEvent, render, renderHook, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Referenced inside the hoisted vi.mock factory below.
 const { mockNavigate } = vi.hoisted(() => ({ mockNavigate: vi.fn() }));
@@ -27,11 +27,17 @@ import { MobileNavigation } from '../components/ui/MobileNavigation';
 import { useAppStore } from '../store';
 
 beforeEach(() => {
+  vi.stubEnv('VITE_BACKEND_WS', 'false');
   mockNavigate.mockClear();
   useAppStore.setState((state) => ({
     connected: false,
+    adapterMode: 'mock',
     settings: { ...state.settings, keyboardShortcuts: true },
   }));
+});
+
+afterEach(() => {
+  vi.unstubAllEnvs();
 });
 
 describe('Sidebar navigation', () => {
@@ -82,7 +88,17 @@ describe('Sidebar navigation', () => {
     expect(screen.getByText('common.connected')).toBeInTheDocument();
   });
 
-  it('shows disconnected status when the store reports no link', () => {
+  it('shows simulation status on static demo when no adapter is connected', () => {
+    render(
+      <MemoryRouter>
+        <Sidebar />
+      </MemoryRouter>,
+    );
+    expect(screen.getByText('mode.simulationBadge')).toBeInTheDocument();
+  });
+
+  it('shows disconnected status when live mode is active but no adapter is connected', () => {
+    useAppStore.setState({ adapterMode: 'live' });
     render(
       <MemoryRouter>
         <Sidebar />

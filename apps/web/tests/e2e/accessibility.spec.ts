@@ -1,6 +1,11 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
-import { attachPageErrorHandler, setupLocalStorage } from './e2e-setup';
+import {
+  attachPageErrorHandler,
+  gotoAndWaitForHealth,
+  mockBackendHealth,
+  setupLocalStorage,
+} from './e2e-setup';
 
 const routes = [
   { path: './', name: 'Command Hub' },
@@ -70,6 +75,7 @@ async function gotoAndWait(page: import('@playwright/test').Page, path: string) 
 test.describe('WCAG 2.2 AA Accessibility', () => {
   test.beforeEach(async ({ page }) => {
     attachPageErrorHandler(page);
+    await mockBackendHealth(page);
     // Emulate `prefers-reduced-motion: reduce` for every a11y test. The app's
     // `@media (prefers-reduced-motion: reduce)` block zeroes every transition/animation
     // duration, so colour-token transitions (e.g. the language toggle's
@@ -213,7 +219,7 @@ test.describe('WCAG 2.2 AA Accessibility', () => {
   });
 
   test('Sankey energy flow should have ARIA-live region for screen readers', async ({ page }) => {
-    await gotoAndWait(page, './energy-flow');
+    await gotoAndWaitForHealth(page, './energy-flow');
 
     // Check for the Sankey-specific ARIA-live region (sr-only, inside the Sankey container)
     const liveRegion = page.locator(
@@ -223,7 +229,7 @@ test.describe('WCAG 2.2 AA Accessibility', () => {
   });
 
   test('Sankey energy flow should have accessible sr-only data table', async ({ page }) => {
-    await gotoAndWait(page, './energy-flow');
+    await gotoAndWaitForHealth(page, './energy-flow');
 
     // Check for sr-only data table
     const dataTable = page.locator('table.sr-only');

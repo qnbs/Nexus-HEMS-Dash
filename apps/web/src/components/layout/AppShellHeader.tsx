@@ -1,5 +1,6 @@
 import { motion } from 'motion/react';
 import type { RefObject } from 'react';
+import type { ConnectionPresentation } from '../../lib/adapter-mode';
 import { AppShellHeaderBar } from './AppShellHeaderBar';
 import { AppShellHeaderTicker } from './AppShellHeaderTicker';
 
@@ -13,8 +14,8 @@ export interface AppShellHeaderProps {
   isLive: boolean;
   /** Whether the backend enforces read-only mode. */
   isReadOnly: boolean;
-  /** Whether the backend WebSocket is connected. */
-  connected: boolean;
+  /** Resolved connection chrome label (connected / simulation / disconnected). */
+  connectionPresentation: ConnectionPresentation;
   /** Whether any enabled adapter is degraded. */
   hasDegradedAdapter: boolean;
   /** Current electricity price in €/kWh. */
@@ -39,7 +40,7 @@ export function AppShellHeader({
   scrolled,
   isLive,
   isReadOnly,
-  connected,
+  connectionPresentation,
   hasDegradedAdapter,
   priceCurrent,
   pvPower,
@@ -65,7 +66,7 @@ export function AppShellHeader({
       <AppShellHeaderBar
         isLive={isLive}
         isReadOnly={isReadOnly}
-        connected={connected}
+        connectionPresentation={connectionPresentation}
         hasDegradedAdapter={hasDegradedAdapter}
         priceCurrent={priceCurrent}
         onOpenCommandPalette={onOpenCommandPalette}

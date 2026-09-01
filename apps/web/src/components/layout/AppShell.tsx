@@ -2,7 +2,8 @@ import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useEnergyStoreBase } from '../../core/useEnergyStore';
 import { themeDefinitions } from '../../design-tokens';
-import { isLiveSafetyMode } from '../../lib/adapter-mode';
+import { isLiveSafetyMode, resolveConnectionPresentation } from '../../lib/adapter-mode';
+import { getDisplayData } from '../../lib/demo-data';
 import { resolveReadOnlyModeActive } from '../../lib/use-read-only-mode';
 import { useAppStoreShallow } from '../../store';
 import { CommandPaletteWithSafety } from '../command-palette/CommandPaletteWithSafety';
@@ -25,27 +26,27 @@ export function AppShell({ children }: AppShellProps) {
   const { t } = useTranslation();
   const { isOpen: isCommandPaletteOpen, setIsOpen: setCommandPaletteOpen } = useCommandPalette();
 
-  const {
-    priceCurrent,
-    pvPower,
-    batterySoC,
-    gridPower,
-    houseLoad,
+  const { energyData, connected, adapterMode, theme, backendReadOnly } = useAppStoreShallow(
+    (s) => ({
+      energyData: s.energyData,
+      connected: s.connected,
+      adapterMode: s.adapterMode,
+      theme: s.theme,
+      backendReadOnly: s.backendReadOnly,
+    }),
+  );
+
+  const serverWsConnected = useEnergyStoreBase((s) => s.serverWsConnected);
+
+  const connectionPresentation = resolveConnectionPresentation(
     connected,
-    theme,
     adapterMode,
-    backendReadOnly,
-  } = useAppStoreShallow((s) => ({
-    priceCurrent: s.energyData.priceCurrent,
-    pvPower: s.energyData.pvPower,
-    batterySoC: s.energyData.batterySoC,
-    gridPower: s.energyData.gridPower,
-    houseLoad: s.energyData.houseLoad,
-    connected: s.connected,
-    theme: s.theme,
-    adapterMode: s.adapterMode,
-    backendReadOnly: s.backendReadOnly,
-  }));
+    serverWsConnected,
+  );
+  const displayEnergy =
+    connectionPresentation === 'simulation' ? getDisplayData(energyData, connected) : energyData;
+
+  const { priceCurrent, pvPower, batterySoC, gridPower, houseLoad } = displayEnergy;
 
   const isLive = isLiveSafetyMode(adapterMode);
   const isReadOnly = resolveReadOnlyModeActive(backendReadOnly);
@@ -107,7 +108,7 @@ export function AppShell({ children }: AppShellProps) {
           scrolled={scrolled}
           isLive={isLive}
           isReadOnly={isReadOnly}
-          connected={connected}
+          connectionPresentation={connectionPresentation}
           hasDegradedAdapter={hasDegradedAdapter}
           priceCurrent={priceCurrent}
           pvPower={pvPower}

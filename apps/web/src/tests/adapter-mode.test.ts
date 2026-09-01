@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   canConnectHardwareAdapter,
   fetchBackendAdapterMode,
@@ -7,6 +7,7 @@ import {
   isLiveHardwareBuildAllowed,
   isLiveSafetyMode,
   isReadOnlyModeActive,
+  resolveConnectionPresentation,
   resolveFrontendAdapterMode,
   setRuntimeBackendReadOnly,
 } from '../lib/adapter-mode';
@@ -114,6 +115,49 @@ describe('fetchBackendAdapterMode', () => {
   it('returns unknown when the body has no recognised mode', async () => {
     mockFetch({ ok: true, body: { status: 'healthy' } });
     expect(await fetchBackendAdapterMode()).toBe('unknown');
+  });
+});
+
+describe('resolveConnectionPresentation', () => {
+  beforeEach(() => {
+    vi.stubEnv('VITE_BACKEND_WS', 'false');
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it('returns connected when any adapter is connected', () => {
+    expect(resolveConnectionPresentation(true, 'mock')).toBe('connected');
+    expect(resolveConnectionPresentation(true, 'live')).toBe('connected');
+  });
+
+  it('returns connected when the backend WebSocket consumer is linked', () => {
+    vi.stubEnv('VITE_BACKEND_WS', 'true');
+    expect(resolveConnectionPresentation(false, 'live', true)).toBe('connected');
+  });
+
+  it('ignores serverWsConnected when the backend WebSocket consumer is disabled', () => {
+    expect(resolveConnectionPresentation(false, 'live', true)).toBe('disconnected');
+  });
+
+  it('returns simulation on static demo deployments (no backend WS, not live)', () => {
+    expect(resolveConnectionPresentation(false, 'mock')).toBe('simulation');
+    expect(resolveConnectionPresentation(false, 'unknown')).toBe('simulation');
+  });
+
+  it('returns simulation for mock mode when backend WS consumer is enabled but offline', () => {
+    vi.stubEnv('VITE_BACKEND_WS', 'true');
+    expect(resolveConnectionPresentation(false, 'mock', false)).toBe('simulation');
+  });
+
+  it('returns disconnected for unknown mode when backend WS consumer is enabled', () => {
+    vi.stubEnv('VITE_BACKEND_WS', 'true');
+    expect(resolveConnectionPresentation(false, 'unknown', false)).toBe('disconnected');
+  });
+
+  it('returns disconnected when live mode is active but adapters are offline', () => {
+    expect(resolveConnectionPresentation(false, 'live')).toBe('disconnected');
   });
 });
 

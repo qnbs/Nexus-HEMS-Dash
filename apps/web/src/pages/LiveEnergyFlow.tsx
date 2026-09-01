@@ -20,8 +20,7 @@ function LiveEnergyFlowComponent() {
       className={`relative flex h-[calc(100dvh-8rem)] flex-col overflow-hidden ${flow.isFullscreen ? 'h-screen bg-(--color-background)' : ''}`}
     >
       <LiveEnergyTopBar
-        connected={flow.connected}
-        isDemo={flow.isDemo}
+        connectionPresentation={flow.connectionPresentation}
         isFullscreen={flow.isFullscreen}
         onToggleFullscreen={flow.toggleFullscreen}
         energyData={flow.energyData}

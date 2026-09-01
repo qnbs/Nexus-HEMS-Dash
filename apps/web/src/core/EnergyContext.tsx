@@ -1,10 +1,11 @@
 import type { ReactNode } from 'react';
 import { createContext, useContext, useState } from 'react';
+import { resolveConnectionPresentation } from '../lib/adapter-mode';
 import { getDisplayData } from '../lib/demo-data';
 import { useAppStoreShallow } from '../store';
 import type { EnergyData } from '../types';
 import type { UnifiedEnergyModel } from './adapters/EnergyAdapter';
-import { useEnergyStore } from './useEnergyStore';
+import { useEnergyStore, useEnergyStoreBase } from './useEnergyStore';
 
 // ─── Detail panel state (shared between Sankey and floating panels) ──
 
@@ -46,13 +47,25 @@ const EnergyContext = createContext<EnergyContextValue | null>(null);
 
 export function EnergyProvider({ children }: { children: ReactNode }) {
   // Single combined subscription — one render trigger instead of two
-  const { energyData: rawData, connected } = useAppStoreShallow((s) => ({
+  const {
+    energyData: rawData,
+    connected,
+    adapterMode,
+  } = useAppStoreShallow((s) => ({
     energyData: s.energyData,
     connected: s.connected,
+    adapterMode: s.adapterMode,
   }));
+  const serverWsConnected = useEnergyStoreBase((s) => s.serverWsConnected);
+  const connectionPresentation = resolveConnectionPresentation(
+    connected,
+    adapterMode,
+    serverWsConnected,
+  );
 
-  // Centralised demo-data fallback — all consumers get realistic data when disconnected
-  const data = getDisplayData(rawData, connected);
+  // Demo plant only in simulation chrome — matches AppShell header KPI policy
+  const data =
+    connectionPresentation === 'simulation' ? getDisplayData(rawData, connected) : rawData;
 
   const unified = useEnergyStore((s) => s.unified);
   const lastUpdated = useEnergyStore((s) => s.lastUpdated);

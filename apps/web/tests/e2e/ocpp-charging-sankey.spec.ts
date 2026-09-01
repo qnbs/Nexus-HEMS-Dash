@@ -13,7 +13,12 @@
  */
 
 import { expect, test } from '@playwright/test';
-import { attachPageErrorHandler, setupLocalStorage } from './e2e-setup';
+import {
+  attachPageErrorHandler,
+  gotoAndWaitForHealth,
+  mockBackendHealth,
+  setupLocalStorage,
+} from './e2e-setup';
 
 type DevStoreHandle = {
   getState(): {
@@ -60,11 +65,12 @@ test.describe('OCPP Charging Session → Sankey Update', () => {
   test.beforeEach(async ({ page }) => {
     attachPageErrorHandler(page);
     await page.addInitScript(setupLocalStorage);
+    await mockBackendHealth(page);
   });
 
   test('Sankey updates on EV charging start / update / stop', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
-    await page.goto('./energy-flow');
+    await gotoAndWaitForHealth(page, './energy-flow');
     await page.waitForSelector('svg[role="img"]', { timeout: 15_000 });
 
     const sankeyTable = page.locator('table.sr-only');

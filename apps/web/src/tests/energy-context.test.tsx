@@ -264,11 +264,18 @@ describe('EnergyProvider', () => {
 
   describe('demo-data fallback', () => {
     it('uses demo data when disconnected and store has zeroed data', () => {
-      // disconnected + all zeros = demo data → selfSufficiency should be non-zero
-      // DEMO_ENERGY_DATA: houseLoad=3180, gridPower=-1420 → 100% self-sufficient (exporting)
+      // mock/disconnected → simulation chrome → demo plant
+      useAppStore.setState({ adapterMode: 'mock' });
       renderWithProvider();
       expect(screen.getByTestId('isExporting').textContent).toBe('true');
       expect(screen.getByTestId('selfSufficiency').textContent).toBe('100');
+    });
+
+    it('does not substitute demo data in live mode when disconnected', () => {
+      useAppStore.setState({ adapterMode: 'live' });
+      renderWithProvider();
+      expect(screen.getByTestId('isExporting').textContent).toBe('false');
+      expect(screen.getByTestId('selfSufficiency').textContent).toBe('0');
     });
   });
 });
