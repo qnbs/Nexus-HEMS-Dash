@@ -19,7 +19,7 @@ Aligned to `main` @ `b44915fa` after a **53-day product freeze** (last product c
 - **PRF-01** — DeepSource advisory; JavaScript analyzer removed (#299/#301)
 - **OPS-FREEZE-01** — open Dependabot Action pin PRs #323–#327 pending merge (supply-chain hygiene)
 
-Campaign PRs (Sep 2026): CI pin consolidation (#329), Pages demo chrome honesty (#332), this docs truth-sync.
+Campaign PRs (Sep 2026): CI pin consolidation (#329), Pages demo chrome honesty (#332), SEC-11 fail-closed runtime (#333), this docs truth-sync (#334, stacked on #332).
 
 ## Truth-Sync Note (2026-04-26, superseded header)
 
