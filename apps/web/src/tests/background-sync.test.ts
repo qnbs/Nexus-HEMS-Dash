@@ -47,10 +47,10 @@ describe('BackgroundSyncService', () => {
     isAuthTokenValid.mockReset();
     isAuthTokenValid.mockReturnValue(true);
     const { getPendingActions, updateActionStatus } = await import('../lib/db');
-    getPendingActions.mockReset();
-    getPendingActions.mockResolvedValue([]);
-    updateActionStatus.mockReset();
-    updateActionStatus.mockResolvedValue(undefined);
+    vi.mocked(getPendingActions).mockReset();
+    vi.mocked(getPendingActions).mockResolvedValue([]);
+    vi.mocked(updateActionStatus).mockReset();
+    vi.mocked(updateActionStatus).mockResolvedValue(undefined);
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{}', { status: 200 })));
     onlineHandler = null;
     vi.stubGlobal('window', {
