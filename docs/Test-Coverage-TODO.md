@@ -79,7 +79,9 @@ imported files, so covering real imported code was the effective lever.
 
 ### Web — quality gaps (not blocking gates)
 
-- [ ] Cover `co2-report.ts`, `auth-token.ts`, `ai-keys.ts` error paths (large line gaps).
+- [x] Cover `co2-report.ts` PDF export + annual edge cases (2026-09-01, #TBD).
+- [x] Cover `ai-keys.ts` error paths (`isKeyStorageAvailable`, decrypt failure, active provider) (2026-09-01, #TBD).
+- [ ] Cover `auth-token.ts` error paths (partially addressed in offline-sync slice 2).
 - [ ] Page-level tests for historical analytics pages.
 
 ### API backend coverage (separate track, MED-01)
