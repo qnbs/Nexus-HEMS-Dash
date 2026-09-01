@@ -202,7 +202,7 @@ export const de = {
     currentPrice: 'Aktueller Strompreis',
   },
   commandHub: {
-    title: 'Command Hub',
+    title: 'Kommandozentrale',
     subtitle: 'Gesamtübersicht aller Energiesysteme',
     metricsOverview: 'Kennzahlen',
     autonomous: 'autark',
