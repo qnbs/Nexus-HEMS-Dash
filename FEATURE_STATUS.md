@@ -5,7 +5,7 @@
 **Purpose:** Single source of truth for what is actually implemented, partial, or planned. Use this file to keep README/marketing claims synchronized with the codebase.
 
 > **Operational note (2026-09-01):** No product commits landed on `main` between **2026-07-10** (v1.11.0) and this update (~53-day freeze). Open Dependabot CI pin PRs (#323–#327) and campaign fixes (demo chrome, docs truth-sync) are tracked separately from the frozen release baseline.
-
+>
 > **Rule:** Any PR that changes a feature's implementation status must update this file and the relevant docs before merging.
 
 ---
@@ -73,7 +73,7 @@
 | PDF reports + QR sharing | ✅ | `apps/web/src/components/ExportAndSharing.tsx`, `lib/sharing.ts` |
 | Prometheus monitoring | ✅ | `apps/api/src/middleware/metrics.ts`, `routes/metrics.routes.ts`; per-backend-adapter series via `adapter-metrics.ts` (MED-18) |
 | Adapter health endpoint | ✅ | `GET /api/health` returns mode, overall status, and per-adapter state (`apps/api/src/routes/health.routes.ts`) |
-| Live/Mock mode safety indicator | ✅ | Header simulation badge + `resolveConnectionPresentation()` labels static GitHub Pages deploys **Simulation** (not false **Disconnected**); live banner + read-only banner when applicable (`apps/web/src/lib/adapter-mode.ts`, `AppShell.tsx`) |
+| Live/Mock mode safety indicator | ✅ | Header simulation badge + `resolveConnectionPresentation()` labels static GitHub Pages deploys **Simulation** (not false **Disconnected**); counts `serverWsConnected` as **Live** when `VITE_BACKEND_WS` is on; live banner + read-only banner when applicable (`apps/web/src/lib/adapter-mode.ts`, `AppShell.tsx`) |
 | GitHub Pages static demo honesty | ✅ | `AppShell.tsx` header KPI ticker calls `getDisplayData()` only when `resolveConnectionPresentation()` is **simulation** (mock/disconnected); live+disconnected shows raw store values. Routed charts use the same helper via `EnergyContext` (`apps/web/src/lib/demo-data.ts`) |
 | Opt-in backend WebSocket consumer | ✅ | `VITE_BACKEND_WS` flag mounts `useServerWebSocket` (ADR-025); maps server `EnergyData` → `UnifiedEnergyModel`; Monitoring shows `serverWsConnected` pill |
 | Built-in adapters disabled by default | ✅ | `isBuiltinAdapterEnabledByDefault()` returns `false`; user enables adapters in Settings (`apps/web/src/lib/adapter-mode.ts`) |
