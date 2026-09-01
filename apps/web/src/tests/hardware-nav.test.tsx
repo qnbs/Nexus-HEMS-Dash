@@ -30,6 +30,7 @@ beforeEach(() => {
   mockNavigate.mockClear();
   useAppStore.setState((state) => ({
     connected: false,
+    adapterMode: 'mock',
     settings: { ...state.settings, keyboardShortcuts: true },
   }));
 });

@@ -9,12 +9,12 @@ import {
 import { PageHeader } from '../components/layout/PageHeader';
 import { useEnergyContext } from '../core/EnergyContext';
 import { resolveConnectionPresentation } from '../lib/adapter-mode';
-import { useAppStoreShallow } from '../store';
+import { useAppStore } from '../store';
 
 function CommandHubComponent() {
   const { t } = useTranslation();
   const { connected } = useEnergyContext();
-  const adapterMode = useAppStoreShallow((s) => s.adapterMode);
+  const adapterMode = useAppStore((s) => s.adapterMode);
   const connectionPresentation = resolveConnectionPresentation(connected, adapterMode);
 
   return (

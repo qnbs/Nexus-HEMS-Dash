@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useEnergyContext } from '../../../core/EnergyContext';
 import { useLegacySendCommand } from '../../../core/useLegacySendCommand';
 import { resolveConnectionPresentation } from '../../../lib/adapter-mode';
-import { useAppStoreShallow } from '../../../store';
+import { useAppStore } from '../../../store';
 import type { PanelId } from '../types';
 
 /**
@@ -16,7 +16,7 @@ export function useLiveEnergyFlow() {
   const { i18n } = useTranslation();
   const locale = i18n.language;
   const { data: energyData, connected, selfSufficiencyPercent, isExporting } = useEnergyContext();
-  const adapterMode = useAppStoreShallow((s) => s.adapterMode);
+  const adapterMode = useAppStore((s) => s.adapterMode);
   const connectionPresentation = resolveConnectionPresentation(connected, adapterMode);
   const { sendCommand, ConfirmationDialog } = useLegacySendCommand();
 
