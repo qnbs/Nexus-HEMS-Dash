@@ -119,9 +119,22 @@ describe('fetchBackendAdapterMode', () => {
 });
 
 describe('resolveConnectionPresentation', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   it('returns connected when any adapter is connected', () => {
     expect(resolveConnectionPresentation(true, 'mock')).toBe('connected');
     expect(resolveConnectionPresentation(true, 'live')).toBe('connected');
+  });
+
+  it('returns connected when the backend WebSocket consumer is linked', () => {
+    vi.stubEnv('VITE_BACKEND_WS', 'true');
+    expect(resolveConnectionPresentation(false, 'live', true)).toBe('connected');
+  });
+
+  it('ignores serverWsConnected when the backend WebSocket consumer is disabled', () => {
+    expect(resolveConnectionPresentation(false, 'live', true)).toBe('disconnected');
   });
 
   it('returns simulation on static demo deployments (no backend WS, not live)', () => {

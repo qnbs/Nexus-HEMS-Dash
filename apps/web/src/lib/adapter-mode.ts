@@ -142,8 +142,9 @@ export type ConnectionPresentation = 'connected' | 'disconnected' | 'simulation'
 export function resolveConnectionPresentation(
   connected: boolean,
   backendMode: BackendAdapterMode,
+  serverWsConnected = false,
 ): ConnectionPresentation {
-  if (connected) return 'connected';
+  if (connected || (isBackendWsEnabled() && serverWsConnected)) return 'connected';
   if (!isBackendWsEnabled() && !isLiveSafetyMode(backendMode)) return 'simulation';
   return 'disconnected';
 }

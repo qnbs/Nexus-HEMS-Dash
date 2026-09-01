@@ -8,6 +8,7 @@ import {
 } from '../components/command-hub';
 import { PageHeader } from '../components/layout/PageHeader';
 import { useEnergyContext } from '../core/EnergyContext';
+import { useEnergyStoreBase } from '../core/useEnergyStore';
 import { resolveConnectionPresentation } from '../lib/adapter-mode';
 import { useAppStore } from '../store';
 
@@ -15,7 +16,12 @@ function CommandHubComponent() {
   const { t } = useTranslation();
   const { connected } = useEnergyContext();
   const adapterMode = useAppStore((s) => s.adapterMode);
-  const connectionPresentation = resolveConnectionPresentation(connected, adapterMode);
+  const serverWsConnected = useEnergyStoreBase((s) => s.serverWsConnected);
+  const connectionPresentation = resolveConnectionPresentation(
+    connected,
+    adapterMode,
+    serverWsConnected,
+  );
 
   return (
     <div className="space-y-6">

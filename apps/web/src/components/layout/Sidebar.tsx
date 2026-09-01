@@ -16,6 +16,7 @@ import { motion } from 'motion/react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { NavLink } from 'react-router-dom';
+import { useEnergyStoreBase } from '../../core/useEnergyStore';
 import { resolveConnectionPresentation } from '../../lib/adapter-mode';
 import { useAppStoreShallow } from '../../store';
 
@@ -89,7 +90,12 @@ function SidebarComponent() {
     connected: s.connected,
     adapterMode: s.adapterMode,
   }));
-  const connectionPresentation = resolveConnectionPresentation(connected, adapterMode);
+  const serverWsConnected = useEnergyStoreBase((s) => s.serverWsConnected);
+  const connectionPresentation = resolveConnectionPresentation(
+    connected,
+    adapterMode,
+    serverWsConnected,
+  );
   const [collapsed, setCollapsed] = useState(false);
 
   return (

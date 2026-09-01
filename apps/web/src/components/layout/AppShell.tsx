@@ -36,7 +36,13 @@ export function AppShell({ children }: AppShellProps) {
     }),
   );
 
-  const connectionPresentation = resolveConnectionPresentation(connected, adapterMode);
+  const serverWsConnected = useEnergyStoreBase((s) => s.serverWsConnected);
+
+  const connectionPresentation = resolveConnectionPresentation(
+    connected,
+    adapterMode,
+    serverWsConnected,
+  );
   const displayEnergy =
     connectionPresentation === 'simulation' ? getDisplayData(energyData, connected) : energyData;
 
