@@ -68,7 +68,7 @@ export function AppShellHeaderPricePill({ priceCurrent }: AppShellHeaderPricePil
   const { t } = useTranslation();
   return (
     <HeaderKpiPill title={t('dashboard.currentPrice')} className="md:hidden">
-      <span className="text-(--color-primary)">{priceCurrent.toFixed(2)} ct</span>
+      <span className="text-(--color-primary)">{(priceCurrent * 100).toFixed(1)} ct</span>
     </HeaderKpiPill>
   );
 }
