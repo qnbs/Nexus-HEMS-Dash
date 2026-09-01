@@ -3,6 +3,8 @@ import {
   canConnectHardwareAdapter,
   fetchBackendAdapterMode,
   fetchBackendHealthStatus,
+  isAdapterWorkerEnabled,
+  isBackendWsEnabled,
   isBuiltinAdapterEnabledByDefault,
   isLiveHardwareBuildAllowed,
   isLiveSafetyMode,
@@ -17,6 +19,27 @@ describe('adapter-mode (frontend)', () => {
     expect(resolveFrontendAdapterMode()).toBe('mock');
     expect(isBuiltinAdapterEnabledByDefault()).toBe(false);
     expect(isLiveHardwareBuildAllowed()).toBe(false);
+  });
+
+  it('resolves live mode and hardware acknowledgement from env', () => {
+    vi.stubEnv('VITE_ADAPTER_MODE', 'live');
+    vi.stubEnv('VITE_ALLOW_LIVE_HARDWARE', 'true');
+    expect(resolveFrontendAdapterMode()).toBe('live');
+    expect(isLiveHardwareBuildAllowed()).toBe(true);
+    expect(canConnectHardwareAdapter(true)).toBe(true);
+    expect(canConnectHardwareAdapter(false)).toBe(false);
+    vi.unstubAllEnvs();
+  });
+
+  it('warns and falls back to mock for invalid VITE_ADAPTER_MODE in dev', () => {
+    vi.stubEnv('VITE_ADAPTER_MODE', 'bogus');
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    expect(resolveFrontendAdapterMode()).toBe('mock');
+    if (import.meta.env.DEV) {
+      expect(warn).toHaveBeenCalled();
+    }
+    warn.mockRestore();
+    vi.unstubAllEnvs();
   });
 
   it('does not connect hardware without live build acknowledgement', () => {
@@ -62,6 +85,11 @@ describe('fetchBackendHealthStatus', () => {
   it('returns readOnly when the backend reports it', async () => {
     mockFetch({ ok: true, body: { mode: 'mock', readOnly: true } });
     await expect(fetchBackendHealthStatus()).resolves.toEqual({ mode: 'mock', readOnly: true });
+  });
+
+  it('returns live mode with readOnly false when backend is live', async () => {
+    mockFetch({ ok: true, body: { mode: 'live', readOnly: false } });
+    await expect(fetchBackendHealthStatus()).resolves.toEqual({ mode: 'live', readOnly: false });
   });
 
   it('defaults readOnly to false on network failure', async () => {
@@ -164,14 +192,50 @@ describe('resolveConnectionPresentation', () => {
 describe('isReadOnlyModeActive', () => {
   afterEach(() => {
     setRuntimeBackendReadOnly(false);
+    vi.unstubAllEnvs();
   });
 
   it('returns false in test environment (VITE_READ_ONLY_MODE not set)', () => {
     expect(isReadOnlyModeActive()).toBe(false);
   });
 
+  it('returns true when the build sets VITE_READ_ONLY_MODE', () => {
+    vi.stubEnv('VITE_READ_ONLY_MODE', 'true');
+    expect(isReadOnlyModeActive()).toBe(true);
+  });
+
   it('returns true when backend health reports readOnly', () => {
     setRuntimeBackendReadOnly(true);
     expect(isReadOnlyModeActive()).toBe(true);
+  });
+});
+
+describe('isBackendWsEnabled', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it('returns true only when VITE_BACKEND_WS is true', () => {
+    expect(isBackendWsEnabled()).toBe(false);
+    vi.stubEnv('VITE_BACKEND_WS', 'true');
+    expect(isBackendWsEnabled()).toBe(true);
+  });
+});
+
+describe('isAdapterWorkerEnabled', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it('requires live hardware acknowledgement and VITE_ADAPTER_WORKER', () => {
+    vi.stubEnv('VITE_ADAPTER_MODE', 'live');
+    vi.stubEnv('VITE_ALLOW_LIVE_HARDWARE', 'true');
+    vi.stubEnv('VITE_ADAPTER_WORKER', 'true');
+    expect(isAdapterWorkerEnabled()).toBe(true);
+  });
+
+  it('returns false without live hardware acknowledgement', () => {
+    vi.stubEnv('VITE_ADAPTER_WORKER', 'true');
+    expect(isAdapterWorkerEnabled()).toBe(false);
   });
 });

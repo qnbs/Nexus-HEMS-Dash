@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -58,5 +59,19 @@ describe('CommandHub chrome', () => {
     expect(screen.queryByText('mode.simulationBadge')).not.toBeInTheDocument();
     expect(screen.getByText('commandHub.subtitle')).toBeInTheDocument();
     expect(screen.getByText('commandHub.metricsOverview')).toBeInTheDocument();
+  });
+
+  it('expands the secondary metrics disclosure', async () => {
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter>
+        <EnergyProvider>
+          <CommandHub />
+        </EnergyProvider>
+      </MemoryRouter>,
+    );
+
+    await user.click(screen.getByText('commandHub.showMoreMetrics'));
+    expect(screen.getByText('commandHub.secondaryMetrics')).toBeInTheDocument();
   });
 });
