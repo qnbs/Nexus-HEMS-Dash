@@ -14,10 +14,12 @@ vi.stubGlobal('localStorage', {
 });
 
 describe('sync-client', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     storage.clear();
     vi.stubGlobal('fetch', vi.fn());
     vi.stubGlobal('window', { location: { origin: 'http://localhost:3000' } });
+    const { nexusDb } = await import('../lib/db');
+    await nexusDb.syncState.clear();
   });
 
   afterEach(() => {
@@ -51,5 +53,21 @@ describe('sync-client', () => {
 
     const { detectSyncConflict } = await import('../lib/sync-client');
     await expect(detectSyncConflict('settings')).resolves.toBe(true);
+  });
+
+  it('detectSyncConflict bootstraps version on first contact without conflict', async () => {
+    const { setAuthToken } = await import('../lib/auth-token');
+    const { getSyncState } = await import('../lib/db');
+    setAuthToken('jwt');
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response(JSON.stringify({ version: 42 }), { status: 200 }),
+    );
+
+    const { detectSyncConflict } = await import('../lib/sync-client');
+    await expect(detectSyncConflict('settings')).resolves.toBe(false);
+
+    const state = await getSyncState('settings');
+    expect(state.serverVersion).toBe('42');
+    expect(state.hasConflict).toBe(false);
   });
 });

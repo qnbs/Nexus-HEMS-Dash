@@ -13,7 +13,8 @@ export function getSyncVersion(): number {
 
 /** Bump after a server-side config mutation (settings, adapters, etc.). */
 export function bumpSyncVersion(): number {
-  syncVersion = Date.now();
+  const now = Date.now();
+  syncVersion = Math.max(now, syncVersion + 1);
   return syncVersion;
 }
 

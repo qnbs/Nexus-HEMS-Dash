@@ -1605,6 +1605,19 @@ export const en = {
     storageQuotaWarning: 'Device storage is {{percent}}% full',
     storageQuotaWarningDesc:
       'Oldest offline cache entries were removed to free space. Clear cache in Settings if problems persist.',
+    conflictsDetected: '{{count}} sync conflicts detected',
+    viewConflicts: 'View details',
+    syncConflictTitle: 'Settings sync conflict',
+    syncConflictDescription:
+      'The server configuration changed while this device was offline. Choose which version to keep.',
+    localVersion: 'This device',
+    localVersionTime: 'Last sync: {{time}}',
+    serverVersion: 'Server',
+    serverVersionValue: 'Version {{version}}',
+    keepLocal: 'Keep my version',
+    acceptServer: 'Accept server version',
+    conflictResolved: 'Sync conflict resolved',
+    syncConflictResolveError: 'Could not apply your choice. Check your connection and try again.',
   },
   commandPalette: {
     title: 'Command Palette',

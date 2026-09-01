@@ -1621,6 +1621,20 @@ export const de = {
     storageQuotaWarning: 'Gerätespeicher ist zu {{percent}} % belegt',
     storageQuotaWarningDesc:
       'Älteste Offline-Cache-Einträge wurden entfernt. Bei Problemen Cache in den Einstellungen leeren.',
+    conflictsDetected: '{{count}} Sync-Konflikte erkannt',
+    viewConflicts: 'Details anzeigen',
+    syncConflictTitle: 'Einstellungs-Sync-Konflikt',
+    syncConflictDescription:
+      'Die Server-Konfiguration hat sich geändert, während dieses Gerät offline war. Wählen Sie, welche Version behalten werden soll.',
+    localVersion: 'Dieses Gerät',
+    localVersionTime: 'Letzte Synchronisation: {{time}}',
+    serverVersion: 'Server',
+    serverVersionValue: 'Version {{version}}',
+    keepLocal: 'Meine Version behalten',
+    acceptServer: 'Server-Version übernehmen',
+    conflictResolved: 'Sync-Konflikt behoben',
+    syncConflictResolveError:
+      'Die Auswahl konnte nicht angewendet werden. Verbindung prüfen und erneut versuchen.',
   },
   commandPalette: {
     title: 'Befehlspalette',

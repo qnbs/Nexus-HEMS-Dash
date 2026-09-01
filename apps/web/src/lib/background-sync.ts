@@ -12,6 +12,7 @@ import {
   updateActionStatus,
 } from './db';
 import { detectSyncConflict, fetchServerSyncVersion, recordServerSyncVersion } from './sync-client';
+import { markSyncConflict } from './sync-conflict';
 
 const MAX_RETRIES = 5;
 const BASE_RETRY_DELAY_MS = 2000;
@@ -36,11 +37,14 @@ function isCommandExpired(action: OfflineAction): boolean {
 }
 
 function getActionRetryCount(action: OfflineAction): number {
-  return (action as unknown as { retryCount?: number }).retryCount ?? 0;
+  return action.retries;
 }
+
+type ActionProcessResult = 'completed' | 'skipped' | 'failed';
 
 class BackgroundSyncService {
   private isSyncing = false;
+  private syncGeneration = 0;
   private syncInterval: number | null = null;
   private retryTimeouts = new Map<number, ReturnType<typeof setTimeout>>();
   private onlineHandler: (() => void) | null = null;
@@ -67,6 +71,7 @@ class BackgroundSyncService {
     // Listen for online/offline events
     this.onlineHandler = () => {
       if (import.meta.env.DEV) console.log('[BackgroundSync] Network online, syncing...');
+      void this.probeSyncConflict();
       this.syncPendingActions();
     };
     window.addEventListener('online', this.onlineHandler);
@@ -81,7 +86,17 @@ class BackgroundSyncService {
 
     // Initial sync if online
     if (navigator.onLine) {
+      void this.probeSyncConflict();
       this.syncPendingActions();
+    }
+  }
+
+  /** Detect server-side version drift even when the offline queue is empty. */
+  private async probeSyncConflict(): Promise<void> {
+    if (!navigator.onLine || !isAuthTokenValid()) return;
+    const hasConflict = await detectSyncConflict();
+    if (hasConflict) {
+      await markSyncConflict('settings');
     }
   }
 
@@ -100,36 +115,55 @@ class BackgroundSyncService {
   }
 
   /**
-   * Sync all pending actions with retry support
+   * Sync all pending actions with retry support.
+   * @returns false when one or more actions failed in this pass.
    */
-  async syncPendingActions(): Promise<void> {
+  async syncPendingActions(options?: { force?: boolean }): Promise<boolean> {
     if (this.isSyncing || !navigator.onLine) {
-      return;
+      return true;
     }
 
+    const generation = this.syncGeneration;
     this.isSyncing = true;
+    let batchHadFailure = false;
+    let deferredDueToConflict = false;
 
     try {
       const actions = await getPendingActions();
-      if (actions.length === 0) return;
+      if (actions.length === 0) return true;
 
-      if (!this.ensureAuthForReplay()) return;
-
-      const hasConflict = await this.checkAndLogConflict();
+      if (!this.ensureAuthForReplay()) return false;
 
       if (import.meta.env.DEV) {
         console.log(`[BackgroundSync] Syncing ${actions.length} pending actions`);
       }
 
       for (const action of actions) {
-        await this.processPendingAction(action);
+        if (!options?.force && action.type === 'settings') {
+          const hasConflict = await detectSyncConflict('settings');
+          if (hasConflict) {
+            await markSyncConflict('settings');
+            deferredDueToConflict = true;
+            continue;
+          }
+        }
+
+        const result = await this.processPendingAction(action);
+        if (result === 'failed') batchHadFailure = true;
       }
 
-      await this.recordLatestServerVersion(hasConflict);
+      if (!batchHadFailure && !deferredDueToConflict) {
+        await this.recordLatestServerVersion(false);
+      }
+
+      return !batchHadFailure;
     } catch (error) {
       console.error('[BackgroundSync] Sync failed:', error);
+      return false;
     } finally {
-      this.isSyncing = false;
+      if (generation === this.syncGeneration) {
+        this.isSyncing = false;
+      }
     }
   }
 
@@ -141,16 +175,6 @@ class BackgroundSyncService {
     return false;
   }
 
-  private async checkAndLogConflict(): Promise<boolean> {
-    const hasConflict = await detectSyncConflict();
-    if (hasConflict && import.meta.env.DEV) {
-      console.warn(
-        '[BackgroundSync] Server sync version advanced — conflict reconciliation deferred',
-      );
-    }
-    return hasConflict;
-  }
-
   private async recordLatestServerVersion(hasConflict: boolean): Promise<void> {
     const serverVersion = await fetchServerSyncVersion();
     if (serverVersion !== null) {
@@ -158,10 +182,10 @@ class BackgroundSyncService {
     }
   }
 
-  private async processPendingAction(action: OfflineAction): Promise<void> {
+  private async processPendingAction(action: OfflineAction): Promise<ActionProcessResult> {
     if (isCommandExpired(action)) {
       await updateActionStatus(action.id!, 'failed', 'Command expired (TTL exceeded)');
-      return;
+      return 'completed';
     }
 
     const retryCount = getActionRetryCount(action);
@@ -170,13 +194,14 @@ class BackgroundSyncService {
         console.warn(`[BackgroundSync] Action ${action.id} exceeded max retries, marking failed`);
       }
       await updateActionStatus(action.id!, 'failed', 'Max retries exceeded');
-      return;
+      return 'completed';
     }
 
     try {
       await updateActionStatus(action.id!, 'syncing');
       await this.executeAction(action);
       await updateActionStatus(action.id!, 'completed');
+      return 'completed';
     } catch (error) {
       const errMsg = error instanceof Error ? error.message : 'Unknown error';
       console.error(
@@ -194,10 +219,11 @@ class BackgroundSyncService {
       if (retryCount + 1 < MAX_RETRIES) {
         const timeout = setTimeout(() => {
           this.retryTimeouts.delete(action.id!);
-          this.syncPendingActions();
+          void this.syncPendingActions();
         }, delay);
         this.retryTimeouts.set(action.id!, timeout);
       }
+      return 'failed';
     }
   }
 
@@ -293,6 +319,7 @@ class BackgroundSyncService {
    * Cleanup on destroy
    */
   destroy() {
+    this.syncGeneration += 1;
     this.isSyncing = false;
     if (this.syncInterval) {
       clearInterval(this.syncInterval);

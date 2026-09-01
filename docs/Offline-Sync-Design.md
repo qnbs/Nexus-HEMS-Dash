@@ -1,6 +1,6 @@
 # Offline Sync Design — Nexus-HEMS-Dash
 
-> **Status:** Active design — **idempotency slice 1** + **slice 2** (sync version endpoint, token/TTL guards) shipped; conflict UI + full reconciliation remain **Planned**
+> **Status:** Active design — **slice 1–2** shipped (idempotency, sync version endpoint, JWT/TTL guards); **slice 3** (conflict UI + deferred replay) shipped; `/api/sync/diff` reconciliation remains planned.
 > **Created:** 2026-04-25
 > **Owner:** @qnbs
 
@@ -24,16 +24,17 @@ and replay safety mechanisms for Nexus-HEMS-Dash.
 - Online/offline event listeners
 
 **Known Gaps (v1.1.x):**
-| Gap | Impact |
-|-----|--------|
-| No `lastSyncVersion` tracking | Lost-update bug if server state changes while client offline |
-| No conflict detection | Optimistic updates may overwrite newer server state |
-| Failed actions never auto-recovered (marked `failed`, no escalation) | Manual UI intervention required |
-| No idempotency keys on commands | Duplicate execution possible on network retry | ✅ Slice 1 shipped (API `X-Idempotency-Key` + WS `idempotencyKey`, 5 min TTL) |
-| No command TTL on hardware replay | Stale offline commands may execute after reconnect | ✅ Slice 2 shipped (5 min TTL in `background-sync.ts`) |
-| No JWT liveness check before replay | Expired sessions may attempt sync | ✅ Slice 2 shipped (`isAuthTokenValid()` guard) |
-| No server sync version endpoint | Client cannot detect server-side drift | ✅ Slice 2 shipped (`GET /api/sync/version`) |
-| No server-wins reconciliation for config changes | Settings divergence after reconnect |
+
+| Gap | Impact | Status |
+|-----|--------|--------|
+| No `lastSyncVersion` tracking | Lost-update bug if server state changes while client offline | Slice 2+ (`syncState` + `/api/sync/version`) |
+| No conflict detection | Optimistic updates may overwrite newer server state | Slice 3 (banner + resolution UI) |
+| Failed actions never auto-recovered | Manual UI intervention required | Open |
+| No idempotency keys on commands | Duplicate execution on network retry | ✅ Slice 1 |
+| No command TTL on hardware replay | Stale offline commands after reconnect | ✅ Slice 2 |
+| No JWT liveness check before replay | Expired sessions may attempt sync | ✅ Slice 2 |
+| No server sync version endpoint | Client cannot detect server-side drift | ✅ Slice 2 |
+| No server-wins reconciliation for config changes | Settings divergence after reconnect | ✅ Slice 3 |
 
 ---
 
