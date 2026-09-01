@@ -7,6 +7,7 @@
 import crypto from 'crypto';
 import fs from 'fs';
 import { decodeProtectedHeader, errors as joseErrors, jwtVerify, SignJWT } from 'jose';
+import { isProductionRuntime } from './config/runtime-env.js';
 import {
   recordJtiRevocation,
   recordJwtKeyReload,
@@ -265,7 +266,7 @@ function readSecretFromFile(path: string): string | null {
     const fileSecret = fs.readFileSync(path, 'utf-8').trim();
     return fileSecret.length >= JWT_MIN_SECRET_LENGTH ? fileSecret : null;
   } catch (err) {
-    if (process.env.NODE_ENV === 'production') {
+    if (isProductionRuntime()) {
       console.warn('[JWT] Secret file not accessible:', path, (err as Error).message);
     }
     return null;
@@ -300,7 +301,7 @@ function readNewJwtSecretString(): string | null {
 }
 
 function resolveSigningMaterial(): SigningMaterial {
-  const isProd = process.env.NODE_ENV === 'production';
+  const isProd = isProductionRuntime();
   const main = readMainJwtSecretString();
   const fresh = readNewJwtSecretString();
 

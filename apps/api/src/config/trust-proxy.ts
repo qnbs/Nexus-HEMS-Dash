@@ -3,6 +3,8 @@
  * @see https://expressjs.com/en/guide/behind-proxies.html
  */
 
+import { isProductionRuntime } from './runtime-env.js';
+
 let warningLogged = false;
 
 /**
@@ -45,7 +47,7 @@ export function logTrustProxyWarning(): void {
   if (warningLogged) return;
   warningLogged = true;
 
-  const isProduction = process.env.NODE_ENV === 'production';
+  const isProduction = isProductionRuntime();
   const raw = process.env.TRUST_PROXY?.trim();
 
   if (isProduction && !raw) {

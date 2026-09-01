@@ -3,6 +3,8 @@
  * Mirrors the nginx docker-entrypoint allowlist; API Helmet consumes the same env.
  */
 
+import { isDevRuntime } from './runtime-env.js';
+
 const WS_ORIGIN_PATTERN = /^wss?:\/\/[a-zA-Z0-9][a-zA-Z0-9._\-[\]:]*(?::\d{1,5})?(?:\/[^\s]*)?$/;
 
 export function parseWsOrigins(raw: string | undefined): string[] {
@@ -58,7 +60,7 @@ export function isAllowedWsOrigin(origin: string, allowlist: string[]): boolean 
  * Empty is allowed (no extra connect-src entries beyond defaults).
  */
 export function validateWsOrigins(env: NodeJS.ProcessEnv = process.env): void {
-  if (env.NODE_ENV !== 'production') return;
+  if (isDevRuntime(env)) return;
 
   for (const origin of parseWsOrigins(env.WS_ORIGINS)) {
     if (!isValidWsOrigin(origin)) {

@@ -6,6 +6,7 @@
  */
 
 import type { JWTScope } from '../middleware/auth.js';
+import { isDevRuntime } from './runtime-env.js';
 
 function parseApiKeys(env: NodeJS.ProcessEnv): string[] {
   return (env.API_KEYS || '')
@@ -35,7 +36,7 @@ function parseApiKeyScopeMap(env: NodeJS.ProcessEnv): Map<string, JWTScope> {
  * Dev mode skips validation (anonymous / auto-accept paths remain available).
  */
 export function validateProductionAuthConfig(env: NodeJS.ProcessEnv = process.env): void {
-  if (env.NODE_ENV !== 'production') return;
+  if (isDevRuntime(env)) return;
 
   const apiKeys = parseApiKeys(env);
   if (apiKeys.length === 0) {

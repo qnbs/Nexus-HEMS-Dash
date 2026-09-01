@@ -4,11 +4,12 @@ import type { Express, NextFunction, Request, Response } from 'express';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import { buildProductionScriptSrc, buildProductionStyleSrc } from '../config/csp-nonce.js';
+import { isProductionRuntime } from '../config/runtime-env.js';
 
 // ─── CORS — Origin Whitelist ─────────────────────────────────────────
 
 export function configureCors(app: Express): void {
-  const isProduction = process.env.NODE_ENV === 'production';
+  const isProduction = isProductionRuntime();
   const ALLOWED_ORIGINS = (process.env.CORS_ORIGINS || '')
     .split(',')
     .map((o) => o.trim())

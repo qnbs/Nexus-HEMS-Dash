@@ -1,5 +1,6 @@
 import type { NextFunction, Request, Response } from 'express';
 import type { IncomingMessage } from 'http';
+import { isDevRuntime } from '../config/runtime-env.js';
 import { verifyToken } from '../jwt-utils.js';
 import type { IWsTicketStore } from '../services/ws-ticket-store.js';
 
@@ -76,7 +77,7 @@ export function clampScope(requestedScope: JWTScope | undefined, apiKey: string)
   return SCOPE_ORDER[requested] <= SCOPE_ORDER[maxScope] ? requested : maxScope;
 }
 
-const isDev = process.env.NODE_ENV !== 'production';
+const isDev = isDevRuntime();
 
 /**
  * Validates an API key against the configured set.

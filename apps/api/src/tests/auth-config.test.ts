@@ -30,6 +30,16 @@ describe('validateProductionAuthConfig', () => {
     ).toThrow(/API_KEYS/);
   });
 
+  it('enforces production auth when NODE_ENV is unset (SEC-11)', () => {
+    expect(() =>
+      validateProductionAuthConfig({
+        API_KEYS: 'only-key',
+        API_KEY_SCOPES: 'only-key:read',
+      }),
+    ).not.toThrow();
+    expect(() => validateProductionAuthConfig({ API_KEYS: 'only-key' })).toThrow(/API_KEY_SCOPES/);
+  });
+
   it('throws when API_KEY_SCOPES is unset in production', () => {
     expect(() =>
       validateProductionAuthConfig({
