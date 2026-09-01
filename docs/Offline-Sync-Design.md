@@ -29,7 +29,7 @@ and replay safety mechanisms for Nexus-HEMS-Dash.
 | No `lastSyncVersion` tracking | Lost-update bug if server state changes while client offline |
 | No conflict detection | Optimistic updates may overwrite newer server state |
 | Failed actions never auto-recovered (marked `failed`, no escalation) | Manual UI intervention required |
-| No idempotency keys on commands | Duplicate execution possible on network retry |
+| No idempotency keys on commands | Duplicate execution possible on network retry | ✅ Slice 1 shipped (API `X-Idempotency-Key` + WS `idempotencyKey`, 5 min TTL) |
 | No server-wins reconciliation for config changes | Settings divergence after reconnect |
 
 ---

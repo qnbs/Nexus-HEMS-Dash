@@ -355,6 +355,8 @@ export const WSCommandSchema = z
   .object({
     type: WSCommandTypeSchema,
     value: z.union([z.number().finite(), z.string(), z.boolean()]),
+    /** Optional replay key — duplicate WS commands within TTL skip mock mutation. */
+    idempotencyKey: z.string().min(1).max(128).optional(),
   })
   .superRefine((cmd, ctx) => {
     refineWsCommandValue(cmd.type, cmd.value, (message) => {

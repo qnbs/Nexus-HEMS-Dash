@@ -12,6 +12,7 @@ import { isReadOnlyMode } from '../config/read-only-mode.js';
 import { isProductionRuntime } from '../config/runtime-env.js';
 import { logger } from '../core/logger.js';
 import { type CommandOutcome, writeCommandAuditEntry } from '../data/command-audit.js';
+import { isWsIdempotencyReplay, markWsIdempotencyAccepted } from '../data/idempotency-cache.js';
 import { mockData, updateMockData } from '../data/mock-data.js';
 import { type AuthenticatedClient, authenticateWS, type JWTScope } from '../middleware/auth.js';
 import { setMetric, updateServerMetrics, wsMessageCount } from '../middleware/metrics.js';
@@ -339,7 +340,7 @@ export function handleWsCommand(
   }
 
   // CRIT-02: Enforce scope-based command authorization
-  const cmd = parsed as { type: string; value?: number };
+  const cmd = parsed as { type: string; value?: number; idempotencyKey?: string };
   if (!checkScopeAuthorization(ws, cmd.type, wsAuthMap)) {
     auditCommand(
       wsAuthMap,
@@ -371,6 +372,13 @@ export function handleWsCommand(
 
   const commandValue = cmd.value ?? 0;
   const mode = getEffectiveAdapterMode();
+  const idempotencyKey = cmd.idempotencyKey?.trim();
+
+  if (mode !== 'live' && idempotencyKey && isWsIdempotencyReplay(idempotencyKey)) {
+    const broadcastData = resolveBroadcastData(liveAggregator);
+    safeSend(ws, { type: 'ENERGY_UPDATE', data: broadcastData });
+    return;
+  }
 
   if (mode === 'live') {
     void dispatchLiveCommand(
@@ -385,6 +393,7 @@ export function handleWsCommand(
 
   applyMockCommandMutation(cmd);
   auditCommand(wsAuthMap, ws, cmd.type, commandValue, 'accepted');
+  if (idempotencyKey) markWsIdempotencyAccepted(idempotencyKey);
 
   mockData.gridPower =
     mockData.houseLoad +
