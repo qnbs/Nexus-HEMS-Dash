@@ -17,6 +17,7 @@ Post-v1.11.0 freeze campaign: security hardening, demo chrome honesty, CI pins, 
 
 - **SEC-11** — Fail closed when `NODE_ENV` is unset: `runtime-env.ts` (`isDevRuntime()` / `isProductionRuntime()` / `warnIfNodeEnvUnset()`); auth bypass, JWT config, WS origins, trust-proxy, and CORS now require explicit `development` or `test` (#333).
 - **deps/CVE** — Remediate high-severity production audit findings; Docker server image hardening (#336).
+- **Offline command idempotency (slice 1)** — Server-side dedupe for `POST /api/modbus/write` (`X-Idempotency-Key`) and mock-mode WS commands (`idempotencyKey` field); 5-minute TTL cache.
 
 ### Fixed
 

@@ -91,6 +91,31 @@ describe('Modbus SunSpec proxy API', () => {
     expect(res.body).toEqual({ ok: true, register: 'WChaMax', value: 2000 });
   });
 
+  it('deduplicates POST /api/modbus/write retries via X-Idempotency-Key', async () => {
+    const { clearIdempotencyCacheForTests } = await import('../data/idempotency-cache.js');
+    clearIdempotencyCacheForTests();
+
+    const bearer = await signToken({ sub: 'writer', scope: 'readwrite' }, '1h');
+    const api = buildApp();
+    const body = { register: 'WChaMax', value: 1500 };
+
+    await api
+      .post('/api/modbus/write')
+      .set('Authorization', `Bearer ${bearer}`)
+      .set('X-Idempotency-Key', 'modbus-retry-1')
+      .send(body)
+      .expect(200);
+
+    const replay = await api
+      .post('/api/modbus/write')
+      .set('Authorization', `Bearer ${bearer}`)
+      .set('X-Idempotency-Key', 'modbus-retry-1')
+      .send({ register: 'WChaMax', value: 9999 })
+      .expect(200);
+
+    expect(replay.body).toEqual({ ok: true, register: 'WChaMax', value: 1500 });
+  });
+
   it('rejects a write with read-only scope (403)', async () => {
     const bearer = await signToken({ sub: 'reader', scope: 'read' }, '1h');
     await buildApp()

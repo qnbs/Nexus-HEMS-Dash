@@ -277,6 +277,26 @@ describe('handleWsCommand', () => {
     expect(peer.sent.some((msg) => (msg as { type: string }).type === 'ENERGY_UPDATE')).toBe(true);
   });
 
+  it('skips duplicate mock mutation when idempotencyKey repeats', async () => {
+    const { clearWsIdempotencyCacheForTests } = await import('../data/idempotency-cache.js');
+    clearWsIdempotencyCacheForTests();
+    delete process.env.READ_ONLY_MODE;
+    const { mockData } = await import('../data/mock-data.js');
+    mockData.evPower = 0;
+
+    const ws = mockWs();
+    const auth = new WeakMap<WebSocket, AuthenticatedClient>();
+    auth.set(ws, { clientId: 'writer', scope: 'readwrite' });
+    const wss = { clients: new Set<WebSocket>() } as WebSocketServer;
+
+    const cmd = { type: 'SET_EV_POWER', value: 3000, idempotencyKey: 'ws-dup-1' };
+    handleWsCommand(ws, cmd, new WeakMap(), auth, wss);
+    expect(mockData.evPower).toBe(3000);
+
+    handleWsCommand(ws, { ...cmd, value: 9000 }, new WeakMap(), auth, wss);
+    expect(mockData.evPower).toBe(3000);
+  });
+
   it('dispatches EV commands to live protocol adapters in live mode', async () => {
     delete process.env.READ_ONLY_MODE;
     process.env.ADAPTER_MODE = 'live';

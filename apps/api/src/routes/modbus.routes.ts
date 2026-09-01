@@ -27,6 +27,7 @@ import { isReadOnlyMode } from '../config/read-only-mode.js';
 import { writeCommandAuditEntry } from '../data/command-audit.js';
 import { mockData } from '../data/mock-data.js';
 import { type JWTScope, requireJWT, requireScope } from '../middleware/auth.js';
+import { idempotencyMiddleware } from '../middleware/idempotency.js';
 import { requireNotReadOnly } from '../middleware/require-not-read-only.js';
 
 type ModelName = 'common' | 'inverter' | 'battery' | 'meter';
@@ -157,6 +158,7 @@ export function createModbusRoutes(): Router {
     '/api/modbus/write',
     requireJWT,
     requireScope('readwrite'),
+    idempotencyMiddleware,
     requireNotReadOnlyWithModbusAudit,
     (req: Request, res: Response) => {
       const parsed = WriteBodySchema.safeParse(req.body);
