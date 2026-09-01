@@ -15,7 +15,7 @@ Aligned to `main` @ `b44915fa` after a **53-day product freeze** (last product c
 - **LOW-11** — ESS clamp from `settings.systemConfig.battery` (#316) ✅
 - **F-01–F-07** — deep-audit remediation shipped in v1.11.0 (#313) ✅
 - **SEC-12 / ADR-026** — non-extractable `vault-key-v2` CryptoKey (`secure-store.ts`) ✅; XSS-on-origin residual remains accepted
-- **SEC-11** — `NODE_ENV`-unset auth fail-open still deferred ⏳ (`auth.ts` `isDev` bypass)
+- **SEC-11** — fail-closed `NODE_ENV` handling: fix in PR #333 (`runtime-env.ts`, `isDevRuntime()`); pending merge
 - **PRF-01** — DeepSource advisory; JavaScript analyzer removed (#299/#301)
 - **OPS-FREEZE-01** — open Dependabot Action pin PRs #323–#327 pending merge (supply-chain hygiene)
 
@@ -303,7 +303,7 @@ Changed to `process.env.JWT_SECRET_FILE ?? '/run/secrets/jwt_secret'`.
 
 ## MEDIUM
 
-### MED-01 — Test Coverage Below Industry Standard
+### MED-01 — Test Coverage Floors Enforced (Roadmap Stretch Remaining)
 
 **File:** `apps/web/vitest.config.ts:22-27`, `apps/web/coverage-baseline.json`, `apps/api/vitest.config.ts:18-23`, `packages/ai-core/vitest.config.ts`
 **Status:** ✅ Enforced floors met — roadmap stretch targets remain in `docs/Testing-Coverage-Strategy.md`
@@ -803,12 +803,10 @@ backend fail-open/SSRF findings were fixed in their own PRs; the items below are
 **deferred by design** and tracked here.
 
 ### SEC-11 — `NODE_ENV`-unset global auth fail-open
-**Files:** `apps/api/src/middleware/auth.ts` (`isDev = process.env.NODE_ENV !== 'production'`), `apps/api/src/middleware/security.ts`
-**Status:** ⏳ Deferred — documented; hardening pending maintainer sign-off (verified open 2026-09-01)
+**Files:** `apps/api/src/config/runtime-env.ts`, `apps/api/src/middleware/auth.ts`, `apps/api/src/middleware/security.ts`
+**Status:** 🔄 Fix in PR #333 — `isDevRuntime()` treats only explicit `development`/`test` as dev; unset `NODE_ENV` fails closed with startup warning
 
-When `NODE_ENV` is unset (not exactly `production`), `requireJWT`, `requireScope`, WS auth, and rate
-limiting all treat the process as dev and relax enforcement. Flipping the default to secure-by-default
-risks breaking dev/CI flows repo-wide, so the change is deferred. **Mitigation today:** `warnIfProductionBypass()` logs when production-shaped secrets are present with `NODE_ENV` unset/non-production. **Mitigation to add:** fail-closed boot when `NODE_ENV` is unset in container images. Do not rely on the absence of `NODE_ENV` for any security property.
+When `NODE_ENV` is unset, auth, scope checks, WS auth, and rate limiting now use production-hardened paths via `isDevRuntime()` / `isProductionRuntime()`. **Merge gate:** PR #333 + targeted `runtime-env` tests. Do not rely on the absence of `NODE_ENV` for any security property.
 
 ### OPS-FREEZE-01 — Post-v1.11.0 operational rot
 **Files:** `.github/workflows/*`, open Dependabot PRs #323–#327
