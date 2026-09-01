@@ -265,6 +265,7 @@ describe('EnergyProvider', () => {
   describe('demo-data fallback', () => {
     it('uses demo data when disconnected and store has zeroed data', () => {
       // mock/disconnected → simulation chrome → demo plant
+      useAppStore.setState({ adapterMode: 'mock' });
       renderWithProvider();
       expect(screen.getByTestId('isExporting').textContent).toBe('true');
       expect(screen.getByTestId('selfSufficiency').textContent).toBe('100');

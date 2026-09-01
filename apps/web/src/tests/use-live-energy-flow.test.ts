@@ -1,5 +1,5 @@
 import { renderHook } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const energyContextState = vi.hoisted(() => ({
   connected: false,
@@ -58,6 +58,10 @@ describe('useLiveEnergyFlow', () => {
     appStoreState.adapterMode = 'mock';
     vi.unstubAllEnvs();
     vi.stubEnv('VITE_BACKEND_WS', 'false');
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
   });
 
   it('uses simulation presentation on static demo deployments', () => {

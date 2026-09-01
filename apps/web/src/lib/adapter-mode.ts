@@ -137,8 +137,10 @@ export type ConnectionPresentation = 'connected' | 'disconnected' | 'simulation'
 /**
  * Resolve connection chrome for static demos and mock backends: when live
  * hardware is not active, show "Simulation" instead of a false "Disconnected"
- * alarm. Only `live` backend mode (or a live-capable frontend build) shows
- * disconnected while adapters and the optional backend WebSocket are offline.
+ * alarm. Full-stack builds with `VITE_BACKEND_WS` keep `unknown` as
+ * disconnected until `/api/health` resolves to `mock`. Only `live` backend mode
+ * (or a live-capable frontend build) shows disconnected while adapters and the
+ * optional backend WebSocket are offline.
  */
 export function resolveConnectionPresentation(
   connected: boolean,
@@ -146,6 +148,7 @@ export function resolveConnectionPresentation(
   serverWsConnected = false,
 ): ConnectionPresentation {
   if (connected || (isBackendWsEnabled() && serverWsConnected)) return 'connected';
+  if (backendMode === 'unknown' && isBackendWsEnabled()) return 'disconnected';
   if (!isLiveSafetyMode(backendMode)) return 'simulation';
   return 'disconnected';
 }
