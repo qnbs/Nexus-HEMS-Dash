@@ -2,16 +2,18 @@ import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
+import type { ConnectionPresentation } from '../../lib/adapter-mode';
+
 /** Props for {@link AppShellHeaderLogo}. */
 export interface AppShellHeaderLogoProps {
-  /** Whether the backend WebSocket is connected. */
-  connected: boolean;
+  /** Resolved connection chrome label. */
+  connectionPresentation: ConnectionPresentation;
 }
 
 /**
  * Mobile header logo with a live connection status indicator.
  */
-export function AppShellHeaderLogo({ connected }: AppShellHeaderLogoProps) {
+export function AppShellHeaderLogo({ connectionPresentation }: AppShellHeaderLogoProps) {
   const { t } = useTranslation();
 
   return (
@@ -30,9 +32,11 @@ export function AppShellHeaderLogo({ connected }: AppShellHeaderLogoProps) {
       />
       <span
         className={`absolute -right-0.5 -bottom-0.5 h-2.5 w-2.5 rounded-full border-(--color-surface-strong) border-2 ${
-          connected
+          connectionPresentation === 'connected'
             ? 'bg-(--color-neon-green) shadow-[0_0_6px_var(--color-neon-green)]'
-            : 'bg-(--state-danger-bg) shadow-[0_0_6px_var(--state-danger-bg)]'
+            : connectionPresentation === 'simulation'
+              ? 'bg-(--color-primary) shadow-[0_0_6px_var(--color-primary)]'
+              : 'bg-(--state-danger-bg) shadow-[0_0_6px_var(--state-danger-bg)]'
         }`}
         aria-hidden="true"
       />

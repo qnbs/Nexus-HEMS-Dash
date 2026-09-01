@@ -1,3 +1,4 @@
+import type { ConnectionPresentation } from '../../lib/adapter-mode';
 import { AppShellHeaderActions } from './AppShellHeaderActions';
 import { AppShellHeaderLogo } from './AppShellHeaderLogo';
 import { AppShellHeaderSafetyBanners } from './AppShellHeaderSafetyBanners';
@@ -9,8 +10,8 @@ export interface AppShellHeaderBarProps {
   isLive: boolean;
   /** Whether the backend enforces read-only mode. */
   isReadOnly: boolean;
-  /** Whether the backend WebSocket is connected. */
-  connected: boolean;
+  /** Resolved connection chrome label. */
+  connectionPresentation: ConnectionPresentation;
   /** Whether any enabled adapter is degraded. */
   hasDegradedAdapter: boolean;
   /** Current electricity price in €/kWh. */
@@ -25,7 +26,7 @@ export interface AppShellHeaderBarProps {
 export function AppShellHeaderBar({
   isLive,
   isReadOnly,
-  connected,
+  connectionPresentation,
   hasDegradedAdapter,
   priceCurrent,
   onOpenCommandPalette,
@@ -35,7 +36,7 @@ export function AppShellHeaderBar({
       <AppShellHeaderSafetyBanners isLive={isLive} isReadOnly={isReadOnly} />
 
       <div className="flex items-center gap-2 sm:gap-3">
-        <AppShellHeaderLogo connected={connected} />
+        <AppShellHeaderLogo connectionPresentation={connectionPresentation} />
         <MobilePageTitle />
         <AppShellHeaderActions
           isLive={isLive}

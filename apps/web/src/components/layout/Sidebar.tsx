@@ -16,7 +16,8 @@ import { motion } from 'motion/react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { NavLink } from 'react-router-dom';
-import { useAppStore } from '../../store';
+import { resolveConnectionPresentation } from '../../lib/adapter-mode';
+import { useAppStoreShallow } from '../../store';
 
 interface NavItem {
   readonly path: string;
@@ -84,7 +85,11 @@ export const allNavItems: readonly NavItem[] = navSections.flatMap((s) => s.item
 
 function SidebarComponent() {
   const { t } = useTranslation();
-  const connected = useAppStore((s) => s.connected);
+  const { connected, adapterMode } = useAppStoreShallow((s) => ({
+    connected: s.connected,
+    adapterMode: s.adapterMode,
+  }));
+  const connectionPresentation = resolveConnectionPresentation(connected, adapterMode);
   const [collapsed, setCollapsed] = useState(false);
 
   return (
@@ -118,11 +123,21 @@ function SidebarComponent() {
               aria-atomic="true"
             >
               <span
-                className={`h-2 w-2 rounded-full ${connected ? 'bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.6)]' : 'bg-rose-400 shadow-[0_0_6px_rgba(251,113,133,0.6)]'}`}
+                className={`h-2 w-2 rounded-full ${
+                  connectionPresentation === 'connected'
+                    ? 'bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.6)]'
+                    : connectionPresentation === 'simulation'
+                      ? 'bg-(--color-primary) shadow-[0_0_6px_var(--color-primary)]'
+                      : 'bg-rose-400 shadow-[0_0_6px_rgba(251,113,133,0.6)]'
+                }`}
                 aria-hidden="true"
               />
               <span className="text-(--color-muted) text-xs">
-                {connected ? t('common.connected') : t('common.disconnected')}
+                {connectionPresentation === 'connected'
+                  ? t('common.connected')
+                  : connectionPresentation === 'simulation'
+                    ? t('mode.simulationBadge')
+                    : t('common.disconnected')}
               </span>
             </div>
           </div>

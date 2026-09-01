@@ -122,12 +122,11 @@ describe('live-energy-flow panels — branch coverage', () => {
     expect(screen.getByText('Hall')).toBeInTheDocument();
   });
 
-  it('LiveEnergyTopBar reflects connected/disconnected, demo and fullscreen', () => {
+  it('LiveEnergyTopBar reflects connected, simulation, and disconnected states', () => {
     const energy = { pvPower: 1000, houseLoad: 800, gridPower: 200, priceCurrent: 0.25 };
     const { rerender } = render(
       <LiveEnergyTopBar
-        connected
-        isDemo={false}
+        connectionPresentation="connected"
         isFullscreen={false}
         onToggleFullscreen={vi.fn()}
         energyData={energy}
@@ -138,11 +137,21 @@ describe('live-energy-flow panels — branch coverage', () => {
 
     rerender(
       <LiveEnergyTopBar
-        connected={false}
-        isDemo
+        connectionPresentation="simulation"
         isFullscreen
         onToggleFullscreen={vi.fn()}
         energyData={{ ...energy, gridPower: -200 }}
+        locale="en"
+      />,
+    );
+    expect(screen.getByText('mode.simulationBadge')).toBeInTheDocument();
+
+    rerender(
+      <LiveEnergyTopBar
+        connectionPresentation="disconnected"
+        isFullscreen={false}
+        onToggleFullscreen={vi.fn()}
+        energyData={energy}
         locale="en"
       />,
     );

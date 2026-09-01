@@ -1,7 +1,7 @@
 import { Activity, Home, Maximize2, Minimize2, Sun, Zap } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import type { ConnectionPresentation } from '../../../lib/adapter-mode';
 import { formatPower } from '../../../lib/format';
-import { DemoBadge } from '../../DemoBadge';
 import { HelpTooltip } from '../../ui/HelpTooltip';
 
 interface TopBarEnergy {
@@ -12,15 +12,13 @@ interface TopBarEnergy {
 }
 
 export function LiveEnergyTopBar({
-  connected,
-  isDemo,
+  connectionPresentation,
   isFullscreen,
   onToggleFullscreen,
   energyData,
   locale,
 }: {
-  connected: boolean;
-  isDemo: boolean;
+  connectionPresentation: ConnectionPresentation;
   isFullscreen: boolean;
   onToggleFullscreen: () => void;
   energyData: TopBarEnergy;
@@ -32,20 +30,32 @@ export function LiveEnergyTopBar({
       <div className="flex items-center gap-3">
         <Activity size={18} className="text-(--color-primary)" aria-hidden="true" />
         <h1 className="fluid-text-lg font-semibold text-(--color-text)">{t('liveEnergy.title')}</h1>
-        <HelpTooltip
-          content={t(
-            'tour.liveEnergy.help',
-            'Echtzeit-Energiefluss mit Sankey-Diagramm und Gerätesteuerung',
-          )}
-        />
-        {isDemo && <DemoBadge />}
+        <HelpTooltip content={t('tour.liveEnergy.help')} />
         <span
-          className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-medium text-xs ${connected ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}`}
+          role="status"
+          className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-medium text-xs ${
+            connectionPresentation === 'connected'
+              ? 'bg-emerald-500/10 text-emerald-400'
+              : connectionPresentation === 'simulation'
+                ? 'border border-(--color-border) bg-(--color-surface-strong) text-(--color-muted)'
+                : 'bg-rose-500/10 text-rose-400'
+          }`}
         >
           <span
-            className={`h-2 w-2 rounded-full ${connected ? 'energy-pulse bg-emerald-400' : 'bg-rose-400'}`}
+            className={`h-2 w-2 rounded-full ${
+              connectionPresentation === 'connected'
+                ? 'energy-pulse bg-emerald-400'
+                : connectionPresentation === 'simulation'
+                  ? 'bg-(--color-primary)'
+                  : 'bg-rose-400'
+            }`}
+            aria-hidden="true"
           />
-          {connected ? t('common.live') : t('common.disconnected')}
+          {connectionPresentation === 'connected'
+            ? t('common.live')
+            : connectionPresentation === 'simulation'
+              ? t('mode.simulationBadge')
+              : t('common.disconnected')}
         </span>
       </div>
 

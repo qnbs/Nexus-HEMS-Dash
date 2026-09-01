@@ -7,6 +7,7 @@ import {
   isLiveHardwareBuildAllowed,
   isLiveSafetyMode,
   isReadOnlyModeActive,
+  resolveConnectionPresentation,
   resolveFrontendAdapterMode,
   setRuntimeBackendReadOnly,
 } from '../lib/adapter-mode';
@@ -114,6 +115,22 @@ describe('fetchBackendAdapterMode', () => {
   it('returns unknown when the body has no recognised mode', async () => {
     mockFetch({ ok: true, body: { status: 'healthy' } });
     expect(await fetchBackendAdapterMode()).toBe('unknown');
+  });
+});
+
+describe('resolveConnectionPresentation', () => {
+  it('returns connected when any adapter is connected', () => {
+    expect(resolveConnectionPresentation(true, 'mock')).toBe('connected');
+    expect(resolveConnectionPresentation(true, 'live')).toBe('connected');
+  });
+
+  it('returns simulation on static demo deployments (no backend WS, not live)', () => {
+    expect(resolveConnectionPresentation(false, 'mock')).toBe('simulation');
+    expect(resolveConnectionPresentation(false, 'unknown')).toBe('simulation');
+  });
+
+  it('returns disconnected when live mode is active but adapters are offline', () => {
+    expect(resolveConnectionPresentation(false, 'live')).toBe('disconnected');
   });
 });
 

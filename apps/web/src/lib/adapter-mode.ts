@@ -131,6 +131,23 @@ export function isBackendWsEnabled(): boolean {
   return import.meta.env.VITE_BACKEND_WS?.trim().toLowerCase() === LIVE_HARDWARE_ACK;
 }
 
+/** How the chrome should label adapter connectivity (sidebar, page headers). */
+export type ConnectionPresentation = 'connected' | 'disconnected' | 'simulation';
+
+/**
+ * Resolve connection chrome for static demos (e.g. GitHub Pages): when no backend
+ * WebSocket consumer is configured and live hardware is not active, show
+ * "Simulation" instead of a false "Disconnected" alarm.
+ */
+export function resolveConnectionPresentation(
+  connected: boolean,
+  backendMode: BackendAdapterMode,
+): ConnectionPresentation {
+  if (connected) return 'connected';
+  if (!isBackendWsEnabled() && !isLiveSafetyMode(backendMode)) return 'simulation';
+  return 'disconnected';
+}
+
 /**
  * Whether the browser should offload Modbus SunSpec REST polling to the
  * adapter Web Worker (MED-12). Requires live hardware acknowledgement — same
