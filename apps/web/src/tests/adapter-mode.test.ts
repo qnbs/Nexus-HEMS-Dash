@@ -146,6 +146,11 @@ describe('resolveConnectionPresentation', () => {
     expect(resolveConnectionPresentation(false, 'unknown')).toBe('simulation');
   });
 
+  it('returns simulation for mock mode when backend WS consumer is enabled but offline', () => {
+    vi.stubEnv('VITE_BACKEND_WS', 'true');
+    expect(resolveConnectionPresentation(false, 'mock', false)).toBe('simulation');
+  });
+
   it('returns disconnected when live mode is active but adapters are offline', () => {
     expect(resolveConnectionPresentation(false, 'live')).toBe('disconnected');
   });
