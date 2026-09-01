@@ -11,7 +11,7 @@ export interface AppShellHeaderLogoProps {
 }
 
 /**
- * Mobile header logo with a live connection status indicator.
+ * Mobile header logo with a connection-status indicator (connected, simulation, or disconnected).
  */
 export function AppShellHeaderLogo({ connectionPresentation }: AppShellHeaderLogoProps) {
   const { t } = useTranslation();
