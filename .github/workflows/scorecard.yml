@@ -22,8 +22,8 @@ jobs:
   scorecard:
     name: OpenSSF Scorecard
     runs-on: ubuntu-latest
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    # No job-level or workflow-level `env` — ossf/scorecard-action rejects
+    # publish_results when the scorecard job defines env vars (OpenSSF API 400).
     permissions:
       # Needed to publish results and get a badge (see publish_results below)
       id-token: write
