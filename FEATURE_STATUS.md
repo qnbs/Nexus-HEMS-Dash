@@ -1,8 +1,10 @@
 # Feature Status — Nexus-HEMS-Dash
 
 **Version:** 1.11.0 shipped (2026-07-10)  
-**Last updated:** 2026-07-10 (release 1.11.0 — command palette, settings/help, page modularization, deep-audit remediation F-01–F-07)  
+**Last updated:** 2026-09-01 (post-v1.11.0 freeze truth-sync — demo chrome honesty, operational status)  
 **Purpose:** Single source of truth for what is actually implemented, partial, or planned. Use this file to keep README/marketing claims synchronized with the codebase.
+
+> **Operational note (2026-09-01):** No product commits landed on `main` between **2026-07-10** (v1.11.0) and this update (~53-day freeze). Open Dependabot CI pin PRs (#323–#327) and campaign fixes (demo chrome, docs truth-sync) are tracked separately from the frozen release baseline.
 
 > **Rule:** Any PR that changes a feature's implementation status must update this file and the relevant docs before merging.
 
@@ -71,7 +73,8 @@
 | PDF reports + QR sharing | ✅ | `apps/web/src/components/ExportAndSharing.tsx`, `lib/sharing.ts` |
 | Prometheus monitoring | ✅ | `apps/api/src/middleware/metrics.ts`, `routes/metrics.routes.ts`; per-backend-adapter series via `adapter-metrics.ts` (MED-18) |
 | Adapter health endpoint | ✅ | `GET /api/health` returns mode, overall status, and per-adapter state (`apps/api/src/routes/health.routes.ts`) |
-| Live/Mock mode safety indicator | ✅ | Header banner (live) + simulation badge + persistent read-only banner (`mode.readOnlyBannerWarning`), Settings status, and live-hardware warning in the command-confirmation dialog — driven by `/api/health` `mode` + `readOnly` (`apps/web/src/lib/adapter-mode.ts`, `AppShell.tsx`, `useSafeCommand.tsx`) |
+| Live/Mock mode safety indicator | ✅ | Header simulation badge + `resolveConnectionPresentation()` labels static GitHub Pages deploys **Simulation** (not false **Disconnected**); live banner + read-only banner when applicable (`apps/web/src/lib/adapter-mode.ts`, `AppShell.tsx`) |
+| GitHub Pages static demo honesty | ✅ | Header KPI ticker uses `getDisplayData()` (same demo plant as Command Hub / Sankey when `VITE_BACKEND_WS` is off); single simulation treatment in chrome (campaign fix, 2026-09-01) |
 | Opt-in backend WebSocket consumer | ✅ | `VITE_BACKEND_WS` flag mounts `useServerWebSocket` (ADR-025); maps server `EnergyData` → `UnifiedEnergyModel`; Monitoring shows `serverWsConnected` pill |
 | Built-in adapters disabled by default | ✅ | `isBuiltinAdapterEnabledByDefault()` returns `false`; user enables adapters in Settings (`apps/web/src/lib/adapter-mode.ts`) |
 | Demo data without hardware | ✅ | Mock/simulated energy data when effective adapter mode is `mock` (`apps/api/src/data/mock-data.ts`, `EnergyContext`) |
@@ -100,7 +103,7 @@
 | Container CVE scan (Grype) in CI | ✅ | `sbom-scan.yml` + `container-publish.yml` — critical cutoff, blocking; `.grype.yaml` targeted ignores (`docs/Supply-Chain-Grype-Policy.md`) |
 | Cosign image signing in CI | ✅ | `container-publish.yml` — keyless cosign + SLSA provenance on GHCR push (`ghcr.io/qnbs/nexus-hems-dash`, `nexus-hems-server`) |
 | OpenSSF Scorecard | ✅ | `.github/workflows/scorecard.yml` |
-| DeepSource static analysis | ⚠️ | `.deepsource.toml` connected; advisory mode (see PRF-01) |
+| DeepSource static analysis | ⚠️ | `.deepsource.toml` connected; **advisory only** (not a merge gate). JavaScript analyzer removed 2026-07-07 (#299/#301); secrets + Docker analyzers remain (see PRF-01) |
 | Unified PR feedback comment | ✅ | `.github/workflows/pr-feedback-summary.yml` |
 | Multi-user RBAC | ⏳ | ADR-009 deferred |
 
@@ -115,7 +118,7 @@
 | E2E tests (Playwright) | ✅ | 13 spec files including `auth-jwt`, `read-only-commands`, `adapter-mode-indicators`, `backend-websocket-live`, `safety-indicators` (post-audit C2) |
 | Fuzz/property tests | ✅ | `apps/web/src/tests/security-fuzz.test.ts` |
 | i18n parity test | ✅ | `apps/web/src/tests/i18n-sync.test.ts` |
-| Coverage gates | ✅ | Web vitest + PRF-03 baseline: **78/72/70/80** (statements/branches/functions/lines). API: **55/46/62/55**. See `apps/web/coverage-baseline.json`, `vitest.config.ts`. |
+| Coverage gates | ✅ | Web vitest + PRF-03 baseline: **78/72/70/80** (statements/branches/functions/lines). API: **55/46/62/55**. ai-core: **73/51/77/73** (F-05a). See `coverage-baseline.json`, `vitest.config.ts`, `pnpm check:coverage-baseline`. |
 | Lighthouse CI | ✅ | `.github/workflows/lighthouse.yml` |
 | Chromatic visual regression | ✅ | `.github/workflows/chromatic.yml` |
 
