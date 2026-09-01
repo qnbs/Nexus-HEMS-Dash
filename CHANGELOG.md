@@ -9,6 +9,14 @@ Release notes are maintained here and published via [semantic-release](https://g
 
 ## [Unreleased]
 
+### CI / Toolchain
+
+- Enable `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24` on remaining auxiliary workflows (Scorecard, CodeRabbit, deploy-recovery, stale, Renovate, PR labeler, PR feedback summary).
+
+### Tests
+
+- Restore web branch-coverage floor (≥72%) with adapter-mode, header KPI, and Command Hub disclosure tests after #340 chrome simplification.
+
 ## [1.11.1] - 2026-09-01
 
 Post-v1.11.0 freeze campaign: security hardening, demo chrome honesty, CI pins, and operational housekeeping after a 53-day product freeze (PRs #329–#337).

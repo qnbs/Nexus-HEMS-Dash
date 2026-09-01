@@ -48,6 +48,9 @@ concurrency:
     }}
   cancel-in-progress: false
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   request-review:
     name: Request CodeRabbit review
