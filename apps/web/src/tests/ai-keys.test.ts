@@ -10,12 +10,37 @@ vi.mock('../lib/crypto', () => ({
   decryptWithKey: vi.fn(async (cipher: string, _key: unknown) => cipher.replace('ENC:', '')),
 }));
 
-import { AI_PROVIDERS, getAIKey, listAIKeys, removeAIKey, saveAIKey } from '../lib/ai-keys';
+import {
+  AI_PROVIDERS,
+  getActiveProvider,
+  getAIKey,
+  isKeyStorageAvailable,
+  listAIKeys,
+  removeAIKey,
+  saveAIKey,
+  setActiveProvider,
+} from '../lib/ai-keys';
+import { decryptWithKey } from '../lib/crypto';
 import { nexusDb } from '../lib/db';
+
+const storage = new Map<string, string>();
 
 describe('AI Key Storage', () => {
   beforeEach(async () => {
+    storage.clear();
+    vi.stubGlobal('localStorage', {
+      getItem: (key: string) => storage.get(key) ?? null,
+      setItem: (key: string, value: string) => {
+        storage.set(key, value);
+      },
+      removeItem: (key: string) => {
+        storage.delete(key);
+      },
+    });
     await nexusDb.aiKeys.clear();
+    vi.mocked(decryptWithKey).mockImplementation(async (cipher: string) =>
+      cipher.replace('ENC:', ''),
+    );
   });
 
   it('should have all 7 providers defined', () => {
@@ -77,5 +102,53 @@ describe('AI Key Storage', () => {
     const result = await getAIKey('openai');
     expect(result!.apiKey).toBe('new-key');
     expect(result!.model).toBe('gpt-4o-mini');
+  });
+
+  it('reports storage availability', async () => {
+    await expect(isKeyStorageAvailable()).resolves.toBe(true);
+  });
+
+  it('throws when IndexedDB is unavailable during save', async () => {
+    const countSpy = vi.spyOn(nexusDb.aiKeys, 'count').mockRejectedValue(new Error('blocked'));
+    try {
+      await expect(isKeyStorageAvailable()).resolves.toBe(false);
+      await expect(saveAIKey('openai', 'sk-test', 'gpt-4o')).rejects.toThrow(
+        /IndexedDB is not available/i,
+      );
+    } finally {
+      countSpy.mockRestore();
+    }
+  });
+
+  it('returns null when decryption fails', async () => {
+    await saveAIKey('anthropic', 'sk-secret', 'claude-sonnet-4-20250514');
+    vi.mocked(decryptWithKey).mockRejectedValueOnce(new Error('bad cipher'));
+    await expect(getAIKey('anthropic')).resolves.toBeNull();
+  });
+
+  it('filters unknown providers from listAIKeys', async () => {
+    await nexusDb.aiKeys.put({
+      provider: 'legacy-provider' as 'openai',
+      encryptedKey: 'ENC:legacy',
+      model: 'old',
+      baseUrl: 'https://example.com',
+      createdAt: Date.now(),
+      lastUsed: Date.now(),
+    });
+    await saveAIKey('openai', 'sk-key', 'gpt-4o');
+
+    const list = await listAIKeys();
+    expect(list).toHaveLength(1);
+    expect(list[0]?.provider).toBe('openai');
+  });
+
+  it('persists and reads the active provider from localStorage', async () => {
+    setActiveProvider('groq');
+    await expect(getActiveProvider()).resolves.toBe('groq');
+  });
+
+  it('falls back to the first stored provider when localStorage is empty', async () => {
+    await saveAIKey('google', 'AIza-key', 'gemini-3.0-flash');
+    await expect(getActiveProvider()).resolves.toBe('google');
   });
 });

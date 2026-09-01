@@ -1,8 +1,36 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+const { mockOutput } = vi.hoisted(() => {
+  const mockOutput = vi.fn(() => new Blob(['pdf'], { type: 'application/pdf' }));
+  return { mockOutput };
+});
+
+vi.mock('jspdf', () => {
+  class MockJsPDF {
+    internal = { pageSize: { getWidth: () => 210, getHeight: () => 297 } };
+    setFillColor = vi.fn();
+    rect = vi.fn();
+    setDrawColor = vi.fn();
+    setLineWidth = vi.fn();
+    line = vi.fn();
+    setFont = vi.fn();
+    setFontSize = vi.fn();
+    setTextColor = vi.fn();
+    text = vi.fn();
+    getTextWidth = vi.fn(() => 20);
+    roundedRect = vi.fn();
+    output = mockOutput;
+  }
+
+  return { jsPDF: MockJsPDF };
+});
+
 import {
   calculateAnnualCo2,
   calculateCo2Balance,
   calculateMonthlyCo2,
+  downloadCo2Report,
+  generateCo2ReportPdf,
   getUbaFactor,
 } from '../lib/co2-report';
 import type { EnergySnapshot } from '../lib/db';
@@ -86,5 +114,65 @@ describe('co2-report calculations', () => {
     expect(annual.months.length).toBeGreaterThan(0);
     expect(annual.totalSelfConsumptionSavingsKg).toBeGreaterThan(0);
     expect(annual.bestMonth.savingsKg).toBeGreaterThanOrEqual(annual.worstMonth.savingsKg);
+  });
+
+  it('returns an empty annual summary when no snapshots match the year', () => {
+    const annual = calculateAnnualCo2([], 2026);
+    expect(annual.months).toHaveLength(0);
+    expect(annual.avgMonthlyNetKg).toBe(0);
+    expect(annual.worstMonth).toEqual({ month: '–', savingsKg: 0 });
+  });
+
+  it('marks positive net balance when grid import dominates self-consumption', () => {
+    const importHeavy: DailyAggregate[] = [
+      {
+        ...dailyRows[0],
+        pvGenerationKwh: 1,
+        gridImportKwh: 20,
+        gridExportKwh: 0,
+      },
+    ];
+    const balance = calculateCo2Balance(importHeavy, 2026, 2, 'de-DE');
+    expect(balance.netBalanceKg).toBeGreaterThan(0);
+  });
+});
+
+describe('co2-report PDF export', () => {
+  beforeEach(() => {
+    mockOutput.mockClear();
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('generateCo2ReportPdf returns a PDF blob', async () => {
+    const balance = calculateCo2Balance(dailyRows, 2026, 2, 'de-DE');
+    const blob = await generateCo2ReportPdf(balance);
+    expect(blob).toBeInstanceOf(Blob);
+    expect(mockOutput).toHaveBeenCalledWith('blob');
+  });
+
+  it('downloadCo2Report triggers a download link', async () => {
+    const balance = calculateCo2Balance(dailyRows, 2026, 2, 'de-DE');
+    const click = vi.fn();
+    const revoke = vi.fn();
+    const appendChild = vi.fn();
+    const removeChild = vi.fn();
+
+    vi.stubGlobal('URL', {
+      createObjectURL: vi.fn(() => 'blob:co2'),
+      revokeObjectURL: revoke,
+    });
+    vi.stubGlobal('document', {
+      createElement: vi.fn(() => ({ href: '', download: '', click })),
+      body: { appendChild, removeChild },
+    });
+
+    await downloadCo2Report(balance);
+
+    expect(click).toHaveBeenCalled();
+    expect(revoke).toHaveBeenCalledWith('blob:co2');
+    expect(removeChild).toHaveBeenCalled();
   });
 });
