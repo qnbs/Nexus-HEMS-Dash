@@ -74,7 +74,7 @@
 | Prometheus monitoring | ✅ | `apps/api/src/middleware/metrics.ts`, `routes/metrics.routes.ts`; per-backend-adapter series via `adapter-metrics.ts` (MED-18) |
 | Adapter health endpoint | ✅ | `GET /api/health` returns mode, overall status, and per-adapter state (`apps/api/src/routes/health.routes.ts`) |
 | Live/Mock mode safety indicator | ✅ | Header simulation badge + `resolveConnectionPresentation()` labels static GitHub Pages deploys **Simulation** (not false **Disconnected**); live banner + read-only banner when applicable (`apps/web/src/lib/adapter-mode.ts`, `AppShell.tsx`) |
-| GitHub Pages static demo honesty | ✅ | `AppShell.tsx` header KPI ticker calls `getDisplayData()` when the store snapshot is disconnected (same demo plant as Command Hub / Sankey); `EnergyContext` applies the same helper for routed charts (`apps/web/src/lib/demo-data.ts`) |
+| GitHub Pages static demo honesty | ✅ | `AppShell.tsx` header KPI ticker calls `getDisplayData()` only when `resolveConnectionPresentation()` is **simulation** (mock/disconnected); live+disconnected shows raw store values. Routed charts use the same helper via `EnergyContext` (`apps/web/src/lib/demo-data.ts`) |
 | Opt-in backend WebSocket consumer | ✅ | `VITE_BACKEND_WS` flag mounts `useServerWebSocket` (ADR-025); maps server `EnergyData` → `UnifiedEnergyModel`; Monitoring shows `serverWsConnected` pill |
 | Built-in adapters disabled by default | ✅ | `isBuiltinAdapterEnabledByDefault()` returns `false`; user enables adapters in Settings (`apps/web/src/lib/adapter-mode.ts`) |
 | Demo data without hardware | ✅ | Mock/simulated energy data when effective adapter mode is `mock` (`apps/api/src/data/mock-data.ts`, `EnergyContext`) |
