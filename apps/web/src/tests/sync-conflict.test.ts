@@ -24,6 +24,10 @@ vi.mock('../lib/background-sync', () => ({
   },
 }));
 
+vi.mock('../lib/sync-reconcile', () => ({
+  reconcileServerSettings: vi.fn().mockResolvedValue(77),
+}));
+
 import { getSyncState, updateSyncState } from '../lib/db';
 import {
   dispatchSyncConflictEvent,
@@ -108,6 +112,7 @@ describe('sync-conflict', () => {
     await updateSyncState('settings', '10', true);
 
     const { backgroundSyncService } = await import('../lib/background-sync');
+    const { reconcileServerSettings } = await import('../lib/sync-reconcile');
     vi.mocked(backgroundSyncService.syncPendingActions).mockClear();
 
     await resolveSyncConflict('settings', 'server');
@@ -116,6 +121,7 @@ describe('sync-conflict', () => {
     expect(state.hasConflict).toBe(false);
     expect(state.serverVersion).toBe('77');
     expect(backgroundSyncService.syncPendingActions).not.toHaveBeenCalled();
+    expect(reconcileServerSettings).toHaveBeenCalledWith(10);
   });
 
   it('dispatchSyncConflictEvent emits a custom event', () => {

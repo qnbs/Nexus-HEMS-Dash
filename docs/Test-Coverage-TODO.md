@@ -86,12 +86,14 @@ imported files, so covering real imported code was the effective lever.
 
 ### API backend coverage (separate track, MED-01)
 
-- [ ] Raise `apps/api` from measured 33/30/38/33 toward 55 %, prioritizing protocol adapters + WS gateway.
-- [ ] Update `apps/api/vitest.config.ts` staged, sync `docs/Testing-Coverage-Strategy.md`.
+- [x] `apps/api` vitest gate at **55/46/62/55** — measured ~66/59/71/68 (2026-09-01, slice 4 tests).
+- [ ] Stretch toward roadmap targets in `docs/Testing-Coverage-Strategy.md` (OpenADR routes, services layer).
+- [x] Sync slice 4 route/store tests (`sync.routes`, `settings-store`, `sync-diff-store`, `settings-sync-keys`).
 
 ### E2E / quality
 
 - [ ] Prefer behavioural assertions over render-only smoke when filling coverage.
+- [x] E2E offline sync conflict scenario (`tests/e2e/offline-sync-conflict.spec.ts`, 2026-09-01).
 - [ ] E2E for auth flows, command-safety, backend-integration per `FEATURE_STATUS.md`.
 
 ---

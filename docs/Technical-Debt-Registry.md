@@ -1,9 +1,9 @@
 # Technical Debt Registry — Nexus-HEMS-Dash
 
-**Last audited:** 2026-09-01 (post-v1.11.1 master-prompt remediation complete)  
-**Version at audit:** 1.11.1 shipped (`main` @ `0202d2c`, 2026-09-01)  
+**Last audited:** 2026-09-01 (post-v1.11.1 + offline-sync slices 2–4)  
+**Version at audit:** 1.11.1 shipped (`main` @ `b1e6346`, 2026-09-01)  
 **Last updated:** 2026-09-01  
-**Release line:** v1.11.1 tagged (`1716a42`); `main` ahead with CI/coverage/offline-sync slice 2 candidates  
+**Release line:** v1.11.1 tagged (`1716a42`); `main` ahead with offline-sync slices 2–4 (#344–#346, #349 draft) — **release intentionally deferred** until campaign complete  
 **Auditor:** Cursor Cloud Agent (2026-06-29 full audit; 2026-07-02 delta; 2026-07-03 full review; 2026-09-01 freeze + campaign closeout)
 
 This file is the canonical issue tracker for known technical debt, security gaps, incomplete implementations, and quality issues. It is **not** a substitute for GitHub Issues — use it for context, rationale, and multi-sprint planning.
@@ -18,6 +18,8 @@ Aligned to `main` @ `0006a56` after a **53-day product freeze** (last product co
 - **SEC-11** — fail-closed `NODE_ENV` handling (`runtime-env.ts`, `isDevRuntime()`) ✅ (#333)
 - **PRF-01** — DeepSource advisory; JavaScript analyzer removed (#299/#301)
 - **OPS-FREEZE-01** — Sep 2026 campaign complete (#329–#336); stale Dependabot pins #323–#327 closed (superseded by #329)
+- **Offline sync slices 2–4** — version endpoint, conflict UI, `/api/sync/diff` + server-wins reconciliation (#344–#346, #349) ✅
+- **Review quiescence policy** — canonical in `docs/runbooks/pr-review-correction-loop.md` §1.1 (#348) ✅
 
 Campaign PRs (Sep 2026, all merged): #336 (deps/CVE), #329 (CI pins), #332 (demo chrome), #334 (docs), #335 (E-STOP test), #333 (SEC-11). Duplicate empty squash commit on `main` removed during housekeeping.
 
@@ -311,7 +313,7 @@ Changed to `process.env.JWT_SECRET_FILE ?? '/run/secrets/jwt_secret'`.
 Current enforced thresholds (verified 2026-09-01):
 
 - Web `apps/web/vitest.config.ts`: statements **78%**, branches **72%**, functions **70%**, lines **80%**
-- API `apps/api/vitest.config.ts`: statements **55%**, branches **46%**, functions **62%**, lines **55%**
+- API `apps/api/vitest.config.ts`: statements **55%**, branches **46%**, functions **62%**, lines **55%** — measured ~**66/59/71/68** after slice 4
 - ai-core `packages/ai-core/vitest.config.ts`: statements **73%**, branches **51%**, functions **77%**, lines **73%** (F-05a; `pnpm check:coverage-baseline`)
 
 **Follow-up:** raise toward roadmap targets via tested helper extraction (`docs/Test-Coverage-TODO.md`); do not lower floors to greenwash CI.

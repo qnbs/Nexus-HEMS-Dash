@@ -7,6 +7,7 @@ import {
   updateSyncState,
 } from './db';
 import { fetchServerSyncVersion, recordServerSyncVersion } from './sync-client';
+import { reconcileServerSettings } from './sync-reconcile';
 
 /** Dispatched when a new sync conflict is persisted in Dexie `syncState`. */
 export const SYNC_CONFLICT_EVENT = 'nexus-hems-sync-conflict';
@@ -52,12 +53,19 @@ export async function resolveSyncConflict(
   resolution: SyncConflictResolution,
 ): Promise<void> {
   if (resolution === 'server') {
-    const remote = await fetchServerSyncVersion();
-    if (remote !== null) {
-      await recordServerSyncVersion(remote, domain, false);
+    const state = await getSyncState(domain);
+    const since = Number.parseInt(state.serverVersion, 10);
+    const reconciledVersion = Number.isNaN(since) ? null : await reconcileServerSettings(since);
+
+    if (reconciledVersion !== null) {
+      await recordServerSyncVersion(reconciledVersion, domain, false);
     } else {
-      const state = await getSyncState(domain);
-      await updateSyncState(domain, state.serverVersion, false);
+      const remote = await fetchServerSyncVersion();
+      if (remote !== null) {
+        await recordServerSyncVersion(remote, domain, false);
+      } else {
+        await updateSyncState(domain, state.serverVersion, false);
+      }
     }
     await discardPendingSettingsActions();
     return;

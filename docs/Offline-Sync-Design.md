@@ -1,6 +1,6 @@
 # Offline Sync Design — Nexus-HEMS-Dash
 
-> **Status:** Active design — **slice 1–2** shipped (idempotency, sync version endpoint, JWT/TTL guards); **slice 3** (conflict UI + deferred replay) shipped; `/api/sync/diff` reconciliation remains planned.
+> **Status:** Active design — **slice 1–3** shipped (idempotency, sync version, JWT/TTL guards, conflict UI + deferred replay); **slice 4** (`GET /api/sync/diff`, `PUT /api/settings`, server-wins reconciliation) shipped.
 > **Created:** 2026-04-25
 > **Owner:** @qnbs
 
@@ -34,7 +34,7 @@ and replay safety mechanisms for Nexus-HEMS-Dash.
 | No command TTL on hardware replay | Stale offline commands after reconnect | ✅ Slice 2 |
 | No JWT liveness check before replay | Expired sessions may attempt sync | ✅ Slice 2 |
 | No server sync version endpoint | Client cannot detect server-side drift | ✅ Slice 2 |
-| No server-wins reconciliation for config changes | Settings divergence after reconnect | ✅ Slice 3 |
+| No server-wins reconciliation for config changes | Settings divergence after reconnect | ✅ Slice 3–4 |
 
 ---
 
@@ -203,16 +203,18 @@ i18n keys needed:
 
 | Item | Phase | Effort | Status |
 |------|-------|--------|--------|
-| `SyncState` Dexie table (schema v4) | 2 | 1h | ✅ Shipped (Dexie v12) |
-| `idempotencyKey` on OfflineAction | 2 | 30min | ✅ Shipped (Dexie v12) |
+| `SyncState` Dexie table (schema v4) | 2 | 1h | ✅ Shipped (Dexie v12+) |
+| `idempotencyKey` on OfflineAction | 2 | 30min | ✅ Shipped (Dexie v12+) |
 | `X-Idempotency-Key` header in `executeAction()` | 2 | 30min | ✅ Shipped |
 | `isTokenValid()` pre-replay check | 2 | 30min | ✅ Shipped (`isAuthTokenValid`) |
 | Server `/api/sync/version` endpoint | 2 | 1h | ✅ Shipped |
 | Command TTL expiry (5min oneshot) | 2 | 1h | ✅ Shipped |
-| Conflict detection + reconciliation | 2 | 3h | 🔲 Planned |
-| Conflict UI modal + i18n keys | 2 | 2h | 🔲 Planned |
-| Playwright E2E: offline conflict scenario | 2 | 2h | 🔲 Planned |
-| Vitest: reconciliation logic unit tests | 2 | 1h | 🔲 Planned |
+| Conflict detection + deferred settings replay | 3 | 3h | ✅ Shipped |
+| Conflict UI modal + i18n keys | 3 | 2h | ✅ Shipped |
+| Server `/api/sync/diff` + `PUT /api/settings` | 4 | 2h | ✅ Shipped |
+| Server-wins reconciliation via diff apply | 4 | 2h | ✅ Shipped |
+| Playwright E2E: offline conflict scenario | 4 | 2h | ✅ Shipped |
+| Vitest: full reconciliation integration tests | 4 | 1h | ✅ Shipped (unit + E2E) |
 
 **Total estimated effort: ~12h** — can be parallelised across sync-backend (server-side) and
 sync-frontend (Dexie + background-sync) tracks.
