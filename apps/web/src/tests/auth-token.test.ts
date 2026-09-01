@@ -176,4 +176,46 @@ describe('auth-token', () => {
       expect(getTokenScope(makeToken({ scope: 123 }))).toBeNull();
     });
   });
+
+  it('getApiBaseUrl returns empty string without window or env', async () => {
+    vi.stubGlobal('window', undefined);
+    const { getApiBaseUrl } = await import('../lib/auth-token');
+    expect(getApiBaseUrl()).toBe('');
+  });
+
+  it('exchangeApiKeyForJwt returns no_api_base when origin is unavailable', async () => {
+    vi.stubGlobal('window', undefined);
+    const { exchangeApiKeyForJwt } = await import('../lib/auth-token');
+    await expect(exchangeApiKeyForJwt('client-1', 'secret-key')).resolves.toEqual({
+      ok: false,
+      error: 'no_api_base',
+    });
+  });
+
+  it('survives localStorage failures for read/write/clear', async () => {
+    vi.stubGlobal('localStorage', {
+      getItem: () => {
+        throw new Error('blocked');
+      },
+      setItem: () => {
+        throw new Error('blocked');
+      },
+      removeItem: () => {
+        throw new Error('blocked');
+      },
+    });
+
+    const { getAuthToken, setAuthToken, clearAuthToken } = await import('../lib/auth-token');
+    expect(getAuthToken()).toBeNull();
+    expect(() => setAuthToken('x')).not.toThrow();
+    expect(() => clearAuthToken()).not.toThrow();
+  });
+
+  it('fetchWsTicket returns null when response omits ticket', async () => {
+    vi.stubGlobal('window', { location: { origin: 'http://localhost:3000' } });
+    const { setAuthToken, fetchWsTicket } = await import('../lib/auth-token');
+    setAuthToken('jwt-abc');
+    vi.mocked(fetch).mockResolvedValueOnce(new Response(JSON.stringify({}), { status: 200 }));
+    await expect(fetchWsTicket()).resolves.toBeNull();
+  });
 });
