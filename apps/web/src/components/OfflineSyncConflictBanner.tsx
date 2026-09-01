@@ -1,6 +1,6 @@
 import { AlertTriangle } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import type { SyncState } from '../lib/db';
@@ -12,13 +12,16 @@ export function OfflineSyncConflictBanner() {
   const [conflicts, setConflicts] = useState<SyncState[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [activeConflict, setActiveConflict] = useState<SyncState | null>(null);
+  const refreshSeq = useRef(0);
 
   const refreshConflicts = useCallback(async () => {
+    const seq = ++refreshSeq.current;
     if (!navigator.onLine) {
-      setConflicts([]);
+      if (seq === refreshSeq.current) setConflicts([]);
       return;
     }
     const rows = await getConflictedSyncStates();
+    if (seq !== refreshSeq.current) return;
     setConflicts(rows);
     if (rows.length === 0) {
       setDialogOpen(false);

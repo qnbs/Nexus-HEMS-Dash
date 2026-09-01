@@ -1,5 +1,6 @@
 import * as Dialog from '@radix-ui/react-dialog';
 import { AlertTriangle, X } from 'lucide-react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import type { SyncState } from '../lib/db';
@@ -12,8 +13,8 @@ interface SyncConflictDialogProps {
   onResolved: () => void;
 }
 
-function formatSyncTime(timestamp: number, locale: string): string {
-  if (!timestamp) return '—';
+function formatSyncTime(timestamp: number, locale: string, fallback: string): string {
+  if (!timestamp) return fallback;
   return new Date(timestamp).toLocaleString(locale, {
     dateStyle: 'medium',
     timeStyle: 'short',
@@ -27,13 +28,19 @@ export function SyncConflictDialog({
   onResolved,
 }: SyncConflictDialogProps) {
   const { t, i18n } = useTranslation();
+  const [resolveError, setResolveError] = useState<string | null>(null);
 
   if (!conflict) return null;
 
   const handleResolve = async (resolution: 'local' | 'server') => {
-    await resolveSyncConflict(conflict.key, resolution);
-    onResolved();
-    onClose();
+    try {
+      setResolveError(null);
+      await resolveSyncConflict(conflict.key, resolution);
+      onResolved();
+      onClose();
+    } catch {
+      setResolveError(t('offline.syncConflictResolveError'));
+    }
   };
 
   return (
@@ -83,7 +90,7 @@ export function SyncConflictDialog({
               </p>
               <p className="text-(--color-text-muted) text-xs">
                 {t('offline.localVersionTime', {
-                  time: formatSyncTime(conflict.lastSyncedAt, i18n.language),
+                  time: formatSyncTime(conflict.lastSyncedAt, i18n.language, t('common.noData')),
                 })}
               </p>
             </div>
@@ -92,10 +99,18 @@ export function SyncConflictDialog({
                 {t('offline.serverVersion')}
               </p>
               <p className="text-(--color-text-muted) text-xs">
-                {t('offline.serverVersionValue', { version: conflict.serverVersion || '—' })}
+                {t('offline.serverVersionValue', {
+                  version: conflict.serverVersion || t('common.noData'),
+                })}
               </p>
             </div>
           </div>
+
+          {resolveError ? (
+            <p className="mb-4 text-(--state-error-fg) text-sm" role="alert">
+              {resolveError}
+            </p>
+          ) : null}
 
           <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
             <button

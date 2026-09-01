@@ -115,7 +115,9 @@ export function isAuthTokenValid(bufferMs = 30_000): boolean {
       normalized.padEnd(normalized.length + ((4 - (normalized.length % 4)) % 4), '='),
     );
     const parsed = JSON.parse(json) as { exp?: unknown };
-    return typeof parsed.exp === 'number' && parsed.exp * 1000 > Date.now() + bufferMs;
+    if (typeof parsed.exp !== 'number') return false;
+    const expiresAtMs = parsed.exp * 1000;
+    return expiresAtMs > Date.now() + bufferMs;
   } catch {
     return false;
   }

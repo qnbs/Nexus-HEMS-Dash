@@ -20,7 +20,7 @@ vi.mock('../lib/auth-token', () => ({
 
 vi.mock('../lib/background-sync', () => ({
   backgroundSyncService: {
-    syncPendingActions: vi.fn().mockResolvedValue(undefined),
+    syncPendingActions: vi.fn().mockResolvedValue(true),
   },
 }));
 

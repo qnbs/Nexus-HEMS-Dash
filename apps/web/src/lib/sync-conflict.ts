@@ -1,4 +1,11 @@
-import { getSyncState, nexusDb, type SyncState, updateSyncState } from './db';
+import {
+  getPendingActions,
+  getSyncState,
+  nexusDb,
+  type SyncState,
+  updateActionStatus,
+  updateSyncState,
+} from './db';
 import { fetchServerSyncVersion, recordServerSyncVersion } from './sync-client';
 
 /** Dispatched when a new sync conflict is persisted in Dexie `syncState`. */
@@ -27,24 +34,46 @@ export async function markSyncConflict(domain = 'settings'): Promise<void> {
   dispatchSyncConflictEvent(domain);
 }
 
+async function discardPendingSettingsActions(): Promise<void> {
+  const pending = await getPendingActions();
+  for (const action of pending) {
+    if (action.type === 'settings' && action.id !== undefined) {
+      await updateActionStatus(action.id, 'failed', 'Discarded (server-wins conflict resolution)');
+    }
+  }
+}
+
 /**
  * Resolve a sync conflict after explicit user choice.
- * Server-wins clears the flag; local-wins clears the flag then replays the offline queue.
+ * Server-wins discards queued settings mutations; local-wins replays then clears the flag.
  */
 export async function resolveSyncConflict(
   domain: string,
   resolution: SyncConflictResolution,
 ): Promise<void> {
+  if (resolution === 'server') {
+    const remote = await fetchServerSyncVersion();
+    if (remote !== null) {
+      await recordServerSyncVersion(remote, domain, false);
+    } else {
+      const state = await getSyncState(domain);
+      await updateSyncState(domain, state.serverVersion, false);
+    }
+    await discardPendingSettingsActions();
+    return;
+  }
+
+  const { backgroundSyncService } = await import('./background-sync');
+  const replayOk = await backgroundSyncService.syncPendingActions({ force: true });
+  if (!replayOk) {
+    throw new Error('Local replay failed');
+  }
+
   const remote = await fetchServerSyncVersion();
   if (remote !== null) {
     await recordServerSyncVersion(remote, domain, false);
   } else {
     const state = await getSyncState(domain);
     await updateSyncState(domain, state.serverVersion, false);
-  }
-
-  if (resolution === 'local') {
-    const { backgroundSyncService } = await import('./background-sync');
-    await backgroundSyncService.syncPendingActions();
   }
 }

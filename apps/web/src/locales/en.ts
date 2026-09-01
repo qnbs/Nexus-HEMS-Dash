@@ -1617,6 +1617,7 @@ export const en = {
     keepLocal: 'Keep my version',
     acceptServer: 'Accept server version',
     conflictResolved: 'Sync conflict resolved',
+    syncConflictResolveError: 'Could not apply your choice. Check your connection and try again.',
   },
   commandPalette: {
     title: 'Command Palette',

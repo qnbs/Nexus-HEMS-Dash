@@ -279,7 +279,6 @@ describe('BackgroundSyncService', () => {
         timestamp: Date.now(),
         retries: 5,
         status: 'pending',
-        retryCount: 5,
       },
     ]);
 
@@ -310,7 +309,7 @@ describe('BackgroundSyncService', () => {
   });
 
   it('registers an online listener that triggers sync', () => {
-    const syncSpy = vi.spyOn(backgroundSyncService, 'syncPendingActions').mockResolvedValue();
+    const syncSpy = vi.spyOn(backgroundSyncService, 'syncPendingActions').mockResolvedValue(true);
     backgroundSyncService.init();
 
     expect(onlineHandler).toBeTypeOf('function');
@@ -385,6 +384,39 @@ describe('BackgroundSyncService', () => {
     expect(markSyncConflict).toHaveBeenCalledWith('settings');
     expect(fetch).not.toHaveBeenCalled();
     expect(updateActionStatus).not.toHaveBeenCalled();
-    expect(recordServerSyncVersion).toHaveBeenCalledWith(42, 'settings', true);
+    expect(recordServerSyncVersion).not.toHaveBeenCalled();
+  });
+
+  it('replays hardware commands when only settings has a sync conflict', async () => {
+    getAuthHeader.mockReturnValue({ Authorization: 'Bearer sync-jwt' });
+    const { getPendingActions, updateActionStatus } = await import('../lib/db');
+    const { detectSyncConflict } = await import('../lib/sync-client');
+    vi.mocked(detectSyncConflict).mockResolvedValueOnce(true).mockResolvedValue(false);
+    (getPendingActions as ReturnType<typeof vi.fn>).mockResolvedValueOnce([
+      {
+        id: 31,
+        type: 'settings',
+        payload: { theme: 'ocean-dark' },
+        timestamp: Date.now(),
+        retries: 0,
+        status: 'pending',
+      },
+      {
+        id: 32,
+        type: 'battery-control',
+        payload: { powerW: 1000 },
+        timestamp: Date.now(),
+        retries: 0,
+        status: 'pending',
+      },
+    ]);
+
+    await backgroundSyncService.syncPendingActions();
+
+    expect(fetch).toHaveBeenCalledWith(
+      'http://localhost:5173/api/battery/control',
+      expect.objectContaining({ method: 'POST' }),
+    );
+    expect(updateActionStatus).toHaveBeenCalledWith(32, 'completed');
   });
 });

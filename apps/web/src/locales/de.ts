@@ -1633,6 +1633,8 @@ export const de = {
     keepLocal: 'Meine Version behalten',
     acceptServer: 'Server-Version übernehmen',
     conflictResolved: 'Sync-Konflikt behoben',
+    syncConflictResolveError:
+      'Die Auswahl konnte nicht angewendet werden. Verbindung prüfen und erneut versuchen.',
   },
   commandPalette: {
     title: 'Befehlspalette',

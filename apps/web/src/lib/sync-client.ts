@@ -34,7 +34,9 @@ export async function detectSyncConflict(domain = 'settings'): Promise<boolean> 
   const state = await getSyncState(domain);
   const localVersion = Number.parseInt(state.serverVersion, 10);
   if (!state.serverVersion || Number.isNaN(localVersion)) {
-    return remoteVersion > 0;
+    // First contact: baseline the client without raising a user-visible conflict.
+    await recordServerSyncVersion(remoteVersion, domain, false);
+    return false;
   }
   return remoteVersion > localVersion;
 }
