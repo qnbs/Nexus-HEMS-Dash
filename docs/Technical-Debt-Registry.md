@@ -866,7 +866,8 @@ advisory database for the specific IDs.
 | `protobufjs ^7.5.5` | Prototype-pollution fix |
 | `undici ^7.28.0` | HTTP client security + correctness fixes |
 | `ws @^7 → >=7.5.11` | DoS fix (header / per-message-deflate handling) |
-| `dompurify >=3.4.11` | mXSS sanitizer-bypass fix |
+| `dompurify >=3.4.12` | mXSS sanitizer-bypass fix |
+| `ip-address >=10.3.1` | SSRF / IP parsing hardening (transitive audit HIGH) |
 | `qs >=6.15.2` | Prototype-pollution / resource-exhaustion fix |
 | `uuid >=11.1.1` | Consolidate on the hardened ESM-native line |
 | `form-data >=4.0.6` | Safe multipart boundary generation |
