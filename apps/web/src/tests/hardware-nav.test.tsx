@@ -82,7 +82,17 @@ describe('Sidebar navigation', () => {
     expect(screen.getByText('common.connected')).toBeInTheDocument();
   });
 
-  it('shows disconnected status when the store reports no link', () => {
+  it('shows simulation status on static demo when no adapter is connected', () => {
+    render(
+      <MemoryRouter>
+        <Sidebar />
+      </MemoryRouter>,
+    );
+    expect(screen.getByText('mode.simulationBadge')).toBeInTheDocument();
+  });
+
+  it('shows disconnected status when live mode is active but no adapter is connected', () => {
+    useAppStore.setState({ adapterMode: 'live' });
     render(
       <MemoryRouter>
         <Sidebar />
