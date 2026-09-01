@@ -14,9 +14,8 @@ concurrency:
 permissions:
   contents: read
 
-env:
-  # Job-level only — workflow-level `env` breaks Scorecard SARIF publish (ossf/scorecard-action).
-  # Each job sets FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 locally where JS actions run.
+# FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 is set per-job (workflow-level `env` breaks
+# OpenSSF Scorecard SARIF publish — see scorecard-action workflow restrictions).
 
 jobs:
   lint-typecheck:
