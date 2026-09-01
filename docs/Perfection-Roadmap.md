@@ -1,10 +1,13 @@
 # Perfection Roadmap — Nexus-HEMS-Dash
 
-> **Status:** Active living document  
+> **Status:** Historical phase tracker (Phase 0–3 milestones largely shipped through v1.11.x)  
 > **Created:** 2026-06-29  
+> **Last reviewed:** 2026-09-01  
 > **Source audit:** `docs/Audit-Report-2026-06-29.md`  
-> **Baseline:** v1.10.0 shipped (2026-07-04)  
-> **Owner:** @qnbs + contributors
+> **Baseline:** v1.11.1 shipped (2026-09-01); Phase 0 safety defaults shipped in v1.3.0  
+> **Owner:** @qnbs + contributors  
+>
+> **Agent note:** Do not execute Phase 0 tasks as open work — they are ✅ in the debt registry. For current priorities see `docs/Campaign-Handoff-2026-09.md` and `docs/Technical-Debt-Registry.md`.
 
 This roadmap translates the June 2026 deep audit into **phased, measurable milestones** with success metrics and rollback strategies. It supersedes tactical items in `docs/Master-Improvement-Roadmap.md` where they conflict; the Master Roadmap remains the historical v1.1→1.2 record.
 
@@ -331,4 +334,4 @@ Consider adding: `audit`, `safety`, `perf-probe`, `supply-chain` — audit `git 
 
 ---
 
-*Last updated: 2026-07-01 · Next review: end of Phase 0 (target 2026-07-02)*
+*Last updated: 2026-09-01 · Phase 0 closed (v1.3.0+). Next review: when a new CRIT/HIGH debt item opens.*
