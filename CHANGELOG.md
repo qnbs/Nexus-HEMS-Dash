@@ -9,6 +9,29 @@ Release notes are maintained here and published via [semantic-release](https://g
 
 ## [Unreleased]
 
+### Security
+
+- **SEC-11** — Fail closed when `NODE_ENV` is unset: `runtime-env.ts` (`isDevRuntime()` / `isProductionRuntime()` / `warnIfNodeEnvUnset()`); auth bypass, JWT config, WS origins, trust-proxy, and CORS now require explicit `development` or `test` (#333).
+- **deps/CVE** — Remediate high-severity production audit findings; Docker server image hardening (#336).
+
+### Fixed
+
+- **Demo chrome** — `resolveConnectionPresentation()` treats mock backend as simulation, unknown backend + `VITE_BACKEND_WS` as disconnected until `/api/health` resolves; live mode without connection shows disconnected (#332).
+
+### CI / Toolchain
+
+- Align GitHub Actions pins (CodeQL, setup-python, rust-cache, harden-runner, buildx) (#329).
+- Close stale Dependabot Action pin PRs superseded by #329 (#323–#327).
+
+### Tests
+
+- **E-STOP** — Stabilize EmergencyStop async assertions in unit tests (#335).
+
+### Documentation
+
+- Post-freeze truth-sync: debt registry, FEATURE_STATUS operational note, coverage gate references (#334).
+- Sep 2026 campaign closeout handoff (`docs/Campaign-Handoff-2026-09.md`).
+
 ## [1.11.0] - 2026-07-10
 
 Consolidates **45 commits** since [`v1.10.0`](https://github.com/qnbs/Nexus-HEMS-Dash/compare/v1.10.0...v1.11.0) (PRs [#270](https://github.com/qnbs/Nexus-HEMS-Dash/pull/270)–[#313](https://github.com/qnbs/Nexus-HEMS-Dash/pull/313)): the Command Palette registry (ADR-028), Settings & Help perfection, page modularization, deep-audit remediation (F-01–F-07, incl. a non-destructive prompt-sanitizer and deferred in-browser LLM engines per ADR-029), plus toolchain, CI/deploy and docs hardening.

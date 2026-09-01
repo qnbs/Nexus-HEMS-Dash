@@ -75,6 +75,7 @@ within ~2 sprints) · `LOW` (backlog) · `DOC` (documentation-only).
 - **Deploy:** [`Deployment-Guide.md`](Deployment-Guide.md) · [`Deployment-Checklist.md`](Deployment-Checklist.md) · [`Manual-Workflow-Triggers.md`](Manual-Workflow-Triggers.md) · [`Release-History.md`](Release-History.md) · [`Release-GH_TOKEN-Setup.md`](Release-GH_TOKEN-Setup.md)
 - **Observability:** [`Observability-Plan.md`](Observability-Plan.md) · [`Grafana-Dashboards-Custom.md`](Grafana-Dashboards-Custom.md)
 - **Support:** [`Troubleshooting.md`](Troubleshooting.md) · [`PR-FEEDBACK-PLAYBOOK.md`](PR-FEEDBACK-PLAYBOOK.md) · [`Graphify-Integration-Guide.md`](Graphify-Integration-Guide.md)
+- **Campaign closeout:** [`Campaign-Handoff-2026-09.md`](Campaign-Handoff-2026-09.md) (post-v1.11.0 freeze, Sep 2026)
 - [`runbooks/`](runbooks/) — per-platform integration runbooks
 
 ## Accessibility & UX
