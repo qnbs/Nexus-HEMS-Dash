@@ -34,6 +34,14 @@ Fixes #<!-- issue number -->
 - [ ] Existing tests pass
 - [ ] I have written new tests for my changes (if applicable)
 
+### Review quiescence (mandatory before merge)
+
+- [ ] All required CI checks green on the **latest** commit
+- [ ] All review bots finished on latest SHA (CodeRabbit, CodeAnt, DeepSource, etc.)
+- [ ] **Zero** unresolved GitHub review threads (including nitpicks)
+- [ ] CodeRabbit outside-diff comments fetched (`./scripts/fetch-coderabbit-outside-diff.sh <pr>`) and addressed
+- [ ] Correction loop repeated until **no new actionable comments** on latest SHA ([runbook](docs/runbooks/pr-review-correction-loop.md))
+
 ### i18n / a11y (mandatory)
 
 - [ ] All new user-facing strings are localized in both `apps/web/src/locales/de.ts` and `apps/web/src/locales/en.ts` using `t()`

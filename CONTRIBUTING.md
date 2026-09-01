@@ -222,14 +222,18 @@ AI API keys (OpenAI, Anthropic, Gemini, etc.) are managed through the in-app BYO
 - Rebase and merge is acceptable for a clean, already well-structured commit series.
 - Merge commits should stay disabled on `main` to preserve linear history.
 - This repository currently runs in a single-maintainer mode: approvals are optional and not a hard merge gate.
-- Merge readiness is determined by passing required status checks and resolved review conversations.
+- **Merge readiness requires review quiescence** — see
+  [`docs/runbooks/pr-review-correction-loop.md`](docs/runbooks/pr-review-correction-loop.md) §1.1.
+  All actionable review comments from every bot (including nitpicks and CodeRabbit outside-diff
+  range comments) must be fixed or explicitly declined with rationale and threads resolved
+  before merge. Repeat correction loops until no new actionable comments appear on the latest SHA.
 - If the maintainer team grows, re-enable required approvals and Code Owner review as a policy hardening step.
 
 ## Pull Request Expectations
 
 - Target branch: always `main`
 - Required status checks: primary workflow `ci.yml` (includes lint, typecheck, unit tests, build, E2E, security audit), plus additional workflows configured on the repo (e.g. Lighthouse, supply-chain scans). The optimized CI workflow is manual-only and is not part of the default push gate.
-- Required review hygiene: all review conversations resolved before merge
+- **Required review hygiene (mandatory):** review **quiescence** before merge — zero unresolved conversations and zero unaddressed bot findings on the latest commit. Full checklist: `docs/runbooks/pr-review-correction-loop.md`.
 - Copilot review may be auto-requested for draft PRs and subsequent pushes; treat it as an additional review signal
 
 ## Pull Request Feedback & Quality Checks

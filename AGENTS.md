@@ -448,4 +448,23 @@ See `.env.example` for the full list, including per-adapter host/port settings.
 
 ---
 
+## 14. PR merge gate — review quiescence (mandatory)
+
+**Never merge a PR to `main` until review quiescence is reached.**
+
+| Step | Action |
+|------|--------|
+| 1 | All required CI checks green on latest commit |
+| 2 | All review bots **finished** on that SHA (not queued/in progress) |
+| 3 | Collect **all** actionable comments: GitHub unresolved threads **+** `./scripts/fetch-coderabbit-outside-diff.sh <pr>` |
+| 4 | Fix or decline **every** item — **nitpicks included** — resolve threads |
+| 5 | Push → repeat steps 1–4 until **no new actionable comments** appear (quiescence) |
+
+Canonical runbook: [`docs/runbooks/pr-review-correction-loop.md`](docs/runbooks/pr-review-correction-loop.md).
+
+Cloud agents: do not mark a PR complete after first green CI. Do not merge without explicit
+user instruction **and** quiescence. CodeRabbit outside-diff comments are **not** optional.
+
+---
+
 *Last updated: 2026-09-01. If you change tooling, scripts, deployment targets, or safety guardrails, update this file to keep it accurate.*
