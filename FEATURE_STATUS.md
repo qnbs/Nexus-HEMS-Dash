@@ -103,7 +103,7 @@
 | Container CVE scan (Grype) in CI | ✅ | `sbom-scan.yml` + `container-publish.yml` — critical cutoff, blocking; `.grype.yaml` targeted ignores (`docs/Supply-Chain-Grype-Policy.md`) |
 | Cosign image signing in CI | ✅ | `container-publish.yml` — keyless cosign + SLSA provenance on GHCR push (`ghcr.io/qnbs/nexus-hems-dash`, `nexus-hems-server`) |
 | OpenSSF Scorecard | ✅ | `.github/workflows/scorecard.yml` |
-| DeepSource static analysis | ⚠️ | `.deepsource.toml` connected; **advisory only** (not a merge gate). JavaScript analyzer removed 2026-07-07 (#299/#301); secrets + Docker analyzers remain (see PRF-01) |
+| DeepSource static analysis | ⚠️ | `.deepsource.toml` connected; **advisory only** (not a merge gate). JavaScript analyzer removed 2026-07-07 (#299/#301); secrets, Docker, and test-coverage analyzers remain (see PRF-01) |
 | Unified PR feedback comment | ✅ | `.github/workflows/pr-feedback-summary.yml` |
 | Multi-user RBAC | ⏳ | ADR-009 deferred |
 
