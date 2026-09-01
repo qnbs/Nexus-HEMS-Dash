@@ -269,6 +269,21 @@ Circuit Breaker (`apps/web/src/core/circuit-breaker.ts`): FSM with CLOSED → OP
   - CI E2E/security completion before final merge/deploy
 - Document any intentionally deferred local heavy checks in the PR/summary output
 
+### PR merge gate — review quiescence (mandatory)
+
+**Do not merge to `main` until review quiescence is reached.** Canonical runbook:
+[`docs/runbooks/pr-review-correction-loop.md`](docs/runbooks/pr-review-correction-loop.md).
+
+1. Wait for **all** review bots to finish on the **latest** SHA (CodeRabbit, CodeAnt, DeepSource,
+   Sourcery, Amazon Q, Codecov, humans).
+2. Resolve **every** actionable item — **including nitpicks** and CodeRabbit **outside-diff**
+   comments (`./scripts/fetch-coderabbit-outside-diff.sh <pr>`). Inline `reviewThreads` alone
+   is insufficient.
+3. Fix in code **or** decline with written rationale and resolve the GitHub thread.
+4. Push fixes → re-poll CI and **all** reviews. Repeat until a full bot pass on the latest SHA
+   produces **zero new actionable comments** (quiescence).
+5. Agents merge only when explicitly instructed; quiescence is still required first.
+
 ---
 
 ## CRITICAL CONSTRAINTS — never violate

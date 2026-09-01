@@ -295,6 +295,7 @@ Conventional Commits enforced by commitlint. Types: `feat, fix, docs, style, ref
 2. Implement changes following all rules above.
 3. Add/update i18n keys in both `apps/web/src/locales/en.ts` and `apps/web/src/locales/de.ts`.
 4. Verify with staged, non-parallel checks: `time pnpm type-check` → `pnpm lint` → targeted tests. For docs/config-only changes, prefer targeted Markdown/diff checks plus CI instead of exhausting local hardware.
+5. **Before merge:** reach **review quiescence** on the PR — every actionable bot/human comment (including nitpicks and CodeRabbit outside-diff items) fixed or declined; loop until no new actionable comments on the latest SHA. Canonical process: `docs/runbooks/pr-review-correction-loop.md`.
 
 When CI is the source of truth, push focused commits and monitor GitHub Actions with non-interactive `gh` commands (`GH_PAGER=cat PAGER=cat gh run view ...`). Avoid terminal UI commands such as `gh run watch` in this workspace because they can leave control sequences in the shell.
 

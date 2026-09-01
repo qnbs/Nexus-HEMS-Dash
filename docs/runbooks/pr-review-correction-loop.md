@@ -10,26 +10,64 @@ every actionable thread is resolved.
 process. [PR-FEEDBACK-PLAYBOOK.md](../PR-FEEDBACK-PLAYBOOK.md) explains philosophy and
 tool roles; this document is the **operational checklist**.
 
-**Last updated:** 2026-07-04
+**Last updated:** 2026-09-01
 
 ---
 
 ## 1. Policy (non-negotiable)
 
-Every PR branch must complete **all** of the following before merge:
+Every PR branch must complete **all** of the following before merge to `main`:
 
 1. **Required CI gates green** — see [ci-primary-gate.md](ci-primary-gate.md) and
    [pr-status-checks.md](pr-status-checks.md).
 2. **All advisory review platforms polled** — CodeRabbit, CodeAnt.ai, DeepSource,
-   Codecov (and any other bot that comments on the PR).
-3. **Correction loops finished** — every actionable inline/summary comment is either
-   fixed in code or explicitly declined with a written rationale and thread resolved.
-4. **Re-push after fixes** — each fix commit re-triggers CI and reviews; repeat until
-   stable green.
+   Codecov, Sourcery, Amazon Q Developer, and any other bot that comments on the PR.
+3. **Review quiescence reached** — see §1.1 below. Merge is **forbidden** until
+   quiescence is achieved on the **latest** commit SHA.
+4. **Correction loops finished** — every actionable item from every platform is either
+   fixed in code or explicitly declined with a written rationale and the GitHub
+   thread resolved.
+5. **Re-push after fixes** — each fix commit re-triggers CI and reviews; repeat from
+   step 2 until quiescence.
 
-> **Agents (Cursor Cloud):** Do not declare a PR "done" after the first green CI run.
-> Wait for AI reviewers to finish, address their threads, push fixes, and re-verify.
-> Merge only after the maintainer merges (or explicitly asks you to stop).
+> **Agents (Cursor Cloud):** Do not declare a PR "done" or merge to `main` after the
+> first green CI run. Poll all review bots, address **every** actionable thread
+> (including nitpicks and CodeRabbit outside-diff comments), push fixes, and loop until
+> quiescence. Merge only when exit criteria in §7 are satisfied or the maintainer
+> explicitly instructs you to stop.
+
+### 1.1 Review quiescence (definition)
+
+**Quiescence** means: on the current PR head SHA, after all configured review bots have
+finished (status not "in progress" / "queued"), there are **zero** remaining actionable
+review items from **any** source.
+
+| Source | What counts as actionable | Included in quiescence? |
+|--------|---------------------------|-------------------------|
+| GitHub inline review threads | Unresolved `coderabbitai`, `codeant-ai`, human, bot threads | **Yes** — all severities including nitpick |
+| CodeRabbit summary comment | Unaddressed bullets in the latest summary | **Yes** |
+| CodeRabbit **outside diff range** | Items in `⚠️ Outside diff range comments` `<details>` (review body only) | **Yes — mandatory**; invisible to `reviewThreads` |
+| CodeAnt.ai | Inline + summary suggestions | **Yes** |
+| DeepSource | `critical` / `major` / `security` inline annotations | **Yes** |
+| Sourcery / Amazon Q / other bots | Actionable inline or summary findings | **Yes** |
+| Codecov patch gaps | Missing lines on safety-critical paths | **Yes** (add tests or document why unreachable) |
+| Pure praise / "LGTM" / duplicate noise | No code change requested | No |
+
+**Nitpicks are not optional.** If a bot labels a finding as nitpick, minor, or quick win,
+it still must be **fixed or declined with rationale** before merge unless the maintainer
+explicitly waives it in a PR comment.
+
+**Quiescence loop (repeat until stable):**
+
+1. Push commit → wait for CI green + all review bots complete on that SHA.
+2. Collect **all** actionable items: GraphQL unresolved threads **and**
+   `./scripts/fetch-coderabbit-outside-diff.sh <pr>`.
+3. Fix or decline each item; resolve GitHub threads; push.
+4. If step 1 produced **new** actionable comments on the new SHA → go to step 2.
+5. **Quiescent** when step 4 finds nothing new after a full bot pass on the latest SHA.
+
+**Never** treat "0 unresolved `reviewThreads`" as done without the outside-diff fetch.
+**Never** merge with open review conversations on GitHub.
 
 ---
 
@@ -263,15 +301,21 @@ re-request `@coderabbitai review`.
 
 ## 7. Step 4 — Exit criteria (ready to merge)
 
+Merge to `main` is allowed **only** when **review quiescence** (§1.1) is reached **and**:
+
 - [ ] All **required** GitHub checks green on the **latest** commit.
-- [ ] CodeRabbit review **complete** (not "in progress") and all actionable threads
-      resolved **including outside-diff review-body comments**.
-- [ ] CodeAnt review complete (or confirmed unavailable) and threads resolved.
-- [ ] DeepSource: no unaddressed `critical`/`major` inline issues (or documented
-      suppressions).
-- [ ] Codecov: no unexpected coverage regression on safety-critical paths (advisory).
+- [ ] Every review bot has **finished** on the latest SHA (not "in progress" / "queued").
+- [ ] **Zero** unresolved GitHub review threads (inline), **all severities** including nitpick.
+- [ ] CodeRabbit outside-diff fetch run on latest SHA and **zero** unaddressed items:
+      `./scripts/fetch-coderabbit-outside-diff.sh <pr>`
+- [ ] CodeRabbit summary: no unaddressed actionable bullets on latest review.
+- [ ] CodeAnt (and Sourcery / Amazon Q / other bots): no unaddressed actionable items.
+- [ ] DeepSource: no unaddressed `critical`/`major` inline issues (or documented suppressions).
+- [ ] Codecov: no unexpected patch gaps on safety-critical paths (advisory but mandatory to address).
+- [ ] A fix push after the last review round did **not** produce new actionable comments
+      (quiescence confirmed).
 - [ ] `FEATURE_STATUS.md` / audit docs updated if feature status changed.
-- [ ] Maintainer merge (agents do not self-merge unless explicitly instructed).
+- [ ] Maintainer merge (agents merge only when explicitly instructed; still must reach quiescence first).
 
 ---
 
@@ -295,14 +339,15 @@ If a bot suggests such a change, **decline the thread** and cite
 ```text
 [ ] Push latest commit
 [ ] Poll CI — all required jobs green on latest SHA?
-[ ] CodeRabbit finished? (not "review in progress")
-[ ] CodeRabbit outside-diff comments fetched and addressed?
-[ ] CodeAnt finished?
-[ ] DeepSource / Codecov summaries read?
-[ ] All inline threads: fixed OR declined + resolved?
-[ ] If fixes pushed → go to top (re-poll CI + reviews)
+[ ] All review bots finished on latest SHA? (not queued/in progress)
+[ ] Unresolved reviewThreads count = 0 (all severities, incl. nitpick)?
+[ ] CodeRabbit outside-diff: ./scripts/fetch-coderabbit-outside-diff.sh <pr> — all addressed?
+[ ] CodeRabbit summary bullets — all addressed or declined?
+[ ] CodeAnt / Sourcery / Amazon Q / other bots — all actionable items addressed?
+[ ] DeepSource / Codecov summaries read and addressed?
+[ ] If fixes pushed → re-poll CI + ALL reviews; repeat until QUIESCENCE (no new actionable items)
 [ ] Update PR description if scope changed
-[ ] Hand off for merge when exit criteria met
+[ ] Merge only when quiescent + exit criteria (§7) met
 ```
 
 ---
