@@ -44,20 +44,18 @@ vi.mock('../components/SankeyDiagram', () => ({
   SankeyDiagram: () => <div data-testid="sankey" />,
 }));
 
-vi.mock('../store', () => ({
-  useAppStore: (
-    selector: (state: {
-      settings: {
-        systemConfig: { evCharger: { maxPowerKW: number }; battery: { maxChargeRateKW: number } };
-      };
-    }) => unknown,
-  ) =>
-    selector({
-      settings: {
-        systemConfig: { evCharger: { maxPowerKW: 11 }, battery: { maxChargeRateKW: 5 } },
-      },
-    }),
-}));
+vi.mock('../store', () => {
+  const mockState = {
+    adapterMode: 'mock' as const,
+    settings: {
+      systemConfig: { evCharger: { maxPowerKW: 11 }, battery: { maxChargeRateKW: 5 } },
+    },
+  };
+  return {
+    useAppStore: (selector: (state: typeof mockState) => unknown) => selector(mockState),
+    useAppStoreShallow: (selector: (state: typeof mockState) => unknown) => selector(mockState),
+  };
+});
 
 describe('LiveEnergyFlow', () => {
   beforeEach(() => {
