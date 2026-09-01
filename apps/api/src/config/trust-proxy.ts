@@ -3,7 +3,7 @@
  * @see https://expressjs.com/en/guide/behind-proxies.html
  */
 
-import { isProductionRuntime } from '../config/runtime-env.js';
+import { isProductionRuntime } from './runtime-env.js';
 
 let warningLogged = false;
 
