@@ -35,7 +35,7 @@ Adopted on `main`:
 
 No further action. This item is closed.
 
-### ⛔ Declined — preserved for audit only
+### ❌ Declined — preserved for audit only
 
 #### 2. `shared-types` compiled build output  *(DECLINED — 2026-07-01)*
 
