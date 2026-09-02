@@ -2,10 +2,8 @@ import i18n from 'i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 import { initReactI18next } from 'react-i18next';
 
-// Both locales are bundled synchronously so the first paint never mixes
-// German fallback strings with English (or vice versa) while a lazy bundle loads.
+// Fallback locale is bundled statically so German is always available synchronously.
 import { de } from './locales/de';
-import { en } from './locales/en';
 
 // i18next Inspector Mode — activate via localStorage:
 //   localStorage.setItem('i18n-inspector', 'true')
@@ -14,14 +12,38 @@ import { en } from './locales/en';
 const inspectorMode =
   typeof window !== 'undefined' && window.localStorage.getItem('i18n-inspector') === 'true';
 
-void i18n
+function resolveActiveLanguage(): 'de' | 'en' {
+  const lang = i18n.resolvedLanguage ?? i18n.language ?? 'de';
+  return lang.startsWith('en') ? 'en' : 'de';
+}
+
+async function ensureLocaleBundle(lang: 'de' | 'en'): Promise<void> {
+  if (i18n.hasResourceBundle(lang, 'translation')) return;
+
+  if (lang === 'de') {
+    i18n.addResourceBundle(
+      'de',
+      'translation',
+      de as unknown as Record<string, unknown>,
+      true,
+      true,
+    );
+    return;
+  }
+
+  const { en } = await import('./locales/en');
+  i18n.addResourceBundle('en', 'translation', en as unknown as Record<string, unknown>, true, true);
+}
+
+/** Resolves when the detected active locale is loaded — gate first paint in `main.tsx`. */
+export const i18nReady = i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
     resources: {
       de: { translation: de as unknown as Record<string, unknown> },
-      en: { translation: en as unknown as Record<string, unknown> },
     },
+    partialBundledLanguages: true,
     fallbackLng: 'de',
     supportedLngs: ['de', 'en'],
     defaultNS: 'translation',
@@ -48,6 +70,14 @@ void i18n
         console.warn(`[i18n-inspector] Missing key: ${key}`);
       },
     }),
+  })
+  .then(async () => {
+    const active = resolveActiveLanguage();
+    await ensureLocaleBundle(active);
+
+    // Pre-load the other locale in the background so switching stays instant.
+    const other = active === 'de' ? 'en' : 'de';
+    void ensureLocaleBundle(other);
   });
 
 export default i18n;

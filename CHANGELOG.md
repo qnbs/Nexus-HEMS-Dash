@@ -29,7 +29,7 @@ Release notes are maintained here and published via [semantic-release](https://g
 
 ### Fixed
 
-- **Pages demo i18n** — bundle `en` and `de` locales synchronously to prevent mixed-language chrome on first paint; Command Hub locale regression tests.
+- **Pages demo i18n** — gate first paint on `i18nReady` so the active locale loads before React mounts; prevents mixed-language chrome without bloating the app entry chunk.
 - **Tariff formatter** — shared `formatTariffPrice` for header pill (compact ct/kWh), Command Hub price card, and Live Energy top bar (full €/kWh).
 
 ### Security

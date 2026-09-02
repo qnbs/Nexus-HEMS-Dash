@@ -12,7 +12,7 @@ vi.mock('../components/SankeyDiagram', () => ({
 }));
 
 import { EnergyProvider } from '../core/EnergyContext';
-import i18n from '../i18n';
+import i18n, { i18nReady } from '../i18n';
 import CommandHub from '../pages/CommandHub';
 import { useAppStore } from '../store';
 
@@ -49,6 +49,7 @@ describe('CommandHub locale chrome', () => {
         priceCurrent: 0.128,
       },
     });
+    await i18nReady;
     if (!i18n.isInitialized) {
       await new Promise<void>((resolve) => i18n.on('initialized', () => resolve()));
     }

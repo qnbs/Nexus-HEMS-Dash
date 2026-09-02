@@ -2,10 +2,10 @@ import { MotionConfig } from 'motion/react';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
+import { i18nReady } from './i18n';
 import { startDownsamplingService } from './lib/downsampling-service';
 import { QueryProvider } from './lib/query-client.tsx';
 import { initSentry } from './lib/sentry';
-import './i18n';
 import './index.css';
 // Bundle sonner's stylesheet from 'self' so the toaster is styled/positioned
 // under the strict CSP (AUD-02). sonner injects its CSS via a runtime <style>
@@ -28,37 +28,39 @@ if ('serviceWorker' in navigator && !import.meta.env.VITE_E2E_TESTING) {
   });
 }
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <QueryProvider>
-      {/* Under E2E, skip all framer-motion animations so values snap to their final
-          state instantly. Entrance opacity/spring fades otherwise race the axe scan
-          and trip transient color-contrast violations (spring animations are JS-driven
-          and invisible to `document.getAnimations()`, so the test-side settle can't
-          catch them). `skipAnimations` is framer's documented E2E switch; gated on
-          VITE_E2E_TESTING → zero production impact.
+void i18nReady.then(() => {
+  createRoot(document.getElementById('root')!).render(
+    <StrictMode>
+      <QueryProvider>
+        {/* Under E2E, skip all framer-motion animations so values snap to their final
+            state instantly. Entrance opacity/spring fades otherwise race the axe scan
+            and trip transient color-contrast violations (spring animations are JS-driven
+            and invisible to `document.getAnimations()`, so the test-side settle can't
+            catch them). `skipAnimations` is framer's documented E2E switch; gated on
+            VITE_E2E_TESTING → zero production impact.
 
-          Escape hatch: VITE_E2E_ANIMATIONS=true keeps E2E mode (SW-reload guard,
-          background-service opt-out) but runs animations, so animation-gated crashes
-          — e.g. a recharts ResponsiveContainer looping inside a height:0 → auto
-          reveal (React #185), which this flag previously MASKED in CI — are exposed.
-          Used by the animation-crash-sweep E2E job. */}
-      <MotionConfig
-        skipAnimations={
-          import.meta.env.VITE_E2E_TESTING === 'true' &&
-          import.meta.env.VITE_E2E_ANIMATIONS !== 'true'
-        }
-      >
-        <App />
-      </MotionConfig>
-    </QueryProvider>
-  </StrictMode>,
-);
+            Escape hatch: VITE_E2E_ANIMATIONS=true keeps E2E mode (SW-reload guard,
+            background-service opt-out) but runs animations, so animation-gated crashes
+            — e.g. a recharts ResponsiveContainer looping inside a height:0 → auto
+            reveal (React #185), which this flag previously MASKED in CI — are exposed.
+            Used by the animation-crash-sweep E2E job. */}
+        <MotionConfig
+          skipAnimations={
+            import.meta.env.VITE_E2E_TESTING === 'true' &&
+            import.meta.env.VITE_E2E_ANIMATIONS !== 'true'
+          }
+        >
+          <App />
+        </MotionConfig>
+      </QueryProvider>
+    </StrictMode>,
+  );
 
-// Start the background Dexie downsampling service after React mounts.
-// 90 s startup delay avoids contending with initial data loading.
-// Disabled during E2E testing to eliminate background IndexedDB work and
-// timers that can keep the Playwright process alive.
-if (import.meta.env.VITE_E2E_TESTING !== 'true') {
-  startDownsamplingService();
-}
+  // Start the background Dexie downsampling service after React mounts.
+  // 90 s startup delay avoids contending with initial data loading.
+  // Disabled during E2E testing to eliminate background IndexedDB work and
+  // timers that can keep the Playwright process alive.
+  if (import.meta.env.VITE_E2E_TESTING !== 'true') {
+    startDownsamplingService();
+  }
+});
