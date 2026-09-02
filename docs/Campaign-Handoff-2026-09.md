@@ -1,8 +1,8 @@
 # Campaign Handoff — Post-v1.11.0 Freeze (Sep 2026)
 
-> **Status:** Phase 1–3 complete on `main`; Stream A docs truth-sync complete (#352); release line deferred (HEAD ahead of tag)  
-> **Snapshot:** `main` @ `1993cb2` — tag `v1.11.1` @ `1716a42` (2026-09-01)  
-> **Purpose:** Closeout record for the Sep 2026 operational campaign after a 53-day product freeze, plus the post-freeze master-prompt remediation and CI/offline-sync waves.
+> **Status:** Phase 1–4 complete on `main`; Stream F protocol depth shipped (#355–#356); release line deferred (HEAD ahead of tag)  
+> **Snapshot:** `main` @ `c4e7939` — tag `v1.11.1` @ `1716a42` (2026-09-01)  
+> **Purpose:** Closeout record for the Sep 2026 operational campaign after a 53-day product freeze, plus the post-freeze master-prompt remediation and CI/offline-sync/protocol-depth waves.
 
 ---
 
@@ -57,7 +57,18 @@ auth fail-open, and high-severity dependency/CVE findings.
 | [#350](https://github.com/qnbs/Nexus-HEMS-Dash/pull/350) | Isolate SLSA attestation; PR/main parity; retry 403s |
 | [#351](https://github.com/qnbs/Nexus-HEMS-Dash/pull/351) | Scorecard job must not define `env` when `publish_results` is on |
 
-**HEAD:** `1993cb2` — **10 commits ahead of `v1.11.1`**. Do not claim `v1.11.1 == main`.
+**HEAD:** `c4e7939` — **15 commits ahead of `v1.11.1`**. Do not claim `v1.11.1 == main`.
+
+---
+
+## Phase 4 — Protocol depth Stream F (merged 2026-09-02)
+
+| PR | Scope |
+| --- | --- |
+| [#355](https://github.com/qnbs/Nexus-HEMS-Dash/pull/355) | SG Ready closed loop, OpenADR DR→hardware, Matter/Zigbee/HA/HeatPump backend commands, E2E specs |
+| [#356](https://github.com/qnbs/Nexus-HEMS-Dash/pull/356) | Review follow-ups: HA `handled:false`, Matter node guard, Zigbee finite checks, OpenADR timeout + aggregate dispatch |
+
+**Deferred (tracked in debt registry):** OpenADR limit release after event expiry; external VTN webhook auth for production VTN push; HeatPump Modbus write serialization vs polling.
 
 ---
 
@@ -72,14 +83,13 @@ auth fail-open, and high-severity dependency/CVE findings.
 
 ## Verification
 
-CI on `main` after Phase 3: lint, type-check, unit tests (coverage ≥72% branches), build, smoke-prod, SLSA attestation (isolated job), E2E, fuzz, Scorecard publish — all green on `1993cb2`.
+CI on `main` after Phase 4: lint, type-check, unit tests (coverage ≥72% branches), build + size-limit, smoke-prod, SLSA attestation (isolated job), E2E (18 specs), fuzz, Scorecard publish — all green on `c4e7939`.
 
 ---
 
-## What remains (not in Phases 1–3)
+## What remains (not in Phases 1–4)
 
-- **Demo i18n + tariff formatter** — Pages demo DE/EN split and inconsistent ct vs €/kWh (Stream B, PR #353).
-- **Offline sync production residuals** — durable Redis-backed sync/idempotency (ADR-030), `/api/commands/replay`, expanded write-route idempotency, Helm replica warning — **Stream C (this PR)**.
 - **SUPPLY-02** — Grype exception review due **2026-09-29**.
 - **PRF-02 / PRF-06** — CodeAnt GitHub App install + `GH_TOKEN` rotation (maintainer-only).
-- **Protocol depth** — Matter, HA, Zigbee, OpenADR, SG Ready — one capability per PR (Stream F).
+- **OpenADR production residuals** — DR limit release on event expiry; external VTN webhook authentication model.
+- **Matter/Zigbee/HA backend** — move from ⚠️ Phase 2 to full parity (device discovery, write ack, multi-device routing).

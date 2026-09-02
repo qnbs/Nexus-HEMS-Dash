@@ -2,7 +2,7 @@
 
 **Last curated:** 2026-09-02  
 **Current release (tag):** `v1.11.1` @ `1716a42`  
-**`main` HEAD (unreleased):** `1993cb2` — 10 commits ahead of the tag; see `CHANGELOG.md` `[Unreleased]`  
+**`main` HEAD (unreleased):** `c4e7939` — 15 commits ahead of the tag; see `CHANGELOG.md` `[Unreleased]`  
 **Policy:** Manual-only semantic-release (ADR-015 amended 2026-07-03)
 
 This document records the **canonical release timeline**, known anomalies from the automatic-release period, and how to cut future releases correctly.
@@ -30,10 +30,12 @@ This document records the **canonical release timeline**, known anomalies from t
 
 ### Unreleased on `main` (post-tag, 2026-09-02)
 
-Commits after `v1.11.1` through `1993cb2` are documented in `CHANGELOG.md` `[Unreleased]`:
+Commits after `v1.11.1` through `c4e7939` are documented in `CHANGELOG.md` `[Unreleased]`:
 
 - Post-v1.11.1 campaign closeout docs (#342)
-- Offline sync slices 2–4 (#344, #346, #349)
+- Offline sync slices 2–4 + Stream C Redis (#344, #346, #349, #354)
+- Demo i18n + tariff formatter (#353)
+- Protocol depth Stream F (#355–#356)
 - CI: Node 24 job-level env (#343), SLSA isolation + PR parity (#350), Scorecard publish fix (#351)
 - Review quiescence policy (#348), release checkout fix (#347), test coverage (#345)
 

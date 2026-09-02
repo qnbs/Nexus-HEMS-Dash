@@ -95,8 +95,8 @@ and the adapter source under `apps/api/src/protocols/`.
 | **OCPP CSMS** | `OCPP_CSMS_PORT`; `OCPP_CSMS_HOST`; `OCPP_CSMS_PATH` *+ `OCPP_SESSION_PREFIX`, `OCPP_SESSION_TTL_SEC`, `OCPP_EV_COMMANDS`* | CSMS gateway; SP3 mTLS proxy is separate (`/ws/ocpp`). |
 | **Home Assistant** | `HA_HOST`; `HA_PORT`; `HA_TLS`; `HA_TOKEN`; `HA_DEVICE_ID` *+ entity-map & command overrides* (`HA_ENTITY_MAP_PATH`, `HA_WALLBOX_*`, `HA_HEAT_PUMP_MODE_ENTITY`, `HA_EV_COMMANDS`) | `ha-ws-api` transport (ADR-023). |
 | **Home Assistant (MQTT)** | `HA_MQTT_BROKER_URL` *+ `HA_MQTT_TOPIC_PREFIX`, `HA_MQTT_EV_COMMANDS`, `HA_MQTT_ADAPTER_ID`* | `mqtt-broker` transport (ADR-023). |
-| **Matter/Thread** | `MATTER_BRIDGE_HOST`; `MATTER_BRIDGE_PORT`; `MATTER_BRIDGE_TLS` *+ `MATTER_NODE_IDS`, `MATTER_NODE_MAP_PATH`, `MATTER_DEVICE_ID`* | Phase-1 MVP: read-only telemetry (ADR-022). |
-| **Zigbee2MQTT** | `Z2M_BROKER_URL` | MQTT bridge telemetry. |
+| **Matter/Thread** | `MATTER_BRIDGE_HOST`; `MATTER_BRIDGE_PORT`; `MATTER_BRIDGE_TLS` *+ `MATTER_NODE_IDS`, `MATTER_NODE_MAP_PATH`, `MATTER_DEVICE_ID`, **`MATTER_HEAT_PUMP_NODE_ID` (required for `SET_HEAT_PUMP_MODE`)*** | Phase 2: WS telemetry + SG Ready write (ADR-022). |
+| **Zigbee2MQTT** | `Z2M_BROKER_URL` *+ `Z2M_BASE_TOPIC`, `Z2M_HEAT_PUMP_DEVICE`, `Z2M_EV_DEVICE`, `Z2M_HEAT_PUMP_HINTS`, `Z2M_EV_HINTS`* | MQTT bridge telemetry + command publish for heat pump / EV plugs. |
 | **Exec** | `EXEC_SCRIPTS_CONFIG` | JSON string or path to a whitelist of runnable scripts (ADR-021). |
 
 ## Demand Response, VPP & Tariffs

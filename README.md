@@ -30,9 +30,9 @@
 
 Nexus-HEMS is a **unified Command Center** that consolidates <!-- ADAPTERS-EN:START -->**13 protocol adapters** (7 core + 6 contrib)<!-- ADAPTERS-EN:END --> into **8 primary routes across 7 navigation sections** — orchestrating photovoltaic generation, battery storage, heat pumps, EV charging, and building automation with dynamic electricity tariffs. Instead of 18+ separate pages, every feature is accessible from a **single streamlined interface** with contextual in-context help and a new-user landing on the Command Hub.
 
-The current shipped release line is **1.11.1** (tagged 2026-09-01 @ `1716a42`). **`main` HEAD** (`1993cb2` as of 2026-09-02) is **10 commits ahead** with unreleased offline-sync slices 2–4 and CI hardening — see [CHANGELOG.md](CHANGELOG.md) `[Unreleased]` and [docs/Release-History.md](docs/Release-History.md).
+The current shipped release line is **1.11.1** (tagged 2026-09-01 @ `1716a42`). **`main` HEAD** (`c4e7939` as of 2026-09-02) is **15 commits ahead** with unreleased offline-sync Stream C, protocol depth Stream F, demo i18n, and CI hardening — see [CHANGELOG.md](CHANGELOG.md) `[Unreleased]` and [docs/Release-History.md](docs/Release-History.md).
 
-> **Maintenance status (2026-09-02):** Tag `v1.11.1` covers the Sep 2026 post-freeze campaign (#329–#341). The [live GitHub Pages demo](https://qnbs.github.io/Nexus-HEMS-Dash/) footer still shows `v1.11.1` and is a **backendless static SPA** (`VITE_BACKEND_WS` off): simulation mode with demo plant data — not a disconnected production backend. See [FEATURE_STATUS.md](FEATURE_STATUS.md) for verified feature boundaries.
+> **Maintenance status (2026-09-02):** Tag `v1.11.1` covers the Sep 2026 post-freeze campaign (#329–#341). Streams B–F landed on `main` (#353–#356). The [live GitHub Pages demo](https://qnbs.github.io/Nexus-HEMS-Dash/) footer still shows `v1.11.1` and is a **backendless static SPA** (`VITE_BACKEND_WS` off): simulation mode with demo plant data — not a disconnected production backend. See [FEATURE_STATUS.md](FEATURE_STATUS.md) for verified feature boundaries.
 
 > **Safety notice:** Nexus-HEMS controls safety-critical electrical infrastructure. No regulatory certification (VDE, IEC, CE) has been obtained. Read [docs/Safety-Certification-Notice.md](docs/Safety-Certification-Notice.md) before connecting to live hardware.
 

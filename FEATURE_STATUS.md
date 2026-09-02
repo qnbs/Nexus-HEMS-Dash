@@ -1,10 +1,10 @@
 # Feature Status — Nexus-HEMS-Dash
 
-**Version:** 1.11.1 tagged (2026-09-01); `main` @ `1993cb2` unreleased (+10 commits after tag)  
-**Last updated:** 2026-09-02 (post-tag truth-sync — offline sync slices 2–4, CI SLSA/Scorecard hardening)  
+**Version:** 1.11.1 tagged (2026-09-01); `main` @ `c4e7939` unreleased (+15 commits after tag)  
+**Last updated:** 2026-09-02 (Stream F protocol depth + review follow-ups; offline sync Stream C)  
 **Purpose:** Single source of truth for what is actually implemented, partial, or planned. Use this file to keep README/marketing claims synchronized with the codebase.
 
-> **Operational note (2026-09-02):** Tag `v1.11.1` (`1716a42`) covers the Sep 2026 post-freeze campaign (#329–#341). **`main` is ahead** with offline sync slices 2–4 (#344–#349), CI hardening (#350–#351), and review-quiescence policy (#348). Do not equate the live Pages demo version footer (`v1.11.1`) with current `main` HEAD. See `docs/Campaign-Handoff-2026-09.md` and `docs/Release-History.md`.
+> **Operational note (2026-09-02):** Tag `v1.11.1` (`1716a42`) covers the Sep 2026 post-freeze campaign (#329–#341). **`main` is ahead** with offline sync Stream C (#354), protocol depth Stream F (#355–#356), demo i18n (#353), and CI/review policy work (#347–#351). Do not equate the live Pages demo version footer (`v1.11.1`) with current `main` HEAD. See `docs/Campaign-Handoff-2026-09.md` and `docs/Release-History.md`.
 >
 > **Rule:** Any PR that changes a feature's implementation status must update this file and the relevant docs before merging.
 
@@ -33,12 +33,12 @@
 | EEBUS SPINE/SHIP | ✅ | ✅ | Full backend `IProtocolAdapter` (`apps/api/src/protocols/eebus/EebusProtocolAdapter.ts`) connects to all trusted devices in the trust store, maintains persistent SHIP sessions, parses SPINE `measurementListData` + `loadControlLimitListData` datagrams, and emits role-tagged `UnifiedEnergyDatapoint` to the EventBus. Registered in `protocols/index.ts`. Frontend `CertificateManagement.tsx` wired into Settings → EEBUS Certs tab. Supported use cases: MPC, MGCP, LPC (§14a EnWG), EV charging, heat pump. Trust-store polling for newly paired devices. Unit tests: `EebusProtocolAdapter.test.ts` (17 cases). |
 | evcc backend | ✅ | ✅ | Browser adapter for direct REST+WS. Backend `EvccAdapter` (`apps/api/src/protocols/evcc/EvccAdapter.ts`) polls `/api/state` and subscribes to `/ws`, emitting role-tagged datapoints to the EventBus (MED-20). Enable with `EVCC_BASE_URL` in live mode. |
 | OpenEMS Edge (JSON-RPC) | ✅ | ✅ | Browser `OpenEMSAdapter` + backend `OpenEMSProtocolAdapter` with EV + battery/heat-pump/grid writes via `ProtocolCommandRouter` (Phase 5–6). Configurable `OPENEMS_*_CTRL_ID` env vars. |
-| Home Assistant MQTT | ✅ (contrib, dual-mode) | ⚠️ | Frontend: ha-ws-api + MQTT discovery, commands. Backend: **ha-ws-api** telemetry + EV `call_service` commands; **MQTT broker** telemetry + MQTT service publish for EV/heat-pump (`HomeAssistantMqttProtocolAdapter`, Phase 6). |
+| Home Assistant MQTT | ✅ (contrib, dual-mode) | ⚠️ | Frontend: ha-ws-api + MQTT discovery, commands. Backend: **ha-ws-api** telemetry + EV/heat-pump `call_service`; returns `handled: false` when command entities are not configured so other adapters can serve the command. **MQTT broker** telemetry + MQTT service publish (`HomeAssistantMqttProtocolAdapter`, Phase 6). |
 | ExecAdapter (Custom Scripts) | ✅ (contrib, new) | ✅ (new) | Safe shell script integration: whitelisted scripts only (`EXEC_SCRIPTS_CONFIG`), argv-array execution (no shell), 30s timeout, 64 KB output cap, `READ_ONLY_MODE` compliance. Frontend `ExecAdapter`, backend `ExecService` + `/api/exec/*` routes. |
-| Matter/Thread | ✅ (contrib) | ⚠️ | Frontend contrib adapter. Backend **Phase 2** (`MatterProtocolAdapter`): WS telemetry + `SET_HEAT_PUMP_MODE` write via `MATTER_BRIDGE_HOST` / `MATTER_HEAT_PUMP_NODE_ID`. |
-| Zigbee2MQTT | ✅ (contrib, P1 enhanced) | ⚠️ | Frontend: role classification, EV/heat-pump plugs, availability tracking. Backend **Phase 2** (`Zigbee2MQTTProtocolAdapter`): mqtt.js bridge + `SET_HEAT_PUMP_MODE` / `SET_HEAT_PUMP_POWER` / `SET_EV_POWER` via `Z2M_HEAT_PUMP_DEVICE` / `Z2M_EV_DEVICE`. |
+| Matter/Thread | ✅ (contrib) | ⚠️ | Frontend contrib adapter. Backend **Phase 2** (`MatterProtocolAdapter`): WS telemetry + `SET_HEAT_PUMP_MODE` write via `MATTER_BRIDGE_HOST` and **required** `MATTER_HEAT_PUMP_NODE_ID` (no first-node fallback). |
+| Zigbee2MQTT | ✅ (contrib, P1 enhanced) | ⚠️ | Frontend: role classification, EV/heat-pump plugs, availability tracking. Backend **Phase 2** (`Zigbee2MQTTProtocolAdapter`): mqtt.js bridge + `SET_HEAT_PUMP_MODE` / `SET_HEAT_PUMP_POWER` / `SET_EV_POWER` via `Z2M_HEAT_PUMP_DEVICE` / `Z2M_EV_DEVICE`; rejects non-finite power values. |
 | Shelly REST (Gen1/2/3) | ✅ (contrib, P1 enhanced) | ✅ (webhook route) | Gen1 support (GET /status); auto-detect generation; SET_RELAY command; pv capability; 3-phase phases[] disaggregation; /api/shelly/webhook push receiver (ShellyWebhookBus). |
-| OpenADR 3.1 VEN | ✅ (contrib) | ⚠️ | Frontend contrib adapter + backend OAuth2 proxy (`routes/openadr.routes.ts`): token, events, programs, webhook buffer, reports, ack. DR events dispatch `SET_HEAT_PUMP_MODE` / `SET_EV_POWER` via `openadr-hardware-dispatch.ts`. |
+| OpenADR 3.1 VEN | ✅ (contrib) | ⚠️ | Frontend contrib adapter + backend OAuth2 proxy (`routes/openadr.routes.ts`): token, events, programs, webhook buffer (demo), reports, ack; VTN relay bounded by 15s timeout. DR events aggregate LOAD_CONTROL limits and dispatch `SET_HEAT_PUMP_MODE` / `SET_HEAT_PUMP_POWER` / `SET_EV_POWER` via `openadr-hardware-dispatch.ts`. |
 | Example template | ✅ (contrib) | ⏳ | Template for custom adapters — not counted in the shipped 13-adapter inventory. |
 
 > **Shipped frontend count:** 13 adapters (7 core + 6 contrib). The Example row above is a development template only (`example-contrib.ts`).
@@ -115,7 +115,7 @@
 | :------ | :----- | :--------------- |
 | Unit tests (web) | ✅ | 55+ test files; v1.3.x campaign added `settings-tabs` (21), `adapter-worker-target` (12), `hardware-registry` (11), `use-safe-command` (3); #194 added contrib-adapter tests |
 | Unit tests (api) | ✅ | 10+ test files |
-| E2E tests (Playwright) | ✅ | 13 spec files including `auth-jwt`, `read-only-commands`, `adapter-mode-indicators`, `backend-websocket-live`, `safety-indicators` (post-audit C2) |
+| E2E tests (Playwright) | ✅ | 18 spec files including `sg-ready-heat-pump`, `openadr-demo-event`, `auth-jwt`, `read-only-commands`, `adapter-mode-indicators`, `backend-websocket-live`, `safety-indicators` |
 | Fuzz/property tests | ✅ | `apps/web/src/tests/security-fuzz.test.ts` |
 | i18n parity test | ✅ | `apps/web/src/tests/i18n-sync.test.ts` |
 | Coverage gates | ✅ | `check:coverage-baseline` enforces web (**78/72/70/80**) + ai-core (**73/51/77/73**, F-05a) via `apps/web/coverage-baseline.json` and `packages/ai-core/coverage-baseline.json`. API thresholds live in `apps/api/vitest.config.ts` but are not part of the baseline checker. |
