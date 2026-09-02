@@ -36,7 +36,11 @@ export function HubMetricCard({ card, metrics }: HubMetricCardProps) {
           </p>
           {isPriceCard ? (
             <p className="live-metric fluid-text-lg font-mono tabular-nums">
-              {formatTariffPriceCompact(metrics.energyData.priceCurrent, tariffLocale)}
+              {formatTariffPriceCompact(
+                metrics.energyData.priceCurrent,
+                tariffLocale,
+                t('units.ctPerKwh'),
+              )}
             </p>
           ) : (
             <LiveMetric

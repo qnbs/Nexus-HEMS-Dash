@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string) => key,
+    t: (key: string) => (key === 'units.ctPerKwh' ? 'ct/kWh' : key),
     i18n: { language: 'en', resolvedLanguage: 'en' },
   }),
 }));

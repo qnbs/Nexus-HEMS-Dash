@@ -78,6 +78,11 @@ export const i18nReady = i18n
     // Pre-load the other locale in the background so switching stays instant.
     const other = active === 'de' ? 'en' : 'de';
     void ensureLocaleBundle(other);
+
+    i18n.on('languageChanging', async (lng) => {
+      const lang = lng.startsWith('en') ? 'en' : 'de';
+      await ensureLocaleBundle(lang);
+    });
   });
 
 export default i18n;

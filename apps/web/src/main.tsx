@@ -28,7 +28,7 @@ if ('serviceWorker' in navigator && !import.meta.env.VITE_E2E_TESTING) {
   });
 }
 
-void i18nReady.then(() => {
+function mountApp(): void {
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
       <QueryProvider>
@@ -56,11 +56,12 @@ void i18nReady.then(() => {
     </StrictMode>,
   );
 
-  // Start the background Dexie downsampling service after React mounts.
-  // 90 s startup delay avoids contending with initial data loading.
-  // Disabled during E2E testing to eliminate background IndexedDB work and
-  // timers that can keep the Playwright process alive.
   if (import.meta.env.VITE_E2E_TESTING !== 'true') {
     startDownsamplingService();
   }
+}
+
+void i18nReady.then(mountApp).catch((error: unknown) => {
+  console.error('[i18n] locale bootstrap failed; mounting with German fallback', error);
+  mountApp();
 });

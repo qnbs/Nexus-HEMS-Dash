@@ -70,6 +70,7 @@ export function AppShellHeaderPricePill({ priceCurrent }: AppShellHeaderPricePil
   const formatted = formatTariffPriceCompact(
     priceCurrent,
     tariffFormatLocale(i18n.resolvedLanguage ?? i18n.language),
+    t('units.ctPerKwh'),
   );
   return (
     <HeaderKpiPill title={t('dashboard.currentPrice')} className="md:hidden">
