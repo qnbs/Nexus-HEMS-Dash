@@ -16,13 +16,21 @@ test.describe('SG Ready heat pump UI', () => {
   test('devices page shows SG Ready mode selector on heat pump detail', async ({ page }) => {
     await gotoAndWaitForHealth(page, './devices');
 
-    const heatPumpCard = page.getByRole('button', { name: /heat pump|wärmepumpe/i }).first();
-    if (await heatPumpCard.isVisible().catch(() => false)) {
-      await heatPumpCard.click();
-    }
+    const heatPumpHeader = page.getByRole('button', { name: /heat pump|wärmepumpe/i }).first();
+    await expect(heatPumpHeader).toBeVisible({ timeout: 15_000 });
+    await heatPumpHeader.click();
 
-    await expect(page.getByRole('heading', { name: /sg ready|sg-ready/i }).first()).toBeVisible({
-      timeout: 15_000,
+    const openDetails = page.getByRole('button', {
+      name: /open full details|vollständige details/i,
     });
+    await expect(openDetails).toBeVisible({ timeout: 10_000 });
+    await openDetails.click();
+
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible({ timeout: 10_000 });
+    await expect(
+      dialog.getByRole('heading', { name: /heat pump sg ready|wärmepumpe sg ready/i }),
+    ).toBeVisible({ timeout: 10_000 });
+    await expect(dialog.getByRole('radiogroup')).toBeVisible();
   });
 });
