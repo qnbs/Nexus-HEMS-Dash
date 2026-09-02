@@ -16,6 +16,7 @@ import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
 import { z } from 'zod';
 import { requireJWT, requireScope } from '../middleware/auth.js';
+import { idempotencyMiddleware } from '../middleware/idempotency.js';
 import { requireNotReadOnly } from '../middleware/require-not-read-only.js';
 import { listAvailableScripts, runCommandScript, runScript } from '../services/ExecService.js';
 
@@ -121,6 +122,7 @@ export function createExecRoutes(): Router {
     requireJWT,
     requireScope('readwrite'),
     requireNotReadOnly,
+    idempotencyMiddleware,
     async (req, res) => {
       const parsed = commandBodySchema.safeParse(req.body);
       if (!parsed.success) {

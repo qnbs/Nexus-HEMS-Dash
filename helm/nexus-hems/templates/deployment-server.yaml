@@ -45,6 +45,10 @@ spec:
               value: {{ .Values.env.PORT | quote }}
             - name: ADAPTER_MODE
               value: {{ .Values.env.ADAPTER_MODE | default "mock" | quote }}
+            {{- if .Values.server.redisUrl }}
+            - name: REDIS_URL
+              value: {{ .Values.server.redisUrl | quote }}
+            {{- end }}
             {{- if .Values.existingSecret }}
             - name: JWT_SECRET
               valueFrom:

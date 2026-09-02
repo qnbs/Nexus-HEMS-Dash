@@ -13,12 +13,14 @@ Release notes are maintained here and published via [semantic-release](https://g
 
 ### Added
 
+- **Offline sync Stream C (ADR-030)** — optional Redis-backed sync version, settings, diff log, and HTTP/WS idempotency when `REDIS_URL` is set; `POST /api/commands/replay` for hardware offline queue; Helm `server.redisUrl` + multi-replica warning in NOTES.txt.
 - **Offline sync slice 2** — `GET /api/sync/version`, JWT liveness guard before offline replay, 5-minute hardware-command TTL expiry, client `sync-client` conflict probe (#344).
 - **Offline sync slice 3** — conflict banner, resolution modal (keep local / accept server), deferred replay until resolved (#346).
 - **Offline sync slice 4** — `GET /api/sync/diff?since=`, `PUT /api/settings` with idempotency, server-wins reconciliation, Playwright conflict E2E (#349).
 
 ### Changed
 
+- **Offline sync** — idempotency middleware now supports PUT/PATCH; expanded to exec, OCPP proxy-session; live WebSocket commands honor idempotency keys; background sync replays hardware via `/api/commands/replay`.
 - **CI / Node 24** — `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24` on auxiliary workflows at job level (#343); `ci.yml` sets the flag per job (not workflow-wide) so Scorecard `publish_results` is unaffected.
 - **Review policy** — mandatory PR review quiescence before merge (#348).
 - **Release workflow** — checkout uses default `GITHUB_TOKEN`; `GH_TOKEN` only for semantic-release push (#347).

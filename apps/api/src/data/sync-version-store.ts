@@ -1,24 +1,10 @@
 /**
- * In-memory monotonic sync version for offline reconciliation (slice 2).
- * Single-process API instances only; cluster-wide versioning needs Redis (future).
+ * Monotonic sync version for offline reconciliation (slice 2, ADR-030).
+ * Delegates to sync-persistence (Redis when REDIS_URL is set, in-memory otherwise).
  */
 
-const SERVER_BOOT_VERSION = Date.now();
-let syncVersion = SERVER_BOOT_VERSION;
-
-/** Current server sync version (milliseconds since epoch at last bump). */
-export function getSyncVersion(): number {
-  return syncVersion;
-}
-
-/** Bump after a server-side config mutation (settings, adapters, etc.). */
-export function bumpSyncVersion(): number {
-  const now = Date.now();
-  syncVersion = Math.max(now, syncVersion + 1);
-  return syncVersion;
-}
-
-/** Test-only reset. */
-export function resetSyncVersionForTests(value = SERVER_BOOT_VERSION): void {
-  syncVersion = value;
-}
+export {
+  bumpSyncVersion,
+  getSyncVersion,
+  resetSyncPersistenceForTests as resetSyncVersionForTests,
+} from '../services/sync-persistence.js';

@@ -6,13 +6,13 @@ import {
 } from '../data/sync-version-store.js';
 
 describe('sync-version-store', () => {
-  it('returns a strictly increasing version after consecutive bumps', () => {
+  it('returns a strictly increasing version after consecutive bumps', async () => {
     resetSyncVersionForTests(100);
-    expect(getSyncVersion()).toBe(100);
-    const first = bumpSyncVersion();
-    const second = bumpSyncVersion();
+    expect(await getSyncVersion()).toBe(100);
+    const first = await bumpSyncVersion();
+    const second = await bumpSyncVersion();
     expect(first).toBeGreaterThan(100);
     expect(second).toBeGreaterThan(first);
-    expect(getSyncVersion()).toBe(second);
+    expect(await getSyncVersion()).toBe(second);
   });
 });

@@ -12,6 +12,7 @@ import crypto from 'crypto';
 import { Router } from 'express';
 import { isPrivateHost } from '../config/private-host.js';
 import { requireJWT, requireScope } from '../middleware/auth.js';
+import { idempotencyMiddleware } from '../middleware/idempotency.js';
 import { requireNotReadOnly } from '../middleware/require-not-read-only.js';
 import { ocppSessionStore } from '../services/ocpp-session-store.js';
 
@@ -31,6 +32,7 @@ export function createOcppRoutes(): Router {
     requireJWT,
     requireScope('readwrite'),
     requireNotReadOnly,
+    idempotencyMiddleware,
     async (req, res) => {
       const parsed = OcppProxySessionRequestSchema.safeParse(req.body);
       if (!parsed.success) {

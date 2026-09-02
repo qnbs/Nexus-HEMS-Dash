@@ -127,12 +127,16 @@ describe('BackgroundSyncService', () => {
     await backgroundSyncService.syncPendingActions();
 
     expect(fetch).toHaveBeenCalledWith(
-      'http://localhost:5173/api/battery/control',
+      'http://localhost:5173/api/commands/replay',
       expect.objectContaining({
         method: 'POST',
         headers: expect.objectContaining({
           Authorization: 'Bearer sync-jwt',
           'X-Idempotency-Key': 'battery-1',
+        }),
+        body: JSON.stringify({
+          type: 'battery-control',
+          payload: { powerW: 2000 },
         }),
       }),
     );
@@ -227,11 +231,11 @@ describe('BackgroundSyncService', () => {
     await backgroundSyncService.syncPendingActions();
 
     expect(fetch).toHaveBeenCalledWith(
-      'http://localhost:5173/api/ev/control',
+      'http://localhost:5173/api/commands/replay',
       expect.objectContaining({ method: 'POST' }),
     );
     expect(fetch).toHaveBeenCalledWith(
-      'http://localhost:5173/api/heatpump/control',
+      'http://localhost:5173/api/commands/replay',
       expect.objectContaining({ method: 'POST' }),
     );
     expect(fetch).toHaveBeenCalledWith(
@@ -414,7 +418,7 @@ describe('BackgroundSyncService', () => {
     await backgroundSyncService.syncPendingActions();
 
     expect(fetch).toHaveBeenCalledWith(
-      'http://localhost:5173/api/battery/control',
+      'http://localhost:5173/api/commands/replay',
       expect.objectContaining({ method: 'POST' }),
     );
     expect(updateActionStatus).toHaveBeenCalledWith(32, 'completed');

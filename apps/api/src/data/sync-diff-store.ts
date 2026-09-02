@@ -1,42 +1,32 @@
 /**
- * Versioned settings change log for offline reconciliation (slice 4).
- * Process-local only; cluster-wide diff needs Redis (future).
+ * Versioned settings change log for offline reconciliation (slice 4, ADR-030).
  */
 
+import {
+  appendSyncDiffEntry,
+  bumpSyncVersion,
+  getSyncDiffSince,
+  resetSyncPersistenceForTests,
+} from '../services/sync-persistence.js';
 import type { SettingsSyncCategory } from './settings-sync-keys.js';
-import { bumpSyncVersion, getSyncVersion } from './sync-version-store.js';
 
-export interface SyncDiffEntry {
-  key: string;
-  value: unknown;
-  updatedAt: number;
-  category: SettingsSyncCategory;
-  version: number;
-}
-
-const changeLog: SyncDiffEntry[] = [];
+export type { SyncDiffEntry } from '../services/sync-persistence.js';
 
 /** Record a settings mutation and return the new server sync version. */
-export function recordSyncDiffEntry(
+export async function recordSyncDiffEntry(
   key: string,
   value: unknown,
   category: SettingsSyncCategory,
   updatedAt = Date.now(),
-): number {
-  const version = bumpSyncVersion();
-  changeLog.push({ key, value, updatedAt, category, version });
+): Promise<number> {
+  const version = await bumpSyncVersion();
+  await appendSyncDiffEntry({ key, value, updatedAt, category, version });
   return version;
 }
 
-/** Changes with version strictly greater than `since` (monotonic server counter). */
-export function getSyncDiffSince(since: number): { version: number; changes: SyncDiffEntry[] } {
-  const version = getSyncVersion();
-  const normalizedSince = Number.isFinite(since) ? since : 0;
-  const changes = changeLog.filter((entry) => entry.version > normalizedSince);
-  return { version, changes };
-}
+export { getSyncDiffSince };
 
-/** @internal Test helper — clears the in-memory change log. */
+/** @internal Test helper — clears sync persistence state. */
 export function resetSyncDiffForTests(): void {
-  changeLog.length = 0;
+  resetSyncPersistenceForTests();
 }

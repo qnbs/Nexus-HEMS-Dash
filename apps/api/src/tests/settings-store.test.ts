@@ -10,13 +10,13 @@ describe('settings-store', () => {
     resetSyncVersionForTests(10);
   });
 
-  it('applies a patch and records diff entries', () => {
-    const result = applySettingsPatch({ animations: false, victronIp: '10.0.0.5' }, 5000);
+  it('applies a patch and records diff entries', async () => {
+    const result = await applySettingsPatch({ animations: false, victronIp: '10.0.0.5' }, 5000);
 
     expect(result.applied).toEqual(['animations', 'victronIp']);
     expect(result.version).toBeGreaterThan(10);
 
-    const diff = getSyncDiffSince(10);
+    const diff = await getSyncDiffSince(10);
     expect(diff.changes).toHaveLength(2);
     expect(diff.changes[0]?.category).toBe('userPreferences');
     expect(diff.changes[1]?.category).toBe('deviceSettings');

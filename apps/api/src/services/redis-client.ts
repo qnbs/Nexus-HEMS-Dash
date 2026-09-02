@@ -9,6 +9,7 @@ export interface IRedisClient {
   get(key: string): Promise<string | null>;
   getdel(key: string): Promise<string | null>;
   del(...keys: string[]): Promise<number>;
+  incr(key: string): Promise<number>;
   on(event: string, cb: (err: Error) => void): this;
 }
 
@@ -50,7 +51,7 @@ export async function getOptionalRedisClient(): Promise<IRedisClient | null> {
 
     await client.ping();
     _client = client;
-    console.log('[Redis] Session store backend: Redis (WS tickets + dashboard shares)');
+    console.log('[Redis] Session store backend: Redis (WS tickets, shares, offline sync)');
   } catch (err) {
     _initFailed = true;
     console.warn(

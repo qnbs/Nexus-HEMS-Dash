@@ -271,26 +271,12 @@ class BackgroundSyncService {
 
     switch (action.type) {
       case 'ev-control':
-        await fetch(`${baseUrl}/api/ev/control`, {
-          method: 'POST',
-          headers: commonHeaders,
-          body: JSON.stringify(action.payload),
-        });
-        break;
-
       case 'hp-control':
-        await fetch(`${baseUrl}/api/heatpump/control`, {
-          method: 'POST',
-          headers: commonHeaders,
-          body: JSON.stringify(action.payload),
-        });
-        break;
-
       case 'battery-control':
-        await fetch(`${baseUrl}/api/battery/control`, {
+        await fetch(`${baseUrl}/api/commands/replay`, {
           method: 'POST',
           headers: commonHeaders,
-          body: JSON.stringify(action.payload),
+          body: JSON.stringify({ type: action.type, payload: action.payload }),
         });
         break;
 

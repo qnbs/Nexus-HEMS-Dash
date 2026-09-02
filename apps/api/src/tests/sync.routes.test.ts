@@ -61,9 +61,9 @@ describe('sync routes', () => {
   });
 
   it('GET /api/sync/diff returns changes since the given version', async () => {
-    applySettingsPatch({ animations: false });
+    await applySettingsPatch({ animations: false });
     const since = 42;
-    applySettingsPatch({ victronIp: '10.0.0.9' });
+    await applySettingsPatch({ victronIp: '10.0.0.9' });
 
     const bearer = await signToken({ sub: 'reader', scope: 'read' }, '1h');
     const res = await buildApp()
