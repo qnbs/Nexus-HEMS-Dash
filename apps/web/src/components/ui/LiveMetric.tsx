@@ -81,13 +81,17 @@ export function LiveMetric({
   const [announcement, setAnnouncement] = useState(formattedLabel);
   const announceTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const lastAnnouncedValue = useRef(value);
+  const lastRenderedValue = useRef(value);
   const lastFormattedLabel = useRef(formattedLabel);
 
   useEffect(() => {
     const labelChanged = lastFormattedLabel.current !== formattedLabel;
-    lastFormattedLabel.current = formattedLabel;
+    const valueUnchanged = value === lastRenderedValue.current;
 
-    if (labelChanged && value === lastAnnouncedValue.current) {
+    lastFormattedLabel.current = formattedLabel;
+    lastRenderedValue.current = value;
+
+    if (labelChanged && valueUnchanged) {
       setAnnouncement(formattedLabel);
       return;
     }
