@@ -23,7 +23,13 @@ Release notes are maintained here and published via [semantic-release](https://g
 - **Review policy** — mandatory PR review quiescence before merge (#348).
 - **Release workflow** — checkout uses default `GITHUB_TOKEN`; `GH_TOKEN` only for semantic-release push (#347).
 
+### Deprecated
+
+### Removed
+
 ### Fixed
+
+### Security
 
 - **SLSA attestation** — isolated into dedicated `slsa-attest` job with 3 retries; runs on PRs to `main` for PR/main parity; E2E no longer skipped when SLSA flakes (#350).
 - **OpenSSF Scorecard** — removed job-level `env` from `scorecard.yml` so `publish_results` succeeds on `main` push (#351).
