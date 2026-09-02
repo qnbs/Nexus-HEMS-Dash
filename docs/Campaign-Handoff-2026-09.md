@@ -79,7 +79,7 @@ CI on `main` after Phase 3: lint, type-check, unit tests (coverage ≥72% branch
 ## What remains (not in Phases 1–3)
 
 - **Demo i18n + tariff formatter** — Pages demo DE/EN split and inconsistent ct vs €/kWh (Stream B, PR #353).
-- **Offline sync production residuals** — durable server version store, multi-instance idempotency, expanded write-route coverage, Helm replica warning (Stream C).
+- **Offline sync production residuals** — durable Redis-backed sync/idempotency (ADR-030), `/api/commands/replay`, expanded write-route idempotency, Helm replica warning — **Stream C (this PR)**.
 - **SUPPLY-02** — Grype exception review due **2026-09-29**.
 - **PRF-02 / PRF-06** — CodeAnt GitHub App install + `GH_TOKEN` rotation (maintainer-only).
 - **Protocol depth** — Matter, HA, Zigbee, OpenADR, SG Ready — one capability per PR (Stream F).

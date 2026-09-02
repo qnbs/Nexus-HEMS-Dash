@@ -27,9 +27,17 @@ deployment:
       maxSurge: 1
 
 # ─── Replicas ────────────────────────────────────────────────────────
+# server.replicaCount > 1 requires server.redisUrl (REDIS_URL) for offline sync
+# idempotency and version/diff persistence — see ADR-030 and NOTES.txt.
 replicaCount:
   frontend: 2
   server: 2
+
+# ─── Server (API) ───────────────────────────────────────────────────
+server:
+  # Optional Redis URL for HA offline sync + idempotency (maps to REDIS_URL).
+  # Required when replicaCount.server > 1.
+  redisUrl: ''
 
 # ─── Service ─────────────────────────────────────────────────────────
 service:

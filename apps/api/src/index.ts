@@ -22,6 +22,7 @@ import {
 } from './middleware/security.js';
 import { startProtocolAdapters, stopProtocolAdapters } from './protocols/index.js';
 import { createAuthRoutes } from './routes/auth.routes.js';
+import { createCommandsRoutes } from './routes/commands.routes.js';
 import { createEebusRoutes } from './routes/eebus.routes.js';
 import { createExecRoutes } from './routes/exec.routes.js';
 import { createGrafanaRoutes } from './routes/grafana.routes.js';
@@ -124,6 +125,7 @@ export async function startServer(): Promise<void> {
   app.use(createGrafanaRoutes());
   app.use(createHealthRoutes());
   app.use(createSyncRoutes());
+  app.use(createCommandsRoutes());
   app.use(createModbusRoutes());
   app.use('/api/v1', createHistoryRoutes());
 

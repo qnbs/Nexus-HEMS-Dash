@@ -14,24 +14,24 @@ describe('sync-diff-store', () => {
     resetSyncVersionForTests(100);
   });
 
-  it('records changes with monotonically increasing versions', () => {
+  it('records changes with monotonically increasing versions', async () => {
     resetSyncVersionForTests(100);
-    const v1 = recordSyncDiffEntry('theme', 'dark', 'userPreferences', 1000);
-    const v2 = recordSyncDiffEntry('victronIp', '10.0.0.1', 'deviceSettings', 1001);
+    const v1 = await recordSyncDiffEntry('theme', 'dark', 'userPreferences', 1000);
+    const v2 = await recordSyncDiffEntry('victronIp', '10.0.0.1', 'deviceSettings', 1001);
 
     expect(v2).toBeGreaterThan(v1);
-    expect(getSyncVersion()).toBe(v2);
+    expect(await getSyncVersion()).toBe(v2);
   });
 
-  it('returns only entries newer than since', () => {
+  it('returns only entries newer than since', async () => {
     resetSyncVersionForTests(50);
-    recordSyncDiffEntry('animations', true, 'userPreferences');
-    const mid = getSyncVersion();
-    recordSyncDiffEntry('knxIp', '192.168.1.2', 'deviceSettings');
+    await recordSyncDiffEntry('animations', true, 'userPreferences');
+    const mid = await getSyncVersion();
+    await recordSyncDiffEntry('knxIp', '192.168.1.2', 'deviceSettings');
 
-    const diff = getSyncDiffSince(mid);
+    const diff = await getSyncDiffSince(mid);
     expect(diff.changes).toHaveLength(1);
     expect(diff.changes[0]?.key).toBe('knxIp');
-    expect(diff.version).toBe(getSyncVersion());
+    expect(diff.version).toBe(await getSyncVersion());
   });
 });

@@ -1,20 +1,26 @@
 /**
- * Express middleware: deduplicate hardware command POSTs via `X-Idempotency-Key`.
+ * Express middleware: deduplicate mutating requests via `X-Idempotency-Key`.
  * Returns the cached JSON body for duplicate keys within the 5-minute TTL window.
+ * Supports POST, PUT, and PATCH (ADR-030).
  */
 
 import type { NextFunction, Request, Response } from 'express';
 import { getIdempotencyRecord, setIdempotencyRecord } from '../data/idempotency-cache.js';
 
 const HEADER = 'x-idempotency-key';
+const MUTATING_METHODS = new Set(['POST', 'PUT', 'PATCH']);
 
 /**
  * When `X-Idempotency-Key` is present, replay cached success responses or wrap
  * `res.json` to store the first 2xx body for later retries.
  */
-export function idempotencyMiddleware(req: Request, res: Response, next: NextFunction): void {
+export async function idempotencyMiddleware(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
   const rawKey = req.header(HEADER);
-  if (!rawKey || req.method !== 'POST') {
+  if (!rawKey || !MUTATING_METHODS.has(req.method)) {
     next();
     return;
   }
@@ -25,7 +31,7 @@ export function idempotencyMiddleware(req: Request, res: Response, next: NextFun
     return;
   }
 
-  const cached = getIdempotencyRecord(key);
+  const cached = await getIdempotencyRecord(key);
   if (cached) {
     res.status(cached.statusCode).json(cached.body);
     return;
@@ -34,7 +40,7 @@ export function idempotencyMiddleware(req: Request, res: Response, next: NextFun
   const originalJson = res.json.bind(res);
   res.json = (body: unknown) => {
     if (res.statusCode >= 200 && res.statusCode < 300) {
-      setIdempotencyRecord(key, res.statusCode, body);
+      void setIdempotencyRecord(key, res.statusCode, body);
     }
     return originalJson(body);
   };

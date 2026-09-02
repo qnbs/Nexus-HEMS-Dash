@@ -14,16 +14,16 @@ afterEach(() => {
 });
 
 describe('idempotency-cache', () => {
-  it('returns cached HTTP responses within TTL', () => {
-    setIdempotencyRecord('key-1', 200, { ok: true });
-    const hit = getIdempotencyRecord('key-1');
+  it('returns cached HTTP responses within TTL', async () => {
+    await setIdempotencyRecord('key-1', 200, { ok: true });
+    const hit = await getIdempotencyRecord('key-1');
     expect(hit?.statusCode).toBe(200);
     expect(hit?.body).toEqual({ ok: true });
   });
 
-  it('tracks WS idempotency keys to prevent double execution', () => {
-    expect(isWsIdempotencyReplay('ws-1')).toBe(false);
-    markWsIdempotencyAccepted('ws-1');
-    expect(isWsIdempotencyReplay('ws-1')).toBe(true);
+  it('tracks WS idempotency keys to prevent double execution', async () => {
+    expect(await isWsIdempotencyReplay('ws-1')).toBe(false);
+    await markWsIdempotencyAccepted('ws-1');
+    expect(await isWsIdempotencyReplay('ws-1')).toBe(true);
   });
 });

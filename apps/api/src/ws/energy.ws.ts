@@ -13,6 +13,7 @@ import { isProductionRuntime } from '../config/runtime-env.js';
 import { logger } from '../core/logger.js';
 import { type CommandOutcome, writeCommandAuditEntry } from '../data/command-audit.js';
 import { isWsIdempotencyReplay, markWsIdempotencyAccepted } from '../data/idempotency-cache.js';
+import { applyMockCommandMutation } from '../data/mock-command-mutation.js';
 import { mockData, updateMockData } from '../data/mock-data.js';
 import { type AuthenticatedClient, authenticateWS, type JWTScope } from '../middleware/auth.js';
 import { setMetric, updateServerMetrics, wsMessageCount } from '../middleware/metrics.js';
@@ -239,7 +240,7 @@ export function setupWebSocket(wss: WebSocketServer, liveAggregator?: LiveEnergy
       }
       try {
         const parsed = JSON.parse(message.toString());
-        handleWsCommand(ws, parsed, wsSubscriptions, wsAuthMap, wss, liveAggregator);
+        void handleWsCommand(ws, parsed, wsSubscriptions, wsAuthMap, wss, liveAggregator);
       } catch (e) {
         console.error('Failed to parse message', e);
       }
@@ -316,14 +317,14 @@ export function checkScopeAuthorization(
 }
 
 /** @internal Exported for unit tests (energy-ws.test.ts). */
-export function handleWsCommand(
+export async function handleWsCommand(
   ws: WebSocket,
   parsed: unknown,
   wsSubscriptions: WeakMap<WebSocket, Set<string>>,
   wsAuthMap: WeakMap<WebSocket, AuthenticatedClient>,
   wss: WebSocketServer,
   liveAggregator?: LiveEnergyAggregator,
-): void {
+): Promise<void> {
   const validation = validateWSCommand(parsed);
   if (!validation.valid) {
     // Handle SUBSCRIBE separately — it's not in WSCommandSchema (not audited as a command)
@@ -374,26 +375,27 @@ export function handleWsCommand(
   const mode = getEffectiveAdapterMode();
   const idempotencyKey = cmd.idempotencyKey?.trim();
 
-  if (mode !== 'live' && idempotencyKey && isWsIdempotencyReplay(idempotencyKey)) {
+  if (idempotencyKey && (await isWsIdempotencyReplay(idempotencyKey))) {
     const broadcastData = resolveBroadcastData(liveAggregator);
     safeSend(ws, { type: 'ENERGY_UPDATE', data: broadcastData });
     return;
   }
 
   if (mode === 'live') {
-    void dispatchLiveCommand(
+    await dispatchLiveCommand(
       ws,
       { type: cmd.type as WSCommandType, value: commandValue },
       wsAuthMap,
       wss,
       liveAggregator,
+      idempotencyKey,
     );
     return;
   }
 
   applyMockCommandMutation(cmd);
   auditCommand(wsAuthMap, ws, cmd.type, commandValue, 'accepted');
-  if (idempotencyKey) markWsIdempotencyAccepted(idempotencyKey);
+  if (idempotencyKey) await markWsIdempotencyAccepted(idempotencyKey);
 
   mockData.gridPower =
     mockData.houseLoad +
@@ -407,22 +409,13 @@ export function handleWsCommand(
   });
 }
 
-function applyMockCommandMutation(cmd: { type: string; value?: number }): void {
-  if (cmd.type === 'SET_EV_POWER') {
-    mockData.evPower = cmd.value ?? mockData.evPower;
-  } else if (cmd.type === 'SET_HEAT_PUMP_POWER') {
-    mockData.heatPumpPower = cmd.value ?? mockData.heatPumpPower;
-  } else if (cmd.type === 'SET_BATTERY_POWER') {
-    mockData.batteryPower = cmd.value ?? mockData.batteryPower;
-  }
-}
-
 async function dispatchLiveCommand(
   ws: WebSocket,
   command: { type: WSCommandType; value: number | string | boolean },
   wsAuthMap: WeakMap<WebSocket, AuthenticatedClient>,
   wss: WebSocketServer,
   liveAggregator?: LiveEnergyAggregator,
+  idempotencyKey?: string,
 ): Promise<void> {
   const result = await dispatchProtocolCommand(command);
 
@@ -456,6 +449,7 @@ async function dispatchLiveCommand(
   }
 
   auditCommand(wsAuthMap, ws, command.type, command.value, 'accepted');
+  if (idempotencyKey) await markWsIdempotencyAccepted(idempotencyKey);
 
   const broadcastData = resolveBroadcastData(liveAggregator);
   wss.clients.forEach((c) => {

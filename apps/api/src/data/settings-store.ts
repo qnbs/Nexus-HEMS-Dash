@@ -1,40 +1,42 @@
 /**
- * In-memory server settings store for offline sync (slice 4).
- * Single-process mock/demo API; production multi-instance needs shared storage.
+ * Server settings store for offline sync (slice 4, ADR-030).
  */
 
+import {
+  getServerSettingsSnapshot,
+  getSyncVersion,
+  resetSyncPersistenceForTests,
+  setServerSetting,
+} from '../services/sync-persistence.js';
 import { classifySettingsKey } from './settings-sync-keys.js';
 import { recordSyncDiffEntry } from './sync-diff-store.js';
-import { getSyncVersion } from './sync-version-store.js';
-
-const settings = new Map<string, unknown>();
 
 /** Snapshot of all known server settings keys. */
-export function getServerSettings(): Record<string, unknown> {
-  return Object.fromEntries(settings);
+export async function getServerSettings(): Promise<Record<string, unknown>> {
+  return getServerSettingsSnapshot();
 }
 
 /**
  * Merge a partial settings patch from a client replay or API write.
  * Returns the new sync version after recording per-key diffs.
  */
-export function applySettingsPatch(
+export async function applySettingsPatch(
   patch: Record<string, unknown>,
   clientUpdatedAt?: number,
-): { version: number; applied: string[] } {
+): Promise<{ version: number; applied: string[] }> {
   const updatedAt = clientUpdatedAt ?? Date.now();
   const applied: string[] = [];
 
   for (const [key, value] of Object.entries(patch)) {
-    settings.set(key, value);
-    recordSyncDiffEntry(key, value, classifySettingsKey(key), updatedAt);
+    await setServerSetting(key, value);
+    await recordSyncDiffEntry(key, value, classifySettingsKey(key), updatedAt);
     applied.push(key);
   }
 
-  return { version: getSyncVersion(), applied };
+  return { version: await getSyncVersion(), applied };
 }
 
-/** @internal Test helper — clears settings and relies on diff reset separately. */
+/** @internal Test helper */
 export function resetServerSettingsForTests(): void {
-  settings.clear();
+  resetSyncPersistenceForTests();
 }
