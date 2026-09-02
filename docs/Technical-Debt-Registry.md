@@ -33,7 +33,7 @@ Aligned to `main` @ `0006a56` after a **53-day product freeze** (last product co
 - **SEC-11** — fail-closed `NODE_ENV` handling (`runtime-env.ts`, `isDevRuntime()`) ✅ (#333)
 - **PRF-01** — DeepSource advisory; JavaScript analyzer removed (#299/#301)
 - **OPS-FREEZE-01** — Sep 2026 campaign complete (#329–#337); stale Dependabot pins #323–#327 closed (superseded by #329)
-- **Offline sync slices 2–4** — version endpoint, conflict UI, `/api/sync/diff` + server-wins reconciliation (#344–#346, #349) ✅
+- **Offline sync slices 2–4** — version endpoint, conflict UI, `/api/sync/diff` + server-wins reconciliation (#344, #346, #349) ✅
 - **Review quiescence policy** — canonical in `docs/runbooks/pr-review-correction-loop.md` §1.1 (#348) ✅
 
 Campaign PRs (Sep 2026, all merged): #336 (deps/CVE), #329 (CI pins), #332 (demo chrome), #334 (docs), #335 (E-STOP test), #333 (SEC-11), #337 (campaign closeout). Duplicate empty squash commit on `main` removed during housekeeping.
