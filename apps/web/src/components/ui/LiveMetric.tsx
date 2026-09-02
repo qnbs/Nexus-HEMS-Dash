@@ -81,8 +81,17 @@ export function LiveMetric({
   const [announcement, setAnnouncement] = useState(formattedLabel);
   const announceTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const lastAnnouncedValue = useRef(value);
+  const lastFormattedLabel = useRef(formattedLabel);
 
   useEffect(() => {
+    const labelChanged = lastFormattedLabel.current !== formattedLabel;
+    lastFormattedLabel.current = formattedLabel;
+
+    if (labelChanged && value === lastAnnouncedValue.current) {
+      setAnnouncement(formattedLabel);
+      return;
+    }
+
     const previous = lastAnnouncedValue.current;
     const pctChange = Math.abs(value - previous) / (Math.abs(previous) || 1);
     // Only announce if the value shifted by more than 5 % relative
