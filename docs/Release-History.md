@@ -1,7 +1,8 @@
 # Release History — Nexus-HEMS-Dash
 
-**Last curated:** 2026-09-01  
-**Current release:** `v1.11.1`  
+**Last curated:** 2026-09-02  
+**Current release (tag):** `v1.11.1` @ `1716a42`  
+**`main` HEAD (unreleased):** `1993cb2` — 10 commits ahead of the tag; see `CHANGELOG.md` `[Unreleased]`  
 **Policy:** Manual-only semantic-release (ADR-015 amended 2026-07-03)
 
 This document records the **canonical release timeline**, known anomalies from the automatic-release period, and how to cut future releases correctly.
@@ -26,6 +27,17 @@ This document records the **canonical release timeline**, known anomalies from t
 | `v1.2.0` | 2026-06-30 | — | CI hardening, safety documentation |
 | `v1.1.0` | 2026-04-25 | — | Mobile, tariffs, toolchain |
 | `v1.0.0` | — | — | Initial public release |
+
+### Unreleased on `main` (post-tag, 2026-09-02)
+
+Commits after `v1.11.1` through `1993cb2` are documented in `CHANGELOG.md` `[Unreleased]`:
+
+- Post-v1.11.1 campaign closeout docs (#342)
+- Offline sync slices 2–4 (#344, #346, #349)
+- CI: Node 24 job-level env (#343), SLSA isolation + PR parity (#350), Scorecard publish fix (#351)
+- Review quiescence policy (#348), release checkout fix (#347), test coverage (#345)
+
+Cut **`v1.11.2`** (or next patch) only when the maintainer dispatches `release.yml` or tags manually.
 
 ---
 
