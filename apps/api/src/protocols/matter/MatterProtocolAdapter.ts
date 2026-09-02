@@ -25,6 +25,7 @@ import {
   type IProtocolAdapter,
   type ProtocolType,
   type UnifiedEnergyDatapoint,
+  type WSCommandType,
 } from '@nexus-hems/shared-types';
 import { WebSocket } from 'ws';
 import {
@@ -33,6 +34,12 @@ import {
   recordAdapterReconnect,
 } from '../../middleware/adapter-metrics.js';
 import { API_RUNTIME_DIR, DEAD_LETTER_QUEUE_PATH } from '../../runtime-paths.js';
+import type {
+  IProtocolCommandHandler,
+  ProtocolCommandRequest,
+  ProtocolCommandResult,
+} from '../protocol-command.js';
+import { HeatPumpModeValueSchema } from '../protocol-command.js';
 import {
   MATTER_CLUSTER,
   type MatterNodeMapping,
@@ -72,6 +79,7 @@ export interface MatterProtocolAdapterConfig {
   deviceId?: string;
   nodeMappings?: MatterNodeMapping[];
   nodeIds?: number[];
+  heatPumpNodeId?: number;
 }
 
 interface DLQEntry {
@@ -82,7 +90,7 @@ interface DLQEntry {
   protocol: ProtocolType;
 }
 
-export class MatterProtocolAdapter implements IProtocolAdapter {
+export class MatterProtocolAdapter implements IProtocolAdapter, IProtocolCommandHandler {
   readonly id: string;
   readonly protocol: ProtocolType = 'matter-thread';
 
@@ -91,6 +99,7 @@ export class MatterProtocolAdapter implements IProtocolAdapter {
   private readonly deviceIdPrefix: string;
   private readonly staticMap: Map<number, MatterNodeMapping>;
   private readonly nodeIds: Set<number>;
+  private readonly heatPumpNodeId: number | undefined;
   private ws: WebSocket | null = null;
   private wsMsgId = 1;
   private connected = false;
@@ -111,6 +120,7 @@ export class MatterProtocolAdapter implements IProtocolAdapter {
     this.deviceIdPrefix = config.deviceId ?? 'matter-site';
     this.staticMap = new Map((config.nodeMappings ?? []).map((entry) => [entry.nodeId, entry]));
     this.nodeIds = new Set(config.nodeIds ?? []);
+    this.heatPumpNodeId = config.heatPumpNodeId;
   }
 
   async connect(): Promise<void> {
@@ -348,6 +358,59 @@ export class MatterProtocolAdapter implements IProtocolAdapter {
     this.ws?.send(JSON.stringify(payload));
   }
 
+  supportsCommand(type: WSCommandType): boolean {
+    return type === 'SET_HEAT_PUMP_MODE';
+  }
+
+  async sendCommand(command: ProtocolCommandRequest): Promise<ProtocolCommandResult> {
+    if (!this.supportsCommand(command.type)) {
+      return { handled: false, success: false };
+    }
+
+    if (!this.connected || !this.ws || this.ws.readyState !== WebSocket.OPEN) {
+      return {
+        handled: true,
+        success: false,
+        adapterId: this.id,
+        error: 'Matter bridge WebSocket not connected',
+      };
+    }
+
+    const mode = HeatPumpModeValueSchema.safeParse(command.value);
+    if (!mode.success) {
+      return {
+        handled: true,
+        success: false,
+        adapterId: this.id,
+        error: 'SET_HEAT_PUMP_MODE requires an integer SG Ready mode between 1 and 4',
+      };
+    }
+
+    const nodeId = this.heatPumpNodeId ?? [...this.nodeIds][0];
+    if (nodeId === undefined) {
+      return {
+        handled: true,
+        success: false,
+        adapterId: this.id,
+        error: 'MATTER_HEAT_PUMP_NODE_ID not configured',
+      };
+    }
+
+    this.sendWs({
+      type: 'write_attribute',
+      messageId: String(this.wsMsgId++),
+      data: {
+        nodeId,
+        endpoint: 1,
+        cluster: 0x0201,
+        attribute: 'systemMode',
+        value: mode.data,
+      },
+    });
+
+    return { handled: true, success: true, adapterId: this.id };
+  }
+
   private scheduleReconnect(): void {
     if (this.destroyed || this.reconnectTimer) return;
     const delay = Math.min(60_000, 1000 * 2 ** this.reconnectAttempt);
@@ -403,6 +466,12 @@ export function createMatterAdapterFromEnv(
     nodeMappings: mappings,
   };
   if (nodeIds && nodeIds.length > 0) adapterConfig.nodeIds = nodeIds;
+  const heatPumpNodeId = env.MATTER_HEAT_PUMP_NODE_ID
+    ? Number.parseInt(env.MATTER_HEAT_PUMP_NODE_ID, 10)
+    : undefined;
+  if (heatPumpNodeId !== undefined && Number.isFinite(heatPumpNodeId)) {
+    adapterConfig.heatPumpNodeId = heatPumpNodeId;
+  }
 
   return new MatterProtocolAdapter(adapterConfig);
 }

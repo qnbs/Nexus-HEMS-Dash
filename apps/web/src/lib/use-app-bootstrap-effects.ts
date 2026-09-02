@@ -112,6 +112,17 @@ export const useAppBootstrapEffects = ({
 
   useEffect(() => {
     if (import.meta.env.VITE_E2E_TESTING === 'true') return undefined;
+    let stopBridge: (() => void) | undefined;
+    void import('../core/useControllerCommandBridge').then(({ startControllerCommandBridge }) => {
+      stopBridge = startControllerCommandBridge();
+    });
+    return () => {
+      stopBridge?.();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (import.meta.env.VITE_E2E_TESTING === 'true') return undefined;
     backgroundSyncService.init();
     return () => {
       backgroundSyncService.destroy();

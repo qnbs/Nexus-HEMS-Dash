@@ -450,6 +450,25 @@ export class EEBUSAdapter extends BaseAdapter {
             isActive: true,
             isChangeable: false,
           });
+        case 'SET_HEAT_PUMP_MODE': {
+          const mode = Number(command.value);
+          if (!Number.isInteger(mode) || mode < 1 || mode > 4) return false;
+          const ratedW = 5000;
+          const powerByMode: Record<number, number> = {
+            1: 0,
+            2: ratedW * 0.7,
+            3: ratedW * 0.9,
+            4: ratedW,
+          };
+          return this.sendLoadControlWrite({
+            limitId: 10,
+            limitType: 'maxValueLimit',
+            unit: 'W',
+            value: powerByMode[mode] ?? ratedW * 0.7,
+            isActive: true,
+            isChangeable: true,
+          });
+        }
         case 'SET_HEAT_PUMP_POWER':
           return this.sendLoadControlWrite({
             limitId: 10,

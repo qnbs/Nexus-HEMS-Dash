@@ -34,6 +34,7 @@ export type LocaleCode = 'de' | 'en';
 
 export type CommandType =
   | 'SET_EV_POWER'
+  | 'SET_HEAT_PUMP_MODE'
   | 'SET_HEAT_PUMP_POWER'
   | 'SET_BATTERY_POWER'
   | 'TOGGLE_KNX_LIGHTS'

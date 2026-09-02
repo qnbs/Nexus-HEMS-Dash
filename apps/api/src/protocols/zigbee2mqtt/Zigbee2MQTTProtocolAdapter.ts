@@ -26,6 +26,7 @@ import {
   type MetricType,
   type ProtocolType,
   type UnifiedEnergyDatapoint,
+  type WSCommandType,
 } from '@nexus-hems/shared-types';
 import mqtt, { type IClientOptions, type MqttClient } from 'mqtt';
 import {
@@ -34,6 +35,12 @@ import {
   recordAdapterReconnect,
 } from '../../middleware/adapter-metrics.js';
 import { API_RUNTIME_DIR, DEAD_LETTER_QUEUE_PATH } from '../../runtime-paths.js';
+import type {
+  IProtocolCommandHandler,
+  ProtocolCommandRequest,
+  ProtocolCommandResult,
+} from '../protocol-command.js';
+import { HeatPumpModeValueSchema } from '../protocol-command.js';
 import {
   classifyZ2mDevice,
   hasZ2mEnergyExpose,
@@ -62,6 +69,8 @@ export interface Zigbee2MQTTProtocolAdapterConfig {
   energyDevices?: string[];
   heatPumpHints?: string[];
   evHints?: string[];
+  heatPumpDevice?: string;
+  evDevice?: string;
   clientOptions?: IClientOptions;
 }
 
@@ -71,7 +80,7 @@ interface DeviceRuntimeState {
   device?: Z2mBridgeDevice;
 }
 
-export class Zigbee2MQTTProtocolAdapter implements IProtocolAdapter {
+export class Zigbee2MQTTProtocolAdapter implements IProtocolAdapter, IProtocolCommandHandler {
   readonly id: string;
   readonly protocol: ProtocolType = 'zigbee2mqtt';
 
@@ -83,6 +92,8 @@ export class Zigbee2MQTTProtocolAdapter implements IProtocolAdapter {
   private readonly staticMap: Map<string, Z2mDeviceMapping>;
   private readonly heatPumpHints?: string[];
   private readonly evHints?: string[];
+  private readonly heatPumpDevice?: string;
+  private readonly evDevice?: string;
   private readonly configuredEnergyDevices: Set<string>;
   private readonly deviceState = new Map<string, DeviceRuntimeState>();
   private client: MqttClient | null = null;
@@ -104,6 +115,8 @@ export class Zigbee2MQTTProtocolAdapter implements IProtocolAdapter {
     );
     if (config.heatPumpHints) this.heatPumpHints = config.heatPumpHints;
     if (config.evHints) this.evHints = config.evHints;
+    if (config.heatPumpDevice) this.heatPumpDevice = config.heatPumpDevice;
+    if (config.evDevice) this.evDevice = config.evDevice;
     this.configuredEnergyDevices = new Set(config.energyDevices ?? []);
   }
 
@@ -411,6 +424,99 @@ export class Zigbee2MQTTProtocolAdapter implements IProtocolAdapter {
     this.consecutiveErrors = 0;
     this.emitter.emit('data', datapoint.data);
   }
+
+  supportsCommand(type: WSCommandType): boolean {
+    return (
+      type === 'SET_HEAT_PUMP_MODE' || type === 'SET_HEAT_PUMP_POWER' || type === 'SET_EV_POWER'
+    );
+  }
+
+  async sendCommand(command: ProtocolCommandRequest): Promise<ProtocolCommandResult> {
+    if (!this.supportsCommand(command.type)) {
+      return { handled: false, success: false };
+    }
+
+    if (!this.client || !this.connected) {
+      return {
+        handled: true,
+        success: false,
+        adapterId: this.id,
+        error: 'Zigbee2MQTT MQTT not connected',
+      };
+    }
+
+    const topicDevice =
+      command.type === 'SET_EV_POWER'
+        ? this.evDevice
+        : (this.heatPumpDevice ?? this.resolveHeatPumpDevice());
+    if (!topicDevice) {
+      return {
+        handled: true,
+        success: false,
+        adapterId: this.id,
+        error: 'Z2M heat pump / EV device not configured',
+      };
+    }
+
+    let payload: Record<string, unknown>;
+    if (command.type === 'SET_HEAT_PUMP_MODE') {
+      const mode = HeatPumpModeValueSchema.safeParse(command.value);
+      if (!mode.success) {
+        return {
+          handled: true,
+          success: false,
+          adapterId: this.id,
+          error: 'SET_HEAT_PUMP_MODE requires an integer SG Ready mode between 1 and 4',
+        };
+      }
+      payload = { state: mode.data === 1 ? 'OFF' : 'ON', sg_ready_mode: mode.data };
+    } else if (command.type === 'SET_HEAT_PUMP_POWER') {
+      if (typeof command.value !== 'number' || command.value < 0) {
+        return {
+          handled: true,
+          success: false,
+          adapterId: this.id,
+          error: 'SET_HEAT_PUMP_POWER requires a non-negative number',
+        };
+      }
+      payload = { state: command.value > 0 ? 'ON' : 'OFF' };
+    } else {
+      if (typeof command.value !== 'number' || command.value < 0) {
+        return {
+          handled: true,
+          success: false,
+          adapterId: this.id,
+          error: 'SET_EV_POWER requires a non-negative number',
+        };
+      }
+      payload = { power_limit: command.value };
+    }
+
+    try {
+      const topic = `${this.config.baseTopic}/${topicDevice}/set`;
+      await new Promise<void>((resolve, reject) => {
+        this.client!.publish(topic, JSON.stringify(payload), { qos: 1 }, (err) => {
+          if (err) reject(err);
+          else resolve();
+        });
+      });
+      return { handled: true, success: true, adapterId: this.id };
+    } catch (err) {
+      return {
+        handled: true,
+        success: false,
+        adapterId: this.id,
+        error: err instanceof Error ? err.message : String(err),
+      };
+    }
+  }
+
+  private resolveHeatPumpDevice(): string | undefined {
+    for (const [friendlyName, runtime] of this.deviceState) {
+      if (runtime.role?.role === 'heatpump') return friendlyName;
+    }
+    return undefined;
+  }
 }
 
 export function loadZ2mDeviceMappings(path: string): Z2mDeviceMapping[] {
@@ -465,6 +571,9 @@ export function createZigbee2MQTTAdapterFromEnv(
   if (energyDevices && energyDevices.length > 0) adapterConfig.energyDevices = energyDevices;
   if (heatPumpHints) adapterConfig.heatPumpHints = heatPumpHints;
   if (evHints) adapterConfig.evHints = evHints;
+  if (env.Z2M_HEAT_PUMP_DEVICE?.trim())
+    adapterConfig.heatPumpDevice = env.Z2M_HEAT_PUMP_DEVICE.trim();
+  if (env.Z2M_EV_DEVICE?.trim()) adapterConfig.evDevice = env.Z2M_EV_DEVICE.trim();
 
   return new Zigbee2MQTTProtocolAdapter(adapterConfig);
 }

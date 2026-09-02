@@ -35,10 +35,10 @@
 | OpenEMS Edge (JSON-RPC) | ✅ | ✅ | Browser `OpenEMSAdapter` + backend `OpenEMSProtocolAdapter` with EV + battery/heat-pump/grid writes via `ProtocolCommandRouter` (Phase 5–6). Configurable `OPENEMS_*_CTRL_ID` env vars. |
 | Home Assistant MQTT | ✅ (contrib, dual-mode) | ⚠️ | Frontend: ha-ws-api + MQTT discovery, commands. Backend: **ha-ws-api** telemetry + EV `call_service` commands; **MQTT broker** telemetry + MQTT service publish for EV/heat-pump (`HomeAssistantMqttProtocolAdapter`, Phase 6). |
 | ExecAdapter (Custom Scripts) | ✅ (contrib, new) | ✅ (new) | Safe shell script integration: whitelisted scripts only (`EXEC_SCRIPTS_CONFIG`), argv-array execution (no shell), 30s timeout, 64 KB output cap, `READ_ONLY_MODE` compliance. Frontend `ExecAdapter`, backend `ExecService` + `/api/exec/*` routes. |
-| Matter/Thread | ✅ (contrib) | ⚠️ | Frontend contrib adapter. Backend **Phase 1 MVP** (`MatterProtocolAdapter`): read-only WS telemetry via `MATTER_BRIDGE_HOST`, static `matter-node-map.json`, EPM/EEM/ElectricalMeasurement clusters. |
-| Zigbee2MQTT | ✅ (contrib, P1 enhanced) | ⚠️ | Frontend: role classification, EV/heat-pump plugs, availability tracking. Backend **Phase 1 MVP** (`Zigbee2MQTTProtocolAdapter`): read-only mqtt.js bridge via `Z2M_BROKER_URL`, auto-discovery + `z2m-device-map.json`. |
+| Matter/Thread | ✅ (contrib) | ⚠️ | Frontend contrib adapter. Backend **Phase 2** (`MatterProtocolAdapter`): WS telemetry + `SET_HEAT_PUMP_MODE` write via `MATTER_BRIDGE_HOST` / `MATTER_HEAT_PUMP_NODE_ID`. |
+| Zigbee2MQTT | ✅ (contrib, P1 enhanced) | ⚠️ | Frontend: role classification, EV/heat-pump plugs, availability tracking. Backend **Phase 2** (`Zigbee2MQTTProtocolAdapter`): mqtt.js bridge + `SET_HEAT_PUMP_MODE` / `SET_HEAT_PUMP_POWER` / `SET_EV_POWER` via `Z2M_HEAT_PUMP_DEVICE` / `Z2M_EV_DEVICE`. |
 | Shelly REST (Gen1/2/3) | ✅ (contrib, P1 enhanced) | ✅ (webhook route) | Gen1 support (GET /status); auto-detect generation; SET_RELAY command; pv capability; 3-phase phases[] disaggregation; /api/shelly/webhook push receiver (ShellyWebhookBus). |
-| OpenADR 3.1 VEN | ✅ (contrib) | ⚠️ | Frontend contrib adapter + backend OAuth2 proxy (`routes/openadr.routes.ts`). Full VTN integration and event handling is partial. |
+| OpenADR 3.1 VEN | ✅ (contrib) | ⚠️ | Frontend contrib adapter + backend OAuth2 proxy (`routes/openadr.routes.ts`): token, events, programs, webhook buffer, reports, ack. DR events dispatch `SET_HEAT_PUMP_MODE` / `SET_EV_POWER` via `openadr-hardware-dispatch.ts`. |
 | Example template | ✅ (contrib) | ⏳ | Template for custom adapters — not counted in the shipped 13-adapter inventory. |
 
 > **Shipped frontend count:** 13 adapters (7 core + 6 contrib). The Example row above is a development template only (`example-contrib.ts`).
@@ -68,7 +68,7 @@
 | 24h/7d predictive forecast | ✅ | `apps/web/src/components/PredictiveForecast.tsx`, `lib/ml-forecast.ts` |
 | Live tariff widget (Tibber/aWATTar/Octopus/Nordpool) | ✅ | `apps/web/src/lib/tariff-providers.ts` |
 | Smart EV charging (§14a EnWG) | ✅ | Frontend OCPP P1 + backend CSMS gateway with outbound smart-charging + V2G/grid-limit commands (Phase 5–7); SP3 mTLS via API proxy |
-| SG Ready heat pump control | ⚠️ | Frontend commands + P2 `HeatPumpAdapter` backend (6 manufacturers); full closed-loop ⏳ |
+| SG Ready heat pump control | ✅ | UI sends `SET_HEAT_PUMP_MODE` (modes 1–4); `HeatPumpSGReadyController` → `controller-command-bridge`; backend `HeatPumpAdapter` Modbus write + HA WS/MQTT/EEBUS/Matter/Zigbee parity |
 | Hardware registry (190 devices, ~50 brands) | ✅ | Catalog browser at `/settings/hardware` (`HardwareRegistryPage.tsx`) with search + category/manufacturer/protocol filters and add-adapter wizard (`AddAdapterWizard.tsx`, `hardware-adapter-map.ts`) — connection test + enable flow (MED-19). |
 | PDF reports + QR sharing | ✅ | `apps/web/src/components/ExportAndSharing.tsx`, `lib/sharing.ts` |
 | Prometheus monitoring | ✅ | `apps/api/src/middleware/metrics.ts`, `routes/metrics.routes.ts`; per-backend-adapter series via `adapter-metrics.ts` (MED-18) |

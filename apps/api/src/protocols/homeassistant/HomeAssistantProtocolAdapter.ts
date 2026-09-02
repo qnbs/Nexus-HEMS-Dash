@@ -42,18 +42,20 @@ import type {
   ProtocolCommandRequest,
   ProtocolCommandResult,
 } from '../protocol-command.js';
-import { parseOptionalMainsVoltageEnv } from '../protocol-command.js';
+import { HeatPumpModeValueSchema, parseOptionalMainsVoltageEnv } from '../protocol-command.js';
+import { resolveHeatPumpModeServiceCall } from './ha-mqtt-command-mapper.js';
 import {
   type HAEntityMapping,
   parseHANumericState,
   resolveHAEntityRole,
 } from './ha-role-resolver.js';
 
-const HA_EV_COMMANDS = new Set<WSCommandType>([
+const HA_WS_COMMANDS = new Set<WSCommandType>([
   'SET_EV_POWER',
   'SET_EV_CURRENT',
   'START_CHARGING',
   'STOP_CHARGING',
+  'SET_HEAT_PUMP_MODE',
 ]);
 const CONNECT_TIMEOUT_MS = 15_000;
 const CALL_SERVICE_TIMEOUT_MS = 10_000;
@@ -105,6 +107,7 @@ export interface HomeAssistantProtocolAdapterConfig {
   entityMappings?: HAEntityMapping[];
   wallboxCurrentEntityId?: string;
   wallboxSwitchEntityId?: string;
+  heatPumpModeEntityId?: string;
   mainsVoltage?: number;
 }
 
@@ -128,6 +131,7 @@ export class HomeAssistantProtocolAdapter implements IProtocolAdapter, IProtocol
   private readonly entityMap: Map<string, HAEntityMapping>;
   private readonly wallboxCurrentEntityId: string | undefined;
   private readonly wallboxSwitchEntityId: string | undefined;
+  private readonly heatPumpModeEntityId: string | undefined;
   private readonly mainsVoltage: number;
   private ws: WebSocket | null = null;
   private wsMsgId = 1;
@@ -153,6 +157,7 @@ export class HomeAssistantProtocolAdapter implements IProtocolAdapter, IProtocol
       config.wallboxCurrentEntityId ?? resolveWallboxCurrentEntity(this.entityMap);
     this.wallboxSwitchEntityId =
       config.wallboxSwitchEntityId ?? resolveWallboxSwitchEntity(this.entityMap);
+    this.heatPumpModeEntityId = config.heatPumpModeEntityId;
     this.mainsVoltage =
       config.mainsVoltage !== undefined &&
       Number.isFinite(config.mainsVoltage) &&
@@ -400,7 +405,7 @@ export class HomeAssistantProtocolAdapter implements IProtocolAdapter, IProtocol
   }
 
   supportsCommand(type: WSCommandType): boolean {
-    return HA_EV_COMMANDS.has(type);
+    return HA_WS_COMMANDS.has(type);
   }
 
   async sendCommand(command: ProtocolCommandRequest): Promise<ProtocolCommandResult> {
@@ -542,6 +547,23 @@ export class HomeAssistantProtocolAdapter implements IProtocolAdapter, IProtocol
           service: 'turn_off',
           target: { entity_id: this.wallboxSwitchEntityId },
         };
+      case 'SET_HEAT_PUMP_MODE': {
+        const mode = HeatPumpModeValueSchema.safeParse(command.value);
+        if (!mode.success || !this.heatPumpModeEntityId) return null;
+        const resolved = resolveHeatPumpModeServiceCall(this.heatPumpModeEntityId, mode.data);
+        if ('error' in resolved) return null;
+        const { entity_id, ...serviceData } = resolved.payload as {
+          entity_id: string;
+          value?: number;
+          option?: string;
+        };
+        return {
+          domain: resolved.domain,
+          service: resolved.service,
+          target: { entity_id },
+          serviceData,
+        };
+      }
       default:
         return null;
     }
@@ -605,6 +627,9 @@ export function createHomeAssistantAdapterFromEnv(
       : {}),
     ...(env.HA_WALLBOX_SWITCH_ENTITY?.trim()
       ? { wallboxSwitchEntityId: env.HA_WALLBOX_SWITCH_ENTITY.trim() }
+      : {}),
+    ...(env.HA_HEAT_PUMP_MODE_ENTITY?.trim()
+      ? { heatPumpModeEntityId: env.HA_HEAT_PUMP_MODE_ENTITY.trim() }
       : {}),
     ...(mainsVoltage !== undefined ? { mainsVoltage } : {}),
   });

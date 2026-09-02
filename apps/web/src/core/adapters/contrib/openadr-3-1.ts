@@ -23,6 +23,10 @@
  *   - docs/adr/ADR-012-openadr-ven-client.md
  */
 
+import {
+  dispatchOpenADRAggregateState,
+  dispatchOpenADRHardwareActions,
+} from '../../openadr-hardware-dispatch';
 import { registerAdapter } from '../adapter-registry';
 import { BaseAdapter } from '../BaseAdapter';
 import type {
@@ -485,6 +489,8 @@ export class OpenADR31Adapter extends BaseAdapter {
         }
         break;
     }
+
+    void dispatchOpenADRHardwareActions(event);
   }
 
   private rebuildAggregateState(): void {
@@ -532,6 +538,11 @@ export class OpenADR31Adapter extends BaseAdapter {
     } else {
       this.tariffOverride = null;
     }
+
+    void dispatchOpenADRAggregateState({
+      ...(sgReady !== undefined ? { sgReady } : {}),
+      ...(evDisabled ? { evMaxPowerW: 0 } : {}),
+    });
   }
 
   private emitCurrentState(): void {

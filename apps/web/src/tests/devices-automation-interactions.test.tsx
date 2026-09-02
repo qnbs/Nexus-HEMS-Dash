@@ -120,14 +120,14 @@ describe('devices-automation detail interactions', () => {
     expect(onOpenDetail).toHaveBeenCalledTimes(1);
   });
 
-  it('HeatPumpDetail submits the default SG-Ready mode power exactly', async () => {
+  it('HeatPumpDetail submits the default SG-Ready mode as SET_HEAT_PUMP_MODE', async () => {
     const user = userEvent.setup();
     const sendCommand = vi.fn();
     render(<HeatPumpDetail data={data} sendCommand={sendCommand} />);
 
-    // Default SG-Ready mode is '2' → SG_READY_POWER_W['2'] = 800 W.
+    // Default SG-Ready mode is '2' → SET_HEAT_PUMP_MODE with integer mode 2.
     await user.click(screen.getByRole('button', { name: 'common.apply' }));
-    await waitFor(() => expect(sendCommand).toHaveBeenCalledWith('SET_HEAT_PUMP_POWER', 800), {
+    await waitFor(() => expect(sendCommand).toHaveBeenCalledWith('SET_HEAT_PUMP_MODE', 2), {
       timeout: 3000,
     });
   });

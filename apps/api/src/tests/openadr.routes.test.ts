@@ -70,6 +70,35 @@ describe('OpenADR API routes (demo mode)', () => {
     expect(res.body.expires_in).toBe(3600);
   });
 
+  it('returns demo DR programs', async () => {
+    const res = await supertest(buildApp())
+      .get('/api/openadr/programs')
+      .set('Authorization', `Bearer ${await bearer()}`)
+      .expect(200);
+
+    expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body[0].id).toBe('nexus-hems-program');
+  });
+
+  it('buffers webhook events in demo mode', async () => {
+    const payload = { eventName: 'WebhookTest', programID: 'nexus-hems-program' };
+    const post = await supertest(buildApp())
+      .post('/api/openadr/webhook')
+      .set('Authorization', `Bearer ${await bearer('readwrite')}`)
+      .send(payload)
+      .expect(202);
+
+    expect(post.body.accepted).toBe(true);
+    expect(post.body.note).toBe('demo-mode');
+
+    const buffered = await supertest(buildApp())
+      .get('/api/openadr/webhook/events')
+      .set('Authorization', `Bearer ${await bearer()}`)
+      .expect(200);
+
+    expect(buffered.body).toEqual(expect.arrayContaining([payload]));
+  });
+
   it('returns demo load-control events', async () => {
     const res = await supertest(buildApp())
       .get('/api/openadr/events?programId=test-program')

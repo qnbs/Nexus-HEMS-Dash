@@ -11,7 +11,7 @@ export function HeatPumpQuickAction({ sendCommand }: { sendCommand: SendCommand 
       type="button"
       onClick={() => {
         hapticModeChange();
-        sendCommand('SET_HEAT_PUMP_POWER', 1500);
+        sendCommand('SET_HEAT_PUMP_MODE', 3);
         hapticSuccess();
       }}
       className="focus-ring flex items-center gap-1.5 rounded-lg bg-(--color-primary)/10 px-3 py-1.5 font-medium text-(--color-primary) text-xs transition-colors hover:bg-(--color-primary)/20"

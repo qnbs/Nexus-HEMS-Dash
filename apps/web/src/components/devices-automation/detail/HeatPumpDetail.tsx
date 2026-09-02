@@ -23,7 +23,7 @@ export function HeatPumpDetail({
       const mode = (formData.get('hpMode') ?? '2') as HpMode;
       const power = SG_READY_POWER_W[mode] ?? 800;
       await new Promise((resolve) => setTimeout(resolve, 600));
-      sendCommand('SET_HEAT_PUMP_POWER', power);
+      sendCommand('SET_HEAT_PUMP_MODE', Number(mode));
       hapticSuccess();
       return { mode, power, message: t('control.hpUpdated') };
     },
