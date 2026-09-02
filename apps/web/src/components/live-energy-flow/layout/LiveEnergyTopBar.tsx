@@ -2,6 +2,7 @@ import { Activity, Home, Maximize2, Minimize2, Sun, Zap } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { ConnectionPresentation } from '../../../lib/adapter-mode';
 import { formatPower } from '../../../lib/format';
+import { formatTariffPriceFull, tariffFormatLocale } from '../../../lib/format-tariff-price';
 import { HelpTooltip } from '../../ui/HelpTooltip';
 
 interface TopBarEnergy {
@@ -24,7 +25,8 @@ export function LiveEnergyTopBar({
   energyData: TopBarEnergy;
   locale: string;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const tariffLocale = tariffFormatLocale(i18n.resolvedLanguage ?? i18n.language);
   return (
     <div className="flex items-center justify-between gap-2 px-4 py-2">
       <div className="flex items-center gap-3">
@@ -74,7 +76,7 @@ export function LiveEnergyTopBar({
             {formatPower(Math.abs(energyData.gridPower), locale)}
           </span>
           <span className="price-pill">
-            {energyData.priceCurrent.toFixed(3)} {t('units.euroPerKwh')}
+            {formatTariffPriceFull(energyData.priceCurrent, tariffLocale)}
           </span>
         </div>
         <button

@@ -1,5 +1,6 @@
 import { BatteryMedium, Sun, Zap } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { formatTariffPriceCompact, tariffFormatLocale } from '../../lib/format-tariff-price';
 import { HeaderKpiPill } from './HeaderKpiPill';
 import { batterySocTextClass, formatHeaderPower, gridPowerTextClass } from './header-kpi-format';
 import { SelfSufficiencyRing } from './SelfSufficiencyRing';
@@ -65,10 +66,14 @@ export interface AppShellHeaderPricePillProps {
 
 /** Mobile-only price KPI pill (cent/kWh). */
 export function AppShellHeaderPricePill({ priceCurrent }: AppShellHeaderPricePillProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const formatted = formatTariffPriceCompact(
+    priceCurrent,
+    tariffFormatLocale(i18n.resolvedLanguage ?? i18n.language),
+  );
   return (
     <HeaderKpiPill title={t('dashboard.currentPrice')} className="md:hidden">
-      <span className="text-(--color-primary)">{(priceCurrent * 100).toFixed(1)} ct</span>
+      <span className="text-(--color-primary)">{formatted}</span>
     </HeaderKpiPill>
   );
 }

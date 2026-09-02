@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string) => key,
+    i18n: { language: 'en', resolvedLanguage: 'en' },
   }),
 }));
 
@@ -15,9 +16,9 @@ import {
 } from '../components/layout/AppShellHeaderTickerPills';
 
 describe('AppShellHeaderPricePill', () => {
-  it('displays €/kWh values as cent/kWh for the mobile pill', () => {
+  it('displays compact cent/kWh for the mobile pill', () => {
     render(<AppShellHeaderPricePill priceCurrent={0.128} />);
-    expect(screen.getByText('12.8 ct')).toBeInTheDocument();
+    expect(screen.getByText('12.8 ct/kWh')).toBeInTheDocument();
   });
 });
 

@@ -20,6 +20,11 @@ describe('i18n Configuration', () => {
     expect(i18n.options.supportedLngs).toContain('en');
   });
 
+  it('should bundle English synchronously on init', () => {
+    expect(i18n.hasResourceBundle('en', 'translation')).toBe(true);
+    expect(i18n.t('commandHub.title', { lng: 'en' })).toBe('Command Hub');
+  });
+
   it('should translate a known key in German', async () => {
     await i18n.changeLanguage('de');
     const val = i18n.t('dashboard.realtimeFlow');

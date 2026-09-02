@@ -9,7 +9,7 @@ Release notes are maintained here and published via [semantic-release](https://g
 
 ## [Unreleased]
 
-> **HEAD:** `1993cb2` (10 commits ahead of tag `v1.11.1` @ `1716a42`). Not yet released — cut `v1.11.2` only when the maintainer dispatches `release.yml` or tags manually (ADR-015).
+> **HEAD:** `main` ahead of tag `v1.11.1` @ `1716a42`. Not yet released — cut `v1.11.2` only when the maintainer dispatches `release.yml` or tags manually (ADR-015).
 
 ### Added
 
@@ -28,6 +28,9 @@ Release notes are maintained here and published via [semantic-release](https://g
 ### Removed
 
 ### Fixed
+
+- **Pages demo i18n** — bundle `en` and `de` locales synchronously to prevent mixed-language chrome on first paint; Command Hub locale regression tests.
+- **Tariff formatter** — shared `formatTariffPrice` for header pill (compact ct/kWh), Command Hub price card, and Live Energy top bar (full €/kWh).
 
 ### Security
 
