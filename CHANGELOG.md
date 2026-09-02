@@ -9,10 +9,11 @@ Release notes are maintained here and published via [semantic-release](https://g
 
 ## [Unreleased]
 
-> **HEAD:** Unreleased on `main` (post-#352 docs truth-sync; includes this PR). Not yet released — cut `v1.11.2` only when the maintainer dispatches `release.yml` or tags manually (ADR-015).
+> **HEAD:** Unreleased on `main` @ `c4e7939` (post-Stream F closeout). Not yet released — cut `v1.11.2` only when the maintainer dispatches `release.yml` or tags manually (ADR-015).
 
 ### Added
 
+- **Stream F — protocol depth** (#355) — SG Ready closed loop (`SET_HEAT_PUMP_MODE` UI → `controller-command-bridge` → backend Modbus/HA/EEBUS/Matter/Zigbee); OpenADR programs/webhook buffer + `openadr-hardware-dispatch`; E2E specs `sg-ready-heat-pump`, `openadr-demo-event`.
 - **Offline sync Stream C (ADR-030)** — optional Redis-backed sync version, settings, diff log, and HTTP/WS idempotency when `REDIS_URL` is set; `POST /api/commands/replay` for hardware offline queue; Helm `server.redisUrl` + multi-replica warning in NOTES.txt.
 - **Offline sync slice 2** — `GET /api/sync/version`, JWT liveness guard before offline replay, 5-minute hardware-command TTL expiry, client `sync-client` conflict probe (#344).
 - **Offline sync slice 3** — conflict banner, resolution modal (keep local / accept server), deferred replay until resolved (#346).
@@ -20,6 +21,7 @@ Release notes are maintained here and published via [semantic-release](https://g
 
 ### Changed
 
+- **Stream F review follow-ups** (#356) — HA returns `handled: false` when heat-pump/charging entities missing; Matter requires explicit `MATTER_HEAT_PUMP_NODE_ID`; Zigbee rejects non-finite power commands; OpenADR VTN relay 15s timeout; OpenADR aggregate LOAD_CONTROL dispatch; controller-bridge in-flight guard.
 - **Offline sync** — idempotency middleware now supports PUT/PATCH; expanded to exec, OCPP proxy-session; live WebSocket commands honor idempotency keys; background sync replays hardware via `/api/commands/replay`.
 - **CI / Node 24** — `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24` on auxiliary workflows at job level (#343); `ci.yml` sets the flag per job (not workflow-wide) so Scorecard `publish_results` is unaffected.
 - **Review policy** — mandatory PR review quiescence before merge (#348).
@@ -41,11 +43,13 @@ Release notes are maintained here and published via [semantic-release](https://g
 
 ### Tests
 
+- Stream F: `controller-command-bridge`, HeatPump Modbus write, OpenADR routes, SG Ready + OpenADR E2E (#355–#356).
 - CO2 report PDF export, `ai-keys`, and auth-token error paths (#345).
 - Web branch-coverage floor restored (≥72%) with adapter-mode, header KPI, and Command Hub disclosure tests after #340 chrome simplification (#343).
 
 ### Docs
 
+- Stream F closeout truth-sync (`FEATURE_STATUS.md`, campaign handoff, env vars) — housekeeping post-#356.
 - Post-v1.11.1 campaign closeout and release tag sync (#342).
 
 ## [1.11.1] - 2026-09-01
