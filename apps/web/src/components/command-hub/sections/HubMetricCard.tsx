@@ -1,7 +1,7 @@
 import { ChevronRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { formatTariffPriceCompact, tariffFormatLocale } from '../../../lib/format-tariff-price';
+import { formatTariffPrice, tariffFormatLocale } from '../../../lib/format-tariff-price';
 import { EnergyCard } from '../../ui/EnergyCard';
 import { LiveMetric } from '../../ui/LiveMetric';
 import { formatMetricDetail, type MetricDef } from '../data/metricCards';
@@ -18,9 +18,13 @@ export function HubMetricCard({ card, metrics }: HubMetricCardProps) {
   const { t, i18n } = useTranslation();
   const tariffLocale = tariffFormatLocale(i18n.resolvedLanguage ?? i18n.language);
   const isPriceCard = card.id === 'price';
-  const priceLabel = isPriceCard
-    ? formatTariffPriceCompact(metrics.energyData.priceCurrent, tariffLocale, t('units.ctPerKwh'))
-    : '';
+  const priceDisplay = isPriceCard
+    ? formatTariffPrice(metrics.energyData.priceCurrent, {
+        style: 'compact',
+        locale: tariffLocale,
+        unit: t('units.ctPerKwh'),
+      })
+    : null;
 
   return (
     <Link to={card.link} className="group focus-ring rounded-2xl">
@@ -37,15 +41,14 @@ export function HubMetricCard({ card, metrics }: HubMetricCardProps) {
           <p className="truncate font-medium text-(--color-muted) text-[11px] uppercase tracking-wide">
             {t(card.labelKey)}
           </p>
-          {isPriceCard ? (
-            <p
-              className="live-metric fluid-text-lg font-mono tabular-nums"
-              role="status"
-              aria-live="polite"
-              aria-atomic="true"
-            >
-              {priceLabel}
-            </p>
+          {isPriceCard && priceDisplay ? (
+            <LiveMetric
+              value={metrics.energyData.priceCurrent * 100}
+              formattedDisplay={priceDisplay}
+              format="custom"
+              size="sm"
+              precision={1}
+            />
           ) : (
             <LiveMetric
               value={card.getValue(metrics)}

@@ -31,4 +31,8 @@ describe('formatTariffPrice', () => {
     expect(compact).toContain('ct/kWh');
     expect(compact).not.toContain('€');
   });
+
+  it('rounds negative midpoint cent values away from zero', () => {
+    expect(formatTariffPriceCompact(-0.0125, en, ctUnit)).toBe('-1.3 ct/kWh');
+  });
 });

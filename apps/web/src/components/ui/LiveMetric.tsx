@@ -8,6 +8,8 @@ export interface LiveMetricProps {
   value: number;
   /** Unit label appended after the number (e.g. "kW", "%", "€/kWh") */
   unit?: string;
+  /** Locale-aware preformatted display; numeric `value` still drives pulse + SR thresholds */
+  formattedDisplay?: { value: string; unit?: string };
   /** Number of decimal places (default: auto-detected by format) */
   precision?: number;
   /** Predefined format for common energy metrics */
@@ -54,6 +56,7 @@ const defaultPrecision: Record<LiveMetricFormat, number> = {
 export function LiveMetric({
   value,
   unit,
+  formattedDisplay,
   precision,
   format = 'custom',
   size = 'md',
@@ -61,7 +64,9 @@ export function LiveMetric({
   className = '',
 }: LiveMetricProps) {
   const decimals = precision ?? defaultPrecision[format];
-  const formatted = value.toFixed(decimals);
+  const displayValue = formattedDisplay?.value ?? value.toFixed(decimals);
+  const displayUnit = formattedDisplay?.unit ?? unit;
+  const formattedLabel = `${displayValue}${displayUnit ? ` ${displayUnit}` : ''}`;
 
   const [prevValue, setPrevValue] = useState(value);
   const [animKey, setAnimKey] = useState(0);
@@ -73,7 +78,7 @@ export function LiveMetric({
   }
 
   // Debounced sr-only announcement — WCAG 4.1.3 / prevents aria-live spam
-  const [announcement, setAnnouncement] = useState('');
+  const [announcement, setAnnouncement] = useState(formattedLabel);
   const announceTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const lastAnnouncedValue = useRef(value);
 
@@ -85,11 +90,11 @@ export function LiveMetric({
       clearTimeout(announceTimer.current);
       announceTimer.current = setTimeout(() => {
         lastAnnouncedValue.current = value;
-        setAnnouncement(`${value.toFixed(decimals)}${unit ? ` ${unit}` : ''}`);
+        setAnnouncement(formattedLabel);
       }, 3000);
     }
     return () => clearTimeout(announceTimer.current);
-  }, [value, decimals, unit]);
+  }, [value, formattedLabel]);
 
   return (
     <span className="contents">
@@ -100,10 +105,10 @@ export function LiveMetric({
         data-changing={pulse ? 'true' : undefined}
         aria-hidden="true"
       >
-        {formatted}
-        {unit && (
+        {displayValue}
+        {displayUnit && (
           <span className="ml-1 font-normal text-(--color-muted) text-[0.6em] tracking-wide">
-            {unit}
+            {displayUnit}
           </span>
         )}
       </span>
