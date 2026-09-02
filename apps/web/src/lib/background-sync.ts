@@ -29,6 +29,13 @@ function isHardwareCommand(type: OfflineAction['type']): boolean {
   return HARDWARE_COMMAND_TYPES.has(type);
 }
 
+async function assertFetchOk(response: Response, context: string): Promise<void> {
+  if (response.ok) return;
+  const detail = await response.text().catch(() => '');
+  const suffix = detail.length > 0 ? `: ${detail.slice(0, 200)}` : '';
+  throw new Error(`${context} failed with HTTP ${response.status}${suffix}`);
+}
+
 function isCommandExpired(action: OfflineAction): boolean {
   return (
     isHardwareCommand(action.type) &&
@@ -272,29 +279,35 @@ class BackgroundSyncService {
     switch (action.type) {
       case 'ev-control':
       case 'hp-control':
-      case 'battery-control':
-        await fetch(`${baseUrl}/api/commands/replay`, {
+      case 'battery-control': {
+        const response = await fetch(`${baseUrl}/api/commands/replay`, {
           method: 'POST',
           headers: commonHeaders,
           body: JSON.stringify({ type: action.type, payload: action.payload }),
         });
+        await assertFetchOk(response, `Replay ${action.type}`);
         break;
+      }
 
-      case 'settings':
-        await fetch(`${baseUrl}/api/settings`, {
+      case 'settings': {
+        const response = await fetch(`${baseUrl}/api/settings`, {
           method: 'PUT',
           headers: commonHeaders,
           body: JSON.stringify(action.payload),
         });
+        await assertFetchOk(response, 'Settings sync');
         break;
+      }
 
-      case 'ai-optimize':
-        await fetch(`${baseUrl}/api/ai/optimize`, {
+      case 'ai-optimize': {
+        const response = await fetch(`${baseUrl}/api/ai/optimize`, {
           method: 'POST',
           headers: commonHeaders,
           body: JSON.stringify(action.payload),
         });
+        await assertFetchOk(response, 'AI optimize');
         break;
+      }
 
       default:
         throw new Error(`Unknown action type: ${action.type}`);
