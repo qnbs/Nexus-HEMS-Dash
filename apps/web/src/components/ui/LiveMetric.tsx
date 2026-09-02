@@ -92,6 +92,7 @@ export function LiveMetric({
     lastRenderedValue.current = value;
 
     if (labelChanged && valueUnchanged) {
+      lastAnnouncedValue.current = value;
       setAnnouncement(formattedLabel);
       return;
     }
