@@ -49,6 +49,7 @@ import {
   type MetricType,
   type ProtocolType,
   type UnifiedEnergyDatapoint,
+  type WSCommandType,
 } from '@nexus-hems/shared-types';
 import {
   recordAdapterDlq,
@@ -56,6 +57,12 @@ import {
   recordAdapterReconnect,
 } from '../../middleware/adapter-metrics.js';
 import { API_RUNTIME_DIR, DEAD_LETTER_QUEUE_PATH } from '../../runtime-paths.js';
+import type {
+  IProtocolCommandHandler,
+  ProtocolCommandRequest,
+  ProtocolCommandResult,
+} from '../protocol-command.js';
+import { HEAT_PUMP_MODE_ERROR, HeatPumpModeValueSchema } from '../protocol-command.js';
 
 // ---------------------------------------------------------------------------
 // Manufacturer register profiles
@@ -250,7 +257,7 @@ function writeToDLQ(entry: {
   }
 }
 
-export class HeatPumpAdapter implements IProtocolAdapter {
+export class HeatPumpAdapter implements IProtocolAdapter, IProtocolCommandHandler {
   readonly id: string;
   readonly protocol: ProtocolType = 'heatpump' as ProtocolType;
 
@@ -507,6 +514,86 @@ export class HeatPumpAdapter implements IProtocolAdapter {
       default:
         return ratedPowerW * 0.7;
     }
+  }
+
+  private powerToSgReadyMode(powerW: number, ratedPowerW: number): 1 | 2 | 3 | 4 {
+    if (powerW <= 0) return 1;
+    if (powerW >= ratedPowerW * 0.95) return 4;
+    if (powerW >= ratedPowerW * 0.8) return 3;
+    return 2;
+  }
+
+  supportsCommand(type: WSCommandType): boolean {
+    return type === 'SET_HEAT_PUMP_MODE' || type === 'SET_HEAT_PUMP_POWER';
+  }
+
+  async sendCommand(command: ProtocolCommandRequest): Promise<ProtocolCommandResult> {
+    if (!this.supportsCommand(command.type)) {
+      return { handled: false, success: false };
+    }
+
+    if (!this.client || !this.connected) {
+      return {
+        handled: true,
+        success: false,
+        adapterId: this.id,
+        error: 'Heat pump Modbus not connected',
+      };
+    }
+
+    const sgRegister = this.profile.sgReadyState;
+    if (sgRegister === undefined) {
+      return {
+        handled: true,
+        success: false,
+        adapterId: this.id,
+        error: 'SG Ready register not configured for this manufacturer profile',
+      };
+    }
+
+    let mode: 1 | 2 | 3 | 4;
+    if (command.type === 'SET_HEAT_PUMP_MODE') {
+      const parsed = HeatPumpModeValueSchema.safeParse(command.value);
+      if (!parsed.success) {
+        return {
+          handled: true,
+          success: false,
+          adapterId: this.id,
+          error: HEAT_PUMP_MODE_ERROR,
+        };
+      }
+      mode = parsed.data as 1 | 2 | 3 | 4;
+    } else {
+      if (
+        typeof command.value !== 'number' ||
+        !Number.isFinite(command.value) ||
+        command.value < 0
+      ) {
+        return {
+          handled: true,
+          success: false,
+          adapterId: this.id,
+          error: 'SET_HEAT_PUMP_POWER requires a non-negative number',
+        };
+      }
+      mode = this.powerToSgReadyMode(command.value, this.profile.ratedPowerW);
+    }
+
+    try {
+      await this.writeRegister(sgRegister, mode);
+      return { handled: true, success: true, adapterId: this.id };
+    } catch (err) {
+      return {
+        handled: true,
+        success: false,
+        adapterId: this.id,
+        error: err instanceof Error ? err.message : String(err),
+      };
+    }
+  }
+
+  private async writeRegister(address: number, value: number): Promise<void> {
+    await this.client!.writeRegister(address, value);
   }
 
   private scheduleReconnect(): void {

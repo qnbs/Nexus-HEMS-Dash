@@ -331,6 +331,7 @@ export async function startProtocolAdapters(eventBus: EventBus): Promise<void> {
       .then(() => {
         setState(heatPumpAdapter.id, heatPumpAdapter.protocol, 'healthy');
         pipeAdapterToEventBus(heatPumpAdapter, eventBus);
+        registerCommandCapableAdapter(heatPumpAdapter);
       })
       .catch((err: unknown) => {
         const message = err instanceof Error ? err.message : String(err);
@@ -418,7 +419,7 @@ export async function startProtocolAdapters(eventBus: EventBus): Promise<void> {
   }
 
   // -------------------------------------------------------------------------
-  // Zigbee2MQTT (MQTT bridge — read-only telemetry)
+  // Zigbee2MQTT (MQTT bridge — telemetry + SET commands for heat pump / EV plugs)
   // Enable via env: Z2M_BROKER_URL=mqtt://mosquitto:1883
   // -------------------------------------------------------------------------
   const zigbee2MqttAdapter = createZigbee2MQTTAdapterFromEnv();
@@ -433,6 +434,7 @@ export async function startProtocolAdapters(eventBus: EventBus): Promise<void> {
       .then(() => {
         setState(zigbee2MqttAdapter.id, zigbee2MqttAdapter.protocol, 'healthy');
         pipeAdapterToEventBus(zigbee2MqttAdapter, eventBus);
+        registerCommandCapableAdapter(zigbee2MqttAdapter);
       })
       .catch((err: unknown) => {
         const message = err instanceof Error ? err.message : String(err);
@@ -442,7 +444,7 @@ export async function startProtocolAdapters(eventBus: EventBus): Promise<void> {
   }
 
   // -------------------------------------------------------------------------
-  // Matter/Thread (WebSocket controller — read-only telemetry)
+  // Matter/Thread (WebSocket controller — telemetry + SET_HEAT_PUMP_MODE writes)
   // Enable via env: MATTER_BRIDGE_HOST=matter.local
   // -------------------------------------------------------------------------
   const matterAdapter = createMatterAdapterFromEnv();
@@ -457,6 +459,7 @@ export async function startProtocolAdapters(eventBus: EventBus): Promise<void> {
       .then(() => {
         setState(matterAdapter.id, matterAdapter.protocol, 'healthy');
         pipeAdapterToEventBus(matterAdapter, eventBus);
+        registerCommandCapableAdapter(matterAdapter);
       })
       .catch((err: unknown) => {
         const message = err instanceof Error ? err.message : String(err);

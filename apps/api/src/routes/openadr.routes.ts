@@ -65,6 +65,9 @@ interface CachedToken {
 
 let cachedToken: CachedToken | null = null;
 
+/** Demo-mode webhook event buffer (VTN push simulation). */
+const webhookEventBuffer: unknown[] = [];
+
 // ─── Minimal fetch helper using Node.js built-in http/https ──────────
 
 interface FetchResult {
@@ -151,6 +154,113 @@ async function fetchVTNToken(vtnUrl: URL): Promise<string> {
 
 export function createOpenADRRoutes(): Router {
   const router = Router();
+
+  /**
+   * GET /api/openadr/programs
+   * Lists DR programs from the VTN (demo list when VTN is not configured).
+   */
+  router.get('/api/openadr/programs', requireJWT, async (req: Request, res: Response) => {
+    const vtnUrl = getVTNBaseUrl();
+
+    if (!vtnUrl) {
+      res.json([
+        {
+          id: 'nexus-hems-program',
+          programName: 'Nexus HEMS Demo Program',
+          payloadDescriptors: [{ payloadType: 'LOAD_CONTROL' }, { payloadType: 'SIMPLE' }],
+        },
+      ]);
+      return;
+    }
+
+    try {
+      const token = await fetchVTNToken(vtnUrl);
+      const programsUrl = new URL('/openadr3/programs', vtnUrl);
+      const result = await nodeFetch(programsUrl, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json',
+        },
+      });
+
+      if (result.status !== 200) {
+        res.status(result.status).json({ error: `VTN programs fetch failed: ${result.status}` });
+        return;
+      }
+
+      res.json(JSON.parse(result.body) as unknown);
+    } catch (err) {
+      logger.error('OpenADR programs fetch error', {
+        requestId: req.requestId,
+        error: err instanceof Error ? err.message : String(err),
+      });
+      res.status(502).json({ error: 'VTN programs fetch failed' });
+    }
+  });
+
+  /**
+   * POST /api/openadr/webhook
+   * VTN push webhook for new/updated DR events (demo buffer when VTN is not configured).
+   */
+  router.post(
+    '/api/openadr/webhook',
+    requireJWT,
+    requireNotReadOnly,
+    async (req: Request, res: Response) => {
+      const vtnUrl = getVTNBaseUrl();
+
+      if (!vtnUrl) {
+        webhookEventBuffer.push(req.body);
+        if (webhookEventBuffer.length > 100) webhookEventBuffer.shift();
+        res
+          .status(202)
+          .json({ accepted: true, note: 'demo-mode', buffered: webhookEventBuffer.length });
+        return;
+      }
+
+      try {
+        const token = await fetchVTNToken(vtnUrl);
+        const webhookUrl = new URL('/openadr3/subscriptions/webhook', vtnUrl);
+        const body = JSON.stringify(req.body);
+        const result = await nodeFetch(webhookUrl, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'Content-Length': String(Buffer.byteLength(body)),
+          },
+          body,
+        });
+
+        res
+          .status(result.status < 300 ? 202 : result.status)
+          .json(
+            result.status < 300
+              ? { accepted: true }
+              : { error: `VTN webhook failed: ${result.status}` },
+          );
+      } catch (err) {
+        logger.error('OpenADR webhook error', {
+          requestId: req.requestId,
+          error: err instanceof Error ? err.message : String(err),
+        });
+        res.status(502).json({ error: 'VTN webhook relay failed' });
+      }
+    },
+  );
+
+  /**
+   * GET /api/openadr/webhook/events
+   * Returns demo webhook buffer (only when VTN is not configured).
+   */
+  router.get('/api/openadr/webhook/events', requireJWT, (_req: Request, res: Response) => {
+    const vtnUrl = getVTNBaseUrl();
+    if (vtnUrl) {
+      res.status(404).json({ error: 'Webhook buffer only available in demo mode' });
+      return;
+    }
+    res.json(webhookEventBuffer);
+  });
 
   /**
    * POST /api/openadr/token

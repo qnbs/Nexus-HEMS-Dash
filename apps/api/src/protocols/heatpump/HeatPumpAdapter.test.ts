@@ -6,6 +6,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockReadHoldingRegisters = vi.fn();
+const mockWriteRegister = vi.fn().mockResolvedValue(undefined);
 const mockConnectTCP = vi.fn().mockResolvedValue(undefined);
 const mockClose = vi.fn((cb?: () => void) => cb?.());
 const mockSetID = vi.fn();
@@ -16,6 +17,7 @@ vi.mock('modbus-serial', () => {
       setID = mockSetID;
       connectTCP = mockConnectTCP;
       readHoldingRegisters = mockReadHoldingRegisters;
+      writeRegister = mockWriteRegister;
       close = mockClose;
     },
   };
@@ -66,5 +68,26 @@ describe('HeatPumpAdapter', () => {
     await adapter.connect();
     await adapter.disconnect();
     expect(mockClose).toHaveBeenCalled();
+  });
+
+  it('writes SG Ready mode for SET_HEAT_PUMP_MODE', async () => {
+    await adapter.connect();
+    const result = await adapter.sendCommand({ type: 'SET_HEAT_PUMP_MODE', value: 3 });
+    expect(result.success).toBe(true);
+    expect(mockWriteRegister).toHaveBeenCalledWith(5010, 3);
+  });
+
+  it('rejects invalid SET_HEAT_PUMP_MODE values', async () => {
+    await adapter.connect();
+    const result = await adapter.sendCommand({ type: 'SET_HEAT_PUMP_MODE', value: 0 });
+    expect(result.success).toBe(false);
+    expect(mockWriteRegister).not.toHaveBeenCalled();
+  });
+
+  it('maps SET_HEAT_PUMP_POWER to nearest SG Ready mode', async () => {
+    await adapter.connect();
+    const result = await adapter.sendCommand({ type: 'SET_HEAT_PUMP_POWER', value: 5000 });
+    expect(result.success).toBe(true);
+    expect(mockWriteRegister).toHaveBeenCalled();
   });
 });
