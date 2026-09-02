@@ -68,7 +68,6 @@ function shouldDispatch(
         : state.lastEvAt;
 
   if (lastValue === value && now - lastAt < MIN_DISPATCH_INTERVAL_MS) return false;
-  if (now - lastAt < MIN_DISPATCH_INTERVAL_MS) return false;
   return true;
 }
 

@@ -1,11 +1,10 @@
 /**
  * useControllerCommandBridge — runs ControllerPipeline on an interval and dispatches outputs.
  *
- * Mount once in App.tsx alongside useAdapterBridge. Respects per-controller enable flags
- * on controllerPipeline and skips dispatch when read-only mode is active.
+ * Exposed as a start/stop function (not a hook) so App bootstrap can dynamic-import this
+ * module and keep energy-controllers out of the App Entry chunk.
  */
 
-import { useEffect, useRef } from 'react';
 import { isReadOnlyModeActive } from '../lib/adapter-mode';
 import { useAppStore } from '../store';
 import { dispatchControllerOutputs } from './controller-command-bridge';
@@ -39,21 +38,16 @@ function legacyEnergyFromStore(): import('../types').EnergyData {
   };
 }
 
-export function useControllerCommandBridge(): void {
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+/** Start the controller command loop; returns a cleanup function. */
+export function startControllerCommandBridge(): () => void {
+  const intervalId = setInterval(() => {
+    if (isReadOnlyModeActive()) return;
 
-  useEffect(() => {
-    intervalRef.current = setInterval(() => {
-      if (isReadOnlyModeActive()) return;
+    const settings = useAppStore.getState().settings;
+    const data = legacyEnergyFromStore();
+    const output = controllerPipeline.run(data, settings);
+    void dispatchControllerOutputs(output);
+  }, CONTROLLER_LOOP_MS);
 
-      const settings = useAppStore.getState().settings;
-      const data = legacyEnergyFromStore();
-      const output = controllerPipeline.run(data, settings);
-      void dispatchControllerOutputs(output);
-    }, CONTROLLER_LOOP_MS);
-
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
-  }, []);
+  return () => clearInterval(intervalId);
 }

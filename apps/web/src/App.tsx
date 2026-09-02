@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { AppRouterTree } from './components/AppRouterTree';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import { useControllerCommandBridge } from './core/useControllerCommandBridge';
 import { useAdapterBridge, useServerWebSocket } from './core/useEnergyStore';
 import { isBackendWsEnabled } from './lib/adapter-mode';
 import { logError } from './lib/db';
@@ -45,7 +44,6 @@ export default function App() {
 
   useBackendHealthPoll();
   useAdapterBridge();
-  useControllerCommandBridge();
   useServerWebSocket(isBackendWsEnabled());
   useNotifications();
 

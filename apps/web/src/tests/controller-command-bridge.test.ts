@@ -32,6 +32,13 @@ describe('controller-command-bridge', () => {
     expect(sendAdapterCommand).toHaveBeenCalledTimes(1);
   });
 
+  it('dispatches immediately when sgReadyMode value changes', async () => {
+    await dispatchControllerOutputs({ sgReadyMode: 2, reason: 'a', confidence: 0.9 });
+    await dispatchControllerOutputs({ sgReadyMode: 4, reason: 'b', confidence: 0.9 });
+    expect(sendAdapterCommand).toHaveBeenCalledTimes(2);
+    expect(sendAdapterCommand).toHaveBeenLastCalledWith({ type: 'SET_HEAT_PUMP_MODE', value: 4 });
+  });
+
   it('dispatches battery and EV commands when present', async () => {
     const accepted = await dispatchControllerOutputs({
       essPowerW: 2000,
