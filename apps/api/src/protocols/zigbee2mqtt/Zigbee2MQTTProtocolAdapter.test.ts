@@ -283,4 +283,10 @@ describe('Zigbee2MQTTProtocolAdapter', () => {
       createZigbee2MQTTAdapterFromEnv({ Z2M_BROKER_URL: 'mqtt://localhost:1883' }),
     ).not.toBeNull();
   });
+
+  it('rejects non-finite SET_EV_POWER values', async () => {
+    const result = await adapter.sendCommand({ type: 'SET_EV_POWER', value: Number.NaN });
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('finite');
+  });
 });

@@ -75,6 +75,8 @@ interface FetchResult {
   body: string;
 }
 
+const VTN_FETCH_TIMEOUT_MS = 15_000;
+
 function nodeFetch(
   url: URL,
   options: {
@@ -91,6 +93,7 @@ function nodeFetch(
       path: url.pathname + url.search,
       method: options.method ?? 'GET',
       headers: options.headers ?? {},
+      timeout: VTN_FETCH_TIMEOUT_MS,
     };
 
     const req = lib.request(reqOptions, (res) => {
@@ -104,6 +107,9 @@ function nodeFetch(
       );
     });
 
+    req.on('timeout', () => {
+      req.destroy(new Error(`VTN request timed out after ${VTN_FETCH_TIMEOUT_MS}ms`));
+    });
     req.on('error', reject);
 
     if (options.body) req.write(options.body);

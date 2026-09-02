@@ -80,6 +80,16 @@ interface DeviceRuntimeState {
   device?: Z2mBridgeDevice;
 }
 
+function validateFinitePowerW(
+  value: unknown,
+  label: 'SET_HEAT_PUMP_POWER' | 'SET_EV_POWER',
+): { ok: true; watts: number } | { ok: false; error: string } {
+  if (typeof value !== 'number' || !Number.isFinite(value) || value < 0) {
+    return { ok: false, error: `${label} requires a finite non-negative number` };
+  }
+  return { ok: true, watts: value };
+}
+
 export class Zigbee2MQTTProtocolAdapter implements IProtocolAdapter, IProtocolCommandHandler {
   readonly id: string;
   readonly protocol: ProtocolType = 'zigbee2mqtt';
@@ -445,6 +455,18 @@ export class Zigbee2MQTTProtocolAdapter implements IProtocolAdapter, IProtocolCo
       };
     }
 
+    if (command.type === 'SET_HEAT_PUMP_POWER' || command.type === 'SET_EV_POWER') {
+      const validated = validateFinitePowerW(command.value, command.type);
+      if (!validated.ok) {
+        return {
+          handled: true,
+          success: false,
+          adapterId: this.id,
+          error: validated.error,
+        };
+      }
+    }
+
     const topicDevice =
       command.type === 'SET_EV_POWER'
         ? this.evDevice
@@ -471,25 +493,9 @@ export class Zigbee2MQTTProtocolAdapter implements IProtocolAdapter, IProtocolCo
       }
       payload = { state: mode.data === 1 ? 'OFF' : 'ON', sg_ready_mode: mode.data };
     } else if (command.type === 'SET_HEAT_PUMP_POWER') {
-      if (typeof command.value !== 'number' || command.value < 0) {
-        return {
-          handled: true,
-          success: false,
-          adapterId: this.id,
-          error: 'SET_HEAT_PUMP_POWER requires a non-negative number',
-        };
-      }
-      payload = { state: command.value > 0 ? 'ON' : 'OFF' };
+      payload = { state: (command.value as number) > 0 ? 'ON' : 'OFF' };
     } else {
-      if (typeof command.value !== 'number' || command.value < 0) {
-        return {
-          handled: true,
-          success: false,
-          adapterId: this.id,
-          error: 'SET_EV_POWER requires a non-negative number',
-        };
-      }
-      payload = { power_limit: command.value };
+      payload = { power_limit: command.value as number };
     }
 
     try {

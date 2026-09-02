@@ -436,6 +436,13 @@ export class HomeAssistantProtocolAdapter implements IProtocolAdapter, IProtocol
           error: `${command.type} requires a non-negative number`,
         };
       }
+      if (
+        command.type === 'SET_HEAT_PUMP_MODE' ||
+        command.type === 'START_CHARGING' ||
+        command.type === 'STOP_CHARGING'
+      ) {
+        return { handled: false, success: false };
+      }
       return {
         handled: true,
         success: false,
