@@ -7,7 +7,6 @@
 
 import type { ActiveDREvent } from './adapters/contrib/openadr-3-1';
 import type { AdapterCommand } from './adapters/EnergyAdapter';
-import { validateCommand } from './command-safety';
 import { sendAdapterCommand } from './useEnergyStore';
 
 interface DispatchSnapshot {
@@ -71,13 +70,13 @@ export async function dispatchOpenADRHardwareActions(event: ActiveDREvent): Prom
 
   let accepted = 0;
   for (const command of commandsFromSnapshot(snap)) {
-    const validation = validateCommand(command);
-    if (!validation.valid) continue;
     const ok = await sendAdapterCommand(command);
     if (ok) accepted++;
   }
 
-  lastSnapshot = { ...snap };
+  if (accepted > 0) {
+    lastSnapshot = { ...snap };
+  }
   return accepted;
 }
 
@@ -99,12 +98,12 @@ export async function dispatchOpenADRAggregateState(state: {
 
   let accepted = 0;
   for (const command of commandsFromSnapshot(snap)) {
-    const validation = validateCommand(command);
-    if (!validation.valid) continue;
     const ok = await sendAdapterCommand(command);
     if (ok) accepted++;
   }
 
-  lastSnapshot = { ...snap };
+  if (accepted > 0) {
+    lastSnapshot = { ...snap };
+  }
   return accepted;
 }

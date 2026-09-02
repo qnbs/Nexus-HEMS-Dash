@@ -7,7 +7,6 @@
  */
 
 import type { AdapterCommand } from './adapters/EnergyAdapter';
-import { validateCommand } from './command-safety';
 import type { ControllerOutput } from './energy-controllers';
 import { sendAdapterCommand } from './useEnergyStore';
 
@@ -80,25 +79,26 @@ export async function dispatchControllerOutputs(output: ControllerOutput): Promi
   let accepted = 0;
 
   for (const command of commandsFromOutput(output)) {
-    const validation = validateCommand(command);
-    if (!validation.valid) continue;
+    const key =
+      command.type === 'SET_HEAT_PUMP_MODE' && typeof command.value === 'number'
+        ? ('sgReadyMode' as const)
+        : command.type === 'SET_BATTERY_POWER' && typeof command.value === 'number'
+          ? ('essPowerW' as const)
+          : command.type === 'SET_EV_CURRENT' && typeof command.value === 'number'
+            ? ('evCurrentA' as const)
+            : null;
 
-    if (command.type === 'SET_HEAT_PUMP_MODE' && typeof command.value === 'number') {
-      if (!shouldDispatch('sgReadyMode', command.value, now)) continue;
-      state.sgReadyMode = command.value;
-      state.lastSgReadyAt = now;
-    } else if (command.type === 'SET_BATTERY_POWER' && typeof command.value === 'number') {
-      if (!shouldDispatch('essPowerW', command.value, now)) continue;
-      state.essPowerW = command.value;
-      state.lastEssAt = now;
-    } else if (command.type === 'SET_EV_CURRENT' && typeof command.value === 'number') {
-      if (!shouldDispatch('evCurrentA', command.value, now)) continue;
-      state.evCurrentA = command.value;
-      state.lastEvAt = now;
-    }
+    if (key === null || typeof command.value !== 'number') continue;
+    if (!shouldDispatch(key, command.value, now)) continue;
 
     const ok = await sendAdapterCommand(command);
-    if (ok) accepted++;
+    if (!ok) continue;
+
+    accepted++;
+    state[key] = command.value;
+    if (key === 'sgReadyMode') state.lastSgReadyAt = now;
+    else if (key === 'essPowerW') state.lastEssAt = now;
+    else state.lastEvAt = now;
   }
 
   return accepted;
