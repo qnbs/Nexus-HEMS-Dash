@@ -61,7 +61,10 @@ function mountApp(): void {
   }
 }
 
-void i18nReady.then(mountApp).catch((error: unknown) => {
-  console.error('[i18n] locale bootstrap failed; mounting with German fallback', error);
-  mountApp();
-});
+void i18nReady
+  .catch((error: unknown) => {
+    console.error('[i18n] locale bootstrap failed; mounting with German fallback', error);
+  })
+  .then(() => {
+    mountApp();
+  });

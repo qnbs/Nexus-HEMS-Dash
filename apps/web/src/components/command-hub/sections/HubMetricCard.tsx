@@ -1,7 +1,6 @@
 import { ChevronRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { formatTariffPriceCompact, tariffFormatLocale } from '../../../lib/format-tariff-price';
 import { EnergyCard } from '../../ui/EnergyCard';
 import { LiveMetric } from '../../ui/LiveMetric';
 import { formatMetricDetail, type MetricDef } from '../data/metricCards';
@@ -15,8 +14,7 @@ interface HubMetricCardProps {
 /** A single metric tile linking to its detail route. Shared by the primary grid
  *  and the expandable secondary grid so the markup lives in exactly one place. */
 export function HubMetricCard({ card, metrics }: HubMetricCardProps) {
-  const { t, i18n } = useTranslation();
-  const tariffLocale = tariffFormatLocale(i18n.resolvedLanguage ?? i18n.language);
+  const { t } = useTranslation();
   const isPriceCard = card.id === 'price';
 
   return (
@@ -35,13 +33,13 @@ export function HubMetricCard({ card, metrics }: HubMetricCardProps) {
             {t(card.labelKey)}
           </p>
           {isPriceCard ? (
-            <p className="live-metric fluid-text-lg font-mono tabular-nums">
-              {formatTariffPriceCompact(
-                metrics.energyData.priceCurrent,
-                tariffLocale,
-                t('units.ctPerKwh'),
-              )}
-            </p>
+            <LiveMetric
+              value={metrics.energyData.priceCurrent * 100}
+              unit={t('units.ctPerKwh')}
+              format="custom"
+              size="sm"
+              precision={1}
+            />
           ) : (
             <LiveMetric
               value={card.getValue(metrics)}

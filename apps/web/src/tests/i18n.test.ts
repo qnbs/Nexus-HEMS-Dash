@@ -17,9 +17,11 @@ describe('i18n Configuration', () => {
     expect(i18n.options.supportedLngs).toContain('en');
   });
 
-  it('should load the active locale before first render via i18nReady', async () => {
+  it('should load both locale bundles before first render via i18nReady', async () => {
     await i18nReady;
+    expect(i18n.hasResourceBundle('de', 'translation')).toBe(true);
     expect(i18n.hasResourceBundle('en', 'translation')).toBe(true);
+    await i18n.changeLanguage('en');
     expect(i18n.t('commandHub.title', { lng: 'en' })).toBe('Command Hub');
   });
 

@@ -13,6 +13,11 @@ const inspectorMode =
   typeof window !== 'undefined' && window.localStorage.getItem('i18n-inspector') === 'true';
 
 function resolveActiveLanguage(): 'de' | 'en' {
+  if (typeof window !== 'undefined') {
+    const stored = window.localStorage.getItem('nexus-hems-language');
+    if (stored?.startsWith('en')) return 'en';
+    if (stored?.startsWith('de')) return 'de';
+  }
   const lang = i18n.resolvedLanguage ?? i18n.language ?? 'de';
   return lang.startsWith('en') ? 'en' : 'de';
 }
@@ -31,7 +36,13 @@ async function ensureLocaleBundle(lang: 'de' | 'en'): Promise<void> {
     return;
   }
 
-  const { en } = await import('./locales/en');
+  const { en } = await import('./locales/en').catch((error: unknown) => {
+    console.error(
+      '[i18n] failed to load English locale bundle; German fallback remains active',
+      error,
+    );
+    return { en: de };
+  });
   i18n.addResourceBundle('en', 'translation', en as unknown as Record<string, unknown>, true, true);
 }
 
@@ -73,11 +84,8 @@ export const i18nReady = i18n
   })
   .then(async () => {
     const active = resolveActiveLanguage();
-    await ensureLocaleBundle(active);
-
-    // Pre-load the other locale in the background so switching stays instant.
     const other = active === 'de' ? 'en' : 'de';
-    void ensureLocaleBundle(other);
+    await Promise.all([ensureLocaleBundle(active), ensureLocaleBundle(other)]);
 
     i18n.on('languageChanging', async (lng) => {
       const lang = lng.startsWith('en') ? 'en' : 'de';
