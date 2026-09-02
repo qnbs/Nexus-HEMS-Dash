@@ -1,10 +1,9 @@
 # WIP Carry-over TODO — `wip/unrelated-wip-stash`
 
-> **Status:** Open · **Created:** 2026-07-01 · **Owner:** maintainer
-> **Purpose:** Capture the changes that lived only on the `wip/unrelated-wip-stash`
-> preservation branch and are **not yet adopted into the app/`main`**, so they can be
-> caught up deliberately. Once the two "ADOPT" items below land (or are explicitly
-> declined), the branch carries no unique value and can be deleted.
+> **Status:** Closed · **Created:** 2026-07-01 · **Owner:** maintainer
+> **Purpose:** Permanent record of work that lived only on the `wip/unrelated-wip-stash`
+> preservation branch — what was adopted into `main`, what was explicitly declined, and
+> why. The preservation branch was deleted after closeout; this file remains the audit trail.
 
 ## How this list was derived
 
