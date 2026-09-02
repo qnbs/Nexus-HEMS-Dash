@@ -9,7 +9,7 @@ Release notes are maintained here and published via [semantic-release](https://g
 
 ## [Unreleased]
 
-> **HEAD:** `5eda86b` (11 commits ahead of tag `v1.11.1` @ `1716a42`). Not yet released — cut `v1.11.2` only when the maintainer dispatches `release.yml` or tags manually (ADR-015).
+> **HEAD:** `5eda86b` on `main` (+ this PR). Not yet released — cut `v1.11.2` only when the maintainer dispatches `release.yml` or tags manually (ADR-015).
 
 ### Added
 

@@ -37,11 +37,12 @@ export function formatTariffPrice(
     return { value, unit: options.unit };
   }
 
-  const cents = Math.round(eurPerKwh * 1000) / 10;
+  const cents = eurPerKwh * 100;
+  const roundedCents = ((Math.sign(cents) || 1) * Math.round(Math.abs(cents) * 10)) / 10;
   const value = new Intl.NumberFormat(locale, {
     minimumFractionDigits: 1,
     maximumFractionDigits: 1,
-  }).format(cents);
+  }).format(roundedCents);
   return { value, unit: options.unit };
 }
 

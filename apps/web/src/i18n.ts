@@ -36,14 +36,21 @@ async function ensureLocaleBundle(lang: 'de' | 'en'): Promise<void> {
     return;
   }
 
-  const { en } = await import('./locales/en').catch((error: unknown) => {
+  try {
+    const { en } = await import('./locales/en');
+    i18n.addResourceBundle(
+      'en',
+      'translation',
+      en as unknown as Record<string, unknown>,
+      true,
+      true,
+    );
+  } catch (error: unknown) {
     console.error(
       '[i18n] failed to load English locale bundle; German fallback remains active',
       error,
     );
-    return { en: de };
-  });
-  i18n.addResourceBundle('en', 'translation', en as unknown as Record<string, unknown>, true, true);
+  }
 }
 
 /** Resolves when the detected active locale is loaded — gate first paint in `main.tsx`. */
