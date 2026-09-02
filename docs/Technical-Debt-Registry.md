@@ -1,9 +1,9 @@
 # Technical Debt Registry — Nexus-HEMS-Dash
 
-**Last audited:** 2026-09-01 (post-v1.11.1 + offline-sync slices 2–4)  
-**Version at audit:** 1.11.1 shipped (`main` @ `b1e6346`, 2026-09-01)  
-**Last updated:** 2026-09-01  
-**Release line:** v1.11.1 tagged (`1716a42`); `main` ahead with offline-sync slices 2–4 (#344–#346, #349 draft) — **release intentionally deferred** until campaign complete  
+**Last audited:** 2026-09-02 (post-v1.11.1 HEAD truth-sync)  
+**Version at audit:** 1.11.1 tagged; `main` @ `1993cb2` unreleased  
+**Last updated:** 2026-09-02  
+**Release line:** v1.11.1 tagged (`1716a42`); `main` ahead with offline-sync slices 2–4 (#344–#349), CI SLSA/Scorecard (#350–#351) — **release intentionally deferred** until maintainer cuts next patch  
 **Auditor:** Cursor Cloud Agent (2026-06-29 full audit; 2026-07-02 delta; 2026-07-03 full review; 2026-09-01 freeze + campaign closeout)
 
 This file is the canonical issue tracker for known technical debt, security gaps, incomplete implementations, and quality issues. It is **not** a substitute for GitHub Issues — use it for context, rationale, and multi-sprint planning.
