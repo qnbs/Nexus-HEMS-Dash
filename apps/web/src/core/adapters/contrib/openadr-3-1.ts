@@ -23,10 +23,7 @@
  *   - docs/adr/ADR-012-openadr-ven-client.md
  */
 
-import {
-  dispatchOpenADRAggregateState,
-  dispatchOpenADRHardwareActions,
-} from '../../openadr-hardware-dispatch';
+import { dispatchOpenADRAggregateState } from '../../openadr-hardware-dispatch';
 import { registerAdapter } from '../adapter-registry';
 import { BaseAdapter } from '../BaseAdapter';
 import type {
@@ -102,6 +99,68 @@ export interface ActiveDREvent {
   /** For SIMPLE: DR level 0–4 */
   simpleLevel?: number;
   acknowledged: boolean;
+}
+
+interface DRAggregateFold {
+  lowestPrice: number | null;
+  highestPriority: number;
+  evDisabled: boolean;
+  sgReady: 1 | 2 | 3 | 4 | undefined;
+  evMaxPowerW: number | undefined;
+  hvacMaxPowerW: number | undefined;
+}
+
+function applyPriceEvent(fold: DRAggregateFold, event: ActiveDREvent): void {
+  if (event.eventType !== 'ELECTRICITY_PRICE' || event.priceEurKWh === undefined) return;
+  const priority = event.raw.priority ?? 0;
+  if (priority >= fold.highestPriority) {
+    fold.lowestPrice = event.priceEurKWh;
+    fold.highestPriority = priority;
+  }
+}
+
+function applyLoadControlEvent(fold: DRAggregateFold, event: ActiveDREvent): void {
+  if (event.eventType !== 'LOAD_CONTROL') return;
+  if ((event.evMaxPowerW ?? Infinity) <= 0) {
+    fold.evDisabled = true;
+  }
+  if (event.evMaxPowerW !== undefined) {
+    fold.evMaxPowerW =
+      fold.evMaxPowerW === undefined
+        ? event.evMaxPowerW
+        : Math.min(fold.evMaxPowerW, event.evMaxPowerW);
+  }
+  if (event.hvacMaxPowerW !== undefined) {
+    fold.hvacMaxPowerW =
+      fold.hvacMaxPowerW === undefined
+        ? event.hvacMaxPowerW
+        : Math.min(fold.hvacMaxPowerW, event.hvacMaxPowerW);
+  }
+}
+
+function applySimpleEvent(fold: DRAggregateFold, event: ActiveDREvent): void {
+  if (event.eventType !== 'SIMPLE' || event.simpleLevel === undefined) return;
+  fold.sgReady = Math.min(4, Math.max(1, event.simpleLevel + 1)) as 1 | 2 | 3 | 4;
+}
+
+function foldActiveDREvents(events: Iterable<ActiveDREvent>, now: number): DRAggregateFold {
+  const fold: DRAggregateFold = {
+    lowestPrice: null,
+    highestPriority: -1,
+    evDisabled: false,
+    sgReady: undefined,
+    evMaxPowerW: undefined,
+    hvacMaxPowerW: undefined,
+  };
+
+  for (const event of events) {
+    if (event.activeFrom > now || event.activeTo < now) continue;
+    applyPriceEvent(fold, event);
+    applyLoadControlEvent(fold, event);
+    applySimpleEvent(fold, event);
+  }
+
+  return fold;
 }
 
 // ─── OAuth2 token response ───────────────────────────────────────────
@@ -359,7 +418,7 @@ export class OpenADR31Adapter extends BaseAdapter {
     }
 
     // Rebuild aggregate state from all active events
-    this.rebuildAggregateState();
+    await this.rebuildAggregateState();
     this.emitCurrentState();
   }
 
@@ -489,37 +548,11 @@ export class OpenADR31Adapter extends BaseAdapter {
         }
         break;
     }
-
-    void dispatchOpenADRHardwareActions(event);
   }
 
-  private rebuildAggregateState(): void {
-    const now = Date.now();
-    let lowestPrice: number | null = null;
-    let highestPriority = -1;
-    let evDisabled = false;
-    let sgReady: 1 | 2 | 3 | 4 | undefined;
-
-    for (const event of this.activeEvents.values()) {
-      if (event.activeFrom > now || event.activeTo < now) continue;
-
-      const priority = event.raw.priority ?? 0;
-
-      if (event.eventType === 'ELECTRICITY_PRICE' && event.priceEurKWh !== undefined) {
-        if (priority >= highestPriority) {
-          lowestPrice = event.priceEurKWh;
-          highestPriority = priority;
-        }
-      }
-
-      if (event.eventType === 'LOAD_CONTROL' && (event.evMaxPowerW ?? Infinity) <= 0) {
-        evDisabled = true;
-      }
-
-      if (event.eventType === 'SIMPLE' && event.simpleLevel !== undefined) {
-        sgReady = Math.min(4, Math.max(1, event.simpleLevel + 1)) as 1 | 2 | 3 | 4;
-      }
-    }
+  private async rebuildAggregateState(): Promise<void> {
+    const fold = foldActiveDREvents(this.activeEvents.values(), Date.now());
+    const { lowestPrice, evDisabled, sgReady, evMaxPowerW, hvacMaxPowerW } = fold;
 
     this.evDisabledBy14a = evDisabled;
 
@@ -539,9 +572,13 @@ export class OpenADR31Adapter extends BaseAdapter {
       this.tariffOverride = null;
     }
 
-    void dispatchOpenADRAggregateState({
+    const aggregateEvLimit =
+      evMaxPowerW !== undefined ? { evMaxPowerW } : evDisabled ? { evMaxPowerW: 0 } : {};
+
+    await dispatchOpenADRAggregateState({
       ...(sgReady !== undefined ? { sgReady } : {}),
-      ...(evDisabled ? { evMaxPowerW: 0 } : {}),
+      ...aggregateEvLimit,
+      ...(hvacMaxPowerW !== undefined ? { hvacMaxPowerW } : {}),
     });
   }
 

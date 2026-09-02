@@ -386,7 +386,7 @@ export class MatterProtocolAdapter implements IProtocolAdapter, IProtocolCommand
       };
     }
 
-    const nodeId = this.heatPumpNodeId ?? [...this.nodeIds][0];
+    const nodeId = this.heatPumpNodeId;
     if (nodeId === undefined) {
       return {
         handled: true,

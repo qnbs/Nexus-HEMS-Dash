@@ -13,6 +13,8 @@ import { useEnergyStoreBase } from './useEnergyStore';
 
 const CONTROLLER_LOOP_MS = 5_000;
 
+let dispatchInFlight = false;
+
 function legacyEnergyFromStore(): import('../types').EnergyData {
   const unified = useEnergyStoreBase.getState().unified;
   const appEnergy = useAppStore.getState().energyData;
@@ -41,12 +43,19 @@ function legacyEnergyFromStore(): import('../types').EnergyData {
 /** Start the controller command loop; returns a cleanup function. */
 export function startControllerCommandBridge(): () => void {
   const intervalId = setInterval(() => {
-    if (isReadOnlyModeActive()) return;
+    if (isReadOnlyModeActive() || dispatchInFlight) return;
 
-    const settings = useAppStore.getState().settings;
-    const data = legacyEnergyFromStore();
-    const output = controllerPipeline.run(data, settings);
-    void dispatchControllerOutputs(output);
+    dispatchInFlight = true;
+    void (async () => {
+      try {
+        const settings = useAppStore.getState().settings;
+        const data = legacyEnergyFromStore();
+        const output = controllerPipeline.run(data, settings);
+        await dispatchControllerOutputs(output);
+      } finally {
+        dispatchInFlight = false;
+      }
+    })();
   }, CONTROLLER_LOOP_MS);
 
   return () => clearInterval(intervalId);

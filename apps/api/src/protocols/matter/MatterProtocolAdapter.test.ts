@@ -119,4 +119,25 @@ describe('MatterProtocolAdapter', () => {
     expect(createMatterAdapterFromEnv({})).toBeNull();
     expect(createMatterAdapterFromEnv({ MATTER_BRIDGE_HOST: 'matter.local' })).not.toBeNull();
   });
+
+  it('rejects SET_HEAT_PUMP_MODE without MATTER_HEAT_PUMP_NODE_ID', async () => {
+    await adapter.connect();
+    const result = await adapter.sendCommand({ type: 'SET_HEAT_PUMP_MODE', value: 3 });
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('MATTER_HEAT_PUMP_NODE_ID');
+    expect(mockWsHolder.current?.send).not.toHaveBeenCalledWith(
+      expect.stringContaining('write_attribute'),
+    );
+  });
+
+  it('writes SG Ready mode when heatPumpNodeId is configured', async () => {
+    const hpAdapter = new MatterProtocolAdapter({ ...testConfig, heatPumpNodeId: 42 });
+    await hpAdapter.connect();
+    const result = await hpAdapter.sendCommand({ type: 'SET_HEAT_PUMP_MODE', value: 3 });
+    expect(result.success).toBe(true);
+    expect(mockWsHolder.current?.send).toHaveBeenCalledWith(
+      expect.stringContaining('"type":"write_attribute"'),
+    );
+    await hpAdapter.disconnect();
+  });
 });
