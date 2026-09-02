@@ -19,7 +19,7 @@ Release notes are maintained here and published via [semantic-release](https://g
 
 ### Changed
 
-- **CI / Node 24** — `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24` on remaining auxiliary workflows at job level (#343).
+- **CI / Node 24** — `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24` on auxiliary workflows at job level (#343); `ci.yml` sets the flag per job (not workflow-wide) so Scorecard `publish_results` is unaffected.
 - **Review policy** — mandatory PR review quiescence before merge (#348).
 - **Release workflow** — checkout uses default `GITHUB_TOKEN`; `GH_TOKEN` only for semantic-release push (#347).
 
@@ -31,7 +31,7 @@ Release notes are maintained here and published via [semantic-release](https://g
 
 ### Security
 
-- **SLSA attestation** — isolated into dedicated `slsa-attest` job with 3 retries; runs on PRs to `main` for PR/main parity; E2E no longer skipped when SLSA flakes (#350).
+- **SLSA attestation** — isolated into dedicated `slsa-attest` job with three attempts; runs on PRs to `main` for PR/main parity; E2E no longer skipped when SLSA flakes (#350).
 - **OpenSSF Scorecard** — removed job-level `env` from `scorecard.yml` so `publish_results` succeeds on `main` push (#351).
 
 ### Tests

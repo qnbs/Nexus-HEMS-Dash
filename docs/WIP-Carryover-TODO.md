@@ -21,9 +21,11 @@ only what is catalogued below.
 
 ---
 
-## ✅ ADOPTED — landed on `main`
+## Resolution summary
 
-### 1. Production-build smoke test  *(merged — PR #160 / CI `smoke:prod`)*
+### ✅ Adopted — landed on `main`
+
+#### 1. Production-build smoke test  *(merged — PR #160 / CI `smoke:prod`)*
 
 Adopted on `main`:
 
@@ -33,7 +35,9 @@ Adopted on `main`:
 
 No further action. This item is closed.
 
-### 2. `shared-types` compiled build output  *(DECLINED — 2026-07-01)*
+### ⛔ Declined — preserved for audit only
+
+#### 2. `shared-types` compiled build output  *(DECLINED — 2026-07-01)*
 
 wip switched `@nexus-hems/shared-types` from being consumed as raw TS source to a
 compiled `dist/` (`tsconfig.build.json` emitting declarations + maps; `exports`

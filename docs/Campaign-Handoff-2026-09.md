@@ -1,6 +1,6 @@
 # Campaign Handoff — Post-v1.11.0 Freeze (Sep 2026)
 
-> **Status:** Phase 1–3 complete on `main`; release line deferred (HEAD ahead of tag)  
+> **Status:** Phase 1–3 complete on `main`; Stream A docs truth-sync complete (#352); release line deferred (HEAD ahead of tag)  
 > **Snapshot:** `main` @ `1993cb2` — tag `v1.11.1` @ `1716a42` (2026-09-01)  
 > **Purpose:** Closeout record for the Sep 2026 operational campaign after a 53-day product freeze, plus the post-freeze master-prompt remediation and CI/offline-sync waves.
 
@@ -78,8 +78,7 @@ CI on `main` after Phase 3: lint, type-check, unit tests (coverage ≥72% branch
 
 ## What remains (not in Phases 1–3)
 
-- **Docs truth-sync** — living docs still reference mid-afternoon 2026-09-01 snapshots; Stream A campaign PR aligns CHANGELOG, handoff, FEATURE_STATUS, Release-History.
-- **Demo i18n + tariff formatter** — Pages demo DE/EN split and inconsistent ct vs €/kWh (Stream B).
+- **Demo i18n + tariff formatter** — Pages demo DE/EN split and inconsistent ct vs €/kWh (Stream B, PR #353).
 - **Offline sync production residuals** — durable server version store, multi-instance idempotency, expanded write-route coverage, Helm replica warning (Stream C).
 - **SUPPLY-02** — Grype exception review due **2026-09-29**.
 - **PRF-02 / PRF-06** — CodeAnt GitHub App install + `GH_TOKEN` rotation (maintainer-only).

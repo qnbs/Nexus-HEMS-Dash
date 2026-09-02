@@ -14,17 +14,6 @@ This document records the **canonical release timeline**, known anomalies from t
 | Tag | Date (UTC) | Head commit | Highlights |
 |-----|------------|-------------|------------|
 | `v1.11.1` | 2026-09-01 | `1716a42` | Post-freeze campaign + master-prompt remediation: SEC-11, deps/CVE, demo chrome, E-STOP tests, CI pins, Command Hub i18n, offline idempotency slice 1 (#329–#341) |
-
-### Unreleased on `main` (post-tag, 2026-09-02)
-
-Commits after `v1.11.1` through `1993cb2` are documented in `CHANGELOG.md` `[Unreleased]`:
-
-- Offline sync slices 2–4 (#344, #346, #349)
-- CI: Node 24 job-level env (#343), SLSA isolation + PR parity (#350), Scorecard publish fix (#351)
-- Review quiescence policy (#348), release checkout fix (#347), test coverage (#345)
-
-Cut **`v1.11.2`** (or next patch) only when the maintainer dispatches `release.yml` or tags manually.
-
 | `v1.11.0` | 2026-07-10 | `—` | Command Palette registry (ADR-028), Settings/Help perfection, page modularization, deep-audit remediation (F-01–F-07, ADR-029 local-LLM deferral), toolchain + Pages-deploy hardening (#270–#313) |
 | `v1.10.0` | 2026-07-04 | `7469389` | Post-audit phases 1–8, WS schema hardening, Helm `WS_ORIGINS`, Pages deploy prune, security wave (#236–#268, #269) |
 | `v1.9.0` | 2026-07-02 | `4138235` | Read-only banner, `ControlPanel` removal, `ENERGY_UPDATE` Zod validation |
@@ -38,6 +27,17 @@ Cut **`v1.11.2`** (or next patch) only when the maintainer dispatches `release.y
 | `v1.2.0` | 2026-06-30 | — | CI hardening, safety documentation |
 | `v1.1.0` | 2026-04-25 | — | Mobile, tariffs, toolchain |
 | `v1.0.0` | — | — | Initial public release |
+
+### Unreleased on `main` (post-tag, 2026-09-02)
+
+Commits after `v1.11.1` through `1993cb2` are documented in `CHANGELOG.md` `[Unreleased]`:
+
+- Post-v1.11.1 campaign closeout docs (#342)
+- Offline sync slices 2–4 (#344, #346, #349)
+- CI: Node 24 job-level env (#343), SLSA isolation + PR parity (#350), Scorecard publish fix (#351)
+- Review quiescence policy (#348), release checkout fix (#347), test coverage (#345)
+
+Cut **`v1.11.2`** (or next patch) only when the maintainer dispatches `release.yml` or tags manually.
 
 ---
 
