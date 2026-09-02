@@ -1,10 +1,10 @@
 # Feature Status — Nexus-HEMS-Dash
 
-**Version:** 1.11.1 shipped (2026-09-01); v1.11.0 baseline (2026-07-10)  
-**Last updated:** 2026-09-01 (Sep 2026 campaign closeout — demo chrome, SEC-11, ops housekeeping)  
+**Version:** 1.11.1 tagged (2026-09-01); `main` @ `1993cb2` unreleased (+10 commits after tag)  
+**Last updated:** 2026-09-02 (post-tag truth-sync — offline sync slices 2–4, CI SLSA/Scorecard hardening)  
 **Purpose:** Single source of truth for what is actually implemented, partial, or planned. Use this file to keep README/marketing claims synchronized with the codebase.
 
-> **Operational note (2026-09-01):** After a **53-day product freeze** (last v1.11.0 commit 2026-07-10), six campaign PRs landed on `main` the same day (#329–#336): CI pins, demo chrome honesty (`resolveConnectionPresentation`), docs truth-sync, E-STOP test, SEC-11 `NODE_ENV` fail-closed, and high-severity dependency/CVE remediation. Stale Dependabot pin PRs #323–#327 are closed (superseded by #329). See `docs/Campaign-Handoff-2026-09.md`.
+> **Operational note (2026-09-02):** Tag `v1.11.1` (`1716a42`) covers the Sep 2026 post-freeze campaign (#329–#341). **`main` is ahead** with offline sync slices 2–4 (#344–#349), CI hardening (#350–#351), and review-quiescence policy (#348). Do not equate the live Pages demo version footer (`v1.11.1`) with current `main` HEAD. See `docs/Campaign-Handoff-2026-09.md` and `docs/Release-History.md`.
 >
 > **Rule:** Any PR that changes a feature's implementation status must update this file and the relevant docs before merging.
 

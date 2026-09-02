@@ -1,8 +1,8 @@
 # Campaign Handoff — Post-v1.11.0 Freeze (Sep 2026)
 
-> **Status:** Complete (2026-09-01)  
-> **Snapshot:** `main` @ `1716a42` — `v1.11.1` tagged and released  
-> **Purpose:** Closeout record for the Sep 2026 operational campaign after a 53-day product freeze, plus the post-freeze master-prompt remediation wave.
+> **Status:** Phase 1–3 complete on `main`; release line deferred (HEAD ahead of tag)  
+> **Snapshot:** `main` @ `1993cb2` — tag `v1.11.1` @ `1716a42` (2026-09-01)  
+> **Purpose:** Closeout record for the Sep 2026 operational campaign after a 53-day product freeze, plus the post-freeze master-prompt remediation and CI/offline-sync waves.
 
 ---
 
@@ -29,7 +29,7 @@ auth fail-open, and high-severity dependency/CVE findings.
 
 ---
 
-## Phase 2 — Master-prompt remediation (merged 2026-09-01)
+## Phase 2 — Master-prompt remediation (merged 2026-09-01, in tag `v1.11.1`)
 
 | PR | Scope |
 | --- | --- |
@@ -39,6 +39,25 @@ auth fail-open, and high-severity dependency/CVE findings.
 | [#341](https://github.com/qnbs/Nexus-HEMS-Dash/pull/341) | Offline command idempotency slice 1 (Modbus write + mock WS dedupe) |
 
 **Release:** [`v1.11.1`](https://github.com/qnbs/Nexus-HEMS-Dash/releases/tag/v1.11.1) tagged at `1716a42` (2026-09-01).
+
+---
+
+## Phase 3 — Post-tag work on `main` (unreleased as of 2026-09-02)
+
+| PR | Scope |
+| --- | --- |
+| [#342](https://github.com/qnbs/Nexus-HEMS-Dash/pull/342) | Post-v1.11.1 campaign closeout docs |
+| [#343](https://github.com/qnbs/Nexus-HEMS-Dash/pull/343) | Node 24 Actions runner on remaining workflows + coverage restore |
+| [#344](https://github.com/qnbs/Nexus-HEMS-Dash/pull/344) | Offline sync slice 2 — `/api/sync/version`, JWT/TTL replay guards |
+| [#345](https://github.com/qnbs/Nexus-HEMS-Dash/pull/345) | Tests: CO2 PDF export + ai-keys error paths |
+| [#346](https://github.com/qnbs/Nexus-HEMS-Dash/pull/346) | Offline sync slice 3 — conflict banner + resolution UI |
+| [#347](https://github.com/qnbs/Nexus-HEMS-Dash/pull/347) | Release checkout uses `GITHUB_TOKEN`; CodeAnt still pending |
+| [#348](https://github.com/qnbs/Nexus-HEMS-Dash/pull/348) | Mandatory PR review quiescence policy |
+| [#349](https://github.com/qnbs/Nexus-HEMS-Dash/pull/349) | Offline sync slice 4 — `/api/sync/diff`, settings PUT, server-wins + E2E |
+| [#350](https://github.com/qnbs/Nexus-HEMS-Dash/pull/350) | Isolate SLSA attestation; PR/main parity; retry 403s |
+| [#351](https://github.com/qnbs/Nexus-HEMS-Dash/pull/351) | Scorecard job must not define `env` when `publish_results` is on |
+
+**HEAD:** `1993cb2` — **10 commits ahead of `v1.11.1`**. Do not claim `v1.11.1 == main`.
 
 ---
 
@@ -53,14 +72,15 @@ auth fail-open, and high-severity dependency/CVE findings.
 
 ## Verification
 
-CI on `main` after Phase 2: lint, type-check, unit tests (coverage ≥72% branches), build, smoke-prod, E2E, fuzz, Lighthouse — all green on PRs #340–#341.
+CI on `main` after Phase 3: lint, type-check, unit tests (coverage ≥72% branches), build, smoke-prod, SLSA attestation (isolated job), E2E, fuzz, Scorecard publish — all green on `1993cb2`.
 
 ---
 
-## Follow-up (not in this campaign)
+## What remains (not in Phases 1–3)
 
-- Remaining debt in `docs/Technical-Debt-Registry.md` (non-OPS items).
-- Node 20 deprecation warnings on remaining GitHub Actions workflows (informational → `node24-runners` mode).
-- Protocol depth increments (Matter, HA, Zigbee, OpenADR, SG-Ready) — one protocol per PR.
-- SUPPLY-02 Grype exception review — due 2026-09-29.
-- Full offline sync (conflict UI, `lastSyncVersion`, TTL) — post idempotency slice 1.
+- **Docs truth-sync** — living docs still reference mid-afternoon 2026-09-01 snapshots; Stream A campaign PR aligns CHANGELOG, handoff, FEATURE_STATUS, Release-History.
+- **Demo i18n + tariff formatter** — Pages demo DE/EN split and inconsistent ct vs €/kWh (Stream B).
+- **Offline sync production residuals** — durable server version store, multi-instance idempotency, expanded write-route coverage, Helm replica warning (Stream C).
+- **SUPPLY-02** — Grype exception review due **2026-09-29**.
+- **PRF-02 / PRF-06** — CodeAnt GitHub App install + `GH_TOKEN` rotation (maintainer-only).
+- **Protocol depth** — Matter, HA, Zigbee, OpenADR, SG Ready — one capability per PR (Stream F).

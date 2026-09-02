@@ -22,32 +22,17 @@ only what is catalogued below.
 
 ---
 
-## ✅ ADOPT — genuinely novel, not yet in the app
+## ✅ ADOPTED — landed on `main`
 
-### 1. Production-build smoke test  *(recommended — safe, high value)*
+### 1. Production-build smoke test  *(merged — PR #160 / CI `smoke:prod`)*
 
-A lightweight post-build sanity check: start `vite preview` against the built
-`dist/`, load it in headless Chromium, and fail if React does not mount (`#root`
-empty) or any uncaught runtime/console error occurs. Catches "build succeeds but app
-white-screens in production" — a class of failure the unit suite cannot see.
+Adopted on `main`:
 
-Files / wiring on wip:
-- `apps/web/scripts/smoke-prod-build.mjs` — the script (Playwright `chromium`, `vite
-  preview --strictPort` on port 4174, base `/Nexus-HEMS-Dash/`, networkidle + mount
-  assertion; optional static fallback server for agents without the vite CLI).
-- `apps/web/package.json` → add script `"smoke:prod": "node scripts/smoke-prod-build.mjs"`.
-- `.github/workflows/ci.yml` → step **"Smoke-test production build (mounts, no
-  runtime crash)"** running `pnpm --filter @nexus-hems/web smoke:prod` after the web
-  build job (with `VITE_E2E_TESTING=true` to match CI conditions).
+- `apps/web/scripts/smoke-prod-build.mjs`
+- `apps/web/package.json` → `"smoke:prod": "node scripts/smoke-prod-build.mjs"`
+- `.github/workflows/ci.yml` → **"Smoke-test production build"** step after web build
 
-Adoption notes:
-- `main` has **no** equivalent prod-build smoke gate today (verified — only the word
-  "smoke" appears in `Skeleton.tsx`/copilot docs).
-- Take the script **as-is**; do **not** import any other change from wip's
-  `package.json` diff — those are dependency *down*grades from the stale base
-  (Capacitor 8→7, Sentry 10→9, lucide 1.22→0.546, vite 8.0.16→8.0.11, version
-  1.3.0→1.2.0) and must be ignored.
-- Delivery: small PR, port-isolate from the existing E2E (4174 ≠ 4173), CI-first.
+No further action. This item is closed.
 
 ### 2. `shared-types` compiled build output  *(DECLINED — 2026-07-01)*
 

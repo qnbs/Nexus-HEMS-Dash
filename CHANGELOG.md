@@ -9,18 +9,33 @@ Release notes are maintained here and published via [semantic-release](https://g
 
 ## [Unreleased]
 
-### CI / Toolchain
+> **HEAD:** `1993cb2` (10 commits ahead of tag `v1.11.1` @ `1716a42`). Not yet released — cut `v1.11.2` only when the maintainer dispatches `release.yml` or tags manually (ADR-015).
 
-- Enable `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24` on remaining auxiliary workflows (Scorecard, CodeRabbit, deploy-recovery, stale, Renovate, PR labeler, PR feedback summary).
+### Added
+
+- **Offline sync slice 2** — `GET /api/sync/version`, JWT liveness guard before offline replay, 5-minute hardware-command TTL expiry, client `sync-client` conflict probe (#344).
+- **Offline sync slice 3** — conflict banner, resolution modal (keep local / accept server), deferred replay until resolved (#346).
+- **Offline sync slice 4** — `GET /api/sync/diff?since=`, `PUT /api/settings` with idempotency, server-wins reconciliation, Playwright conflict E2E (#349).
+
+### Changed
+
+- **CI / Node 24** — `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24` on remaining auxiliary workflows at job level (#343).
+- **Review policy** — mandatory PR review quiescence before merge (#348).
+- **Release workflow** — checkout uses default `GITHUB_TOKEN`; `GH_TOKEN` only for semantic-release push (#347).
+
+### Fixed
+
+- **SLSA attestation** — isolated into dedicated `slsa-attest` job with 3 retries; runs on PRs to `main` for PR/main parity; E2E no longer skipped when SLSA flakes (#350).
+- **OpenSSF Scorecard** — removed job-level `env` from `scorecard.yml` so `publish_results` succeeds on `main` push (#351).
 
 ### Tests
 
-- Restore web branch-coverage floor (≥72%) with adapter-mode, header KPI, and Command Hub disclosure tests after #340 chrome simplification.
+- CO2 report PDF export, `ai-keys`, and auth-token error paths (#345).
+- Web branch-coverage floor restored (≥72%) with adapter-mode, header KPI, and Command Hub disclosure tests after #340 chrome simplification (#343).
 
-### Security
+### Docs
 
-- **Offline command idempotency (slice 2)** — `GET /api/sync/version`, JWT liveness guard before offline replay, 5-minute hardware-command TTL expiry, client `sync-client` conflict probe.
-- **Offline sync conflict UI (slice 3)** — conflict banner, resolution modal (keep local / accept server), deferred replay until resolved.
+- Post-v1.11.1 campaign closeout and release tag sync (#342).
 
 ## [1.11.1] - 2026-09-01
 
