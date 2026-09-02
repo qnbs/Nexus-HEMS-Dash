@@ -2,9 +2,7 @@ import i18n from 'i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 import { initReactI18next } from 'react-i18next';
 
-// Import the fallback locale statically — this ensures translations are
-// available synchronously at init time, preventing "missing key" flashes
-// in the sidebar, header, and every component that renders on first paint.
+// Fallback locale is bundled statically so German is always available synchronously.
 import { de } from './locales/de';
 
 // i18next Inspector Mode — activate via localStorage:
@@ -14,12 +12,52 @@ import { de } from './locales/de';
 const inspectorMode =
   typeof window !== 'undefined' && window.localStorage.getItem('i18n-inspector') === 'true';
 
-void i18n
+function resolveActiveLanguage(): 'de' | 'en' {
+  if (typeof window !== 'undefined') {
+    const stored = window.localStorage.getItem('nexus-hems-language');
+    if (stored?.startsWith('en')) return 'en';
+    if (stored?.startsWith('de')) return 'de';
+  }
+  const lang = i18n.resolvedLanguage ?? i18n.language ?? 'de';
+  return lang.startsWith('en') ? 'en' : 'de';
+}
+
+async function ensureLocaleBundle(lang: 'de' | 'en'): Promise<void> {
+  if (i18n.hasResourceBundle(lang, 'translation')) return;
+
+  if (lang === 'de') {
+    i18n.addResourceBundle(
+      'de',
+      'translation',
+      de as unknown as Record<string, unknown>,
+      true,
+      true,
+    );
+    return;
+  }
+
+  try {
+    const { en } = await import('./locales/en');
+    i18n.addResourceBundle(
+      'en',
+      'translation',
+      en as unknown as Record<string, unknown>,
+      true,
+      true,
+    );
+  } catch (error: unknown) {
+    console.error(
+      '[i18n] failed to load English locale bundle; German fallback remains active',
+      error,
+    );
+  }
+}
+
+/** Resolves when the detected active locale is loaded — gate first paint in `main.tsx`. */
+export const i18nReady = i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
-    // Fallback locale is bundled statically; the secondary locale is
-    // lazy-loaded below so that `en` stays out of the critical path.
     resources: {
       de: { translation: de as unknown as Record<string, unknown> },
     },
@@ -52,35 +90,14 @@ void i18n
     }),
   })
   .then(async () => {
-    const lang = i18n.resolvedLanguage ?? i18n.language ?? 'de';
+    const active = resolveActiveLanguage();
+    const other = active === 'de' ? 'en' : 'de';
+    await Promise.all([ensureLocaleBundle(active), ensureLocaleBundle(other)]);
 
-    // If the detected language is English, load it now
-    if (lang === 'en') {
-      const { en } = await import('./locales/en');
-      i18n.addResourceBundle(
-        'en',
-        'translation',
-        en as unknown as Record<string, unknown>,
-        true,
-        true,
-      );
-    }
-
-    // Pre-load the other locale in the background so switching is instant
-    const other = lang === 'de' ? 'en' : 'de';
-    if (!i18n.hasResourceBundle(other, 'translation')) {
-      if (other === 'en') {
-        import('./locales/en').then(({ en }) => {
-          i18n.addResourceBundle(
-            'en',
-            'translation',
-            en as unknown as Record<string, unknown>,
-            true,
-            true,
-          );
-        });
-      }
-    }
+    i18n.on('languageChanging', async (lng) => {
+      const lang = lng.startsWith('en') ? 'en' : 'de';
+      await ensureLocaleBundle(lang);
+    });
   });
 
 export default i18n;

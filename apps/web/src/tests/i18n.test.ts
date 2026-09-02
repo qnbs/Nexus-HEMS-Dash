@@ -1,14 +1,11 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import i18n from '../i18n';
+import i18n, { i18nReady } from '../i18n';
 import { de } from '../locales/de';
 import { en } from '../locales/en';
 
 describe('i18n Configuration', () => {
   beforeAll(async () => {
-    // Wait for i18n to finish initializing
-    if (!i18n.isInitialized) {
-      await new Promise<void>((resolve) => i18n.on('initialized', () => resolve()));
-    }
+    await i18nReady;
   });
 
   it('should initialize with German as fallback', () => {
@@ -18,6 +15,14 @@ describe('i18n Configuration', () => {
   it('should support de and en', () => {
     expect(i18n.options.supportedLngs).toContain('de');
     expect(i18n.options.supportedLngs).toContain('en');
+  });
+
+  it('should load both locale bundles before first render via i18nReady', async () => {
+    await i18nReady;
+    expect(i18n.hasResourceBundle('de', 'translation')).toBe(true);
+    expect(i18n.hasResourceBundle('en', 'translation')).toBe(true);
+    await i18n.changeLanguage('en');
+    expect(i18n.t('commandHub.title', { lng: 'en' })).toBe('Command Hub');
   });
 
   it('should translate a known key in German', async () => {

@@ -9,7 +9,7 @@ Release notes are maintained here and published via [semantic-release](https://g
 
 ## [Unreleased]
 
-> **HEAD:** `1993cb2` (10 commits ahead of tag `v1.11.1` @ `1716a42`). Not yet released — cut `v1.11.2` only when the maintainer dispatches `release.yml` or tags manually (ADR-015).
+> **HEAD:** Unreleased on `main` (post-#352 docs truth-sync; includes this PR). Not yet released — cut `v1.11.2` only when the maintainer dispatches `release.yml` or tags manually (ADR-015).
 
 ### Added
 
@@ -28,6 +28,9 @@ Release notes are maintained here and published via [semantic-release](https://g
 ### Removed
 
 ### Fixed
+
+- **Pages demo i18n** — gate first paint on `i18nReady` so the active locale loads before React mounts; prevents mixed-language chrome without bloating the app entry chunk.
+- **Tariff formatter** — shared `formatTariffPrice` for header pill (compact ct/kWh), Command Hub price card, and Live Energy top bar (full €/kWh).
 
 ### Security
 
