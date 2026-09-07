@@ -40,7 +40,7 @@ jobs:
 
       - name: Self-hosted Renovate
         if: env.RENOVATE_TOKEN != ''
-        uses: renovatebot/github-action@693b9ef15eec82123529a37c782242f091365961 # v46.1.14
+        uses: renovatebot/github-action@39b914146caeff8cd512e61c8992f1d5913af85c # v46.2.5
         with:
           configurationFile: .renovaterc.json
           token: ${{ secrets.RENOVATE_TOKEN }}
