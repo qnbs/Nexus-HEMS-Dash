@@ -315,7 +315,7 @@ export async function claimHttpIdempotency(
 /** Drop a pending claim when the handler finishes with a non-success response. */
 export async function abandonHttpIdempotency(scopeKey: string, fingerprint: string): Promise<void> {
   const existing = await getIdempotencyRecord(scopeKey);
-  if (!existing || existing.state !== 'pending' || existing.fingerprint !== fingerprint) {
+  if (existing?.state !== 'pending' || existing.fingerprint !== fingerprint) {
     return;
   }
 
