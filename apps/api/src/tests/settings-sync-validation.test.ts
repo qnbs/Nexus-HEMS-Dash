@@ -22,4 +22,21 @@ describe('validateSettingsSyncPatch', () => {
     const result = validateSettingsSyncPatch({ 'ext.labFlag': true });
     expect(result.ok).toBe(true);
   });
+
+  it('rejects prototype pollution keys', () => {
+    const result = validateSettingsSyncPatch({ __proto__: { polluted: true } });
+    expect(result.ok).toBe(false);
+  });
+
+  it('strips blocked nested keys from systemConfig', () => {
+    const result = validateSettingsSyncPatch({
+      systemConfig: { presetId: 'home', influxToken: 'must-not-persist' },
+    });
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      const cfg = result.patch.systemConfig as Record<string, unknown>;
+      expect(cfg.presetId).toBe('home');
+      expect(cfg.influxToken).toBeUndefined();
+    }
+  });
 });

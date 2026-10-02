@@ -79,6 +79,8 @@ export const DANGER_COMMANDS = new Set<AdapterCommandType>([
   'STOP_CHARGING',
   'SET_HEAT_PUMP_MODE',
   'SET_HEAT_PUMP_POWER',
+  'SET_EV_MODE',
+  'SET_EV_PHASES',
 ]);
 
 // ─── Rate Limiter ────────────────────────────────────────────────────

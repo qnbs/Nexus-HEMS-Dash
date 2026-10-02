@@ -105,6 +105,9 @@ export function validateSettingsSyncPatch(
 
   const patch: Record<string, unknown> = {};
   for (const key of keys) {
+    if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
+      return { ok: false, error: `Unknown settings key: ${key}` };
+    }
     if (SETTINGS_SYNC_BLOCKED_KEYS.has(key)) {
       return { ok: false, error: `Settings key "${key}" cannot be synced via API` };
     }
@@ -127,7 +130,15 @@ export function validateSettingsSyncPatch(
     if (!parsed.success) {
       return { ok: false, error: `Invalid value for settings key "${key}"` };
     }
-    patch[key] = parsed.data;
+    if (key === 'systemConfig' && parsed.data && typeof parsed.data === 'object') {
+      const cleaned = { ...(parsed.data as Record<string, unknown>) };
+      for (const blocked of SETTINGS_SYNC_BLOCKED_KEYS) {
+        delete cleaned[blocked];
+      }
+      patch[key] = cleaned;
+    } else {
+      patch[key] = parsed.data;
+    }
   }
   return { ok: true, patch };
 }

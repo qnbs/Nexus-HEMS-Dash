@@ -312,6 +312,21 @@ export async function claimHttpIdempotency(
   return { kind: 'replay', statusCode: existing.statusCode, body: existing.body };
 }
 
+/** Drop a pending claim when the handler finishes with a non-success response. */
+export async function abandonHttpIdempotency(scopeKey: string, fingerprint: string): Promise<void> {
+  const existing = await getIdempotencyRecord(scopeKey);
+  if (!existing || existing.state !== 'pending' || existing.fingerprint !== fingerprint) {
+    return;
+  }
+
+  const redis = await redisClient();
+  if (redis) {
+    await redis.del(`${IDEMPOTENCY_HTTP_PREFIX}${scopeKey}`);
+    return;
+  }
+  memoryIdempotency.delete(scopeKey);
+}
+
 export async function completeHttpIdempotency(
   scopeKey: string,
   fingerprint: string,

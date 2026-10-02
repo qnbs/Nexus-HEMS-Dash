@@ -213,7 +213,8 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
       });
 
       wss.on('connection', (ws, req) => {
-        const pathParts = (req.url ?? '/').split('/').filter(Boolean);
+        const pathOnly = (req.url ?? '/').split('?')[0] ?? '/';
+        const pathParts = pathOnly.split('/').filter(Boolean);
         const chargePointId = pathParts.at(-1) ?? 'unknown-cp';
         if (resolveOcppStationAdmission(chargePointId) === 'rejected') {
           ws.close(1008, 'Charge point not allowlisted');
@@ -233,7 +234,9 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
           try {
             const raw =
               typeof data === 'string' ? data : Buffer.from(data as Buffer).toString('utf8');
-            if (raw.length > OCPP_MAX_WS_MESSAGE_BYTES) {
+            const byteLength =
+              typeof data === 'string' ? Buffer.byteLength(data, 'utf8') : (data as Buffer).length;
+            if (byteLength > OCPP_MAX_WS_MESSAGE_BYTES) {
               ws.close(1009, 'OCPP message too large');
               return;
             }

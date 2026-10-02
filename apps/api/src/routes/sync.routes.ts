@@ -78,7 +78,8 @@ export function createSyncRoutes(): Router {
             error.message.startsWith('Unknown settings key') ||
             error.message.startsWith('Invalid value') ||
             error.message.startsWith('Settings key') ||
-            error.message.startsWith('Settings patch')
+            error.message.startsWith('Settings patch') ||
+            error.message.startsWith('Extension key')
           ) {
             res.status(400).json({ error: error.message });
             return;

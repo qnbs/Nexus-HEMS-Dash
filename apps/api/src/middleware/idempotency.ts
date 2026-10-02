@@ -5,6 +5,7 @@
 
 import type { NextFunction, Request, Response } from 'express';
 import {
+  abandonHttpIdempotency,
   claimHttpIdempotency,
   completeHttpIdempotency,
   getIdempotencyRecord,
@@ -85,6 +86,12 @@ export async function idempotencyMiddleware(
     }
     return originalJson(body);
   };
+
+  res.on('finish', () => {
+    if (res.statusCode < 200 || res.statusCode >= 300) {
+      void abandonHttpIdempotency(scopeKey, fingerprint);
+    }
+  });
 
   next();
 }

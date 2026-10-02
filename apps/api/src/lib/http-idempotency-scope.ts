@@ -3,10 +3,24 @@ import type { Request } from 'express';
 
 const MUTATING_METHODS = new Set(['POST', 'PUT', 'PATCH']);
 
+function stableJsonStringify(value: unknown): string {
+  if (value === null || typeof value !== 'object') {
+    return JSON.stringify(value);
+  }
+  if (Array.isArray(value)) {
+    return `[${value.map((entry) => stableJsonStringify(entry)).join(',')}]`;
+  }
+  const record = value as Record<string, unknown>;
+  const keys = Object.keys(record).sort();
+  return `{${keys
+    .map((key) => `${JSON.stringify(key)}:${stableJsonStringify(record[key])}`)
+    .join(',')}}`;
+}
+
 /** Stable JSON serialization for request-body fingerprinting. */
 export function canonicalBodyFingerprint(body: unknown): string {
   return createHash('sha256')
-    .update(JSON.stringify(body ?? null))
+    .update(stableJsonStringify(body ?? null))
     .digest('hex');
 }
 

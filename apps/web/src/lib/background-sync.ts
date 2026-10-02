@@ -4,6 +4,7 @@
  * Features: exponential backoff, max retries, online/offline detection
  */
 
+import type { OfflineReplayEnvelope } from '@nexus-hems/shared-types';
 import { getAuthHeader, isAuthTokenValid } from './auth-token';
 import {
   cleanupCompletedActions,
@@ -46,6 +47,24 @@ function isCommandExpired(action: OfflineAction): boolean {
 
 function getActionRetryCount(action: OfflineAction): number {
   return action.retries;
+}
+
+/** Backfill envelope for hardware actions queued before envelope support (upgrade path). */
+function resolveHardwareReplayEnvelope(action: OfflineAction): OfflineReplayEnvelope {
+  if (action.replayEnvelope) {
+    return action.replayEnvelope;
+  }
+  const idempotencyKey = action.idempotencyKey?.trim();
+  if (!idempotencyKey) {
+    throw new Error(`Missing idempotency key for ${action.type} — re-queue the action`);
+  }
+  const createdAt = action.timestamp;
+  return {
+    commandId: crypto.randomUUID(),
+    idempotencyKey,
+    createdAt,
+    expiresAt: createdAt + OFFLINE_HARDWARE_COMMAND_TTL_MS,
+  };
 }
 
 type ActionProcessResult = 'completed' | 'skipped' | 'failed';
@@ -289,9 +308,9 @@ class BackgroundSyncService {
       case 'ev-control':
       case 'hp-control':
       case 'battery-control': {
-        const envelope = action.replayEnvelope;
-        if (!envelope) {
-          throw new Error(`Missing replay envelope for ${action.type} — re-queue the action`);
+        const envelope = resolveHardwareReplayEnvelope(action);
+        if (Date.now() >= envelope.expiresAt) {
+          throw new Error(`Offline ${action.type} expired before replay`);
         }
         const response = await fetch(`${baseUrl}/api/commands/replay`, {
           method: 'POST',

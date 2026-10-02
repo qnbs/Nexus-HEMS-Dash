@@ -22,6 +22,12 @@ describe('validateOfflineReplayEnvelope', () => {
     if (!result.ok) expect(result.status).toBe(410);
   });
 
+  it('rejects envelopes at exact expiresAt boundary', () => {
+    const result = validateOfflineReplayEnvelope(base, base.expiresAt);
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.status).toBe(410);
+  });
+
   it('rejects createdAt too far in the future', () => {
     const result = validateOfflineReplayEnvelope(base, base.createdAt - 120_000);
     expect(result.ok).toBe(false);

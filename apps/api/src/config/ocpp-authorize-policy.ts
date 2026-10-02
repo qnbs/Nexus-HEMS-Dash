@@ -14,7 +14,7 @@ export { extractOcppIdToken };
 
 function readAllowlist(env: NodeJS.ProcessEnv): Set<string> {
   return new Set(
-    (env.OCPP_AUTHORIZE_ID_TOKENS ?? process.env.OCPP_AUTHORIZE_ID_TOKENS ?? '')
+    (env.OCPP_AUTHORIZE_ID_TOKENS ?? '')
       .split(',')
       .map((t) => t.trim())
       .filter(Boolean),

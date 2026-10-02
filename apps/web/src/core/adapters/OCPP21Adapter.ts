@@ -123,6 +123,19 @@ const DEFAULT_RECONNECT = {
 /** Default RPC call timeout (30s) */
 const CALL_TIMEOUT_MS = 30_000;
 
+function parseAuthorizeIdTokens(input?: string | string[]): ReadonlySet<string> {
+  if (!input) return new Set();
+  if (Array.isArray(input)) {
+    return new Set(input.map((token) => token.trim()).filter(Boolean));
+  }
+  return new Set(
+    input
+      .split(',')
+      .map((token) => token.trim())
+      .filter(Boolean),
+  );
+}
+
 export interface OCPPAdapterConfig extends Partial<AdapterConnectionConfig> {
   /** OCPP Security Profile (0-3) */
   securityProfile?: OCPPSecurityProfile;
@@ -136,6 +149,8 @@ export interface OCPPAdapterConfig extends Partial<AdapterConnectionConfig> {
   plugType?: EVPlugType;
   /** CRL/OCSP revocation check mode (hook; full OCSP via API proxy later) */
   revocationCheck?: OcppRevocationCheck;
+  /** RFID/idTokens accepted on inbound Authorize in live mode (comma-separated or array). */
+  authorizeIdTokens?: string | string[];
 }
 
 export class OCPP21Adapter extends BaseAdapter {
@@ -151,6 +166,7 @@ export class OCPP21Adapter extends BaseAdapter {
   readonly securityProfile: OCPPSecurityProfile;
   private readonly revocationCheck: OcppRevocationCheck;
   private iso15118Enabled: boolean;
+  private readonly authorizeIdTokenSet: ReadonlySet<string>;
 
   private charger: ChargerState = {
     connectorStatus: 'Available',
@@ -185,6 +201,7 @@ export class OCPP21Adapter extends BaseAdapter {
     this.securityProfile = config?.securityProfile ?? 2;
     this.revocationCheck = config?.revocationCheck ?? 'off';
     this.iso15118Enabled = config?.iso15118 ?? false;
+    this.authorizeIdTokenSet = parseAuthorizeIdTokens(config?.authorizeIdTokens);
     this.charger.v2xCapable = config?.v2xCapable ?? false;
     this.charger.plugType = config?.plugType ?? 'IEC_62196_T2_COMBO';
   }
@@ -443,7 +460,7 @@ export class OCPP21Adapter extends BaseAdapter {
         break;
       case 'Authorize': {
         const mode = resolveFrontendAdapterMode();
-        const decision = resolveOcppAuthorizeDecision(mode, payload, new Set());
+        const decision = resolveOcppAuthorizeDecision(mode, payload, this.authorizeIdTokenSet);
         this.sendCallResult(messageId, {
           idTokenInfo: { status: idTokenInfoStatus(decision) },
         });

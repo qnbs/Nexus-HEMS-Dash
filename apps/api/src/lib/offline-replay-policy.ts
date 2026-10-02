@@ -32,7 +32,7 @@ export function validateOfflineReplayEnvelope(
     };
   }
 
-  if (nowMs > expiresAt) {
+  if (nowMs >= expiresAt) {
     return { ok: false, status: 410, error: 'Offline command expired — replay rejected' };
   }
 

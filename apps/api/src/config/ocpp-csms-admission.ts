@@ -5,7 +5,7 @@ export const OCPP_MAX_WS_MESSAGE_BYTES = 64 * 1024;
 
 function readStationAllowlist(env: NodeJS.ProcessEnv): Set<string> {
   return new Set(
-    (env.OCPP_CSMS_STATION_ALLOWLIST ?? process.env.OCPP_CSMS_STATION_ALLOWLIST ?? '')
+    (env.OCPP_CSMS_STATION_ALLOWLIST ?? '')
       .split(',')
       .map((s) => s.trim())
       .filter(Boolean),

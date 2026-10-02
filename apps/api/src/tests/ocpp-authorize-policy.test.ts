@@ -13,7 +13,7 @@ describe('resolveInboundOcppAuthorize', () => {
   it('blocks unknown tokens in live mode without allowlist', () => {
     const decision = resolveInboundOcppAuthorize(
       { idToken: { idToken: 'secret-tag', type: 'Central' } },
-      { ADAPTER_MODE: 'live', ALLOW_LIVE_HARDWARE: 'true' },
+      { ADAPTER_MODE: 'live', ALLOW_LIVE_HARDWARE: 'true', OCPP_AUTHORIZE_ID_TOKENS: '' },
     );
     expect(decision).toBe('Blocked');
   });

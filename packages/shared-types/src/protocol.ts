@@ -231,7 +231,11 @@ export const EvCurrentValueSchema = z
 export const OfflineReplayEnvelopeSchema = z
   .object({
     commandId: z.string().uuid(),
-    idempotencyKey: z.string().min(1).max(128),
+    idempotencyKey: z
+      .string()
+      .trim()
+      .min(1, { message: 'idempotencyKey must not be empty' })
+      .max(128),
     createdAt: z.number().int().positive(),
     expiresAt: z.number().int().positive(),
     clientSyncGeneration: z.number().int().nonnegative().optional(),
