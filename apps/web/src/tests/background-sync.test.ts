@@ -41,8 +41,23 @@ type PendingAction = {
   retries: number;
   status: string;
   idempotencyKey?: string;
+  replayEnvelope?: {
+    commandId: string;
+    idempotencyKey: string;
+    createdAt: number;
+    expiresAt: number;
+  };
   retryCount?: number;
 };
+
+function hardwareReplayEnvelope(idempotencyKey: string, createdAt = Date.now()) {
+  return {
+    commandId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+    idempotencyKey,
+    createdAt,
+    expiresAt: createdAt + 300_000,
+  };
+}
 
 describe('BackgroundSyncService', () => {
   let onlineHandler: (() => void) | null = null;
@@ -112,15 +127,22 @@ describe('BackgroundSyncService', () => {
   it('attaches Authorization header when auth token is present', async () => {
     getAuthHeader.mockReturnValue({ Authorization: 'Bearer sync-jwt' });
     const { getPendingActions, updateActionStatus } = await import('../lib/db');
+    const ts = Date.now();
     (getPendingActions as ReturnType<typeof vi.fn>).mockResolvedValueOnce([
       {
         id: 1,
         type: 'battery-control',
         payload: { powerW: 2000 },
-        timestamp: Date.now(),
+        timestamp: ts,
         retries: 0,
         status: 'pending',
         idempotencyKey: 'battery-1',
+        replayEnvelope: {
+          commandId: '11111111-1111-4111-8111-111111111111',
+          idempotencyKey: 'battery-1',
+          createdAt: ts,
+          expiresAt: ts + 300_000,
+        },
       },
     ]);
 
@@ -137,6 +159,12 @@ describe('BackgroundSyncService', () => {
         body: JSON.stringify({
           type: 'battery-control',
           payload: { powerW: 2000 },
+          envelope: {
+            commandId: '11111111-1111-4111-8111-111111111111',
+            idempotencyKey: 'battery-1',
+            createdAt: ts,
+            expiresAt: ts + 300_000,
+          },
         }),
       }),
     );
@@ -191,22 +219,27 @@ describe('BackgroundSyncService', () => {
     getAuthHeader.mockReturnValue({ Authorization: 'Bearer sync-jwt' });
     const { getPendingActions, updateActionStatus } = await import('../lib/db');
 
+    const ts = Date.now();
     const actions: PendingAction[] = [
       {
         id: 11,
         type: 'ev-control',
         payload: { currentA: 16 },
-        timestamp: Date.now(),
+        timestamp: ts,
         retries: 0,
         status: 'pending',
+        idempotencyKey: 'ev-11',
+        replayEnvelope: hardwareReplayEnvelope('ev-11', ts),
       },
       {
         id: 12,
         type: 'hp-control',
         payload: { mode: 'heat' },
-        timestamp: Date.now(),
+        timestamp: ts,
         retries: 0,
         status: 'pending',
+        idempotencyKey: 'hp-12',
+        replayEnvelope: hardwareReplayEnvelope('hp-12', ts),
       },
       {
         id: 13,
@@ -412,6 +445,8 @@ describe('BackgroundSyncService', () => {
         timestamp: Date.now(),
         retries: 0,
         status: 'pending',
+        idempotencyKey: 'bat-32',
+        replayEnvelope: hardwareReplayEnvelope('bat-32'),
       },
     ]);
 

@@ -75,6 +75,14 @@ export interface OfflineAction {
    * Format: `<type>-<timestamp>-<random6hex>`
    */
   idempotencyKey?: string | undefined;
+  /** Server-validated replay envelope for hardware control actions (audit wave 2). */
+  replayEnvelope?: {
+    commandId: string;
+    idempotencyKey: string;
+    createdAt: number;
+    expiresAt: number;
+    clientSyncGeneration?: number;
+  };
 }
 
 /**
@@ -618,13 +626,25 @@ export async function queueOfflineAction(
   const rand = Math.floor(Math.random() * 0xffffff)
     .toString(16)
     .padStart(6, '0');
+  const idempotencyKey = `${type}-${ts}-${rand}`;
+  const isHardware = type === 'ev-control' || type === 'hp-control' || type === 'battery-control';
+  const replayEnvelope = isHardware
+    ? {
+        commandId: crypto.randomUUID(),
+        idempotencyKey,
+        createdAt: ts,
+        expiresAt: ts + 5 * 60 * 1000,
+      }
+    : undefined;
+
   const id = await nexusDb.offlineActions.add({
     type,
     payload,
     timestamp: ts,
     retries: 0,
     status: 'pending',
-    idempotencyKey: `${type}-${ts}-${rand}`,
+    idempotencyKey,
+    ...(replayEnvelope ? { replayEnvelope } : {}),
   });
   return id as number;
 }

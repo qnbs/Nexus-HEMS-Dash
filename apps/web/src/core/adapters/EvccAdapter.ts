@@ -223,12 +223,12 @@ export class EvccAdapter extends BaseAdapter {
         return true;
       }
       case 'SET_EV_MODE': {
-        // Direct evcc mode control: off | now | minpv | pv
         const lp = Number(command.targetDeviceId ?? 1);
         const modeStr = String(command.value);
-        if (['off', 'now', 'minpv', 'pv'].includes(modeStr)) {
-          await this.postApi(`/api/loadpoints/${lp}/mode/${modeStr}`);
+        if (!['off', 'now', 'minpv', 'pv'].includes(modeStr)) {
+          return false;
         }
+        await this.postApi(`/api/loadpoints/${lp}/mode/${modeStr}`);
         return true;
       }
       case 'SET_EV_TARGET_SOC': {
@@ -238,7 +238,10 @@ export class EvccAdapter extends BaseAdapter {
       }
       case 'SET_EV_PHASES': {
         const lp = Number(command.targetDeviceId ?? 1);
-        const phases = Number(command.value) === 3 ? 3 : 1;
+        const phases = Number(command.value);
+        if (phases !== 1 && phases !== 3) {
+          return false;
+        }
         await this.postApi(`/api/loadpoints/${lp}/phases/${phases}`);
         return true;
       }

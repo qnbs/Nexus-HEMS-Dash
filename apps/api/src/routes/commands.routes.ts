@@ -4,6 +4,7 @@
  */
 
 import type { WSCommandType } from '@nexus-hems/shared-types';
+import { OfflineReplayEnvelopeSchema } from '@nexus-hems/shared-types';
 import { Router } from 'express';
 import { z } from 'zod';
 import { getEffectiveAdapterMode } from '../config/adapter-mode.js';
@@ -14,6 +15,7 @@ import {
   OFFLINE_ACTION_WS_TYPE,
 } from '../data/mock-command-mutation.js';
 import { mockData } from '../data/mock-data.js';
+import { validateOfflineReplayEnvelope } from '../lib/offline-replay-policy.js';
 import { requireJWT, requireScope } from '../middleware/auth.js';
 import { idempotencyMiddleware } from '../middleware/idempotency.js';
 import { requireNotReadOnly } from '../middleware/require-not-read-only.js';
@@ -22,6 +24,7 @@ import { dispatchProtocolCommand } from '../protocols/ProtocolCommandRouter.js';
 const ReplayBodySchema = z.object({
   type: z.enum(['ev-control', 'hp-control', 'battery-control']),
   payload: z.record(z.string(), z.unknown()).default({}),
+  envelope: OfflineReplayEnvelopeSchema,
 });
 
 /** Factory for `/api/commands/replay`. */
@@ -38,6 +41,21 @@ export function createCommandsRoutes(): Router {
       const parsed = ReplayBodySchema.safeParse(req.body);
       if (!parsed.success) {
         res.status(400).json({ error: 'Invalid replay body', details: parsed.error.flatten() });
+        return;
+      }
+
+      const headerKey = req.header('x-idempotency-key')?.trim();
+      const { envelope } = parsed.data;
+      if (headerKey && headerKey !== envelope.idempotencyKey) {
+        res.status(400).json({
+          error: 'X-Idempotency-Key must match envelope.idempotencyKey when both are present',
+        });
+        return;
+      }
+
+      const freshness = validateOfflineReplayEnvelope(envelope);
+      if (!freshness.ok) {
+        res.status(freshness.status).json({ error: freshness.error });
         return;
       }
 
@@ -69,7 +87,7 @@ export function createCommandsRoutes(): Router {
           });
           return;
         }
-        res.json({ ok: true, mode: 'live', type, value: watts });
+        res.json({ ok: true, mode: 'live', type, value: watts, commandId: envelope.commandId });
         return;
       }
 
@@ -81,7 +99,7 @@ export function createCommandsRoutes(): Router {
         mockData.heatPumpPower -
         mockData.pvPower;
 
-      res.json({ ok: true, mode: 'mock', type, value: watts });
+      res.json({ ok: true, mode: 'mock', type, value: watts, commandId: envelope.commandId });
     },
   );
 

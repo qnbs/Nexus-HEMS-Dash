@@ -19,6 +19,10 @@ Release notes are maintained here and published via [semantic-release](https://g
 - **Offline sync slice 3** — conflict banner, resolution modal (keep local / accept server), deferred replay until resolved (#346).
 - **Offline sync slice 4** — `GET /api/sync/diff?since=`, `PUT /api/settings` with idempotency, server-wins reconciliation, Playwright conflict E2E (#349).
 
+### Security
+
+- **Audit wave 2 (safety/replay)** — HTTP idempotency binds principal, route, client key, and body fingerprint; offline hardware replay requires a server-validated envelope; OCPP `Authorize` fail-closed in live mode with `OCPP_AUTHORIZE_ID_TOKENS` allowlist; WS ticket scope defaults to `read` when JWT scope is invalid; shared `SET_EV_MODE` / `SET_EV_PHASES` schemas and evcc adapter rejects unsupported values.
+
 ### Changed
 
 - **Stream F review follow-ups** (#356) — HA returns `handled: false` when heat-pump/charging entities missing; Matter requires explicit `MATTER_HEAT_PUMP_NODE_ID`; Zigbee rejects non-finite power commands; OpenADR VTN relay 15s timeout; OpenADR aggregate LOAD_CONTROL dispatch; controller-bridge in-flight guard.

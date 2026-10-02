@@ -17,6 +17,8 @@
  * to an existing CSMS backend as a monitoring client.
  */
 
+import { idTokenInfoStatus, resolveOcppAuthorizeDecision } from '@nexus-hems/shared-types';
+import { resolveFrontendAdapterMode } from '../../lib/adapter-mode';
 import { BaseAdapter } from './BaseAdapter';
 import type {
   AdapterCapability,
@@ -439,12 +441,14 @@ export class OCPP21Adapter extends BaseAdapter {
       case 'Heartbeat':
         this.sendCallResult(messageId, { currentTime: new Date().toISOString() });
         break;
-      case 'Authorize':
-        // Auto-authorize for HEMS-managed stations
+      case 'Authorize': {
+        const mode = resolveFrontendAdapterMode();
+        const decision = resolveOcppAuthorizeDecision(mode, payload, new Set());
         this.sendCallResult(messageId, {
-          idTokenInfo: { status: 'Accepted' },
+          idTokenInfo: { status: idTokenInfoStatus(decision) },
         });
         break;
+      }
       default:
         this.sendCallError(messageId, 'NotImplemented', `Action ${action} not supported`);
     }

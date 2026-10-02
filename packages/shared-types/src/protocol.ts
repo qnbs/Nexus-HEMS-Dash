@@ -227,6 +227,21 @@ export const EvCurrentValueSchema = z
   .min(0, { error: SET_EV_CURRENT_ERROR })
   .max(MAX_EV_CURRENT_A, { error: SET_EV_CURRENT_ERROR });
 
+/** Offline hardware replay envelope — server-authoritative freshness (ADR-030 audit). */
+export const OfflineReplayEnvelopeSchema = z
+  .object({
+    commandId: z.string().uuid(),
+    idempotencyKey: z.string().min(1).max(128),
+    createdAt: z.number().int().positive(),
+    expiresAt: z.number().int().positive(),
+    clientSyncGeneration: z.number().int().nonnegative().optional(),
+  })
+  .refine((e) => e.expiresAt > e.createdAt, {
+    message: 'expiresAt must be after createdAt',
+  });
+
+export type OfflineReplayEnvelope = z.infer<typeof OfflineReplayEnvelopeSchema>;
+
 /** SG Ready discrete mode 1–4 — rejects fractional values at schema boundary. */
 export const HeatPumpModeValueSchema = z
   .number({ error: HEAT_PUMP_MODE_ERROR })

@@ -280,10 +280,18 @@ class BackgroundSyncService {
       case 'ev-control':
       case 'hp-control':
       case 'battery-control': {
+        const envelope = action.replayEnvelope;
+        if (!envelope) {
+          throw new Error(`Missing replay envelope for ${action.type} — re-queue the action`);
+        }
         const response = await fetch(`${baseUrl}/api/commands/replay`, {
           method: 'POST',
           headers: commonHeaders,
-          body: JSON.stringify({ type: action.type, payload: action.payload }),
+          body: JSON.stringify({
+            type: action.type,
+            payload: action.payload,
+            envelope,
+          }),
         });
         await assertFetchOk(response, `Replay ${action.type}`);
         break;

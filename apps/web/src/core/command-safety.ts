@@ -10,7 +10,12 @@
  * This module is the ONLY path to send commands to adapters.
  */
 
-import { HeatPumpModeValueSchema, MAX_EV_CURRENT_A } from '@nexus-hems/shared-types';
+import {
+  EvccLoadpointModeSchema,
+  EvPhaseCountSchema,
+  HeatPumpModeValueSchema,
+  MAX_EV_CURRENT_A,
+} from '@nexus-hems/shared-types';
 import { z } from 'zod';
 import { isReadOnlyModeActive } from '../lib/adapter-mode';
 import { nexusDb } from '../lib/db';
@@ -48,15 +53,9 @@ export const commandSchemas: Record<AdapterCommandType, z.ZodType<CommandValue>>
   KNX_TOGGLE_LIGHTS: z.boolean(),
   KNX_SET_TEMPERATURE: temperatureSetpoint,
   KNX_TOGGLE_WINDOW: z.boolean(),
-  SET_EV_MODE: z.union([
-    z.literal('off'),
-    z.literal('now'),
-    z.literal('minpv'),
-    z.literal('pv'),
-    z.string(),
-  ]),
+  SET_EV_MODE: EvccLoadpointModeSchema,
   SET_EV_TARGET_SOC: z.number().min(0).max(100),
-  SET_EV_PHASES: z.union([z.literal(1), z.literal(3), z.number().min(1).max(3)]),
+  SET_EV_PHASES: EvPhaseCountSchema,
   SET_EV_MIN_CURRENT: currentAmps,
   SET_SMART_COST_LIMIT: z.number().min(0).max(1), // €/kWh
   // V2G / ISO 15118-20 BPT — payload validated separately via Zod on the adapter

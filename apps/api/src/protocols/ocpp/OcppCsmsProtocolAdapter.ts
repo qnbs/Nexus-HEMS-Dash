@@ -27,6 +27,10 @@ import {
 } from '@nexus-hems/shared-types';
 import { WebSocket, WebSocketServer } from 'ws';
 import { z } from 'zod';
+import {
+  idTokenInfoStatus,
+  resolveInboundOcppAuthorize,
+} from '../../config/ocpp-authorize-policy.js';
 import { recordAdapterDlq, recordAdapterError } from '../../middleware/adapter-metrics.js';
 import { API_RUNTIME_DIR, DEAD_LETTER_QUEUE_PATH } from '../../runtime-paths.js';
 import type {
@@ -383,11 +387,13 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
       case 'Heartbeat':
         this.sendCallResult(ws, messageId, { currentTime: new Date().toISOString() });
         break;
-      case 'Authorize':
+      case 'Authorize': {
+        const decision = resolveInboundOcppAuthorize(payload);
         this.sendCallResult(ws, messageId, {
-          idTokenInfo: { status: 'Accepted' },
+          idTokenInfo: { status: idTokenInfoStatus(decision) },
         });
         break;
+      }
       case 'StatusNotification':
         this.sendCallResult(ws, messageId, {});
         break;

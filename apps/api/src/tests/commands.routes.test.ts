@@ -46,10 +46,23 @@ describe('commands routes', () => {
     return supertest(app);
   }
 
+  function replayEnvelope(idempotencyKey: string, createdAt = Date.now()) {
+    return {
+      commandId: '22222222-2222-4222-8222-222222222222',
+      idempotencyKey,
+      createdAt,
+      expiresAt: createdAt + 300_000,
+    };
+  }
+
   it('POST /api/commands/replay requires authentication', async () => {
     await buildApp()
       .post('/api/commands/replay')
-      .send({ type: 'battery-control', payload: { powerW: 1000 } })
+      .send({
+        type: 'battery-control',
+        payload: { powerW: 1000 },
+        envelope: replayEnvelope('no-auth'),
+      })
       .expect(401);
   });
 
@@ -58,7 +71,11 @@ describe('commands routes', () => {
     const res = await buildApp()
       .post('/api/commands/replay')
       .set('Authorization', `Bearer ${bearer}`)
-      .send({ type: 'battery-control', payload: { powerW: 1500 } })
+      .send({
+        type: 'battery-control',
+        payload: { powerW: 1500 },
+        envelope: replayEnvelope('replay-battery-1'),
+      })
       .expect(200);
 
     expect(res.body).toMatchObject({ ok: true, mode: 'mock', value: 1500 });
@@ -73,17 +90,15 @@ describe('commands routes', () => {
       'X-Idempotency-Key': 'replay-dedupe-1',
     };
 
-    const first = await agent
-      .post('/api/commands/replay')
-      .set(headers)
-      .send({ type: 'ev-control', payload: { currentA: 10 } })
-      .expect(200);
+    const envelope = replayEnvelope('replay-dedupe-1');
+    const body = {
+      type: 'ev-control' as const,
+      payload: { currentA: 10 },
+      envelope,
+    };
+    const first = await agent.post('/api/commands/replay').set(headers).send(body).expect(200);
     mockData.evPower = 9999;
-    const second = await agent
-      .post('/api/commands/replay')
-      .set(headers)
-      .send({ type: 'ev-control', payload: { currentA: 10 } })
-      .expect(200);
+    const second = await agent.post('/api/commands/replay').set(headers).send(body).expect(200);
 
     expect(second.body).toEqual(first.body);
     expect(mockData.evPower).toBe(9999);
