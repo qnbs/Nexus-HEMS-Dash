@@ -1,10 +1,13 @@
 import { Zap } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import packageJson from '../../../../package.json';
+import { getBuildSha, getBuildTimeIso } from '../../../lib/build-provenance';
 
 /** Hero block with app icon and version for the Help About tab. */
 export const HelpAboutHero = () => {
   const appVersion = packageJson.version;
+  const buildSha = getBuildSha();
+  const buildTime = getBuildTimeIso();
   const { t } = useTranslation();
 
   return (
@@ -17,6 +20,11 @@ export const HelpAboutHero = () => {
         <p className="text-(--color-muted) text-sm">
           {t('help.versionFull', { version: appVersion })}
         </p>
+        {buildSha && (
+          <p className="font-mono text-(--color-muted) text-xs">
+            {t('help.buildProvenance', { sha: buildSha, time: buildTime ?? '—' })}
+          </p>
+        )}
       </div>
     </div>
   );

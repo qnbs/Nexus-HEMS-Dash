@@ -1233,6 +1233,7 @@ export const en = {
 
     // About
     versionFull: 'Version {{version}} — shipped July 2026',
+    buildProvenance: 'Build {{sha}} · {{time}}',
     visualization: 'Visualization',
     testing: 'Testing',
     githubRepo: 'GitHub Repository',

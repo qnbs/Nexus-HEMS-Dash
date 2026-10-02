@@ -102,6 +102,10 @@ jobs:
         run: pnpm build
         env:
           NODE_ENV: production
+          VITE_BUILD_SHA: ${{ github.sha }}
+          VITE_BUILD_TIME: ${{ github.event.head_commit.timestamp || github.run_started_at }}
+          GIT_SHA: ${{ github.sha }}
+          BUILD_TIME_ISO: ${{ github.event.head_commit.timestamp || github.run_started_at }}
 
       - name: Setup Pages
         uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0

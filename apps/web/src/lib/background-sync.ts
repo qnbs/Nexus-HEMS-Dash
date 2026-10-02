@@ -13,6 +13,7 @@ import {
 } from './db';
 import { detectSyncConflict, fetchServerSyncVersion, recordServerSyncVersion } from './sync-client';
 import { markSyncConflict } from './sync-conflict';
+import { withOfflineSyncLock } from './sync-lock';
 
 const MAX_RETRIES = 5;
 const BASE_RETRY_DELAY_MS = 2000;
@@ -127,6 +128,14 @@ class BackgroundSyncService {
    */
   async syncPendingActions(options?: { force?: boolean }): Promise<boolean> {
     if (this.isSyncing || !navigator.onLine) {
+      return true;
+    }
+
+    return withOfflineSyncLock(() => this.runSyncPass(options));
+  }
+
+  private async runSyncPass(options?: { force?: boolean }): Promise<boolean> {
+    if (this.isSyncing) {
       return true;
     }
 

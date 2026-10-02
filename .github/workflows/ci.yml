@@ -166,6 +166,10 @@ jobs:
         env:
           VITE_E2E_TESTING: 'true'
           VITE_BACKEND_WS: 'true'
+          VITE_BUILD_SHA: ${{ github.sha }}
+          VITE_BUILD_TIME: ${{ github.event.head_commit.timestamp || github.run_started_at }}
+          GIT_SHA: ${{ github.sha }}
+          BUILD_TIME_ISO: ${{ github.event.head_commit.timestamp || github.run_started_at }}
           TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
           TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
 

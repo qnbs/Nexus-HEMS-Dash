@@ -7,6 +7,7 @@
  */
 
 import { Router } from 'express';
+import { resolveBuildMetadata } from '../config/build-info.js';
 import { isReadOnlyMode } from '../config/read-only-mode.js';
 import { getAdapterHealthSummary } from '../protocols/index.js';
 
@@ -18,11 +19,15 @@ export function createHealthRoutes(): Router {
     const health = getAdapterHealthSummary();
     const statusCode = health.overall === 'healthy' ? 200 : 503;
 
+    const build = resolveBuildMetadata();
     res.status(statusCode).json({
       status: health.overall,
       mode: health.mode,
       readOnly: isReadOnlyMode(),
       timestamp: new Date().toISOString(),
+      version: build.version,
+      ...(build.gitSha ? { gitSha: build.gitSha } : {}),
+      ...(build.buildTime ? { buildTime: build.buildTime } : {}),
       adapters: health.adapters,
     });
   });

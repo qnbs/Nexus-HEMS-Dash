@@ -64,6 +64,10 @@ See `docs/Protocol-Adapter-Guide-Backend.md`.
 | `VITE_READ_ONLY_MODE` | Web | `false` | — | Frontend read-only enforcement + banner. |
 | `VITE_BACKEND_WS` | Web | `false` | — | Opt into the backend WebSocket consumer (ADR-025); off for static gh-pages demo. |
 | `VITE_ADAPTER_WORKER` | Web | `false` | — | Poll REST adapters off-thread in `adapter-worker` (MED-12). |
+| `VITE_BUILD_SHA` | Web | unset | — | Short Git SHA baked into the SPA at build time (Help → About). CI sets from `github.sha`. |
+| `VITE_BUILD_TIME` | Web | unset | — | ISO-8601 build timestamp shown with `VITE_BUILD_SHA`. |
+| `GIT_SHA` / `GITHUB_SHA` | API | unset | — | Optional metadata on `GET /api/health` (`gitSha`, truncated to 12 chars). |
+| `BUILD_TIME_ISO` | API | unset | — | Optional `buildTime` on `GET /api/health`. |
 
 ## Persistence — InfluxDB & Redis (API)
 
@@ -92,7 +96,7 @@ and the adapter source under `apps/api/src/protocols/`.
 | **EEBUS** | `EEBUS_DISABLE`; `EEBUS_CERT_FILE` (`data/eebus-server.cert.pem`); `EEBUS_KEY_FILE` (`…key.pem`); `EEBUS_CA_FILE`; `EEBUS_TRUST_BACKEND` (`file`); `EEBUS_TRUST_FILE` (`data/eebus-trust.json`) | mTLS SHIP; `EEBUS_TRUST_BACKEND=redis` uses `REDIS_URL`. |
 | **HeatPump** | `HEATPUMP_HOST`; `HEATPUMP_PORT`; `HEATPUMP_UNIT_ID`; `HEATPUMP_MANUFACTURER` (`generic`); `HEATPUMP_POLL_MS` | 6 manufacturer profiles. |
 | **OpenEMS** | `OPENEMS_HOST`; `OPENEMS_PORT`; `OPENEMS_TLS`; `OPENEMS_AUTH_TOKEN`; `OPENEMS_DEVICE_ID`; `OPENEMS_POLL_MS` *+ controller-ID & command overrides* (`OPENEMS_*_CTRL_ID`, `OPENEMS_*_COMMANDS`, `OPENEMS_WRITABLE_COMPONENT_RULES`) | JSON-RPC/WebSocket. |
-| **OCPP CSMS** | `OCPP_CSMS_PORT`; `OCPP_CSMS_HOST`; `OCPP_CSMS_PATH` *+ `OCPP_SESSION_PREFIX`, `OCPP_SESSION_TTL_SEC`, `OCPP_EV_COMMANDS`, **`OCPP_AUTHORIZE_ID_TOKENS` (live Authorize allowlist)*** | CSMS gateway; SP3 mTLS proxy is separate (`/ws/ocpp`). Live `Authorize` is fail-closed without allowlist. |
+| **OCPP CSMS** | `OCPP_CSMS_PORT`; `OCPP_CSMS_HOST`; `OCPP_CSMS_PATH` *+ `OCPP_SESSION_PREFIX`, `OCPP_SESSION_TTL_SEC`, `OCPP_EV_COMMANDS`, **`OCPP_AUTHORIZE_ID_TOKENS`**, **`OCPP_CSMS_STATION_ALLOWLIST` (live WS admission)*** | CSMS gateway; SP3 mTLS proxy is separate (`/ws/ocpp`). Live mode: `Authorize` and station connect fail-closed without allowlists. |
 | **Home Assistant** | `HA_HOST`; `HA_PORT`; `HA_TLS`; `HA_TOKEN`; `HA_DEVICE_ID` *+ entity-map & command overrides* (`HA_ENTITY_MAP_PATH`, `HA_WALLBOX_*`, `HA_HEAT_PUMP_MODE_ENTITY`, `HA_EV_COMMANDS`) | `ha-ws-api` transport (ADR-023). |
 | **Home Assistant (MQTT)** | `HA_MQTT_BROKER_URL` *+ `HA_MQTT_TOPIC_PREFIX`, `HA_MQTT_EV_COMMANDS`, `HA_MQTT_ADAPTER_ID`* | `mqtt-broker` transport (ADR-023). |
 | **Matter/Thread** | `MATTER_BRIDGE_HOST`; `MATTER_BRIDGE_PORT`; `MATTER_BRIDGE_TLS` *+ `MATTER_NODE_IDS`, `MATTER_NODE_MAP_PATH`, `MATTER_DEVICE_ID`, **`MATTER_HEAT_PUMP_NODE_ID` (required for `SET_HEAT_PUMP_MODE`)*** | Phase 2: WS telemetry + SG Ready write (ADR-022). |

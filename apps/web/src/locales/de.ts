@@ -1246,6 +1246,7 @@ export const de = {
 
     // Über
     versionFull: 'Version {{version}} — veröffentlicht Juli 2026',
+    buildProvenance: 'Build {{sha}} · {{time}}',
     visualization: 'Visualisierung',
     testing: 'Tests',
     githubRepo: 'GitHub-Repository',
