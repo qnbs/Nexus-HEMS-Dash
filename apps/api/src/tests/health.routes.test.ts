@@ -24,11 +24,30 @@ describe('GET /api/health', () => {
       expect(res.body.mode).toBe('mock');
       expect(res.body.readOnly).toBe(false);
       expect(res.body.adapters).toEqual([]);
+      expect(typeof res.body.version).toBe('string');
+      expect(res.body.version.length).toBeGreaterThan(0);
     } finally {
       if (originalMode === undefined) delete process.env.ADAPTER_MODE;
       else process.env.ADAPTER_MODE = originalMode;
       if (originalReadOnly === undefined) delete process.env.READ_ONLY_MODE;
       else process.env.READ_ONLY_MODE = originalReadOnly;
+    }
+  });
+
+  it('exposes optional gitSha and buildTime from env', async () => {
+    const originalSha = process.env.GIT_SHA;
+    const originalTime = process.env.BUILD_TIME_ISO;
+    process.env.GIT_SHA = '1111111111111111111111111111111111111111';
+    process.env.BUILD_TIME_ISO = '2026-10-02T08:00:00Z';
+    try {
+      const res = await supertest(app).get('/api/health').expect(200);
+      expect(res.body.gitSha).toBe('111111111111');
+      expect(res.body.buildTime).toBe('2026-10-02T08:00:00Z');
+    } finally {
+      if (originalSha === undefined) delete process.env.GIT_SHA;
+      else process.env.GIT_SHA = originalSha;
+      if (originalTime === undefined) delete process.env.BUILD_TIME_ISO;
+      else process.env.BUILD_TIME_ISO = originalTime;
     }
   });
 

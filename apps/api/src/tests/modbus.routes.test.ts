@@ -93,7 +93,9 @@ describe('Modbus SunSpec proxy API', () => {
 
   it('deduplicates POST /api/modbus/write retries via X-Idempotency-Key', async () => {
     const { clearIdempotencyCacheForTests } = await import('../data/idempotency-cache.js');
+    const { resetSyncPersistenceForTests } = await import('../services/sync-persistence.js');
     clearIdempotencyCacheForTests();
+    resetSyncPersistenceForTests();
 
     const bearer = await signToken({ sub: 'writer', scope: 'readwrite' }, '1h');
     const api = buildApp();
@@ -110,10 +112,35 @@ describe('Modbus SunSpec proxy API', () => {
       .post('/api/modbus/write')
       .set('Authorization', `Bearer ${bearer}`)
       .set('X-Idempotency-Key', 'modbus-retry-1')
-      .send({ register: 'WChaMax', value: 9999 })
+      .send(body)
       .expect(200);
 
     expect(replay.body).toEqual({ ok: true, register: 'WChaMax', value: 1500 });
+  });
+
+  it('returns 409 when X-Idempotency-Key is reused with a different body', async () => {
+    const { clearIdempotencyCacheForTests } = await import('../data/idempotency-cache.js');
+    const { resetSyncPersistenceForTests } = await import('../services/sync-persistence.js');
+    clearIdempotencyCacheForTests();
+    resetSyncPersistenceForTests();
+
+    const bearer = await signToken({ sub: 'writer', scope: 'readwrite' }, '1h');
+    const api = buildApp();
+    const headers = {
+      Authorization: `Bearer ${bearer}`,
+      'X-Idempotency-Key': 'modbus-retry-conflict',
+    };
+
+    await api
+      .post('/api/modbus/write')
+      .set(headers)
+      .send({ register: 'WChaMax', value: 1500 })
+      .expect(200);
+    await api
+      .post('/api/modbus/write')
+      .set(headers)
+      .send({ register: 'WChaMax', value: 9999 })
+      .expect(409);
   });
 
   it('rejects a write with read-only scope (403)', async () => {

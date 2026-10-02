@@ -5,6 +5,9 @@
 
 export type { IdempotencyRecord } from '../services/sync-persistence.js';
 export {
+  abandonHttpIdempotency,
+  claimHttpIdempotency,
+  completeHttpIdempotency,
   getIdempotencyRecord,
   isWsIdempotencyReplay,
   markWsIdempotencyAccepted,

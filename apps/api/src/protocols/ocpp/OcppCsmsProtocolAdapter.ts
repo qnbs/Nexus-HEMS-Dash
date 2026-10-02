@@ -27,6 +27,14 @@ import {
 } from '@nexus-hems/shared-types';
 import { WebSocket, WebSocketServer } from 'ws';
 import { z } from 'zod';
+import {
+  idTokenInfoStatus,
+  resolveInboundOcppAuthorize,
+} from '../../config/ocpp-authorize-policy.js';
+import {
+  OCPP_MAX_WS_MESSAGE_BYTES,
+  resolveOcppStationAdmission,
+} from '../../config/ocpp-csms-admission.js';
 import { recordAdapterDlq, recordAdapterError } from '../../middleware/adapter-metrics.js';
 import { API_RUNTIME_DIR, DEAD_LETTER_QUEUE_PATH } from '../../runtime-paths.js';
 import type {
@@ -205,8 +213,13 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
       });
 
       wss.on('connection', (ws, req) => {
-        const pathParts = (req.url ?? '/').split('/').filter(Boolean);
+        const pathOnly = (req.url ?? '/').split('?')[0] ?? '/';
+        const pathParts = pathOnly.split('/').filter(Boolean);
         const chargePointId = pathParts.at(-1) ?? 'unknown-cp';
+        if (resolveOcppStationAdmission(chargePointId) === 'rejected') {
+          ws.close(1008, 'Charge point not allowlisted');
+          return;
+        }
         this.sessions.set(ws, {
           chargePointId,
           lastPowerW: 0,
@@ -221,6 +234,12 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
           try {
             const raw =
               typeof data === 'string' ? data : Buffer.from(data as Buffer).toString('utf8');
+            const byteLength =
+              typeof data === 'string' ? Buffer.byteLength(data, 'utf8') : (data as Buffer).length;
+            if (byteLength > OCPP_MAX_WS_MESSAGE_BYTES) {
+              ws.close(1009, 'OCPP message too large');
+              return;
+            }
             const json: unknown = JSON.parse(raw);
             const parsed = OcppInboundMessageSchema.safeParse(json);
             if (!parsed.success) {
@@ -373,6 +392,15 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
         if (station.success && station.data.serialNumber) {
           session.chargePointId = station.data.serialNumber;
         }
+        if (resolveOcppStationAdmission(session.chargePointId) === 'rejected') {
+          this.sendCallResult(ws, messageId, {
+            currentTime: new Date().toISOString(),
+            interval: HEARTBEAT_INTERVAL_S,
+            status: 'Rejected',
+          });
+          ws.close(1008, 'Charge point not allowlisted');
+          break;
+        }
         this.sendCallResult(ws, messageId, {
           currentTime: new Date().toISOString(),
           interval: HEARTBEAT_INTERVAL_S,
@@ -383,11 +411,13 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
       case 'Heartbeat':
         this.sendCallResult(ws, messageId, { currentTime: new Date().toISOString() });
         break;
-      case 'Authorize':
+      case 'Authorize': {
+        const decision = resolveInboundOcppAuthorize(payload);
         this.sendCallResult(ws, messageId, {
-          idTokenInfo: { status: 'Accepted' },
+          idTokenInfo: { status: idTokenInfoStatus(decision) },
         });
         break;
+      }
       case 'StatusNotification':
         this.sendCallResult(ws, messageId, {});
         break;

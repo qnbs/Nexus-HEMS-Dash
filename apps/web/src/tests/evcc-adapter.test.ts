@@ -216,6 +216,28 @@ describe('EvccAdapter — sendCommand', () => {
     );
   });
 
+  it('returns false for invalid SET_EV_MODE values', async () => {
+    const ok = await adapter.sendCommand({
+      type: 'SET_EV_MODE',
+      value: 'invalid-mode',
+      targetDeviceId: '1',
+    });
+    expect(ok).toBe(false);
+    expect(mockFetch).not.toHaveBeenCalledWith(
+      expect.stringContaining('/mode/invalid-mode'),
+      expect.anything(),
+    );
+  });
+
+  it('returns false for unsupported SET_EV_PHASES (2-phase)', async () => {
+    const ok = await adapter.sendCommand({
+      type: 'SET_EV_PHASES',
+      value: 2,
+      targetDeviceId: '1',
+    });
+    expect(ok).toBe(false);
+  });
+
   it('returns false for unsupported command types', async () => {
     const ok = await adapter.sendCommand({
       type: 'SET_GRID_LIMIT' as Parameters<typeof adapter.sendCommand>[0]['type'],

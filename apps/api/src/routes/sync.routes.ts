@@ -4,6 +4,7 @@
 
 import { type NextFunction, type Request, type Response, Router } from 'express';
 import { z } from 'zod';
+import { SettingsPatchError } from '../data/settings-patch-error.js';
 import { applySettingsPatch } from '../data/settings-store.js';
 import { getSyncDiffSince } from '../data/sync-diff-store.js';
 import { getSyncVersion } from '../data/sync-version-store.js';
@@ -14,28 +15,36 @@ const SinceQuerySchema = z.object({
   since: z.coerce.number().finite().nonnegative().optional().default(0),
 });
 
-const SettingsPatchSchema = z
-  .object({
-    updatedAt: z.number().finite().nonnegative().optional(),
-  })
-  .catchall(z.unknown());
-
 function parseSettingsBody(body: unknown): {
   patch: Record<string, unknown>;
   clientUpdatedAt?: number;
 } {
-  const parsed = SettingsPatchSchema.safeParse(body);
-  if (!parsed.success) {
+  if (!body || typeof body !== 'object' || Array.isArray(body)) {
     throw new Error('invalid_body');
   }
-  const { updatedAt, ...rest } = parsed.data;
+  const record = body as Record<string, unknown>;
+  const updatedAtRaw = record.updatedAt;
+  const { updatedAt, ...rest } = record;
   const patch: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(rest)) {
     if (value !== undefined) patch[key] = value;
   }
+  if (Object.keys(patch).length === 0) {
+    throw new Error('empty_patch');
+  }
+  if (
+    updatedAtRaw !== undefined &&
+    (typeof updatedAtRaw !== 'number' || !Number.isFinite(updatedAtRaw) || updatedAtRaw < 0)
+  ) {
+    throw new Error('invalid_updatedAt');
+  }
+  const clientUpdatedAt =
+    typeof updatedAtRaw === 'number' && Number.isFinite(updatedAtRaw) && updatedAtRaw >= 0
+      ? updatedAtRaw
+      : undefined;
   return {
     patch,
-    ...(updatedAt !== undefined ? { clientUpdatedAt: updatedAt } : {}),
+    ...(clientUpdatedAt !== undefined ? { clientUpdatedAt } : {}),
   };
 }
 
@@ -64,16 +73,22 @@ export function createSyncRoutes(): Router {
     async (req: Request, res: Response, next: NextFunction) => {
       try {
         const { patch, clientUpdatedAt } = parseSettingsBody(req.body);
-        if (Object.keys(patch).length === 0) {
-          res.status(400).json({ error: 'Settings patch must include at least one key' });
-          return;
-        }
         const result = await applySettingsPatch(patch, clientUpdatedAt);
         res.json({ ok: true, ...result });
       } catch (error) {
-        if (error instanceof Error && error.message === 'invalid_body') {
-          res.status(400).json({ error: 'Invalid settings body' });
+        if (error instanceof SettingsPatchError) {
+          res.status(error.statusCode).json({ error: error.message });
           return;
+        }
+        if (error instanceof Error) {
+          if (
+            error.message === 'invalid_body' ||
+            error.message === 'empty_patch' ||
+            error.message === 'invalid_updatedAt'
+          ) {
+            res.status(400).json({ error: 'Invalid settings body' });
+            return;
+          }
         }
         next(error);
       }

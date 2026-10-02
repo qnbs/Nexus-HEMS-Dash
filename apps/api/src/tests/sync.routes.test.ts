@@ -98,6 +98,15 @@ describe('sync routes', () => {
     expect(typeof res.body.version).toBe('number');
   });
 
+  it('PUT /api/settings rejects unknown keys', async () => {
+    const bearer = await signToken({ sub: 'writer', scope: 'readwrite' }, '1h');
+    await buildApp()
+      .put('/api/settings')
+      .set('Authorization', `Bearer ${bearer}`)
+      .send({ notARealSetting: true })
+      .expect(400);
+  });
+
   it('PUT /api/settings rejects an empty patch', async () => {
     const bearer = await signToken({ sub: 'writer', scope: 'readwrite' }, '1h');
     await buildApp()

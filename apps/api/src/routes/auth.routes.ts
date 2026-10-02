@@ -106,7 +106,7 @@ export function createAuthRoutes(): Router {
     const payload = res.locals.jwtPayload as { sub?: string; scope?: string } | undefined;
     const clientId = payload?.sub ?? 'unknown';
     const scope = (
-      ['read', 'readwrite', 'admin'].includes(payload?.scope ?? '') ? payload!.scope : 'readwrite'
+      ['read', 'readwrite', 'admin'].includes(payload?.scope ?? '') ? payload!.scope : 'read'
     ) as JWTScope;
 
     const ticket = crypto.randomUUID();

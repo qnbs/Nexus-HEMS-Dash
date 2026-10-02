@@ -19,6 +19,12 @@ Release notes are maintained here and published via [semantic-release](https://g
 - **Offline sync slice 3** — conflict banner, resolution modal (keep local / accept server), deferred replay until resolved (#346).
 - **Offline sync slice 4** — `GET /api/sync/diff?since=`, `PUT /api/settings` with idempotency, server-wins reconciliation, Playwright conflict E2E (#349).
 
+### Security
+
+- **Audit waves 1–4/6 (continued)** — settings sync registry (reject unknown/credential keys); atomic settings batch version bump; OCPP CSMS station allowlist + max WS frame size; deploy waits for `✅ CI Passed` on the same SHA; Dependabot Action pin bumps (harden-runner, deploy-pages, anchore scan, attest provenance); exhaustive `COMMAND_RISK_MAP` with CI unit test.
+- **Audit wave 2 (safety/replay)** — HTTP idempotency binds principal, route, client key, and body fingerprint; offline hardware replay requires a server-validated envelope; OCPP `Authorize` fail-closed in live mode with `OCPP_AUTHORIZE_ID_TOKENS` allowlist; WS ticket scope defaults to `read` when JWT scope is invalid; shared `SET_EV_MODE` / `SET_EV_PHASES` schemas and evcc adapter rejects unsupported values.
+- **Audit waves 7–9 (PWA / domain / provenance)** — `navigator.locks` exclusive offline-sync lock across tabs; `ENERGY_SIGN_CONVENTIONS` in shared-types; Help About + `/api/health` expose optional build SHA/time when CI env is set.
+
 ### Changed
 
 - **Stream F review follow-ups** (#356) — HA returns `handled: false` when heat-pump/charging entities missing; Matter requires explicit `MATTER_HEAT_PUMP_NODE_ID`; Zigbee rejects non-finite power commands; OpenADR VTN relay 15s timeout; OpenADR aggregate LOAD_CONTROL dispatch; controller-bridge in-flight guard.

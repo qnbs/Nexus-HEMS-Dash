@@ -9,6 +9,10 @@ interface ImportMetaEnv {
   readonly VITE_ADAPTER_MODE?: string;
   /** Must be "true" together with VITE_ADAPTER_MODE=live to allow hardware connections */
   readonly VITE_ALLOW_LIVE_HARDWARE?: string;
+  /** Short Git SHA embedded at CI/production build time (Help → About). */
+  readonly VITE_BUILD_SHA?: string;
+  /** ISO-8601 build timestamp (`VITE_BUILD_TIME`). */
+  readonly VITE_BUILD_TIME?: string;
 }
 
 interface ImportMeta {

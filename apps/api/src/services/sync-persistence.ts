@@ -16,11 +16,21 @@ const IDEMPOTENCY_WS_PREFIX = 'nexus:idempotency:ws:';
 const IDEMPOTENCY_TTL_SEC = 300;
 const MAX_DIFF_ENTRIES = 500;
 
+export type HttpIdempotencyState = 'pending' | 'completed';
+
 export interface IdempotencyRecord {
+  state: HttpIdempotencyState;
+  fingerprint: string;
   statusCode: number;
   body: unknown;
   expiresAt: number;
 }
+
+export type HttpIdempotencyClaimResult =
+  | { kind: 'proceed' }
+  | { kind: 'replay'; statusCode: number; body: unknown }
+  | { kind: 'conflict'; reason: string }
+  | { kind: 'in_flight' };
 
 export interface SyncDiffEntry {
   key: string;
@@ -31,6 +41,18 @@ export interface SyncDiffEntry {
 }
 
 const SERVER_BOOT_VERSION = Date.now();
+
+/** Serializes in-process settings batches (memory fallback has no Redis transactions). */
+let settingsBatchTail: Promise<unknown> = Promise.resolve();
+
+function withSettingsBatchMutex<T>(task: () => Promise<T>): Promise<T> {
+  const next = settingsBatchTail.then(task, task);
+  settingsBatchTail = next.then(
+    () => undefined,
+    () => undefined,
+  );
+  return next;
+}
 
 // ─── In-memory fallback ───────────────────────────────────────────────
 
@@ -86,6 +108,17 @@ export async function bumpSyncVersion(): Promise<number> {
   return memoryVersion.value;
 }
 
+/** Roll back version after a failed settings batch (best-effort). */
+async function rollbackSyncVersion(previous: number): Promise<void> {
+  const redis = await redisClient();
+  if (redis) {
+    await redis.set(SYNC_VERSION_KEY, String(previous), 'EX', 86_400 * 30);
+    memoryVersion.value = previous;
+    return;
+  }
+  memoryVersion.value = previous;
+}
+
 // ─── Settings ─────────────────────────────────────────────────────────
 
 export async function getServerSettingsSnapshot(): Promise<Record<string, unknown>> {
@@ -120,6 +153,68 @@ export async function setServerSetting(key: string, value: unknown): Promise<voi
   const snapshot = await getServerSettingsSnapshot();
   snapshot[key] = value;
   await persistSettingsSnapshot(snapshot);
+}
+
+/** Atomic multi-key settings patch with a single version bump and diff append. */
+export async function applySettingsBatch(
+  entries: Array<{
+    key: string;
+    value: unknown;
+    category: SettingsSyncCategory;
+    updatedAt: number;
+  }>,
+): Promise<number> {
+  return withSettingsBatchMutex(() => applySettingsBatchInner(entries));
+}
+
+async function applySettingsBatchInner(
+  entries: Array<{
+    key: string;
+    value: unknown;
+    category: SettingsSyncCategory;
+    updatedAt: number;
+  }>,
+): Promise<number> {
+  if (entries.length === 0) {
+    return getSyncVersion();
+  }
+
+  const priorVersion = await getSyncVersion();
+  const priorSnapshot = await getServerSettingsSnapshot();
+  const snapshot = { ...priorSnapshot };
+  for (const entry of entries) {
+    snapshot[entry.key] = entry.value;
+  }
+
+  const log = await readDiffLog();
+  const version = await bumpSyncVersion();
+  const nextLog = [...log];
+  for (const entry of entries) {
+    nextLog.push({
+      key: entry.key,
+      value: entry.value,
+      updatedAt: entry.updatedAt,
+      category: entry.category,
+      version,
+    });
+  }
+
+  try {
+    await persistSettingsSnapshot(snapshot);
+    await writeDiffLog(nextLog);
+    return version;
+  } catch (error) {
+    await rollbackSyncVersion(priorVersion);
+    try {
+      await persistSettingsSnapshot(priorSnapshot);
+    } catch (restoreError) {
+      console.error(
+        '[sync-persistence] Failed to restore settings snapshot after batch error',
+        restoreError,
+      );
+    }
+    throw error;
+  }
 }
 
 // ─── Diff log ─────────────────────────────────────────────────────────
@@ -167,21 +262,45 @@ export async function getSyncDiffSince(
 
 // ─── HTTP idempotency ─────────────────────────────────────────────────
 
+function parseIdempotencyRecord(raw: string): IdempotencyRecord | undefined {
+  try {
+    const parsed = JSON.parse(raw) as Partial<IdempotencyRecord>;
+    if (!parsed.fingerprint || !parsed.expiresAt) return undefined;
+    const state: HttpIdempotencyState = parsed.state === 'pending' ? 'pending' : 'completed';
+    if (state === 'pending') {
+      return {
+        state: 'pending',
+        fingerprint: parsed.fingerprint,
+        statusCode: 0,
+        body: null,
+        expiresAt: parsed.expiresAt,
+      };
+    }
+    if (typeof parsed.statusCode !== 'number') return undefined;
+    return {
+      state: 'completed',
+      fingerprint: parsed.fingerprint,
+      statusCode: parsed.statusCode,
+      body: parsed.body,
+      expiresAt: parsed.expiresAt,
+    };
+  } catch {
+    return undefined;
+  }
+}
+
 export async function getIdempotencyRecord(key: string): Promise<IdempotencyRecord | undefined> {
   const redis = await redisClient();
   if (redis) {
     const raw = await redis.get(`${IDEMPOTENCY_HTTP_PREFIX}${key}`);
     if (!raw) return undefined;
-    try {
-      const record = JSON.parse(raw) as IdempotencyRecord;
-      if (record.expiresAt <= Date.now()) {
-        await redis.del(`${IDEMPOTENCY_HTTP_PREFIX}${key}`);
-        return undefined;
-      }
-      return record;
-    } catch {
+    const record = parseIdempotencyRecord(raw);
+    if (!record) return undefined;
+    if (record.expiresAt <= Date.now()) {
+      await redis.del(`${IDEMPOTENCY_HTTP_PREFIX}${key}`);
       return undefined;
     }
+    return record;
   }
 
   pruneMemoryIdempotency();
@@ -193,12 +312,81 @@ export async function getIdempotencyRecord(key: string): Promise<IdempotencyReco
   return record;
 }
 
-export async function setIdempotencyRecord(
-  key: string,
+/** Atomic claim for HTTP idempotency (composite scope key + body fingerprint). */
+export async function claimHttpIdempotency(
+  scopeKey: string,
+  fingerprint: string,
+): Promise<HttpIdempotencyClaimResult> {
+  const expiresAt = Date.now() + IDEMPOTENCY_TTL_SEC * 1000;
+  const pending: IdempotencyRecord = {
+    state: 'pending',
+    fingerprint,
+    statusCode: 0,
+    body: null,
+    expiresAt,
+  };
+
+  const redis = await redisClient();
+  if (redis) {
+    const redisKey = `${IDEMPOTENCY_HTTP_PREFIX}${scopeKey}`;
+    type RedisSetNx = {
+      set(key: string, value: string, mode: 'EX', ttl: number, nx: 'NX'): Promise<'OK' | null>;
+    };
+    const claimed = await (redis as RedisSetNx).set(
+      redisKey,
+      JSON.stringify(pending),
+      'EX',
+      IDEMPOTENCY_TTL_SEC,
+      'NX',
+    );
+    if (claimed === 'OK') return { kind: 'proceed' };
+
+    const existing = await getIdempotencyRecord(scopeKey);
+    if (!existing) return { kind: 'in_flight' };
+    if (existing.state === 'pending') return { kind: 'in_flight' };
+    if (existing.fingerprint !== fingerprint) {
+      return { kind: 'conflict', reason: 'Idempotency key reused with different request body' };
+    }
+    return { kind: 'replay', statusCode: existing.statusCode, body: existing.body };
+  }
+
+  pruneMemoryIdempotency();
+  const existing = memoryIdempotency.get(scopeKey);
+  if (!existing || existing.expiresAt <= Date.now()) {
+    memoryIdempotency.set(scopeKey, pending);
+    return { kind: 'proceed' };
+  }
+  if (existing.state === 'pending') return { kind: 'in_flight' };
+  if (existing.fingerprint !== fingerprint) {
+    return { kind: 'conflict', reason: 'Idempotency key reused with different request body' };
+  }
+  return { kind: 'replay', statusCode: existing.statusCode, body: existing.body };
+}
+
+/** Drop a pending claim when the handler finishes with a non-success response. */
+export async function abandonHttpIdempotency(scopeKey: string, fingerprint: string): Promise<void> {
+  const existing = await getIdempotencyRecord(scopeKey);
+  if (existing?.state !== 'pending' || existing.fingerprint !== fingerprint) {
+    return;
+  }
+
+  const redis = await redisClient();
+  if (redis) {
+    await redis.del(`${IDEMPOTENCY_HTTP_PREFIX}${scopeKey}`);
+    return;
+  }
+  memoryIdempotency.delete(scopeKey);
+}
+
+export async function completeHttpIdempotency(
+  scopeKey: string,
+  fingerprint: string,
   statusCode: number,
   body: unknown,
 ): Promise<void> {
   const record: IdempotencyRecord = {
+    state: 'completed',
+    fingerprint,
     statusCode,
     body,
     expiresAt: Date.now() + IDEMPOTENCY_TTL_SEC * 1000,
@@ -207,7 +395,7 @@ export async function setIdempotencyRecord(
   const redis = await redisClient();
   if (redis) {
     await redis.set(
-      `${IDEMPOTENCY_HTTP_PREFIX}${key}`,
+      `${IDEMPOTENCY_HTTP_PREFIX}${scopeKey}`,
       JSON.stringify(record),
       'EX',
       IDEMPOTENCY_TTL_SEC,
@@ -216,7 +404,16 @@ export async function setIdempotencyRecord(
   }
 
   pruneMemoryIdempotency();
-  memoryIdempotency.set(key, record);
+  memoryIdempotency.set(scopeKey, record);
+}
+
+/** @deprecated Prefer claimHttpIdempotency + completeHttpIdempotency */
+export async function setIdempotencyRecord(
+  key: string,
+  statusCode: number,
+  body: unknown,
+): Promise<void> {
+  await completeHttpIdempotency(key, 'legacy', statusCode, body);
 }
 
 // ─── WS idempotency ───────────────────────────────────────────────────

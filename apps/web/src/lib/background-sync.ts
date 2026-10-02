@@ -4,15 +4,18 @@
  * Features: exponential backoff, max retries, online/offline detection
  */
 
+import type { OfflineReplayEnvelope } from '@nexus-hems/shared-types';
 import { getAuthHeader, isAuthTokenValid } from './auth-token';
 import {
   cleanupCompletedActions,
   getPendingActions,
   type OfflineAction,
+  persistOfflineReplayEnvelope,
   updateActionStatus,
 } from './db';
 import { detectSyncConflict, fetchServerSyncVersion, recordServerSyncVersion } from './sync-client';
 import { markSyncConflict } from './sync-conflict';
+import { withOfflineSyncLock } from './sync-lock';
 
 const MAX_RETRIES = 5;
 const BASE_RETRY_DELAY_MS = 2000;
@@ -45,6 +48,24 @@ function isCommandExpired(action: OfflineAction): boolean {
 
 function getActionRetryCount(action: OfflineAction): number {
   return action.retries;
+}
+
+/** Backfill envelope for hardware actions queued before envelope support (upgrade path). */
+function resolveHardwareReplayEnvelope(action: OfflineAction): OfflineReplayEnvelope {
+  if (action.replayEnvelope) {
+    return action.replayEnvelope;
+  }
+  const idempotencyKey = action.idempotencyKey?.trim();
+  if (!idempotencyKey) {
+    throw new Error(`Missing idempotency key for ${action.type} — re-queue the action`);
+  }
+  const createdAt = action.timestamp;
+  return {
+    commandId: crypto.randomUUID(),
+    idempotencyKey,
+    createdAt,
+    expiresAt: createdAt + OFFLINE_HARDWARE_COMMAND_TTL_MS,
+  };
 }
 
 type ActionProcessResult = 'completed' | 'skipped' | 'failed';
@@ -127,6 +148,14 @@ class BackgroundSyncService {
    */
   async syncPendingActions(options?: { force?: boolean }): Promise<boolean> {
     if (this.isSyncing || !navigator.onLine) {
+      return true;
+    }
+
+    return withOfflineSyncLock(() => this.runSyncPass(options));
+  }
+
+  private async runSyncPass(options?: { force?: boolean }): Promise<boolean> {
+    if (this.isSyncing) {
       return true;
     }
 
@@ -280,10 +309,21 @@ class BackgroundSyncService {
       case 'ev-control':
       case 'hp-control':
       case 'battery-control': {
+        const envelope = resolveHardwareReplayEnvelope(action);
+        if (!action.replayEnvelope && action.id !== undefined) {
+          await persistOfflineReplayEnvelope(action.id, envelope);
+        }
+        if (Date.now() >= envelope.expiresAt) {
+          throw new Error(`Offline ${action.type} expired before replay`);
+        }
         const response = await fetch(`${baseUrl}/api/commands/replay`, {
           method: 'POST',
           headers: commonHeaders,
-          body: JSON.stringify({ type: action.type, payload: action.payload }),
+          body: JSON.stringify({
+            type: action.type,
+            payload: action.payload,
+            envelope,
+          }),
         });
         await assertFetchOk(response, `Replay ${action.type}`);
         break;

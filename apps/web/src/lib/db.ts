@@ -1,3 +1,4 @@
+import type { OfflineReplayEnvelope } from '@nexus-hems/shared-types';
 import Dexie, { type Table, type Transaction } from 'dexie';
 import type { CommandAuditEntry } from '../core/command-safety';
 import type { EnergyData, StoredSettings } from '../types';
@@ -75,6 +76,8 @@ export interface OfflineAction {
    * Format: `<type>-<timestamp>-<random6hex>`
    */
   idempotencyKey?: string | undefined;
+  /** Server-validated replay envelope for hardware control actions (audit wave 2). */
+  replayEnvelope?: OfflineReplayEnvelope;
 }
 
 /**
@@ -618,13 +621,25 @@ export async function queueOfflineAction(
   const rand = Math.floor(Math.random() * 0xffffff)
     .toString(16)
     .padStart(6, '0');
+  const idempotencyKey = `${type}-${ts}-${rand}`;
+  const isHardware = type === 'ev-control' || type === 'hp-control' || type === 'battery-control';
+  const replayEnvelope = isHardware
+    ? {
+        commandId: crypto.randomUUID(),
+        idempotencyKey,
+        createdAt: ts,
+        expiresAt: ts + 5 * 60 * 1000,
+      }
+    : undefined;
+
   const id = await nexusDb.offlineActions.add({
     type,
     payload,
     timestamp: ts,
     retries: 0,
     status: 'pending',
-    idempotencyKey: `${type}-${ts}-${rand}`,
+    idempotencyKey,
+    ...(replayEnvelope ? { replayEnvelope } : {}),
   });
   return id as number;
 }
@@ -682,6 +697,13 @@ export async function getPendingActions(): Promise<OfflineAction[]> {
 /**
  * Update offline action status
  */
+export async function persistOfflineReplayEnvelope(
+  id: number,
+  replayEnvelope: OfflineReplayEnvelope,
+): Promise<void> {
+  await nexusDb.offlineActions.update(id, { replayEnvelope });
+}
+
 export async function updateActionStatus(
   id: number,
   status: OfflineAction['status'],

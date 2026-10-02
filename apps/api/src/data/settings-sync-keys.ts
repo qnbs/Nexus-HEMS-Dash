@@ -36,5 +36,6 @@ const USER_PREFERENCE_KEYS = new Set<string>([
 
 /** Classify a settings patch key for sync diff metadata. */
 export function classifySettingsKey(key: string): SettingsSyncCategory {
+  if (key.startsWith('ext.')) return 'userPreferences';
   return USER_PREFERENCE_KEYS.has(key) ? 'userPreferences' : 'deviceSettings';
 }
