@@ -4,6 +4,7 @@
 
 import { type NextFunction, type Request, type Response, Router } from 'express';
 import { z } from 'zod';
+import { SettingsPatchError } from '../data/settings-patch-error.js';
 import { applySettingsPatch } from '../data/settings-store.js';
 import { getSyncDiffSince } from '../data/sync-diff-store.js';
 import { getSyncVersion } from '../data/sync-version-store.js';
@@ -30,6 +31,12 @@ function parseSettingsBody(body: unknown): {
   }
   if (Object.keys(patch).length === 0) {
     throw new Error('empty_patch');
+  }
+  if (
+    updatedAtRaw !== undefined &&
+    (typeof updatedAtRaw !== 'number' || !Number.isFinite(updatedAtRaw) || updatedAtRaw < 0)
+  ) {
+    throw new Error('invalid_updatedAt');
   }
   const clientUpdatedAt =
     typeof updatedAtRaw === 'number' && Number.isFinite(updatedAtRaw) && updatedAtRaw >= 0
@@ -69,19 +76,17 @@ export function createSyncRoutes(): Router {
         const result = await applySettingsPatch(patch, clientUpdatedAt);
         res.json({ ok: true, ...result });
       } catch (error) {
+        if (error instanceof SettingsPatchError) {
+          res.status(error.statusCode).json({ error: error.message });
+          return;
+        }
         if (error instanceof Error) {
-          if (error.message === 'invalid_body' || error.message === 'empty_patch') {
-            res.status(400).json({ error: 'Invalid settings body' });
-            return;
-          }
           if (
-            error.message.startsWith('Unknown settings key') ||
-            error.message.startsWith('Invalid value') ||
-            error.message.startsWith('Settings key') ||
-            error.message.startsWith('Settings patch') ||
-            error.message.startsWith('Extension key')
+            error.message === 'invalid_body' ||
+            error.message === 'empty_patch' ||
+            error.message === 'invalid_updatedAt'
           ) {
-            res.status(400).json({ error: error.message });
+            res.status(400).json({ error: 'Invalid settings body' });
             return;
           }
         }

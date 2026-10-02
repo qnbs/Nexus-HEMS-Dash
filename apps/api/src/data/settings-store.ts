@@ -8,6 +8,7 @@ import {
   getServerSettingsSnapshot,
   resetSyncPersistenceForTests,
 } from '../services/sync-persistence.js';
+import { SettingsPatchError } from './settings-patch-error.js';
 import { classifySettingsKey } from './settings-sync-keys.js';
 
 /** Snapshot of all known server settings keys. */
@@ -25,7 +26,7 @@ export async function applySettingsPatch(
 ): Promise<{ version: number; applied: string[] }> {
   const validated = validateSettingsSyncPatch(patch);
   if (!validated.ok) {
-    throw new Error(validated.error);
+    throw new SettingsPatchError(validated.error);
   }
 
   const updatedAt = clientUpdatedAt ?? Date.now();

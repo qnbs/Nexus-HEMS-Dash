@@ -1,3 +1,4 @@
+import type { OfflineReplayEnvelope } from '@nexus-hems/shared-types';
 import Dexie, { type Table, type Transaction } from 'dexie';
 import type { CommandAuditEntry } from '../core/command-safety';
 import type { EnergyData, StoredSettings } from '../types';
@@ -76,13 +77,7 @@ export interface OfflineAction {
    */
   idempotencyKey?: string | undefined;
   /** Server-validated replay envelope for hardware control actions (audit wave 2). */
-  replayEnvelope?: {
-    commandId: string;
-    idempotencyKey: string;
-    createdAt: number;
-    expiresAt: number;
-    clientSyncGeneration?: number;
-  };
+  replayEnvelope?: OfflineReplayEnvelope;
 }
 
 /**
@@ -702,6 +697,13 @@ export async function getPendingActions(): Promise<OfflineAction[]> {
 /**
  * Update offline action status
  */
+export async function persistOfflineReplayEnvelope(
+  id: number,
+  replayEnvelope: OfflineReplayEnvelope,
+): Promise<void> {
+  await nexusDb.offlineActions.update(id, { replayEnvelope });
+}
+
 export async function updateActionStatus(
   id: number,
   status: OfflineAction['status'],

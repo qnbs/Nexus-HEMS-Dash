@@ -5,7 +5,7 @@
 
 import type { WSCommandType } from '@nexus-hems/shared-types';
 import { OfflineReplayEnvelopeSchema } from '@nexus-hems/shared-types';
-import { Router } from 'express';
+import { type NextFunction, type Request, type Response, Router } from 'express';
 import { z } from 'zod';
 import { getEffectiveAdapterMode } from '../config/adapter-mode.js';
 import { isReadOnlyMode } from '../config/read-only-mode.js';
@@ -27,6 +27,34 @@ const ReplayBodySchema = z.object({
   envelope: OfflineReplayEnvelopeSchema,
 });
 
+type ReplayBody = z.infer<typeof ReplayBodySchema>;
+
+function validateReplayRequest(req: Request, res: Response, next: NextFunction): void {
+  const parsed = ReplayBodySchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: 'Invalid replay body', details: parsed.error.flatten() });
+    return;
+  }
+
+  const headerKey = req.header('x-idempotency-key')?.trim();
+  const { envelope } = parsed.data;
+  if (headerKey && headerKey !== envelope.idempotencyKey) {
+    res.status(400).json({
+      error: 'X-Idempotency-Key must match envelope.idempotencyKey when both are present',
+    });
+    return;
+  }
+
+  const freshness = validateOfflineReplayEnvelope(envelope);
+  if (!freshness.ok) {
+    res.status(freshness.status).json({ error: freshness.error });
+    return;
+  }
+
+  (req as Request & { replayBody: ReplayBody }).replayBody = parsed.data;
+  next();
+}
+
 /** Factory for `/api/commands/replay`. */
 export function createCommandsRoutes(): Router {
   const router = Router();
@@ -36,28 +64,10 @@ export function createCommandsRoutes(): Router {
     requireJWT,
     requireScope('readwrite'),
     requireNotReadOnly,
+    validateReplayRequest,
     idempotencyMiddleware,
     async (req, res) => {
-      const parsed = ReplayBodySchema.safeParse(req.body);
-      if (!parsed.success) {
-        res.status(400).json({ error: 'Invalid replay body', details: parsed.error.flatten() });
-        return;
-      }
-
-      const headerKey = req.header('x-idempotency-key')?.trim();
-      const { envelope } = parsed.data;
-      if (headerKey && headerKey !== envelope.idempotencyKey) {
-        res.status(400).json({
-          error: 'X-Idempotency-Key must match envelope.idempotencyKey when both are present',
-        });
-        return;
-      }
-
-      const freshness = validateOfflineReplayEnvelope(envelope);
-      if (!freshness.ok) {
-        res.status(freshness.status).json({ error: freshness.error });
-        return;
-      }
+      const parsed = (req as Request & { replayBody: ReplayBody }).replayBody;
 
       if (isReadOnlyMode()) {
         res
@@ -66,7 +76,7 @@ export function createCommandsRoutes(): Router {
         return;
       }
 
-      const { type, payload } = parsed.data;
+      const { type, payload, envelope } = parsed;
       const wsType = OFFLINE_ACTION_WS_TYPE[type];
       const watts = extractOfflineCommandWatts(payload);
 

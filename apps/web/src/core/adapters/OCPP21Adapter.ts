@@ -166,7 +166,7 @@ export class OCPP21Adapter extends BaseAdapter {
   readonly securityProfile: OCPPSecurityProfile;
   private readonly revocationCheck: OcppRevocationCheck;
   private iso15118Enabled: boolean;
-  private readonly authorizeIdTokenSet: ReadonlySet<string>;
+  private authorizeIdTokenSet: ReadonlySet<string>;
 
   private charger: ChargerState = {
     connectorStatus: 'Available',
@@ -213,6 +213,10 @@ export class OCPP21Adapter extends BaseAdapter {
 
     const { mergeCredentialsIntoConfig } = await import('../../lib/secure-store');
     const merged = await mergeCredentialsIntoConfig('ocpp-21', this.config);
+    const mergedOcpp = merged as OCPPAdapterConfig;
+    if (mergedOcpp.authorizeIdTokens !== undefined) {
+      this.authorizeIdTokenSet = parseAuthorizeIdTokens(mergedOcpp.authorizeIdTokens);
+    }
 
     const prep = prepareOcppConnection({
       host: merged.host,

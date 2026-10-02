@@ -91,6 +91,48 @@ export type SettingsSyncValidationResult =
   | { ok: true; patch: Record<string, unknown> }
   | { ok: false; error: string };
 
+type SettingsSyncKeyResult = { ok: true; value: unknown } | { ok: false; error: string };
+
+function isPrototypePollutionKey(key: string): boolean {
+  return key === '__proto__' || key === 'constructor' || key === 'prototype';
+}
+
+function stripBlockedFromSystemConfig(data: unknown): Record<string, unknown> {
+  const cleaned = { ...(data as Record<string, unknown>) };
+  for (const blocked of SETTINGS_SYNC_BLOCKED_KEYS) {
+    delete cleaned[blocked];
+  }
+  return cleaned;
+}
+
+function validateSettingsSyncKey(key: string, raw: Record<string, unknown>): SettingsSyncKeyResult {
+  if (isPrototypePollutionKey(key)) {
+    return { ok: false, error: `Unknown settings key: ${key}` };
+  }
+  if (SETTINGS_SYNC_BLOCKED_KEYS.has(key)) {
+    return { ok: false, error: `Settings key "${key}" cannot be synced via API` };
+  }
+  if (key.startsWith('ext.')) {
+    const value = raw[key];
+    if (typeof value !== 'string' && typeof value !== 'number' && typeof value !== 'boolean') {
+      return { ok: false, error: `Extension key "${key}" must be a primitive value` };
+    }
+    return { ok: true, value };
+  }
+  const schema = settingsSyncValueSchemas[key];
+  if (!schema) {
+    return { ok: false, error: `Unknown settings key: ${key}` };
+  }
+  const parsed = schema.safeParse(raw[key]);
+  if (!parsed.success) {
+    return { ok: false, error: `Invalid value for settings key "${key}"` };
+  }
+  if (key === 'systemConfig' && parsed.data && typeof parsed.data === 'object') {
+    return { ok: true, value: stripBlockedFromSystemConfig(parsed.data) };
+  }
+  return { ok: true, value: parsed.data };
+}
+
 /** Validate and normalize a settings sync patch (reject unknown/blocked keys). */
 export function validateSettingsSyncPatch(
   raw: Record<string, unknown>,
@@ -103,42 +145,16 @@ export function validateSettingsSyncPatch(
     return { ok: false, error: `Settings patch exceeds ${SETTINGS_SYNC_MAX_KEYS_PER_PATCH} keys` };
   }
 
-  const patch: Record<string, unknown> = {};
+  const patch = Object.create(null) as Record<string, unknown>;
   for (const key of keys) {
-    if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
-      return { ok: false, error: `Unknown settings key: ${key}` };
-    }
-    if (SETTINGS_SYNC_BLOCKED_KEYS.has(key)) {
-      return { ok: false, error: `Settings key "${key}" cannot be synced via API` };
-    }
-    if (key.startsWith('ext.')) {
-      if (
-        typeof raw[key] !== 'string' &&
-        typeof raw[key] !== 'number' &&
-        typeof raw[key] !== 'boolean'
-      ) {
-        return { ok: false, error: `Extension key "${key}" must be a primitive value` };
-      }
-      patch[key] = raw[key];
+    if (!Object.hasOwn(raw, key)) {
       continue;
     }
-    const schema = settingsSyncValueSchemas[key];
-    if (!schema) {
-      return { ok: false, error: `Unknown settings key: ${key}` };
+    const result = validateSettingsSyncKey(key, raw);
+    if (!result.ok) {
+      return result;
     }
-    const parsed = schema.safeParse(raw[key]);
-    if (!parsed.success) {
-      return { ok: false, error: `Invalid value for settings key "${key}"` };
-    }
-    if (key === 'systemConfig' && parsed.data && typeof parsed.data === 'object') {
-      const cleaned = { ...(parsed.data as Record<string, unknown>) };
-      for (const blocked of SETTINGS_SYNC_BLOCKED_KEYS) {
-        delete cleaned[blocked];
-      }
-      patch[key] = cleaned;
-    } else {
-      patch[key] = parsed.data;
-    }
+    patch[key] = result.value;
   }
   return { ok: true, patch };
 }

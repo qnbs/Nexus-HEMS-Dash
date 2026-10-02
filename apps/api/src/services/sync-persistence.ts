@@ -96,6 +96,17 @@ export async function bumpSyncVersion(): Promise<number> {
   return memoryVersion.value;
 }
 
+/** Roll back version after a failed settings batch (best-effort). */
+async function rollbackSyncVersion(previous: number): Promise<void> {
+  const redis = await redisClient();
+  if (redis) {
+    await redis.set(SYNC_VERSION_KEY, String(previous), 'EX', 86_400 * 30);
+    memoryVersion.value = previous;
+    return;
+  }
+  memoryVersion.value = previous;
+}
+
 // ─── Settings ─────────────────────────────────────────────────────────
 
 export async function getServerSettingsSnapshot(): Promise<Record<string, unknown>> {
@@ -145,16 +156,17 @@ export async function applySettingsBatch(
     return getSyncVersion();
   }
 
-  const version = await bumpSyncVersion();
+  const priorVersion = await getSyncVersion();
   const snapshot = await getServerSettingsSnapshot();
   for (const entry of entries) {
     snapshot[entry.key] = entry.value;
   }
-  await persistSettingsSnapshot(snapshot);
 
   const log = await readDiffLog();
+  const version = await bumpSyncVersion();
+  const nextLog = [...log];
   for (const entry of entries) {
-    log.push({
+    nextLog.push({
       key: entry.key,
       value: entry.value,
       updatedAt: entry.updatedAt,
@@ -162,8 +174,15 @@ export async function applySettingsBatch(
       version,
     });
   }
-  await writeDiffLog(log);
-  return version;
+
+  try {
+    await persistSettingsSnapshot(snapshot);
+    await writeDiffLog(nextLog);
+    return version;
+  } catch (error) {
+    await rollbackSyncVersion(priorVersion);
+    throw error;
+  }
 }
 
 // ─── Diff log ─────────────────────────────────────────────────────────

@@ -16,7 +16,10 @@ function readPackageVersion(): string {
 
 export const API_APP_VERSION = readPackageVersion();
 
-/** Optional CI/git metadata (not required in dev). */
+/**
+ * Optional CI/git metadata (not required in dev).
+ * Set `GIT_SHA` / `BUILD_TIME_ISO` on the API process at runtime (Docker/K8s) — build-time CI env alone does not persist them.
+ */
 export function resolveBuildMetadata(env: NodeJS.ProcessEnv = process.env): {
   version: string;
   gitSha?: string;

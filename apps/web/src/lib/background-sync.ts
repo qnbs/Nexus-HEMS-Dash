@@ -10,6 +10,7 @@ import {
   cleanupCompletedActions,
   getPendingActions,
   type OfflineAction,
+  persistOfflineReplayEnvelope,
   updateActionStatus,
 } from './db';
 import { detectSyncConflict, fetchServerSyncVersion, recordServerSyncVersion } from './sync-client';
@@ -309,6 +310,9 @@ class BackgroundSyncService {
       case 'hp-control':
       case 'battery-control': {
         const envelope = resolveHardwareReplayEnvelope(action);
+        if (!action.replayEnvelope && action.id !== undefined) {
+          await persistOfflineReplayEnvelope(action.id, envelope);
+        }
         if (Date.now() >= envelope.expiresAt) {
           throw new Error(`Offline ${action.type} expired before replay`);
         }
