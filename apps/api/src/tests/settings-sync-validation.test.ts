@@ -28,6 +28,13 @@ describe('validateSettingsSyncPatch', () => {
     expect(result.ok).toBe(false);
   });
 
+  it('rejects oversized ext.* string values', () => {
+    const result = validateSettingsSyncPatch({
+      'ext.flag': 'x'.repeat(600),
+    });
+    expect(result.ok).toBe(false);
+  });
+
   it('strips blocked nested keys from systemConfig', () => {
     const result = validateSettingsSyncPatch({
       systemConfig: { presetId: 'home', influxToken: 'must-not-persist' },

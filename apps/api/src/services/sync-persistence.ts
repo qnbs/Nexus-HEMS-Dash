@@ -42,6 +42,18 @@ export interface SyncDiffEntry {
 
 const SERVER_BOOT_VERSION = Date.now();
 
+/** Serializes in-process settings batches (memory fallback has no Redis transactions). */
+let settingsBatchTail: Promise<unknown> = Promise.resolve();
+
+function withSettingsBatchMutex<T>(task: () => Promise<T>): Promise<T> {
+  const next = settingsBatchTail.then(task, task);
+  settingsBatchTail = next.then(
+    () => undefined,
+    () => undefined,
+  );
+  return next;
+}
+
 // ─── In-memory fallback ───────────────────────────────────────────────
 
 const memoryVersion = { value: SERVER_BOOT_VERSION };
@@ -145,6 +157,17 @@ export async function setServerSetting(key: string, value: unknown): Promise<voi
 
 /** Atomic multi-key settings patch with a single version bump and diff append. */
 export async function applySettingsBatch(
+  entries: Array<{
+    key: string;
+    value: unknown;
+    category: SettingsSyncCategory;
+    updatedAt: number;
+  }>,
+): Promise<number> {
+  return withSettingsBatchMutex(() => applySettingsBatchInner(entries));
+}
+
+async function applySettingsBatchInner(
   entries: Array<{
     key: string;
     value: unknown;

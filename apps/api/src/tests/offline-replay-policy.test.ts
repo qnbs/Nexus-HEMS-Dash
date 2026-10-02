@@ -31,5 +31,9 @@ describe('validateOfflineReplayEnvelope', () => {
   it('rejects createdAt too far in the future', () => {
     const result = validateOfflineReplayEnvelope(base, base.createdAt - 120_000);
     expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.status).toBe(400);
+      expect(result.error).toMatch(/future/i);
+    }
   });
 });

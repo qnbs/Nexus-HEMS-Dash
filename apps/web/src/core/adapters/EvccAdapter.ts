@@ -238,8 +238,12 @@ export class EvccAdapter extends BaseAdapter {
       }
       case 'SET_EV_PHASES': {
         const lp = Number(command.targetDeviceId ?? 1);
-        const phases = Number(command.value);
-        if (phases !== 1 && phases !== 3) {
+        const raw = command.value;
+        if (typeof raw !== 'number' && typeof raw !== 'string') {
+          return false;
+        }
+        const phases = typeof raw === 'number' ? raw : Number.parseInt(String(raw), 10);
+        if (!Number.isFinite(phases) || (phases !== 1 && phases !== 3)) {
           return false;
         }
         await this.postApi(`/api/loadpoints/${lp}/phases/${phases}`);

@@ -86,6 +86,7 @@ export const settingsSyncValueSchemas: Record<string, z.ZodType<unknown>> = {
 };
 
 export const SETTINGS_SYNC_MAX_KEYS_PER_PATCH = 50;
+export const SETTINGS_SYNC_EXT_MAX_STRING_LENGTH = 512;
 
 export type SettingsSyncValidationResult =
   | { ok: true; patch: Record<string, unknown> }
@@ -116,6 +117,12 @@ function validateSettingsSyncKey(key: string, raw: Record<string, unknown>): Set
     const value = raw[key];
     if (typeof value !== 'string' && typeof value !== 'number' && typeof value !== 'boolean') {
       return { ok: false, error: `Extension key "${key}" must be a primitive value` };
+    }
+    if (typeof value === 'string' && value.length > SETTINGS_SYNC_EXT_MAX_STRING_LENGTH) {
+      return {
+        ok: false,
+        error: `Extension key "${key}" exceeds max length of ${SETTINGS_SYNC_EXT_MAX_STRING_LENGTH}`,
+      };
     }
     return { ok: true, value };
   }
