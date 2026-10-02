@@ -31,6 +31,10 @@ import {
   idTokenInfoStatus,
   resolveInboundOcppAuthorize,
 } from '../../config/ocpp-authorize-policy.js';
+import {
+  OCPP_MAX_WS_MESSAGE_BYTES,
+  resolveOcppStationAdmission,
+} from '../../config/ocpp-csms-admission.js';
 import { recordAdapterDlq, recordAdapterError } from '../../middleware/adapter-metrics.js';
 import { API_RUNTIME_DIR, DEAD_LETTER_QUEUE_PATH } from '../../runtime-paths.js';
 import type {
@@ -211,6 +215,10 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
       wss.on('connection', (ws, req) => {
         const pathParts = (req.url ?? '/').split('/').filter(Boolean);
         const chargePointId = pathParts.at(-1) ?? 'unknown-cp';
+        if (resolveOcppStationAdmission(chargePointId) === 'rejected') {
+          ws.close(1008, 'Charge point not allowlisted');
+          return;
+        }
         this.sessions.set(ws, {
           chargePointId,
           lastPowerW: 0,
@@ -225,6 +233,10 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
           try {
             const raw =
               typeof data === 'string' ? data : Buffer.from(data as Buffer).toString('utf8');
+            if (raw.length > OCPP_MAX_WS_MESSAGE_BYTES) {
+              ws.close(1009, 'OCPP message too large');
+              return;
+            }
             const json: unknown = JSON.parse(raw);
             const parsed = OcppInboundMessageSchema.safeParse(json);
             if (!parsed.success) {
@@ -376,6 +388,15 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
         const station = ChargingStationSchema.safeParse(payload.chargingStation);
         if (station.success && station.data.serialNumber) {
           session.chargePointId = station.data.serialNumber;
+        }
+        if (resolveOcppStationAdmission(session.chargePointId) === 'rejected') {
+          this.sendCallResult(ws, messageId, {
+            currentTime: new Date().toISOString(),
+            interval: HEARTBEAT_INTERVAL_S,
+            status: 'Rejected',
+          });
+          ws.close(1008, 'Charge point not allowlisted');
+          break;
         }
         this.sendCallResult(ws, messageId, {
           currentTime: new Date().toISOString(),

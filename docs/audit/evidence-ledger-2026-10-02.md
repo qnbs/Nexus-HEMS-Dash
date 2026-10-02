@@ -25,8 +25,11 @@
 | AUD-OCPP-AUTH | P0 | OCPP Authorize always Accepted | **Fixed** — fail-closed in live + allowlist |
 | AUD-WS-TICKET-SCOPE | P1 | WS ticket scope default `readwrite` | **Fixed** — default `read` |
 | AUD-EV-SCHEMA | P1 | `SET_EV_MODE` / `SET_EV_PHASES` schema drift | **Fixed** — shared-types + adapter false on unsupported |
-| AUD-SETTINGS-CATCHALL | P1 | Settings sync catchall | Open — wave 4 |
-| AUD-SYNC-RACES | P1 | Redis settings/diff RMW races | Open — wave 4 |
+| AUD-SETTINGS-CATCHALL | P1 | Settings sync catchall | **Fixed** — registry + blocked credential keys |
+| AUD-SYNC-RACES | P1 | Redis settings/diff RMW races | **Partial** — atomic batch per PATCH; Redis RMW across replicas still open |
+| AUD-OCPP-ADMISSION | P1 | CSMS station allowlist / frame size | **Fixed** — live allowlist + 64KiB cap |
+| AUD-DEPLOY-CI | P1 | Pages deploy vs CI SHA | **Fixed** — `wait-for-ci` on push |
+| AUD-COMMAND-RISK | P1 | Risk map exhaustiveness | **Fixed** — `COMMAND_RISK_MAP` + test |
 | AUD-READONLY-DUAL | P1 | Backend vs frontend read-only flags | Partial — documented in `safety-invariants.md`; convergence wave 2+ |
 | AUD-DEPLOY-CI | P1 | Pages deploy vs exact CI SHA | Open — wave 6 |
 

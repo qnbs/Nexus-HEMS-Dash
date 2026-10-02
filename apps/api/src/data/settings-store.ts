@@ -2,14 +2,13 @@
  * Server settings store for offline sync (slice 4, ADR-030).
  */
 
+import { validateSettingsSyncPatch } from '@nexus-hems/shared-types';
 import {
+  applySettingsBatch,
   getServerSettingsSnapshot,
-  getSyncVersion,
   resetSyncPersistenceForTests,
-  setServerSetting,
 } from '../services/sync-persistence.js';
 import { classifySettingsKey } from './settings-sync-keys.js';
-import { recordSyncDiffEntry } from './sync-diff-store.js';
 
 /** Snapshot of all known server settings keys. */
 export async function getServerSettings(): Promise<Record<string, unknown>> {
@@ -18,22 +17,27 @@ export async function getServerSettings(): Promise<Record<string, unknown>> {
 
 /**
  * Merge a partial settings patch from a client replay or API write.
- * Returns the new sync version after recording per-key diffs.
+ * Returns the new sync version after recording per-key diffs (single atomic bump).
  */
 export async function applySettingsPatch(
   patch: Record<string, unknown>,
   clientUpdatedAt?: number,
 ): Promise<{ version: number; applied: string[] }> {
-  const updatedAt = clientUpdatedAt ?? Date.now();
-  const applied: string[] = [];
-
-  for (const [key, value] of Object.entries(patch)) {
-    await setServerSetting(key, value);
-    await recordSyncDiffEntry(key, value, classifySettingsKey(key), updatedAt);
-    applied.push(key);
+  const validated = validateSettingsSyncPatch(patch);
+  if (!validated.ok) {
+    throw new Error(validated.error);
   }
 
-  return { version: await getSyncVersion(), applied };
+  const updatedAt = clientUpdatedAt ?? Date.now();
+  const entries = Object.entries(validated.patch).map(([key, value]) => ({
+    key,
+    value,
+    category: classifySettingsKey(key),
+    updatedAt,
+  }));
+
+  const version = await applySettingsBatch(entries);
+  return { version, applied: entries.map((e) => e.key) };
 }
 
 /** @internal Test helper */

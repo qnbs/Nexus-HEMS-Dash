@@ -132,6 +132,40 @@ export async function setServerSetting(key: string, value: unknown): Promise<voi
   await persistSettingsSnapshot(snapshot);
 }
 
+/** Atomic multi-key settings patch with a single version bump and diff append. */
+export async function applySettingsBatch(
+  entries: Array<{
+    key: string;
+    value: unknown;
+    category: SettingsSyncCategory;
+    updatedAt: number;
+  }>,
+): Promise<number> {
+  if (entries.length === 0) {
+    return getSyncVersion();
+  }
+
+  const version = await bumpSyncVersion();
+  const snapshot = await getServerSettingsSnapshot();
+  for (const entry of entries) {
+    snapshot[entry.key] = entry.value;
+  }
+  await persistSettingsSnapshot(snapshot);
+
+  const log = await readDiffLog();
+  for (const entry of entries) {
+    log.push({
+      key: entry.key,
+      value: entry.value,
+      updatedAt: entry.updatedAt,
+      category: entry.category,
+      version,
+    });
+  }
+  await writeDiffLog(log);
+  return version;
+}
+
 // ─── Diff log ─────────────────────────────────────────────────────────
 
 async function readDiffLog(): Promise<SyncDiffEntry[]> {

@@ -21,6 +21,7 @@ Release notes are maintained here and published via [semantic-release](https://g
 
 ### Security
 
+- **Audit waves 1–4/6 (continued)** — settings sync registry (reject unknown/credential keys); atomic settings batch version bump; OCPP CSMS station allowlist + max WS frame size; deploy waits for `✅ CI Passed` on the same SHA; Dependabot Action pin bumps (harden-runner, deploy-pages, anchore scan, attest provenance); exhaustive `COMMAND_RISK_MAP` with CI unit test.
 - **Audit wave 2 (safety/replay)** — HTTP idempotency binds principal, route, client key, and body fingerprint; offline hardware replay requires a server-validated envelope; OCPP `Authorize` fail-closed in live mode with `OCPP_AUTHORIZE_ID_TOKENS` allowlist; WS ticket scope defaults to `read` when JWT scope is invalid; shared `SET_EV_MODE` / `SET_EV_PHASES` schemas and evcc adapter rejects unsupported values.
 
 ### Changed
