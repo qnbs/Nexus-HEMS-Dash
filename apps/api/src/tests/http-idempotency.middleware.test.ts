@@ -1,4 +1,5 @@
 import express from 'express';
+import rateLimit from 'express-rate-limit';
 import supertest from 'supertest';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { clearIdempotencyCacheForTests } from '../data/idempotency-cache.js';
@@ -26,6 +27,14 @@ describe('idempotencyMiddleware composite scope', () => {
     let hitCount = 0;
     const app = express();
     app.use(express.json());
+    app.use(
+      rateLimit({
+        windowMs: 60_000,
+        max: 1000,
+        standardHeaders: true,
+        legacyHeaders: false,
+      }),
+    );
     app.post('/api/a', requireJWT, idempotencyMiddleware, (_req, res) => {
       hitCount += 1;
       res.json({ route: 'a', hitCount });
