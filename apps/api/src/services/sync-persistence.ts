@@ -157,7 +157,8 @@ export async function applySettingsBatch(
   }
 
   const priorVersion = await getSyncVersion();
-  const snapshot = await getServerSettingsSnapshot();
+  const priorSnapshot = await getServerSettingsSnapshot();
+  const snapshot = { ...priorSnapshot };
   for (const entry of entries) {
     snapshot[entry.key] = entry.value;
   }
@@ -181,6 +182,14 @@ export async function applySettingsBatch(
     return version;
   } catch (error) {
     await rollbackSyncVersion(priorVersion);
+    try {
+      await persistSettingsSnapshot(priorSnapshot);
+    } catch (restoreError) {
+      console.error(
+        '[sync-persistence] Failed to restore settings snapshot after batch error',
+        restoreError,
+      );
+    }
     throw error;
   }
 }
