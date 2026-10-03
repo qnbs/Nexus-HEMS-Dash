@@ -18,7 +18,7 @@
 ## Dependabot `npm_and_yarn` run (2026-10-03)
 
 - Workflow run **failed** on `main` (no PR opened): many transitive `security_update_not_possible` (e.g. `tar`, `undici`, `semver`) and `vitest` peer-deps resolution error in Dependabot’s sandbox.
-- **Action:** no agent PR to merge; keep prod surface clean via `pnpm.overrides` + CI `pnpm audit --prod` (#366–#367). Let **Renovate** (`renovate.yml`) propose resolvable npm bumps.
+- **Action:** no Dependabot PR to merge; manual override PR **#371** (`tar` ≥7.5.21, `undici` ^7.29.1 with 7.x cap for jsdom). Continue prod audit via `pnpm.overrides` + CI (#366–#367). Let **Renovate** (`renovate.yml`) propose other resolvable npm bumps.
 
 ## Policy
 
