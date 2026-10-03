@@ -1,14 +1,22 @@
 # Technical Debt Registry — Nexus-HEMS-Dash
 
-**Last audited:** 2026-09-02 (Stream F protocol depth closeout)  
-**Version at audit:** 1.11.1 tagged; `main` @ `c4e7939` unreleased  
-**Last updated:** 2026-09-02  
-**Release line:** v1.11.1 tagged (`1716a42`); `main` ahead with offline-sync Stream C (#354), protocol depth Stream F (#355–#356), demo i18n (#353), CI SLSA/Scorecard (#350–#351), release-workflow fix (#347), and review policy (#348) — **release intentionally deferred** until maintainer cuts next patch  
+**Last audited:** 2026-10-03 (v1.12.0 release + Oct audit closeout)  
+**Version at audit:** **1.12.0** tagged (`698cf42`, 2026-10-03); `main` @ `b035318`  
+**Last updated:** 2026-10-03  
+**Release line:** **v1.12.0** shipped (#363 audit waves 0–9, offline sync Stream C, Stream F, #344–#357, #361) — see `CHANGELOG.md` `[1.12.0]` and `docs/Campaign-Handoff-2026-10.md`  
 **Auditor:** Cursor Cloud Agent (2026-06-29 full audit; 2026-07-02 delta; 2026-07-03 full review; 2026-09-01 freeze + campaign closeout)
 
 This file is the canonical issue tracker for known technical debt, security gaps, incomplete implementations, and quality issues. It is **not** a substitute for GitHub Issues — use it for context, rationale, and multi-sprint planning.
 
-## Truth-Sync Note (2026-09-02)
+## Truth-Sync Note (2026-10-03)
+
+Aligned to tag **`v1.12.0`** @ `698cf42`. Supersedes the 2026-09-02 note below. Confirmed in code:
+
+- **Audit waves 0–9 (#363)** — HTTP idempotency fingerprint, offline replay envelope, OCPP Authorize fail-closed, settings sync registry, `applySettingsBatch` rollback + in-process mutex, build provenance, `navigator.locks` offline sync ✅
+- **Dependabot #358–#362** — closed or merged; Action pins on `main` current ✅
+- **Residual:** Redis multi-replica transactional settings sync (AUD-SYNC-RACES partial); org-level GitHub ruleset still manual
+
+## Truth-Sync Note (2026-09-02, superseded)
 
 Aligned to `main` @ `c4e7939` (Stream F protocol depth closeout). Supersedes the 2026-09-02 note below (`1993cb2`). Confirmed in code:
 
