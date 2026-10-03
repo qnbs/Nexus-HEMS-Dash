@@ -9,7 +9,17 @@ Release notes are maintained here and published via [semantic-release](https://g
 
 ## [Unreleased]
 
-> **HEAD:** Unreleased on `main` @ `c4e7939` (post-Stream F closeout). Not yet released — cut `v1.11.2` only when the maintainer dispatches `release.yml` or tags manually (ADR-015).
+### Added
+
+### Changed
+
+### Fixed
+
+### Security
+
+## [1.12.0] - 2026-10-03
+
+Shipped from `main` after audit #363, offline sync Stream C, Stream F protocol depth, and CI hardening (#344–#357, #361).
 
 ### Added
 
@@ -57,6 +67,10 @@ Release notes are maintained here and published via [semantic-release](https://g
 
 - Stream F closeout truth-sync (`FEATURE_STATUS.md`, campaign handoff, env vars) — housekeeping post-#356.
 - Post-v1.11.1 campaign closeout and release tag sync (#342).
+
+### CI
+
+- Renovate GitHub Action v46.2.5 (#361).
 
 ## [1.11.1] - 2026-09-01
 

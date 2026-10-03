@@ -1,10 +1,10 @@
 # Feature Status — Nexus-HEMS-Dash
 
-**Version:** 1.11.1 tagged (2026-09-01); `main` @ `c4e7939` unreleased (+15 commits after tag)  
+**Version:** 1.12.0 tagged (2026-10-03); `main` tracks current development  
 **Last updated:** 2026-09-02 (Stream F protocol depth + review follow-ups; offline sync Stream C)  
 **Purpose:** Single source of truth for what is actually implemented, partial, or planned. Use this file to keep README/marketing claims synchronized with the codebase.
 
-> **Operational note (2026-09-02):** Tag `v1.11.1` (`1716a42`) covers the Sep 2026 post-freeze campaign (#329–#341). **`main` is ahead** with offline sync Stream C (#354), protocol depth Stream F (#355–#356), demo i18n (#353), and CI/review policy work (#347–#351). Do not equate the live Pages demo version footer (`v1.11.1`) with current `main` HEAD. See `docs/Campaign-Handoff-2026-09.md` and `docs/Release-History.md`.
+> **Operational note (2026-10-03):** Tag `v1.12.0` ships audit #363, offline sync Stream C, Stream F, and post-v1.11.1 campaign work (#344–#357). See `docs/Campaign-Handoff-2026-09.md` and `docs/Release-History.md`.
 >
 > **Rule:** Any PR that changes a feature's implementation status must update this file and the relevant docs before merging.
 
