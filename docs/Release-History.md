@@ -72,7 +72,7 @@ Manual **Release** dispatch (`workflow_dispatch`, run `33544392686`) failed at *
 3. Verify: new tag, GitHub Release with non-empty body, workspace versions in sync.
 4. Downstream: `tauri-build.yml` + `container-publish.yml` trigger on the published release.
 
-> **Note (2026-09-01):** `v1.11.1` was cut via the fully manual tag procedure (`git tag` + `gh release create`) because Cloud Agent tokens cannot dispatch workflows (`403`) and semantic-release would not re-cut an already-bumped `1.11.1` manifest. Use workflow dispatch for the **next** patch when `[Unreleased]` warrants it, or bump to `1.11.2` manually first.
+> **Note (2026-10-03):** `v1.12.0` was cut via ADR-015 **Option B** (PR #364 + `git tag` + `gh release create`) because cloud agent tokens cannot dispatch `release.yml` (`403`). `v1.11.1` used the same manual tag procedure for a different reason (manifest already at `1.11.1`). For the next release, prefer workflow dispatch when `GH_TOKEN` is valid, or repeat Option B.
 
 ### Fallback — fully manual tags
 
