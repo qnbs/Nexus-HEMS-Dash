@@ -1,10 +1,10 @@
 # Feature Status — Nexus-HEMS-Dash
 
-**Version:** 1.12.0 tagged (2026-10-03); `main` tracks current development  
-**Last updated:** 2026-09-02 (Stream F protocol depth + review follow-ups; offline sync Stream C)  
+**Version:** 1.12.1 tagged (2026-10-03); `main` tracks current development  
+**Last updated:** 2026-10-03 (v1.12.1 security patch + release truth-sync)  
 **Purpose:** Single source of truth for what is actually implemented, partial, or planned. Use this file to keep README/marketing claims synchronized with the codebase.
 
-> **Operational note (2026-10-03):** Tag `v1.12.0` ships audit #363, offline sync Stream C, Stream F, and post-v1.11.1 campaign work (#344–#357). See `docs/Campaign-Handoff-2026-09.md` and `docs/Release-History.md`.
+> **Operational note (2026-10-03):** Tag `v1.12.1` is the current release (security overrides #366–#367 on top of `v1.12.0` audit #363, offline sync, Stream F). See `docs/Campaign-Handoff-2026-10.md` and `docs/Release-History.md`.
 >
 > **Rule:** Any PR that changes a feature's implementation status must update this file and the relevant docs before merging.
 
@@ -134,7 +134,7 @@
 | GitHub Pages deploy | ✅ | `.github/workflows/deploy.yml` |
 | Automated container registry push | ✅ | `container-publish.yml` — GHCR push + Grype gate + cosign sign on tag/main |
 | Automated Helm chart lint in CI | ✅ | `ci.yml` `helm-chart` job — `helm lint` + `helm template` smoke |
-| Tauri desktop build | ✅ | **Tauri Desktop Build** succeeded for `v1.12.0` (release workflow, 2026-10-03); ad-hoc macOS signing unless `MACOS_CODESIGN_ENABLED` |
+| Tauri desktop build | ✅ | **Tauri Desktop Build** for `v1.12.1` (release workflow, 2026-10-03); also green on `v1.12.0`; ad-hoc macOS signing unless `MACOS_CODESIGN_ENABLED` |
 | Capacitor mobile build | ⚠️ | Core/cli at 8.x, plugins aligned in `package.json`; verify with `cap sync` |
 
 ---
