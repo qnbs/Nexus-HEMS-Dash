@@ -244,6 +244,7 @@ Consolidates **33 commits** since `v1.9.0` (PRs [#236](https://github.com/qnbs/N
 - **Post-audit remediation summary** — `docs/Post-Audit-Remediation-Summary-2026-07-04.md`; `FEATURE_STATUS.md` phase 8 rows.
 - **Debt registry + perfection roadmap** — Phase 8 items closed; release line updated.
 
+[1.12.0]: https://github.com/qnbs/Nexus-HEMS-Dash/compare/v1.11.1...v1.12.0
 [1.11.1]: https://github.com/qnbs/Nexus-HEMS-Dash/compare/v1.11.0...v1.11.1
 [1.11.0]: https://github.com/qnbs/Nexus-HEMS-Dash/compare/v1.10.0...v1.11.0
 [1.10.0]: https://github.com/qnbs/Nexus-HEMS-Dash/compare/v1.9.0...v1.10.0
@@ -1110,6 +1111,6 @@ Consolidates **33 commits** since `v1.9.0` (PRs [#236](https://github.com/qnbs/N
 
 ---
 
-[Unreleased]: https://github.com/qnbs/Nexus-HEMS-Dash/compare/v1.11.1...HEAD
+[Unreleased]: https://github.com/qnbs/Nexus-HEMS-Dash/compare/v1.12.0...HEAD
 [1.1.0]: https://github.com/qnbs/Nexus-HEMS-Dash/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/qnbs/Nexus-HEMS-Dash/releases/tag/v1.0.0
