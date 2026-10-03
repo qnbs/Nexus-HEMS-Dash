@@ -1,6 +1,7 @@
 # Dependabot PR inventory — 2026-10-03
 
-**Open PRs:** none  
+**Last checked:** 2026-10-03 (post `v1.12.1`)  
+**Open PRs:** none (re-check after Dependabot `npm_and_yarn` workflow completes)  
 **Open `dependabot/*` branches on remote:** none  
 **Dependabot alerts API:** not available to cloud agent token (403); production risk tracked via `pnpm audit --prod` in CI Security Gate.
 
