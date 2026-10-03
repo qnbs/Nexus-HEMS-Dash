@@ -17,6 +17,8 @@ Release notes are maintained here and published via [semantic-release](https://g
 
 ### Security
 
+- **deps** — Raise `pnpm.overrides` floors for `tar` and `undici` (Dependabot `npm_and_yarn` could not resolve; aligns with lowest non-vulnerable versions).
+
 ## [1.12.1] - 2026-10-03
 
 Security patch after `v1.12.0` — production dependency overrides only (no feature changes).
