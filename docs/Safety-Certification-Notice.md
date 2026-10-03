@@ -1,7 +1,7 @@
 # Safety & Certification Notice — Nexus-HEMS-Dash
 
 **Last updated:** 2026-07-10
-**Applies to:** All versions (current release line **1.12.0**)
+**Applies to:** All versions (current release line **1.12.1**)
 
 ---
 

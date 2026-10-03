@@ -1,19 +1,21 @@
 # Technical Debt Registry — Nexus-HEMS-Dash
 
-**Last audited:** 2026-10-03 (v1.12.0 release + Oct audit closeout)  
-**Version at audit:** **1.12.0** tagged (`698cf42`, 2026-10-03); `main` @ `b035318`  
+**Last audited:** 2026-10-03 (v1.12.1 patch + post-release docs)  
+**Version at audit:** **1.12.1** tagged (`c48cd56`, 2026-10-03); `main` @ `53c5d48` (post #369)  
 **Last updated:** 2026-10-03  
-**Release line:** **v1.12.0** shipped (#363 audit waves 0–9, offline sync Stream C, Stream F, #344–#357, #361) — see `CHANGELOG.md` `[1.12.0]` and `docs/Campaign-Handoff-2026-10.md`  
+**Release line:** **v1.12.1** current — security overrides (#366–#368) on **v1.12.0** (#363, #364); see `CHANGELOG.md` and `docs/Campaign-Handoff-2026-10.md`  
 **Auditor:** Cursor Cloud Agent (2026-06-29 full audit; 2026-07-02 delta; 2026-07-03 full review; 2026-09-01 freeze + campaign closeout)
 
 This file is the canonical issue tracker for known technical debt, security gaps, incomplete implementations, and quality issues. It is **not** a substitute for GitHub Issues — use it for context, rationale, and multi-sprint planning.
 
-## Truth-Sync Note (2026-10-03)
+## Truth-Sync Note (2026-10-03, v1.12.1)
 
-Aligned to tag **`v1.12.0`** @ `698cf42`. Supersedes the 2026-09-02 note below. Confirmed in code:
+Aligned to tag **`v1.12.1`** @ `c48cd56` (`main` @ `53c5d48`). Supersedes the v1.12.0 note below. Confirmed in code:
 
 - **Audit waves 0–9 (#363)** — HTTP idempotency fingerprint, offline replay envelope, OCPP Authorize fail-closed, settings sync registry, `applySettingsBatch` rollback + in-process mutex, build provenance, `navigator.locks` offline sync ✅
+- **Prod dependency audit (#366–#367)** — `pnpm audit --prod` clean via `pnpm.overrides` (dompurify, qs, body-parser, protobufjs, ip-address, fflate, …) ✅
 - **Dependabot #358–#362** — closed or merged; Action pins on `main` current ✅
+- **Dependabot `npm_and_yarn` (2026-10-03)** — workflow failed without opening PRs; Renovate + overrides path documented in `docs/Dependabot-Inventory-2026-10-03.md`
 - **Residual:** Redis multi-replica transactional settings sync (AUD-SYNC-RACES partial); org-level GitHub ruleset still manual
 
 ## Truth-Sync Note (2026-09-02, superseded)
