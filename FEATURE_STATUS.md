@@ -134,7 +134,7 @@
 | GitHub Pages deploy | ✅ | `.github/workflows/deploy.yml` |
 | Automated container registry push | ✅ | `container-publish.yml` — GHCR push + Grype gate + cosign sign on tag/main |
 | Automated Helm chart lint in CI | ✅ | `ci.yml` `helm-chart` job — `helm lint` + `helm template` smoke |
-| Tauri desktop build | ⚠️ | Icons + mobile-plugin gating fixed (#236); verify via **Tauri Desktop Build** workflow (`version=1.11.0`) |
+| Tauri desktop build | ✅ | **Tauri Desktop Build** succeeded for `v1.12.0` (release workflow, 2026-10-03); ad-hoc macOS signing unless `MACOS_CODESIGN_ENABLED` |
 | Capacitor mobile build | ⚠️ | Core/cli at 8.x, plugins aligned in `package.json`; verify with `cap sync` |
 
 ---

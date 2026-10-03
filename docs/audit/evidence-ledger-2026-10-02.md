@@ -2,19 +2,20 @@
 
 **Date:** 2026-10-02 (UTC)  
 **Repository:** `qnbs/Nexus-HEMS-Dash`  
-**Baseline SHA:** `ef4f5d08fd58432bce9574a82bd4eb419a4b083c` (`docs: truth-sync post-Stream F closeout at c4e7939 (#357)`)
+**Baseline SHA:** `ef4f5d08fd58432bce9574a82bd4eb419a4b083c` (`docs: truth-sync post-Stream F closeout at c4e7939 (#357)`)  
+**Closeout SHA:** `356266c` merged via PR **#363**; released as **`v1.12.0`** @ `698cf42` (2026-10-03, PR #364)
 
 ## Release / version provenance
 
 | Signal | Value |
 |--------|--------|
-| `package.json` version | `1.11.1` |
-| Latest GitHub Release tag | `v1.11.1` (2026-09-01) |
-| `main` ahead of tag | Yes — Stream F + docs closeout landed after release |
+| `package.json` version | `1.12.0` (tagged) |
+| Latest GitHub Release tag | `v1.12.0` (2026-10-03) |
+| `main` ahead of tag | Docs-only (`b035318` Release-History pointer) — align on next release |
 
 ## Open dependency PRs (snapshot)
 
-- #358–#362 — GitHub Actions bumps (Dependabot)
+- #358–#362 — **Closed/merged** (2026-10-03 housekeeping)
 
 ## Seed findings (reproduced at baseline)
 
