@@ -1,7 +1,7 @@
 # Nexus-HEMS-Dash — Documentation Hub
 
 Central index for the project's documentation. Start here to find the right doc
-by task. The shipped release line is **v1.12.0** (2026-10-03); see [Release-History.md](Release-History.md).
+by task. The shipped release line is **v1.12.1** (2026-10-03); see [Release-History.md](Release-History.md).
 
 > **New here?** Read the root [`README.md`](../README.md) for the project overview,
 > then [`CLAUDE.md`](../CLAUDE.md) for the engineering rules, and
@@ -75,6 +75,7 @@ within ~2 sprints) · `LOW` (backlog) · `DOC` (documentation-only).
 - **Deploy:** [`Deployment-Guide.md`](Deployment-Guide.md) · [`Deployment-Checklist.md`](Deployment-Checklist.md) · [`Manual-Workflow-Triggers.md`](Manual-Workflow-Triggers.md) · [`Release-History.md`](Release-History.md) · [`Release-GH_TOKEN-Setup.md`](Release-GH_TOKEN-Setup.md)
 - **Observability:** [`Observability-Plan.md`](Observability-Plan.md) · [`Grafana-Dashboards-Custom.md`](Grafana-Dashboards-Custom.md)
 - **Support:** [`Troubleshooting.md`](Troubleshooting.md) · [`PR-FEEDBACK-PLAYBOOK.md`](PR-FEEDBACK-PLAYBOOK.md) · [`Graphify-Integration-Guide.md`](Graphify-Integration-Guide.md)
+- **Dependabot status:** [`Dependabot-Inventory-2026-10-03.md`](Dependabot-Inventory-2026-10-03.md)
 - **Campaign closeout:** [`Campaign-Handoff-2026-10.md`](Campaign-Handoff-2026-10.md) (v1.12.0 release, Oct 2026); [`Campaign-Handoff-2026-09.md`](Campaign-Handoff-2026-09.md) (post-v1.11.0 freeze, Sep 2026)
 - [`runbooks/`](runbooks/) — per-platform integration runbooks
 

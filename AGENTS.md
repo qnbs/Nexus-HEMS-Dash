@@ -7,7 +7,7 @@ For the full architectural rulebook, read [`CLAUDE.md`](CLAUDE.md) first; this f
 
 ## 1. Project overview
 
-**Nexus-HEMS Dashboard** (`v1.12.0`) is a production-oriented, real-time Home Energy Management System dashboard. It consolidates **13 protocol adapters** (7 core + 6 contrib) into a unified React 19 SPA served by an Express 5 backend.
+**Nexus-HEMS Dashboard** (`v1.12.1`) is a production-oriented, real-time Home Energy Management System dashboard. It consolidates **13 protocol adapters** (7 core + 6 contrib) into a unified React 19 SPA served by an Express 5 backend.
 
 It is a **pnpm + Turborepo monorepo** with three workspaces:
 

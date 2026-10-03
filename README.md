@@ -30,9 +30,9 @@
 
 Nexus-HEMS is a **unified Command Center** that consolidates <!-- ADAPTERS-EN:START -->**13 protocol adapters** (7 core + 6 contrib)<!-- ADAPTERS-EN:END --> into **8 primary routes across 7 navigation sections** — orchestrating photovoltaic generation, battery storage, heat pumps, EV charging, and building automation with dynamic electricity tariffs. Instead of 18+ separate pages, every feature is accessible from a **single streamlined interface** with contextual in-context help and a new-user landing on the Command Hub.
 
-The current shipped release line is **1.12.0** (tagged 2026-10-03). See [CHANGELOG.md](CHANGELOG.md) and [docs/Release-History.md](docs/Release-History.md) for the full timeline.
+The current shipped release line is **1.12.1** (tagged 2026-10-03). See [CHANGELOG.md](CHANGELOG.md) and [docs/Release-History.md](docs/Release-History.md) for the full timeline.
 
-> **Maintenance status (2026-10-03):** Tag `v1.12.0` includes audit waves 0–9 (#363), offline sync Stream C (#354), protocol depth Stream F (#355–#356), demo i18n (#353), and CI/review policy hardening. The [live GitHub Pages demo](https://qnbs.github.io/Nexus-HEMS-Dash/) is a **backendless static SPA** when `VITE_BACKEND_WS` is off: simulation mode with demo plant data. See [FEATURE_STATUS.md](FEATURE_STATUS.md) for verified feature boundaries.
+> **Maintenance status (2026-10-03):** Tag `v1.12.1` is a security patch (prod `pnpm audit` clean, #366–#367). `v1.12.0` includes audit waves 0–9 (#363), offline sync Stream C (#354), protocol depth Stream F (#355–#356), demo i18n (#353), and CI/review policy hardening. The [live GitHub Pages demo](https://qnbs.github.io/Nexus-HEMS-Dash/) is a **backendless static SPA** when `VITE_BACKEND_WS` is off: simulation mode with demo plant data. See [FEATURE_STATUS.md](FEATURE_STATUS.md) for verified feature boundaries.
 
 > **Safety notice:** Nexus-HEMS controls safety-critical electrical infrastructure. No regulatory certification (VDE, IEC, CE) has been obtained. Read [docs/Safety-Certification-Notice.md](docs/Safety-Certification-Notice.md) before connecting to live hardware.
 
