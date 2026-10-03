@@ -1,9 +1,8 @@
 # Release History — Nexus-HEMS-Dash
 
-**Last curated:** 2026-09-02  
-**Current release (tag):** `v1.11.1` @ `1716a42`  
-**`main` HEAD (unreleased):** `c4e7939` — 15 commits ahead of the tag; see `CHANGELOG.md` `[Unreleased]`  
-**Policy:** Manual-only semantic-release (ADR-015 amended 2026-07-03)
+**Last curated:** 2026-10-03  
+**Current release (tag):** `v1.12.0` @ `303d757` (manifest bump PR follows)  
+**Policy:** Manual-only semantic-release (ADR-015 amended 2026-07-03); this release cut via manual version sync + tag (Option B)
 
 This document records the **canonical release timeline**, known anomalies from the automatic-release period, and how to cut future releases correctly.
 
@@ -13,6 +12,7 @@ This document records the **canonical release timeline**, known anomalies from t
 
 | Tag | Date (UTC) | Head commit | Highlights |
 |-----|------------|-------------|------------|
+| `v1.12.0` | 2026-10-03 | `—` | Audit waves 0–9 (#363), offline sync slices 2–4 + Stream C (#344–#354), Stream F SG Ready/OpenADR (#355–#356), demo i18n (#353), CI SLSA/Scorecard/quiescence (#347–#351), Renovate action (#361) |
 | `v1.11.1` | 2026-09-01 | `1716a42` | Post-freeze campaign + master-prompt remediation: SEC-11, deps/CVE, demo chrome, E-STOP tests, CI pins, Command Hub i18n, offline idempotency slice 1 (#329–#341) |
 | `v1.11.0` | 2026-07-10 | `—` | Command Palette registry (ADR-028), Settings/Help perfection, page modularization, deep-audit remediation (F-01–F-07, ADR-029 local-LLM deferral), toolchain + Pages-deploy hardening (#270–#313) |
 | `v1.10.0` | 2026-07-04 | `7469389` | Post-audit phases 1–8, WS schema hardening, Helm `WS_ORIGINS`, Pages deploy prune, security wave (#236–#268, #269) |
@@ -28,18 +28,9 @@ This document records the **canonical release timeline**, known anomalies from t
 | `v1.1.0` | 2026-04-25 | — | Mobile, tariffs, toolchain |
 | `v1.0.0` | — | — | Initial public release |
 
-### Unreleased on `main` (post-tag, 2026-09-02)
+### v1.12.0 (2026-10-03)
 
-Commits after `v1.11.1` through `c4e7939` are documented in `CHANGELOG.md` `[Unreleased]`:
-
-- Post-v1.11.1 campaign closeout docs (#342)
-- Offline sync slices 2–4 + Stream C Redis (#344, #346, #349, #354)
-- Demo i18n + tariff formatter (#353)
-- Protocol depth Stream F (#355–#356)
-- CI: Node 24 job-level env (#343), SLSA isolation + PR parity (#350), Scorecard publish fix (#351)
-- Review quiescence policy (#348), release checkout fix (#347), test coverage (#345)
-
-Cut **`v1.11.2`** (or next patch) only when the maintainer dispatches `release.yml` or tags manually.
+Shipped via manual version sync + tag (ADR-015 Option B). See `CHANGELOG.md` `[1.12.0]`.
 
 ---
 

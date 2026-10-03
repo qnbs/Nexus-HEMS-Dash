@@ -9,7 +9,17 @@ Release notes are maintained here and published via [semantic-release](https://g
 
 ## [Unreleased]
 
-> **HEAD:** Unreleased on `main` @ `c4e7939` (post-Stream F closeout). Not yet released — cut `v1.11.2` only when the maintainer dispatches `release.yml` or tags manually (ADR-015).
+### Added
+
+### Changed
+
+### Fixed
+
+### Security
+
+## [1.12.0] - 2026-10-03
+
+Shipped from `main` after audit #363, offline sync Stream C, Stream F protocol depth, and CI hardening (#344–#357, #361).
 
 ### Added
 
@@ -57,6 +67,10 @@ Release notes are maintained here and published via [semantic-release](https://g
 
 - Stream F closeout truth-sync (`FEATURE_STATUS.md`, campaign handoff, env vars) — housekeeping post-#356.
 - Post-v1.11.1 campaign closeout and release tag sync (#342).
+
+### CI
+
+- Renovate GitHub Action v46.2.5 (#361).
 
 ## [1.11.1] - 2026-09-01
 
@@ -230,6 +244,7 @@ Consolidates **33 commits** since `v1.9.0` (PRs [#236](https://github.com/qnbs/N
 - **Post-audit remediation summary** — `docs/Post-Audit-Remediation-Summary-2026-07-04.md`; `FEATURE_STATUS.md` phase 8 rows.
 - **Debt registry + perfection roadmap** — Phase 8 items closed; release line updated.
 
+[1.12.0]: https://github.com/qnbs/Nexus-HEMS-Dash/compare/v1.11.1...v1.12.0
 [1.11.1]: https://github.com/qnbs/Nexus-HEMS-Dash/compare/v1.11.0...v1.11.1
 [1.11.0]: https://github.com/qnbs/Nexus-HEMS-Dash/compare/v1.10.0...v1.11.0
 [1.10.0]: https://github.com/qnbs/Nexus-HEMS-Dash/compare/v1.9.0...v1.10.0
@@ -1096,6 +1111,6 @@ Consolidates **33 commits** since `v1.9.0` (PRs [#236](https://github.com/qnbs/N
 
 ---
 
-[Unreleased]: https://github.com/qnbs/Nexus-HEMS-Dash/compare/v1.11.1...HEAD
+[Unreleased]: https://github.com/qnbs/Nexus-HEMS-Dash/compare/v1.12.0...HEAD
 [1.1.0]: https://github.com/qnbs/Nexus-HEMS-Dash/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/qnbs/Nexus-HEMS-Dash/releases/tag/v1.0.0
