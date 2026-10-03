@@ -9,9 +9,9 @@
 
 | Signal | Value |
 |--------|--------|
-| `package.json` version | `1.12.0` (tagged) |
-| Latest GitHub Release tag | `v1.12.0` (2026-10-03) |
-| `main` ahead of tag | Docs-only (`b035318` Release-History pointer) — align on next release |
+| `package.json` version | `1.12.1` (tagged) |
+| Latest GitHub Release tag | `v1.12.1` (2026-10-03, #368) |
+| `main` ahead of tag | Docs-only (`53c5d48` post #369) — no manifest drift |
 
 ## Open dependency PRs (snapshot)
 

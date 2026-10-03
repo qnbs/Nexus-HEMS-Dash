@@ -3,8 +3,8 @@
 > **Status:** Closed (patch line active)  
 > **Current tag:** `v1.12.1` @ `c48cd56` (2026-10-03) — security patch #368  
 > **Prior tag:** `v1.12.0` @ `698cf42` — feature release #364  
-> **`main` HEAD:** `c48cd56` (post #368)  
-> **Pages deploy:** re-run `deploy.yml` on `c48cd56` after merge (CI-triggered)
+> **`main` HEAD:** `53c5d48` (post #369 docs truth-sync)  
+> **Pages deploy:** `deploy.yml` green on `53c5d48` (2026-10-03)
 
 ## What shipped
 
