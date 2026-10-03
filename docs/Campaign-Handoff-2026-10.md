@@ -2,7 +2,8 @@
 
 > **Status:** Closed  
 > **Tag:** `v1.12.0` @ `698cf42` (2026-10-03)  
-> **`main` HEAD:** `b035318` (docs pointer after release)
+> **`main` HEAD:** `5d6b352` (post #365 docs truth-sync)  
+> **Pages deploy:** `deploy.yml` green on `5d6b352` (wait-for-ci + verify-pages)
 
 ## What shipped
 
