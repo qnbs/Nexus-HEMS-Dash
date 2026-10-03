@@ -1,7 +1,7 @@
 # Nexus-HEMS-Dash — Documentation Hub
 
 Central index for the project's documentation. Start here to find the right doc
-by task. The shipped release line is **v1.12.0** (2026-10-03); see [Release-History.md](Release-History.md).
+by task. The shipped release line is **v1.12.1** (2026-10-03); see [Release-History.md](Release-History.md).
 
 > **New here?** Read the root [`README.md`](../README.md) for the project overview,
 > then [`CLAUDE.md`](../CLAUDE.md) for the engineering rules, and

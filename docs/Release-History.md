@@ -1,7 +1,7 @@
 # Release History — Nexus-HEMS-Dash
 
 **Last curated:** 2026-10-03  
-**Current release (tag):** `v1.12.0` @ `698cf42`  
+**Current release (tag):** `v1.12.1` @ `TBD` (manifest PR pending)  
 **Policy:** Manual-only semantic-release (ADR-015 amended 2026-07-03); this release cut via manual version sync + tag (Option B)
 
 This document records the **canonical release timeline**, known anomalies from the automatic-release period, and how to cut future releases correctly.
@@ -12,6 +12,7 @@ This document records the **canonical release timeline**, known anomalies from t
 
 | Tag | Date (UTC) | Head commit | Highlights |
 |-----|------------|-------------|------------|
+| `v1.12.1` | 2026-10-03 | `—` | Security patch: dompurify + prod transitive overrides (#366–#367); docs truth-sync (#365) |
 | `v1.12.0` | 2026-10-03 | `698cf42` | Audit waves 0–9 (#363), offline sync slices 2–4 + Stream C (#344–#354), Stream F SG Ready/OpenADR (#355–#356), demo i18n (#353), CI SLSA/Scorecard/quiescence (#347–#351), Renovate action (#361); cut via ADR-015 Option B (#364) |
 | `v1.11.1` | 2026-09-01 | `1716a42` | Post-freeze campaign + master-prompt remediation: SEC-11, deps/CVE, demo chrome, E-STOP tests, CI pins, Command Hub i18n, offline idempotency slice 1 (#329–#341) |
 | `v1.11.0` | 2026-07-10 | `—` | Command Palette registry (ADR-028), Settings/Help perfection, page modularization, deep-audit remediation (F-01–F-07, ADR-029 local-LLM deferral), toolchain + Pages-deploy hardening (#270–#313) |
