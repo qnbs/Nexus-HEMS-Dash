@@ -17,7 +17,7 @@ Release notes are maintained here and published via [semantic-release](https://g
 
 ### Security
 
-- **deps** — Raise `pnpm.overrides` floors for `tar` and `undici` (Dependabot `npm_and_yarn` could not resolve; aligns with lowest non-vulnerable versions).
+- **deps** — Raise `pnpm.overrides` floors for `tar` (≥7.5.21) and `undici` (^7.29.1, 7.x cap for jsdom); Dependabot `npm_and_yarn` could not open a PR.
 
 ## [1.12.1] - 2026-10-03
 
