@@ -17,6 +17,8 @@ Release notes are maintained here and published via [semantic-release](https://g
 
 ### Security
 
+- **deps** — Raise `pnpm.overrides` floors for production transitive advisories (`qs`, `body-parser`, `protobufjs`, `ip-address`, `fflate`); `pnpm audit --prod` clean.
+
 ## [1.12.0] - 2026-10-03
 
 Shipped from `main` after audit #363, offline sync Stream C, Stream F protocol depth, and CI hardening (#344–#357, #361).
