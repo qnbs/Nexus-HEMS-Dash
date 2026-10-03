@@ -1,7 +1,7 @@
 # Release History — Nexus-HEMS-Dash
 
 **Last curated:** 2026-10-03  
-**Current release (tag):** `v1.12.0` @ `303d757` (manifest bump PR follows)  
+**Current release (tag):** `v1.12.0` @ `698cf42`  
 **Policy:** Manual-only semantic-release (ADR-015 amended 2026-07-03); this release cut via manual version sync + tag (Option B)
 
 This document records the **canonical release timeline**, known anomalies from the automatic-release period, and how to cut future releases correctly.
