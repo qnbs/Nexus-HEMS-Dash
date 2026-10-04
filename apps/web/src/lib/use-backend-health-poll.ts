@@ -1,6 +1,10 @@
 import { useEffect } from 'react';
 import { useAppStore } from '../store';
-import { fetchBackendHealthStatus, setRuntimeBackendReadOnly } from './adapter-mode';
+import {
+  fetchBackendHealthStatus,
+  setRuntimeBackendAdapterMode,
+  setRuntimeBackendReadOnly,
+} from './adapter-mode';
 import { ignorePromiseRejection } from './ignore-promise-rejection';
 
 /**
@@ -18,6 +22,7 @@ export const useBackendHealthPoll = (): void => {
         setBackendReadOnly(readOnly);
         // Non-React command-safety path reads the module flag synchronously.
         setRuntimeBackendReadOnly(readOnly);
+        setRuntimeBackendAdapterMode(mode);
       })
       .catch(ignorePromiseRejection);
     return () => {

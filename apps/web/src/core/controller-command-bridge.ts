@@ -8,7 +8,7 @@
 
 import type { AdapterCommand } from './adapters/EnergyAdapter';
 import type { ControllerOutput } from './energy-controllers';
-import { sendAdapterCommand } from './useEnergyStore';
+import { dispatchHardwareCommand } from './hardware-command-dispatch';
 
 const MIN_DISPATCH_INTERVAL_MS = 60_000;
 
@@ -91,7 +91,7 @@ export async function dispatchControllerOutputs(output: ControllerOutput): Promi
     if (key === null || typeof command.value !== 'number') continue;
     if (!shouldDispatch(key, command.value, now)) continue;
 
-    const ok = await sendAdapterCommand(command);
+    const ok = await dispatchHardwareCommand(command);
     if (!ok) continue;
 
     accepted++;

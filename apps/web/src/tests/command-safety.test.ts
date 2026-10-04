@@ -122,6 +122,15 @@ describe('command-safety', () => {
       expect(result.error).toMatch(/read-only mode/i);
     });
 
+    it('rejects browser commands when backend WebSocket mode owns control', () => {
+      vi.stubEnv('VITE_ADAPTER_MODE', 'live');
+      vi.stubEnv('VITE_ALLOW_LIVE_HARDWARE', 'true');
+      vi.stubEnv('VITE_BACKEND_WS', 'true');
+      const result = validateCommandShape({ type: 'SET_BATTERY_POWER', value: 2500 });
+      expect(result.valid).toBe(false);
+      expect(result.error).toMatch(/Backend WebSocket mode/i);
+    });
+
     it('leaves a full token budget for validateCommand after a shape pre-check', () => {
       const command = { type: 'SET_GRID_LIMIT' as const, value: 5000 };
       // A UI pre-check (shape) followed by the single authoritative gate must

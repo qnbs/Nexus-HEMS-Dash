@@ -52,12 +52,49 @@ export function isBuiltinAdapterEnabledByDefault(): boolean {
  * Whether an enabled adapter may attempt a hardware connection.
  * Requires live build acknowledgement; user must still enable the adapter.
  */
+/**
+ * Whether an enabled adapter may open a hardware connection in the browser.
+ * FUP-CTRL-01: same fail-closed rules as command dispatch.
+ */
 export function canConnectHardwareAdapter(adapterEnabled: boolean): boolean {
   if (!adapterEnabled) return false;
-  return isLiveHardwareBuildAllowed();
+  return isBrowserDirectControlAllowed() && isLiveHardwareBuildAllowed();
 }
 
+import {
+  browserControlDeniedMessage,
+  type ControlAuthoritySnapshot,
+  resolveControlAuthority,
+} from '../core/control-authority';
+
 export type BackendAdapterMode = 'mock' | 'live' | 'unknown';
+
+let runtimeBackendAdapterMode: BackendAdapterMode = 'unknown';
+
+/** Updated from `useBackendHealthPoll` after each `/api/health` fetch. */
+export function setRuntimeBackendAdapterMode(mode: BackendAdapterMode): void {
+  runtimeBackendAdapterMode = mode;
+}
+
+export function getRuntimeBackendAdapterMode(): BackendAdapterMode {
+  return runtimeBackendAdapterMode;
+}
+
+/** Current authority for this browser session (fail-closed by default). */
+export function getBrowserControlAuthority(): ControlAuthoritySnapshot {
+  return resolveControlAuthority({
+    backendMode: runtimeBackendAdapterMode,
+    readOnly: isReadOnlyModeActive(),
+    buildAllowsLive: isLiveHardwareBuildAllowed(),
+    backendWsEnabled: isBackendWsEnabled(),
+  });
+}
+
+export function isBrowserDirectControlAllowed(): boolean {
+  return getBrowserControlAuthority().browserDirectControlAllowed;
+}
+
+export { browserControlDeniedMessage };
 
 /** Parsed fields from `GET /api/health` used for global safety indicators. */
 export interface BackendHealthStatus {
