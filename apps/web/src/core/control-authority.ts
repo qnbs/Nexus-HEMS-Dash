@@ -45,22 +45,19 @@ export function resolveControlAuthority(input: ControlAuthorityInput): ControlAu
     };
   }
 
-  if (
-    input.backendMode === 'unknown' &&
-    (input.buildAllowsLive || input.backendWsEnabled)
-  ) {
-    return {
-      source: 'none',
-      browserDirectControlAllowed: false,
-      denyReason: 'backend_unresolved',
-    };
-  }
-
   if (input.backendWsEnabled) {
     return {
       source: 'backend',
       browserDirectControlAllowed: false,
       denyReason: 'backend_ws',
+    };
+  }
+
+  if (input.backendMode === 'unknown' && input.buildAllowsLive) {
+    return {
+      source: 'none',
+      browserDirectControlAllowed: false,
+      denyReason: 'backend_unresolved',
     };
   }
 
