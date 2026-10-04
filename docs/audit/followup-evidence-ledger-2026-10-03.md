@@ -121,9 +121,9 @@ Treat as **locked** unless a targeted test fails:
 | ID | Priority | Domain | Status | Wave | Summary |
 |----|----------|--------|--------|------|---------|
 | **FUP-REL-01** | P1 | Release | **closed** | F0 | **v1.12.2** @ `0eb15bc` (#374, tag published 2026-10-04) |
-| **FUP-REDIS-01** | P0/P1 | Sync | **open** | F1 | Redis-native atomic settings + stream diff; no version rollback; TTL policy |
+| **FUP-REDIS-01** | P0/P1 | Sync | **closed** | F1 | #375 @ `23538c9` — Lua batch, stream diff, `REDIS_REQUIRED`, Helm guard |
 | **FUP-IDEM-01** | P0/P1 | Idempotency | **open** | F2 | Physical-command state machine; UNKNOWN after dispatch |
-| **FUP-REDIS-02** | P1 | Redis API | **open** | F1/F2 | Typed `SET NX` / CAS / streams on `IRedisClient` |
+| **FUP-REDIS-02** | P1 | Redis API | **closed** | F1 | #375 — typed `SET NX`, `hget`/`hdel`/`eval`/`xrevrange` on `IRedisClient` |
 | **FUP-CTRL-01** | P1 | Safety | **open** | F3 | Single `ControlAuthority` / fail-closed browser live control |
 | **FUP-OCPP-01** | P1 | OCPP | **open** | F4 | Disable SP0 insecure CSMS by default; identity/session limits |
 | **FUP-DEPLOY-01** | P1 | CI/CD | **open** | F5 | Promote CI-built `apps/web/dist`, no post-CI rebuild |
@@ -152,6 +152,7 @@ Treat as **locked** unless a targeted test fails:
 | 2026-10-04 | (this file) | Opened follow-up ledger at `539a897`; registered findings FUP-* |
 | 2026-10-04 | `0eb15bc` / #374 | **FUP-REL-01:** v1.12.2 manifest + tag; `Release-History.md` SHA `0eb15bc` |
 | 2026-10-04 | (F1 branch) | **FUP-REDIS-01/02:** atomic Lua batch, stream diff, typed SET NX, `REDIS_REQUIRED`, Helm wiring (PR pending) |
+| 2026-10-04 | `23538c9` / #375 | **FUP-REDIS-01/02 merged** (admin squash; CI green @ `fb2d8a4`, 8 review threads resolved) |
 
 ---
 
