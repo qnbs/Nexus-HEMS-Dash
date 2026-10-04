@@ -402,7 +402,8 @@ export async function getSyncDiffSince(since: number): Promise<SyncDiffResult> {
     for (const entry of log) {
       if (entry.version < minVersion) minVersion = entry.version;
     }
-    if (normalizedSince > 0 && normalizedSince < minVersion) {
+    // Gap: client version is more than one behind the oldest retained diff entry.
+    if (normalizedSince > 0 && normalizedSince < minVersion - 1) {
       return { version, changes: [], fullResyncRequired: true };
     }
   }
