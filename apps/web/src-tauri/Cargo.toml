@@ -1,6 +1,6 @@
 [package]
 name = "nexus-hems-dash"
-version = "1.12.1"
+version = "1.12.2"
 description = "Nexus HEMS Dashboard – Desktop App"
 authors = ["Nexus HEMS Team"]
 edition = "2024"

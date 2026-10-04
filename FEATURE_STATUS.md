@@ -1,7 +1,7 @@
 # Feature Status — Nexus-HEMS-Dash
 
-**Version:** 1.12.1 tagged (2026-10-03); `main` tracks current development  
-**Last updated:** 2026-10-03 (v1.12.1 security patch + release truth-sync)  
+**Version:** 1.12.2 release line (tag pending); `main` tracks current development  
+**Last updated:** 2026-10-04 (v1.12.2 patch checkpoint, FUP-REL-01)  
 **Purpose:** Single source of truth for what is actually implemented, partial, or planned. Use this file to keep README/marketing claims synchronized with the codebase.
 
 > **Operational note (2026-10-03):** Tag `v1.12.1` is the current release (security overrides #366–#367 on top of `v1.12.0` audit #363, offline sync, Stream F). See `docs/Campaign-Handoff-2026-10.md` and `docs/Release-History.md`.

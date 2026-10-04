@@ -17,7 +17,17 @@ Release notes are maintained here and published via [semantic-release](https://g
 
 ### Security
 
-- **deps** — Raise `pnpm.overrides` floors for `tar` (≥7.5.21) and `undici` (^7.29.1, 7.x cap for jsdom); Dependabot `npm_and_yarn` could not open a PR.
+## [1.12.2] - 2026-10-04
+
+Patch after `v1.12.1` — aligns the release tag with post-tag security overrides and documentation truth-sync already on `main` (#369–#372).
+
+### Security
+
+- **deps** — Raise `pnpm.overrides` floors for `tar` (≥7.5.21) and `undici` (^7.29.1, 7.x cap for jsdom) (#371).
+
+### Docs
+
+- Post-`v1.12.1` truth-sync (#369–#370), Dependabot inventory (#372).
 
 ## [1.12.1] - 2026-10-03
 
@@ -259,6 +269,7 @@ Consolidates **33 commits** since `v1.9.0` (PRs [#236](https://github.com/qnbs/N
 - **Post-audit remediation summary** — `docs/Post-Audit-Remediation-Summary-2026-07-04.md`; `FEATURE_STATUS.md` phase 8 rows.
 - **Debt registry + perfection roadmap** — Phase 8 items closed; release line updated.
 
+[1.12.2]: https://github.com/qnbs/Nexus-HEMS-Dash/compare/v1.12.1...v1.12.2
 [1.12.1]: https://github.com/qnbs/Nexus-HEMS-Dash/compare/v1.12.0...v1.12.1
 [1.12.0]: https://github.com/qnbs/Nexus-HEMS-Dash/compare/v1.11.1...v1.12.0
 [1.11.1]: https://github.com/qnbs/Nexus-HEMS-Dash/compare/v1.11.0...v1.11.1
@@ -1127,6 +1138,6 @@ Consolidates **33 commits** since `v1.9.0` (PRs [#236](https://github.com/qnbs/N
 
 ---
 
-[Unreleased]: https://github.com/qnbs/Nexus-HEMS-Dash/compare/v1.12.1...HEAD
+[Unreleased]: https://github.com/qnbs/Nexus-HEMS-Dash/compare/v1.12.2...HEAD
 [1.1.0]: https://github.com/qnbs/Nexus-HEMS-Dash/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/qnbs/Nexus-HEMS-Dash/releases/tag/v1.0.0
