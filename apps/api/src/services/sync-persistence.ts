@@ -152,10 +152,14 @@ async function mergeLegacySettingsJson(
   try {
     const legacy = JSON.parse(raw) as Record<string, unknown>;
     for (const [key, value] of Object.entries(legacy)) {
-      if (snapshot[key] === undefined) {
-        await redis.hset(SYNC_SETTINGS_HASH_KEY, key, JSON.stringify(value));
-        snapshot[key] = value;
+      if (snapshot[key] !== undefined) continue;
+      const existing = await redis.hget(SYNC_SETTINGS_HASH_KEY, key);
+      if (existing !== null) {
+        snapshot[key] = JSON.parse(existing) as unknown;
+        continue;
       }
+      await redis.hset(SYNC_SETTINGS_HASH_KEY, key, JSON.stringify(value));
+      snapshot[key] = value;
     }
     await redis.del(SYNC_SETTINGS_KEY);
   } catch {
@@ -228,15 +232,11 @@ async function applySettingsBatchInner(
   const redis = await redisClient();
   if (redis) {
     try {
-      const versionKey = await redis.get(SYNC_VERSION_KEY);
-      if (!versionKey) {
-        await persistSyncVersionKey(redis, memoryVersion.value);
-      }
       const argv: string[] = [String(entries.length)];
       for (const entry of entries) {
         argv.push(entry.key, JSON.stringify(entry.value), entry.category, String(entry.updatedAt));
       }
-      argv.push(String(MAX_DIFF_ENTRIES));
+      argv.push(String(memoryVersion.value), String(MAX_DIFF_ENTRIES));
       const result = await redis.eval(
         APPLY_SETTINGS_BATCH_LUA,
         3,

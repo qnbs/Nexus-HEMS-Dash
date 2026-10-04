@@ -1,5 +1,5 @@
 {{- if and (gt (int .Values.replicaCount.server) 1) (not .Values.server.redisUrl) }}
-{{- fail "server.replicaCount.server > 1 requires server.redisUrl for HA offline sync (REDIS_URL)" }}
+{{- fail "replicaCount.server > 1 requires .Values.server.redisUrl for HA offline sync (REDIS_URL)" }}
 {{- end }}
 apiVersion: apps/v1
 kind: Deployment

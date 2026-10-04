@@ -70,6 +70,10 @@ function createMockRedis(): IRedisClient & { state: Map<string, string> } {
         throw new Error('unexpected script');
       }
       const argv = args.slice(3);
+      const seed = argv[argv.length - 2];
+      if (!state.has(SYNC_VERSION_KEY) && seed) {
+        state.set(SYNC_VERSION_KEY, seed);
+      }
       const prior = Number(state.get(SYNC_VERSION_KEY) ?? 0);
       version = prior + 1;
       state.set(SYNC_VERSION_KEY, String(version));
