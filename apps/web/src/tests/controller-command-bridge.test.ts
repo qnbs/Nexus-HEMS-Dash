@@ -36,7 +36,10 @@ describe('controller-command-bridge', () => {
     await dispatchControllerOutputs({ sgReadyMode: 2, reason: 'a', confidence: 0.9 });
     await dispatchControllerOutputs({ sgReadyMode: 4, reason: 'b', confidence: 0.9 });
     expect(dispatchHardwareCommand).toHaveBeenCalledTimes(2);
-    expect(dispatchHardwareCommand).toHaveBeenLastCalledWith({ type: 'SET_HEAT_PUMP_MODE', value: 4 });
+    expect(dispatchHardwareCommand).toHaveBeenLastCalledWith({
+      type: 'SET_HEAT_PUMP_MODE',
+      value: 4,
+    });
   });
 
   it('dispatches battery and EV commands when present', async () => {
@@ -47,7 +50,10 @@ describe('controller-command-bridge', () => {
       confidence: 0.8,
     });
     expect(accepted).toBe(2);
-    expect(dispatchHardwareCommand).toHaveBeenCalledWith({ type: 'SET_BATTERY_POWER', value: 2000 });
+    expect(dispatchHardwareCommand).toHaveBeenCalledWith({
+      type: 'SET_BATTERY_POWER',
+      value: 2000,
+    });
     expect(dispatchHardwareCommand).toHaveBeenCalledWith({ type: 'SET_EV_CURRENT', value: 12 });
   });
 });
