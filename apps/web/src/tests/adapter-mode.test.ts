@@ -11,6 +11,7 @@ import {
   isReadOnlyModeActive,
   resolveConnectionPresentation,
   resolveFrontendAdapterMode,
+  setRuntimeBackendAdapterMode,
   setRuntimeBackendReadOnly,
 } from '../lib/adapter-mode';
 
@@ -24,10 +25,12 @@ describe('adapter-mode (frontend)', () => {
   it('resolves live mode and hardware acknowledgement from env', () => {
     vi.stubEnv('VITE_ADAPTER_MODE', 'live');
     vi.stubEnv('VITE_ALLOW_LIVE_HARDWARE', 'true');
+    setRuntimeBackendAdapterMode('mock');
     expect(resolveFrontendAdapterMode()).toBe('live');
     expect(isLiveHardwareBuildAllowed()).toBe(true);
     expect(canConnectHardwareAdapter(true)).toBe(true);
     expect(canConnectHardwareAdapter(false)).toBe(false);
+    setRuntimeBackendAdapterMode('unknown');
     vi.unstubAllEnvs();
   });
 
