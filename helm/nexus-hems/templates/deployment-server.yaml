@@ -48,6 +48,10 @@ spec:
             {{- if .Values.server.redisUrl }}
             - name: REDIS_URL
               value: {{ .Values.server.redisUrl | quote }}
+            {{- if gt (int .Values.replicaCount.server) 1 }}
+            - name: REDIS_REQUIRED
+              value: "true"
+            {{- end }}
             {{- end }}
             {{- if .Values.existingSecret }}
             - name: JWT_SECRET

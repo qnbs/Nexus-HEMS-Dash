@@ -3,8 +3,7 @@
  */
 
 import {
-  appendSyncDiffEntry,
-  bumpSyncVersion,
+  applySettingsBatch,
   getSyncDiffSince,
   resetSyncPersistenceForTests,
 } from '../services/sync-persistence.js';
@@ -19,9 +18,7 @@ export async function recordSyncDiffEntry(
   category: SettingsSyncCategory,
   updatedAt = Date.now(),
 ): Promise<number> {
-  const version = await bumpSyncVersion();
-  await appendSyncDiffEntry({ key, value, updatedAt, category, version });
-  return version;
+  return applySettingsBatch([{ key, value, category, updatedAt }]);
 }
 
 export { getSyncDiffSince };
