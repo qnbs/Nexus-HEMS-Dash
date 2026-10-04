@@ -33,7 +33,7 @@
 | GitHub ruleset (0 approvals, bypass actors) | 6 | Maintainer org settings |
 | Read-only single authority (browser direct adapters) | 2/9 | Documented; needs product decision |
 | Redis authoritative multi-replica sync | 4 | TTL + RMW races partially mitigated |
-| API coverage gate in CI | 6 | Threshold exists; not yet blocking rollup |
+| API coverage gate in CI | 6 | **Blocking** since 2026-09+ via `ci.yml` `unit-tests` + `check:coverage-baseline` (supersedes this row 2026-10-04, **FUP-DOC-01**) |
 | SW lifecycle / message bridge hardening | 7 | Follow-up |
 | DST/tariff domain proofs | 8 | Conventions only in this slice |
 | Full docs truth-sync (`FEATURE_STATUS`) | 9 | Follow-up |
