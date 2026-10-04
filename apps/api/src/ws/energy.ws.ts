@@ -449,6 +449,21 @@ export async function handleWsCommand(
   }
 
   if (mode === 'live') {
+    if (!idempotencyKey) {
+      auditCommand(
+        wsAuthMap,
+        ws,
+        cmd.type,
+        commandValue,
+        'rejected_validation',
+        'idempotencyKey required for live hardware commands',
+      );
+      safeSend(ws, {
+        type: 'ERROR',
+        error: 'idempotencyKey is required for live hardware commands',
+      });
+      return;
+    }
     await dispatchLiveCommand(
       ws,
       { type: cmd.type as WSCommandType, value: commandValue },

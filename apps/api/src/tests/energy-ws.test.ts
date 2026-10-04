@@ -3,6 +3,7 @@ import type { WebSocket, WebSocketServer } from 'ws';
 import { isReadOnlyMode } from '../config/read-only-mode.js';
 import type { AuthenticatedClient } from '../middleware/auth.js';
 import * as ProtocolCommandRouter from '../protocols/ProtocolCommandRouter.js';
+import { resetPhysicalCommandLedgerForTests } from '../services/physical-command-ledger.js';
 import {
   checkScopeAuthorization,
   checkWsRateLimit,
@@ -238,6 +239,7 @@ describe('handleWsCommand', () => {
     else process.env.ADAPTER_MODE = originalAdapterMode;
     if (originalAllowLive === undefined) delete process.env.ALLOW_LIVE_HARDWARE;
     else process.env.ALLOW_LIVE_HARDWARE = originalAllowLive;
+    resetPhysicalCommandLedgerForTests();
     dispatchSpy.mockRestore();
   });
 
@@ -312,7 +314,13 @@ describe('handleWsCommand', () => {
     Object.defineProperty(ws, 'readyState', { value: 1 });
     Object.defineProperty(peer, 'readyState', { value: 1 });
 
-    await handleWsCommand(ws, { type: 'SET_EV_POWER', value: 7200 }, new WeakMap(), auth, wss);
+    await handleWsCommand(
+      ws,
+      { type: 'SET_EV_POWER', value: 7200, idempotencyKey: 'live-ev-dispatch-1' },
+      new WeakMap(),
+      auth,
+      wss,
+    );
 
     await vi.waitFor(() => {
       expect(dispatchSpy).toHaveBeenCalledWith({ type: 'SET_EV_POWER', value: 7200 });
@@ -322,6 +330,22 @@ describe('handleWsCommand', () => {
         true,
       );
     });
+  });
+
+  it('rejects live commands without idempotencyKey', async () => {
+    delete process.env.READ_ONLY_MODE;
+    process.env.ADAPTER_MODE = 'live';
+    process.env.ALLOW_LIVE_HARDWARE = 'true';
+
+    const ws = mockWs();
+    const auth = new WeakMap<WebSocket, AuthenticatedClient>();
+    auth.set(ws, { clientId: 'writer', scope: 'readwrite' });
+    const wss = { clients: new Set<WebSocket>() } as WebSocketServer;
+
+    await handleWsCommand(ws, { type: 'SET_EV_POWER', value: 7200 }, new WeakMap(), auth, wss);
+
+    expect((ws.sent[0] as { error: string }).error).toContain('idempotencyKey');
+    expect(dispatchSpy).not.toHaveBeenCalled();
   });
 
   it('returns ERROR in live mode when no adapter handles the command', async () => {
@@ -335,7 +359,13 @@ describe('handleWsCommand', () => {
     auth.set(ws, { clientId: 'writer', scope: 'readwrite' });
     const wss = { clients: new Set<WebSocket>() } as WebSocketServer;
 
-    await handleWsCommand(ws, { type: 'SET_EV_POWER', value: 7200 }, new WeakMap(), auth, wss);
+    await handleWsCommand(
+      ws,
+      { type: 'SET_EV_POWER', value: 7200, idempotencyKey: 'live-ev-no-adapter-1' },
+      new WeakMap(),
+      auth,
+      wss,
+    );
 
     await vi.waitFor(() => {
       expect((ws.sent[0] as { error: string }).error).toContain('No live adapter');
@@ -357,7 +387,13 @@ describe('handleWsCommand', () => {
     auth.set(ws, { clientId: 'writer', scope: 'readwrite' });
     const wss = { clients: new Set<WebSocket>() } as WebSocketServer;
 
-    await handleWsCommand(ws, { type: 'START_CHARGING', value: true }, new WeakMap(), auth, wss);
+    await handleWsCommand(
+      ws,
+      { type: 'START_CHARGING', value: true, idempotencyKey: 'live-start-1' },
+      new WeakMap(),
+      auth,
+      wss,
+    );
 
     await vi.waitFor(() => {
       expect((ws.sent[0] as { error: string }).error).toContain('No charge point');
