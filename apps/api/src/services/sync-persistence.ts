@@ -287,13 +287,33 @@ async function applySettingsBatchInner(
   }
 
   try {
-    await persistSettingsSnapshot(snapshot);
+    if (redis) {
+      for (const entry of entries) {
+        await redis.hset(SYNC_SETTINGS_HASH_KEY, entry.key, JSON.stringify(entry.value));
+      }
+    } else {
+      await persistSettingsSnapshot(snapshot);
+    }
     await writeDiffLog(nextLog);
+    for (const entry of entries) {
+      memorySettings.set(entry.key, entry.value);
+    }
     return version;
   } catch (error) {
     await rollbackSyncVersionMemory(priorVersion);
     try {
-      await persistSettingsSnapshot(priorSnapshot);
+      if (redis) {
+        for (const entry of entries) {
+          const prev = priorSnapshot[entry.key];
+          if (prev === undefined) {
+            await redis.hdel(SYNC_SETTINGS_HASH_KEY, entry.key);
+          } else {
+            await redis.hset(SYNC_SETTINGS_HASH_KEY, entry.key, JSON.stringify(prev));
+          }
+        }
+      } else {
+        await persistSettingsSnapshot(priorSnapshot);
+      }
     } catch (restoreError) {
       console.error(
         '[sync-persistence] Failed to restore settings snapshot after batch error',
