@@ -192,9 +192,20 @@ describe('OcppCsmsProtocolAdapter', () => {
     expect(createOcppCsmsAdapterFromEnv({})).toBeNull();
   });
 
-  it('createOcppCsmsAdapterFromEnv builds adapter from env', () => {
+  it('createOcppCsmsAdapterFromEnv returns null when SP0 is not opted in', () => {
+    expect(
+      createOcppCsmsAdapterFromEnv({
+        OCPP_CSMS_PORT: '9000',
+        OCPP_CSMS_ADAPTER_ID: 'csms-edge',
+      }),
+    ).toBeNull();
+  });
+
+  it('createOcppCsmsAdapterFromEnv builds adapter when SP0 is opted in', () => {
     const a = createOcppCsmsAdapterFromEnv({
+      ADAPTER_MODE: 'mock',
       OCPP_CSMS_PORT: '9000',
+      OCPP_CSMS_ENABLE_SP0: 'true',
       OCPP_CSMS_ADAPTER_ID: 'csms-edge',
     });
     expect(a?.id).toBe('csms-edge');

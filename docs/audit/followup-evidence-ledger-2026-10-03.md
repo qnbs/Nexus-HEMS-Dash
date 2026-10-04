@@ -124,8 +124,13 @@ Treat as **locked** unless a targeted test fails:
 | **FUP-REDIS-01** | P0/P1 | Sync | **closed** | F1 | #375 @ `23538c9` — Lua batch, stream diff, `REDIS_REQUIRED`, Helm guard |
 | **FUP-IDEM-01** | P0/P1 | Idempotency | **closed** | F2 | Physical-command ledger + UNKNOWN after dispatch (#377) |
 | **FUP-REDIS-02** | P1 | Redis API | **closed** | F1 | #375 — typed `SET NX`, `hget`/`hdel`/`eval`/`xrevrange` on `IRedisClient` |
+<<<<<<< HEAD
 | **FUP-CTRL-01** | P1 | Safety | **closed** | F3 | ControlAuthority fail-closed browser direct control (#378) |
 | **FUP-OCPP-01** | P1 | OCPP | **open** | F4 | Disable SP0 insecure CSMS by default; identity/session limits |
+=======
+| **FUP-CTRL-01** | P1 | Safety | **open** | F3 | Single `ControlAuthority` / fail-closed browser live control |
+| **FUP-OCPP-01** | P1 | OCPP | **closed** | F4 | SP0 opt-in (`OCPP_CSMS_ENABLE_SP0`) + session cap (PR pending) |
+>>>>>>> dabf0bd (feat(ocpp): opt-in SP0 CSMS listener and session cap (FUP-OCPP-01 / F4))
 | **FUP-DEPLOY-01** | P1 | CI/CD | **open** | F5 | Promote CI-built `apps/web/dist`, no post-CI rebuild |
 | **FUP-SMOKE-01** | P1 | CI/CD | **open** | F5 | Browser smoke on Pages; assert expected `VITE_BUILD_SHA` |
 | **FUP-E2E-01** | P2 | QA | **open** | F6 | Chromium blocking vs Firefox/WebKit scheduled; README truth |

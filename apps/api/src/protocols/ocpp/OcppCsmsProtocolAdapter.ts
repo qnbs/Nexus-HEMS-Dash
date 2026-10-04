@@ -6,10 +6,12 @@
  * MeterValues / TransactionEvent telemetry to role-tagged UnifiedEnergyDatapoint
  * values for the EventBus.
  *
- * Env (live mode only):
- *   OCPP_CSMS_PORT=9000          — enables gateway when set (default path /ocpp)
+ * Env (SP0 opt-in — FUP-OCPP-01):
+ *   OCPP_CSMS_ENABLE_SP0=true    — required with OCPP_CSMS_PORT to bind plain WS
+ *   OCPP_CSMS_PORT=9000          — listen port (default path /ocpp)
  *   OCPP_CSMS_HOST=0.0.0.0       — bind address (default 0.0.0.0)
  *   OCPP_CSMS_PATH=/ocpp         — WebSocket HTTP upgrade path
+ *   OCPP_CSMS_MAX_SESSIONS=32    — concurrent charge-point connections cap
  *
  * Security: SP0 (plain WS) only in this pass; SP3 mTLS tracked as HIGH-12.
  */
@@ -35,6 +37,10 @@ import {
   OCPP_MAX_WS_MESSAGE_BYTES,
   resolveOcppStationAdmission,
 } from '../../config/ocpp-csms-admission.js';
+import {
+  isOcppCsmsSp0Enabled,
+  resolveOcppCsmsMaxSessions,
+} from '../../config/ocpp-csms-sp0-enable.js';
 import { recordAdapterDlq, recordAdapterError } from '../../middleware/adapter-metrics.js';
 import { API_RUNTIME_DIR, DEAD_LETTER_QUEUE_PATH } from '../../runtime-paths.js';
 import type {
@@ -148,6 +154,7 @@ export interface OcppCsmsProtocolAdapterConfig {
   host?: string;
   port: number;
   path?: string;
+  maxSessions?: number;
 }
 
 interface DLQEntry {
@@ -171,7 +178,9 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
   readonly id: string;
   readonly protocol: ProtocolType = 'ocpp';
 
-  private readonly config: Required<Pick<OcppCsmsProtocolAdapterConfig, 'host' | 'path'>> &
+  private readonly config: Required<
+    Pick<OcppCsmsProtocolAdapterConfig, 'host' | 'path' | 'maxSessions'>
+  > &
     OcppCsmsProtocolAdapterConfig;
   private wss: WebSocketServer | null = null;
   private listening = false;
@@ -187,6 +196,7 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
       ...config,
       host: config.host ?? '0.0.0.0',
       path: config.path ?? '/ocpp',
+      maxSessions: config.maxSessions ?? 32,
     };
     this.id = config.id;
   }
@@ -218,6 +228,10 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
         const chargePointId = pathParts.at(-1) ?? 'unknown-cp';
         if (resolveOcppStationAdmission(chargePointId) === 'rejected') {
           ws.close(1008, 'Charge point not allowlisted');
+          return;
+        }
+        if (this.sessions.size >= this.config.maxSessions) {
+          ws.close(1013, 'CSMS session limit reached');
           return;
         }
         this.sessions.set(ws, {
@@ -817,6 +831,7 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
 export function createOcppCsmsAdapterFromEnv(
   env: NodeJS.ProcessEnv = process.env,
 ): OcppCsmsProtocolAdapter | null {
+  if (!isOcppCsmsSp0Enabled(env)) return null;
   const portRaw = env.OCPP_CSMS_PORT?.trim();
   if (!portRaw) return null;
   const port = Number(portRaw);
@@ -827,6 +842,7 @@ export function createOcppCsmsAdapterFromEnv(
     host: env.OCPP_CSMS_HOST?.trim() || '0.0.0.0',
     port,
     path: env.OCPP_CSMS_PATH?.trim() || '/ocpp',
+    maxSessions: resolveOcppCsmsMaxSessions(env),
   });
 }
 
