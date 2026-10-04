@@ -1,9 +1,15 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { applySettingsPatch, resetServerSettingsForTests } from '../data/settings-store.js';
 import { getSyncDiffSince, resetSyncDiffForTests } from '../data/sync-diff-store.js';
 import { resetSyncVersionForTests } from '../data/sync-version-store.js';
 
 describe('settings-store', () => {
+  beforeEach(() => {
+    resetServerSettingsForTests();
+    resetSyncDiffForTests();
+    resetSyncVersionForTests(10);
+  });
+
   afterEach(() => {
     resetServerSettingsForTests();
     resetSyncDiffForTests();

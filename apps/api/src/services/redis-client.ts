@@ -1,15 +1,38 @@
 /**
  * Optional shared Redis client for HA session state (WS tickets, shares, JTI).
- * Falls back gracefully when REDIS_URL is unset or ioredis is unavailable.
+ * Falls back gracefully when REDIS_URL is unset or ioredis is unavailable,
+ * unless REDIS_REQUIRED=true (fail closed).
  */
+
+import { isRedisRequiredForSync } from '../config/redis-sync.js';
 
 export interface IRedisClient {
   ping(): Promise<string>;
-  set(key: string, value: string, mode: string, ttl: number): Promise<string | null>;
+  /** `set(key, val, 'EX', ttl)` or `set(key, val, 'EX', ttl, 'NX')` for atomic claims. */
+  set(key: string, value: string, mode?: 'EX', ttl?: number, nx?: 'NX'): Promise<string | null>;
   get(key: string): Promise<string | null>;
   getdel(key: string): Promise<string | null>;
   del(...keys: string[]): Promise<number>;
   incr(key: string): Promise<number>;
+  hget(key: string, field: string): Promise<string | null>;
+  hgetall(key: string): Promise<Record<string, string>>;
+  hset(key: string, field: string, value: string): Promise<number>;
+  hdel(key: string, ...fields: string[]): Promise<number>;
+  eval(script: string, numKeys: number, ...args: string[]): Promise<unknown>;
+  xrevrange(
+    key: string,
+    end: string,
+    start: string,
+    countKeyword?: 'COUNT',
+    count?: number,
+  ): Promise<Array<[string, string[]]>>;
+  xrange(
+    key: string,
+    start: string,
+    end: string,
+    countKeyword?: 'COUNT',
+    count?: number,
+  ): Promise<Array<[string, string[]]>>;
   on(event: string, cb: (err: Error) => void): this;
 }
 
@@ -31,10 +54,15 @@ let _initFailed = false;
  */
 export async function getOptionalRedisClient(): Promise<IRedisClient | null> {
   if (_initialized) return _client;
-  _initialized = true;
 
   const redisUrl = process.env.REDIS_URL;
-  if (!redisUrl) return null;
+  if (!redisUrl) {
+    if (isRedisRequiredForSync()) {
+      throw new Error('[Redis] REDIS_REQUIRED=true but REDIS_URL is unset');
+    }
+    _initialized = true;
+    return null;
+  }
 
   try {
     const { Redis } = (await importOptionalModule('ioredis')) as OptionalRedisModule;
@@ -51,17 +79,31 @@ export async function getOptionalRedisClient(): Promise<IRedisClient | null> {
 
     await client.ping();
     _client = client;
+    _initialized = true;
     console.log('[Redis] Session store backend: Redis (WS tickets, shares, offline sync)');
   } catch (err) {
     _initFailed = true;
+    if (isRedisRequiredForSync()) {
+      throw new Error(
+        `[Redis] REDIS_REQUIRED=true but connection failed: ${(err as Error).message}`,
+      );
+    }
     console.warn(
       '[Redis] Connection failed — WS tickets and shares use in-memory fallback:',
       (err as Error).message,
     );
     _client = null;
+    _initialized = true;
   }
 
   return _client;
+}
+
+/** Inject a mock client for unit tests (skips ioredis connect). */
+export function setRedisClientForTests(client: IRedisClient | null): void {
+  _client = client;
+  _initialized = true;
+  _initFailed = false;
 }
 
 /** Reset client state between tests (in-memory fallback only). */

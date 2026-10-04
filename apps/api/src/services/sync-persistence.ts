@@ -3,13 +3,19 @@
  * Falls back to in-memory structures when REDIS_URL is unset or unavailable.
  */
 
+import { isRedisRequiredForSync, isRedisSyncAuthoritative } from '../config/redis-sync.js';
 import type { SettingsSyncCategory } from '../data/settings-sync-keys.js';
 import type { IRedisClient } from './redis-client.js';
 import { getOptionalRedisClient } from './redis-client.js';
+import { APPLY_SETTINGS_BATCH_LUA } from './redis-sync-lua.js';
 
 const SYNC_VERSION_KEY = 'nexus:sync:version';
+/** Legacy JSON blob — migrated to {@link SYNC_SETTINGS_HASH_KEY} on read. */
 const SYNC_SETTINGS_KEY = 'nexus:sync:settings';
+const SYNC_SETTINGS_HASH_KEY = 'nexus:sync:settings:h';
+/** Legacy JSON diff array — superseded by {@link SYNC_DIFF_STREAM_KEY}. */
 const SYNC_DIFF_KEY = 'nexus:sync:diff';
+const SYNC_DIFF_STREAM_KEY = 'nexus:sync:diff:stream';
 const IDEMPOTENCY_HTTP_PREFIX = 'nexus:idempotency:http:';
 const IDEMPOTENCY_WS_PREFIX = 'nexus:idempotency:ws:';
 
@@ -82,15 +88,26 @@ async function redisClient(): Promise<IRedisClient | null> {
 
 // ─── Sync version ─────────────────────────────────────────────────────
 
+async function persistSyncVersionKey(redis: IRedisClient, value: number): Promise<void> {
+  if (isRedisSyncAuthoritative()) {
+    await redis.set(SYNC_VERSION_KEY, String(value));
+    return;
+  }
+  await redis.set(SYNC_VERSION_KEY, String(value), 'EX', 86_400 * 30);
+}
+
 export async function getSyncVersion(): Promise<number> {
   const redis = await redisClient();
   if (redis) {
     const raw = await redis.get(SYNC_VERSION_KEY);
     if (raw) {
       const parsed = Number(raw);
-      if (Number.isFinite(parsed)) return parsed;
+      if (Number.isFinite(parsed)) {
+        memoryVersion.value = parsed;
+        return parsed;
+      }
     }
-    await redis.set(SYNC_VERSION_KEY, String(memoryVersion.value), 'EX', 86_400 * 30);
+    await persistSyncVersionKey(redis, memoryVersion.value);
     return memoryVersion.value;
   }
   return memoryVersion.value;
@@ -103,36 +120,61 @@ export async function bumpSyncVersion(): Promise<number> {
     memoryVersion.value = bumped;
     return bumped;
   }
-  const now = Date.now();
-  memoryVersion.value = Math.max(now, memoryVersion.value + 1);
+  memoryVersion.value += 1;
   return memoryVersion.value;
 }
 
-/** Roll back version after a failed settings batch (best-effort). */
-async function rollbackSyncVersion(previous: number): Promise<void> {
-  const redis = await redisClient();
-  if (redis) {
-    await redis.set(SYNC_VERSION_KEY, String(previous), 'EX', 86_400 * 30);
-    memoryVersion.value = previous;
-    return;
-  }
+/** Roll back version after a failed in-memory settings batch only (never decrement Redis). */
+async function rollbackSyncVersionMemory(previous: number): Promise<void> {
   memoryVersion.value = previous;
 }
 
 // ─── Settings ─────────────────────────────────────────────────────────
 
+function parseSettingsHashFields(fields: Record<string, string>): Record<string, unknown> {
+  const snapshot: Record<string, unknown> = {};
+  for (const [key, raw] of Object.entries(fields)) {
+    try {
+      snapshot[key] = JSON.parse(raw) as unknown;
+    } catch {
+      snapshot[key] = raw;
+    }
+  }
+  return snapshot;
+}
+
+/** Best-effort one-time migration from legacy JSON; concurrent writers should use `applySettingsBatch`. */
+async function mergeLegacySettingsJson(
+  redis: IRedisClient,
+  snapshot: Record<string, unknown>,
+): Promise<Record<string, unknown>> {
+  const raw = await redis.get(SYNC_SETTINGS_KEY);
+  if (!raw) return snapshot;
+  try {
+    const legacy = JSON.parse(raw) as Record<string, unknown>;
+    for (const [key, value] of Object.entries(legacy)) {
+      if (snapshot[key] !== undefined) continue;
+      const existing = await redis.hget(SYNC_SETTINGS_HASH_KEY, key);
+      if (existing !== null) {
+        snapshot[key] = JSON.parse(existing) as unknown;
+        continue;
+      }
+      await redis.hset(SYNC_SETTINGS_HASH_KEY, key, JSON.stringify(value));
+      snapshot[key] = value;
+    }
+    await redis.del(SYNC_SETTINGS_KEY);
+  } catch {
+    // keep partial hash snapshot
+  }
+  return snapshot;
+}
+
 export async function getServerSettingsSnapshot(): Promise<Record<string, unknown>> {
   const redis = await redisClient();
   if (redis) {
-    const raw = await redis.get(SYNC_SETTINGS_KEY);
-    if (raw) {
-      try {
-        return JSON.parse(raw) as Record<string, unknown>;
-      } catch {
-        return {};
-      }
-    }
-    return {};
+    const hash = await redis.hgetall(SYNC_SETTINGS_HASH_KEY);
+    const snapshot = parseSettingsHashFields(hash);
+    return mergeLegacySettingsJson(redis, snapshot);
   }
   return Object.fromEntries(memorySettings);
 }
@@ -140,7 +182,16 @@ export async function getServerSettingsSnapshot(): Promise<Record<string, unknow
 async function persistSettingsSnapshot(snapshot: Record<string, unknown>): Promise<void> {
   const redis = await redisClient();
   if (redis) {
-    await redis.set(SYNC_SETTINGS_KEY, JSON.stringify(snapshot), 'EX', 86_400 * 30);
+    const existing = await redis.hgetall(SYNC_SETTINGS_HASH_KEY);
+    const nextKeys = new Set(Object.keys(snapshot));
+    for (const key of Object.keys(existing)) {
+      if (!nextKeys.has(key)) {
+        await redis.hdel(SYNC_SETTINGS_HASH_KEY, key);
+      }
+    }
+    for (const [key, value] of Object.entries(snapshot)) {
+      await redis.hset(SYNC_SETTINGS_HASH_KEY, key, JSON.stringify(value));
+    }
     return;
   }
   memorySettings.clear();
@@ -155,30 +206,73 @@ export async function setServerSetting(key: string, value: unknown): Promise<voi
   await persistSettingsSnapshot(snapshot);
 }
 
-/** Atomic multi-key settings patch with a single version bump and diff append. */
-export async function applySettingsBatch(
-  entries: Array<{
-    key: string;
-    value: unknown;
-    category: SettingsSyncCategory;
-    updatedAt: number;
-  }>,
-): Promise<number> {
-  return withSettingsBatchMutex(() => applySettingsBatchInner(entries));
+type SettingsBatchEntry = {
+  key: string;
+  value: unknown;
+  category: SettingsSyncCategory;
+  updatedAt: number;
+};
+
+function rememberBatchInMemory(entries: SettingsBatchEntry[]): void {
+  for (const entry of entries) {
+    memorySettings.set(entry.key, entry.value);
+  }
 }
 
-async function applySettingsBatchInner(
-  entries: Array<{
-    key: string;
-    value: unknown;
-    category: SettingsSyncCategory;
-    updatedAt: number;
-  }>,
+async function applyRedisLuaBatch(
+  redis: IRedisClient,
+  entries: SettingsBatchEntry[],
 ): Promise<number> {
-  if (entries.length === 0) {
-    return getSyncVersion();
+  const argv: string[] = [String(entries.length)];
+  for (const entry of entries) {
+    argv.push(entry.key, JSON.stringify(entry.value), entry.category, String(entry.updatedAt));
   }
+  argv.push(String(memoryVersion.value), String(MAX_DIFF_ENTRIES));
+  const result = await redis.eval(
+    APPLY_SETTINGS_BATCH_LUA,
+    3,
+    SYNC_VERSION_KEY,
+    SYNC_SETTINGS_HASH_KEY,
+    SYNC_DIFF_STREAM_KEY,
+    ...argv,
+  );
+  const version = Number(result);
+  if (!Number.isFinite(version)) {
+    throw new Error('[sync-persistence] Redis settings batch returned invalid version');
+  }
+  memoryVersion.value = version;
+  rememberBatchInMemory(entries);
+  return version;
+}
 
+async function patchRedisSettingsHash(
+  redis: IRedisClient,
+  entries: SettingsBatchEntry[],
+): Promise<void> {
+  for (const entry of entries) {
+    await redis.hset(SYNC_SETTINGS_HASH_KEY, entry.key, JSON.stringify(entry.value));
+  }
+}
+
+async function restoreRedisSettingsHash(
+  redis: IRedisClient,
+  entries: SettingsBatchEntry[],
+  priorSnapshot: Record<string, unknown>,
+): Promise<void> {
+  for (const entry of entries) {
+    const prev = priorSnapshot[entry.key];
+    if (prev === undefined) {
+      await redis.hdel(SYNC_SETTINGS_HASH_KEY, entry.key);
+    } else {
+      await redis.hset(SYNC_SETTINGS_HASH_KEY, entry.key, JSON.stringify(prev));
+    }
+  }
+}
+
+async function applyMemoryBackedSettingsBatch(
+  entries: SettingsBatchEntry[],
+  redis: IRedisClient | null,
+): Promise<number> {
   const priorVersion = await getSyncVersion();
   const priorSnapshot = await getServerSettingsSnapshot();
   const snapshot = { ...priorSnapshot };
@@ -200,13 +294,22 @@ async function applySettingsBatchInner(
   }
 
   try {
-    await persistSettingsSnapshot(snapshot);
+    if (redis) {
+      await patchRedisSettingsHash(redis, entries);
+    } else {
+      await persistSettingsSnapshot(snapshot);
+    }
     await writeDiffLog(nextLog);
+    rememberBatchInMemory(entries);
     return version;
   } catch (error) {
-    await rollbackSyncVersion(priorVersion);
+    await rollbackSyncVersionMemory(priorVersion);
     try {
-      await persistSettingsSnapshot(priorSnapshot);
+      if (redis) {
+        await restoreRedisSettingsHash(redis, entries, priorSnapshot);
+      } else {
+        await persistSettingsSnapshot(priorSnapshot);
+      }
     } catch (restoreError) {
       console.error(
         '[sync-persistence] Failed to restore settings snapshot after batch error',
@@ -217,18 +320,94 @@ async function applySettingsBatchInner(
   }
 }
 
+/** Atomic multi-key settings patch with a single version bump and diff append. */
+export async function applySettingsBatch(entries: SettingsBatchEntry[]): Promise<number> {
+  return withSettingsBatchMutex(() => applySettingsBatchInner(entries));
+}
+
+async function applySettingsBatchInner(entries: SettingsBatchEntry[]): Promise<number> {
+  if (entries.length === 0) {
+    return getSyncVersion();
+  }
+
+  const redis = await redisClient();
+  if (redis) {
+    try {
+      return await applyRedisLuaBatch(redis, entries);
+    } catch (error) {
+      if (isRedisRequiredForSync()) {
+        throw error;
+      }
+      console.warn(
+        '[sync-persistence] Redis settings batch failed; falling back to in-memory path:',
+        (error as Error).message,
+      );
+    }
+  }
+
+  return applyMemoryBackedSettingsBatch(entries, redis);
+}
+
 // ─── Diff log ─────────────────────────────────────────────────────────
+
+function streamFieldsToEntry(fields: string[]): SyncDiffEntry | undefined {
+  const map: Record<string, string> = {};
+  for (let i = 0; i < fields.length - 1; i += 2) {
+    const k = fields[i];
+    const v = fields[i + 1];
+    if (k !== undefined && v !== undefined) map[k] = v;
+  }
+  const version = Number(map.version);
+  const updatedAt = Number(map.updatedAt);
+  if (!map.key || !Number.isFinite(version) || !Number.isFinite(updatedAt)) return undefined;
+  let value: unknown = map.value;
+  if (map.value) {
+    try {
+      value = JSON.parse(map.value) as unknown;
+    } catch {
+      value = map.value;
+    }
+  }
+  const category = map.category as SettingsSyncCategory;
+  return { key: map.key, value, updatedAt, category, version };
+}
+
+async function readLegacyDiffLog(redis: IRedisClient): Promise<SyncDiffEntry[]> {
+  const raw = await redis.get(SYNC_DIFF_KEY);
+  if (!raw) return [];
+  try {
+    return JSON.parse(raw) as SyncDiffEntry[];
+  } catch {
+    return [];
+  }
+}
+
+async function readDiffLogFromStream(redis: IRedisClient): Promise<SyncDiffEntry[]> {
+  const rows = await redis.xrevrange(SYNC_DIFF_STREAM_KEY, '+', '-', 'COUNT', MAX_DIFF_ENTRIES);
+  const entries: SyncDiffEntry[] = [];
+  for (const row of rows) {
+    const fields = row[1];
+    const entry = streamFieldsToEntry(fields);
+    if (entry) entries.push(entry);
+  }
+  return entries.reverse();
+}
 
 async function readDiffLog(): Promise<SyncDiffEntry[]> {
   const redis = await redisClient();
   if (redis) {
-    const raw = await redis.get(SYNC_DIFF_KEY);
-    if (!raw) return [];
-    try {
-      return JSON.parse(raw) as SyncDiffEntry[];
-    } catch {
-      return [];
+    const legacyEntries = await readLegacyDiffLog(redis);
+    const streamEntries = await readDiffLogFromStream(redis);
+    if (legacyEntries.length > 0 && streamEntries.length > 0) {
+      await redis.del(SYNC_DIFF_KEY);
     }
+    const combined =
+      legacyEntries.length > 0 && streamEntries.length > 0
+        ? [...legacyEntries, ...streamEntries]
+        : streamEntries.length > 0
+          ? streamEntries
+          : legacyEntries;
+    return combined.slice(-MAX_DIFF_ENTRIES);
   }
   return [...memoryDiff];
 }
@@ -250,13 +429,28 @@ export async function appendSyncDiffEntry(entry: SyncDiffEntry): Promise<void> {
   await writeDiffLog(log);
 }
 
-export async function getSyncDiffSince(
-  since: number,
-): Promise<{ version: number; changes: SyncDiffEntry[] }> {
+export interface SyncDiffResult {
+  version: number;
+  changes: SyncDiffEntry[];
+  /** True when `since` is older than retained stream history (client must full-resync). */
+  fullResyncRequired?: boolean;
+}
+
+export async function getSyncDiffSince(since: number): Promise<SyncDiffResult> {
   const version = await getSyncVersion();
   const normalizedSince = Number.isFinite(since) ? since : 0;
   const log = await readDiffLog();
   const changes = log.filter((entry) => entry.version > normalizedSince);
+  if (log.length > 0) {
+    let minVersion = log[0]?.version ?? version;
+    for (const entry of log) {
+      if (entry.version < minVersion) minVersion = entry.version;
+    }
+    // Gap: client version is more than one behind the oldest retained diff entry.
+    if (normalizedSince > 0 && normalizedSince < minVersion - 1) {
+      return { version, changes: [], fullResyncRequired: true };
+    }
+  }
   return { version, changes };
 }
 
@@ -329,10 +523,7 @@ export async function claimHttpIdempotency(
   const redis = await redisClient();
   if (redis) {
     const redisKey = `${IDEMPOTENCY_HTTP_PREFIX}${scopeKey}`;
-    type RedisSetNx = {
-      set(key: string, value: string, mode: 'EX', ttl: number, nx: 'NX'): Promise<'OK' | null>;
-    };
-    const claimed = await (redis as RedisSetNx).set(
+    const claimed = await redis.set(
       redisKey,
       JSON.stringify(pending),
       'EX',
