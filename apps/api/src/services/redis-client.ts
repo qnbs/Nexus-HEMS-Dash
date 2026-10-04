@@ -17,7 +17,15 @@ export interface IRedisClient {
   hget(key: string, field: string): Promise<string | null>;
   hgetall(key: string): Promise<Record<string, string>>;
   hset(key: string, field: string, value: string): Promise<number>;
+  hdel(key: string, ...fields: string[]): Promise<number>;
   eval(script: string, numKeys: number, ...args: string[]): Promise<unknown>;
+  xrevrange(
+    key: string,
+    end: string,
+    start: string,
+    countKeyword?: 'COUNT',
+    count?: number,
+  ): Promise<Array<[string, string[]]>>;
   xrange(
     key: string,
     start: string,
@@ -46,13 +54,13 @@ let _initFailed = false;
  */
 export async function getOptionalRedisClient(): Promise<IRedisClient | null> {
   if (_initialized) return _client;
-  _initialized = true;
 
   const redisUrl = process.env.REDIS_URL;
   if (!redisUrl) {
     if (isRedisRequiredForSync()) {
       throw new Error('[Redis] REDIS_REQUIRED=true but REDIS_URL is unset');
     }
+    _initialized = true;
     return null;
   }
 
@@ -71,6 +79,7 @@ export async function getOptionalRedisClient(): Promise<IRedisClient | null> {
 
     await client.ping();
     _client = client;
+    _initialized = true;
     console.log('[Redis] Session store backend: Redis (WS tickets, shares, offline sync)');
   } catch (err) {
     _initFailed = true;
@@ -84,6 +93,7 @@ export async function getOptionalRedisClient(): Promise<IRedisClient | null> {
       (err as Error).message,
     );
     _client = null;
+    _initialized = true;
   }
 
   return _client;

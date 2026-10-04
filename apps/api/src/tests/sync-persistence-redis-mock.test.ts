@@ -56,12 +56,22 @@ function createMockRedis(): IRedisClient & { state: Map<string, string> } {
       hash.get(key)?.set(field, value);
       return 1;
     },
+    hdel: async (key, ...fields) => {
+      const m = hash.get(key);
+      if (!m) return 0;
+      let n = 0;
+      for (const f of fields) {
+        if (m.delete(f)) n++;
+      }
+      return n;
+    },
     eval: async (_script, numKeys, ...args) => {
       if (_script !== APPLY_SETTINGS_BATCH_LUA || numKeys !== 3) {
         throw new Error('unexpected script');
       }
       const argv = args.slice(3);
-      version += 1;
+      const prior = Number(state.get(SYNC_VERSION_KEY) ?? 0);
+      version = prior + 1;
       state.set(SYNC_VERSION_KEY, String(version));
       const n = Number(argv[0]);
       let idx = 1;
@@ -91,6 +101,10 @@ function createMockRedis(): IRedisClient & { state: Map<string, string> } {
       }
       return version;
     },
+    xrevrange: async () =>
+      [...stream]
+        .reverse()
+        .map((row, i) => [`${stream.length - 1 - i}`, row.fields] as [string, string[]]),
     xrange: async () => stream.map((row, i) => [`${i}`, row.fields] as [string, string[]]),
     on: () => client,
   };
@@ -119,11 +133,16 @@ describe('sync-persistence (Redis mock)', () => {
   });
 
   it('getSyncDiffSince signals fullResyncRequired when since is older than retained history', async () => {
+    vi.stubEnv('REDIS_URL', 'redis://127.0.0.1:6379');
+    const mock = createMockRedis();
+    setRedisClientForTests(mock);
     resetSyncPersistenceForTests(10);
+    mock.state.set(SYNC_VERSION_KEY, '10');
+
     const v1 = await applySettingsBatch([
       { key: 'a', value: 1, category: 'userPreferences', updatedAt: 1 },
     ]);
-    expect(v1).toBeGreaterThan(10);
+    expect(v1).toBe(11);
     const diff = await getSyncDiffSince(1);
     expect(diff.fullResyncRequired).toBe(true);
     expect(diff.changes).toHaveLength(0);

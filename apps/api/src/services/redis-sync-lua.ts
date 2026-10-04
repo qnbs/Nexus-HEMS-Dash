@@ -15,6 +15,6 @@ for _ = 1, n do
   redis.call('XADD', KEYS[3], '*', 'key', k, 'value', v, 'category', cat, 'updatedAt', ts, 'version', tostring(version))
   idx = idx + 4
 end
-redis.call('XTRIM', KEYS[3], 'MAXLEN', '~', ARGV[#ARGV])
+redis.call('XTRIM', KEYS[3], 'MAXLEN', ARGV[#ARGV])
 return version
 `;

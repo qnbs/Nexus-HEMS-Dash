@@ -31,7 +31,8 @@ deployment:
 # idempotency and version/diff persistence — see ADR-030 and NOTES.txt.
 replicaCount:
   frontend: 2
-  server: 2
+  # Use server > 1 only with server.redisUrl set (Helm template fails otherwise).
+  server: 1
 
 # ─── Server (API) ───────────────────────────────────────────────────
 server:
