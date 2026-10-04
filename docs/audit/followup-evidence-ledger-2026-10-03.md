@@ -124,7 +124,7 @@ Treat as **locked** unless a targeted test fails:
 | **FUP-REDIS-01** | P0/P1 | Sync | **closed** | F1 | #375 @ `23538c9` — Lua batch, stream diff, `REDIS_REQUIRED`, Helm guard |
 | **FUP-IDEM-01** | P0/P1 | Idempotency | **closed** | F2 | Physical-command ledger + UNKNOWN after dispatch (#377) |
 | **FUP-REDIS-02** | P1 | Redis API | **closed** | F1 | #375 — typed `SET NX`, `hget`/`hdel`/`eval`/`xrevrange` on `IRedisClient` |
-| **FUP-CTRL-01** | P1 | Safety | **open** | F3 | Single `ControlAuthority` / fail-closed browser live control |
+| **FUP-CTRL-01** | P1 | Safety | **closed** | F3 | ControlAuthority fail-closed browser direct control (#378) |
 | **FUP-OCPP-01** | P1 | OCPP | **open** | F4 | Disable SP0 insecure CSMS by default; identity/session limits |
 | **FUP-DEPLOY-01** | P1 | CI/CD | **open** | F5 | Promote CI-built `apps/web/dist`, no post-CI rebuild |
 | **FUP-SMOKE-01** | P1 | CI/CD | **open** | F5 | Browser smoke on Pages; assert expected `VITE_BUILD_SHA` |
@@ -154,7 +154,8 @@ Treat as **locked** unless a targeted test fails:
 | 2026-10-04 | (F1 branch) | **FUP-REDIS-01/02:** atomic Lua batch, stream diff, typed SET NX, `REDIS_REQUIRED`, Helm wiring (PR pending) |
 | 2026-10-04 | `23538c9` / #375 | **FUP-REDIS-01/02 merged** (admin squash; CI green @ `fb2d8a4`, 8 review threads resolved) |
 | 2026-10-04 | `0b7e759` / #376 | Ledger closeout: FUP-REDIS-01/02 marked **closed** on `main` |
-| 2026-10-04 | (F2 branch) | **FUP-IDEM-01:** physical-command ledger (`pending`/`unknown`/`succeeded`/`failed`), replay + WS wiring (PR pending) |
+| 2026-10-04 | `f53aea1` / #377 | **FUP-IDEM-01 merged** — physical-command ledger + replay/WS wiring |
+| 2026-10-04 | (F3 branch) | **FUP-CTRL-01:** ControlAuthority resolver + command/connect gates (PR #378 pending) |
 
 ---
 

@@ -27,6 +27,7 @@ import { useShallow } from 'zustand/react/shallow';
 import {
   canConnectHardwareAdapter,
   isAdapterWorkerEnabled,
+  isBrowserDirectControlAllowed,
   isBuiltinAdapterEnabledByDefault,
 } from '../lib/adapter-mode';
 import { persistSnapshot } from '../lib/db';
@@ -476,6 +477,10 @@ function deepMergeModel(
  * written inside BaseAdapter.sendCommand; this dispatcher does not audit.
  */
 export async function sendAdapterCommand(command: AdapterCommand): Promise<boolean> {
+  if (!isBrowserDirectControlAllowed()) {
+    return false;
+  }
+
   const entries = Object.entries(useEnergyStoreBase.getState().adapters) as [
     AdapterId,
     AdapterEntry,

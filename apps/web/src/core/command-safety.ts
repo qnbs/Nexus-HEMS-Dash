@@ -17,7 +17,11 @@ import {
   MAX_EV_CURRENT_A,
 } from '@nexus-hems/shared-types';
 import { z } from 'zod';
-import { isReadOnlyModeActive } from '../lib/adapter-mode';
+import {
+  browserControlDeniedMessage,
+  getBrowserControlAuthority,
+  isReadOnlyModeActive,
+} from '../lib/adapter-mode';
 import { nexusDb } from '../lib/db';
 import { metricsCollector } from '../lib/metrics';
 import type { AdapterCommand, AdapterCommandType } from './adapters/EnergyAdapter';
@@ -132,6 +136,14 @@ export function validateCommandShape(command: AdapterCommand): CommandValidation
     return {
       valid: false,
       error: 'System is in read-only mode — control commands are disabled',
+    };
+  }
+
+  const authority = getBrowserControlAuthority();
+  if (!authority.browserDirectControlAllowed) {
+    return {
+      valid: false,
+      error: browserControlDeniedMessage(authority),
     };
   }
 
