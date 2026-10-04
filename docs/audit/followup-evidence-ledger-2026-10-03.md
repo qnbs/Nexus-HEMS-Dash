@@ -44,7 +44,8 @@ This document is the **delta ledger** for the follow-up master prompt. It does n
 
 | Item | Value |
 |------|--------|
-| Latest GitHub Release | **v1.12.1** (published 2026-10-03T09:29:21Z) |
+| Latest GitHub Release | **v1.12.2** (published 2026-10-04; manifest #374) |
+| Tag `v1.12.2` commit | `0eb15bc` |
 | Tag `v1.12.1` commit | `c48cd56` |
 | Tag `v1.12.0` commit | `698cf42` |
 | Pages URL | https://qnbs.github.io/Nexus-HEMS-Dash/ |

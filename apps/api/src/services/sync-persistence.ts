@@ -143,6 +143,7 @@ function parseSettingsHashFields(fields: Record<string, string>): Record<string,
   return snapshot;
 }
 
+/** Best-effort one-time migration from legacy JSON; concurrent writers should use `applySettingsBatch`. */
 async function mergeLegacySettingsJson(
   redis: IRedisClient,
   snapshot: Record<string, unknown>,
@@ -397,8 +398,11 @@ export async function getSyncDiffSince(since: number): Promise<SyncDiffResult> {
   const log = await readDiffLog();
   const changes = log.filter((entry) => entry.version > normalizedSince);
   if (log.length > 0) {
-    const minVersion = Math.min(...log.map((e) => e.version));
-    if (normalizedSince > 0 && normalizedSince < minVersion - 1) {
+    let minVersion = log[0]?.version ?? version;
+    for (const entry of log) {
+      if (entry.version < minVersion) minVersion = entry.version;
+    }
+    if (normalizedSince > 0 && normalizedSince < minVersion) {
       return { version, changes: [], fullResyncRequired: true };
     }
   }
