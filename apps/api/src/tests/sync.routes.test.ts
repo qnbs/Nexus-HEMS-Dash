@@ -2,9 +2,6 @@ import express from 'express';
 import supertest from 'supertest';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { clearIdempotencyCacheForTests } from '../data/idempotency-cache.js';
-import { resetServerSettingsForTests } from '../data/settings-store.js';
-import { resetSyncDiffForTests } from '../data/sync-diff-store.js';
-import { resetSyncVersionForTests } from '../data/sync-version-store.js';
 
 const SECRET = 'nexus-hems-ci-fixture-jwt-signing-key-not-a-real-credential';
 
@@ -15,23 +12,32 @@ describe('sync routes', () => {
   let signToken: typeof import('../jwt-utils.js').signToken;
   let applySettingsPatch: typeof import('../data/settings-store.js').applySettingsPatch;
 
+  async function resetSyncStateForTests(): Promise<void> {
+    const { resetServerSettingsForTests } = await import('../data/settings-store.js');
+    const { resetSyncDiffForTests } = await import('../data/sync-diff-store.js');
+    const { resetSyncVersionForTests } = await import('../data/sync-version-store.js');
+    const { resetRedisClientForTests } = await import('../services/redis-client.js');
+    resetRedisClientForTests();
+    resetServerSettingsForTests();
+    resetSyncDiffForTests();
+    resetSyncVersionForTests(42);
+    clearIdempotencyCacheForTests();
+  }
+
   beforeAll(async () => {
     vi.resetModules();
     process.env.NODE_ENV = 'production';
     process.env.JWT_SECRET = SECRET;
     delete process.env.JWT_SECRET_NEW;
 
-    resetSyncVersionForTests(42);
     createSyncRoutes = (await import('../routes/sync.routes.js')).createSyncRoutes;
     signToken = (await import('../jwt-utils.js')).signToken;
     applySettingsPatch = (await import('../data/settings-store.js')).applySettingsPatch;
+    await resetSyncStateForTests();
   }, 60_000);
 
-  afterEach(() => {
-    resetServerSettingsForTests();
-    resetSyncDiffForTests();
-    resetSyncVersionForTests(42);
-    clearIdempotencyCacheForTests();
+  afterEach(async () => {
+    await resetSyncStateForTests();
   });
 
   afterAll(() => {
