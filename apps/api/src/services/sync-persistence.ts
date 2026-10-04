@@ -206,66 +206,73 @@ export async function setServerSetting(key: string, value: unknown): Promise<voi
   await persistSettingsSnapshot(snapshot);
 }
 
-/** Atomic multi-key settings patch with a single version bump and diff append. */
-export async function applySettingsBatch(
-  entries: Array<{
-    key: string;
-    value: unknown;
-    category: SettingsSyncCategory;
-    updatedAt: number;
-  }>,
-): Promise<number> {
-  return withSettingsBatchMutex(() => applySettingsBatchInner(entries));
+type SettingsBatchEntry = {
+  key: string;
+  value: unknown;
+  category: SettingsSyncCategory;
+  updatedAt: number;
+};
+
+function rememberBatchInMemory(entries: SettingsBatchEntry[]): void {
+  for (const entry of entries) {
+    memorySettings.set(entry.key, entry.value);
+  }
 }
 
-async function applySettingsBatchInner(
-  entries: Array<{
-    key: string;
-    value: unknown;
-    category: SettingsSyncCategory;
-    updatedAt: number;
-  }>,
+async function applyRedisLuaBatch(
+  redis: IRedisClient,
+  entries: SettingsBatchEntry[],
 ): Promise<number> {
-  if (entries.length === 0) {
-    return getSyncVersion();
+  const argv: string[] = [String(entries.length)];
+  for (const entry of entries) {
+    argv.push(entry.key, JSON.stringify(entry.value), entry.category, String(entry.updatedAt));
   }
+  argv.push(String(memoryVersion.value), String(MAX_DIFF_ENTRIES));
+  const result = await redis.eval(
+    APPLY_SETTINGS_BATCH_LUA,
+    3,
+    SYNC_VERSION_KEY,
+    SYNC_SETTINGS_HASH_KEY,
+    SYNC_DIFF_STREAM_KEY,
+    ...argv,
+  );
+  const version = Number(result);
+  if (!Number.isFinite(version)) {
+    throw new Error('[sync-persistence] Redis settings batch returned invalid version');
+  }
+  memoryVersion.value = version;
+  rememberBatchInMemory(entries);
+  return version;
+}
 
-  const redis = await redisClient();
-  if (redis) {
-    try {
-      const argv: string[] = [String(entries.length)];
-      for (const entry of entries) {
-        argv.push(entry.key, JSON.stringify(entry.value), entry.category, String(entry.updatedAt));
-      }
-      argv.push(String(memoryVersion.value), String(MAX_DIFF_ENTRIES));
-      const result = await redis.eval(
-        APPLY_SETTINGS_BATCH_LUA,
-        3,
-        SYNC_VERSION_KEY,
-        SYNC_SETTINGS_HASH_KEY,
-        SYNC_DIFF_STREAM_KEY,
-        ...argv,
-      );
-      const version = Number(result);
-      if (!Number.isFinite(version)) {
-        throw new Error('[sync-persistence] Redis settings batch returned invalid version');
-      }
-      memoryVersion.value = version;
-      for (const entry of entries) {
-        memorySettings.set(entry.key, entry.value);
-      }
-      return version;
-    } catch (error) {
-      if (isRedisRequiredForSync()) {
-        throw error;
-      }
-      console.warn(
-        '[sync-persistence] Redis settings batch failed; falling back to in-memory path:',
-        (error as Error).message,
-      );
+async function patchRedisSettingsHash(
+  redis: IRedisClient,
+  entries: SettingsBatchEntry[],
+): Promise<void> {
+  for (const entry of entries) {
+    await redis.hset(SYNC_SETTINGS_HASH_KEY, entry.key, JSON.stringify(entry.value));
+  }
+}
+
+async function restoreRedisSettingsHash(
+  redis: IRedisClient,
+  entries: SettingsBatchEntry[],
+  priorSnapshot: Record<string, unknown>,
+): Promise<void> {
+  for (const entry of entries) {
+    const prev = priorSnapshot[entry.key];
+    if (prev === undefined) {
+      await redis.hdel(SYNC_SETTINGS_HASH_KEY, entry.key);
+    } else {
+      await redis.hset(SYNC_SETTINGS_HASH_KEY, entry.key, JSON.stringify(prev));
     }
   }
+}
 
+async function applyMemoryBackedSettingsBatch(
+  entries: SettingsBatchEntry[],
+  redis: IRedisClient | null,
+): Promise<number> {
   const priorVersion = await getSyncVersion();
   const priorSnapshot = await getServerSettingsSnapshot();
   const snapshot = { ...priorSnapshot };
@@ -288,29 +295,18 @@ async function applySettingsBatchInner(
 
   try {
     if (redis) {
-      for (const entry of entries) {
-        await redis.hset(SYNC_SETTINGS_HASH_KEY, entry.key, JSON.stringify(entry.value));
-      }
+      await patchRedisSettingsHash(redis, entries);
     } else {
       await persistSettingsSnapshot(snapshot);
     }
     await writeDiffLog(nextLog);
-    for (const entry of entries) {
-      memorySettings.set(entry.key, entry.value);
-    }
+    rememberBatchInMemory(entries);
     return version;
   } catch (error) {
     await rollbackSyncVersionMemory(priorVersion);
     try {
       if (redis) {
-        for (const entry of entries) {
-          const prev = priorSnapshot[entry.key];
-          if (prev === undefined) {
-            await redis.hdel(SYNC_SETTINGS_HASH_KEY, entry.key);
-          } else {
-            await redis.hset(SYNC_SETTINGS_HASH_KEY, entry.key, JSON.stringify(prev));
-          }
-        }
+        await restoreRedisSettingsHash(redis, entries, priorSnapshot);
       } else {
         await persistSettingsSnapshot(priorSnapshot);
       }
@@ -322,6 +318,34 @@ async function applySettingsBatchInner(
     }
     throw error;
   }
+}
+
+/** Atomic multi-key settings patch with a single version bump and diff append. */
+export async function applySettingsBatch(entries: SettingsBatchEntry[]): Promise<number> {
+  return withSettingsBatchMutex(() => applySettingsBatchInner(entries));
+}
+
+async function applySettingsBatchInner(entries: SettingsBatchEntry[]): Promise<number> {
+  if (entries.length === 0) {
+    return getSyncVersion();
+  }
+
+  const redis = await redisClient();
+  if (redis) {
+    try {
+      return await applyRedisLuaBatch(redis, entries);
+    } catch (error) {
+      if (isRedisRequiredForSync()) {
+        throw error;
+      }
+      console.warn(
+        '[sync-persistence] Redis settings batch failed; falling back to in-memory path:',
+        (error as Error).message,
+      );
+    }
+  }
+
+  return applyMemoryBackedSettingsBatch(entries, redis);
 }
 
 // ─── Diff log ─────────────────────────────────────────────────────────
