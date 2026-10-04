@@ -402,6 +402,22 @@ export async function handleWsCommand(
       return;
     }
     if (physicalBegin.kind === 'replay') {
+      if (physicalBegin.statusCode >= 400) {
+        const replayBody =
+          physicalBegin.body && typeof physicalBegin.body === 'object'
+            ? (physicalBegin.body as Record<string, unknown>)
+            : {};
+        const replayError =
+          typeof replayBody.error === 'string'
+            ? replayBody.error
+            : 'Physical command replay returned failure';
+        safeSend(ws, {
+          type: 'ERROR',
+          error: replayError,
+          ...replayBody,
+        });
+        return;
+      }
       const broadcastData = resolveBroadcastData(liveAggregator);
       safeSend(ws, { type: 'ENERGY_UPDATE', data: broadcastData });
       return;

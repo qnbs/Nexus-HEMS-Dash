@@ -45,6 +45,33 @@ describe('physical-command-ledger', () => {
     expect(record?.state).toBe('unknown');
   });
 
+  it('blocks a second commandId for the same idempotency key while pending', async () => {
+    const commandIdA = 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee';
+    const commandIdB = 'ffffffff-ffff-4fff-8fff-ffffffffffff';
+    const idempotencyKey = 'ledger-key-alias-race';
+
+    const first = await beginPhysicalCommandReplay({ commandId: commandIdA, idempotencyKey });
+    expect(first.kind).toBe('proceed');
+
+    const second = await beginPhysicalCommandReplay({ commandId: commandIdB, idempotencyKey });
+    expect(second.kind).toBe('in_flight');
+  });
+
+  it('ignores completion when idempotencyKey does not match the pending claim', async () => {
+    const commandId = '11111111-1111-4111-8111-111111111111';
+    const idempotencyKey = 'ledger-key-stale-complete';
+
+    await beginPhysicalCommandReplay({ commandId, idempotencyKey });
+    await completePhysicalCommandReplay(commandId, 'other-key', 'succeeded', 200, {
+      ok: true,
+      stale: true,
+    });
+
+    const record = await getPhysicalCommandRecord(commandId);
+    expect(record?.state).toBe('pending');
+    expect(record?.idempotencyKey).toBe(idempotencyKey);
+  });
+
   it('resolves idempotency alias to the canonical commandId record', async () => {
     const commandId = 'cccccccc-cccc-4ccc-8ccc-cccccccccccc';
     const idempotencyKey = 'ledger-key-3';

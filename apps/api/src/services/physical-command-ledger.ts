@@ -9,7 +9,10 @@ import { getOptionalRedisClient } from './redis-client.js';
 
 const COMMAND_PREFIX = 'nexus:physical-cmd:';
 const IDEM_ALIAS_PREFIX = 'nexus:physical-cmd:idem:';
+/** Terminal success/failure and in-flight pending claims. */
 const LEDGER_TTL_SEC = 300;
+/** Unknown outcomes must not expire before operator review. */
+const UNKNOWN_TTL_SEC = 24 * 60 * 60;
 
 export interface PhysicalCommandRecord {
   state: PhysicalCommandState;
@@ -28,6 +31,10 @@ export type BeginPhysicalCommandResult =
 
 const memoryByCommandId = new Map<string, PhysicalCommandRecord>();
 const memoryIdemAlias = new Map<string, string>();
+
+function ttlSecondsForState(state: PhysicalCommandState): number {
+  return state === 'unknown' ? UNKNOWN_TTL_SEC : LEDGER_TTL_SEC;
+}
 
 function pruneMemory(): void {
   const now = Date.now();
@@ -100,6 +107,9 @@ async function readRecord(commandId: string): Promise<PhysicalCommandRecord | un
   const record = memoryByCommandId.get(commandId);
   if (!record || record.expiresAt <= Date.now()) {
     memoryByCommandId.delete(commandId);
+    if (record?.idempotencyKey) {
+      memoryIdemAlias.delete(record.idempotencyKey);
+    }
     return undefined;
   }
   return record;
@@ -107,15 +117,11 @@ async function readRecord(commandId: string): Promise<PhysicalCommandRecord | un
 
 async function writeRecord(record: PhysicalCommandRecord): Promise<void> {
   const payload = JSON.stringify(record);
+  const ttlSec = ttlSecondsForState(record.state);
   const redis = await getOptionalRedisClient();
   if (redis) {
-    await redis.set(`${COMMAND_PREFIX}${record.commandId}`, payload, 'EX', LEDGER_TTL_SEC);
-    await redis.set(
-      `${IDEM_ALIAS_PREFIX}${record.idempotencyKey}`,
-      record.commandId,
-      'EX',
-      LEDGER_TTL_SEC,
-    );
+    await redis.set(`${COMMAND_PREFIX}${record.commandId}`, payload, 'EX', ttlSec);
+    await redis.set(`${IDEM_ALIAS_PREFIX}${record.idempotencyKey}`, record.commandId, 'EX', ttlSec);
     return;
   }
 
@@ -124,13 +130,28 @@ async function writeRecord(record: PhysicalCommandRecord): Promise<void> {
   memoryIdemAlias.set(record.idempotencyKey, record.commandId);
 }
 
-async function lookupIdempotencyAlias(idempotencyKey: string): Promise<string | undefined> {
+async function resolveIdempotencyAlias(
+  idempotencyKey: string,
+): Promise<BeginPhysicalCommandResult | null> {
   const redis = await getOptionalRedisClient();
   if (redis) {
-    const alias = await redis.get(`${IDEM_ALIAS_PREFIX}${idempotencyKey}`);
-    return alias ?? undefined;
+    const aliasCommandId = await redis.get(`${IDEM_ALIAS_PREFIX}${idempotencyKey}`);
+    if (!aliasCommandId) return null;
+    const aliasRecord = await readRecord(aliasCommandId);
+    if (aliasRecord) return classifyExisting(aliasRecord);
+    await redis.del(`${IDEM_ALIAS_PREFIX}${idempotencyKey}`);
+    return null;
   }
-  return memoryIdemAlias.get(idempotencyKey);
+
+  pruneMemory();
+  const aliasCommandId = memoryIdemAlias.get(idempotencyKey);
+  if (!aliasCommandId) return null;
+  const aliasRecord = memoryByCommandId.get(aliasCommandId);
+  if (aliasRecord && aliasRecord.expiresAt > Date.now()) {
+    return classifyExisting(aliasRecord);
+  }
+  memoryIdemAlias.delete(idempotencyKey);
+  return null;
 }
 
 export async function beginPhysicalCommandReplay(params: {
@@ -138,13 +159,10 @@ export async function beginPhysicalCommandReplay(params: {
   idempotencyKey: string;
 }): Promise<BeginPhysicalCommandResult> {
   const { commandId, idempotencyKey } = params;
-  const expiresAt = Date.now() + LEDGER_TTL_SEC * 1000;
+  const pendingExpiresAt = Date.now() + LEDGER_TTL_SEC * 1000;
 
-  const aliasCommandId = await lookupIdempotencyAlias(idempotencyKey);
-  if (aliasCommandId) {
-    const aliasRecord = await readRecord(aliasCommandId);
-    if (aliasRecord) return classifyExisting(aliasRecord);
-  }
+  const viaAlias = await resolveIdempotencyAlias(idempotencyKey);
+  if (viaAlias) return viaAlias;
 
   const existing = await readRecord(commandId);
   if (existing) return classifyExisting(existing);
@@ -155,11 +173,23 @@ export async function beginPhysicalCommandReplay(params: {
     idempotencyKey,
     statusCode: 0,
     body: null,
-    expiresAt,
+    expiresAt: pendingExpiresAt,
   };
 
   const redis = await getOptionalRedisClient();
   if (redis) {
+    const aliasClaimed = await redis.set(
+      `${IDEM_ALIAS_PREFIX}${idempotencyKey}`,
+      commandId,
+      'EX',
+      LEDGER_TTL_SEC,
+      'NX',
+    );
+    if (aliasClaimed !== 'OK') {
+      const racedAlias = await resolveIdempotencyAlias(idempotencyKey);
+      if (racedAlias) return racedAlias;
+    }
+
     const claimed = await redis.set(
       `${COMMAND_PREFIX}${commandId}`,
       JSON.stringify(pending),
@@ -168,26 +198,32 @@ export async function beginPhysicalCommandReplay(params: {
       'NX',
     );
     if (claimed === 'OK') {
-      await redis.set(
-        `${IDEM_ALIAS_PREFIX}${idempotencyKey}`,
-        commandId,
-        'EX',
-        LEDGER_TTL_SEC,
-        'NX',
-      );
       return { kind: 'proceed' };
     }
+    if (aliasClaimed === 'OK') {
+      await redis.del(`${IDEM_ALIAS_PREFIX}${idempotencyKey}`);
+    }
     const raced = await readRecord(commandId);
-    if (!raced) return { kind: 'proceed' };
+    if (!raced) {
+      const aliasAfterRace = await resolveIdempotencyAlias(idempotencyKey);
+      if (aliasAfterRace) return aliasAfterRace;
+      return { kind: 'proceed' };
+    }
     return classifyExisting(raced);
   }
 
   pruneMemory();
+  if (memoryIdemAlias.has(idempotencyKey)) {
+    const racedAlias = await resolveIdempotencyAlias(idempotencyKey);
+    if (racedAlias) return racedAlias;
+  }
+  memoryIdemAlias.set(idempotencyKey, commandId);
+
   if (!memoryByCommandId.has(commandId)) {
     memoryByCommandId.set(commandId, pending);
-    memoryIdemAlias.set(idempotencyKey, commandId);
     return { kind: 'proceed' };
   }
+  memoryIdemAlias.delete(idempotencyKey);
   const raced = memoryByCommandId.get(commandId);
   return raced ? classifyExisting(raced) : { kind: 'proceed' };
 }
@@ -199,13 +235,19 @@ export async function completePhysicalCommandReplay(
   statusCode: number,
   body: unknown,
 ): Promise<void> {
+  const current = await readRecord(commandId);
+  if (current && (current.state !== 'pending' || current.idempotencyKey !== idempotencyKey)) {
+    return;
+  }
+
+  const ttlSec = ttlSecondsForState(terminalState);
   const record: PhysicalCommandRecord = {
     state: terminalState,
     commandId,
     idempotencyKey,
     statusCode,
     body,
-    expiresAt: Date.now() + LEDGER_TTL_SEC * 1000,
+    expiresAt: Date.now() + ttlSec * 1000,
   };
   await writeRecord(record);
 }
@@ -222,7 +264,7 @@ export async function markPhysicalCommandUnknown(
     idempotencyKey,
     statusCode,
     body,
-    expiresAt: Date.now() + LEDGER_TTL_SEC * 1000,
+    expiresAt: Date.now() + UNKNOWN_TTL_SEC * 1000,
   };
   await writeRecord(record);
 }

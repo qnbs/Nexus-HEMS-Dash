@@ -110,19 +110,75 @@ export function createCommandsRoutes(): Router {
 
       const mode = getEffectiveAdapterMode();
       if (mode === 'live') {
-        const result = await dispatchProtocolCommand({
-          type: wsType as WSCommandType,
-          value: watts,
-        });
-        const dispatchOutcome = resolveProtocolDispatchOutcome(result);
-        if (dispatchOutcome === 'unknown') {
+        try {
+          const result = await dispatchProtocolCommand({
+            type: wsType as WSCommandType,
+            value: watts,
+          });
+          const dispatchOutcome = resolveProtocolDispatchOutcome(result);
+          if (dispatchOutcome === 'unknown') {
+            const unknownBody = {
+              ok: false,
+              outcome: 'unknown',
+              mode: 'live',
+              type,
+              commandId: envelope.commandId,
+              error: result.error ?? 'Hardware outcome unknown after dispatch',
+            };
+            await markPhysicalCommandUnknown(
+              envelope.commandId,
+              envelope.idempotencyKey,
+              409,
+              unknownBody,
+            );
+            res.status(409).json(unknownBody);
+            return;
+          }
+          if (!result.handled || !result.success) {
+            const status = result.handled ? 502 : 501;
+            const failBody = {
+              ok: false,
+              outcome: 'failed',
+              error: result.error ?? 'Live command dispatch failed',
+              commandId: envelope.commandId,
+            };
+            await completePhysicalCommandReplay(
+              envelope.commandId,
+              envelope.idempotencyKey,
+              'failed',
+              status,
+              failBody,
+            );
+            res.status(status).json(failBody);
+            return;
+          }
+          const successBody = {
+            ok: true,
+            outcome: 'succeeded',
+            mode: 'live',
+            type,
+            value: watts,
+            commandId: envelope.commandId,
+          };
+          await completePhysicalCommandReplay(
+            envelope.commandId,
+            envelope.idempotencyKey,
+            'succeeded',
+            200,
+            successBody,
+          );
+          res.json(successBody);
+          return;
+        } catch (error) {
+          const message =
+            error instanceof Error ? error.message : 'Hardware dispatch failed unexpectedly';
           const unknownBody = {
             ok: false,
             outcome: 'unknown',
             mode: 'live',
             type,
             commandId: envelope.commandId,
-            error: result.error ?? 'Hardware outcome unknown after dispatch',
+            error: message,
           };
           await markPhysicalCommandUnknown(
             envelope.commandId,
@@ -133,41 +189,6 @@ export function createCommandsRoutes(): Router {
           res.status(409).json(unknownBody);
           return;
         }
-        if (!result.handled || !result.success) {
-          const status = result.handled ? 502 : 501;
-          const failBody = {
-            ok: false,
-            outcome: 'failed',
-            error: result.error ?? 'Live command dispatch failed',
-            commandId: envelope.commandId,
-          };
-          await completePhysicalCommandReplay(
-            envelope.commandId,
-            envelope.idempotencyKey,
-            'failed',
-            status,
-            failBody,
-          );
-          res.status(status).json(failBody);
-          return;
-        }
-        const successBody = {
-          ok: true,
-          outcome: 'succeeded',
-          mode: 'live',
-          type,
-          value: watts,
-          commandId: envelope.commandId,
-        };
-        await completePhysicalCommandReplay(
-          envelope.commandId,
-          envelope.idempotencyKey,
-          'succeeded',
-          200,
-          successBody,
-        );
-        res.json(successBody);
-        return;
       }
 
       applyMockCommandMutation({ type: wsType, value: watts });

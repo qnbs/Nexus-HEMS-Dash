@@ -120,40 +120,42 @@ describe('commands routes', () => {
     });
     const { createCommandsRoutes: createLiveRoutes } = await import('../routes/commands.routes.js');
 
-    const bearer = await signToken({ sub: 'writer', scope: 'readwrite' }, '1h');
-    const envelope = replayEnvelope('replay-unknown-1');
-    const body = {
-      type: 'battery-control' as const,
-      payload: { powerW: 1200 },
-      envelope,
-    };
+    try {
+      const bearer = await signToken({ sub: 'writer', scope: 'readwrite' }, '1h');
+      const envelope = replayEnvelope('replay-unknown-1');
+      const body = {
+        type: 'battery-control' as const,
+        payload: { powerW: 1200 },
+        envelope,
+      };
 
-    const app = express();
-    app.use(express.json());
-    app.use(createLiveRoutes());
-    const agent = supertest(app);
-    const first = await agent
-      .post('/api/commands/replay')
-      .set('Authorization', `Bearer ${bearer}`)
-      .set('X-Idempotency-Key', 'replay-unknown-1')
-      .send(body)
-      .expect(409);
+      const app = express();
+      app.use(express.json());
+      app.use(createLiveRoutes());
+      const agent = supertest(app);
+      const first = await agent
+        .post('/api/commands/replay')
+        .set('Authorization', `Bearer ${bearer}`)
+        .set('X-Idempotency-Key', 'replay-unknown-1')
+        .send(body)
+        .expect(409);
 
-    expect(first.body).toMatchObject({ outcome: 'unknown', commandId: envelope.commandId });
+      expect(first.body).toMatchObject({ outcome: 'unknown', commandId: envelope.commandId });
 
-    mockData.batteryPower = 7777;
-    const second = await agent
-      .post('/api/commands/replay')
-      .set('Authorization', `Bearer ${bearer}`)
-      .set('X-Idempotency-Key', 'replay-unknown-1')
-      .send(body)
-      .expect(409);
+      mockData.batteryPower = 7777;
+      const second = await agent
+        .post('/api/commands/replay')
+        .set('Authorization', `Bearer ${bearer}`)
+        .set('X-Idempotency-Key', 'replay-unknown-1')
+        .send(body)
+        .expect(409);
 
-    expect(second.body).toEqual(first.body);
-    expect(mockData.batteryPower).toBe(7777);
-
-    dispatchSpy.mockRestore();
-    delete process.env.ADAPTER_MODE;
-    delete process.env.ALLOW_LIVE_HARDWARE;
+      expect(second.body).toEqual(first.body);
+      expect(mockData.batteryPower).toBe(7777);
+    } finally {
+      dispatchSpy.mockRestore();
+      delete process.env.ADAPTER_MODE;
+      delete process.env.ALLOW_LIVE_HARDWARE;
+    }
   });
 });
