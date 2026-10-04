@@ -74,6 +74,12 @@ export async function dispatchProtocolCommand(
       if (result.handled) return result;
     } catch (err) {
       lastError = err instanceof Error ? err.message : String(err);
+      return {
+        handled: true,
+        success: false,
+        dispatchOutcome: 'unknown',
+        error: lastError,
+      };
     }
   }
 

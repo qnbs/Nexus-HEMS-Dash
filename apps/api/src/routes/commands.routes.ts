@@ -20,6 +20,12 @@ import { requireJWT, requireScope } from '../middleware/auth.js';
 import { idempotencyMiddleware } from '../middleware/idempotency.js';
 import { requireNotReadOnly } from '../middleware/require-not-read-only.js';
 import { dispatchProtocolCommand } from '../protocols/ProtocolCommandRouter.js';
+import { resolveProtocolDispatchOutcome } from '../protocols/protocol-command.js';
+import {
+  beginPhysicalCommandReplay,
+  completePhysicalCommandReplay,
+  markPhysicalCommandUnknown,
+} from '../services/physical-command-ledger.js';
 
 const ReplayBodySchema = z.object({
   type: z.enum(['ev-control', 'hp-control', 'battery-control']),
@@ -85,19 +91,82 @@ export function createCommandsRoutes(): Router {
         return;
       }
 
+      const physicalBegin = await beginPhysicalCommandReplay({
+        commandId: envelope.commandId,
+        idempotencyKey: envelope.idempotencyKey,
+      });
+      if (physicalBegin.kind === 'replay') {
+        res.status(physicalBegin.statusCode).json(physicalBegin.body);
+        return;
+      }
+      if (physicalBegin.kind === 'unknown') {
+        res.status(physicalBegin.statusCode).json(physicalBegin.body);
+        return;
+      }
+      if (physicalBegin.kind === 'in_flight') {
+        res.status(409).json({ error: 'Physical command dispatch in progress' });
+        return;
+      }
+
       const mode = getEffectiveAdapterMode();
       if (mode === 'live') {
         const result = await dispatchProtocolCommand({
           type: wsType as WSCommandType,
           value: watts,
         });
-        if (!result.handled || !result.success) {
-          res.status(result.handled ? 502 : 501).json({
-            error: result.error ?? 'Live command dispatch failed',
-          });
+        const dispatchOutcome = resolveProtocolDispatchOutcome(result);
+        if (dispatchOutcome === 'unknown') {
+          const unknownBody = {
+            ok: false,
+            outcome: 'unknown',
+            mode: 'live',
+            type,
+            commandId: envelope.commandId,
+            error: result.error ?? 'Hardware outcome unknown after dispatch',
+          };
+          await markPhysicalCommandUnknown(
+            envelope.commandId,
+            envelope.idempotencyKey,
+            409,
+            unknownBody,
+          );
+          res.status(409).json(unknownBody);
           return;
         }
-        res.json({ ok: true, mode: 'live', type, value: watts, commandId: envelope.commandId });
+        if (!result.handled || !result.success) {
+          const status = result.handled ? 502 : 501;
+          const failBody = {
+            ok: false,
+            outcome: 'failed',
+            error: result.error ?? 'Live command dispatch failed',
+            commandId: envelope.commandId,
+          };
+          await completePhysicalCommandReplay(
+            envelope.commandId,
+            envelope.idempotencyKey,
+            'failed',
+            status,
+            failBody,
+          );
+          res.status(status).json(failBody);
+          return;
+        }
+        const successBody = {
+          ok: true,
+          outcome: 'succeeded',
+          mode: 'live',
+          type,
+          value: watts,
+          commandId: envelope.commandId,
+        };
+        await completePhysicalCommandReplay(
+          envelope.commandId,
+          envelope.idempotencyKey,
+          'succeeded',
+          200,
+          successBody,
+        );
+        res.json(successBody);
         return;
       }
 
@@ -109,7 +178,22 @@ export function createCommandsRoutes(): Router {
         mockData.heatPumpPower -
         mockData.pvPower;
 
-      res.json({ ok: true, mode: 'mock', type, value: watts, commandId: envelope.commandId });
+      const successBody = {
+        ok: true,
+        outcome: 'succeeded',
+        mode: 'mock',
+        type,
+        value: watts,
+        commandId: envelope.commandId,
+      };
+      await completePhysicalCommandReplay(
+        envelope.commandId,
+        envelope.idempotencyKey,
+        'succeeded',
+        200,
+        successBody,
+      );
+      res.json(successBody);
     },
   );
 

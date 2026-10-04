@@ -1,7 +1,8 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { WebSocket, WebSocketServer } from 'ws';
 import { isReadOnlyMode } from '../config/read-only-mode.js';
 import type { AuthenticatedClient } from '../middleware/auth.js';
+import * as ProtocolCommandRouter from '../protocols/ProtocolCommandRouter.js';
 import {
   checkScopeAuthorization,
   checkWsRateLimit,
@@ -11,12 +12,6 @@ import {
   sanitizeOutgoingWsPayload,
   validateWSCommand,
 } from '../ws/energy.ws.js';
-
-vi.mock('../protocols/ProtocolCommandRouter.js', () => ({
-  dispatchProtocolCommand: vi.fn(),
-}));
-
-import { dispatchProtocolCommand } from '../protocols/ProtocolCommandRouter.js';
 
 describe('validateWSCommand', () => {
   it('accepts a valid hardware command', () => {
@@ -221,7 +216,11 @@ describe('handleWsCommand', () => {
   const originalReadOnly = process.env.READ_ONLY_MODE;
   const originalAdapterMode = process.env.ADAPTER_MODE;
   const originalAllowLive = process.env.ALLOW_LIVE_HARDWARE;
-  const mockedDispatch = vi.mocked(dispatchProtocolCommand);
+  let dispatchSpy: ReturnType<typeof vi.spyOn>;
+
+  beforeEach(() => {
+    dispatchSpy = vi.spyOn(ProtocolCommandRouter, 'dispatchProtocolCommand');
+  });
 
   function mockWs(): WebSocket & { sent: unknown[] } {
     return {
@@ -239,7 +238,7 @@ describe('handleWsCommand', () => {
     else process.env.ADAPTER_MODE = originalAdapterMode;
     if (originalAllowLive === undefined) delete process.env.ALLOW_LIVE_HARDWARE;
     else process.env.ALLOW_LIVE_HARDWARE = originalAllowLive;
-    mockedDispatch.mockReset();
+    dispatchSpy.mockRestore();
   });
 
   it('routes invalid commands to SUBSCRIBE handler when applicable', async () => {
@@ -278,8 +277,10 @@ describe('handleWsCommand', () => {
   });
 
   it('skips duplicate mock mutation when idempotencyKey repeats', async () => {
-    const { clearWsIdempotencyCacheForTests } = await import('../data/idempotency-cache.js');
-    clearWsIdempotencyCacheForTests();
+    const { resetPhysicalCommandLedgerForTests } = await import(
+      '../services/physical-command-ledger.js'
+    );
+    resetPhysicalCommandLedgerForTests();
     delete process.env.READ_ONLY_MODE;
     const { mockData } = await import('../data/mock-data.js');
     mockData.evPower = 0;
@@ -301,7 +302,7 @@ describe('handleWsCommand', () => {
     delete process.env.READ_ONLY_MODE;
     process.env.ADAPTER_MODE = 'live';
     process.env.ALLOW_LIVE_HARDWARE = 'true';
-    mockedDispatch.mockResolvedValue({ handled: true, success: true, adapterId: 'ocpp-csms-01' });
+    dispatchSpy.mockResolvedValue({ handled: true, success: true, adapterId: 'ocpp-csms-01' });
 
     const ws = mockWs();
     const peer = mockWs();
@@ -314,7 +315,7 @@ describe('handleWsCommand', () => {
     await handleWsCommand(ws, { type: 'SET_EV_POWER', value: 7200 }, new WeakMap(), auth, wss);
 
     await vi.waitFor(() => {
-      expect(mockedDispatch).toHaveBeenCalledWith({ type: 'SET_EV_POWER', value: 7200 });
+      expect(dispatchSpy).toHaveBeenCalledWith({ type: 'SET_EV_POWER', value: 7200 });
     });
     await vi.waitFor(() => {
       expect(peer.sent.some((msg) => (msg as { type: string }).type === 'ENERGY_UPDATE')).toBe(
@@ -327,7 +328,7 @@ describe('handleWsCommand', () => {
     delete process.env.READ_ONLY_MODE;
     process.env.ADAPTER_MODE = 'live';
     process.env.ALLOW_LIVE_HARDWARE = 'true';
-    mockedDispatch.mockResolvedValue({ handled: false, success: false });
+    dispatchSpy.mockResolvedValue({ handled: false, success: false });
 
     const ws = mockWs();
     const auth = new WeakMap<WebSocket, AuthenticatedClient>();
@@ -345,7 +346,7 @@ describe('handleWsCommand', () => {
     delete process.env.READ_ONLY_MODE;
     process.env.ADAPTER_MODE = 'live';
     process.env.ALLOW_LIVE_HARDWARE = 'true';
-    mockedDispatch.mockResolvedValue({
+    dispatchSpy.mockResolvedValue({
       handled: true,
       success: false,
       error: 'No charge point connected',
