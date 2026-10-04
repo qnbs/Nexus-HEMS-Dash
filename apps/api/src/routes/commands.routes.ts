@@ -20,6 +20,12 @@ import { requireJWT, requireScope } from '../middleware/auth.js';
 import { idempotencyMiddleware } from '../middleware/idempotency.js';
 import { requireNotReadOnly } from '../middleware/require-not-read-only.js';
 import { dispatchProtocolCommand } from '../protocols/ProtocolCommandRouter.js';
+import { resolveProtocolDispatchOutcome } from '../protocols/protocol-command.js';
+import {
+  beginPhysicalCommandReplay,
+  completePhysicalCommandReplay,
+  markPhysicalCommandUnknown,
+} from '../services/physical-command-ledger.js';
 
 const ReplayBodySchema = z.object({
   type: z.enum(['ev-control', 'hp-control', 'battery-control']),
@@ -55,6 +61,71 @@ function validateReplayRequest(req: Request, res: Response, next: NextFunction):
   next();
 }
 
+async function dispatchLiveCommandReplay(
+  res: Response,
+  params: {
+    type: ReplayBody['type'];
+    wsType: WSCommandType;
+    watts: number;
+    commandId: string;
+    idempotencyKey: string;
+  },
+): Promise<void> {
+  const { type, wsType, watts, commandId, idempotencyKey } = params;
+  try {
+    const result = await dispatchProtocolCommand({ type: wsType, value: watts });
+    const dispatchOutcome = resolveProtocolDispatchOutcome(result);
+    if (dispatchOutcome === 'unknown') {
+      const unknownBody = {
+        ok: false,
+        outcome: 'unknown',
+        mode: 'live',
+        type,
+        commandId,
+        error: result.error ?? 'Hardware outcome unknown after dispatch',
+      };
+      await markPhysicalCommandUnknown(commandId, idempotencyKey, 409, unknownBody);
+      res.status(409).json(unknownBody);
+      return;
+    }
+    if (!result.handled || !result.success) {
+      const status = result.handled ? 502 : 501;
+      const failBody = {
+        ok: false,
+        outcome: 'failed',
+        error: result.error ?? 'Live command dispatch failed',
+        commandId,
+      };
+      await completePhysicalCommandReplay(commandId, idempotencyKey, 'failed', status, failBody);
+      res.status(status).json(failBody);
+      return;
+    }
+    const successBody = {
+      ok: true,
+      outcome: 'succeeded',
+      mode: 'live',
+      type,
+      value: watts,
+      commandId,
+    };
+    await completePhysicalCommandReplay(commandId, idempotencyKey, 'succeeded', 200, successBody);
+    res.json(successBody);
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : 'Hardware dispatch failed unexpectedly';
+    const unknownBody = {
+      ok: false,
+      outcome: 'unknown',
+      mode: 'live',
+      type,
+      commandId,
+      error: message,
+    };
+    await markPhysicalCommandUnknown(commandId, idempotencyKey, 409, unknownBody);
+    res.status(409).json(unknownBody);
+  }
+}
+
 /** Factory for `/api/commands/replay`. */
 export function createCommandsRoutes(): Router {
   const router = Router();
@@ -85,19 +156,32 @@ export function createCommandsRoutes(): Router {
         return;
       }
 
+      const physicalBegin = await beginPhysicalCommandReplay({
+        commandId: envelope.commandId,
+        idempotencyKey: envelope.idempotencyKey,
+      });
+      if (physicalBegin.kind === 'replay') {
+        res.status(physicalBegin.statusCode).json(physicalBegin.body);
+        return;
+      }
+      if (physicalBegin.kind === 'unknown') {
+        res.status(physicalBegin.statusCode).json(physicalBegin.body);
+        return;
+      }
+      if (physicalBegin.kind === 'in_flight') {
+        res.status(409).json({ error: 'Physical command dispatch in progress' });
+        return;
+      }
+
       const mode = getEffectiveAdapterMode();
       if (mode === 'live') {
-        const result = await dispatchProtocolCommand({
-          type: wsType as WSCommandType,
-          value: watts,
+        await dispatchLiveCommandReplay(res, {
+          type,
+          wsType: wsType as WSCommandType,
+          watts,
+          commandId: envelope.commandId,
+          idempotencyKey: envelope.idempotencyKey,
         });
-        if (!result.handled || !result.success) {
-          res.status(result.handled ? 502 : 501).json({
-            error: result.error ?? 'Live command dispatch failed',
-          });
-          return;
-        }
-        res.json({ ok: true, mode: 'live', type, value: watts, commandId: envelope.commandId });
         return;
       }
 
@@ -109,7 +193,22 @@ export function createCommandsRoutes(): Router {
         mockData.heatPumpPower -
         mockData.pvPower;
 
-      res.json({ ok: true, mode: 'mock', type, value: watts, commandId: envelope.commandId });
+      const successBody = {
+        ok: true,
+        outcome: 'succeeded',
+        mode: 'mock',
+        type,
+        value: watts,
+        commandId: envelope.commandId,
+      };
+      await completePhysicalCommandReplay(
+        envelope.commandId,
+        envelope.idempotencyKey,
+        'succeeded',
+        200,
+        successBody,
+      );
+      res.json(successBody);
     },
   );
 

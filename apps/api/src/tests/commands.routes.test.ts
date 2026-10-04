@@ -2,6 +2,7 @@ import express from 'express';
 import supertest from 'supertest';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { clearIdempotencyCacheForTests } from '../data/idempotency-cache.js';
+import { resetPhysicalCommandLedgerForTests } from '../services/physical-command-ledger.js';
 import { resetSyncPersistenceForTests } from '../services/sync-persistence.js';
 
 const SECRET = 'nexus-hems-ci-fixture-jwt-signing-key-not-a-real-credential';
@@ -28,6 +29,7 @@ describe('commands routes', () => {
 
   afterEach(() => {
     clearIdempotencyCacheForTests();
+    resetPhysicalCommandLedgerForTests();
     resetSyncPersistenceForTests();
     mockData.evPower = 0;
     mockData.batteryPower = -500;
@@ -102,5 +104,58 @@ describe('commands routes', () => {
 
     expect(second.body).toEqual(first.body);
     expect(mockData.evPower).toBe(9999);
+  });
+
+  it('returns unknown outcome and blocks duplicate dispatch when live handler throws', async () => {
+    process.env.ADAPTER_MODE = 'live';
+    process.env.ALLOW_LIVE_HARDWARE = 'true';
+
+    vi.resetModules();
+    const router = await import('../protocols/ProtocolCommandRouter.js');
+    const dispatchSpy = vi.spyOn(router, 'dispatchProtocolCommand').mockResolvedValue({
+      handled: true,
+      success: false,
+      dispatchOutcome: 'unknown',
+      error: 'transport dropped mid-flight',
+    });
+    const { createCommandsRoutes: createLiveRoutes } = await import('../routes/commands.routes.js');
+
+    try {
+      const bearer = await signToken({ sub: 'writer', scope: 'readwrite' }, '1h');
+      const envelope = replayEnvelope('replay-unknown-1');
+      const body = {
+        type: 'battery-control' as const,
+        payload: { powerW: 1200 },
+        envelope,
+      };
+
+      const app = express();
+      app.use(express.json());
+      app.use(createLiveRoutes());
+      const agent = supertest(app);
+      const first = await agent
+        .post('/api/commands/replay')
+        .set('Authorization', `Bearer ${bearer}`)
+        .set('X-Idempotency-Key', 'replay-unknown-1')
+        .send(body)
+        .expect(409);
+
+      expect(first.body).toMatchObject({ outcome: 'unknown', commandId: envelope.commandId });
+
+      mockData.batteryPower = 7777;
+      const second = await agent
+        .post('/api/commands/replay')
+        .set('Authorization', `Bearer ${bearer}`)
+        .set('X-Idempotency-Key', 'replay-unknown-1')
+        .send(body)
+        .expect(409);
+
+      expect(second.body).toEqual(first.body);
+      expect(mockData.batteryPower).toBe(7777);
+    } finally {
+      dispatchSpy.mockRestore();
+      delete process.env.ADAPTER_MODE;
+      delete process.env.ALLOW_LIVE_HARDWARE;
+    }
   });
 });

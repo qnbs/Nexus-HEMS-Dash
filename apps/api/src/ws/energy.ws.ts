@@ -12,13 +12,18 @@ import { isReadOnlyMode } from '../config/read-only-mode.js';
 import { isProductionRuntime } from '../config/runtime-env.js';
 import { logger } from '../core/logger.js';
 import { type CommandOutcome, writeCommandAuditEntry } from '../data/command-audit.js';
-import { isWsIdempotencyReplay, markWsIdempotencyAccepted } from '../data/idempotency-cache.js';
 import { applyMockCommandMutation } from '../data/mock-command-mutation.js';
 import { mockData, updateMockData } from '../data/mock-data.js';
 import { type AuthenticatedClient, authenticateWS, type JWTScope } from '../middleware/auth.js';
 import { setMetric, updateServerMetrics, wsMessageCount } from '../middleware/metrics.js';
 import { dispatchProtocolCommand } from '../protocols/ProtocolCommandRouter.js';
+import { resolveProtocolDispatchOutcome } from '../protocols/protocol-command.js';
 import type { LiveEnergyAggregator } from '../services/LiveEnergyAggregator.js';
+import {
+  beginPhysicalCommandReplay,
+  completePhysicalCommandReplay,
+  markPhysicalCommandUnknown,
+} from '../services/physical-command-ledger.js';
 import { wsTicketStore } from '../services/ws-ticket-store.js';
 import { handleEebusProxyConnection, isEebusProxyPath } from './eebus-proxy.ws.js';
 import { handleOcppProxyConnection, isOcppProxyPath } from './ocpp-proxy.ws.js';
@@ -316,6 +321,65 @@ export function checkScopeAuthorization(
   return false;
 }
 
+/**
+ * Physical-command ledger gate for WebSocket control commands.
+ * @returns true when the handler already sent a terminal WS response.
+ */
+async function handleWsPhysicalCommandLedger(
+  ws: WebSocket,
+  wsAuthMap: WeakMap<WebSocket, AuthenticatedClient>,
+  liveAggregator: LiveEnergyAggregator | undefined,
+  params: { idempotencyKey: string; cmdType: string; commandValue: number },
+): Promise<boolean> {
+  const { idempotencyKey, cmdType, commandValue } = params;
+  const physicalBegin = await beginPhysicalCommandReplay({
+    commandId: idempotencyKey,
+    idempotencyKey,
+  });
+  if (physicalBegin.kind === 'unknown') {
+    auditCommand(
+      wsAuthMap,
+      ws,
+      cmdType,
+      commandValue,
+      'rejected_dispatch',
+      'Physical command outcome unknown — replay blocked',
+    );
+    safeSend(ws, {
+      type: 'ERROR',
+      error: 'Hardware command outcome unknown — do not retry without operator review',
+      outcome: 'unknown',
+    });
+    return true;
+  }
+  if (physicalBegin.kind === 'replay') {
+    if (physicalBegin.statusCode >= 400) {
+      const replayBody =
+        physicalBegin.body && typeof physicalBegin.body === 'object'
+          ? (physicalBegin.body as Record<string, unknown>)
+          : {};
+      const replayError =
+        typeof replayBody.error === 'string'
+          ? replayBody.error
+          : 'Physical command replay returned failure';
+      safeSend(ws, {
+        type: 'ERROR',
+        error: replayError,
+        ...replayBody,
+      });
+      return true;
+    }
+    const broadcastData = resolveBroadcastData(liveAggregator);
+    safeSend(ws, { type: 'ENERGY_UPDATE', data: broadcastData });
+    return true;
+  }
+  if (physicalBegin.kind === 'in_flight') {
+    safeSend(ws, { type: 'ERROR', error: 'Physical command dispatch in progress' });
+    return true;
+  }
+  return false;
+}
+
 /** @internal Exported for unit tests (energy-ws.test.ts). */
 export async function handleWsCommand(
   ws: WebSocket,
@@ -375,13 +439,31 @@ export async function handleWsCommand(
   const mode = getEffectiveAdapterMode();
   const idempotencyKey = cmd.idempotencyKey?.trim();
 
-  if (idempotencyKey && (await isWsIdempotencyReplay(idempotencyKey))) {
-    const broadcastData = resolveBroadcastData(liveAggregator);
-    safeSend(ws, { type: 'ENERGY_UPDATE', data: broadcastData });
-    return;
+  if (idempotencyKey) {
+    const ledgerHandled = await handleWsPhysicalCommandLedger(ws, wsAuthMap, liveAggregator, {
+      idempotencyKey,
+      cmdType: cmd.type,
+      commandValue,
+    });
+    if (ledgerHandled) return;
   }
 
   if (mode === 'live') {
+    if (!idempotencyKey) {
+      auditCommand(
+        wsAuthMap,
+        ws,
+        cmd.type,
+        commandValue,
+        'rejected_validation',
+        'idempotencyKey required for live hardware commands',
+      );
+      safeSend(ws, {
+        type: 'ERROR',
+        error: 'idempotencyKey is required for live hardware commands',
+      });
+      return;
+    }
     await dispatchLiveCommand(
       ws,
       { type: cmd.type as WSCommandType, value: commandValue },
@@ -395,7 +477,11 @@ export async function handleWsCommand(
 
   applyMockCommandMutation(cmd);
   auditCommand(wsAuthMap, ws, cmd.type, commandValue, 'accepted');
-  if (idempotencyKey) await markWsIdempotencyAccepted(idempotencyKey);
+  if (idempotencyKey) {
+    await completePhysicalCommandReplay(idempotencyKey, idempotencyKey, 'succeeded', 200, {
+      accepted: true,
+    });
+  }
 
   mockData.gridPower =
     mockData.houseLoad +
@@ -418,8 +504,35 @@ async function dispatchLiveCommand(
   idempotencyKey?: string,
 ): Promise<void> {
   const result = await dispatchProtocolCommand(command);
+  const dispatchOutcome = resolveProtocolDispatchOutcome(result);
+
+  if (dispatchOutcome === 'unknown' && idempotencyKey) {
+    await markPhysicalCommandUnknown(idempotencyKey, idempotencyKey, 409, {
+      outcome: 'unknown',
+    });
+    auditCommand(
+      wsAuthMap,
+      ws,
+      command.type,
+      command.value,
+      'rejected_dispatch',
+      result.error ?? 'Hardware outcome unknown after dispatch',
+    );
+    safeSend(ws, {
+      type: 'ERROR',
+      error:
+        result.error ?? 'Hardware command outcome unknown — do not retry without operator review',
+      outcome: 'unknown',
+    });
+    return;
+  }
 
   if (!result.handled) {
+    if (idempotencyKey) {
+      await completePhysicalCommandReplay(idempotencyKey, idempotencyKey, 'failed', 501, {
+        error: result.error ?? 'No live adapter handles this command',
+      });
+    }
     auditCommand(
       wsAuthMap,
       ws,
@@ -436,6 +549,11 @@ async function dispatchLiveCommand(
   }
 
   if (!result.success) {
+    if (idempotencyKey) {
+      await completePhysicalCommandReplay(idempotencyKey, idempotencyKey, 'failed', 502, {
+        error: result.error ?? 'Command failed',
+      });
+    }
     auditCommand(
       wsAuthMap,
       ws,
@@ -449,7 +567,11 @@ async function dispatchLiveCommand(
   }
 
   auditCommand(wsAuthMap, ws, command.type, command.value, 'accepted');
-  if (idempotencyKey) await markWsIdempotencyAccepted(idempotencyKey);
+  if (idempotencyKey) {
+    await completePhysicalCommandReplay(idempotencyKey, idempotencyKey, 'succeeded', 200, {
+      accepted: true,
+    });
+  }
 
   const broadcastData = resolveBroadcastData(liveAggregator);
   wss.clients.forEach((c) => {

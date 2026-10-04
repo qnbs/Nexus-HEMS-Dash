@@ -141,6 +141,9 @@ export function validateProtocolCommandRequest(
   return { valid: true, command: parsed.data };
 }
 
+/** Whether the server knows the hardware outcome after dispatch (FUP-IDEM-01). */
+export type ProtocolCommandDispatchOutcome = 'confirmed_success' | 'confirmed_failure' | 'unknown';
+
 export interface ProtocolCommandResult {
   /** True when a registered handler recognized the command type. */
   handled: boolean;
@@ -149,6 +152,19 @@ export interface ProtocolCommandResult {
   /** Adapter id that handled the command (when handled). */
   adapterId?: string;
   error?: string;
+  /**
+   * When set to `unknown`, the command may have reached hardware but the outcome
+   * must not be retried blindly. Defaults from `success` when omitted.
+   */
+  dispatchOutcome?: ProtocolCommandDispatchOutcome;
+}
+
+export function resolveProtocolDispatchOutcome(
+  result: ProtocolCommandResult,
+): ProtocolCommandDispatchOutcome {
+  if (result.dispatchOutcome) return result.dispatchOutcome;
+  if (!result.handled) return 'confirmed_failure';
+  return result.success ? 'confirmed_success' : 'confirmed_failure';
 }
 
 /** Optional capability mixed into backend protocol adapters. */
