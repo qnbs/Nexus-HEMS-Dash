@@ -1,21 +1,28 @@
 # Adapters bundle budget (#405)
 
-**Current enforced limit:** 92 kB gzip (`apps/web/package.json` size-limit).  
-**Observed CI baseline:** ~90.8 kB with `VITE_BACKEND_WS=true` (see #404 / debt registry).
+**Core limit:** 92 kB gzip — `dist/assets/adapters-*.js` (`apps/web/package.json` size-limit).  
+**Contrib limit:** 155 kB gzip — `dist/assets/contrib-adapters-*.js` (split 2026-11-04; lazy-loaded contrib plugins).
 
-## Measure locally (same toolchain as CI)
+## Measured (local, same flags as CI)
 
 ```bash
 VITE_BACKEND_WS=true pnpm --filter @nexus-hems/web build
-pnpm size
+pnpm --filter @nexus-hems/web size
 ```
 
-Inspect chunk: `apps/web/dist/assets/adapters-*.js` (gzip via size-limit).
+| Chunk | Gzip (2026-11-04) | Notes |
+| --- | --- | --- |
+| `adapters-*` | ~90.5 kB | CI logged 91.53 kB before contrib split |
+| `contrib-adapters-*` | ~58.1 kB | Six shipped contrib adapters + shared deps |
 
-## Remediation backlog (no limit bump without evidence)
+## Vite `manualChunks`
 
-1. Lazy-load rarely used contrib adapters from Settings/plugins path only.
-2. Trim duplicate protocol helpers shared with adapter-worker (single code path).
-3. Re-run bundle analyzer: `pnpm build:analyze` → `apps/web/dist/bundle-stats.html`.
+Contrib sources under `core/adapters/contrib/` → `contrib-adapters` chunk. Core seven adapters + registry + Evcc/OpenEMS → `adapters` chunk.
 
-**Do not** raise the 92 kB ceiling again without a linked issue, measured delta, and lazy-load plan.
+## Remediation backlog (no core limit bump without ADR)
+
+1. Dynamic-import OCPP registration in `adapter-registry.ts` so OCPP can leave the core chunk.
+2. Trim duplicate protocol helpers shared with `adapter-worker.ts` (single code path).
+3. Bundle analyzer: `pnpm build:analyze` → `apps/web/dist/bundle-stats.html`.
+
+**Do not** raise the 92 kB core ceiling without a linked issue, measured delta, and lazy-load plan.

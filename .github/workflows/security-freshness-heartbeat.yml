@@ -1,10 +1,15 @@
 name: Security Freshness Heartbeat
 
-# Detects missing scheduled security scans (#387). Runs daily and on manual dispatch.
+# Detects missing scheduled security scans (#387). Cron may not fire when GitHub disables
+# repository schedules — also runs after green CI on main and on manual dispatch.
 on:
   schedule:
     - cron: '30 4 * * *'
   workflow_dispatch:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
 
 permissions:
   actions: read
@@ -27,6 +32,10 @@ jobs:
   heartbeat:
     name: Scheduled security scan freshness
     runs-on: ubuntu-latest
+    if: >-
+      github.event_name != 'workflow_run' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event != 'pull_request')
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 

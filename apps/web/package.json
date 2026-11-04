@@ -147,6 +147,12 @@
       "gzip": true
     },
     {
+      "name": "Contrib adapters (lazy)",
+      "path": "dist/assets/contrib-adapters-*.js",
+      "limit": "155 kB",
+      "gzip": true
+    },
+    {
       "name": "Vendor D3",
       "path": "dist/assets/vendor-d3-*.js",
       "limit": "30 kB",

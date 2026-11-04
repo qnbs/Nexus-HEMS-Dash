@@ -20,9 +20,10 @@
 | #385 | npm group — **defer** to Renovate unless audit-critical; Dependabot npm PRs duplicate Renovate ownership per `DEVOPS.md`. Close with comment if versions already on `main` or superseded. |
 | #373 | Draft ledger doc — **conflicts** with post-recovery `main`; close as superseded by #402 / merged runbooks unless maintainer revives content manually. |
 
-## After batch merge
+## After batch merge (#407 on `main`)
 
 - Container promotion evidenced on `898162f` / `3de2b5d` — see `container-image-provenance-392.md`.
-- Close superseded Dependabot PRs **#380–#384** on GitHub when still open (content on `main` via #407).
-- **#385** merged via #409; close Dependabot PR if still open.
+- Dependabot PRs **#380–#385** — close on GitHub if still open (content superseded by #407 / #409).
 - **#373** — close as superseded by #402 runbooks unless revived manually.
+
+**Status (2026-11-04):** npm/application deps remain **Renovate-owned**; Dependabot limited to Actions (batch merged).

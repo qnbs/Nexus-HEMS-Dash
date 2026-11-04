@@ -253,10 +253,13 @@ export default defineConfig(({ mode }) => {
           // Strategy: separate heavy libs into dedicated chunks so pages
           // only download what they actually render.
           manualChunks(id) {
-            // ── Source code: adapter implementations → own chunk ──
-            // Adapters are 2800+ LOC with heavy protocol logic.
-            // Splitting them out reduces the main entry chunk significantly.
-            if (/\/core\/adapters\/(?:Victron|Modbus|KNX|OCPP|EEBUS|adapter-registry)/.test(id))
+            // Contrib plugins: own chunk (monitored separately from core adapters-* budget).
+            if (/\/core\/adapters\/contrib\//.test(id)) return 'contrib-adapters';
+            if (
+              /\/core\/adapters\/(?:Victron|Modbus|KNX|OCPP|EEBUS|Evcc|OpenEMS|adapter-registry)/.test(
+                id,
+              )
+            )
               return 'adapters';
 
             if (!id.includes('node_modules')) return;
