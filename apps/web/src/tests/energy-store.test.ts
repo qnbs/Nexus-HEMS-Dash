@@ -352,7 +352,7 @@ describe('useEnergyStore', () => {
     }
 
     beforeEach(() => {
-      for (const id of ['knx', 'ocpp-21'] as AdapterId[]) {
+      for (const id of ['knx', 'eebus'] as AdapterId[]) {
         connectAdapter(id);
         vi.mocked(useEnergyStoreBase.getState().adapters[id].adapter.sendCommand).mockClear();
       }
@@ -362,18 +362,18 @@ describe('useEnergyStore', () => {
       sendAdapterCommand({ type: 'KNX_TOGGLE_LIGHTS', value: true });
       const { adapters } = useEnergyStoreBase.getState();
       expect(adapters.knx.adapter.sendCommand).toHaveBeenCalledTimes(1);
-      expect(adapters['ocpp-21'].adapter.sendCommand).toHaveBeenCalledTimes(1);
+      expect(adapters.eebus.adapter.sendCommand).toHaveBeenCalledTimes(1);
     });
 
     it('routes only to the specified adapter when targetAdapterId is set', () => {
       sendAdapterCommand({
         type: 'SET_EV_POWER',
         value: 7000,
-        targetAdapterId: 'ocpp-21',
+        targetAdapterId: 'eebus',
       });
       const { adapters } = useEnergyStoreBase.getState();
       expect(adapters.knx.adapter.sendCommand).not.toHaveBeenCalled();
-      expect(adapters['ocpp-21'].adapter.sendCommand).toHaveBeenCalledTimes(1);
+      expect(adapters.eebus.adapter.sendCommand).toHaveBeenCalledTimes(1);
     });
   });
 });
