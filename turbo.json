@@ -26,7 +26,8 @@
         "VITE_BUILD_SHA",
         "VITE_BUILD_TIME",
         "GIT_SHA",
-        "BUILD_TIME_ISO"
+        "BUILD_TIME_ISO",
+        "GITHUB_SHA"
       ],
       "inputs": [
         "src/**",
