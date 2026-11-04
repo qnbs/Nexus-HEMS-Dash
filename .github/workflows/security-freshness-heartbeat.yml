@@ -16,8 +16,10 @@ concurrency:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  # Fail if no successful scheduled run within this many days.
-  MAX_STALE_DAYS: '8'
+  # Scheduled cron reliability (expected daily SBOM / weekly Scorecard).
+  MAX_SCHEDULE_STALE_DAYS: '2'
+  # Any successful scan recency (includes manual dispatch after Actions re-enable).
+  MAX_ANY_SUCCESS_STALE_DAYS: '8'
 
 jobs:
   heartbeat:
@@ -26,16 +28,28 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
-      - name: Check SBOM workflow freshness
+      - name: Check SBOM scheduled freshness
         env:
           GH_TOKEN: ${{ github.token }}
-          MAX_STALE_DAYS: ${{ env.MAX_STALE_DAYS }}
-        run: bash .github/scripts/security-scan-freshness.sh sbom-scan.yml "${MAX_STALE_DAYS}"
+        run: bash .github/scripts/security-scan-freshness.sh sbom-scan.yml "${{ env.MAX_SCHEDULE_STALE_DAYS }}" schedule
 
-      - name: Check Scorecard workflow freshness
+      - name: Check SBOM latest successful scan (any trigger)
         if: always()
         continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
-          MAX_STALE_DAYS: ${{ env.MAX_STALE_DAYS }}
-        run: bash .github/scripts/security-scan-freshness.sh scorecard.yml "${MAX_STALE_DAYS}"
+        run: bash .github/scripts/security-scan-freshness.sh sbom-scan.yml "${{ env.MAX_ANY_SUCCESS_STALE_DAYS }}" any
+
+      - name: Check Scorecard scheduled freshness
+        if: always()
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash .github/scripts/security-scan-freshness.sh scorecard.yml "${{ env.MAX_SCHEDULE_STALE_DAYS }}" schedule
+
+      - name: Check Scorecard latest successful scan (any trigger)
+        if: always()
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash .github/scripts/security-scan-freshness.sh scorecard.yml "${{ env.MAX_ANY_SUCCESS_STALE_DAYS }}" any
