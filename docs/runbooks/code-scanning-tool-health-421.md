@@ -1,0 +1,79 @@
+# Code scanning tool health (#421)
+
+**Prepared:** 2026-11-04 (Europe/Berlin)  
+**Canonical tracker:** [#402](recovery-evidence-ledger-402.md) · Issues [#421](https://github.com/qnbs/Nexus-HEMS-Dash/issues/421)–[#425](https://github.com/qnbs/Nexus-HEMS-Dash/issues/425)
+
+This runbook implements **Wave B** of the Security & Quality Master Addendum (2026-11-04). It does **not** dismiss alerts or re-enable workflows without maintainer authorization.
+
+## 1. Confirmed root cause: `Security Full` disabled
+
+| Field | Value |
+| --- | --- |
+| Workflow file | `.github/workflows/security-full.yml` |
+| Workflow name | `Security Full` |
+| GitHub Actions workflow ID | `246879325` |
+| **State** | **`disabled_manually`** (verified via `gh api repos/qnbs/Nexus-HEMS-Dash/actions/workflows/security-full.yml`) |
+| Last `push` run on `main` | 2026-06-30 (success) |
+| Last `pull_request` run | 2026-06-30 |
+
+While disabled, this workflow does **not** run on `push`/`pull_request`/`schedule`/`workflow_dispatch` triggers. That explains:
+
+- No `Security Full` entries in recent push run samples (200+ runs, Nov 2026 audit).
+- Missing expected **CodeQL + Semgrep SARIF + Gitleaks** uploads from this workflow (ADR-027 single CodeQL source is **this file** when enabled).
+- GitHub **Code scanning → Tool status** errors and stale Scorecard/Trivy ingest may persist even when `ci.yml`, `sbom-scan.yml`, and `scorecard.yml` succeed.
+
+### Maintainer action (required before closing #421)
+
+1. GitHub → **Actions** → **Security Full** → **Enable workflow** (or remove manual disable at org/repo level).
+2. Run **workflow_dispatch** once on `main` and confirm jobs: CodeQL, Semgrep, Gitleaks, dependency audit, summary gate.
+3. Open **Security and quality → Code scanning → Tool status** — confirm each tool shows a **successful analysis on current `main`** (not only green Actions jobs).
+
+**Agents must not** use API/workflow edits to bypass disablement without explicit owner approval (see Master Addendum §3.3).
+
+## 2. Other scan paths (still active on `main`)
+
+| Workflow | Trigger | Role |
+| --- | --- | --- |
+| `ci.yml` | push/PR | Lint, tests, build, E2E, fuzz — **not** full CodeQL/Semgrep from `security-full.yml` |
+| `sbom-scan.yml` | push/PR/schedule | SBOM, Grype, pnpm audit |
+| `scorecard.yml` | push/PR/schedule | OpenSSF Scorecard SARIF |
+| `security-freshness-heartbeat.yml` | schedule, dispatch, `workflow_run` after CI | Staleness guard (#387) |
+
+**Schedule delivery:** GitHub `event=schedule` for SBOM/Scorecard largely stalled since **2026-10-19** — see [scheduled-security-workflows-387-391.md](scheduled-security-workflows-387-391.md). Push-triggered runs remain green; cron proof still open (#387/#391).
+
+## 3. Semgrep SARIF upload (`continue-on-error: true`)
+
+In `security-full.yml`, the Semgrep SARIF upload step uses `continue-on-error: true`. Before changing it:
+
+1. Re-enable workflow and capture a failing upload log (permissions, SARIF schema, category collision).
+2. Only then decide: fix root cause vs. promote upload failure to blocking.
+
+Do not blanket-remove `continue-on-error` without evidence (Master Addendum §3.2).
+
+## 4. Agent/API limits
+
+Cloud agent tokens **cannot** list code scanning alerts (`403 Resource not accessible by integration`). Per-alert disposition requires:
+
+- Maintainer **Tool status** screenshots/exports, or
+- PAT with **Code scanning alerts: read** (sanitized before posting in issues).
+
+Use the acceptance ledger: [code-scanning-alert-acceptance-ledger-421.md](code-scanning-alert-acceptance-ledger-421.md).
+
+## 5. Stop conditions for #421
+
+- [ ] `Security Full` enabled and at least one successful **`workflow_dispatch`** on current `main`.
+- [ ] Tool status: no unexplained configuration errors for CodeQL, Scorecard, Trivy/Grype (as shown in UI).
+- [ ] Fresh accepted analyses indexed for `refs/heads/main` (analysis IDs recorded in ledger).
+- [ ] Schedule/cron recovery tracked separately under #387/#391.
+
+## 6. Related issue map (22 supplied alerts)
+
+| Issue | Alerts |
+| --- | --- |
+| #422 Token-Permissions | 208, 207, 206, 205, 96, 95 |
+| #423 Pinned-Dependencies | 204–196 |
+| #424 Trusted container registries | 181, 180 |
+| #425 Scorecard project health | 20, 19, 16 |
+| #390 Branch protection / review | 17, 7 |
+
+**0/22 closed by documentation alone.** Fixes require evidence-backed PRs per wave C–F in the Master Addendum.

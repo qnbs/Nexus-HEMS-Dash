@@ -18,9 +18,12 @@ Wave A + post-merge safety work on `main` (Europe/Berlin dates).
 | 2026-11-04 | `d95020c` | #415 verify relax + chain complete | CI `41887360493`, Deploy `41887360783` **success**, live `build-info.json` SHA match, Container `41887360476` |
 | 2026-11-04 | `949d094` | #417 contrib chunk + heartbeat hook | CI `41892150084`, Deploy `41892150035` success, Heartbeat `41892929820` (schedule stale advisory) |
 | 2026-11-04 | `35f4c06` | #418 lazy OCPP + heartbeat CI fix (#405, #387) | CI `41897433479`, Deploy `41897433554` **success** (verify-pages OK), live `build-info.json` SHA match, Heartbeat `41898093286` **success** |
+| 2026-11-04 | `d310436` | #420 lazy evcc/OpenEMS (#405) | CI `41903529044`, Deploy `41903528984`; `adapters-core-*` ~84.8 kB gzip |
 
-**Pages provenance (#392):** first green end-to-end push deploy @ `d95020c` — CI `build` artifact promoted (113 files + digest manifest), `verify-pages` passed on run `41887360783`. Subsequent deploys @ `949d094` / `35f4c06` promote the same CI artifact pattern with matching live SHA.
+**Pages provenance (#392):** first green end-to-end push deploy @ `d95020c` — CI `build` artifact promoted (113 files + digest manifest), `verify-pages` passed on run `41887360783`. Subsequent deploys promote the same CI artifact pattern with matching live SHA.
 
-**Open tracker items:** #387/#391 GitHub `schedule` delivery still stale (~30d); push/dispatch scans + heartbeat `workflow_run` green (run `41898093286`). #405: `adapters-core-*` ~88.5 kB gzip after OCPP lazy split — further lazy-load optional. #401 release dispatch (explicit approval only).
+**Security audit wave (#421–#425):** `Security Full` workflow **`disabled_manually`** (last main push run 2026-06-30) — see `code-scanning-tool-health-421.md`. **22/22** owner-supplied Code Scanning IDs mapped; **0/22** closed without fresh scan evidence. Agent token: code-scanning alerts API **403**.
+
+**Open tracker items:** #387/#391 schedule delivery; #401 release (explicit approval only); #421 tool health (re-enable `Security Full` + Tool status — **maintainer**); #422–#425 per acceptance ledger.
 
 **Runner queue (#411):** intermittent queue delays observed; deploy/CI eventually completed on `d95020c`. `deploy-recovery.yml` uses `gh run list --repo "$GITHUB_REPOSITORY"` (#413).
