@@ -28,6 +28,8 @@ Patch **`v1.12.3`** (security/resilience focus) after P0/P1 gates — **manual**
 
 P0 dependency fixes (#403 / #386) do **not** auto-publish a tag. The maintainer explicitly chooses whether the first post-audit release is a **signed security patch** (`v1.12.3`) or remains deferred until broader recovery (#404) lands. Cloud agents must not dispatch `release.yml` or edit GitHub Releases.
 
+Record the decision in #402 when chosen. **Advisory evidence:** GHSA-jqcg-44mw-7w3h (`proxy-addr` forwarded-header parsing) — remediated via `pnpm.overrides` + lockfile `proxy-addr@2.0.8` and regression guards (`scripts/proxy-addr-supply-chain.test.mjs`, `apps/api/src/tests/trust-proxy.test.ts`). **Pre-merge scan evidence:** green SBOM/Grype on stack heads (#403 `eab8051`, #404 `5b3a40b`, #379 `7dff0e8`) — re-run on new `main` after each authorized merge.
+
 ## Demo vs production
 
 GitHub Pages demo may still reflect an older deployment SHA until the next successful `deploy.yml` on `main`. Compare Help → About build SHA with `git rev-parse main`.
