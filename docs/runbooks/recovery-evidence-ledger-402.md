@@ -12,9 +12,13 @@ Wave A + post-merge safety work on `main` (Europe/Berlin dates).
 | 2026-11-04 | `898162f` | #408 container scan→promote (#392 GHCR leg) | Run `41860671937` |
 | 2026-11-04 | `3de2b5d` | #409 Vite patch (#385) | Container publish `41861932895` |
 | 2026-11-04 | `9fbae2e` | #410 provenance runbook (#392 docs) | PR CI success |
+| 2026-11-04 | `51b4b8a` | #412 Pages CI artifact promote | Deploy failed: empty `gitSha` (turbo cache) |
+| 2026-11-04 | `9f01f04` | #413 Pages provenance | Deploy `41881368601`: missing digest manifest |
+| 2026-11-04 | `a331e59` | #414 digest after size/smoke | Deploy `41884659538`: manifest file-set mismatch |
+| 2026-11-04 | `d95020c` | #415 verify relax + chain complete | CI `41887360493`, Deploy `41887360783` **success**, live `build-info.json` SHA match, Container `41887360476` |
 
-| 2026-11-04 | `9f01f04` | #413 Pages provenance merge | Deploy `41881368601` failed: digest before size gate — hotfix moves manifest after smoke |
+**Pages provenance (#392):** first green end-to-end push deploy @ `d95020c` — CI `build` artifact promoted (113 files + digest manifest), `verify-pages` passed on run `41887360783`.
 
-**Open tracker items:** #387/#391 scheduled workflow proof, #405 adapters bundle, #401 release dispatch, Pages verify after turbo env fix.
+**Open tracker items:** #387/#391 scheduled workflow proof, #405 adapters bundle, #401 release dispatch (explicit approval only).
 
-**Runner queue (#411):** Container publish on `3de2b5d` completed after queue delay; treat long `queued` as infra, not workflow regression.
+**Runner queue (#411):** intermittent queue delays observed; deploy/CI eventually completed on `d95020c`.
