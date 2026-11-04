@@ -10,8 +10,7 @@ Code scanning alerts **#180** (frontend deployment) and **#181** (server deploym
 | **Values schema** | `values.schema.json` — `trustedRegistries` entries must match `host/path/` pattern; `minItems: 1`. |
 | **Defaults** | `values.yaml` — `trustedRegistries: [ghcr.io/qnbs/]`, GHCR repos under `ghcr.io/qnbs/`. |
 | **CI proof** | `scripts/verify-helm-trusted-registries.mjs` in **Helm Chart Lint** (`ci.yml`) — positive default render, negative untrusted/spoof/empty-list cases. |
-| **Trivy static (Helm templates)** | `.trivyignore` KSV034/KSV-0125 — Trivy config scan reads unrendered `{{ include "nexus-hems.imageRef" … }}` text; cannot execute Helm. **Not** a substitute for render-time control. |
-| **Trivy SARIF** | `trivy-code-scanning.yml` uploads Helm chart config SARIF for Tool status (#421); separate from Grype image gates. |
+| **Trivy config SARIF** | `trivy-code-scanning.yml` — `scan-type: config` on `helm/nexus-hems` with `severity: HIGH,CRITICAL` for the scan step. The pinned `trivy-action` does **not** set `limit-severities-for-sarif`, so SARIF upload may still include Medium findings (e.g. **#180/#181**) until closed on the Security tab. `.trivyignore` documents accepted static findings; render-time enforcement remains authoritative. |
 
 ## Alert disposition (maintainer)
 

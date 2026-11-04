@@ -1,0 +1,10 @@
+# Negative: ghcr.io/qnbs-evil/ must not match trusted prefix ghcr.io/qnbs/ (component boundary).
+image:
+  trustedRegistries:
+    - ghcr.io/qnbs/
+  frontend:
+    repository: ghcr.io/qnbs-evil/nexus-hems-dash
+    pullPolicy: IfNotPresent
+  server:
+    repository: ghcr.io/qnbs/nexus-hems-server
+    pullPolicy: IfNotPresent

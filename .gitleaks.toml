@@ -91,7 +91,6 @@ tags = ["mqtt", "victron", "iot"]
 [rules.allowlist]
 regexTarget = "line"
 regexes = [
-  '''mqttUser\s*:''',
   '''mqttBrokerAuth''',
   '''MQTT_BROKER_AUTH_FIELD''',
   '''mqtt-credential-keys''',

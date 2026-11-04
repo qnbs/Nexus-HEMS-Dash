@@ -7,6 +7,13 @@ import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
+import {
+  applyTemplate,
+  probeMarker,
+  syntheticGroqKey,
+  syntheticMqttPassword,
+  syntheticTibberToken,
+} from './gitleaks-canary/runtime-synthetic.mjs';
 
 const repoRoot = process.cwd();
 const mainConfigPath = path.join(repoRoot, '.gitleaks.toml');
@@ -67,6 +74,26 @@ function resolveGitleaksRunner() {
 }
 
 const gitleaksRunner = resolveGitleaksRunner();
+
+function logRunnerVersion() {
+  if (gitleaksRunner.mode === 'local') {
+    const version = run('gitleaks', ['version'], { stdio: 'pipe' });
+    if (!version.error && version.status === 0) {
+      console.log(`Gitleaks runner: local ${version.stdout.trim()}`);
+    }
+  } else {
+    const version = run(
+      'docker',
+      ['run', '--rm', GITLEAKS_DOCKER, 'version'],
+      { stdio: 'pipe' },
+    );
+    if (!version.error && version.status === 0) {
+      console.log(`Gitleaks runner: docker ${GITLEAKS_DOCKER} (${version.stdout.trim()})`);
+    }
+  }
+}
+
+logRunnerVersion();
 
 function gitleaksReport(sourcePath, reportPath) {
   const resolvedSource = path.resolve(sourcePath);
@@ -164,7 +191,11 @@ function expectFinding(label, sourceDir, expected) {
     const hit = findings.some((f) => {
       const file = (f.File ?? f.file ?? '').replaceAll('\\', '/');
       const rule = f.RuleID ?? f.ruleID ?? f.RuleId ?? '';
-      return file.endsWith(exp.fileSuffix) && allowedRules.includes(rule);
+      const matchText = `${f.Match ?? ''}${f.Secret ?? ''}`;
+      const ruleOk = file.endsWith(exp.fileSuffix) && allowedRules.includes(rule);
+      if (!ruleOk) return false;
+      if (exp.marker && !matchText.includes(exp.marker)) return false;
+      return true;
     });
     if (!hit) {
       console.error(
@@ -182,6 +213,15 @@ function expectFinding(label, sourceDir, expected) {
   }
 
   console.log(`${label}: OK (${expected.length ? `${expected.length} expected finding(s)` : 'clean'})`);
+}
+
+function readTemplate(name) {
+  const filePath = path.join(canaryDir, name);
+  if (!fs.existsSync(filePath)) {
+    console.error(`Missing canary template: ${name}`);
+    process.exit(1);
+  }
+  return fs.readFileSync(filePath, 'utf8');
 }
 
 function readCanary(name) {
@@ -205,16 +245,38 @@ if (!fs.existsSync(canaryDir)) {
 
 ensureIntegrityConfig();
 
+const probeIds = {
+  docs: 'DOCS_TIBBER',
+  eebus: 'EEBUS_MQTT',
+  groq: 'GROQ_KEY',
+  tibberNear: 'TIBBER_NEAR',
+  mqttMixed: 'MQTT_MIXED',
+};
+
+const synth = {
+  docsToken: syntheticTibberToken(probeIds.docs),
+  eebusMqtt: syntheticMqttPassword(probeIds.eebus, { includeExampleSubstring: true }),
+  groqKey: syntheticGroqKey(probeIds.groq),
+  tibberNearToken: syntheticTibberToken(probeIds.tibberNear),
+  mqttMixedPassword: syntheticMqttPassword(probeIds.mqttMixed),
+};
+
 // Positive: docs path restored (no whole-file ignore) + Tibber canary
 const docsProbe = freshProbeDir('docs-');
 const docsRel = path.join(docsProbe, 'docs', 'API-Reference.md');
 fs.mkdirSync(path.dirname(docsRel), { recursive: true });
 fs.writeFileSync(
   docsRel,
-  `${fs.readFileSync(path.join(repoRoot, 'docs/API-Reference.md'), 'utf8')}\n${readCanary('docs-api-append.env')}`,
+  `${fs.readFileSync(path.join(repoRoot, 'docs/API-Reference.md'), 'utf8')}\n${applyTemplate(readTemplate('docs-api-append.template'), {
+    PROBE_TIBBER_VAL: synth.docsToken,
+  })}`,
 );
 expectFinding('Docs API-Reference Tibber probe', docsProbe, [
-  { fileSuffix: 'docs/API-Reference.md', ruleId: ['tibber-api-token', 'generic-api-key'] },
+  {
+    fileSuffix: 'docs/API-Reference.md',
+    ruleId: ['tibber-api-token', 'generic-api-key'],
+    marker: probeMarker(probeIds.docs),
+  },
 ]);
 
 // Positive: EEBUS test path + MQTT substring must still detect
@@ -226,17 +288,27 @@ const eebusRel = path.join(
 fs.mkdirSync(path.dirname(eebusRel), { recursive: true });
 fs.writeFileSync(
   eebusRel,
-  `${fs.readFileSync(path.join(repoRoot, 'apps/api/src/protocols/eebus/EebusProtocolAdapter.test.ts'), 'utf8')}\n${readCanary('eebus-test-append.env')}`,
+  `${fs.readFileSync(path.join(repoRoot, 'apps/api/src/protocols/eebus/EebusProtocolAdapter.test.ts'), 'utf8')}\n${applyTemplate(readTemplate('eebus-test-append.template'), {
+    PROBE_MQTT_VAL: synth.eebusMqtt,
+  })}`,
 );
 expectFinding('EEBUS test MQTT probe', eebusProbe, [
-  { fileSuffix: 'apps/api/src/protocols/eebus/EebusProtocolAdapter.test.ts', ruleId: 'mqtt-credentials' },
+  {
+    fileSuffix: 'apps/api/src/protocols/eebus/EebusProtocolAdapter.test.ts',
+    ruleId: 'mqtt-credentials',
+    marker: probeMarker(probeIds.eebus),
+  },
 ]);
 
-// Positive: OpenAI-style marker in isolated copy (not under canary allowlist path)
+// Positive: Groq API marker in isolated copy (not under canary allowlist path)
 const openAiProbe = freshProbeDir('openai-');
-fs.writeFileSync(path.join(openAiProbe, 'probe.env'), readCanary('openai-canary.env'));
+fs.writeFileSync(path.join(openAiProbe, 'probe.env'), `${synth.groqKey}\n`);
 expectFinding('Groq API marker probe', openAiProbe, [
-  { fileSuffix: 'probe.env', ruleId: 'groq-api-key' },
+  {
+    fileSuffix: 'probe.env',
+    ruleId: 'groq-api-key',
+    marker: probeMarker(probeIds.groq).replaceAll('_', 'X'),
+  },
 ]);
 
 // Negative: HA colon placeholder
@@ -254,5 +326,45 @@ fs.writeFileSync(
   readCanary('eebus-form-placeholder.fixture'),
 );
 expectFinding('EEBUS placeholder= PEM syntax', eebusSafeProbe, []);
+
+// Positive: Tibber marker near placeholder comment text (#432 residual)
+const tibberNearProbe = freshProbeDir('tibber-near-');
+fs.writeFileSync(
+  path.join(tibberNearProbe, 'tibber.env'),
+  applyTemplate(readTemplate('tibber-near-placeholder.template'), {
+    PROBE_TIBBER_VAL: synth.tibberNearToken,
+  }),
+);
+expectFinding('Tibber marker near placeholder text', tibberNearProbe, [
+  {
+    fileSuffix: 'tibber.env',
+    ruleId: ['tibber-api-token', 'generic-api-key'],
+    marker: probeMarker(probeIds.tibberNear),
+  },
+]);
+
+// Negative: Tibber-shaped placeholder assignment stays clean
+const tibberSafeProbe = freshProbeDir('tibber-safe-');
+fs.writeFileSync(
+  path.join(tibberSafeProbe, 'tibber.env'),
+  readCanary('tibber-placeholder-negative.env'),
+);
+expectFinding('Tibber your_ placeholder assignment', tibberSafeProbe, []);
+
+// Positive: mqttUser on same line must not suppress mqttPassword (#432)
+const mqttMixedProbe = freshProbeDir('mqtt-mixed-');
+fs.writeFileSync(
+  path.join(mqttMixedProbe, 'Broker.ts'),
+  applyTemplate(readTemplate('mqtt-mixed-line.template'), {
+    PROBE_MQTT_VAL: synth.mqttMixedPassword,
+  }),
+);
+expectFinding('MQTT mixed-line password probe', mqttMixedProbe, [
+  {
+    fileSuffix: 'Broker.ts',
+    ruleId: 'mqtt-credentials',
+    marker: probeMarker(probeIds.mqttMixed),
+  },
+]);
 
 console.log('Gitleaks integrity verification passed.');
