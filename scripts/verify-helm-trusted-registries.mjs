@@ -59,7 +59,6 @@ assertIncludes(
   'digest-pinned frontend image',
 );
 
-fs.mkdirSync(verifyCacheDir, { recursive: true });
 const fixtureValues = path.join(chartDir, 'tests/fixtures/untrusted-frontend-values.yaml');
 if (!fs.existsSync(fixtureValues)) {
   console.error(`Missing fixture: ${fixtureValues}`);
