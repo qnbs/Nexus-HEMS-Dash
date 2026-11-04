@@ -99,3 +99,31 @@ Log anchor: `gh run view 41905375510 --log-failed`.
 - [ ] Gitleaks: green on `main` after allowlist PR merges (no real secrets rotated — all documented placeholders).
 - [ ] Tool status UI review (maintainer).
 - [ ] Schedule/cron recovery (#387/#391) — separate track.
+
+## 8. Maintainer Security overview (screenshot 2026-11-04 ~21:20 CET)
+
+Evidence from repo **Security** tab (maintainer mobile capture; archived in agent artifacts as `github-security-overview-2026-11-04.jpg`):
+
+| Surface | Reading |
+| --- | --- |
+| **Dependabot** | **60** vulnerabilities (Malware category listed in UI) |
+| **Code scanning** | **37** open alerts |
+| **Secret scanning** | Listed; count not visible in capture |
+| **Banner** | **Code scanning configuration error** — *"Scorecard and Trivy are reporting errors. Check the status page for help."* |
+| **Security policy** | Enabled |
+| **Security advisories** | Enabled |
+
+### How this maps to the recovery plan
+
+1. **37 code scanning alerts** exceeds the **22** owner-supplied IDs in §6 — expect additional Semgrep/CodeQL/Scorecard (and possibly default-setup) findings. Inventory via **Code scanning → All alerts** export after Tool status is healthy; do not bulk-dismiss.
+2. **60 Dependabot** items are **dependency alerts**, not the code-scanning acceptance ledger. Triage via Renovate/Dependabot + `pnpm audit` waves; malware-flagged items need maintainer priority review.
+3. **Scorecard + Trivy configuration errors** on **Tool status** can persist while **`scorecard.yml` Actions jobs are green** (verified on `main` push after #427). Likely causes:
+   - **CodeQL default setup** still enabled alongside advanced `security-full.yml` (§7) — blocks coherent SARIF ingest.
+   - **Trivy** in Tool status may refer to GitHub’s default/integrated scanner name; this repo’s CI uses **Grype** for image/SBOM gates (`sbom-scan.yml`, `container-publish.yml`) and does **not** upload Grype SARIF to Code scanning today. Orphaned or default **Trivy** registration may need removal or a deliberate SARIF upload workflow (#424).
+4. **Next maintainer click:** **Security → Code scanning → Tool status** (from the red banner) — capture the **Scorecard** and **Trivy** row error text and last successful analysis SHA.
+
+### Stop-condition progress (#421) — UI
+
+- [x] Maintainer provided Security overview screenshot (counts + configuration banner).
+- [ ] Tool status detail export for Scorecard + Trivy rows.
+- [ ] Code scanning alert export reconciled with §6 issue map + extra 15 alerts.

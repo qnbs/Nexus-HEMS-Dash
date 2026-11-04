@@ -11,16 +11,18 @@ Template for **Wave B–G** disposition. Do not mark an alert **Fixed** until a 
 
 | Status | Count |
 | --- | --- |
-| Mapped to issues | 22/22 |
+| Mapped to issues | 22/22 (owner-supplied batch) |
 | Evidence-backed fix merged | 0/22 |
-| Remaining 60 findings | **Not inventoried** (dashboard/API access required) |
+| Dashboard **Code scanning** (2026-11-04 UI) | **37** open — full inventory pending |
+| Dashboard **Dependabot** (same UI) | **60** — separate from code-scanning ledger |
 
 ## Workflow health evidence (2026-11-04)
 
 | Check | Result |
 | --- | --- |
-| `Security Full` workflow state | **`disabled_manually`** — see [code-scanning-tool-health-421.md](code-scanning-tool-health-421.md) |
+| `Security Full` workflow state | **`active`** — dispatch run `41905375510`; Gitleaks fix in PR #428 |
 | Agent `code-scanning/alerts` API | 403 (integration) |
-| Push CI / SBOM / Scorecard on `main` | Green on snapshot SHAs in [#402 ledger](recovery-evidence-ledger-402.md) |
+| Maintainer Security tab screenshot | See [code-scanning-tool-health-421.md](code-scanning-tool-health-421.md) §8 |
+| Push CI / SBOM / Scorecard on `main` | Green on recent SHAs; **Tool status** still reports Scorecard + Trivy configuration errors |
 
 Update rows as PRs land; never auto-dismiss from green CI alone.
