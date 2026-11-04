@@ -15,7 +15,8 @@ on:
         default: 'NO'
 
 # Read-only default; build/deploy jobs declare required scopes.
-permissions: read-all
+permissions:
+  contents: read
 
 concurrency:
   group: 'pages'

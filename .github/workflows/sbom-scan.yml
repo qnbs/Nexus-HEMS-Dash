@@ -11,7 +11,8 @@ on:
   workflow_dispatch:
 
 # Read-only default; each job declares the least privilege it needs.
-permissions: read-all
+permissions:
+  contents: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

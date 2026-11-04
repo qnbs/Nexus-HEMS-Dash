@@ -16,7 +16,8 @@ on:
       - 'apps/web/capacitor.config.ts'
       - '.github/workflows/capacitor-android.yml'
 
-permissions: read-all
+permissions:
+  contents: read
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true

@@ -12,7 +12,8 @@ on:
         default: 'NO'
 
 # Read-only default; release job grants write scopes explicitly.
-permissions: read-all
+permissions:
+  contents: read
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true

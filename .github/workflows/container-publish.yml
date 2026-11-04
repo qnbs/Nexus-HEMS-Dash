@@ -12,9 +12,6 @@ on:
 
 permissions:
   contents: read
-  packages: write
-  id-token: write
-  attestations: write
 
 concurrency:
   group: container-publish-${{ github.ref }}
@@ -27,6 +24,11 @@ jobs:
   publish:
     name: Publish ${{ matrix.component }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      attestations: write
     strategy:
       fail-fast: false
       matrix:

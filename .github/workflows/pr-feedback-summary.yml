@@ -19,8 +19,6 @@ on:
 
 permissions:
   contents: read
-  pull-requests: write
-  actions: read
 
 concurrency:
   # Key on the head branch (repeats across the 4 upstream workflow_run completions
@@ -37,6 +35,10 @@ jobs:
     name: Post PR Feedback Summary
     runs-on: ubuntu-latest
     if: github.event.workflow_run.event == 'pull_request'
+    permissions:
+      contents: read
+      pull-requests: write
+      actions: read
     steps:
       - name: Post summary comment
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v7
