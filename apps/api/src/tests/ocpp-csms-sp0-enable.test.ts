@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   isOcppCsmsSp0Enabled,
+  normalizeOcppCsmsMaxSessions,
   resolveOcppCsmsMaxSessions,
 } from '../config/ocpp-csms-sp0-enable.js';
 
@@ -52,5 +53,24 @@ describe('resolveOcppCsmsMaxSessions', () => {
 
   it('parses OCPP_CSMS_MAX_SESSIONS', () => {
     expect(resolveOcppCsmsMaxSessions({ OCPP_CSMS_MAX_SESSIONS: '8' })).toBe(8);
+  });
+
+  it('falls back for invalid env values', () => {
+    expect(resolveOcppCsmsMaxSessions({ OCPP_CSMS_MAX_SESSIONS: '0' })).toBe(32);
+    expect(resolveOcppCsmsMaxSessions({ OCPP_CSMS_MAX_SESSIONS: 'NaN' })).toBe(32);
+  });
+});
+
+describe('normalizeOcppCsmsMaxSessions', () => {
+  it('rejects non-finite and sub-one values', () => {
+    expect(normalizeOcppCsmsMaxSessions(Number.NaN)).toBe(32);
+    expect(normalizeOcppCsmsMaxSessions(Number.POSITIVE_INFINITY)).toBe(32);
+    expect(normalizeOcppCsmsMaxSessions(0)).toBe(32);
+    expect(normalizeOcppCsmsMaxSessions(-3)).toBe(32);
+  });
+
+  it('floors and caps finite values', () => {
+    expect(normalizeOcppCsmsMaxSessions(2.9)).toBe(2);
+    expect(normalizeOcppCsmsMaxSessions(5000)).toBe(4096);
   });
 });

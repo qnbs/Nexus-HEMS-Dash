@@ -3,12 +3,21 @@ import { resolveAdapterMode } from './adapter-mode.js';
 const DEFAULT_MAX_SESSIONS = 32;
 const MAX_SESSIONS_CAP = 4096;
 
+export { DEFAULT_MAX_SESSIONS as OCPP_CSMS_DEFAULT_MAX_SESSIONS };
+
 export function resolveOcppCsmsMaxSessions(env: NodeJS.ProcessEnv = process.env): number {
   const raw = env.OCPP_CSMS_MAX_SESSIONS?.trim();
   if (!raw) return DEFAULT_MAX_SESSIONS;
-  const n = Number(raw);
-  if (!Number.isFinite(n) || n < 1) return DEFAULT_MAX_SESSIONS;
-  return Math.min(Math.floor(n), MAX_SESSIONS_CAP);
+  return normalizeOcppCsmsMaxSessions(Number(raw));
+}
+
+/** Finite positive session cap for direct adapter construction and env parsing. */
+export function normalizeOcppCsmsMaxSessions(
+  value: number,
+  fallback: number = DEFAULT_MAX_SESSIONS,
+): number {
+  if (!Number.isFinite(value) || value < 1) return fallback;
+  return Math.min(Math.floor(value), MAX_SESSIONS_CAP);
 }
 
 /**

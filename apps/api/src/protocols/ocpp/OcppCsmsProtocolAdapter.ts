@@ -39,6 +39,8 @@ import {
 } from '../../config/ocpp-csms-admission.js';
 import {
   isOcppCsmsSp0Enabled,
+  normalizeOcppCsmsMaxSessions,
+  OCPP_CSMS_DEFAULT_MAX_SESSIONS,
   resolveOcppCsmsMaxSessions,
 } from '../../config/ocpp-csms-sp0-enable.js';
 import { recordAdapterDlq, recordAdapterError } from '../../middleware/adapter-metrics.js';
@@ -196,7 +198,10 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
       ...config,
       host: config.host ?? '0.0.0.0',
       path: config.path ?? '/ocpp',
-      maxSessions: config.maxSessions ?? 32,
+      maxSessions:
+        config.maxSessions === undefined
+          ? OCPP_CSMS_DEFAULT_MAX_SESSIONS
+          : normalizeOcppCsmsMaxSessions(config.maxSessions, OCPP_CSMS_DEFAULT_MAX_SESSIONS),
     };
     this.id = config.id;
   }
@@ -223,6 +228,10 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
       });
 
       wss.on('connection', (ws, req) => {
+        ws.on('error', () => {
+          // Admission may close before handlers attach; avoid unhandled 'error'.
+        });
+
         const pathOnly = (req.url ?? '/').split('?')[0] ?? '/';
         const pathParts = pathOnly.split('/').filter(Boolean);
         const chargePointId = pathParts.at(-1) ?? 'unknown-cp';

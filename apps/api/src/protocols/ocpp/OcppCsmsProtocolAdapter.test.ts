@@ -575,4 +575,37 @@ describe('OcppCsmsProtocolAdapter', () => {
 
     client.close();
   });
+
+  describe('session admission cap', () => {
+    let capped: OcppCsmsProtocolAdapter;
+    let cappedPort: number;
+
+    beforeEach(async () => {
+      capped = new OcppCsmsProtocolAdapter({ id: 'cap-csms', port: 0, maxSessions: 2 });
+      await capped.connect();
+      cappedPort = capped.getBoundPort() ?? 0;
+    });
+
+    afterEach(async () => {
+      await capped.disconnect();
+    });
+
+    it('accepts up to maxSessions then rejects additional connections', async () => {
+      const first = await connectChargePoint(cappedPort, 'CP-CAP-1');
+      const second = await connectChargePoint(cappedPort, 'CP-CAP-2');
+
+      const rejected = new WebSocket(`ws://127.0.0.1:${cappedPort}/CP-CAP-3`, 'ocpp2.0.1');
+      await new Promise<void>((resolve) => {
+        rejected.once('close', () => resolve());
+        rejected.once('error', () => resolve());
+      });
+
+      first.close();
+      await new Promise((resolve) => setTimeout(resolve, 30));
+      const third = await connectChargePoint(cappedPort, 'CP-CAP-3');
+
+      second.close();
+      third.close();
+    });
+  });
 });
