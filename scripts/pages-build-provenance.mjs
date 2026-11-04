@@ -29,9 +29,17 @@ export function shaMatchesManifest(expectedSha, manifestGitSha) {
   const expected = expectedSha.trim().toLowerCase();
   const found = manifestGitSha.trim().toLowerCase();
   if (!expected || !found) return false;
-  if (found === expected) return true;
-  if (found.length >= 12 && expected.startsWith(found)) return true;
-  if (expected.length >= 12 && found.startsWith(expected.slice(0, 12))) return true;
+  if (expected.length !== 40) return false;
+
+  if (found.length === 40) {
+    return found === expected;
+  }
+
+  // Short manifest SHA only (Help/About-style prefix); never accept distinct full SHAs that share 12 chars.
+  if (found.length >= 12 && found.length < 40 && expected.startsWith(found)) {
+    return true;
+  }
+
   return false;
 }
 

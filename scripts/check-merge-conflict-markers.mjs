@@ -31,7 +31,7 @@ function allowFile(file) {
 }
 
 const grep = execSync(
-  `git grep -n -E '^<<<<<<<|^=======|^>>>>>>>' -- 'apps' 'packages' 'docs' 'scripts' '.github' 'package.json' 'pnpm-workspace.yaml' 'turbo.json' 'biome.json' 'commitlint.config.js' 'eslint.config.js' || true`,
+  `git grep -n -E '^<<<<<<<|^=======|^>>>>>>>|^\\|\\|\\|\\|\\|\\|\\|' -- 'apps' 'packages' 'docs' 'scripts' '.github' 'package.json' 'pnpm-workspace.yaml' 'turbo.json' 'biome.json' 'commitlint.config.js' 'eslint.config.js' || true`,
   { encoding: 'utf8' },
 );
 

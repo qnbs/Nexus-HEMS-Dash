@@ -59,9 +59,16 @@ describe('pages-build-provenance', () => {
 
   it('matches full and short git SHAs', () => {
     const full = 'abcdef1234567890abcdef1234567890abcd1234';
+    const other = 'abcdef1234567890aaaa00000000000000000000';
     assert.equal(shaMatchesManifest(full, full), true);
     assert.equal(shaMatchesManifest(full, 'abcdef123456'), true);
+    assert.equal(shaMatchesManifest(full, other), false);
     assert.equal(shaMatchesManifest(full, '0000000000000000000000000000000000000000'), false);
+  });
+
+  it('detects diff3 base marker lines', () => {
+    const sample = ['||||||| merged common ancestors', 'ok'].join('\n');
+    assert.equal(findConflictMarkerLines(sample).length, 1);
   });
 
   it('parses build-info manifest JSON', () => {

@@ -4,6 +4,8 @@ set -euo pipefail
 
 page_url="${1:?page URL required}"
 expected_sha="${2:?expected full git sha required}"
+max_attempts="${3:-6}"
+retry_sleep_sec="${4:-20}"
 
 if ! [[ "${expected_sha}" =~ ^[0-9a-fA-F]{40}$ ]]; then
   echo "::error::EXPECTED_SHA must be a full 40-character git commit SHA"
@@ -11,23 +13,38 @@ if ! [[ "${expected_sha}" =~ ^[0-9a-fA-F]{40}$ ]]; then
 fi
 
 manifest_url="${page_url%/}/build-info.json"
-echo "Fetching build manifest: ${manifest_url}"
+expected_lower="$(printf '%s' "${expected_sha}" | tr '[:upper:]' '[:lower:]')"
 
-http_code="$(curl -sS -o /tmp/nexus-pages-build-info.json -w '%{http_code}' \
-  -H 'Accept: application/json' \
-  "${manifest_url}")"
+sha_matches_manifest() {
+  local manifest_lower="$1"
+  if [ "${manifest_lower}" = "${expected_lower}" ]; then
+    return 0
+  fi
+  if [ "${#manifest_lower}" -ge 12 ] && [ "${#manifest_lower}" -lt 40 ]; then
+    if [[ "${expected_lower}" == "${manifest_lower}"* ]]; then
+      return 0
+    fi
+  fi
+  if [ "${#manifest_lower}" -eq 40 ] && [ "${manifest_lower}" != "${expected_lower}" ]; then
+    return 1
+  fi
+  return 1
+}
 
-if [ "${http_code}" != "200" ]; then
-  echo "::error::build-info.json returned HTTP ${http_code} (expected 200)"
-  exit 1
-fi
+for attempt in $(seq 1 "${max_attempts}"); do
+  echo "Attempt ${attempt}/${max_attempts}: ${manifest_url}"
 
-content_type="$(curl -sSI "${manifest_url}" | awk -F': ' 'tolower($1)=="content-type"{print tolower($2); exit}' | tr -d '\r')"
-if [ -n "${content_type}" ] && [[ "${content_type}" != *"application/json"* ]] && [[ "${content_type}" != *"text/plain"* ]]; then
-  echo "::warning::Unexpected Content-Type for build-info.json: ${content_type}"
-fi
+  http_code="$(curl -sS -o /tmp/nexus-pages-build-info.json -w '%{http_code}' \
+    -H 'Accept: application/json' \
+    "${manifest_url}")"
 
-manifest_git_sha="$(python3 - <<'PY'
+  if [ "${http_code}" != "200" ]; then
+    echo "build-info.json HTTP ${http_code} (retrying)"
+    sleep "${retry_sleep_sec}"
+    continue
+  fi
+
+  if ! manifest_git_sha="$(python3 - <<'PY'
 import json
 from pathlib import Path
 data = json.loads(Path("/tmp/nexus-pages-build-info.json").read_text(encoding="utf-8"))
@@ -36,26 +53,21 @@ if not isinstance(sha, str) or not sha.strip():
     raise SystemExit("missing gitSha")
 print(sha.strip())
 PY
-)"
+  )"; then
+    echo "Invalid build-info.json (retrying)"
+    sleep "${retry_sleep_sec}"
+    continue
+  fi
 
-expected_lower="$(printf '%s' "${expected_sha}" | tr '[:upper:]' '[:lower:]')"
-manifest_lower="$(printf '%s' "${manifest_git_sha}" | tr '[:upper:]' '[:lower:]')"
+  manifest_lower="$(printf '%s' "${manifest_git_sha}" | tr '[:upper:]' '[:lower:]')"
+  if sha_matches_manifest "${manifest_lower}"; then
+    echo "Pages build-info.json gitSha matches expected commit (${manifest_git_sha})"
+    exit 0
+  fi
 
-if [ "${manifest_lower}" = "${expected_lower}" ]; then
-  echo "Pages build-info.json gitSha matches expected commit"
-  exit 0
-fi
+  echo "Mismatch: manifest gitSha=${manifest_git_sha} expected=${expected_sha} (retrying)"
+  sleep "${retry_sleep_sec}"
+done
 
-# Prefix match (manifest may store short SHA)
-if [ "${#manifest_lower}" -ge 12 ] && [[ "${expected_lower}" == "${manifest_lower}"* ]]; then
-  echo "Pages build-info.json gitSha prefix matches expected commit"
-  exit 0
-fi
-
-if [ "${#expected_lower}" -ge 12 ] && [ "${manifest_lower}" = "${expected_lower:0:12}" ]; then
-  echo "Pages build-info.json short gitSha matches expected commit prefix"
-  exit 0
-fi
-
-echo "::error::build-info.json gitSha '${manifest_git_sha}' does not match expected ${expected_sha}"
+echo "::error::build-info.json did not match expected ${expected_sha} after ${max_attempts} attempts"
 exit 1

@@ -2,7 +2,7 @@
 /**
  * Shared logic for detecting Git merge conflict marker lines in file contents.
  */
-const MARKER_LINE = /^(<<<<<<<|=======|>>>>>>>)/;
+const MARKER_LINE = /^(<<<<<<<|=======|>>>>>>>|\|\|\|\|\|\|\|)/;
 
 /**
  * @param {string} text

@@ -11,15 +11,15 @@ repo="${GITHUB_REPOSITORY:?GITHUB_REPOSITORY required}"
 workflow_id="$(gh api "/repos/${repo}/actions/workflows/${workflow_file}" --jq '.id')"
 
 if [ "${mode}" = "schedule" ]; then
-  event_filter='.event=="schedule"'
   label="scheduled"
+  # Filter server-side so PR successes cannot mask missing cron runs.
+  last_success="$(gh api "/repos/${repo}/actions/workflows/${workflow_id}/runs?status=success&event=schedule&per_page=100" \
+    --paginate --jq '[.workflow_runs[].created_at] | first // empty')"
 else
-  event_filter='.event=="schedule" or .event=="workflow_dispatch" or .event=="push" or .event=="pull_request"'
   label="any-trigger"
+  last_success="$(gh api "/repos/${repo}/actions/workflows/${workflow_id}/runs?status=success&per_page=100" \
+    --paginate --jq '[.workflow_runs[] | select(.event=="schedule" or .event=="workflow_dispatch" or .event=="push" or .event=="pull_request") | .created_at] | first // empty')"
 fi
-
-last_success="$(gh api "/repos/${repo}/actions/workflows/${workflow_id}/runs?status=success&per_page=80" \
-  --jq "[.workflow_runs[] | select(${event_filter})][0].created_at // empty")"
 
 if [ -z "${last_success}" ]; then
   echo "::error::No successful ${label} ${workflow_file} run found."

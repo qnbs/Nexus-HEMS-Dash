@@ -16,8 +16,10 @@ concurrency:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  # Scheduled cron reliability (expected daily SBOM / weekly Scorecard).
-  MAX_SCHEDULE_STALE_DAYS: '2'
+  # Daily SBOM cron (Mon–Sun ~04:30 UTC) — expect success within ~2 days.
+  MAX_SBOM_SCHEDULE_STALE_DAYS: '2'
+  # Weekly Scorecard (Monday cron) — allow 9 days including grace.
+  MAX_SCORECARD_SCHEDULE_STALE_DAYS: '9'
   # Any successful scan recency (includes manual dispatch after Actions re-enable).
   MAX_ANY_SUCCESS_STALE_DAYS: '8'
 
@@ -31,7 +33,7 @@ jobs:
       - name: Check SBOM scheduled freshness
         env:
           GH_TOKEN: ${{ github.token }}
-        run: bash .github/scripts/security-scan-freshness.sh sbom-scan.yml "${{ env.MAX_SCHEDULE_STALE_DAYS }}" schedule
+        run: bash .github/scripts/security-scan-freshness.sh sbom-scan.yml "${{ env.MAX_SBOM_SCHEDULE_STALE_DAYS }}" schedule
 
       - name: Check SBOM latest successful scan (any trigger)
         if: always()
@@ -45,7 +47,7 @@ jobs:
         continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
-        run: bash .github/scripts/security-scan-freshness.sh scorecard.yml "${{ env.MAX_SCHEDULE_STALE_DAYS }}" schedule
+        run: bash .github/scripts/security-scan-freshness.sh scorecard.yml "${{ env.MAX_SCORECARD_SCHEDULE_STALE_DAYS }}" schedule
 
       - name: Check Scorecard latest successful scan (any trigger)
         if: always()
@@ -53,3 +55,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: bash .github/scripts/security-scan-freshness.sh scorecard.yml "${{ env.MAX_ANY_SUCCESS_STALE_DAYS }}" any
+
+      - name: Note external schedule watchdog (#387)
+        if: always()
+        run: |
+          echo "::notice::PR/dispatch success does not prove GitHub schedule delivery. Maintain an external alert on event=schedule SBOM/Scorecard freshness (#387)."
