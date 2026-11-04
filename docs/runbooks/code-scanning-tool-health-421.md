@@ -127,3 +127,18 @@ Evidence from repo **Security** tab (maintainer mobile capture; archived in agen
 - [x] Maintainer provided Security overview screenshot (counts + configuration banner).
 - [ ] Tool status detail export for Scorecard + Trivy rows.
 - [ ] Code scanning alert export reconciled with §6 issue map + extra 15 alerts.
+
+## 9. Post-merge manual Security Full on `main` (run `41906727744`, 2026-11-04 ~21:27 CET)
+
+After maintainer re-enabled workflows and switched CodeQL to **Advanced**, a **`workflow_dispatch`** on **`main`** (before **#429** merged) produced:
+
+| Job | Result | Notes |
+| --- | --- | --- |
+| CodeQL (legacy job on old `main`) | success | Pre-#429 tree still had `security-full` CodeQL job; **#429** moved CodeQL to `codeql.yml`. |
+| Gitleaks | **failure** | Expected until **#429** Gitleaks allowlists landed on `main`. |
+| Semgrep, dependency audit, anti-trojan | success | |
+| Security Gate | **failure** | Rollup failed on Gitleaks only. |
+
+**After #429 merged (`b8d7246`):** re-run **Security Full** and **CodeQL Advanced** on `main`; expect **Security Gate green** if Gitleaks allowlists are active.
+
+The red **Scorecard + Trivy configuration error** banner on the Security tab is **Tool status**, not the Security Full rollup. Mitigation PR adds explicit Scorecard SARIF upload + `trivy-code-scanning.yml` Helm SARIF ingest.

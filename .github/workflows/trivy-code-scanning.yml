@@ -1,0 +1,48 @@
+# Trivy SARIF ingest for GitHub Code scanning tool status (#421 / #424).
+# Container/filesystem gates remain Grype (sbom-scan.yml, container-publish.yml).
+# This workflow scans Helm chart config only and uploads SARIF so the Trivy tool
+# row in Code scanning → Tool status can show a fresh successful analysis.
+
+name: Trivy Code Scanning
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    # Tuesday 04:15 UTC — offset from Scorecard Monday cron
+    - cron: '15 4 * * 2'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: trivy-code-scanning-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  trivy-helm-config:
+    name: Trivy Helm config SARIF
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Trivy config scan (Helm chart)
+        uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # 0.35.0
+        with:
+          scan-type: config
+          scan-ref: helm/nexus-hems
+          format: sarif
+          output: trivy-helm.sarif
+          severity: HIGH,CRITICAL
+          trivyignores: .trivyignore
+
+      - name: Upload Trivy SARIF
+        uses: github/codeql-action/upload-sarif@cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4.37.9
+        with:
+          sarif_file: trivy-helm.sarif
+          category: Trivy
