@@ -25,6 +25,11 @@ jobs:
   # SINGLE CodeQL source (ADR-027) — the former duplicate definitions in
   # security.yml and security-scan.yml were removed. Branch-protection rulesets
   # must require THIS check ("CodeQL"), not the deleted "CodeQL Analysis" ones.
+  #
+  # If analyze fails with "CodeQL analyses from advanced configurations cannot
+  # be processed when the default setup is enabled", disable GitHub **default**
+  # Code scanning setup for this repo (Settings → Code security → Code scanning)
+  # so only this workflow uploads SARIF. See code-scanning-tool-health-421.md §7.
   # ════════════════════════════════════════════════════════════════
   #  1. CodeQL — Static Application Security Testing (GitHub)
   # ════════════════════════════════════════════════════════════════

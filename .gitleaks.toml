@@ -26,6 +26,8 @@ paths = [
   '''\.woff2?$''',
   '''src/tests/''',
   '''\.env\.example$''',
+  '''docs/API-Reference\.md$''',
+  '''apps/api/src/protocols/eebus/EebusProtocolAdapter\.test\.ts$''',
 ]
 
 # Known false positives (placeholder text, i18n keys, config keys)
@@ -51,6 +53,8 @@ regexes = [
   '''resolveMqttBrokerAuth''',
   '''mqttBrokerAuth''',
   '''FIXTURE_.*_AUTH''',
+  '''ZmFrZQ==''',
+  '''FAKE_.*_PEM''',
 ]
 
 # Fingerprints of verified false positives (placeholder PEM in form inputs)
@@ -84,7 +88,16 @@ description = "MQTT Broker Credentials"
 regex = '''(?i)mqtt[_\-]?(password|pass|secret|token)\s*[:=]\s*['"]?[^\s'"]{8,}['"]?'''
 tags = ["mqtt", "victron", "iot"]
 [rules.allowlist]
-regexes = ['''your_''', '''your-''', '''placeholder''', '''example''']
+regexes = [
+  '''your_''',
+  '''your-''',
+  '''placeholder''',
+  '''example''',
+  '''mqttUser\s*:''',
+  '''mqttBrokerAuth''',
+  '''MQTT_BROKER_AUTH_FIELD''',
+  '''mqtt-credential-keys''',
+]
 
 [[rules]]
 id = "ocpp-auth-key"
@@ -104,7 +117,11 @@ description = "EEBUS Private Key or Certificate"
 regex = '''-----BEGIN (RSA |EC )?PRIVATE KEY-----'''
 tags = ["eebus", "tls", "certificate"]
 [rules.allowlist]
-regexes = ['''placeholder=''']
+regexes = [
+  '''placeholder=''',
+  '''placeholder="-----BEGIN''',
+  '''placeholder='-----BEGIN''',
+]
 
 [[rules]]
 id = "gemini-api-key"

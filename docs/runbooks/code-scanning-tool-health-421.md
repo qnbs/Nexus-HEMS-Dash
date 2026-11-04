@@ -12,7 +12,7 @@ This runbook implements **Wave B** of the Security & Quality Master Addendum (20
 | Workflow file | `.github/workflows/security-full.yml` |
 | Workflow name | `Security Full` |
 | GitHub Actions workflow ID | `246879325` |
-| **State** | **`disabled_manually`** (verified via `gh api repos/qnbs/Nexus-HEMS-Dash/actions/workflows/security-full.yml`) |
+| **State** | **`active`** (re-enabled by maintainer 2026-11-04; was `disabled_manually`) |
 | Last `push` run on `main` | 2026-06-30 (success) |
 | Last `pull_request` run | 2026-06-30 |
 
@@ -77,3 +77,25 @@ Use the acceptance ledger: [code-scanning-alert-acceptance-ledger-421.md](code-s
 | #390 Branch protection / review | 17, 7 |
 
 **0/22 closed by documentation alone.** Fixes require evidence-backed PRs per wave C–F in the Master Addendum.
+
+## 7. Post-enable dispatch on `main` (run `41905375510`, 2026-11-04 ~21:18 CET)
+
+Maintainer ran **workflow_dispatch** after re-enabling **Security Full**. Outcome:
+
+| Job | Result | Notes |
+| --- | --- | --- |
+| CodeQL | **failure** | SARIF rejected: *"CodeQL analyses from advanced configurations cannot be processed when the default setup is enabled"*. **Maintainer:** turn off GitHub **default** Code scanning setup for this repo so ADR-027 advanced workflow (`security-full.yml`) is the sole CodeQL ingest path. |
+| Gitleaks | **failure** | 11 findings — placeholder PEM in adapter forms, docs JSON examples, EEBUS test fixtures, HA `mqttPassword` field key (see `.gitleaksignore` / `.gitleaks.toml` fix PR). |
+| Semgrep OSS | success | SARIF upload step green (`continue-on-error` still advisory until upload failures are proven). |
+| Dependency audit, anti-trojan, branch-protection reminder | success | |
+| Security Gate | **failure** | Rollup failed on CodeQL + Gitleaks. |
+
+Log anchor: `gh run view 41905375510 --log-failed`.
+
+### Stop-condition progress (#421)
+
+- [x] `Security Full` enabled + manual dispatch executed on current `main`.
+- [ ] CodeQL ingest: resolve **default vs advanced** setup conflict; confirm Tool status shows fresh analysis.
+- [ ] Gitleaks: green on `main` after allowlist PR merges (no real secrets rotated — all documented placeholders).
+- [ ] Tool status UI review (maintainer).
+- [ ] Schedule/cron recovery (#387/#391) — separate track.

@@ -1,10 +1,40 @@
-# Gitleaks known false positives
-# These are placeholder PEM strings in form input fields
-# File: src/components/AdapterConfigPanel.tsx (EEBUS config form)
+# Gitleaks known false positives (placeholder PEM, docs examples, test fixtures)
+# Format: commit:path:rule-id:line OR path:rule-id:line (applies to all commits)
+
+# Legacy monolith path (pre-apps/web move)
 2ed45d939b4f1683cba16115df27ebb48fa6def0:src/components/AdapterConfigPanel.tsx:eebus-certificate-key:899
 2ed45d939b4f1683cba16115df27ebb48fa6def0:src/components/AdapterConfigPanel.tsx:eebus-certificate-key:963
 src/components/AdapterConfigPanel.tsx:eebus-certificate-key:899
 src/components/AdapterConfigPanel.tsx:eebus-certificate-key:963
+
+# Split adapter config (form placeholders — current tree)
+108bdf45f45a80594c040bf88cd5773916aff023:apps/web/src/components/adapter-config-entry/AdapterConfigEebusFields.tsx:eebus-certificate-key:59
+108bdf45f45a80594c040bf88cd5773916aff023:apps/web/src/components/adapter-config-entry/AdapterConfigOcppMtlsFields.tsx:eebus-certificate-key:39
+apps/web/src/components/adapter-config-entry/AdapterConfigEebusFields.tsx:eebus-certificate-key:59
+apps/web/src/components/adapter-config-entry/AdapterConfigOcppMtlsFields.tsx:eebus-certificate-key:39
+
+# HA MQTT vault field names (scanner-safe `mqttPassword` key via mqtt-credential-keys.ts)
+108bdf45f45a80594c040bf88cd5773916aff023:apps/web/src/components/settings/HaSettingsPanelBody.tsx:mqtt-credentials:46
+108bdf45f45a80594c040bf88cd5773916aff023:apps/web/src/core/homeassistant-settings-save.ts:mqtt-credentials:101
+108bdf45f45a80594c040bf88cd5773916aff023:apps/web/src/core/homeassistant-settings-save.ts:mqtt-credentials:123
+apps/web/src/core/homeassistant-settings-save.ts:mqtt-credentials:101
+apps/web/src/core/homeassistant-settings-save.ts:mqtt-credentials:123
+
+# Historical AdapterConfigPanel before field split (git history scan)
+4374c4370548fdaa779401339ca6473ca6fd31d8:apps/web/src/components/AdapterConfigPanel.tsx:eebus-certificate-key:1054
+4374c4370548fdaa779401339ca6473ca6fd31d8:apps/web/src/components/AdapterConfigPanel.tsx:eebus-certificate-key:1130
+
+# Docs JSON examples
+c83703e1cb71629f1af3c959163ef4701bf81ce8:docs/API-Reference.md:eebus-certificate-key:134
+docs/API-Reference.md:eebus-certificate-key:134
+
+# Backend EEBUS protocol tests (fake PEM / mocked crypto)
+e38ab7f1323dba93fa60c5434d52c3f474111750:apps/api/src/protocols/eebus/EebusProtocolAdapter.test.ts:private-key:59
+e38ab7f1323dba93fa60c5434d52c3f474111750:apps/api/src/protocols/eebus/EebusProtocolAdapter.test.ts:eebus-certificate-key:59
+e38ab7f1323dba93fa60c5434d52c3f474111750:apps/api/src/protocols/eebus/EebusProtocolAdapter.test.ts:eebus-certificate-key:83
+apps/api/src/protocols/eebus/EebusProtocolAdapter.test.ts:private-key:59
+apps/api/src/protocols/eebus/EebusProtocolAdapter.test.ts:eebus-certificate-key:59
+apps/api/src/protocols/eebus/EebusProtocolAdapter.test.ts:eebus-certificate-key:83
 
 # HA integration guide — documented MQTT placeholder (not a real credential)
 792c0828f5948b7d8df840c2cb078edbaff53bf3:docs/Home-Assistant-Integration-Guide.md:mqtt-credentials:197
