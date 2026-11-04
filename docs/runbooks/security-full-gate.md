@@ -37,6 +37,26 @@ Comprehensive SAST, secret detection, supply-chain, and repository-hardening gat
 
 ## Common Failures & Fixes
 
+### Gitleaks reports a secret
+
+- **Do not commit real secrets.**
+- Rotate the exposed credential immediately.
+- If the match is a false positive (e.g., a test fixture), add an allowlist entry in `.gitleaks.toml` and document it.
+
+### CodeQL fails on SARIF upload (default setup enabled)
+
+If the **Perform CodeQL Analysis** step fails with:
+
+> CodeQL analyses from advanced configurations cannot be processed when the default setup is enabled
+
+GitHub is running **both** the repository **default** Code scanning setup and this workflow’s **advanced** CodeQL job. ADR-027 requires **this file** as the single CodeQL source:
+
+1. Repo **Settings → Code security → Code scanning** — disable **default setup** (or migrate fully to default setup and remove this job — **not** current policy).
+2. Re-run **Security Full** via `workflow_dispatch` on `main`.
+3. Confirm **Tool status** shows a successful analysis for `refs/heads/main`.
+
+See [code-scanning-tool-health-421.md](code-scanning-tool-health-421.md) §7.
+
 ### CodeQL reports a new alert
 
 - Open the alert in the GitHub Security tab.
