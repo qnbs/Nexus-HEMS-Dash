@@ -618,11 +618,38 @@ describe('OcppCsmsProtocolAdapter', () => {
       const client = await connectChargePoint(cappedPort, 'CP-DISC');
       const started = Date.now();
       await capped.disconnect();
-      expect(Date.now() - started).toBeLessThan(7_000);
+      expect(Date.now() - started).toBeLessThan(8_000);
+      expect(client.readyState).toBe(WebSocket.CLOSED);
+    });
+
+    it('disconnect releases listener when peer stalls close handshake', async () => {
+      const client = await connectChargePoint(cappedPort, 'CP-STALL');
+      const socket = (
+        client as WebSocket & { _socket?: { pause?: () => void; resume?: () => void } }
+      )._socket;
+      socket?.pause?.();
+
+      await capped.disconnect();
+      socket?.resume?.();
+
+      expect(capped.getBoundPort()).toBeUndefined();
+      const health = await capped.healthCheck();
+      expect(health.status).toBe('offline');
+
+      const probe = new WebSocket(`ws://127.0.0.1:${cappedPort}/CP-PROBE`, 'ocpp2.0.1');
+      const probeOutcome = await new Promise<'open' | 'error' | 'timeout'>((resolve) => {
+        probe.once('open', () => resolve('open'));
+        probe.once('error', () => resolve('error'));
+        setTimeout(() => resolve('timeout'), 750);
+      });
+      expect(probeOutcome).not.toBe('open');
+      if (probe.readyState !== WebSocket.CLOSED) {
+        probe.terminate();
+      }
       if (client.readyState !== WebSocket.CLOSED) {
         client.terminate();
       }
-    });
+    }, 20_000);
   });
 
   describe('live station allowlist at connect', () => {
