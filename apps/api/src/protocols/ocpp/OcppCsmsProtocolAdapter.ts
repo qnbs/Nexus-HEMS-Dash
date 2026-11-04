@@ -321,6 +321,10 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
   }
 
   async disconnect(): Promise<void> {
+    if (!this.wss && !this.listening) {
+      return;
+    }
+
     this.emitter.emit('destroy');
     this.emitter.removeAllListeners();
 
@@ -337,14 +341,14 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
       }
       this.sessions.clear();
 
-      await Promise.race([
-        new Promise<void>((resolve) => {
-          wss.close(() => resolve());
-        }),
-        new Promise<void>((resolve) => {
-          setTimeout(resolve, DISCONNECT_CLOSE_TIMEOUT_MS);
-        }),
-      ]);
+      let shutdownTimer: ReturnType<typeof setTimeout> | undefined;
+      await new Promise<void>((resolve) => {
+        shutdownTimer = setTimeout(resolve, DISCONNECT_CLOSE_TIMEOUT_MS);
+        wss.close(() => {
+          if (shutdownTimer) clearTimeout(shutdownTimer);
+          resolve();
+        });
+      });
 
       for (const ws of [...wss.clients]) {
         if (ws.readyState !== WebSocket.CLOSED) {
