@@ -23,8 +23,13 @@ export function buildInfoManifestPlugin(options: {
       outDir = config.build.outDir;
     },
     closeBundle() {
-      const gitSha = (process.env.VITE_BUILD_SHA ?? '').trim();
-      const buildTime = (process.env.VITE_BUILD_TIME ?? '').trim();
+      const gitSha = (process.env.VITE_BUILD_SHA ?? process.env.GIT_SHA ?? '').trim();
+      const buildTime = (process.env.VITE_BUILD_TIME ?? process.env.BUILD_TIME_ISO ?? '').trim();
+      if (process.env.CI === 'true' && gitSha.length === 0) {
+        throw new Error(
+          'build-info.json requires VITE_BUILD_SHA or GIT_SHA in CI (check turbo.json env passthrough)',
+        );
+      }
       const manifest: BuildInfoManifest = {
         gitSha,
         buildTime,
