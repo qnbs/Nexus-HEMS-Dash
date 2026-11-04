@@ -41,13 +41,21 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 
 {{/*
 Validate image repositories against a trusted registry allowlist.
+Each prefix must match with a path boundary (trailing slash on prefix; repository must extend past prefix).
 */}}
 {{- define "nexus-hems.assertTrustedImageRepository" -}}
-{{- $repository := .repository -}}
+{{- $repository := required "image.repository is required" .repository -}}
 {{- $trustedRegistries := .trustedRegistries | default (list) -}}
+{{- if eq (len $trustedRegistries) 0 -}}
+	{{- fail "image.trustedRegistries must contain at least one registry prefix" -}}
+{{- end -}}
 {{- $trusted := false -}}
 {{- range $trustedRegistries -}}
-	{{- if hasPrefix . $repository -}}
+	{{- $prefix := . -}}
+	{{- if not (hasSuffix "/" $prefix) -}}
+		{{- $prefix = printf "%s/" $prefix -}}
+	{{- end -}}
+	{{- if and (hasPrefix $prefix $repository) (gt (len $repository) (len $prefix)) -}}
 		{{- $trusted = true -}}
 	{{- end -}}
 {{- end -}}

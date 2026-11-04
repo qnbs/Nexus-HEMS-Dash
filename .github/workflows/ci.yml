@@ -72,6 +72,9 @@ jobs:
       - name: Render chart template smoke
         run: helm template nexus-hems helm/nexus-hems > /tmp/nexus-hems-rendered.yaml
 
+      - name: Verify trusted registry enforcement (#424)
+        run: node scripts/verify-helm-trusted-registries.mjs
+
   unit-tests:
     name: Unit Tests
     runs-on: ubuntu-latest

@@ -4,7 +4,9 @@ Template for **Wave B–G** disposition. Do not mark an alert **Fixed** until a 
 
 | alert_id | tool | rule | severity | main_sha | location | report_summary | exploitability | root_cause | fix_or_exception | PR | tests | analysis_id_time | github_state | reviewer | owner |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 208 | Scorecard | Token-Permissions | High | TBD | sbom-scan.yml | TBD | TBD | TBD | #422 | — | — | TBD | open | pending | maintainer |
+| 208 | Scorecard | Token-Permissions | High | TBD | sbom-scan.yml | TBD | TBD | TBD | #422 / #434 | — | — | TBD | open | pending | maintainer |
+| 180 | Trivy | KSV034 / trusted registry | Medium | TBD | deployment-frontend.yaml | Static template scan | Low | Unrendered Helm template | #424 render-time + CI tests | TBD | verify-helm-trusted-registries.mjs | TBD | open | exception | maintainer |
+| 181 | Trivy | KSV034 / trusted registry | Medium | TBD | deployment-server.yaml | Static template scan | Low | Unrendered Helm template | #424 render-time + CI tests | TBD | verify-helm-trusted-registries.mjs | TBD | open | exception | maintainer |
 | … | … | … | … | … | … | … | … | … | … | … | … | … | open | pending | maintainer |
 
 ## Batch status (owner-supplied 22 IDs)

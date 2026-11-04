@@ -1,0 +1,13 @@
+# Committed negative-test values for scripts/verify-helm-trusted-registries.mjs (#424).
+# Helm render must fail: frontend repository outside trustedRegistries.
+image:
+  trustedRegistries:
+    - ghcr.io/qnbs/
+  frontend:
+    repository: registry.example.com/malicious
+    tag: latest
+    pullPolicy: IfNotPresent
+  server:
+    repository: ghcr.io/qnbs/nexus-hems-server
+    tag: latest
+    pullPolicy: IfNotPresent
