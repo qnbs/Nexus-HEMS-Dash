@@ -8,6 +8,7 @@
 # the `nexus-hems.assertTrustedImageRepository` helper in _helpers.tpl, which
 # calls `fail()` if the repository does not start with a prefix from
 # `.Values.image.trustedRegistries` (defaults to ["ghcr.io/qnbs/"]).
+# CI proof: `scripts/verify-helm-trusted-registries.mjs` (see docs/runbooks/trivy-trusted-registries-424.md).
 #
 # Rule: KSV034 — Restrict container images to only those from approved registries
 # Rule: KSV-0125 — Restrict container images to trusted registries
