@@ -20,7 +20,7 @@
 
 ## Recommended target (solo-maintainer aware)
 
-1. **Required approvals:** `1` for `main` (maintainer self-approval allowed if repo policy permits).
+1. **Required approvals:** `1` from a reviewer who is **not** the PR author (GitHub does not count the author's own approval). Solo maintainers need a second trusted reviewer account, org bot approval, or a documented break-glass ruleset exception — not an implicit self-approve.
 2. **Review thread resolution:** `true` (aligns with `docs/runbooks/pr-review-correction-loop.md`).
 3. **Strict status checks:** `true` — checks must pass on **latest** head SHA.
 4. **Bypass actors:** remove `always` bypass except break-glass admin; document each retained bypass in `DEVOPS.md`.

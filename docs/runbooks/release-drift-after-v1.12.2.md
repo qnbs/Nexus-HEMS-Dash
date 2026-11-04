@@ -14,10 +14,11 @@
 
 ## Release prerequisites (do not skip)
 
-1. Merge **#403** (production dependency advisories) and confirm green `sbom-scan` on `main`.
-2. Merge **#379** (OCPP SP0 opt-in) after review quiescence.
-3. Dispatch **SBOM**, **security-full**, and **Scorecard** manually if schedules remain stale (#387).
-4. Verify Pages deploy SHA smoke (`verify-pages-build-sha.sh` in `deploy.yml`).
+1. Merge **#403** (P0 production dependency advisories).
+2. Merge **#404** (CI/security recovery, SBOM/Grype base images, Pages provenance) onto updated `main`.
+3. Rebase **#379** to an OCPP-only diff after #404, then merge after review quiescence.
+4. Dispatch **SBOM**, **security-full**, and **Scorecard** manually if schedules remain stale (#387).
+5. Verify Pages deploy uses `build-info.json` provenance (`verify-pages-build-sha.sh` in `deploy.yml`).
 
 ## Suggested next version
 

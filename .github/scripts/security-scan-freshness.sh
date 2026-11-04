@@ -29,12 +29,14 @@ fi
 echo "Last successful ${label} ${workflow_file}: ${last_success}"
 last_epoch="$(date -d "${last_success}" +%s)"
 now_epoch="$(date -u +%s)"
-age_days=$(( (now_epoch - last_epoch) / 86400 ))
-echo "Age (days): ${age_days}"
+age_sec=$(( now_epoch - last_epoch ))
+max_stale_sec=$(( max_stale_days * 86400 ))
+age_days=$(( age_sec / 86400 ))
+echo "Age: ${age_sec}s (~${age_days}d, max ${max_stale_sec}s / ${max_stale_days}d)"
 
-if [ "${age_days}" -gt "${max_stale_days}" ]; then
-  echo "::error::${workflow_file} ${label} success is ${age_days} days old (max ${max_stale_days})."
+if [ "${age_sec}" -gt "${max_stale_sec}" ]; then
+  echo "::error::${workflow_file} ${label} success is ${age_sec}s old (max ${max_stale_sec}s)."
   exit 1
 fi
 
-echo "Freshness OK for ${workflow_file} (${label}, ${age_days}d)"
+echo "Freshness OK for ${workflow_file} (${label}, ${age_sec}s)"
