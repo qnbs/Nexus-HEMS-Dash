@@ -13,7 +13,7 @@ Wave A + post-merge safety work on `main` (Europe/Berlin dates).
 | 2026-11-04 | `3de2b5d` | #409 Vite patch (#385) | Container publish `41861932895` |
 | 2026-11-04 | `9fbae2e` | #410 provenance runbook (#392 docs) | PR CI success |
 
-| 2026-11-04 | `51b4b8a` | #412 Pages CI artifact promote (#392) | Deploy run `41871929405` failed verify (empty `gitSha` — turbo cache env); fix pending |
+| 2026-11-04 | `9f01f04` | #413 Pages provenance merge | Deploy `41881368601` failed: digest before size gate — hotfix moves manifest after smoke |
 
 **Open tracker items:** #387/#391 scheduled workflow proof, #405 adapters bundle, #401 release dispatch, Pages verify after turbo env fix.
 
