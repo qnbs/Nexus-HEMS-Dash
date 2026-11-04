@@ -19,11 +19,13 @@ Wave A + post-merge safety work on `main` (Europe/Berlin dates).
 | 2026-11-04 | `949d094` | #417 contrib chunk + heartbeat hook | CI `41892150084`, Deploy `41892150035` success, Heartbeat `41892929820` (schedule stale advisory) |
 | 2026-11-04 | `35f4c06` | #418 lazy OCPP + heartbeat CI fix (#405, #387) | CI `41897433479`, Deploy `41897433554` **success** (verify-pages OK), live `build-info.json` SHA match, Heartbeat `41898093286` **success** |
 | 2026-11-04 | `d310436` | #420 lazy evcc/OpenEMS (#405) | CI `41903529044`, Deploy `41903528984`; `adapters-core-*` ~84.8 kB gzip |
+| 2026-11-04 | `b8d7246` | #429 CodeQL Advanced + Gitleaks (#421) | Security Full push `41908058281` **success**; CodeQL in `codeql.yml` |
+| 2026-11-04 | `5951aef` | #431 Scorecard/Trivy SARIF (#421) | Scorecard `41909771826` (explicit SARIF upload), Trivy `41909772215`, Security Full dispatch `41909627237` **success** |
 
 **Pages provenance (#392):** first green end-to-end push deploy @ `d95020c` — CI `build` artifact promoted (113 files + digest manifest), `verify-pages` passed on run `41887360783`. Subsequent deploys promote the same CI artifact pattern with matching live SHA.
 
-**Security audit wave (#421–#425):** `Security Full` **re-enabled** 2026-11-04; dispatch run **`41905375510`** failed **CodeQL** (default vs advanced setup) + **Gitleaks** (11 FPs — **#428**). Maintainer Security tab screenshot (**2026-11-04 ~21:20 CET**): **37** code scanning, **60** Dependabot, banner **Scorecard + Trivy configuration errors** — see `code-scanning-tool-health-421.md` §8. **22/22** owner IDs mapped; **0/22** closed without fresh scan. Agent alerts API **403**.
+**Security audit wave (#421–#425):** `Security Full` **re-enabled**; **#429** / **#431** merged on `main`. Maintainer **CodeQL Advanced** enabled; Gitleaks green. Tool-status mitigation: Scorecard + Trivy SARIF workflows (**#431**). Security tab still showed **37** code scanning / **60** Dependabot (2026-11-04 ~21:20 CET) — re-check **Tool status** after runs `41909771826` / `41909772215`. **22/22** owner IDs mapped; **0/22** closed without fresh scan. Agent alerts API **403**.
 
-**Open tracker items:** #387/#391 schedule delivery; #401 release (explicit approval only); #421 CodeQL default-setup conflict (**maintainer** UI) + Gitleaks allowlist PR; #422–#425 per acceptance ledger.
+**Open tracker items:** #387/#391 schedule delivery; #401 release (explicit approval only); #421 Tool status UI confirmation post-#431; #422–#425 acceptance ledger waves.
 
 **Runner queue (#411):** intermittent queue delays observed; deploy/CI eventually completed on `d95020c`. `deploy-recovery.yml` uses `gh run list --repo "$GITHUB_REPOSITORY"` (#413).
