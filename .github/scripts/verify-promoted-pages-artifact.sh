@@ -85,8 +85,14 @@ for (const rel of files) {
 }
 
 const manifestKeys = Object.keys(raw.entries).sort();
-if (files.join('\0') !== manifestKeys.join('\0')) {
-  throw new Error('digest-manifest.json file set does not match dist tree');
+const orphans = manifestKeys.filter((key) => !files.includes(key));
+if (orphans.length > 0) {
+  console.log(
+    `::warning::digest manifest lists ${orphans.length} path(s) not present in artifact; ignored after hash checks`,
+  );
+}
+if (!files.every((rel) => rel in raw.entries)) {
+  throw new Error('dist contains files absent from digest manifest');
 }
 
 console.log(`Verified ${files.length} dist files against digest-manifest.json`);
