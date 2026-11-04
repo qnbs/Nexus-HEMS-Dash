@@ -260,12 +260,10 @@ export async function loadAllContribAdapters(): Promise<string[]> {
 
 import type { EEBUSAdapterConfig } from './EEBUSAdapter';
 import { EEBUSAdapter } from './EEBUSAdapter';
-import { EvccAdapter } from './EvccAdapter';
 import type { KNXAdapterConfig } from './KNXAdapter';
 import { KNXAdapter } from './KNXAdapter';
 import { createLazyEnergyAdapter } from './lazy-energy-adapter';
 import { ModbusSunSpecAdapter } from './ModbusSunSpecAdapter';
-import { OpenEMSAdapter } from './OpenEMSAdapter';
 import type { VictronAdapterConfig } from './VictronMQTTAdapter';
 import { VictronMQTTAdapter } from './VictronMQTTAdapter';
 
@@ -319,15 +317,37 @@ export function registerBuiltinAdapters(): void {
     source: 'builtin',
   });
 
-  registerAdapter('evcc', (config) => new EvccAdapter(config), {
-    displayName: 'evcc Backend',
-    description: 'evcc.io backend integration via REST + WebSocket',
-    source: 'builtin',
-  });
+  registerAdapter(
+    'evcc',
+    (config) =>
+      createLazyEnergyAdapter(
+        'evcc',
+        'evcc Backend',
+        () => import('./EvccAdapter'),
+        'EvccAdapter',
+        config,
+      ),
+    {
+      displayName: 'evcc Backend',
+      description: 'evcc.io backend integration via REST + WebSocket',
+      source: 'builtin',
+    },
+  );
 
-  registerAdapter('openems', (config) => new OpenEMSAdapter(config), {
-    displayName: 'OpenEMS Edge',
-    description: 'OpenEMS Edge JSON-RPC over WebSocket',
-    source: 'builtin',
-  });
+  registerAdapter(
+    'openems',
+    (config) =>
+      createLazyEnergyAdapter(
+        'openems',
+        'OpenEMS Edge',
+        () => import('./OpenEMSAdapter'),
+        'OpenEMSAdapter',
+        config,
+      ),
+    {
+      displayName: 'OpenEMS Edge',
+      description: 'OpenEMS Edge JSON-RPC over WebSocket',
+      source: 'builtin',
+    },
+  );
 }

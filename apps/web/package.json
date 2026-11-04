@@ -143,13 +143,25 @@
     {
       "name": "Adapters (core protocol layer)",
       "path": "dist/assets/adapters-core-*.js",
-      "limit": "92 kB",
+      "limit": "88 kB",
       "gzip": true
     },
     {
       "name": "Adapters OCPP (lazy)",
       "path": "dist/assets/adapters-ocpp-*.js",
       "limit": "35 kB",
+      "gzip": true
+    },
+    {
+      "name": "Adapters evcc (lazy)",
+      "path": "dist/assets/adapters-evcc-*.js",
+      "limit": "8 kB",
+      "gzip": true
+    },
+    {
+      "name": "Adapters OpenEMS (lazy)",
+      "path": "dist/assets/adapters-openems-*.js",
+      "limit": "12 kB",
       "gzip": true
     },
     {
