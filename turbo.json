@@ -27,7 +27,8 @@
         "VITE_BUILD_TIME",
         "GIT_SHA",
         "BUILD_TIME_ISO",
-        "GITHUB_SHA"
+        "GITHUB_SHA",
+        "NEXUS_DEPLOYABLE_PAGES_BUILD"
       ],
       "inputs": [
         "src/**",
@@ -85,6 +86,20 @@
     "storybook:build": {
       "inputs": ["src/**", ".storybook/**"],
       "outputs": ["storybook-static/**"]
+    },
+    "@nexus-hems/web#size": {
+      "dependsOn": ["@nexus-hems/web#build"],
+      "env": [
+        "VITE_E2E_TESTING",
+        "VITE_BACKEND_WS",
+        "VITE_BUILD_SHA",
+        "VITE_BUILD_TIME",
+        "GIT_SHA",
+        "BUILD_TIME_ISO",
+        "GITHUB_SHA"
+      ],
+      "inputs": ["dist/**", "package.json"],
+      "outputs": []
     },
     "size": {
       "dependsOn": ["build"],

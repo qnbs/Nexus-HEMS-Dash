@@ -13,7 +13,8 @@
 ## Notes
 
 - CI `Build` uses `VITE_E2E_TESTING=true` and `VITE_BACKEND_WS=true` (same bundle E2E and smoke exercised). Pages demo intentionally matches that artifact until a split production artifact is added.
-- **`turbo.json`** must list `VITE_BUILD_SHA`, `VITE_BUILD_TIME`, `GIT_SHA`, and `BUILD_TIME_ISO` under `@nexus-hems/web#build` `env` so cached builds do not emit empty `build-info.json`.
+- **`turbo.json`** must list `VITE_BUILD_SHA`, `VITE_BUILD_TIME`, `GIT_SHA`, `BUILD_TIME_ISO`, `GITHUB_SHA`, and `NEXUS_DEPLOYABLE_PAGES_BUILD` under `@nexus-hems/web#build` `env` so cached builds do not emit empty `build-info.json`.
+- Only the CI `Build` step sets `NEXUS_DEPLOYABLE_PAGES_BUILD=true`; Storybook/Lighthouse/size rebuilds must not fail when SHA is absent, but deploy rejects empty manifests.
 - Artifact retention: 7 days (`ci.yml`). Manual `deploy.yml` dispatch on an old SHA fails if the artifact expired.
 - Container GHCR promotion remains separate; see `container-image-provenance-392.md`.
 

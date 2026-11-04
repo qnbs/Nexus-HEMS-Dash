@@ -167,6 +167,7 @@ jobs:
       - name: Build
         run: pnpm build
         env:
+          NEXUS_DEPLOYABLE_PAGES_BUILD: 'true'
           VITE_E2E_TESTING: 'true'
           VITE_BACKEND_WS: 'true'
           VITE_BUILD_SHA: ${{ github.sha }}

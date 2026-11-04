@@ -38,7 +38,7 @@ jobs:
         run: |
           set -euo pipefail
           failed_id="${{ github.event.workflow_run.id }}"
-          latest_id="$(gh run list --workflow=deploy.yml --branch=main --limit=1 --json databaseId --jq '.[0].databaseId')"
+          latest_id="$(gh run list --repo "${GITHUB_REPOSITORY}" --workflow=deploy.yml --branch=main --limit=1 --json databaseId --jq '.[0].databaseId')"
           if [ "${latest_id}" != "${failed_id}" ]; then
             echo "Newer Deploy run ${latest_id} exists; skipping recovery for failed run ${failed_id}."
             echo "skip=true" >> "${GITHUB_OUTPUT}"
@@ -58,7 +58,7 @@ jobs:
         run: |
           set -euo pipefail
           run_id="${{ github.event.workflow_run.id }}"
-          latest_id="$(gh run list --workflow=deploy.yml --branch=main --limit=1 --json databaseId --jq '.[0].databaseId')"
+          latest_id="$(gh run list --repo "${GITHUB_REPOSITORY}" --workflow=deploy.yml --branch=main --limit=1 --json databaseId --jq '.[0].databaseId')"
           if [ "${latest_id}" != "${run_id}" ]; then
             echo "Deploy run ${run_id} was superseded by ${latest_id} during cooldown; skipping rerun."
             exit 0

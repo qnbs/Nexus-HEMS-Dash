@@ -118,8 +118,8 @@ PY
           expected="${GITHUB_SHA}"
           manifest_lower="$(printf '%s' "${manifest_sha}" | tr '[:upper:]' '[:lower:]')"
           expected_lower="$(printf '%s' "${expected}" | tr '[:upper:]' '[:lower:]')"
-          if [ "${manifest_lower}" != "${expected_lower}" ] && [[ "${expected_lower}" != "${manifest_lower}"* ]]; then
-            echo "::error::Artifact gitSha ${manifest_sha} does not match ${expected}"
+          if [ "${#manifest_lower}" -ne 40 ] || [ "${manifest_lower}" != "${expected_lower}" ]; then
+            echo "::error::Artifact gitSha ${manifest_sha} must exactly match commit ${expected}"
             exit 1
           fi
           sha256sum apps/web/dist/build-info.json | tee -a "$GITHUB_STEP_SUMMARY"
