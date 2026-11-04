@@ -22,7 +22,7 @@ Wave A + post-merge safety work on `main` (Europe/Berlin dates).
 
 **Pages provenance (#392):** first green end-to-end push deploy @ `d95020c` — CI `build` artifact promoted (113 files + digest manifest), `verify-pages` passed on run `41887360783`. Subsequent deploys promote the same CI artifact pattern with matching live SHA.
 
-**Security audit wave (#421–#425):** `Security Full` **re-enabled** 2026-11-04; dispatch run **`41905375510`** failed **CodeQL** (default vs advanced setup) + **Gitleaks** (11 placeholder/fixture hits — allowlist PR pending). See `code-scanning-tool-health-421.md` §7. **22/22** owner-supplied Code Scanning IDs mapped; **0/22** closed without fresh scan evidence. Agent token: code-scanning alerts API **403**.
+**Security audit wave (#421–#425):** `Security Full` **re-enabled** 2026-11-04; dispatch run **`41905375510`** failed **CodeQL** (default vs advanced setup) + **Gitleaks** (11 FPs — **#428**). Maintainer Security tab screenshot (**2026-11-04 ~21:20 CET**): **37** code scanning, **60** Dependabot, banner **Scorecard + Trivy configuration errors** — see `code-scanning-tool-health-421.md` §8. **22/22** owner IDs mapped; **0/22** closed without fresh scan. Agent alerts API **403**.
 
 **Open tracker items:** #387/#391 schedule delivery; #401 release (explicit approval only); #421 CodeQL default-setup conflict (**maintainer** UI) + Gitleaks allowlist PR; #422–#425 per acceptance ledger.
 
