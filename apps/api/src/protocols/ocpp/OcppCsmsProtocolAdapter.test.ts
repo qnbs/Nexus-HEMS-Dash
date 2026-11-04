@@ -600,6 +600,10 @@ describe('OcppCsmsProtocolAdapter', () => {
         rejected.once('error', reject);
       });
       expect(await rejectedCode).toBe(1013);
+      await new Promise<void>((resolve) => {
+        if (rejected.readyState === WebSocket.CLOSED) resolve();
+        else rejected.once('close', () => resolve());
+      });
 
       first.close();
       await new Promise<void>((resolve) => first.once('close', () => resolve()));
