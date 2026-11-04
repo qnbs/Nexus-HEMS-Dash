@@ -21,11 +21,12 @@ Wave A + post-merge safety work on `main` (Europe/Berlin dates).
 | 2026-11-04 | `d310436` | #420 lazy evcc/OpenEMS (#405) | CI `41903529044`, Deploy `41903528984`; `adapters-core-*` ~84.8 kB gzip |
 | 2026-11-04 | `b8d7246` | #429 CodeQL Advanced + Gitleaks (#421) | Security Full push `41908058281` **success**; CodeQL in `codeql.yml` |
 | 2026-11-04 | `5951aef` | #431 Scorecard/Trivy SARIF (#421) | Scorecard `41909771826` (explicit SARIF upload), Trivy `41909772215`, Security Full dispatch `41909627237` **success** |
+| 2026-11-04 | `35b5ec1` | #434 Token-Permissions (#422) | PR #434 CI **success** (`41913986609`); matrix `docs/runbooks/token-permissions-422.md` |
 
 **Pages provenance (#392):** first green end-to-end push deploy @ `d95020c` — CI `build` artifact promoted (113 files + digest manifest), `verify-pages` passed on run `41887360783`. Subsequent deploys promote the same CI artifact pattern with matching live SHA.
 
-**Security audit wave (#421–#425):** `Security Full` **re-enabled**; **#429** / **#431** merged on `main`. Maintainer **CodeQL Advanced** enabled; Gitleaks green. Tool-status mitigation: Scorecard + Trivy SARIF workflows (**#431**). Security tab still showed **37** code scanning / **60** Dependabot (2026-11-04 ~21:20 CET) — re-check **Tool status** after runs `41909771826` / `41909772215`. **22/22** owner IDs mapped; **0/22** closed without fresh scan. Agent alerts API **403**.
+**Security audit wave (#421–#425):** `Security Full` **re-enabled**; **#429** / **#431** / **#434** merged on `main`. Maintainer **CodeQL Advanced** enabled; Gitleaks green on reduced allowlists pending **#432** integrity PR. Tool-status mitigation: Scorecard + Trivy SARIF workflows (**#431**). Security tab still showed **37** code scanning / **60** Dependabot (2026-11-04 ~21:20 CET) — re-check **Tool status** after runs on `35b5ec1`. **22/22** owner IDs mapped; **0/22** closed without fresh scan. Agent alerts API **403**.
 
-**Open tracker items:** #387/#391 schedule delivery; #401 release (explicit approval only); #421 Tool status UI confirmation post-#431; #422–#425 acceptance ledger waves.
+**Open tracker items:** #387/#391 schedule delivery; #401 release (explicit approval only); #421 Tool status UI confirmation; **#432** Gitleaks integrity (in flight); #423–#425 acceptance ledger waves.
 
 **Runner queue (#411):** intermittent queue delays observed; deploy/CI eventually completed on `d95020c`. `deploy-recovery.yml` uses `gh run list --repo "$GITHUB_REPOSITORY"` (#413).
