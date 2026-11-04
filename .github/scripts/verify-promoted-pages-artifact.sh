@@ -92,5 +92,5 @@ if (files.join('\0') !== manifestKeys.join('\0')) {
 console.log(`Verified ${files.length} dist files against digest-manifest.json`);
 NODE
 
-sha256sum "${build_info}" "${manifest_path}" | tee -a "${GITHUB_STEP_SUMMARY:-/dev/stdout}"
-echo "file_count=$(find "${dist_root}" -type f | wc -l | tr -d ' ')" >> "${GITHUB_STEP_SUMMARY:-/dev/stdout}"
+sha256sum "${build_info}" "${manifest_path}" | tee -a "${GITHUB_STEP_SUMMARY:-/dev/null}"
+echo "file_count=$(find "${dist_root}" -type f | wc -l | tr -d ' ')" >> "${GITHUB_STEP_SUMMARY:-/dev/null}"
