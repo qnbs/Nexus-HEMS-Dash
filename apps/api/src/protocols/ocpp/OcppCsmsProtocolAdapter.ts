@@ -79,7 +79,26 @@ const OUTBOUND_TIMEOUT_MS = 10_000;
 const ADMISSION_CLOSE_TERMINATE_MS = 5_000;
 /** Upper bound for graceful CSMS shutdown before `terminate()` on stragglers. */
 const DISCONNECT_CLOSE_TIMEOUT_MS = 5_000;
+/** After forced `terminate()`, wait for `wss.close()` callback (or this drain cap). */
+const DISCONNECT_SERVER_DRAIN_MS = 1_000;
 const MAX_DLQ_LINES = 10_000;
+
+async function waitForClientsClosed(wss: WebSocketServer, budgetMs: number): Promise<void> {
+  const deadline = Date.now() + budgetMs;
+  while (Date.now() < deadline) {
+    for (const ws of [...wss.clients]) {
+      if (ws.readyState !== WebSocket.CLOSED) {
+        ws.terminate();
+      }
+    }
+    if ([...wss.clients].every((ws) => ws.readyState === WebSocket.CLOSED)) {
+      return;
+    }
+    await new Promise<void>((resolve) => {
+      setTimeout(resolve, 25);
+    });
+  }
+}
 
 function closeWithBoundedTeardown(ws: WebSocket, code: number, reason: string): void {
   const timer = setTimeout(() => {
@@ -341,14 +360,47 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
       }
       this.sessions.clear();
 
-      let shutdownTimer: ReturnType<typeof setTimeout> | undefined;
       await new Promise<void>((resolve) => {
-        shutdownTimer = setTimeout(resolve, DISCONNECT_CLOSE_TIMEOUT_MS);
-        wss.close(() => {
-          if (shutdownTimer) clearTimeout(shutdownTimer);
+        let settled = false;
+        let graceTimer: ReturnType<typeof setTimeout> | undefined;
+        let drainTimer: ReturnType<typeof setTimeout> | undefined;
+
+        const finish = (): void => {
+          if (settled) return;
+          settled = true;
+          if (graceTimer) clearTimeout(graceTimer);
+          if (drainTimer) clearTimeout(drainTimer);
           resolve();
+        };
+
+        const forceTerminateClients = (): void => {
+          for (const client of [...wss.clients]) {
+            if (client.readyState !== WebSocket.CLOSED) {
+              client.terminate();
+            }
+          }
+        };
+
+        const scheduleFinishAfterTerminate = (): void => {
+          if ([...wss.clients].every((client) => client.readyState === WebSocket.CLOSED)) {
+            finish();
+            return;
+          }
+          drainTimer = setTimeout(finish, DISCONNECT_SERVER_DRAIN_MS);
+        };
+
+        graceTimer = setTimeout(() => {
+          forceTerminateClients();
+          scheduleFinishAfterTerminate();
+        }, DISCONNECT_CLOSE_TIMEOUT_MS);
+
+        wss.close(() => {
+          forceTerminateClients();
+          scheduleFinishAfterTerminate();
         });
       });
+
+      await waitForClientsClosed(wss, DISCONNECT_CLOSE_TIMEOUT_MS + DISCONNECT_SERVER_DRAIN_MS);
 
       for (const ws of [...wss.clients]) {
         if (ws.readyState !== WebSocket.CLOSED) {
