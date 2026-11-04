@@ -141,9 +141,15 @@
       "gzip": true
     },
     {
-      "name": "Adapters (protocol layer)",
-      "path": "dist/assets/adapters-*.js",
+      "name": "Adapters (core protocol layer)",
+      "path": "dist/assets/adapters-core-*.js",
       "limit": "92 kB",
+      "gzip": true
+    },
+    {
+      "name": "Adapters OCPP (lazy)",
+      "path": "dist/assets/adapters-ocpp-*.js",
+      "limit": "35 kB",
       "gzip": true
     },
     {

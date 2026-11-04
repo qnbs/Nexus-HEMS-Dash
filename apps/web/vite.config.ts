@@ -255,12 +255,13 @@ export default defineConfig(({ mode }) => {
           manualChunks(id) {
             // Contrib plugins: own chunk (monitored separately from core adapters-* budget).
             if (/\/core\/adapters\/contrib\//.test(id)) return 'contrib-adapters';
+            if (/\/core\/adapters\/OCPP/.test(id)) return 'adapters-ocpp';
             if (
-              /\/core\/adapters\/(?:Victron|Modbus|KNX|OCPP|EEBUS|Evcc|OpenEMS|adapter-registry)/.test(
+              /\/core\/adapters\/(?:Victron|Modbus|KNX|EEBUS|Evcc|OpenEMS|adapter-registry|lazy-energy-adapter)/.test(
                 id,
               )
             )
-              return 'adapters';
+              return 'adapters-core';
 
             if (!id.includes('node_modules')) return;
 

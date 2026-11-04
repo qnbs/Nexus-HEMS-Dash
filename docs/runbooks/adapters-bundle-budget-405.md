@@ -10,14 +10,14 @@ VITE_BACKEND_WS=true pnpm --filter @nexus-hems/web build
 pnpm --filter @nexus-hems/web size
 ```
 
-| Chunk | Gzip (2026-11-04) | Notes |
+| Chunk | Gzip (2026-11-04 post-#418) | Notes |
 | --- | --- | --- |
-| `adapters-*` | ~90.5 kB | CI logged 91.53 kB before contrib split |
-| `contrib-adapters-*` | ~58.1 kB | Six shipped contrib adapters + shared deps |
+| `adapters-core-*` | ~88.5 kB | OCPP lazy-loaded via `lazy-energy-adapter.ts` → `adapters-ocpp-*` (~3.8 kB) |
+| `contrib-adapters-*` | ~58.1 kB | Six shipped contrib adapters |
 
 ## Vite `manualChunks`
 
-Contrib sources under `core/adapters/contrib/` → `contrib-adapters` chunk. Core seven adapters + registry + Evcc/OpenEMS → `adapters` chunk.
+Contrib sources under `core/adapters/contrib/` → `contrib-adapters` chunk. Core seven adapters (minus OCPP module) + registry + Evcc/OpenEMS → `adapters-core` chunk. OCPP registers via `createLazyEnergyAdapter()` + dynamic `import('./OCPP21Adapter')`.
 
 ## Remediation backlog (no core limit bump without ADR)
 
