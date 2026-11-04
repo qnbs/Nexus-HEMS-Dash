@@ -187,9 +187,6 @@ jobs:
           TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
           TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
 
-      - name: Generate dist digest manifest (Pages provenance)
-        run: node .github/scripts/generate-web-dist-digest-manifest.mjs apps/web/dist
-
       - name: Resolve web app version
         id: web-version
         run: |
@@ -239,6 +236,10 @@ jobs:
           CI: 'true'
           VITE_E2E_TESTING: 'true'
           VITE_BACKEND_WS: 'true'
+
+      # After size/smoke (may refresh dist via turbo), seal the artifact CI promotes to Pages.
+      - name: Generate dist digest manifest (Pages provenance)
+        run: node .github/scripts/generate-web-dist-digest-manifest.mjs apps/web/dist
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
