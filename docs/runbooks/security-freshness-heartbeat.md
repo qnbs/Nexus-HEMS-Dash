@@ -12,10 +12,12 @@ Tracks whether **scheduled** security workflows still produce successful runs. G
 
 ## When this fails
 
-1. Open **Actions → SBOM Generation → Run workflow** (dispatch) after merging dependency fixes (#403).
-2. Review repository **Settings → Actions → General** (workflow permissions, fork PR settings).
-3. Confirm the repository had activity within GitHub’s schedule window (inactive repos pause cron).
+1. Confirm **Settings → Actions** allows workflows (re-enabled 2026-11-04 after suspension).
+2. Open **Actions → SBOM Generation → Run workflow** on `main` or merge **#404** and use the PR `pull_request` run.
+3. Review repository **Settings → Actions → General** (workflow permissions).
 4. Inspect org billing/quota if runs are skipped entirely.
+
+Successful **manual dispatch**, **push**, or **pull_request** SBOM runs count toward freshness (not only `schedule`).
 
 ## Related issues
 

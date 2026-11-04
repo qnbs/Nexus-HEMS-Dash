@@ -24,53 +24,18 @@ jobs:
     name: Scheduled security scan freshness
     runs-on: ubuntu-latest
     steps:
-      - name: Check last successful scheduled SBOM run
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Check SBOM workflow freshness
         env:
           GH_TOKEN: ${{ github.token }}
-          REPO: ${{ github.repository }}
           MAX_STALE_DAYS: ${{ env.MAX_STALE_DAYS }}
-        run: |
-          set -euo pipefail
-          workflow_id=$(gh api "/repos/${REPO}/actions/workflows/sbom-scan.yml" --jq '.id')
-          last_success=$(gh api "/repos/${REPO}/actions/workflows/${workflow_id}/runs?event=schedule&status=success&per_page=1" \
-            --jq '.workflow_runs[0].created_at // empty')
-          if [ -z "${last_success}" ]; then
-            echo "::warning::No successful scheduled sbom-scan run found. Dispatch sbom-scan.yml manually and investigate Actions schedule suspension (#387)."
-            echo "last_success=none" >> "$GITHUB_OUTPUT"
-            exit 1
-          fi
-          echo "Last successful scheduled sbom-scan: ${last_success}"
-          last_epoch=$(date -d "${last_success}" +%s)
-          now_epoch=$(date -u +%s)
-          age_days=$(( (now_epoch - last_epoch) / 86400 ))
-          echo "Age (days): ${age_days}"
-          if [ "${age_days}" -gt "${MAX_STALE_DAYS}" ]; then
-            echo "::error::Scheduled sbom-scan success is ${age_days} days old (max ${MAX_STALE_DAYS}). See docs/runbooks/security-freshness-heartbeat.md"
-            exit 1
-          fi
-          echo "Security freshness OK (${age_days}d since last scheduled sbom-scan success)"
+        run: bash .github/scripts/security-scan-freshness.sh sbom-scan.yml "${MAX_STALE_DAYS}"
 
-      - name: Check last successful scheduled Scorecard run
+      - name: Check Scorecard workflow freshness
         if: always()
         continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
-          REPO: ${{ github.repository }}
           MAX_STALE_DAYS: ${{ env.MAX_STALE_DAYS }}
-        run: |
-          set -euo pipefail
-          workflow_id=$(gh api "/repos/${REPO}/actions/workflows/scorecard.yml" --jq '.id')
-          last_success=$(gh api "/repos/${REPO}/actions/workflows/${workflow_id}/runs?event=schedule&status=success&per_page=1" \
-            --jq '.workflow_runs[0].created_at // empty')
-          if [ -z "${last_success}" ]; then
-            echo "::warning::No successful scheduled scorecard run — investigate checkout/token failures (#391)."
-            exit 1
-          fi
-          last_epoch=$(date -d "${last_success}" +%s)
-          now_epoch=$(date -u +%s)
-          age_days=$(( (now_epoch - last_epoch) / 86400 ))
-          if [ "${age_days}" -gt "${MAX_STALE_DAYS}" ]; then
-            echo "::error::Scheduled scorecard success is ${age_days} days old (max ${MAX_STALE_DAYS})."
-            exit 1
-          fi
-          echo "Scorecard freshness OK (${age_days}d)"
+        run: bash .github/scripts/security-scan-freshness.sh scorecard.yml "${MAX_STALE_DAYS}"
