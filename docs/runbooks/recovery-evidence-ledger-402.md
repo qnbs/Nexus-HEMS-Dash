@@ -13,6 +13,8 @@ Wave A + post-merge safety work on `main` (Europe/Berlin dates).
 | 2026-11-04 | `3de2b5d` | #409 Vite patch (#385) | Container publish `41861932895` |
 | 2026-11-04 | `9fbae2e` | #410 provenance runbook (#392 docs) | PR CI success |
 
-**Open tracker items:** #392 Pages artifact promotion (PR pending), #387/#391 scheduled workflow proof, #405 adapters bundle, #401 release dispatch.
+| 2026-11-04 | `51b4b8a` | #412 Pages CI artifact promote (#392) | Deploy run `41871929405` failed verify (empty `gitSha` — turbo cache env); fix pending |
+
+**Open tracker items:** #387/#391 scheduled workflow proof, #405 adapters bundle, #401 release dispatch, Pages verify after turbo env fix.
 
 **Runner queue (#411):** Container publish on `3de2b5d` completed after queue delay; treat long `queued` as infra, not workflow regression.

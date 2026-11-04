@@ -38,3 +38,4 @@ apps/api/data/*.ndjson
 # TypeScript / ESLint incremental caches
 *.tsbuildinfo
 .eslintcache
+/actionlint

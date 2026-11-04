@@ -77,6 +77,8 @@ jobs:
         with:
           egress-policy: audit
 
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
       - name: Resolve successful CI workflow run
         id: ci_run
         env:
@@ -102,11 +104,7 @@ jobs:
           run-id: ${{ steps.ci_run.outputs.run_id }}
 
       - name: Record promoted dist fingerprint
-        run: |
-          set -euo pipefail
-          test -f apps/web/dist/build-info.json
-          sha256sum apps/web/dist/build-info.json | tee -a "$GITHUB_STEP_SUMMARY"
-          echo "file_count=$(find apps/web/dist -type f | wc -l | tr -d ' ')" >> "$GITHUB_STEP_SUMMARY"
+        run: bash .github/scripts/verify-promoted-pages-artifact.sh apps/web/dist "${{ github.sha }}"
 
       - name: Setup Pages
         uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
