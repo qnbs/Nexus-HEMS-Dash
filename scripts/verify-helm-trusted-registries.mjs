@@ -5,7 +5,6 @@
  */
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import process from 'node:process';
 
@@ -60,22 +59,12 @@ assertIncludes(
   'digest-pinned frontend image',
 );
 
-const tmpValues = path.join(os.tmpdir(), 'nexus-hems-untrusted-values.yaml');
-fs.writeFileSync(
-  tmpValues,
-  `image:
-  trustedRegistries:
-    - ghcr.io/qnbs/
-  frontend:
-    repository: registry.example.com/malicious
-    tag: latest
-    pullPolicy: IfNotPresent
-  server:
-    repository: ghcr.io/qnbs/nexus-hems-server
-    tag: latest
-    pullPolicy: IfNotPresent
-`,
-);
-runHelm(['-f', tmpValues], { expectFail: true });
+fs.mkdirSync(verifyCacheDir, { recursive: true });
+const fixtureValues = path.join(chartDir, 'tests/fixtures/untrusted-frontend-values.yaml');
+if (!fs.existsSync(fixtureValues)) {
+  console.error(`Missing fixture: ${fixtureValues}`);
+  process.exit(1);
+}
+runHelm(['-f', fixtureValues], { expectFail: true });
 
 console.log('Helm trusted-registry verification passed.');
