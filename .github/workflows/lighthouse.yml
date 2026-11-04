@@ -7,7 +7,8 @@ on:
     branches: [main]
 
 # Read-only default; the lighthouse job grants PR-comment scope.
-permissions: read-all
+permissions:
+  contents: read
 
 concurrency:
   group: lighthouse-${{ github.ref }}

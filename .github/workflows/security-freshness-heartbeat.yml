@@ -12,7 +12,6 @@ on:
     branches: [main]
 
 permissions:
-  actions: read
   contents: read
 
 concurrency:
@@ -32,6 +31,9 @@ jobs:
   heartbeat:
     name: Scheduled security scan freshness
     runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
     if: >-
       github.event_name != 'workflow_run' ||
       (github.event.workflow_run.conclusion == 'success' &&

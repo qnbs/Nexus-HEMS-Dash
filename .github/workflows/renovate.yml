@@ -17,7 +17,8 @@ on:
           - 'false'
 
 # Read-only default; the renovate job grants write scopes explicitly.
-permissions: read-all
+permissions:
+  contents: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
