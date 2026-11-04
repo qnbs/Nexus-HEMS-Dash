@@ -11,7 +11,13 @@ On each matrix leg (frontend/server):
 3. **Push** — second `docker/build-push-action` with `push: true` and metadata tags (`type=sha`, `latest`, …).
 4. **Cosign** — signs `${{ matrix.image }}@${{ steps.push.outputs.digest }}` (published manifest digest).
 
-## Gap (why #392 stays open)
+## Remediation (PR pending)
+
+`container-publish.yml` promotes the **Grype-scanned** local tag (`${{ matrix.image }}:${{ github.sha }}`) to registry tags via `docker tag` + `docker push` — **no second `build-push-action` build**. Job summary records scanned image ID and published digest.
+
+**Closure criteria for #392:** one successful `main` publish run where Grype digest matches cosign `subject-digest` (and scanned image ID matches promoted manifest).
+
+## Gap (historical — pre-promotion fix)
 
 Grype and cosign operate on **different build invocations**. GHA layer cache usually makes them identical, but the workflow does not record or assert that the scanned image ID equals `steps.push.outputs.digest`. A cache miss, rebuild, or divergent tags would mean **green Grype ≠ guaranteed scanned digest published**.
 
@@ -31,9 +37,8 @@ Compare `docker inspect --format='{{.Id}}'` on the loaded image vs pushed digest
 
 ## Remediation options (future PR)
 
-1. **Single build + push by digest:** scan after push using digest reference (accepts brief window) **or**
-2. **Promote scanned artifact:** push the exact loaded image ID (no second build) **or**
-3. **Attestation linkage:** SLSA/provenance predicate includes both scan SARIF digest and image digest in one job output.
+1. ~~**Single build + push by digest**~~ — **implemented** in `container-publish.yml` (scan-then-promote).
+2. **Attestation linkage:** SLSA/provenance predicate includes scan SARIF digest and image digest in one job output (optional follow-up).
 
 Do not close #392 until one promotion path is implemented **and** evidenced on `main`.
 

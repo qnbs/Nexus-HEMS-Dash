@@ -96,21 +96,45 @@ jobs:
           severity-cutoff: critical
           output-format: sarif
 
-      - name: Push image to GHCR
-        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+      - name: Record scanned image identity
+        id: scanned
+        run: |
+          set -euo pipefail
+          ref="${{ matrix.image }}:${{ github.sha }}"
+          image_id="$(docker inspect --format='{{.Id}}' "$ref")"
+          echo "ref=${ref}" >> "$GITHUB_OUTPUT"
+          echo "image_id=${image_id}" >> "$GITHUB_OUTPUT"
+          {
+            echo "### Scanned artifact (${{ matrix.component }})"
+            echo "- ref: \`${ref}\`"
+            echo "- image ID: \`${image_id}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Push scanned image to GHCR (promote, no rebuild)
         id: push
-        with:
-          context: .
-          file: ${{ matrix.dockerfile }}
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          build-args: |
-            VCS_REF=${{ github.sha }}
-            BUILD_DATE=${{ steps.date.outputs.date }}
-            VERSION=${{ github.ref_name }}
-          cache-from: type=gha,scope=${{ matrix.component }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.component }}
+        run: |
+          set -euo pipefail
+          source_ref="${{ steps.scanned.outputs.ref }}"
+          mapfile -t tags <<< "${{ steps.meta.outputs.tags }}"
+          if [ "${#tags[@]}" -eq 0 ] || [ -z "${tags[0]}" ]; then
+            echo "::error::metadata-action produced no push tags"
+            exit 1
+          fi
+          digest=""
+          for tag in "${tags[@]}"; do
+            [ -z "$tag" ] && continue
+            docker tag "$source_ref" "$tag"
+            push_out="$(docker push "$tag" 2>&1)"
+            echo "$push_out"
+            if [ -z "$digest" ]; then
+              digest="$(printf '%s\n' "$push_out" | rg -o 'sha256:[a-f0-9]{64}' | tail -1 || true)"
+            fi
+          done
+          if [ -z "$digest" ]; then
+            digest="$(docker inspect --format='{{index .RepoDigests 0}}' "${tags[0]}" | cut -d@ -f2)"
+          fi
+          echo "digest=${digest}" >> "$GITHUB_OUTPUT"
+          echo "Promoted ${source_ref} (ID ${{ steps.scanned.outputs.image_id }}) → ${digest}" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Install cosign
         uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
