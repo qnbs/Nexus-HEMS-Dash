@@ -1,34 +1,61 @@
 #!/usr/bin/env bash
-# Verify the live GitHub Pages bundle embeds the expected VITE_BUILD_SHA (FUP-SMOKE-01).
+# Verify live GitHub Pages publishes the expected build-info.json manifest (FUP-SMOKE-01).
 set -euo pipefail
 
 page_url="${1:?page URL required}"
 expected_sha="${2:?expected full git sha required}"
-short_sha="${expected_sha:0:12}"
 
-html="$(curl -fsSL "${page_url}")"
-script_src="$(printf '%s' "${html}" | grep -Eo 'src="[^"]+/assets/[^"]+\.js"' | head -1 | sed 's/src="//;s/"$//')"
-if [ -z "${script_src}" ]; then
-  echo "::error::Could not locate main JS bundle in Pages HTML"
+if ! [[ "${expected_sha}" =~ ^[0-9a-fA-F]{40}$ ]]; then
+  echo "::error::EXPECTED_SHA must be a full 40-character git commit SHA"
   exit 1
 fi
 
-if [[ "${script_src}" == ./* ]]; then
-  bundle_url="${page_url%/}/${script_src#./}"
-else
-  bundle_url="${script_src}"
+manifest_url="${page_url%/}/build-info.json"
+echo "Fetching build manifest: ${manifest_url}"
+
+http_code="$(curl -sS -o /tmp/nexus-pages-build-info.json -w '%{http_code}' \
+  -H 'Accept: application/json' \
+  "${manifest_url}")"
+
+if [ "${http_code}" != "200" ]; then
+  echo "::error::build-info.json returned HTTP ${http_code} (expected 200)"
+  exit 1
 fi
 
-bundle="$(curl -fsSL "${bundle_url}")"
-if printf '%s' "${bundle}" | grep -q "${short_sha}"; then
-  echo "Pages bundle contains expected build SHA prefix ${short_sha}"
+content_type="$(curl -sSI "${manifest_url}" | awk -F': ' 'tolower($1)=="content-type"{print tolower($2); exit}' | tr -d '\r')"
+if [ -n "${content_type}" ] && [[ "${content_type}" != *"application/json"* ]] && [[ "${content_type}" != *"text/plain"* ]]; then
+  echo "::warning::Unexpected Content-Type for build-info.json: ${content_type}"
+fi
+
+manifest_git_sha="$(python3 - <<'PY'
+import json
+from pathlib import Path
+data = json.loads(Path("/tmp/nexus-pages-build-info.json").read_text(encoding="utf-8"))
+sha = data.get("gitSha")
+if not isinstance(sha, str) or not sha.strip():
+    raise SystemExit("missing gitSha")
+print(sha.strip())
+PY
+)"
+
+expected_lower="$(printf '%s' "${expected_sha}" | tr '[:upper:]' '[:lower:]')"
+manifest_lower="$(printf '%s' "${manifest_git_sha}" | tr '[:upper:]' '[:lower:]')"
+
+if [ "${manifest_lower}" = "${expected_lower}" ]; then
+  echo "Pages build-info.json gitSha matches expected commit"
   exit 0
 fi
 
-if printf '%s' "${bundle}" | grep -q "${expected_sha}"; then
-  echo "Pages bundle contains expected full build SHA"
+# Prefix match (manifest may store short SHA)
+if [ "${#manifest_lower}" -ge 12 ] && [[ "${expected_lower}" == "${manifest_lower}"* ]]; then
+  echo "Pages build-info.json gitSha prefix matches expected commit"
   exit 0
 fi
 
-echo "::error::Pages JS at ${bundle_url} does not contain expected SHA ${short_sha}"
+if [ "${#expected_lower}" -ge 12 ] && [ "${manifest_lower}" = "${expected_lower:0:12}" ]; then
+  echo "Pages build-info.json short gitSha matches expected commit prefix"
+  exit 0
+fi
+
+echo "::error::build-info.json gitSha '${manifest_git_sha}' does not match expected ${expected_sha}"
 exit 1
