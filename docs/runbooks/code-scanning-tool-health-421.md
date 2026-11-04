@@ -84,7 +84,7 @@ Maintainer ran **workflow_dispatch** after re-enabling **Security Full**. Outcom
 
 | Job | Result | Notes |
 | --- | --- | --- |
-| CodeQL | **failure** | SARIF rejected: *"CodeQL analyses from advanced configurations cannot be processed when the default setup is enabled"*. **Maintainer:** turn off GitHub **default** Code scanning setup for this repo so ADR-027 advanced workflow (`security-full.yml`) is the sole CodeQL ingest path. |
+| CodeQL | **failure** (dispatch `41905375510`; **resolved** 2026-11-04) | Maintainer disabled **default** setup, enabled **Advanced** (`codeql.yml`, PR #429). Duplicate CodeQL job removed from `security-full.yml` in consolidation PR. Re-run dispatch after merge. |
 | Gitleaks | **failure** | 11 findings — placeholder PEM in adapter forms, docs JSON examples, EEBUS test fixtures, HA `mqttPassword` field key (see `.gitleaksignore` / `.gitleaks.toml` fix PR). |
 | Semgrep OSS | success | SARIF upload step green (`continue-on-error` still advisory until upload failures are proven). |
 | Dependency audit, anti-trojan, branch-protection reminder | success | |
@@ -95,7 +95,7 @@ Log anchor: `gh run view 41905375510 --log-failed`.
 ### Stop-condition progress (#421)
 
 - [x] `Security Full` enabled + manual dispatch executed on current `main`.
-- [ ] CodeQL ingest: resolve **default vs advanced** setup conflict; confirm Tool status shows fresh analysis.
+- [x] CodeQL ingest: **default off / Advanced on** (`codeql.yml`); dedupe from `security-full.yml` pending merge.
 - [ ] Gitleaks: green on `main` after allowlist PR merges (no real secrets rotated — all documented placeholders).
 - [ ] Tool status UI review (maintainer).
 - [ ] Schedule/cron recovery (#387/#391) — separate track.
