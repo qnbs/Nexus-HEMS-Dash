@@ -299,6 +299,12 @@ jobs:
           echo "::error::Pages root returned HTTP ${code} (expected 200). See docs/runbooks/Pages-403-Remediation.md"
           exit 1
 
+      - name: Verify deployed bundle embeds expected build SHA
+        env:
+          PAGE_URL: https://qnbs.github.io/Nexus-HEMS-Dash/
+          EXPECTED_SHA: ${{ github.sha }}
+        run: bash .github/scripts/verify-pages-build-sha.sh "${PAGE_URL}" "${EXPECTED_SHA}"
+
   prune-deployments:
     # Auto-deploy creates one github-pages deployment per push, which pile up
     # (150+). After a successful deploy, keep only the newest few and delete the

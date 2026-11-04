@@ -41,6 +41,17 @@ describe('resolveControlAuthority', () => {
     expect(snapshot.denyReason).toBe('backend_ws');
   });
 
+  it('denies browser control in read-only mode', () => {
+    const snapshot = resolveControlAuthority({
+      backendMode: 'mock',
+      readOnly: true,
+      buildAllowsLive: true,
+      backendWsEnabled: false,
+    });
+    expect(snapshot.browserDirectControlAllowed).toBe(false);
+    expect(snapshot.denyReason).toBe('read_only');
+  });
+
   it('allows browser control only with live build acknowledgement and mock backend', () => {
     const snapshot = resolveControlAuthority({
       backendMode: 'mock',
@@ -78,5 +89,12 @@ describe('getBrowserControlAuthority runtime wiring', () => {
     setRuntimeBackendAdapterMode('live');
     expect(isBrowserDirectControlAllowed()).toBe(false);
     expect(getBrowserControlAuthority().denyReason).toBe('backend_live');
+  });
+
+  it('blocks commands when read-only mode is active', () => {
+    setRuntimeBackendReadOnly(true);
+    setRuntimeBackendAdapterMode('mock');
+    expect(isBrowserDirectControlAllowed()).toBe(false);
+    expect(getBrowserControlAuthority().denyReason).toBe('read_only');
   });
 });
