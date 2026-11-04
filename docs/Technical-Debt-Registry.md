@@ -916,6 +916,10 @@ advisory database for the specific IDs.
 | `undici ^7.28.0` | HTTP client security + correctness fixes |
 | `ws @^7 → >=7.5.11` | DoS fix (header / per-message-deflate handling) |
 | `dompurify >=3.4.12` | mXSS sanitizer-bypass fix |
+| `dompurify >=3.4.17` | Follow-on sanitizer hardening (#386 / #403 P0) |
+| `body-parser >=2.4.0` | Express transitive body parsing hardening (#386) |
+| `proxy-addr >=2.0.8` | `trust proxy` / forwarded-header parsing fix (#386) |
+| `@nexus-hems/api>zod >=4.6.6` | Scoped API workspace pin (global `zod` bump breaks ESLint/react-compiler) |
 | `ip-address >=10.3.1` | SSRF / IP parsing hardening (transitive audit HIGH) |
 | `qs >=6.15.2` | Prototype-pollution / resource-exhaustion fix |
 | `uuid >=11.1.1` | Consolidate on the hardened ESM-native line |
@@ -935,7 +939,9 @@ advisory database for the specific IDs.
 | `@rollup/plugin-terser >=0.4.5` | Align the terser plugin across the Rollup/Rolldown tree |
 | `flatted 3.4.2` | Force a single resolved version (de-dupe) |
 | `handlebars 4.7.9` | Force a single resolved version (de-dupe) |
+| `handlebars 4.7.10` | Grype critical source-tree finding cleared (#388); Storybook peer alignment |
 | `lodash 4.18.1`, `lodash-es 4.18.1` | Pin transitive lodash / lodash-es to one resolution |
+| `apps/web` Adapters chunk size-limit **92 kB** gzip (was 85 kB) | `VITE_BACKEND_WS` + adapter registry chunk growth ~90.8 kB on CI baseline; tracked until lazy-split or dead-code trim (#404 CI) |
 
 > Nested `parent>child` overrides (`npm>brace-expansion`, `npm>picomatch`,
 > `@lhci/cli>tmp`, `external-editor>tmp`) scope a pin to a specific dependency
