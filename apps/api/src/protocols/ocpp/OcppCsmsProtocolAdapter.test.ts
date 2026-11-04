@@ -2,7 +2,7 @@
  * OcppCsmsProtocolAdapter unit tests — real WebSocket client against ephemeral CSMS port.
  */
 
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import WebSocket from 'ws';
 import {
   createOcppCsmsAdapterFromEnv,
@@ -595,17 +595,56 @@ describe('OcppCsmsProtocolAdapter', () => {
       const second = await connectChargePoint(cappedPort, 'CP-CAP-2');
 
       const rejected = new WebSocket(`ws://127.0.0.1:${cappedPort}/CP-CAP-3`, 'ocpp2.0.1');
-      await new Promise<void>((resolve) => {
-        rejected.once('close', () => resolve());
-        rejected.once('error', () => resolve());
+      const rejectedCode = new Promise<number>((resolve, reject) => {
+        rejected.once('close', (code) => resolve(code));
+        rejected.once('error', reject);
       });
+      expect(await rejectedCode).toBe(1013);
 
       first.close();
-      await new Promise((resolve) => setTimeout(resolve, 30));
+      await new Promise<void>((resolve) => first.once('close', () => resolve()));
       const third = await connectChargePoint(cappedPort, 'CP-CAP-3');
 
       second.close();
       third.close();
+    });
+
+    it('disconnect completes within bounded timeout with active sessions', async () => {
+      const client = await connectChargePoint(cappedPort, 'CP-DISC');
+      const started = Date.now();
+      await capped.disconnect();
+      expect(Date.now() - started).toBeLessThan(7_000);
+      if (client.readyState !== WebSocket.CLOSED) {
+        client.terminate();
+      }
+    });
+  });
+
+  describe('live station allowlist at connect', () => {
+    const liveEnv = {
+      ADAPTER_MODE: 'live',
+      ALLOW_LIVE_HARDWARE: 'true',
+      OCPP_CSMS_STATION_ALLOWLIST: 'allowed-cp',
+    } as NodeJS.ProcessEnv;
+
+    it('closes with 1008 when charge point is not allowlisted', async () => {
+      vi.stubEnv('ADAPTER_MODE', liveEnv.ADAPTER_MODE as string);
+      vi.stubEnv('ALLOW_LIVE_HARDWARE', liveEnv.ALLOW_LIVE_HARDWARE as string);
+      vi.stubEnv('OCPP_CSMS_STATION_ALLOWLIST', liveEnv.OCPP_CSMS_STATION_ALLOWLIST as string);
+
+      const gated = new OcppCsmsProtocolAdapter({ id: 'gate-csms', port: 0, maxSessions: 4 });
+      await gated.connect();
+      const port = gated.getBoundPort() ?? 0;
+
+      const client = new WebSocket(`ws://127.0.0.1:${port}/not-allowed`, 'ocpp2.0.1');
+      const code = await new Promise<number>((resolve, reject) => {
+        client.once('close', (closeCode) => resolve(closeCode));
+        client.once('error', reject);
+      });
+      expect(code).toBe(1008);
+
+      await gated.disconnect();
+      vi.unstubAllEnvs();
     });
   });
 });

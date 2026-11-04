@@ -75,7 +75,21 @@ const OCPP_CALLERROR = 4;
 
 const HEARTBEAT_INTERVAL_S = 300;
 const OUTBOUND_TIMEOUT_MS = 10_000;
+/** Force-terminate peers that never finish the WS closing handshake after admission reject. */
+const ADMISSION_CLOSE_TERMINATE_MS = 5_000;
+/** Upper bound for graceful CSMS shutdown before `terminate()` on stragglers. */
+const DISCONNECT_CLOSE_TIMEOUT_MS = 5_000;
 const MAX_DLQ_LINES = 10_000;
+
+function closeWithBoundedTeardown(ws: WebSocket, code: number, reason: string): void {
+  const timer = setTimeout(() => {
+    if (ws.readyState !== WebSocket.CLOSED) {
+      ws.terminate();
+    }
+  }, ADMISSION_CLOSE_TERMINATE_MS);
+  ws.once('close', () => clearTimeout(timer));
+  ws.close(code, reason);
+}
 let dlqLineCount = 0;
 
 interface OutboundPending {
@@ -236,11 +250,12 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
         const pathParts = pathOnly.split('/').filter(Boolean);
         const chargePointId = pathParts.at(-1) ?? 'unknown-cp';
         if (resolveOcppStationAdmission(chargePointId) === 'rejected') {
-          ws.close(1008, 'Charge point not allowlisted');
+          closeWithBoundedTeardown(ws, 1008, 'Charge point not allowlisted');
           return;
         }
-        if (this.sessions.size >= this.config.maxSessions) {
-          ws.close(1013, 'CSMS session limit reached');
+        // Count every upgraded socket (including pending/rejected closes), not only admitted sessions.
+        if (wss.clients.size > this.config.maxSessions) {
+          closeWithBoundedTeardown(ws, 1013, 'CSMS session limit reached');
           return;
         }
         this.sessions.set(ws, {
@@ -260,7 +275,8 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
             const byteLength =
               typeof data === 'string' ? Buffer.byteLength(data, 'utf8') : (data as Buffer).length;
             if (byteLength > OCPP_MAX_WS_MESSAGE_BYTES) {
-              ws.close(1009, 'OCPP message too large');
+              closeWithBoundedTeardown(ws, 1009, 'OCPP message too large');
+              this.sessions.delete(ws);
               return;
             }
             const json: unknown = JSON.parse(raw);
@@ -314,16 +330,30 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
     }
     this.outboundPending.clear();
 
-    for (const ws of this.sessions.keys()) {
-      ws.close(1000, 'csms shutdown');
-    }
-    this.sessions.clear();
+    const wss = this.wss;
+    if (wss) {
+      for (const ws of [...wss.clients]) {
+        ws.close(1000, 'csms shutdown');
+      }
+      this.sessions.clear();
 
-    if (this.wss) {
-      await new Promise<void>((resolve) => {
-        this.wss!.close(() => resolve());
-      });
+      await Promise.race([
+        new Promise<void>((resolve) => {
+          wss.close(() => resolve());
+        }),
+        new Promise<void>((resolve) => {
+          setTimeout(resolve, DISCONNECT_CLOSE_TIMEOUT_MS);
+        }),
+      ]);
+
+      for (const ws of [...wss.clients]) {
+        if (ws.readyState !== WebSocket.CLOSED) {
+          ws.terminate();
+        }
+      }
       this.wss = null;
+    } else {
+      this.sessions.clear();
     }
     this.listening = false;
   }
@@ -421,7 +451,8 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
             interval: HEARTBEAT_INTERVAL_S,
             status: 'Rejected',
           });
-          ws.close(1008, 'Charge point not allowlisted');
+          this.sessions.delete(ws);
+          closeWithBoundedTeardown(ws, 1008, 'Charge point not allowlisted');
           break;
         }
         this.sendCallResult(ws, messageId, {
