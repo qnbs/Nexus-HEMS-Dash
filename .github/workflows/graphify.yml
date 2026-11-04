@@ -5,9 +5,10 @@ on:
     branches: [main]
   workflow_dispatch:
 
-# Minimal top-level permissions; each job declares the least privilege it needs.
-permissions:
-  contents: read
+# Scorecard Token-Permissions: explicit job scopes; workflow stays `{}` (no default
+# repo-wide token grants). Jobs declare `contents: read` (+ `actions: write` where
+# upload-artifact requires it). This is stricter than workflow-level `contents: read`.
+permissions: {}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -25,6 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      actions: write # upload-artifact / download-artifact
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -104,6 +106,7 @@ jobs:
     needs: generate-graph
     permissions:
       contents: read
+      actions: read # download-artifact from sibling job
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
