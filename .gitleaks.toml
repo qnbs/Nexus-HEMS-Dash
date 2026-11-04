@@ -26,8 +26,7 @@ paths = [
   '''\.woff2?$''',
   '''src/tests/''',
   '''\.env\.example$''',
-  '''docs/API-Reference\.md$''',
-  '''apps/api/src/protocols/eebus/EebusProtocolAdapter\.test\.ts$''',
+  '''scripts/gitleaks-canary/''',
 ]
 
 # Known false positives (placeholder text, i18n keys, config keys)
@@ -55,6 +54,8 @@ regexes = [
   '''FIXTURE_.*_AUTH''',
   '''ZmFrZQ==''',
   '''FAKE_.*_PEM''',
+  '''mqttPassword:\s*['\x27]your_mqtt_password_here['\x27]''',
+  '''placeholder=''-----BEGIN PRIVATE KEY-----''',
 ]
 
 # Fingerprints of verified false positives (placeholder PEM in form inputs)
@@ -88,15 +89,15 @@ description = "MQTT Broker Credentials"
 regex = '''(?i)mqtt[_\-]?(password|pass|secret|token)\s*[:=]\s*['"]?[^\s'"]{8,}['"]?'''
 tags = ["mqtt", "victron", "iot"]
 [rules.allowlist]
+regexTarget = "line"
 regexes = [
-  '''your_''',
-  '''your-''',
-  '''placeholder''',
-  '''example''',
   '''mqttUser\s*:''',
   '''mqttBrokerAuth''',
   '''MQTT_BROKER_AUTH_FIELD''',
   '''mqtt-credential-keys''',
+  '''=\s*your[_-]''',
+  '''=\s*["']?your[_-]''',
+  '''mqttPassword:\s*'your_mqtt_password_here' ''',
 ]
 
 [[rules]]
@@ -117,6 +118,7 @@ description = "EEBUS Private Key or Certificate"
 regex = '''-----BEGIN (RSA |EC )?PRIVATE KEY-----'''
 tags = ["eebus", "tls", "certificate"]
 [rules.allowlist]
+regexTarget = "line"
 regexes = [
   '''placeholder=''',
   '''placeholder="-----BEGIN''',
@@ -153,12 +155,10 @@ description = "xAI API Key"
 regex = '''xai-[a-zA-Z0-9]{20,}'''
 tags = ["api", "ai", "xai"]
 
-# ─── Allowlist rules for test/demo data ─────────────────────────
+# ─── Demo/test placeholder assignments (narrow; does not blanket-ignore secrets) ─
 
 [[rules]]
 id = "demo-data-allowlist"
-description = "Allow demo/test placeholder values"
-regex = '''(?i)(demo|test|example|placeholder|dummy)[_\-]?(api[_\-]?)?(key|token|secret)\s*[:=]\s*['"]?(demo|test|example|placeholder|dummy|xxx|your)[^\s'"]*['"]?'''
-[rules.allowlist]
-regexTarget = "match"
-regexes = ['''.*''']
+description = "Allow obvious demo/test placeholder assignments only"
+regex = '''(?i)(demo|test|example|placeholder|dummy)[_\-]?(api[_\-]?)?(key|token|secret)\s*[:=]\s*['"]?(demo|test|example|placeholder|dummy|xxx|your)[^\s'"]{0,32}['"]?'''
+tags = ["allowlist", "demo"]

@@ -1,0 +1,258 @@
+#!/usr/bin/env node
+/**
+ * Gitleaks integrity verification (#432). Uses a generated config identical to
+ * `.gitleaks.toml` except the canary fixture path exclusion is removed.
+ */
+import { spawnSync } from 'node:child_process';
+import fs from 'node:fs';
+import path from 'node:path';
+import process from 'node:process';
+
+const repoRoot = process.cwd();
+const mainConfigPath = path.join(repoRoot, '.gitleaks.toml');
+const canaryDir = path.join(repoRoot, 'scripts/gitleaks-canary');
+const probeRoot = path.join(repoRoot, '.cache/gitleaks-probes');
+const integrityConfigPath = path.join(probeRoot, '.gitleaks-integrity.generated.toml');
+
+/** Pin matches CI wrapper / security-full probe install. */
+const GITLEAKS_DOCKER = 'ghcr.io/gitleaks/gitleaks:v8.22.1';
+
+function run(command, args, options = {}) {
+  return spawnSync(command, args, {
+    cwd: repoRoot,
+    encoding: 'utf8',
+    ...options,
+  });
+}
+
+function ensureIntegrityConfig() {
+  fs.mkdirSync(probeRoot, { recursive: true });
+  const main = fs.readFileSync(mainConfigPath, 'utf8');
+  const withoutCanaryPath = main.replace(
+    /\n\s*'''scripts\/gitleaks-canary\/''',\n/,
+    '\n',
+  );
+  if (withoutCanaryPath === main) {
+    console.error('Integrity config generation failed: canary path entry not found.');
+    process.exit(1);
+  }
+  fs.writeFileSync(integrityConfigPath, withoutCanaryPath);
+}
+
+function hostToContainerSource(hostPath) {
+  const resolved = path.resolve(hostPath);
+  const root = path.resolve(repoRoot);
+  if (resolved === root) return '/repo';
+  if (resolved.startsWith(`${root}${path.sep}`)) {
+    return `/repo${resolved.slice(root.length)}`;
+  }
+  return resolved;
+}
+
+function resolveGitleaksRunner() {
+  const local = run('gitleaks', ['version'], { stdio: 'pipe' });
+  if (!local.error && local.status === 0) {
+    return { mode: 'local' };
+  }
+  const docker = run('docker', ['version'], { stdio: 'pipe' });
+  if (!docker.error && docker.status === 0) {
+    return { mode: 'docker' };
+  }
+  if (process.env.GITHUB_ACTIONS === 'true') {
+    console.error('Gitleaks CLI and Docker unavailable — cannot run integrity probes.');
+    process.exit(1);
+  }
+  console.warn('Skipping integrity checks (no gitleaks/docker locally).');
+  process.exit(0);
+}
+
+const gitleaksRunner = resolveGitleaksRunner();
+
+function gitleaksReport(sourcePath, reportPath) {
+  const resolvedSource = path.resolve(sourcePath);
+  const resolvedReport = path.resolve(reportPath);
+  fs.mkdirSync(path.dirname(resolvedReport), { recursive: true });
+
+  const args = [
+    'detect',
+    '--source',
+    resolvedSource,
+    '--config',
+    integrityConfigPath,
+    '--no-git',
+    '--report-format',
+    'json',
+    '--report-path',
+    resolvedReport,
+    '--exit-code',
+    '1',
+  ];
+
+  const runner = gitleaksRunner;
+  let status;
+  if (runner.mode === 'local') {
+    const result = run('gitleaks', args, { stdio: 'pipe' });
+    if (result.error) {
+      console.error(result.error.message);
+      process.exit(1);
+    }
+    status = result.status ?? 1;
+  } else {
+    const containerReport = hostToContainerSource(resolvedReport);
+    const dockerArgs = [
+      'detect',
+      '--source',
+      hostToContainerSource(resolvedSource),
+      '--config',
+      hostToContainerSource(integrityConfigPath),
+      '--no-git',
+      '--report-format',
+      'json',
+      '--report-path',
+      containerReport,
+      '--exit-code',
+      '1',
+    ];
+    const result = run(
+      'docker',
+      ['run', '--rm', '-v', `${repoRoot}:/repo`, '-w', '/repo', GITLEAKS_DOCKER, ...dockerArgs],
+      { stdio: 'pipe' },
+    );
+    if (result.error) {
+      console.error(result.error.message);
+      process.exit(1);
+    }
+    status = result.status ?? 1;
+  }
+
+  if (!fs.existsSync(resolvedReport)) {
+    console.error('Gitleaks did not produce a JSON report (scanner error).');
+    process.exit(1);
+  }
+
+  let findings;
+  try {
+    findings = JSON.parse(fs.readFileSync(resolvedReport, 'utf8'));
+  } catch {
+    console.error('Failed to parse Gitleaks JSON report.');
+    process.exit(1);
+  }
+
+  if (!Array.isArray(findings)) {
+    console.error('Unexpected Gitleaks JSON shape.');
+    process.exit(1);
+  }
+
+  return { status, findings };
+}
+
+function expectFinding(label, sourceDir, expected) {
+  const reportFile = path.join(sourceDir, '.gitleaks-report.json');
+  const { status, findings } = gitleaksReport(sourceDir, reportFile);
+  if (status === 0 && expected.length > 0) {
+    console.error(`${label}: expected leaks but scan was clean.`);
+    process.exit(1);
+  }
+  if (status !== 0 && expected.length === 0) {
+    console.error(`${label}: expected clean scan but Gitleaks exited ${status}.`);
+    console.error(JSON.stringify(findings, null, 2));
+    process.exit(1);
+  }
+
+  for (const exp of expected) {
+    const allowedRules = Array.isArray(exp.ruleId) ? exp.ruleId : [exp.ruleId];
+    const hit = findings.some((f) => {
+      const file = (f.File ?? f.file ?? '').replaceAll('\\', '/');
+      const rule = f.RuleID ?? f.ruleID ?? f.RuleId ?? '';
+      return file.endsWith(exp.fileSuffix) && allowedRules.includes(rule);
+    });
+    if (!hit) {
+      console.error(
+        `${label}: missing expected finding ${allowedRules.join('|')} in *${exp.fileSuffix}`,
+      );
+      console.error(JSON.stringify(findings, null, 2));
+      process.exit(1);
+    }
+  }
+
+  if (expected.length === 0 && findings.length > 0) {
+    console.error(`${label}: unexpected findings:`);
+    console.error(JSON.stringify(findings, null, 2));
+    process.exit(1);
+  }
+
+  console.log(`${label}: OK (${expected.length ? `${expected.length} expected finding(s)` : 'clean'})`);
+}
+
+function readCanary(name) {
+  const filePath = path.join(canaryDir, name);
+  if (!fs.existsSync(filePath)) {
+    console.error(`Missing canary fixture: ${name}`);
+    process.exit(1);
+  }
+  return fs.readFileSync(filePath, 'utf8');
+}
+
+function freshProbeDir(prefix) {
+  fs.mkdirSync(probeRoot, { recursive: true });
+  return fs.mkdtempSync(path.join(probeRoot, prefix));
+}
+
+if (!fs.existsSync(canaryDir)) {
+  console.error('Missing scripts/gitleaks-canary/ directory.');
+  process.exit(1);
+}
+
+ensureIntegrityConfig();
+
+// Positive: docs path restored (no whole-file ignore) + Tibber canary
+const docsProbe = freshProbeDir('docs-');
+const docsRel = path.join(docsProbe, 'docs', 'API-Reference.md');
+fs.mkdirSync(path.dirname(docsRel), { recursive: true });
+fs.writeFileSync(
+  docsRel,
+  `${fs.readFileSync(path.join(repoRoot, 'docs/API-Reference.md'), 'utf8')}\n${readCanary('docs-api-append.env')}`,
+);
+expectFinding('Docs API-Reference Tibber probe', docsProbe, [
+  { fileSuffix: 'docs/API-Reference.md', ruleId: ['tibber-api-token', 'generic-api-key'] },
+]);
+
+// Positive: EEBUS test path + MQTT substring must still detect
+const eebusProbe = freshProbeDir('eebus-');
+const eebusRel = path.join(
+  eebusProbe,
+  'apps/api/src/protocols/eebus/EebusProtocolAdapter.test.ts',
+);
+fs.mkdirSync(path.dirname(eebusRel), { recursive: true });
+fs.writeFileSync(
+  eebusRel,
+  `${fs.readFileSync(path.join(repoRoot, 'apps/api/src/protocols/eebus/EebusProtocolAdapter.test.ts'), 'utf8')}\n${readCanary('eebus-test-append.env')}`,
+);
+expectFinding('EEBUS test MQTT probe', eebusProbe, [
+  { fileSuffix: 'apps/api/src/protocols/eebus/EebusProtocolAdapter.test.ts', ruleId: 'mqtt-credentials' },
+]);
+
+// Positive: OpenAI-style marker in isolated copy (not under canary allowlist path)
+const openAiProbe = freshProbeDir('openai-');
+fs.writeFileSync(path.join(openAiProbe, 'probe.env'), readCanary('openai-canary.env'));
+expectFinding('Groq API marker probe', openAiProbe, [
+  { fileSuffix: 'probe.env', ruleId: 'groq-api-key' },
+]);
+
+// Negative: HA colon placeholder
+const haSafeProbe = freshProbeDir('ha-safe-');
+fs.writeFileSync(
+  path.join(haSafeProbe, 'HaSafe.ts'),
+  readCanary('ha-mqtt-placeholder.fixture'),
+);
+expectFinding('HA mqttPassword colon placeholder', haSafeProbe, []);
+
+// Negative: EEBUS form placeholder PEM syntax
+const eebusSafeProbe = freshProbeDir('eebus-safe-');
+fs.writeFileSync(
+  path.join(eebusSafeProbe, 'AdapterConfigEebusFields.tsx'),
+  readCanary('eebus-form-placeholder.fixture'),
+);
+expectFinding('EEBUS placeholder= PEM syntax', eebusSafeProbe, []);
+
+console.log('Gitleaks integrity verification passed.');

@@ -41,7 +41,7 @@ Comprehensive SAST, secret detection, supply-chain, and repository-hardening gat
 
 - **Do not commit real secrets.**
 - Rotate the exposed credential immediately.
-- If the match is a false positive (e.g., a test fixture), add an allowlist entry in `.gitleaks.toml` and document it.
+- If the match is a false positive (e.g., a test fixture), add a **line-specific** entry in `.gitleaksignore` and document it in `docs/runbooks/gitleaks-integrity-432.md`. Avoid whole-file path exclusions in `.gitleaks.toml`.
 
 ### CodeQL fails on SARIF upload (default setup enabled)
 
@@ -67,7 +67,7 @@ See [code-scanning-tool-health-421.md](code-scanning-tool-health-421.md) §7.
 
 - **Do not commit real secrets.**
 - Rotate the exposed credential immediately.
-- If the match is a false positive (e.g., a test fixture), add an allowlist entry in `.gitleaks.toml` and document it.
+- If the match is a false positive (e.g., a test fixture), add a **line-specific** entry in `.gitleaksignore` and document it in `docs/runbooks/gitleaks-integrity-432.md`. Avoid whole-file path exclusions in `.gitleaks.toml`.
 
 ### Semgrep reports an issue
 

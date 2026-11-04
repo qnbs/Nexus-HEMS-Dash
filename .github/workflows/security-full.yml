@@ -42,6 +42,15 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITLEAKS_CONFIG: .gitleaks.toml
 
+      - name: Install Gitleaks CLI (integrity probes)
+        run: |
+          curl -sSfL https://github.com/gitleaks/gitleaks/releases/download/v8.22.1/gitleaks_8.22.1_linux_x64.tar.gz | tar xz -C /tmp
+          sudo install -m 755 /tmp/gitleaks /usr/local/bin/gitleaks
+          gitleaks version
+
+      - name: Verify Gitleaks detection integrity (#432)
+        run: node scripts/verify-gitleaks-integrity.mjs
+
   # ════════════════════════════════════════════════════════════════
   #  3. Semgrep — SAST Rules
   # ════════════════════════════════════════════════════════════════

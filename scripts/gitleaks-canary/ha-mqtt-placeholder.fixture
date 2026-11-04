@@ -1,0 +1,1 @@
+export const settings = { mqttPassword: 'your_mqtt_password_here' };
