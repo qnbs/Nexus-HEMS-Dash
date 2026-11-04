@@ -9,6 +9,8 @@
 | Frontend | `…-hems-dash:898162f…` | `sha256:163d28a356e1903339c0292eb9ac8103257a86ec7e749cdaea249e2c11fa94bd` |
 | Server | `…-hems-server:898162f…` | `sha256:ff16ce46d100eb8587c8a79d11ea17a407fa204bf31d59c7a685784364e09a0b` |
 
+**Follow-up @ `3de2b5d`:** run [`41861932895`](https://github.com/qnbs/Nexus-HEMS-Dash/actions/runs/41861932895) — frontend `sha256:63c9409846d4a44aac4b839a600f7f43203466247c45a5d7408e35d52dc5cc18`, server `sha256:2bab5ccd1d8642c24726a21bf74d83b8772a9eed5ad081ab79c8203b27128353`.
+
 No second `build-push-action` after Grype. Grype’s stereoscope “digest” log line may differ from the registry manifest hash (Syft artifact ID vs OCI manifest); push/cosign/SLSA all reference the **same** manifest digest above.
 
 Copy for issues: `/opt/cursor/artifacts/container-provenance-evidence-392.md` (agent run artifact).
@@ -55,4 +57,4 @@ Do not close #392 until one promotion path is implemented **and** evidenced on `
 
 ## Pages vs container
 
-GitHub Pages deploy may rebuild the SPA independently (`deploy.yml`). `build-info.json` proves **source SHA** on Pages, not OCI digest parity with GHCR. Treat Pages and GHCR provenance separately.
+GitHub Pages deploy promotes the CI `build` artifact (`docs/runbooks/pages-ci-artifact-promotion-392.md`). GHCR uses scan-then-promote in `container-publish.yml`. `build-info.json` proves **source SHA** on Pages; GHCR uses OCI digest + cosign/SLSA.

@@ -22,5 +22,7 @@
 
 ## After batch merge
 
-- Re-run Container Publish on `main` and append digest evidence to `docs/runbooks/container-image-provenance-392.md` / #392.
-- Do not bulk-merge remaining bot PRs without per-PR CI on latest `main`.
+- Container promotion evidenced on `898162f` / `3de2b5d` — see `container-image-provenance-392.md`.
+- Close superseded Dependabot PRs **#380–#384** on GitHub when still open (content on `main` via #407).
+- **#385** merged via #409; close Dependabot PR if still open.
+- **#373** — close as superseded by #402 runbooks unless revived manually.
