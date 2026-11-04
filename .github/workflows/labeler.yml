@@ -1,7 +1,10 @@
 name: PR Labeler
 
+# Use pull_request (not pull_request_target) so repository Actions-policy / ruleset
+# "Restrict events" passes without a pull_request_target exception (GH policy Dec 2026).
+# Fork PRs may not receive auto-labels; see docs/runbooks/ruleset-hardening-proposal-15007889.md.
 on:
-  pull_request_target:
+  pull_request:
     types: [opened, synchronize, reopened]
 
 permissions:

@@ -30,6 +30,17 @@
 
 Export current ruleset JSON from GitHub UI before edits; restore prior JSON if release or hotfix velocity is blocked.
 
+## Actions policy — `pull_request_target` (2026-12-02)
+
+GitHub rulesets can include **Actions policies → Restrict events**. If evaluation fails with *Configure an Actions policy* for `pull_request_target`:
+
+| Approach | When |
+| --- | --- |
+| **Preferred (repo)** | Use `pull_request` in workflows that do not need base-branch secrets — e.g. `.github/workflows/labeler.yml` (auto-label). |
+| **Maintainer-only** | Rules → ruleset **15007889** → **Actions policies** → allow `pull_request_target` for a named workflow (only if fork PR labeling with elevated context is required). See [GitHub guidance](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/managing-github-actions-settings-for-a-repository#managing-github-actions-permissions-for-your-repository). |
+
+Do not re-introduce `pull_request_target` without a documented threat model (untrusted fork code + write token).
+
 ## Out of scope for agents
 
 Cloud agents must **not** change ruleset settings without explicit maintainer authorization.
