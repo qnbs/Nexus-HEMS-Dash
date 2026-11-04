@@ -96,8 +96,8 @@ Log anchor: `gh run view 41905375510 --log-failed`.
 
 - [x] `Security Full` enabled + manual dispatch executed on current `main`.
 - [x] CodeQL ingest: **default off / Advanced on** (`codeql.yml`); dedupe from `security-full.yml` pending merge.
-- [ ] Gitleaks: green on `main` after allowlist PR merges (no real secrets rotated — all documented placeholders).
-- [ ] Tool status UI review (maintainer).
+- [x] Gitleaks: green on `main` after **#429** (`b8d7246`).
+- [ ] Tool status UI: confirm Scorecard + Trivy rows after **#431** runs `41909771826` / `41909772215` on `5951aef`.
 - [ ] Schedule/cron recovery (#387/#391) — separate track.
 
 ## 8. Maintainer Security overview (screenshot 2026-11-04 ~21:20 CET)
