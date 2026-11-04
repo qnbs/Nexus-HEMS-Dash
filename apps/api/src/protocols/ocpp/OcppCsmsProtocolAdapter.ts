@@ -6,10 +6,12 @@
  * MeterValues / TransactionEvent telemetry to role-tagged UnifiedEnergyDatapoint
  * values for the EventBus.
  *
- * Env (live mode only):
- *   OCPP_CSMS_PORT=9000          — enables gateway when set (default path /ocpp)
+ * Env (SP0 opt-in — FUP-OCPP-01):
+ *   OCPP_CSMS_ENABLE_SP0=true    — required with OCPP_CSMS_PORT to bind plain WS
+ *   OCPP_CSMS_PORT=9000          — listen port (default path /ocpp)
  *   OCPP_CSMS_HOST=0.0.0.0       — bind address (default 0.0.0.0)
  *   OCPP_CSMS_PATH=/ocpp         — WebSocket HTTP upgrade path
+ *   OCPP_CSMS_MAX_SESSIONS=32    — concurrent charge-point connections cap
  *
  * Security: SP0 (plain WS) only in this pass; SP3 mTLS tracked as HIGH-12.
  */
@@ -35,6 +37,12 @@ import {
   OCPP_MAX_WS_MESSAGE_BYTES,
   resolveOcppStationAdmission,
 } from '../../config/ocpp-csms-admission.js';
+import {
+  isOcppCsmsSp0Enabled,
+  normalizeOcppCsmsMaxSessions,
+  OCPP_CSMS_DEFAULT_MAX_SESSIONS,
+  resolveOcppCsmsMaxSessions,
+} from '../../config/ocpp-csms-sp0-enable.js';
 import { recordAdapterDlq, recordAdapterError } from '../../middleware/adapter-metrics.js';
 import { API_RUNTIME_DIR, DEAD_LETTER_QUEUE_PATH } from '../../runtime-paths.js';
 import type {
@@ -67,7 +75,21 @@ const OCPP_CALLERROR = 4;
 
 const HEARTBEAT_INTERVAL_S = 300;
 const OUTBOUND_TIMEOUT_MS = 10_000;
+/** Force-terminate peers that never finish the WS closing handshake after admission reject. */
+const ADMISSION_CLOSE_TERMINATE_MS = 5_000;
+/** Upper bound for graceful CSMS shutdown before `terminate()` on stragglers. */
+const DISCONNECT_CLOSE_TIMEOUT_MS = 5_000;
 const MAX_DLQ_LINES = 10_000;
+
+function closeWithBoundedTeardown(ws: WebSocket, code: number, reason: string): void {
+  const timer = setTimeout(() => {
+    if (ws.readyState !== WebSocket.CLOSED) {
+      ws.terminate();
+    }
+  }, ADMISSION_CLOSE_TERMINATE_MS);
+  ws.once('close', () => clearTimeout(timer));
+  ws.close(code, reason);
+}
 let dlqLineCount = 0;
 
 interface OutboundPending {
@@ -148,6 +170,7 @@ export interface OcppCsmsProtocolAdapterConfig {
   host?: string;
   port: number;
   path?: string;
+  maxSessions?: number;
 }
 
 interface DLQEntry {
@@ -171,7 +194,9 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
   readonly id: string;
   readonly protocol: ProtocolType = 'ocpp';
 
-  private readonly config: Required<Pick<OcppCsmsProtocolAdapterConfig, 'host' | 'path'>> &
+  private readonly config: Required<
+    Pick<OcppCsmsProtocolAdapterConfig, 'host' | 'path' | 'maxSessions'>
+  > &
     OcppCsmsProtocolAdapterConfig;
   private wss: WebSocketServer | null = null;
   private listening = false;
@@ -187,6 +212,10 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
       ...config,
       host: config.host ?? '0.0.0.0',
       path: config.path ?? '/ocpp',
+      maxSessions:
+        config.maxSessions === undefined
+          ? OCPP_CSMS_DEFAULT_MAX_SESSIONS
+          : normalizeOcppCsmsMaxSessions(config.maxSessions, OCPP_CSMS_DEFAULT_MAX_SESSIONS),
     };
     this.id = config.id;
   }
@@ -213,11 +242,20 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
       });
 
       wss.on('connection', (ws, req) => {
+        ws.on('error', () => {
+          // Admission may close before handlers attach; avoid unhandled 'error'.
+        });
+
         const pathOnly = (req.url ?? '/').split('?')[0] ?? '/';
         const pathParts = pathOnly.split('/').filter(Boolean);
         const chargePointId = pathParts.at(-1) ?? 'unknown-cp';
         if (resolveOcppStationAdmission(chargePointId) === 'rejected') {
-          ws.close(1008, 'Charge point not allowlisted');
+          closeWithBoundedTeardown(ws, 1008, 'Charge point not allowlisted');
+          return;
+        }
+        // Count every upgraded socket (including pending/rejected closes), not only admitted sessions.
+        if (wss.clients.size > this.config.maxSessions) {
+          closeWithBoundedTeardown(ws, 1013, 'CSMS session limit reached');
           return;
         }
         this.sessions.set(ws, {
@@ -237,7 +275,8 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
             const byteLength =
               typeof data === 'string' ? Buffer.byteLength(data, 'utf8') : (data as Buffer).length;
             if (byteLength > OCPP_MAX_WS_MESSAGE_BYTES) {
-              ws.close(1009, 'OCPP message too large');
+              closeWithBoundedTeardown(ws, 1009, 'OCPP message too large');
+              this.sessions.delete(ws);
               return;
             }
             const json: unknown = JSON.parse(raw);
@@ -282,6 +321,10 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
   }
 
   async disconnect(): Promise<void> {
+    if (!this.wss && !this.listening) {
+      return;
+    }
+
     this.emitter.emit('destroy');
     this.emitter.removeAllListeners();
 
@@ -291,16 +334,30 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
     }
     this.outboundPending.clear();
 
-    for (const ws of this.sessions.keys()) {
-      ws.close(1000, 'csms shutdown');
-    }
-    this.sessions.clear();
+    const wss = this.wss;
+    if (wss) {
+      for (const ws of [...wss.clients]) {
+        ws.close(1000, 'csms shutdown');
+      }
+      this.sessions.clear();
 
-    if (this.wss) {
+      let shutdownTimer: ReturnType<typeof setTimeout> | undefined;
       await new Promise<void>((resolve) => {
-        this.wss!.close(() => resolve());
+        shutdownTimer = setTimeout(resolve, DISCONNECT_CLOSE_TIMEOUT_MS);
+        wss.close(() => {
+          if (shutdownTimer) clearTimeout(shutdownTimer);
+          resolve();
+        });
       });
+
+      for (const ws of [...wss.clients]) {
+        if (ws.readyState !== WebSocket.CLOSED) {
+          ws.terminate();
+        }
+      }
       this.wss = null;
+    } else {
+      this.sessions.clear();
     }
     this.listening = false;
   }
@@ -398,7 +455,8 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
             interval: HEARTBEAT_INTERVAL_S,
             status: 'Rejected',
           });
-          ws.close(1008, 'Charge point not allowlisted');
+          this.sessions.delete(ws);
+          closeWithBoundedTeardown(ws, 1008, 'Charge point not allowlisted');
           break;
         }
         this.sendCallResult(ws, messageId, {
@@ -817,6 +875,7 @@ export class OcppCsmsProtocolAdapter implements IProtocolAdapter, IProtocolComma
 export function createOcppCsmsAdapterFromEnv(
   env: NodeJS.ProcessEnv = process.env,
 ): OcppCsmsProtocolAdapter | null {
+  if (!isOcppCsmsSp0Enabled(env)) return null;
   const portRaw = env.OCPP_CSMS_PORT?.trim();
   if (!portRaw) return null;
   const port = Number(portRaw);
@@ -827,6 +886,7 @@ export function createOcppCsmsAdapterFromEnv(
     host: env.OCPP_CSMS_HOST?.trim() || '0.0.0.0',
     port,
     path: env.OCPP_CSMS_PATH?.trim() || '/ocpp',
+    maxSessions: resolveOcppCsmsMaxSessions(env),
   });
 }
 

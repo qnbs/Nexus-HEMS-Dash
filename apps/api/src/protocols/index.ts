@@ -470,7 +470,7 @@ export async function startProtocolAdapters(eventBus: EventBus): Promise<void> {
 
   // -------------------------------------------------------------------------
   // OCPP 2.1 CSMS Gateway (WebSocket server for charge points)
-  // Enable via env: OCPP_CSMS_PORT=9000
+  // Enable via env: OCPP_CSMS_ENABLE_SP0=true + OCPP_CSMS_PORT=9000
   // -------------------------------------------------------------------------
   const ocppCsmsAdapter = createOcppCsmsAdapterFromEnv();
   if (ocppCsmsAdapter) {

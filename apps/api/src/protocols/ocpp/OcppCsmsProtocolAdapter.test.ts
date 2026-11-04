@@ -2,7 +2,7 @@
  * OcppCsmsProtocolAdapter unit tests — real WebSocket client against ephemeral CSMS port.
  */
 
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import WebSocket from 'ws';
 import {
   createOcppCsmsAdapterFromEnv,
@@ -192,9 +192,20 @@ describe('OcppCsmsProtocolAdapter', () => {
     expect(createOcppCsmsAdapterFromEnv({})).toBeNull();
   });
 
-  it('createOcppCsmsAdapterFromEnv builds adapter from env', () => {
+  it('createOcppCsmsAdapterFromEnv returns null when SP0 is not opted in', () => {
+    expect(
+      createOcppCsmsAdapterFromEnv({
+        OCPP_CSMS_PORT: '9000',
+        OCPP_CSMS_ADAPTER_ID: 'csms-edge',
+      }),
+    ).toBeNull();
+  });
+
+  it('createOcppCsmsAdapterFromEnv builds adapter when SP0 is opted in', () => {
     const a = createOcppCsmsAdapterFromEnv({
+      ADAPTER_MODE: 'mock',
       OCPP_CSMS_PORT: '9000',
+      OCPP_CSMS_ENABLE_SP0: 'true',
       OCPP_CSMS_ADAPTER_ID: 'csms-edge',
     });
     expect(a?.id).toBe('csms-edge');
@@ -563,5 +574,82 @@ describe('OcppCsmsProtocolAdapter', () => {
     expect(result.success).toBe(false);
 
     client.close();
+  });
+
+  describe('session admission cap', () => {
+    let capped: OcppCsmsProtocolAdapter;
+    let cappedPort: number;
+
+    beforeEach(async () => {
+      capped = new OcppCsmsProtocolAdapter({ id: 'cap-csms', port: 0, maxSessions: 2 });
+      await capped.connect();
+      cappedPort = capped.getBoundPort() ?? 0;
+    });
+
+    afterEach(async () => {
+      await capped.disconnect();
+    });
+
+    it('accepts up to maxSessions then rejects additional connections', async () => {
+      const first = await connectChargePoint(cappedPort, 'CP-CAP-1');
+      const second = await connectChargePoint(cappedPort, 'CP-CAP-2');
+
+      const rejected = new WebSocket(`ws://127.0.0.1:${cappedPort}/CP-CAP-3`, 'ocpp2.0.1');
+      const rejectedCode = new Promise<number>((resolve, reject) => {
+        rejected.once('close', (code) => resolve(code));
+        rejected.once('error', reject);
+      });
+      expect(await rejectedCode).toBe(1013);
+      await new Promise<void>((resolve) => {
+        if (rejected.readyState === WebSocket.CLOSED) resolve();
+        else rejected.once('close', () => resolve());
+      });
+
+      first.close();
+      await new Promise<void>((resolve) => first.once('close', () => resolve()));
+      const third = await connectChargePoint(cappedPort, 'CP-CAP-3');
+      expect(third.readyState).toBe(WebSocket.OPEN);
+
+      second.close();
+      third.close();
+    });
+
+    it('disconnect completes within bounded timeout with active sessions', async () => {
+      const client = await connectChargePoint(cappedPort, 'CP-DISC');
+      const started = Date.now();
+      await capped.disconnect();
+      expect(Date.now() - started).toBeLessThan(7_000);
+      if (client.readyState !== WebSocket.CLOSED) {
+        client.terminate();
+      }
+    });
+  });
+
+  describe('live station allowlist at connect', () => {
+    const liveEnv = {
+      ADAPTER_MODE: 'live',
+      ALLOW_LIVE_HARDWARE: 'true',
+      OCPP_CSMS_STATION_ALLOWLIST: 'allowed-cp',
+    } as NodeJS.ProcessEnv;
+
+    it('closes with 1008 when charge point is not allowlisted', async () => {
+      vi.stubEnv('ADAPTER_MODE', liveEnv.ADAPTER_MODE as string);
+      vi.stubEnv('ALLOW_LIVE_HARDWARE', liveEnv.ALLOW_LIVE_HARDWARE as string);
+      vi.stubEnv('OCPP_CSMS_STATION_ALLOWLIST', liveEnv.OCPP_CSMS_STATION_ALLOWLIST as string);
+
+      const gated = new OcppCsmsProtocolAdapter({ id: 'gate-csms', port: 0, maxSessions: 4 });
+      await gated.connect();
+      const port = gated.getBoundPort() ?? 0;
+
+      const client = new WebSocket(`ws://127.0.0.1:${port}/not-allowed`, 'ocpp2.0.1');
+      const code = await new Promise<number>((resolve, reject) => {
+        client.once('close', (closeCode) => resolve(closeCode));
+        client.once('error', reject);
+      });
+      expect(code).toBe(1008);
+
+      await gated.disconnect();
+      vi.unstubAllEnvs();
+    });
   });
 });
