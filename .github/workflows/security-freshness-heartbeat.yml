@@ -40,6 +40,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Check SBOM scheduled freshness
+        continue-on-error: ${{ github.event_name == 'workflow_run' }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: bash .github/scripts/security-scan-freshness.sh sbom-scan.yml "${{ env.MAX_SBOM_SCHEDULE_STALE_DAYS }}" schedule
@@ -53,7 +54,7 @@ jobs:
 
       - name: Check Scorecard scheduled freshness
         if: always()
-        continue-on-error: true
+        continue-on-error: ${{ github.event_name == 'workflow_run' }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: bash .github/scripts/security-scan-freshness.sh scorecard.yml "${{ env.MAX_SCORECARD_SCHEDULE_STALE_DAYS }}" schedule

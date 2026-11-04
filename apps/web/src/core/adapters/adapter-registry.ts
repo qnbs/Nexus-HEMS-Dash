@@ -263,9 +263,8 @@ import { EEBUSAdapter } from './EEBUSAdapter';
 import { EvccAdapter } from './EvccAdapter';
 import type { KNXAdapterConfig } from './KNXAdapter';
 import { KNXAdapter } from './KNXAdapter';
+import { createLazyEnergyAdapter } from './lazy-energy-adapter';
 import { ModbusSunSpecAdapter } from './ModbusSunSpecAdapter';
-import type { OCPPAdapterConfig } from './OCPP21Adapter';
-import { OCPP21Adapter } from './OCPP21Adapter';
 import { OpenEMSAdapter } from './OpenEMSAdapter';
 import type { VictronAdapterConfig } from './VictronMQTTAdapter';
 import { VictronMQTTAdapter } from './VictronMQTTAdapter';
@@ -299,7 +298,14 @@ export function registerBuiltinAdapters(): void {
 
   registerAdapter(
     'ocpp-21',
-    (config) => new OCPP21Adapter(config as OCPPAdapterConfig | undefined),
+    (config) =>
+      createLazyEnergyAdapter(
+        'ocpp-21',
+        'OCPP 2.1',
+        () => import('./OCPP21Adapter'),
+        'OCPP21Adapter',
+        config,
+      ),
     {
       displayName: 'OCPP 2.1',
       description: 'EV-Laden, V2X, ISO 15118',

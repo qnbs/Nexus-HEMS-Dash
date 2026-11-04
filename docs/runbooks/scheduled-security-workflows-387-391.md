@@ -8,7 +8,7 @@
 | --- | --- | --- |
 | SBOM | 2026-10-19 — **failure** (run `39192971692`, setup-node skipped on legacy composite) | 2026-11-04 — success on `main` pushes |
 | Scorecard | 2026-10-19 — failure; 2026-10-05 — last schedule **success** | 2026-11-04 — success on PR/push |
-| Freshness heartbeat | **No runs yet** until `workflow_run` hook lands on `main` | N/A |
+| Freshness heartbeat | **2026-11-04** — run `41892929820` (`workflow_run` after #417 CI); schedule steps fail as expected (cron stale ~30d); any-trigger SBOM/Scorecard fresh |
 
 GitHub did not enqueue new `schedule` runs after 2026-10-19 despite active `main` pushes. Treat this as **platform schedule delivery**, not application regression:
 
