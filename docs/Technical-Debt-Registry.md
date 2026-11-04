@@ -917,7 +917,11 @@ advisory database for the specific IDs.
 | `ws @^7 → >=7.5.11` | DoS fix (header / per-message-deflate handling) |
 | `dompurify >=3.4.17` | Active mXSS sanitizer pin (#386 / #403); supersedes prior `>=3.4.12` floor |
 | `body-parser >=2.4.0` | Express transitive body parsing hardening (#386) |
+<<<<<<< HEAD
 | `proxy-addr >=2.0.8` | Transitive Express chain below 2.0.8 (forwarded-header / trust-proxy parsing, #386). **Remove override** when `pnpm why proxy-addr` resolves ≥2.0.8 without `pnpm.overrides` after a lockfile refresh. **Regression guards:** `scripts/proxy-addr-supply-chain.test.mjs`, `apps/api/src/tests/trust-proxy.test.ts`, `apps/api/src/middleware/security.ts` (`req.ip`, not raw `x-forwarded-for`). |
+=======
+| `proxy-addr >=2.0.8` | Transitive Express chain below 2.0.8 (forwarded-header / trust-proxy parsing, #386). **Remove override** when `pnpm why proxy-addr` resolves ≥2.0.8 without `pnpm.overrides` after a lockfile refresh. **Regression guards:** `apps/api/src/tests/trust-proxy.test.ts`, `apps/api/src/middleware/security.ts` (`req.ip`, not raw `x-forwarded-for`). |
+>>>>>>> 5b3a40b (docs(ci): proxy override lifecycle and merge playbook)
 | `@nexus-hems/api>zod >=4.6.6` | Scoped API workspace pin (global `zod` bump breaks ESLint/react-compiler) |
 | `ip-address >=10.3.1` | SSRF / IP parsing hardening (transitive audit HIGH) |
 | `qs >=6.15.2` | Prototype-pollution / resource-exhaustion fix |

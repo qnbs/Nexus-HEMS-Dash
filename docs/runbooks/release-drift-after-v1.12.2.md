@@ -24,6 +24,10 @@
 
 Patch **`v1.12.3`** (security/resilience focus) after P0/P1 gates — **manual** `release.yml` dispatch only (`approveRelease=RELEASE`), per ADR-015.
 
+### Security patch decision (maintainer-only)
+
+P0 dependency fixes (#403 / #386) do **not** auto-publish a tag. The maintainer explicitly chooses whether the first post-audit release is a **signed security patch** (`v1.12.3`) or remains deferred until broader recovery (#404) lands. Cloud agents must not dispatch `release.yml` or edit GitHub Releases.
+
 ## Demo vs production
 
 GitHub Pages demo may still reflect an older deployment SHA until the next successful `deploy.yml` on `main`. Compare Help → About build SHA with `git rev-parse main`.
