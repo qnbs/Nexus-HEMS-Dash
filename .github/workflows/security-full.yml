@@ -21,44 +21,10 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
-  # Registered key: security-full.yml:codeql (/language:javascript-typescript)
-  # SINGLE CodeQL source (ADR-027) — the former duplicate definitions in
-  # security.yml and security-scan.yml were removed. Branch-protection rulesets
-  # must require THIS check ("CodeQL"), not the deleted "CodeQL Analysis" ones.
+  # CodeQL runs in `.github/workflows/codeql.yml` (Advanced setup, ADR-027 amended 2026-11-04).
+  # This workflow covers Gitleaks, Semgrep, dependency audit, anti-trojan, and the rollup gate.
   # ════════════════════════════════════════════════════════════════
-  #  1. CodeQL — Static Application Security Testing (GitHub)
-  # ════════════════════════════════════════════════════════════════
-  codeql:
-    name: CodeQL
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    permissions:
-      contents: read
-      security-events: write
-    steps:
-      - name: Harden the runner
-        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
-        with:
-          egress-policy: audit
-
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4.37.9
-        with:
-          languages: javascript-typescript
-          queries: security-and-quality
-
-      - name: Autobuild
-        uses: github/codeql-action/autobuild@cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4.37.9
-
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4.37.9
-        with:
-          category: '/language:javascript-typescript'
-
-  # ════════════════════════════════════════════════════════════════
-  #  2. Gitleaks — Secret Detection
+  #  1. Gitleaks — Secret Detection
   # ════════════════════════════════════════════════════════════════
   gitleaks:
     name: 'Gitleaks Secret Scan'
@@ -319,7 +285,6 @@ jobs:
     runs-on: ubuntu-latest
     if: always()
     needs:
-      - codeql
       - gitleaks
       - semgrep
       - anti-trojan-source
@@ -332,7 +297,7 @@ jobs:
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "| Job | Status |" >> "$GITHUB_STEP_SUMMARY"
           echo "|-----|--------|" >> "$GITHUB_STEP_SUMMARY"
-          echo "| CodeQL | ${{ needs.codeql.result }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| CodeQL (codeql.yml) | see CodeQL Advanced workflow |" >> "$GITHUB_STEP_SUMMARY"
           echo "| Gitleaks | ${{ needs.gitleaks.result }} |" >> "$GITHUB_STEP_SUMMARY"
           echo "| Semgrep | ${{ needs.semgrep.result }} |" >> "$GITHUB_STEP_SUMMARY"
           echo "| Anti-Trojan-Source | ${{ needs.anti-trojan-source.result }} |" >> "$GITHUB_STEP_SUMMARY"
@@ -340,8 +305,7 @@ jobs:
           echo "| Branch Protection | ${{ needs.branch-protection-reminder.result }} |" >> "$GITHUB_STEP_SUMMARY"
 
           # Fail the gate if any critical job failed
-          if [[ "${{ needs.codeql.result }}" == "failure" || \
-                "${{ needs.gitleaks.result }}" == "failure" || \
+          if [[ "${{ needs.gitleaks.result }}" == "failure" || \
                 "${{ needs.semgrep.result }}" == "failure" || \
                 "${{ needs.anti-trojan-source.result }}" == "failure" || \
                 "${{ needs.dependency-check.result }}" == "failure" ]]; then
