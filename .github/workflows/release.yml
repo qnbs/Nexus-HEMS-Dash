@@ -54,7 +54,6 @@ jobs:
 
       - name: Semantic Release
         id: semantic
-        continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN || secrets.GITHUB_TOKEN }}
           GIT_AUTHOR_NAME: github-actions[bot]
@@ -62,6 +61,12 @@ jobs:
           GIT_COMMITTER_NAME: github-actions[bot]
           GIT_COMMITTER_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
         run: pnpm release
+
+      - name: Fail when semantic-release errored
+        if: steps.semantic.outcome == 'failure'
+        run: |
+          echo "::error::semantic-release exited with failure — do not treat this workflow as a successful release (#401)."
+          exit 1
 
       - name: Release status summary
         if: always()

@@ -6,6 +6,7 @@ import path from 'path';
 import { visualizer } from 'rollup-plugin-visualizer';
 import { defineConfig, loadEnv, type PluginOption } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
+import { buildInfoManifestPlugin } from './vite.build-info-plugin';
 import { stripLocalhostWsOrigins } from './vite.csp';
 
 function cspNoncePlugin(
@@ -52,7 +53,7 @@ export default defineConfig(({ mode }) => {
       includeAssets: ['robots.txt', 'icon.svg', 'apple-touch-icon.png'],
       manifest: false, // Use public/manifest.json
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
+        globPatterns: ['**/*.{js,css,html,json,ico,png,svg,woff,woff2}'],
         globIgnores: ['**/bundle-stats.html'],
         maximumFileSizeToCacheInBytes: 8 * 1024 * 1024, // 8 MB
         sourcemap: false,
@@ -181,6 +182,10 @@ export default defineConfig(({ mode }) => {
 
   if (isProd) {
     plugins.push(
+      buildInfoManifestPlugin({
+        basePath: '/Nexus-HEMS-Dash/',
+        appVersion: process.env.npm_package_version || '0.0.0',
+      }),
       visualizer({
         filename: 'dist/bundle-stats.html',
         gzipSize: true,

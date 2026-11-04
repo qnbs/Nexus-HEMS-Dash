@@ -1,0 +1,62 @@
+name: Security Freshness Heartbeat
+
+# Detects missing scheduled security scans (#387). Runs daily and on manual dispatch.
+on:
+  schedule:
+    - cron: '30 4 * * *'
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: security-freshness-heartbeat
+  cancel-in-progress: false
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  # Daily SBOM cron (Mon–Sun ~04:30 UTC) — expect success within ~2 days.
+  MAX_SBOM_SCHEDULE_STALE_DAYS: '2'
+  # Weekly Scorecard (Monday cron) — allow 9 days including grace.
+  MAX_SCORECARD_SCHEDULE_STALE_DAYS: '9'
+  # Any successful scan recency (includes manual dispatch after Actions re-enable).
+  MAX_ANY_SUCCESS_STALE_DAYS: '8'
+
+jobs:
+  heartbeat:
+    name: Scheduled security scan freshness
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Check SBOM scheduled freshness
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash .github/scripts/security-scan-freshness.sh sbom-scan.yml "${{ env.MAX_SBOM_SCHEDULE_STALE_DAYS }}" schedule
+
+      - name: Check SBOM latest successful scan (any trigger)
+        if: always()
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash .github/scripts/security-scan-freshness.sh sbom-scan.yml "${{ env.MAX_ANY_SUCCESS_STALE_DAYS }}" any
+
+      - name: Check Scorecard scheduled freshness
+        if: always()
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash .github/scripts/security-scan-freshness.sh scorecard.yml "${{ env.MAX_SCORECARD_SCHEDULE_STALE_DAYS }}" schedule
+
+      - name: Check Scorecard latest successful scan (any trigger)
+        if: always()
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash .github/scripts/security-scan-freshness.sh scorecard.yml "${{ env.MAX_ANY_SUCCESS_STALE_DAYS }}" any
+
+      - name: Note external schedule watchdog (#387)
+        if: always()
+        run: |
+          echo "::notice::PR/dispatch success does not prove GitHub schedule delivery. Maintain an external alert on event=schedule SBOM/Scorecard freshness (#387)."

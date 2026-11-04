@@ -42,6 +42,9 @@ jobs:
       - name: Biome CI (whole-repo gate)
         run: pnpm lint:all
 
+      - name: Merge conflict marker guard
+        run: pnpm check:conflict-markers
+
       - name: Adapter-count drift guard (F-04)
         run: pnpm check:adapters
 

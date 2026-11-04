@@ -27,12 +27,16 @@ jobs:
     permissions:
       # Needed to publish results and get a badge (see publish_results below)
       id-token: write
+      contents: read
+      security-events: write
 
     steps:
       - name: Checkout code
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
+          repository: ${{ github.repository }}
+          ref: ${{ github.sha }}
 
       - name: Run OpenSSF Scorecard
         uses: ossf/scorecard-action@4eaacf0543bb3f2c246792bd56e8cdeffafb205a # v2.4.3
