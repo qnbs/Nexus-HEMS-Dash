@@ -87,7 +87,7 @@
       "esbuild": ">=0.28.1",
       "flatted": "3.4.2",
       "ip-address": ">=10.7.1",
-      "handlebars": "4.7.9",
+      "handlebars": "4.7.10",
       "lodash": "4.18.1",
       "lodash-es": "4.18.1",
       "npm>brace-expansion": "2.1.0",
