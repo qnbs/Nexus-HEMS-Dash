@@ -915,7 +915,10 @@ advisory database for the specific IDs.
 | `protobufjs ^7.5.5` | Prototype-pollution fix |
 | `undici ^7.28.0` | HTTP client security + correctness fixes |
 | `ws @^7 → >=7.5.11` | DoS fix (header / per-message-deflate handling) |
-| `dompurify >=3.4.12` | mXSS sanitizer-bypass fix |
+| `dompurify >=3.4.17` | Active mXSS sanitizer pin (#386 / #403); supersedes prior `>=3.4.12` floor |
+| `body-parser >=2.4.0` | Express transitive body parsing hardening (#386) |
+| `proxy-addr >=2.0.8` | `trust proxy` / forwarded-header parsing fix (#386) |
+| `@nexus-hems/api>zod >=4.6.6` | Scoped API workspace pin (global `zod` bump breaks ESLint/react-compiler) |
 | `ip-address >=10.3.1` | SSRF / IP parsing hardening (transitive audit HIGH) |
 | `qs >=6.15.2` | Prototype-pollution / resource-exhaustion fix |
 | `uuid >=11.1.1` | Consolidate on the hardened ESM-native line |
@@ -934,8 +937,9 @@ advisory database for the specific IDs.
 | -------- | ------- |
 | `@rollup/plugin-terser >=0.4.5` | Align the terser plugin across the Rollup/Rolldown tree |
 | `flatted 3.4.2` | Force a single resolved version (de-dupe) |
-| `handlebars 4.7.9` | Force a single resolved version (de-dupe) |
+| `handlebars 4.7.10` | Active pin (Grype source-tree + Storybook); supersedes `4.7.9` de-dupe row |
 | `lodash 4.18.1`, `lodash-es 4.18.1` | Pin transitive lodash / lodash-es to one resolution |
+| `apps/web` Adapters chunk size-limit **92 kB** gzip (was 85 kB) | Documented regression tracked in [#405](https://github.com/qnbs/Nexus-HEMS-Dash/issues/405); ~90.8 kB gzipped on CI baseline until lazy-split |
 
 > Nested `parent>child` overrides (`npm>brace-expansion`, `npm>picomatch`,
 > `@lhci/cli>tmp`, `external-editor>tmp`) scope a pin to a specific dependency
