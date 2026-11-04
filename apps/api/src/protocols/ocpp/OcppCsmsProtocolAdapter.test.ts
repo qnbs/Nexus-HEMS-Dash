@@ -608,6 +608,7 @@ describe('OcppCsmsProtocolAdapter', () => {
       first.close();
       await new Promise<void>((resolve) => first.once('close', () => resolve()));
       const third = await connectChargePoint(cappedPort, 'CP-CAP-3');
+      expect(third.readyState).toBe(WebSocket.OPEN);
 
       second.close();
       third.close();
