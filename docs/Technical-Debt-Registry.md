@@ -939,7 +939,7 @@ advisory database for the specific IDs.
 | `flatted 3.4.2` | Force a single resolved version (de-dupe) |
 | `handlebars 4.7.10` | Active pin (Grype source-tree + Storybook); supersedes `4.7.9` de-dupe row |
 | `lodash 4.18.1`, `lodash-es 4.18.1` | Pin transitive lodash / lodash-es to one resolution |
-| `apps/web` Adapters chunk size-limit **92 kB** gzip (was 85 kB) | Documented regression tracked in [#405](https://github.com/qnbs/Nexus-HEMS-Dash/issues/405); ~90.8 kB gzipped on CI baseline until lazy-split |
+| `apps/web` Adapters core chunk size-limit **88 kB** gzip (`adapters-core-*`; was 85 kB / interim 92 kB) | [#405](https://github.com/qnbs/Nexus-HEMS-Dash/issues/405); lazy OCPP/evcc/OpenEMS splits — core ~84.8 kB gzip (2026-11-04) |
 
 > Nested `parent>child` overrides (`npm>brace-expansion`, `npm>picomatch`,
 > `@lhci/cli>tmp`, `external-editor>tmp`) scope a pin to a specific dependency
