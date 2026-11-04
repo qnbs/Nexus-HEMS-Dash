@@ -164,6 +164,16 @@ jobs:
       - name: Setup Node.js and pnpm
         uses: ./.github/actions/setup-node-pnpm
 
+      - name: Resolve build timestamp
+        id: build_ts
+        run: |
+          set -euo pipefail
+          ts="${{ github.event.head_commit.timestamp }}"
+          if [ -z "${ts}" ]; then
+            ts="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          fi
+          echo "iso=${ts}" >> "$GITHUB_OUTPUT"
+
       - name: Build
         run: pnpm build
         env:
@@ -171,11 +181,14 @@ jobs:
           VITE_E2E_TESTING: 'true'
           VITE_BACKEND_WS: 'true'
           VITE_BUILD_SHA: ${{ github.sha }}
-          VITE_BUILD_TIME: ${{ github.event.head_commit.timestamp || github.run_started_at }}
+          VITE_BUILD_TIME: ${{ steps.build_ts.outputs.iso }}
           GIT_SHA: ${{ github.sha }}
-          BUILD_TIME_ISO: ${{ github.event.head_commit.timestamp || github.run_started_at }}
+          BUILD_TIME_ISO: ${{ steps.build_ts.outputs.iso }}
           TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
           TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+
+      - name: Generate dist digest manifest (Pages provenance)
+        run: node .github/scripts/generate-web-dist-digest-manifest.mjs apps/web/dist
 
       - name: Resolve web app version
         id: web-version
@@ -211,9 +224,9 @@ jobs:
           VITE_E2E_TESTING: 'true'
           VITE_BACKEND_WS: 'true'
           VITE_BUILD_SHA: ${{ github.sha }}
-          VITE_BUILD_TIME: ${{ github.event.head_commit.timestamp || github.run_started_at }}
+          VITE_BUILD_TIME: ${{ steps.build_ts.outputs.iso }}
           GIT_SHA: ${{ github.sha }}
-          BUILD_TIME_ISO: ${{ github.event.head_commit.timestamp || github.run_started_at }}
+          BUILD_TIME_ISO: ${{ steps.build_ts.outputs.iso }}
 
       # Production-build smoke test: loads the just-built dist/ in headless
       # Chromium and fails if React does not mount or a runtime error fires.

@@ -6,9 +6,7 @@
 
 1. Wait for `✅ CI Passed` on the push SHA (`wait-for-ci`).
 2. Resolve the newest successful `ci.yml` run for `github.sha`.
-3. `actions/download-artifact` with `name: build`, `run-id` from that CI run.
-4. Upload to Pages via `upload-pages-artifact` (unchanged).
-5. `verify-pages` still checks live `build-info.json` against `github.sha` (FUP-SMOKE-01).
+3. `deploy.yml` downloads artifact, validates `build-info.json` + full `digest-manifest.json` via `.github/scripts/verify-promoted-pages-artifact.sh`, then uploads to Pages.
 
 ## Notes
 
