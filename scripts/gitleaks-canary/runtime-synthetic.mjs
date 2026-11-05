@@ -9,6 +9,7 @@ export function probeMarker(probeId) {
   return `GITLEAKS_INTEGRITY_${probeId}`;
 }
 
+/** Generate a deterministic-length alphanumeric string for synthetic secrets. */
 function syntheticAlnum(length) {
   const raw = crypto.randomBytes(length * 2).toString('base64url');
   const alnum = raw.replace(/[^a-zA-Z0-9]/g, '');
@@ -45,6 +46,7 @@ export function syntheticGroqKey(probeId) {
   return `gsk_${marker}${syntheticAlnum(12)}`;
 }
 
+/** Replace `{{KEY}}` placeholders in a canary template with runtime synthetic values. */
 export function applyTemplate(templateText, replacements) {
   let out = templateText;
   for (const [key, value] of Object.entries(replacements)) {

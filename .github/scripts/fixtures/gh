@@ -27,8 +27,8 @@ while [ "$#" -gt 0 ]; do
 done
 
 workflow_id="${MOCK_WORKFLOW_ID:-4242}"
-fresh_ts="${MOCK_FRESH_TS:-2026-11-05T03:00:00Z}"
-stale_ts="${MOCK_STALE_TS:-2026-10-01T03:00:00Z}"
+fresh_ts="${MOCK_FRESH_TS:-$(date -u +%Y-%m-%dT03:00:00Z)}"
+stale_ts="${MOCK_STALE_TS:-$(date -u -d '30 days ago' +%Y-%m-%dT03:00:00Z)}"
 
 case "${MOCK_FRESHNESS_SCENARIO:-schedule-fresh}" in
   schedule-fresh)
@@ -63,14 +63,29 @@ if [[ "${url}" == *"/actions/workflows/${workflow_id}/runs"* ]]; then
   fi
 
   if [ "${paginate}" = true ] && [ -n "${jq_filter}" ]; then
+    runs_json=""
     if [ "${MOCK_FRESHNESS_SCENARIO}" = any-fresh ]; then
-      printf '%s\n' "${fresh_ts}" "${stale_ts}"
+      runs_json="$(jq -n \
+        --arg stale "${stale_ts}" \
+        --arg fresh "${fresh_ts}" \
+        --arg noise "2099-06-01T03:00:00Z" \
+        '{workflow_runs:[
+          {event:"push",created_at:$stale},
+          {event:"check_suite",created_at:$noise},
+          {event:"pull_request",created_at:$fresh}
+        ]}')"
     else
-      printf '%s\n' "${stale_ts}" "${stale_ts}"
+      runs_json="$(jq -n \
+        --arg stale "${stale_ts}" \
+        '{workflow_runs:[
+          {event:"push",created_at:$stale},
+          {event:"check_suite",created_at:"2099-06-01T03:00:00Z"}
+        ]}')"
     fi
+    jq -r "${jq_filter}" <<<"${runs_json}"
     exit 0
   fi
 fi
 
-echo "gh-mock-run-freshness: unhandled url=${url} paginate=${paginate} jq=${jq_filter}" >&2
+echo "gh mock: unhandled url=${url} paginate=${paginate} jq=${jq_filter}" >&2
 exit 98

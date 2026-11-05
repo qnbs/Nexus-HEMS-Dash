@@ -26,6 +26,7 @@ const integrityConfigPath = path.join(probeRoot, '.gitleaks-integrity.generated.
 /** Pin matches CI wrapper / security-full probe install. */
 const GITLEAKS_DOCKER = 'ghcr.io/gitleaks/gitleaks:v8.22.1';
 
+/** Run a subprocess from the repo root and return spawnSync output. */
 function run(command, args, options = {}) {
   return spawnSync(command, args, {
     cwd: repoRoot,
@@ -34,6 +35,7 @@ function run(command, args, options = {}) {
   });
 }
 
+/** Write integrity config with canary path allowlist removed for probe scans. */
 function ensureIntegrityConfig() {
   fs.mkdirSync(probeRoot, { recursive: true });
   const main = fs.readFileSync(mainConfigPath, 'utf8');
@@ -48,6 +50,7 @@ function ensureIntegrityConfig() {
   fs.writeFileSync(integrityConfigPath, withoutCanaryPath);
 }
 
+/** Map a host path under the repo to the `/repo` bind-mount path used in Docker. */
 function hostToContainerSource(hostPath) {
   const resolved = path.resolve(hostPath);
   const root = path.resolve(repoRoot);
@@ -58,6 +61,7 @@ function hostToContainerSource(hostPath) {
   return resolved;
 }
 
+/** Prefer local `gitleaks`; fall back to Docker; skip locally when neither exists. */
 function resolveGitleaksRunner() {
   const local = run('gitleaks', ['version'], { stdio: 'pipe' });
   if (!local.error && local.status === 0) {
@@ -77,6 +81,7 @@ function resolveGitleaksRunner() {
 
 const gitleaksRunner = resolveGitleaksRunner();
 
+/** Log the selected Gitleaks runner and version for CI audit trails. */
 function logRunnerVersion() {
   if (gitleaksRunner.mode === 'local') {
     const version = run('gitleaks', ['version'], { stdio: 'pipe' });
@@ -97,6 +102,7 @@ function logRunnerVersion() {
 
 logRunnerVersion();
 
+/** Run Gitleaks against `sourcePath` and parse the JSON report at `reportPath`. */
 function gitleaksReport(sourcePath, reportPath) {
   const resolvedSource = path.resolve(sourcePath);
   const resolvedReport = path.resolve(reportPath);
@@ -175,6 +181,7 @@ function gitleaksReport(sourcePath, reportPath) {
   return { status, findings };
 }
 
+/** Assert Gitleaks findings match expected rule IDs and optional probe markers. */
 function expectFinding(label, sourceDir, expected) {
   const reportFile = path.join(sourceDir, '.gitleaks-report.json');
   const { status, findings } = gitleaksReport(sourceDir, reportFile);
@@ -217,6 +224,7 @@ function expectFinding(label, sourceDir, expected) {
   console.log(`${label}: OK (${expected.length ? `${expected.length} expected finding(s)` : 'clean'})`);
 }
 
+/** Read a canary template file from `scripts/gitleaks-canary/`. */
 function readTemplate(name) {
   const filePath = path.join(canaryDir, name);
   if (!fs.existsSync(filePath)) {
@@ -226,6 +234,7 @@ function readTemplate(name) {
   return fs.readFileSync(filePath, 'utf8');
 }
 
+/** Read a static canary fixture from `scripts/gitleaks-canary/`. */
 function readCanary(name) {
   const filePath = path.join(canaryDir, name);
   if (!fs.existsSync(filePath)) {
@@ -235,6 +244,7 @@ function readCanary(name) {
   return fs.readFileSync(filePath, 'utf8');
 }
 
+/** Create a unique directory under `.cache/gitleaks-probes/` for an isolated probe. */
 function freshProbeDir(prefix) {
   fs.mkdirSync(probeRoot, { recursive: true });
   return fs.mkdtempSync(path.join(probeRoot, prefix));

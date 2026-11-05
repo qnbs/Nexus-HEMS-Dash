@@ -6,9 +6,10 @@ Tracks whether **scheduled** security workflows still produce successful runs. G
 
 - File: `.github/workflows/security-freshness-heartbeat.yml`
 - Triggers: daily `04:30 UTC`, manual `workflow_dispatch`
-- Checks:
-  - **Blocking:** last successful **scheduled** `sbom-scan.yml` run must be ≤ 8 days old
-  - **Advisory:** last successful scheduled `scorecard.yml` (continues on failure until #391 is resolved)
+- Checks (env vars in `.github/workflows/security-freshness-heartbeat.yml`):
+  - **Blocking:** last successful **scheduled** `sbom-scan.yml` run ≤ **2** days (`MAX_SBOM_SCHEDULE_STALE_DAYS`)
+  - **Blocking:** last successful **scheduled** `scorecard.yml` run ≤ **9** days (`MAX_SCORECARD_SCHEDULE_STALE_DAYS`); step is **non-blocking** only on post-CI **`workflow_run`** (`continue-on-error`)
+  - **Advisory** (`continue-on-error: true`): latest successful SBOM/Scorecard from **any** trigger ≤ **8** days (`MAX_ANY_SUCCESS_STALE_DAYS`)
 
 ## When this fails
 
