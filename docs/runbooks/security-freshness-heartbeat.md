@@ -7,8 +7,8 @@ Tracks whether **scheduled** security workflows still produce successful runs. G
 - File: `.github/workflows/security-freshness-heartbeat.yml`
 - Triggers: daily `04:30 UTC`, manual `workflow_dispatch`
 - Checks (env vars in `.github/workflows/security-freshness-heartbeat.yml`):
-  - **Blocking:** last successful **scheduled** `sbom-scan.yml` run ≤ **2** days (`MAX_SBOM_SCHEDULE_STALE_DAYS`)
-  - **Blocking:** last successful **scheduled** `scorecard.yml` run ≤ **9** days (`MAX_SCORECARD_SCHEDULE_STALE_DAYS`); step is **non-blocking** only on post-CI **`workflow_run`** (`continue-on-error`)
+  - **Blocking:** last successful **scheduled** `sbom-scan.yml` run ≤ **2** days (`MAX_SBOM_SCHEDULE_STALE_DAYS`); **non-blocking** on post-CI **`workflow_run`** (same `continue-on-error` pattern as Scorecard below)
+  - **Blocking:** last successful **scheduled** `scorecard.yml` run ≤ **9** days (`MAX_SCORECARD_SCHEDULE_STALE_DAYS`); **non-blocking** only on post-CI **`workflow_run`** (`continue-on-error`)
   - **Advisory** (`continue-on-error: true`): latest successful SBOM/Scorecard from **any** trigger ≤ **8** days (`MAX_ANY_SUCCESS_STALE_DAYS`)
 
 ## When this fails
@@ -19,7 +19,7 @@ Tracks whether **scheduled** security workflows still produce successful runs. G
 4. Review repository **Settings → Actions → General** (workflow permissions).
 5. Inspect org billing/quota if runs are skipped entirely.
 
-The heartbeat workflow runs **schedule** checks (SBOM blocking on cron; Scorecard blocking except on post-CI `workflow_run`) plus **any-trigger** checks (`continue-on-error: true`) so operators still see recency after Actions re-enable (#387 notice step).
+The heartbeat workflow runs **schedule** checks (SBOM and Scorecard both use `continue-on-error` on post-CI **`workflow_run`**; otherwise SBOM schedule is blocking on cron/dispatch) plus **any-trigger** checks (`continue-on-error: true`) so operators still see recency after Actions re-enable (#387 notice step).
 
 ## Related issues
 

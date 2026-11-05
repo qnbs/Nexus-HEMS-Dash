@@ -481,7 +481,7 @@ Cloud agents share the maintainer’s **cloud-first CI** rules in `CLAUDE.md` (s
 Canonical runbook: [`docs/runbooks/pr-review-correction-loop.md`](docs/runbooks/pr-review-correction-loop.md).
 
 Cloud agents: do not mark a PR complete after first green CI. Do not merge without explicit
-user instruction **and** quiescence. CodeRabbit outside-diff comments are **not** optional.
+maintainer approval **and** quiescence. CodeRabbit outside-diff comments are **not** optional.
 
 ---
 
