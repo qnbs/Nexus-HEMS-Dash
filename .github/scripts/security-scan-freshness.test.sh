@@ -46,6 +46,13 @@ else
   echo "OK multiline timestamp rejected"
 fi
 
+if ( assert_single_iso_timestamp "2026-11-05T03:00:00Z" "valid-single" ); then
+  echo "OK valid single timestamp accepted"
+else
+  echo "FAIL valid single timestamp rejected"
+  failures=$((failures + 1))
+fi
+
 if [ "${failures}" -gt 0 ]; then
   echo "${failures} test(s) failed"
   exit 1

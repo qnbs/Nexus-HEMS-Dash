@@ -19,7 +19,7 @@ assert_single_iso_timestamp() {
   if [ -z "${value}" ]; then
     return 0
   fi
-  if printf '%s' "${value}" | grep -q $'\n'; then
+  if [[ "${value}" == *$'\n'* ]]; then
     echo "::error::${context}: expected one timestamp, got multiple lines (pagination/jq bug)."
     printf '%s\n' "${value}" >&2
     exit 1
@@ -46,9 +46,17 @@ run_freshness_check() {
     last_success="$(jq -r '.workflow_runs[0].created_at // empty' <<<"${runs_json}")"
   else
     label="any-trigger"
-    last_success="$(gh api "/repos/${repo}/actions/workflows/${workflow_id}/runs?status=success&per_page=100" \
-      --paginate --jq '.workflow_runs[] | select(.event == "schedule" or .event == "workflow_dispatch" or .event == "push" or .event == "pull_request") | .created_at' \
-      | sort -r | head -n 1 || true)"
+    local timestamps
+    if ! timestamps="$(gh api "/repos/${repo}/actions/workflows/${workflow_id}/runs?status=success&per_page=100" \
+      --paginate --jq '.workflow_runs[] | select(.event == "schedule" or .event == "workflow_dispatch" or .event == "push" or .event == "pull_request") | .created_at')"; then
+      echo "::error::gh api failed while listing ${workflow_file} runs (${label})."
+      return 1
+    fi
+    if [ -n "${timestamps}" ]; then
+      last_success="$(printf '%s\n' "${timestamps}" | sort -r | head -n 1)"
+    else
+      last_success=""
+    fi
   fi
 
   assert_single_iso_timestamp "${last_success}" "${workflow_file} ${label}"
