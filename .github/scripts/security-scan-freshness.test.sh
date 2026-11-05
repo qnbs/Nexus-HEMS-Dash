@@ -53,6 +53,42 @@ else
   failures=$((failures + 1))
 fi
 
+FIXTURES="${ROOT}/fixtures"
+MOCK_GH="${FIXTURES}/gh"
+
+run_with_mock_gh() {
+  local scenario="$1"
+  shift
+  GITHUB_REPOSITORY="qnbs/Nexus-HEMS-Dash" \
+    MOCK_FRESHNESS_SCENARIO="${scenario}" \
+    PATH="${FIXTURES}:${PATH}" \
+    run_freshness_check "$@"
+}
+
+if run_with_mock_gh schedule-fresh sbom-scan.yml 2 schedule >/tmp/freshness-schedule.out 2>&1; then
+  echo "OK run_freshness_check schedule mode accepts fresh run"
+else
+  echo "FAIL run_freshness_check schedule mode fresh run"
+  cat /tmp/freshness-schedule.out
+  failures=$((failures + 1))
+fi
+
+if run_with_mock_gh any-fresh sbom-scan.yml 8 any >/tmp/freshness-any.out 2>&1; then
+  echo "OK run_freshness_check any mode picks latest paginated timestamp"
+else
+  echo "FAIL run_freshness_check any mode fresh run"
+  cat /tmp/freshness-any.out
+  failures=$((failures + 1))
+fi
+
+if run_with_mock_gh schedule-stale sbom-scan.yml 2 schedule >/tmp/freshness-stale.out 2>&1; then
+  echo "FAIL run_freshness_check should reject stale schedule run"
+  cat /tmp/freshness-stale.out
+  failures=$((failures + 1))
+else
+  echo "OK run_freshness_check schedule mode rejects stale run"
+fi
+
 if [ "${failures}" -gt 0 ]; then
   echo "${failures} test(s) failed"
   exit 1

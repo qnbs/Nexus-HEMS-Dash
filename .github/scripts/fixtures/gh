@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+# Mock `gh api` for run_freshness_check unit tests (no network). Set MOCK_FRESHNESS_SCENARIO.
+set -euo pipefail
+
+url=""
+paginate=false
+jq_filter=""
+
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    api)
+      url="${2:?}"
+      shift 2
+      ;;
+    --paginate)
+      paginate=true
+      shift
+      ;;
+    --jq)
+      jq_filter="${2:?}"
+      shift 2
+      ;;
+    *)
+      shift
+      ;;
+  esac
+done
+
+workflow_id="${MOCK_WORKFLOW_ID:-4242}"
+fresh_ts="${MOCK_FRESH_TS:-2026-11-05T03:00:00Z}"
+stale_ts="${MOCK_STALE_TS:-2026-10-01T03:00:00Z}"
+
+case "${MOCK_FRESHNESS_SCENARIO:-schedule-fresh}" in
+  schedule-fresh)
+    pick_ts="${fresh_ts}"
+    ;;
+  schedule-stale)
+    pick_ts="${stale_ts}"
+    ;;
+  any-fresh)
+    pick_ts="${fresh_ts}"
+    ;;
+  any-stale)
+    pick_ts="${stale_ts}"
+    ;;
+  *)
+    echo "unknown MOCK_FRESHNESS_SCENARIO: ${MOCK_FRESHNESS_SCENARIO}" >&2
+    exit 99
+    ;;
+esac
+
+if [[ "${url}" == *"/actions/workflows/"*".yml" ]]; then
+  if [ "${jq_filter}" = '.id' ]; then
+    printf '%s\n' "${workflow_id}"
+    exit 0
+  fi
+fi
+
+if [[ "${url}" == *"/actions/workflows/${workflow_id}/runs"* ]]; then
+  if [[ "${url}" == *event=schedule* ]]; then
+    printf '{"workflow_runs":[{"event":"schedule","created_at":"%s"}]}\n' "${pick_ts}"
+    exit 0
+  fi
+
+  if [ "${paginate}" = true ] && [ -n "${jq_filter}" ]; then
+    if [ "${MOCK_FRESHNESS_SCENARIO}" = any-fresh ]; then
+      printf '%s\n' "${fresh_ts}" "${stale_ts}"
+    else
+      printf '%s\n' "${stale_ts}" "${stale_ts}"
+    fi
+    exit 0
+  fi
+fi
+
+echo "gh-mock-run-freshness: unhandled url=${url} paginate=${paginate} jq=${jq_filter}" >&2
+exit 98
