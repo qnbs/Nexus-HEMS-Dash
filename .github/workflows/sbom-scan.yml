@@ -87,6 +87,7 @@ jobs:
         with:
           image: nexus-hems-frontend:${{ github.sha }}
           config: .grype.yaml
+          cache-db: true
           fail-build: true
           severity-cutoff: critical
           output-format: sarif
@@ -132,6 +133,7 @@ jobs:
         with:
           image: nexus-hems-backend:${{ github.sha }}
           config: .grype.yaml
+          cache-db: true
           fail-build: true
           severity-cutoff: critical
           output-format: sarif
@@ -165,6 +167,7 @@ jobs:
         with:
           sbom: sbom-source.spdx.json
           config: .grype.yaml
+          cache-db: true
           fail-build: true
           severity-cutoff: critical
           output-format: sarif
