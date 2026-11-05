@@ -10,8 +10,10 @@ import process from 'node:process';
 import {
   applyTemplate,
   probeMarker,
+  syntheticAwattarToken,
   syntheticGroqKey,
   syntheticMqttPassword,
+  syntheticMqttPasswordWithPlaceholder,
   syntheticTibberToken,
 } from './gitleaks-canary/runtime-synthetic.mjs';
 
@@ -251,6 +253,8 @@ const probeIds = {
   groq: 'GROQ_KEY',
   tibberNear: 'TIBBER_NEAR',
   mqttMixed: 'MQTT_MIXED',
+  awattar: 'AWATTAR_KEY',
+  mqttPlaceholder: 'MQTT_PLACEHOLDER',
 };
 
 const synth = {
@@ -259,6 +263,8 @@ const synth = {
   groqKey: syntheticGroqKey(probeIds.groq),
   tibberNearToken: syntheticTibberToken(probeIds.tibberNear),
   mqttMixedPassword: syntheticMqttPassword(probeIds.mqttMixed),
+  awattarToken: syntheticAwattarToken(probeIds.awattar),
+  mqttPlaceholderPassword: syntheticMqttPasswordWithPlaceholder(probeIds.mqttPlaceholder),
 };
 
 // Positive: docs path restored (no whole-file ignore) + Tibber canary
@@ -274,7 +280,7 @@ fs.writeFileSync(
 expectFinding('Docs API-Reference Tibber probe', docsProbe, [
   {
     fileSuffix: 'docs/API-Reference.md',
-    ruleId: ['tibber-api-token', 'generic-api-key'],
+    ruleId: 'tibber-api-token',
     marker: probeMarker(probeIds.docs),
   },
 ]);
@@ -338,7 +344,7 @@ fs.writeFileSync(
 expectFinding('Tibber marker near placeholder text', tibberNearProbe, [
   {
     fileSuffix: 'tibber.env',
-    ruleId: ['tibber-api-token', 'generic-api-key'],
+    ruleId: 'tibber-api-token',
     marker: probeMarker(probeIds.tibberNear),
   },
 ]);
@@ -364,6 +370,45 @@ expectFinding('MQTT mixed-line password probe', mqttMixedProbe, [
     fileSuffix: 'Broker.ts',
     ruleId: 'mqtt-credentials',
     marker: probeMarker(probeIds.mqttMixed),
+  },
+]);
+
+// Positive: aWATTar token (exact rule ID)
+const awattarProbe = freshProbeDir('awattar-');
+fs.writeFileSync(
+  path.join(awattarProbe, 'awattar.env'),
+  applyTemplate(readTemplate('awattar-positive.template'), {
+    PROBE_AWATTAR_VAL: synth.awattarToken,
+  }),
+);
+expectFinding('aWATTar API key probe', awattarProbe, [
+  {
+    fileSuffix: 'awattar.env',
+    ruleId: 'awattar-api-key',
+    marker: probeMarker(probeIds.awattar),
+  },
+]);
+
+const awattarSafeProbe = freshProbeDir('awattar-safe-');
+fs.writeFileSync(
+  path.join(awattarSafeProbe, 'awattar.env'),
+  readCanary('awattar-placeholder-negative.env'),
+);
+expectFinding('aWATTar your_ placeholder assignment', awattarSafeProbe, []);
+
+// Positive: mqttPassword containing literal placeholder substring
+const mqttPlaceholderProbe = freshProbeDir('mqtt-placeholder-');
+fs.writeFileSync(
+  path.join(mqttPlaceholderProbe, 'mqtt.env'),
+  applyTemplate(readTemplate('mqtt-placeholder-positive.template'), {
+    PROBE_MQTT_VAL: synth.mqttPlaceholderPassword,
+  }),
+);
+expectFinding('MQTT placeholder substring probe', mqttPlaceholderProbe, [
+  {
+    fileSuffix: 'mqtt.env',
+    ruleId: 'mqtt-credentials',
+    marker: probeMarker(probeIds.mqttPlaceholder),
   },
 ]);
 

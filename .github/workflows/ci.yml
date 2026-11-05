@@ -75,6 +75,9 @@ jobs:
       - name: Verify trusted registry enforcement (#424)
         run: node scripts/verify-helm-trusted-registries.mjs
 
+      - name: Security scan freshness unit tests (#387)
+        run: bash .github/scripts/security-scan-freshness.test.sh
+
   unit-tests:
     name: Unit Tests
     runs-on: ubuntu-latest

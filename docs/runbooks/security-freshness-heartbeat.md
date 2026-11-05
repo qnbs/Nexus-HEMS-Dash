@@ -13,7 +13,8 @@ Tracks whether **scheduled** security workflows still produce successful runs. G
 ## When this fails
 
 1. Confirm **Settings → Actions** allows workflows (re-enabled 2026-11-04 after suspension).
-2. Open **Actions → SBOM Generation → Run workflow** on `main` or merge **#404** and use the PR `pull_request` run.
+2. Distinguish **real stale cron** (e.g. Scorecard last `event=schedule` before threshold) from **script bugs** — `.github/scripts/security-scan-freshness.sh` must not use `--paginate --jq '… | first'` (GH CLI applies jq per page). Unit tests: `bash .github/scripts/security-scan-freshness.test.sh`.
+3. Open **Actions → SBOM Generation → Run workflow** on `main` or merge **#404** and use the PR `pull_request` run.
 3. Review repository **Settings → Actions → General** (workflow permissions).
 4. Inspect org billing/quota if runs are skipped entirely.
 

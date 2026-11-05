@@ -11,7 +11,7 @@ Restores detection coverage after [#429](https://github.com/qnbs/Nexus-HEMS-Dash
    - `scripts/gitleaks-canary/` (path-ignored in main scan) must produce findings.
    - Temp copies of docs + EEBUS test with synthetic append must produce findings.
    - Isolated HA `your_mqtt_password_here` placeholder must stay clean.
-   - **#432 residual:** Tibber marker adjacent to `your_` / `example` comment text must still detect; placeholder-only Tibber assignment stays clean; `mqttUser` on the same line must not suppress `mqttPassword` (removed line-level `mqttUser` allowlist in `.gitleaks.toml`).
+   - **#432 residual:** Tibber/aWATTar rules use `secretGroup = 1` on the assigned token; integrity probes require exact `tibber-api-token` / `awattar-api-key` RuleIDs (runtime-generated values only).
 
 ## Docker vs local runner
 

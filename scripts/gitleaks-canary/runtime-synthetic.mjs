@@ -23,6 +23,16 @@ export function syntheticTibberToken(probeId) {
   return `${probeMarker(probeId)}${syntheticAlnum(28)}`;
 }
 
+/** aWATTar API assignment value (≥24 chars). */
+export function syntheticAwattarToken(probeId) {
+  return `${probeMarker(probeId)}${syntheticAlnum(28)}`;
+}
+
+/** MQTT password with literal "placeholder" substring (must still detect). */
+export function syntheticMqttPasswordWithPlaceholder(probeId) {
+  return `placeholder${probeMarker(probeId)}${syntheticAlnum(12)}`;
+}
+
 /** MQTT password value (≥8 chars); may include literal "example" to test allowlist narrowness. */
 export function syntheticMqttPassword(probeId, { includeExampleSubstring = false } = {}) {
   const core = `${probeMarker(probeId)}${syntheticAlnum(16)}`;
