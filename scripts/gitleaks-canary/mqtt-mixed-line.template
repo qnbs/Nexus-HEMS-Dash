@@ -1,0 +1,2 @@
+// mqttUser + mqttPassword on one line — content filled at runtime only
+export const broker = { mqttUser: 'admin', mqttPassword: '{{PROBE_MQTT_VAL}}' };

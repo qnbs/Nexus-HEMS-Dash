@@ -1,0 +1,2 @@
+# Appended to docs probe copy at runtime — placeholders only in git
+TIBBER_API_TOKEN={{PROBE_TIBBER_VAL}}

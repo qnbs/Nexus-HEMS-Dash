@@ -1,0 +1,10 @@
+# Positive: nested path under ghcr.io/qnbs/ is allowed.
+image:
+  trustedRegistries:
+    - ghcr.io/qnbs/
+  frontend:
+    repository: ghcr.io/qnbs/releases/nexus-hems-dash
+    pullPolicy: IfNotPresent
+  server:
+    repository: ghcr.io/qnbs/nexus-hems-server
+    pullPolicy: IfNotPresent
