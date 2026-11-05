@@ -82,6 +82,9 @@ jobs:
       - name: Validate Grype policy
         run: bash scripts/verify-grype-policy.sh
 
+      - name: Warm Grype vulnerability DB (#411)
+        uses: ./.github/actions/warm-grype-db
+
       - name: Scan frontend image (Grype)
         uses: anchore/scan-action@27805bf3b4e84b4a5c980df22ed233c00390a439 # v7.4.2
         with:
@@ -128,6 +131,9 @@ jobs:
       - name: Validate Grype policy
         run: bash scripts/verify-grype-policy.sh
 
+      - name: Warm Grype vulnerability DB (#411)
+        uses: ./.github/actions/warm-grype-db
+
       - name: Scan backend image (Grype)
         uses: anchore/scan-action@27805bf3b4e84b4a5c980df22ed233c00390a439 # v7.4.2
         with:
@@ -161,6 +167,9 @@ jobs:
 
       - name: Validate Grype policy
         run: bash scripts/verify-grype-policy.sh
+
+      - name: Warm Grype vulnerability DB (#411)
+        uses: ./.github/actions/warm-grype-db
 
       - name: Scan source SBOM (Grype)
         uses: anchore/scan-action@27805bf3b4e84b4a5c980df22ed233c00390a439 # v7.4.2
