@@ -10,8 +10,10 @@ import process from 'node:process';
 import {
   applyTemplate,
   probeMarker,
+  syntheticAwattarToken,
   syntheticGroqKey,
   syntheticMqttPassword,
+  syntheticMqttPasswordWithPlaceholder,
   syntheticTibberToken,
 } from './gitleaks-canary/runtime-synthetic.mjs';
 
@@ -24,6 +26,13 @@ const integrityConfigPath = path.join(probeRoot, '.gitleaks-integrity.generated.
 /** Pin matches CI wrapper / security-full probe install. */
 const GITLEAKS_DOCKER = 'ghcr.io/gitleaks/gitleaks:v8.22.1';
 
+/**
+ * Run a subprocess from the repo root and return spawnSync output.
+ * @param {string} command
+ * @param {string[]} args
+ * @param {import('node:child_process').SpawnSyncOptionsWithStringEncoding} [options]
+ * @returns {import('node:child_process').SpawnSyncReturns<string>}
+ */
 function run(command, args, options = {}) {
   return spawnSync(command, args, {
     cwd: repoRoot,
@@ -32,6 +41,7 @@ function run(command, args, options = {}) {
   });
 }
 
+/** Write integrity config with canary path allowlist removed for probe scans. @returns {void} */
 function ensureIntegrityConfig() {
   fs.mkdirSync(probeRoot, { recursive: true });
   const main = fs.readFileSync(mainConfigPath, 'utf8');
@@ -46,6 +56,11 @@ function ensureIntegrityConfig() {
   fs.writeFileSync(integrityConfigPath, withoutCanaryPath);
 }
 
+/**
+ * Map a host path under the repo to the `/repo` bind-mount path used in Docker.
+ * @param {string} hostPath
+ * @returns {string}
+ */
 function hostToContainerSource(hostPath) {
   const resolved = path.resolve(hostPath);
   const root = path.resolve(repoRoot);
@@ -56,6 +71,10 @@ function hostToContainerSource(hostPath) {
   return resolved;
 }
 
+/**
+ * Prefer local `gitleaks`; fall back to Docker; skip locally when neither exists.
+ * @returns {{ mode: 'local' } | { mode: 'docker' }}
+ */
 function resolveGitleaksRunner() {
   const local = run('gitleaks', ['version'], { stdio: 'pipe' });
   if (!local.error && local.status === 0) {
@@ -75,6 +94,7 @@ function resolveGitleaksRunner() {
 
 const gitleaksRunner = resolveGitleaksRunner();
 
+/** Log the selected Gitleaks runner and version for CI audit trails. @returns {void} */
 function logRunnerVersion() {
   if (gitleaksRunner.mode === 'local') {
     const version = run('gitleaks', ['version'], { stdio: 'pipe' });
@@ -95,6 +115,12 @@ function logRunnerVersion() {
 
 logRunnerVersion();
 
+/**
+ * Run Gitleaks against `sourcePath` and parse the JSON report at `reportPath`.
+ * @param {string} sourcePath
+ * @param {string} reportPath
+ * @returns {{ status: number, findings: Record<string, unknown>[] }}
+ */
 function gitleaksReport(sourcePath, reportPath) {
   const resolvedSource = path.resolve(sourcePath);
   const resolvedReport = path.resolve(reportPath);
@@ -173,6 +199,13 @@ function gitleaksReport(sourcePath, reportPath) {
   return { status, findings };
 }
 
+/**
+ * Assert Gitleaks findings match expected rule IDs and optional probe markers.
+ * @param {string} label
+ * @param {string} sourceDir
+ * @param {Array<{ fileSuffix: string, ruleId: string | string[], marker?: string }>} expected
+ * @returns {void}
+ */
 function expectFinding(label, sourceDir, expected) {
   const reportFile = path.join(sourceDir, '.gitleaks-report.json');
   const { status, findings } = gitleaksReport(sourceDir, reportFile);
@@ -215,6 +248,11 @@ function expectFinding(label, sourceDir, expected) {
   console.log(`${label}: OK (${expected.length ? `${expected.length} expected finding(s)` : 'clean'})`);
 }
 
+/**
+ * Read a canary template file from `scripts/gitleaks-canary/`.
+ * @param {string} name
+ * @returns {string}
+ */
 function readTemplate(name) {
   const filePath = path.join(canaryDir, name);
   if (!fs.existsSync(filePath)) {
@@ -224,6 +262,11 @@ function readTemplate(name) {
   return fs.readFileSync(filePath, 'utf8');
 }
 
+/**
+ * Read a static canary fixture from `scripts/gitleaks-canary/`.
+ * @param {string} name
+ * @returns {string}
+ */
 function readCanary(name) {
   const filePath = path.join(canaryDir, name);
   if (!fs.existsSync(filePath)) {
@@ -233,6 +276,11 @@ function readCanary(name) {
   return fs.readFileSync(filePath, 'utf8');
 }
 
+/**
+ * Create a unique directory under `.cache/gitleaks-probes/` for an isolated probe.
+ * @param {string} prefix
+ * @returns {string}
+ */
 function freshProbeDir(prefix) {
   fs.mkdirSync(probeRoot, { recursive: true });
   return fs.mkdtempSync(path.join(probeRoot, prefix));
@@ -251,6 +299,8 @@ const probeIds = {
   groq: 'GROQ_KEY',
   tibberNear: 'TIBBER_NEAR',
   mqttMixed: 'MQTT_MIXED',
+  awattar: 'AWATTAR_KEY',
+  mqttPlaceholder: 'MQTT_PLACEHOLDER',
 };
 
 const synth = {
@@ -259,6 +309,8 @@ const synth = {
   groqKey: syntheticGroqKey(probeIds.groq),
   tibberNearToken: syntheticTibberToken(probeIds.tibberNear),
   mqttMixedPassword: syntheticMqttPassword(probeIds.mqttMixed),
+  awattarToken: syntheticAwattarToken(probeIds.awattar),
+  mqttPlaceholderPassword: syntheticMqttPasswordWithPlaceholder(probeIds.mqttPlaceholder),
 };
 
 // Positive: docs path restored (no whole-file ignore) + Tibber canary
@@ -274,7 +326,7 @@ fs.writeFileSync(
 expectFinding('Docs API-Reference Tibber probe', docsProbe, [
   {
     fileSuffix: 'docs/API-Reference.md',
-    ruleId: ['tibber-api-token', 'generic-api-key'],
+    ruleId: 'tibber-api-token',
     marker: probeMarker(probeIds.docs),
   },
 ]);
@@ -338,7 +390,7 @@ fs.writeFileSync(
 expectFinding('Tibber marker near placeholder text', tibberNearProbe, [
   {
     fileSuffix: 'tibber.env',
-    ruleId: ['tibber-api-token', 'generic-api-key'],
+    ruleId: 'tibber-api-token',
     marker: probeMarker(probeIds.tibberNear),
   },
 ]);
@@ -364,6 +416,45 @@ expectFinding('MQTT mixed-line password probe', mqttMixedProbe, [
     fileSuffix: 'Broker.ts',
     ruleId: 'mqtt-credentials',
     marker: probeMarker(probeIds.mqttMixed),
+  },
+]);
+
+// Positive: aWATTar token (exact rule ID)
+const awattarProbe = freshProbeDir('awattar-');
+fs.writeFileSync(
+  path.join(awattarProbe, 'awattar.env'),
+  applyTemplate(readTemplate('awattar-positive.template'), {
+    PROBE_AWATTAR_VAL: synth.awattarToken,
+  }),
+);
+expectFinding('aWATTar API key probe', awattarProbe, [
+  {
+    fileSuffix: 'awattar.env',
+    ruleId: 'awattar-api-key',
+    marker: probeMarker(probeIds.awattar),
+  },
+]);
+
+const awattarSafeProbe = freshProbeDir('awattar-safe-');
+fs.writeFileSync(
+  path.join(awattarSafeProbe, 'awattar.env'),
+  readCanary('awattar-placeholder-negative.env'),
+);
+expectFinding('aWATTar your_ placeholder assignment', awattarSafeProbe, []);
+
+// Positive: mqttPassword containing literal placeholder substring
+const mqttPlaceholderProbe = freshProbeDir('mqtt-placeholder-');
+fs.writeFileSync(
+  path.join(mqttPlaceholderProbe, 'mqtt.env'),
+  applyTemplate(readTemplate('mqtt-placeholder-positive.template'), {
+    PROBE_MQTT_VAL: synth.mqttPlaceholderPassword,
+  }),
+);
+expectFinding('MQTT placeholder substring probe', mqttPlaceholderProbe, [
+  {
+    fileSuffix: 'mqtt.env',
+    ruleId: 'mqtt-credentials',
+    marker: probeMarker(probeIds.mqttPlaceholder),
   },
 ]);
 

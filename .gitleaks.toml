@@ -68,8 +68,9 @@ commits = [
 [[rules]]
 id = "tibber-api-token"
 description = "Tibber API Token (real token, not placeholder)"
-regex = '''(?i)tibber[_\-]?(api[_\-]?)?(token|key|secret)\s*[:=]\s*['"]?[a-zA-Z0-9\-_]{24,}['"]?'''
+regex = '''(?i)tibber(?:[_\-]?(?:api[_\-]?)?(?:token|key|secret))?\s*[:=]\s*['"]?([a-zA-Z0-9\-_]{24,})['"]?'''
 entropy = 3.5
+secretGroup = 1
 tags = ["api", "tibber", "energy"]
 [rules.allowlist]
 regexes = ['''your_''', '''placeholder''', '''example''', '''=\s*$''', '''=\s*\n''']
@@ -77,8 +78,9 @@ regexes = ['''your_''', '''placeholder''', '''example''', '''=\s*$''', '''=\s*\n
 [[rules]]
 id = "awattar-api-key"
 description = "aWATTar API Key (real key, not placeholder)"
-regex = '''(?i)awattar[_\-]?(api[_\-]?)?(token|key|secret)\s*[:=]\s*['"]?[a-zA-Z0-9\-_]{24,}['"]?'''
+regex = '''(?i)awattar(?:[_\-]?(?:api[_\-]?)?(?:token|key|secret))?\s*[:=]\s*['"]?([a-zA-Z0-9\-_]{24,})['"]?'''
 entropy = 3.5
+secretGroup = 1
 tags = ["api", "awattar", "energy"]
 [rules.allowlist]
 regexes = ['''your_''', '''placeholder''', '''example''']

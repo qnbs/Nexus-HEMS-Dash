@@ -448,7 +448,25 @@ See `.env.example` for the full list, including per-adapter host/port settings.
 
 ---
 
-## 14. PR merge gate — review quiescence (mandatory)
+## 14. Cursor Cloud agents
+
+Cloud agents share the maintainer’s **cloud-first CI** rules in `CLAUDE.md` (sequential local checks, no full-suite/local E2E unless CI is unavailable or the user asks). They also follow the PR merge gate in §15 and [`docs/runbooks/pr-review-correction-loop.md`](docs/runbooks/pr-review-correction-loop.md).
+
+### Git push cadence
+
+- **Batch** related commits locally: targeted verification first (`type-check` → `lint` → focused tests), then **one push** per review cycle when practical.
+- Do **not** push after every single commit or trigger unnecessary CI/review reruns.
+- **Autonomous pushes** within an assigned task are fine; no per-push approval from the maintainer.
+- After each push, evaluate **CI and reviews on that exact head SHA**; collect feedback and land follow-up fixes in the next sensible batch when possible.
+
+### Merge
+
+- Do **not** merge without **explicit maintainer approval** and **review quiescence** (§15).
+- Never enable auto-merge unless the maintainer asks.
+
+---
+
+## 15. PR merge gate — review quiescence (mandatory)
 
 **Never merge a PR to `main` until review quiescence is reached.**
 
@@ -463,8 +481,8 @@ See `.env.example` for the full list, including per-adapter host/port settings.
 Canonical runbook: [`docs/runbooks/pr-review-correction-loop.md`](docs/runbooks/pr-review-correction-loop.md).
 
 Cloud agents: do not mark a PR complete after first green CI. Do not merge without explicit
-user instruction **and** quiescence. CodeRabbit outside-diff comments are **not** optional.
+maintainer approval **and** quiescence. CodeRabbit outside-diff comments are **not** optional.
 
 ---
 
-*Last updated: 2026-10-03. If you change tooling, scripts, deployment targets, or safety guardrails, update this file to keep it accurate.*
+*Last updated: 2026-11-05. If you change tooling, scripts, deployment targets, or safety guardrails, update this file to keep it accurate.*
