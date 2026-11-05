@@ -24,6 +24,7 @@ Wave A + post-merge safety work on `main` (Europe/Berlin dates).
 | 2026-11-04 | `1406658` | #435 Gitleaks integrity (#432) | Security Full `41919025824` Gitleaks + integrity **pass** |
 | 2026-11-04 | `d398c3f` | #436 Helm trusted registries (#424) | CI `41924473440`, Trivy `41924473477`, Deploy `41924473500` **success** |
 | 2026-11-05 | `54715ab` | #437 Gitleaks MQTT + runtime canaries (#432/#424) | PR Security Full + GitGuardian **pass**; squash merge (admin); push CI `41943847050` |
+| 2026-11-05 | `3bdca6f` | #439 freshness pagination + Gitleaks Tibber/aWATTar (#387/#432) | Squash merge (admin); primary CI green; SBOM syft download **504** flake on PR head |
 
 **Pages provenance (#392):** first green end-to-end push deploy @ `d95020c` — CI `build` artifact promoted (113 files + digest manifest), `verify-pages` passed on run `41887360783`. Subsequent deploys promote the same CI artifact pattern with matching live SHA.
 
