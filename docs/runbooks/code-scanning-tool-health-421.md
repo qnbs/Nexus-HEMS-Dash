@@ -61,10 +61,13 @@ Use the acceptance ledger: [code-scanning-alert-acceptance-ledger-421.md](code-s
 
 ## 5. Stop conditions for #421
 
-- [ ] `Security Full` enabled and at least one successful **`workflow_dispatch`** on current `main`.
-- [ ] Tool status: no unexplained configuration errors for CodeQL, Scorecard, Trivy/Grype (as shown in UI).
-- [ ] Fresh accepted analyses indexed for `refs/heads/main` (analysis IDs recorded in ledger).
+- [x] `Security Full` enabled and successful **`push`** on current `main` (post-#439 @ `3bdca6f`: run `42047974425`).
+- [x] Companion ingest workflows green on same push: CodeQL `42047974534`, Trivy SARIF `42047974501`, SBOM `42047974888`, Scorecard on recent pushes.
+- [ ] Tool status UI: no unexplained configuration errors for CodeQL, Scorecard, Trivy (maintainer export still required — agent API 403).
+- [ ] Fresh accepted analyses indexed for `refs/heads/main` (analysis IDs in acceptance ledger).
 - [ ] Schedule/cron recovery tracked separately under #387/#391.
+
+**Optional ingest smoke (after push, not inside Security Full):** `node scripts/verify-code-scanning-workflow-health.mjs` — resolves the current **`main` tip SHA** via the GitHub API and requires each listed workflow’s latest **`push`** run on `main` to be **success** at that commit (warns with `STALE success @ …` if the newest run is older). Set `VERIFY_CODE_SCANNING_STRICT=0` for a non-failing advisory run on PR branches in CI. Does **not** prove SARIF indexing (Tool status remains owner-only).
 
 ## 6. Related issue map (22 supplied alerts)
 
@@ -142,3 +145,19 @@ After maintainer re-enabled workflows and switched CodeQL to **Advanced**, a **`
 **After #429 merged (`b8d7246`):** re-run **Security Full** and **CodeQL Advanced** on `main`; expect **Security Gate green** if Gitleaks allowlists are active.
 
 The red **Scorecard + Trivy configuration error** banner on the Security tab is **Tool status**, not the Security Full rollup. Mitigation PR adds explicit Scorecard SARIF upload + `trivy-code-scanning.yml` Helm SARIF ingest.
+
+## 10. Post-#439 push on `main` (2026-11-05 ~15:44 CET)
+
+Squash merge **#439** @ `3bdca6f` triggered parallel ingest workflows:
+
+| Workflow | Run ID | Result |
+| --- | --- | --- |
+| Security Full | `42047974425` | success |
+| CodeQL Advanced | `42047974534` | success |
+| Trivy Code Scanning | `42047974501` | success |
+| SBOM Generation | `42047974888` | success |
+| Scheduled SBOM (`event=schedule`) | `41959107523` | success (2026-11-05 03:03 UTC) |
+
+**Semgrep container:** `security-full.yml` uses `semgrep/semgrep@sha256:…` (OCI index digest for tag `1.184.0`) so the job image is immutable.
+
+**Remaining #421 owner steps:** Security → Code scanning → Tool status export; reconcile **37** UI alerts vs acceptance ledger (§6). Do not close #421 on green Actions alone.

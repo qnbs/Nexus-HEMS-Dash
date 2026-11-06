@@ -44,3 +44,25 @@ Do not re-introduce `pull_request_target` without a documented threat model (unt
 ## Out of scope for agents
 
 Cloud agents must **not** change ruleset settings without explicit maintainer authorization.
+
+---
+
+## Operational note — Code scanning rule and merge `BLOCKED` (2026-11-06)
+
+GitHub exposes ruleset **15007889** with a **`code_scanning`** rule: **CodeQL** must meet configured thresholds (**critical** security alerts and **errors** for standard severity). This is independent of green CI workflow runs.
+
+### Symptoms
+
+- `gh pr view <n> --json mergeStateStatus` returns **`BLOCKED`** while `mergeable` is **`MERGEABLE`** and required workflow checks are green.
+- REST merge (`gh pr merge`) fails with “base branch policy prohibits the merge” without naming a missing check.
+- Auto-merge may be disabled at org/repo level (`enablePullRequestAutoMerge`); that is separate from this rule.
+
+### Maintainer actions
+
+1. **Security** tab → **Code scanning** → triage **CodeQL** (and Semgrep if applicable): fix, dismiss with reason, or mark false positives per org policy until the ruleset’s `code_scanning` evaluation passes for the PR’s head commit.
+2. If the UI shows stale or contradictory state, re-run **CodeQL Advanced** on the branch after triage.
+3. Per [pr-review-correction-loop.md](pr-review-correction-loop.md): agents cannot verify alert counts via `gh api .../code-scanning/alerts` (often **403** on integration tokens); rely on the **Security** tab or a maintainer token.
+
+### Agent policy alignment
+
+Per **AGENTS.md** §15: do **not** use `--admin` merge or bypass branch protection; merge is a maintainer action once **review quiescence** and **ruleset evaluation** both pass.

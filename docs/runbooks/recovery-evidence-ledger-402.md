@@ -24,11 +24,12 @@ Wave A + post-merge safety work on `main` (Europe/Berlin dates).
 | 2026-11-04 | `1406658` | #435 Gitleaks integrity (#432) | Security Full `41919025824` Gitleaks + integrity **pass** |
 | 2026-11-04 | `d398c3f` | #436 Helm trusted registries (#424) | CI `41924473440`, Trivy `41924473477`, Deploy `41924473500` **success** |
 | 2026-11-05 | `54715ab` | #437 Gitleaks MQTT + runtime canaries (#432/#424) | PR Security Full + GitGuardian **pass**; squash merge (admin); push CI `41943847050` |
+| 2026-11-05 | `3bdca6f` | #439 freshness pagination + Gitleaks Tibber/aWATTar (#387/#432) | Squash merge (admin); ingest runs `42047974425`–`42047974888` **success**; PR SBOM syft **504** flake |
 
 **Pages provenance (#392):** first green end-to-end push deploy @ `d95020c` — CI `build` artifact promoted (113 files + digest manifest), `verify-pages` passed on run `41887360783`. Subsequent deploys promote the same CI artifact pattern with matching live SHA.
 
-**Security audit wave (#421–#425):** **#437** merged @ `54715ab` — runtime Gitleaks canaries, MQTT line allowlist fix, Helm verify hardening. **#432** code path closed; maintainer GitGuardian disposition for historical SHAs (`8280130` on main) may remain. **#421** Tool status / alert export still owner-required (API 403).
+**Security audit wave (#421–#425):** **#439** merged @ `3bdca6f`. Workflow ingest green on push (§421 runbook §10). **Tool status / alert export** still owner-required (API 403). **#411** Grype DB: rely on **`cache-db: true`** in `anchore/scan-action` (same Grype binary as scan); no separate CLI warm step.
 
-**Open tracker items:** #387/#391 schedule delivery (SBOM cron 03:00 UTC — verify after window); #401 release (explicit approval only); #423–#425 acceptance ledger; #411 SBOM Grype DB flake (`database does not exist` on PR `41936482081` frontend job).
+**Open tracker items:** #387/#391 schedule delivery (SBOM cron verified 2026-11-05 `41959107523` — monitor recurrence); #401 release (explicit approval only); #423–#425 acceptance ledger; #421 UI Tool status + alert inventory.
 
-**Runner queue (#411):** intermittent queue delays observed; deploy/CI eventually completed on `d95020c`. `deploy-recovery.yml` uses `gh run list --repo "$GITHUB_REPOSITORY"` (#413).
+**Runner queue (#411 issue):** intermittent queue delays observed; `deploy-recovery.yml` uses `gh run list --repo "$GITHUB_REPOSITORY"` (#413). Grype **`database does not exist`** flake tracked in [grype-db-resilience-411.md](grype-db-resilience-411.md).

@@ -304,6 +304,7 @@ re-request `@coderabbitai review`.
 Merge to `main` is allowed **only** when **review quiescence** (§1.1) is reached **and**:
 
 - [ ] All **required** GitHub checks green on the **latest** commit.
+- [ ] **Branch ruleset evaluation passes** — e.g. ruleset **15007889** includes a **`code_scanning`** rule (CodeQL thresholds). `mergeStateStatus: BLOCKED` with green CI often means open Code scanning alerts or failed tool evaluation; see [ruleset-hardening-proposal-15007889.md](ruleset-hardening-proposal-15007889.md) § Operational note.
 - [ ] Every review bot has **finished** on the latest SHA (not "in progress" / "queued").
 - [ ] **Zero** unresolved GitHub review threads (inline), **all severities** including nitpick.
 - [ ] CodeRabbit outside-diff fetch run on latest SHA and **zero** unaddressed items:

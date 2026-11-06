@@ -94,6 +94,7 @@ jobs:
         with:
           image: ${{ matrix.image }}:${{ github.sha }}
           config: .grype.yaml
+          cache-db: true
           fail-build: true
           severity-cutoff: critical
           output-format: sarif
