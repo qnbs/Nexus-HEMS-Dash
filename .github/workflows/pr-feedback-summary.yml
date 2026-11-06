@@ -26,7 +26,10 @@ concurrency:
   # for the same PR) so overlapping summary-postings dedupe. workflow_run.id would be
   # unique per run, making the group a no-op.
   group: ${{ github.workflow }}-${{ github.event.workflow_run.head_branch }}
-  cancel-in-progress: true
+  # Queue all summary runs for this branch — do not cancel in-progress, or the
+  # burst of four completions drops sections (#446).
+  cancel-in-progress: false
+  queue: max
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true

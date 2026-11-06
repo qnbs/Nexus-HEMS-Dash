@@ -15,6 +15,8 @@ Release notes are maintained here and published via [semantic-release](https://g
 
 ### Fixed
 
+- **ci** — `pr-feedback-summary` queues overlapping runs (`queue: max`, `cancel-in-progress: false`) so the four upstream completions are not canceled mid-flight (#443).
+
 ### Security
 
 ## [1.12.2] - 2026-10-04
