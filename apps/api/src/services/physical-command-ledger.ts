@@ -5,6 +5,7 @@
  */
 
 import type { PhysicalCommandState } from '@nexus-hems/shared-types';
+import { BEGIN_PHYSICAL_COMMAND_REPLAY_LUA } from './physical-command-ledger-lua.js';
 import { getOptionalRedisClient } from './redis-client.js';
 
 const COMMAND_PREFIX = 'nexus:physical-cmd:';
@@ -178,38 +179,32 @@ export async function beginPhysicalCommandReplay(params: {
 
   const redis = await getOptionalRedisClient();
   if (redis) {
-    const aliasClaimed = await redis.set(
-      `${IDEM_ALIAS_PREFIX}${idempotencyKey}`,
+    const recordKey = `${COMMAND_PREFIX}${commandId}`;
+    const aliasKey = `${IDEM_ALIAS_PREFIX}${idempotencyKey}`;
+    const claimResult = await redis.eval(
+      BEGIN_PHYSICAL_COMMAND_REPLAY_LUA,
+      2,
+      recordKey,
+      aliasKey,
+      JSON.stringify(pending),
+      String(LEDGER_TTL_SEC),
       commandId,
-      'EX',
-      LEDGER_TTL_SEC,
-      'NX',
     );
-    if (aliasClaimed !== 'OK') {
+    const code = typeof claimResult === 'number' ? claimResult : Number(claimResult);
+    if (code === 0) {
+      return { kind: 'proceed' };
+    }
+    if (code === 1) {
+      const raced = await readRecord(commandId);
+      return raced ? classifyExisting(raced) : { kind: 'proceed' };
+    }
+    if (code === 2) {
       const racedAlias = await resolveIdempotencyAlias(idempotencyKey);
       if (racedAlias) return racedAlias;
+      const raced = await readRecord(commandId);
+      return raced ? classifyExisting(raced) : { kind: 'proceed' };
     }
-
-    const claimed = await redis.set(
-      `${COMMAND_PREFIX}${commandId}`,
-      JSON.stringify(pending),
-      'EX',
-      LEDGER_TTL_SEC,
-      'NX',
-    );
-    if (claimed === 'OK') {
-      return { kind: 'proceed' };
-    }
-    if (aliasClaimed === 'OK') {
-      await redis.del(`${IDEM_ALIAS_PREFIX}${idempotencyKey}`);
-    }
-    const raced = await readRecord(commandId);
-    if (!raced) {
-      const aliasAfterRace = await resolveIdempotencyAlias(idempotencyKey);
-      if (aliasAfterRace) return aliasAfterRace;
-      return { kind: 'proceed' };
-    }
-    return classifyExisting(raced);
+    throw new Error(`[physical-command-ledger] unexpected eval return: ${String(claimResult)}`);
   }
 
   pruneMemory();
