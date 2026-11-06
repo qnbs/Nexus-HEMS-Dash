@@ -99,6 +99,11 @@ export class TimeseriesService implements EventBusSubscriber {
   private walGate: Promise<void> = Promise.resolve();
   /** Serializes Influx write/flush — one flight at a time even if WAL lock is released during recovery. */
   private influxSerial: Promise<void> = Promise.resolve();
+  /**
+   * Only one `recoverWAL` body at a time: concurrent callers share a queue so `mergeStrandedSnapshotsIntoPrimary`
+   * cannot steal another run's active `.recovering` snapshot while flush retries hold the gate open.
+   */
+  private walRecoverChain: Promise<void> = Promise.resolve();
 
   constructor(deps?: TimeseriesServiceDeps) {
     this.dataDir = deps?.dataDir ?? getEnv('NEXUS_HEMS_DATA_DIR', DEFAULT_DATA_DIR);
@@ -159,6 +164,12 @@ export class TimeseriesService implements EventBusSubscriber {
    * Influx retries run **outside** the WAL lock so `onBatch` can append while recovery waits on the network.
    */
   async recoverWAL(): Promise<void> {
+    const next = this.walRecoverChain.then(() => this.recoverWALBody());
+    this.walRecoverChain = next.catch(() => {});
+    return next;
+  }
+
+  private async recoverWALBody(): Promise<void> {
     if (!this.writeApi) {
       console.warn('[TimeseriesService] WAL recovery skipped — no WriteApi');
       return;

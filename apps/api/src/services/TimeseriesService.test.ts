@@ -327,6 +327,56 @@ describe('TimeseriesService WAL recovery', () => {
     await svc.destroy();
   });
 
+  it('serializes concurrent recoverWAL so a second run cannot merge an active .recovering snapshot', async () => {
+    const dataDir = mkdtempSync(join(tmpdir(), 'wal-concurrent-rec-'));
+    dirs.push(dataDir);
+    const walPath = join(dataDir, 'wal.ndjson');
+    const recoveringPath = `${walPath}.recovering`;
+    const lines = [samplePoint(1), samplePoint(2)].map((p) => JSON.stringify(p)).join('\n');
+    writeFileSync(walPath, `${lines}\n`, 'utf8');
+
+    let releaseSecondFlush!: () => void;
+    const secondFlushBarrier = new Promise<void>((resolve) => {
+      releaseSecondFlush = resolve;
+    });
+    let flushCalls = 0;
+    const writePoint = vi.fn();
+    const writeApi = {
+      writePoint,
+      flush: vi.fn(async () => {
+        flushCalls += 1;
+        if (flushCalls === 1) return;
+        await secondFlushBarrier;
+      }),
+      close: vi.fn(async () => {}),
+    } as unknown as WriteApi;
+
+    const svc = new TimeseriesService({
+      dataDir,
+      writeApi,
+      walBatchSize: 1,
+      maxWalRecoveryAttempts: 3,
+    });
+
+    const first = svc.recoverWAL();
+    for (let i = 0; i < 200 && flushCalls < 2; i++) {
+      await new Promise((r) => setTimeout(r, 5));
+    }
+    expect(flushCalls).toBe(2);
+    expect(existsSync(recoveringPath)).toBe(true);
+
+    const second = svc.recoverWAL();
+    await new Promise((r) => setTimeout(r, 25));
+    expect(existsSync(recoveringPath)).toBe(true);
+
+    releaseSecondFlush();
+    await first;
+    await second;
+
+    expect(existsSync(recoveringPath)).toBe(false);
+    await svc.destroy();
+  });
+
   it('getWalBacklogBytes includes recovering snapshot size', async () => {
     const dataDir = mkdtempSync(join(tmpdir(), 'wal-backlog-bytes-'));
     dirs.push(dataDir);
