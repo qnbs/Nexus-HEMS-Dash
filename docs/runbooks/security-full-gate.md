@@ -55,7 +55,7 @@ GitHub is running **both** the repository **default** Code scanning setup and **
 
 **Path A — Advanced (repo workflow, ADR-027 as implemented)**  
 1. **Settings → Code security → Code scanning** — turn **Default** setup **off**.  
-2. **Actions → `CodeQL Advanced` (`codeql.yml`)** — GitHub may have **disabled** this workflow when Default was on; **re-enable** it if needed (do not assume it is still active).  
+2. **Actions → Code scanning workflows** — enable **only** `.github/workflows/codeql.yml` (display name **CodeQL Advanced**). If another **CodeQL Advanced** entry points at **`codeql1.yml`** (a removed/phantom file), **disable** it first so GitHub is not serving two Advanced definitions.  
 3. Run **workflow_dispatch** on `main` if needed.  
 4. In **Tool status**, confirm a **successful Advanced** analysis for `refs/heads/main` that **completed after** this configuration change (use `workflow_dispatch` or a new push to `main` to trigger it). Do not rely on an older successful run alone as proof that SARIF uploads still work.
 
