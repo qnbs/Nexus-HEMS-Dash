@@ -3,11 +3,19 @@ import { describe, it } from 'node:test';
 import {
   MARKER,
   assembleSummaryBody,
+  isBotOwnedSummaryComment,
+  isNewestWorkflowRunForHead,
   parseExistingSummary,
+  parseWorkflowNameFromHeading,
   upsertPrFeedbackSummary,
 } from './pr-feedback-summary.mjs';
 
 describe('pr-feedback-summary', () => {
+  it('parses workflow name from heading with two-code-point warning emoji', () => {
+    assert.equal(parseWorkflowNameFromHeading('⚠️ CI finished'), 'CI');
+    assert.equal(parseWorkflowNameFromHeading('✅ Security Full finished'), 'Security Full');
+  });
+
   it('assembles a stable body with marker and head tag', () => {
     const sha = 'a'.repeat(40);
     const body = assembleSummaryBody(sha, {
@@ -18,7 +26,7 @@ describe('pr-feedback-summary', () => {
     assert.ok(body.includes('### ✅ CI finished'));
   });
 
-  it('parses round-trip sections for the same head', () => {
+  it('parseExistingSummary round-trips sections', () => {
     const sha = 'b'.repeat(40);
     const first = assembleSummaryBody(sha, {
       CI: '### ✅ CI finished\n\nfirst',
@@ -26,19 +34,126 @@ describe('pr-feedback-summary', () => {
     const parsed = parseExistingSummary(first);
     assert.equal(parsed.headSha, sha);
     assert.ok(parsed.sections.CI.includes('first'));
-
-    const second = assembleSummaryBody(sha, {
-      ...parsed.sections,
-      'Security Full': '### ✅ Security Full finished\n\nsec',
-    });
-    const again = parseExistingSummary(second);
-    assert.ok(again.sections.CI.includes('first'));
-    assert.ok(again.sections['Security Full'].includes('sec'));
   });
 
-  it('upsert updates one comment in place and deletes duplicates for same head', async () => {
-    const sha = 'c'.repeat(40);
-    const calls = { deleted: [], updated: 0, created: 0 };
+  it('isBotOwnedSummaryComment only matches github-actions bot', () => {
+    assert.equal(isBotOwnedSummaryComment({ login: 'github-actions[bot]' }), true);
+    assert.equal(isBotOwnedSummaryComment({ login: 'someone' }), false);
+  });
+
+  it('skips when workflow_run head does not match current PR head', async () => {
+    const calls = { updated: 0, created: 0 };
+    const github = {
+      paginate: {
+        iterator: async function* () {
+          yield { data: [] };
+        },
+      },
+      rest: {
+        pulls: { get: async () => ({ data: { head: { sha: 'a'.repeat(40) } } }) },
+        issues: {
+          listComments: async () => ({ data: [] }),
+          updateComment: async () => {
+            calls.updated += 1;
+          },
+          createComment: async () => {
+            calls.created += 1;
+          },
+          deleteComment: async () => {},
+        },
+        actions: { listWorkflowRuns: async () => ({ data: { workflow_runs: [] } }) },
+      },
+    };
+
+    await upsertPrFeedbackSummary(
+      github,
+      { owner: 'o', repo: 'r', prNumber: 1 },
+      {
+        id: 1,
+        workflow_id: 99,
+        html_url: 'https://x',
+        name: 'CI',
+        conclusion: 'success',
+        head_sha: 'c'.repeat(40),
+        head_branch: 'topic',
+      },
+      { prHeadSha: 'a'.repeat(40), log: { info: () => {}, error: () => {} } },
+    );
+
+    assert.equal(calls.updated, 0);
+    assert.equal(calls.created, 0);
+  });
+
+  it('skips when workflow run is not the newest for same workflow + branch + sha', async () => {
+    const sha = 'd'.repeat(40);
+    const calls = { issues: [] };
+    const github = {
+      paginate: {
+        iterator: async function* () {
+          yield { data: [] };
+        },
+      },
+      rest: {
+        pulls: { get: async () => ({ data: { head: { sha } } }) },
+        issues: {
+          listComments: async () => {
+            calls.issues.push('list');
+            return { data: [] };
+          },
+          updateComment: async () => {
+            calls.issues.push('update');
+          },
+          createComment: async () => {
+            calls.issues.push('create');
+          },
+          deleteComment: async () => {
+            calls.issues.push('delete');
+          },
+        },
+        actions: {
+          listWorkflowRuns: async () => ({
+            data: {
+              workflow_runs: [
+                { id: 999, event: 'pull_request', head_sha: sha, created_at: '2026-01-02' },
+                { id: 1, event: 'pull_request', head_sha: sha, created_at: '2026-01-01' },
+              ],
+            },
+          }),
+        },
+      },
+    };
+
+    await upsertPrFeedbackSummary(
+      github,
+      { owner: 'o', repo: 'r', prNumber: 1 },
+      {
+        id: 1,
+        workflow_id: 42,
+        html_url: 'https://x',
+        name: 'CI',
+        conclusion: 'success',
+        head_sha: sha,
+        head_branch: 'topic',
+      },
+      { prHeadSha: sha, log: { info: () => {}, error: () => {} } },
+    );
+
+    assert.deepEqual(calls.issues, []);
+  });
+
+  it('upsert updates keeper, merges duplicate same-head sections, deletes stale head after', async () => {
+    const sha = 'e'.repeat(40);
+    const bodyKeeper = assembleSummaryBody(sha, {
+      CI: '### ✅ CI finished\n\nold-ci',
+    });
+    const bodyDup = assembleSummaryBody(sha, {
+      'Security Full': '### ✅ Security Full finished\n\nonly-here',
+    });
+
+    const calls = {
+      deleted: [],
+      updateArg: null,
+    };
 
     const github = {
       paginate: {
@@ -48,30 +163,32 @@ describe('pr-feedback-summary', () => {
         },
       },
       rest: {
+        pulls: { get: async () => ({ data: { head: { sha } } }) },
         issues: {
           listComments: async () => ({
             data: [
-              {
-                id: 1,
-                body: `${assembleSummaryBody(sha, { CI: '### ✅ CI finished\n\nold' })}`,
-                user: { login: 'github-actions[bot]' },
-              },
-              {
-                id: 2,
-                body: `${assembleSummaryBody(sha, { CI: '### ✅ CI finished\n\ndup' })}`,
-                user: { login: 'github-actions[bot]' },
-              },
+              { id: 10, body: `${bodyKeeper}`, user: { login: 'github-actions[bot]' } },
+              { id: 20, body: `${bodyDup}`, user: { login: 'github-actions[bot]' } },
+              { id: 30, body: `${MARKER} stale`, user: { login: 'github-actions[bot]' } },
+              { id: 40, body: `${MARKER} human?`, user: { login: 'human' } },
             ],
           }),
           deleteComment: async ({ comment_id }) => {
             calls.deleted.push(comment_id);
           },
-          updateComment: async () => {
-            calls.updated += 1;
+          updateComment: async (args) => {
+            calls.updateArg = args;
           },
           createComment: async () => {
-            calls.created += 1;
+            assert.fail('should update in place');
           },
+        },
+        actions: {
+          listWorkflowRuns: async () => ({
+            data: {
+              workflow_runs: [{ id: 50, event: 'pull_request', head_sha: sha }],
+            },
+          }),
         },
       },
     };
@@ -80,15 +197,103 @@ describe('pr-feedback-summary', () => {
       github,
       { owner: 'o', repo: 'r', prNumber: 44 },
       {
+        id: 50,
+        workflow_id: 7,
         html_url: 'https://example.com/run',
         name: 'CI',
         conclusion: 'success',
         head_sha: sha,
+        head_branch: 'pr-branch',
       },
+      { prHeadSha: sha, log: { info: () => {}, error: () => {} } },
     );
 
-    assert.equal(calls.updated, 1);
-    assert.equal(calls.created, 0);
-    assert.ok(calls.deleted.includes(2));
+    assert.equal(calls.updateArg.comment_id, 10);
+    assert.ok(calls.updateArg.body.includes('only-here'));
+    assert.ok(calls.updateArg.body.includes('### ✅ CI finished'));
+    assert.ok(calls.deleted.includes(20));
+    assert.ok(calls.deleted.includes(30));
+    assert.equal(calls.deleted.includes(40), false);
+  });
+
+  it('create-before-delete: does not delete stale until after successful create when no keeper', async () => {
+    const sha = 'f'.repeat(40);
+    const staleBody = assembleSummaryBody('0'.repeat(40), { CI: '### ✅ CI finished\n\nstale' });
+    const order = [];
+
+    const github = {
+      paginate: {
+        iterator: async function* (fn, params) {
+          yield await fn(params);
+        },
+      },
+      rest: {
+        pulls: { get: async () => ({ data: { head: { sha } } }) },
+        issues: {
+          listComments: async () => ({
+            data: [{ id: 1, body: staleBody, user: { login: 'github-actions[bot]' } }],
+          }),
+          deleteComment: async () => {
+            order.push('delete');
+          },
+          createComment: async ({ body }) => {
+            order.push('create');
+            assert.ok(body.includes(sha));
+            return { data: { id: 2 } };
+          },
+          updateComment: async () => assert.fail('unexpected update'),
+        },
+        actions: {
+          listWorkflowRuns: async () => ({
+            data: {
+              workflow_runs: [{ id: 100, event: 'pull_request', head_sha: sha }],
+            },
+          }),
+        },
+      },
+    };
+
+    await upsertPrFeedbackSummary(
+      github,
+      { owner: 'o', repo: 'r', prNumber: 1 },
+      {
+        id: 100,
+        workflow_id: 5,
+        html_url: 'https://r',
+        name: 'CI',
+        conclusion: 'success',
+        head_sha: sha,
+        head_branch: 'b',
+      },
+      { prHeadSha: sha, log: { info: () => {}, error: () => {} } },
+    );
+
+    assert.deepEqual(order, ['create', 'delete']);
+  });
+});
+
+describe('isNewestWorkflowRunForHead', () => {
+  it('returns true when API lists this run first', async () => {
+    const github = {
+      rest: {
+        actions: {
+          listWorkflowRuns: async () => ({
+            data: {
+              workflow_runs: [
+                { id: 1, event: 'pull_request', head_sha: 'a'.repeat(40) },
+                { id: 2, event: 'pull_request', head_sha: 'a'.repeat(40) },
+              ],
+            },
+          }),
+        },
+      },
+    };
+    const ok = await isNewestWorkflowRunForHead(github, { owner: 'o', repo: 'r' }, {
+      id: 1,
+      workflow_id: 9,
+      head_branch: 'b',
+      head_sha: 'a'.repeat(40),
+    });
+    assert.equal(ok, true);
   });
 });

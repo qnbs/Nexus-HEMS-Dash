@@ -57,13 +57,27 @@ jobs:
             }
             const pr = prs[0];
             const repo = context.repo;
-            await upsertPrFeedbackSummary(github, {
+            const { data: pull } = await github.rest.pulls.get({
               owner: repo.owner,
               repo: repo.repo,
-              prNumber: pr.number,
-            }, {
-              html_url: run.html_url,
-              name: run.name,
-              conclusion: run.conclusion,
-              head_sha: run.head_sha,
+              pull_number: pr.number,
             });
+            const prHeadSha = pull.head.sha;
+            await upsertPrFeedbackSummary(
+              github,
+              {
+                owner: repo.owner,
+                repo: repo.repo,
+                prNumber: pr.number,
+              },
+              {
+                id: run.id,
+                workflow_id: run.workflow_id,
+                html_url: run.html_url,
+                name: run.name,
+                conclusion: run.conclusion,
+                head_sha: run.head_sha,
+                head_branch: run.head_branch,
+              },
+              { prHeadSha, log: core },
+            );
