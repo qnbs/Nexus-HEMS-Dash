@@ -12,7 +12,7 @@ GitHub allows **only one** active CodeQL configuration per repo. If **Settings �
 | Mode | Maintainer setup |
 | --- | --- |
 | **ADR-027 / current workflow** | **Default OFF**, **Advanced ON** — keep `.github/workflows/codeql.yml` active; languages include `actions`, `javascript-typescript`, `rust`. |
-| **GitHub Default only** | **Disable** the **CodeQL Advanced** workflow (Actions → `CodeQL Advanced` → disable) **or** delete `codeql.yml` in a PR. Rely on Default for JS/TS only. |
+| **GitHub Default only** | **Disable** the **CodeQL Advanced** workflow (Actions → `CodeQL Advanced` → disable) **or** delete `codeql.yml` in a PR. **Default** coverage follows the languages GitHub **detects and you enable** for the repo (commonly JavaScript/TypeScript; supported languages such as Rust can also appear when selected — not a fixed one-language set). You lose the explicit **`actions` + matrix** control in `codeql.yml`. |
 
 **Health script:** `VERIFY_CODE_SCANNING_SKIP_CODEQL_ADVANCED=1` skips expecting a successful **`push`** run for `codeql.yml` (use only while Default is the single source and `codeql.yml` is disabled).
 
