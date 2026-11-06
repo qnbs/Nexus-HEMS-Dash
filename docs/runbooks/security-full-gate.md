@@ -22,16 +22,18 @@ Comprehensive SAST, secret detection, supply-chain, and repository-hardening gat
 
 ## Jobs
 
-| Job                          | Tool                           | Purpose                                                     |
-| ---------------------------- | ------------------------------ | ----------------------------------------------------------- |
-| `codeql`                     | GitHub CodeQL                  | JavaScript/TypeScript SAST (`security-and-quality` queries) |
-| `gitleaks`                   | Gitleaks                       | Secret/credential detection                                 |
-| `semgrep`                    | Semgrep OSS                    | SAST with `--config auto`                                   |
-| `anti-trojan-source`         | `anti-trojan-source` + Biome   | Unicode bidi attack detection                               |
-| `dependency-check`           | `pnpm audit` + license checker | Dependency vulnerabilities and license compliance           |
-| `scorecard`                  | OpenSSF Scorecard              | Supply-chain security score (non-PR)                        |
-| `branch-protection-reminder` | Shell checklist                | Prints branch-protection checklist to job summary           |
-| `security-gate`              | Shell rollup                   | Fails if any critical job failed                            |
+| Job                          | Tool / image                                      | Purpose                                                                 |
+| ---------------------------- | ------------------------------------------------- | ----------------------------------------------------------------------- |
+| `gitleaks`                   | Gitleaks Action + integrity probe                 | Secret/credential detection                                             |
+| `semgrep`                    | `semgrep/semgrep@sha256:…` (pinned digest)        | SAST with `semgrep scan --config auto` → SARIF upload (best effort)    |
+| `anti-trojan-source`         | `anti-trojan-source` + Biome                      | Unicode bidi attack detection; Biome lint                               |
+| `dependency-check`           | `pnpm audit` (HIGH report + **critical** gate)  | Production dependency vulnerabilities; critical count must be zero     |
+| `license-check`              | `license-checker` (scheduled / dispatch only)     | Advisory GPL/AGPL production license report (see workflow `if:`)       |
+| `audit-full`                 | `pnpm audit` incl. dev-deps (sched./dispatch)     | Weekly/manual full dependency report                                    |
+| `branch-protection-reminder` | Shell checklist                                   | Prints branch-protection checklist to job summary                       |
+| `security-gate`              | Shell rollup                                      | Fails if any **critical** upstream job failed                           |
+
+**CodeQL** and **OpenSSF Scorecard** are **not** jobs in this file; they run in `codeql.yml` and `scorecard.yml` (ADR-027 single-source workflows). The rollup job prints their status as informational lines only.
 
 ---
 
@@ -49,10 +51,10 @@ If the **Perform CodeQL Analysis** step fails with:
 
 > CodeQL analyses from advanced configurations cannot be processed when the default setup is enabled
 
-GitHub is running **both** the repository **default** Code scanning setup and this workflow’s **advanced** CodeQL job. ADR-027 requires **this file** as the single CodeQL source:
+GitHub is running **both** the repository **default** Code scanning setup and the **advanced** CodeQL workflow (`.github/workflows/codeql.yml`). ADR-027 requires **`codeql.yml`** as the single CodeQL source (not `security-full.yml`):
 
 1. Repo **Settings → Code security → Code scanning** — disable **default setup** (or migrate fully to default setup and remove this job — **not** current policy).
-2. Re-run **Security Full** via `workflow_dispatch` on `main`.
+2. Re-run **CodeQL Advanced** (`codeql.yml`) via `workflow_dispatch` on `main` if needed, and confirm **Security Full** stays green for the same changeset.
 3. Confirm **Tool status** shows a successful analysis for `refs/heads/main`.
 
 See [code-scanning-tool-health-421.md](code-scanning-tool-health-421.md) §7.
@@ -62,12 +64,6 @@ See [code-scanning-tool-health-421.md](code-scanning-tool-health-421.md) §7.
 - Open the alert in the GitHub Security tab.
 - If it is a true positive, fix it and add a regression test when possible.
 - If it is a false positive, use the GitHub UI to dismiss it with a reason.
-
-### Gitleaks reports a secret
-
-- **Do not commit real secrets.**
-- Rotate the exposed credential immediately.
-- If the match is a false positive (e.g., a test fixture), add a **line-specific** entry in `.gitleaksignore` and document it in `docs/runbooks/gitleaks-integrity-432.md`. Avoid whole-file path exclusions in `.gitleaks.toml`.
 
 ### Semgrep reports an issue
 
@@ -83,10 +79,11 @@ See [code-scanning-tool-health-421.md](code-scanning-tool-health-421.md) §7.
 - If a HIGH vulnerability is reported, open a dedicated remediation issue/PR.
 - The separate `pnpm audit` step in `ci.yml` is currently report-only for HIGH CVEs until remediation.
 
-### License compliance fails
+### License compliance (scheduled / manual)
 
-- `license-checker` fails on `GPL-3.0` / `AGPL-3.0` in production.
-- If a dependency has an incompatible license, find an alternative or obtain legal review.
+- The `license-check` job uses `continue-on-error: true` — advisory on schedule/dispatch runs.
+- `dependency-check` on every push also runs `license-checker` with `continue-on-error: true` for the same GPL/AGPL rule (non-blocking until promoted in the workflow).
+- If `GPL-3.0` / `AGPL-3.0` appears in production dependencies, find an alternative or obtain legal review before dropping `continue-on-error`.
 
 ---
 

@@ -1,15 +1,23 @@
 #!/usr/bin/env node
 /**
  * Verify recent successful push runs for code-scanning ingest workflows (#421).
- * Uses `gh` CLI; advisory on PRs, informational on main push.
+ * Uses `gh` CLI; compares each workflow's latest **push** run on `main` to the
+ * current `main` tip (from the API). Advisory (exit 0 with WARN lines) when
+ * `GITHUB_ACTIONS` is set on a non-main push; strict otherwise unless
+ * `VERIFY_CODE_SCANNING_STRICT=0`.
  */
 import { spawnSync } from 'node:child_process';
 import process from 'node:process';
 
 const repo = process.env.GITHUB_REPOSITORY ?? 'qnbs/Nexus-HEMS-Dash';
-const expectedSha = process.env.GITHUB_SHA ?? '';
 const isMainPush =
   process.env.GITHUB_REF === 'refs/heads/main' && process.env.GITHUB_EVENT_NAME === 'push';
+const inGithubCi = process.env.GITHUB_ACTIONS === 'true';
+/** Exit 1 when any check fails (default strict for local runs and main push). */
+const strictExit =
+  process.env.VERIFY_CODE_SCANNING_STRICT === '0'
+    ? false
+    : process.env.VERIFY_CODE_SCANNING_STRICT === '1' || isMainPush || !inGithubCi;
 
 /** @typedef {{ workflowFile: string, label: string }} WorkflowSpec */
 
@@ -39,10 +47,18 @@ function runGh(command, args) {
 }
 
 /**
+ * @returns {string}
+ */
+function getCurrentMainSha() {
+  return runGh('gh', ['api', `repos/${repo}/branches/main`, '--jq', '.commit.sha']);
+}
+
+/**
  * @param {WorkflowSpec} spec
+ * @param {string} currentMainSha
  * @returns {{ ok: boolean, detail: string }}
  */
-function checkWorkflow(spec) {
+function checkWorkflow(spec, currentMainSha) {
   const json = runGh('gh', [
     'run',
     'list',
@@ -63,37 +79,47 @@ function checkWorkflow(spec) {
   if (!run) {
     return { ok: false, detail: 'no push run found on main' };
   }
-  const shaOk = !isMainPush || !expectedSha || run.headSha === expectedSha;
+  const shaOk = run.headSha === currentMainSha;
   const ok = run.conclusion === 'success' && shaOk;
-  const detail = `${run.conclusion} @ ${run.headSha?.slice(0, 7) ?? '?'} (${run.databaseId}) ${run.url}`;
+  const shortRun = run.headSha?.slice(0, 7) ?? '?';
+  const shortMain = currentMainSha.slice(0, 7);
+  let detail = `${run.conclusion} @ ${shortRun} (${run.databaseId}) ${run.url}`;
+  if (run.conclusion === 'success' && !shaOk) {
+    detail = `STALE success @ ${shortRun} (main is ${shortMain}) (${run.databaseId}) ${run.url}`;
+  }
   return { ok, detail };
 }
 
-console.log(`Code scanning workflow ingest health (#421) — repo ${repo}`);
-if (expectedSha) {
-  console.log(`Expected head SHA (main push only): ${expectedSha}`);
+let currentMainSha = '';
+try {
+  currentMainSha = getCurrentMainSha();
+} catch (error) {
+  const message = error instanceof Error ? error.message : String(error);
+  console.error(`Cannot resolve current main SHA: ${message}`);
+  process.exit(strictExit ? 1 : 0);
 }
+
+console.log(`Code scanning workflow ingest health (#421) — repo ${repo}`);
+console.log(`Current main tip: ${currentMainSha}`);
 
 let failures = 0;
 for (const spec of workflows) {
   try {
-    const { ok, detail } = checkWorkflow(spec);
+    const { ok, detail } = checkWorkflow(spec, currentMainSha);
     console.log(`${ok ? 'OK' : 'WARN'} ${spec.label}: ${detail}`);
-    if (!ok && isMainPush) {
+    if (!ok) {
       failures += 1;
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     console.log(`WARN ${spec.label}: ${message}`);
-    if (isMainPush) {
-      failures += 1;
-    }
+    failures += 1;
   }
 }
 
-if (failures > 0 && isMainPush) {
+if (failures > 0 && strictExit) {
   console.error(
-    `${failures} workflow(s) missing a successful push run for this SHA — Tool status may lag; see docs/runbooks/code-scanning-tool-health-421.md`,
+    `${failures} workflow check(s) failed — latest push run missing, not successful, or not at main tip (${currentMainSha.slice(0, 7)}); see docs/runbooks/code-scanning-tool-health-421.md`,
   );
   process.exit(1);
 }

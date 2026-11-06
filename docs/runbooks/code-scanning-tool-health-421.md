@@ -67,7 +67,7 @@ Use the acceptance ledger: [code-scanning-alert-acceptance-ledger-421.md](code-s
 - [ ] Fresh accepted analyses indexed for `refs/heads/main` (analysis IDs in acceptance ledger).
 - [ ] Schedule/cron recovery tracked separately under #387/#391.
 
-**Optional ingest smoke (after push, not inside Security Full):** `node scripts/verify-code-scanning-workflow-health.mjs` — verifies latest **successful** `push` runs on `main` for key workflows; it does **not** prove SARIF indexing (Tool status remains owner-only).
+**Optional ingest smoke (after push, not inside Security Full):** `node scripts/verify-code-scanning-workflow-health.mjs` — resolves the current **`main` tip SHA** via the GitHub API and requires each listed workflow’s latest **`push`** run on `main` to be **success** at that commit (warns with `STALE success @ …` if the newest run is older). Set `VERIFY_CODE_SCANNING_STRICT=0` for a non-failing advisory run on PR branches in CI. Does **not** prove SARIF indexing (Tool status remains owner-only).
 
 ## 6. Related issue map (22 supplied alerts)
 
