@@ -520,7 +520,6 @@ export class TimeseriesService implements EventBusSubscriber {
     start: number,
   ): Promise<void> {
     const remaining = datapoints.slice(start);
-    await this.writeToWALUnlocked(remaining);
     const failedPath = `${this.walPath}.failed-${Date.now()}`;
     try {
       copyFileSync(recoveringPath, failedPath);
@@ -534,8 +533,14 @@ export class TimeseriesService implements EventBusSubscriber {
       // ignore
     }
     this.deleteProgress(recoveringPath);
+    /**
+     * Do **not** append `remaining` to the live primary here: `failedPath` is a full copy of the recovering snapshot,
+     * and `mergeStrandedSnapshotsIntoPrimary()` will re-append from `nextParsedIndex` on the next `recoverWAL()`.
+     * Writing both duplicated rows on every failed cycle (copy + append) caused exponential WAL growth when Influx
+     * stayed down.
+     */
     console.error(
-      `[TimeseriesService] WAL recovery failed after retries — ${remaining.length} row(s) re-staged to WAL; snapshot at ${failedPath}`,
+      `[TimeseriesService] WAL recovery failed after retries — ${remaining.length} unflushed row(s) retained in failed snapshot ${failedPath} (merge on next recovery)`,
     );
   }
 

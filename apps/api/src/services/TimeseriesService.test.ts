@@ -64,7 +64,7 @@ describe('TimeseriesService WAL recovery', () => {
     await svc.destroy();
   });
 
-  it('on recovery failure, moves snapshot aside and re-stages rows to WAL', async () => {
+  it('on recovery failure, moves snapshot aside without duplicating rows onto primary', async () => {
     const dataDir = mkdtempSync(join(tmpdir(), 'wal-fail-'));
     dirs.push(dataDir);
     const walPath = join(dataDir, 'wal.ndjson');
@@ -83,11 +83,97 @@ describe('TimeseriesService WAL recovery', () => {
 
     const failedSnap = readdirSync(dataDir).find((f) => f.startsWith('wal.ndjson.failed-'));
     expect(failedSnap).toBeTruthy();
-    expect(existsSync(walPath)).toBe(true);
-    const restaged = readFileSync(walPath, 'utf8').trim().split('\n').filter(Boolean);
-    expect(restaged.length).toBe(2);
+    expect(existsSync(walPath)).toBe(false);
+    const failedPath = join(dataDir, failedSnap!);
+    const failedLines = readFileSync(failedPath, 'utf8').trim().split('\n').filter(Boolean);
+    expect(failedLines.length).toBe(2);
 
     await svc.destroy();
+  });
+
+  it('does not grow WAL row count when recovery fails repeatedly with Influx down', async () => {
+    const dataDir = mkdtempSync(join(tmpdir(), 'wal-repeat-fail-'));
+    dirs.push(dataDir);
+    const walPath = join(dataDir, 'wal.ndjson');
+    const writeApi = {
+      writePoint: vi.fn(),
+      flush: vi.fn(async () => {
+        throw new Error('influx stays down');
+      }),
+      close: vi.fn(async () => {}),
+    } as unknown as WriteApi;
+
+    const svc = new TimeseriesService({
+      dataDir,
+      writeApi,
+      maxWalRecoveryAttempts: 1,
+      walBatchSize: 1,
+    });
+    await svc.onBatch([samplePoint(1), samplePoint(2)]);
+
+    const countLogicalRows = (): number => {
+      let total = 0;
+      for (const name of readdirSync(dataDir)) {
+        if (
+          name === 'wal.ndjson' ||
+          name === 'wal.ndjson.recovering' ||
+          (name.startsWith('wal.ndjson.failed-') && /^wal\.ndjson\.failed-\d+$/.test(name))
+        ) {
+          const p = join(dataDir, name);
+          if (existsSync(p)) {
+            total += readFileSync(p, 'utf8').trim().split('\n').filter(Boolean).length;
+          }
+        }
+      }
+      return total;
+    };
+
+    for (let cycle = 0; cycle < 5; cycle++) {
+      await svc.recoverWAL();
+      expect(countLogicalRows()).toBe(2);
+      expect(existsSync(walPath)).toBe(false);
+    }
+
+    await svc.destroy();
+  });
+
+  it('recovers all rows after repeated failed cycles once Inflush succeeds', async () => {
+    const dataDir = mkdtempSync(join(tmpdir(), 'wal-recover-after-fail-'));
+    dirs.push(dataDir);
+    const walPath = join(dataDir, 'wal.ndjson');
+    const failingApi = {
+      writePoint: vi.fn(),
+      flush: vi.fn(async () => {
+        throw new Error('influx down');
+      }),
+      close: vi.fn(async () => {}),
+    } as unknown as WriteApi;
+
+    const svcFail = new TimeseriesService({
+      dataDir,
+      writeApi: failingApi,
+      maxWalRecoveryAttempts: 1,
+      walBatchSize: 2,
+    });
+    await svcFail.onBatch([samplePoint(1), samplePoint(2)]);
+    await svcFail.recoverWAL();
+    await svcFail.recoverWAL();
+    await svcFail.destroy();
+
+    const writePoint = vi.fn();
+    const okApi = {
+      writePoint,
+      flush: vi.fn(async () => {}),
+      close: vi.fn(async () => {}),
+    } as unknown as WriteApi;
+    const svcOk = new TimeseriesService({ dataDir, writeApi: okApi, walBatchSize: 2 });
+    await svcOk.recoverWAL();
+
+    expect(writePoint).toHaveBeenCalledTimes(2);
+    expect(existsSync(walPath)).toBe(false);
+    expect(readdirSync(dataDir).some((f) => f.startsWith('wal.ndjson.failed-'))).toBe(false);
+
+    await svcOk.destroy();
   });
 
   it('merges stranded .recovering into primary before replay (no primary WAL)', async () => {
@@ -221,8 +307,8 @@ describe('TimeseriesService WAL recovery', () => {
     });
     await svc2.recoverWAL();
 
-    // Restaged row plus merged tail can duplicate the last datapoint (at-least-once); both flush in one batch.
-    expect(writeApi2.writePoint).toHaveBeenCalledTimes(2);
+    // Failed snapshot merges only rows from nextParsedIndex (point 3); no duplicate append onto primary.
+    expect(writeApi2.writePoint).toHaveBeenCalledTimes(1);
     expect(existsSync(walPath)).toBe(false);
 
     await svc.destroy();
