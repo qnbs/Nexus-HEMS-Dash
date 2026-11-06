@@ -114,7 +114,8 @@ jobs:
         env:
           TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
           TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
-          PHYSICAL_CMD_LEDGER_REDIS_URL: redis://redis:6379
+          # Job runs on the runner VM; map service port to localhost (not the service hostname).
+          PHYSICAL_CMD_LEDGER_REDIS_URL: redis://127.0.0.1:6379
 
       - name: Web Unit Tests with Coverage
         run: |
