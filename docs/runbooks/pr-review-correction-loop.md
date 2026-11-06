@@ -316,7 +316,7 @@ Merge to `main` is allowed **only** when **review quiescence** (§1.1) is reache
 - [ ] A fix push after the last review round did **not** produce new actionable comments
       (quiescence confirmed).
 - [ ] `FEATURE_STATUS.md` / audit docs updated if feature status changed.
-- [ ] Maintainer merge (agents merge only when explicitly instructed; still must reach quiescence first).
+- [ ] **Merge:** maintainer in the UI, or `gh pr merge <n> --<method> --auto` when **Allow auto-merge** is on and the maintainer asked the agent to queue the merge (still only after quiescence + green required checks + passing ruleset). Agents use the merge method allowed on `main` (often **squash** only).
 
 ---
 

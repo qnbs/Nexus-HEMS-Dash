@@ -462,7 +462,7 @@ Cloud agents share the maintainer’s **cloud-first CI** rules in `CLAUDE.md` (s
 ### Merge
 
 - Do **not** merge without **explicit maintainer approval** and **review quiescence** (§15).
-- Never enable auto-merge unless the maintainer asks.
+- **Auto-merge:** when the repository has **Settings → General → Allow auto-merge** enabled **and** the maintainer asks you to finish the merge, use `gh pr merge <n> --<merge-method> --auto` after §7 exit criteria (match allowed methods: squash/merge/rebase per branch rules). Do **not** toggle repo/org settings yourself unless the maintainer asks.
 
 ---
 
@@ -485,4 +485,4 @@ maintainer approval **and** quiescence. CodeRabbit outside-diff comments are **n
 
 ---
 
-*Last updated: 2026-11-05. If you change tooling, scripts, deployment targets, or safety guardrails, update this file to keep it accurate.*
+*Last updated: 2026-11-06. If you change tooling, scripts, deployment targets, or safety guardrails, update this file to keep it accurate.*

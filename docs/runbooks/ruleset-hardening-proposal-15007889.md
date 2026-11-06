@@ -55,7 +55,7 @@ GitHub exposes ruleset **15007889** with a **`code_scanning`** rule: **CodeQL** 
 
 - `gh pr view <n> --json mergeStateStatus` returns **`BLOCKED`** while `mergeable` is **`MERGEABLE`** and required workflow checks are green.
 - REST merge (`gh pr merge`) fails with “base branch policy prohibits the merge” without naming a missing check.
-- Auto-merge may be disabled at org/repo level (`enablePullRequestAutoMerge`); that is separate from this rule.
+- If `gh pr merge --auto` fails with `enablePullRequestAutoMerge`, turn on **Allow auto-merge** under **Settings → General** (repo or org); that is separate from the `code_scanning` rule.
 
 ### Maintainer actions
 
@@ -65,4 +65,4 @@ GitHub exposes ruleset **15007889** with a **`code_scanning`** rule: **CodeQL** 
 
 ### Agent policy alignment
 
-Per **AGENTS.md** §15: do **not** use `--admin` merge or bypass branch protection; merge is a maintainer action once **review quiescence** and **ruleset evaluation** both pass.
+Per **AGENTS.md** §15: use the normal merge path first (UI or `gh pr merge` without flags) once **review quiescence** and **ruleset evaluation** pass. Use **`--admin`** only when the **maintainer explicitly asks** and the repo’s bypass list / your role allows it (e.g. Cursor app bypass)—never to skip quiescence or green required checks.
