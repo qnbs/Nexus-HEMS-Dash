@@ -62,8 +62,9 @@ jobs:
     permissions:
       contents: read
       security-events: write
+    # Pinned OCI index digest for semgrep/semgrep:1.184.0 (immutable; Docker Hub tag is mutable).
     container:
-      image: semgrep/semgrep
+      image: semgrep/semgrep@sha256:cc1b68266f267878b39739373ea9985b9a78e5d64497dd875c8de100b22695ed
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -299,18 +300,7 @@ jobs:
       - anti-trojan-source
       - dependency-check
       - branch-protection-reminder
-    permissions:
-      actions: read
-      contents: read
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      - name: Verify code scanning workflow ingest (#421)
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: node scripts/verify-code-scanning-workflow-health.mjs
-        continue-on-error: true
-
       - name: Evaluate security results
         run: |
           echo "## Security Gate Results" >> "$GITHUB_STEP_SUMMARY"

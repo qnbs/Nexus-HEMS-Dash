@@ -67,7 +67,7 @@ Use the acceptance ledger: [code-scanning-alert-acceptance-ledger-421.md](code-s
 - [ ] Fresh accepted analyses indexed for `refs/heads/main` (analysis IDs in acceptance ledger).
 - [ ] Schedule/cron recovery tracked separately under #387/#391.
 
-Automated helper (advisory in Security Full gate): `node scripts/verify-code-scanning-workflow-health.mjs` (`continue-on-error: true` until Tool status UI is reconciled).
+**Optional ingest smoke (after push, not inside Security Full):** `node scripts/verify-code-scanning-workflow-health.mjs` — verifies latest **successful** `push` runs on `main` for key workflows; it does **not** prove SARIF indexing (Tool status remains owner-only).
 
 ## 6. Related issue map (22 supplied alerts)
 
@@ -157,5 +157,7 @@ Squash merge **#439** @ `3bdca6f` triggered parallel ingest workflows:
 | Trivy Code Scanning | `42047974501` | success |
 | SBOM Generation | `42047974888` | success |
 | Scheduled SBOM (`event=schedule`) | `41959107523` | success (2026-11-05 03:03 UTC) |
+
+**Semgrep container:** `security-full.yml` uses `semgrep/semgrep@sha256:…` (OCI index digest for tag `1.184.0`) so the job image is immutable.
 
 **Remaining #421 owner steps:** Security → Code scanning → Tool status export; reconcile **37** UI alerts vs acceptance ledger (§6). Do not close #421 on green Actions alone.

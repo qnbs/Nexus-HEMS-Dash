@@ -23,7 +23,7 @@ Template for **Wave B–G** disposition. Do not mark an alert **Fixed** until a 
 | Check | Result |
 | --- | --- |
 | `Security Full` + ingest workflows on `main` @ `3bdca6f` | Runs `42047974425`, `42047974534`, `42047974501`, `42047974888` **success** — see [code-scanning-tool-health-421.md](code-scanning-tool-health-421.md) §10 |
-| Automated ingest helper | `scripts/verify-code-scanning-workflow-health.mjs` (Security Full gate, advisory) |
+| Optional post-push ingest check | `scripts/verify-code-scanning-workflow-health.mjs` (manual; not part of Security Full gate) |
 | Agent `code-scanning/alerts` API | 403 (integration) |
 | Maintainer Security tab / Tool status | Still required for alert inventory + configuration banner |
 | Push CI / SBOM / Scorecard on `main` | Green on recent SHAs; **Tool status** may still show historical configuration errors until UI export |

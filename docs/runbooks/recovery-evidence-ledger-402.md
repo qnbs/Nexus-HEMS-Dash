@@ -28,7 +28,7 @@ Wave A + post-merge safety work on `main` (Europe/Berlin dates).
 
 **Pages provenance (#392):** first green end-to-end push deploy @ `d95020c` — CI `build` artifact promoted (113 files + digest manifest), `verify-pages` passed on run `41887360783`. Subsequent deploys promote the same CI artifact pattern with matching live SHA.
 
-**Security audit wave (#421–#425):** **#439** merged @ `3bdca6f`. Workflow ingest green on push (§421 runbook §10). **Tool status / alert export** still owner-required (API 403). **#411** Grype DB: `cache-db` (#438) + warm-grype-db composite (follow-up PR).
+**Security audit wave (#421–#425):** **#439** merged @ `3bdca6f`. Workflow ingest green on push (§421 runbook §10). **Tool status / alert export** still owner-required (API 403). **#411** Grype DB: rely on **`cache-db: true`** in `anchore/scan-action` (same Grype binary as scan); no separate CLI warm step.
 
 **Open tracker items:** #387/#391 schedule delivery (SBOM cron verified 2026-11-05 `41959107523` — monitor recurrence); #401 release (explicit approval only); #423–#425 acceptance ledger; #421 UI Tool status + alert inventory.
 
