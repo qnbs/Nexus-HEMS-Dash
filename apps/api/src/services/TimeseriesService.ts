@@ -428,6 +428,23 @@ export class TimeseriesService implements EventBusSubscriber {
   } | null> {
     return this.withWalLock(async () => {
       if (!this.writeApi) return null;
+      await mkdir(this.dataDir, { recursive: true });
+      /**
+       * Crash consistency: never `renameSync(primary → .recovering)` while a prior `wal.ndjson.recovering` still exists
+       * — on POSIX that **replaces** the destination and drops unacked rows. Re-run merge until the snapshot is gone
+       * (bounded retries for transient unlink races).
+       */
+      const staleRecovering = `${this.walPath}.recovering`;
+      for (let i = 0; i < 5; i++) {
+        this.mergeStrandedSnapshotsIntoPrimary();
+        if (!existsSync(staleRecovering)) break;
+      }
+      if (existsSync(staleRecovering)) {
+        console.warn(
+          '[TimeseriesService] Stale wal.ndjson.recovering still present after merge — refusing rename to avoid data loss',
+        );
+        return null;
+      }
       if (!existsSync(this.walPath)) return null;
 
       const recoveringPath = this.renamePrimaryWalToRecovering();

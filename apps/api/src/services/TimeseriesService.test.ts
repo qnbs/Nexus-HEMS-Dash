@@ -327,6 +327,55 @@ describe('TimeseriesService WAL recovery', () => {
     await svc.destroy();
   });
 
+  it('merges pre-existing wal.ndjson.recovering into primary before rename (both files present)', async () => {
+    const dataDir = mkdtempSync(join(tmpdir(), 'wal-stale-rec-plus-primary-'));
+    dirs.push(dataDir);
+    const walPath = join(dataDir, 'wal.ndjson');
+    const recoveringPath = `${walPath}.recovering`;
+    writeFileSync(walPath, `${JSON.stringify(samplePoint(1))}\n`, 'utf8');
+    writeFileSync(recoveringPath, `${JSON.stringify(samplePoint(2))}\n`, 'utf8');
+
+    const writePoint = vi.fn();
+    const writeApi = {
+      writePoint,
+      flush: vi.fn(async () => {}),
+      close: vi.fn(async () => {}),
+    } as unknown as WriteApi;
+
+    const svc = new TimeseriesService({ dataDir, writeApi, walBatchSize: 200 });
+    await svc.recoverWAL();
+
+    expect(writePoint).toHaveBeenCalledTimes(2);
+    expect(existsSync(recoveringPath)).toBe(false);
+    expect(existsSync(walPath)).toBe(false);
+
+    await svc.destroy();
+  });
+
+  it('recovers when only wal.ndjson.recovering exists (crash after rename, before replay)', async () => {
+    const dataDir = mkdtempSync(join(tmpdir(), 'wal-only-recovering-'));
+    dirs.push(dataDir);
+    const walPath = join(dataDir, 'wal.ndjson');
+    const recoveringPath = `${walPath}.recovering`;
+    writeFileSync(recoveringPath, `${JSON.stringify(samplePoint(42))}\n`, 'utf8');
+
+    const writePoint = vi.fn();
+    const writeApi = {
+      writePoint,
+      flush: vi.fn(async () => {}),
+      close: vi.fn(async () => {}),
+    } as unknown as WriteApi;
+
+    const svc = new TimeseriesService({ dataDir, writeApi });
+    await svc.recoverWAL();
+
+    expect(writePoint).toHaveBeenCalledTimes(1);
+    expect(existsSync(recoveringPath)).toBe(false);
+    expect(existsSync(walPath)).toBe(false);
+
+    await svc.destroy();
+  });
+
   it('serializes concurrent recoverWAL so a second run cannot merge an active .recovering snapshot', async () => {
     const dataDir = mkdtempSync(join(tmpdir(), 'wal-concurrent-rec-'));
     dirs.push(dataDir);
