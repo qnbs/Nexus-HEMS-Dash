@@ -6,6 +6,7 @@ import {
   compareWorkflowRunsForSameHead,
   isBotOwnedSummaryComment,
   isNewestWorkflowRunForHead,
+  listAllIssueComments,
   parseExistingSummary,
   parseWorkflowNameFromHeading,
   upsertPrFeedbackSummary,
@@ -420,5 +421,112 @@ describe('compareWorkflowRunsForSameHead', () => {
     const b = { id: 2, run_attempt: 2, created_at: '2026-01-01T00:00:00Z' };
     assert.ok(compareWorkflowRunsForSameHead(a, b) > 0);
     assert.ok(compareWorkflowRunsForSameHead(b, a) < 0);
+  });
+});
+
+describe('listAllIssueComments', () => {
+  it('follows pagination until two pages are merged', async () => {
+    const ids = [];
+    const github = {
+      paginate: {
+        iterator: async function* (fn, params) {
+          const p1 = await fn({ ...params, page: 1, per_page: 100 });
+          yield p1;
+          const p2 = await fn({ ...params, page: 2, per_page: 100 });
+          yield p2;
+        },
+      },
+      rest: {
+        issues: {
+          listComments: async (p) => {
+            const page = p.page ?? 1;
+            if (page === 1) {
+              return { data: [{ id: 1, body: 'a', user: { login: 'u' } }] };
+            }
+            if (page === 2) {
+              return { data: [{ id: 2, body: 'b', user: { login: 'u' } }] };
+            }
+            return { data: [] };
+          },
+        },
+      },
+    };
+    const out = await listAllIssueComments(github, { owner: 'o', repo: 'r' }, 5);
+    for (const c of out) {
+      ids.push(c.id);
+    }
+    assert.deepEqual(ids, [1, 2]);
+  });
+});
+
+describe('upsertPrFeedbackSummary burst', () => {
+  it('merges four sequential workflow sections into one keeper comment', async () => {
+    const sha = 'b'.repeat(40);
+    /** @type {Array<{ id: number, body: string | null, user: { login: string } }>} */
+    let stored = [];
+    const github = {
+      paginate: {
+        iterator: async function* (fn, params) {
+          yield await fn(params);
+        },
+      },
+      rest: {
+        pulls: { get: async () => ({ data: { head: { sha } } }) },
+        issues: {
+          listComments: async () => ({ data: stored }),
+          createComment: async ({ body }) => {
+            stored = [{ id: 1, body, user: { login: 'github-actions[bot]' } }];
+            return { data: { id: 1 } };
+          },
+          updateComment: async ({ body }) => {
+            stored = [{ id: 1, body, user: { login: 'github-actions[bot]' } }];
+          },
+          deleteComment: async () => {},
+        },
+        actions: {
+          listWorkflowRuns: async () => ({
+            data: {
+              workflow_runs: [],
+            },
+          }),
+        },
+      },
+    };
+
+    const workflows = ['CI', 'Security Full', 'Lighthouse CI', 'Performance Benchmark'];
+    let rid = 10;
+    for (const name of workflows) {
+      const eventRun = {
+        id: rid,
+        workflow_id: 1,
+        html_url: `https://example.com/run/${rid}`,
+        name,
+        conclusion: 'success',
+        head_sha: sha,
+        head_branch: 'topic',
+        run_attempt: 1,
+        created_at: '2026-01-01T00:00:00Z',
+        updated_at: '2026-01-01T00:00:00Z',
+        event: 'pull_request',
+      };
+      rid += 1;
+      github.rest.actions.listWorkflowRuns = async () => ({
+        data: {
+          workflow_runs: [eventRun],
+        },
+      });
+      await upsertPrFeedbackSummary(
+        github,
+        { owner: 'o', repo: 'r', prNumber: 99 },
+        eventRun,
+        { prHeadSha: sha, log: { info: () => {}, error: () => {} } },
+      );
+    }
+
+    assert.equal(stored.length, 1);
+    const body = stored[0]?.body ?? '';
+    for (const w of workflows) {
+      assert.ok(body.includes(`### ✅ ${w} finished`), `missing section ${w}`);
+    }
   });
 });
