@@ -155,6 +155,47 @@ async function resolveIdempotencyAlias(
   return null;
 }
 
+async function beginPhysicalCommandReplayRedis(
+  redis: NonNullable<Awaited<ReturnType<typeof getOptionalRedisClient>>>,
+  params: { commandId: string; idempotencyKey: string; pending: PhysicalCommandRecord },
+): Promise<BeginPhysicalCommandResult> {
+  const { commandId, idempotencyKey, pending } = params;
+  const recordKey = `${COMMAND_PREFIX}${commandId}`;
+  const aliasKey = `${IDEM_ALIAS_PREFIX}${idempotencyKey}`;
+  const pendingJson = JSON.stringify(pending);
+  const claimResult = await redis.eval(
+    BEGIN_PHYSICAL_COMMAND_REPLAY_LUA,
+    2,
+    recordKey,
+    aliasKey,
+    pendingJson,
+    String(LEDGER_TTL_SEC),
+    commandId,
+  );
+  const code = typeof claimResult === 'number' ? claimResult : Number(claimResult);
+  if (code === 0) {
+    const verified = await redis.get(recordKey);
+    if (verified === pendingJson && (await redis.get(aliasKey)) === commandId) {
+      return { kind: 'proceed' };
+    }
+    return { kind: 'in_flight' };
+  }
+  if (code === 1) {
+    const raced = await readRecord(commandId);
+    return raced ? classifyExisting(raced) : { kind: 'in_flight' };
+  }
+  if (code === 2) {
+    const racedAlias = await resolveIdempotencyAlias(idempotencyKey);
+    if (racedAlias) return racedAlias;
+    const raced = await readRecord(commandId);
+    return raced ? classifyExisting(raced) : { kind: 'in_flight' };
+  }
+  if (code === 3) {
+    return { kind: 'in_flight' };
+  }
+  throw new Error(`[physical-command-ledger] unexpected eval return: ${String(claimResult)}`);
+}
+
 export async function beginPhysicalCommandReplay(params: {
   commandId: string;
   idempotencyKey: string;
@@ -179,32 +220,7 @@ export async function beginPhysicalCommandReplay(params: {
 
   const redis = await getOptionalRedisClient();
   if (redis) {
-    const recordKey = `${COMMAND_PREFIX}${commandId}`;
-    const aliasKey = `${IDEM_ALIAS_PREFIX}${idempotencyKey}`;
-    const claimResult = await redis.eval(
-      BEGIN_PHYSICAL_COMMAND_REPLAY_LUA,
-      2,
-      recordKey,
-      aliasKey,
-      JSON.stringify(pending),
-      String(LEDGER_TTL_SEC),
-      commandId,
-    );
-    const code = typeof claimResult === 'number' ? claimResult : Number(claimResult);
-    if (code === 0) {
-      return { kind: 'proceed' };
-    }
-    if (code === 1) {
-      const raced = await readRecord(commandId);
-      return raced ? classifyExisting(raced) : { kind: 'proceed' };
-    }
-    if (code === 2) {
-      const racedAlias = await resolveIdempotencyAlias(idempotencyKey);
-      if (racedAlias) return racedAlias;
-      const raced = await readRecord(commandId);
-      return raced ? classifyExisting(raced) : { kind: 'proceed' };
-    }
-    throw new Error(`[physical-command-ledger] unexpected eval return: ${String(claimResult)}`);
+    return beginPhysicalCommandReplayRedis(redis, { commandId, idempotencyKey, pending });
   }
 
   pruneMemory();

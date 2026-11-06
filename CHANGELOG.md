@@ -15,6 +15,8 @@ Release notes are maintained here and published via [semantic-release](https://g
 
 ### Fixed
 
+- **adapter** — Physical-command Redis claim verifies both keys after `EVAL`, never returns `proceed` on stale reads, and Lua compensates partial SET failures (#395).
+
 ### Security
 
 ## [1.12.2] - 2026-10-04

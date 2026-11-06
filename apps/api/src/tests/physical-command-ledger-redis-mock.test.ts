@@ -77,11 +77,18 @@ function createLedgerRedisMock(): IRedisClient & { state: Map<string, string> } 
       if (!recordKey || !aliasKey || !payload || !ttlStr || !commandId) {
         throw new Error('bad argv');
       }
-      void Number(ttlStr);
+      const ttl = Number(ttlStr);
+      if (!Number.isFinite(ttl) || ttl <= 0) return 3;
       if (state.has(aliasKey)) return 2;
       if (state.has(recordKey)) return 1;
-      state.set(recordKey, payload);
-      state.set(aliasKey, commandId);
+      try {
+        state.set(recordKey, payload);
+        state.set(aliasKey, commandId);
+      } catch {
+        state.delete(recordKey);
+        state.delete(aliasKey);
+        return 3;
+      }
       return 0;
     },
     xrevrange: async () =>
@@ -145,5 +152,46 @@ describe('physical-command-ledger (Redis mock)', () => {
 
     const b = await beginPhysicalCommandReplay({ commandId, idempotencyKey });
     expect(b.kind).toBe('in_flight');
+  });
+
+  it('returns in_flight when eval claims success but keys are not readable (verification)', async () => {
+    const brokenEvalClient = createLedgerRedisMock();
+    brokenEvalClient.eval = async () => 0;
+    brokenEvalClient.get = async () => null;
+    setRedisClientForTests(brokenEvalClient);
+
+    const r = await beginPhysicalCommandReplay({
+      commandId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+      idempotencyKey: 'verify-mismatch',
+    });
+    expect(r.kind).toBe('in_flight');
+  });
+
+  it('returns in_flight when command key is held but record JSON is missing (race)', async () => {
+    const mock = createLedgerRedisMock();
+    const origEval = mock.eval.bind(mock);
+    mock.eval = async (...args: Parameters<IRedisClient['eval']>) => {
+      const result = await origEval(...args);
+      return result === 0 ? 1 : result;
+    };
+    setRedisClientForTests(mock);
+
+    const r = await beginPhysicalCommandReplay({
+      commandId: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+      idempotencyKey: 'race-no-record',
+    });
+    expect(r.kind).toBe('in_flight');
+  });
+
+  it('returns in_flight when Lua reports SET failure (code 3)', async () => {
+    const mock = createLedgerRedisMock();
+    mock.eval = async () => 3;
+    setRedisClientForTests(mock);
+
+    const r = await beginPhysicalCommandReplay({
+      commandId: 'cccccccc-cccc-4ccc-8ccc-cccccccccccc',
+      idempotencyKey: 'lua-fail',
+    });
+    expect(r.kind).toBe('in_flight');
   });
 });
