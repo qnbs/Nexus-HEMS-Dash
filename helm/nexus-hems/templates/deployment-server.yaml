@@ -46,7 +46,7 @@ spec:
               value: {{ .Values.env.NODE_ENV | quote }}
             - name: PORT
               value: {{ .Values.env.PORT | quote }}
-            # WAL persistence: emptyDir mount below (read-only container root).
+            # WAL directory: PVC when server.walPersistence.enabled, else pod-ephemeral emptyDir (#452).
             - name: NEXUS_HEMS_DATA_DIR
               value: "/data/nexus-hems"
             - name: ADAPTER_MODE
@@ -97,4 +97,17 @@ spec:
         - name: tmp
           emptyDir: {}
         - name: nexus-hems-data
+          {{- if .Values.server.walPersistence.enabled }}
+          {{- if not (or .Values.server.walPersistence.existingClaim .Values.server.walPersistence.create) }}
+          {{- fail "server.walPersistence.enabled requires server.walPersistence.existingClaim or create: true (WAL PVC #452)" }}
+          {{- end }}
+          {{- if .Values.server.walPersistence.existingClaim }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.server.walPersistence.existingClaim | quote }}
+          {{- else }}
+          persistentVolumeClaim:
+            claimName: {{ include "nexus-hems.fullname" . }}-server-wal
+          {{- end }}
+          {{- else }}
           emptyDir: {}
+          {{- end }}

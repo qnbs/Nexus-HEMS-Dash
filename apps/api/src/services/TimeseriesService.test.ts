@@ -10,8 +10,8 @@ function samplePoint(n: number): UnifiedEnergyDatapoint {
   return {
     timestamp: 1_700_000_000_000 + n,
     deviceId: 'dev-1',
-    protocol: 'mqtt',
-    metric: 'power',
+    protocol: 'victron-mqtt',
+    metric: 'POWER_W',
     value: n,
     qualityIndicator: 'GOOD',
   };
@@ -233,7 +233,7 @@ describe('TimeseriesService WAL recovery', () => {
     const dataDir = mkdtempSync(join(tmpdir(), 'wal-failed-merge-'));
     dirs.push(dataDir);
     const walPath = join(dataDir, 'wal.ndjson');
-    const failedPath = `${walPath}.failed-merge`;
+    const failedPath = `${walPath}.failed-1730916000000`;
     const pts = [samplePoint(10), samplePoint(20), samplePoint(30)];
     writeFileSync(failedPath, `${pts.map((p) => JSON.stringify(p)).join('\n')}\n`, 'utf8');
     writeFileSync(
@@ -255,6 +255,88 @@ describe('TimeseriesService WAL recovery', () => {
     expect(existsSync(failedPath)).toBe(false);
     expect(writePoint).toHaveBeenCalledTimes(1);
     expect(existsSync(walPath)).toBe(false);
+
+    await svc.destroy();
+  });
+
+  it('does not treat progress sidecars as WAL snapshots for merge', async () => {
+    const dataDir = mkdtempSync(join(tmpdir(), 'wal-progress-sidecar-'));
+    dirs.push(dataDir);
+    const walPath = join(dataDir, 'wal.ndjson');
+    const failedPath = `${walPath}.failed-1730916000001`;
+    writeFileSync(failedPath, `${JSON.stringify(samplePoint(1))}\n`, 'utf8');
+    writeFileSync(
+      `${failedPath}.recovery-progress.json`,
+      `${JSON.stringify({ nextParsedIndex: 0 })}\n`,
+      'utf8',
+    );
+    // Poison line that would match old prefix-only logic (progress JSON misread as datapoint)
+    writeFileSync(
+      join(dataDir, 'wal.ndjson.failed-1730916000002.recovery-progress.json'),
+      `${JSON.stringify({ nextParsedIndex: 0, forged: true })}\n`,
+      'utf8',
+    );
+
+    const writePoint = vi.fn();
+    const writeApi = {
+      writePoint,
+      flush: vi.fn(async () => {}),
+      close: vi.fn(async () => {}),
+    } as unknown as WriteApi;
+
+    const svc = new TimeseriesService({ dataDir, writeApi });
+    await svc.recoverWAL();
+
+    expect(writePoint).toHaveBeenCalledTimes(1);
+    expect(
+      existsSync(join(dataDir, 'wal.ndjson.failed-1730916000002.recovery-progress.json')),
+    ).toBe(true);
+    const primaryLines = existsSync(walPath)
+      ? readFileSync(walPath, 'utf8').trim().split('\n').filter(Boolean)
+      : [];
+    expect(primaryLines.length).toBeLessThanOrEqual(1);
+
+    await svc.destroy();
+  });
+
+  it('quarantines JSON that fails energy datapoint schema', async () => {
+    const dataDir = mkdtempSync(join(tmpdir(), 'wal-schema-'));
+    dirs.push(dataDir);
+    const walPath = join(dataDir, 'wal.ndjson');
+    writeFileSync(
+      walPath,
+      `${JSON.stringify(samplePoint(1))}\n${JSON.stringify({ not: 'a datapoint' })}\n`,
+      'utf8',
+    );
+
+    const writePoint = vi.fn();
+    const writeApi = {
+      writePoint,
+      flush: vi.fn(async () => {}),
+      close: vi.fn(async () => {}),
+    } as unknown as WriteApi;
+
+    const svc = new TimeseriesService({ dataDir, writeApi });
+    await svc.recoverWAL();
+
+    expect(writePoint).toHaveBeenCalledTimes(1);
+    const qPath = join(dataDir, 'wal-corrupt.ndjson');
+    const qLines = readFileSync(qPath, 'utf8').trim().split('\n').filter(Boolean);
+    expect(qLines.some((l) => JSON.parse(l).reason === 'schema_validation')).toBe(true);
+
+    await svc.destroy();
+  });
+
+  it('getWalBacklogBytes includes recovering snapshot size', async () => {
+    const dataDir = mkdtempSync(join(tmpdir(), 'wal-backlog-bytes-'));
+    dirs.push(dataDir);
+    const walPath = join(dataDir, 'wal.ndjson');
+    const recoveringPath = `${walPath}.recovering`;
+    writeFileSync(recoveringPath, `${JSON.stringify(samplePoint(1))}\n`, 'utf8');
+
+    const svc = new TimeseriesService({ dataDir, writeApi: null });
+    const bytes = svc.getWalBacklogBytes();
+    expect(bytes).toBeGreaterThan(0);
 
     await svc.destroy();
   });

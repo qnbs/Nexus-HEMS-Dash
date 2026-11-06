@@ -1,0 +1,19 @@
+{{- if and .Values.server.walPersistence.enabled .Values.server.walPersistence.create (not .Values.server.walPersistence.existingClaim) }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "nexus-hems.fullname" . }}-server-wal
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "nexus-hems.labels" . | nindent 4 }}
+    app.kubernetes.io/component: server-wal
+spec:
+  accessModes:
+    {{- toYaml .Values.server.walPersistence.accessModes | nindent 4 }}
+  resources:
+    requests:
+      storage: {{ .Values.server.walPersistence.size | quote }}
+  {{- if .Values.server.walPersistence.storageClassName }}
+  storageClassName: {{ .Values.server.walPersistence.storageClassName | quote }}
+  {{- end }}
+{{- end }}

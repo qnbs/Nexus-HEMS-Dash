@@ -19,6 +19,8 @@ Release notes are maintained here and published via [semantic-release](https://g
 
 ### Fixed
 
+- **api** — WAL: strict snapshot filename grammar (progress sidecars never merged), Zod validation of NDJSON lines, backlog bytes include snapshots/progress, recovery releases WAL lock during Influx retries with serial flush, optional Helm PVC for durable WAL (#447, #452).
+
 ### Security
 
 ## [1.12.2] - 2026-10-04

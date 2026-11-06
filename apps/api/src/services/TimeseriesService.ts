@@ -6,7 +6,11 @@
  *  - Converts UnifiedEnergyDatapoint → InfluxDB Points
  *  - WAL (Write-Ahead Log) when InfluxDB writes fail or client is unavailable
  *  - Recovery on startup and periodic drain: rename-then-replay; **never** counts WAL append as remote success
- *  - Stranded `wal.ndjson.recovering` / `wal.ndjson.failed-*` snapshots are merged into the live WAL before replay (no overwrite of unflushed data)
+ *  - Stranded `wal.ndjson.recovering` / `wal.ndjson.failed-*` snapshots are merged into the live WAL before replay
+ *
+ * **Durability scope:** Delivery is **at-least-once** (duplicates possible after a crash between remote flush and
+ * progress write). WAL lines are **not** fsync'd per line; do not claim power-loss durability without OS/fsync policy.
+ * Helm: default `emptyDir` is **pod-ephemeral** — use `server.walPersistence` for PVC-backed storage (see #452).
  */
 
 import {
@@ -24,7 +28,11 @@ import { mkdir } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { InfluxDB, Point, type WriteApi } from '@influxdata/influxdb-client';
-import type { EventBusSubscriber, UnifiedEnergyDatapoint } from '@nexus-hems/shared-types';
+import {
+  type EventBusSubscriber,
+  energyDatapointSchema,
+  type UnifiedEnergyDatapoint,
+} from '@nexus-hems/shared-types';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -32,7 +40,6 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const DEFAULT_DATA_DIR = join(__dirname, '../../data');
 
 const WAL_FILE = 'wal.ndjson';
-const WAL_RECOVERING_PREFIX = 'wal.ndjson.recovering';
 const WAL_FAILED_PREFIX = 'wal.ndjson.failed-';
 const WAL_PROGRESS_SUFFIX = '.recovery-progress.json';
 const WAL_QUARANTINE = 'wal-corrupt.ndjson';
@@ -68,6 +75,17 @@ interface WalRecoveryProgress {
   nextParsedIndex: number;
 }
 
+/** Exclude progress sidecars and non-snapshot files (v7: `*.recovery-progress.json` is not a datapoint snapshot). */
+function isWalSnapshotBasename(name: string): boolean {
+  if (name.endsWith(WAL_PROGRESS_SUFFIX)) return false;
+  if (name === WAL_FILE || name === WAL_QUARANTINE) return false;
+  if (name === `${WAL_FILE}.recovering`) return true;
+  if (name.startsWith(`${WAL_FILE}.recovering.`)) return true;
+  // `wal.ndjson.failed-<digits>` only (not `failed-*.recovery-progress.json` — excluded above)
+  if (name.startsWith(WAL_FAILED_PREFIX) && /^wal\.ndjson\.failed-\d+$/.test(name)) return true;
+  return false;
+}
+
 export class TimeseriesService implements EventBusSubscriber {
   private readonly writeApi: WriteApi | null;
   private influxConnected = false;
@@ -79,6 +97,8 @@ export class TimeseriesService implements EventBusSubscriber {
   private backgroundTimer: ReturnType<typeof setInterval> | undefined;
   /** Serializes WAL file mutations vs recovery rename/replay. */
   private walGate: Promise<void> = Promise.resolve();
+  /** Serializes Influx write/flush — one flight at a time even if WAL lock is released during recovery. */
+  private influxSerial: Promise<void> = Promise.resolve();
 
   constructor(deps?: TimeseriesServiceDeps) {
     this.dataDir = deps?.dataDir ?? getEnv('NEXUS_HEMS_DATA_DIR', DEFAULT_DATA_DIR);
@@ -121,7 +141,7 @@ export class TimeseriesService implements EventBusSubscriber {
 
     await this.withWalLock(async () => {
       if (this.writeApi && this.influxConnected) {
-        const result = await this.tryFlushToInflux(datapoints);
+        const result = await this.withInfluxSerial(() => this.tryFlushToInflux(datapoints));
         if (result === 'flushed') {
           return;
         }
@@ -136,8 +156,7 @@ export class TimeseriesService implements EventBusSubscriber {
 
   /**
    * Merge stranded snapshots into the live WAL, then replay the live WAL to InfluxDB.
-   * Uses rename-then-replay so concurrent `onBatch` appends go to a fresh primary file.
-   * At-least-once delivery: replays may duplicate points in Influx after a crash between flush and progress write.
+   * Influx retries run **outside** the WAL lock so `onBatch` can append while recovery waits on the network.
    */
   async recoverWAL(): Promise<void> {
     if (!this.writeApi) {
@@ -148,8 +167,45 @@ export class TimeseriesService implements EventBusSubscriber {
     await this.withWalLock(async () => {
       await mkdir(this.dataDir, { recursive: true });
       this.mergeStrandedSnapshotsIntoPrimary();
-      await this.recoverPrimaryWalUnlocked();
     });
+
+    while (true) {
+      const session = await this.takeRecoveringSnapshotUnderLock();
+      if (!session) break;
+
+      const { recoveringPath, datapoints } = session;
+      let nextParsedIndex = this.readProgress(recoveringPath).nextParsedIndex;
+      if (nextParsedIndex > datapoints.length) {
+        nextParsedIndex = 0;
+      }
+
+      let recoveredOk = true;
+      for (let start = nextParsedIndex; start < datapoints.length; start += this.walBatchSize) {
+        const batch = datapoints.slice(start, start + this.walBatchSize);
+        const flushed = await this.flushBatchWithRetries(batch);
+        if (!flushed) {
+          await this.withWalLock(async () => {
+            await this.onRecoveryBatchFailedLocked(recoveringPath, datapoints, start);
+          });
+          recoveredOk = false;
+          this.influxConnected = false;
+          break;
+        }
+        await this.withWalLock(async () => {
+          this.writeProgress(recoveringPath, start + batch.length);
+        });
+      }
+
+      if (!recoveredOk) {
+        return;
+      }
+
+      await this.withWalLock(async () => {
+        this.removeRecoveringAfterSuccess(recoveringPath);
+      });
+      this.influxConnected = true;
+      console.log('[TimeseriesService] WAL recovery complete.');
+    }
   }
 
   /**
@@ -172,13 +228,31 @@ export class TimeseriesService implements EventBusSubscriber {
     }
   }
 
-  /** Bytes of primary WAL file if present (for health metrics). */
+  /** Bytes of WAL backlog: primary + snapshot + quarantine (not 0 while `.recovering` exists). */
   getWalBacklogBytes(): number {
+    let total = 0;
+    let names: string[] = [];
     try {
-      return statSync(this.walPath).size;
+      names = readdirSync(this.dataDir);
     } catch {
       return 0;
     }
+    for (const name of names) {
+      if (
+        name === WAL_FILE ||
+        name === WAL_QUARANTINE ||
+        isWalSnapshotBasename(name) ||
+        name.endsWith(WAL_PROGRESS_SUFFIX)
+      ) {
+        try {
+          const p = join(this.dataDir, name);
+          if (statSync(p).isFile()) total += statSync(p).size;
+        } catch {
+          // ignore
+        }
+      }
+    }
+    return total;
   }
 
   /** Graceful shutdown. */
@@ -211,9 +285,22 @@ export class TimeseriesService implements EventBusSubscriber {
     }
   }
 
+  private async withInfluxSerial<T>(fn: () => Promise<T>): Promise<T> {
+    const previous = this.influxSerial;
+    let release!: () => void;
+    this.influxSerial = new Promise<void>((r) => {
+      release = r;
+    });
+    await previous;
+    try {
+      return await fn();
+    } finally {
+      release();
+    }
+  }
+
   /**
-   * Move any `wal.ndjson.recovering*` or `wal.ndjson.failed-*` files into the live primary WAL (append), then remove the snapshot.
-   * Avoids abandoning data when the primary was recreated after a partial recovery.
+   * Move any stranded recovering/failed **snapshot** files into the live primary WAL (append), then remove the snapshot.
    */
   private mergeStrandedSnapshotsIntoPrimary(): void {
     let names: string[];
@@ -223,9 +310,7 @@ export class TimeseriesService implements EventBusSubscriber {
       return;
     }
 
-    const stranded = names.filter(
-      (n) => n.startsWith(WAL_RECOVERING_PREFIX) || n.startsWith(WAL_FAILED_PREFIX),
-    );
+    const stranded = names.filter(isWalSnapshotBasename);
     stranded.sort();
 
     for (const name of stranded) {
@@ -286,12 +371,16 @@ export class TimeseriesService implements EventBusSubscriber {
     }
   }
 
-  private quarantineCorruptLine(line: string, lineIndex: number): void {
+  private quarantineLine(
+    line: string,
+    lineIndex: number,
+    reason: 'json_parse' | 'schema_validation',
+  ): void {
     const qPath = join(this.dataDir, WAL_QUARANTINE);
     const entry = JSON.stringify({
       ts: Date.now(),
       lineIndex,
-      reason: 'json_parse',
+      reason,
       raw: line.length > 4096 ? `${line.slice(0, 4096)}…` : line,
     });
     appendFileSync(qPath, `${entry}\n`, 'utf8');
@@ -304,46 +393,55 @@ export class TimeseriesService implements EventBusSubscriber {
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
       if (line === undefined || line === '') continue;
+      let obj: unknown;
       try {
-        parsed.push(JSON.parse(line) as UnifiedEnergyDatapoint);
+        obj = JSON.parse(line) as unknown;
       } catch {
-        this.quarantineCorruptLine(line, i);
+        this.quarantineLine(line, i, 'json_parse');
+        continue;
       }
+      const valid = energyDatapointSchema.safeParse(obj);
+      if (!valid.success) {
+        this.quarantineLine(line, i, 'schema_validation');
+        continue;
+      }
+      parsed.push(valid.data);
     }
     return parsed;
   }
 
-  private async recoverPrimaryWalUnlocked(): Promise<void> {
-    if (!this.writeApi) return;
-    if (!existsSync(this.walPath)) return;
+  /** Under lock: rename primary → recovering and return parsed datapoints, or clean up and return null. */
+  private async takeRecoveringSnapshotUnderLock(): Promise<{
+    recoveringPath: string;
+    datapoints: UnifiedEnergyDatapoint[];
+  } | null> {
+    return this.withWalLock(async () => {
+      if (!this.writeApi) return null;
+      if (!existsSync(this.walPath)) return null;
 
-    const recoveringPath = this.renamePrimaryWalToRecovering();
-    if (!recoveringPath) return;
+      const recoveringPath = this.renamePrimaryWalToRecovering();
+      if (!recoveringPath) return null;
 
-    this.deleteProgress(recoveringPath);
+      this.deleteProgress(recoveringPath);
 
-    const raw = readFileSync(recoveringPath, 'utf8').trimEnd();
-    if (!raw) {
-      this.removeRecoveringSnapshotIfEmpty(recoveringPath);
-      return;
-    }
+      const raw = readFileSync(recoveringPath, 'utf8').trimEnd();
+      if (!raw) {
+        this.removeRecoveringSnapshotIfEmpty(recoveringPath);
+        return null;
+      }
 
-    const datapoints = this.parseRecoveringWal(recoveringPath);
-    console.log(
-      `[TimeseriesService] Recovering WAL snapshot (${datapoints.length} valid datapoint(s))…`,
-    );
+      const datapoints = this.parseRecoveringWal(recoveringPath);
+      console.log(
+        `[TimeseriesService] Recovering WAL snapshot (${datapoints.length} valid datapoint(s))…`,
+      );
 
-    if (datapoints.length === 0) {
-      this.removeRecoveringSnapshotIfEmpty(recoveringPath);
-      return;
-    }
+      if (datapoints.length === 0) {
+        this.removeRecoveringSnapshotIfEmpty(recoveringPath);
+        return null;
+      }
 
-    const done = await this.flushRecoveringBatches(recoveringPath, datapoints);
-    if (!done) return;
-
-    this.removeRecoveringAfterSuccess(recoveringPath);
-    this.influxConnected = true;
-    console.log('[TimeseriesService] WAL recovery complete.');
+      return { recoveringPath, datapoints };
+    });
   }
 
   private renamePrimaryWalToRecovering(): string | undefined {
@@ -375,40 +473,20 @@ export class TimeseriesService implements EventBusSubscriber {
     this.deleteProgress(recoveringPath);
   }
 
-  /** @returns true if fully flushed, false if stopped early (failure path). */
-  private async flushRecoveringBatches(
-    recoveringPath: string,
-    datapoints: UnifiedEnergyDatapoint[],
-  ): Promise<boolean> {
-    let nextParsedIndex = this.readProgress(recoveringPath).nextParsedIndex;
-    if (nextParsedIndex > datapoints.length) {
-      nextParsedIndex = 0;
-    }
-
-    for (let start = nextParsedIndex; start < datapoints.length; start += this.walBatchSize) {
-      const batch = datapoints.slice(start, start + this.walBatchSize);
-      const flushed = await this.flushBatchWithRetries(batch);
-      if (!flushed) {
-        await this.onRecoveryBatchFailed(recoveringPath, datapoints, start);
-        return false;
-      }
-      this.writeProgress(recoveringPath, start + batch.length);
-    }
-    return true;
-  }
-
   private async flushBatchWithRetries(batch: UnifiedEnergyDatapoint[]): Promise<boolean> {
-    let attempt = 0;
-    while (attempt < this.maxWalRecoveryAttempts) {
-      if ((await this.tryFlushToInflux(batch)) === 'flushed') return true;
-      const delayMs = Math.min(1000 * 2 ** attempt, 30_000);
-      await new Promise((r) => setTimeout(r, delayMs));
-      attempt++;
+    for (let attempt = 0; attempt < this.maxWalRecoveryAttempts; attempt++) {
+      if ((await this.withInfluxSerial(() => this.tryFlushToInflux(batch))) === 'flushed')
+        return true;
+      // Do not sleep after the final failed attempt — avoids extra delay on startup failure paths (v7).
+      if (attempt < this.maxWalRecoveryAttempts - 1) {
+        const delayMs = Math.min(1000 * 2 ** attempt, 30_000);
+        await new Promise((r) => setTimeout(r, delayMs));
+      }
     }
     return false;
   }
 
-  private async onRecoveryBatchFailed(
+  private async onRecoveryBatchFailedLocked(
     recoveringPath: string,
     datapoints: UnifiedEnergyDatapoint[],
     start: number,
