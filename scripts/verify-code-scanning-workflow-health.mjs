@@ -21,14 +21,22 @@ const strictExit =
 
 /** @typedef {{ workflowFile: string, label: string }} WorkflowSpec */
 
+/** Skip `codeql.yml` expectations when GitHub Code scanning uses **Default** setup only (ADR-027: do not run Default + Advanced together). */
+const skipCodeqlAdvancedWorkflow =
+  process.env.VERIFY_CODE_SCANNING_SKIP_CODEQL_ADVANCED === '1';
+
 /** @type {WorkflowSpec[]} */
-const workflows = [
+const allWorkflows = [
   { workflowFile: 'security-full.yml', label: 'Security Full' },
   { workflowFile: 'codeql.yml', label: 'CodeQL Advanced' },
   { workflowFile: 'scorecard.yml', label: 'OpenSSF Scorecard' },
   { workflowFile: 'trivy-code-scanning.yml', label: 'Trivy Code Scanning' },
   { workflowFile: 'sbom-scan.yml', label: 'SBOM Generation' },
 ];
+
+const workflows = skipCodeqlAdvancedWorkflow
+  ? allWorkflows.filter((w) => w.workflowFile !== 'codeql.yml')
+  : allWorkflows;
 
 /**
  * @param {string} command
@@ -101,6 +109,11 @@ try {
 
 console.log(`Code scanning workflow ingest health (#421) — repo ${repo}`);
 console.log(`Current main tip: ${currentMainSha}`);
+if (skipCodeqlAdvancedWorkflow) {
+  console.log(
+    'SKIP CodeQL Advanced (`codeql.yml`): VERIFY_CODE_SCANNING_SKIP_CODEQL_ADVANCED=1 — use only when GitHub Code scanning Default setup is ON and `.github/workflows/codeql.yml` is disabled; see docs/runbooks/code-scanning-tool-health-421.md',
+  );
+}
 
 let failures = 0;
 for (const spec of workflows) {

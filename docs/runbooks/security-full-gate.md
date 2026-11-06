@@ -45,19 +45,26 @@ Comprehensive SAST, secret detection, supply-chain, and repository-hardening gat
 - Rotate the exposed credential immediately.
 - If the match is a false positive (e.g., a test fixture), add a **line-specific** entry in `.gitleaksignore` and document it in `docs/runbooks/gitleaks-integrity-432.md`. Avoid whole-file path exclusions in `.gitleaks.toml`.
 
-### CodeQL fails on SARIF upload (default setup enabled)
+### CodeQL fails on SARIF upload (default + advanced both on)
 
 If the **Perform CodeQL Analysis** step fails with:
 
 > CodeQL analyses from advanced configurations cannot be processed when the default setup is enabled
 
-GitHub is running **both** the repository **default** Code scanning setup and the **advanced** CodeQL workflow (`.github/workflows/codeql.yml`). ADR-027 requires **`codeql.yml`** as the single CodeQL source (not `security-full.yml`):
+GitHub is running **both** the repository **default** Code scanning setup and **CodeQL Advanced** (`.github/workflows/codeql.yml`). **Pick one:**
 
-1. Repo **Settings → Code security → Code scanning** — disable **default setup** (or migrate fully to default setup and remove this job — **not** current policy).
-2. Re-run **CodeQL Advanced** (`codeql.yml`) via `workflow_dispatch` on `main` if needed, and confirm **Security Full** stays green for the same changeset.
-3. Confirm **Tool status** shows a successful analysis for `refs/heads/main`.
+**Path A — Advanced (repo workflow, ADR-027 as implemented)**  
+1. **Settings → Code security → Code scanning** — turn **Default** setup **off**.  
+2. **Actions → Code scanning workflows** — enable **only** `.github/workflows/codeql.yml` (display name **CodeQL Advanced**). If another **CodeQL Advanced** entry points at **`codeql1.yml`** (a removed/phantom file), **disable** it first so GitHub is not serving two Advanced definitions.  
+3. Run **workflow_dispatch** on `main` if needed.  
+4. In **Tool status**, confirm a **successful Advanced** analysis for `refs/heads/main` that **completed after** this configuration change (use `workflow_dispatch` or a new push to `main` to trigger it). Do not rely on an older successful run alone as proof that SARIF uploads still work.
 
-See [code-scanning-tool-health-421.md](code-scanning-tool-health-421.md) §7.
+**Path B — Default only (GitHub-managed)**  
+1. **Disable** the **CodeQL Advanced** workflow (Actions → `CodeQL Advanced` → disable) or remove `codeql.yml` in a PR.  
+2. Leave **Default** setup on. **Coverage may differ** from the explicit matrix in `codeql.yml`: Default setup can also scan **GitHub Actions workflows**, and the languages analyzed are those **selected in the Code scanning UI** — they may overlap with or match the `actions` / `javascript-typescript` / `rust` set. **Check** the selected languages under **Settings → Code security → Code scanning** rather than assuming parity with Advanced.  
+3. Optional: `VERIFY_CODE_SCANNING_SKIP_CODEQL_ADVANCED=1` when running `verify-code-scanning-workflow-health.mjs`.
+
+See [code-scanning-tool-health-421.md](code-scanning-tool-health-421.md) §0 and [codeql-advanced-restore.md](codeql-advanced-restore.md) for the full Advanced restore checklist.
 
 ### CodeQL reports a new alert
 

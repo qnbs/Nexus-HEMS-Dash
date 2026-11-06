@@ -5,6 +5,21 @@
 
 This runbook implements **Wave B** of the Security & Quality Master Addendum (2026-11-04). It does **not** dismiss alerts or re-enable workflows without maintainer authorization.
 
+## 0. CodeQL: GitHub **Default** setup vs **Advanced** (`.github/workflows/codeql.yml`)
+
+Step-by-step **restore Advanced** after Default: [codeql-advanced-restore.md](codeql-advanced-restore.md).
+
+GitHub allows **only one** active CodeQL configuration per repo. If **Settings → Code security → Code scanning** uses **Default** setup **and** the workflow **`CodeQL Advanced`** (`codeql.yml`) still runs, analyses conflict: uploads fail with errors such as *advanced configurations cannot be processed when the default setup is enabled*.
+
+| Mode | Maintainer setup |
+| --- | --- |
+| **ADR-027 / current workflow** | **Default OFF**, **Advanced ON** — keep `.github/workflows/codeql.yml` active; languages include `actions`, `javascript-typescript`, `rust`. |
+| **GitHub Default only** | **Disable** the **CodeQL Advanced** workflow (Actions → `CodeQL Advanced` → disable) **or** delete `codeql.yml` in a PR. **Default** coverage follows the languages GitHub **detects and you enable** for the repo (commonly JavaScript/TypeScript; supported languages such as Rust can also appear when selected — not a fixed one-language set). You lose the explicit **`actions` + matrix** control in `codeql.yml`. |
+
+**Duplicate display names:** GitHub may list two workflows both named **CodeQL Advanced** (for example after a mistaken `.github/workflows/codeql1.yml` was added then removed from `main`). Always match by **workflow file path** (`codeql.yml` vs `codeql1.yml`) and **disable** any orphan/phantom entry. See [codeql-advanced-restore.md](codeql-advanced-restore.md) §2.5.
+
+**Health script:** `VERIFY_CODE_SCANNING_SKIP_CODEQL_ADVANCED=1` skips expecting a successful **`push`** run for `codeql.yml` (use only while Default is the single source and `codeql.yml` is disabled).
+
 ## 1. Confirmed root cause: `Security Full` disabled
 
 | Field | Value |
@@ -19,13 +34,13 @@ This runbook implements **Wave B** of the Security & Quality Master Addendum (20
 While disabled, this workflow does **not** run on `push`/`pull_request`/`schedule`/`workflow_dispatch` triggers. That explains:
 
 - No `Security Full` entries in recent push run samples (200+ runs, Nov 2026 audit).
-- Missing expected **CodeQL + Semgrep SARIF + Gitleaks** uploads from this workflow (ADR-027 single CodeQL source is **this file** when enabled).
+- Missing expected **Semgrep SARIF + Gitleaks** uploads from this workflow when disabled. **CodeQL** ingest is **`codeql.yml`** (Advanced), not `security-full.yml` (ADR-027 amended 2026-11-04).
 - GitHub **Code scanning → Tool status** errors and stale Scorecard/Trivy ingest may persist even when `ci.yml`, `sbom-scan.yml`, and `scorecard.yml` succeed.
 
 ### Maintainer action (required before closing #421)
 
 1. GitHub → **Actions** → **Security Full** → **Enable workflow** (or remove manual disable at org/repo level).
-2. Run **workflow_dispatch** once on `main` and confirm jobs: CodeQL, Semgrep, Gitleaks, dependency audit, summary gate.
+2. Run **workflow_dispatch** once on `main` and confirm jobs: Semgrep, Gitleaks, dependency audit, summary gate — and separately **CodeQL Advanced** (`codeql.yml`) if Advanced is the CodeQL source.
 3. Open **Security and quality → Code scanning → Tool status** — confirm each tool shows a **successful analysis on current `main`** (not only green Actions jobs).
 
 **Agents must not** use API/workflow edits to bypass disablement without explicit owner approval (see Master Addendum §3.3).
