@@ -7,6 +7,8 @@ This runbook implements **Wave B** of the Security & Quality Master Addendum (20
 
 ## 0. CodeQL: GitHub **Default** setup vs **Advanced** (`.github/workflows/codeql.yml`)
 
+Step-by-step **restore Advanced** after Default: [codeql-advanced-restore.md](codeql-advanced-restore.md).
+
 GitHub allows **only one** active CodeQL configuration per repo. If **Settings → Code security → Code scanning** uses **Default** setup **and** the workflow **`CodeQL Advanced`** (`codeql.yml`) still runs, analyses conflict: uploads fail with errors such as *advanced configurations cannot be processed when the default setup is enabled*.
 
 | Mode | Maintainer setup |
