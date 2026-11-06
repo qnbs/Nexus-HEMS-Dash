@@ -64,7 +64,7 @@ GitHub is running **both** the repository **default** Code scanning setup and **
 2. Leave **Default** setup on. Coverage depends on **languages detected and selected** in the Code scanning UI (often JS/TS; Rust and others can be included when enabled — it is not identical to the explicit `actions` / `javascript-typescript` / `rust` matrix in `codeql.yml`).  
 3. Optional: `VERIFY_CODE_SCANNING_SKIP_CODEQL_ADVANCED=1` when running `verify-code-scanning-workflow-health.mjs`.
 
-See [code-scanning-tool-health-421.md](code-scanning-tool-health-421.md) §0.
+See [code-scanning-tool-health-421.md](code-scanning-tool-health-421.md) §0 and [codeql-advanced-restore.md](codeql-advanced-restore.md) for the full Advanced restore checklist.
 
 ### CodeQL reports a new alert
 
