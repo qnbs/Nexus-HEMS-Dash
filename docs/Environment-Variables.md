@@ -77,6 +77,7 @@ See `docs/Protocol-Adapter-Guide-Backend.md`.
 | `INFLUXDB_TOKEN` | `nexus-hems-influx-token` | ⚠️ live | InfluxDB API token (**change in production**). |
 | `INFLUXDB_ORG` | `nexus-hems` | — | InfluxDB org. |
 | `INFLUXDB_BUCKET` | `nexus-hems` | — | InfluxDB bucket. |
+| `NEXUS_HEMS_DATA_DIR` | `apps/api/data` (resolved from package) | — | Writable directory for the Influx write-ahead log (`wal.ndjson`) and recovery sidecar files. |
 | `REDIS_URL` | — | — | Optional. Shared Redis for JTI revocation (ADR-003), offline sync (ADR-030), and the EEBUS trust store (`EEBUS_TRUST_BACKEND=redis`). Falls back to in-memory stores when unset. |
 | `REDIS_REQUIRED` | — | — | When `true`, startup fails if `REDIS_URL` is unset or Redis is unreachable (multi-replica / HA sync). |
 
