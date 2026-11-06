@@ -90,7 +90,8 @@ All commands below passed on this checkout. Because the local machine runs Node 
 | Workflow / App        | Trigger                              | Job(s) used as required                                                       | Notes                                                                                                                                               |
 | --------------------- | ------------------------------------ | ----------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `ci.yml`              | push: `main`, `develop`; PR: `main`  | `lint-typecheck`, `unit-tests`, `build`, `e2e-tests`, `security`, `fuzz-tests`, `ci-passed` | `ci-passed` is the single rollup gate. API unit tests and Web coverage both run in `unit-tests`; `fuzz-tests` runs `pnpm test:fuzz`. `slsa-attest` runs on main push **and** PRs to main (3 retries); E2E depends on `build` only. |
-| `security-full.yml`   | push/PR `main`, weekly Mon 05:00 UTC | `security-gate`                                                               | **Single CodeQL (`CodeQL`) + Semgrep (`Semgrep OSS`) source** (ADR-027). Aggregates CodeQL, Gitleaks, Semgrep, Anti-Trojan-Source, Dependency Audit, Branch Protection. Gitleaks/Semgrep/audit are hard gates. Also runs License Compliance + full dev-dep audit on schedule/dispatch.  |
+| `security-full.yml`   | push/PR `main`, weekly Mon 05:00 UTC | `security-gate`                                                               | Gitleaks, Semgrep (container digest-pinned), Anti-Trojan-Source, production dependency audit (**critical** gate), branch-protection checklist; `security-gate` rolls up upstream job results. **CodeQL** is only in `codeql.yml` (ADR-027). Scheduled/dispatch: license compliance + full dev-dep audit. |
+| `codeql.yml`          | push/PR `main`, schedule, manual     | per-matrix jobs + SARIF upload                                                | **Single CodeQL source** (ADR-027). Check name **`CodeQL`** / **CodeQL Advanced** in the UI.                                                                    |
 | `sbom-scan.yml`       | push: `main`, PR, manual             | dependency-audit, sbom-frontend, sbom-backend, sbom-source                  | Syft SBOM + Grype (critical, blocking, `.grype.yaml`) on frontend/backend images and source; `scripts/verify-grype-policy.sh` guardrail.              |
 | `container-publish.yml` | push: `main`, tags `v*`, manual    | `publish` (matrix: frontend + server)                                       | Build → Grype gate → push GHCR → cosign keyless sign + SLSA provenance. Not a PR gate; runs on main/tags only.                                      |
 | `lighthouse.yml`      | PR, manual                           | `lighthouse`                                                                  | Builds with `VITE_E2E_TESTING=true`, waits up to 30s for preview readiness, enforces LHCI budgets.                                                  |
@@ -159,8 +160,8 @@ version. Recurring actions:
    **currently required** checks are: `✅ CI Passed`, `🎭 E2E Tests`, `lighthouse`.
    The ADR-027 consolidation deleted `security.yml` + `security-scan.yml`, but their
    `CodeQL Analysis`/`Semgrep SAST` checks were **never required**, so no ruleset edit is
-   needed. **Recommended optional additions:** `Security Gate` (or `CodeQL` + `Semgrep OSS`
-   from `security-full.yml`), `chromatic`, `Security Fuzz`. `DeepSource: JavaScript`/`Secrets`,
+   needed.    **Recommended optional additions:** `Security Gate` from `security-full.yml` (or `Semgrep OSS`
+   there + **`CodeQL`** from `codeql.yml`), `chromatic`, `Security Fuzz`. `DeepSource: JavaScript`/`Secrets`,
    Codecov, CodeRabbit, and CodeAnt stay **advisory**; promote DeepSource to required only
    after existing HIGH-severity dependency advisories are remediated.
 4. **DeepSource and CodeAnt.ai are newly integrated.** DeepSource is
