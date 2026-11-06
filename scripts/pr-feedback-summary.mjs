@@ -4,7 +4,18 @@
  * workflow display name in place.
  *
  * @typedef {{ owner: string, repo: string }} RepoSlug
- * @typedef {{ html_url: string; name: string; conclusion: string | null; head_sha: string; id: number; created_at?: string; head_branch?: string | null }} WorkflowRunLike
+ * @typedef {{
+ *   html_url: string;
+ *   name: string;
+ *   conclusion: string | null;
+ *   head_sha: string;
+ *   id: number;
+ *   run_attempt?: number;
+ *   created_at?: string;
+ *   updated_at?: string | null;
+ *   head_branch?: string | null;
+ *   event?: string | null;
+ * }} WorkflowRunLike
  * @typedef {{ number: number }} PullRequestLike
  */
 
@@ -45,8 +56,12 @@ export function parseWorkflowNameFromHeading(titleLineWithoutHashes) {
  * @returns {string}
  */
 function iconForConclusion(run) {
-  if (run.conclusion === 'success') return '✅';
-  if (run.conclusion === 'failure') return '❌';
+  const c = run.conclusion;
+  if (c === 'success') return '✅';
+  if (c === 'failure' || c === 'timed_out') return '❌';
+  if (c === 'cancelled' || c === 'skipped') return '⏭️';
+  if (c === 'neutral') return '⚪';
+  if (c === 'action_required') return '🔶';
   return '⚠️';
 }
 
@@ -60,8 +75,12 @@ export function buildSectionBody(repo, pr, run) {
   const runUrl = run.html_url;
   const runName = run.name;
   const icon = iconForConclusion(run);
+  const conclusion = run.conclusion ?? 'unknown';
+  const attempt = run.run_attempt ?? 1;
 
   return `### ${icon} ${runName} finished
+
+_Conclusion: \`${conclusion}\` (run_attempt ${attempt}). This \`workflow_run.completed\` event reflects only this workflow; other PR checks may still be **pending** — see the **Checks** tab._
 
 | Detail | Link |
 | -------- | ------ |
@@ -178,14 +197,37 @@ export async function listAllIssueComments(github, repo, issueNumber) {
 }
 
 /**
- * True when this `workflow_run` is the newest run for the same workflow + branch + head SHA
- * (avoids late/out-of-order completions overwriting a newer head's summary).
+ * True when this `workflow_run` is the latest attempt/recency for the same workflow + branch + head SHA
+ * (avoids late/out-of-order completions overwriting a newer summary — including re-run attempts).
  *
  * @param {unknown} github
  * @param {RepoSlug} repo
  * @param {WorkflowRunLike & { workflow_id?: number }} run
  * @returns {Promise<boolean>}
  */
+function runRecencyTimestampMs(w) {
+  const u = w.updated_at ?? w.created_at;
+  if (typeof u !== 'string') return 0;
+  const t = Date.parse(u);
+  return Number.isFinite(t) ? t : 0;
+}
+
+/**
+ * Higher = more recent. Same workflow + branch + head SHA only.
+ *
+ * @param {WorkflowRunLike & { workflow_id?: number }} a
+ * @param {WorkflowRunLike & { workflow_id?: number }} b
+ * @returns {number}
+ */
+export function compareWorkflowRunsForSameHead(a, b) {
+  const attA = a.run_attempt ?? 1;
+  const attB = b.run_attempt ?? 1;
+  if (attA !== attB) return attB - attA;
+  const ts = runRecencyTimestampMs(b) - runRecencyTimestampMs(a);
+  if (ts !== 0) return ts;
+  return b.id - a.id;
+}
+
 export async function isNewestWorkflowRunForHead(github, repo, run) {
   const wfId = run.workflow_id;
   const branch = run.head_branch;
@@ -197,12 +239,20 @@ export async function isNewestWorkflowRunForHead(github, repo, run) {
     repo: repo.repo,
     workflow_id: wfId,
     branch,
-    per_page: 30,
+    per_page: 100,
   });
 
   const runs = data.workflow_runs.filter((w) => w.event === 'pull_request' && w.head_sha === sha);
   if (runs.length === 0) return true;
-  return runs[0].id === run.id;
+  const sorted = [...runs].sort(compareWorkflowRunsForSameHead);
+  const newest = sorted[0];
+  if (!newest) return true;
+
+  const sameAsNewest =
+    (newest.run_attempt ?? 1) === (run.run_attempt ?? 1) &&
+    runRecencyTimestampMs(newest) === runRecencyTimestampMs(run) &&
+    newest.id === run.id;
+  return sameAsNewest;
 }
 
 /**

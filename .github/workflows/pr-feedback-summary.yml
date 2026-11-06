@@ -81,6 +81,10 @@ jobs:
                 conclusion: run.conclusion,
                 head_sha: run.head_sha,
                 head_branch: run.head_branch,
+                run_attempt: run.run_attempt,
+                created_at: run.created_at,
+                updated_at: run.updated_at,
+                event: run.event,
               },
               { prHeadSha, log: core },
             );

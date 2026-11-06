@@ -3,6 +3,7 @@ import { describe, it } from 'node:test';
 import {
   MARKER,
   assembleSummaryBody,
+  compareWorkflowRunsForSameHead,
   isBotOwnedSummaryComment,
   isNewestWorkflowRunForHead,
   parseExistingSummary,
@@ -114,8 +115,22 @@ describe('pr-feedback-summary', () => {
           listWorkflowRuns: async () => ({
             data: {
               workflow_runs: [
-                { id: 999, event: 'pull_request', head_sha: sha, created_at: '2026-01-02' },
-                { id: 1, event: 'pull_request', head_sha: sha, created_at: '2026-01-01' },
+                {
+                  id: 999,
+                  event: 'pull_request',
+                  head_sha: sha,
+                  created_at: '2026-01-02T00:00:00Z',
+                  updated_at: '2026-01-02T00:00:00Z',
+                  run_attempt: 1,
+                },
+                {
+                  id: 1,
+                  event: 'pull_request',
+                  head_sha: sha,
+                  created_at: '2026-01-01T00:00:00Z',
+                  updated_at: '2026-01-01T00:00:00Z',
+                  run_attempt: 1,
+                },
               ],
             },
           }),
@@ -134,6 +149,7 @@ describe('pr-feedback-summary', () => {
         conclusion: 'success',
         head_sha: sha,
         head_branch: 'topic',
+        run_attempt: 1,
       },
       { prHeadSha: sha, log: { info: () => {}, error: () => {} } },
     );
@@ -186,7 +202,16 @@ describe('pr-feedback-summary', () => {
         actions: {
           listWorkflowRuns: async () => ({
             data: {
-              workflow_runs: [{ id: 50, event: 'pull_request', head_sha: sha }],
+              workflow_runs: [
+                {
+                  id: 50,
+                  event: 'pull_request',
+                  head_sha: sha,
+                  created_at: '2026-01-01T00:00:00Z',
+                  updated_at: '2026-01-01T00:00:00Z',
+                  run_attempt: 1,
+                },
+              ],
             },
           }),
         },
@@ -204,6 +229,9 @@ describe('pr-feedback-summary', () => {
         conclusion: 'success',
         head_sha: sha,
         head_branch: 'pr-branch',
+        run_attempt: 1,
+        created_at: '2026-01-01T00:00:00Z',
+        updated_at: '2026-01-01T00:00:00Z',
       },
       { prHeadSha: sha, log: { info: () => {}, error: () => {} } },
     );
@@ -246,7 +274,16 @@ describe('pr-feedback-summary', () => {
         actions: {
           listWorkflowRuns: async () => ({
             data: {
-              workflow_runs: [{ id: 100, event: 'pull_request', head_sha: sha }],
+              workflow_runs: [
+                {
+                  id: 100,
+                  event: 'pull_request',
+                  head_sha: sha,
+                  created_at: '2026-01-01T00:00:00Z',
+                  updated_at: '2026-01-01T00:00:00Z',
+                  run_attempt: 1,
+                },
+              ],
             },
           }),
         },
@@ -264,6 +301,9 @@ describe('pr-feedback-summary', () => {
         conclusion: 'success',
         head_sha: sha,
         head_branch: 'b',
+        run_attempt: 1,
+        created_at: '2026-01-01T00:00:00Z',
+        updated_at: '2026-01-01T00:00:00Z',
       },
       { prHeadSha: sha, log: { info: () => {}, error: () => {} } },
     );
@@ -274,14 +314,29 @@ describe('pr-feedback-summary', () => {
 
 describe('isNewestWorkflowRunForHead', () => {
   it('returns true when API lists this run first', async () => {
+    const sha = 'a'.repeat(40);
     const github = {
       rest: {
         actions: {
           listWorkflowRuns: async () => ({
             data: {
               workflow_runs: [
-                { id: 1, event: 'pull_request', head_sha: 'a'.repeat(40) },
-                { id: 2, event: 'pull_request', head_sha: 'a'.repeat(40) },
+                {
+                  id: 1,
+                  event: 'pull_request',
+                  head_sha: sha,
+                  created_at: '2026-01-02T00:00:00Z',
+                  updated_at: '2026-01-02T00:00:00Z',
+                  run_attempt: 1,
+                },
+                {
+                  id: 2,
+                  event: 'pull_request',
+                  head_sha: sha,
+                  created_at: '2026-01-01T00:00:00Z',
+                  updated_at: '2026-01-01T00:00:00Z',
+                  run_attempt: 1,
+                },
               ],
             },
           }),
@@ -292,8 +347,78 @@ describe('isNewestWorkflowRunForHead', () => {
       id: 1,
       workflow_id: 9,
       head_branch: 'b',
-      head_sha: 'a'.repeat(40),
+      head_sha: sha,
+      run_attempt: 1,
+      created_at: '2026-01-02T00:00:00Z',
+      updated_at: '2026-01-02T00:00:00Z',
     });
     assert.equal(ok, true);
+  });
+
+  it('skips when a higher run_attempt exists for the same head (re-run supersedes)', async () => {
+    const sha = 'c'.repeat(40);
+    const github = {
+      rest: {
+        actions: {
+          listWorkflowRuns: async () => ({
+            data: {
+              workflow_runs: [
+                {
+                  id: 200,
+                  event: 'pull_request',
+                  head_sha: sha,
+                  created_at: '2026-01-03T00:00:00Z',
+                  updated_at: '2026-01-03T00:00:00Z',
+                  run_attempt: 2,
+                },
+                {
+                  id: 100,
+                  event: 'pull_request',
+                  head_sha: sha,
+                  created_at: '2026-01-02T00:00:00Z',
+                  updated_at: '2026-01-04T00:00:00Z',
+                  run_attempt: 1,
+                },
+              ],
+            },
+          }),
+        },
+      },
+    };
+    const lateAttempt1 = await isNewestWorkflowRunForHead(github, { owner: 'o', repo: 'r' }, {
+      id: 100,
+      workflow_id: 1,
+      head_branch: 'topic',
+      head_sha: sha,
+      run_attempt: 1,
+      created_at: '2026-01-02T00:00:00Z',
+      updated_at: '2026-01-04T00:00:00Z',
+    });
+    assert.equal(lateAttempt1, false);
+
+    const attempt2 = await isNewestWorkflowRunForHead(github, { owner: 'o', repo: 'r' }, {
+      id: 200,
+      workflow_id: 1,
+      head_branch: 'topic',
+      head_sha: sha,
+      run_attempt: 2,
+      created_at: '2026-01-03T00:00:00Z',
+      updated_at: '2026-01-03T00:00:00Z',
+    });
+    assert.equal(attempt2, true);
+  });
+});
+
+describe('compareWorkflowRunsForSameHead', () => {
+  it('orders by run_attempt before timestamps', () => {
+    const a = {
+      id: 1,
+      run_attempt: 1,
+      created_at: '2026-01-10T00:00:00Z',
+      updated_at: '2026-01-10T00:00:00Z',
+    };
+    const b = { id: 2, run_attempt: 2, created_at: '2026-01-01T00:00:00Z' };
+    assert.ok(compareWorkflowRunsForSameHead(a, b) > 0);
+    assert.ok(compareWorkflowRunsForSameHead(b, a) < 0);
   });
 });
