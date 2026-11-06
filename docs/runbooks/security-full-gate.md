@@ -57,11 +57,11 @@ GitHub is running **both** the repository **default** Code scanning setup and **
 1. **Settings → Code security → Code scanning** — turn **Default** setup **off**.  
 2. **Actions → `CodeQL Advanced` (`codeql.yml`)** — GitHub may have **disabled** this workflow when Default was on; **re-enable** it if needed (do not assume it is still active).  
 3. Run **workflow_dispatch** on `main` if needed.  
-4. Confirm **Tool status** shows a successful analysis for `refs/heads/main`.
+4. In **Tool status**, confirm a **successful Advanced** analysis for `refs/heads/main` that **completed after** this configuration change (use `workflow_dispatch` or a new push to `main` to trigger it). Do not rely on an older successful run alone as proof that SARIF uploads still work.
 
 **Path B — Default only (GitHub-managed)**  
 1. **Disable** the **CodeQL Advanced** workflow (Actions → `CodeQL Advanced` → disable) or remove `codeql.yml` in a PR.  
-2. Leave **Default** setup on. Coverage depends on **languages detected and selected** in the Code scanning UI (often JS/TS; Rust and others can be included when enabled — it is not identical to the explicit `actions` / `javascript-typescript` / `rust` matrix in `codeql.yml`).  
+2. Leave **Default** setup on. **Coverage may differ** from the explicit matrix in `codeql.yml`: Default setup can also scan **GitHub Actions workflows**, and the languages analyzed are those **selected in the Code scanning UI** — they may overlap with or match the `actions` / `javascript-typescript` / `rust` set. **Check** the selected languages under **Settings → Code security → Code scanning** rather than assuming parity with Advanced.  
 3. Optional: `VERIFY_CODE_SCANNING_SKIP_CODEQL_ADVANCED=1` when running `verify-code-scanning-workflow-health.mjs`.
 
 See [code-scanning-tool-health-421.md](code-scanning-tool-health-421.md) §0 and [codeql-advanced-restore.md](codeql-advanced-restore.md) for the full Advanced restore checklist.
