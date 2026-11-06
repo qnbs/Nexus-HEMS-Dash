@@ -81,6 +81,8 @@ services:
       MQTT_BROKER_URL: ${MQTT_BROKER_URL:-}
       RATE_LIMIT_TRUSTED_IPS: ${RATE_LIMIT_TRUSTED_IPS:-}
       REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+      # Canonical WAL path must match the `api_data` volume mount (read-only root + persistent volume).
+      NEXUS_HEMS_DATA_DIR: /app/apps/api/data
     volumes:
       - api_data:/app/apps/api/data
     read_only: true

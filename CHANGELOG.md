@@ -11,7 +11,11 @@ Release notes are maintained here and published via [semantic-release](https://g
 
 ### Added
 
+- **api** — WAL recovery merges stranded `.recovering` / `.failed-*` snapshots, persists batch cursor in `.recovery-progress.json`, quarantines corrupt NDJSON lines, and runs periodic WAL drain after Influx comes back (#447).
+
 ### Changed
+
+- **api** — Docker Compose prod sets `NEXUS_HEMS_DATA_DIR=/app/apps/api/data`; Helm server sets `NEXUS_HEMS_DATA_DIR=/data/nexus-hems` with a dedicated `emptyDir` volume (#447).
 
 ### Fixed
 

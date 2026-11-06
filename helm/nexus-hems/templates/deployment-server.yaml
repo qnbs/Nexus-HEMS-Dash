@@ -46,6 +46,9 @@ spec:
               value: {{ .Values.env.NODE_ENV | quote }}
             - name: PORT
               value: {{ .Values.env.PORT | quote }}
+            # WAL persistence: emptyDir mount below (read-only container root).
+            - name: NEXUS_HEMS_DATA_DIR
+              value: "/data/nexus-hems"
             - name: ADAPTER_MODE
               value: {{ .Values.env.ADAPTER_MODE | default "mock" | quote }}
             {{- if .Values.server.redisUrl }}
@@ -88,6 +91,10 @@ spec:
           volumeMounts:
             - name: tmp
               mountPath: /tmp
+            - name: nexus-hems-data
+              mountPath: /data/nexus-hems
       volumes:
         - name: tmp
+          emptyDir: {}
+        - name: nexus-hems-data
           emptyDir: {}
