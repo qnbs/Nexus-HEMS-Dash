@@ -117,7 +117,7 @@ describe('TimeseriesService WAL recovery', () => {
         if (
           name === 'wal.ndjson' ||
           name === 'wal.ndjson.recovering' ||
-          (name.startsWith('wal.ndjson.failed-') && /^wal\.ndjson\.failed-\d+$/.test(name))
+          (name.startsWith('wal.ndjson.failed-') && /^wal\.ndjson\.failed-\d+(-\d+)?$/.test(name))
         ) {
           const p = join(dataDir, name);
           if (existsSync(p)) {

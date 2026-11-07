@@ -82,7 +82,8 @@ function isWalSnapshotBasename(name: string): boolean {
   if (name === `${WAL_FILE}.recovering`) return true;
   if (name.startsWith(`${WAL_FILE}.recovering.`)) return true;
   // `wal.ndjson.failed-<digits>` only (not `failed-*.recovery-progress.json` — excluded above)
-  if (name.startsWith(WAL_FAILED_PREFIX) && /^wal\.ndjson\.failed-\d+$/.test(name)) return true;
+  if (name.startsWith(WAL_FAILED_PREFIX) && /^wal\.ndjson\.failed-\d+(-\d+)?$/.test(name))
+    return true;
   return false;
 }
 
@@ -104,6 +105,8 @@ export class TimeseriesService implements EventBusSubscriber {
    * cannot steal another run's active `.recovering` snapshot while flush retries hold the gate open.
    */
   private walRecoverChain: Promise<void> = Promise.resolve();
+  /** Disambiguates `wal.ndjson.failed-<ts>` when `Date.now()` collides within one process. */
+  private failedArchiveSeq = 0;
 
   constructor(deps?: TimeseriesServiceDeps) {
     this.dataDir = deps?.dataDir ?? getEnv('NEXUS_HEMS_DATA_DIR', DEFAULT_DATA_DIR);
@@ -520,7 +523,7 @@ export class TimeseriesService implements EventBusSubscriber {
     start: number,
   ): Promise<void> {
     const remaining = datapoints.slice(start);
-    const failedPath = `${this.walPath}.failed-${Date.now()}`;
+    const failedPath = `${this.walPath}.failed-${Date.now()}-${this.failedArchiveSeq++}`;
     const stagingPath = `${failedPath}.staging`;
     let archiveCommitted = false;
 
@@ -547,10 +550,11 @@ export class TimeseriesService implements EventBusSubscriber {
     if (archiveCommitted) {
       try {
         unlinkSync(recoveringPath);
+        this.deleteProgress(recoveringPath);
       } catch {
-        // ignore — failed snapshot is authoritative; stray recovering is merged later
+        // Failed archive is authoritative; mark recovering drained so merge cannot duplicate rows.
+        this.writeProgress(recoveringPath, datapoints.length);
       }
-      this.deleteProgress(recoveringPath);
       /**
        * Do **not** append `remaining` to the live primary here: `failedPath` is a full copy of the recovering snapshot,
        * and `mergeStrandedSnapshotsIntoPrimary()` will re-append from `nextParsedIndex` on the next `recoverWAL()`.

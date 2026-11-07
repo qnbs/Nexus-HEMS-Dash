@@ -110,7 +110,9 @@ describe('TimeseriesService failed recovery archive handoff (DATA-18)', () => {
 
     expect(existsSync(recoveringPath)).toBe(true);
     expect(readFileSync(recoveringPath, 'utf8')).toBe(before);
-    expect(readdirSync(dataDir).some((f) => /^wal\.ndjson\.failed-\d+$/.test(f))).toBe(false);
+    expect(readdirSync(dataDir).some((f) => /^wal\.ndjson\.failed-\d+(-\d+)?$/.test(f))).toBe(
+      false,
+    );
     expect(readdirSync(dataDir).some((f) => f.includes('.staging'))).toBe(false);
 
     await svc.destroy();
@@ -147,7 +149,9 @@ describe('TimeseriesService failed recovery archive handoff (DATA-18)', () => {
 
     expect(existsSync(recoveringPath)).toBe(true);
     expect(readFileSync(recoveringPath, 'utf8')).toBe(before);
-    expect(readdirSync(dataDir).some((f) => /^wal\.ndjson\.failed-\d+$/.test(f))).toBe(false);
+    expect(readdirSync(dataDir).some((f) => /^wal\.ndjson\.failed-\d+(-\d+)?$/.test(f))).toBe(
+      false,
+    );
 
     await svc.destroy();
   });
@@ -179,7 +183,9 @@ describe('TimeseriesService failed recovery archive handoff (DATA-18)', () => {
     await svc.recoverWAL();
 
     expect(existsSync(recoveringPath)).toBe(true);
-    expect(readdirSync(dataDir).some((f) => /^wal\.ndjson\.failed-\d+$/.test(f))).toBe(false);
+    expect(readdirSync(dataDir).some((f) => /^wal\.ndjson\.failed-\d+(-\d+)?$/.test(f))).toBe(
+      false,
+    );
 
     await svc.destroy();
   });
@@ -211,16 +217,14 @@ describe('TimeseriesService failed recovery archive handoff (DATA-18)', () => {
     const svc = new TimeseriesService({ dataDir, writeApi, maxWalRecoveryAttempts: 1 });
     await svc.recoverWAL();
 
-    const failedName = readdirSync(dataDir).find((f) => /^wal\.ndjson\.failed-\d+$/.test(f));
+    const failedName = readdirSync(dataDir).find((f) => /^wal\.ndjson\.failed-\d+(-\d+)?$/.test(f));
     expect(failedName).toBeTruthy();
     const failedPath = join(dataDir, failedName!);
     expect(readFileSync(failedPath, 'utf8').trim().split('\n').filter(Boolean).length).toBe(2);
     expect(existsSync(`${failedPath}.recovery-progress.json`)).toBe(true);
+    expect(existsSync(recoveringPath)).toBe(true);
 
     unlinkFaultArmed = false;
-    if (existsSync(recoveringPath)) {
-      fsActual.unlinkSync!(recoveringPath);
-    }
 
     const writeApi2 = {
       writePoint: vi.fn(),
@@ -230,8 +234,41 @@ describe('TimeseriesService failed recovery archive handoff (DATA-18)', () => {
     const svc2 = new TimeseriesService({ dataDir, writeApi: writeApi2 });
     await svc2.recoverWAL();
     expect(writeApi2.writePoint).toHaveBeenCalledTimes(2);
+    expect(existsSync(recoveringPath)).toBe(false);
 
     await svc.destroy();
     await svc2.destroy();
+  });
+
+  it('allocates distinct failed snapshot names when archive timestamps collide', async () => {
+    const dataDir = mkdtempSync(join(tmpdir(), 'wal-failed-ts-collision-'));
+    dirs.push(dataDir);
+    const fixedTs = 1_730_916_000_000;
+    vi.spyOn(Date, 'now').mockReturnValue(fixedTs);
+
+    const writeApi = {
+      writePoint: vi.fn(),
+      flush: vi.fn(async () => {
+        throw new Error('always fail');
+      }),
+      close: vi.fn(async () => {}),
+    } as unknown as WriteApi;
+
+    const svc = new TimeseriesService({
+      dataDir,
+      writeApi,
+      maxWalRecoveryAttempts: 1,
+      walBatchSize: 1,
+    });
+    await svc.onBatch([samplePoint(1), samplePoint(2)]);
+
+    await svc.recoverWAL();
+    expect(existsSync(join(dataDir, `wal.ndjson.failed-${fixedTs}-0`))).toBe(true);
+
+    await svc.recoverWAL();
+    expect(existsSync(join(dataDir, `wal.ndjson.failed-${fixedTs}-1`))).toBe(true);
+
+    await svc.destroy();
+    vi.restoreAllMocks();
   });
 });
