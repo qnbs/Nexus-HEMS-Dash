@@ -143,6 +143,7 @@ export async function startServer(): Promise<void> {
   await timeseriesService.recoverWAL().catch((err: unknown) => {
     logger.warn('WAL recovery failed', { error: err instanceof Error ? err.message : String(err) });
   });
+  timeseriesService.startBackgroundWalDrain();
 
   // ─── Energy Router (Day-Ahead LP optimizer) ───────────────────────
   const energyRouter = new EnergyRouterService(eventBus);
@@ -171,6 +172,7 @@ export async function startServer(): Promise<void> {
   // ─── Graceful Shutdown ────────────────────────────────────────────
   const shutdown = async (): Promise<void> => {
     logger.info('Server shutting down');
+    timeseriesService.stopBackgroundWalDrain();
     energyRouter.stop();
     await stopProtocolAdapters();
     await timeseriesService.destroy();

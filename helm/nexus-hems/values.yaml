@@ -40,6 +40,18 @@ server:
   # Required when replicaCount.server > 1.
   redisUrl: ''
 
+  # WAL (TimeseriesService) — default chart uses emptyDir: data is pod-ephemeral (#452).
+  # Enable PVC for cross-restart WAL snapshots when you need stronger persistence guarantees.
+  walPersistence:
+    enabled: false
+    # Existing PVC name (create out-of-band or let pvc-wal.yaml template provision when create: true)
+    existingClaim: ''
+    create: false
+    accessModes:
+      - ReadWriteOnce
+    size: 1Gi
+    storageClassName: ''
+
 # ─── Service ─────────────────────────────────────────────────────────
 service:
   frontend:

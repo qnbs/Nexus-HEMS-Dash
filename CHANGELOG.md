@@ -11,11 +11,17 @@ Release notes are maintained here and published via [semantic-release](https://g
 
 ### Added
 
+- **api** — WAL recovery merges stranded `.recovering` / `.failed-*` snapshots, persists batch cursor in `.recovery-progress.json`, quarantines corrupt NDJSON lines, and runs periodic WAL drain after Influx comes back (#447).
+
 ### Changed
+
+- **api** — Docker Compose prod sets `NEXUS_HEMS_DATA_DIR=/app/apps/api/data`; Helm server sets `NEXUS_HEMS_DATA_DIR=/data/nexus-hems` with a dedicated `emptyDir` volume (#447).
 
 ### Fixed
 
+- **api** — WAL: strict snapshot filename grammar (progress sidecars never merged), Zod validation of NDJSON lines, backlog bytes include snapshots/progress, recovery releases WAL lock during Influx retries with serial flush, optional Helm PVC for durable WAL (#447, #452).
 - **adapter** — Physical-command Redis claim verifies both keys after `EVAL`, never returns `proceed` on stale reads, and Lua compensates partial SET failures (#395).
+- **pwa** — Stale offline `syncing` actions re-queue on startup under Navigator Lock; sync-conflict resolution throws when server version cannot be verified (#448).
 - **ci** — `pr-feedback-summary` queues overlapping runs (`queue: max`, `cancel-in-progress: false`) so the four upstream completions are not canceled mid-flight (#443).
 
 ### Security
