@@ -4,12 +4,14 @@ import {
   beginPhysicalCommandReplay,
   completePhysicalCommandReplay,
   getPhysicalCommandRecord,
+  markPhysicalCommandUnknown,
   resetPhysicalCommandLedgerForTests,
 } from '../services/physical-command-ledger.js';
 import {
   ABANDON_PHYSICAL_COMMAND_PENDING_LUA,
   BEGIN_PHYSICAL_COMMAND_REPLAY_LUA,
   COMPLETE_PHYSICAL_COMMAND_REPLAY_LUA,
+  MARK_PHYSICAL_COMMAND_UNKNOWN_LUA,
 } from '../services/physical-command-ledger-lua.js';
 import type { IRedisClient } from '../services/redis-client.js';
 import { resetRedisClientForTests, setRedisClientForTests } from '../services/redis-client.js';
@@ -22,11 +24,16 @@ function mockEvalComplete(state: Map<string, string>, args: string[]): number {
   const aliasKey = args[1];
   const terminalJson = args[2];
   const expectedPending = args[3];
-  if (!recordKey || !aliasKey || !terminalJson || !expectedPending) throw new Error('bad argv');
+  const commandId = args[5];
+  if (!recordKey || !aliasKey || !terminalJson || !expectedPending || !commandId) {
+    throw new Error('bad argv');
+  }
   const cur = state.get(recordKey);
   if (cur === undefined) return 2;
   if (cur !== expectedPending) return 1;
+  if (state.get(aliasKey) !== commandId) return 1;
   state.set(recordKey, terminalJson);
+  state.set(aliasKey, commandId);
   return 0;
 }
 
@@ -34,12 +41,32 @@ function mockEvalAbandon(state: Map<string, string>, args: string[]): number {
   const recordKey = args[0];
   const aliasKey = args[1];
   const expectedPending = args[2];
-  if (!recordKey || !aliasKey || !expectedPending) throw new Error('bad argv');
+  const commandId = args[3];
+  if (!recordKey || !aliasKey || !expectedPending || !commandId) throw new Error('bad argv');
   const cur = state.get(recordKey);
   if (cur === undefined) return 2;
   if (cur !== expectedPending) return 1;
+  if (state.get(aliasKey) !== commandId) return 1;
   state.delete(recordKey);
   state.delete(aliasKey);
+  return 0;
+}
+
+function mockEvalUnknown(state: Map<string, string>, args: string[]): number {
+  const recordKey = args[0];
+  const aliasKey = args[1];
+  const unknownJson = args[2];
+  const expectedPending = args[3];
+  const commandId = args[5];
+  if (!recordKey || !aliasKey || !unknownJson || !expectedPending || !commandId) {
+    throw new Error('bad argv');
+  }
+  const cur = state.get(recordKey);
+  if (cur === undefined) return 2;
+  if (cur !== expectedPending) return 1;
+  if (state.get(aliasKey) !== commandId) return 1;
+  state.set(recordKey, unknownJson);
+  state.set(aliasKey, commandId);
   return 0;
 }
 
@@ -124,6 +151,9 @@ function createLedgerRedisMock(): IRedisClient & { state: Map<string, string> } 
       const argv = args as string[];
       if (script === COMPLETE_PHYSICAL_COMMAND_REPLAY_LUA && numKeys === 2) {
         return mockEvalComplete(state, argv);
+      }
+      if (script === MARK_PHYSICAL_COMMAND_UNKNOWN_LUA && numKeys === 2) {
+        return mockEvalUnknown(state, argv);
       }
       if (script === ABANDON_PHYSICAL_COMMAND_PENDING_LUA && numKeys === 2) {
         return mockEvalAbandon(state, argv);
@@ -233,6 +263,34 @@ describe('physical-command-ledger (Redis mock)', () => {
 
     await beginPhysicalCommandReplay({ commandId, idempotencyKey });
     await completePhysicalCommandReplay(commandId, 'wrong-key', 'succeeded', 200, { stale: true });
+
+    const record = await getPhysicalCommandRecord(commandId);
+    expect(record?.state).toBe('pending');
+  });
+
+  it('complete ignores poisoned alias pointing at another commandId', async () => {
+    const mock = createLedgerRedisMock();
+    setRedisClientForTests(mock);
+    const commandId = 'cccccccc-cccc-4ccc-8ccc-cccccccccccc';
+    const idempotencyKey = 'idem-alias-poison-complete';
+
+    await beginPhysicalCommandReplay({ commandId, idempotencyKey });
+    mock.state.set(`${IDEM_ALIAS_PREFIX}${idempotencyKey}`, 'dddddddd-dddd-4ddd-8ddd-dddddddddddd');
+    await completePhysicalCommandReplay(commandId, idempotencyKey, 'succeeded', 200, { bad: true });
+
+    const record = await getPhysicalCommandRecord(commandId);
+    expect(record?.state).toBe('pending');
+  });
+
+  it('unknown transition requires matching alias ownership', async () => {
+    const mock = createLedgerRedisMock();
+    setRedisClientForTests(mock);
+    const commandId = 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee';
+    const idempotencyKey = 'idem-alias-poison-unknown';
+
+    await beginPhysicalCommandReplay({ commandId, idempotencyKey });
+    mock.state.set(`${IDEM_ALIAS_PREFIX}${idempotencyKey}`, 'ffffffff-ffff-4fff-8fff-ffffffffffff');
+    await markPhysicalCommandUnknown(commandId, idempotencyKey, 409, { outcome: 'unknown' });
 
     const record = await getPhysicalCommandRecord(commandId);
     expect(record?.state).toBe('pending');

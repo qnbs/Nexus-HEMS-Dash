@@ -10,6 +10,7 @@ import {
   beginPhysicalCommandReplay,
   completePhysicalCommandReplay,
   getPhysicalCommandRecord,
+  markPhysicalCommandUnknown,
   resetPhysicalCommandLedgerForTests,
 } from '../services/physical-command-ledger.js';
 import { resetRedisClientForTests, setRedisClientForTests } from '../services/redis-client.js';
@@ -168,6 +169,43 @@ describe.skipIf(!hasRedisUrl)('physical-command-ledger (Redis integration)', () 
     expect(record?.state).toBe('succeeded');
     const body = record?.body as { lane?: number };
     expect([1, 2]).toContain(body.lane);
+  });
+
+  it('does not complete when idempotency alias was repointed to another commandId', async () => {
+    const commandId = '55555555-5555-4555-8555-555555555555';
+    const idempotencyKey = 'idem-ci-alias-poison';
+    setRedisClientForTests(redis);
+    await beginPhysicalCommandReplay({ commandId, idempotencyKey });
+
+    await redis.set(
+      `${IDEM_ALIAS_PREFIX}${idempotencyKey}`,
+      '66666666-6666-4666-8666-666666666666',
+    );
+
+    setRedisClientForTests(redisReplica);
+    await completePhysicalCommandReplay(commandId, idempotencyKey, 'succeeded', 200, {
+      poisoned: true,
+    });
+
+    const record = await getPhysicalCommandRecord(commandId);
+    expect(record?.state).toBe('pending');
+  });
+
+  it('does not mark unknown when alias ownership diverged', async () => {
+    const commandId = '77777777-7777-4777-8777-777777777777';
+    const idempotencyKey = 'idem-ci-unknown-alias';
+    setRedisClientForTests(redis);
+    await beginPhysicalCommandReplay({ commandId, idempotencyKey });
+    await redis.set(
+      `${IDEM_ALIAS_PREFIX}${idempotencyKey}`,
+      '88888888-8888-4888-8888-888888888888',
+    );
+
+    setRedisClientForTests(redisReplica);
+    await markPhysicalCommandUnknown(commandId, idempotencyKey, 409, { outcome: 'unknown' });
+
+    const record = await getPhysicalCommandRecord(commandId);
+    expect(record?.state).toBe('pending');
   });
 
   it('surfaces Redis WRONGTYPE on alias key instead of issuing proceed', async () => {

@@ -9,6 +9,7 @@ import {
   ABANDON_PHYSICAL_COMMAND_PENDING_LUA,
   BEGIN_PHYSICAL_COMMAND_REPLAY_LUA,
   COMPLETE_PHYSICAL_COMMAND_REPLAY_LUA,
+  MARK_PHYSICAL_COMMAND_UNKNOWN_LUA,
 } from './physical-command-ledger-lua.js';
 import { getOptionalRedisClient } from './redis-client.js';
 
@@ -279,6 +280,7 @@ export async function completePhysicalCommandReplay(
       terminalJson,
       pendingRaw,
       String(ttlSec),
+      commandId,
     );
     return;
   }
@@ -299,14 +301,47 @@ export async function markPhysicalCommandUnknown(
   statusCode: number,
   body: unknown,
 ): Promise<void> {
+  const ttlSec = UNKNOWN_TTL_SEC;
   const record: PhysicalCommandRecord = {
     state: 'unknown',
     commandId,
     idempotencyKey,
     statusCode,
     body,
-    expiresAt: Date.now() + UNKNOWN_TTL_SEC * 1000,
+    expiresAt: Date.now() + ttlSec * 1000,
   };
+
+  const redis = await getOptionalRedisClient();
+  if (redis) {
+    const recordKey = `${COMMAND_PREFIX}${commandId}`;
+    const aliasKey = `${IDEM_ALIAS_PREFIX}${idempotencyKey}`;
+    const pendingRaw = await redis.get(recordKey);
+    if (!pendingRaw) return;
+    const current = parseRecord(pendingRaw);
+    if (current?.state !== 'pending' || current.idempotencyKey !== idempotencyKey) {
+      return;
+    }
+    const unknownJson = JSON.stringify(record);
+    await redis.eval(
+      MARK_PHYSICAL_COMMAND_UNKNOWN_LUA,
+      2,
+      recordKey,
+      aliasKey,
+      unknownJson,
+      pendingRaw,
+      String(ttlSec),
+      commandId,
+    );
+    return;
+  }
+
+  const memoryCurrent = await readRecord(commandId);
+  if (
+    memoryCurrent &&
+    (memoryCurrent.state !== 'pending' || memoryCurrent.idempotencyKey !== idempotencyKey)
+  ) {
+    return;
+  }
   await writeRecord(record);
 }
 
@@ -320,7 +355,14 @@ export async function abandonPhysicalCommandPending(commandId: string): Promise<
     const existing = parseRecord(pendingRaw);
     if (existing?.state !== 'pending') return;
     const aliasKey = `${IDEM_ALIAS_PREFIX}${existing.idempotencyKey}`;
-    await redis.eval(ABANDON_PHYSICAL_COMMAND_PENDING_LUA, 2, recordKey, aliasKey, pendingRaw);
+    await redis.eval(
+      ABANDON_PHYSICAL_COMMAND_PENDING_LUA,
+      2,
+      recordKey,
+      aliasKey,
+      pendingRaw,
+      commandId,
+    );
     return;
   }
 
