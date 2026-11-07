@@ -11,6 +11,7 @@ import {
   getPendingActions,
   type OfflineAction,
   persistOfflineReplayEnvelope,
+  requeueStaleSyncingOfflineActions,
   updateActionStatus,
 } from './db';
 import { detectSyncConflict, fetchServerSyncVersion, recordServerSyncVersion } from './sync-client';
@@ -112,10 +113,18 @@ class BackgroundSyncService {
       60 * 60 * 1000,
     );
 
-    // Initial sync if online
+    void this.runStartupRecoveryAndSync();
+  }
+
+  private async runStartupRecoveryAndSync(): Promise<void> {
+    try {
+      await requeueStaleSyncingOfflineActions();
+    } catch (error) {
+      console.error('[BackgroundSync] Failed to requeue stale syncing actions:', error);
+    }
     if (navigator.onLine) {
-      void this.probeSyncConflict();
-      this.syncPendingActions();
+      await this.probeSyncConflict();
+      await this.syncPendingActions();
     }
   }
 

@@ -20,6 +20,8 @@ Release notes are maintained here and published via [semantic-release](https://g
 ### Fixed
 
 - **api** — WAL: strict snapshot filename grammar (progress sidecars never merged), Zod validation of NDJSON lines, backlog bytes include snapshots/progress, recovery releases WAL lock during Influx retries with serial flush, optional Helm PVC for durable WAL (#447, #452).
+- **adapter** — Physical-command Redis claim verifies both keys after `EVAL`, never returns `proceed` on stale reads, and Lua compensates partial SET failures (#395).
+- **pwa** — Stale offline `syncing` actions re-queue on startup under Navigator Lock; sync-conflict resolution throws when server version cannot be verified (#448).
 - **ci** — `pr-feedback-summary` queues overlapping runs (`queue: max`, `cancel-in-progress: false`) so the four upstream completions are not canceled mid-flight (#443).
 
 ### Security

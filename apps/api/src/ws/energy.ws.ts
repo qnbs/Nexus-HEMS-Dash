@@ -22,7 +22,9 @@ import type { LiveEnergyAggregator } from '../services/LiveEnergyAggregator.js';
 import {
   beginPhysicalCommandReplay,
   completePhysicalCommandReplay,
+  isPhysicalCommandLedgerCommitted,
   markPhysicalCommandUnknown,
+  type PhysicalCommandLedgerTransitionResult,
 } from '../services/physical-command-ledger.js';
 import { wsTicketStore } from '../services/ws-ticket-store.js';
 import { handleEebusProxyConnection, isEebusProxyPath } from './eebus-proxy.ws.js';
@@ -477,10 +479,12 @@ export async function handleWsCommand(
 
   applyMockCommandMutation(cmd);
   auditCommand(wsAuthMap, ws, cmd.type, commandValue, 'accepted');
-  if (idempotencyKey) {
-    await completePhysicalCommandReplay(idempotencyKey, idempotencyKey, 'succeeded', 200, {
-      accepted: true,
-    });
+  if (
+    !(await runIdempotentLedgerTransition(ws, idempotencyKey, (key) =>
+      completePhysicalCommandReplay(key, key, 'succeeded', 200, { accepted: true }),
+    ))
+  ) {
+    return;
   }
 
   mockData.gridPower =
@@ -507,9 +511,13 @@ async function dispatchLiveCommand(
   const dispatchOutcome = resolveProtocolDispatchOutcome(result);
 
   if (dispatchOutcome === 'unknown' && idempotencyKey) {
-    await markPhysicalCommandUnknown(idempotencyKey, idempotencyKey, 409, {
-      outcome: 'unknown',
-    });
+    if (
+      !(await runIdempotentLedgerTransition(ws, idempotencyKey, (key) =>
+        markPhysicalCommandUnknown(key, key, 409, { outcome: 'unknown' }),
+      ))
+    ) {
+      return;
+    }
     auditCommand(
       wsAuthMap,
       ws,
@@ -528,10 +536,14 @@ async function dispatchLiveCommand(
   }
 
   if (!result.handled) {
-    if (idempotencyKey) {
-      await completePhysicalCommandReplay(idempotencyKey, idempotencyKey, 'failed', 501, {
-        error: result.error ?? 'No live adapter handles this command',
-      });
+    if (
+      !(await runIdempotentLedgerTransition(ws, idempotencyKey, (key) =>
+        completePhysicalCommandReplay(key, key, 'failed', 501, {
+          error: result.error ?? 'No live adapter handles this command',
+        }),
+      ))
+    ) {
+      return;
     }
     auditCommand(
       wsAuthMap,
@@ -549,10 +561,14 @@ async function dispatchLiveCommand(
   }
 
   if (!result.success) {
-    if (idempotencyKey) {
-      await completePhysicalCommandReplay(idempotencyKey, idempotencyKey, 'failed', 502, {
-        error: result.error ?? 'Command failed',
-      });
+    if (
+      !(await runIdempotentLedgerTransition(ws, idempotencyKey, (key) =>
+        completePhysicalCommandReplay(key, key, 'failed', 502, {
+          error: result.error ?? 'Command failed',
+        }),
+      ))
+    ) {
+      return;
     }
     auditCommand(
       wsAuthMap,
@@ -567,10 +583,12 @@ async function dispatchLiveCommand(
   }
 
   auditCommand(wsAuthMap, ws, command.type, command.value, 'accepted');
-  if (idempotencyKey) {
-    await completePhysicalCommandReplay(idempotencyKey, idempotencyKey, 'succeeded', 200, {
-      accepted: true,
-    });
+  if (
+    !(await runIdempotentLedgerTransition(ws, idempotencyKey, (key) =>
+      completePhysicalCommandReplay(key, key, 'succeeded', 200, { accepted: true }),
+    ))
+  ) {
+    return;
   }
 
   const broadcastData = resolveBroadcastData(liveAggregator);
@@ -585,6 +603,33 @@ export function sanitizeOutgoingWsPayload(payload: unknown): unknown {
 
 function safeSend(ws: WebSocket, payload: unknown): void {
   ws.send(JSON.stringify(sanitizeOutgoingWsPayload(payload)));
+}
+
+function guardPhysicalCommandLedgerCommit(
+  ws: WebSocket,
+  ledger: PhysicalCommandLedgerTransitionResult,
+): boolean {
+  if (isPhysicalCommandLedgerCommitted(ledger)) {
+    return true;
+  }
+  safeSend(ws, {
+    type: 'ERROR',
+    error: 'Physical command ledger transition rejected',
+    ledgerTransition: ledger,
+  });
+  return false;
+}
+
+async function runIdempotentLedgerTransition(
+  ws: WebSocket,
+  idempotencyKey: string | undefined,
+  run: (idempotencyKey: string) => Promise<PhysicalCommandLedgerTransitionResult>,
+): Promise<boolean> {
+  if (!idempotencyKey) {
+    return true;
+  }
+  const ledger = await run(idempotencyKey);
+  return guardPhysicalCommandLedgerCommit(ws, ledger);
 }
 
 // ---------------------------------------------------------------------------
