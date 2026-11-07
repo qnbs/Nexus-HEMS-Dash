@@ -35,6 +35,18 @@ export type BeginPhysicalCommandResult =
   | { kind: 'unknown'; statusCode: number; body: unknown; commandId: string }
   | { kind: 'in_flight' };
 
+/** Result of a terminal ledger transition (complete / unknown). */
+export type PhysicalCommandLedgerTransitionResult =
+  | 'committed'
+  | 'rejected_no_pending'
+  | 'rejected_cas';
+
+function mapLuaTransitionCode(code: number): PhysicalCommandLedgerTransitionResult {
+  if (code === 0) return 'committed';
+  if (code === 2) return 'rejected_no_pending';
+  return 'rejected_cas';
+}
+
 const memoryByCommandId = new Map<string, PhysicalCommandRecord>();
 const memoryIdemAlias = new Map<string, string>();
 
@@ -255,7 +267,7 @@ export async function completePhysicalCommandReplay(
   terminalState: 'succeeded' | 'failed',
   statusCode: number,
   body: unknown,
-): Promise<void> {
+): Promise<PhysicalCommandLedgerTransitionResult> {
   const ttlSec = ttlSecondsForState(terminalState);
   const record: PhysicalCommandRecord = {
     state: terminalState,
@@ -271,13 +283,13 @@ export async function completePhysicalCommandReplay(
     const recordKey = `${COMMAND_PREFIX}${commandId}`;
     const aliasKey = `${IDEM_ALIAS_PREFIX}${idempotencyKey}`;
     const pendingRaw = await redis.get(recordKey);
-    if (!pendingRaw) return;
+    if (!pendingRaw) return 'rejected_no_pending';
     const current = parseRecord(pendingRaw);
     if (current?.state !== 'pending' || current.idempotencyKey !== idempotencyKey) {
-      return;
+      return 'rejected_cas';
     }
     const terminalJson = JSON.stringify(record);
-    await redis.eval(
+    const code = await redis.eval(
       COMPLETE_PHYSICAL_COMMAND_REPLAY_LUA,
       2,
       recordKey,
@@ -287,17 +299,18 @@ export async function completePhysicalCommandReplay(
       String(ttlSec),
       commandId,
     );
-    return;
+    return mapLuaTransitionCode(typeof code === 'number' ? code : Number(code));
   }
 
   const memoryCurrent = await readRecord(commandId);
-  if (
-    memoryCurrent &&
-    (memoryCurrent.state !== 'pending' || memoryCurrent.idempotencyKey !== idempotencyKey)
-  ) {
-    return;
+  if (!memoryCurrent || memoryCurrent.state !== 'pending') {
+    return 'rejected_no_pending';
+  }
+  if (memoryCurrent.idempotencyKey !== idempotencyKey) {
+    return 'rejected_cas';
   }
   await writeRecord(record);
+  return 'committed';
 }
 
 export async function markPhysicalCommandUnknown(
@@ -305,7 +318,7 @@ export async function markPhysicalCommandUnknown(
   idempotencyKey: string,
   statusCode: number,
   body: unknown,
-): Promise<void> {
+): Promise<PhysicalCommandLedgerTransitionResult> {
   const ttlSec = UNKNOWN_TTL_SEC;
   const record: PhysicalCommandRecord = {
     state: 'unknown',
@@ -321,13 +334,13 @@ export async function markPhysicalCommandUnknown(
     const recordKey = `${COMMAND_PREFIX}${commandId}`;
     const aliasKey = `${IDEM_ALIAS_PREFIX}${idempotencyKey}`;
     const pendingRaw = await redis.get(recordKey);
-    if (!pendingRaw) return;
+    if (!pendingRaw) return 'rejected_no_pending';
     const current = parseRecord(pendingRaw);
     if (current?.state !== 'pending' || current.idempotencyKey !== idempotencyKey) {
-      return;
+      return 'rejected_cas';
     }
     const unknownJson = JSON.stringify(record);
-    await redis.eval(
+    const code = await redis.eval(
       MARK_PHYSICAL_COMMAND_UNKNOWN_LUA,
       2,
       recordKey,
@@ -337,17 +350,18 @@ export async function markPhysicalCommandUnknown(
       String(ttlSec),
       commandId,
     );
-    return;
+    return mapLuaTransitionCode(typeof code === 'number' ? code : Number(code));
   }
 
   const memoryCurrent = await readRecord(commandId);
-  if (
-    memoryCurrent &&
-    (memoryCurrent.state !== 'pending' || memoryCurrent.idempotencyKey !== idempotencyKey)
-  ) {
-    return;
+  if (!memoryCurrent || memoryCurrent.state !== 'pending') {
+    return 'rejected_no_pending';
+  }
+  if (memoryCurrent.idempotencyKey !== idempotencyKey) {
+    return 'rejected_cas';
   }
   await writeRecord(record);
+  return 'committed';
 }
 
 /** Drop a pending claim when validation fails before hardware dispatch. */
