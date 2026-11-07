@@ -1,8 +1,9 @@
 name: PR Feedback Summary
 
-# Posts a single, concise summary comment on PRs after the main CI,
-# security, Lighthouse, and perf workflows finish. This reduces context
-# switching by surfacing links to reports and the next-step checklist.
+# Posts one bot-owned summary comment per PR, updated in place as CI,
+# security, Lighthouse, and perf workflows complete (sections keyed by
+# workflow display name). Reduces delete/recreate churn vs a fresh comment
+# per upstream completion (#443).
 #
 # Runs on workflow_run so it has write access to PR comments without
 # granting broad write permissions to the heavy workflows themselves.
@@ -25,7 +26,10 @@ concurrency:
   # for the same PR) so overlapping summary-postings dedupe. workflow_run.id would be
   # unique per run, making the group a no-op.
   group: ${{ github.workflow }}-${{ github.event.workflow_run.head_branch }}
-  cancel-in-progress: true
+  # Queue all summary runs for this branch — do not cancel in-progress, or the
+  # burst of four completions drops sections (#446).
+  cancel-in-progress: false
+  queue: max
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -40,64 +44,47 @@ jobs:
       pull-requests: write
       actions: read
     steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Post summary comment
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v7
         with:
           script: |
+            const { upsertPrFeedbackSummary } = await import(
+              `${process.cwd()}/scripts/pr-feedback-summary.mjs`
+            );
             const run = context.payload.workflow_run;
             const prs = run.pull_requests;
             if (!prs || prs.length === 0) {
               core.info('No associated PRs; skipping summary comment.');
               return;
             }
-
             const pr = prs[0];
             const repo = context.repo;
-            const runUrl = run.html_url;
-            const runName = run.name;
-            const conclusion = run.conclusion;
-            const icon = conclusion === 'success' ? '✅' : conclusion === 'failure' ? '❌' : '⚠️';
-
-            const body = `## ${icon} ${runName} finished
-
-            | Detail | Link |
-            |--------|------|
-            | Workflow run | [View run](${runUrl}) |
-            | Coverage (Codecov) | [View PR report](https://app.codecov.io/gh/${repo.owner}/${repo.repo}/pull/${pr.number}) |
-            | DeepSource report | [View report card](https://app.deepsource.com/gh/${repo.owner}/${repo.repo}/) |
-            | Coverage artifact | Download “coverage-report” artifact from the CI run |
-            | Bundle analysis | Download “bundle-analysis” artifact from the CI run |
-            | Lighthouse report | Download “lighthouse-report” artifact (if Lighthouse run) |
-
-            **Next steps:**
-            - If any check failed, click the failing job and read the log.
-            - See [PR Feedback Playbook](https://github.com/${repo.owner}/${repo.repo}/blob/main/docs/PR-FEEDBACK-PLAYBOOK.md) for tool roles.
-            - Follow the [PR Review & Correction Loop Runbook](https://github.com/${repo.owner}/${repo.repo}/blob/${run.head_sha}/docs/runbooks/pr-review-correction-loop.md) (mandatory checklist).
-            - Resolve all review threads before merging.
-
-            <!-- pr-feedback-summary -->`;
-
-            // Upsert: delete previous summary comments for this run name.
-            const { data: comments } = await github.rest.issues.listComments({
+            const { data: pull } = await github.rest.pulls.get({
               owner: repo.owner,
               repo: repo.repo,
-              issue_number: pr.number,
+              pull_number: pr.number,
             });
-
-            const marker = '<!-- pr-feedback-summary -->';
-            for (const c of comments) {
-              if (c.body && c.body.includes(marker)) {
-                await github.rest.issues.deleteComment({
-                  owner: repo.owner,
-                  repo: repo.repo,
-                  comment_id: c.id,
-                });
-              }
-            }
-
-            await github.rest.issues.createComment({
-              owner: repo.owner,
-              repo: repo.repo,
-              issue_number: pr.number,
-              body,
-            });
+            const prHeadSha = pull.head.sha;
+            await upsertPrFeedbackSummary(
+              github,
+              {
+                owner: repo.owner,
+                repo: repo.repo,
+                prNumber: pr.number,
+              },
+              {
+                id: run.id,
+                workflow_id: run.workflow_id,
+                html_url: run.html_url,
+                name: run.name,
+                conclusion: run.conclusion,
+                head_sha: run.head_sha,
+                head_branch: run.head_branch,
+                run_attempt: run.run_attempt,
+                created_at: run.created_at,
+                updated_at: run.updated_at,
+                event: run.event,
+              },
+              { prHeadSha, log: core },
+            );

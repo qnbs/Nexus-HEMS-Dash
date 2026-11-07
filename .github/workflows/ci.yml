@@ -45,6 +45,9 @@ jobs:
       - name: Merge conflict marker guard
         run: pnpm check:conflict-markers
 
+      - name: Repo script unit tests (merge markers, supply-chain guard, PR feedback summary)
+        run: pnpm test:conflict-markers
+
       - name: Adapter-count drift guard (F-04)
         run: pnpm check:adapters
 
