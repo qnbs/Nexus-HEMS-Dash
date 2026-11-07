@@ -2,15 +2,22 @@
 
 **Workflows:** `sbom-scan.yml` (daily 03:00 UTC), `scorecard.yml` (Monday 03:00 UTC), watchdog `security-freshness-heartbeat.yml` (04:30 UTC + post-CI on `main`).
 
-## Observed state (2026-11-04)
+## Observed state (2026-11-07)
 
 | Workflow | Last `event=schedule` run | Last `push`/`pull_request` success |
 | --- | --- | --- |
-| SBOM | 2026-10-19 — **failure** (run `39192971692`, setup-node skipped on legacy composite) | 2026-11-04 — success on `main` pushes |
-| Scorecard | 2026-10-19 — failure; 2026-10-05 — last schedule **success** | 2026-11-04 — success on PR/push |
-| Freshness heartbeat | **2026-11-04** — run `41898093286` (`workflow_run` after #418 CI) **success**; schedule steps still advisory (cron ~30d stale). Prior run `41892929820` failed before #418 heartbeat fix. |
+| SBOM (`sbom-scan.yml`) | **2026-11-07** — success (`42332133401`, `event=schedule`) | PR/`main` runs continue to pass Layer-1 gates |
+| Scorecard (`scorecard.yml`) | **2026-10-05** — last schedule **success** (`03:12:20Z`); 2026-10-19 schedule failed checkout (`Repository not found`) | 2026-11-06 — PR/push success (**not** a substitute for schedule freshness) |
+| Renovate / Stale / other crons | **2026-11-07** — scheduled runs **green** (e.g. Renovate `42341339305`, Stale `42327967074`) | N/A |
+| Freshness heartbeat | **2026-11-07** — run `42338839901` **`schedule` job failed** on Scorecard freshness (>9d since last schedule success; ~33d since 2026-10-05). SBOM schedule step on same run **green** after 2026-11-07 schedule success. | `workflow_run` post-`main` CI paths may still pass while schedule proof is red |
 
-GitHub did not enqueue new `schedule` runs after 2026-10-19 despite active `main` pushes. Treat this as **platform schedule delivery**, not application regression:
+**Do not** widen freshness thresholds to green-wash the heartbeat while Scorecard `event=schedule` remains stale. Next expected Scorecard cron window: **Monday ~03:00 UTC** (`0 3 * * 1`); GitHub dispatch timing can skew.
+
+### Prior snapshot (2026-11-04)
+
+SBOM schedule last failed 2026-10-19 before composite fix; post-fix **push** SBOM/Scorecard were green while **schedule** events were still sparse — see git history for #418 heartbeat work.
+
+GitHub schedule delivery can lag org/repo policy. Treat prolonged absence of `event=schedule` as **platform schedule delivery**, not application regression:
 
 1. Repo **Settings → Actions → General** — confirm Actions enabled and scheduled workflows allowed for this repository/org.
 2. Run **workflow_dispatch** on `sbom-scan.yml` and `scorecard.yml` weekly until schedule events resume.
