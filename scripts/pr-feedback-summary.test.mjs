@@ -3,6 +3,7 @@ import { describe, it } from 'node:test';
 import {
   MARKER,
   assembleSummaryBody,
+  buildSectionBody,
   compareWorkflowRunsForSameHead,
   extractConclusionFromSection,
   formatRollupStatusLine,
@@ -53,6 +54,33 @@ describe('pr-feedback-summary', () => {
       extractConclusionFromSection('### ⏭️ X finished\n\n_Conclusion: `skipped` (run_attempt 1)._'),
       'skipped',
     );
+  });
+
+  it('buildSectionBody maps pending in-progress and neutral conclusions to distinct icons', () => {
+    const repo = { owner: 'qnbs', repo: 'Nexus-HEMS-Dash' };
+    const pr = { number: 446 };
+    const base = {
+      name: 'CI',
+      html_url: 'https://example.com/run',
+      head_sha: 'a'.repeat(40),
+      head_branch: 'topic',
+    };
+    const pending = buildSectionBody(repo, pr, { ...base, conclusion: null, run_attempt: 1 });
+    assert.ok(pending.startsWith('### ⏳ CI finished'));
+    const neutral = buildSectionBody(repo, pr, { ...base, conclusion: 'neutral', run_attempt: 2 });
+    assert.ok(neutral.startsWith('### ⚪ CI finished'));
+    assert.ok(neutral.includes('run_attempt 2'));
+  });
+
+  it('rollup overall stays pending until all four tracked workflows have sections', () => {
+    const rollup = rollupTrackedWorkflowConclusions({
+      CI: '### ✅ CI finished\n\n_Conclusion: `success` (run_attempt 1)._',
+    });
+    assert.equal(rollup.overall, 'pending');
+    assert.ok(rollup.pendingWorkflows.includes('Security Full'));
+    const line = formatRollupStatusLine(rollup);
+    assert.ok(line.includes('pending 3'));
+    assert.ok(line.includes('awaiting:'));
   });
 
   it('parseExistingSummary round-trips sections', () => {
@@ -111,6 +139,73 @@ describe('pr-feedback-summary', () => {
 
     assert.equal(calls.updated, 0);
     assert.equal(calls.created, 0);
+  });
+
+  it('upsert no-ops when an older run_attempt completes after a newer attempt (issue #443 rerun race)', async () => {
+    const sha = '9'.repeat(40);
+    const calls = { issues: [] };
+    const github = {
+      paginate: {
+        iterator: async function* (fn, params) {
+          yield await fn(params);
+        },
+      },
+      rest: {
+        pulls: { get: async () => ({ data: { head: { sha } } }) },
+        issues: {
+          listComments: async () => ({ data: [] }),
+          createComment: async () => {
+            calls.issues.push('create');
+          },
+          updateComment: async () => calls.issues.push('update'),
+          deleteComment: async () => calls.issues.push('delete'),
+        },
+        actions: {
+          listWorkflowRuns: async () => ({
+            data: {
+              workflow_runs: [
+                {
+                  id: 300,
+                  event: 'pull_request',
+                  head_sha: sha,
+                  created_at: '2026-01-05T00:00:00Z',
+                  updated_at: '2026-01-05T00:00:00Z',
+                  run_attempt: 2,
+                },
+                {
+                  id: 250,
+                  event: 'pull_request',
+                  head_sha: sha,
+                  created_at: '2026-01-04T00:00:00Z',
+                  updated_at: '2026-01-06T00:00:00Z',
+                  run_attempt: 1,
+                },
+              ],
+            },
+          }),
+        },
+      },
+    };
+
+    await upsertPrFeedbackSummary(
+      github,
+      { owner: 'o', repo: 'r', prNumber: 1 },
+      {
+        id: 250,
+        workflow_id: 9,
+        html_url: 'https://x',
+        name: 'CI',
+        conclusion: 'success',
+        head_sha: sha,
+        head_branch: 'topic',
+        run_attempt: 1,
+        created_at: '2026-01-04T00:00:00Z',
+        updated_at: '2026-01-06T00:00:00Z',
+      },
+      { prHeadSha: sha, log: { info: () => {}, error: () => {} } },
+    );
+
+    assert.deepEqual(calls.issues, []);
   });
 
   it('skips when workflow run is not the newest for same workflow + branch + sha', async () => {
