@@ -76,6 +76,12 @@ function readWalProgressStart(progressPath: string): number {
 }
 
 /** Count WAL NDJSON rows not yet drained per sidecar progress (test helper). */
+function countPrimaryWalLines(dataDir: string): number {
+  const walPath = join(dataDir, 'wal.ndjson');
+  if (!existsSync(walPath)) return 0;
+  return readFileSync(walPath, 'utf8').trim().split('\n').filter(Boolean).length;
+}
+
 function countUnmergedWalRows(dataDir: string): number {
   let total = 0;
   for (const name of readdirSync(dataDir)) {
@@ -313,6 +319,55 @@ describe('TimeseriesService failed recovery archive handoff (DATA-18)', () => {
     });
     await svc2.recoverWAL();
     expect(countUnmergedWalRows(dataDir)).toBe(2);
+
+    await svc.destroy();
+    await svc2.destroy();
+  });
+
+  it('does not duplicate primary WAL lines when merge progress write fails after append', async () => {
+    const dataDir = mkdtempSync(join(tmpdir(), 'wal-merge-progress-fail-'));
+    dirs.push(dataDir);
+    const failedPath = join(dataDir, 'wal.ndjson.failed-1700000001000-0');
+    const lines = [samplePoint(101), samplePoint(102)].map((p) => JSON.stringify(p)).join('\n');
+    writeFileSync(failedPath, `${lines}\n`, 'utf8');
+
+    const strandedProgressPath = `${failedPath}.recovery-progress.json`;
+    let failStrandedProgressOnce = true;
+    fsFault.writeFileSync = (path, content, encoding) => {
+      if (failStrandedProgressOnce && String(path) === strandedProgressPath) {
+        failStrandedProgressOnce = false;
+        throw Object.assign(new Error('EIO during progress write'), { code: 'EIO' });
+      }
+      return fsActual.writeFileSync!(path, content, encoding);
+    };
+
+    const writeApi = {
+      writePoint: vi.fn(),
+      flush: vi.fn(async () => {
+        throw new Error('influx always down');
+      }),
+      close: vi.fn(async () => {}),
+    } as unknown as WriteApi;
+
+    const svc = new TimeseriesService({
+      dataDir,
+      writeApi,
+      maxWalRecoveryAttempts: 1,
+      walBatchSize: 2,
+    });
+    await svc.recoverWAL();
+    const logicalRowsAfterCrash = countPrimaryWalLines(dataDir) + countUnmergedWalRows(dataDir);
+    expect(logicalRowsAfterCrash).toBe(2);
+
+    const svc2 = new TimeseriesService({
+      dataDir,
+      writeApi,
+      maxWalRecoveryAttempts: 1,
+      walBatchSize: 2,
+    });
+    await svc2.recoverWAL();
+    const logicalRowsAfterRetry = countPrimaryWalLines(dataDir) + countUnmergedWalRows(dataDir);
+    expect(logicalRowsAfterRetry).toBe(logicalRowsAfterCrash);
 
     await svc.destroy();
     await svc2.destroy();

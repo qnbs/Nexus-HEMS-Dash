@@ -42,6 +42,7 @@ const DEFAULT_DATA_DIR = join(__dirname, '../../data');
 const WAL_FILE = 'wal.ndjson';
 const WAL_FAILED_PREFIX = 'wal.ndjson.failed-';
 const WAL_PROGRESS_SUFFIX = '.recovery-progress.json';
+const WAL_MERGE_STAGED_SUFFIX = '.merge-staged.json';
 const WAL_QUARANTINE = 'wal-corrupt.ndjson';
 
 const DEFAULT_WAL_BATCH_SIZE = 200;
@@ -73,6 +74,13 @@ export interface TimeseriesServiceDeps {
 interface WalRecoveryProgress {
   /** Next index into the parsed datapoint array to flush (exclusive of already flushed). */
   nextParsedIndex: number;
+}
+
+/** Crash-safe stranded merge handoff (#447): marks append completion before progress/unlink. */
+interface WalMergeStaged {
+  phase: 'pending' | 'appended';
+  lineCount: number;
+  primaryLinesBefore: number;
 }
 
 /** Exclude progress sidecars and non-snapshot files (v7: `*.recovery-progress.json` is not a datapoint snapshot). */
@@ -316,6 +324,52 @@ export class TimeseriesService implements EventBusSubscriber {
   /**
    * Move any stranded recovering/failed **snapshot** files into the live primary WAL (append), then remove the snapshot.
    */
+  private countPrimaryWalLines(): number {
+    if (!existsSync(this.walPath)) return 0;
+    return readFileSync(this.walPath, 'utf8').trim().split('\n').filter(Boolean).length;
+  }
+
+  private readMergeStaged(snapshotPath: string): WalMergeStaged | undefined {
+    const stagedPath = `${snapshotPath}${WAL_MERGE_STAGED_SUFFIX}`;
+    if (!existsSync(stagedPath)) return undefined;
+    try {
+      const parsed = JSON.parse(readFileSync(stagedPath, 'utf8').trim()) as Partial<WalMergeStaged>;
+      if (
+        (parsed.phase !== 'pending' && parsed.phase !== 'appended') ||
+        typeof parsed.lineCount !== 'number' ||
+        typeof parsed.primaryLinesBefore !== 'number'
+      ) {
+        return undefined;
+      }
+      return {
+        phase: parsed.phase,
+        lineCount: parsed.lineCount,
+        primaryLinesBefore: parsed.primaryLinesBefore,
+      };
+    } catch {
+      return undefined;
+    }
+  }
+
+  private writeMergeStaged(snapshotPath: string, staged: WalMergeStaged): void {
+    const stagedPath = `${snapshotPath}${WAL_MERGE_STAGED_SUFFIX}`;
+    writeFileSync(stagedPath, `${JSON.stringify(staged)}\n`, 'utf8');
+  }
+
+  private deleteMergeStaged(snapshotPath: string): void {
+    const stagedPath = `${snapshotPath}${WAL_MERGE_STAGED_SUFFIX}`;
+    try {
+      unlinkSync(stagedPath);
+    } catch {
+      // ignore
+    }
+  }
+
+  private mergeAppendAlreadyOnPrimary(staged: WalMergeStaged): boolean {
+    if (staged.phase === 'appended') return true;
+    return this.countPrimaryWalLines() >= staged.primaryLinesBefore + staged.lineCount;
+  }
+
   private mergeStrandedSnapshotsIntoPrimary(): void {
     let names: string[];
     try {
@@ -337,13 +391,38 @@ export class TimeseriesService implements EventBusSubscriber {
       const datapoints = this.parseRecoveringWal(full);
       const { nextParsedIndex } = this.readProgress(full);
       const slice = datapoints.slice(Math.min(nextParsedIndex, datapoints.length));
-      if (slice.length > 0) {
+      const staged = this.readMergeStaged(full);
+      const skipAppend = staged !== undefined && this.mergeAppendAlreadyOnPrimary(staged);
+
+      if (slice.length > 0 && !skipAppend) {
+        const primaryLinesBefore = this.countPrimaryWalLines();
         const lines = `${slice.map((dp) => JSON.stringify(dp)).join('\n')}\n`;
+        this.writeMergeStaged(full, {
+          phase: 'pending',
+          lineCount: slice.length,
+          primaryLinesBefore,
+        });
         if (existsSync(this.walPath)) {
           appendFileSync(this.walPath, lines, 'utf8');
         } else {
           writeFileSync(this.walPath, lines, 'utf8');
         }
+        this.writeMergeStaged(full, {
+          phase: 'appended',
+          lineCount: slice.length,
+          primaryLinesBefore,
+        });
+      }
+
+      try {
+        this.writeProgress(full, datapoints.length);
+      } catch (err) {
+        console.error(
+          '[TimeseriesService] Could not persist stranded merge progress for',
+          name,
+          err,
+        );
+        continue;
       }
       let removed = false;
       try {
@@ -353,10 +432,8 @@ export class TimeseriesService implements EventBusSubscriber {
         console.error('[TimeseriesService] Could not remove stranded WAL snapshot', name, err);
       }
       if (removed) {
+        this.deleteMergeStaged(full);
         this.deleteProgress(full);
-      } else {
-        // Merge bytes are on primary; drain cursor so a later merge cannot re-append.
-        this.writeProgress(full, datapoints.length);
       }
     }
   }
