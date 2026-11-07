@@ -16,12 +16,14 @@ import {
   loadEebusLocalCertificateRows,
   logError,
   nexusDb,
+  OFFLINE_SYNCING_STALE_MS,
   persistEebusLocalCertificateRows,
   persistSankeySnapshot,
   persistSettings,
   persistShareLink,
   persistSnapshot,
   queueOfflineAction,
+  requeueStaleSyncingOfflineActions,
   revokeLocalShareLink,
   storeCacheMetadata,
   updateActionStatus,
@@ -95,6 +97,21 @@ describe('Database operational helpers', () => {
     await cleanupCompletedActions();
 
     expect(await nexusDb.offlineActions.count()).toBe(0);
+  });
+
+  it('requeues offline actions stuck in syncing past the stale window', async () => {
+    const id = await queueOfflineAction('settings', { theme: 'ocean-dark' });
+    await updateActionStatus(id, 'syncing');
+    await nexusDb.offlineActions.update(id, {
+      syncStartedAt: Date.now() - OFFLINE_SYNCING_STALE_MS - 1000,
+    });
+
+    const requeued = await requeueStaleSyncingOfflineActions();
+    expect(requeued).toBe(1);
+
+    const row = await nexusDb.offlineActions.get(id);
+    expect(row?.status).toBe('pending');
+    expect(row?.error).toBeUndefined();
   });
 
   it('creates and updates sync state records', async () => {
