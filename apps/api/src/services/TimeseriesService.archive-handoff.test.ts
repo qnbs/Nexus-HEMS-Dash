@@ -61,6 +61,34 @@ function samplePoint(n: number): UnifiedEnergyDatapoint {
   };
 }
 
+const WAL_ROW_WAL_FILE = /^(?:wal\.ndjson|wal\.ndjson\.recovering|wal\.ndjson\.failed-\d+(-\d+)?)$/;
+
+function readWalProgressStart(progressPath: string): number {
+  if (!existsSync(progressPath)) return 0;
+  try {
+    const parsed = JSON.parse(readFileSync(progressPath, 'utf8').trim()) as {
+      nextParsedIndex?: number;
+    };
+    return typeof parsed.nextParsedIndex === 'number' ? parsed.nextParsedIndex : 0;
+  } catch {
+    return 0;
+  }
+}
+
+/** Count WAL NDJSON rows not yet drained per sidecar progress (test helper). */
+function countUnmergedWalRows(dataDir: string): number {
+  let total = 0;
+  for (const name of readdirSync(dataDir)) {
+    if (!WAL_ROW_WAL_FILE.test(name)) continue;
+    const filePath = join(dataDir, name);
+    if (!existsSync(filePath)) continue;
+    const lines = readFileSync(filePath, 'utf8').trim().split('\n').filter(Boolean);
+    const start = readWalProgressStart(`${filePath}.recovery-progress.json`);
+    total += lines.slice(Math.min(start, lines.length)).length;
+  }
+  return total;
+}
+
 describe('TimeseriesService failed recovery archive handoff (DATA-18)', () => {
   const dirs: string[] = [];
 
@@ -263,35 +291,6 @@ describe('TimeseriesService failed recovery archive handoff (DATA-18)', () => {
       close: vi.fn(async () => {}),
     } as unknown as WriteApi;
 
-    const countUnmergedRows = (): number => {
-      let total = 0;
-      for (const name of readdirSync(dataDir)) {
-        if (
-          name === 'wal.ndjson' ||
-          name === 'wal.ndjson.recovering' ||
-          (name.startsWith('wal.ndjson.failed-') && /^wal\.ndjson\.failed-\d+(-\d+)?$/.test(name))
-        ) {
-          const p = join(dataDir, name);
-          if (!existsSync(p)) continue;
-          const lines = readFileSync(p, 'utf8').trim().split('\n').filter(Boolean);
-          const progressPath = `${p}.recovery-progress.json`;
-          let start = 0;
-          if (existsSync(progressPath)) {
-            try {
-              const parsed = JSON.parse(readFileSync(progressPath, 'utf8').trim()) as {
-                nextParsedIndex?: number;
-              };
-              start = typeof parsed.nextParsedIndex === 'number' ? parsed.nextParsedIndex : 0;
-            } catch {
-              start = 0;
-            }
-          }
-          total += lines.slice(Math.min(start, lines.length)).length;
-        }
-      }
-      return total;
-    };
-
     const svc = new TimeseriesService({
       dataDir,
       writeApi,
@@ -300,10 +299,10 @@ describe('TimeseriesService failed recovery archive handoff (DATA-18)', () => {
     });
     await svc.recoverWAL();
     expect(existsSync(failedPath)).toBe(true);
-    expect(countUnmergedRows()).toBe(2);
+    expect(countUnmergedWalRows(dataDir)).toBe(2);
 
     await svc.recoverWAL();
-    expect(countUnmergedRows()).toBe(2);
+    expect(countUnmergedWalRows(dataDir)).toBe(2);
 
     failStrandedUnlink = false;
     const svc2 = new TimeseriesService({
@@ -313,7 +312,7 @@ describe('TimeseriesService failed recovery archive handoff (DATA-18)', () => {
       walBatchSize: 2,
     });
     await svc2.recoverWAL();
-    expect(countUnmergedRows()).toBe(2);
+    expect(countUnmergedWalRows(dataDir)).toBe(2);
 
     await svc.destroy();
     await svc2.destroy();
