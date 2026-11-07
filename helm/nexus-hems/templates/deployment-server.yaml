@@ -1,6 +1,9 @@
 {{- if and (gt (int .Values.replicaCount.server) 1) (not .Values.server.redisUrl) }}
 {{- fail "replicaCount.server > 1 requires .Values.server.redisUrl for HA offline sync (REDIS_URL)" }}
 {{- end }}
+{{- if and (gt (int .Values.replicaCount.server) 1) (not .Values.server.walPersistence.enabled) }}
+{{- fail "replicaCount.server > 1 requires server.walPersistence.enabled for durable WAL (#452)" }}
+{{- end }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -46,6 +49,11 @@ spec:
               value: {{ .Values.env.NODE_ENV | quote }}
             - name: PORT
               value: {{ .Values.env.PORT | quote }}
+            # WAL directory: PVC when server.walPersistence.enabled, else pod-ephemeral emptyDir (#452).
+            - name: NEXUS_HEMS_DATA_DIR
+              value: "/data/nexus-hems"
+            - name: NEXUS_HEMS_WAL_STORAGE_CLASS
+              value: {{ if .Values.server.walPersistence.enabled }}"pvc"{{ else }}"ephemeral"{{ end | quote }}
             - name: ADAPTER_MODE
               value: {{ .Values.env.ADAPTER_MODE | default "mock" | quote }}
             {{- if .Values.server.redisUrl }}
@@ -88,6 +96,23 @@ spec:
           volumeMounts:
             - name: tmp
               mountPath: /tmp
+            - name: nexus-hems-data
+              mountPath: /data/nexus-hems
       volumes:
         - name: tmp
           emptyDir: {}
+        - name: nexus-hems-data
+          {{- if .Values.server.walPersistence.enabled }}
+          {{- if not (or .Values.server.walPersistence.existingClaim .Values.server.walPersistence.create) }}
+          {{- fail "server.walPersistence.enabled requires server.walPersistence.existingClaim or create: true (WAL PVC #452)" }}
+          {{- end }}
+          {{- if .Values.server.walPersistence.existingClaim }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.server.walPersistence.existingClaim | quote }}
+          {{- else }}
+          persistentVolumeClaim:
+            claimName: {{ include "nexus-hems.fullname" . }}-server-wal
+          {{- end }}
+          {{- else }}
+          emptyDir: {}
+          {{- end }}

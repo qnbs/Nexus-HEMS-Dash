@@ -51,6 +51,19 @@ describe('GET /api/health', () => {
     }
   });
 
+  it('exposes walStorageClass ephemeral with durability notice', async () => {
+    const originalWal = process.env.NEXUS_HEMS_WAL_STORAGE_CLASS;
+    process.env.NEXUS_HEMS_WAL_STORAGE_CLASS = 'ephemeral';
+    try {
+      const res = await supertest(app).get('/api/health').expect(200);
+      expect(res.body.walStorageClass).toBe('ephemeral');
+      expect(res.body.walDurabilityNotice).toMatch(/Pod recreation/i);
+    } finally {
+      if (originalWal === undefined) delete process.env.NEXUS_HEMS_WAL_STORAGE_CLASS;
+      else process.env.NEXUS_HEMS_WAL_STORAGE_CLASS = originalWal;
+    }
+  });
+
   it('exposes readOnly=true when READ_ONLY_MODE is set', async () => {
     const originalReadOnly = process.env.READ_ONLY_MODE;
     process.env.READ_ONLY_MODE = 'true';
