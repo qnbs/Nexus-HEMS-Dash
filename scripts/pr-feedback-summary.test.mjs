@@ -4,11 +4,14 @@ import {
   MARKER,
   assembleSummaryBody,
   compareWorkflowRunsForSameHead,
+  extractConclusionFromSection,
+  formatRollupStatusLine,
   isBotOwnedSummaryComment,
   isNewestWorkflowRunForHead,
   listAllIssueComments,
   parseExistingSummary,
   parseWorkflowNameFromHeading,
+  rollupTrackedWorkflowConclusions,
   upsertPrFeedbackSummary,
 } from './pr-feedback-summary.mjs';
 
@@ -21,11 +24,35 @@ describe('pr-feedback-summary', () => {
   it('assembles a stable body with marker and head tag', () => {
     const sha = 'a'.repeat(40);
     const body = assembleSummaryBody(sha, {
-      CI: '### ✅ CI finished\n\ndone',
+      CI: '### ✅ CI finished\n\n_Conclusion: `success` (run_attempt 1)._',
     });
     assert.ok(body.includes(`head=${sha}`));
     assert.ok(body.endsWith(`${MARKER}\n`));
     assert.ok(body.includes('### ✅ CI finished'));
+    assert.ok(body.includes('overall **pending**'));
+    assert.ok(body.includes('awaiting:'));
+  });
+
+  it('rollup marks failed when any tracked section failed', () => {
+    const rollup = rollupTrackedWorkflowConclusions({
+      CI: '### ❌ CI finished\n\n_Conclusion: `failure` (run_attempt 1)._',
+      'Security Full': '### ✅ Security Full finished\n\n_Conclusion: `success` (run_attempt 1)._',
+    });
+    assert.equal(rollup.overall, 'failed');
+    assert.equal(rollup.counts.failure, 1);
+    assert.equal(rollup.pendingWorkflows.length, 2);
+    assert.ok(formatRollupStatusLine(rollup).includes('failed 1'));
+  });
+
+  it('extractConclusionFromSection reads neutral and skipped', () => {
+    assert.equal(
+      extractConclusionFromSection('### ⚪ X finished\n\n_Conclusion: `neutral` (run_attempt 1)._'),
+      'neutral',
+    );
+    assert.equal(
+      extractConclusionFromSection('### ⏭️ X finished\n\n_Conclusion: `skipped` (run_attempt 1)._'),
+      'skipped',
+    );
   });
 
   it('parseExistingSummary round-trips sections', () => {
@@ -356,6 +383,49 @@ describe('isNewestWorkflowRunForHead', () => {
     assert.equal(ok, true);
   });
 
+  it('ignores non-pull_request workflow runs when choosing newest (fork trust boundary)', async () => {
+    const sha = 'd'.repeat(40);
+    const github = {
+      rest: {
+        actions: {
+          listWorkflowRuns: async () => ({
+            data: {
+              workflow_runs: [
+                {
+                  id: 900,
+                  event: 'push',
+                  head_sha: sha,
+                  created_at: '2026-01-10T00:00:00Z',
+                  updated_at: '2026-01-10T00:00:00Z',
+                  run_attempt: 5,
+                },
+                {
+                  id: 50,
+                  event: 'pull_request',
+                  head_sha: sha,
+                  created_at: '2026-01-01T00:00:00Z',
+                  updated_at: '2026-01-01T00:00:00Z',
+                  run_attempt: 1,
+                },
+              ],
+            },
+          }),
+        },
+      },
+    };
+    const ok = await isNewestWorkflowRunForHead(github, { owner: 'o', repo: 'r' }, {
+      id: 50,
+      workflow_id: 1,
+      head_branch: 'topic',
+      head_sha: sha,
+      run_attempt: 1,
+      created_at: '2026-01-01T00:00:00Z',
+      updated_at: '2026-01-01T00:00:00Z',
+      event: 'pull_request',
+    });
+    assert.equal(ok, true);
+  });
+
   it('skips when a higher run_attempt exists for the same head (re-run supersedes)', async () => {
     const sha = 'c'.repeat(40);
     const github = {
@@ -456,6 +526,133 @@ describe('listAllIssueComments', () => {
       ids.push(c.id);
     }
     assert.deepEqual(ids, [1, 2]);
+  });
+});
+
+describe('upsertPrFeedbackSummary resilience', () => {
+  it('leaves human-owned marker comment untouched when creating keeper', async () => {
+    const sha = '9'.repeat(40);
+    let humanBody = `user notes\n${MARKER}\n`;
+    const github = {
+      paginate: {
+        iterator: async function* (fn, params) {
+          yield await fn(params);
+        },
+      },
+      rest: {
+        pulls: { get: async () => ({ data: { head: { sha } } }) },
+        issues: {
+          listComments: async () => ({
+            data: [
+              { id: 99, body: humanBody, user: { login: 'human' } },
+            ],
+          }),
+          createComment: async () => ({ data: { id: 1 } }),
+          updateComment: async () => assert.fail('unexpected update'),
+          deleteComment: async ({ comment_id }) => {
+            assert.notEqual(comment_id, 99);
+          },
+        },
+        actions: {
+          listWorkflowRuns: async () => ({ data: { workflow_runs: [] } }),
+        },
+      },
+    };
+
+    await upsertPrFeedbackSummary(
+      github,
+      { owner: 'o', repo: 'r', prNumber: 1 },
+      {
+        id: 1,
+        workflow_id: 1,
+        html_url: 'https://r',
+        name: 'CI',
+        conclusion: 'success',
+        head_sha: sha,
+        head_branch: 'b',
+        run_attempt: 1,
+      },
+      { prHeadSha: sha, log: { info: () => {}, error: () => {} } },
+    );
+    assert.equal(humanBody, `user notes\n${MARKER}\n`);
+  });
+
+  it('does not delete stale comments when update throws', async () => {
+    const sha = '8'.repeat(40);
+    const staleId = 77;
+    const deletes = [];
+    const github = {
+      paginate: {
+        iterator: async function* (fn, params) {
+          yield await fn(params);
+        },
+      },
+      rest: {
+        pulls: { get: async () => ({ data: { head: { sha } } }) },
+        issues: {
+          listComments: async () => ({
+            data: [
+              {
+                id: 10,
+                body: assembleSummaryBody(sha, { CI: '### ✅ CI finished\n\nx' }),
+                user: { login: 'github-actions[bot]' },
+              },
+              { id: staleId, body: `${MARKER} old`, user: { login: 'github-actions[bot]' } },
+            ],
+          }),
+          updateComment: async () => {
+            throw new Error('api 503');
+          },
+          createComment: async () => assert.fail('should not create'),
+          deleteComment: async ({ comment_id }) => {
+            deletes.push(comment_id);
+          },
+        },
+        actions: {
+          listWorkflowRuns: async () => ({
+            data: {
+              workflow_runs: [
+                {
+                  id: 5,
+                  event: 'pull_request',
+                  head_sha: sha,
+                  head_branch: 'b',
+                  run_attempt: 1,
+                  created_at: '2026-01-01T00:00:00Z',
+                  updated_at: '2026-01-01T00:00:00Z',
+                },
+              ],
+            },
+          }),
+        },
+      },
+    };
+
+    const eventRun = {
+      id: 5,
+      workflow_id: 1,
+      html_url: 'https://r',
+      name: 'CI',
+      conclusion: 'success',
+      head_sha: sha,
+      head_branch: 'b',
+      run_attempt: 1,
+      created_at: '2026-01-01T00:00:00Z',
+      updated_at: '2026-01-01T00:00:00Z',
+      event: 'pull_request',
+    };
+
+    await assert.rejects(
+      () =>
+        upsertPrFeedbackSummary(
+          github,
+          { owner: 'o', repo: 'r', prNumber: 2 },
+          eventRun,
+          { prHeadSha: sha, log: { info: () => {}, error: () => {} } },
+        ),
+      /503/,
+    );
+    assert.deepEqual(deletes, []);
   });
 });
 

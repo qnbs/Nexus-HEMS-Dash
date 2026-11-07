@@ -22,6 +22,14 @@
 export const MARKER = '<!-- pr-feedback-summary -->';
 const VERSION_TAG = '<!-- pr-feedback-v1';
 
+/** Upstream workflows that post sections via `pr-feedback-summary.yml` (partial rollup source). */
+export const TRACKED_FEEDBACK_WORKFLOWS = [
+  'CI',
+  'Security Full',
+  'Lighthouse CI',
+  'Performance Benchmark',
+];
+
 /** Bot identities allowed to own summary comments (workflow GITHUB_TOKEN). */
 const BOT_OWNERS = new Set(['github-actions[bot]']);
 
@@ -62,7 +70,90 @@ function iconForConclusion(run) {
   if (c === 'cancelled' || c === 'skipped') return '⏭️';
   if (c === 'neutral') return '⚪';
   if (c === 'action_required') return '🔶';
+  if (c === null || c === 'pending' || c === 'in_progress') return '⏳';
   return '⚠️';
+}
+
+/**
+ * @param {string} sectionMarkdown
+ * @returns {string | null}
+ */
+export function extractConclusionFromSection(sectionMarkdown) {
+  const m = sectionMarkdown.match(/_Conclusion: `([^`]+)`/);
+  return m?.[1] ?? null;
+}
+
+/**
+ * Roll up tracked workflow section conclusions (not full GitHub Checks API).
+ *
+ * @param {Record<string, string>} sections
+ * @returns {{ overall: string, counts: Record<string, number>, pendingWorkflows: string[] }}
+ */
+export function rollupTrackedWorkflowConclusions(sections) {
+  /** @type {Record<string, number>} */
+  const counts = {
+    success: 0,
+    failure: 0,
+    neutral: 0,
+    skipped: 0,
+    cancelled: 0,
+    action_required: 0,
+    unknown: 0,
+    pending: 0,
+  };
+  /** @type {string[]} */
+  const pendingWorkflows = [];
+
+  for (const name of TRACKED_FEEDBACK_WORKFLOWS) {
+    const block = sections[name];
+    if (!block) {
+      counts.pending += 1;
+      pendingWorkflows.push(name);
+      continue;
+    }
+    const c = extractConclusionFromSection(block);
+    if (c === 'success') counts.success += 1;
+    else if (c === 'failure' || c === 'timed_out') counts.failure += 1;
+    else if (c === 'neutral') counts.neutral += 1;
+    else if (c === 'skipped') counts.skipped += 1;
+    else if (c === 'cancelled') counts.cancelled += 1;
+    else if (c === 'action_required') counts.action_required += 1;
+    else counts.unknown += 1;
+  }
+
+  /** @type {string} */
+  let overall = 'pending';
+  if (counts.failure > 0) overall = 'failed';
+  else if (counts.pending > 0) overall = 'pending';
+  else if (counts.neutral > 0 || counts.unknown > 0) overall = 'neutral';
+  else if (counts.action_required > 0) overall = 'action_required';
+  else if (counts.cancelled > 0 && counts.success === 0) overall = 'cancelled';
+  else if (counts.skipped > 0 && counts.success + counts.skipped === TRACKED_FEEDBACK_WORKFLOWS.length) {
+    overall = 'skipped';
+  } else if (counts.success === TRACKED_FEEDBACK_WORKFLOWS.length) overall = 'success';
+
+  return { overall, counts, pendingWorkflows };
+}
+
+/**
+ * @param {ReturnType<typeof rollupTrackedWorkflowConclusions>} rollup
+ * @returns {string}
+ */
+export function formatRollupStatusLine(rollup) {
+  const { overall, counts, pendingWorkflows } = rollup;
+  const parts = [
+    `overall **${overall}**`,
+    `success ${counts.success}`,
+    `failed ${counts.failure}`,
+    `pending ${counts.pending}`,
+    `neutral ${counts.neutral}`,
+    `skipped ${counts.skipped}`,
+    `cancelled ${counts.cancelled}`,
+  ];
+  if (pendingWorkflows.length > 0) {
+    parts.push(`awaiting: ${pendingWorkflows.join(', ')}`);
+  }
+  return parts.join(' · ');
 }
 
 /**
@@ -106,7 +197,8 @@ _Conclusion: \`${conclusion}\` (run_attempt ${attempt}). This \`workflow_run.com
  */
 export function assembleSummaryBody(headSha, sections) {
   const short = headSha.slice(0, 7);
-  const order = ['CI', 'Security Full', 'Lighthouse CI', 'Performance Benchmark'];
+  const rollup = rollupTrackedWorkflowConclusions(sections);
+  const order = [...TRACKED_FEEDBACK_WORKFLOWS];
   const keys = Object.keys(sections);
   keys.sort((a, b) => {
     const ia = order.indexOf(a);
@@ -123,6 +215,10 @@ export function assembleSummaryBody(headSha, sections) {
     `## Pull request check summary`,
     '',
     `_Latest \`workflow_run\` head: \`${short}\` (${headSha})_`,
+    '',
+    `**Tracked workflow rollup (partial):** ${formatRollupStatusLine(rollup)}`,
+    '',
+    '_Scope: conclusions from the four upstream workflows above only — branch rulesets and other Checks (e.g. CodeQL) may still be **pending** on the Checks tab._',
     '',
   ];
   for (const k of keys) {
