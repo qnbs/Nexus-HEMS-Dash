@@ -15,6 +15,7 @@ Release notes are maintained here and published via [semantic-release](https://g
 
 ### Fixed
 
+- **adapter** — Physical-command Redis claim verifies both keys after `EVAL`, never returns `proceed` on stale reads, and Lua compensates partial SET failures (#395).
 - **ci** — `pr-feedback-summary` queues overlapping runs (`queue: max`, `cancel-in-progress: false`) so the four upstream completions are not canceled mid-flight (#443).
 
 ### Security
