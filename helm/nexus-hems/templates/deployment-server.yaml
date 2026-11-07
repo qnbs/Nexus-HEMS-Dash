@@ -53,7 +53,7 @@ spec:
             - name: NEXUS_HEMS_DATA_DIR
               value: "/data/nexus-hems"
             - name: NEXUS_HEMS_WAL_STORAGE_CLASS
-              value: {{ if .Values.server.walPersistence.enabled }}"pvc"{{ else }}"ephemeral"{{ end | quote }}
+              value: {{- if .Values.server.walPersistence.enabled }} {{ "pvc" | quote }}{{- else }} {{ "ephemeral" | quote }}{{- end }}
             - name: ADAPTER_MODE
               value: {{ .Values.env.ADAPTER_MODE | default "mock" | quote }}
             {{- if .Values.server.redisUrl }}
