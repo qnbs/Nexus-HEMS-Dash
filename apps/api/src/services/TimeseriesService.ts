@@ -350,7 +350,7 @@ export class TimeseriesService implements EventBusSubscriber {
         unlinkSync(full);
         removed = true;
       } catch (err) {
-        console.error(`[TimeseriesService] Could not remove stranded WAL snapshot ${name}:`, err);
+        console.error('[TimeseriesService] Could not remove stranded WAL snapshot', name, err);
       }
       if (removed) {
         this.deleteProgress(full);
