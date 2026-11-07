@@ -13,6 +13,8 @@
 
 **Do not** widen freshness thresholds to green-wash the heartbeat while Scorecard `event=schedule` remains stale. Next expected Scorecard cron window: **Monday ~03:00 UTC** (`0 3 * * 1`); GitHub dispatch timing can skew.
 
+**Agent follow-up (2026-11-09):** After the Monday 03:00 UTC `scorecard.yml` schedule run, append the run id + `event=schedule` conclusion to this file and to `docs/runbooks/recovery-evidence-ledger-402.md` under #387/#391. Until that cron fires, PR/push successes on `main` (e.g. post–v9 merge stack ending `69bae53`) are **not** schedule proof.
+
 ### Prior snapshot (2026-11-04)
 
 SBOM schedule last failed 2026-10-19 before composite fix; post-fix **push** SBOM/Scorecard were green while **schedule** events were still sparse — see git history for #418 heartbeat work.

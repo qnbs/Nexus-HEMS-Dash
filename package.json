@@ -123,6 +123,7 @@
     "check:coverage-baseline": "node scripts/check-coverage-baseline.mjs apps/web packages/ai-core",
     "sync:adapters": "node scripts/sync-adapter-counts.mjs",
     "check:adapters": "node scripts/sync-adapter-counts.mjs && git diff --exit-code README.md",
+    "check:invariants": "node scripts/check-invariants-register.mjs",
     "check:conflict-markers": "node scripts/check-merge-conflict-markers.mjs",
     "test:conflict-markers": "node --test scripts/merge-conflict-marker-scan.test.mjs scripts/proxy-addr-supply-chain.test.mjs scripts/pr-feedback-summary.test.mjs",
     "test:e2e": "turbo --filter=@nexus-hems/web test:e2e",
