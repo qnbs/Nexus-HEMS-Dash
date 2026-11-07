@@ -1,6 +1,7 @@
 /**
  * DATA-18: failure-atomic WAL archive handoff — injectable `node:fs` shims (ESM cannot vi.spyOn fs exports).
  */
+import { createHash } from 'node:crypto';
 import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -403,5 +404,70 @@ describe('TimeseriesService failed recovery archive handoff (DATA-18)', () => {
 
     await svc.destroy();
     vi.restoreAllMocks();
+  });
+
+  it('does not treat merge-staged sidecar basename as a WAL snapshot (#454)', async () => {
+    const dataDir = mkdtempSync(join(tmpdir(), 'wal-merge-staged-basename-'));
+    dirs.push(dataDir);
+    const orphanMarker = join(dataDir, 'wal.ndjson.recovering.merge-staged.json');
+    writeFileSync(orphanMarker, '{"phase":"pending","lineCount":1}\n', 'utf8');
+
+    const writeApi = {
+      writePoint: vi.fn(),
+      flush: vi.fn(async () => {}),
+      close: vi.fn(async () => {}),
+    } as unknown as WriteApi;
+
+    const svc = new TimeseriesService({ dataDir, writeApi, maxWalRecoveryAttempts: 1 });
+    await svc.recoverWAL();
+
+    expect(existsSync(orphanMarker)).toBe(true);
+    await svc.destroy();
+  });
+
+  it('does not accept unrelated primary line growth as merge receipt while staged pending (#454)', async () => {
+    const dataDir = mkdtempSync(join(tmpdir(), 'wal-merge-count-trap-'));
+    dirs.push(dataDir);
+    const walPath = join(dataDir, 'wal.ndjson');
+    const recoveringPath = join(dataDir, 'wal.ndjson.recovering');
+    const pointA = samplePoint(101);
+    const pointB = samplePoint(102);
+    const sliceLines = `${JSON.stringify(pointA)}\n${JSON.stringify(pointB)}\n`;
+    writeFileSync(recoveringPath, sliceLines, 'utf8');
+
+    const unrelated = `${JSON.stringify(samplePoint(999))}\n${JSON.stringify(samplePoint(1000))}\n`;
+    writeFileSync(walPath, unrelated, 'utf8');
+
+    const payloadDigest = createHash('sha256').update(sliceLines, 'utf8').digest('hex');
+    writeFileSync(
+      `${recoveringPath}${'.merge-staged.json'}`,
+      `${JSON.stringify({
+        phase: 'pending',
+        lineCount: 2,
+        primaryLinesBefore: 0,
+        payloadDigest,
+      })}\n`,
+      'utf8',
+    );
+
+    const writeApi = {
+      writePoint: vi.fn(),
+      flush: vi.fn(async () => {
+        throw new Error('keep WAL local for assertion');
+      }),
+      close: vi.fn(async () => {}),
+    } as unknown as WriteApi;
+
+    const svc = new TimeseriesService({ dataDir, writeApi, maxWalRecoveryAttempts: 1 });
+    await svc.recoverWAL();
+
+    const failedName = readdirSync(dataDir).find((n) => n.startsWith('wal.ndjson.failed-'));
+    expect(failedName).toBeDefined();
+    const retained = readFileSync(join(dataDir, failedName as string), 'utf8');
+    expect(retained).toContain('"value":101');
+    expect(retained).toContain('"value":102');
+    expect(countUnmergedWalRows(dataDir)).toBeGreaterThanOrEqual(2);
+
+    await svc.destroy();
   });
 });
