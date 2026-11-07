@@ -5,6 +5,12 @@
  */
 
 import type { PhysicalCommandState } from '@nexus-hems/shared-types';
+import {
+  ABANDON_PHYSICAL_COMMAND_PENDING_LUA,
+  BEGIN_PHYSICAL_COMMAND_REPLAY_LUA,
+  COMPLETE_PHYSICAL_COMMAND_REPLAY_LUA,
+  MARK_PHYSICAL_COMMAND_UNKNOWN_LUA,
+} from './physical-command-ledger-lua.js';
 import { getOptionalRedisClient } from './redis-client.js';
 
 const COMMAND_PREFIX = 'nexus:physical-cmd:';
@@ -28,6 +34,18 @@ export type BeginPhysicalCommandResult =
   | { kind: 'replay'; statusCode: number; body: unknown }
   | { kind: 'unknown'; statusCode: number; body: unknown; commandId: string }
   | { kind: 'in_flight' };
+
+/** Result of a terminal ledger transition (complete / unknown). */
+export type PhysicalCommandLedgerTransitionResult =
+  | 'committed'
+  | 'rejected_no_pending'
+  | 'rejected_cas';
+
+function mapLuaTransitionCode(code: number): PhysicalCommandLedgerTransitionResult {
+  if (code === 0) return 'committed';
+  if (code === 2) return 'rejected_no_pending';
+  return 'rejected_cas';
+}
 
 const memoryByCommandId = new Map<string, PhysicalCommandRecord>();
 const memoryIdemAlias = new Map<string, string>();
@@ -154,6 +172,52 @@ async function resolveIdempotencyAlias(
   return null;
 }
 
+async function beginPhysicalCommandReplayRedis(
+  redis: NonNullable<Awaited<ReturnType<typeof getOptionalRedisClient>>>,
+  params: { commandId: string; idempotencyKey: string; pending: PhysicalCommandRecord },
+  allowGhostAliasRetry = true,
+): Promise<BeginPhysicalCommandResult> {
+  const { commandId, idempotencyKey, pending } = params;
+  const recordKey = `${COMMAND_PREFIX}${commandId}`;
+  const aliasKey = `${IDEM_ALIAS_PREFIX}${idempotencyKey}`;
+  const pendingJson = JSON.stringify(pending);
+  const claimResult = await redis.eval(
+    BEGIN_PHYSICAL_COMMAND_REPLAY_LUA,
+    2,
+    recordKey,
+    aliasKey,
+    pendingJson,
+    String(LEDGER_TTL_SEC),
+    commandId,
+  );
+  const code = typeof claimResult === 'number' ? claimResult : Number(claimResult);
+  if (code === 0) {
+    const verified = await redis.get(recordKey);
+    if (verified === pendingJson && (await redis.get(aliasKey)) === commandId) {
+      return { kind: 'proceed' };
+    }
+    return { kind: 'in_flight' };
+  }
+  if (code === 1) {
+    const raced = await readRecord(commandId);
+    return raced ? classifyExisting(raced) : { kind: 'in_flight' };
+  }
+  if (code === 2) {
+    const racedAlias = await resolveIdempotencyAlias(idempotencyKey);
+    if (racedAlias) return racedAlias;
+    const raced = await readRecord(commandId);
+    if (raced) return classifyExisting(raced);
+    if (allowGhostAliasRetry) {
+      return beginPhysicalCommandReplayRedis(redis, params, false);
+    }
+    return { kind: 'in_flight' };
+  }
+  if (code === 3) {
+    return { kind: 'in_flight' };
+  }
+  throw new Error(`[physical-command-ledger] unexpected eval return: ${String(claimResult)}`);
+}
+
 export async function beginPhysicalCommandReplay(params: {
   commandId: string;
   idempotencyKey: string;
@@ -178,38 +242,7 @@ export async function beginPhysicalCommandReplay(params: {
 
   const redis = await getOptionalRedisClient();
   if (redis) {
-    const aliasClaimed = await redis.set(
-      `${IDEM_ALIAS_PREFIX}${idempotencyKey}`,
-      commandId,
-      'EX',
-      LEDGER_TTL_SEC,
-      'NX',
-    );
-    if (aliasClaimed !== 'OK') {
-      const racedAlias = await resolveIdempotencyAlias(idempotencyKey);
-      if (racedAlias) return racedAlias;
-    }
-
-    const claimed = await redis.set(
-      `${COMMAND_PREFIX}${commandId}`,
-      JSON.stringify(pending),
-      'EX',
-      LEDGER_TTL_SEC,
-      'NX',
-    );
-    if (claimed === 'OK') {
-      return { kind: 'proceed' };
-    }
-    if (aliasClaimed === 'OK') {
-      await redis.del(`${IDEM_ALIAS_PREFIX}${idempotencyKey}`);
-    }
-    const raced = await readRecord(commandId);
-    if (!raced) {
-      const aliasAfterRace = await resolveIdempotencyAlias(idempotencyKey);
-      if (aliasAfterRace) return aliasAfterRace;
-      return { kind: 'proceed' };
-    }
-    return classifyExisting(raced);
+    return beginPhysicalCommandReplayRedis(redis, { commandId, idempotencyKey, pending });
   }
 
   pruneMemory();
@@ -225,7 +258,7 @@ export async function beginPhysicalCommandReplay(params: {
   }
   memoryIdemAlias.delete(idempotencyKey);
   const raced = memoryByCommandId.get(commandId);
-  return raced ? classifyExisting(raced) : { kind: 'proceed' };
+  return raced ? classifyExisting(raced) : { kind: 'in_flight' };
 }
 
 export async function completePhysicalCommandReplay(
@@ -234,12 +267,7 @@ export async function completePhysicalCommandReplay(
   terminalState: 'succeeded' | 'failed',
   statusCode: number,
   body: unknown,
-): Promise<void> {
-  const current = await readRecord(commandId);
-  if (current && (current.state !== 'pending' || current.idempotencyKey !== idempotencyKey)) {
-    return;
-  }
-
+): Promise<PhysicalCommandLedgerTransitionResult> {
   const ttlSec = ttlSecondsForState(terminalState);
   const record: PhysicalCommandRecord = {
     state: terminalState,
@@ -249,7 +277,40 @@ export async function completePhysicalCommandReplay(
     body,
     expiresAt: Date.now() + ttlSec * 1000,
   };
+
+  const redis = await getOptionalRedisClient();
+  if (redis) {
+    const recordKey = `${COMMAND_PREFIX}${commandId}`;
+    const aliasKey = `${IDEM_ALIAS_PREFIX}${idempotencyKey}`;
+    const pendingRaw = await redis.get(recordKey);
+    if (!pendingRaw) return 'rejected_no_pending';
+    const current = parseRecord(pendingRaw);
+    if (current?.state !== 'pending' || current.idempotencyKey !== idempotencyKey) {
+      return 'rejected_cas';
+    }
+    const terminalJson = JSON.stringify(record);
+    const code = await redis.eval(
+      COMPLETE_PHYSICAL_COMMAND_REPLAY_LUA,
+      2,
+      recordKey,
+      aliasKey,
+      terminalJson,
+      pendingRaw,
+      String(ttlSec),
+      commandId,
+    );
+    return mapLuaTransitionCode(typeof code === 'number' ? code : Number(code));
+  }
+
+  const memoryCurrent = await readRecord(commandId);
+  if (!memoryCurrent || memoryCurrent.state !== 'pending') {
+    return 'rejected_no_pending';
+  }
+  if (memoryCurrent.idempotencyKey !== idempotencyKey) {
+    return 'rejected_cas';
+  }
   await writeRecord(record);
+  return 'committed';
 }
 
 export async function markPhysicalCommandUnknown(
@@ -257,29 +318,75 @@ export async function markPhysicalCommandUnknown(
   idempotencyKey: string,
   statusCode: number,
   body: unknown,
-): Promise<void> {
+): Promise<PhysicalCommandLedgerTransitionResult> {
+  const ttlSec = UNKNOWN_TTL_SEC;
   const record: PhysicalCommandRecord = {
     state: 'unknown',
     commandId,
     idempotencyKey,
     statusCode,
     body,
-    expiresAt: Date.now() + UNKNOWN_TTL_SEC * 1000,
+    expiresAt: Date.now() + ttlSec * 1000,
   };
+
+  const redis = await getOptionalRedisClient();
+  if (redis) {
+    const recordKey = `${COMMAND_PREFIX}${commandId}`;
+    const aliasKey = `${IDEM_ALIAS_PREFIX}${idempotencyKey}`;
+    const pendingRaw = await redis.get(recordKey);
+    if (!pendingRaw) return 'rejected_no_pending';
+    const current = parseRecord(pendingRaw);
+    if (current?.state !== 'pending' || current.idempotencyKey !== idempotencyKey) {
+      return 'rejected_cas';
+    }
+    const unknownJson = JSON.stringify(record);
+    const code = await redis.eval(
+      MARK_PHYSICAL_COMMAND_UNKNOWN_LUA,
+      2,
+      recordKey,
+      aliasKey,
+      unknownJson,
+      pendingRaw,
+      String(ttlSec),
+      commandId,
+    );
+    return mapLuaTransitionCode(typeof code === 'number' ? code : Number(code));
+  }
+
+  const memoryCurrent = await readRecord(commandId);
+  if (!memoryCurrent || memoryCurrent.state !== 'pending') {
+    return 'rejected_no_pending';
+  }
+  if (memoryCurrent.idempotencyKey !== idempotencyKey) {
+    return 'rejected_cas';
+  }
   await writeRecord(record);
+  return 'committed';
 }
 
 /** Drop a pending claim when validation fails before hardware dispatch. */
 export async function abandonPhysicalCommandPending(commandId: string): Promise<void> {
-  const existing = await readRecord(commandId);
-  if (existing?.state !== 'pending') return;
-
   const redis = await getOptionalRedisClient();
   if (redis) {
-    await redis.del(`${COMMAND_PREFIX}${commandId}`);
-    await redis.del(`${IDEM_ALIAS_PREFIX}${existing.idempotencyKey}`);
+    const recordKey = `${COMMAND_PREFIX}${commandId}`;
+    const pendingRaw = await redis.get(recordKey);
+    if (!pendingRaw) return;
+    const existing = parseRecord(pendingRaw);
+    if (existing?.state !== 'pending') return;
+    const aliasKey = `${IDEM_ALIAS_PREFIX}${existing.idempotencyKey}`;
+    await redis.eval(
+      ABANDON_PHYSICAL_COMMAND_PENDING_LUA,
+      2,
+      recordKey,
+      aliasKey,
+      pendingRaw,
+      commandId,
+    );
     return;
   }
+
+  const existing = await readRecord(commandId);
+  if (existing?.state !== 'pending') return;
   memoryByCommandId.delete(commandId);
   memoryIdemAlias.delete(existing.idempotencyKey);
 }

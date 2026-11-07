@@ -1,0 +1,3 @@
+invariant_id,title,component,status,provenance_sha,verification,evidence_ref,notes
+CONTROL-395-ALIAS,Idempotency alias must reference the same commandId on terminal transitions,physical-command-ledger,branch-fixed,b98f576,reproduced-negative-test,apps/api/src/tests/physical-command-ledger-redis-mock.test.ts#Lua-alias,CAS on complete/abandon/unknown; ghost-alias claim retry
+CONTROL-395-RECEIPT,Terminal ledger writes require matching pending claim and surface CAS result,physical-command-ledger,branch-fixed,d9e4d50,reproduced-negative-test,apps/api/src/tests/physical-command-ledger.test.ts#no-claim,Shard owned by PR #451 only (#449)

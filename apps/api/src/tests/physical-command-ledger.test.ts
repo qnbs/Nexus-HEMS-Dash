@@ -20,7 +20,9 @@ describe('physical-command-ledger', () => {
     expect(first.kind).toBe('proceed');
 
     const body = { ok: true, outcome: 'succeeded' };
-    await completePhysicalCommandReplay(commandId, idempotencyKey, 'succeeded', 200, body);
+    expect(
+      await completePhysicalCommandReplay(commandId, idempotencyKey, 'succeeded', 200, body),
+    ).toBe('committed');
 
     const second = await beginPhysicalCommandReplay({ commandId, idempotencyKey });
     expect(second).toEqual({ kind: 'replay', statusCode: 200, body });
@@ -32,7 +34,9 @@ describe('physical-command-ledger', () => {
     const unknownBody = { ok: false, outcome: 'unknown' };
 
     await beginPhysicalCommandReplay({ commandId, idempotencyKey });
-    await markPhysicalCommandUnknown(commandId, idempotencyKey, 409, unknownBody);
+    expect(await markPhysicalCommandUnknown(commandId, idempotencyKey, 409, unknownBody)).toBe(
+      'committed',
+    );
 
     const retry = await beginPhysicalCommandReplay({ commandId, idempotencyKey });
     expect(retry.kind).toBe('unknown');
@@ -62,14 +66,28 @@ describe('physical-command-ledger', () => {
     const idempotencyKey = 'ledger-key-stale-complete';
 
     await beginPhysicalCommandReplay({ commandId, idempotencyKey });
-    await completePhysicalCommandReplay(commandId, 'other-key', 'succeeded', 200, {
-      ok: true,
-      stale: true,
-    });
+    expect(
+      await completePhysicalCommandReplay(commandId, 'other-key', 'succeeded', 200, {
+        ok: true,
+        stale: true,
+      }),
+    ).toBe('rejected_cas');
 
     const record = await getPhysicalCommandRecord(commandId);
     expect(record?.state).toBe('pending');
     expect(record?.idempotencyKey).toBe(idempotencyKey);
+  });
+
+  it('rejects complete/unknown without a matching pending claim (memory)', async () => {
+    const commandId = '99999999-9999-4999-8999-999999999999';
+    const idempotencyKey = 'no-claim';
+    expect(
+      await completePhysicalCommandReplay(commandId, idempotencyKey, 'succeeded', 200, {}),
+    ).toBe('rejected_no_pending');
+    expect(await markPhysicalCommandUnknown(commandId, idempotencyKey, 409, {})).toBe(
+      'rejected_no_pending',
+    );
+    expect(await getPhysicalCommandRecord(commandId)).toBeUndefined();
   });
 
   it('resolves idempotency alias to the canonical commandId record', async () => {
