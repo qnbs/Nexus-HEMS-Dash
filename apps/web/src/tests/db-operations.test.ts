@@ -103,7 +103,7 @@ describe('Database operational helpers', () => {
     const id = await queueOfflineAction('settings', { theme: 'ocean-dark' });
     await updateActionStatus(id, 'syncing');
     await nexusDb.offlineActions.update(id, {
-      timestamp: Date.now() - OFFLINE_SYNCING_STALE_MS - 1000,
+      syncStartedAt: Date.now() - OFFLINE_SYNCING_STALE_MS - 1000,
     });
 
     const requeued = await requeueStaleSyncingOfflineActions();

@@ -111,7 +111,9 @@ describe('sync-conflict', () => {
     vi.mocked(fetch).mockResolvedValueOnce(new Response('', { status: 503 }));
 
     await updateSyncState('settings', '10', true);
-    await resolveSyncConflict('settings', 'server');
+    await expect(resolveSyncConflict('settings', 'server')).rejects.toThrow(
+      'Cannot verify server sync version',
+    );
 
     const state = await getSyncState('settings');
     expect(state.hasConflict).toBe(true);
@@ -122,7 +124,9 @@ describe('sync-conflict', () => {
     vi.mocked(fetch).mockResolvedValue(new Response('', { status: 503 }));
     await updateSyncState('settings', '10', true);
 
-    await resolveSyncConflict('settings', 'local');
+    await expect(resolveSyncConflict('settings', 'local')).rejects.toThrow(
+      'Cannot verify server sync version after local replay',
+    );
 
     const state = await getSyncState('settings');
     expect(state.hasConflict).toBe(true);

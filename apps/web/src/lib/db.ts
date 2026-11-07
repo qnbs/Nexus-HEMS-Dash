@@ -4,6 +4,7 @@ import type { CommandAuditEntry } from '../core/command-safety';
 import type { EnergyData, StoredSettings } from '../types';
 import type { ShareLink } from './auth/auth-provider';
 import type { EncryptedAdapterCredential } from './secure-store';
+import { withOfflineSyncLock } from './sync-lock';
 
 // ─── Downsampling types ──────────────────────────────────────────────
 
@@ -68,6 +69,8 @@ export interface OfflineAction {
   timestamp: number;
   retries: number;
   status: 'pending' | 'syncing' | 'failed' | 'completed';
+  /** Set when status transitions to `syncing` (stale recovery uses this, not queue `timestamp`). */
+  syncStartedAt?: number | undefined;
   error?: string | undefined;
   /**
    * Idempotency key for safe replay of offline actions.
@@ -691,22 +694,25 @@ export async function requeueStaleSyncingOfflineActions(
   nowMs = Date.now(),
   staleMs = OFFLINE_SYNCING_STALE_MS,
 ): Promise<number> {
-  const staleBefore = nowMs - staleMs;
-  const stale = await nexusDb.offlineActions
-    .where('status')
-    .equals('syncing')
-    .and((action) => action.timestamp < staleBefore)
-    .toArray();
+  return withOfflineSyncLock(async () => {
+    const staleBefore = nowMs - staleMs;
+    const stale = await nexusDb.offlineActions
+      .where('status')
+      .equals('syncing')
+      .and((action) => (action.syncStartedAt ?? action.timestamp) < staleBefore)
+      .toArray();
 
-  for (const action of stale) {
-    if (action.id === undefined) continue;
-    await nexusDb.offlineActions.update(action.id, {
-      status: 'pending',
-      error: undefined,
-    });
-  }
+    for (const action of stale) {
+      if (action.id === undefined) continue;
+      await nexusDb.offlineActions.update(action.id, {
+        status: 'pending',
+        error: undefined,
+        syncStartedAt: undefined,
+      });
+    }
 
-  return stale.length;
+    return stale.length;
+  });
 }
 
 /**
@@ -739,11 +745,15 @@ export async function updateActionStatus(
 ) {
   const action = await nexusDb.offlineActions.get(id);
   if (action) {
-    await nexusDb.offlineActions.update(id, {
+    const patch: Partial<OfflineAction> = {
       status,
       error,
       retries: status === 'failed' ? action.retries + 1 : action.retries,
-    });
+    };
+    if (status === 'syncing') {
+      patch.syncStartedAt = Date.now();
+    }
+    await nexusDb.offlineActions.update(id, patch);
   }
 }
 

@@ -64,7 +64,7 @@ export async function resolveSyncConflict(
       if (remote !== null) {
         await recordServerSyncVersion(remote, domain, false);
       } else {
-        return;
+        throw new Error('Cannot verify server sync version — conflict remains open');
       }
     }
     await discardPendingSettingsActions();
@@ -80,5 +80,7 @@ export async function resolveSyncConflict(
   const remote = await fetchServerSyncVersion();
   if (remote !== null) {
     await recordServerSyncVersion(remote, domain, false);
+    return;
   }
+  throw new Error('Cannot verify server sync version after local replay');
 }
