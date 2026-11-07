@@ -345,12 +345,19 @@ export class TimeseriesService implements EventBusSubscriber {
           writeFileSync(this.walPath, lines, 'utf8');
         }
       }
+      let removed = false;
       try {
         unlinkSync(full);
+        removed = true;
       } catch (err) {
         console.error(`[TimeseriesService] Could not remove stranded WAL snapshot ${name}:`, err);
       }
-      this.deleteProgress(full);
+      if (removed) {
+        this.deleteProgress(full);
+      } else {
+        // Merge bytes are on primary; drain cursor so a later merge cannot re-append.
+        this.writeProgress(full, datapoints.length);
+      }
     }
   }
 

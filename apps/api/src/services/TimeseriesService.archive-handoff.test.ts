@@ -240,6 +240,85 @@ describe('TimeseriesService failed recovery archive handoff (DATA-18)', () => {
     await svc2.destroy();
   });
 
+  it('does not duplicate primary rows when stranded snapshot unlink fails during merge', async () => {
+    const dataDir = mkdtempSync(join(tmpdir(), 'wal-merge-unlink-fail-'));
+    dirs.push(dataDir);
+    const failedPath = join(dataDir, 'wal.ndjson.failed-1700000000000-0');
+    const lines = [samplePoint(91), samplePoint(92)].map((p) => JSON.stringify(p)).join('\n');
+    writeFileSync(failedPath, `${lines}\n`, 'utf8');
+
+    let failStrandedUnlink = true;
+    fsFault.unlinkSync = (path) => {
+      if (failStrandedUnlink && String(path) === failedPath) {
+        throw Object.assign(new Error('permission denied'), { code: 'EACCES' });
+      }
+      return fsActual.unlinkSync!(path);
+    };
+
+    const writeApi = {
+      writePoint: vi.fn(),
+      flush: vi.fn(async () => {
+        throw new Error('influx always down');
+      }),
+      close: vi.fn(async () => {}),
+    } as unknown as WriteApi;
+
+    const countUnmergedRows = (): number => {
+      let total = 0;
+      for (const name of readdirSync(dataDir)) {
+        if (
+          name === 'wal.ndjson' ||
+          name === 'wal.ndjson.recovering' ||
+          (name.startsWith('wal.ndjson.failed-') && /^wal\.ndjson\.failed-\d+(-\d+)?$/.test(name))
+        ) {
+          const p = join(dataDir, name);
+          if (!existsSync(p)) continue;
+          const lines = readFileSync(p, 'utf8').trim().split('\n').filter(Boolean);
+          const progressPath = `${p}.recovery-progress.json`;
+          let start = 0;
+          if (existsSync(progressPath)) {
+            try {
+              const parsed = JSON.parse(readFileSync(progressPath, 'utf8').trim()) as {
+                nextParsedIndex?: number;
+              };
+              start = typeof parsed.nextParsedIndex === 'number' ? parsed.nextParsedIndex : 0;
+            } catch {
+              start = 0;
+            }
+          }
+          total += lines.slice(Math.min(start, lines.length)).length;
+        }
+      }
+      return total;
+    };
+
+    const svc = new TimeseriesService({
+      dataDir,
+      writeApi,
+      maxWalRecoveryAttempts: 1,
+      walBatchSize: 2,
+    });
+    await svc.recoverWAL();
+    expect(existsSync(failedPath)).toBe(true);
+    expect(countUnmergedRows()).toBe(2);
+
+    await svc.recoverWAL();
+    expect(countUnmergedRows()).toBe(2);
+
+    failStrandedUnlink = false;
+    const svc2 = new TimeseriesService({
+      dataDir,
+      writeApi,
+      maxWalRecoveryAttempts: 1,
+      walBatchSize: 2,
+    });
+    await svc2.recoverWAL();
+    expect(countUnmergedRows()).toBe(2);
+
+    await svc.destroy();
+    await svc2.destroy();
+  });
+
   it('allocates distinct failed snapshot names when archive timestamps collide', async () => {
     const dataDir = mkdtempSync(join(tmpdir(), 'wal-failed-ts-collision-'));
     dirs.push(dataDir);
