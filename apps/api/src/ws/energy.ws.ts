@@ -22,6 +22,7 @@ import type { LiveEnergyAggregator } from '../services/LiveEnergyAggregator.js';
 import {
   beginPhysicalCommandReplay,
   completePhysicalCommandReplay,
+  isPhysicalCommandLedgerCommitted,
   markPhysicalCommandUnknown,
 } from '../services/physical-command-ledger.js';
 import { wsTicketStore } from '../services/ws-ticket-store.js';
@@ -478,9 +479,23 @@ export async function handleWsCommand(
   applyMockCommandMutation(cmd);
   auditCommand(wsAuthMap, ws, cmd.type, commandValue, 'accepted');
   if (idempotencyKey) {
-    await completePhysicalCommandReplay(idempotencyKey, idempotencyKey, 'succeeded', 200, {
-      accepted: true,
-    });
+    const ledger = await completePhysicalCommandReplay(
+      idempotencyKey,
+      idempotencyKey,
+      'succeeded',
+      200,
+      {
+        accepted: true,
+      },
+    );
+    if (!isPhysicalCommandLedgerCommitted(ledger)) {
+      safeSend(ws, {
+        type: 'ERROR',
+        error: 'Physical command ledger transition rejected',
+        ledgerTransition: ledger,
+      });
+      return;
+    }
   }
 
   mockData.gridPower =
@@ -507,9 +522,17 @@ async function dispatchLiveCommand(
   const dispatchOutcome = resolveProtocolDispatchOutcome(result);
 
   if (dispatchOutcome === 'unknown' && idempotencyKey) {
-    await markPhysicalCommandUnknown(idempotencyKey, idempotencyKey, 409, {
+    const ledger = await markPhysicalCommandUnknown(idempotencyKey, idempotencyKey, 409, {
       outcome: 'unknown',
     });
+    if (!isPhysicalCommandLedgerCommitted(ledger)) {
+      safeSend(ws, {
+        type: 'ERROR',
+        error: 'Physical command ledger transition rejected',
+        ledgerTransition: ledger,
+      });
+      return;
+    }
     auditCommand(
       wsAuthMap,
       ws,
@@ -529,9 +552,23 @@ async function dispatchLiveCommand(
 
   if (!result.handled) {
     if (idempotencyKey) {
-      await completePhysicalCommandReplay(idempotencyKey, idempotencyKey, 'failed', 501, {
-        error: result.error ?? 'No live adapter handles this command',
-      });
+      const ledger = await completePhysicalCommandReplay(
+        idempotencyKey,
+        idempotencyKey,
+        'failed',
+        501,
+        {
+          error: result.error ?? 'No live adapter handles this command',
+        },
+      );
+      if (!isPhysicalCommandLedgerCommitted(ledger)) {
+        safeSend(ws, {
+          type: 'ERROR',
+          error: 'Physical command ledger transition rejected',
+          ledgerTransition: ledger,
+        });
+        return;
+      }
     }
     auditCommand(
       wsAuthMap,
@@ -550,9 +587,23 @@ async function dispatchLiveCommand(
 
   if (!result.success) {
     if (idempotencyKey) {
-      await completePhysicalCommandReplay(idempotencyKey, idempotencyKey, 'failed', 502, {
-        error: result.error ?? 'Command failed',
-      });
+      const ledger = await completePhysicalCommandReplay(
+        idempotencyKey,
+        idempotencyKey,
+        'failed',
+        502,
+        {
+          error: result.error ?? 'Command failed',
+        },
+      );
+      if (!isPhysicalCommandLedgerCommitted(ledger)) {
+        safeSend(ws, {
+          type: 'ERROR',
+          error: 'Physical command ledger transition rejected',
+          ledgerTransition: ledger,
+        });
+        return;
+      }
     }
     auditCommand(
       wsAuthMap,
@@ -568,9 +619,23 @@ async function dispatchLiveCommand(
 
   auditCommand(wsAuthMap, ws, command.type, command.value, 'accepted');
   if (idempotencyKey) {
-    await completePhysicalCommandReplay(idempotencyKey, idempotencyKey, 'succeeded', 200, {
-      accepted: true,
-    });
+    const ledger = await completePhysicalCommandReplay(
+      idempotencyKey,
+      idempotencyKey,
+      'succeeded',
+      200,
+      {
+        accepted: true,
+      },
+    );
+    if (!isPhysicalCommandLedgerCommitted(ledger)) {
+      safeSend(ws, {
+        type: 'ERROR',
+        error: 'Physical command ledger transition rejected',
+        ledgerTransition: ledger,
+      });
+      return;
+    }
   }
 
   const broadcastData = resolveBroadcastData(liveAggregator);

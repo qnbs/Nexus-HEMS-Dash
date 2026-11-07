@@ -303,7 +303,7 @@ export async function completePhysicalCommandReplay(
   }
 
   const memoryCurrent = await readRecord(commandId);
-  if (!memoryCurrent || memoryCurrent.state !== 'pending') {
+  if (memoryCurrent?.state !== 'pending') {
     return 'rejected_no_pending';
   }
   if (memoryCurrent.idempotencyKey !== idempotencyKey) {
@@ -354,7 +354,7 @@ export async function markPhysicalCommandUnknown(
   }
 
   const memoryCurrent = await readRecord(commandId);
-  if (!memoryCurrent || memoryCurrent.state !== 'pending') {
+  if (memoryCurrent?.state !== 'pending') {
     return 'rejected_no_pending';
   }
   if (memoryCurrent.idempotencyKey !== idempotencyKey) {
@@ -362,6 +362,12 @@ export async function markPhysicalCommandUnknown(
   }
   await writeRecord(record);
   return 'committed';
+}
+
+export function isPhysicalCommandLedgerCommitted(
+  result: PhysicalCommandLedgerTransitionResult,
+): boolean {
+  return result === 'committed';
 }
 
 /** Drop a pending claim when validation fails before hardware dispatch. */

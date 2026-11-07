@@ -24,7 +24,9 @@ import { resolveProtocolDispatchOutcome } from '../protocols/protocol-command.js
 import {
   beginPhysicalCommandReplay,
   completePhysicalCommandReplay,
+  isPhysicalCommandLedgerCommitted,
   markPhysicalCommandUnknown,
+  type PhysicalCommandLedgerTransitionResult,
 } from '../services/physical-command-ledger.js';
 
 const ReplayBodySchema = z.object({
@@ -61,6 +63,18 @@ function validateReplayRequest(req: Request, res: Response, next: NextFunction):
   next();
 }
 
+function respondLedgerTransitionRejected(
+  res: Response,
+  transition: PhysicalCommandLedgerTransitionResult,
+  commandId: string,
+): void {
+  res.status(503).json({
+    error: 'Physical command ledger transition rejected',
+    ledgerTransition: transition,
+    commandId,
+  });
+}
+
 async function dispatchLiveCommandReplay(
   res: Response,
   params: {
@@ -84,7 +98,16 @@ async function dispatchLiveCommandReplay(
         commandId,
         error: result.error ?? 'Hardware outcome unknown after dispatch',
       };
-      await markPhysicalCommandUnknown(commandId, idempotencyKey, 409, unknownBody);
+      const unknownLedger = await markPhysicalCommandUnknown(
+        commandId,
+        idempotencyKey,
+        409,
+        unknownBody,
+      );
+      if (!isPhysicalCommandLedgerCommitted(unknownLedger)) {
+        respondLedgerTransitionRejected(res, unknownLedger, commandId);
+        return;
+      }
       res.status(409).json(unknownBody);
       return;
     }
@@ -96,7 +119,17 @@ async function dispatchLiveCommandReplay(
         error: result.error ?? 'Live command dispatch failed',
         commandId,
       };
-      await completePhysicalCommandReplay(commandId, idempotencyKey, 'failed', status, failBody);
+      const failLedger = await completePhysicalCommandReplay(
+        commandId,
+        idempotencyKey,
+        'failed',
+        status,
+        failBody,
+      );
+      if (!isPhysicalCommandLedgerCommitted(failLedger)) {
+        respondLedgerTransitionRejected(res, failLedger, commandId);
+        return;
+      }
       res.status(status).json(failBody);
       return;
     }
@@ -108,7 +141,17 @@ async function dispatchLiveCommandReplay(
       value: watts,
       commandId,
     };
-    await completePhysicalCommandReplay(commandId, idempotencyKey, 'succeeded', 200, successBody);
+    const okLedger = await completePhysicalCommandReplay(
+      commandId,
+      idempotencyKey,
+      'succeeded',
+      200,
+      successBody,
+    );
+    if (!isPhysicalCommandLedgerCommitted(okLedger)) {
+      respondLedgerTransitionRejected(res, okLedger, commandId);
+      return;
+    }
     res.json(successBody);
   } catch (error) {
     const message =
@@ -121,7 +164,16 @@ async function dispatchLiveCommandReplay(
       commandId,
       error: message,
     };
-    await markPhysicalCommandUnknown(commandId, idempotencyKey, 409, unknownBody);
+    const unknownLedger = await markPhysicalCommandUnknown(
+      commandId,
+      idempotencyKey,
+      409,
+      unknownBody,
+    );
+    if (!isPhysicalCommandLedgerCommitted(unknownLedger)) {
+      respondLedgerTransitionRejected(res, unknownLedger, commandId);
+      return;
+    }
     res.status(409).json(unknownBody);
   }
 }
@@ -201,13 +253,17 @@ export function createCommandsRoutes(): Router {
         value: watts,
         commandId: envelope.commandId,
       };
-      await completePhysicalCommandReplay(
+      const mockLedger = await completePhysicalCommandReplay(
         envelope.commandId,
         envelope.idempotencyKey,
         'succeeded',
         200,
         successBody,
       );
+      if (!isPhysicalCommandLedgerCommitted(mockLedger)) {
+        respondLedgerTransitionRejected(res, mockLedger, envelope.commandId);
+        return;
+      }
       res.json(successBody);
     },
   );
