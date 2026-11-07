@@ -321,4 +321,25 @@ describe('physical-command-ledger (Redis mock)', () => {
     });
     expect(r.kind).toBe('in_flight');
   });
+
+  it('retries atomic claim once when Lua returns 2 but the alias is already gone', async () => {
+    const mock = createLedgerRedisMock();
+    let beginCalls = 0;
+    const baseEval = mock.eval.bind(mock);
+    mock.eval = async (script, numKeys, ...args) => {
+      if (script === BEGIN_PHYSICAL_COMMAND_REPLAY_LUA && numKeys === 2) {
+        beginCalls += 1;
+        if (beginCalls === 1) return 2;
+      }
+      return baseEval(script, numKeys, ...args);
+    };
+    setRedisClientForTests(mock);
+
+    const commandId = 'dddddddd-dddd-4ddd-8ddd-dddddddddddd';
+    const idempotencyKey = 'ghost-alias-retry';
+    const r = await beginPhysicalCommandReplay({ commandId, idempotencyKey });
+    expect(r.kind).toBe('proceed');
+    expect(beginCalls).toBe(2);
+    expect(mock.state.get(`${COMMAND_PREFIX}${commandId}`)).toBeTruthy();
+  });
 });

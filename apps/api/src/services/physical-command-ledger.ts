@@ -163,6 +163,7 @@ async function resolveIdempotencyAlias(
 async function beginPhysicalCommandReplayRedis(
   redis: NonNullable<Awaited<ReturnType<typeof getOptionalRedisClient>>>,
   params: { commandId: string; idempotencyKey: string; pending: PhysicalCommandRecord },
+  allowGhostAliasRetry = true,
 ): Promise<BeginPhysicalCommandResult> {
   const { commandId, idempotencyKey, pending } = params;
   const recordKey = `${COMMAND_PREFIX}${commandId}`;
@@ -193,7 +194,11 @@ async function beginPhysicalCommandReplayRedis(
     const racedAlias = await resolveIdempotencyAlias(idempotencyKey);
     if (racedAlias) return racedAlias;
     const raced = await readRecord(commandId);
-    return raced ? classifyExisting(raced) : { kind: 'in_flight' };
+    if (raced) return classifyExisting(raced);
+    if (allowGhostAliasRetry) {
+      return beginPhysicalCommandReplayRedis(redis, params, false);
+    }
+    return { kind: 'in_flight' };
   }
   if (code === 3) {
     return { kind: 'in_flight' };
@@ -241,7 +246,7 @@ export async function beginPhysicalCommandReplay(params: {
   }
   memoryIdemAlias.delete(idempotencyKey);
   const raced = memoryByCommandId.get(commandId);
-  return raced ? classifyExisting(raced) : { kind: 'proceed' };
+  return raced ? classifyExisting(raced) : { kind: 'in_flight' };
 }
 
 export async function completePhysicalCommandReplay(
