@@ -5,7 +5,11 @@
  */
 
 import type { PhysicalCommandState } from '@nexus-hems/shared-types';
-import { BEGIN_PHYSICAL_COMMAND_REPLAY_LUA } from './physical-command-ledger-lua.js';
+import {
+  ABANDON_PHYSICAL_COMMAND_PENDING_LUA,
+  BEGIN_PHYSICAL_COMMAND_REPLAY_LUA,
+  COMPLETE_PHYSICAL_COMMAND_REPLAY_LUA,
+} from './physical-command-ledger-lua.js';
 import { getOptionalRedisClient } from './redis-client.js';
 
 const COMMAND_PREFIX = 'nexus:physical-cmd:';
@@ -246,11 +250,6 @@ export async function completePhysicalCommandReplay(
   statusCode: number,
   body: unknown,
 ): Promise<void> {
-  const current = await readRecord(commandId);
-  if (current && (current.state !== 'pending' || current.idempotencyKey !== idempotencyKey)) {
-    return;
-  }
-
   const ttlSec = ttlSecondsForState(terminalState);
   const record: PhysicalCommandRecord = {
     state: terminalState,
@@ -260,6 +259,37 @@ export async function completePhysicalCommandReplay(
     body,
     expiresAt: Date.now() + ttlSec * 1000,
   };
+
+  const redis = await getOptionalRedisClient();
+  if (redis) {
+    const recordKey = `${COMMAND_PREFIX}${commandId}`;
+    const aliasKey = `${IDEM_ALIAS_PREFIX}${idempotencyKey}`;
+    const pendingRaw = await redis.get(recordKey);
+    if (!pendingRaw) return;
+    const current = parseRecord(pendingRaw);
+    if (current?.state !== 'pending' || current.idempotencyKey !== idempotencyKey) {
+      return;
+    }
+    const terminalJson = JSON.stringify(record);
+    await redis.eval(
+      COMPLETE_PHYSICAL_COMMAND_REPLAY_LUA,
+      2,
+      recordKey,
+      aliasKey,
+      terminalJson,
+      pendingRaw,
+      String(ttlSec),
+    );
+    return;
+  }
+
+  const memoryCurrent = await readRecord(commandId);
+  if (
+    memoryCurrent &&
+    (memoryCurrent.state !== 'pending' || memoryCurrent.idempotencyKey !== idempotencyKey)
+  ) {
+    return;
+  }
   await writeRecord(record);
 }
 
@@ -282,15 +312,20 @@ export async function markPhysicalCommandUnknown(
 
 /** Drop a pending claim when validation fails before hardware dispatch. */
 export async function abandonPhysicalCommandPending(commandId: string): Promise<void> {
-  const existing = await readRecord(commandId);
-  if (existing?.state !== 'pending') return;
-
   const redis = await getOptionalRedisClient();
   if (redis) {
-    await redis.del(`${COMMAND_PREFIX}${commandId}`);
-    await redis.del(`${IDEM_ALIAS_PREFIX}${existing.idempotencyKey}`);
+    const recordKey = `${COMMAND_PREFIX}${commandId}`;
+    const pendingRaw = await redis.get(recordKey);
+    if (!pendingRaw) return;
+    const existing = parseRecord(pendingRaw);
+    if (existing?.state !== 'pending') return;
+    const aliasKey = `${IDEM_ALIAS_PREFIX}${existing.idempotencyKey}`;
+    await redis.eval(ABANDON_PHYSICAL_COMMAND_PENDING_LUA, 2, recordKey, aliasKey, pendingRaw);
     return;
   }
+
+  const existing = await readRecord(commandId);
+  if (existing?.state !== 'pending') return;
   memoryByCommandId.delete(commandId);
   memoryIdemAlias.delete(existing.idempotencyKey);
 }

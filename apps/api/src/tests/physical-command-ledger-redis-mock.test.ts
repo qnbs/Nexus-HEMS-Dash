@@ -1,14 +1,69 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import {
+  abandonPhysicalCommandPending,
   beginPhysicalCommandReplay,
+  completePhysicalCommandReplay,
+  getPhysicalCommandRecord,
   resetPhysicalCommandLedgerForTests,
 } from '../services/physical-command-ledger.js';
-import { BEGIN_PHYSICAL_COMMAND_REPLAY_LUA } from '../services/physical-command-ledger-lua.js';
+import {
+  ABANDON_PHYSICAL_COMMAND_PENDING_LUA,
+  BEGIN_PHYSICAL_COMMAND_REPLAY_LUA,
+  COMPLETE_PHYSICAL_COMMAND_REPLAY_LUA,
+} from '../services/physical-command-ledger-lua.js';
 import type { IRedisClient } from '../services/redis-client.js';
 import { resetRedisClientForTests, setRedisClientForTests } from '../services/redis-client.js';
 
 const COMMAND_PREFIX = 'nexus:physical-cmd:';
 const IDEM_ALIAS_PREFIX = 'nexus:physical-cmd:idem:';
+
+function mockEvalComplete(state: Map<string, string>, args: string[]): number {
+  const recordKey = args[0];
+  const aliasKey = args[1];
+  const terminalJson = args[2];
+  const expectedPending = args[3];
+  if (!recordKey || !aliasKey || !terminalJson || !expectedPending) throw new Error('bad argv');
+  const cur = state.get(recordKey);
+  if (cur === undefined) return 2;
+  if (cur !== expectedPending) return 1;
+  state.set(recordKey, terminalJson);
+  return 0;
+}
+
+function mockEvalAbandon(state: Map<string, string>, args: string[]): number {
+  const recordKey = args[0];
+  const aliasKey = args[1];
+  const expectedPending = args[2];
+  if (!recordKey || !aliasKey || !expectedPending) throw new Error('bad argv');
+  const cur = state.get(recordKey);
+  if (cur === undefined) return 2;
+  if (cur !== expectedPending) return 1;
+  state.delete(recordKey);
+  state.delete(aliasKey);
+  return 0;
+}
+
+function mockEvalBegin(state: Map<string, string>, args: string[]): number {
+  const recordKey = args[0];
+  const aliasKey = args[1];
+  const payload = args[2];
+  const ttlStr = args[3];
+  const commandId = args[4];
+  if (!recordKey || !aliasKey || !payload || !ttlStr || !commandId) throw new Error('bad argv');
+  const ttl = Number(ttlStr);
+  if (!Number.isFinite(ttl) || ttl <= 0) return 3;
+  if (state.has(aliasKey)) return 2;
+  if (state.has(recordKey)) return 1;
+  try {
+    state.set(recordKey, payload);
+    state.set(aliasKey, commandId);
+  } catch {
+    state.delete(recordKey);
+    state.delete(aliasKey);
+    return 3;
+  }
+  return 0;
+}
 
 /**
  * Minimal Redis mock with string store + Lua used by beginPhysicalCommandReplay (atomic claim).
@@ -66,30 +121,17 @@ function createLedgerRedisMock(): IRedisClient & { state: Map<string, string> } 
       return n;
     },
     eval: async (script, numKeys, ...args) => {
-      if (script !== BEGIN_PHYSICAL_COMMAND_REPLAY_LUA || numKeys !== 2) {
-        throw new Error('unexpected script');
+      const argv = args as string[];
+      if (script === COMPLETE_PHYSICAL_COMMAND_REPLAY_LUA && numKeys === 2) {
+        return mockEvalComplete(state, argv);
       }
-      const recordKey = args[0];
-      const aliasKey = args[1];
-      const payload = args[2];
-      const ttlStr = args[3];
-      const commandId = args[4];
-      if (!recordKey || !aliasKey || !payload || !ttlStr || !commandId) {
-        throw new Error('bad argv');
+      if (script === ABANDON_PHYSICAL_COMMAND_PENDING_LUA && numKeys === 2) {
+        return mockEvalAbandon(state, argv);
       }
-      const ttl = Number(ttlStr);
-      if (!Number.isFinite(ttl) || ttl <= 0) return 3;
-      if (state.has(aliasKey)) return 2;
-      if (state.has(recordKey)) return 1;
-      try {
-        state.set(recordKey, payload);
-        state.set(aliasKey, commandId);
-      } catch {
-        state.delete(recordKey);
-        state.delete(aliasKey);
-        return 3;
+      if (script === BEGIN_PHYSICAL_COMMAND_REPLAY_LUA && numKeys === 2) {
+        return mockEvalBegin(state, argv);
       }
-      return 0;
+      throw new Error('unexpected script');
     },
     xrevrange: async () =>
       [...stream]
@@ -181,6 +223,33 @@ describe('physical-command-ledger (Redis mock)', () => {
       idempotencyKey: 'race-no-record',
     });
     expect(r.kind).toBe('in_flight');
+  });
+
+  it('complete CAS ignores stale idempotencyKey writer', async () => {
+    const mock = createLedgerRedisMock();
+    setRedisClientForTests(mock);
+    const commandId = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+    const idempotencyKey = 'idem-complete-cas';
+
+    await beginPhysicalCommandReplay({ commandId, idempotencyKey });
+    await completePhysicalCommandReplay(commandId, 'wrong-key', 'succeeded', 200, { stale: true });
+
+    const record = await getPhysicalCommandRecord(commandId);
+    expect(record?.state).toBe('pending');
+  });
+
+  it('abandon CAS does not delete after concurrent complete', async () => {
+    const mock = createLedgerRedisMock();
+    setRedisClientForTests(mock);
+    const commandId = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+    const idempotencyKey = 'idem-abandon-after-complete';
+
+    await beginPhysicalCommandReplay({ commandId, idempotencyKey });
+    await completePhysicalCommandReplay(commandId, idempotencyKey, 'succeeded', 200, { ok: true });
+    await abandonPhysicalCommandPending(commandId);
+
+    const record = await getPhysicalCommandRecord(commandId);
+    expect(record?.state).toBe('succeeded');
   });
 
   it('returns in_flight when Lua reports SET failure (code 3)', async () => {

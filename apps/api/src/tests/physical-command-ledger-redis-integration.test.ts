@@ -9,6 +9,7 @@ import {
   abandonPhysicalCommandPending,
   beginPhysicalCommandReplay,
   completePhysicalCommandReplay,
+  getPhysicalCommandRecord,
   resetPhysicalCommandLedgerForTests,
 } from '../services/physical-command-ledger.js';
 import { resetRedisClientForTests, setRedisClientForTests } from '../services/redis-client.js';
@@ -20,6 +21,7 @@ const hasRedisUrl = Boolean(redisUrl);
 
 describe.skipIf(!hasRedisUrl)('physical-command-ledger (Redis integration)', () => {
   let redis: Redis;
+  let redisReplica: Redis;
 
   beforeAll(async () => {
     redis = new Redis(redisUrl as string, {
@@ -27,13 +29,18 @@ describe.skipIf(!hasRedisUrl)('physical-command-ledger (Redis integration)', () 
       maxRetriesPerRequest: 2,
       connectTimeout: 5_000,
     });
-    await redis.ping();
+    redisReplica = new Redis(redisUrl as string, {
+      lazyConnect: false,
+      maxRetriesPerRequest: 2,
+      connectTimeout: 5_000,
+    });
+    await Promise.all([redis.ping(), redisReplica.ping()]);
     setRedisClientForTests(redis);
   });
 
   afterAll(async () => {
     try {
-      await redis?.quit();
+      await Promise.all([redis?.quit(), redisReplica?.quit()]);
     } catch {
       // ignore quit races
     }
@@ -90,6 +97,77 @@ describe.skipIf(!hasRedisUrl)('physical-command-ledger (Redis integration)', () 
 
     const second = await beginPhysicalCommandReplay({ commandId: commandIdB, idempotencyKey });
     expect(second.kind).toBe('proceed');
+  });
+
+  it('complete from two independent clients: at most one terminal write, no stale key', async () => {
+    const commandId = '22222222-2222-4222-8222-222222222222';
+    const idempotencyKey = 'idem-ci-dual-complete';
+
+    setRedisClientForTests(redis);
+    const first = await beginPhysicalCommandReplay({ commandId, idempotencyKey });
+    expect(first.kind).toBe('proceed');
+
+    setRedisClientForTests(redis);
+    const good = completePhysicalCommandReplay(commandId, idempotencyKey, 'succeeded', 200, {
+      winner: 'A',
+    });
+    setRedisClientForTests(redisReplica);
+    const bad = completePhysicalCommandReplay(commandId, 'stale-idem-key', 'succeeded', 200, {
+      winner: 'B',
+    });
+    await Promise.all([good, bad]);
+
+    setRedisClientForTests(redisReplica);
+    const record = await getPhysicalCommandRecord(commandId);
+    expect(record?.state).toBe('succeeded');
+    expect(record?.body).toEqual({ winner: 'A' });
+
+    const retry = await beginPhysicalCommandReplay({ commandId, idempotencyKey });
+    expect(retry.kind).toBe('replay');
+  });
+
+  it('abandon on one client does not wipe terminal state written on the other', async () => {
+    const commandId = '33333333-3333-4333-8333-333333333333';
+    const idempotencyKey = 'idem-ci-dual-abandon';
+
+    setRedisClientForTests(redis);
+    await beginPhysicalCommandReplay({ commandId, idempotencyKey });
+    setRedisClientForTests(redisReplica);
+    await completePhysicalCommandReplay(commandId, idempotencyKey, 'failed', 502, {
+      error: 'adapter',
+    });
+
+    setRedisClientForTests(redis);
+    await abandonPhysicalCommandPending(commandId);
+
+    setRedisClientForTests(redisReplica);
+    const record = await getPhysicalCommandRecord(commandId);
+    expect(record?.state).toBe('failed');
+    expect(record?.statusCode).toBe(502);
+  });
+
+  it('concurrent complete race from two clients leaves a single terminal record', async () => {
+    const commandId = '44444444-4444-4444-8444-444444444444';
+    const idempotencyKey = 'idem-ci-concurrent-complete';
+
+    setRedisClientForTests(redis);
+    await beginPhysicalCommandReplay({ commandId, idempotencyKey });
+
+    setRedisClientForTests(redis);
+    const c1 = completePhysicalCommandReplay(commandId, idempotencyKey, 'succeeded', 200, {
+      lane: 1,
+    });
+    setRedisClientForTests(redisReplica);
+    const c2 = completePhysicalCommandReplay(commandId, idempotencyKey, 'succeeded', 200, {
+      lane: 2,
+    });
+    await Promise.all([c1, c2]);
+
+    setRedisClientForTests(redis);
+    const record = await getPhysicalCommandRecord(commandId);
+    expect(record?.state).toBe('succeeded');
+    const body = record?.body as { lane?: number };
+    expect([1, 2]).toContain(body.lane);
   });
 
   it('surfaces Redis WRONGTYPE on alias key instead of issuing proceed', async () => {
