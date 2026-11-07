@@ -9,6 +9,7 @@
 import { Router } from 'express';
 import { resolveBuildMetadata } from '../config/build-info.js';
 import { isReadOnlyMode } from '../config/read-only-mode.js';
+import { resolveWalStorageClass } from '../config/wal-storage.js';
 import { getAdapterHealthSummary } from '../protocols/index.js';
 
 /** Factory for unauthenticated `/api/health` routes. */
@@ -20,10 +21,15 @@ export function createHealthRoutes(): Router {
     const statusCode = health.overall === 'healthy' ? 200 : 503;
 
     const build = resolveBuildMetadata();
+    const walStorageClass = resolveWalStorageClass();
     res.status(statusCode).json({
       status: health.overall,
       mode: health.mode,
       readOnly: isReadOnlyMode(),
+      walStorageClass,
+      ...(walStorageClass === 'ephemeral'
+        ? { walDurabilityNotice: 'WAL data is not durable across Pod recreation (emptyDir).' }
+        : {}),
       timestamp: new Date().toISOString(),
       version: build.version,
       ...(build.gitSha ? { gitSha: build.gitSha } : {}),

@@ -1,6 +1,9 @@
 {{- if and (gt (int .Values.replicaCount.server) 1) (not .Values.server.redisUrl) }}
 {{- fail "replicaCount.server > 1 requires .Values.server.redisUrl for HA offline sync (REDIS_URL)" }}
 {{- end }}
+{{- if and (gt (int .Values.replicaCount.server) 1) (not .Values.server.walPersistence.enabled) }}
+{{- fail "replicaCount.server > 1 requires server.walPersistence.enabled for durable WAL (#452)" }}
+{{- end }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -49,6 +52,8 @@ spec:
             # WAL directory: PVC when server.walPersistence.enabled, else pod-ephemeral emptyDir (#452).
             - name: NEXUS_HEMS_DATA_DIR
               value: "/data/nexus-hems"
+            - name: NEXUS_HEMS_WAL_STORAGE_CLASS
+              value: {{ if .Values.server.walPersistence.enabled }}"pvc"{{ else }}"ephemeral"{{ end | quote }}
             - name: ADAPTER_MODE
               value: {{ .Values.env.ADAPTER_MODE | default "mock" | quote }}
             {{- if .Values.server.redisUrl }}
