@@ -378,15 +378,33 @@ export class TimeseriesService implements EventBusSubscriber {
     return createHash('sha256').update(payloadUtf8, 'utf8').digest('hex');
   }
 
+  private primaryWalLines(): string[] {
+    if (!existsSync(this.walPath)) return [];
+    const raw = readFileSync(this.walPath, 'utf8').trimEnd();
+    if (!raw) return [];
+    return raw.split('\n').filter(Boolean);
+  }
+
   /** True when the primary WAL tail contains the exact merged payload for this handoff (#454). */
   private primaryTailMatchesDigest(digest: string, lineCount: number): boolean {
-    if (lineCount <= 0 || !existsSync(this.walPath)) return false;
-    const raw = readFileSync(this.walPath, 'utf8').trimEnd();
-    if (!raw) return false;
-    const lines = raw.split('\n').filter(Boolean);
-    if (lines.length < lineCount) return false;
+    const lines = this.primaryWalLines();
+    if (lineCount <= 0 || lines.length < lineCount) return false;
     const tailPayload = `${lines.slice(-lineCount).join('\n')}\n`;
     return this.walPayloadDigest(tailPayload) === digest;
+  }
+
+  /** Receipt anchored at the line offset recorded before merge append (survives newer primary rows). */
+  private primaryPayloadMatchesAtOffset(
+    digest: string,
+    lineCount: number,
+    primaryLinesBefore: number,
+  ): boolean {
+    const lines = this.primaryWalLines();
+    if (lineCount <= 0 || primaryLinesBefore < 0) return false;
+    if (lines.length < primaryLinesBefore + lineCount) return false;
+    const segment = lines.slice(primaryLinesBefore, primaryLinesBefore + lineCount);
+    const payload = `${segment.join('\n')}\n`;
+    return this.walPayloadDigest(payload) === digest;
   }
 
   private mergeAppendAlreadyOnPrimary(staged: WalMergeStaged, slicePayloadDigest: string): boolean {
@@ -395,6 +413,9 @@ export class TimeseriesService implements EventBusSubscriber {
     }
     const digest = staged.payloadDigest ?? slicePayloadDigest;
     if (!digest) return false;
+    if (this.primaryPayloadMatchesAtOffset(digest, staged.lineCount, staged.primaryLinesBefore)) {
+      return true;
+    }
     return this.primaryTailMatchesDigest(digest, staged.lineCount);
   }
 
