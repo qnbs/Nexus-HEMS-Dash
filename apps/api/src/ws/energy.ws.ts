@@ -480,10 +480,8 @@ export async function handleWsCommand(
   applyMockCommandMutation(cmd);
   auditCommand(wsAuthMap, ws, cmd.type, commandValue, 'accepted');
   if (
-    !(await runIdempotentLedgerTransition(ws, idempotencyKey, () =>
-      completePhysicalCommandReplay(idempotencyKey, idempotencyKey, 'succeeded', 200, {
-        accepted: true,
-      }),
+    !(await runIdempotentLedgerTransition(ws, idempotencyKey, (key) =>
+      completePhysicalCommandReplay(key, key, 'succeeded', 200, { accepted: true }),
     ))
   ) {
     return;
@@ -514,8 +512,8 @@ async function dispatchLiveCommand(
 
   if (dispatchOutcome === 'unknown' && idempotencyKey) {
     if (
-      !(await runIdempotentLedgerTransition(ws, idempotencyKey, () =>
-        markPhysicalCommandUnknown(idempotencyKey, idempotencyKey, 409, { outcome: 'unknown' }),
+      !(await runIdempotentLedgerTransition(ws, idempotencyKey, (key) =>
+        markPhysicalCommandUnknown(key, key, 409, { outcome: 'unknown' }),
       ))
     ) {
       return;
@@ -539,8 +537,8 @@ async function dispatchLiveCommand(
 
   if (!result.handled) {
     if (
-      !(await runIdempotentLedgerTransition(ws, idempotencyKey, () =>
-        completePhysicalCommandReplay(idempotencyKey!, idempotencyKey!, 'failed', 501, {
+      !(await runIdempotentLedgerTransition(ws, idempotencyKey, (key) =>
+        completePhysicalCommandReplay(key, key, 'failed', 501, {
           error: result.error ?? 'No live adapter handles this command',
         }),
       ))
@@ -564,8 +562,8 @@ async function dispatchLiveCommand(
 
   if (!result.success) {
     if (
-      !(await runIdempotentLedgerTransition(ws, idempotencyKey, () =>
-        completePhysicalCommandReplay(idempotencyKey!, idempotencyKey!, 'failed', 502, {
+      !(await runIdempotentLedgerTransition(ws, idempotencyKey, (key) =>
+        completePhysicalCommandReplay(key, key, 'failed', 502, {
           error: result.error ?? 'Command failed',
         }),
       ))
@@ -586,10 +584,8 @@ async function dispatchLiveCommand(
 
   auditCommand(wsAuthMap, ws, command.type, command.value, 'accepted');
   if (
-    !(await runIdempotentLedgerTransition(ws, idempotencyKey, () =>
-      completePhysicalCommandReplay(idempotencyKey!, idempotencyKey!, 'succeeded', 200, {
-        accepted: true,
-      }),
+    !(await runIdempotentLedgerTransition(ws, idempotencyKey, (key) =>
+      completePhysicalCommandReplay(key, key, 'succeeded', 200, { accepted: true }),
     ))
   ) {
     return;
@@ -627,12 +623,12 @@ function guardPhysicalCommandLedgerCommit(
 async function runIdempotentLedgerTransition(
   ws: WebSocket,
   idempotencyKey: string | undefined,
-  run: () => Promise<PhysicalCommandLedgerTransitionResult>,
+  run: (idempotencyKey: string) => Promise<PhysicalCommandLedgerTransitionResult>,
 ): Promise<boolean> {
   if (!idempotencyKey) {
     return true;
   }
-  const ledger = await run();
+  const ledger = await run(idempotencyKey);
   return guardPhysicalCommandLedgerCommit(ws, ledger);
 }
 
