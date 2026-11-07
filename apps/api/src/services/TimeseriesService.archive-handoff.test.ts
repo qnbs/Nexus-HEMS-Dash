@@ -422,6 +422,41 @@ describe('TimeseriesService failed recovery archive handoff (DATA-18)', () => {
     await svc.recoverWAL();
 
     expect(existsSync(orphanMarker)).toBe(true);
+    expect(readdirSync(dataDir).some((n) => n === 'wal-corrupt.ndjson')).toBe(false);
+    await svc.destroy();
+  });
+
+  it('re-merges when staged digest does not match current snapshot payload (#454)', async () => {
+    const dataDir = mkdtempSync(join(tmpdir(), 'wal-stale-digest-'));
+    dirs.push(dataDir);
+    const recoveringPath = join(dataDir, 'wal.ndjson.recovering');
+    const pointA = samplePoint(201);
+    writeFileSync(recoveringPath, `${JSON.stringify(pointA)}\n`, 'utf8');
+    writeFileSync(
+      `${recoveringPath}.merge-staged.json`,
+      `${JSON.stringify({
+        phase: 'appended',
+        lineCount: 1,
+        primaryLinesBefore: 0,
+        payloadDigest: 'deadbeef',
+      })}\n`,
+      'utf8',
+    );
+
+    const writeApi = {
+      writePoint: vi.fn(),
+      flush: vi.fn(async () => {
+        throw new Error('keep local');
+      }),
+      close: vi.fn(async () => {}),
+    } as unknown as WriteApi;
+
+    const svc = new TimeseriesService({ dataDir, writeApi, maxWalRecoveryAttempts: 1 });
+    await svc.recoverWAL();
+
+    const failedName = readdirSync(dataDir).find((n) => n.startsWith('wal.ndjson.failed-'));
+    expect(failedName).toBeDefined();
+    expect(readFileSync(join(dataDir, failedName as string), 'utf8')).toContain('"value":201');
     await svc.destroy();
   });
 

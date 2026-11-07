@@ -346,12 +346,15 @@ export class TimeseriesService implements EventBusSubscriber {
       ) {
         return undefined;
       }
-      return {
+      const staged: WalMergeStaged = {
         phase: parsed.phase,
         lineCount: parsed.lineCount,
         primaryLinesBefore: parsed.primaryLinesBefore,
-        payloadDigest: typeof parsed.payloadDigest === 'string' ? parsed.payloadDigest : undefined,
       };
+      if (typeof parsed.payloadDigest === 'string') {
+        staged.payloadDigest = parsed.payloadDigest;
+      }
+      return staged;
     } catch {
       return undefined;
     }
@@ -387,15 +390,12 @@ export class TimeseriesService implements EventBusSubscriber {
   }
 
   private mergeAppendAlreadyOnPrimary(staged: WalMergeStaged, slicePayloadDigest: string): boolean {
+    if (staged.payloadDigest && staged.payloadDigest !== slicePayloadDigest) {
+      return false;
+    }
     const digest = staged.payloadDigest ?? slicePayloadDigest;
     if (!digest) return false;
-    if (staged.phase === 'pending') {
-      return this.primaryTailMatchesDigest(digest, staged.lineCount);
-    }
-    if (staged.phase === 'appended') {
-      return this.primaryTailMatchesDigest(digest, staged.lineCount);
-    }
-    return false;
+    return this.primaryTailMatchesDigest(digest, staged.lineCount);
   }
 
   private mergeStrandedSnapshotsIntoPrimary(): void {
