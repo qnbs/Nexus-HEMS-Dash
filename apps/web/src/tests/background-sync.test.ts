@@ -29,6 +29,7 @@ vi.mock('../lib/db', () => ({
   updateActionStatus: vi.fn().mockResolvedValue(undefined),
   cleanupCompletedActions: vi.fn().mockResolvedValue(undefined),
   persistSettings: vi.fn(),
+  requeueStaleSyncingOfflineActions: vi.fn().mockResolvedValue(0),
 }));
 
 import { backgroundSyncService } from '../lib/background-sync';
@@ -98,6 +99,12 @@ describe('BackgroundSyncService', () => {
 
   it('should initialize without throwing', () => {
     expect(() => backgroundSyncService.init()).not.toThrow();
+  });
+
+  it('requeues stale syncing offline actions during init', async () => {
+    const { requeueStaleSyncingOfflineActions } = await import('../lib/db');
+    backgroundSyncService.init();
+    expect(requeueStaleSyncingOfflineActions).toHaveBeenCalled();
   });
 
   it('should be safely destroyable', () => {

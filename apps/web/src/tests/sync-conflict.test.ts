@@ -105,6 +105,29 @@ describe('sync-conflict', () => {
     expect(backgroundSyncService.syncPendingActions).toHaveBeenCalled();
   });
 
+  it('resolveSyncConflict server-wins keeps conflict when server version is unreachable', async () => {
+    const { reconcileServerSettings } = await import('../lib/sync-reconcile');
+    vi.mocked(reconcileServerSettings).mockResolvedValueOnce(null);
+    vi.mocked(fetch).mockResolvedValueOnce(new Response('', { status: 503 }));
+
+    await updateSyncState('settings', '10', true);
+    await resolveSyncConflict('settings', 'server');
+
+    const state = await getSyncState('settings');
+    expect(state.hasConflict).toBe(true);
+    expect(state.serverVersion).toBe('10');
+  });
+
+  it('resolveSyncConflict local-wins keeps conflict when post-replay version fetch fails', async () => {
+    vi.mocked(fetch).mockResolvedValue(new Response('', { status: 503 }));
+    await updateSyncState('settings', '10', true);
+
+    await resolveSyncConflict('settings', 'local');
+
+    const state = await getSyncState('settings');
+    expect(state.hasConflict).toBe(true);
+  });
+
   it('resolveSyncConflict clears flag without replay on server choice', async () => {
     vi.mocked(fetch).mockResolvedValue(
       new Response(JSON.stringify({ version: 77 }), { status: 200 }),

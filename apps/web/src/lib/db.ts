@@ -682,6 +682,34 @@ export async function updateSyncState(
 }
 
 /**
+ * Actions stuck in `syncing` after a tab crash or killed SW never re-enter the pending queue.
+ * Re-queue rows that have been in `syncing` longer than the stale window (by queue timestamp).
+ */
+export const OFFLINE_SYNCING_STALE_MS = 2 * 60 * 1000;
+
+export async function requeueStaleSyncingOfflineActions(
+  nowMs = Date.now(),
+  staleMs = OFFLINE_SYNCING_STALE_MS,
+): Promise<number> {
+  const staleBefore = nowMs - staleMs;
+  const stale = await nexusDb.offlineActions
+    .where('status')
+    .equals('syncing')
+    .and((action) => action.timestamp < staleBefore)
+    .toArray();
+
+  for (const action of stale) {
+    if (action.id === undefined) continue;
+    await nexusDb.offlineActions.update(action.id, {
+      status: 'pending',
+      error: undefined,
+    });
+  }
+
+  return stale.length;
+}
+
+/**
  * Get pending offline actions
  */
 export async function getPendingActions(): Promise<OfflineAction[]> {

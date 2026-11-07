@@ -64,7 +64,7 @@ export async function resolveSyncConflict(
       if (remote !== null) {
         await recordServerSyncVersion(remote, domain, false);
       } else {
-        await updateSyncState(domain, state.serverVersion, false);
+        return;
       }
     }
     await discardPendingSettingsActions();
@@ -80,8 +80,5 @@ export async function resolveSyncConflict(
   const remote = await fetchServerSyncVersion();
   if (remote !== null) {
     await recordServerSyncVersion(remote, domain, false);
-  } else {
-    const state = await getSyncState(domain);
-    await updateSyncState(domain, state.serverVersion, false);
   }
 }

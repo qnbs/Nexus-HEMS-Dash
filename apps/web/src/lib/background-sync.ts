@@ -11,6 +11,7 @@ import {
   getPendingActions,
   type OfflineAction,
   persistOfflineReplayEnvelope,
+  requeueStaleSyncingOfflineActions,
   updateActionStatus,
 } from './db';
 import { detectSyncConflict, fetchServerSyncVersion, recordServerSyncVersion } from './sync-client';
@@ -81,6 +82,10 @@ class BackgroundSyncService {
    * Initialize background sync
    */
   init() {
+    void requeueStaleSyncingOfflineActions().catch((error) => {
+      console.error('[BackgroundSync] Failed to requeue stale syncing actions:', error);
+    });
+
     // Register service worker sync if available
     if ('serviceWorker' in navigator && 'sync' in ServiceWorkerRegistration.prototype) {
       navigator.serviceWorker.ready
