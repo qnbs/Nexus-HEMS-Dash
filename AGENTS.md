@@ -148,6 +148,7 @@ All commands run from the repository root unless noted.
 | `pnpm test:e2e` | Playwright E2E, **Chromium only** locally. |
 | `pnpm test:e2e:ui` | Playwright interactive UI mode. |
 | `pnpm test:a11y` | Playwright accessibility spec only. |
+| `pnpm test:conflict-markers` | Node `node:test` gate for `scripts/*.test.mjs` (merge markers, supply-chain guard, PR feedback summary). |
 
 ### Targeted testing
 

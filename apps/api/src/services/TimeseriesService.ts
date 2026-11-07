@@ -280,6 +280,7 @@ export class TimeseriesService implements EventBusSubscriber {
   /** Graceful shutdown. */
   async destroy(): Promise<void> {
     this.stopBackgroundWalDrain();
+    await this.walRecoverChain;
     if (this.writeApi) {
       try {
         await this.writeApi.close();
