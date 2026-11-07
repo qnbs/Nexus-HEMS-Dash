@@ -521,27 +521,50 @@ export class TimeseriesService implements EventBusSubscriber {
   ): Promise<void> {
     const remaining = datapoints.slice(start);
     const failedPath = `${this.walPath}.failed-${Date.now()}`;
+    const stagingPath = `${failedPath}.staging`;
+    let archiveCommitted = false;
+
     try {
-      copyFileSync(recoveringPath, failedPath);
+      copyFileSync(recoveringPath, stagingPath);
+      renameSync(stagingPath, failedPath);
       this.writeProgress(failedPath, start);
+      archiveCommitted = true;
     } catch (err) {
-      console.error('[TimeseriesService] Could not copy failed recovery WAL:', err);
+      console.error('[TimeseriesService] Could not archive failed recovery WAL:', err);
+      try {
+        if (existsSync(stagingPath)) unlinkSync(stagingPath);
+      } catch {
+        // ignore
+      }
+      try {
+        if (existsSync(failedPath)) unlinkSync(failedPath);
+      } catch {
+        // ignore
+      }
+      this.deleteProgress(failedPath);
     }
-    try {
-      unlinkSync(recoveringPath);
-    } catch {
-      // ignore
+
+    if (archiveCommitted) {
+      try {
+        unlinkSync(recoveringPath);
+      } catch {
+        // ignore — failed snapshot is authoritative; stray recovering is merged later
+      }
+      this.deleteProgress(recoveringPath);
+      /**
+       * Do **not** append `remaining` to the live primary here: `failedPath` is a full copy of the recovering snapshot,
+       * and `mergeStrandedSnapshotsIntoPrimary()` will re-append from `nextParsedIndex` on the next `recoverWAL()`.
+       * Writing both duplicated rows on every failed cycle (copy + append) caused exponential WAL growth when Influx
+       * stayed down.
+       */
+      console.error(
+        `[TimeseriesService] WAL recovery failed after retries — ${remaining.length} unflushed row(s) retained in failed snapshot ${failedPath} (merge on next recovery)`,
+      );
+    } else {
+      console.error(
+        `[TimeseriesService] WAL recovery failed — preserving recovering snapshot ${recoveringPath} (${remaining.length} unflushed row(s))`,
+      );
     }
-    this.deleteProgress(recoveringPath);
-    /**
-     * Do **not** append `remaining` to the live primary here: `failedPath` is a full copy of the recovering snapshot,
-     * and `mergeStrandedSnapshotsIntoPrimary()` will re-append from `nextParsedIndex` on the next `recoverWAL()`.
-     * Writing both duplicated rows on every failed cycle (copy + append) caused exponential WAL growth when Influx
-     * stayed down.
-     */
-    console.error(
-      `[TimeseriesService] WAL recovery failed after retries — ${remaining.length} unflushed row(s) retained in failed snapshot ${failedPath} (merge on next recovery)`,
-    );
   }
 
   /**
