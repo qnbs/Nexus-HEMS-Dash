@@ -708,7 +708,7 @@ export async function requeueStaleSyncingOfflineActions(
       for (const action of candidates) {
         if (action.id === undefined) continue;
         const current = await nexusDb.offlineActions.get(action.id);
-        if (!current || current.status !== 'syncing') continue;
+        if (current?.status !== 'syncing') continue;
         const startedAt = current.syncStartedAt ?? current.timestamp;
         if (startedAt >= staleBefore) continue;
         await nexusDb.offlineActions.update(action.id, {
