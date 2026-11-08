@@ -68,7 +68,7 @@ export interface OfflineAction {
   payload: Record<string, unknown>;
   timestamp: number;
   retries: number;
-  status: 'pending' | 'syncing' | 'failed' | 'completed';
+  status: 'pending' | 'syncing' | 'failed' | 'completed' | 'discarded';
   /** Set when status transitions to `syncing` (stale recovery uses this, not queue `timestamp`). */
   syncStartedAt?: number | undefined;
   error?: string | undefined;
@@ -456,7 +456,7 @@ export class NexusDatabase extends Dexie {
           .table('offlineActions')
           .toCollection()
           .modify((action: Record<string, unknown>) => {
-            const validStatuses = ['pending', 'syncing', 'failed', 'completed'];
+            const validStatuses = ['pending', 'syncing', 'failed', 'completed', 'discarded'];
             if (!validStatuses.includes(action.status as string)) {
               action.status = 'failed';
             }
@@ -696,22 +696,31 @@ export async function requeueStaleSyncingOfflineActions(
 ): Promise<number> {
   return withOfflineSyncLock(async () => {
     const staleBefore = nowMs - staleMs;
-    const stale = await nexusDb.offlineActions
-      .where('status')
-      .equals('syncing')
-      .and((action) => (action.syncStartedAt ?? action.timestamp) < staleBefore)
-      .toArray();
+    let requeued = 0;
 
-    for (const action of stale) {
-      if (action.id === undefined) continue;
-      await nexusDb.offlineActions.update(action.id, {
-        status: 'pending',
-        error: undefined,
-        syncStartedAt: undefined,
-      });
-    }
+    await nexusDb.transaction('rw', nexusDb.offlineActions, async () => {
+      const candidates = await nexusDb.offlineActions
+        .where('status')
+        .equals('syncing')
+        .and((action) => (action.syncStartedAt ?? action.timestamp) < staleBefore)
+        .toArray();
 
-    return stale.length;
+      for (const action of candidates) {
+        if (action.id === undefined) continue;
+        const current = await nexusDb.offlineActions.get(action.id);
+        if (!current || current.status !== 'syncing') continue;
+        const startedAt = current.syncStartedAt ?? current.timestamp;
+        if (startedAt >= staleBefore) continue;
+        await nexusDb.offlineActions.update(action.id, {
+          status: 'pending',
+          error: undefined,
+          syncStartedAt: undefined,
+        });
+        requeued += 1;
+      }
+    });
+
+    return requeued;
   });
 }
 
@@ -753,8 +762,20 @@ export async function updateActionStatus(
     if (status === 'syncing') {
       patch.syncStartedAt = Date.now();
     }
+    if (status === 'discarded') {
+      patch.syncStartedAt = undefined;
+    }
     await nexusDb.offlineActions.update(id, patch);
   }
+}
+
+/** Terminal user-intent discard — never eligible for `getPendingActions()` replay (#448). */
+export async function discardOfflineAction(id: number, reason: string): Promise<void> {
+  await nexusDb.offlineActions.update(id, {
+    status: 'discarded',
+    error: reason,
+    syncStartedAt: undefined,
+  });
 }
 
 /**
@@ -764,7 +785,7 @@ export async function cleanupCompletedActions() {
   const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
   await nexusDb.offlineActions
     .where('status')
-    .equals('completed')
+    .anyOf(['completed', 'discarded'])
     .and((action) => action.timestamp < sevenDaysAgo)
     .delete();
 }
