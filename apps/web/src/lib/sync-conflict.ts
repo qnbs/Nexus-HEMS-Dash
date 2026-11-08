@@ -7,6 +7,7 @@ import {
   updateSyncState,
 } from './db';
 import { fetchServerSyncVersion, recordServerSyncVersion } from './sync-client';
+import { withOfflineSyncLock } from './sync-lock';
 import { reconcileServerSettings } from './sync-reconcile';
 
 /** Dispatched when a new sync conflict is persisted in Dexie `syncState`. */
@@ -60,8 +61,10 @@ export async function resolveSyncConflict(
     if (reconciledVersion === null) {
       throw new Error('Cannot apply server settings — conflict remains open');
     }
-    await recordServerSyncVersion(reconciledVersion, domain, false);
-    await discardPendingSettingsActions();
+    await withOfflineSyncLock(async () => {
+      await discardPendingSettingsActions();
+      await recordServerSyncVersion(reconciledVersion, domain, false);
+    });
     return;
   }
 

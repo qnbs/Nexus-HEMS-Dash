@@ -129,6 +129,15 @@ describe('Database operational helpers', () => {
     expect(row?.status).toBe('completed');
   });
 
+  it('discardOfflineAction does not overwrite terminal completed rows (#448)', async () => {
+    const id = await queueOfflineAction('settings', { theme: 'ocean-dark' });
+    await updateActionStatus(id, 'completed');
+    const { discardOfflineAction } = await import('../lib/db');
+    await discardOfflineAction(id, 'should-not-apply');
+    const row = await nexusDb.offlineActions.get(id);
+    expect(row?.status).toBe('completed');
+  });
+
   it('purges discarded offline actions older than retention window', async () => {
     const id = await queueOfflineAction('settings', { theme: 'ocean-dark' });
     await nexusDb.offlineActions.update(id, {

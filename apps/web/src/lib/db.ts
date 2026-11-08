@@ -769,12 +769,22 @@ export async function updateActionStatus(
   }
 }
 
+const DISCARD_ELIGIBLE_STATUSES: ReadonlySet<OfflineAction['status']> = new Set([
+  'pending',
+  'syncing',
+  'failed',
+]);
+
 /** Terminal user-intent discard — never eligible for `getPendingActions()` replay (#448). */
 export async function discardOfflineAction(id: number, reason: string): Promise<void> {
-  await nexusDb.offlineActions.update(id, {
-    status: 'discarded',
-    error: reason,
-    syncStartedAt: undefined,
+  await nexusDb.transaction('rw', nexusDb.offlineActions, async () => {
+    const current = await nexusDb.offlineActions.get(id);
+    if (!current || !DISCARD_ELIGIBLE_STATUSES.has(current.status)) return;
+    await nexusDb.offlineActions.update(id, {
+      status: 'discarded',
+      error: reason,
+      syncStartedAt: undefined,
+    });
   });
 }
 
