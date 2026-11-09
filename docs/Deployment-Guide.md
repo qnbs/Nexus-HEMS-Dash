@@ -149,8 +149,8 @@ helm install nexus-hems ./helm/nexus-hems \
 | `ingress.enabled`                   | true           | Enable Ingress            |
 | `ingress.className`                 | nginx          | Ingress class             |
 | `ingress.tls.secretName`            | nexus-hems-tls | TLS certificate secret    |
-| `hpa.enabled`                       | true           | Horizontal Pod Autoscaler |
-| `hpa.maxReplicas`                   | 8              | Max scale-out             |
+| `autoscaling.enabled`               | `true`         | Frontend **and** server HPAs (`templates/hpa.yaml`); `minReplicas: 2` on server can override `replicaCount.server: 1` |
+| `autoscaling.maxReplicas`           | 8              | Max scale-out             |
 | `monitoring.serviceMonitor.enabled` | true           | Prometheus ServiceMonitor |
 | `networkPolicy.enabled`             | true           | Restrict pod traffic      |
 
@@ -160,11 +160,11 @@ helm install nexus-hems ./helm/nexus-hems \
 
 | Profile | Replicas | `server.walPersistence.enabled` | `server.redisUrl` | Durability |
 | ------- | -------- | ------------------------------- | ----------------- | ---------- |
-| Dev / mock (defaults) | 1 | `false` (emptyDir) | optional | WAL lost on pod delete |
-| Edge live single writer | 1 | `true` (RWO PVC; `create: true` or `existingClaim`) | recommended | WAL survives reschedule on same PVC |
+| Dev / mock (defaults) | 1 | `false` (emptyDir) | optional | WAL lost on pod delete; **set `autoscaling.enabled: false`** or accept server HPA `minReplicas: 2` (multi-pod in-memory sync without Redis) |
+| Edge live single writer | 1 | `true` (RWO PVC; `create: true` or `existingClaim`) | recommended | WAL survives reschedule on same PVC; **requires `autoscaling.enabled: false`** (+ `Recreate`) — enforced in overlay on **#466**, not `main` |
 | API HA | >1 | **must stay `false`** | **required** (`REDIS_REQUIRED=true`) | Per-pod ephemeral WAL only; Redis egress must work (see NetworkPolicy) |
 
-**Server HPA:** `autoscaling.enabled` defaults to `true` with `minReplicas: 2` on **both** frontend and server (`templates/hpa.yaml`). That overrides a static `replicaCount.server: 1` and breaks the single-writer WAL profile. For PVC-backed WAL, set `autoscaling.enabled: false` **or** raise `replicaCount.server` only with `walPersistence.enabled: false` and Redis (HA row above). PR **#466** extends `values-edge-live.yaml` with `autoscaling.enabled: false` (not on `main` yet).
+**Server HPA:** `autoscaling.enabled` defaults to `true` with `minReplicas: 2` on **both** frontend and server (`templates/hpa.yaml`). That overrides a static `replicaCount.server: 1` for **both** the default mock profile and any edge overlay until you disable autoscaling. For any single-server profile (dev mock **or** WAL PVC), set `autoscaling.enabled: false`. For API HA, keep autoscaling on but use `walPersistence.enabled: false` and Redis (row above). PR **#466** adds chart guards (omit server HPA when WAL PVC on) plus `values-edge-live.yaml` with `autoscaling.enabled: false` (not on `main` yet).
 
 **WAL PVC upgrades:** chart default `deployment.strategy` is `RollingUpdate` with `maxSurge: 1`, which can temporarily run two server pods against one RWO PVC. For durable WAL, set `deployment.strategy.type: Recreate` in values; chart templates must omit `rollingUpdate` when type is `Recreate` (**#466** / `nexus-hems.deploymentStrategy` helper). Applies to **both** frontend and server — expect brief downtime. `Recreate` does not fence manual pod deletion; strict single-writer guarantees need additional ops controls (#452 backlog / StatefulSet).
 
