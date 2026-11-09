@@ -90,17 +90,3 @@ Defaults to wss://<ingress.host> when frontend.wsOrigins is empty.
 {{- fail "frontend.wsOrigins is empty and ingress.host is not set; provide one of them" -}}
 {{- end -}}
 {{- end }}
-
-{{/*
-Deployment strategy — omit rollingUpdate when type is Recreate (Helm value merge otherwise keeps both).
-*/}}
-{{- define "nexus-hems.deploymentStrategy" -}}
-{{- $type := default "RollingUpdate" .Values.deployment.strategy.type | toString -}}
-type: {{ $type }}
-{{- if eq $type "RollingUpdate" }}
-{{- if .Values.deployment.strategy.rollingUpdate }}
-rollingUpdate:
-{{ toYaml .Values.deployment.strategy.rollingUpdate | indent 2 }}
-{{- end }}
-{{- end }}
-{{- end }}

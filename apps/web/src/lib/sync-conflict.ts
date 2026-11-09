@@ -30,10 +30,9 @@ export async function markSyncConflict(domain = 'settings'): Promise<void> {
   const state = await getSyncState(domain);
   if (state.hasConflict) return;
 
-  // Keep the last successfully synced version so server-wins reconcile can request
-  // /api/sync/diff?since=<baseline>. Do not bump to the remote head while conflicted.
-  const baseline = state.serverVersion || '0';
-  await updateSyncState(domain, baseline, true);
+  const remote = await fetchServerSyncVersion();
+  const version = remote !== null ? String(remote) : state.serverVersion || '0';
+  await updateSyncState(domain, version, true);
   dispatchSyncConflictEvent(domain);
 }
 

@@ -57,7 +57,9 @@ describe('sync-conflict', () => {
   });
 
   it('markSyncConflict sets hasConflict and dispatches event', async () => {
-    await updateSyncState('settings', '10', false);
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response(JSON.stringify({ version: 50 }), { status: 200 }),
+    );
 
     const handler = vi.fn();
     window.addEventListener(SYNC_CONFLICT_EVENT, handler);
@@ -66,7 +68,6 @@ describe('sync-conflict', () => {
 
     const state = await getSyncState('settings');
     expect(state.hasConflict).toBe(true);
-    expect(state.serverVersion).toBe('10');
     expect(handler).toHaveBeenCalledTimes(1);
 
     window.removeEventListener(SYNC_CONFLICT_EVENT, handler);

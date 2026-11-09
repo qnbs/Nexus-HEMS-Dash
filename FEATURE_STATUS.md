@@ -57,7 +57,7 @@
 | :------ | :----- | :--------------- |
 | Unified Command Center (7 sections, 8 routes) | ✅ | `apps/web/src/App.tsx` |
 | PWA offline-first | ✅ | `vite-plugin-pwa`, service worker handling in `main.tsx`, Dexie cache |
-| Offline settings sync (slices 1–4, server-wins `discarded`, Redis version) | ✅ | `docs/Offline-Sync-Design.md`; `markSyncConflict` keeps last synced baseline for `reconcileServerSettings(since)`; client `sync-conflict.ts` + Dexie queue CAS; API `GET /api/sync/version` + optional Redis (ADR-030); tests `sync-conflict.test.ts`, `db-operations.test.ts` (#448) |
+| Offline settings sync (slices 1–4, server-wins `discarded`, Redis version) | ✅ | `docs/Offline-Sync-Design.md`; client `sync-conflict.ts` + Dexie queue CAS; API `GET /api/sync/version` + optional Redis (ADR-030); tests `sync-conflict.test.ts`, `db-operations.test.ts` (#448) |
 | 5 themes | ✅ | `apps/web/src/design-tokens.ts` |
 | Full i18n DE/EN | ✅ | `apps/web/src/locales/en.ts`, `de.ts`; parity test |
 | WCAG 2.2 AA automated | ✅ | axe-core Playwright tests |

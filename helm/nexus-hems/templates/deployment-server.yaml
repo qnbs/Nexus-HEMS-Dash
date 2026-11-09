@@ -16,7 +16,7 @@ spec:
   replicas: {{ .Values.replicaCount.server }}
   revisionHistoryLimit: {{ .Values.deployment.revisionHistoryLimit }}
   strategy:
-    {{- include "nexus-hems.deploymentStrategy" . | nindent 4 }}
+    {{- toYaml .Values.deployment.strategy | nindent 4 }}
   selector:
     matchLabels:
       {{- include "nexus-hems.selectorLabels" . | nindent 6 }}
