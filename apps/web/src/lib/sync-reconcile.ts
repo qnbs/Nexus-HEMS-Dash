@@ -69,8 +69,9 @@ export async function applyFullServerSettingsResync(
   for (const key of Object.keys(settingsSyncValueSchemas)) {
     if (!isStoredSettingsKey(key)) continue;
     const serverVal = settings[key];
+    const storeKey = key as keyof StoredSettings;
     (patch as Record<string, unknown>)[key] =
-      serverVal !== undefined ? serverVal : (defaultSettings as Record<string, unknown>)[key];
+      serverVal !== undefined ? serverVal : defaultSettings[storeKey];
   }
   useAppStore.getState().updateSettings(patch);
   await persistSettings(useAppStore.getState().settings);
