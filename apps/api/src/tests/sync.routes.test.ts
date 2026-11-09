@@ -79,6 +79,19 @@ describe('sync routes', () => {
     expect(res.body.settings).toMatchObject({ animations: true, compactMode: false });
   });
 
+  it('GET /api/sync/diff returns fullResyncRequired when history is empty but version is ahead', async () => {
+    const bearer = await signToken({ sub: 'reader', scope: 'read' }, '1h');
+    const res = await buildApp()
+      .get('/api/sync/diff')
+      .query({ since: 10 })
+      .set('Authorization', `Bearer ${bearer}`)
+      .expect(200);
+
+    expect(res.body.version).toBe(42);
+    expect(res.body.changes).toEqual([]);
+    expect(res.body.fullResyncRequired).toBe(true);
+  });
+
   it('GET /api/sync/diff returns changes since the given version', async () => {
     await applySettingsPatch({ animations: false });
     const since = 42;

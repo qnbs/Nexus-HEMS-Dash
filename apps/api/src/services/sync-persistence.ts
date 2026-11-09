@@ -449,6 +449,7 @@ export interface SyncDiffResult {
   fullResyncRequired?: boolean;
 }
 
+/** Per-process mutex only; multi-replica writers require Redis (`REDIS_URL`) for shared sync state (#448). */
 export async function getSyncDiffSince(since: number): Promise<SyncDiffResult> {
   return withSettingsBatchMutex(async () => {
     const version = await getSyncVersion();
