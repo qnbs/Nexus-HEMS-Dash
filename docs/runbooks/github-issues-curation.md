@@ -10,9 +10,9 @@
 
 | Issue | Priority | Title (short) | Owner PR / branch | Notes |
 | --- | --- | --- | --- | --- |
-| [#448](https://github.com/qnbs/Nexus-HEMS-Dash/issues/448) | P1 | Offline sync: orphaned `syncing`, failure-atomic server-wins | [#467](https://github.com/qnbs/Nexus-HEMS-Dash/pull/467) @ `e929951` | TS2352 fixed; baseline + full resync; CAS/hardware still open |
-| [#452](https://github.com/qnbs/Nexus-HEMS-Dash/issues/452) | P0 | K8s WAL durable single-writer | [#466](https://github.com/qnbs/Nexus-HEMS-Dash/pull/466) `cursor/helm-wal-hpa-enforce-452-79f6` | HEAD `dd90325`: 36/36 CI green + Lighthouse pass (2026-11-09); CodeRabbit rate-limit may block quiescence |
-| [#465](https://github.com/qnbs/Nexus-HEMS-Dash/pull/465) | P1 | Docs/toolchain truth-sync | `cursor/docs-toolchain-refresh-79f6` @ `82148a6` | Docs-only; 0 unresolved threads; CI green on gate SHAs |
+| [#448](https://github.com/qnbs/Nexus-HEMS-Dash/issues/448) | P1 | Offline sync: orphaned `syncing`, failure-atomic server-wins | [#467](https://github.com/qnbs/Nexus-HEMS-Dash/pull/467) @ `a1e1282` | Unstacked from #465; 36/36 CI green; multi-replica CAS still open |
+| [#452](https://github.com/qnbs/Nexus-HEMS-Dash/issues/452) | P0 | K8s WAL durable single-writer | [#466](https://github.com/qnbs/Nexus-HEMS-Dash/pull/466) `cursor/helm-wal-hpa-enforce-452-79f6` | HEAD `dd90325`: CI green; runtime durability acceptance open on #452 |
+| [#465](https://github.com/qnbs/Nexus-HEMS-Dash/pull/465) | P1 | Docs/toolchain truth-sync | `cursor/docs-toolchain-refresh-79f6` @ `2ad2ed5` | Helm overlay reverted; Linear/GitHub curation runbooks; CI on `2ad2ed5` |
 | [#458](https://github.com/qnbs/Nexus-HEMS-Dash/issues/458) | P0/P1 | Object identity / CID audit umbrella | TBD | Cross-links OCPP mock isolation |
 | [#421](https://github.com/qnbs/Nexus-HEMS-Dash/issues/421) | P0 | Code scanning tool status | Runbooks under `docs/runbooks/` | Pairs with #402 ledger |
 | [#432](https://github.com/qnbs/Nexus-HEMS-Dash/issues/432) | P0 | Gitleaks integrity | — | Security-full gate |

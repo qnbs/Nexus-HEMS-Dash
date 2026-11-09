@@ -28,12 +28,12 @@ Unlike WorldScript Studio, most HEMS GitHub issues are **not** 1:1 `QNB-*` mirro
 
 | GitHub | Linear anchor | Active PR / notes |
 | --- | --- | --- |
-| [#448](https://github.com/qnbs/Nexus-HEMS-Dash/issues/448) offline sync | Project + GH comments | [#467](https://github.com/qnbs/Nexus-HEMS-Dash/pull/467) @ `e929951` — baseline, full resync; CAS/hardware open |
+| [#448](https://github.com/qnbs/Nexus-HEMS-Dash/issues/448) offline sync | Project + GH comments | [#467](https://github.com/qnbs/Nexus-HEMS-Dash/pull/467) @ `a1e1282` — fail-closed diff + full resync; CAS/hardware open |
 | [#452](https://github.com/qnbs/Nexus-HEMS-Dash/issues/452) K8s WAL | Project + GH | [#466](https://github.com/qnbs/Nexus-HEMS-Dash/pull/466) @ `dd90325` CI green |
 | [#402](https://github.com/qnbs/Nexus-HEMS-Dash/issues/402) recovery ledger | Project + [ledger](recovery-evidence-ledger-402.md) | Evidence SHAs only after authorized merge |
 | [#421](https://github.com/qnbs/Nexus-HEMS-Dash/issues/421) code scanning | Runbooks | Tool status still owner-required |
 | [#432](https://github.com/qnbs/Nexus-HEMS-Dash/issues/432) Gitleaks | — | Security-full gate |
-| Docs truth-sync | — | [#465](https://github.com/qnbs/Nexus-HEMS-Dash/pull/465) @ `82148a6` docs-only (+ this runbook) |
+| Docs truth-sync | — | [#465](https://github.com/qnbs/Nexus-HEMS-Dash/pull/465) @ `2ad2ed5` docs-only (+ curation runbooks) |
 
 **Note:** Linear project summary may lag GitHub HEAD (e.g. still naming #467 `bc30a08` after `e929951` type-check fix). Prefer `gh pr view` / CI over Linear text.
 

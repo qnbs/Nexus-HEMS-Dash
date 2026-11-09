@@ -190,6 +190,8 @@ private isTokenValid(): boolean {
 
 ## 5. User-Facing Conflict UI
 
+For **settings** queue conflicts, **“Server-Version übernehmen”** runs server-wins reconcile (`reconcileServerSettings()`): returned server keys overwrite local state without per-key timestamp comparison (see §2). Timestamps in the modal are informational for hardware/other domains only.
+
 When conflicts are detected and cannot be auto-resolved:
 
 1. `OfflineBanner` shows "X Änderungen konnten nicht synchronisiert werden" with a `Details` link
