@@ -1,4 +1,5 @@
-import { useAppStore } from '../store';
+import { settingsSyncValueSchemas } from '@nexus-hems/shared-types';
+import { defaultSettings, useAppStore } from '../store';
 import type { StoredSettings } from '../types';
 import { getApiBaseUrl, getAuthHeader } from './auth-token';
 import { persistSettings } from './db';
@@ -60,16 +61,17 @@ function isStoredSettingsKey(key: string): key is keyof StoredSettings {
  * Apply server diff entries to the local Zustand store and IndexedDB settings row.
  * Used on server-wins conflict resolution — all returned keys overwrite local state.
  */
-/** Apply a full server settings snapshot (used when diff history was truncated). */
-export async function applyServerSettingsSnapshot(
+/** Full resync: every sync-eligible key — server value or install default when sparse. */
+export async function applyFullServerSettingsResync(
   settings: Record<string, unknown>,
 ): Promise<void> {
   const patch: Partial<StoredSettings> = {};
-  for (const [key, value] of Object.entries(settings)) {
+  for (const key of Object.keys(settingsSyncValueSchemas)) {
     if (!isStoredSettingsKey(key)) continue;
-    (patch as Record<string, unknown>)[key] = value;
+    const serverVal = settings[key];
+    (patch as Record<string, unknown>)[key] =
+      serverVal !== undefined ? serverVal : (defaultSettings as Record<string, unknown>)[key];
   }
-  if (Object.keys(patch).length === 0) return;
   useAppStore.getState().updateSettings(patch);
   await persistSettings(useAppStore.getState().settings);
 }
@@ -123,7 +125,7 @@ export async function reconcileServerSettings(since: number): Promise<number | n
   if (diff.fullResyncRequired) {
     const snapshot = await fetchServerSettingsSnapshot();
     if (!snapshot) return null;
-    await applyServerSettingsSnapshot(snapshot.settings);
+    await applyFullServerSettingsResync(snapshot.settings);
     return snapshot.version;
   }
 

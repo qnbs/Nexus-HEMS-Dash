@@ -5,7 +5,7 @@
 import { type NextFunction, type Request, type Response, Router } from 'express';
 import { z } from 'zod';
 import { SettingsPatchError } from '../data/settings-patch-error.js';
-import { applySettingsPatch, getServerSettings } from '../data/settings-store.js';
+import { applySettingsPatch, getServerSettingsForClientSync } from '../data/settings-store.js';
 import { getSyncDiffSince } from '../data/sync-diff-store.js';
 import { getSyncVersion } from '../data/sync-version-store.js';
 import { requireJWT, requireScope } from '../middleware/auth.js';
@@ -57,8 +57,7 @@ export function createSyncRoutes(): Router {
   });
 
   router.get('/api/settings', requireJWT, async (_req, res) => {
-    const [version, settings] = await Promise.all([getSyncVersion(), getServerSettings()]);
-    res.json({ version, settings });
+    res.json(await getServerSettingsForClientSync());
   });
 
   router.get('/api/sync/diff', requireJWT, async (req, res) => {

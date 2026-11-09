@@ -91,6 +91,19 @@ describe('sync-reconcile', () => {
     expect(useAppStore.getState().settings.animations).toBe(false);
   });
 
+  it('full resync resets sync keys missing from sparse server snapshot to defaults', async () => {
+    const { applyFullServerSettingsResync } = await import('../lib/sync-reconcile');
+    const { useAppStore, defaultSettings } = await import('../store');
+    useAppStore.setState({
+      settings: { ...defaultSettings, compactMode: true, animations: true },
+    });
+
+    await applyFullServerSettingsResync({ animations: false });
+
+    expect(useAppStore.getState().settings.animations).toBe(false);
+    expect(useAppStore.getState().settings.compactMode).toBe(defaultSettings.compactMode);
+  });
+
   it('reconcileServerSettings fetches diff and applies changes', async () => {
     vi.mocked(fetch).mockResolvedValueOnce(
       new Response(

@@ -325,6 +325,19 @@ export async function applySettingsBatch(entries: SettingsBatchEntry[]): Promise
   return withSettingsBatchMutex(() => applySettingsBatchInner(entries));
 }
 
+/**
+ * Settings + version read under the same mutex as writes (avoids version/settings skew).
+ */
+export async function getServerSettingsSyncSnapshot(): Promise<{
+  version: number;
+  settings: Record<string, unknown>;
+}> {
+  return withSettingsBatchMutex(async () => ({
+    version: await getSyncVersion(),
+    settings: await getServerSettingsSnapshot(),
+  }));
+}
+
 async function applySettingsBatchInner(entries: SettingsBatchEntry[]): Promise<number> {
   if (entries.length === 0) {
     return getSyncVersion();
