@@ -142,9 +142,10 @@ async detectConflicts(): Promise<boolean> {
 ```
 Client reconnects → fetch serverVersion
 ├─ serverVersion > localSyncedVersion?
-│   ├─ YES → Conflict detected → show SyncConflictDialog (no auto-reconcile)
+│   ├─ YES → markSyncConflict (on `main`: can bump `syncState.serverVersion` to remote head and miss intervening diff — **#448**; **#467** preserves last-applied baseline for `since=`)
+│   │   └─ show SyncConflictDialog (no auto-reconcile)
 │   │   ├─ user chooses server-wins (resolveSyncConflict → 'server')
-│   │   │   ├─ reconcileServerSettings: GET /api/sync/diff?since=… → applyServerSyncDiff
+│   │   │   ├─ reconcileServerSettings(since=baseline): GET /api/sync/diff → full snapshot if `fullResyncRequired` (#467) else incremental apply
 │   │   │   │   ├─ apply OK → discard queued settings (`discarded` #448), record server version, clear flag
 │   │   │   │   └─ apply FAIL → throw; conflict remains open (no replay, no version bump)
 │   │   └─ user chooses local-wins (resolveSyncConflict → 'local')

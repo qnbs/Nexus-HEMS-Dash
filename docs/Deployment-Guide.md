@@ -162,7 +162,7 @@ helm install nexus-hems ./helm/nexus-hems \
 | ------- | -------- | ------------------------------- | ----------------- | ---------- |
 | Dev / mock (defaults) | 1 | `false` (emptyDir) | optional | WAL lost on pod delete; **set `autoscaling.enabled: false`** or accept server HPA `minReplicas: 2` (multi-pod in-memory sync without Redis) |
 | Edge live single writer | 1 | `true` (RWO PVC; `create: true` or `existingClaim`) | recommended | WAL survives reschedule on same PVC; **requires `autoscaling.enabled: false`** (+ `Recreate`) — enforced in overlay on **#466**, not `main` |
-| API HA | >1 | **must stay `false`** | **required** (`REDIS_REQUIRED=true`) | Per-pod ephemeral WAL only; Redis egress must work (see NetworkPolicy) |
+| API HA | `replicaCount.server: 2` or greater (+ autoscaling) | **must stay `false`** | **required** (`REDIS_REQUIRED=true`) | Per-pod ephemeral WAL only; each pod needs shared Redis — not optional when HPA can run multiple replicas |
 
 **Server HPA:** `autoscaling.enabled` defaults to `true` with `minReplicas: 2` on **both** frontend and server (`templates/hpa.yaml`). That overrides a static `replicaCount.server: 1` for **both** the default mock profile and any edge overlay until you disable autoscaling. For any single-server profile (dev mock **or** WAL PVC), set `autoscaling.enabled: false`. For API HA, keep autoscaling on but use `walPersistence.enabled: false` and Redis (row above). PR **#466** adds chart guards (omit server HPA when WAL PVC on) plus `values-edge-live.yaml` with `autoscaling.enabled: false` (not on `main` yet).
 
