@@ -142,14 +142,17 @@ async detectConflicts(): Promise<boolean> {
 ```
 Client reconnects → fetch serverVersion
 ├─ serverVersion > localSyncedVersion?
-│   ├─ YES → Conflict path:
-│   │   ├─ Fetch diff from /api/sync/diff?since=<localSyncedVersion>
-│   │   ├─ GET /api/sync/diff?since=… → applyServerSyncDiff (server-wins; no timestamp branch)
-│   │   ├─ settings queue → terminal `discarded` where server-wins applies (#448)
-│   │   └─ deviceSettings → server-wins (hardware-safe keys)
-│   │   └─ Update localSyncVersion = serverVersion, increment conflictsDetected
-│   └─ NO → No conflict, proceed with action replay
-├─ Replay pending actions (with idempotency keys)
+│   ├─ YES → Conflict detected → show SyncConflictDialog (no auto-reconcile)
+│   │   ├─ user chooses server-wins (resolveSyncConflict → 'server')
+│   │   │   ├─ reconcileServerSettings: GET /api/sync/diff?since=… → applyServerSyncDiff
+│   │   │   │   ├─ apply OK → discard queued settings (`discarded` #448), record server version, clear flag
+│   │   │   │   └─ apply FAIL → throw; conflict remains open (no replay, no version bump)
+│   │   └─ user chooses local-wins (resolveSyncConflict → 'local')
+│   │       ├─ replay pending actions (force) → verify GET /api/sync/version
+│   │       │   ├─ both OK → clear conflict flag
+│   │       │   └─ replay or version FAIL → conflict remains open
+│   └─ NO → No conflict
+├─ Background replay of pending actions (idempotency keys; withOfflineSyncLock when available)
 └─ Update clientSyncedAt
 ```
 
