@@ -12,7 +12,7 @@
 | --- | --- | --- | --- | --- |
 | [#448](https://github.com/qnbs/Nexus-HEMS-Dash/issues/448) | P1 | Offline sync: orphaned `syncing`, failure-atomic server-wins | [#467](https://github.com/qnbs/Nexus-HEMS-Dash/pull/467) @ `bc30a08` | Baseline + `fullResyncRequired` + atomic `GET /api/settings`; CAS/hardware still open |
 | [#452](https://github.com/qnbs/Nexus-HEMS-Dash/issues/452) | P0 | K8s WAL durable single-writer | [#466](https://github.com/qnbs/Nexus-HEMS-Dash/pull/466) `cursor/helm-wal-hpa-enforce-452-79f6` | HEAD `dd90325`: 36/36 CI green + Lighthouse pass (2026-11-09); CodeRabbit rate-limit may block quiescence |
-| [#465](https://github.com/qnbs/Nexus-HEMS-Dash/pull/465) | P1 | Docs/toolchain truth-sync | `cursor/docs-toolchain-refresh-79f6` | HEAD `9a8df9f` docs-only; 0 unresolved threads; CI green (user confirm 2026-11-09) on latest push |
+| [#465](https://github.com/qnbs/Nexus-HEMS-Dash/pull/465) | P1 | Docs/toolchain truth-sync | `cursor/docs-toolchain-refresh-79f6` @ `f7d3bac` | Docs-only; 0 unresolved threads; CI success on `9a8df9f` gate (re-run after `f7d3bac` if needed) |
 | [#458](https://github.com/qnbs/Nexus-HEMS-Dash/issues/458) | P0/P1 | Object identity / CID audit umbrella | TBD | Cross-links OCPP mock isolation |
 | [#421](https://github.com/qnbs/Nexus-HEMS-Dash/issues/421) | P0 | Code scanning tool status | Runbooks under `docs/runbooks/` | Pairs with #402 ledger |
 | [#432](https://github.com/qnbs/Nexus-HEMS-Dash/issues/432) | P0 | Gitleaks integrity | — | Security-full gate |
