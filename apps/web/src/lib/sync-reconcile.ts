@@ -14,6 +14,12 @@ export interface SyncDiffEntry {
 export interface SyncDiffResponse {
   version: number;
   changes: SyncDiffEntry[];
+  fullResyncRequired?: boolean;
+}
+
+export interface ServerSettingsSnapshotResponse {
+  version: number;
+  settings: Record<string, unknown>;
 }
 
 /**
@@ -54,6 +60,43 @@ function isStoredSettingsKey(key: string): key is keyof StoredSettings {
  * Apply server diff entries to the local Zustand store and IndexedDB settings row.
  * Used on server-wins conflict resolution — all returned keys overwrite local state.
  */
+/** Apply a full server settings snapshot (used when diff history was truncated). */
+export async function applyServerSettingsSnapshot(
+  settings: Record<string, unknown>,
+): Promise<void> {
+  const patch: Partial<StoredSettings> = {};
+  for (const [key, value] of Object.entries(settings)) {
+    if (!isStoredSettingsKey(key)) continue;
+    (patch as Record<string, unknown>)[key] = value;
+  }
+  if (Object.keys(patch).length === 0) return;
+  useAppStore.getState().updateSettings(patch);
+  await persistSettings(useAppStore.getState().settings);
+}
+
+export async function fetchServerSettingsSnapshot(
+  signal?: AbortSignal,
+): Promise<ServerSettingsSnapshotResponse | null> {
+  const base = getApiBaseUrl();
+  const headers = getAuthHeader();
+  if (!base || !headers) return null;
+
+  try {
+    const res = await fetch(`${base}/api/settings`, {
+      signal: signal ?? null,
+      headers: { Accept: 'application/json', ...headers },
+    });
+    if (!res.ok) return null;
+    const data = (await res.json()) as ServerSettingsSnapshotResponse;
+    if (typeof data.version !== 'number' || !data.settings || typeof data.settings !== 'object') {
+      return null;
+    }
+    return data;
+  } catch {
+    return null;
+  }
+}
+
 export async function applyServerSyncDiff(changes: SyncDiffEntry[]): Promise<void> {
   if (changes.length === 0) return;
 
@@ -76,6 +119,14 @@ export async function applyServerSyncDiff(changes: SyncDiffEntry[]): Promise<voi
 export async function reconcileServerSettings(since: number): Promise<number | null> {
   const diff = await fetchSyncDiff(since);
   if (!diff) return null;
+
+  if (diff.fullResyncRequired) {
+    const snapshot = await fetchServerSettingsSnapshot();
+    if (!snapshot) return null;
+    await applyServerSettingsSnapshot(snapshot.settings);
+    return snapshot.version;
+  }
+
   await applyServerSyncDiff(diff.changes);
   return diff.version;
 }

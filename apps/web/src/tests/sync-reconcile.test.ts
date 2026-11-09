@@ -65,6 +65,32 @@ describe('sync-reconcile', () => {
     expect(useAppStore.getState().settings.victronIp).toBe('10.0.0.42');
   });
 
+  it('reconcileServerSettings performs full snapshot when fullResyncRequired is set', async () => {
+    vi.mocked(fetch)
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ version: 200, changes: [], fullResyncRequired: true }), {
+          status: 200,
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            version: 200,
+            settings: { compactMode: true, animations: false },
+          }),
+          { status: 200 },
+        ),
+      );
+
+    const { reconcileServerSettings } = await import('../lib/sync-reconcile');
+    const { useAppStore, defaultSettings } = await import('../store');
+    useAppStore.setState({ settings: { ...defaultSettings } });
+
+    await expect(reconcileServerSettings(5)).resolves.toBe(200);
+    expect(useAppStore.getState().settings.compactMode).toBe(true);
+    expect(useAppStore.getState().settings.animations).toBe(false);
+  });
+
   it('reconcileServerSettings fetches diff and applies changes', async () => {
     vi.mocked(fetch).mockResolvedValueOnce(
       new Response(

@@ -66,6 +66,19 @@ describe('sync routes', () => {
     expect(typeof res.body.version).toBe('number');
   });
 
+  it('GET /api/settings returns snapshot and version for authenticated clients', async () => {
+    await applySettingsPatch({ animations: true, compactMode: false });
+
+    const bearer = await signToken({ sub: 'reader', scope: 'read' }, '1h');
+    const res = await buildApp()
+      .get('/api/settings')
+      .set('Authorization', `Bearer ${bearer}`)
+      .expect(200);
+
+    expect(typeof res.body.version).toBe('number');
+    expect(res.body.settings).toMatchObject({ animations: true, compactMode: false });
+  });
+
   it('GET /api/sync/diff returns changes since the given version', async () => {
     await applySettingsPatch({ animations: false });
     const since = 42;
