@@ -16,6 +16,7 @@ Release notes are maintained here and published via [semantic-release](https://g
 ### Changed
 
 - **docs** — Toolchain hub refresh (ADR log 030–031, Deployment Guide WAL tables, Offline-Sync gap matrix, `pnpm check:helm-*` scripts).
+- **docs** — `FEATURE_STATUS.md` offline-sync shipped row matches `docs/Offline-Sync-Design.md` (#465).
 - **api** — Docker Compose prod sets `NEXUS_HEMS_DATA_DIR=/app/apps/api/data`; Helm server sets `NEXUS_HEMS_DATA_DIR=/data/nexus-hems` with a dedicated `emptyDir` volume (#447).
 
 ### Fixed

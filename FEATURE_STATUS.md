@@ -1,7 +1,7 @@
 # Feature Status — Nexus-HEMS-Dash
 
 **Version:** 1.12.2 release line (tag pending); `main` tracks current development  
-**Last updated:** 2026-10-04 (v1.12.2 patch checkpoint, FUP-REL-01)  
+**Last updated:** 2026-11-09 (offline-sync matrix truth-sync, #465)  
 **Purpose:** Single source of truth for what is actually implemented, partial, or planned. Use this file to keep README/marketing claims synchronized with the codebase.
 
 > **Operational note (2026-10-03):** Tag `v1.12.1` is the current release (security overrides #366–#367 on top of `v1.12.0` audit #363, offline sync, Stream F). See `docs/Campaign-Handoff-2026-10.md` and `docs/Release-History.md`.
@@ -57,6 +57,7 @@
 | :------ | :----- | :--------------- |
 | Unified Command Center (7 sections, 8 routes) | ✅ | `apps/web/src/App.tsx` |
 | PWA offline-first | ✅ | `vite-plugin-pwa`, service worker handling in `main.tsx`, Dexie cache |
+| Offline settings sync (slices 1–4, server-wins `discarded`, Redis version) | ✅ | `docs/Offline-Sync-Design.md`; client `sync-conflict.ts` + Dexie queue CAS; API `GET /api/sync/version` + optional Redis (ADR-030); tests `sync-conflict.test.ts`, `db-operations.test.ts` (#448) |
 | 5 themes | ✅ | `apps/web/src/design-tokens.ts` |
 | Full i18n DE/EN | ✅ | `apps/web/src/locales/en.ts`, `de.ts`; parity test |
 | WCAG 2.2 AA automated | ✅ | axe-core Playwright tests |
