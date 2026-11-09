@@ -159,10 +159,12 @@ helm install nexus-hems ./helm/nexus-hems \
 | Profile | Replicas | `server.walPersistence.enabled` | `server.redisUrl` | Durability |
 | ------- | -------- | ------------------------------- | ----------------- | ---------- |
 | Dev / mock (defaults) | 1 | `false` (emptyDir) | optional | WAL lost on pod delete |
-| Edge live single writer | 1 | `true` (RWO PVC) | recommended | WAL survives reschedule on same PVC |
-| API HA | >1 | **must stay `false`** | **required** | Per-pod ephemeral WAL only |
+| Edge live single writer | 1 | `true` (RWO PVC; `create: true` or `existingClaim`) | recommended | WAL survives reschedule on same PVC |
+| API HA | >1 | **must stay `false`** | **required** (`REDIS_REQUIRED=true`) | Per-pod ephemeral WAL only; Redis egress must work (see NetworkPolicy) |
 
 **Server HPA:** `autoscaling.enabled` defaults to `true` with `minReplicas: 2` on **both** frontend and server (`templates/hpa.yaml`). That overrides a static `replicaCount.server: 1` and breaks the single-writer WAL profile. For PVC-backed WAL, set `autoscaling.enabled: false` **or** raise `replicaCount.server` only with `walPersistence.enabled: false` and Redis (HA row above). `values-edge-live.yaml` disables autoscaling.
+
+**WAL PVC upgrades:** chart default `deployment.strategy` is `RollingUpdate` with `maxSurge: 1`, which can temporarily run two server pods against one RWO PVC. For durable WAL, prefer `deployment.strategy.type: Recreate` (removes `rollingUpdate`; applies to **both** frontend and server templates — expect brief downtime). `Recreate` does not fence manual pod deletion; strict single-writer guarantees need additional ops controls (#452 backlog / StatefulSet).
 
 **Redis + NetworkPolicy:** when `networkPolicy.enabled` is `true`, the default policy allows egress only to same-chart pods, DNS, and HTTPS — not external Redis on port **6379**. Point `server.redisUrl` at an in-cluster Redis reachable under that policy, or add a companion `NetworkPolicy` that permits server → Redis egress.
 

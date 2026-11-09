@@ -52,7 +52,7 @@ and replay safety mechanisms for Nexus-HEMS-Dash.
 | Data Type | Strategy | Rationale |
 |-----------|----------|-----------|
 | Hardware commands (EV, battery, heat pump) | Server-wins + idempotency key | Safety-critical; server validates physical constraints |
-| User settings/preferences | Last-write-wins (client timestamp) | Non-safety, user intent should prevail |
+| User settings/preferences | **Server-wins** on conflict reconcile (Slice 4) | `reconcileServerSettings()` applies `/api/sync/diff` without per-key timestamp comparison; queued settings conflicts mark local rows `discarded` (#448). Optional “keep local” replay remains a separate UX path (see open follow-ups). |
 | Tariff cache | Always discard local on reconnect | Server is source of truth for pricing |
 | Energy snapshots (read-only) | Append-only; no conflict possible | Historical data, never mutated |
 
@@ -144,11 +144,9 @@ Client reconnects → fetch serverVersion
 ├─ serverVersion > localSyncedVersion?
 │   ├─ YES → Conflict path:
 │   │   ├─ Fetch diff from /api/sync/diff?since=<localSyncedVersion>
-│   │   ├─ For each changed key in diff:
-│   │   │   ├─ userPreferences → compare client.updatedAt vs server.updatedAt
-│   │   │   │   ├─ client newer → push to server (Last-Write-Wins)
-│   │   │   │   └─ server newer → overwrite local (Server-Wins)
-│   │   │   └─ deviceSettings → Server-Wins always
+│   │   ├─ GET /api/sync/diff?since=… → applyServerSyncDiff (server-wins; no timestamp branch)
+│   │   ├─ settings queue → terminal `discarded` where server-wins applies (#448)
+│   │   └─ deviceSettings → server-wins (hardware-safe keys)
 │   │   └─ Update localSyncVersion = serverVersion, increment conflictsDetected
 │   └─ NO → No conflict, proceed with action replay
 ├─ Replay pending actions (with idempotency keys)

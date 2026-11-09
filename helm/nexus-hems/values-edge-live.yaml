@@ -13,6 +13,11 @@ replicaCount:
 autoscaling:
   enabled: false
 
+# Avoid two server pods mounting the same RWO WAL PVC during upgrades (ADR-031).
+deployment:
+  strategy:
+    type: Recreate
+
 server:
   redisUrl: 'redis://nexus-hems-redis:6379'
   walPersistence:
