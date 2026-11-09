@@ -4,8 +4,11 @@
 {{- if and (gt (int .Values.replicaCount.server) 1) .Values.server.walPersistence.enabled }}
 {{- fail "replicaCount.server > 1 cannot share a single ReadWriteOnce WAL PVC — use replicaCount.server: 1 with walPersistence or per-pod emptyDir (#452)" }}
 {{- end }}
-{{- if and .Values.server.walPersistence.enabled (eq .Values.deployment.strategy.type "RollingUpdate") }}
-{{- fail "server.walPersistence.enabled requires deployment.strategy.type: Recreate — default RollingUpdate can overlap pods on the same RWO WAL (#452)" }}
+{{- if .Values.server.walPersistence.enabled }}
+{{- $rolloutType := default "RollingUpdate" .Values.deployment.strategy.type | toString -}}
+{{- if ne $rolloutType "Recreate" }}
+{{- fail "server.walPersistence.enabled requires deployment.strategy.type: Recreate — omitted or non-Recreate types default to RollingUpdate and can overlap pods on one RWO WAL (#452)" }}
+{{- end }}
 {{- end }}
 apiVersion: apps/v1
 kind: Deployment

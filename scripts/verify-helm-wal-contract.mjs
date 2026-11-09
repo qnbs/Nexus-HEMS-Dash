@@ -123,6 +123,21 @@ runHelm(
   },
 );
 
+runHelm(
+  [
+    '--set',
+    'server.walPersistence.enabled=true',
+    '--set',
+    'server.walPersistence.create=true',
+    '--set-json',
+    'deployment.strategy={"rollingUpdate":{"maxSurge":1,"maxUnavailable":0}}',
+  ],
+  {
+    expectFail: true,
+    expectMessage: 'requires deployment.strategy.type: Recreate',
+  },
+);
+
 runHelm([
   '--set',
   'replicaCount.server=1',
