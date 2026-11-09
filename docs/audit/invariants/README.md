@@ -31,7 +31,10 @@ Former umbrella **DATA-18** is split so sync-failure vs crash-restart semantics 
 - **DATA-18-CRASH** — after a committed archive, crash or `unlink` failure may leave both `.recovering` and `wal.ndjson.failed-*`; merge must not replay duplicate logical rows (`merged-main-verified` @ `f7b219c`).
 - **DATA-18-MERGE / DATA-18-MERGE-CRASH** — stranded snapshot merge idempotency and progress-write crash window (`merged-main-verified` @ `f7b219c`).
 - **DATA-18-POWER** — explicit non-claim: per-line WAL without fsync (`observed`).
-- **DATA-18-K8S** — Helm replica guard + health WAL storage class (`merged-main-verified` @ `f7b219c`; ops validation on real clusters still recommended).
+- **DATA-18-K8S** — health `walStorageClass` / ephemeral notice (`merged-main-verified` @ `f7b219c`).
+- **DATA-18-K8S-CONTRACT** — Helm forbids shared RWO WAL PVC when `replicaCount.server > 1` (`merged-main-verified` @ `7ceb4a9`; `pnpm check:helm-wal`).
+- **DATA-18-MERGE-IDENTITY** — WAL merge payload digest receipts (#454, @ `69a7a71`).
+- **SYNC-448-DISCARD** — offline `discarded` terminal status on server-wins (#448, @ `e3a11b1`).
 
 **DATA-02** — repeat-failure duplicate growth guard (`merged-main-verified` @ `f7b219c`).
 

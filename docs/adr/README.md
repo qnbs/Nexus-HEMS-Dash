@@ -49,5 +49,7 @@ its consequences.
 | [027](ADR-027-layered-quality-platforms.md) | Layered Code-Quality Platforms & CI Consolidation | ✅ Accepted | 2026-07-04 | `DEVOPS.md` |
 | [028](ADR-028-command-palette-registry.md) | Command Palette Registry & Extensibility | ✅ Accepted | 2026-07-04 | ADR-002/019; `command-safety.ts` |
 | [029](ADR-029-local-llm-csp-deferral.md) | Defer In-Browser Local-LLM Engines (CSP + Bundle) | ✅ Accepted | 2026-07-09 | F-03; AUD-02 CSP; `ai-core/providers/local` |
+| [030](ADR-030-offline-sync-redis-persistence.md) | Offline Sync State — Optional Redis Backend | ✅ Accepted | 2026-09-02 | `REDIS_URL`; Helm `server.redisUrl` |
+| [031](ADR-031-kubernetes-wal-deployment-contract.md) | Kubernetes WAL Deployment Contract | ✅ Accepted | 2026-11-09 | `verify-helm-wal-contract.mjs`; #452 |
 
 _Legend: ✅ Accepted/in effect · 🔄 In progress · ⏳ Proposed or Deferred (open). See the root [`docs/README.md`](../README.md) for the project-wide status legend._

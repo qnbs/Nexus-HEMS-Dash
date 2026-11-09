@@ -1,6 +1,6 @@
 # Offline Sync Design — Nexus-HEMS-Dash
 
-> **Status:** Active design — **slice 1–3** shipped (idempotency, sync version, JWT/TTL guards, conflict UI + deferred replay); **slice 4** (`GET /api/sync/diff`, `PUT /api/settings`, server-wins reconciliation) shipped.
+> **Status:** Active design — **slices 1–4** shipped. **2026-11:** server-wins marks queued settings as terminal `discarded` (not retryable `failed`); reconcile fail-closed when diff apply fails (#448). Multi-tab replay gated by `Navigator Lock` + per-row CAS for stale `syncing` reclaim. HA API uses optional Redis (`REDIS_URL`, ADR-030).
 > **Created:** 2026-04-25
 > **Owner:** @qnbs
 
@@ -23,18 +23,25 @@ and replay safety mechanisms for Nexus-HEMS-Dash.
 - `HIGH-05` fix: Auth header on every fetch
 - Online/offline event listeners
 
-**Known Gaps (v1.1.x):**
+**Shipped capabilities (v1.12.x):**
 
-| Gap | Impact | Status |
-|-----|--------|--------|
-| No `lastSyncVersion` tracking | Lost-update bug if server state changes while client offline | Slice 2+ (`syncState` + `/api/sync/version`) |
-| No conflict detection | Optimistic updates may overwrite newer server state | Slice 3 (banner + resolution UI) |
-| Failed actions never auto-recovered | Manual UI intervention required | Open |
-| No idempotency keys on commands | Duplicate execution on network retry | ✅ Slice 1 |
-| No command TTL on hardware replay | Stale offline commands after reconnect | ✅ Slice 2 |
-| No JWT liveness check before replay | Expired sessions may attempt sync | ✅ Slice 2 |
-| No server sync version endpoint | Client cannot detect server-side drift | ✅ Slice 2 |
-| No server-wins reconciliation for config changes | Settings divergence after reconnect | ✅ Slice 3–4 |
+| Capability | Status |
+|------------|--------|
+| Idempotency keys on retried commands | ✅ Slice 1 |
+| Command TTL + JWT gate before hardware replay | ✅ Slice 2 |
+| `syncState` + `/api/sync/version` drift detection | ✅ Slice 2 |
+| Conflict UI + deferred settings replay while conflicted | ✅ Slice 3 |
+| `GET /api/sync/diff` + server-wins settings reconcile | ✅ Slice 4 |
+| Terminal `discarded` offline status on server-wins (#448) | ✅ v1.12.2+ unreleased on `main` |
+| Optional Redis-backed sync version (ADR-030) | ✅ API stores |
+
+**Open follow-ups:**
+
+| Gap | Impact | Tracking |
+|-----|--------|----------|
+| Hardware commands with unknown server outcome | Unsafe blind replay | #448 / ledger hardening |
+| Cross-tab generation lease beyond Navigator Lock | Rare duplicate replay | #448 backlog |
+| Settings conflict UX uses server-wins for settings queue | User “local wins” still available for replay path | by design |
 
 ---
 

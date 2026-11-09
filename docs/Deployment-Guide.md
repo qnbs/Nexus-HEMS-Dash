@@ -141,8 +141,11 @@ helm install nexus-hems ./helm/nexus-hems \
 
 | Value                               | Default        | Description               |
 | ----------------------------------- | -------------- | ------------------------- |
-| `frontend.replicaCount`             | 2              | Frontend replicas         |
-| `server.replicaCount`               | 2              | Server replicas           |
+| `replicaCount.frontend`             | 2              | Frontend replicas         |
+| `replicaCount.server`               | 1              | API replicas (WAL + Redis below) |
+| `server.redisUrl`                   | `""`           | Required when `replicaCount.server > 1` (ADR-030) |
+| `server.walPersistence.enabled`     | `false`        | PVC WAL at `/data/nexus-hems` (only with `replicaCount.server: 1`; ADR-031) |
+| `server.walPersistence.create`      | `false`        | Provision chart PVC when persistence enabled |
 | `ingress.enabled`                   | true           | Enable Ingress            |
 | `ingress.className`                 | nginx          | Ingress class             |
 | `ingress.tls.secretName`            | nexus-hems-tls | TLS certificate secret    |
@@ -150,6 +153,17 @@ helm install nexus-hems ./helm/nexus-hems \
 | `hpa.maxReplicas`                   | 8              | Max scale-out             |
 | `monitoring.serviceMonitor.enabled` | true           | Prometheus ServiceMonitor |
 | `networkPolicy.enabled`             | true           | Restrict pod traffic      |
+
+### WAL and offline sync (Helm)
+
+| Profile | Replicas | `server.walPersistence` | `server.redisUrl` | Durability |
+| ------- | -------- | ----------------------- | ----------------- | ---------- |
+| Dev / mock (defaults) | 1 | `false` (emptyDir) | optional | WAL lost on pod delete |
+| Edge live single writer | 1 | `true` (RWO PVC) | recommended | WAL survives reschedule on same PVC |
+| API HA | >1 | **must stay `false`** | **required** | Per-pod ephemeral WAL only |
+
+Example overlay: `helm/nexus-hems/values-edge-live.yaml`. Local contract tests: `pnpm check:helm-wal`
+(requires Helm 3). See [ADR-031](adr/ADR-031-kubernetes-wal-deployment-contract.md).
 
 ### Security Defaults
 

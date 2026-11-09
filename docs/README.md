@@ -34,7 +34,8 @@ within ~2 sprints) · `LOW` (backlog) · `DOC` (documentation-only).
 | [`../FEATURE_STATUS.md`](../FEATURE_STATUS.md) | Shipped vs partial vs planned feature matrix |
 | [`Release-History.md`](Release-History.md) | Canonical tag timeline + manual-release procedure (ADR-015) |
 | [`../CHANGELOG.md`](../CHANGELOG.md) | Keep-a-Changelog release notes |
-| [`adr/README.md`](adr/README.md) | Architecture Decision Records log (28 ADRs) |
+| [`adr/README.md`](adr/README.md) | Architecture Decision Records log (31 ADRs) |
+| [`audit/invariants/README.md`](audit/invariants/README.md) | Bounded implicit-invariants register (`register.csv` + `pnpm check:invariants`) |
 
 ## Getting Started & Project Meta
 
