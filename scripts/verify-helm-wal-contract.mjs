@@ -9,6 +9,7 @@ import process from 'node:process';
 
 const repoRoot = process.cwd();
 const chartDir = path.join(repoRoot, 'helm/nexus-hems');
+const edgeLiveValues = path.join(chartDir, 'values-edge-live.yaml');
 
 function runHelm(args, { expectFail = false, expectMessage } = {}) {
   const result = spawnSync('helm', ['template', 'nexus-hems-wal', chartDir, ...args], {
@@ -47,6 +48,35 @@ function assertIncludes(output, needle, label) {
   }
 }
 
+/** @param {string} output */
+function assertNoServerHpaWithWalPvc(output) {
+  const docs = output.split(/^---$/m).filter((d) => d.trim().length > 0);
+  for (const doc of docs) {
+    if (!doc.includes('kind: HorizontalPodAutoscaler')) continue;
+    if (doc.includes('-server') && doc.includes('scaleTargetRef')) {
+      console.error('server HPA must not render when server.walPersistence.enabled (#452)');
+      process.exit(1);
+    }
+  }
+}
+
+/** @param {string} output */
+function assertWalDataVolumeIsPvc(output) {
+  const walVolume = /- name: nexus-hems-data\n\s+persistentVolumeClaim:/m;
+  if (!walVolume.test(output)) {
+    console.error('nexus-hems-data must use persistentVolumeClaim when WAL PVC enabled');
+    process.exit(1);
+  }
+  if (/- name: nexus-hems-data\n\s+emptyDir:/m.test(output)) {
+    console.error('nexus-hems-data must not be emptyDir when WAL PVC enabled');
+    process.exit(1);
+  }
+  if (!output.includes('mountPath: /data/nexus-hems')) {
+    console.error('server WAL mountPath missing');
+    process.exit(1);
+  }
+}
+
 const helmVersion = spawnSync('helm', ['version', '--short'], { encoding: 'utf8' });
 if (helmVersion.error || helmVersion.status !== 0) {
   console.error('helm CLI is required for WAL contract verification.');
@@ -80,6 +110,19 @@ runHelm(
   },
 );
 
+runHelm(
+  [
+    '--set',
+    'server.walPersistence.enabled=true',
+    '--set',
+    'server.walPersistence.create=true',
+  ],
+  {
+    expectFail: true,
+    expectMessage: 'requires deployment.strategy.type: Recreate',
+  },
+);
+
 runHelm([
   '--set',
   'replicaCount.server=1',
@@ -87,21 +130,39 @@ runHelm([
   'server.walPersistence.enabled=true',
   '--set',
   'server.walPersistence.create=true',
+  '--set',
+  'deployment.strategy.type=Recreate',
 ]);
-runHelm(['--set', 'server.walPersistence.enabled=true'], {
-  expectFail: true,
-  expectMessage: 'requires server.walPersistence.existingClaim or create: true',
-});
+runHelm(
+  [
+    '--set',
+    'server.walPersistence.enabled=true',
+    '--set',
+    'deployment.strategy.type=Recreate',
+  ],
+  {
+    expectFail: true,
+    expectMessage: 'requires server.walPersistence.existingClaim or create: true',
+  },
+);
 
 const pvcRender = runHelm([
   '--set',
   'server.walPersistence.enabled=true',
   '--set',
   'server.walPersistence.create=true',
+  '--set',
+  'deployment.strategy.type=Recreate',
 ]);
-assertIncludes(pvcRender.stdout, 'persistentVolumeClaim:', 'PVC-backed WAL volume');
 assertIncludes(pvcRender.stdout, 'value: "pvc"', 'pvc WAL storage class env');
 assertIncludes(pvcRender.stdout, 'mountPath: /data/nexus-hems', 'WAL mount path');
+assertWalDataVolumeIsPvc(pvcRender.stdout);
+assertNoServerHpaWithWalPvc(pvcRender.stdout);
+
+const edgeRender = runHelm(['-f', edgeLiveValues]);
+assertWalDataVolumeIsPvc(edgeRender.stdout);
+assertNoServerHpaWithWalPvc(edgeRender.stdout);
+assertIncludes(edgeRender.stdout, 'type: Recreate', 'edge-live Recreate strategy');
 
 const haRender = runHelm([
   '--set',
@@ -110,6 +171,7 @@ const haRender = runHelm([
   'server.redisUrl=redis://redis:6379',
 ]);
 assertIncludes(haRender.stdout, 'name: REDIS_REQUIRED', 'HA redis flag');
+assertIncludes(haRender.stdout, 'value: "true"', 'HA REDIS_REQUIRED value');
 assertIncludes(haRender.stdout, 'emptyDir: {}', 'HA without shared WAL uses per-pod emptyDir');
 
 console.log('Helm WAL contract verification passed.');
