@@ -1,8 +1,8 @@
 {{- if and (gt (int .Values.replicaCount.server) 1) (not .Values.server.redisUrl) }}
 {{- fail "replicaCount.server > 1 requires .Values.server.redisUrl for HA offline sync (REDIS_URL)" }}
 {{- end }}
-{{- if and (gt (int .Values.replicaCount.server) 1) (not .Values.server.walPersistence.enabled) }}
-{{- fail "replicaCount.server > 1 requires server.walPersistence.enabled for durable WAL (#452)" }}
+{{- if and (gt (int .Values.replicaCount.server) 1) .Values.server.walPersistence.enabled }}
+{{- fail "replicaCount.server > 1 cannot share a single ReadWriteOnce WAL PVC — use replicaCount.server: 1 with walPersistence or per-pod emptyDir (#452)" }}
 {{- end }}
 apiVersion: apps/v1
 kind: Deployment

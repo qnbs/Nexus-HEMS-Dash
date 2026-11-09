@@ -1,0 +1,22 @@
+# Example overlay: single writer with durable WAL on Kubernetes (#452).
+# Use: helm upgrade --install nexus-hems ./helm/nexus-hems -f helm/nexus-hems/values-edge-live.yaml
+#
+# Profile guarantees:
+# - One API pod owns the RWO WAL PVC (replicaCount.server: 1).
+# - Offline sync idempotency via Redis (ADR-030) when scaling API later without shared WAL.
+# - ADAPTER_MODE remains mock unless you enable live hardware per Safety-Certification-Notice.
+
+replicaCount:
+  server: 1
+
+server:
+  redisUrl: 'redis://nexus-hems-redis:6379'
+  walPersistence:
+    enabled: true
+    create: true
+    size: 2Gi
+    accessModes:
+      - ReadWriteOnce
+
+env:
+  ADAPTER_MODE: mock

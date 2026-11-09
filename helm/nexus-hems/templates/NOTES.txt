@@ -17,3 +17,12 @@ For offline sync in HA mode, configure Redis:
     --set server.redisUrl=redis://redis:6379
 
 See docs/adr/ADR-030-offline-sync-redis-persistence.md
+
+{{- if .Values.server.walPersistence.enabled }}
+
+WAL persistence: PVC-backed at /data/nexus-hems (walStorageClass=pvc). Single-writer only:
+keep replicaCount.server at 1 with a ReadWriteOnce claim (ADR-031). Not power-loss certified.
+{{- else if eq (int .Values.replicaCount.server) 1 }}
+
+WAL storage: pod-ephemeral emptyDir — survives container restart, not pod rescheduling (#452).
+{{- end }}

@@ -19,6 +19,7 @@ Release notes are maintained here and published via [semantic-release](https://g
 
 ### Fixed
 
+- **helm** — WAL contract: forbid shared RWO PVC when `replicaCount.server > 1`; add `values-edge-live.yaml`, ADR-031, and `verify-helm-wal-contract.mjs` (#452).
 - **api** — WAL stranded merge uses payload SHA-256 receipts instead of unrelated primary line counts; exclude `*.merge-staged.json` from snapshot glob (#454).
 - **api** — WAL: strict snapshot filename grammar (progress sidecars never merged), Zod validation of NDJSON lines, backlog bytes include snapshots/progress, recovery releases WAL lock during Influx retries with serial flush, optional Helm PVC for durable WAL (#447, #452).
 - **adapter** — Physical-command Redis claim verifies both keys after `EVAL`, never returns `proceed` on stale reads, and Lua compensates partial SET failures (#395).

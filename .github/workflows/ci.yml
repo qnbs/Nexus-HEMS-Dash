@@ -78,6 +78,9 @@ jobs:
       - name: Verify trusted registry enforcement (#424)
         run: node scripts/verify-helm-trusted-registries.mjs
 
+      - name: Verify Helm WAL deployment contract (#452)
+        run: node scripts/verify-helm-wal-contract.mjs
+
       - name: Security scan freshness unit tests (#387)
         run: bash .github/scripts/security-scan-freshness.test.sh
 
