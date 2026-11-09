@@ -9,6 +9,10 @@
 replicaCount:
   server: 1
 
+# Server HPA defaults to minReplicas: 2 and would break single-writer WAL + RWO PVC (ADR-031).
+autoscaling:
+  enabled: false
+
 server:
   redisUrl: 'redis://nexus-hems-redis:6379'
   walPersistence:

@@ -156,11 +156,15 @@ helm install nexus-hems ./helm/nexus-hems \
 
 ### WAL and offline sync (Helm)
 
-| Profile | Replicas | `server.walPersistence` | `server.redisUrl` | Durability |
-| ------- | -------- | ----------------------- | ----------------- | ---------- |
+| Profile | Replicas | `server.walPersistence.enabled` | `server.redisUrl` | Durability |
+| ------- | -------- | ------------------------------- | ----------------- | ---------- |
 | Dev / mock (defaults) | 1 | `false` (emptyDir) | optional | WAL lost on pod delete |
 | Edge live single writer | 1 | `true` (RWO PVC) | recommended | WAL survives reschedule on same PVC |
 | API HA | >1 | **must stay `false`** | **required** | Per-pod ephemeral WAL only |
+
+**Server HPA:** `autoscaling.enabled` defaults to `true` with `minReplicas: 2` on **both** frontend and server (`templates/hpa.yaml`). That overrides a static `replicaCount.server: 1` and breaks the single-writer WAL profile. For PVC-backed WAL, set `autoscaling.enabled: false` **or** raise `replicaCount.server` only with `walPersistence.enabled: false` and Redis (HA row above). `values-edge-live.yaml` disables autoscaling.
+
+**Redis + NetworkPolicy:** when `networkPolicy.enabled` is `true`, the default policy allows egress only to same-chart pods, DNS, and HTTPS — not external Redis on port **6379**. Point `server.redisUrl` at an in-cluster Redis reachable under that policy, or add a companion `NetworkPolicy` that permits server → Redis egress.
 
 Example overlay: `helm/nexus-hems/values-edge-live.yaml`. Local contract tests: `pnpm check:helm-wal`
 (requires Helm 3). See [ADR-031](adr/ADR-031-kubernetes-wal-deployment-contract.md).

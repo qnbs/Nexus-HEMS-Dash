@@ -1,6 +1,6 @@
 # Offline Sync Design — Nexus-HEMS-Dash
 
-> **Status:** Active design — **slices 1–4** shipped. **2026-11:** server-wins marks queued settings as terminal `discarded` (not retryable `failed`); reconcile fail-closed when diff apply fails (#448). Multi-tab replay gated by `Navigator Lock` + per-row CAS for stale `syncing` reclaim. HA API uses optional Redis (`REDIS_URL`, ADR-030).
+> **Status:** Active design — **slices 1–4** shipped. **2026-11:** server-wins marks queued settings as terminal `discarded` (not retryable `failed`); reconcile fail-closed when diff apply fails (#448). Multi-tab replay uses `navigator.locks` when available (`withOfflineSyncLock`); otherwise replay runs unlocked and duplicate selection is only partially mitigated by per-row CAS on stale `syncing` reclaim (#448). HA API uses optional Redis (`REDIS_URL`, ADR-030).
 > **Created:** 2026-04-25
 > **Owner:** @qnbs
 

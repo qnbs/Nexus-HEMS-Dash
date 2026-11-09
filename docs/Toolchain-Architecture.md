@@ -91,8 +91,10 @@ All root scripts delegate to Turborepo; Turbo fan-outs across `apps/*` and `pack
 
 **Renovate** (`renovate.yml`) owns npm/docker/cargo version bumps; **Dependabot** owns GitHub
 Actions only (`DEVOPS.md`, ADR-027). Do not batch-upgrade the full workspace locally on
-RAM-constrained machines — let CI validate Renovate PRs. Security patches at `high`+ block merges
-via `ci.yml` / `security-full.yml` audit gates.
+RAM-constrained machines — let CI validate Renovate PRs. Pull-request audit gates use
+`pnpm audit --audit-level=high --prod` (production dependencies only). Dev-only advisories
+do not block merges there; the scheduled `security-full.yml` job runs the broader dev-dep
+audit on `main`.
 
 ---
 
