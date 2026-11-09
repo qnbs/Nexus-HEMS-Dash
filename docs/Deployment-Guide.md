@@ -156,6 +156,8 @@ helm install nexus-hems ./helm/nexus-hems \
 
 ### WAL and offline sync (Helm)
 
+> **Honesty (#452, governance v11):** On protected `main` at `4d0f435`, the edge-live overlay alone did **not** guarantee single-writer WAL until chart guards land (server HPA + RollingUpdate overlap). Chart enforcement is in PR branch `cursor/helm-wal-hpa-enforce-452-79f6` (`Refs #452`). Do not describe PVC-backed edge-live as production-durable until that code is on `main` and acceptance is recorded.
+
 | Profile | Replicas | `server.walPersistence.enabled` | `server.redisUrl` | Durability |
 | ------- | -------- | ------------------------------- | ----------------- | ---------- |
 | Dev / mock (defaults) | 1 | `false` (emptyDir) | optional | WAL lost on pod delete |
