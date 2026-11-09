@@ -28,7 +28,13 @@ vi.mock('../lib/sync-reconcile', () => ({
   reconcileServerSettings: vi.fn().mockResolvedValue(77),
 }));
 
-import { getSyncState, updateSyncState } from '../lib/db';
+import {
+  getPendingActions,
+  getSyncState,
+  nexusDb,
+  queueOfflineAction,
+  updateSyncState,
+} from '../lib/db';
 import {
   dispatchSyncConflictEvent,
   getConflictedSyncStates,
@@ -43,6 +49,7 @@ describe('sync-conflict', () => {
     vi.stubGlobal('fetch', vi.fn());
     const { nexusDb } = await import('../lib/db');
     await nexusDb.syncState.clear();
+    await nexusDb.offlineActions.clear();
   });
 
   afterEach(() => {
@@ -105,14 +112,31 @@ describe('sync-conflict', () => {
     expect(backgroundSyncService.syncPendingActions).toHaveBeenCalled();
   });
 
-  it('resolveSyncConflict server-wins keeps conflict when server version is unreachable', async () => {
+  it('resolveSyncConflict server-wins keeps conflict when server settings cannot be applied', async () => {
     const { reconcileServerSettings } = await import('../lib/sync-reconcile');
     vi.mocked(reconcileServerSettings).mockResolvedValueOnce(null);
     vi.mocked(fetch).mockResolvedValueOnce(new Response('', { status: 503 }));
 
     await updateSyncState('settings', '10', true);
     await expect(resolveSyncConflict('settings', 'server')).rejects.toThrow(
-      'Cannot verify server sync version',
+      'Cannot apply server settings',
+    );
+
+    const state = await getSyncState('settings');
+    expect(state.hasConflict).toBe(true);
+    expect(state.serverVersion).toBe('10');
+  });
+
+  it('resolveSyncConflict server-wins does not clear conflict when diff fails but version endpoint responds', async () => {
+    const { reconcileServerSettings } = await import('../lib/sync-reconcile');
+    vi.mocked(reconcileServerSettings).mockResolvedValueOnce(null);
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response(JSON.stringify({ version: 99 }), { status: 200 }),
+    );
+
+    await updateSyncState('settings', '10', true);
+    await expect(resolveSyncConflict('settings', 'server')).rejects.toThrow(
+      'Cannot apply server settings',
     );
 
     const state = await getSyncState('settings');
@@ -149,6 +173,37 @@ describe('sync-conflict', () => {
     expect(state.serverVersion).toBe('77');
     expect(backgroundSyncService.syncPendingActions).not.toHaveBeenCalled();
     expect(reconcileServerSettings).toHaveBeenCalledWith(10);
+  });
+
+  it.each([
+    0, 1, 2,
+  ] as const)('resolveSyncConflict server-wins marks settings action discarded (retries=%i), not replayable', async (retries) => {
+    vi.mocked(fetch).mockResolvedValue(
+      new Response(JSON.stringify({ version: 77 }), { status: 200 }),
+    );
+    await updateSyncState('settings', '10', true);
+
+    const actionId = await queueOfflineAction('settings', { theme: 'ocean-dark' });
+    await nexusDb.offlineActions.update(actionId, { status: 'failed', retries });
+
+    const { backgroundSyncService } = await import('../lib/background-sync');
+    vi.mocked(backgroundSyncService.syncPendingActions).mockClear();
+    const fetchMock = vi.mocked(fetch);
+    fetchMock.mockClear();
+
+    await resolveSyncConflict('settings', 'server');
+
+    const row = await nexusDb.offlineActions.get(actionId);
+    expect(row?.status).toBe('discarded');
+    expect(await getPendingActions()).toHaveLength(0);
+    expect(backgroundSyncService.syncPendingActions).not.toHaveBeenCalled();
+    expect(
+      fetchMock.mock.calls.some(
+        ([url, init]) =>
+          String(url).includes('/api/settings') &&
+          (init as RequestInit | undefined)?.method === 'PUT',
+      ),
+    ).toBe(false);
   });
 
   it('dispatchSyncConflictEvent emits a custom event', () => {

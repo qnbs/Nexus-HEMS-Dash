@@ -1,12 +1,13 @@
 import {
+  discardOfflineAction,
   getPendingActions,
   getSyncState,
   nexusDb,
   type SyncState,
-  updateActionStatus,
   updateSyncState,
 } from './db';
 import { fetchServerSyncVersion, recordServerSyncVersion } from './sync-client';
+import { withOfflineSyncLock } from './sync-lock';
 import { reconcileServerSettings } from './sync-reconcile';
 
 /** Dispatched when a new sync conflict is persisted in Dexie `syncState`. */
@@ -39,7 +40,7 @@ async function discardPendingSettingsActions(): Promise<void> {
   const pending = await getPendingActions();
   for (const action of pending) {
     if (action.type === 'settings' && action.id !== undefined) {
-      await updateActionStatus(action.id, 'failed', 'Discarded (server-wins conflict resolution)');
+      await discardOfflineAction(action.id, 'Discarded (server-wins conflict resolution)');
     }
   }
 }
@@ -57,17 +58,13 @@ export async function resolveSyncConflict(
     const since = Number.parseInt(state.serverVersion, 10);
     const reconciledVersion = Number.isNaN(since) ? null : await reconcileServerSettings(since);
 
-    if (reconciledVersion !== null) {
-      await recordServerSyncVersion(reconciledVersion, domain, false);
-    } else {
-      const remote = await fetchServerSyncVersion();
-      if (remote !== null) {
-        await recordServerSyncVersion(remote, domain, false);
-      } else {
-        throw new Error('Cannot verify server sync version — conflict remains open');
-      }
+    if (reconciledVersion === null) {
+      throw new Error('Cannot apply server settings — conflict remains open');
     }
-    await discardPendingSettingsActions();
+    await withOfflineSyncLock(async () => {
+      await discardPendingSettingsActions();
+      await recordServerSyncVersion(reconciledVersion, domain, false);
+    });
     return;
   }
 

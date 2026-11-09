@@ -114,6 +114,40 @@ describe('Database operational helpers', () => {
     expect(row?.error).toBeUndefined();
   });
 
+  it('does not requeue syncing rows that completed before stale reclaim (#448)', async () => {
+    const id = await queueOfflineAction('settings', { theme: 'ocean-dark' });
+    await updateActionStatus(id, 'syncing');
+    await nexusDb.offlineActions.update(id, {
+      syncStartedAt: Date.now() - OFFLINE_SYNCING_STALE_MS - 1000,
+    });
+    await updateActionStatus(id, 'completed');
+
+    const requeued = await requeueStaleSyncingOfflineActions();
+    expect(requeued).toBe(0);
+
+    const row = await nexusDb.offlineActions.get(id);
+    expect(row?.status).toBe('completed');
+  });
+
+  it('discardOfflineAction does not overwrite terminal completed rows (#448)', async () => {
+    const id = await queueOfflineAction('settings', { theme: 'ocean-dark' });
+    await updateActionStatus(id, 'completed');
+    const { discardOfflineAction } = await import('../lib/db');
+    await discardOfflineAction(id, 'should-not-apply');
+    const row = await nexusDb.offlineActions.get(id);
+    expect(row?.status).toBe('completed');
+  });
+
+  it('purges discarded offline actions older than retention window', async () => {
+    const id = await queueOfflineAction('settings', { theme: 'ocean-dark' });
+    await nexusDb.offlineActions.update(id, {
+      status: 'discarded',
+      timestamp: Date.now() - 8 * 24 * 60 * 60 * 1000,
+    });
+    await cleanupCompletedActions();
+    expect(await nexusDb.offlineActions.count()).toBe(0);
+  });
+
   it('creates and updates sync state records', async () => {
     const initial = await getSyncState('settings');
     expect(initial.localRevision).toBe(0);
