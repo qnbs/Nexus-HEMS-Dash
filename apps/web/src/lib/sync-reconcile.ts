@@ -119,15 +119,29 @@ export async function applyServerSyncDiff(changes: SyncDiffEntry[]): Promise<voi
  * Pull and apply server settings changes since the client's last known version.
  * Returns the latest server version when reconciliation succeeded.
  */
+const FULL_RESYNC_ALIGN_ATTEMPTS = 3;
+
 export async function reconcileServerSettings(since: number): Promise<number | null> {
-  const diff = await fetchSyncDiff(since);
+  let diff = await fetchSyncDiff(since);
   if (!diff) return null;
 
   if (diff.fullResyncRequired) {
-    const snapshot = await fetchServerSettingsSnapshot();
-    if (!snapshot) return null;
-    await applyFullServerSettingsResync(snapshot.settings);
-    return snapshot.version;
+    for (let attempt = 0; attempt < FULL_RESYNC_ALIGN_ATTEMPTS; attempt++) {
+      const snapshot = await fetchServerSettingsSnapshot();
+      if (!snapshot) return null;
+      if (snapshot.version === diff.version) {
+        await applyFullServerSettingsResync(snapshot.settings);
+        return snapshot.version;
+      }
+      const refreshed = await fetchSyncDiff(since);
+      if (!refreshed) return null;
+      diff = refreshed;
+      if (!diff.fullResyncRequired) {
+        await applyServerSyncDiff(diff.changes);
+        return diff.version;
+      }
+    }
+    return null;
   }
 
   await applyServerSyncDiff(diff.changes);
