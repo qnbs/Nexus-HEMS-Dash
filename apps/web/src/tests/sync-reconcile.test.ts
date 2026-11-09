@@ -65,6 +65,94 @@ describe('sync-reconcile', () => {
     expect(useAppStore.getState().settings.victronIp).toBe('10.0.0.42');
   });
 
+  it('reconcileServerSettings performs full snapshot when fullResyncRequired is set', async () => {
+    vi.mocked(fetch)
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ version: 200, changes: [], fullResyncRequired: true }), {
+          status: 200,
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            version: 200,
+            settings: { compactMode: true, animations: false },
+          }),
+          { status: 200 },
+        ),
+      );
+
+    const { reconcileServerSettings } = await import('../lib/sync-reconcile');
+    const { useAppStore, defaultSettings } = await import('../store');
+    useAppStore.setState({ settings: { ...defaultSettings } });
+
+    await expect(reconcileServerSettings(5)).resolves.toBe(200);
+    expect(useAppStore.getState().settings.compactMode).toBe(true);
+    expect(useAppStore.getState().settings.animations).toBe(false);
+  });
+
+  it('full resync resets sync keys missing from sparse server snapshot to defaults', async () => {
+    const { applyFullServerSettingsResync } = await import('../lib/sync-reconcile');
+    const { useAppStore, defaultSettings } = await import('../store');
+    useAppStore.setState({
+      settings: { ...defaultSettings, compactMode: true, animations: true },
+    });
+
+    await applyFullServerSettingsResync({ animations: false });
+
+    expect(useAppStore.getState().settings.animations).toBe(false);
+    expect(useAppStore.getState().settings.compactMode).toBe(defaultSettings.compactMode);
+  });
+
+  it('full resync fails closed when diff and snapshot versions diverge across retries', async () => {
+    vi.mocked(fetch)
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ version: 200, changes: [], fullResyncRequired: true }), {
+          status: 200,
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            version: 201,
+            settings: { compactMode: true },
+          }),
+          { status: 200 },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ version: 200, changes: [], fullResyncRequired: true }), {
+          status: 200,
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            version: 201,
+            settings: { compactMode: true },
+          }),
+          { status: 200 },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ version: 200, changes: [], fullResyncRequired: true }), {
+          status: 200,
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            version: 201,
+            settings: { compactMode: true },
+          }),
+          { status: 200 },
+        ),
+      );
+
+    const { reconcileServerSettings } = await import('../lib/sync-reconcile');
+    await expect(reconcileServerSettings(5)).resolves.toBeNull();
+  });
+
   it('reconcileServerSettings fetches diff and applies changes', async () => {
     vi.mocked(fetch).mockResolvedValueOnce(
       new Response(

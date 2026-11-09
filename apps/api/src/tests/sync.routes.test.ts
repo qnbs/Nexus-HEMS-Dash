@@ -66,6 +66,32 @@ describe('sync routes', () => {
     expect(typeof res.body.version).toBe('number');
   });
 
+  it('GET /api/settings returns snapshot and version for authenticated clients', async () => {
+    await applySettingsPatch({ animations: true, compactMode: false });
+
+    const bearer = await signToken({ sub: 'reader', scope: 'read' }, '1h');
+    const res = await buildApp()
+      .get('/api/settings')
+      .set('Authorization', `Bearer ${bearer}`)
+      .expect(200);
+
+    expect(typeof res.body.version).toBe('number');
+    expect(res.body.settings).toMatchObject({ animations: true, compactMode: false });
+  });
+
+  it('GET /api/sync/diff returns fullResyncRequired when history is empty but version is ahead', async () => {
+    const bearer = await signToken({ sub: 'reader', scope: 'read' }, '1h');
+    const res = await buildApp()
+      .get('/api/sync/diff')
+      .query({ since: 10 })
+      .set('Authorization', `Bearer ${bearer}`)
+      .expect(200);
+
+    expect(res.body.version).toBe(42);
+    expect(res.body.changes).toEqual([]);
+    expect(res.body.fullResyncRequired).toBe(true);
+  });
+
   it('GET /api/sync/diff returns changes since the given version', async () => {
     await applySettingsPatch({ animations: false });
     const since = 42;
@@ -120,6 +146,28 @@ describe('sync routes', () => {
       .set('Authorization', `Bearer ${bearer}`)
       .send({ updatedAt: 1 })
       .expect(400);
+  });
+
+  it('GET /api/settings returns mutex-aligned version and settings snapshot', async () => {
+    const patchVersion = (await applySettingsPatch({ theme: 'solar-light' })).version;
+    const bearer = await signToken({ sub: 'reader', scope: 'read' }, '1h');
+    const agent = buildApp();
+
+    const settings = await agent
+      .get('/api/settings')
+      .set('Authorization', `Bearer ${bearer}`)
+      .expect(200);
+
+    expect(settings.body.version).toBe(patchVersion);
+    expect(settings.body.settings.theme).toBe('solar-light');
+
+    const diff = await agent
+      .get('/api/sync/diff')
+      .query({ since: patchVersion - 1 })
+      .set('Authorization', `Bearer ${bearer}`)
+      .expect(200);
+
+    expect(diff.body.version).toBe(patchVersion);
   });
 
   it('GET /api/sync/diff rejects invalid since values', async () => {

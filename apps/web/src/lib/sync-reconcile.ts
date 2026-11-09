@@ -1,4 +1,5 @@
-import { useAppStore } from '../store';
+import { settingsSyncValueSchemas } from '@nexus-hems/shared-types';
+import { defaultSettings, useAppStore } from '../store';
 import type { StoredSettings } from '../types';
 import { getApiBaseUrl, getAuthHeader } from './auth-token';
 import { persistSettings } from './db';
@@ -14,6 +15,12 @@ export interface SyncDiffEntry {
 export interface SyncDiffResponse {
   version: number;
   changes: SyncDiffEntry[];
+  fullResyncRequired?: boolean;
+}
+
+export interface ServerSettingsSnapshotResponse {
+  version: number;
+  settings: Record<string, unknown>;
 }
 
 /**
@@ -54,6 +61,45 @@ function isStoredSettingsKey(key: string): key is keyof StoredSettings {
  * Apply server diff entries to the local Zustand store and IndexedDB settings row.
  * Used on server-wins conflict resolution — all returned keys overwrite local state.
  */
+/** Full resync: every sync-eligible key — server value or install default when sparse. */
+export async function applyFullServerSettingsResync(
+  settings: Record<string, unknown>,
+): Promise<void> {
+  const patch: Partial<StoredSettings> = {};
+  for (const key of Object.keys(settingsSyncValueSchemas)) {
+    if (!isStoredSettingsKey(key)) continue;
+    const serverVal = settings[key];
+    const storeKey = key as keyof StoredSettings;
+    (patch as Record<string, unknown>)[key] =
+      serverVal !== undefined ? serverVal : defaultSettings[storeKey];
+  }
+  useAppStore.getState().updateSettings(patch);
+  await persistSettings(useAppStore.getState().settings);
+}
+
+export async function fetchServerSettingsSnapshot(
+  signal?: AbortSignal,
+): Promise<ServerSettingsSnapshotResponse | null> {
+  const base = getApiBaseUrl();
+  const headers = getAuthHeader();
+  if (!base || !headers) return null;
+
+  try {
+    const res = await fetch(`${base}/api/settings`, {
+      signal: signal ?? null,
+      headers: { Accept: 'application/json', ...headers },
+    });
+    if (!res.ok) return null;
+    const data = (await res.json()) as ServerSettingsSnapshotResponse;
+    if (typeof data.version !== 'number' || !data.settings || typeof data.settings !== 'object') {
+      return null;
+    }
+    return data;
+  } catch {
+    return null;
+  }
+}
+
 export async function applyServerSyncDiff(changes: SyncDiffEntry[]): Promise<void> {
   if (changes.length === 0) return;
 
@@ -73,9 +119,31 @@ export async function applyServerSyncDiff(changes: SyncDiffEntry[]): Promise<voi
  * Pull and apply server settings changes since the client's last known version.
  * Returns the latest server version when reconciliation succeeded.
  */
+const FULL_RESYNC_ALIGN_ATTEMPTS = 3;
+
 export async function reconcileServerSettings(since: number): Promise<number | null> {
-  const diff = await fetchSyncDiff(since);
+  let diff = await fetchSyncDiff(since);
   if (!diff) return null;
+
+  if (diff.fullResyncRequired) {
+    for (let attempt = 0; attempt < FULL_RESYNC_ALIGN_ATTEMPTS; attempt++) {
+      const snapshot = await fetchServerSettingsSnapshot();
+      if (!snapshot) return null;
+      if (snapshot.version === diff.version) {
+        await applyFullServerSettingsResync(snapshot.settings);
+        return snapshot.version;
+      }
+      const refreshed = await fetchSyncDiff(since);
+      if (!refreshed) return null;
+      diff = refreshed;
+      if (!diff.fullResyncRequired) {
+        await applyServerSyncDiff(diff.changes);
+        return diff.version;
+      }
+    }
+    return null;
+  }
+
   await applyServerSyncDiff(diff.changes);
   return diff.version;
 }

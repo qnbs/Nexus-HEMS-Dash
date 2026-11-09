@@ -6,6 +6,7 @@ import { validateSettingsSyncPatch } from '@nexus-hems/shared-types';
 import {
   applySettingsBatch,
   getServerSettingsSnapshot,
+  getServerSettingsSyncSnapshot,
   resetSyncPersistenceForTests,
 } from '../services/sync-persistence.js';
 import { SettingsPatchError } from './settings-patch-error.js';
@@ -14,6 +15,14 @@ import { classifySettingsKey } from './settings-sync-keys.js';
 /** Snapshot of all known server settings keys. */
 export async function getServerSettings(): Promise<Record<string, unknown>> {
   return getServerSettingsSnapshot();
+}
+
+/** Version + settings snapshot for client full-resync (mutex-aligned with batches). */
+export async function getServerSettingsForClientSync(): Promise<{
+  version: number;
+  settings: Record<string, unknown>;
+}> {
+  return getServerSettingsSyncSnapshot();
 }
 
 /**
