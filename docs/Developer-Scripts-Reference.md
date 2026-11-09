@@ -30,6 +30,9 @@ root unless noted. Most delegate to **Turborepo**, which fans out across
 | `pnpm lint:fix` | `turbo lint:fix` | Biome `--write` + ESLint `--fix`. |
 | `pnpm format` / `pnpm format:check` | Biome | Format write / read-only check (`biome format apps/ packages/`). |
 | `pnpm check:adapters` | `sync-adapter-counts.mjs` + `git diff --exit-code README.md` | Fail if the README adapter count drifts from the code (F-04). `pnpm sync:adapters` regenerates it. |
+| `pnpm check:invariants` | `check-invariants-register.mjs` | Validate `docs/audit/invariants/register.csv` schema + evidence paths (#449). |
+| `pnpm check:helm-trusted` | `verify-helm-trusted-registries.mjs` | Helm chart trusted-registry renders (needs `helm` 3.x; CI gate). |
+| `pnpm check:helm-wal` | `verify-helm-wal-contract.mjs` | Helm WAL deployment contract (#452 / ADR-031; needs `helm` 3.x). |
 | `pnpm verify:basis` | `turbo type-check lint test:run` | Full local gate (heavy — prefer CI). |
 
 ## Test

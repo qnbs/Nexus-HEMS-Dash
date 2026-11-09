@@ -1,6 +1,6 @@
 # Offline Sync Design — Nexus-HEMS-Dash
 
-> **Status:** Active design — **slice 1–3** shipped (idempotency, sync version, JWT/TTL guards, conflict UI + deferred replay); **slice 4** (`GET /api/sync/diff`, `PUT /api/settings`, server-wins reconciliation) shipped.
+> **Status:** Active design — **slices 1–4** shipped. **2026-11:** server-wins marks queued settings as terminal `discarded` (not retryable `failed`); reconcile fail-closed when diff apply fails (#448). Multi-tab replay uses `navigator.locks` when available (`withOfflineSyncLock`); otherwise replay runs unlocked and duplicate selection is only partially mitigated by per-row CAS on stale `syncing` reclaim (#448). HA API uses optional Redis (`REDIS_URL`, ADR-030).
 > **Created:** 2026-04-25
 > **Owner:** @qnbs
 
@@ -23,18 +23,25 @@ and replay safety mechanisms for Nexus-HEMS-Dash.
 - `HIGH-05` fix: Auth header on every fetch
 - Online/offline event listeners
 
-**Known Gaps (v1.1.x):**
+**Shipped capabilities (v1.12.x):**
 
-| Gap | Impact | Status |
-|-----|--------|--------|
-| No `lastSyncVersion` tracking | Lost-update bug if server state changes while client offline | Slice 2+ (`syncState` + `/api/sync/version`) |
-| No conflict detection | Optimistic updates may overwrite newer server state | Slice 3 (banner + resolution UI) |
-| Failed actions never auto-recovered | Manual UI intervention required | Open |
-| No idempotency keys on commands | Duplicate execution on network retry | ✅ Slice 1 |
-| No command TTL on hardware replay | Stale offline commands after reconnect | ✅ Slice 2 |
-| No JWT liveness check before replay | Expired sessions may attempt sync | ✅ Slice 2 |
-| No server sync version endpoint | Client cannot detect server-side drift | ✅ Slice 2 |
-| No server-wins reconciliation for config changes | Settings divergence after reconnect | ✅ Slice 3–4 |
+| Capability | Status |
+|------------|--------|
+| Idempotency keys on retried commands | ✅ Slice 1 |
+| Command TTL + JWT gate before hardware replay | ✅ Slice 2 |
+| `syncState` + `/api/sync/version` drift detection | ✅ Slice 2 |
+| Conflict UI + deferred settings replay while conflicted | ✅ Slice 3 |
+| `GET /api/sync/diff` + server-wins settings reconcile | ✅ Slice 4 |
+| Terminal `discarded` offline status on server-wins (#448) | ✅ v1.12.2+ unreleased on `main` |
+| Optional Redis-backed sync version (ADR-030) | ✅ API stores |
+
+**Open follow-ups:**
+
+| Gap | Impact | Tracking |
+|-----|--------|----------|
+| Hardware commands with unknown server outcome | Unsafe blind replay | #448 / ledger hardening |
+| Cross-tab generation lease beyond Navigator Lock | Rare duplicate replay | #448 backlog |
+| Settings conflict UX uses server-wins for settings queue | User “local wins” still available for replay path | by design |
 
 ---
 
@@ -45,7 +52,7 @@ and replay safety mechanisms for Nexus-HEMS-Dash.
 | Data Type | Strategy | Rationale |
 |-----------|----------|-----------|
 | Hardware commands (EV, battery, heat pump) | Server-wins + idempotency key | Safety-critical; server validates physical constraints |
-| User settings/preferences | Last-write-wins (client timestamp) | Non-safety, user intent should prevail |
+| User settings/preferences | **Server-wins** on conflict reconcile (Slice 4) | `reconcileServerSettings()` applies `/api/sync/diff` without per-key timestamp comparison; queued settings conflicts mark local rows `discarded` (#448). Optional “keep local” replay remains a separate UX path (see open follow-ups). |
 | Tariff cache | Always discard local on reconnect | Server is source of truth for pricing |
 | Energy snapshots (read-only) | Append-only; no conflict possible | Historical data, never mutated |
 
@@ -135,16 +142,18 @@ async detectConflicts(): Promise<boolean> {
 ```
 Client reconnects → fetch serverVersion
 ├─ serverVersion > localSyncedVersion?
-│   ├─ YES → Conflict path:
-│   │   ├─ Fetch diff from /api/sync/diff?since=<localSyncedVersion>
-│   │   ├─ For each changed key in diff:
-│   │   │   ├─ userPreferences → compare client.updatedAt vs server.updatedAt
-│   │   │   │   ├─ client newer → push to server (Last-Write-Wins)
-│   │   │   │   └─ server newer → overwrite local (Server-Wins)
-│   │   │   └─ deviceSettings → Server-Wins always
-│   │   └─ Update localSyncVersion = serverVersion, increment conflictsDetected
-│   └─ NO → No conflict, proceed with action replay
-├─ Replay pending actions (with idempotency keys)
+│   ├─ YES → markSyncConflict (on `main`: can bump `syncState.serverVersion` to remote head and miss intervening diff — **#448**; **#467** preserves last-applied baseline for `since=`)
+│   │   └─ show SyncConflictDialog (no auto-reconcile)
+│   │   ├─ user chooses server-wins (resolveSyncConflict → 'server')
+│   │   │   ├─ reconcileServerSettings(since=baseline): GET /api/sync/diff → full snapshot if `fullResyncRequired` (#467) else incremental apply
+│   │   │   │   ├─ apply OK → discard queued settings (`discarded` #448), record server version, clear flag
+│   │   │   │   └─ apply FAIL → throw; conflict remains open (no replay, no version bump)
+│   │   └─ user chooses local-wins (resolveSyncConflict → 'local')
+│   │       ├─ replay pending actions (force) → verify GET /api/sync/version
+│   │       │   ├─ both OK → clear conflict flag
+│   │       │   └─ replay or version FAIL → conflict remains open
+│   └─ NO → No conflict
+├─ Background replay of pending actions (idempotency keys; withOfflineSyncLock when available)
 └─ Update clientSyncedAt
 ```
 
@@ -181,6 +190,8 @@ private isTokenValid(): boolean {
 ---
 
 ## 5. User-Facing Conflict UI
+
+For **settings** queue conflicts, **“Server-Version übernehmen”** runs server-wins reconcile (`reconcileServerSettings()`): returned server keys overwrite local state without per-key timestamp comparison (see §2). Timestamps in the modal are informational for hardware/other domains only.
 
 When conflicts are detected and cannot be auto-resolved:
 

@@ -136,6 +136,9 @@ All commands run from the repository root unless noted.
 | `pnpm format` | Turbo format --write. |
 | `pnpm format:check` | Biome format read-only over `apps/` and `packages/`. |
 | `pnpm verify:basis` | `turbo type-check lint test:run` (full local gate). |
+| `pnpm check:adapters` | README adapter-count drift guard (F-04). |
+| `pnpm check:invariants` | `register.csv` schema + evidence paths (#449). |
+| `pnpm check:helm-trusted` / `pnpm check:helm-wal` | Helm render contracts (#424, #452; needs `helm` 3.x). |
 
 ### Testing
 
