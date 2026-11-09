@@ -32,6 +32,6 @@ Wave A + post-merge safety work on `main` (Europe/Berlin dates).
 
 **Open tracker items:** #387/#391 schedule delivery (SBOM cron verified 2026-11-05 `41959107523` — monitor recurrence); #401 release (explicit approval only); #423–#425 acceptance ledger; #421 UI Tool status + alert inventory.
 
-**2026-11-09 agent curation (Europe/Berlin):** Maintained issue↔PR map in [github-issues-curation.md](github-issues-curation.md). In flight: #448 → PR #467 (baseline + `fullResyncRequired`); #452 → PR #466; docs truth-sync PR #465 trimmed to docs-only (`37e8e66` reverts code/helm overlap). **No merges** without v11 maintainer SHA approval.
+**2026-11-09 agent curation (Europe/Berlin):** Maintained issue↔PR maps in [github-issues-curation.md](github-issues-curation.md) and [linear-issues-curation.md](linear-issues-curation.md) (Linear project `P-QNB-13`). In flight: #448 → PR #467 @ `e929951`; #452 → PR #466 @ `dd90325`; docs PR #465 docs-only. **No merges** without v11 maintainer SHA approval.
 
 **Runner queue (#411 issue):** intermittent queue delays observed; `deploy-recovery.yml` uses `gh run list --repo "$GITHUB_REPOSITORY"` (#413). Grype **`database does not exist`** flake tracked in [grype-db-resilience-411.md](grype-db-resilience-411.md).

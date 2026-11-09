@@ -79,7 +79,7 @@ within ~2 sprints) · `LOW` (backlog) · `DOC` (documentation-only).
 - **Dependabot status:** [`Dependabot-Inventory-2026-10-03.md`](Dependabot-Inventory-2026-10-03.md)
 - **Post-v1.12.1 follow-up ledger:** [`audit/followup-evidence-ledger-2026-10-03.md`](audit/followup-evidence-ledger-2026-10-03.md)
 - **Campaign closeout:** [`Campaign-Handoff-2026-10.md`](Campaign-Handoff-2026-10.md) (v1.12.x line, current **v1.12.1**, Oct 2026); [`Campaign-Handoff-2026-09.md`](Campaign-Handoff-2026-09.md) (post-v1.11.0 freeze, Sep 2026)
-- [`runbooks/`](runbooks/) — per-platform integration runbooks
+- [`runbooks/`](runbooks/) — per-platform integration runbooks (agent maps: [GitHub](runbooks/github-issues-curation.md) · [Linear](runbooks/linear-issues-curation.md))
 
 ## Accessibility & UX
 
