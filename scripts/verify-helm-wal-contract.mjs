@@ -178,6 +178,10 @@ const edgeRender = runHelm(['-f', edgeLiveValues]);
 assertWalDataVolumeIsPvc(edgeRender.stdout);
 assertNoServerHpaWithWalPvc(edgeRender.stdout);
 assertIncludes(edgeRender.stdout, 'type: Recreate', 'edge-live Recreate strategy');
+if (/type: Recreate[\s\S]{0,80}rollingUpdate:/m.test(edgeRender.stdout)) {
+  console.error('Recreate rollout must not include rollingUpdate (invalid Deployment strategy)');
+  process.exit(1);
+}
 
 const haRender = runHelm([
   '--set',
