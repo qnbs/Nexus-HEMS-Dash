@@ -1,7 +1,7 @@
 # Toolchain Architecture — Nexus-HEMS-Dash
 
-**Last updated:** 2026-07-08
-**Status:** Active (post-Biome-migration, post-monorepo-migration)
+**Last updated:** 2026-11-09 (Europe/Berlin)
+**Status:** Active — Biome-first monorepo; Node **24 LTS** (`packageManager: pnpm@10.34.4`, enforced via Corepack)
 
 ---
 
@@ -81,7 +81,20 @@ All root scripts delegate to Turborepo; Turbo fan-outs across `apps/*` and `pack
 | `pnpm format:check` | `biome format apps/ packages/`                                       | Biome format check (read-only)   |
 | `pnpm type-check`   | `turbo type-check` → `tsc --noEmit` in each workspace                | TypeScript type checking across all 3 packages |
 | `pnpm verify:basis` | `turbo type-check lint test:run`                                      | Full local verification          |
+| `pnpm check:adapters` | `sync-adapter-counts.mjs` + README drift guard                       | F-04 adapter count (blocking CI) |
+| `pnpm check:invariants` | `check-invariants-register.mjs`                                    | Invariant CSV schema + evidence paths (#449) |
+| `pnpm check:helm-trusted` | `verify-helm-trusted-registries.mjs` (needs `helm` CLI)          | Trusted image registry negative tests (#424) |
+| `pnpm check:helm-wal` | `verify-helm-wal-contract.mjs` (needs `helm` CLI)                  | WAL Helm contract (#452 / ADR-031) |
 | `pnpm bench`        | `./scripts/bench-tooling.sh`                                         | Toolchain wall-clock + RSS bench |
+
+### Dependency upgrades
+
+**Renovate** (`renovate.yml`) owns npm/docker/cargo version bumps; **Dependabot** owns GitHub
+Actions only (`DEVOPS.md`, ADR-027). Do not batch-upgrade the full workspace locally on
+RAM-constrained machines — let CI validate Renovate PRs. Pull-request audit gates use
+`pnpm audit --audit-level=high --prod` (production dependencies only). Dev-only advisories
+do not block merges there; the scheduled `security-full.yml` job runs the broader dev-dep
+audit on `main`.
 
 ---
 
@@ -154,7 +167,8 @@ Two complementary CI pipelines in `.github/workflows/`:
 lint-typecheck
   ├─ pnpm audit --audit-level=high
   ├─ turbo lint       (biome check + slim eslint across all workspaces)
-  └─ turbo type-check (tsc --noEmit across apps/api + apps/web + packages/shared-types)
+  ├─ turbo type-check (tsc --noEmit across apps/api + apps/web + packages/shared-types)
+  └─ helm-chart job   (helm lint/template + verify-helm-trusted-registries + verify-helm-wal-contract)
 
 unit-tests (needs: lint-typecheck)
   └─ turbo test:coverage → vitest run --coverage (apps/web)
