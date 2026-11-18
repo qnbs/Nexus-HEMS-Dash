@@ -179,6 +179,23 @@ export async function getServerSettingsSnapshot(): Promise<Record<string, unknow
   return Object.fromEntries(memorySettings);
 }
 
+/**
+ * True when an empty settings snapshot still reflects durable server state (not post-restart amnesia).
+ */
+export async function isSettingsSnapshotComplete(
+  settings: Record<string, unknown>,
+): Promise<boolean> {
+  if (Object.keys(settings).length > 0) return true;
+  const redis = await redisClient();
+  if (redis) {
+    const hash = await redis.hgetall(SYNC_SETTINGS_HASH_KEY);
+    if (Object.keys(hash).length > 0) return true;
+    const legacy = await redis.get(SYNC_SETTINGS_KEY);
+    return typeof legacy === 'string' && legacy.length > 0;
+  }
+  return false;
+}
+
 async function persistSettingsSnapshot(snapshot: Record<string, unknown>): Promise<void> {
   const redis = await redisClient();
   if (redis) {
@@ -325,6 +342,24 @@ export async function applySettingsBatch(entries: SettingsBatchEntry[]): Promise
   return withSettingsBatchMutex(() => applySettingsBatchInner(entries));
 }
 
+/**
+ * Settings + version read under the same mutex as writes (avoids version/settings skew).
+ */
+export async function getServerSettingsSyncSnapshot(): Promise<{
+  version: number;
+  settings: Record<string, unknown>;
+  snapshotComplete: boolean;
+}> {
+  return withSettingsBatchMutex(async () => {
+    const settings = await getServerSettingsSnapshot();
+    return {
+      version: await getSyncVersion(),
+      settings,
+      snapshotComplete: await isSettingsSnapshotComplete(settings),
+    };
+  });
+}
+
 async function applySettingsBatchInner(entries: SettingsBatchEntry[]): Promise<number> {
   if (entries.length === 0) {
     return getSyncVersion();
@@ -436,22 +471,32 @@ export interface SyncDiffResult {
   fullResyncRequired?: boolean;
 }
 
+/** Per-process mutex only; multi-replica writers require Redis (`REDIS_URL`) for shared sync state (#448). */
 export async function getSyncDiffSince(since: number): Promise<SyncDiffResult> {
-  const version = await getSyncVersion();
-  const normalizedSince = Number.isFinite(since) ? since : 0;
-  const log = await readDiffLog();
-  const changes = log.filter((entry) => entry.version > normalizedSince);
-  if (log.length > 0) {
-    let minVersion = log[0]?.version ?? version;
-    for (const entry of log) {
-      if (entry.version < minVersion) minVersion = entry.version;
-    }
-    // Gap: client version is more than one behind the oldest retained diff entry.
-    if (normalizedSince > 0 && normalizedSince < minVersion - 1) {
+  return withSettingsBatchMutex(async () => {
+    const version = await getSyncVersion();
+    const normalizedSince = Number.isFinite(since) ? since : 0;
+    const log = await readDiffLog();
+    const changes = log.filter((entry) => entry.version > normalizedSince);
+
+    // History lost/expired but server version advanced — incremental diff is not trustworthy.
+    if (log.length === 0 && normalizedSince < version) {
       return { version, changes: [], fullResyncRequired: true };
     }
-  }
-  return { version, changes };
+
+    if (log.length > 0) {
+      let minVersion = log[0]?.version ?? version;
+      for (const entry of log) {
+        if (entry.version < minVersion) minVersion = entry.version;
+      }
+      // Gap: client baseline is older than the oldest retained diff entry (including since=0).
+      if (normalizedSince < minVersion - 1) {
+        return { version, changes: [], fullResyncRequired: true };
+      }
+    }
+
+    return { version, changes };
+  });
 }
 
 // ─── HTTP idempotency ─────────────────────────────────────────────────

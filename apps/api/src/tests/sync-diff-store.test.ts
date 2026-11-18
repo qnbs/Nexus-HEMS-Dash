@@ -6,6 +6,7 @@ import {
   resetSyncDiffForTests,
 } from '../data/sync-diff-store.js';
 import { getSyncVersion, resetSyncVersionForTests } from '../data/sync-version-store.js';
+import { resetSyncPersistenceForTests } from '../services/sync-persistence.js';
 
 describe('sync-diff-store', () => {
   afterEach(() => {
@@ -21,6 +22,24 @@ describe('sync-diff-store', () => {
 
     expect(v2).toBeGreaterThan(v1);
     expect(await getSyncVersion()).toBe(v2);
+  });
+
+  it('requires full resync when diff history is empty but server version is ahead of since', async () => {
+    resetSyncPersistenceForTests(20);
+
+    const diff = await getSyncDiffSince(10);
+    expect(diff.version).toBe(20);
+    expect(diff.changes).toHaveLength(0);
+    expect(diff.fullResyncRequired).toBe(true);
+  });
+
+  it('requires full resync for since=0 when oldest retained diff starts after version 1', async () => {
+    resetSyncPersistenceForTests(50);
+    await recordSyncDiffEntry('theme', 'dark', 'userPreferences');
+
+    const diff = await getSyncDiffSince(0);
+    expect(diff.fullResyncRequired).toBe(true);
+    expect(diff.changes).toHaveLength(0);
   });
 
   it('returns only entries newer than since', async () => {
