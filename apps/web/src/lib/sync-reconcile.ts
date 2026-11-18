@@ -21,6 +21,8 @@ export interface SyncDiffResponse {
 export interface ServerSettingsSnapshotResponse {
   version: number;
   settings: Record<string, unknown>;
+  /** False when the API cannot prove durable settings after in-memory restart (#448). */
+  snapshotComplete?: boolean;
 }
 
 /**
@@ -73,8 +75,10 @@ export async function applyFullServerSettingsResync(
     (patch as Record<string, unknown>)[key] =
       serverVal !== undefined ? serverVal : defaultSettings[storeKey];
   }
+  const current = useAppStore.getState().settings;
+  const nextSettings = { ...current, ...patch };
+  await persistSettings(nextSettings);
   useAppStore.getState().updateSettings(patch);
-  await persistSettings(useAppStore.getState().settings);
 }
 
 export async function fetchServerSettingsSnapshot(
@@ -111,8 +115,10 @@ export async function applyServerSyncDiff(changes: SyncDiffEntry[]): Promise<voi
 
   if (Object.keys(patch).length === 0) return;
 
+  const current = useAppStore.getState().settings;
+  const nextSettings = { ...current, ...patch };
+  await persistSettings(nextSettings);
   useAppStore.getState().updateSettings(patch);
-  await persistSettings(useAppStore.getState().settings);
 }
 
 /**
@@ -129,6 +135,9 @@ export async function reconcileServerSettings(since: number): Promise<number | n
     for (let attempt = 0; attempt < FULL_RESYNC_ALIGN_ATTEMPTS; attempt++) {
       const snapshot = await fetchServerSettingsSnapshot();
       if (!snapshot) return null;
+      if (snapshot.snapshotComplete === false && Object.keys(snapshot.settings).length === 0) {
+        return null;
+      }
       if (snapshot.version === diff.version) {
         await applyFullServerSettingsResync(snapshot.settings);
         return snapshot.version;

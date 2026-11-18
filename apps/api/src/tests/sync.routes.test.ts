@@ -77,6 +77,23 @@ describe('sync routes', () => {
 
     expect(typeof res.body.version).toBe('number');
     expect(res.body.settings).toMatchObject({ animations: true, compactMode: false });
+    expect(res.body.snapshotComplete).toBe(true);
+  });
+
+  it('GET /api/settings redacts influxUrl credentials and marks incomplete empty snapshot', async () => {
+    await applySettingsPatch({
+      influxUrl: 'http://admin:token@influx.local:8086',
+    });
+
+    const bearer = await signToken({ sub: 'reader', scope: 'read' }, '1h');
+    const res = await buildApp()
+      .get('/api/settings')
+      .set('Authorization', `Bearer ${bearer}`)
+      .expect(200);
+
+    expect(res.body.settings.influxUrl).not.toContain('admin');
+    expect(res.body.settings.influxUrl).not.toContain('token');
+    expect(res.body.snapshotComplete).toBe(true);
   });
 
   it('GET /api/sync/diff returns fullResyncRequired when history is empty but version is ahead', async () => {

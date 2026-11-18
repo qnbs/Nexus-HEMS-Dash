@@ -77,6 +77,7 @@ describe('sync-reconcile', () => {
           JSON.stringify({
             version: 200,
             settings: { compactMode: true, animations: false },
+            snapshotComplete: true,
           }),
           { status: 200 },
         ),
@@ -151,6 +152,51 @@ describe('sync-reconcile', () => {
 
     const { reconcileServerSettings } = await import('../lib/sync-reconcile');
     await expect(reconcileServerSettings(5)).resolves.toBeNull();
+  });
+
+  it('fails closed when server snapshot is empty and not durable (snapshotComplete false)', async () => {
+    vi.mocked(fetch)
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ version: 200, changes: [], fullResyncRequired: true }), {
+          status: 200,
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            version: 200,
+            settings: {},
+            snapshotComplete: false,
+          }),
+          { status: 200 },
+        ),
+      );
+
+    const { reconcileServerSettings } = await import('../lib/sync-reconcile');
+    await expect(reconcileServerSettings(5)).resolves.toBeNull();
+  });
+
+  it('reconcileServerSettings returns null when diff fetch fails', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(new Response('fail', { status: 503 }));
+
+    const { reconcileServerSettings } = await import('../lib/sync-reconcile');
+    await expect(reconcileServerSettings(5)).resolves.toBeNull();
+  });
+
+  it('applyFullServerSettingsResync does not mutate store when persist fails', async () => {
+    const db = await import('../lib/db');
+    const persistSpy = vi
+      .spyOn(db, 'persistSettings')
+      .mockRejectedValueOnce(new Error('disk full'));
+
+    const { applyFullServerSettingsResync } = await import('../lib/sync-reconcile');
+    const { useAppStore, defaultSettings } = await import('../store');
+    useAppStore.setState({ settings: { ...defaultSettings, compactMode: true } });
+
+    await expect(applyFullServerSettingsResync({ animations: false })).rejects.toThrow('disk full');
+    expect(useAppStore.getState().settings.compactMode).toBe(true);
+    expect(useAppStore.getState().settings.animations).toBe(defaultSettings.animations);
+    persistSpy.mockRestore();
   });
 
   it('reconcileServerSettings fetches diff and applies changes', async () => {

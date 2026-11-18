@@ -179,6 +179,23 @@ export async function getServerSettingsSnapshot(): Promise<Record<string, unknow
   return Object.fromEntries(memorySettings);
 }
 
+/**
+ * True when an empty settings snapshot still reflects durable server state (not post-restart amnesia).
+ */
+export async function isSettingsSnapshotComplete(
+  settings: Record<string, unknown>,
+): Promise<boolean> {
+  if (Object.keys(settings).length > 0) return true;
+  const redis = await redisClient();
+  if (redis) {
+    const hash = await redis.hgetall(SYNC_SETTINGS_HASH_KEY);
+    if (Object.keys(hash).length > 0) return true;
+    const legacy = await redis.get(SYNC_SETTINGS_KEY);
+    return typeof legacy === 'string' && legacy.length > 0;
+  }
+  return false;
+}
+
 async function persistSettingsSnapshot(snapshot: Record<string, unknown>): Promise<void> {
   const redis = await redisClient();
   if (redis) {
@@ -331,11 +348,16 @@ export async function applySettingsBatch(entries: SettingsBatchEntry[]): Promise
 export async function getServerSettingsSyncSnapshot(): Promise<{
   version: number;
   settings: Record<string, unknown>;
+  snapshotComplete: boolean;
 }> {
-  return withSettingsBatchMutex(async () => ({
-    version: await getSyncVersion(),
-    settings: await getServerSettingsSnapshot(),
-  }));
+  return withSettingsBatchMutex(async () => {
+    const settings = await getServerSettingsSnapshot();
+    return {
+      version: await getSyncVersion(),
+      settings,
+      snapshotComplete: await isSettingsSnapshotComplete(settings),
+    };
+  });
 }
 
 async function applySettingsBatchInner(entries: SettingsBatchEntry[]): Promise<number> {
