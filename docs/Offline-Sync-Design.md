@@ -146,6 +146,7 @@ Client reconnects → fetch serverVersion
 │   │   └─ show SyncConflictDialog (no auto-reconcile)
 │   │   ├─ user chooses server-wins (resolveSyncConflict → 'server')
 │   │   │   ├─ reconcileServerSettings(since=baseline): GET /api/sync/diff → full snapshot if `fullResyncRequired` (#467) else incremental apply
+│   │   │   │   ├─ full path: `GET /api/settings` must return `snapshotComplete: true` (fail closed on empty in-memory restart); server redacts `influxUrl` credentials
 │   │   │   │   ├─ apply OK → discard queued settings (`discarded` #448), record server version, clear flag
 │   │   │   │   └─ apply FAIL → throw; conflict remains open (no replay, no version bump)
 │   │   └─ user chooses local-wins (resolveSyncConflict → 'local')
